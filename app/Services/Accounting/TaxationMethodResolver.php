@@ -16,6 +16,8 @@ use App\Enums\Finance\{OpenItemDirection, TaxationMethod};
 use App\Models\Accounting\{AccountingOpenItem, AccountingTaxationPeriod};
 use App\Models\{Organization, User};
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -138,18 +140,18 @@ class TaxationMethodResolver {
             ->orderBy('document_date')
             ->get();
 
-        $total = '0.00';
+        $total = Money::zero($items->first()->currency ?? CurrencyCode::Euro);
         $rows = [];
         foreach ($items as $item) {
-            $open = $item->open_amount?->getAmount() ?? '0.00';
-            $total = number_format((float) $total + (float) $open, 2, '.', '');
+            $open = $item->open_amount ?? Money::zero($item->currency);
+            $total = $total->plus($open);
             $rows[] = [
                 'document' => $item->document_reference,
                 'document_date' => $item->document_date->toDateString(),
-                'open_amount' => $open,
+                'open_amount' => $open->getAmount(),
             ];
         }
 
-        return ['count' => $items->count(), 'open_amount' => $total, 'items' => $rows];
+        return ['count' => $items->count(), 'open_amount' => $total->getAmount(), 'items' => $rows];
     }
 }

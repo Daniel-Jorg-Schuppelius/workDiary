@@ -16,6 +16,8 @@ use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
 use App\Models\{Customer, Invoice, Organization};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -76,7 +78,7 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             $line = $this->line(
                 PostingAccountRole::Receivable,
                 $receivable,
-                $this->money($source->total),
+                $source->total?->getAmount() ?? '0.00',
                 '0.00',
                 $source->number,
                 Customer::class,
@@ -90,8 +92,10 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
 
         foreach ($breakdown as $group) {
             $rate = (string) ($group['rate'] ?? '0.00');
-            $net = $this->money($group['net'] ?? '0.00');
-            $tax = $this->money($group['tax'] ?? '0.00');
+            // Die Aufschlüsselung liegt als JSON vor; Money normalisiert die
+            // Rohwerte ohne Float-Zwischenschritt (Vollscan 2026-08-23, C1).
+            $net = Money::of((string) ($group['net'] ?? '0'), $source->currencyCode())->getAmount();
+            $tax = Money::of((string) ($group['tax'] ?? '0'), $source->currencyCode())->getAmount();
             $context = ['tax_rate' => $rate];
 
             $revenue = $this->rule($organization, PostingAccountRole::Revenue, $context, $issuedOn);
@@ -106,7 +110,7 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
             }
 
             // Steuerzeile nur, wenn der Beleg auch Steuer ausweist.
-            if ((float) $tax === 0.0) {
+            if (NumberHelper::isZeroPrecise($tax)) {
                 continue;
             }
 

@@ -20,13 +20,20 @@
 >
     {{-- Regel 12: Alpine nicht am auto-<form>, sondern am Body-Wrapper. Der
          Einsatzort-Select filtert reaktiv nach dem gewählten Kunden. --}}
-    <div x-data="{
-            customerId: @js((string) old('customer_id', $job?->customer_id ?? '')),
-            sites: @js($sites->map(fn ($s) => ['id' => (string) $s->id, 'name' => $s->name, 'customer' => (string) $s->customer_id])->values()),
-         }"
+    @php
+        // Das Kunden-Select postet Sqids; der Einsatzort-Filter vergleicht
+        // deshalb ebenfalls über den Kunden-Sqid (Vollscan 2026-08-23, I1).
+        $customerSqids = $customers->mapWithKeys(fn ($c) => [(int) $c->id => (string) $c->sqid]);
+        $siteOptions = $sites->map(fn ($s) => [
+            'id' => (string) $s->id,
+            'name' => $s->name,
+            'parent' => $customerSqids[(int) $s->customer_id] ?? '',
+        ])->values();
+    @endphp
+    <div x-data="dependentSelect(@js((string) old('customer_id', $job?->customer?->sqid ?? '')), @js($siteOptions))"
          class="space-y-4">
         <x-form-group :legend="__('disposal.form.group_assignment')" icon="recycling" tone="primary" cols="2">
-            <x-select-field name="customer_id" :label="__('Kunde')" required x-model="customerId">
+            <x-select-field name="customer_id" :label="__('Kunde')" required x-model="parent">
                 <option value="">{{ __('-- Kunde wählen --') }}</option>
                 @foreach ($customers as $c)
                     <option value="{{ $c->sqid }}" @selected((string) old('customer_id', $job?->customer_id) === (string) $c->id)>{{ $c->name }}</option>
@@ -34,8 +41,8 @@
             </x-select-field>
             <x-select-field name="site_id" :label="__('disposal.form.site')">
                 <option value="">{{ __('disposal.form.site_none') }}</option>
-                <template x-for="site in sites.filter((s) => s.customer === customerId)" :key="site.id">
-                    <option :value="site.id" x-text="site.name" :selected="site.id === @js((string) old('site_id', $job?->site_id ?? ''))"></option>
+                <template x-for="site in filtered()" :key="site.id">
+                    <option :value="site.id" x-text="site.name" :selected="isSelected(site.id, @js((string) old('site_id', $job?->site_id ?? '')))"></option>
                 </template>
             </x-select-field>
             <x-select-field name="diary_entry_id" :label="__('disposal.form.diary_entry')">

@@ -97,11 +97,11 @@
                                 @php
                                     $target = $um->user;
                                     $updateRoute = $um->source === 'alias'
-                                        ? route('admin.toggl.mappings.user-alias.update', $um->id)
-                                        : route('admin.toggl.mappings.update', $um->id);
+                                        ? route('admin.toggl.mappings.user-alias.update', $um->sqid)
+                                        : route('admin.toggl.mappings.update', $um->sqid);
                                     $deleteRoute = $um->source === 'alias'
-                                        ? route('admin.toggl.mappings.user-alias.delete', $um->id)
-                                        : route('admin.toggl.mappings.delete', $um->id);
+                                        ? route('admin.toggl.mappings.user-alias.delete', $um->sqid)
+                                        : route('admin.toggl.mappings.delete', $um->sqid);
                                 @endphp
                                 <tr>
                                     <td class="font-mono text-xs">{{ $um->email }}</td>
@@ -174,7 +174,7 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center justify-end gap-2">
-                                            <form method="POST" action="{{ route('admin.toggl.mappings.update', $mapping->id) }}"
+                                            <form method="POST" action="{{ route('admin.toggl.mappings.update', $mapping->sqid) }}"
                                                   class="flex items-center gap-2">
                                                 @csrf
                                                 <select name="target_id" required class="select select-sm select-bordered">
@@ -196,7 +196,7 @@
                                                 </select>
                                                 <button type="submit" class="btn btn-sm">{{ __('Umbiegen') }}</button>
                                             </form>
-                                            <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->id) }}"
+                                            <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->sqid) }}"
                                                   data-confirm-dialog
                                                   data-confirm-message="{{ __('Diese Zuordnung entfernen? Künftige Importe matchen dann nicht mehr automatisch.') }}">
                                                 @csrf
@@ -241,7 +241,7 @@
                                     </td>
                                     <td>
                                         <div class="flex items-center justify-end gap-2">
-                                            <form method="POST" action="{{ route('admin.toggl.mappings.update', $mapping->id) }}"
+                                            <form method="POST" action="{{ route('admin.toggl.mappings.update', $mapping->sqid) }}"
                                                   class="flex items-center gap-2">
                                                 @csrf
                                                 <select name="target_id" required class="select select-sm select-bordered">
@@ -254,7 +254,7 @@
                                                 </select>
                                                 <button type="submit" class="btn btn-sm">{{ __('Umbiegen') }}</button>
                                             </form>
-                                            <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->id) }}"
+                                            <form method="POST" action="{{ route('admin.toggl.mappings.delete', $mapping->sqid) }}"
                                                   data-confirm-dialog
                                                   data-confirm-message="{{ __('Diese Zuordnung entfernen? Künftige Importe matchen dann nicht mehr automatisch.') }}">
                                                 @csrf

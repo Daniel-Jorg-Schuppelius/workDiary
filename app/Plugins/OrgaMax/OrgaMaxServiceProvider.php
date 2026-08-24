@@ -15,6 +15,7 @@ namespace App\Plugins\OrgaMax;
 use App\Plugins\OrgaMax\Console\OrgaMaxSyncCommand;
 use App\Plugins\OrgaMax\Services\OrgaMaxOutboxDispatcher;
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 use App\Services\Integration\IntegrationOutboxDispatcherResolver;
 
 /**
@@ -36,5 +37,10 @@ class OrgaMaxServiceProvider extends PluginServiceProviderBase {
     protected function bootPlugin(): void {
         $this->app->make(IntegrationOutboxDispatcherResolver::class)
             ->register($this->app->make(OrgaMaxOutboxDispatcher::class));
+
+        // Belegfluss-Quelle (Feature 105; Vollscan B9): der Kern kennt die
+        // Tabelle `orgamax_invoices` nur noch über diese Registrierung.
+        $this->app->make(DocumentFeedSourceRegistry::class)
+            ->register(new OrgaMaxDocumentFeedSource);
     }
 }

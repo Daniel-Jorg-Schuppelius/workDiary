@@ -12,7 +12,7 @@ namespace App\Console\Commands;
 
 use App\Events\Chat\MessageSent;
 use App\Models\Chat\{Channel, ScheduledMessage};
-use App\Services\PushNotifier;
+use App\Services\Chat\ChatNotificationService;
 use Illuminate\Console\Command;
 
 /**
@@ -24,7 +24,7 @@ class SendScheduledMessages extends Command {
 
     protected $description = 'Sendet fällige geplante Chat-Nachrichten.';
 
-    public function handle(PushNotifier $push): int {
+    public function handle(ChatNotificationService $chat): int {
         $due = ScheduledMessage::query()
             ->where('scheduled_at', '<=', now())
             ->orderBy('scheduled_at')
@@ -50,7 +50,7 @@ class SendScheduledMessages extends Command {
             broadcast(new MessageSent($message));
             $channel->members()->where('users.id', '!=', $sched->user_id)->pluck('users.id')
                 ->each(fn ($id) => broadcast(new \App\Events\Chat\ChannelListChanged((int) $id)));
-            $push->chatMessage($message);
+            $chat->messageCreated($message);
             $sched->delete();
             $count++;
         }

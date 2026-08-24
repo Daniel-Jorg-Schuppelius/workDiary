@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reporting;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\{AssetFinanceContract, AssetFinanceCostSnapshot, AssetFinanceDeadline, AssetFinanceRateSchedule, AssetFinanceReportSnapshot, AssetFinanceUsageLimit};
 use App\Services\AssetFinance\AssetFinanceService;
@@ -26,6 +27,8 @@ use Illuminate\Support\Facades\Gate;
  * Abgrenzung (keine Bilanzierung, W11).
  */
 class AssetFinanceReportController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly AssetFinanceService $service) {}
 
     public function index(): View {
@@ -42,7 +45,7 @@ class AssetFinanceReportController extends Controller {
         $actor = $request->user() ?? abort(401);
 
         AssetFinanceReportSnapshot::query()->create([
-            'organization_id' => $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'period_start' => now()->startOfMonth()->toDateString(),
             'period_end' => now()->toDateString(),
             'payload' => $this->aggregate(),

@@ -19,6 +19,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class ServiceTicketService {
+    use \App\Services\Concerns\ParsesMixedDate;
+
     public function __construct(
         private readonly TicketStatusMachine $statusMachine,
         private readonly SlaTimer $slaTimer,
@@ -430,14 +432,4 @@ class ServiceTicketService {
         return ServiceTicketSource::tryFrom($value) ?? ServiceTicketSource::Manual;
     }
 
-    private function parseDate(mixed $value): ?Carbon {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof Carbon) {
-            return $value;
-        }
-
-        return Carbon::parse((string) $value);
-    }
 }

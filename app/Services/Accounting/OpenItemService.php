@@ -17,7 +17,7 @@ use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingOpenI
 use App\Models\Organization;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Collection;
@@ -64,12 +64,12 @@ class OpenItemService {
             }
 
             $direction = $this->directionOf($account->type);
-            $debit = $line->debit?->getAmount() ?? '0.00';
-            $credit = $line->credit?->getAmount() ?? '0.00';
+            $debit = $line->debit ?? Money::zero($line->currency);
+            $credit = $line->credit ?? Money::zero($line->currency);
 
             $increasing = $direction === OpenItemDirection::Receivable
-                ? (float) $debit > 0.0
-                : (float) $credit > 0.0;
+                ? $debit->isPositive()
+                : $credit->isPositive();
 
             if ($increasing && ! $settlesTarget) {
                 $this->register($organization, $entry, $line, $direction);
@@ -81,8 +81,8 @@ class OpenItemService {
                 ? ($direction === OpenItemDirection::Receivable ? $debit : $credit)
                 : ($direction === OpenItemDirection::Receivable ? $credit : $debit);
 
-            if ((float) $amount > 0.0) {
-                $this->settleFromEntry($organization, $entry, $line, $direction, $amount, reopening: $increasing);
+            if ($amount->isPositive()) {
+                $this->settleFromEntry($organization, $entry, $line, $direction, $amount->getAmount(), reopening: $increasing);
             }
         }
     }
@@ -152,11 +152,13 @@ class OpenItemService {
 
         // Grenzen als Datumswerte statt als Datumsarithmetik im SQL — das
         // hält die Abfrage über MariaDB und SQLite hinweg gleich.
+        // Grenzen aus der EINEN Bänderungs-Definition (B15/E7).
+        $limits = \App\Support\Billing\AgingBuckets::accounting()->limits;
         $bounds = [
             'today' => $today->toDateString(),
-            'd30' => $today->subDays(30)->toDateString(),
-            'd60' => $today->subDays(60)->toDateString(),
-            'd90' => $today->subDays(90)->toDateString(),
+            'd30' => $today->subDays($limits[0])->toDateString(),
+            'd60' => $today->subDays($limits[1])->toDateString(),
+            'd90' => $today->subDays($limits[2])->toDateString(),
         ];
 
         $base = fn (): Builder => AccountingOpenItem::query()
@@ -176,8 +178,8 @@ class OpenItemService {
         $sums = $row === null ? [] : $row->getAttributes();
 
         $buckets = [];
-        foreach (['not_due', 'd30', 'd60', 'd90', 'd90plus'] as $key) {
-            $buckets[$key] = number_format((float) ($sums[$key] ?? 0), 2, '.', '');
+        foreach (\App\Support\Billing\AgingBuckets::accounting()->keys as $key) {
+            $buckets[$key] = Decimal::of((string) ($sums[$key] ?? 0), 2)->getValue();
         }
 
         $items = match (true) {

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Enums\Sales;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Pipeline-Status eines Leads (Feature 091): new → contacted → qualified →
@@ -21,7 +21,7 @@ use App\Enums\Contracts\HasLabel;
  * konvertierter Lead lebt als Kunde weiter, ein verworfener läuft in die
  * Anonymisierungsfrist.
  */
-enum LeadStatus: string implements HasLabel {
+enum LeadStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case New = 'new';
@@ -55,7 +55,7 @@ enum LeadStatus: string implements HasLabel {
      *
      * @return list<self>
      */
-    public function next(): array {
+    public function allowedTransitions(): array {
         return match ($this) {
             self::New => [self::Contacted, self::Qualified, self::Discarded],
             self::Contacted => [self::Qualified, self::Discarded],

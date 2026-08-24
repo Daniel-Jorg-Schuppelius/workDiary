@@ -60,6 +60,20 @@ jobs:
       - name: Legacy encapsulation guard
         run: composer legacy:guard
 
+      # Vollscan 2026-08-23 (D5): Die Übersetzungs-, Hilfe- und Feature-
+      # Register-Gates liefen bisher nur lokal (composer qa) — ab hier blockieren
+      # sie auch Pull Requests. help:coverage braucht die Routenliste (.env).
+      - name: Translation gates (lang:check, lang:coverage)
+        run: |
+          composer lang:check
+          composer lang:coverage
+
+      - name: Help-topic coverage
+        run: composer help:coverage
+
+      - name: Feature-status register check
+        run: composer features:check
+
   security-gate:
     name: Security gate (dependencies & format)
     runs-on: ubuntu-latest
@@ -218,6 +232,76 @@ jobs:
           php artisan migrate --force --seed --no-interaction
           php artisan demo:seed --no-interaction
           php artisan audit:verify
+
+  # Vollscan 2026-08-23 (D2, Entscheid E3): Die Finance-Suite (DATEV-Hash-Kette,
+  # Zahlungsabgleich, SEPA, Bankimport) skippt ohne das private
+  # php-financial-formats komplett — die Standard-Shards waren dort blind.
+  # Dieser Job installiert das Paket über ein Secret (Lock bleibt sauber:
+  # composer.local.json wird nur im Runner erzeugt) und lässt keinen Skip durch.
+  # Ohne gesetztes Secret (Forks) wird der Job übersprungen, nicht rot.
+  tests-financial:
+    name: Tests (Finance mit php-financial-formats)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      FINANCIAL_FORMATS_TOKEN: ${{ secrets.FINANCIAL_FORMATS_TOKEN }}
+
+    steps:
+      - name: Check for package token
+        id: token
+        run: |
+          if [ -n "$FINANCIAL_FORMATS_TOKEN" ]; then echo "present=true" >> "$GITHUB_OUTPUT"; else echo "present=false" >> "$GITHUB_OUTPUT"; echo "::warning::FINANCIAL_FORMATS_TOKEN fehlt — Finance-Suite mit php-financial-formats wird übersprungen."; fi
+
+      - name: Checkout repository
+        if: steps.token.outputs.present == 'true'
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Set up PHP
+        if: steps.token.outputs.present == 'true'
+        uses: shivammathur/setup-php@2.37.2
+        with:
+          php-version: "8.4"
+          extensions: bcmath, curl, dom, fileinfo, gd, intl, mbstring, openssl, pcntl, pdo_sqlite, sodium, sqlite3, tokenizer, xml, xmlwriter, zip
+          coverage: none
+          tools: composer:v2
+
+      - name: Install dependencies incl. php-financial-formats
+        if: steps.token.outputs.present == 'true'
+        env:
+          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.FINANCIAL_FORMATS_TOKEN }}"}}'
+        run: |
+          cat > composer.local.json <<'JSON'
+          {
+              "repositories": {
+                  "php-financial-formats": {
+                      "type": "vcs",
+                      "url": "https://github.com/Daniel-Jorg-Schuppelius/php-financial-formats.git",
+                      "canonical": false
+                  }
+              },
+              "require": {
+                  "daniel-jorg-schuppelius/php-financial-formats": "^1.4"
+              }
+          }
+          JSON
+          composer install --no-interaction --no-progress --prefer-dist
+          composer update daniel-jorg-schuppelius/php-financial-formats --no-interaction --no-progress --prefer-dist
+          test -d vendor/daniel-jorg-schuppelius/php-financial-formats
+
+      - name: Prepare test environment
+        if: steps.token.outputs.present == 'true'
+        run: |
+          cp .env.testing .env
+          touch /dev/shm/workdiary-testing.sqlite
+
+      - name: Run Finance suite (no skips allowed)
+        if: steps.token.outputs.present == 'true'
+        run: |
+          php artisan config:clear --ansi
+          XDEBUG_MODE=off php artisan test tests/Feature/Finance tests/Unit/Finance --log-junit "${{ runner.temp }}/junit-finance.xml"
+          php scripts/check-junit-skips.php "${{ runner.temp }}/junit-finance.xml" --max=0
 
   frontend:
     name: Frontend build

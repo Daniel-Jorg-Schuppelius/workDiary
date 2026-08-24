@@ -76,7 +76,7 @@
         {{-- MVP-604: Kategorie-Filter --}}
         @if (($categories ?? collect())->isNotEmpty())
             <x-filter-field :label="__('article.field.category')" for="art-category">
-                <select id="art-category" name="category" class="select select-sm select-bordered" onchange="this.form.submit()">
+                <select id="art-category" name="category" class="select select-sm select-bordered" data-autosubmit>
                     <option value="">{{ __('Alle') }}</option>
                     @foreach ($categories as $cat)
                         <option value="{{ $cat }}" @selected(($category ?? '') === $cat)>{{ $cat }}</option>

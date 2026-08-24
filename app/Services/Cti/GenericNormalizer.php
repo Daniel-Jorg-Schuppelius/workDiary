@@ -12,15 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Cti;
 
-use Illuminate\Support\Carbon;
-use Throwable;
-
 /**
  * Neutraler CTI-Adapter (Feature 056, MVP-118) für Provider ohne eigenen
  * Adapter: erwartet das schlanke WorkDiary-Format
  * `{call_id, direction: inbound|outbound, from, to, occurred_at?, duration_seconds?}`.
  */
-class GenericNormalizer implements CtiEventNormalizer {
+class GenericNormalizer extends AbstractCtiNormalizer {
     public function normalize(array $payload): ?CtiCall {
         $callId = (string) ($payload['call_id'] ?? '');
         $direction = (string) ($payload['direction'] ?? '');
@@ -38,14 +35,4 @@ class GenericNormalizer implements CtiEventNormalizer {
         );
     }
 
-    private function parseDate(mixed $value): Carbon {
-        if (! is_string($value) || $value === '') {
-            return Carbon::now();
-        }
-        try {
-            return Carbon::parse($value);
-        } catch (Throwable) {
-            return Carbon::now();
-        }
-    }
 }

@@ -14,6 +14,7 @@ namespace App\Services\Finance\Sepa;
 
 use App\Models\{IncomingEInvoice, Supplier};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Support\Collection;
 
 /**
@@ -75,23 +76,43 @@ class PaymentProposalService {
             'discount_percent' => $usesDiscount ? (float) $invoice->discount_percent : null,
             'execute_on' => $executeOn->lessThan($today) ? $today : $executeOn,
             'uses_discount' => $usesDiscount,
-            'blocked' => $this->blockingReason($iban, $amount),
+            'blocked' => $this->blockingReason($invoice, $supplier, $iban, $amount),
         ];
     }
 
     /**
      * Warum diese Position (noch) nicht zahlbar ist. Ohne IBAN gibt es keine
-     * Überweisung — das darf nicht erst die Bank feststellen.
+     * Überweisung — das darf nicht erst die Bank feststellen. Und eine
+     * Rechnungs-IBAN, die vom Stammsatz abweicht, ist ein klassischer
+     * Rechnungsbetrugs-Vektor (Vollscan 2026-08-23, E3): Blocker, bis ein
+     * Berechtigter die Abweichung auditiert bestätigt hat.
      */
-    private function blockingReason(?string $iban, float $amount): ?string {
+    private function blockingReason(IncomingEInvoice $invoice, ?Supplier $supplier, ?string $iban, float $amount): ?string {
         if ($iban === null || $iban === '') {
             return 'missing_iban';
         }
         if ($amount <= 0) {
             return 'zero_amount';
         }
+        if ($this->ibanDiffersFromMaster($invoice, $supplier)) {
+            return 'iban_differs';
+        }
 
         return null;
+    }
+
+    /** Rechnungs-IBAN ≠ Stammsatz-IBAN (normalisiert) und noch nicht bestätigt. */
+    public function ibanDiffersFromMaster(IncomingEInvoice $invoice, ?Supplier $supplier): bool {
+        if ($invoice->creditor_iban_confirmed_at !== null) {
+            return false;
+        }
+        $invoiceIban = BankHelper::normalizeIBAN(trim((string) ($invoice->creditor_iban ?? '')));
+        if ($invoiceIban === null || $supplier === null) {
+            return false;
+        }
+        $masterIban = BankHelper::normalizeIBAN(trim((string) $supplier->primaryBankAccount()?->iban));
+
+        return $masterIban !== null && $masterIban !== $invoiceIban;
     }
 
     /** @return array{0: string|null, 1: string|null} */
@@ -111,6 +132,16 @@ class PaymentProposalService {
     }
 
     private function supplierFor(IncomingEInvoice $invoice): ?Supplier {
+        // USt-ID vor Name (Vollscan 2026-08-23, E3): sie ist das stabilere
+        // Merkmal — der Name kommt frei formatiert aus der Rechnung.
+        $vatId = trim((string) ($invoice->seller_vat_id ?? ''));
+        if ($vatId !== '') {
+            $byVat = Supplier::query()->where('vat_id', $vatId)->first();
+            if ($byVat !== null) {
+                return $byVat;
+            }
+        }
+
         $name = trim((string) ($invoice->seller_name ?? ''));
         if ($name === '') {
             return null;

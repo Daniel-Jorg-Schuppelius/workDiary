@@ -55,7 +55,18 @@ class IdentifierIssueDetector {
             return $issues;
         }
 
-        foreach ($contact->bankAccounts()->get() as $account) {
+        $accounts = $contact->bankAccounts()->get();
+        if ($accounts->isNotEmpty()) {
+            // F8/E6: bank_iban/bank_bic am Kontakt sind nur noch die Projektion
+            // der primären Bankverbindung — dieselbe kaputte IBAN würde sonst
+            // doppelt gemeldet (einmal inline, einmal an der Bankverbindung).
+            $issues = array_values(array_filter(
+                $issues,
+                static fn (array $issue): bool => ! in_array($issue['field'], ['bank_iban', 'bank_bic'], true),
+            ));
+        }
+
+        foreach ($accounts as $account) {
             $label = trim((string) ($account->bank_name ?? ''));
             foreach ($this->forModel($account) as $issue) {
                 $issues[] = $issue + ['context' => (string) __('stammdaten.identifier.context.bank_account', [

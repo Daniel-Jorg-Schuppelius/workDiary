@@ -461,15 +461,15 @@ class Invoice extends Model {
     public function markSent(): void {
         $this->sent_at = now();
         $this->sent_count = ((int) $this->sent_count) + 1;
-        // Pro-forma ist KEINE steuerliche Rechnung (MVP-171): der Versand
-        // stellt sie nie — kein issued-Status, kein Fälligkeits-/Snapshot-Weg.
-        if ($this->status === self::STATUS_DRAFT && ! $this->isCreditNote() && ! $this->isProforma()) {
-            $this->status = self::STATUS_ISSUED;
-            $this->issued_on ??= now();
-            $this->due_on ??= now()->addDays($this->payment_terms_days ?? 14);
-            $this->freezeParties();
-        }
         $this->save();
+
+        // Pro-forma ist KEINE steuerliche Rechnung (MVP-171): der Versand
+        // stellt sie nie. Ausstellung über die einzige Schreibstelle (B1) —
+        // inkl. tax_context-Freeze, der hier vorher fehlte.
+        $issuer = app(\App\Services\Invoicing\InvoiceIssueService::class);
+        if ($issuer->wouldIssue($this)) {
+            $issuer->issue($this);
+        }
     }
 
     public function isProforma(): bool {

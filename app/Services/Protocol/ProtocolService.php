@@ -55,8 +55,6 @@ class ProtocolService {
             $protocol = Protocol::query()->create([
                 'organization_id' => $subject->getAttribute('organization_id') ?: $creator->organization_id,
                 'type' => $type->value,
-                'template_id' => $attributes['template_id'] ?? null,
-                'template_version' => $attributes['template_version'] ?? null,
                 'subject_type' => $subject::class,
                 'subject_id' => $subject->getKey(),
                 'title' => $attributes['title'],
@@ -200,8 +198,6 @@ class ProtocolService {
             $copy = Protocol::query()->create([
                 'organization_id' => $protocol->organization_id,
                 'type' => $protocol->type->value,
-                'template_id' => $protocol->template_id,
-                'template_version' => $protocol->template_version,
                 'subject_type' => $protocol->subject_type,
                 'subject_id' => $protocol->subject_id,
                 'title' => $protocol->title,
@@ -388,7 +384,6 @@ class ProtocolService {
             'role' => $role->value,
             'signer_name' => $signerName,
             'signer_email' => $data['signer_email'] ?? null,
-            'signer_contact_id' => $data['signer_contact_id'] ?? null,
             'signed_at' => $signedAt,
             'method' => $method->value,
             'signature_image_path' => $imagePath,
@@ -505,7 +500,7 @@ class ProtocolService {
     }
 
     private function assertTransition(Protocol $protocol, string $action): void {
-        if (! in_array($action, $protocol->status->allowedTransitions(), true)) {
+        if (! in_array($action, $protocol->status->allowedActions(), true)) {
             throw InvalidProtocolTransitionException::from($protocol->status, $action);
         }
     }

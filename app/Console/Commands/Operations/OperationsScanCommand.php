@@ -36,6 +36,7 @@ class OperationsScanCommand extends Command {
 
         $this->scanBackupHeartbeat($alerts);
         $this->scanRestoreTests($alerts);
+        $this->scanQueue($alerts);
 
         // Ablauf-/Verbindungswarnungen (MVP-057) inkl. Auto-Resolve.
         app(\App\Services\Operations\Expiry\ExpiryScanner::class)->scan($alerts);
@@ -48,6 +49,50 @@ class OperationsScanCommand extends Command {
         $this->info('Betriebsaufgaben synchronisiert.');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * Queue-Zustand (Vollscan 2026-08-23, J6): failed_jobs und ein toter
+     * Worker-Heartbeat waren nur auf der Diagnoseseite sichtbar — wer sie
+     * nicht öffnete, erfuhr von liegengebliebenen Mails/Importen nichts.
+     * Beide Signale lösen sich bei Erholung selbst auf (scheduler_overdue-Muster).
+     */
+    private function scanQueue(OperationsAlertService $alerts): void {
+        if (config('queue.default') === 'sync') {
+            return; // kein Worker, keine failed_jobs-Semantik
+        }
+
+        $queue = app(\App\Services\Diagnostics\DiagnosticsService::class)->checkQueue();
+        $failed = (int) ($queue->metrics['failed'] ?? 0);
+        if ($failed > 0) {
+            $alerts->report(new OperationsSignal(
+                type: OperationsTaskType::QueueFailedJobs,
+                dedupeKey: 'queue_failed_jobs',
+                severity: OperationsTaskSeverity::Warning,
+                titleKey: 'operations.task.queue_failed_jobs',
+                params: ['count' => $failed, 'last' => (string) ($queue->metrics['last_failed_at'] ?? '–')],
+                linkRoute: 'admin.diagnostics.index',
+            ));
+        } else {
+            $alerts->resolve('queue_failed_jobs');
+        }
+
+        $heartbeat = $queue->metrics['worker_heartbeat_at'] ?? null;
+        $heartbeatAt = is_string($heartbeat) ? \Carbon\CarbonImmutable::parse($heartbeat) : null;
+        $thresholdMinutes = (int) \App\Support\Setting::get('operations.queue_worker_silence_minutes', 10);
+        if ($heartbeatAt !== null && $heartbeatAt->diffInMinutes(now(), true) > $thresholdMinutes) {
+            $alerts->report(new OperationsSignal(
+                type: OperationsTaskType::QueueWorkerDown,
+                dedupeKey: 'queue_worker_down',
+                severity: OperationsTaskSeverity::Critical,
+                titleKey: 'operations.task.queue_worker_down',
+                params: ['minutes' => (int) $heartbeatAt->diffInMinutes(now(), true)],
+                linkRoute: 'admin.diagnostics.index',
+            ));
+        } else {
+            // Kein Heartbeat = Worker lief noch nie (Frischinstallation) → Onboarding, kein Alarm.
+            $alerts->resolve('queue_worker_down');
+        }
     }
 
     /**

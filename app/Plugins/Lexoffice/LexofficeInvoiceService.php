@@ -97,11 +97,11 @@ class LexofficeInvoiceService {
 
         $fetched = $this->fetchInvoice($externalId);
         $remoteNumber = $fetched['voucherNumber'] ?? null;
-        $updates = ['status' => Invoice::STATUS_ISSUED, 'issued_on' => $invoice->issued_on ?? now()];
-        if (is_string($remoteNumber) && $remoteNumber !== '') {
-            $updates['number'] = $remoteNumber;
-        }
-        $invoice->update($updates);
+        // Ausstellung über die einzige Schreibstelle (Vollscan 2026-08-23, B1):
+        // Partei-Snapshot, Fälligkeit und tax_context frieren jetzt auch beim
+        // Lexoffice-Push ein; die Lexoffice-Nummer kommt im selben Save mit.
+        $extra = is_string($remoteNumber) && $remoteNumber !== '' ? ['number' => $remoteNumber] : [];
+        app(\App\Services\Invoicing\InvoiceIssueService::class)->issue($invoice, $extra);
 
         return ['external_id' => $externalId, 'payload' => $fetched];
     }

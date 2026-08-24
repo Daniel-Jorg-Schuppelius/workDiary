@@ -32,6 +32,9 @@ return [
         'canceled' => 'Solicitud de cita cancelada',
         'service_created' => 'Servicio reservable creado',
     ],
+    'incomingEInvoice' => [
+        'ibanConfirmed' => 'IBAN de factura divergente confirmado',
+    ],
     'paymentRun' => [
         'released' => 'Remesa aprobada',
         'exported' => 'Fichero SEPA creado',
@@ -40,6 +43,7 @@ return [
         'revoked' => 'Mandato SEPA revocado',
     ],
     'circular' => [
+        'send_started' => 'Envío de la circular iniciado',
         'approved' => 'Circular aprobada',
         'sent' => 'Circular enviada',
     ],
@@ -255,6 +259,7 @@ return [
     'cti' => [
         'connection_issued' => 'Conexión CTI emitida',
         'dial_configured' => 'Marcación con un clic configurada',
+        'dial_started' => 'Llamada iniciada con clic para llamar',
         'disconnected' => 'CTI desconectado',
     ],
     'datanorm' => [

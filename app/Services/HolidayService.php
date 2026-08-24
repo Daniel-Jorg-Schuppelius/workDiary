@@ -14,7 +14,7 @@ namespace App\Services;
 
 use App\Models\Holiday as CustomHoliday;
 use App\Support\Setting;
-use Carbon\CarbonInterface;
+use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Support\Facades\Schema;
 use Yasumi\{Holiday, Yasumi};
 
@@ -105,5 +105,33 @@ class HolidayService {
 
     public function isHoliday(CarbonInterface $date, ?string $provider = null): bool {
         return $this->nameFor($date, $provider) !== null;
+    }
+
+    /**
+     * Werktage (Mo–Fr ohne Feiertage) INKLUSIVE Start- und Endtag (Vollscan
+     * 2026-08-23, B16 — vorher 8 handgeschriebene Kopien). $start > $end ⇒ 0.
+     */
+    public function workingDaysBetween(CarbonInterface $start, CarbonInterface $end, ?string $provider = null): int {
+        $cursor = CarbonImmutable::parse($start->toDateString());
+        $endDay = CarbonImmutable::parse($end->toDateString());
+        $count = 0;
+        while ($cursor->lte($endDay)) {
+            if ($cursor->isWeekday() && ! $this->isHoliday($cursor, $provider)) {
+                $count++;
+            }
+            $cursor = $cursor->addDay();
+        }
+
+        return $count;
+    }
+
+    /** Nächster Werktag AB $date (ein Werktag bleibt er selbst). */
+    public function nextBusinessDay(CarbonInterface $date, ?string $provider = null): CarbonImmutable {
+        $day = CarbonImmutable::parse($date->toDateString());
+        while ($day->isWeekend() || $this->isHoliday($day, $provider)) {
+            $day = $day->addDay();
+        }
+
+        return $day;
     }
 }

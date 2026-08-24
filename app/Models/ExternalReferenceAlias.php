@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
-use App\Models\Concerns\BelongsToOrganization;
+use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
  */
 class ExternalReferenceAlias extends Model {
     use BelongsToOrganization;
+    use HasSqid;
 
     protected $fillable = [
         'organization_id',

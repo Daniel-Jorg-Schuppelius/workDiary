@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\User;
 use App\Services\Calendar\CalendarEventService;
 use App\Support\Sqid;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class CalendarController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function index(): View {
         return view('calendar.index');
     }
@@ -28,12 +31,12 @@ class CalendarController extends Controller {
         $user = Auth::user();
         abort_if($user === null, 401);
 
-        $start = $request->query('start')
-            ? CarbonImmutable::parse((string) $request->query('start'))
-            : CarbonImmutable::now()->startOfMonth();
-        $end = $request->query('end')
-            ? CarbonImmutable::parse((string) $request->query('end'))
-            : CarbonImmutable::now()->endOfMonth();
+        // Guard statt Roh-Parse (Vollscan 2026-08-23, B10): Müll-Input fällt
+        // auf den Monat zurück statt als 500 zu enden.
+        [$start, $end] = $this->resolveNamedRangeWithDefault($request, 'start', 'end', static fn (): array => [
+            CarbonImmutable::now()->startOfMonth(),
+            CarbonImmutable::now()->endOfMonth(),
+        ]);
 
         $teamScope = $request->boolean('team') && $user->isAdmin();
         $rawFilterUser = (string) $request->query('user', '');

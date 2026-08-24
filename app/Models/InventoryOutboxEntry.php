@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Inventory\OutboxStatus;
 use App\Models\Concerns\BelongsToOrganization;
+use Illuminate\Database\Eloquent\{Builder, MassPrunable};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -32,8 +33,10 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class InventoryOutboxEntry extends Model {
     use BelongsToOrganization;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use MassPrunable;
 
     protected $table = 'inventory_outbox';
 
@@ -60,5 +63,23 @@ class InventoryOutboxEntry extends Model {
     /** @return BelongsTo<StockMovement, $this> */
     public function stockMovement(): BelongsTo {
         return $this->belongsTo(StockMovement::class);
+    }
+
+    /**
+     * Aufbewahrung der Outbox (Vollscan 2026-08-23, J9): bestätigte Einträge
+     * nach `integration.delivery_retention_days`, endgültig gescheiterte/
+     * kompensationspflichtige nach `integration.failed_retention_days`;
+     * pending/processing bleiben (sie sind Arbeit, kein Protokoll).
+     *
+     * @return Builder<static>
+     */
+    public function prunable(): Builder {
+        $okDays = max(1, (int) config('integration.delivery_retention_days', 90));
+        $failedDays = max(1, (int) config('integration.failed_retention_days', 180));
+
+        return static::query()->where(function (Builder $q) use ($okDays, $failedDays): void {
+            $q->where(fn (Builder $sub) => $sub->where('status', OutboxStatus::Confirmed->value)->where('updated_at', '<', now()->subDays($okDays)))
+                ->orWhere(fn (Builder $sub) => $sub->whereIn('status', [OutboxStatus::Failed->value, OutboxStatus::CompensationRequired->value])->where('updated_at', '<', now()->subDays($failedDays)));
+        });
     }
 }

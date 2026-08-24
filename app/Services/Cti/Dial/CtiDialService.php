@@ -51,7 +51,7 @@ class CtiDialService {
      * @throws CtiDialException bei fehlender Anbindung, unbrauchbarer Nummer
      *                          oder Ablehnung durch die Anlage
      */
-    public function dial(Organization $organization, string $number): void {
+    public function dial(Organization $organization, string $number, ?int $actorUserId = null): void {
         $connection = $this->connectionFor($organization);
         if ($connection === null) {
             throw new CtiDialException((string) __('cti.dial.no_connection'));
@@ -63,5 +63,10 @@ class CtiDialService {
         }
 
         $this->dialer->dial($connection, $e164);
+
+        // Wer wann welche Nummer über die Org-Nebenstelle gewählt hat — der
+        // CTI-Webhook protokolliert den Anruf, nicht den Auslöser (Vollscan
+        // 2026-08-23, E8). Der Anlagen-Token bleibt bewusst außen vor.
+        $connection->audit('cti.dial_started', ['by_user_id' => $actorUserId, 'number' => $e164]);
     }
 }

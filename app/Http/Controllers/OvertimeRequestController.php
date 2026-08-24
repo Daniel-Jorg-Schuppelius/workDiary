@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Compliance\ComplianceFindingStatus;
 use App\Enums\TimeApproval\OvertimeRequestStatus;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{ComplianceFinding, OvertimeRequest, User};
 use App\Services\Compliance\AttendancePlausibilityScanService;
 use App\Services\TimeApproval\OvertimeRequestService;
@@ -27,6 +28,8 @@ use Illuminate\View\View;
  * Entscheidungen liegen im {@see Admin\OvertimeInboxController}.
  */
 class OvertimeRequestController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function __construct(private readonly OvertimeRequestService $service) {}
 
     public function index(Request $request): View {
@@ -70,9 +73,7 @@ class OvertimeRequestController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', OvertimeRequest::class);
 
-        $scopeDate = $request->filled('date')
-            ? CarbonImmutable::parse((string) $request->input('date'))
-            : CarbonImmutable::now()->subDay();
+        $scopeDate = $this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::now()->subDay());
 
         return view('time-approval.overtime._form_dialog', [
             'isDialog' => true,

@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\MergesDuplicates;
+use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
 use App\Models\{Organization, Supplier, SupplierMergeDismissal};
 use App\Services\{SupplierDuplicateFinder, SupplierMergeService};
 use Illuminate\Database\Eloquent\Model;
@@ -30,6 +30,7 @@ use Illuminate\View\View;
 class SupplierMergeController extends Controller {
     /** @use MergesDuplicates<Supplier> */
     use MergesDuplicates;
+    use ResolvesCurrentOrganization;
 
     public function index(Request $request, SupplierDuplicateFinder $finder): View {
         $user = $this->authorizeMerging();
@@ -92,7 +93,7 @@ class SupplierMergeController extends Controller {
         SupplierMergeDismissal::query()->updateOrCreate(
             SupplierMergeDismissal::pairKey((int) $source->getKey(), (int) $target->getKey()),
             [
-                'organization_id' => $user->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'dismissed_by' => $user->id,
             ],
         );

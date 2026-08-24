@@ -114,6 +114,50 @@ class PaymentRunTest extends TestCase {
         $this->assertSame('missing_iban', app(PaymentProposalService::class)->proposalFor($invoice)['blocked']);
     }
 
+    /** E3 (Vollscan 2026-08-23): Rechnungs-IBAN ≠ Stammsatz ⇒ Blocker statt stiller Übernahme. */
+    public function test_deviating_invoice_iban_blocks_until_confirmed(): void {
+        $supplier = \App\Models\Supplier::factory()->create([
+            'organization_id' => $this->org->id,
+            'name' => 'Lieferant GmbH',
+        ]);
+        $supplier->bankAccounts()->create([
+            'organization_id' => $this->org->id,
+            'account_holder' => 'Lieferant GmbH',
+            'iban' => 'DE02120300000000202051',
+            'is_primary' => true,
+        ]);
+        $invoice = $this->invoice(); // creditor_iban DE8937… ≠ Stammsatz
+
+        $proposal = app(PaymentProposalService::class)->proposalFor($invoice);
+        $this->assertSame('iban_differs', $proposal['blocked']);
+
+        // Auditierte Bestätigung durch einen Freigabe-Berechtigten hebt den Blocker.
+        $this->actingAs($this->admin)
+            ->post(route('finance.payment-runs.proposals.confirm-iban', ['invoice' => $invoice]))
+            ->assertRedirect();
+
+        $invoice->refresh();
+        $this->assertNotNull($invoice->creditor_iban_confirmed_at);
+        $this->assertNull(app(PaymentProposalService::class)->proposalFor($invoice)['blocked']);
+        $this->assertSame(1, $invoice->auditLogs()->where('event', 'incomingEInvoice.ibanConfirmed')->count());
+    }
+
+    /** E3: Übereinstimmende oder fehlende Stammsatz-IBAN blockt nicht. */
+    public function test_matching_master_iban_does_not_block(): void {
+        $supplier = \App\Models\Supplier::factory()->create([
+            'organization_id' => $this->org->id,
+            'name' => 'Lieferant GmbH',
+        ]);
+        $supplier->bankAccounts()->create([
+            'organization_id' => $this->org->id,
+            'account_holder' => 'Lieferant GmbH',
+            'iban' => 'DE89 3704 0044 0532 0130 00', // gleich, nur formatiert
+            'is_primary' => true,
+        ]);
+
+        $this->assertNull(app(PaymentProposalService::class)->proposalFor($this->invoice())['blocked']);
+    }
+
     public function test_run_collects_positions_and_locks_the_invoices(): void {
         $first = $this->invoice();
         $second = $this->invoice();
@@ -194,6 +238,31 @@ class PaymentRunTest extends TestCase {
 
         $this->assertSame(PaymentRunStatus::Released, $released->status);
         $this->assertSame($this->admin->id, $released->released_by);
+    }
+
+    /**
+     * Vollscan 2026-08-23, E4: Der Zahllauf ignorierte das Vier-Augen-Setting
+     * des Buchungskerns — Zusammenstellen, Freigeben und Exportieren konnte
+     * dieselbe Person. Geldausgang ist der sensiblere Pfad.
+     */
+    public function test_four_eyes_setting_blocks_release_by_the_creator(): void {
+        \App\Support\Setting::set(\App\Services\Accounting\Posting\PostingInboxService::FOUR_EYES_KEY, true, \App\Settings\SettingScope::Organization, $this->org);
+
+        $invoice = $this->invoice();
+        $run = $this->service()->createFromProposals($this->account, $this->admin, [$invoice->id]);
+
+        try {
+            $this->service()->release($run, $this->admin);
+            $this->fail('Ersteller durfte den eigenen Zahllauf trotz Vier-Augen-Prinzip freigeben.');
+        } catch (RuntimeException $e) {
+            $this->assertSame((string) __('sepa.error.four_eyes'), $e->getMessage());
+        }
+
+        $other = User::factory()->admin()->create(['organization_id' => $this->org->id]);
+        $released = $this->service()->release($run->fresh(), $other);
+
+        $this->assertSame(PaymentRunStatus::Released, $released->status);
+        $this->assertSame($other->id, $released->released_by);
     }
 
     public function test_export_without_release_is_rejected(): void {

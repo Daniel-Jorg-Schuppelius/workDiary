@@ -84,7 +84,7 @@
 
                         @if ($canUpdate || $canDelete)
                             <div class="flex flex-wrap gap-1">
-                                @foreach ($issue->status->allowedTransitions() as $action)
+                                @foreach ($issue->status->allowedActions() as $action)
                                     @if (! $canUpdate)
                                         @break
                                     @endif

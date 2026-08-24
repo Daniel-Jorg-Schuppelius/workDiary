@@ -33,13 +33,10 @@ use RuntimeException;
  *    zur Akquise-Akte). Kunde und Lead verweisen aufeinander.
  */
 class LeadService {
+    use \App\Services\Concerns\AssertsStatusTransition;
+
     public function transition(Lead $lead, LeadStatus $to, ?string $reason = null): Lead {
-        if (! in_array($to, $lead->status->next(), true)) {
-            throw new RuntimeException((string) __('Der Statuswechsel von :from nach :to ist nicht vorgesehen.', [
-                'from' => $lead->status->label(),
-                'to' => $to->label(),
-            ]));
-        }
+        $this->assertStatusTransition($lead->status, $to);
 
         $lead->forceFill([
             'status' => $to,

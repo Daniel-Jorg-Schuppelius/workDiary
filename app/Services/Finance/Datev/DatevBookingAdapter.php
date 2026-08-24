@@ -20,6 +20,7 @@ use CommonToolkit\FinancialFormats\Entities\DATEV\Header\BookingBatchHeaderLine;
 use CommonToolkit\FinancialFormats\Enums\DATEV\HeaderFields\V700\BookingBatchHeaderField as F;
 use CommonToolkit\FinancialFormats\Generators\DATEV\DatevDocumentGenerator;
 use CommonToolkit\FinancialFormats\Parsers\DatevDocumentParser;
+use CommonToolkit\Helper\Data\NumberHelper;
 use DateTimeImmutable;
 use Throwable;
 
@@ -41,9 +42,27 @@ final class DatevBookingAdapter {
     /**
      * Erzeugt die DATEV-V700-CSV als String.
      *
-     * @param  list<array{amount: float, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}>  $rows
+     * @param  list<array{amount: float|numeric-string, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}>  $rows
      */
     public function generate(DatevBookingBatch $batch, DatevBookingConfig $config, array $rows): string {
+        return $this->generateBookings(
+            new DateTimeImmutable($batch->period_from->toDateString()),
+            new DateTimeImmutable($batch->period_to->toDateString()),
+            (bool) $batch->finalized_locked,
+            $this->description($batch),
+            $config,
+            $rows,
+        );
+    }
+
+    /**
+     * Batch-unabhängige Stapel-Erzeugung (Vollscan 2026-08-23, C2): auch die
+     * DATEV-Übergabe aus den lokalen Festbuchungen (MVP-677) erzeugt damit
+     * einen importierbaren EXTF-V700-Stapel statt einer Haus-CSV.
+     *
+     * @param  list<array{amount: float|numeric-string, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}>  $rows
+     */
+    public function generateBookings(DateTimeImmutable $from, DateTimeImmutable $to, bool $locked, string $description, DatevBookingConfig $config, array $rows): string {
         FinancialFormatsSupport::ensureAvailable();
 
         $fieldHeader = BookingBatchHeaderLine::createV700();
@@ -52,14 +71,11 @@ final class DatevBookingAdapter {
         $builder = new BookingDocumentBuilder();
         $builder->setFieldHeader($fieldHeader);
         $builder->setClient($config->advisorNumber, $config->clientNumber);
-        $builder->setDateRange(
-            new DateTimeImmutable($batch->period_from->toDateString()),
-            new DateTimeImmutable($batch->period_to->toDateString()),
-        );
-        $builder->setDescription($this->description($batch));
+        $builder->setDateRange($from, $to);
+        $builder->setDescription($this->clip($description, 30));
 
         foreach ($rows as $row) {
-            $builder->addBooking($this->buildLine($fieldHeader, $fieldCount, $batch, $row));
+            $builder->addBooking($this->buildLine($fieldHeader, $fieldCount, $locked, $row));
         }
 
         $document = $builder->build();
@@ -140,12 +156,12 @@ final class DatevBookingAdapter {
      * MVP-334: Storno-Übergaben tragen das Generalumkehr-Kennzeichen
      * (EXTF-Feld 118 „Generalumkehr (GU)" = 1) — DATEV kehrt die Buchung um.
      *
-     * @param  array{amount: float, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}  $row
+     * @param  array{amount: float|numeric-string, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}  $row
      */
     private function buildLine(
         BookingBatchHeaderLine $header,
         int $fieldCount,
-        DatevBookingBatch $batch,
+        bool $locked,
         array $row,
     ): DataLine {
         $values = array_fill(0, $fieldCount, '');
@@ -157,7 +173,11 @@ final class DatevBookingAdapter {
             }
         };
 
-        $set(F::Umsatz, number_format(abs($row['amount']), 2, ',', ''));
+        // Betrag als Decimal-String (Journal-Pfad, C1) oder Float (Alt-Pfad) —
+        // beide enden im DATEV-Komma-Format ohne Tausendertrenner.
+        $set(F::Umsatz, is_string($row['amount'])
+            ? NumberHelper::toGermanFormat(NumberHelper::absPrecise($row['amount']), 2)
+            : number_format(abs($row['amount']), 2, ',', ''));
         $set(F::SollHabenKennzeichen, $row['soll_haben']);
         $set(F::Konto, $row['account']);
         $set(F::Gegenkonto, $row['contra_account']);
@@ -167,7 +187,7 @@ final class DatevBookingAdapter {
         $set(F::Belegdatum, $row['date']->format('dm'));
         $set(F::Belegfeld1, $this->clip($row['document_ref'], 36));
         $set(F::Buchungstext, $this->clip($row['text'], 60));
-        $set(F::Festschreibung, $batch->finalized_locked ? '1' : '0');
+        $set(F::Festschreibung, $locked ? '1' : '0');
         if (($row['is_reversal'] ?? false) === true) {
             $set(F::Generalumkehr, '1');
         }

@@ -36,7 +36,7 @@ class CalendlyAppointmentMatcher {
 
             $byContact = Customer::query()
                 ->where('organization_id', $organization->id)
-                ->where('contact_persons', 'like', '%' . $email . '%')
+                ->whereLikeEscaped('contact_persons', $email)
                 ->get()
                 ->first(fn(Customer $customer): bool => $this->contactHasEmail($customer, $email));
             if ($byContact instanceof Customer) {

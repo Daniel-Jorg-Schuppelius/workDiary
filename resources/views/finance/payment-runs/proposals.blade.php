@@ -64,6 +64,10 @@
                         <td class="text-xs">
                             @if ($proposal['blocked'] !== null)
                                 <x-status-badge tone="error" outline>{{ __('sepa.blocked.' . $proposal['blocked']) }}</x-status-badge>
+                                @if ($proposal['blocked'] === 'iban_differs' && \Illuminate\Support\Facades\Gate::allows(\App\Enums\User\Permission::FinancePaymentRelease->value))
+                                    <button type="submit" class="btn btn-ghost btn-xs"
+                                            form="confirm-iban-{{ $invoice->sqid }}">{{ __('sepa.action.confirm_iban') }}</button>
+                                @endif
                             @elseif ($proposal['uses_discount'])
                                 <x-status-badge tone="success" outline>{{ __('sepa.discount_used', ['percent' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $proposal['discount_percent'], 2)]) }}</x-status-badge>
                             @endif
@@ -80,5 +84,15 @@
                 </div>
             @endif
         </form>
+
+        {{-- Bestätigungs-Formulare außerhalb des Hauptformulars (kein Nesting);
+             die Buttons in der Tabelle verweisen per form="…"-Attribut hierher. --}}
+        @foreach ($proposals as $proposal)
+            @if ($proposal['blocked'] === 'iban_differs')
+                <form id="confirm-iban-{{ $proposal['invoice']->sqid }}" method="POST"
+                      action="{{ route('finance.payment-runs.proposals.confirm-iban', ['invoice' => $proposal['invoice']]) }}"
+                      class="hidden">@csrf</form>
+            @endif
+        @endforeach
     </x-index-page>
 @endsection

@@ -52,6 +52,17 @@ class TogglApiClient implements RemoteTimeWriter {
         private readonly float $requestInterval = 0.0,
     ) {}
 
+    /**
+     * Baut den Client aus der aufgelösten Plugin-Konfiguration
+     * ({@see \App\Plugins\Toggl\TogglConfig::resolve()}) — einheitliche
+     * Konstruktion statt vier lose durchgereichter Werte (B12).
+     *
+     * @param  array{api_token: ?string, base_url: string, workspace_id: ?int, request_interval: float}  $config
+     */
+    public static function fromConfig(array $config): self {
+        return new self($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+    }
+
     /** Waren alle Eintrags-Abrufe dieser Instanz vollständig? */
     public function isFetchComplete(): bool {
         return $this->fetchComplete;

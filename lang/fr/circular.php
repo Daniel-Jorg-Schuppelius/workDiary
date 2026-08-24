@@ -16,7 +16,7 @@ return [
     'empty' => 'Aucune circulaire créée pour l’instant.',
     'empty_recipients' => 'Aucun destinataire enregistré.',
     'created' => 'Circulaire créée.',
-    'sent' => 'Circulaire envoyée.',
+    'sent' => 'Envoi lancé — il s’exécute en arrière-plan ; l’état apparaît par destinataire dans la liste de preuve.',
     'already_sent' => 'Cette circulaire a déjà été envoyée.',
     'no_recipients' => 'Le filtre sélectionné ne correspond à aucun client.',
     'mandatory_short' => 'Communication obligatoire',

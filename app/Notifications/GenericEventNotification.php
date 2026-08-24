@@ -12,6 +12,7 @@ namespace App\Notifications;
 
 use App\Enums\Notification\NotificationEvent;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
 
@@ -20,8 +21,19 @@ use Illuminate\Notifications\Notification;
  * trägt Ereignistyp, Titel/Nachricht und Link; die Kanäle (database/mail)
  * werden vom Dispatcher pro Empfänger vorberechnet (Regel + Präferenzen).
  */
-class GenericEventNotification extends Notification {
+/**
+ * Queued (Vollscan 2026-08-23, A2): vorher lief jede Ereignis-Mail synchron im
+ * HTTP-Request — ein Statuswechsel mit N Rollen-Empfängern kostete N SMTP-
+ * Roundtrips. afterCommit: erst senden, wenn der auslösende Datensatz
+ * tatsächlich geschrieben ist.
+ */
+class GenericEventNotification extends Notification implements ShouldQueue {
     use Queueable;
+
+    public int $tries = 3;
+
+    /** @var list<int> */
+    public array $backoff = [30, 120, 600];
 
     /**
      * @param  array{title: string, title_key?: string|null, title_params?: array<string, mixed>|null, message?: string|null, message_key?: string|null, message_params?: array<string, mixed>|null, url?: string|null, icon?: string|null, due_at?: \DateTimeInterface|string|null}  $payload
@@ -32,7 +44,9 @@ class GenericEventNotification extends Notification {
         public readonly array $payload,
         public readonly array $channels = ['database'],
         public readonly string $stage = 'initial',
-    ) {}
+    ) {
+        $this->afterCommit();
+    }
 
     /** @return list<string> */
     public function via(object $notifiable): array {

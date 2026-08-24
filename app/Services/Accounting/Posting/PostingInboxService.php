@@ -19,6 +19,7 @@ use App\Models\{Organization, User};
 use App\Services\Accounting\{AccountingSovereigntyResolver, InternalTransferService, JournalService};
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Collection, Str};
 use Illuminate\Validation\ValidationException;
@@ -139,8 +140,8 @@ class PostingInboxService {
             ]);
         }
 
-        $amount = number_format(abs((float) $transaction->amount), 2, '.', '');
-        if ((float) $amount === 0.0) {
+        $amount = NumberHelper::roundPrecise(NumberHelper::absPrecise(NumberHelper::normalizeDecimalString((string) $transaction->amount)), 2);
+        if (NumberHelper::isZeroPrecise($amount)) {
             throw ValidationException::withMessages([
                 'clearing_account' => [(string) __('accounting.inbox.blocker.no_amount')],
             ]);

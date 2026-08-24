@@ -38,6 +38,14 @@ class LexofficeInvoiceController extends Controller {
             return back()->with('error', __('Nur Entwürfe können an Lexoffice übertragen werden.'));
         }
 
+        // Dieselben Voraussetzungen wie die lokale Ausstellung (Freigabepflicht,
+        // E-Rechnungs-Validierung) — der Push stellt die Rechnung (B1).
+        try {
+            app(\App\Services\Invoicing\InvoiceIssueService::class)->assertIssuable($invoice);
+        } catch (\App\Services\Invoicing\InvoiceIssueException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
         $contactRef = ExternalReference::query()
             ->forPlugin($invoice->customer->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
             ->forReferenceable($invoice->customer)

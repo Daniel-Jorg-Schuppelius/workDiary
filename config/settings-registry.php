@@ -89,6 +89,9 @@ return [
     'backup.thresholds_hours.critical' => ['type' => 'integer', 'scopes' => ['system'], 'rules' => 'min:1|max:2160'],
     'backup.heartbeat_freshness_hours' => ['type' => 'integer', 'scopes' => ['system'], 'rules' => 'min:1|max:720'],
     'backup.restore_test_overdue_days' => ['type' => 'integer', 'scopes' => ['system'], 'rules' => 'min:7|max:1095'],
+    // Vollscan 2026-08-23 (J6): ab wie vielen Minuten ohne Worker-Heartbeat der
+    // Betriebsalarm „Queue-Worker inaktiv" ausgelöst wird.
+    'operations.queue_worker_silence_minutes' => ['type' => 'integer', 'scopes' => ['system'], 'rules' => 'min:2|max:1440', 'fallback' => 10],
 
     // --- Faktura/Anzeige (config/invoicing.php, config/ui.php) ---
     'invoicing.default_currency' => ['type' => 'string', 'scopes' => ['system', 'organization'], 'rules' => 'size:3'],

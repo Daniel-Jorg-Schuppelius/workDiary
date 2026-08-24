@@ -15,7 +15,7 @@ use App\Enums\Project\ProjectStatus;
 use App\Http\Controllers\Controller;
 use App\Models\{Asset, Customer, ForeignCustomer, Organization, Project, RemotePendingSession};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
-use App\Plugins\RemoteSupport\{RemoteSupportService, RemoteSupportSuggestionService};
+use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSupportSuggestionService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Asset\AssetService;
 use App\Support\{Setting, Sqid};
@@ -40,7 +40,7 @@ class RemoteSupportPendingController extends Controller {
     private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
 
     public function __construct(
-        private readonly RemoteSupportService $service,
+        private readonly RemotePendingAssignmentService $service,
         private readonly RemoteSupportSuggestionService $suggester,
     ) {}
 
@@ -76,7 +76,7 @@ class RemoteSupportPendingController extends Controller {
 
         // Nur fernwartbare Geräte (Arbeitsplatz/Server/Notebook) können eine ID tragen.
         $assets = Asset::query()
-            ->whereIn('category_code', RemoteSupportService::REMOTE_CATEGORY_CODES)
+            ->whereIn('category_code', RemoteDeviceRegistry::REMOTE_CATEGORY_CODES)
             ->orderBy('name')
             ->get(['id', 'name', 'asset_no', 'customer_id', 'category_code']);
 
@@ -118,7 +118,7 @@ class RemoteSupportPendingController extends Controller {
             ->all();
 
         $pool = (array) config('asset_categories', []);
-        $categories = array_intersect_key($pool, array_flip(RemoteSupportService::REMOTE_CATEGORY_CODES));
+        $categories = array_intersect_key($pool, array_flip(RemoteDeviceRegistry::REMOTE_CATEGORY_CODES));
 
         return view('remote-support::pending.index', [
             'groups' => $groups,
@@ -221,7 +221,7 @@ class RemoteSupportPendingController extends Controller {
             'name' => ['required', 'string', 'max:191'],
             'customer_id' => ['nullable', 'integer'],
             'foreign_customer_id' => ['nullable', 'integer'],
-            'category_code' => ['required', 'string', 'in:' . implode(',', RemoteSupportService::REMOTE_CATEGORY_CODES)],
+            'category_code' => ['required', 'string', 'in:' . implode(',', RemoteDeviceRegistry::REMOTE_CATEGORY_CODES)],
             'shared_remote' => ['sometimes', 'boolean'],
             'matchcode' => ['nullable', 'string', 'max:16'],
             'matchcode_scope' => ['nullable', 'string', 'in:customer,foreign'],

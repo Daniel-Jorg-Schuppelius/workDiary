@@ -10,13 +10,39 @@
 
 namespace App\Observers;
 
-use App\Models\EmergencyAssignment;
-use App\Services\PushNotifier;
+use App\Enums\Notification\NotificationEvent;
+use App\Models\{EmergencyAssignment, User};
+use App\Services\Notification\NotificationDispatcher;
+use App\Support\CarbonFmt;
 
 class EmergencyAssignmentObserver {
+    /**
+     * Notdienst-Zuweisung über den zentralen Dispatcher (B7): der Zeitpunkt
+     * wandert als ISO-Wert in die Params — NotificationText rendert ihn erst
+     * beim Betrachter (Locale/Zeitzone des Empfängers statt des Auslösers).
+     */
     public function created(EmergencyAssignment $assignment): void {
         $assignment->loadMissing('user');
+        $user = $assignment->user;
+        if (! $user instanceof User) {
+            return;
+        }
 
-        app(PushNotifier::class)->emergencyAssigned($assignment);
+        $params = [
+            'start' => $assignment->start_at->toIso8601String(),
+            'reason' => (string) ($assignment->reason ?: ''),
+        ];
+        app(NotificationDispatcher::class)->notify(NotificationEvent::EmergencyAssigned, $assignment, $user, [
+            'title' => (string) __('notification.message.emergency_assigned_title'),
+            'title_key' => 'notification.message.emergency_assigned_title',
+            'title_params' => [],
+            'message' => (string) __('notification.message.emergency_assigned', [
+                ...$params,
+                'start' => CarbonFmt::fdatetime($assignment->start_at),
+            ]),
+            'message_key' => 'notification.message.emergency_assigned',
+            'message_params' => $params,
+            'url' => route('week.index'),
+        ]);
     }
 }

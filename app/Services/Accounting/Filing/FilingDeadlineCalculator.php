@@ -47,12 +47,12 @@ class FilingDeadlineCalculator {
             $base = $base->addMonthNoOverflow();
         }
 
-        return $this->nextBusinessDay($base);
+        return $this->holidays->nextBusinessDay($base);
     }
 
     /** Sondervorauszahlung: 10. Februar des Jahres (§ 48 Abs. 1 UStDV). */
     public function specialPrepayment(int $year): CarbonImmutable {
-        return $this->nextBusinessDay(CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year, 2, 10)));
+        return $this->holidays->nextBusinessDay(CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year, 2, 10)));
     }
 
     /**
@@ -60,7 +60,7 @@ class FilingDeadlineCalculator {
      * Verlängerung, auch wenn eine Dauerfristverlängerung vorliegt.
      */
     public function recapitulative(VatReturnPeriod $period): CarbonImmutable {
-        return $this->nextBusinessDay($period->to->addDay()->startOfDay()->addDays(24));
+        return $this->holidays->nextBusinessDay($period->to->addDay()->startOfDay()->addDays(24));
     }
 
     /**
@@ -72,7 +72,7 @@ class FilingDeadlineCalculator {
             ? CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year + 2, 2, 1))->endOfMonth()->startOfDay()
             : CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year + 1, 7, 31));
 
-        return $this->nextBusinessDay($base);
+        return $this->holidays->nextBusinessDay($base);
     }
 
     /** Frist einer Pflicht — ein Aufrufpfad für alle Arten. */
@@ -85,17 +85,4 @@ class FilingDeadlineCalculator {
         };
     }
 
-    /**
-     * § 108 Abs. 3 AO: Samstag, Sonntag oder Feiertag schieben auf den
-     * nächsten Werktag.
-     */
-    public function nextBusinessDay(CarbonImmutable $date): CarbonImmutable {
-        $day = $date->startOfDay();
-
-        while ($day->isWeekend() || $this->holidays->isHoliday($day)) {
-            $day = $day->addDay();
-        }
-
-        return $day;
-    }
 }

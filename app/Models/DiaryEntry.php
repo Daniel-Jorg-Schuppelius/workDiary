@@ -34,7 +34,6 @@ use Illuminate\Support\Carbon;
  * @property string|null $content
  * @property string|null $response
  * @property Status $status
- * @property int|null $status_legacy
  * @property Priority|null $priority
  * @property Carbon|null $start_at
  * @property Carbon|null $end_at
@@ -102,7 +101,6 @@ class DiaryEntry extends Model {
         'content',
         'response',
         'status',
-        'status_legacy',
         'planned_start_at',
         'planned_end_at',
         'planned_duration_min',
@@ -165,7 +163,6 @@ class DiaryEntry extends Model {
         'window_start_date' => 'date',
         'window_end_date' => 'date',
         'status' => Status::class,
-        'status_legacy' => 'integer',
         'planned_start_at' => 'immutable_datetime',
         'planned_end_at' => 'immutable_datetime',
         'planned_duration_min' => 'integer',

@@ -39,7 +39,7 @@ class MaterialDemandCalculator {
      * @return list<array{requirement: ProcedureMaterialRequirement, demand: numeric-string}>
      */
     public function calculate(Collection $bom, string $targetQty): array {
-        $target = $this->numeric($targetQty);
+        $target = NumberHelper::normalizeDecimalString($targetQty);
 
         $ratioSum = '0';
         foreach ($bom as $req) {
@@ -56,7 +56,7 @@ class MaterialDemandCalculator {
 
             $base = match ($req->quantity_kind) {
                 QuantityKind::PerUnit => bcmul($req->quantity?->getNumericValue() ?? '0', $target, self::WORK),
-                QuantityKind::Fixed => $this->numeric($req->quantity?->getNumericValue() ?? '0'),
+                QuantityKind::Fixed => NumberHelper::normalizeDecimalString($req->quantity?->getNumericValue() ?? '0'),
                 QuantityKind::Ratio => bccomp($ratioSum, '0', self::WORK) > 0 && $req->ratio_part !== null
                     ? bcmul($target, bcdiv($req->ratio_part, $ratioSum, self::WORK), self::WORK)
                     : '0',
@@ -88,10 +88,4 @@ class MaterialDemandCalculator {
             : bcadd(NumberHelper::roundPrecise($value, 0, $rounding), '0', self::SCALE);
     }
 
-    /** @return numeric-string */
-    private function numeric(string $value): string {
-        // normalizeDecimalString() garantiert numeric-string (nicht-numerischer
-        // und leerer Input ergeben '0') — eine Nachprüfung wäre toter Code.
-        return NumberHelper::normalizeDecimalString($value);
-    }
 }

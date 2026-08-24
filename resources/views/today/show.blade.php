@@ -89,7 +89,7 @@
             @include('today._entry_bar')
         @endif
 
-        <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-5">
+        <section class="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-6">
             <x-kpi-tile :label="__('Soll')" :value="$fmt($targetMinutes)" />
 
             {{-- Anwesenheit-Tile: tickert live mit dem Header-Stempel-Timer mit. --}}
@@ -110,7 +110,10 @@
                    x-text="untrackedFmt">{{ $fmt($untrackedMinutes) }}</p>
             </div>
 
-            @include('attendances._panel', ['current' => $current])
+            {{-- Doppelte Spaltenbreite für die Aktionsleiste; grid-Wrapper streckt das Panel auf Zeilenhöhe. --}}
+            <div class="grid sm:col-span-2">
+                @include('attendances._panel', ['current' => $current])
+            </div>
         </section>
 
         <x-card as="section">

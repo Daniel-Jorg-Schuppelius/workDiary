@@ -15,11 +15,14 @@ namespace App\Plugins\Support\Backup;
 use RuntimeException;
 
 /**
- * Gemeinsame Chunk-Leseschleife der Backup-/Storage-Clients
- * (Vollaudit 2026-07, N31) — ersetzt vier identische fopen/fread/finally-
- * Blöcke inkl. Fehlertexten. Die provider-spezifische Session-/PUT-Semantik
- * (Dropbox append/finish, Graph 202, Drive 308, Nextcloud MKCOL/MOVE)
- * bleibt in den Clients.
+ * Chunkweises Lesen für Backup-Uploads.
+ *
+ * BEWUSST app-lokal (Vollscan 2026-08-23, C9 — Klasse F): `File::readChunks`
+ * im common-toolkit bricht bei `fread === false` STILL ab (break) — für
+ * Backup-Teile wäre das ein stiller Datenverlust; hier ist ein Lesefehler
+ * eine RuntimeException. Zusätzlich braucht der Upload (chunk, startOffset)
+ * und die Gesamt-Bytezahl. Toolkit-Erweiterung (strict-Modus) ist als
+ * Welle-6-Kandidat notiert; bis dahin bleibt diese Klasse die Wahrheit.
  */
 final class ChunkedFileReader {
     /**

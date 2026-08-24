@@ -33,24 +33,12 @@ final class DecimalQty {
     public const SCALE = 4;
 
     /**
-     * Kanonischer Punkt-Dezimalstring; nicht Numerisches wird zu '0'.
-     *
-     * @return numeric-string
-     */
-    public static function sanitize(string $value): string {
-        // normalizeDecimalString() setzt numeric-string zur Laufzeit durch
-        // (leerer Input und alles nicht-Numerische ergeben '0'), eine erneute
-        // Prüfung wäre toter Code.
-        return NumberHelper::normalizeDecimalString($value);
-    }
-
-    /**
      * Betrag (immer >= 0) als kanonischer Dezimalstring.
      *
      * @return numeric-string
      */
     public static function positive(string $value): string {
-        return NumberHelper::absPrecise(self::sanitize($value));
+        return NumberHelper::absPrecise(NumberHelper::normalizeDecimalString($value));
     }
 
     /**

@@ -36,9 +36,13 @@ class RentalCalendarController extends Controller {
     public function index(Request $request): View {
         Gate::authorize('viewAny', RentalCase::class);
 
-        $month = $request->filled('month')
-            ? Carbon::parse($request->string('month')->toString() . '-01')->startOfMonth()
-            : now()->startOfMonth();
+        try {
+            $month = $request->filled('month')
+                ? Carbon::parse($request->string('month')->toString() . '-01')->startOfMonth()
+                : now()->startOfMonth();
+        } catch (\Carbon\Exceptions\InvalidFormatException) {
+            $month = now()->startOfMonth(); // Müll-Input ⇒ aktueller Monat statt 500 (B10).
+        }
 
         $groupCode = $request->string('group')->toString() ?: null;
         $assetId = $request->filled('asset_id')

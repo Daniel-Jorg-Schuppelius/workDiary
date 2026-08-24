@@ -18,8 +18,9 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Accounting\AccountingAccount;
-use App\Services\Accounting\{AccountingReportService, OpenItemService, TaxationMethodResolver, VatFilingProfileResolver};
 use App\Services\Accounting\Filing\{FilingDeadlineCalculator, RecapitulativeStatementService, VatFilingPeriodService, VatReturnService};
+use App\Services\Accounting\{OpenItemService, TaxationMethodResolver, VatFilingProfileResolver};
+use App\Services\Accounting\Reports\{AccountLedgerBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, LiquidityBuilder, ProfitAndLossBuilder, TrialBalanceBuilder};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -32,8 +33,8 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Finanzberichte der lokalen Buchhaltung (Feature 125, MVP-676).
  *
  * Alle Berichte teilen denselben Zeitraum (globaler Header) und dieselbe
- * Datenquelle ({@see AccountingReportService}) — Liste, Kennzahl und Export
- * können deshalb nicht auseinanderlaufen.
+ * Datenquelle (die Builder unter {@see \App\Services\Accounting\Reports}) —
+ * Liste, Kennzahl und Export können deshalb nicht auseinanderlaufen.
  */
 class AccountingReportController extends Controller {
     use RendersReportPdf;
@@ -42,7 +43,13 @@ class AccountingReportController extends Controller {
     use WritesReportCsv;
 
     public function __construct(
-        private readonly AccountingReportService $reports,
+        private readonly TrialBalanceBuilder $trialBalances,
+        private readonly AccountLedgerBuilder $accountLedgers,
+        private readonly EuerPreviewBuilder $euerPreviews,
+        private readonly ProfitAndLossBuilder $profitAndLosses,
+        private readonly LiquidityBuilder $liquidities,
+        private readonly DataQualityBuilder $qualities,
+        private readonly ExportContextBuilder $exportContexts,
         private readonly OpenItemService $openItems,
         private readonly VatFilingPeriodService $periods,
         private readonly VatReturnService $returns,
@@ -60,8 +67,8 @@ class AccountingReportController extends Controller {
         return view('reports.accounting.index', [
             'from' => $from,
             'to' => $to,
-            'quality' => $this->reports->dataQuality($organization, $from, $to),
-            'liquidity' => $this->reports->liquidity($organization, $to),
+            'quality' => $this->qualities->build($organization, $from, $to),
+            'liquidity' => $this->liquidities->build($organization, $to),
         ]);
     }
 
@@ -70,7 +77,7 @@ class AccountingReportController extends Controller {
         $this->authorizeView();
         [$from, $to] = $this->range();
         $organization = $this->currentOrganizationOrAbort();
-        $data = $this->reports->trialBalance($organization, $from, $to);
+        $data = $this->trialBalances->build($organization, $from, $to);
 
         if ($this->wantsExport($request)) {
             return $this->export($request, 'accounting-trial-balance', 'accounting.trial_balance', $from, $to, array_merge(
@@ -117,7 +124,7 @@ class AccountingReportController extends Controller {
         if ($selected !== null && $this->wantsExport($request)) {
             // Der Export braucht alle Zeilen — eine Seite wäre ein anderer
             // Bericht als der auf dem Bildschirm.
-            $lines = $this->reports->accountLedger($organization, $selected, $from, $to)['lines'];
+            $lines = $this->accountLedgers->build($organization, $selected, $from, $to)['lines'];
             return $this->export($request, 'accounting-account-ledger', 'accounting.account_ledger', $from, $to, array_merge(
                 [[
                     (string) __('accounting.ledger.column.booked_on'),
@@ -138,7 +145,7 @@ class AccountingReportController extends Controller {
 
         // Die Ansicht blättert: Ein Sachkonto kann zehntausende Zeilen tragen.
         $data = $selected !== null
-            ? $this->reports->accountLedger($organization, $selected, $from, $to, 100)
+            ? $this->accountLedgers->build($organization, $selected, $from, $to, 100)
             : ['opening' => '0.00', 'lines' => collect(), 'closing' => '0.00'];
 
         return view('reports.accounting.account-ledger', $data + [
@@ -257,7 +264,7 @@ class AccountingReportController extends Controller {
     public function euer(Request $request): View|SymfonyResponse {
         $this->authorizeView();
         [$from, $to] = $this->range();
-        $data = $this->reports->euerPreview($this->currentOrganizationOrAbort(), $from, $to);
+        $data = $this->euerPreviews->build($this->currentOrganizationOrAbort(), $from, $to);
 
         if ($this->wantsExport($request)) {
             $rows = [[
@@ -284,7 +291,7 @@ class AccountingReportController extends Controller {
     public function profitAndLoss(Request $request): View|SymfonyResponse {
         $this->authorizeView();
         [$from, $to] = $this->range();
-        $data = $this->reports->profitAndLoss($this->currentOrganizationOrAbort(), $from, $to);
+        $data = $this->profitAndLosses->build($this->currentOrganizationOrAbort(), $from, $to);
 
         if ($this->wantsExport($request)) {
             $rows = [[
@@ -309,7 +316,7 @@ class AccountingReportController extends Controller {
         $this->authorizeView();
         [$from, $to] = $this->range();
         $organization = $this->currentOrganizationOrAbort();
-        $data = $this->reports->liquidity($organization, $to);
+        $data = $this->liquidities->build($organization, $to);
 
         if ($this->wantsExport($request)) {
             $rows = [[
@@ -338,7 +345,7 @@ class AccountingReportController extends Controller {
     public function quality(Request $request): View|SymfonyResponse {
         $this->authorizeView();
         [$from, $to] = $this->range();
-        $data = $this->reports->dataQuality($this->currentOrganizationOrAbort(), $from, $to);
+        $data = $this->qualities->build($this->currentOrganizationOrAbort(), $from, $to);
 
         if ($this->wantsExport($request)) {
             $rows = [[(string) __('accounting.reports.kpi.findings')]];
@@ -377,7 +384,7 @@ class AccountingReportController extends Controller {
      */
     private function export(Request $request, string $filename, string $code, CarbonImmutable $from, CarbonImmutable $to, array $rows): SymfonyResponse {
         $name = $filename . '-' . $from->toDateString() . '_' . $to->toDateString();
-        $context = $this->reports->exportContext($this->currentOrganizationOrAbort(), $from, $to);
+        $context = $this->exportContexts->build($this->currentOrganizationOrAbort(), $from, $to);
 
         if ((string) $request->query('export') === 'pdf') {
             return $this->pdfDownload('reports.pdf.accounting', [

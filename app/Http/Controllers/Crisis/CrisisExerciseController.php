@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Crisis;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Crisis\{CrisisCase, CrisisExercise};
 use App\Models\{ProcedureTemplate, User};
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * verfälschen nie echte Krisenakten; Beobachtungen verbessern Playbooks.
  */
 class CrisisExerciseController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize('viewAny', CrisisCase::class);
 
@@ -55,7 +58,7 @@ class CrisisExerciseController extends Controller {
         $actor = Auth::user();
         CrisisExercise::query()->create([
             ...$data,
-            'organization_id' => (int) $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => $actor->id,
         ]);
 

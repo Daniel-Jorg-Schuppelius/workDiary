@@ -16,6 +16,8 @@ use App\Enums\Finance\VatFilingInterval;
 use App\Models\Accounting\{AccountingVatExtension, AccountingVatFilingPeriod};
 use App\Models\{Organization, User};
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -34,10 +36,10 @@ use Illuminate\Validation\ValidationException;
  */
 class VatFilingProfileResolver {
     /** § 18 Abs. 2 S. 2 UStG — ab dieser Vorjahressteuer monatlich (seit 2025). */
-    public const MONTHLY_THRESHOLD = 9000.0;
+    public const MONTHLY_THRESHOLD = '9000.00';
 
     /** § 18 Abs. 2 S. 3 UStG — bis hierhin Befreiung möglich (seit 2025). */
-    public const ANNUAL_THRESHOLD = 2000.0;
+    public const ANNUAL_THRESHOLD = '2000.00';
 
     /**
      * Bis einschließlich dieses Besteuerungszeitraums ist der Zwang zur
@@ -143,18 +145,19 @@ class VatFilingProfileResolver {
      * @return array{interval: VatFilingInterval, prior_year: int, prior_year_tax: string, reason_key: string, founder_rule_active: bool}
      */
     public function suggest(int $year, string $priorYearTax): array {
-        $tax = (float) $priorYearTax;
+        // Die Schwellen des UStG sind Euro-Beträge — der Vergleich läuft exakt.
+        $tax = Money::of($priorYearTax, CurrencyCode::Euro);
 
         $interval = match (true) {
-            $tax > self::MONTHLY_THRESHOLD => VatFilingInterval::Monthly,
-            $tax <= self::ANNUAL_THRESHOLD => VatFilingInterval::Annual,
+            $tax->greaterThan(Money::of(self::MONTHLY_THRESHOLD, CurrencyCode::Euro)) => VatFilingInterval::Monthly,
+            $tax->lessThanOrEqual(Money::of(self::ANNUAL_THRESHOLD, CurrencyCode::Euro)) => VatFilingInterval::Annual,
             default => VatFilingInterval::Quarterly,
         };
 
         return [
             'interval' => $interval,
             'prior_year' => $year - 1,
-            'prior_year_tax' => number_format($tax, 2, '.', ''),
+            'prior_year_tax' => $tax->getAmount(),
             'reason_key' => 'accounting.filing.suggestion.' . $interval->value,
             // Ab 2027 ist die Aussetzung beendet: Neugründungen melden dann
             // wieder zwingend monatlich, unabhängig von der Vorjahressteuer.

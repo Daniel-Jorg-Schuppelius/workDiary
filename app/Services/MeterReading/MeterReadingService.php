@@ -16,6 +16,8 @@ use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class MeterReadingService {
+    use \App\Services\Concerns\ParsesMixedDate;
+
     /** @param array<string, mixed> $payload */
     public function record(Asset $asset, User $actor, array $payload): MeterReading {
         $readAt = $this->parseDate($payload['read_at'] ?? null) ?? Carbon::now();
@@ -74,17 +76,6 @@ class MeterReadingService {
             ->where('asset_id', $asset->id)
             ->orderByDesc('read_at')
             ->first();
-    }
-
-    private function parseDate(mixed $value): ?Carbon {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof Carbon) {
-            return $value;
-        }
-
-        return Carbon::parse((string) $value);
     }
 
     private function parseDecimal(mixed $value, string $field): float {

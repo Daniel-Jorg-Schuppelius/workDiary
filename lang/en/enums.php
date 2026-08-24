@@ -541,6 +541,7 @@ return [
                 'componentEol' => 'Component end-of-life (EOL)',
                 'pluginDisabled' => 'Plugin disabled automatically',
                 'schedulerOverdue' => 'Scheduled task overdue',
+                'queueDegraded' => 'Queue degraded',
                 'maintenanceScheduled' => 'Maintenance window announced',
                 'problemReportReceived' => 'New problem report received',
                 'cloudIntakeReauth' => 'Cloud intake: sign-in required',
@@ -560,6 +561,18 @@ return [
                 'threat' => 'Threat detection',
                 'newDevice' => 'Sign-in from new device',
                 'lockout' => 'Account temporarily locked',
+            ],
+            'diary' => [
+                'commentCreated' => 'New diary comment',
+                'problem' => 'Diary entry flagged as problem',
+                'completed' => 'Diary entry completed',
+                'attachmentAdded' => 'New diary attachment',
+            ],
+            'emergency' => ['assigned' => 'On-call assigned'],
+            'timesheet' => ['signed' => 'Timesheet signed'],
+            'chat' => [
+                'message' => 'Chat message',
+                'reminder' => 'Chat reminder',
             ],
         ],
         'channel' => [

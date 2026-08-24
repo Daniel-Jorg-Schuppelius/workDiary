@@ -96,6 +96,34 @@ class PaymentRunController extends Controller {
         return redirect()->route('finance.payment-runs.show', $run)->with('status', __('sepa.run_created'));
     }
 
+    /**
+     * Abweichende Rechnungs-IBAN ausdrücklich bestätigen (Vollscan 2026-08-23,
+     * E3): Freigabe-Recht nötig (Betrugs-Vektor), Bestätigung landet
+     * revisionssicher im Audit-Log — erst danach fällt der Blocker weg.
+     */
+    public function confirmIban(Request $request, IncomingEInvoice $invoice): RedirectResponse {
+        abort_unless(Gate::allows(Permission::FinancePaymentRelease->value), 403);
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $supplier = $this->proposals->proposalFor($invoice)['supplier'];
+        if (! $this->proposals->ibanDiffersFromMaster($invoice, $supplier)) {
+            return back()->with('error', (string) __('sepa.error.no_iban_deviation'));
+        }
+
+        $invoice->forceFill([
+            'creditor_iban_confirmed_at' => now(),
+            'creditor_iban_confirmed_by' => $actor->id,
+        ])->save();
+        $invoice->audit('incomingEInvoice.ibanConfirmed', [
+            'invoice_iban_tail' => substr((string) $invoice->creditor_iban, -4),
+            'master_iban_tail' => substr((string) $supplier?->primaryBankAccount()?->iban, -4),
+            'supplier_id' => $supplier?->id,
+        ]);
+
+        return back()->with('status', (string) __('sepa.iban_confirmed'));
+    }
+
     public function show(PaymentRun $run): View {
         abort_unless(Gate::allows(Permission::FinancePaymentRun->value), 403);
 

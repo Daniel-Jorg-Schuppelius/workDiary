@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\CustomerPortal;
 
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Models\{AppointmentRequest, BookableService, User};
 use App\Services\Appointments\{AppointmentRequestService, AppointmentSlotService};
@@ -30,6 +31,8 @@ use RuntimeException;
  * Disposition BESTÄTIGT — erst dann entsteht der Eintrag.
  */
 class AppointmentController extends Controller {
+    use ResolvesGlobalDateRange;
+
     public function index(AppointmentSlotService $slots, Request $request, SqidEncoder $sqids): View {
         /** @var User $portalUser */
         $portalUser = Auth::guard('customer')->user();
@@ -51,7 +54,7 @@ class AppointmentController extends Controller {
             $selected = $services->firstWhere('id', $serviceId);
         }
         if ($selected !== null) {
-            $day = CarbonImmutable::parse((string) $request->query('day', $selected->earliestStart()->format('Y-m-d')))->startOfDay();
+            $day = $this->resolveDateParam($request, 'day', static fn (): CarbonImmutable => CarbonImmutable::parse($selected->earliestStart()->format('Y-m-d')))->startOfDay();
             $windows = $slots->slotsFor($selected, $day);
         }
 

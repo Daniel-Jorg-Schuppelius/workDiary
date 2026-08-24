@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{Project, Task, TimeEntry, User};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -26,6 +27,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Endpunkt mit JSON, sonst mit Redirect zurück auf „Heute" — dieselbe Buchung.
  */
 class QuickBookController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function store(Request $request): RedirectResponse|JsonResponse {
         Gate::authorize('create', TimeEntry::class);
 
@@ -43,13 +46,13 @@ class QuickBookController extends Controller {
             'date' => ['nullable', 'date'],
         ]);
 
-        $project = $this->resolveProject((string) $data['project'], $user);
+        $project = $this->resolveProject((string) $data['project']);
         $taskId = $this->resolveTaskId($data['task'] ?? null, $project);
 
         $attributes = [
             'project_id' => $project->id,
             'user_id' => $user->id,
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'kind' => TimeEntryKind::Work,
             'task_id' => $taskId,
             'description' => $data['description'] ?? null,
@@ -88,12 +91,12 @@ class QuickBookController extends Controller {
     }
 
     /** Projekt über Sqid auflösen, strikt organisationsgescopet (404 bei fremd). */
-    private function resolveProject(string $rawId, User $user): Project {
+    private function resolveProject(string $rawId): Project {
         $id = Sqid::decodeOrAbort(Project::class, $rawId);
 
         /** @var Project|null $project */
         $project = Project::query()
-            ->where('organization_id', $user->organization_id)
+            ->where('organization_id', $this->currentOrganization()->id)
             ->find($id);
         abort_unless($project instanceof Project, 404);
 

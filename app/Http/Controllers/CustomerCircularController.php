@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\Communication\CustomerCircular;
 use App\Models\Customer;
 use App\Services\Communication\CustomerCircularService;
@@ -27,6 +28,8 @@ use RuntimeException;
  * ist kein Vorgang, den man versehentlich auslösen können soll.
  */
 class CustomerCircularController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly CustomerCircularService $circulars) {}
 
     public function index(): View {
@@ -55,7 +58,7 @@ class CustomerCircularController extends Controller {
         $data = $this->validated($request);
 
         $circular = CustomerCircular::query()->create([
-            'organization_id' => $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'subject' => $data['subject'],
             'body' => $data['body'],
             'is_mandatory' => (bool) ($data['is_mandatory'] ?? false),

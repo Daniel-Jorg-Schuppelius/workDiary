@@ -84,18 +84,30 @@ trait ResolvesGlobalDateRange {
      * @return array{0: CarbonImmutable, 1: CarbonImmutable}
      */
     protected function resolveRangeWithDefault(Request $request, callable $default): array {
-        if (! $request->filled('from') && ! $request->filled('to')) {
+        return $this->resolveNamedRangeWithDefault($request, 'from', 'to', $default);
+    }
+
+    /**
+     * Wie {@see resolveRangeWithDefault()}, aber mit frei benannten
+     * Parametern (Vollscan 2026-08-23, B10 — Kalender-Clients senden
+     * `start`/`end`, FullCalendar-Konvention).
+     *
+     * @param  callable(): array{0: CarbonImmutable, 1: CarbonImmutable}  $default
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}
+     */
+    protected function resolveNamedRangeWithDefault(Request $request, string $fromKey, string $toKey, callable $default): array {
+        if (! $request->filled($fromKey) && ! $request->filled($toKey)) {
             return $default();
         }
 
         [$defaultFrom, $defaultTo] = $default();
 
         try {
-            $from = $request->filled('from')
-                ? CarbonImmutable::parse((string) $request->input('from'))->startOfDay()
+            $from = $request->filled($fromKey)
+                ? CarbonImmutable::parse((string) $request->input($fromKey))->startOfDay()
                 : $defaultFrom;
-            $to = $request->filled('to')
-                ? CarbonImmutable::parse((string) $request->input('to'))->endOfDay()
+            $to = $request->filled($toKey)
+                ? CarbonImmutable::parse((string) $request->input($toKey))->endOfDay()
                 : $defaultTo;
         } catch (\Carbon\Exceptions\InvalidFormatException) {
             // Müll-Input (hand-editierte Bookmarks) → fachlicher Default statt 500.
@@ -107,6 +119,24 @@ trait ResolvesGlobalDateRange {
         }
 
         return [$from, $to];
+    }
+
+    /**
+     * Einzelner Datums-Parameter mit fachlichem Default statt 500 bei
+     * Müll-Input (Vollscan 2026-08-23, B10 — z. B. `?day=` der Raumliste).
+     *
+     * @param  callable(): CarbonImmutable  $default
+     */
+    protected function resolveDateParam(Request $request, string $key, callable $default): CarbonImmutable {
+        if (! $request->filled($key)) {
+            return $default();
+        }
+
+        try {
+            return CarbonImmutable::parse((string) $request->input($key));
+        } catch (\Carbon\Exceptions\InvalidFormatException) {
+            return $default();
+        }
     }
 
     /**

@@ -38,6 +38,7 @@ return [
     ],
 
     'action' => [
+        'confirm_iban' => 'Confirm IBAN',
         'proposal' => 'Payment proposal',
         'create_run' => 'Create payment run',
         'show' => 'View',
@@ -74,15 +75,20 @@ return [
         'cancelled' => 'cancelled',
     ],
 
+    'iban_confirmed' => 'The differing IBAN has been confirmed — the position is now payable.',
+
     'blocked' => [
         'missing_iban' => 'IBAN missing',
         'zero_amount' => 'Amount is 0',
+        'iban_differs' => 'IBAN differs from master data',
     ],
 
     'error' => [
+        'no_iban_deviation' => 'The invoice IBAN does not (or no longer) differ from the supplier master data.',
         'no_positions' => 'The payment run contains no positions.',
         'not_draft' => 'The payment run is no longer a draft.',
         'not_released' => 'The payment run has not been released.',
+        'four_eyes' => 'Four-eyes principle: whoever prepared the payment run cannot release it themselves.',
         'exported_final' => 'An exported payment run is no longer cancelled.',
         'invalid_amount' => 'The payment amount must be above 0 and must not exceed the invoice amount.',
         'reason_required' => 'A reduced payment amount requires a reason.',

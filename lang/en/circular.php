@@ -16,7 +16,7 @@ return [
     'empty' => 'No circular created yet.',
     'empty_recipients' => 'No recipients recorded.',
     'created' => 'Circular created.',
-    'sent' => 'Circular sent.',
+    'sent' => 'Dispatch started — runs in the background; progress appears per recipient in the evidence list.',
     'already_sent' => 'This circular has already been sent.',
     'no_recipients' => 'The selected filter matches no customer.',
     'mandatory_short' => 'Mandatory notice',

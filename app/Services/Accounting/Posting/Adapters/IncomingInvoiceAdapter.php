@@ -16,6 +16,7 @@ use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
 use App\Models\{IncomingEInvoice, Organization};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -63,17 +64,17 @@ class IncomingInvoiceAdapter extends AbstractPostingAdapter {
             $blockers[] = (string) __('accounting.inbox.blocker.handed_over');
         }
 
-        $gross = $this->money($source->amount_gross);
-        $net = $this->money($source->amount_net);
-        $tax = $this->money($source->amount_tax);
+        $gross = $source->amount_gross?->getAmount() ?? '0.00';
+        $net = $source->amount_net?->getAmount() ?? '0.00';
+        $tax = $source->amount_tax?->getAmount() ?? '0.00';
 
-        if ((float) $gross === 0.0) {
+        if (NumberHelper::isZeroPrecise($gross)) {
             $blockers[] = (string) __('accounting.inbox.blocker.no_amount');
         }
 
         // Netto ohne eigenen Ausweis: Der Beleg trägt nur den Bruttobetrag —
         // dann ist der Aufwand brutto und die Vorsteuer bleibt außen vor.
-        if ((float) $net === 0.0 && (float) $gross > 0.0) {
+        if (NumberHelper::isZeroPrecise($net) && NumberHelper::isPositivePrecise($gross)) {
             $net = $gross;
             $tax = '0.00';
         }
@@ -92,7 +93,7 @@ class IncomingInvoiceAdapter extends AbstractPostingAdapter {
             }
         }
 
-        if ((float) $tax > 0.0) {
+        if (NumberHelper::isPositivePrecise($tax)) {
             $taxRule = $this->rule($organization, PostingAccountRole::TaxInput, [], $issuedOn);
             if ($taxRule === null) {
                 $blockers[] = $this->missingRuleBlocker(PostingAccountRole::TaxInput);

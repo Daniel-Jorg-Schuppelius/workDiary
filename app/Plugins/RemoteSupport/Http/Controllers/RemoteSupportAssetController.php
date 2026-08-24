@@ -13,7 +13,7 @@ namespace App\Plugins\RemoteSupport\Http\Controllers;
 use App\Http\Controllers\Controller;
 use App\Models\{Asset, Organization};
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, TeamViewerClient};
-use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportService};
+use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemoteSessionImporter, RemoteSupportConfig};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -26,7 +26,10 @@ use Illuminate\Support\Facades\Gate;
 class RemoteSupportAssetController extends Controller {
     private const PROVIDERS = [AnyDeskClient::ID, TeamViewerClient::ID];
 
-    public function __construct(private readonly RemoteSupportService $service) {}
+    public function __construct(
+        private readonly RemoteDeviceRegistry $devices,
+        private readonly RemoteSessionImporter $importer,
+    ) {}
 
     public function saveId(Request $request, Asset $asset): RedirectResponse {
         Gate::authorize('update', $asset);
@@ -36,7 +39,7 @@ class RemoteSupportAssetController extends Controller {
             'remote_id' => ['required', 'string', 'max:191'],
         ]);
 
-        $this->service->setRemoteId($asset, $validated['provider'], $validated['remote_id']);
+        $this->devices->setRemoteId($asset, $validated['provider'], $validated['remote_id']);
 
         return back()->with('status', __('Geräte-ID gespeichert.'));
     }
@@ -46,7 +49,7 @@ class RemoteSupportAssetController extends Controller {
         abort_unless(in_array($provider, self::PROVIDERS, true), 404);
 
         $remoteId = trim((string) $request->input('remote_id', ''));
-        $this->service->forgetRemoteId($asset, $provider, $remoteId !== '' ? $remoteId : null);
+        $this->devices->forgetRemoteId($asset, $provider, $remoteId !== '' ? $remoteId : null);
 
         return back()->with('status', __('Geräte-ID entfernt.'));
     }
@@ -69,7 +72,7 @@ class RemoteSupportAssetController extends Controller {
         Gate::authorize('update', $target);
         abort_if($target->id === $asset->id, 422, __('Quell- und Zielgerät sind identisch.'));
 
-        $result = $this->service->mergeRemoteDevice($asset, $target);
+        $result = $this->devices->mergeRemoteDevice($asset, $target);
 
         return redirect()
             ->route('assets.show', $target)
@@ -104,13 +107,13 @@ class RemoteSupportAssetController extends Controller {
         }
 
         $config = RemoteSupportConfig::resolve($organization->id);
-        if (! $config['enabled'] || $this->service->providersFor($config) === []) {
+        if (! $config['enabled'] || $this->importer->providersFor($config) === []) {
             return back()->with('error', __('Fernwartung ist nicht konfiguriert.'));
         }
 
         $to = CarbonImmutable::now();
         $from = $to->subDays(max(1, (int) $config['sync_window_days']));
-        $result = $this->service->import($organization, $config, $from, $to);
+        $result = $this->importer->import($organization, $config, $from, $to);
 
         return back()->with('status', __(':created neue, :linked mit vorhandenen Zeiten verknüpft, :skipped vorhandene, :unmatched ohne Gerät, :pending zur Zuordnung.', [
             'created' => $result['created'],

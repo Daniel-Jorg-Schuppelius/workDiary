@@ -38,6 +38,7 @@ return [
     ],
 
     'action' => [
+        'confirm_iban' => 'Conferma IBAN',
         'proposal' => 'Proposta di pagamento',
         'create_run' => 'Crea distinta',
         'show' => 'Visualizza',
@@ -74,15 +75,20 @@ return [
         'cancelled' => 'annullata',
     ],
 
+    'iban_confirmed' => 'L’IBAN divergente è stato confermato — la posizione è ora pagabile.',
+
     'blocked' => [
         'missing_iban' => 'IBAN mancante',
         'zero_amount' => 'Importo 0',
+        'iban_differs' => 'IBAN diverso dall’anagrafica',
     ],
 
     'error' => [
+        'no_iban_deviation' => 'L’IBAN della fattura non differisce (più) dall’anagrafica del fornitore.',
         'no_positions' => 'La distinta non contiene posizioni.',
         'not_draft' => 'La distinta non è più una bozza.',
         'not_released' => 'La distinta non è approvata.',
+        'four_eyes' => 'Principio dei quattro occhi: chi ha preparato la distinta non può approvarla da solo.',
         'exported_final' => 'Una distinta esportata non viene più annullata.',
         'invalid_amount' => 'L’importo da pagare deve essere superiore a 0 e non può superare l’importo fatturato.',
         'reason_required' => 'Un importo ridotto richiede un motivo.',

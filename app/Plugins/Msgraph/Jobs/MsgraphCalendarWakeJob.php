@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Jobs;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{MsgraphConnection, Organization};
+use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphCalendarImportService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -28,6 +30,11 @@ use Throwable;
  * geschluckt: das stündliche Polling (msgraph:calendar-import) heilt.
  */
 class MsgraphCalendarWakeJob implements ShouldQueue {
+    use RetriesTransientFailures;
+
+    protected function pluginErrorId(): ?string {
+        return MsgraphPlugin::ID;
+    }
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;

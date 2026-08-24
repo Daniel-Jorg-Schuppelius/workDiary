@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Diagnostics\DiagnosticsService;
@@ -19,6 +20,8 @@ use Illuminate\Support\Facades\{Gate, Mail};
 use Illuminate\View\View;
 
 class DiagnosticsController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request, DiagnosticsService $diagnostics): View {
         Gate::authorize(Permission::PlatformDiagnosticsView->value);
 
@@ -73,7 +76,7 @@ class DiagnosticsController extends Controller {
         }
 
         AuditLog::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'diagnostics.viewed',
             'auditable_type' => User::class,
@@ -84,7 +87,7 @@ class DiagnosticsController extends Controller {
 
     private function writeTestTriggeredAudit(User $user, string $kind, bool $ok, ?string $error): void {
         AuditLog::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'diagnostics.testTriggered',
             'auditable_type' => User::class,

@@ -11,10 +11,12 @@
 namespace App\Plugins\Toggl\Http\Controllers;
 
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, ExternalReference, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry};
+use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, TimeEntry};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
+use App\Plugins\Toggl\Services\TogglUserMappingService;
 use App\Plugins\Toggl\Sources\{ApiWorkspaceSource, TogglApiClient, TogglWorkspaceReader};
 use App\Plugins\Toggl\{TogglArchiveException, TogglConfig, TogglExportArchiveService, TogglExportImporter, TogglExportService, TogglImportService, TogglOptionBuilder, TogglPlugin};
+use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -33,6 +35,7 @@ class TogglController extends Controller {
         private readonly TogglImportService $service,
         private readonly TogglOptionBuilder $options,
         private readonly TogglExportArchiveService $archive,
+        private readonly TogglUserMappingService $mappingService,
         private readonly TogglExportImporter $exportImporter = new TogglExportImporter,
     ) {}
 
@@ -148,7 +151,7 @@ class TogglController extends Controller {
             return back()->withErrors(['item' => __('Keine Toggl-Eintrags-ID am Konflikt gefunden.')]);
         }
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+        $client = TogglApiClient::fromConfig($config);
         $result = $client->fetchEntry($togglId);
         if ($result['status'] === 'error') {
             return back()->withErrors(['item' => __('Fremdstand konnte nicht geladen werden (Toggl nicht erreichbar?).')]);
@@ -204,109 +207,8 @@ class TogglController extends Controller {
     /** Mapping-Verwaltung: gemerkte Client-/Projekt-Zuordnungen einsehen/ändern. */
     public function mappings(): View {
         $admin = $this->admin();
-        $organization = $admin->organization;
 
-        $mappings = $organization instanceof Organization ? $this->service->mappings($organization) : collect();
-
-        // Benutzer-Zuordnungen vereint aus Primär-Referenzen UND Aliassen —
-        // Zweitadressen desselben Benutzers liegen wegen extref_unique im Alias.
-        $userMappings = collect();
-        if ($organization instanceof Organization) {
-            foreach ($mappings->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL) as $ref) {
-                $userMappings->push((object) ['id' => (int) $ref->id, 'source' => 'ref', 'email' => (string) $ref->external_id, 'user' => $ref->referenceable]);
-            }
-            $aliasRows = \App\Models\ExternalReferenceAlias::query()
-                ->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->where('plugin_id', TogglPlugin::ID)
-                ->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL)
-                ->with('referenceable')
-                ->get();
-            foreach ($aliasRows as $alias) {
-                $userMappings->push((object) ['id' => (int) $alias->id, 'source' => 'alias', 'email' => (string) $alias->external_id, 'user' => $alias->referenceable]);
-            }
-            $userMappings = $userMappings->sortBy('email')->values();
-        }
-
-        // Dropdown nur mit UNaufgelösten Toggl-Adressen: Bereits zugeordnete
-        // (oder direkt per E-Mail matchende) verschwinden aus der Auswahl.
-        $togglEmails = [];
-        $allMapped = false;
-        if ($organization instanceof Organization) {
-            $known = $this->knownTogglEmails($organization);
-            $togglEmails = array_values(array_filter(
-                $known,
-                fn (array $tu): bool => $this->service->resolveImportUser($organization, $tu['email']) === null,
-            ));
-            $allMapped = $known !== [] && $togglEmails === [];
-        }
-
-        $customers = Customer::query()->orderBy('name')->get(['id', 'name', 'company']);
-        // Inkl. kundenloser (interner) Projekte, damit eine Name-Zuordnung auch auf ein
-        // unternehmenseigenes Projekt zeigen kann.
-        $projects = Project::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'customer_id']);
-        // Client-Zuordnungen können auch auf Fremdkunden (Endkunden) zeigen.
-        $foreignCustomers = ForeignCustomer::query()
-            ->orderBy('name')
-            ->get(['id', 'name', 'customer_id'])
-            ->map(fn(ForeignCustomer $fc): array => [
-                'sqid' => $fc->sqid,
-                'customer_id' => (int) $fc->customer_id,
-                'name' => (string) $fc->name,
-            ])->all();
-
-        return view('toggl::admin.mappings', [
-            'mappings' => $mappings,
-            'customers' => $this->options->customerOptions($customers),
-            'projects' => $this->options->projectOptions($projects),
-            'foreignCustomers' => $foreignCustomers,
-            'users' => $this->options->userSelectOptions(),
-            'togglEmails' => $togglEmails,
-            'allTogglEmailsMapped' => $allMapped,
-            'userMappings' => $userMappings,
-        ]);
-    }
-
-    /**
-     * Bekannte Toggl-Benutzer für die Zuordnungs-Auswahl (statt Freitext):
-     * Workspace-Benutzer der API (falls Token konfiguriert) plus E-Mails aus
-     * offenen Inbox-Snapshots (CSV-Quelle). Dedupe per lower(email).
-     *
-     * @return array<int, array{email: string, name: string}>
-     */
-    private function knownTogglEmails(Organization $organization): array {
-        $bucket = [];
-
-        $config = TogglConfig::resolve($organization->id);
-        if ($config['enabled'] && $config['api_token'] !== null) {
-            try {
-                $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
-                foreach ($client->workspaces() as $workspace) {
-                    $this->options->collectTogglUsers($bucket, $client->workspaceUsers((int) $workspace['id']));
-                }
-            } catch (\Throwable) {
-                // API nicht erreichbar → nur Snapshot-Quellen anbieten.
-            }
-        }
-
-        // E-Mails aus offenen Zeit-Import-Snapshots (deckt reine CSV-Importe ab).
-        $snapshots = IntegrationInboxItem::query()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->whereNotNull('group_key')
-            ->orderByDesc('id')
-            ->limit(500)
-            ->pluck('remote_snapshot');
-        foreach ($snapshots as $snap) {
-            $email = trim((string) (((array) $snap)['user_email'] ?? ''));
-            if ($email !== '') {
-                $this->options->collectTogglUsers($bucket, [['email' => $email, 'name' => $email]]);
-            }
-        }
-
-        return $this->options->sortTogglUsers($bucket);
+        return view('toggl::admin.mappings', $this->mappingService->viewData($admin->organization));
     }
 
     /**
@@ -323,97 +225,49 @@ class TogglController extends Controller {
             'user' => ['required', 'string'],
         ]);
 
-        $userId = $this->options->decodeId(\App\Models\User::class, $data['user']);
-        $user = \App\Models\User::query()->whereKey($userId)->firstOrFail();
-        abort_unless((int) $user->organization_id === (int) $organization->id, 403);
-
-        $this->service->rememberUserEmail($organization, (string) $data['toggl_email'], $user);
+        $this->mappingService->storeUserMapping($organization, (string) $data['toggl_email'], $data['user']);
 
         return back()->with('status', (string) __('Benutzer-Zuordnung gespeichert.'));
     }
 
     /** Zeigt eine Alias-Benutzer-Zuordnung (Zweitadresse) auf einen anderen Benutzer um. */
-    public function updateUserAliasMapping(Request $request, int $alias): RedirectResponse {
+    public function updateUserAliasMapping(Request $request, string $alias): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
-        $row = $this->findUserAlias($organization, $alias);
 
-        $user = \App\Models\User::query()->whereKey($this->options->decodeId(\App\Models\User::class, $request->input('target_id')))->firstOrFail();
-        abort_unless((int) $user->organization_id === (int) $organization->id, 403);
-
-        $row->update([
-            'referenceable_type' => $user->getMorphClass(),
-            'referenceable_id' => $user->getKey(),
-        ]);
+        $aliasId = Sqid::decodeOrAbort(ExternalReferenceAlias::class, $alias);
+        $this->mappingService->updateUserAliasMapping($organization, $aliasId, $request->input('target_id'));
 
         return back()->with('status', (string) __('Zuordnung aktualisiert.'));
     }
 
     /** Löscht eine Alias-Benutzer-Zuordnung (Zweitadresse). */
-    public function deleteUserAliasMapping(int $alias): RedirectResponse {
+    public function deleteUserAliasMapping(string $alias): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
-        $this->findUserAlias($organization, $alias)->delete();
+
+        $this->mappingService->deleteUserAliasMapping($organization, Sqid::decodeOrAbort(ExternalReferenceAlias::class, $alias));
 
         return back()->with('status', (string) __('Zuordnung entfernt.'));
     }
 
-    private function findUserAlias(Organization $organization, int $alias): \App\Models\ExternalReferenceAlias {
-        return \App\Models\ExternalReferenceAlias::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', TogglPlugin::ID)
-            ->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL)
-            ->whereKey($alias)
-            ->firstOrFail();
-    }
-
     /** Zeigt eine gemerkte Zuordnung auf einen anderen Kunden/ein anderes Projekt um. */
-    public function updateMapping(Request $request, int $reference): RedirectResponse {
+    public function updateMapping(Request $request, string $reference): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
-        $ref = $this->findMapping($organization, $reference);
 
-        if ($ref->external_type === TogglImportService::EXT_TYPE_USER_EMAIL) {
-            $user = \App\Models\User::query()->whereKey($this->options->decodeId(\App\Models\User::class, $request->input('target_id')))->firstOrFail();
-            abort_unless((int) $user->organization_id === (int) $organization->id, 403);
-            $ref->update([
-                'referenceable_type' => $user->getMorphClass(),
-                'referenceable_id' => $user->getKey(),
-                'synced_at' => now(),
-            ]);
-
-            return back()->with('status', (string) __('Zuordnung aktualisiert.'));
-        }
-
-        if ($ref->external_type === TogglImportService::EXT_TYPE_CLIENT) {
-            // Client-Ziel kann Kunde oder Fremdkunde (Endkunde) sein — die Sqids
-            // sind modell-spezifisch, daher nacheinander dekodieren.
-            $raw = (string) $request->input('target_id');
-            $foreignId = \App\Support\Sqid::decode(ForeignCustomer::class, $raw);
-            $target = $foreignId !== null
-                ? ForeignCustomer::query()->whereKey($foreignId)->firstOrFail()
-                : Customer::query()->whereKey($this->options->decodeId(Customer::class, $raw))->firstOrFail();
-        } else {
-            $target = Project::query()->whereKey($this->options->decodeId(Project::class, $request->input('target_id')))->firstOrFail();
-        }
-        abort_unless((int) $target->organization_id === (int) $organization->id, 403);
-
-        $ref->update([
-            'referenceable_type' => $target->getMorphClass(),
-            'referenceable_id' => $target->getKey(),
-            'synced_at' => now(),
-        ]);
+        $referenceId = Sqid::decodeOrAbort(ExternalReference::class, $reference);
+        $this->mappingService->updateMapping($organization, $referenceId, $request->input('target_id'));
 
         return back()->with('status', (string) __('Zuordnung aktualisiert.'));
     }
 
     /** Löscht eine gemerkte Zuordnung (künftige Importe matchen dann nicht mehr automatisch). */
-    public function deleteMapping(int $reference): RedirectResponse {
+    public function deleteMapping(string $reference): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
-        $this->findMapping($organization, $reference)->delete();
+        $this->mappingService->deleteMapping($organization, Sqid::decodeOrAbort(ExternalReference::class, $reference));
 
         return back()->with('status', (string) __('Zuordnung entfernt.'));
     }
@@ -551,7 +405,7 @@ class TogglController extends Controller {
         $togglUsers = [];
 
         if ($tokenSet) {
-            $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+            $client = TogglApiClient::fromConfig($config);
             foreach ($client->workspaces() as $ws) {
                 $source = new ApiWorkspaceSource($client, $ws['id']);
                 $users = $source->users();
@@ -608,7 +462,7 @@ class TogglController extends Controller {
         $from = ! empty($validated['date_from']) ? CarbonImmutable::parse($validated['date_from'])->startOfDay() : null;
         $to = ! empty($validated['date_to']) ? CarbonImmutable::parse($validated['date_to'])->endOfDay() : null;
 
-        $client = new TogglApiClient($config['api_token'], $config['base_url'], $config['workspace_id'], $config['request_interval']);
+        $client = TogglApiClient::fromConfig($config);
 
         $sources = [];
         $workspaceModes = [];
@@ -660,14 +514,5 @@ class TogglController extends Controller {
         }
 
         return $message;
-    }
-
-    /** Lädt eine Toggl-Mapping-Reference der Organisation oder bricht mit 404 ab. */
-    private function findMapping(Organization $organization, int $id): ExternalReference {
-        return ExternalReference::query()
-            ->forPlugin($organization->id, TogglPlugin::ID)
-            ->whereIn('external_type', [TogglImportService::EXT_TYPE_CLIENT, TogglImportService::EXT_TYPE_PROJECT])
-            ->whereKey($id)
-            ->firstOrFail();
     }
 }

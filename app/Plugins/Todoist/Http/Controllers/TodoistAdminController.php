@@ -297,7 +297,9 @@ class TodoistAdminController extends ConnectionOAuthController {
             return back()->with('error', __('todoist.flash.no_connection'));
         }
 
-        Artisan::call('todoist:sync', ['--organization' => (string) $organization->id, '--full' => true]);
+        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
+        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
+        Artisan::queue('todoist:sync', ['--organization' => (string) $organization->id, '--full' => true]);
         $connection->audit('todoist.sync_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('todoist.flash.sync_done'));

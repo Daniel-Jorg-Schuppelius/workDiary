@@ -36,7 +36,12 @@ final class WeatherServiceTest extends TestCase {
     }
 
     private function service(MockHandler $mock): WeatherService {
-        $client = new Client(['handler' => HandlerStack::create($mock)]);
+        // PluginApiClient mit Mock-Transport (C10): gleiche Naht wie produktiv.
+        $client = new \App\Plugins\Support\PluginApiClient(
+            'weather-open-meteo',
+            'https://api.open-meteo.com',
+            new Client(['handler' => HandlerStack::create($mock)]),
+        );
 
         return new WeatherService(new OpenMeteoProvider($client));
     }

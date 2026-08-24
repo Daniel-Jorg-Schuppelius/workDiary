@@ -44,7 +44,7 @@ class VacationPolicy {
         // Admins via HasAdminBypass::before(); zusätzlich entscheidet die
         // benannte Stellvertretung, solange der Vertretene abwesend ist (MVP-523).
         return $this->sharesOrganization($user, $vacation)
-            && $user->actsAsDeputyForAbsentAdmin();
+            && app(\App\Services\Users\DeputyResolver::class)->actsAsDeputyForAbsentAdmin($user);
     }
 
     /** Stornieren darf der Eigentümer, sofern noch nicht entschieden. */

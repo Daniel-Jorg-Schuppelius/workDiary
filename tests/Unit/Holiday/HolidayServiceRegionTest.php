@@ -82,6 +82,21 @@ class HolidayServiceRegionTest extends TestCase {
         $this->assertFalse($bavaria->isHoliday(CarbonImmutable::parse('2026-06-04')));
     }
 
+    /** B16 (Vollscan 2026-08-23): die eine Werktage-Zählung, gegen Kalender gepinnt. */
+    public function test_working_days_between_and_next_business_day(): void {
+        $service = app(\App\Services\HolidayService::class);
+
+        // KW 20/2026 (18.–22.05.) ohne Feiertag: 5 Werktage; inkl. Wochenende 5.
+        $this->assertSame(5, $service->workingDaysBetween(CarbonImmutable::parse('2026-05-18'), CarbonImmutable::parse('2026-05-24')));
+        // 01.05.2026 (Freitag, bundesweiter Feiertag) fällt raus: Mo–So nur 4.
+        $this->assertSame(4, $service->workingDaysBetween(CarbonImmutable::parse('2026-04-27'), CarbonImmutable::parse('2026-05-03')));
+        // Start > Ende ⇒ 0.
+        $this->assertSame(0, $service->workingDaysBetween(CarbonImmutable::parse('2026-05-02'), CarbonImmutable::parse('2026-05-01')));
+        // Samstag 02.05.2026 ⇒ Montag 04.05.; Werktag bleibt er selbst.
+        $this->assertSame('2026-05-04', $service->nextBusinessDay(CarbonImmutable::parse('2026-05-02'))->toDateString());
+        $this->assertSame('2026-05-05', $service->nextBusinessDay(CarbonImmutable::parse('2026-05-05'))->toDateString());
+    }
+
     public function test_holiday_regions_registry_is_consistent(): void {
         $this->assertTrue(HolidayRegions::isValid('Germany\\Bavaria'));
         $this->assertTrue(HolidayRegions::isValid('Germany'));

@@ -197,5 +197,27 @@ return [
         'qualification_expiring' => 'Qualification/training expires on :date.',
         'maintenance_due_soon' => 'Maintenance plan :label is due on :date.',
         'maintenance_overdue' => 'Maintenance plan :label has been overdue since :date.',
+
+        // Legacy notifier replacement (full scan 2026-08-23, B7).
+
+        'unknown_actor' => 'Unknown',
+
+        'diary_comment_created' => ':actor commented: :excerpt',
+
+        'diary_completed' => 'The diary entry was marked as completed.',
+
+        'diary_attachment_added' => 'New attachment: :name',
+
+        'emergency_assigned_title' => 'On-call assigned',
+
+        'emergency_assigned' => 'Duty starts :start. :reason',
+
+        'timesheet_signed_title' => 'Timesheet signed',
+
+        'timesheet_signed' => ':project · :date',
+
+        'chat_reminder_title' => 'Reminder · #:channel',
+
+        'chat_attachment' => '[Attachment]',
     ],
 ];

@@ -465,41 +465,6 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
     }
 
     /**
-     * Vertritt dieser Nutzer aktuell einen abwesenden Genehmiger (MVP-523)?
-     * Aktiv nur, solange der Vertretene HEUTE eine genehmigte Abwesenheit
-     * (Urlaub oder Krankmeldung) hat — die Vertretung erlischt automatisch.
-     */
-    public function actsAsDeputyForAbsentAdmin(): bool {
-        $today = now()->toDateString();
-
-        return self::query()
-            ->where('organization_id', $this->organization_id)
-            ->where('deputy_user_id', $this->getKey())
-            ->get()
-            ->contains(function (self $principal) use ($today): bool {
-                if (! $principal->isAdmin()) {
-                    return false;
-                }
-
-                $onVacation = Vacation::query()
-                    ->where('user_id', $principal->getKey())
-                    ->where('status', \App\Enums\Vacation\VacationStatus::Approved->value)
-                    ->whereDate('start_date', '<=', $today)
-                    ->whereDate('end_date', '>=', $today)
-                    ->exists();
-                if ($onVacation) {
-                    return true;
-                }
-
-                return SickLeave::query()
-                    ->where('user_id', $principal->getKey())
-                    ->whereDate('start_date', '<=', $today)
-                    ->whereDate('end_date', '>=', $today)
-                    ->exists();
-            });
-    }
-
-    /**
      * Teams, die dieser Benutzer leitet (als lead_user_id hinterlegt).
      *
      * @return HasMany<Team, $this>

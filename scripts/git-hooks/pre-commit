@@ -22,4 +22,26 @@ if git diff --cached --name-only | grep -qx 'composer\.lock'; then
     fi
 fi
 
+# Vollscan 2026-08-23 (D11/F11): Neue Migrationen gehören HINTER die letzte
+# (Memory „Migrations-Zeitstempel"); 17 rückdatierte Dateien seit Juli hätten
+# beim Neuaufbau eine andere Reihenfolge als beim Deploy. Regel: jede neu
+# gestagte Migration sortiert lexikografisch über der höchsten bereits
+# committeten, und ihr Zeitstempel-Präfix ist eindeutig.
+staged_migrations=$(git diff --cached --name-only --diff-filter=A | grep '^database/migrations/.*\.php$' || true)
+if [ -n "$staged_migrations" ]; then
+    highest=$(git ls-tree --name-only HEAD database/migrations/ 2>/dev/null | sed 's|.*/||' | sort | tail -n 1)
+    for path in $staged_migrations; do
+        name=$(basename "$path")
+        prefix=$(printf '%s' "$name" | cut -d_ -f1-4)
+        if [ -n "$highest" ] && [ "$(printf '%s\n%s\n' "$highest" "$name" | sort | tail -n 1)" != "$name" ]; then
+            echo "ABBRUCH: Migration $name sortiert vor der letzten committeten ($highest) — Zeitstempel hinter die letzte legen." >&2
+            exit 1
+        fi
+        if git ls-tree --name-only HEAD database/migrations/ 2>/dev/null | grep -q "/${prefix}_"; then
+            echo "ABBRUCH: Zeitstempel-Präfix $prefix ist bereits vergeben — eindeutigen Zeitstempel wählen." >&2
+            exit 1
+        fi
+    done
+fi
+
 exit 0

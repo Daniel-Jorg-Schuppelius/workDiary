@@ -15,6 +15,7 @@ use App\Models\Backup\{BackupGeneration, BackupGenerationPart, BackupTargetConne
 use App\Models\BackupHeartbeat;
 use App\Plugins\Contracts\BackupTarget;
 use App\Services\Backup\Exceptions\{BackupKeyMissingException, BackupPreflightException};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{Cache, Log};
 use SensitiveParameter;
@@ -175,8 +176,8 @@ class BackupRunService {
                 'part_no' => $partNo,
                 'plain_size' => (int) filesize($plainPath),
                 'cipher_size' => $cipherSize,
-                'plain_sha256' => (string) hash_file('sha256', $plainPath),
-                'cipher_sha256' => (string) hash_file('sha256', $cipherPath),
+                'plain_sha256' => File::hash($plainPath),
+                'cipher_sha256' => File::hash($cipherPath),
             ]);
             @unlink($plainPath); // Klartext-Teil sofort entsorgen
         }

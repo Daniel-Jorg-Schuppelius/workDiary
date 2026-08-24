@@ -14,6 +14,7 @@ use App\Enums\Backup\BackupGenerationStatus;
 use App\Models\Backup\{BackupGeneration, BackupGenerationPart, BackupTargetConnection};
 use App\Plugins\Contracts\BackupTarget;
 use App\Services\Backup\Exceptions\BackupPreflightException;
+use CommonToolkit\Helper\FileSystem\File;
 use Throwable;
 
 /**
@@ -117,12 +118,12 @@ class BackupVerifyService {
             }
             fclose($out);
 
-            if (hash_file('sha256', $cipherPath) !== $part->cipher_sha256) {
+            if ($this->sha256($cipherPath) !== $part->cipher_sha256) {
                 throw new BackupPreflightException("Teil {$part->part_no}: Ciphertext-Hash weicht ab.");
             }
 
             $this->decrypter->decryptPart($cipherPath, $plainPath, $dataKey, $generation->snapshot_uuid, $part->part_no);
-            if (hash_file('sha256', $plainPath) !== $part->plain_sha256) {
+            if ($this->sha256($plainPath) !== $part->plain_sha256) {
                 throw new BackupPreflightException("Teil {$part->part_no}: Klartext-Hash weicht ab.");
             }
         } finally {
@@ -131,4 +132,15 @@ class BackupVerifyService {
         }
     }
 
+    /**
+     * Hash der geschriebenen Datei; eine nicht (mehr) lesbare Datei zählt wie
+     * vorher als Abweichung, nicht als Ausnahme (Toolkit File::hash wirft).
+     */
+    private function sha256(string $path): ?string {
+        try {
+            return File::hash($path);
+        } catch (Throwable) {
+            return null;
+        }
+    }
 }

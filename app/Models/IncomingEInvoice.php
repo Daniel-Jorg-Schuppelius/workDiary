@@ -28,6 +28,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property string $source
  * @property string|null $invoice_number
  * @property string|null $seller_name
+ * @property string|null $seller_vat_id
  * @property \Illuminate\Support\Carbon|null $issue_date
  * @property \Illuminate\Support\Carbon|null $due_date
  * @property \CommonToolkit\Enums\CurrencyCode|null $currency
@@ -44,6 +45,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $transferred_by
  * @property string|null $creditor_iban
  * @property string|null $creditor_bic
+ * @property \Illuminate\Support\Carbon|null $creditor_iban_confirmed_at
+ * @property int|null $creditor_iban_confirmed_by
  * @property float|null $discount_percent
  * @property int|null $discount_days
  * @property int|null $paid_in_run_id
@@ -72,7 +75,7 @@ class IncomingEInvoice extends Model {
         'transferred_at', 'transferred_by',
         // MVP-544: aus `summary` denormalisiert, damit der Belegfluss sortieren
         // und summieren kann. Führend bleibt das geparste Original.
-        'invoice_number', 'seller_name', 'issue_date', 'due_date',
+        'invoice_number', 'seller_name', 'seller_vat_id', 'issue_date', 'due_date',
         'currency', 'amount_net', 'amount_tax', 'amount_gross',
         // MVP-609: Zahlungsdaten für den Zahlungsvorschlag.
         'creditor_iban', 'creditor_bic', 'discount_percent', 'discount_days',
@@ -91,6 +94,11 @@ class IncomingEInvoice extends Model {
         'amount_net' => \App\Casts\MoneyCast::class . ':currency,2',
         'amount_tax' => \App\Casts\MoneyCast::class . ':currency,2',
         'amount_gross' => \App\Casts\MoneyCast::class . ':currency,2',
+        // Bankverbindung des Lieferanten wie alle IBAN-Spalten at-rest verschlüsselt
+        // (Vollscan 2026-08-23, E5); einziger Lesepfad ist der Attributzugriff.
+        'creditor_iban' => 'encrypted',
+        'creditor_bic' => 'encrypted',
+        'creditor_iban_confirmed_at' => 'datetime',
     ];
 
     /**
@@ -110,6 +118,7 @@ class IncomingEInvoice extends Model {
         return [
             'invoice_number' => $text($summary['number'] ?? null, 64),
             'seller_name' => $text($summary['seller'] ?? null, 191),
+            'seller_vat_id' => $text($summary['seller_vat'] ?? null, 32),
             'issue_date' => $text($summary['issue_date'] ?? null, 10),
             'due_date' => $text($summary['due_date'] ?? null, 10),
             'currency' => $text($summary['currency'] ?? null, 3),

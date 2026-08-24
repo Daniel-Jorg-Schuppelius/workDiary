@@ -14,8 +14,9 @@ use App\Enums\Finance\{AccountType, AllocationKind, PostingAccountRole, PostingS
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingTransfer};
 use App\Models\{Customer, Invoice, Organization, User};
 use App\Models\Finance\{BankStatement, BankTransaction, PaymentAllocation};
-use App\Services\Accounting\{AccountingProfileService, AccountingReportService, ChartOfAccountsService, FiscalYearService, InternalTransferService};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, InternalTransferService};
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
+use App\Services\Accounting\Reports\DataQualityBuilder;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -166,7 +167,7 @@ class AccountingBankCashLinkTest extends TestCase {
             $this->admin,
         );
 
-        $quality = app(AccountingReportService::class)->dataQuality($this->org, $this->startsOn, $this->startsOn->endOfYear());
+        $quality = app(DataQualityBuilder::class)->build($this->org, $this->startsOn, $this->startsOn->endOfYear());
 
         $this->assertSame(1, $quality['open_clearing']);
     }
@@ -294,5 +295,83 @@ class AccountingBankCashLinkTest extends TestCase {
 
         $this->assertSame($first->id, $second->id);
         $this->assertSame(1, AccountingTransfer::query()->count());
+    }
+
+    /** @return array{0: PaymentAllocation, 1: \App\Models\Accounting\AccountingEntry} */
+    private function allocationWithEntry(bool $posted): array {
+        $invoice = Invoice::create([
+            'organization_id' => $this->org->id,
+            'customer_id' => Customer::create(['organization_id' => $this->org->id, 'name' => 'Storno GmbH', 'currency' => 'EUR', 'created_by' => $this->admin->id])->id,
+            'number' => 'RE-D3-' . ($posted ? 'P' : 'D'),
+            'type' => Invoice::TYPE_INVOICE,
+            'category' => Invoice::CATEGORY_SERVICE,
+            'status' => Invoice::STATUS_ISSUED,
+            'issued_on' => $this->startsOn->addDays(5)->toDateString(),
+            'currency' => 'EUR',
+            'subtotal' => '100.00',
+            'tax_amount' => '19.00',
+            'total' => '119.00',
+            'created_by' => $this->admin->id,
+        ]);
+        $transaction = BankTransaction::factory()->create([
+            'organization_id' => $this->org->id,
+            'bank_statement_id' => BankStatement::factory()->create(['organization_id' => $this->org->id])->id,
+            'booking_date' => $this->startsOn->addDays(15)->toDateString(),
+            'amount' => '119.00',
+            'currency' => 'EUR',
+        ]);
+        $allocation = PaymentAllocation::query()->create([
+            'organization_id' => $this->org->id,
+            'bank_transaction_id' => $transaction->id,
+            'allocatable_type' => Invoice::class,
+            'allocatable_id' => $invoice->id,
+            'amount' => '119.00',
+            'kind' => AllocationKind::Payment,
+            'confirmed_by_user_id' => $this->admin->id,
+            'confirmed_at' => now(),
+        ]);
+
+        $journal = app(\App\Services\Accounting\JournalService::class);
+        $data = [
+            'booked_on' => $this->startsOn->addDays(15),
+            'memo' => 'Zahlung RE-D3',
+            'source_key' => PostingSourceKind::Payment->keyPrefix() . ':' . $allocation->id,
+            'lines' => [
+                ['accounting_account_id' => $this->accounts['bank']->id, 'debit' => '119.00', 'credit' => '0.00'],
+                ['accounting_account_id' => $this->accounts['revenue']->id, 'debit' => '0.00', 'credit' => '119.00'],
+            ],
+        ];
+        $entry = $posted
+            ? $journal->postDirect($this->org, $data, $this->admin)
+            : $journal->draft($this->org, $data, $this->admin);
+
+        return [$allocation, $entry];
+    }
+
+    /**
+     * D3 (Vollscan 2026-08-23): Aufheben einer Zuordnung OHNE Auth-User
+     * (Job/Command) darf die Festbuchung nicht storno-los stehen lassen —
+     * der Festschreiber der Ursprungsbuchung steht als Akteur ein.
+     */
+    public function test_unmatch_without_auth_user_still_reverses_the_posted_entry(): void {
+        [$allocation, $entry] = $this->allocationWithEntry(posted: true);
+
+        \Illuminate\Support\Facades\Auth::logout();
+        $allocation->delete();
+
+        $entry->refresh();
+        $this->assertNotNull($entry->reversed_by_entry_id);
+        $reversal = \App\Models\Accounting\AccountingEntry::query()->findOrFail($entry->reversed_by_entry_id);
+        $this->assertSame($this->admin->id, $reversal->created_by);
+    }
+
+    /** D3: Ein Entwurf verliert beim Aufheben schlicht seine Grundlage — auch ohne Auth-User. */
+    public function test_unmatch_without_auth_user_deletes_the_draft_entry(): void {
+        [$allocation, $entry] = $this->allocationWithEntry(posted: false);
+
+        \Illuminate\Support\Facades\Auth::logout();
+        $allocation->delete();
+
+        $this->assertNull(\App\Models\Accounting\AccountingEntry::query()->find($entry->id));
     }
 }

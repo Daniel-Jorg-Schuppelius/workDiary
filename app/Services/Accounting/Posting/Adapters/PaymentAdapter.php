@@ -17,6 +17,7 @@ use App\Models\{Expense, Invoice, Organization};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -75,11 +76,12 @@ class PaymentAdapter extends AbstractPostingAdapter {
             $blockers[] = $foreign;
         }
 
-        $amount = (float) $source->amount;
-        $isRefund = $amount < 0.0;
-        $absolute = number_format(abs($amount), 2, '.', '');
+        // `amount` ist decimal:2 — Vorzeichen und Betrag ohne Float-Umweg.
+        $amount = NumberHelper::normalizeDecimalString((string) $source->amount);
+        $isRefund = NumberHelper::isNegativePrecise($amount);
+        $absolute = NumberHelper::roundPrecise(NumberHelper::absPrecise($amount), 2);
 
-        if ((float) $absolute === 0.0) {
+        if (NumberHelper::isZeroPrecise($absolute)) {
             $blockers[] = (string) __('accounting.inbox.blocker.no_amount');
         }
 
@@ -182,7 +184,7 @@ class PaymentAdapter extends AbstractPostingAdapter {
     }
 
     private function settlementKind(PaymentAllocation $allocation): SettlementKind {
-        if ((float) $allocation->amount < 0.0) {
+        if (NumberHelper::isNegativePrecise(NumberHelper::normalizeDecimalString((string) $allocation->amount))) {
             return SettlementKind::Reversal;
         }
 

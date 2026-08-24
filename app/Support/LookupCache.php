@@ -19,14 +19,23 @@ class LookupCache {
 
     private const USER_DROPDOWN_KEY = 'lookup.users.dropdown';
 
-    /** @return Collection<int, Tag> */
+    /**
+     * Tag-Optionen der AKTUELLEN Organisation. Der Cache-Key ist je
+     * Organisation getrennt: Tag trägt den OrganizationScope, die Query liefert
+     * also nur die Tags der aktuellen Org — ein globaler Key hätte dieses
+     * Ergebnis fünf Minuten lang an alle anderen Mandanten ausgeliefert
+     * (Vollscan 2026-08-23, A1).
+     *
+     * @return Collection<int, Tag>
+     */
     public static function tagOptions(): Collection {
-        $tags = Cache::get(self::TAG_OPTIONS_KEY);
+        $key = self::tagOptionsKey(self::currentOrganizationId());
+        $tags = Cache::get($key);
 
         if (! $tags instanceof Collection) {
-            Cache::forget(self::TAG_OPTIONS_KEY);
+            Cache::forget($key);
             $tags = Tag::query()->orderBy('name')->get(['id', 'name', 'slug', 'color']);
-            Cache::put(self::TAG_OPTIONS_KEY, $tags, now()->addMinutes(5));
+            Cache::put($key, $tags, now()->addMinutes(5));
         }
 
         /** @var Collection<int, Tag> $tags */
@@ -55,8 +64,13 @@ class LookupCache {
         return $users;
     }
 
-    public static function forgetTagOptions(): void {
-        Cache::forget(self::TAG_OPTIONS_KEY);
+    /**
+     * Invalidiert die Tag-Optionen der angegebenen Organisation (Default:
+     * aktuell gebundene Organisation); der {@see \App\Observers\TagObserver}
+     * übergibt die Organisation des betroffenen Tags.
+     */
+    public static function forgetTagOptions(?int $organizationId = null): void {
+        Cache::forget(self::tagOptionsKey($organizationId ?? self::currentOrganizationId()));
     }
 
     /**
@@ -67,6 +81,10 @@ class LookupCache {
      */
     public static function forgetUserDropdown(?int $organizationId = null): void {
         Cache::forget(self::userDropdownKey($organizationId ?? self::currentOrganizationId()));
+    }
+
+    private static function tagOptionsKey(int $organizationId): string {
+        return self::TAG_OPTIONS_KEY . '.' . $organizationId;
     }
 
     private static function userDropdownKey(int $organizationId): string {

@@ -19,7 +19,10 @@ ExecStart=__PHP_BIN__ __APP_DIR__/artisan queue:work --sleep=3 --tries=3 --max-t
 Restart=always
 RestartSec=5
 # Laufende Jobs beim Stop sauber zu Ende bringen lassen.
-TimeoutStopSec=60
+# Muss über dem größten Job-Timeout (600 s, ProcessCsvImportJob) liegen — sonst
+# killt systemd beim Stop einen laufenden Import und die Queue wiederholt ihn
+# nach retry_after (Vollscan 2026-08-23, J7).
+TimeoutStopSec=660
 KillSignal=SIGTERM
 
 [Install]

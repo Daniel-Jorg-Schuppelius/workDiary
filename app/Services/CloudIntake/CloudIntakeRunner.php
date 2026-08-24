@@ -16,6 +16,7 @@ use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -218,7 +219,7 @@ class CloudIntakeRunner {
             }
 
             // 6. Kanalübergreifender Inhalts-Dedup (Mail/Upload/Cloud).
-            $sha256 = (string) hash_file('sha256', $quarantine);
+            $sha256 = File::hash($quarantine);
             $contentDuplicate = CloudDocumentItem::query()
                 ->where('organization_id', $connection->organization_id)
                 ->where('sha256', $sha256)

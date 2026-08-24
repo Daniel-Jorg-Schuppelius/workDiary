@@ -77,6 +77,53 @@ final class SurveyEngineTest extends TestCase {
         $this->get(route('surveys.public-show', ['token' => $issued['token']]))->assertNotFound();
     }
 
+    /** E1 (Vollscan 2026-08-23): Bereichs-/Array-Input prallt an der Validierung ab, ohne Leichen. */
+    public function test_out_of_range_and_array_input_leave_no_partial_response(): void {
+        $survey = $this->survey();
+        $question = $survey->questions()->firstOrFail();
+
+        foreach ([999, -1, ['a' => 1]] as $bad) {
+            $issued = app(SurveyService::class)->invite($survey, 'bad' . json_encode($bad) . '@example.test');
+            $this->from(route('surveys.public-show', ['token' => $issued['token']]))
+                ->post(route('surveys.public-store', ['token' => $issued['token']]), [
+                    'q' . $question->id => $bad,
+                ])->assertRedirect()->assertSessionHasErrors('q' . $question->id);
+        }
+
+        $this->assertSame(0, SurveyResponse::query()->count());
+        $this->assertSame(0, \App\Models\Survey\SurveyAnswer::query()->count());
+    }
+
+    /** E1: Pflichtverletzung legt KEINE Antwort-Leiche an (Prüfung vor Anlage). */
+    public function test_missing_required_answer_creates_nothing(): void {
+        $survey = $this->survey();
+        $issued = app(SurveyService::class)->invite($survey, 'leer@example.test');
+
+        $this->post(route('surveys.public-store', ['token' => $issued['token']]), [])
+            ->assertRedirect()
+            ->assertSessionHasErrors('q' . $survey->questions()->firstOrFail()->id);
+
+        $this->assertSame(0, SurveyResponse::query()->count());
+        $this->assertSame(SurveyInvitation::STATUS_SENT, $issued['invitation']->fresh()?->status);
+    }
+
+    /** E1: Der Invitation-Claim ist atomar — der zweite Submit legt nichts an. */
+    public function test_double_submit_yields_exactly_one_response(): void {
+        $survey = $this->survey();
+        $issued = app(SurveyService::class)->invite($survey, 'doppel@example.test');
+        $question = $survey->questions()->firstOrFail();
+
+        app(SurveyService::class)->submit($issued['invitation'], [$question->id => 9]);
+
+        $this->expectException(\RuntimeException::class);
+        try {
+            app(SurveyService::class)->submit($issued['invitation']->fresh() ?? $issued['invitation'], [$question->id => 3]);
+        } finally {
+            $this->assertSame(1, SurveyResponse::query()->count());
+            $this->assertSame(1, \App\Models\Survey\SurveyAnswer::query()->count());
+        }
+    }
+
     /** Anonym: kein Einladungsbezug, kein Antwortzeitpunkt. */
     public function test_anonymous_answers_are_technically_untraceable(): void {
         $survey = $this->survey(['anonymous' => true]);

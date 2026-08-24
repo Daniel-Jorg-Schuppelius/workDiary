@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Guarantee\{GuaranteeDirection, GuaranteeStatus};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveGuaranteeRequest;
 use App\Models\{Customer, Project, Supplier, User};
 use App\Models\Guarantee\Guarantee;
@@ -32,6 +33,8 @@ use RuntimeException;
  * Finanzen" auf und nicht am Projekt.
  */
 class GuaranteeController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly GuaranteeService $guarantees) {}
 
     public function index(Request $request): View {
@@ -87,7 +90,7 @@ class GuaranteeController extends Controller {
         $this->authorizeBilling();
 
         $guarantee = Guarantee::query()->create($request->validated() + [
-            'organization_id' => $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => $request->user()?->id,
         ]);
         $guarantee->audit('guarantee.created');

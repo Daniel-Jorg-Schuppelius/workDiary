@@ -10,15 +10,41 @@
 
 namespace App\Observers;
 
-use App\Models\{Attachment, DiaryEntry};
-use App\Services\PushNotifier;
+use App\Enums\Notification\NotificationEvent;
+use App\Models\{Attachment, DiaryEntry, User};
+use App\Services\Notification\NotificationDispatcher;
 
 class AttachmentObserver {
+    /**
+     * Anhang-Benachrichtigung an den Entry-Besitzer über den zentralen
+     * Dispatcher (B7) — nur für Auftragsbuch-Anhänge fremder Uploader.
+     */
     public function created(Attachment $attachment): void {
-        if ($attachment->attachable_type === DiaryEntry::class) {
-            $attachment->loadMissing('attachable.user', 'uploader');
+        $attachment->loadMissing('attachable');
+        if (! $attachment->attachable instanceof DiaryEntry) {
+            return;
         }
 
-        app(PushNotifier::class)->newAttachment($attachment);
+        /** @var DiaryEntry $entry */
+        $entry = $attachment->attachable;
+        if ((int) $entry->user_id === (int) $attachment->user_id) {
+            return;
+        }
+
+        $entry->loadMissing('user');
+        $owner = $entry->user;
+        if (! $owner instanceof User) {
+            return;
+        }
+
+        $name = (string) $attachment->original_name;
+        $title = trim((string) $entry->title);
+        app(NotificationDispatcher::class)->notify(NotificationEvent::DiaryAttachmentAdded, $entry, $owner, [
+            'title' => $title !== '' ? $title : '#' . $entry->id,
+            'message' => (string) __('notification.message.diary_attachment_added', ['name' => $name]),
+            'message_key' => 'notification.message.diary_attachment_added',
+            'message_params' => ['name' => $name],
+            'url' => route('diary.show', $entry),
+        ]);
     }
 }

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Etsy\Jobs;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{EtsyWebhookDelivery, Organization};
+use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Services\EtsyReceiptImportService;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;
@@ -29,6 +31,11 @@ use Throwable;
  * verlässliche Quelle und heilt verpasste Impulse.
  */
 class EtsyWebhookIngestJob implements ShouldQueue {
+    use RetriesTransientFailures;
+
+    protected function pluginErrorId(): ?string {
+        return EtsyPlugin::ID;
+    }
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;

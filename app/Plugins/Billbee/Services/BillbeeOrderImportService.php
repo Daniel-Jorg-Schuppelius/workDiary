@@ -29,6 +29,8 @@ use RuntimeException;
  * Kanalherkunft = Billbee-Plattformname (Amazon/eBay/…).
  */
 class BillbeeOrderImportService {
+    use \App\Plugins\Support\Concerns\ResolvesMarketplaceBuyer;
+
     public function __construct(
         private readonly BillbeeClientFactory $clients,
         private readonly IntegrationResolver $resolver,
@@ -107,11 +109,6 @@ class BillbeeOrderImportService {
     }
 
     /**
-     * Käuferauflösung Inbox-First: bestehende Referenz/eindeutiger Treffer
-     * verlinkt, sonst Inbox-Vorschlag (Kanalherkunft im Untertitel). Nach
-     * einer Verlinkung werden offene Spiegelzeilen desselben Käufers
-     * nachgezogen.
-     *
      * @param array<string, mixed> $buyer
      * @param array{imported: int, updated: int, linked: int, staged: int} $counters
      */
@@ -121,56 +118,28 @@ class BillbeeOrderImportService {
             $name = trim(trim((string) ($buyer['FirstName'] ?? '')) . ' ' . trim((string) ($buyer['LastName'] ?? '')));
         }
 
-        $outcome = $this->resolver->resolve(
+        $customer = $this->resolveMarketplaceBuyer(
             $organization,
-            BillbeePlugin::ID,
             $profile,
-            'customer',
+            BillbeePlugin::ID,
             $buyerExternalId,
-            array_filter([
+            [
                 'name' => $name !== '' ? $name : null,
                 'email' => self::stringOrNull($buyer['Email'] ?? null),
-            ], static fn($value): bool => $value !== null),
+            ],
             $buyer,
-            source: 'billbee',
+            'billbee',
+            BillbeeOrder::class,
+            BillbeeOrder::INBOX_LINKED,
         );
+        if ($customer === null) {
+            $counters['staged']++;
 
-        if (! $outcome->isResolved()) {
-            // Feldabweichung trotz bestehender Referenz (Conflict-Item): die
-            // ZUORDNUNG steht fest — nur der Datenabgleich bleibt offen und
-            // sichtbar in der Inbox. Ohne Referenz bleibt die Zeile offen.
-            $customer = $this->customerByReference($organization, $buyerExternalId);
-            if (! $customer instanceof Customer) {
-                $counters['staged']++;
-
-                return null;
-            }
-        } else {
-            /** @var Customer $customer */
-            $customer = $outcome->model;
+            return null;
         }
-
         $counters['linked']++;
 
-        // Wiederkäufer: offene Spiegelzeilen desselben Käufers nachziehen.
-        BillbeeOrder::query()
-            ->where('organization_id', $organization->id)
-            ->where('buyer_external_id', $buyerExternalId)
-            ->whereNull('customer_id')
-            ->update(['customer_id' => $customer->id, 'inbox_status' => BillbeeOrder::INBOX_LINKED]);
-
         return $customer;
-    }
-
-    /** Kunde aus bestehender Käufer-Referenz (Zuordnung bereits entschieden). */
-    private function customerByReference(Organization $organization, string $buyerExternalId): ?Customer {
-        $reference = \App\Models\ExternalReference::query()
-            ->forPlugin($organization, BillbeePlugin::ID, 'customer')
-            ->forExternalId($buyerExternalId)
-            ->first();
-        $referenceable = $reference?->referenceable;
-
-        return $referenceable instanceof Customer ? $referenceable : null;
     }
 
     /** Aufholpunkt: jüngste bekannte Billbee-Änderung minus Überlappung. */

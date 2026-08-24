@@ -197,5 +197,27 @@ return [
         'qualification_expiring' => 'La qualifica/formazione scade il :date.',
         'maintenance_due_soon' => 'Il piano di manutenzione :label scade il :date.',
         'maintenance_overdue' => 'Il piano di manutenzione :label è scaduto dal :date.',
+
+        // Sostituzione dei notificatori legacy (scansione completa 2026-08-23, B7).
+
+        'unknown_actor' => 'Sconosciuto',
+
+        'diary_comment_created' => ':actor ha commentato: :excerpt',
+
+        'diary_completed' => 'La voce del registro è stata contrassegnata come completata.',
+
+        'diary_attachment_added' => 'Nuovo allegato: :name',
+
+        'emergency_assigned_title' => 'Servizio di emergenza assegnato',
+
+        'emergency_assigned' => 'Turno dal :start. :reason',
+
+        'timesheet_signed_title' => 'Foglio ore firmato',
+
+        'timesheet_signed' => ':project · :date',
+
+        'chat_reminder_title' => 'Promemoria · #:channel',
+
+        'chat_attachment' => '[Allegato]',
     ],
 ];

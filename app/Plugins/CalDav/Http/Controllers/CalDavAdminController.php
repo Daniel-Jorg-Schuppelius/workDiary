@@ -104,7 +104,9 @@ class CalDavAdminController extends Controller {
             return back()->with('error', __('caldav.flash.no_connection'));
         }
 
-        Artisan::call('caldav:publish', ['--organization' => (string) $organization->id]);
+        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
+        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
+        Artisan::queue('caldav:publish', ['--organization' => (string) $organization->id]);
         $connection->audit('caldav.publish_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('caldav.flash.publish_done'));

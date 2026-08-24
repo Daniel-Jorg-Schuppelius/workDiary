@@ -205,6 +205,22 @@ final class GaebPackageIntakeTest extends TestCase {
         $this->assertSame([], $result['gaeb']);
     }
 
+    /**
+     * Vollscan 2026-08-23, E7: Die Summe der entpackten Größen wurde nie
+     * geprüft — ein kleiner Upload konnte sich im Speicher entfalten.
+     */
+    public function test_oversized_entries_are_rejected_before_extraction(): void {
+        // 65 MB Nullbytes komprimieren auf wenige KB — genau das Profil einer ZIP-Bomb.
+        $package = $this->zip(['bombe.x83' => str_repeat("\0", 65 * 1024 * 1024)]);
+
+        $this->expectException(\RuntimeException::class);
+        $this->expectExceptionMessage((string) __('Das Paket überschreitet die zulässige entpackte Größe.'));
+
+        app(GaebPackageIntakeService::class)->intake(
+            $package, 'Paket.zip', $this->organization->id, $this->admin, $this->opportunity()
+        );
+    }
+
     // ── Oberfläche ───────────────────────────────────────────────────────
 
     public function test_upload_and_accept_creates_the_bill_of_quantities(): void {

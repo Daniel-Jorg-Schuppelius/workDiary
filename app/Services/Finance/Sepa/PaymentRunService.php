@@ -16,8 +16,10 @@ use App\Enums\Document\DocumentType;
 use App\Enums\Finance\{PaymentRunKind, PaymentRunStatus};
 use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\{IncomingEInvoice, User};
+use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Document\DocumentService;
 use App\Services\Finance\FinancialFormatsSupport;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Facades\DB;
@@ -203,6 +205,13 @@ class PaymentRunService {
         }
         if ($run->items()->count() === 0) {
             throw new RuntimeException((string) __('sepa.error.no_positions'));
+        }
+        // Dasselbe Vier-Augen-Setting wie der Buchungskern (Vollscan 2026-08-23,
+        // E4): Geldausgang ist der sensiblere Pfad — wer zusammenstellt, gibt
+        // bei aktivem Prinzip nicht selbst frei.
+        if ((bool) Setting::get(PostingInboxService::FOUR_EYES_KEY, false)
+            && $run->created_by !== null && (int) $run->created_by === (int) $actor->id) {
+            throw new RuntimeException((string) __('sepa.error.four_eyes'));
         }
 
         $run->forceFill([

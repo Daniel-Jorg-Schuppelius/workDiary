@@ -16,7 +16,7 @@ return [
     'empty' => 'Todavía no se ha creado ninguna circular.',
     'empty_recipients' => 'No hay destinatarios registrados.',
     'created' => 'Circular creada.',
-    'sent' => 'Circular enviada.',
+    'sent' => 'Envío iniciado — se ejecuta en segundo plano; el estado aparece por destinatario en la lista de comprobantes.',
     'already_sent' => 'Esta circular ya se ha enviado.',
     'no_recipients' => 'El filtro seleccionado no coincide con ningún cliente.',
     'mandatory_short' => 'Comunicación obligatoria',

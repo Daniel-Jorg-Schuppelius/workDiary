@@ -14,6 +14,7 @@ namespace App\Models\Integration;
 
 use App\Enums\Integration\WebhookDeliveryStatus;
 use App\Models\Concerns\BelongsToOrganization;
+use Illuminate\Database\Eloquent\{Builder, MassPrunable};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -44,6 +45,8 @@ class WebhookDelivery extends Model {
     /** @use HasFactory<\Database\Factories\Integration\WebhookDeliveryFactory> */
     use BelongsToOrganization, HasFactory;
 
+    use MassPrunable;
+
     protected $fillable = [
         'organization_id',
         'webhook_endpoint_id',
@@ -69,5 +72,23 @@ class WebhookDelivery extends Model {
     /** @return BelongsTo<WebhookEndpoint, $this> */
     public function endpoint(): BelongsTo {
         return $this->belongsTo(WebhookEndpoint::class, 'webhook_endpoint_id');
+    }
+
+    /**
+     * Aufbewahrung des ausgehenden Zustellprotokolls (Vollscan 2026-08-23, J9):
+     * erfolgreiche Zustellungen nach `integration.delivery_retention_days`,
+     * fehlgeschlagene nach `integration.failed_retention_days`; offene
+     * (pending) bleiben.
+     *
+     * @return Builder<static>
+     */
+    public function prunable(): Builder {
+        $okDays = max(1, (int) config('integration.delivery_retention_days', 90));
+        $failedDays = max(1, (int) config('integration.failed_retention_days', 180));
+
+        return static::query()->where(function (Builder $q) use ($okDays, $failedDays): void {
+            $q->where(fn (Builder $sub) => $sub->where('status', WebhookDeliveryStatus::Success->value)->where('dispatched_at', '<', now()->subDays($okDays)))
+                ->orWhere(fn (Builder $sub) => $sub->where('status', WebhookDeliveryStatus::Failed->value)->where('dispatched_at', '<', now()->subDays($failedDays)));
+        });
     }
 }

@@ -72,22 +72,17 @@
                 @unless ($domain->is_own_holding)
                     <x-action-form :action="route('domains.customer', $domain)" class="mt-2">
                         <div class="space-y-2"
-                             x-data="{
-                                 map: @js($foreignByCustomer),
-                                 customer: @js($domain->customer?->sqid ?? ''),
-                                 foreign: @js($domain->foreignCustomer?->sqid ?? ''),
-                             }"
-                             x-init="$watch('customer', () => { foreign = '' })">
+                             x-data="foreignCustomerPicker(@js($foreignByCustomer), @js($domain->customer?->sqid ?? ''), @js($domain->foreignCustomer?->sqid ?? ''))">
                             <select name="customer" x-model="customer" class="select select-sm select-bordered w-full" aria-label="{{ __('domain.field.customer') }}">
                                 <option value="">{{ __('domain.mapping.none') }}</option>
                                 @foreach ($customers as $mappableCustomer)
                                     <option value="{{ $mappableCustomer->sqid }}">{{ $mappableCustomer->name }}</option>
                                 @endforeach
                             </select>
-                            <select name="foreign_customer" x-model="foreign" x-show="(map[customer] ?? []).length > 0" x-cloak
+                            <select name="foreign_customer" x-model="foreign" x-show="hasOptions()" x-cloak
                                     class="select select-sm select-bordered w-full" aria-label="{{ __('domain.mapping.foreign_customer') }}">
                                 <option value="">{{ __('domain.mapping.no_foreign_customer') }}</option>
-                                <template x-for="fc in (map[customer] ?? [])" :key="fc.sqid">
+                                <template x-for="fc in options()" :key="fc.sqid">
                                     <option :value="fc.sqid" x-text="fc.name"></option>
                                 </template>
                             </select>

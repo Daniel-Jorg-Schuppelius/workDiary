@@ -298,17 +298,6 @@ class SicknessReportController extends Controller {
         if ($start->greaterThan($end)) {
             return 0;
         }
-        $count = 0;
-        $cursor = $start->copy()->startOfDay();
-        $endDay = $end->copy()->startOfDay();
-        while ($cursor->lte($endDay)) {
-            if ($cursor->isWeekday() && ! $this->holidayService->isHoliday($cursor)) {
-                $count++;
-            }
-            // Zuweisung statt In-Place-Mutation: funktioniert für Carbon UND CarbonImmutable.
-            $cursor = $cursor->addDay();
-        }
-
-        return $count;
+        return $this->holidayService->workingDaysBetween($start, $end);
     }
 }

@@ -105,7 +105,7 @@ return [
         'link_removed' => 'Mapping removed.',
         'link_project_required' => 'Please choose a WorkDiary project.',
         'no_connection' => 'No active Todoist connection.',
-        'sync_done' => 'Full sync completed.',
+        'sync_done' => 'Full sync started.',
         'preflight_failed' => 'Preflight failed (:class).',
         'sections_saved' => 'Section mappings saved.',
         'collaborator_assigned' => 'Assignee mapped.',

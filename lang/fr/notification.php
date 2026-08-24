@@ -197,5 +197,27 @@ return [
         'qualification_expiring' => 'La qualification/formation expire le :date.',
         'maintenance_due_soon' => 'Le plan de maintenance :label est dû le :date.',
         'maintenance_overdue' => 'Le plan de maintenance :label est en retard depuis le :date.',
+
+        // Remplacement des notificateurs hérités (scan complet 2026-08-23, B7).
+
+        'unknown_actor' => 'Inconnu',
+
+        'diary_comment_created' => ':actor a commenté : :excerpt',
+
+        'diary_completed' => 'L’entrée du journal a été marquée comme terminée.',
+
+        'diary_attachment_added' => 'Nouvelle pièce jointe : :name',
+
+        'emergency_assigned_title' => 'Astreinte attribuée',
+
+        'emergency_assigned' => 'Intervention à partir du :start. :reason',
+
+        'timesheet_signed_title' => 'Feuille d’heures signée',
+
+        'timesheet_signed' => ':project · :date',
+
+        'chat_reminder_title' => 'Rappel · #:channel',
+
+        'chat_attachment' => '[Pièce jointe]',
     ],
 ];

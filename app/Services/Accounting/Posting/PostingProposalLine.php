@@ -22,6 +22,11 @@ use App\Models\Accounting\AccountingAccount;
  * erklären können, WARUM dieses Konto vorgeschlagen wird, nicht nur DASS.
  */
 final class PostingProposalLine {
+    /**
+     * @param  numeric-string  $debit
+     * @param  numeric-string  $credit
+     * @param  numeric-string|null  $taxAmount
+     */
     public function __construct(
         public readonly PostingAccountRole $role,
         public readonly AccountingAccount $account,

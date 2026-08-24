@@ -15,7 +15,8 @@ namespace App\Console\Commands\Finance;
 use App\Enums\Finance\{AccountType, AccountingEntryStatus, OpenItemDirection, OpenItemStatus, ProfitDetermination};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFiscalYear, AccountingPeriod, AccountingProfile};
 use App\Models\{Organization, User};
-use App\Services\Accounting\{AccountingProfileService, AccountingReportService, ChartOfAccountsService, FiscalYearService, OpenItemService};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, OpenItemService};
+use App\Services\Accounting\Reports\{AccountLedgerBuilder, LiquidityBuilder, TrialBalanceBuilder};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Console\Command;
@@ -327,20 +328,22 @@ class SeedAccountingLoadCommand extends Command {
      * materialisierte Saldentabelle wäre ein zweiter Bestand.
      */
     private function measure(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): void {
-        $reports = app(AccountingReportService::class);
+        $trialBalances = app(TrialBalanceBuilder::class);
+        $accountLedgers = app(AccountLedgerBuilder::class);
+        $liquidities = app(LiquidityBuilder::class);
         $openItems = app(OpenItemService::class);
         $account = AccountingAccount::query()->where('organization_id', $organization->id)->where('number', '1400')->first();
 
         $cases = [
-            'trialBalance' => fn () => $reports->trialBalance($organization, $from, $to),
+            'trialBalance' => fn () => $trialBalances->build($organization, $from, $to),
             // Wie die Seite es aufruft (geblättert) und wie der Export (alles).
             'accountLedger' => fn () => $account instanceof AccountingAccount
-                ? $reports->accountLedger($organization, $account, $from, $to, 100)
+                ? $accountLedgers->build($organization, $account, $from, $to, 100)
                 : null,
             'accountLedgerFull' => fn () => $account instanceof AccountingAccount
-                ? $reports->accountLedger($organization, $account, $from, $to)
+                ? $accountLedgers->build($organization, $account, $from, $to)
                 : null,
-            'liquidity' => fn () => $reports->liquidity($organization, $to),
+            'liquidity' => fn () => $liquidities->build($organization, $to),
             // Journalliste wie auf der Seite: erste Seite mit Zeilen und Konten.
             'journal' => fn () => AccountingEntry::query()
                 ->where('organization_id', $organization->id)

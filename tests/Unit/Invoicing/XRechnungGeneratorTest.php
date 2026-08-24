@@ -283,14 +283,16 @@ class XRechnungGeneratorTest extends TestCase {
         $this->assertSame('R2026-0042', $xp->evaluate('string(/cn:CreditNote/cac:BillingReference/cac:InvoiceDocumentReference/cbc:ID)'));
     }
 
-    public function test_unit_mapping_hours_to_hur_and_default_to_c62(): void {
+    public function test_unit_mapping_hours_to_hur_and_lump_sum_to_ls(): void {
         $invoice = $this->makeIssuedInvoice();
         $xml = app(XRechnungGenerator::class)->generate($invoice);
         $xp = $this->xpath($xml);
 
-        // Position 1: "Std." ⇒ HUR; Position 2: "Pauschale" ⇒ Default C62.
+        // Position 1: "Std." ⇒ HUR; Position 2: "Pauschale" ⇒ LS (UN/ECE Rec 20
+        // „lump sum") — seit der Umstellung auf UnitCode::fromText (Vollscan
+        // 2026-08-23, C8) wie in Bestellungen; vorher fiel es auf das generische C62.
         $this->assertSame('HUR', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='1']/cbc:InvoicedQuantity/@unitCode)"));
-        $this->assertSame('C62', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='2']/cbc:InvoicedQuantity/@unitCode)"));
+        $this->assertSame('LS', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='2']/cbc:InvoicedQuantity/@unitCode)"));
         $this->assertSame('200.00', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='1']/cbc:LineExtensionAmount)"));
         $this->assertSame('100.00', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='1']/cac:Price/cbc:PriceAmount)"));
         $this->assertSame('Beratung', $xp->evaluate("string(/ubl:Invoice/cac:InvoiceLine[cbc:ID='1']/cac:Item/cbc:Name)"));

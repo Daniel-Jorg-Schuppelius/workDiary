@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\TimeApproval\TimeCorrectionStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Attendance, TimeCorrectionRequest, TimeEntry, User};
 use App\Services\TimeApproval\{TimeCorrectionService, TimeCorrectionWorkflowException};
 use App\Support\Sqid;
@@ -29,6 +30,8 @@ use Illuminate\View\View;
  * {@see Admin\TimeCorrectionInboxController}.
  */
 class TimeCorrectionController extends Controller {
+    use ResolvesGlobalDateRange;
+
     private const ALLOWED_SORTS = ['scope_date', 'status'];
 
     public function __construct(private readonly TimeCorrectionService $service) {}
@@ -73,9 +76,7 @@ class TimeCorrectionController extends Controller {
         /** @var User $user */
         $user = Auth::user();
 
-        $scopeDate = $request->filled('date')
-            ? (CarbonImmutable::parse((string) $request->input('date')))
-            : CarbonImmutable::now()->subDay();
+        $scopeDate = $this->resolveDateParam($request, 'date', static fn (): CarbonImmutable => CarbonImmutable::now()->subDay());
 
         // Personalverwaltung/Teamleitung dürfen im Namen von Mitarbeitenden nachtragen.
         $canCreateForOthers = $user->can(Permission::CorrectionCreateForOthers->value);

@@ -38,6 +38,7 @@ return [
     ],
 
     'action' => [
+        'confirm_iban' => 'IBAN bestätigen',
         'proposal' => 'Zahlungsvorschlag',
         'create_run' => 'Zahllauf anlegen',
         'show' => 'Ansehen',
@@ -74,15 +75,20 @@ return [
         'cancelled' => 'storniert',
     ],
 
+    'iban_confirmed' => 'Die abweichende IBAN wurde bestätigt — die Position ist jetzt zahlbar.',
+
     'blocked' => [
         'missing_iban' => 'IBAN fehlt',
         'zero_amount' => 'Betrag 0',
+        'iban_differs' => 'IBAN weicht vom Stammsatz ab',
     ],
 
     'error' => [
+        'no_iban_deviation' => 'Die Rechnungs-IBAN weicht nicht (mehr) vom Lieferanten-Stammsatz ab.',
         'no_positions' => 'Der Zahllauf enthält keine Positionen.',
         'not_draft' => 'Der Zahllauf ist kein Entwurf mehr.',
         'not_released' => 'Der Zahllauf ist nicht freigegeben.',
+        'four_eyes' => 'Vier-Augen-Prinzip: Wer den Zahllauf zusammengestellt hat, gibt ihn nicht selbst frei.',
         'exported_final' => 'Ein exportierter Zahllauf wird nicht mehr storniert.',
         'invalid_amount' => 'Der Zahlbetrag muss über 0 und darf nicht über dem Rechnungsbetrag liegen.',
         'reason_required' => 'Ein gekürzter Zahlbetrag braucht einen Grund.',

@@ -153,34 +153,37 @@ class OrgMemberController extends Controller {
             'csv' => ['required', 'file', 'mimes:csv,txt', 'max:5120'],
         ]);
 
-        $lines = preg_split('/\r\n|\r|\n/', trim((string) file_get_contents((string) $request->file('csv')->getRealPath()))) ?: [];
-        if ($lines === [] || trim($lines[0]) === '') {
+        // Toolkit-CSV statt Handparser (Vollscan 2026-08-23, C5): Delimiter-
+        // Erkennung, Quoting und mehrzeilige Felder übers common-toolkit.
+        $path = (string) $request->file('csv')->getRealPath();
+        try {
+            $delimiter = \CommonToolkit\Parsers\CSVDocumentParser::detectDelimiter($path);
+            $header = array_map(
+                static fn (string $h): string => strtolower(trim($h)),
+                array_values(\CommonToolkit\Parsers\CSVDocumentParser::readHeader($path, $delimiter)->getColumnNames()),
+            );
+        } catch (\Throwable) {
             return back()->withErrors(['csv' => __('Die Datei ist leer.')]);
         }
-
-        $delimiter = str_contains($lines[0], ';') ? ';' : ',';
-        $header = array_map(static fn (?string $h): string => strtolower(trim((string) $h)), str_getcsv(array_shift($lines), $delimiter));
-        $nameIdx = array_search('name', $header, true);
-        $emailIdx = array_search('email', $header, true);
-        if ($nameIdx === false || $emailIdx === false) {
+        if (! in_array('name', $header, true) || ! in_array('email', $header, true)) {
             return back()->withErrors(['csv' => __('Kopfzeile muss mindestens die Spalten name und email enthalten.')]);
         }
-        $pnIdx = array_search('personnel_number', $header, true);
-        $roleIdx = array_search('role', $header, true);
         $allowedRoles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
 
         $created = 0;
         $skipped = [];
-        foreach ($lines as $i => $line) {
-            $lineNo = $i + 2;
-            if (trim($line) === '') {
+        foreach (\App\Support\Toolkit\CsvFacade::streamAssoc($path, $delimiter) as $lineNo => $row) {
+            $data = [];
+            foreach ($row as $column => $value) {
+                $data[strtolower(trim($column))] = $value;
+            }
+            if (trim(implode('', $data)) === '') {
                 continue;
             }
-            $cols = str_getcsv($line, $delimiter);
-            $name = trim((string) ($cols[$nameIdx] ?? ''));
-            $email = strtolower(trim((string) ($cols[$emailIdx] ?? '')));
-            $personnelNumber = $pnIdx !== false ? trim((string) ($cols[$pnIdx] ?? '')) : '';
-            $role = $roleIdx !== false ? strtolower(trim((string) ($cols[$roleIdx] ?? ''))) : '';
+            $name = trim((string) ($data['name'] ?? ''));
+            $email = strtolower(trim((string) ($data['email'] ?? '')));
+            $personnelNumber = trim((string) ($data['personnel_number'] ?? ''));
+            $role = strtolower(trim((string) ($data['role'] ?? '')));
             $role = $role === '' ? UserRole::User->value : $role;
 
             if ($name === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {

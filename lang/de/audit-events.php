@@ -32,6 +32,9 @@ return [
         'canceled' => 'Terminanfrage storniert',
         'service_created' => 'Buchbare Leistungsart angelegt',
     ],
+    'incomingEInvoice' => [
+        'ibanConfirmed' => 'Abweichende Rechnungs-IBAN bestätigt',
+    ],
     'paymentRun' => [
         'released' => 'Zahllauf freigegeben',
         'exported' => 'SEPA-Datei erzeugt',
@@ -40,6 +43,7 @@ return [
         'revoked' => 'SEPA-Mandat widerrufen',
     ],
     'circular' => [
+        'send_started' => 'Versand des Rundschreibens gestartet',
         'approved' => 'Rundschreiben freigegeben',
         'sent' => 'Rundschreiben versendet',
     ],
@@ -255,6 +259,7 @@ return [
     'cti' => [
         'connection_issued' => 'CTI-Verbindung ausgestellt',
         'dial_configured' => 'Klick-zum-Wählen konfiguriert',
+        'dial_started' => 'Anruf per Klick-zum-Wählen gestartet',
         'disconnected' => 'CTI getrennt',
     ],
     'datanorm' => [

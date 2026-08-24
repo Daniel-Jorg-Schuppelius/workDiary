@@ -36,11 +36,25 @@ class PublicSurveyController extends Controller {
     public function store(Request $request, string $token, SurveyService $service): View|RedirectResponse {
         [$invitation, $survey] = $this->resolve($token);
 
-        // Frage-IDs kommen als Sqid-freie Positionen? Nein: als question_<id>
-        // aus dem eigenen Formular - die Auflösung bleibt serverseitig.
+        // Frage-IDs kommen als q<id> aus dem eigenen Formular — die Auflösung
+        // bleibt serverseitig. Öffentlicher Endpunkt: Regeln je Fragetyp
+        // (Vollscan 2026-08-23, E1) — Array-Input und Bereichsverletzungen
+        // enden als Validierungsfehler statt als 500/Datenverfälschung.
+        $questions = $survey->questions()->withoutGlobalScopes()->get();
+        $rules = [];
+        foreach ($questions as $question) {
+            $rules['q' . $question->id] = match ($question->type) {
+                'nps' => [$question->required ? 'required' : 'nullable', 'integer', 'between:0,10'],
+                'scale' => [$question->required ? 'required' : 'nullable', 'integer', 'between:1,5'],
+                'choice' => [$question->required ? 'required' : 'nullable', 'string', \Illuminate\Validation\Rule::in($question->options ?? [])],
+                default => [$question->required ? 'required' : 'nullable', 'string', 'max:4000'],
+            };
+        }
+        $validated = $request->validate($rules);
+
         $answers = [];
-        foreach ($survey->questions()->withoutGlobalScopes()->get() as $question) {
-            $answers[$question->id] = $request->input('q' . $question->id);
+        foreach ($questions as $question) {
+            $answers[$question->id] = $validated['q' . $question->id] ?? null;
         }
 
         try {

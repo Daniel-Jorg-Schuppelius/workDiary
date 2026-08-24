@@ -1100,15 +1100,15 @@ class TogglImportTest extends TestCase {
             ->assertSee('privat@gmx.de')
             ->assertSee('zweit@gmx.de');
 
-        // Alias-Zeile lässt sich entfernen.
-        $aliasId = (int) \App\Models\ExternalReferenceAlias::query()
+        // Alias-Zeile lässt sich entfernen (Route trägt die Sqid, nicht die rohe ID).
+        $alias = \App\Models\ExternalReferenceAlias::query()
             ->where('external_type', TogglImportService::EXT_TYPE_USER_EMAIL)
             ->where('external_id', 'zweit@gmx.de')
-            ->value('id');
+            ->firstOrFail();
         $this->actingAs($this->admin)
-            ->post(route('admin.toggl.mappings.user-alias.delete', $aliasId))
+            ->post(route('admin.toggl.mappings.user-alias.delete', $alias->sqid))
             ->assertRedirect();
-        $this->assertDatabaseMissing('external_reference_aliases', ['id' => $aliasId]);
+        $this->assertDatabaseMissing('external_reference_aliases', ['id' => $alias->id]);
     }
 
     public function test_repair_command_reassigns_users_from_csv(): void {
@@ -1553,7 +1553,7 @@ class TogglImportTest extends TestCase {
         ]);
 
         $this->actingAs($this->admin)
-            ->post(route('admin.toggl.mappings.update', $ref->id), ['target_id' => $gamma->sqid])
+            ->post(route('admin.toggl.mappings.update', $ref->sqid), ['target_id' => $gamma->sqid])
             ->assertRedirect();
 
         $this->assertDatabaseHas('external_references', [
@@ -1562,7 +1562,7 @@ class TogglImportTest extends TestCase {
         ]);
 
         $this->actingAs($this->admin)
-            ->post(route('admin.toggl.mappings.delete', $ref->id))
+            ->post(route('admin.toggl.mappings.delete', $ref->sqid))
             ->assertRedirect();
 
         $this->assertDatabaseMissing('external_references', ['id' => $ref->id]);
@@ -1587,7 +1587,7 @@ class TogglImportTest extends TestCase {
         ]);
 
         $this->actingAs($this->admin)
-            ->post(route('admin.toggl.mappings.update', $ref->id), ['target_id' => $foreign->sqid])
+            ->post(route('admin.toggl.mappings.update', $ref->sqid), ['target_id' => $foreign->sqid])
             ->assertRedirect();
 
         $this->assertDatabaseHas('external_references', [

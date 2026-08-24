@@ -13,7 +13,8 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{CorrectiveActionStatus, FindingKind, FindingStatus};
 use App\Models\Isms\{IsmsAudit, IsmsAuditFinding, IsmsCorrectiveAction};
 use App\Models\User;
-use App\Services\Isms\Concerns\{AssertsIsmsTransition, AssignsSequentialNo, ResolvesAuditReferences};
+use App\Services\Concerns\AssignsSequentialNo;
+use App\Services\Isms\Concerns\{AssertsIsmsTransition, ResolvesAuditReferences};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 

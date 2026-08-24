@@ -80,7 +80,7 @@
                             <tr>
                                 <td>{{ $rule->source_type->label() }}</td>
                                 <td class="font-mono text-sm">{{ $rule->match_value ?? '—' }}</td>
-                                <td class="text-right tabular-nums">{{ rtrim(rtrim(number_format((float) $rule->factor, 4, ',', '.'), '0'), ',') }}</td>
+                                <td class="text-right tabular-nums">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $rule->factor, 4, withThousandsSeparator: true), '0'), ',') }}</td>
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('admin.time-accounts.rules.destroy', [$account, $rule]) }}">
                                         @csrf

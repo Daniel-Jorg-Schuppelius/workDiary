@@ -24,13 +24,13 @@ use Illuminate\Validation\ValidationException;
  */
 trait AssertsIsmsTransition {
     /** @throws ValidationException wenn der Übergang nicht erlaubt ist. */
-    private function assertIsmsTransition(HasStatusTransitions $current, HasStatusTransitions $target): void {
+    private function assertIsmsTransition(HasStatusTransitions $current, HasStatusTransitions $target, string $messageKey = 'isms.error.invalid_transition'): void {
         if (in_array($target, $current->allowedTransitions(), true)) {
             return;
         }
 
         throw ValidationException::withMessages([
-            'status' => __('isms.error.invalid_transition', [
+            'status' => __($messageKey, [
                 'from' => $current->label(),
                 'to' => $target->label(),
             ]),

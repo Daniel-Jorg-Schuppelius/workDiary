@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\MergesDuplicates;
+use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
 use App\Models\{Article, ArticleMergeDismissal, Organization};
 use App\Services\{ArticleDuplicateFinder, ArticleMergeService};
 use Illuminate\Database\Eloquent\Model;
@@ -32,6 +32,7 @@ use Illuminate\View\View;
 class ArticleMergeController extends Controller {
     /** @use MergesDuplicates<Article> */
     use MergesDuplicates;
+    use ResolvesCurrentOrganization;
 
     public function index(Request $request, ArticleDuplicateFinder $finder): View {
         $user = $this->authorizeMerging();
@@ -89,7 +90,7 @@ class ArticleMergeController extends Controller {
         ArticleMergeDismissal::query()->updateOrCreate(
             ArticleMergeDismissal::pairKey((int) $source->getKey(), (int) $target->getKey()),
             [
-                'organization_id' => $user->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'dismissed_by' => $user->id,
             ],
         );

@@ -20,6 +20,7 @@ use App\Rules\ExistsInCurrentOrganization;
 use App\Services\AssetCompliance\AssetComplianceService;
 use App\Services\Attachments\FileAttacher;
 use App\Support\Sqid;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -152,7 +153,7 @@ class AssetInspectionController extends Controller {
                 'measurement_range' => $data['certificate_measurement_range'] ?? null,
                 'tolerance' => $data['certificate_tolerance'] ?? null,
                 'sha256' => $request->hasFile('certificate_file')
-                    ? hash_file('sha256', (string) $request->file('certificate_file')->getRealPath())
+                    ? File::hash((string) $request->file('certificate_file')->getRealPath())
                     : null,
             ];
         }

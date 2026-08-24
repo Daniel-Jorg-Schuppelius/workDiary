@@ -112,6 +112,36 @@ class CustomerControllerTest extends TestCase {
         ]);
     }
 
+    /** F8/E6 (Vollscan 2026-08-23): contact_* führend, Inline-Spalten sind Projektion. */
+    public function test_address_and_bank_inputs_write_contact_records_and_project_inline(): void {
+        $this->postAsAdmin('customers.store', [
+            'name' => 'Projektions GmbH',
+            'currency' => 'EUR',
+            'address_street' => 'Musterweg 1',
+            'address_zip' => '12345',
+            'address_city' => 'Musterstadt',
+            'country' => 'DE',
+            'bank_iban' => 'DE02120300000000202051',
+            'bank_account_holder' => 'Projektions GmbH',
+        ])->assertRedirect();
+
+        $customer = Customer::query()->where('name', 'Projektions GmbH')->firstOrFail();
+
+        // Quelle der Wahrheit: contact_addresses/contact_bank_accounts …
+        $address = $customer->primaryAddress();
+        $this->assertSame('Musterweg 1', $address?->street);
+        $this->assertSame('DE', $address?->country_code);
+        $this->assertSame('DE02120300000000202051', $customer->primaryBankAccount()?->iban);
+
+        // … und die Inline-Spalten sind die nachgezogene Projektion.
+        $this->assertSame('Musterweg 1', $customer->address_street);
+        $this->assertSame('DE02120300000000202051', $customer->bank_iban);
+
+        // Direkte Änderung an der ContactAddress projiziert ebenfalls.
+        $address?->update(['street' => 'Neuer Weg 2']);
+        $this->assertSame('Neuer Weg 2', $customer->fresh()?->address_street);
+    }
+
     public function test_store_increments_customer_number_per_org(): void {
         // Greenfield: Kundennummern werden zentral über NumberSequenceService
         // vergeben. Externes Anlegen mit fixer Nummer aktualisiert die

@@ -60,8 +60,8 @@ class PluginErrorController extends Controller {
         // Triage-Einstieg (W4c): Volltext über Meldung/Exception + Zeitraum.
         if ($filters['q'] !== '') {
             $query->where(function (Builder $q) use ($filters): void {
-                $q->where('message', 'like', '%' . $filters['q'] . '%')
-                    ->orWhere('exception_class', 'like', '%' . $filters['q'] . '%');
+                $q->whereLikeEscaped('message', (string) $filters['q'])
+                    ->orWhereLikeEscaped('exception_class', (string) $filters['q']);
             });
         }
         if ($filters['from'] !== '') {
@@ -151,8 +151,8 @@ class PluginErrorController extends Controller {
             }
             if (($q = (string) $request->string('q')) !== '') {
                 $query->where(function (Builder $sub) use ($q): void {
-                    $sub->where('message', 'like', '%' . $q . '%')
-                        ->orWhere('exception_class', 'like', '%' . $q . '%');
+                    $sub->whereLikeEscaped('message', $q)
+                        ->orWhereLikeEscaped('exception_class', $q);
                 });
             }
         } else {

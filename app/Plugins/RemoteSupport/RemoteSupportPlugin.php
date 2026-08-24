@@ -56,7 +56,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeIm
         $days = max(1, (int) $config['sync_window_days']);
         $to = CarbonImmutable::now();
 
-        return app(RemoteSupportService::class)->import($organization, $config, $to->subDays($days), $to);
+        return app(RemoteSessionImporter::class)->import($organization, $config, $to->subDays($days), $to);
     }
 
     public function adminPanel(): ?array {
@@ -90,9 +90,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeIm
      */
     public function healthCheck(): PluginHealth {
         $config = RemoteSupportConfig::resolve();
-        /** @var RemoteSupportService $service */
-        $service = app(RemoteSupportService::class);
-        $providers = array_filter($service->providersFor($config), fn($p) => $p->isConfigured());
+        $providers = array_filter(app(RemoteSessionImporter::class)->providersFor($config), fn($p) => $p->isConfigured());
 
         if ($providers === []) {
             return PluginHealth::degraded(__('Kein Fernwartungs-Anbieter konfiguriert.'));
@@ -127,26 +125,25 @@ class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeIm
         if ($slot !== 'asset-show.aside' || ! $context instanceof Asset) {
             return null;
         }
-        if (! in_array($context->category_code, RemoteSupportService::REMOTE_CATEGORY_CODES, true)) {
+        if (! in_array($context->category_code, RemoteDeviceRegistry::REMOTE_CATEGORY_CODES, true)) {
             return null;
         }
 
-        /** @var RemoteSupportService $service */
-        $service = app(RemoteSupportService::class);
+        $devices = app(RemoteDeviceRegistry::class);
 
         $organization = $context->organization;
         $pendingCount = $organization instanceof Organization
-            ? $service->openPendingGroups($organization)->sum('count')
+            ? app(RemotePendingAssignmentService::class)->openPendingGroups($organization)->sum('count')
             : 0;
 
         return view('remote-support::_panel', [
             'asset' => $context,
-            'anydeskIds' => $service->remoteIds($context, AnyDeskClient::ID),
-            'teamviewerIds' => $service->remoteIds($context, TeamViewerClient::ID),
+            'anydeskIds' => $devices->remoteIds($context, AnyDeskClient::ID),
+            'teamviewerIds' => $devices->remoteIds($context, TeamViewerClient::ID),
             'pendingCount' => (int) $pendingCount,
             // Ziele für „Fernwartungsdaten übertragen" (Duplikat-Bereinigung).
             'mergeTargets' => \App\Models\Asset::query()
-                ->whereIn('category_code', RemoteSupportService::REMOTE_CATEGORY_CODES)
+                ->whereIn('category_code', RemoteDeviceRegistry::REMOTE_CATEGORY_CODES)
                 ->whereKeyNot($context->getKey())
                 ->orderBy('name')
                 ->get(['id', 'name', 'asset_no']),

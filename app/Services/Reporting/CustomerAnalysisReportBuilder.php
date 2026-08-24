@@ -15,6 +15,7 @@ use App\Enums\Protocol\ProtocolType;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry};
 use App\Support\ChartBucket;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Kundenanalyse-Kennzahlen (MVP-039): Aufwand, abrechenbare und nicht
@@ -43,120 +44,176 @@ class CustomerAnalysisReportBuilder {
      * }>
      */
     public function build(CarbonImmutable $from, CarbonImmutable $to, ?int $projectId, ?int $userId, ?int $entryTypeId = null, array $excludedCustomerIds = []): array {
-        return array_values(Customer::query()
-            ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('id', $excludedCustomerIds))
-            ->orderBy('name')
-            ->get(['id', 'name'])
-            ->map(function (Customer $customer) use ($from, $to, $projectId, $userId, $entryTypeId): array {
-                $projectIds = Project::query()
-                    ->where('customer_id', $customer->id)
-                    ->when($projectId !== null, fn($q) => $q->where('id', $projectId))
-                    ->pluck('id')
-                    ->map(static fn($v): int => (int) $v)
-                    ->all();
+        // Cache je (Org, Filter) — kundenanalyse.md §6 (Vollscan 2026-08-23, A6).
+        $ttl = (int) config('reports.customer_analysis_cache_seconds', 300);
+        $organizationId = app()->bound('currentOrganization') ? (int) (app('currentOrganization')->id ?? 0) : 0;
+        $cacheKey = sprintf('report.customers.%d.%s', $organizationId, md5(json_encode([
+            $from->toIso8601String(), $to->toIso8601String(), $projectId, $userId, $entryTypeId, $excludedCustomerIds,
+        ]) ?: ''));
 
-                $entryQuery = DiaryEntry::query()
-                    ->where('customer_id', $customer->id)
-                    ->whereBetween('created_at', [$from, $to])
-                    ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
-                    ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
-                    ->when($entryTypeId !== null, fn($q) => $q->where('entry_type_id', $entryTypeId));
+        $compute = fn (): array => $this->aggregate($from, $to, $projectId, $userId, $entryTypeId, $excludedCustomerIds);
 
-                $entryIds = $entryQuery->clone()->pluck('id')->map(static fn($v): int => (int) $v)->all();
-                $entryCount = count($entryIds);
-
-                $timeQuery = TimeEntry::query()
-                    ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
-                    ->when($projectIds !== [], fn($q) => $q->whereIn('project_id', $projectIds), fn($q) => $q->whereRaw('1=0'))
-                    ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
-                    // Auftragstyp lebt am Auftrag (diary_entries) — Zeiten folgen
-                    // über ihre Auftragsverknüpfung; ohne Auftrag keine Typzuordnung.
-                    ->when($entryTypeId !== null, fn($q) => $entryIds !== [] ? $q->whereIn('diary_entry_id', $entryIds) : $q->whereRaw('1=0'));
-
-                $totalMinutes = (int) $timeQuery->clone()->sum('minutes');
-                $billableMinutes = (int) $timeQuery->clone()->where('billable', true)->sum('minutes');
-                $nonBillableMinutes = max(0, $totalMinutes - $billableMinutes);
-                $nonBillableShare = $totalMinutes > 0
-                    ? round(($nonBillableMinutes / $totalMinutes) * 100, 2)
-                    : 0.0;
-
-                $openStatuses = OpenIssueStatus::openValues();
-
-                $openIssuesQuery = OpenIssue::query()
-                    ->whereIn('status', $openStatuses)
-                    ->where(function ($q) use ($customer, $entryIds, $projectIds): void {
-                        $q->where(function ($sub) use ($customer): void {
-                            $sub->where('subject_type', Customer::class)
-                                ->where('subject_id', $customer->id);
-                        });
-
-                        if ($entryIds !== []) {
-                            $q->orWhere(function ($sub) use ($entryIds): void {
-                                $sub->where('subject_type', DiaryEntry::class)
-                                    ->whereIn('subject_id', $entryIds);
-                            });
-                        }
-
-                        if ($projectIds !== []) {
-                            $q->orWhere(function ($sub) use ($projectIds): void {
-                                $sub->where('subject_type', Project::class)
-                                    ->whereIn('subject_id', $projectIds);
-                            });
-                        }
-                    });
-
-                $openIssueCount = (int) $openIssuesQuery->clone()->count();
-                $escalationCount = (int) $openIssuesQuery->clone()->where('status', OpenIssueStatus::Blocked->value)->count();
-
-                $reworkEntryCount = (int) Protocol::query()
-                    ->where('type', ProtocolType::Defect->value)
-                    ->where('subject_type', DiaryEntry::class)
-                    ->whereBetween('occurred_at', [$from, $to])
-                    ->when($entryIds !== [], fn($q) => $q->whereIn('subject_id', $entryIds), fn($q) => $q->whereRaw('1=0'))
-                    ->distinct('subject_id')
-                    ->count('subject_id');
-
-                $avgEntryMinutes = $entryCount > 0
-                    ? (int) round($totalMinutes / $entryCount)
-                    : 0;
-
-                $trend30d = $this->trend30d($customer->id, $projectId, $userId, $to, $entryTypeId);
-
-                return [
-                    'customerId' => $customer->id,
-                    'customerName' => $customer->name,
-                    'entryCount' => $entryCount,
-                    'totalMinutes' => $totalMinutes,
-                    'billableMinutes' => $billableMinutes,
-                    'nonBillableMinutes' => $nonBillableMinutes,
-                    'nonBillableShare' => $nonBillableShare,
-                    'reworkEntryCount' => $reworkEntryCount,
-                    'openIssueCount' => $openIssueCount,
-                    'escalationCount' => $escalationCount,
-                    'avgEntryMinutes' => $avgEntryMinutes,
-                    'trend30d' => $trend30d,
-                ];
-            })
-            ->values()
-            ->all());
+        return $ttl > 0 ? Cache::remember($cacheKey, $ttl, $compute) : $compute();
     }
 
-    /** 30-Tage-Trend der Auftragsanzahl (aktueller minus vorheriger Zeitraum). */
-    private function trend30d(int $customerId, ?int $projectId, ?int $userId, CarbonImmutable $to, ?int $entryTypeId = null): int {
+    /**
+     * Acht Aggregationen statt ~10 Queries je Kunde (Vollscan 2026-08-23, A6 —
+     * Lehre aus dem Buchhaltungs-Lastprofil: Aggregation in SQL, Hydration
+     * vermeiden). Die Semantik entspricht der früheren Pro-Kunde-Schleife:
+     * Aufträge mit Filtern, Zeiten über die Kundenprojekte (Auftragstyp über
+     * die Auftragsverknüpfung), offene Punkte über Kunde/Auftrag/Projekt,
+     * Nacharbeit über Mängelprotokolle der gefilterten Aufträge.
+     *
+     * @param  list<int>  $excludedCustomerIds
+     * @return list<array{
+     *   customerId:int,
+     *   customerName:string,
+     *   entryCount:int,
+     *   totalMinutes:int,
+     *   billableMinutes:int,
+     *   nonBillableMinutes:int,
+     *   nonBillableShare:float,
+     *   reworkEntryCount:int,
+     *   openIssueCount:int,
+     *   escalationCount:int,
+     *   avgEntryMinutes:int,
+     *   trend30d:int
+     * }>
+     */
+    private function aggregate(CarbonImmutable $from, CarbonImmutable $to, ?int $projectId, ?int $userId, ?int $entryTypeId, array $excludedCustomerIds): array {
+        $customers = Customer::query()
+            ->when($excludedCustomerIds !== [], fn($q) => $q->whereNotIn('id', $excludedCustomerIds))
+            ->orderBy('name')
+            ->get(['id', 'name']);
+        if ($customers->isEmpty()) {
+            return [];
+        }
+        $customerIds = $customers->pluck('id')->map(static fn($v): int => (int) $v)->all();
+
+        // Gefilterte Aufträge je Kunde (Basis für Zähler, Zeiten-Typfilter, offene Punkte, Nacharbeit).
+        $entryFilter = static function ($q, string $table) use ($from, $to, $projectId, $userId, $entryTypeId): void {
+            $q->whereBetween($table . '.created_at', [$from, $to])
+                ->when($projectId !== null, fn($qq) => $qq->where($table . '.project_id', $projectId))
+                ->when($userId !== null, fn($qq) => $qq->where($table . '.user_id', $userId))
+                ->when($entryTypeId !== null, fn($qq) => $qq->where($table . '.entry_type_id', $entryTypeId));
+        };
+
+        $entryCounts = DiaryEntry::query()
+            ->whereIn('diary_entries.customer_id', $customerIds)
+            ->tap(fn($q) => $entryFilter($q, 'diary_entries'))
+            ->toBase()
+            ->selectRaw('diary_entries.customer_id AS customer_id, COUNT(*) AS c')
+            ->groupBy('diary_entries.customer_id')
+            ->pluck('c', 'customer_id');
+
+        // Zeiten über die Kundenprojekte; mit Auftragstyp-Filter nur Zeiten, die an
+        // einem passenden (gefilterten) Auftrag desselben Kunden hängen.
+        $timeSums = TimeEntry::query()
+            ->join('projects', 'projects.id', '=', 'time_entries.project_id')
+            ->whereIn('projects.customer_id', $customerIds)
+            ->whereBetween('time_entries.date', [$from->toDateString(), $to->toDateString()])
+            ->when($projectId !== null, fn($q) => $q->where('time_entries.project_id', $projectId))
+            ->when($userId !== null, fn($q) => $q->where('time_entries.user_id', $userId))
+            ->when($entryTypeId !== null, fn($q) => $q
+                ->join('diary_entries AS te_entry', 'te_entry.id', '=', 'time_entries.diary_entry_id')
+                ->whereColumn('te_entry.customer_id', 'projects.customer_id')
+                ->tap(fn($qq) => $entryFilter($qq, 'te_entry')))
+            ->toBase()
+            ->selectRaw('projects.customer_id AS customer_id, COALESCE(SUM(time_entries.minutes), 0) AS total, COALESCE(SUM(CASE WHEN time_entries.billable = 1 THEN time_entries.minutes ELSE 0 END), 0) AS billable')
+            ->groupBy('projects.customer_id')
+            ->get()
+            ->keyBy('customer_id');
+
+        // Offene Punkte: drei disjunkte Subjekt-Typen, je Kunde gezählt.
+        $openStatuses = OpenIssueStatus::openValues();
+        $blocked = OpenIssueStatus::Blocked->value;
+        $issueSelect = 'COUNT(*) AS c, SUM(CASE WHEN open_issues.status = ? THEN 1 ELSE 0 END) AS blocked';
+
+        $issuesByCustomer = OpenIssue::query()
+            ->whereIn('open_issues.status', $openStatuses)
+            ->where('open_issues.subject_type', Customer::class)
+            ->whereIn('open_issues.subject_id', $customerIds)
+            ->toBase()
+            ->selectRaw('open_issues.subject_id AS customer_id, ' . $issueSelect, [$blocked])
+            ->groupBy('open_issues.subject_id')
+            ->get()->keyBy('customer_id');
+        $issuesByEntry = OpenIssue::query()
+            ->whereIn('open_issues.status', $openStatuses)
+            ->where('open_issues.subject_type', DiaryEntry::class)
+            ->join('diary_entries AS oi_entry', 'oi_entry.id', '=', 'open_issues.subject_id')
+            ->whereIn('oi_entry.customer_id', $customerIds)
+            ->tap(fn($q) => $entryFilter($q, 'oi_entry'))
+            ->toBase()
+            ->selectRaw('oi_entry.customer_id AS customer_id, ' . $issueSelect, [$blocked])
+            ->groupBy('oi_entry.customer_id')
+            ->get()->keyBy('customer_id');
+        $issuesByProject = OpenIssue::query()
+            ->whereIn('open_issues.status', $openStatuses)
+            ->where('open_issues.subject_type', Project::class)
+            ->join('projects AS oi_project', 'oi_project.id', '=', 'open_issues.subject_id')
+            ->whereIn('oi_project.customer_id', $customerIds)
+            ->when($projectId !== null, fn($q) => $q->where('oi_project.id', $projectId))
+            ->toBase()
+            ->selectRaw('oi_project.customer_id AS customer_id, ' . $issueSelect, [$blocked])
+            ->groupBy('oi_project.customer_id')
+            ->get()->keyBy('customer_id');
+
+        // Nacharbeit: Mängelprotokolle an gefilterten Aufträgen, je Auftrag einmal.
+        $rework = Protocol::query()
+            ->where('protocols.type', ProtocolType::Defect->value)
+            ->where('protocols.subject_type', DiaryEntry::class)
+            ->whereBetween('protocols.occurred_at', [$from, $to])
+            ->join('diary_entries AS pr_entry', 'pr_entry.id', '=', 'protocols.subject_id')
+            ->whereIn('pr_entry.customer_id', $customerIds)
+            ->tap(fn($q) => $entryFilter($q, 'pr_entry'))
+            ->toBase()
+            ->selectRaw('pr_entry.customer_id AS customer_id, COUNT(DISTINCT protocols.subject_id) AS c')
+            ->groupBy('pr_entry.customer_id')
+            ->pluck('c', 'customer_id');
+
+        // 30-Tage-Trend der Auftragsanzahl (aktueller minus vorheriger Zeitraum).
         $latestFrom = $to->subDays(29)->startOfDay();
         $prevFrom = $latestFrom->subDays(30)->startOfDay();
         $prevTo = $latestFrom->subSecond();
+        $trendBase = fn() => DiaryEntry::query()
+            ->whereIn('diary_entries.customer_id', $customerIds)
+            ->when($projectId !== null, fn($q) => $q->where('diary_entries.project_id', $projectId))
+            ->when($userId !== null, fn($q) => $q->where('diary_entries.user_id', $userId))
+            ->when($entryTypeId !== null, fn($q) => $q->where('diary_entries.entry_type_id', $entryTypeId))
+            ->toBase()
+            ->selectRaw('diary_entries.customer_id AS customer_id, COUNT(*) AS c')
+            ->groupBy('diary_entries.customer_id');
+        $trendLatest = $trendBase()->whereBetween('diary_entries.created_at', [$latestFrom, $to])->pluck('c', 'customer_id');
+        $trendPrevious = $trendBase()->whereBetween('diary_entries.created_at', [$prevFrom, $prevTo])->pluck('c', 'customer_id');
 
-        $base = DiaryEntry::query()
-            ->where('customer_id', $customerId)
-            ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
-            ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
-            ->when($entryTypeId !== null, fn($q) => $q->where('entry_type_id', $entryTypeId));
+        $rows = [];
+        foreach ($customers as $customer) {
+            $id = (int) $customer->id;
+            $entryCount = (int) ($entryCounts[$id] ?? 0);
+            $time = $timeSums->get($id);
+            $totalMinutes = (int) ($time->total ?? 0);
+            $billableMinutes = (int) ($time->billable ?? 0);
+            $nonBillableMinutes = max(0, $totalMinutes - $billableMinutes);
+            $openIssueCount = (int) (($issuesByCustomer->get($id)->c ?? 0) + ($issuesByEntry->get($id)->c ?? 0) + ($issuesByProject->get($id)->c ?? 0));
+            $escalationCount = (int) (($issuesByCustomer->get($id)->blocked ?? 0) + ($issuesByEntry->get($id)->blocked ?? 0) + ($issuesByProject->get($id)->blocked ?? 0));
 
-        $latest = (int) $base->clone()->whereBetween('created_at', [$latestFrom, $to])->count();
-        $previous = (int) $base->clone()->whereBetween('created_at', [$prevFrom, $prevTo])->count();
+            $rows[] = [
+                'customerId' => $id,
+                'customerName' => (string) $customer->name,
+                'entryCount' => $entryCount,
+                'totalMinutes' => $totalMinutes,
+                'billableMinutes' => $billableMinutes,
+                'nonBillableMinutes' => $nonBillableMinutes,
+                'nonBillableShare' => $totalMinutes > 0 ? round(($nonBillableMinutes / $totalMinutes) * 100, 2) : 0.0,
+                'reworkEntryCount' => (int) ($rework[$id] ?? 0),
+                'openIssueCount' => $openIssueCount,
+                'escalationCount' => $escalationCount,
+                'avgEntryMinutes' => $entryCount > 0 ? (int) round($totalMinutes / $entryCount) : 0,
+                'trend30d' => (int) ($trendLatest[$id] ?? 0) - (int) ($trendPrevious[$id] ?? 0),
+            ];
+        }
 
-        return $latest - $previous;
+        return $rows;
     }
 
     /**

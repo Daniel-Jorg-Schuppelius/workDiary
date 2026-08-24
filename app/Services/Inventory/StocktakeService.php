@@ -14,7 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{StockCountStatus, StockCountType};
 use App\Models\{ArticleVariant, StockCount, StockCountLine, StockMovement, Warehouse};
-use App\Support\DecimalQty;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -132,7 +132,7 @@ class StocktakeService {
 
     /** Erfasst die gezählte Menge einer Zeile. */
     public function recordCount(StockCountLine $line, string $countedQty, ?int $countedBy = null): StockCountLine {
-        $line->counted_qty = DecimalQty::sanitize($countedQty);
+        $line->counted_qty = NumberHelper::normalizeDecimalString($countedQty);
         $line->counted_by = $countedBy;
         $line->save();
 

@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Calendly\Jobs;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{CalendlyWebhookDelivery, Organization};
+use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Services\CalendlyIngestService;
 use App\Support\OrganizationContext;
 use Illuminate\Bus\Queueable;
@@ -29,6 +31,11 @@ use Throwable;
  * Quelle und heilt verpasste Impulse.
  */
 class CalendlyIngestJob implements ShouldQueue {
+    use RetriesTransientFailures;
+
+    protected function pluginErrorId(): ?string {
+        return CalendlyPlugin::ID;
+    }
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;

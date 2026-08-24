@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Warranty\{WarrantyBasis, WarrantySide, WarrantyStatus};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveWarrantyPeriodRequest;
 use App\Models\{Customer, Project, Protocol, Supplier, User};
 use App\Models\Warranty\WarrantyPeriod;
@@ -30,6 +31,8 @@ use RuntimeException;
  * daraus wird sichtbar, welche Sub-Frist vor der eigenen endet.
  */
 class WarrantyPeriodController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly WarrantyService $warranties) {}
 
     public function index(Request $request): View {
@@ -48,7 +51,7 @@ class WarrantyPeriodController extends Controller {
             $query->where('status', $filters['status']);
         }
 
-        $critical = $this->warranties->subcontractorsEndingFirst($request->user()?->organization_id === null ? null : (int) $request->user()->organization_id);
+        $critical = $this->warranties->subcontractorsEndingFirst((int) $this->currentOrganization()->id);
 
         return view('warranties.index', [
             'periods' => $query->orderBy('ends_on')->paginate(50)->withQueryString(),
@@ -64,7 +67,7 @@ class WarrantyPeriodController extends Controller {
 
     public function form(Request $request, ?WarrantyPeriod $warranty = null): View {
         Gate::authorize('viewAny', Project::class);
-        $organizationId = $request->user()?->organization_id;
+        $organizationId = $this->currentOrganization()->id;
 
         return view('warranties._form_dialog', [
             'period' => $warranty,
@@ -92,7 +95,7 @@ class WarrantyPeriodController extends Controller {
                 $data['override_reason'] ?? null,
                 $request->user(),
                 array_intersect_key($data, array_flip(['protocol_id', 'project_id', 'diary_entry_id', 'customer_id', 'supplier_id', 'trade', 'responsible_user_id', 'note']))
-                    + ['organization_id' => $request->user()?->organization_id],
+                    + ['organization_id' => $this->currentOrganization()->id],
             );
         } catch (RuntimeException $e) {
             return back()->withInput()->with('error', $e->getMessage());

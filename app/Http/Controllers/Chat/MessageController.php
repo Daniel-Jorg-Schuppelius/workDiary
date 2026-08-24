@@ -130,7 +130,7 @@ class MessageController extends Controller {
         $message->load($this->eager());
         broadcast(new MessageSent($message))->toOthers();
         $this->notifyMembers($channel, $user->id);
-        app(\App\Services\PushNotifier::class)->chatMessage($message);
+        app(\App\Services\Chat\ChatNotificationService::class)->messageCreated($message);
         $channel->members()->updateExistingPivot($user->id, ['last_read_at' => now()]);
 
         return response()->json(['id' => $message->id, 'parent_id' => $parentId, 'html' => $this->render($message)], 201);
@@ -157,7 +157,7 @@ class MessageController extends Controller {
         $copy->load($this->eager());
         broadcast(new MessageSent($copy))->toOthers();
         $this->notifyMembers($target, $user->id);
-        app(\App\Services\PushNotifier::class)->chatMessage($copy);
+        app(\App\Services\Chat\ChatNotificationService::class)->messageCreated($copy);
 
         return response()->json(['channel_id' => $target->id, 'id' => $copy->id], 201);
     }

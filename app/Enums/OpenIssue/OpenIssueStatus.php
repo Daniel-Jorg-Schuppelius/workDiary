@@ -65,7 +65,7 @@ enum OpenIssueStatus: string implements HasLabel {
      *
      * @return list<string>
      */
-    public function allowedTransitions(): array {
+    public function allowedActions(): array {
         return match ($this) {
             self::Open => ['start', 'complete', 'wontDo'],
             self::InProgress => ['block', 'complete', 'wontDo'],

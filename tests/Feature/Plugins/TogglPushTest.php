@@ -344,6 +344,37 @@ class TogglPushTest extends TestCase {
         ]);
     }
 
+    /**
+     * Vollscan 2026-08-23, B2: Der TogglApiClient läuft über das api-toolkit und
+     * wirft nach ausgeschöpften Versuchen Guzzles ConnectException — der
+     * Dispatcher fing nur Laravels ConnectionException, der dokumentierte
+     * „kein Retry nach Transport-Timeout“-Schutz griff also nie.
+     */
+    public function test_outbox_create_transport_failure_is_swallowed_without_retry(): void {
+        $this->config();
+        $project = $this->mappedProject();
+        $entry = $this->timeEntry($project);
+
+        $outbox = IntegrationOutboxEntry::query()
+            ->where('operation', TogglOutboxDispatcher::OP_ENTRY_CREATE)
+            ->where('idempotency_key', TogglPlugin::ID . '-entry-create:' . $entry->getKey())
+            ->firstOrFail();
+
+        $fake = FakePluginHttp::fake([
+            self::CREATE_URL => fn(\Psr\Http\Message\RequestInterface $request) => throw new \GuzzleHttp\Exception\ConnectException('cURL error 28: Operation timed out', $request),
+        ]);
+
+        // true = erledigt: kein Queue-Retry, der stündliche toggl:push holt nach.
+        $this->assertTrue(app(TogglOutboxDispatcher::class)->dispatch($outbox));
+
+        $this->assertGreaterThanOrEqual(1, count($fake->recorded()));
+        $this->assertDatabaseMissing('external_references', [
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglExportService::EXT_TYPE_PUSHED,
+            'referenceable_id' => $entry->getKey(),
+        ]);
+    }
+
     public function test_outbox_create_drops_already_referenced_entry(): void {
         // Rennen mit toggl:push: existiert schon eine Toggl-Referenz, ist der
         // Outbox-Create ein No-op (kein Doppel-POST).

@@ -28,4 +28,13 @@ return [
     | dahin global.
     */
     'csv_delimiter' => env('REPORTS_CSV_DELIMITER', ';'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Kundenanalyse-Cache (kundenanalyse.md §6)
+    |--------------------------------------------------------------------------
+    | Sekunden, die das aggregierte Ergebnis je (Organisation, Filter) im
+    | Cache bleibt; 0 schaltet den Cache ab (Vollscan 2026-08-23, A6).
+    */
+    'customer_analysis_cache_seconds' => (int) env('REPORTS_CUSTOMER_ANALYSIS_CACHE_SECONDS', 300),
 ];

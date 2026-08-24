@@ -15,7 +15,7 @@ use App\Models\{Asset, Customer, TimeEntry, User};
 use App\Plugins\Fritzbox\FritzboxImportService;
 use App\Plugins\Fritzbox\Sources\FritzboxCall;
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteSession};
-use App\Plugins\RemoteSupport\{RemoteSupportPlugin, RemoteSupportService};
+use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemoteSessionImporter, RemoteSupportPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -53,7 +53,7 @@ class RemoteSupportCallMergeTest extends TestCase {
             'asset_class' => AssetClass::Device->value,
             'customer_id' => $this->customer->id,
         ]);
-        (new RemoteSupportService)->setRemoteId($this->asset, AnyDeskClient::ID, '123456789');
+        (new RemoteDeviceRegistry)->setRemoteId($this->asset, AnyDeskClient::ID, '123456789');
     }
 
     /** Legt per FritzBox-Import einen Telefonat-Eintrag des Kunden an. */
@@ -87,7 +87,7 @@ class RemoteSupportCallMergeTest extends TestCase {
             endedAt: CarbonImmutable::parse($end, 'UTC'),
         );
 
-        return (new RemoteSupportService)->bookSession(
+        return (new RemoteSessionImporter)->bookSession(
             $this->organization,
             ['default_billable' => true],
             $session,

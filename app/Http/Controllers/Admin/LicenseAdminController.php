@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Organization\TenantStatus;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus, ModuleCatalog, ModuleStatusResolver};
@@ -23,6 +24,8 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class LicenseAdminController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly LicenseService $service,
         private readonly FeatureFlagResolver $resolver,
@@ -275,12 +278,13 @@ class LicenseAdminController extends Controller {
 
         /** @var User $user */
         $user = $request->user();
+        $organizationId = $this->currentOrganization()->id;
         AuditLog::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $organizationId,
             'user_id' => $user->id,
             'event' => 'license.keyIssued',
             'auditable_type' => Organization::class,
-            'auditable_id' => $user->organization_id ?? 0,
+            'auditable_id' => $organizationId,
             // Bewusst OHNE den Schlüssel selbst – nur Metadaten.
             'changes' => [
                 'licensee' => $data['licensee'],

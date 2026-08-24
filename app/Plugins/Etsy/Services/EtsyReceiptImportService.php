@@ -36,6 +36,8 @@ use Throwable;
  * Einzel-Ingest — beide Wege sind dadurch idempotent zueinander.
  */
 class EtsyReceiptImportService {
+    use \App\Plugins\Support\Concerns\ResolvesMarketplaceBuyer;
+
     public function __construct(
         private readonly EtsyClientFactory $clients,
         private readonly IntegrationResolver $resolver,
@@ -204,63 +206,32 @@ class EtsyReceiptImportService {
     }
 
     /**
-     * Käuferauflösung Inbox-First (Billbee-Muster): bestehende Referenz/
-     * eindeutiger Treffer verlinkt, sonst Inbox-Vorschlag; nach einer
-     * Verlinkung werden offene Spiegelzeilen desselben Käufers nachgezogen.
-     *
      * @param array<string, mixed> $receipt
      * @param array{imported: int, updated: int, linked: int, staged: int, truncated: bool} $counters
      */
     private function resolveCustomer(Organization $organization, MatchProfile $profile, string $buyerExternalId, array $receipt, array &$counters): ?Customer {
-        $outcome = $this->resolver->resolve(
+        $customer = $this->resolveMarketplaceBuyer(
             $organization,
-            EtsyPlugin::ID,
             $profile,
-            'customer',
+            EtsyPlugin::ID,
             $buyerExternalId,
-            array_filter([
+            [
                 'name' => self::stringOrNull($receipt['name'] ?? null),
                 'email' => self::stringOrNull($receipt['buyer_email'] ?? null),
-            ], static fn(?string $value): bool => $value !== null),
+            ],
             $this->buyer($receipt) ?? [],
-            source: 'etsy',
+            'etsy',
+            EtsyReceipt::class,
+            EtsyReceipt::INBOX_LINKED,
         );
+        if ($customer === null) {
+            $counters['staged']++;
 
-        if (! $outcome->isResolved()) {
-            // Conflict-Item trotz bestehender Referenz: die ZUORDNUNG steht
-            // fest — nur der Datenabgleich bleibt sichtbar in der Inbox.
-            $customer = $this->customerByReference($organization, $buyerExternalId);
-            if (! $customer instanceof Customer) {
-                $counters['staged']++;
-
-                return null;
-            }
-        } else {
-            /** @var Customer $customer */
-            $customer = $outcome->model;
+            return null;
         }
-
         $counters['linked']++;
 
-        // Wiederkäufer: offene Spiegelzeilen desselben Käufers nachziehen.
-        EtsyReceipt::query()
-            ->where('organization_id', $organization->id)
-            ->where('buyer_external_id', $buyerExternalId)
-            ->whereNull('customer_id')
-            ->update(['customer_id' => $customer->id, 'inbox_status' => EtsyReceipt::INBOX_LINKED]);
-
         return $customer;
-    }
-
-    /** Kunde aus bestehender Käufer-Referenz (Zuordnung bereits entschieden). */
-    private function customerByReference(Organization $organization, string $buyerExternalId): ?Customer {
-        $reference = \App\Models\ExternalReference::query()
-            ->forPlugin($organization, EtsyPlugin::ID, 'customer')
-            ->forExternalId($buyerExternalId)
-            ->first();
-        $referenceable = $reference?->referenceable;
-
-        return $referenceable instanceof Customer ? $referenceable : null;
     }
 
     private function activeConnection(Organization $organization): EtsyConnection {

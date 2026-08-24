@@ -60,7 +60,7 @@ class PayrollClassifier {
                 ? (string) __('Geschätzter Monatsverdienst :amount € übersteigt die Minijob-Grenze (:limit €) – eher Midijob.', ['amount' => $earningsFmt, 'limit' => $limit])
                 : null,
             EmploymentType::Midijob => ($earnings > self::MIDIJOB_UPPER)
-                ? (string) __('Geschätzter Monatsverdienst :amount € liegt über der Midijob-Obergrenze (:limit €) – reguläre Beschäftigung.', ['amount' => $earningsFmt, 'limit' => number_format(self::MIDIJOB_UPPER, 0, ',', '.')])
+                ? (string) __('Geschätzter Monatsverdienst :amount € liegt über der Midijob-Obergrenze (:limit €) – reguläre Beschäftigung.', ['amount' => $earningsFmt, 'limit' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(self::MIDIJOB_UPPER, 0, withThousandsSeparator: true)])
                 : null,
             EmploymentType::Vollzeit, EmploymentType::Teilzeit => ($limit !== null && $earnings <= $limit)
                 ? (string) __('Geschätzter Monatsverdienst :amount € liegt im Minijob-Bereich (≤ :limit €).', ['amount' => $earningsFmt, 'limit' => $limit])

@@ -137,6 +137,40 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Abhängiges Select: Kindoptionen, deren `parent` zur gewählten
+    // Elternauswahl passt (Vollscan 2026-08-23, I1 — die Inline-Variante
+    // nutzte eine Arrow-Funktion, die der CSP-Evaluator nicht kennt).
+    // items: [{id, name, parent}], parent: initial gewählte Eltern-ID.
+    Alpine.data("dependentSelect", (parent, items) => ({
+        parent: parent,
+        items: Array.isArray(items) ? items : [],
+        filtered() {
+            return this.items.filter((item) => item.parent === this.parent);
+        },
+        isSelected(id, current) {
+            return id === current;
+        },
+    }));
+
+    // Kunde → Fremdkunde (Domainverwaltung): Optionen je Kunde aus einer
+    // Map; Wechsel des Kunden setzt die Fremdkunden-Auswahl zurück.
+    Alpine.data("foreignCustomerPicker", (map, customer, foreign) => ({
+        map: map && typeof map === "object" ? map : {},
+        customer: customer,
+        foreign: foreign,
+        init() {
+            this.$watch("customer", () => {
+                this.foreign = "";
+            });
+        },
+        options() {
+            return this.map[this.customer] || [];
+        },
+        hasOptions() {
+            return this.options().length > 0;
+        },
+    }));
+
     // Aufklappbarer Baum in einer Tabelle (Kostengruppen-Pivot, MVP-648).
     // Der Zustand hängt an den Nummern, nicht an Zeilenindizes - sonst ginge
     // er beim Ebenenwechsel verloren.

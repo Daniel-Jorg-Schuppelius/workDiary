@@ -367,13 +367,8 @@ class BillingReportController extends Controller {
      * }
      */
     private function aggregateAging(Carbon $today, ReportFilters $filters): array {
-        $buckets = [
-            'current' => ['count' => 0, 'total' => 0.0],
-            '1_7' => ['count' => 0, 'total' => 0.0],
-            '8_14' => ['count' => 0, 'total' => 0.0],
-            '15_30' => ['count' => 0, 'total' => 0.0],
-            '30_plus' => ['count' => 0, 'total' => 0.0],
-        ];
+        $bands = \App\Support\Billing\AgingBuckets::billing();
+        $buckets = $bands->emptyCounts();
 
         /** @var Collection<int, Invoice> $invoices */
         $invoices = $this->applyInvoiceFilters(
@@ -386,26 +381,13 @@ class BillingReportController extends Controller {
             $total = ($inv->total?->toFloat() ?? 0.0);
             $openTotal += $total;
             $reference = $inv->due_on ?? $inv->issued_on;
-            if ($reference === null) {
-                $buckets['current']['count']++;
-                $buckets['current']['total'] += $total;
-
-                continue;
-            }
-            $daysOverdue = (int) Carbon::parse($reference)->startOfDay()->diffInDays($today, false);
-            if ($daysOverdue <= 0) {
-                $key = 'current';
-            } elseif ($daysOverdue <= 7) {
-                $key = '1_7';
-            } elseif ($daysOverdue <= 14) {
-                $key = '8_14';
-            } elseif ($daysOverdue <= 30) {
-                $key = '15_30';
-            } else {
-                $key = '30_plus';
-            }
-            $buckets[$key]['count']++;
-            $buckets[$key]['total'] += $total;
+            $key = $bands->bucketFor($reference === null
+                ? null
+                : (int) Carbon::parse($reference)->startOfDay()->diffInDays($today, false));
+            $buckets[$key] = [
+                'count' => $buckets[$key]['count'] + 1,
+                'total' => $buckets[$key]['total'] + $total,
+            ];
         }
 
         return ['buckets' => $buckets, 'open_total' => $openTotal];

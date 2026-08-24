@@ -40,6 +40,9 @@ final readonly class JobDefinition {
         public ?string $cadenceSettingKey = null, // Registry-Setting, das die dailyAt-Zeit liefert (z. B. archive.schedule_at)
         public ?string $plugin = null, // Plugin-Bindung: Watchdog meldet nur bei irgendwo aktivem Plugin ('*' = mind. ein Plugin aktiv)
         public array $dependsOn = [],
+        // Lange Läufe als Hintergrundprozess, damit sie die minütlichen Jobs
+        // desselben schedule:run-Ticks nicht verzögern (Vollscan 2026-08-23, J8).
+        public bool $runInBackground = false,
     ) {
         if ($allowedCadences === []) {
             throw new InvalidArgumentException("Job [{$key}] braucht mindestens eine erlaubte Kadenz.");
@@ -67,6 +70,8 @@ final readonly class JobDefinition {
             cadenceSettingKey: isset($data['cadence_setting_key']) ? (string) $data['cadence_setting_key'] : null,
             plugin: isset($data['plugin']) ? (string) $data['plugin'] : null,
             dependsOn: array_values((array) ($data['depends_on'] ?? [])),
+            // Default: alles ab 5 Minuten erwarteter Laufzeit läuft im Hintergrund.
+            runInBackground: (bool) ($data['run_in_background'] ?? ((int) ($data['expected_runtime_minutes'] ?? 5) >= 5)),
         );
     }
 

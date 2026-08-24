@@ -24,6 +24,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class SupplierController extends Controller {
+    use \App\Http\Controllers\Concerns\WritesContactDetails;
     use ArchivesModels;
     use ParsesIndexQuery;
     use ResolvesGlobalDateRange;
@@ -159,8 +160,10 @@ class SupplierController extends Controller {
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
         unset($data['tag_ids'], $data['new_tags']);
+        $contactDetails = $this->pullContactDetails($data);
 
         $supplier = Supplier::create($data + ['created_by' => Auth::id()]);
+        $this->writeContactDetails($supplier, $contactDetails);
         $supplier->syncTagsFromInput($tagIds, \App\Support\TagInput::names($newTagsRaw));
 
         return redirect()->route('suppliers.show', $supplier)
@@ -184,11 +187,13 @@ class SupplierController extends Controller {
         $tagIds = $data['tag_ids'] ?? [];
         $newTagsRaw = (string) ($data['new_tags'] ?? '');
         unset($data['tag_ids'], $data['new_tags']);
+        $contactDetails = $this->pullContactDetails($data);
 
         // fill() vor save(): getDirty() kennt die Änderungen erst danach.
         $supplier->fill($data);
         $changed = array_keys($supplier->getDirty());
         $supplier->save();
+        $changed = array_merge($changed, $this->writeContactDetails($supplier, $contactDetails));
 
         // Korrigierte Stammdaten zurück an Lexoffice — sonst holt der nächste
         // Abgleich den alten Wert wieder.

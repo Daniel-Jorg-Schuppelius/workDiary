@@ -79,57 +79,6 @@ class InvoiceItem extends Model {
         'tax_rate' => PercentageCast::class . ':2',
     ];
 
-    protected static function booted(): void {
-        static::saving(function (InvoiceItem $i): void {
-            // MVP-416: Zeilennetto inkl. Positionsrabatt (Prozent XOR Betrag).
-            $i->amount = \App\Services\Invoicing\InvoiceTotalsCalculator::lineNet(
-                (float) $i->quantity,
-                $i->unit_price,
-                $i->discount_percent,
-                $i->discount_amount,
-                $i->invoice->currency ?? \CommonToolkit\Enums\CurrencyCode::Euro,
-                // Zeilenbetrag in Spaltenpräzision (2 NK) — der Einzelpreis
-                // rechnet mit seinen 4 NK, gespeichert wird auf Cent gerundet.
-            )->withScale(2);
-        });
-
-        // Beim Löschen alle Quellposten wieder freigeben (Spese→Approved, Zeiten→exported=false,
-        // Material→billed=false, Tour→travel_billed=false). Im deleting-Hook: danach ist die Pivot-Zuordnung weg.
-        static::deleting(function (InvoiceItem $i): void {
-            if ($i->expense_id !== null) {
-                $expense = Expense::query()->find($i->expense_id);
-                if ($expense !== null && $expense->status === \App\Enums\Expense\ExpenseStatus::Invoiced) {
-                    $expense->status = \App\Enums\Expense\ExpenseStatus::Approved;
-                    $expense->saveQuietly();
-                }
-            }
-
-            $entryIds = $i->timeEntries()->pluck('time_entries.id')->all();
-            if ($i->time_entry_id !== null) {
-                $entryIds[] = $i->time_entry_id;
-            }
-            if ($entryIds !== []) {
-                TimeEntry::query()->whereKey(array_unique($entryIds))->update(['exported' => false]);
-            }
-            if ($i->material_usage_id !== null) {
-                MaterialUsage::query()->whereKey($i->material_usage_id)->update(['billed' => false]);
-            }
-            if ($i->tour_id !== null) {
-                Tour::query()->whereKey($i->tour_id)->update(['travel_billed' => false]);
-            }
-            if ($i->rental_charge_id !== null) {
-                $charge = \App\Models\Rental\RentalCharge::query()->find($i->rental_charge_id);
-                if ($charge !== null && $charge->status === \App\Enums\Rental\RentalChargeStatus::Invoiced) {
-                    $charge->forceFill([
-                        'status' => \App\Enums\Rental\RentalChargeStatus::Released->value,
-                        'invoice_id' => null,
-                        'invoiced_at' => null,
-                    ])->saveQuietly();
-                }
-            }
-        });
-    }
-
     /** @return BelongsTo<Invoice, $this> */
     public function invoice(): BelongsTo {
         return $this->belongsTo(Invoice::class);

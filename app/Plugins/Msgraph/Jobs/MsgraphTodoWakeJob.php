@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Jobs;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{MsgraphTaskConnection, MsgraphTaskListLink, Organization};
+use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Services\MsgraphTodoSyncService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -29,6 +31,11 @@ use Throwable;
  * (msgraph:todo-sync) heilt.
  */
 class MsgraphTodoWakeJob implements ShouldQueue {
+    use RetriesTransientFailures;
+
+    protected function pluginErrorId(): ?string {
+        return MsgraphPlugin::ID;
+    }
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;

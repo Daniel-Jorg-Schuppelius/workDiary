@@ -86,6 +86,43 @@ class SchedulerRuntimeTest extends TestCase {
         $this->assertSame(0, ScheduledJobState::query()->where('job_key', 'toggl.import')->firstOrFail()->consecutive_failures);
     }
 
+    /**
+     * Vollscan 2026-08-23, J8: Lange Läufe (archive:run, 30 min) blockierten die
+     * minütlichen Jobs desselben Ticks. Im Hintergrund feuert
+     * ScheduledTaskFinished schon beim Start — das Ergebnis kommt über
+     * ScheduledBackgroundTaskFinished (schedule:finish).
+     */
+    public function test_background_run_is_closed_by_the_background_finished_event(): void {
+        $task = $this->makeEvent('archive:run')->runInBackground();
+
+        $this->recorder()->handleStarting(new ScheduledTaskStarting($task));
+        $this->recorder()->handleFinished(new ScheduledTaskFinished($task, 0.01));
+
+        $this->assertDatabaseHas('scheduled_job_runs', ['job_key' => 'archive.run', 'status' => ScheduledJobRun::STATUS_RUNNING]);
+
+        $task->exitCode = 0;
+        $this->recorder()->handleBackgroundFinished(new \Illuminate\Console\Events\ScheduledBackgroundTaskFinished($task));
+
+        $run = ScheduledJobRun::query()->where('job_key', 'archive.run')->latest('id')->firstOrFail();
+        $this->assertSame(ScheduledJobRun::STATUS_SUCCESS, $run->status);
+        $this->assertNotNull($run->duration_ms);
+    }
+
+    public function test_long_running_registry_jobs_are_scheduled_in_the_background(): void {
+        $schedule = new Schedule;
+        app(\App\Scheduling\SchedulerRegistrar::class)->register($schedule);
+
+        $byCommand = [];
+        foreach ($schedule->events() as $event) {
+            if (is_string($event->command)) {
+                $byCommand[trim(\Illuminate\Support\Str::after($event->command, "'artisan' "))] = $event->runInBackground;
+            }
+        }
+
+        $this->assertTrue($byCommand['archive:run'] ?? null, 'archive:run (30 min) muss im Hintergrund laufen');
+        $this->assertFalse($byCommand['scheduler:watchdog'] ?? null, 'kurze Jobs bleiben im Vordergrund');
+    }
+
     public function test_unknown_commands_are_ignored(): void {
         $task = $this->makeEvent('irgendwas:fremdes');
 

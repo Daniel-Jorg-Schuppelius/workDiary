@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Notification;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\Organization;
 use App\Plugins\Contracts\{CalendarPublisher, PluginCapability};
 use App\Plugins\PluginManager;
@@ -36,6 +37,7 @@ class CalendarEventPublishJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RetriesTransientFailures;
     use SerializesModels;
 
     public function __construct(

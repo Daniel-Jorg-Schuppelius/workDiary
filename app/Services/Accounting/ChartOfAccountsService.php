@@ -16,6 +16,7 @@ use App\Enums\Finance\{AccountType, BalanceSide, EuerCategory};
 use App\Models\Accounting\{AccountingAccount, AccountingEntryLine};
 use App\Models\Organization;
 use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -46,7 +47,7 @@ class ChartOfAccountsService {
             'is_cash' => (bool) ($data['is_cash'] ?? false),
             'is_clearing' => (bool) ($data['is_clearing'] ?? false),
             'euer_category' => $this->euerCategory($data['euer_category'] ?? null),
-            'deductible_percent' => number_format((float) ($data['deductible_percent'] ?? 100), 2, '.', ''),
+            'deductible_percent' => NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) ($data['deductible_percent'] ?? 100)), 2),
             'default_tax_code_id' => $data['default_tax_code_id'] ?? null,
             'datev_account' => $data['datev_account'] ?? null,
             'is_active' => (bool) ($data['is_active'] ?? true),
@@ -128,7 +129,7 @@ class ChartOfAccountsService {
                     $attributes['euer_category'] = EuerCategory::tryFrom(strtolower(trim((string) $row['euer_category'])));
                 }
                 if (array_key_exists('deductible_percent', $row) && trim((string) $row['deductible_percent']) !== '') {
-                    $attributes['deductible_percent'] = number_format((float) $row['deductible_percent'], 2, '.', '');
+                    $attributes['deductible_percent'] = NumberHelper::roundPrecise(NumberHelper::normalizeDecimalString((string) $row['deductible_percent']), 2);
                 }
 
                 $account = AccountingAccount::query()

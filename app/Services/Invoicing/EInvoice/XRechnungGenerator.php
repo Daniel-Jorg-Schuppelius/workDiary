@@ -57,40 +57,6 @@ class XRechnungGenerator {
 
     public const PROFILE_ID = 'urn:fdc:peppol.eu:2017:poacc:billing:01:1.0';
 
-    /**
-     * Einheiten-Mapping auf UN/ECE-Recommendation-20-Codes (Toolkit-Enum):
-     * Stunde ⇒ HOUR (HUR), Stück ⇒ UNIT_H87 (H87, seit Toolkit v0.1.12),
-     * unbekannte Einheit (z. B. „Pauschale") ⇒ Default PIECE (C62, generisch
-     * „one", EN-16931-konform).
-     *
-     * @var array<string, UnitCode>
-     */
-    private const UNIT_CODES = [
-        // Stunden
-        'h' => UnitCode::HOUR,
-        'h.' => UnitCode::HOUR,
-        'std' => UnitCode::HOUR,
-        'std.' => UnitCode::HOUR,
-        'stunde' => UnitCode::HOUR,
-        'stunden' => UnitCode::HOUR,
-        'hour' => UnitCode::HOUR,
-        'hours' => UnitCode::HOUR,
-        'hr' => UnitCode::HOUR,
-        // Stück ⇒ H87 (UN/ECE Rec 20 „piece")
-        'st' => UnitCode::UNIT_H87,
-        'st.' => UnitCode::UNIT_H87,
-        'stk' => UnitCode::UNIT_H87,
-        'stk.' => UnitCode::UNIT_H87,
-        'stück' => UnitCode::UNIT_H87,
-        'stueck' => UnitCode::UNIT_H87,
-        'pc' => UnitCode::UNIT_H87,
-        'pcs' => UnitCode::UNIT_H87,
-        'pce' => UnitCode::UNIT_H87,
-        'pz' => UnitCode::UNIT_H87,
-        'ud' => UnitCode::UNIT_H87,
-        'piece' => UnitCode::UNIT_H87,
-    ];
-
     private const DEFAULT_PAYMENT_TERMS_DAYS = 14;
 
     /**
@@ -514,8 +480,14 @@ class XRechnungGenerator {
         return $code !== '' ? (TaxCategory::tryFrom($code) ?? $fallback) : $fallback;
     }
 
+    /**
+     * UN/ECE-Rec-20-Code aus dem Freitext der Position: Stück ⇒ H87
+     * (Geschäftsentscheid, wie Bestellungen), unbekannt ⇒ C62 („one",
+     * EN-16931-konform). Die Wortliste liegt im erechnung-toolkit (≥ v0.11.1,
+     * Vollscan 2026-08-23 C8) — vorher fielen m/kg/Tag fälschlich auf C62.
+     */
     private function unitCode(string $unit): UnitCode {
-        return self::UNIT_CODES[mb_strtolower(trim($unit))] ?? UnitCode::PIECE;
+        return UnitCode::fromText($unit, UnitCode::UNIT_H87) ?? UnitCode::PIECE;
     }
 
     /** BT-10 darf pro Rechnung überschrieben werden; Kundenstamm bleibt Fallback. */

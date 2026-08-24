@@ -16,6 +16,7 @@ use App\Enums\Finance\{PostingAccountRole, PostingSourceKind};
 use App\Models\{CashEntry, Organization};
 use App\Services\Accounting\Posting\{PostingProposal, PostingProposalLine};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -64,8 +65,8 @@ class CashEntryAdapter extends AbstractPostingAdapter {
             $blockers[] = (string) __('accounting.inbox.blocker.handed_over');
         }
 
-        $amount = $this->money($source->amount);
-        if ((float) $amount === 0.0) {
+        $amount = $source->amount?->getAmount() ?? '0.00';
+        if (NumberHelper::isZeroPrecise($amount)) {
             $blockers[] = (string) __('accounting.inbox.blocker.no_amount');
         }
 

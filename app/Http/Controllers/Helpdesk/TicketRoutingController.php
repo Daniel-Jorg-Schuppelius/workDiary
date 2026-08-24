@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Helpdesk;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{ServiceTicket, TicketRoutingRule};
 use App\Services\ServiceTicket\TicketRoutingService;
@@ -26,6 +27,8 @@ use Illuminate\View\View;
  * ändert nie etwas). Recht: helpdesk.queue.manage (Queue-Hoheit).
  */
 class TicketRoutingController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize(Permission::HelpdeskQueueManage->value);
 
@@ -40,7 +43,7 @@ class TicketRoutingController extends Controller {
 
         TicketRoutingRule::query()->create([
             ...$data,
-            'organization_id' => (int) $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
         ]);
 
         return redirect()->route('helpdesk.routing.index')->with('success', __('Regel angelegt.'));

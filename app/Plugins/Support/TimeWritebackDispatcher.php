@@ -83,7 +83,11 @@ abstract class TimeWritebackDispatcher implements IntegrationOutboxDispatcher {
 
         try {
             $service->pushSingle($organization, $config, $timeEntry);
-        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+        } catch (\GuzzleHttp\Exception\ConnectException|\Illuminate\Http\Client\ConnectionException $e) {
+            // Die api-toolkit-Clients (PluginHttpFactory) werfen nach ausgeschöpften
+            // Versuchen Guzzles ConnectException, Laravel-Http-Reste die
+            // ConnectionException — beide sind Transportfehler ohne Retry
+            // (Vollscan 2026-08-23, B2: der Duplikatschutz fing nur die zweite).
             \Illuminate\Support\Facades\Log::warning($this->pluginId() . '-Create-Push: Transportfehler, kein Retry (Backfill räumt auf).', [
                 'organization_id' => $outbox->organization_id,
                 'time_entry_id' => $timeEntry->getKey(),

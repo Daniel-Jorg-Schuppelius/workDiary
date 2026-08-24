@@ -81,35 +81,18 @@ class QuotePdfRenderer {
      *
      * @return array<int, array{rate: float, net: float, tax: float}>
      */
+    /**
+     * Steueraufriss aus der einen Berechnungsstelle (Quote::taxBreakdownByRate,
+     * B3) — Float nur für die View.
+     *
+     * @return list<array{rate: float, net: float, tax: float}>
+     */
     private function taxBreakdown(Quote $quote): array {
-        $fallbackRate = null;
-        $byRate = [];
-        foreach ($quote->items as $item) {
-            $counts = $item->accepted ?? ! $item->optional;
-            if (! $counts) {
-                continue;
-            }
-            $net = $item->netAmount()->toFloat();
-            $rate = $item->tax_rate !== null
-                ? (float) $item->tax_rate->getNumericValue()
-                : ($fallbackRate ??= $this->fallbackTaxRate($quote));
-            $key = (string) $rate;
-            $byRate[$key] ??= ['rate' => $rate, 'net' => 0.0, 'tax' => 0.0];
-            $byRate[$key]['net'] += $net;
-            $byRate[$key]['tax'] += round($net * $rate / 100, 2);
-        }
-        ksort($byRate, SORT_NATURAL);
-
-        return array_values($byRate);
+        return array_map(static fn (array $row): array => [
+            'rate' => $row['rate'],
+            'net' => $row['net']->toFloat(),
+            'tax' => $row['tax']->toFloat(),
+        ], $quote->taxBreakdownByRate());
     }
 
-    private function fallbackTaxRate(Quote $quote): float {
-        $organization = $quote->organization;
-        $customer = $quote->customer;
-        if ($organization === null || $customer === null) {
-            return 19.0;
-        }
-
-        return (float) app(TaxResolver::class)->resolve($organization, $customer)['rate'];
-    }
 }

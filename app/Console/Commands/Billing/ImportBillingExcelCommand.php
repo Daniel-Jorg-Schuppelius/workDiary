@@ -82,7 +82,7 @@ class ImportBillingExcelCommand extends Command {
             ['Blatt', 'Zeilen neu', 'übersprungen', 'Std', 'Zahlung', 'Gesamt (App)', 'Gesamt (Excel)', 'Δ'],
             array_map(static function (array $row): array {
                 $delta = ($row['computed_gross'] !== null && $row['excel_gross'] !== null)
-                    ? number_format($row['computed_gross'] - $row['excel_gross'], 2, ',', '.')
+                    ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['computed_gross'] - $row['excel_gross'], 2, withThousandsSeparator: true)
                     : '—';
 
                 return [
@@ -90,9 +90,9 @@ class ImportBillingExcelCommand extends Command {
                     $row['entries_created'],
                     $row['entries_skipped'],
                     \CommonToolkit\ValueObjects\Duration::ofMinutes((int) $row['minutes'])->toClock(),
-                    $row['payment'] === null ? '—' : number_format($row['payment'], 2, ',', '.') . ($row['payment_created'] ? '' : ' (vorh.)'),
-                    $row['computed_gross'] === null ? '—' : number_format($row['computed_gross'], 2, ',', '.'),
-                    $row['excel_gross'] === null ? '—' : number_format($row['excel_gross'], 2, ',', '.'),
+                    $row['payment'] === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['payment'], 2, withThousandsSeparator: true) . ($row['payment_created'] ? '' : ' (vorh.)'),
+                    $row['computed_gross'] === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['computed_gross'], 2, withThousandsSeparator: true),
+                    $row['excel_gross'] === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['excel_gross'], 2, withThousandsSeparator: true),
                     $delta,
                 ];
             }, $summary)

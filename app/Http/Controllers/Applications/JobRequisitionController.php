@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Applications;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{JobPosting, JobRequisition};
 use App\Models\User;
@@ -24,6 +25,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Stellenbedarf + Veröffentlichungskanäle (Feature 068, MVP-189).
  */
 class JobRequisitionController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         Gate::authorize('viewAny', JobRequisition::class);
 
@@ -68,7 +71,7 @@ class JobRequisitionController extends Controller {
         $actor = Auth::user();
         $requisition = JobRequisition::query()->create([
             ...$this->validated($request),
-            'organization_id' => (int) $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => $actor->id,
         ]);
         $requisition->audit('recruiting.requisition_created', ['title' => $requisition->title]);

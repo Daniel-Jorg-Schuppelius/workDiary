@@ -35,11 +35,16 @@ class Tag extends Model {
         });
     }
 
-    public static function uniqueSlug(string $name, ?int $ignoreId = null): string {
-        // TENANT-BYPASS: Der slug-Unique gilt DB-weit (tags.slug unique) — die
-        // Prüfung muss daher am OrganizationScope vorbei, sonst kollidiert die
-        // zweite Org mit gleichnamigen Tags (z. B. Branchenprofil auf Demo-Mandant).
-        return self::resolveUniqueSlug($name, 'tag', fn(string $slug): bool => static::query()->withoutGlobalScopes()
+    /**
+     * Slug-Eindeutigkeit je Organisation (tags_org_slug_unique). Ohne
+     * explizite Organisation greift der OrganizationScope der aktuellen Org;
+     * Console-/Queue-Pfade übergeben sie explizit (Supplier-Konvention).
+     */
+    public static function uniqueSlug(string $name, ?int $ignoreId = null, ?int $organizationId = null): string {
+        return self::resolveUniqueSlug($name, 'tag', fn(string $slug): bool => static::query()
+            // TENANT-BYPASS nur bei explizit übergebener Organisation; der
+            // where('organization_id', …) erhält die Mandantengrenze.
+            ->when($organizationId !== null, fn($q) => $q->withoutGlobalScopes()->where('organization_id', $organizationId))
             ->where('slug', $slug)
             ->when($ignoreId, fn($q) => $q->where('id', '!=', $ignoreId))
             ->exists());
@@ -80,7 +85,7 @@ class Tag extends Model {
 
         return static::query()->withoutGlobalScopes()->create([
             'name' => $name,
-            'slug' => static::uniqueSlug($name),
+            'slug' => static::uniqueSlug($name, organizationId: $organizationId),
             'created_by' => $userId,
             'organization_id' => $organizationId,
         ]);

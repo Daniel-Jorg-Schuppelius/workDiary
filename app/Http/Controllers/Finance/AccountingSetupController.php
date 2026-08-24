@@ -18,8 +18,9 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingFiscalYear, AccountingSovereigntyPeriod, AccountingVatFilingPeriod};
 use App\Models\Organization;
-use App\Services\Accounting\{AccountingProfileService, AccountingReportService, AccountingSovereigntyResolver, FiscalYearService, TaxationMethodResolver, VatFilingProfileResolver};
+use App\Services\Accounting\{AccountingProfileService, AccountingSovereigntyResolver, FiscalYearService, TaxationMethodResolver, VatFilingProfileResolver};
 use App\Services\Accounting\Filing\VatSpecialPrepaymentService;
+use App\Services\Accounting\Reports\VatPreviewBuilder;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -43,7 +44,7 @@ class AccountingSetupController extends Controller {
         private readonly FiscalYearService $fiscalYears,
         private readonly TaxationMethodResolver $taxation,
         private readonly VatFilingProfileResolver $filing,
-        private readonly AccountingReportService $reports,
+        private readonly VatPreviewBuilder $vatPreviews,
         private readonly VatSpecialPrepaymentService $prepayments,
     ) {}
 
@@ -123,7 +124,7 @@ class AccountingSetupController extends Controller {
         $priorFrom = CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year - 1, 1, 1));
         $priorTo = $priorFrom->endOfYear();
 
-        $preview = $this->reports->vatPreview($organization, $priorFrom, $priorTo);
+        $preview = $this->vatPreviews->build($organization, $priorFrom, $priorTo);
 
         return $this->filing->suggest($year, (string) $preview['payable']);
     }

@@ -106,8 +106,8 @@ class GapFillSuggester {
             ];
             if ($distanceKm !== null) {
                 $reasons[] = $isEstimate
-                    ? (string) __('Entfernung ca. :km km (Luftlinie, grobe Schätzung)', ['km' => number_format($distanceKm, 1, ',', '.')])
-                    : (string) __('Entfernung :km km, zusätzliche Fahrzeit ca. :min Min. (Route)', ['km' => number_format($distanceKm, 1, ',', '.'), 'min' => $extraTravel]);
+                    ? (string) __('Entfernung ca. :km km (Luftlinie, grobe Schätzung)', ['km' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($distanceKm, 1, withThousandsSeparator: true)])
+                    : (string) __('Entfernung :km km, zusätzliche Fahrzeit ca. :min Min. (Route)', ['km' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($distanceKm, 1, withThousandsSeparator: true), 'min' => $extraTravel]);
             }
             if ($entry->time_window_start !== null || $entry->time_window_end !== null) {
                 $reasons[] = (string) __('Zeitfenster des Auftrags: :from–:to', ['from' => $entry->time_window_start ?? '—', 'to' => $entry->time_window_end ?? '—']);

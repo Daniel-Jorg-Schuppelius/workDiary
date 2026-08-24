@@ -541,6 +541,7 @@ return [
                 'componentEol' => 'Componente sin soporte (EOL)',
                 'pluginDisabled' => 'Plugin desactivado automáticamente',
                 'schedulerOverdue' => 'Tarea programada atrasada',
+                'queueDegraded' => 'Cola degradada',
                 'maintenanceScheduled' => 'Ventana de mantenimiento anunciada',
                 'problemReportReceived' => 'Nuevo informe de problema recibido',
                 'cloudIntakeReauth' => 'Entrada en la nube: se requiere iniciar sesión',
@@ -560,6 +561,18 @@ return [
                 'threat' => 'Detección de ataques',
                 'newDevice' => 'Inicio de sesión desde un dispositivo nuevo',
                 'lockout' => 'Cuenta bloqueada temporalmente',
+            ],
+            'diary' => [
+                'commentCreated' => 'Nuevo comentario en el libro de órdenes',
+                'problem' => 'Entrada del libro con problema',
+                'completed' => 'Entrada del libro completada',
+                'attachmentAdded' => 'Nuevo adjunto en el libro de órdenes',
+            ],
+            'emergency' => ['assigned' => 'Servicio de urgencia asignado'],
+            'timesheet' => ['signed' => 'Hoja de horas firmada'],
+            'chat' => [
+                'message' => 'Mensaje de chat',
+                'reminder' => 'Recordatorio de chat',
             ],
         ],
         'channel' => [

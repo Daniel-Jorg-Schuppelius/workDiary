@@ -98,8 +98,8 @@ class GoogleDriveBackupClient {
         }
 
         $objects = [];
-        $pageToken = null;
-        do {
+        // CursorPaginator (Vollscan 2026-08-23, C3): Endlos-Guard + Seiten-Deckel.
+        $paginator = new \APIToolkit\API\Pagination\CursorPaginator(function (?string $pageToken) use ($folderId): \APIToolkit\API\Pagination\CursorPage {
             $query = [
                 'q' => sprintf("'%s' in parents and trashed=false", addslashes($folderId)),
                 'fields' => 'nextPageToken,files(id,name,size,modifiedTime)',
@@ -109,22 +109,28 @@ class GoogleDriveBackupClient {
                 $query['pageToken'] = $pageToken;
             }
             $response = $this->api->getResponse($this->base . '/files', $query);
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException('Drive-Listing fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
 
             /** @var array{files?: list<array<string, mixed>>, nextPageToken?: string} $data */
             $data = (array) $response->json();
-            foreach ((array) ($data['files'] ?? []) as $row) {
-                $objects[] = new BackupRemoteObject(
-                    ref: (string) ($row['id'] ?? ''),
-                    name: (string) ($row['name'] ?? ''),
-                    size: (int) ($row['size'] ?? 0),
-                    modifiedAt: isset($row['modifiedTime']) ? (string) $row['modifiedTime'] : null,
-                );
+            $next = isset($data['nextPageToken']) && $data['nextPageToken'] !== '' ? (string) $data['nextPageToken'] : null;
+
+            return new \APIToolkit\API\Pagination\CursorPage((array) ($data['files'] ?? []), $next);
+        }, maxPages: 500);
+
+        foreach ($paginator as $row) {
+            if (! is_array($row)) {
+                continue;
             }
-            $pageToken = isset($data['nextPageToken']) && $data['nextPageToken'] !== '' ? (string) $data['nextPageToken'] : null;
-        } while ($pageToken !== null);
+            $objects[] = new BackupRemoteObject(
+                ref: (string) ($row['id'] ?? ''),
+                name: (string) ($row['name'] ?? ''),
+                size: (int) ($row['size'] ?? 0),
+                modifiedAt: isset($row['modifiedTime']) ? (string) $row['modifiedTime'] : null,
+            );
+        }
 
         return $objects;
     }

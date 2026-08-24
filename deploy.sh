@@ -16,6 +16,37 @@ set -euo pipefail
 
 cd "$(dirname "$0")"
 
+# Release-Prozess (Vollscan 2026-08-23, J5 — WorkDiary-Architecture/release-prozess.md §3/§4):
+# Backup VOR der Migration, Wartungsmodus während des Umbaus, system:health als
+# harter Exit-Check, Wartungsmodus erst danach beenden. Abschaltbar für
+# Sonderfälle: DEPLOY_SKIP_BACKUP=1 (z. B. direkt nach einem frischen Backup),
+# DEPLOY_SKIP_MAINTENANCE=1 (z. B. Erstinstallation ohne Nutzer).
+PRE_BACKUP_DIR="${DEPLOY_BACKUP_DIR:-$PWD/storage/app/private/predeploy-backups}"
+MAINTENANCE_ON=0
+finish_maintenance() {
+    if [ "$MAINTENANCE_ON" = "1" ]; then
+        echo "⚠ Deploy abgebrochen — die Anwendung bleibt im WARTUNGSMODUS (halb migrierter Stand darf nicht online)." >&2
+        echo "  Nach Klärung manuell: php artisan up" >&2
+    fi
+}
+trap finish_maintenance ERR
+
+echo "→ Backup vor dem Update (DB + Dateien) → $PRE_BACKUP_DIR"
+if [ "${DEPLOY_SKIP_BACKUP:-0}" = "1" ]; then
+    echo "  ⚠ DEPLOY_SKIP_BACKUP=1 — Backup übersprungen."
+else
+    mkdir -p "$PRE_BACKUP_DIR"
+    BACKUP_DIR="$PRE_BACKUP_DIR" bash scripts/backup.sh
+fi
+
+if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
+    echo "→ Wartungsmodus (Betreiber-Bypass über den ausgegebenen Secret-Link)"
+    DEPLOY_SECRET="$(php -r 'echo bin2hex(random_bytes(12));')"
+    php artisan down --retry=60 --secret="$DEPLOY_SECRET"
+    MAINTENANCE_ON=1
+    echo "  Bypass: <APP_URL>/$DEPLOY_SECRET"
+fi
+
 echo "→ Code auf origin/main bringen (Hard-Reset – verwirft lokale Änderungen!)"
 # storage/license-keys.env ist gitignored/untracked → reset --hard lässt sie unberührt.
 git fetch origin
@@ -110,7 +141,22 @@ if ! php artisan integrity:freeze --yes; then
     echo "    Manuell nachholen: php artisan integrity:freeze --yes && php artisan integrity:verify"
 fi
 
+echo "→ Release-Manifest (Versionen, Prüfsummen; optional signiert)"
+# Kein Abbruchgrund: das Manifest ist Nachweis, nicht Betriebsvoraussetzung.
+php artisan release:manifest || echo "  ⚠ release:manifest fehlgeschlagen — Nachweis manuell erzeugen."
+
+echo "→ Health-Check nach dem Update (harter Exit-Check)"
+# Exit 1 = Problem (DB, offene Migrationen, Storage, Queue, APP_KEY, Mail,
+# Lizenz) → Deploy bricht ab, Wartungsmodus bleibt aktiv.
+php artisan system:health
+
 echo "→ Kontrolle"
 php artisan license:show || true
+
+if [ "$MAINTENANCE_ON" = "1" ]; then
+    echo "→ Wartungsmodus beenden"
+    php artisan up
+    MAINTENANCE_ON=0
+fi
 
 echo "✓ Deploy abgeschlossen"

@@ -56,16 +56,22 @@ class StockController extends Controller {
                 ->where('warehouse_id', $selected->id)
                 ->get()->keyBy('article_variant_id')->all();
 
+            // Salden und Bewertung je Lager in je einer Query statt ≥ 8 Queries
+            // je Variante (Vollscan 2026-08-23, A4).
+            $balances = $this->ledger->balancesByVariant($selected);
+            $valuations = $this->valuation->summariesForWarehouse($selected);
+
             $variants = ArticleVariant::query()->with('article')->whereIn('id', $variantIds)->get();
             foreach ($variants as $variant) {
                 $level = $levelByVariant[$variant->id] ?? null;
+                $variantBalances = $balances[(int) $variant->id] ?? [];
                 $rows[] = [
                     'variant' => $variant,
-                    'available' => $this->ledger->available($variant, $selected),
-                    'physical' => $this->ledger->balance($variant, $selected, \App\Enums\Inventory\StockState::Physical),
-                    'reserved' => $this->ledger->balance($variant, $selected, \App\Enums\Inventory\StockState::Reserved),
-                    'avg' => $this->valuation->average($variant, $selected),
-                    'value' => $this->valuation->totalValue($variant, $selected),
+                    'available' => InventoryLedger::availableFromBalances($variantBalances),
+                    'physical' => bcadd($variantBalances[\App\Enums\Inventory\StockState::Physical->value] ?? '0', '0', InventoryLedger::SCALE),
+                    'reserved' => bcadd($variantBalances[\App\Enums\Inventory\StockState::Reserved->value] ?? '0', '0', InventoryLedger::SCALE),
+                    'avg' => $valuations[(int) $variant->id]['avg'] ?? '0',
+                    'value' => $valuations[(int) $variant->id]['value'] ?? '0',
                     'reorder' => $level?->reorder_point,
                 ];
             }

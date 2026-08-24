@@ -13,7 +13,8 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{AccountType, EuerCategory, ProfitDetermination};
 use App\Models\Accounting\AccountingAccount;
 use App\Models\{Customer, Invoice, Organization, User};
-use App\Services\Accounting\{AccountingProfileService, AccountingReportService, ChartOfAccountsService, FiscalYearService, JournalService};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
+use App\Services\Accounting\Reports\{DataQualityBuilder, EuerPreviewBuilder, TrialBalanceBuilder};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -80,7 +81,7 @@ class AccountingEuerTest extends TestCase {
 
     /** @return array<string, mixed> */
     private function preview(?CarbonImmutable $from = null, ?CarbonImmutable $to = null): array {
-        return app(AccountingReportService::class)->euerPreview(
+        return app(EuerPreviewBuilder::class)->build(
             $this->org,
             $from ?? $this->startsOn,
             $to ?? $this->startsOn->endOfYear(),
@@ -270,7 +271,7 @@ class AccountingEuerTest extends TestCase {
             ],
         ], $this->admin);
 
-        $quality = app(AccountingReportService::class)->dataQuality(
+        $quality = app(DataQualityBuilder::class)->build(
             $this->org,
             CarbonImmutable::create(2027, 1, 1),
             CarbonImmutable::create(2027, 1, 31),
@@ -284,7 +285,7 @@ class AccountingEuerTest extends TestCase {
     public function test_the_deductible_share_never_touches_the_journal(): void {
         $this->cashExpense($this->accounts['hospitality'], '100.00');
 
-        $balance = app(AccountingReportService::class)->trialBalance($this->org, $this->startsOn, $this->startsOn->endOfYear());
+        $balance = app(TrialBalanceBuilder::class)->build($this->org, $this->startsOn, $this->startsOn->endOfYear());
         $row = collect($balance['rows'])->firstWhere('account.number', '4650');
 
         $this->assertNotNull($row);

@@ -15,10 +15,16 @@ use App\Support\LookupCache;
 
 class TagObserver {
     public function saved(Tag $tag): void {
-        LookupCache::forgetTagOptions();
+        LookupCache::forgetTagOptions(self::organizationId($tag));
     }
 
     public function deleted(Tag $tag): void {
-        LookupCache::forgetTagOptions();
+        LookupCache::forgetTagOptions(self::organizationId($tag));
+    }
+
+    private static function organizationId(Tag $tag): ?int {
+        $organizationId = $tag->getAttribute('organization_id');
+
+        return $organizationId === null ? null : (int) $organizationId;
     }
 }

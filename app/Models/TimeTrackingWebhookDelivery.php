@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\PrunesWebhookDeliveries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -26,6 +27,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $processed_at
  */
 class TimeTrackingWebhookDelivery extends Model {
+    use PrunesWebhookDeliveries;
+
     protected $fillable = [
         'plugin_id', 'delivery_id', 'event_name', 'organization_id',
         'received_at', 'processed_at',

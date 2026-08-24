@@ -43,10 +43,10 @@ class AppServiceProvider extends ServiceProvider {
         // Wetterprovider (Feature 062): je Org über Setting `weather.provider`
         // aufgelöst. Org-Kontext muss VOR der Container-Auflösung gebunden sein
         // (vgl. FetchProtocolWeatherJob).
-        $this->app->bind(\App\Services\Weather\Contracts\WeatherProvider::class, static function (): \App\Services\Weather\Contracts\WeatherProvider {
+        $this->app->bind(\App\Services\Weather\Contracts\WeatherProvider::class, static function ($app): \App\Services\Weather\Contracts\WeatherProvider {
             return match (Setting::get('weather.provider', 'open-meteo')) {
-                'dwd' => new \App\Services\Weather\DwdProvider(new \GuzzleHttp\Client),
-                default => new \App\Services\Weather\OpenMeteoProvider(new \GuzzleHttp\Client),
+                'dwd' => new \App\Services\Weather\DwdProvider($app->make(\App\Plugins\Support\PluginHttpFactory::class)->coreClient('weather-dwd', \App\Services\Weather\DwdProvider::BASE)),
+                default => new \App\Services\Weather\OpenMeteoProvider($app->make(\App\Plugins\Support\PluginHttpFactory::class)->coreClient('weather-open-meteo', 'https://api.open-meteo.com')),
             };
         });
 
@@ -67,225 +67,10 @@ class AppServiceProvider extends ServiceProvider {
         // Aufbewahrungs-Registry (Restpunkte 66+67): Fristen je Rechtsraum
         // aus config/retention.php; die Policies liefern die überfälligen
         // Datensätze für den Review-Scan (Vorschläge statt Direktlöschung).
+        // Alle Policy-Registrierungen: RetentionRegistrations (B4).
         $this->app->singleton(\App\Services\Privacy\Retention\RetentionRegistry::class, function (): \App\Services\Privacy\Retention\RetentionRegistry {
             $registry = new \App\Services\Privacy\Retention\RetentionRegistry;
-
-            // CTI-Anrufmetadaten (Vollaudit 2026-07, M18): Rufnummer aus
-            // Referenz-Payload und Notiz-Betreff anonymisieren; Richtung/
-            // Zeitpunkt/Dauer bleiben als Vorgangsnachweis.
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'cti_calls',
-                modelClass: \App\Models\ExternalReference::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\ExternalReference::query()
-                    ->forPlugin($organization->id, \App\Services\Cti\CtiCallService::PLUGIN_ID, \App\Services\Cti\CtiCallService::EXTERNAL_TYPE)
-                    ->where('synced_at', '<', $cutoff)
-                    ->whereRaw("json_extract(payload, '$.anonymized') is null"),
-                purge: function (\App\Models\ExternalReference $subject): void {
-                    $payload = (array) $subject->payload;
-                    unset($payload['number']);
-                    $subject->forceFill(['payload' => [...$payload, 'anonymized' => true]])->save();
-                    $note = $subject->referenceable;
-                    if ($note instanceof CommunicationNote) {
-                        $note->forceFill(['subject' => (string) __('Anruf (anonymisiert)')])->save();
-                    }
-                },
-            ));
-
-            // Ideenkarten im Papierkorb (Vollaudit 2026-07, M21): soft-gelöschte
-            // Karten nach Frist endgültig entfernen (Knoten/Links/Shares kaskadieren).
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'idea_maps',
-                modelClass: \App\Models\IdeaMap::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\IdeaMap::query()
-                    ->withoutGlobalScopes()
-                    ->onlyTrashed()
-                    ->where('organization_id', $organization->id)
-                    ->where('deleted_at', '<', $cutoff),
-                purge: function (\App\Models\IdeaMap $subject): void {
-                    $subject->forceDelete();
-                },
-            ));
-
-            // Fehlerberichte mit Seitenkontext-PII (Vollaudit 2026-07, N15).
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'problem_reports',
-                modelClass: \App\Models\ProblemReport::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\ProblemReport::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->where('status', \App\Enums\Support\ProblemReportStatus::Closed->value)
-                    ->where('updated_at', '<', $cutoff),
-                purge: function (\App\Models\ProblemReport $subject): void {
-                    foreach ($subject->attachments()->get() as $attachment) {
-                        \Illuminate\Support\Facades\Storage::disk($attachment->disk)->delete((string) $attachment->path);
-                        $attachment->delete();
-                    }
-                    $subject->delete();
-                },
-            ));
-
-            // Führerscheinkontrollen (Vollaudit 2026-07, N24): nach Nachweisfrist
-            // löschen — Vorschlag über den Review-Scan, keine Direktlöschung.
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'driver_license_checks',
-                modelClass: \App\Models\DriverLicenseCheck::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\DriverLicenseCheck::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->where('checked_at', '<', $cutoff),
-                purge: function (\App\Models\DriverLicenseCheck $subject): void {
-                    $subject->delete();
-                },
-            ));
-
-            // Abgeschlossene Betroffenenanfragen nach Nachweisfrist.
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'privacy_requests',
-                modelClass: \App\Models\Privacy\DataSubjectRequest::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\Privacy\DataSubjectRequest::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->whereNotNull('closed_at')
-                    ->where('closed_at', '<', $cutoff),
-                purge: function (\App\Models\Privacy\DataSubjectRequest $subject): void {
-                    foreach ($subject->attachments()->get() as $attachment) {
-                        \Illuminate\Support\Facades\Storage::disk('local')->delete((string) $attachment->path);
-                        $attachment->delete();
-                    }
-                    $subject->delete();
-                },
-            ));
-
-            // Bewerbungen (Feature 068, MVP-192): purge anonymisiert
-            // (Kennzahlen bleiben, PII verschwindet).
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'applications',
-                modelClass: \App\Models\Applications\JobApplication::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\Applications\JobApplication::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->whereNull('anonymized_at')
-                    ->whereNotNull('retention_until')
-                    ->where('retention_until', '<=', now()->toDateString()),
-                purge: function (\App\Models\Applications\JobApplication $subject): void {
-                    $subject->interviews()->update(['notes' => null]);
-                    $subject->reviews()->update(['comment' => null]);
-                    $subject->forceFill([
-                        'candidate_name' => null,
-                        'email' => null,
-                        'phone' => null,
-                        'email_hash' => null,
-                        'notes' => null,
-                        'status' => 'deleted',
-                        'anonymized_at' => now(),
-                    ])->save();
-                },
-            ));
-
-            // Leads (Feature 091, MVP-656): personenbezogene Daten ohne
-            // Vertrag - nicht konvertierte Leads werden 6 Monate nach dem
-            // letzten Kontakt anonymisiert (PII weg, Pipeline-Kennzahl bleibt).
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'leads',
-                modelClass: \App\Models\Lead::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\Lead::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->whereNull('anonymized_at')
-                    ->where('status', '!=', \App\Enums\Sales\LeadStatus::Converted->value)
-                    ->whereNotNull('last_contact_at')
-                    ->where('last_contact_at', '<=', now()->subMonths((int) config('sales.lead_retention_months', 6))),
-                purge: function (\App\Models\Lead $subject): void {
-                    app(\App\Services\Sales\LeadService::class)->anonymize($subject);
-                },
-            ));
-
-            // Reklamationsakten (Feature 072, MVP-256): abgeschlossene Fälle
-            // nach Ablauf anonymisieren (Melder-PII), Kennzahlen bleiben.
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'claims',
-                modelClass: \App\Models\Claims\ClaimCase::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\Claims\ClaimCase::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->whereNull('anonymized_at')
-                    ->whereNotNull('closed_at')
-                    ->where('closed_at', '<', $cutoff),
-                purge: function (\App\Models\Claims\ClaimCase $subject): void {
-                    $subject->forceFill([
-                        'reporter_name' => null,
-                        'reporter_email' => null,
-                        'anonymized_at' => now(),
-                    ])->save();
-                },
-            ));
-
-            // Lohn-/Zeitexporte inkl. abgelegter Dateien. Vollaudit 2026-07
-            // (N6): Purge auditiert jetzt als export.deleted und räumt Zeilen mit.
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'exports',
-                modelClass: TimeExport::class,
-                overdueQuery: fn($organization, $cutoff) => TimeExport::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->where('created_at', '<', $cutoff),
-                purge: function (TimeExport $subject): void {
-                    $subject->audit('export.deleted', ['reason' => 'retention', 'file_path' => $subject->file_path]);
-                    $path = (string) ($subject->file_path ?? '');
-                    if ($path !== '') {
-                        \Illuminate\Support\Facades\Storage::disk('local')->delete($path);
-                    }
-                    $subject->lines()->delete();
-                    $subject->delete();
-                },
-            ));
-
-            // Eingangsrechnungen im DMS — GoBD-Ausnahme: solange nicht
-            // archiviert, gilt das Dokument als in Verwendung (kein Vorschlag).
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'documents_invoice',
-                modelClass: \App\Models\Document::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\Document::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->where('document_type', \App\Enums\Document\DocumentType::Invoice->value)
-                    ->where('created_at', '<', $cutoff),
-                exempt: fn($subject): ?string => $subject->getAttribute('status') !== \App\Enums\Document\DocumentStatus::Archived
-                    ? 'Noch nicht archiviert — Dokument gilt als in Verwendung (GoBD).'
-                    : null,
-            ));
-
-            // Fahrtakten (MVP-456, Konzept §11): abgeschlossene Fahrten werden
-            // nach Frist anonymisiert — Orts-/Fahrgastfelder genullt (encrypted-
-            // Regel: NULL, nie ""), Beträge/Steuer/Zeiten bleiben als Nachweis.
-            $registry->register(new \App\Services\Privacy\Retention\RetentionPolicy(
-                area: 'passenger_rides',
-                modelClass: \App\Models\Passenger\PassengerRide::class,
-                overdueQuery: fn($organization, $cutoff) => \App\Models\Passenger\PassengerRide::query()
-                    ->withoutGlobalScopes()
-                    ->where('organization_id', $organization->id)
-                    ->whereIn('status', array_values(array_map(
-                        static fn(\App\Enums\Passenger\RideStatus $status): string => $status->value,
-                        array_filter(\App\Enums\Passenger\RideStatus::cases(), static fn(\App\Enums\Passenger\RideStatus $status): bool => $status->isFinal()),
-                    )))
-                    ->whereNull('anonymized_at')
-                    ->where(fn($query) => $query
-                        ->where('completed_at', '<', $cutoff)
-                        ->orWhere('cancelled_at', '<', $cutoff)),
-                purge: function (\App\Models\Passenger\PassengerRide $subject): void {
-                    $subject->forceFill([
-                        'pickup_address' => null,
-                        'destination_address' => null,
-                        'waypoints' => null,
-                        'passenger_name' => null,
-                        'passenger_contact' => null,
-                        'route_note' => null,
-                        'closing_note' => null,
-                        'anonymized_at' => now(),
-                    ])->save();
-                    $subject->audit('passenger.ride_anonymized', ['reason' => 'retention']);
-                },
-            ));
+            \App\Services\Privacy\Retention\RetentionRegistrations::register($registry);
 
             return $registry;
         });
@@ -385,6 +170,20 @@ class AppServiceProvider extends ServiceProvider {
 
         // Generische Integrations-Outbox (MVP-114): gleiche Registry-Mechanik.
         $this->app->singleton(\App\Services\Integration\IntegrationOutboxDispatcherResolver::class);
+
+        // Belegfluss-Quellen (Feature 105; Vollscan 2026-08, B9): Kern-Quellen
+        // hier, Plugin-Quellen (Lexoffice/orgaMAX) registriert der jeweilige
+        // Plugin-Provider beim Booten — der Kern kennt keine Plugin-Tabellen.
+        $this->app->singleton(\App\Services\Billing\Feed\DocumentFeedSourceRegistry::class, function (): \App\Services\Billing\Feed\DocumentFeedSourceRegistry {
+            $registry = new \App\Services\Billing\Feed\DocumentFeedSourceRegistry;
+            $registry->register(new \App\Services\Billing\Feed\Sources\InvoiceSource($registry));
+            $registry->register(new \App\Services\Billing\Feed\Sources\QuoteSource);
+            $registry->register(new \App\Services\Billing\Feed\Sources\AccountingVoucherSource);
+            $registry->register(new \App\Services\Billing\Feed\Sources\IncomingEInvoiceSource);
+            $registry->register(new \App\Services\Billing\Feed\Sources\ExpenseSource($registry));
+
+            return $registry;
+        });
 
         // Versand-Provider (Feature 059, MVP-128): Carrier-Plugins registrieren
         // ihren ShippingProvider beim Booten, der ShipmentService löst darüber auf.
@@ -523,6 +322,10 @@ class AppServiceProvider extends ServiceProvider {
             [\App\Scheduling\ScheduleRunRecorder::class, 'handleFailed'],
         );
         EventFacade::listen(
+            \Illuminate\Console\Events\ScheduledBackgroundTaskFinished::class,
+            [\App\Scheduling\ScheduleRunRecorder::class, 'handleBackgroundFinished'],
+        );
+        EventFacade::listen(
             \Illuminate\Console\Events\ScheduledTaskSkipped::class,
             [\App\Scheduling\ScheduleRunRecorder::class, 'handleSkipped'],
         );
@@ -530,50 +333,16 @@ class AppServiceProvider extends ServiceProvider {
         // Stichtags-Rekonstruktion (Nachtrag 046b): jede Bewertungsänderung
         // (SoA-Aussage, Norm-Konformitätsstatus) erzeugt einen append-only
         // Snapshot — Model-Events, damit auch Service-Updates erfasst werden.
-        \App\Models\Isms\IsmsApplicabilityStatement::saved(
-            fn($model) => app(\App\Services\Isms\AssessmentSnapshotService::class)->record($model),
-        );
-        \App\Models\Isms\IsmsNormStatus::saved(
-            fn($model) => app(\App\Services\Isms\AssessmentSnapshotService::class)->record($model),
-        );
+        \App\Models\Isms\IsmsApplicabilityStatement::observe(\App\Observers\IsmsAssessmentSnapshotObserver::class);
+        \App\Models\Isms\IsmsNormStatus::observe(\App\Observers\IsmsAssessmentSnapshotObserver::class);
 
         // Task→Board-Sync (Feature 064, P3): Statuswechsel außerhalb des Boards
-        // schiebt das Work-Item in die erste Spalte der Zielkategorie. Kein
-        // Task-Write hier → keine Endlos-Schleife mit AgileBoardService::move().
-        Task::saved(function (Task $task): void {
-            if (! $task->wasChanged('status')) {
-                return;
-            }
-            $item = \App\Models\Agile\AgileWorkItem::query()->where('task_id', $task->id)->first();
-            if ($item === null) {
-                return;
-            }
-            $rawStatus = $task->getAttribute('status');
-            $status = (string) ($rawStatus instanceof \BackedEnum ? $rawStatus->value : $rawStatus);
-            $currentCategory = $item->column?->category?->value;
-            if ($currentCategory === $status) {
-                return;
-            }
-            $target = \App\Models\Agile\AgileBoardColumn::query()
-                ->where('board_id', $item->board_id)
-                ->where('category', $status)
-                ->orderBy('position')
-                ->first();
-            if ($target === null || (int) $target->id === (int) $item->column_id) {
-                return;
-            }
-            $from = $item->column_id;
-            \App\Models\Agile\AgileWorkItem::query()->whereKey($item->id)
-                ->update(['column_id' => $target->id, 'lock_version' => \Illuminate\Support\Facades\DB::raw('lock_version + 1')]);
-            \App\Models\Agile\AgileEvent::record([
-                'organization_id' => $item->organization_id,
-                'board_id' => $item->board_id,
-                'work_item_id' => $item->id,
-                'event' => 'column.moved',
-                'payload' => ['from' => $from, 'to' => $target->id, 'origin' => 'task_sync'],
-                'created_at' => now(),
-            ]);
-        });
+        // → AgileBoardService::syncColumnFromTask (B4 aus dem Provider gezogen).
+        Task::observe(\App\Observers\TaskObserver::class);
+        // F14: Fachlogik aus den Model-Hooks in Observer (TimeEntry-saving
+        // lebt im bestehenden TimeEntryObserver, s. u.).
+        \App\Models\Attendance::observe(\App\Observers\AttendanceObserver::class);
+        \App\Models\InvoiceItem::observe(\App\Observers\InvoiceItemObserver::class);
 
         // Carbon-Anzeige-Macros (Logik in App\Support\CarbonFmt): orgTz/fdate/
         // fdatetime/ftime. Auf allen Carbon-Varianten registriert (Eloquent-Casts
@@ -604,6 +373,9 @@ class AppServiceProvider extends ServiceProvider {
 
         Comment::observe(CommentObserver::class);
         // Feature 107 W10: VK-Preisverlauf für den DATPREIS-Export „seit Datum".
+        // F8/E6: contact_* führend — Projektion in die Inline-Spalten.
+        \App\Models\ContactAddress::observe(\App\Observers\ContactDetailsProjectionObserver::class);
+        \App\Models\ContactBankAccount::observe(\App\Observers\ContactDetailsProjectionObserver::class);
         \App\Models\Article::observe(\App\Observers\ArticleSalePriceObserver::class);
         \App\Models\ArticleVariant::observe(\App\Observers\ArticleVariantSalePriceObserver::class);
         Attachment::observe(AttachmentObserver::class);
@@ -980,7 +752,14 @@ class AppServiceProvider extends ServiceProvider {
             try {
                 $user = Auth::user();
                 if ($user instanceof User) {
-                    $items = app(ReminderService::class)->for($user);
+                    // 3–5 Count-Queries je Seitenaufruf (Vollscan 2026-08-23, A7):
+                    // je Nutzer + Locale eine Minute cachen — Erinnerungen sind
+                    // keine Echtzeitdaten.
+                    $items = \Illuminate\Support\Facades\Cache::remember(
+                        'reminders:' . (int) $user->id . ':' . app()->getLocale(),
+                        \App\Services\Navigation\NavigationRegistry::BADGE_TTL,
+                        static fn (): array => app(ReminderService::class)->for($user),
+                    );
                 }
             } catch (\Throwable $e) {
                 report($e);

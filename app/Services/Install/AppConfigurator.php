@@ -42,6 +42,12 @@ class AppConfigurator {
         if (isset($data['app_env'])) {
             $values['APP_ENV'] = $data['app_env'];
             $values['APP_DEBUG'] = $data['app_env'] === 'local' ? 'true' : 'false';
+            // Produktion: rotierende Tageslogs auf info statt einer einzigen,
+            // nie rotierten laravel.log im debug-Level (Vollscan 2026-08-23, J15).
+            if ($data['app_env'] === 'production') {
+                $values['LOG_STACK'] = 'daily';
+                $values['LOG_LEVEL'] = 'info';
+            }
         }
         if (isset($data['locale'])) {
             $values['APP_LOCALE'] = $data['locale'];

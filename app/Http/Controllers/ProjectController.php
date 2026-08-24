@@ -16,7 +16,6 @@ use App\Http\Requests\SaveProjectRequest;
 use App\Models\{DiaryEntry, LexofficeArticle, Project, RecurrenceRule, Task, Team, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Pagination\{LengthAwarePaginator, Paginator};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\View\View;
@@ -40,24 +39,35 @@ class ProjectController extends Controller {
             });
         }
 
-        $projects = $query->orderByRaw("CASE status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END")
-            ->orderBy('name')
-            ->select(['id', 'name', 'slug', 'color', 'status', 'description', 'starts_on', 'ends_on', 'parent_id', 'customer_id', 'foreign_customer_id'])
-            ->with(['parent:id,name', 'customer:id,name,slug', 'foreignCustomer:id,name,color'])
-            ->get();
+        $columns = ['id', 'name', 'slug', 'color', 'status', 'description', 'starts_on', 'ends_on', 'parent_id', 'customer_id', 'foreign_customer_id'];
+        $relations = ['parent:id,name', 'customer:id,name,slug', 'foreignCustomer:id,name,color'];
+        $ordered = fn(\Illuminate\Database\Eloquent\Builder $q) => $q
+            ->orderByRaw("CASE status WHEN 'active' THEN 0 WHEN 'paused' THEN 1 ELSE 2 END")
+            ->orderBy('name');
 
-        // Flache Zeilenliste: Wurzeln (inkl. Waisen mit gefiltertem Parent) gefolgt von ihren Kindern.
-        $byId = $projects->keyBy('id');
-        $childrenByParent = $projects->groupBy(fn(Project $p): int => $p->parent_id ?? 0);
+        // Pagination auf Ebene der Wurzel-Projekte in SQL (Vollscan 2026-08-23,
+        // A12 — vorher wurden alle Projekte der Org geladen und in PHP
+        // paginiert). Wurzel = ohne Parent ODER Waise, deren Parent nicht im
+        // gefilterten Bestand liegt; Kinder der Seiten-Wurzeln werden nachgeladen,
+        // damit Bäume nicht zerschnitten werden.
+        $filteredIds = (clone $query)->select('id');
+        $projectsPaginator = $ordered((clone $query)
+            ->where(fn($q) => $q->whereNull('parent_id')->orWhereNotIn('parent_id', $filteredIds)))
+            ->select($columns)
+            ->with($relations)
+            ->paginate(25)
+            ->withQueryString();
 
-        $roots = $projects
-            ->filter(fn(Project $p) => $p->parent_id === null || ! $byId->has($p->parent_id))
-            ->values();
-
-        // Pagination auf Ebene der Wurzel-Projekte, damit Bäume nicht zerschnitten werden.
-        $perPage = 25;
-        $page = Paginator::resolveCurrentPage();
-        $pageRoots = $roots->forPage($page, $perPage);
+        /** @var Collection<int, Project> $pageRoots */
+        $pageRoots = $projectsPaginator->getCollection();
+        $children = collect();
+        $parentIds = $pageRoots->pluck('id')->all();
+        for ($depth = 0; $depth < 2 && $parentIds !== []; $depth++) {
+            $level = $ordered((clone $query)->whereIn('parent_id', $parentIds))->select($columns)->with($relations)->get();
+            $children = $children->merge($level);
+            $parentIds = $level->pluck('id')->all();
+        }
+        $childrenByParent = $children->groupBy(fn(Project $p): int => (int) $p->parent_id);
 
         $rows = collect();
         $emit = function (Project $project, int $depth) use (&$emit, $childrenByParent, $rows): void {
@@ -69,14 +79,6 @@ class ProjectController extends Controller {
         foreach ($pageRoots as $root) {
             $emit($root, 0);
         }
-
-        $projectsPaginator = new LengthAwarePaginator(
-            $pageRoots->values(),
-            $roots->count(),
-            $perPage,
-            $page,
-            ['path' => Paginator::resolveCurrentPath(), 'query' => $request->query()]
-        );
 
         // Aggregationen nur für die tatsächlich sichtbaren Projekte berechnen.
         $projectIds = $rows->pluck('project.id')->all();

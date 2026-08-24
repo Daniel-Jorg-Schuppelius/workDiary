@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Jobs\Location;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{Organization, User};
 use App\Services\Location\{VisitBuilder, VisitMaterializer};
 use Illuminate\Bus\Queueable;
@@ -28,6 +29,7 @@ class ProcessLocationBatch implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RetriesTransientFailures;
     use SerializesModels;
 
     public function __construct(public readonly int $userId) {}

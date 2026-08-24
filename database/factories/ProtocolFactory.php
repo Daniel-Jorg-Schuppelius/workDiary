@@ -23,8 +23,6 @@ class ProtocolFactory extends Factory {
     public function definition(): array {
         return [
             'type' => ProtocolType::Service->value,
-            'template_id' => null,
-            'template_version' => null,
             'subject_type' => DiaryEntry::class,
             'subject_id' => DiaryEntry::factory(),
             'title' => fake()->sentence(5),

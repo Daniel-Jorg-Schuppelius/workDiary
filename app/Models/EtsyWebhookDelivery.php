@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\PrunesWebhookDeliveries;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -29,6 +30,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property \Illuminate\Support\Carbon|null $processed_at
  */
 class EtsyWebhookDelivery extends Model {
+    use PrunesWebhookDeliveries;
+
     protected $fillable = [
         'delivery_hash',
         'webhook_id',

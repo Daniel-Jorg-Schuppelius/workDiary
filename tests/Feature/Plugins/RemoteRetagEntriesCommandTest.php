@@ -12,7 +12,7 @@ namespace Tests\Feature\Plugins;
 
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{ExternalReference, Project, TimeEntry, User};
-use App\Plugins\RemoteSupport\{RemoteSupportPlugin, RemoteSupportService};
+use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -55,7 +55,7 @@ class RemoteRetagEntriesCommandTest extends TestCase {
         ExternalReference::query()->create([
             'organization_id' => $this->organization->id,
             'plugin_id' => RemoteSupportPlugin::ID,
-            'external_type' => RemoteSupportService::EXT_TYPE_SESSION,
+            'external_type' => RemoteSessionImporter::EXT_TYPE_SESSION,
             'referenceable_type' => $entry->getMorphClass(),
             'referenceable_id' => $entry->getKey(),
             'external_id' => $sessionKey,

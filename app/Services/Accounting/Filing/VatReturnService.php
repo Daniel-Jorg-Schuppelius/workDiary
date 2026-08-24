@@ -13,7 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Accounting\Filing;
 
 use App\Models\Organization;
-use App\Services\Accounting\{AccountingReportService, VatFilingProfileResolver};
+use App\Services\Accounting\Reports\VatPreviewBuilder;
+use App\Services\Accounting\VatFilingProfileResolver;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Umsatzsteuer-Vorschau für einen Voranmeldungszeitraum (Feature 125,
@@ -25,7 +27,7 @@ use App\Services\Accounting\{AccountingReportService, VatFilingProfileResolver};
  */
 class VatReturnService {
     public function __construct(
-        private readonly AccountingReportService $reports,
+        private readonly VatPreviewBuilder $vatPreviews,
         private readonly VatFilingProfileResolver $profile,
         private readonly VatFieldBreakdownService $fields,
     ) {}
@@ -34,7 +36,7 @@ class VatReturnService {
      * @return array<string, mixed>
      */
     public function preview(Organization $organization, VatReturnPeriod $period): array {
-        $data = $this->reports->vatPreview($organization, $period->from, $period->to);
+        $data = $this->vatPreviews->build($organization, $period->from, $period->to);
 
         // Angerechnet wird nur in der letzten Periode des Jahres und nur, was
         // tatsächlich gezahlt wurde (§ 48 Abs. 4 UStDV).
@@ -46,7 +48,7 @@ class VatReturnService {
             }
         }
 
-        $payable = (string) $data['payable'];
+        $payable = $data['payable'];
 
         $breakdown = $this->fields->forRange($organization, $period->from, $period->to);
 
@@ -57,7 +59,7 @@ class VatReturnService {
             'interval' => $this->profile->at($organization, $period->to),
             'has_extension' => $this->profile->hasExtension($organization, $period->to),
             'special_prepayment' => $prepayment,
-            'remaining' => number_format((float) $payable - (float) $prepayment, 2, '.', ''),
+            'remaining' => NumberHelper::subtractPrecise($payable, $prepayment, 2),
         ];
     }
 }

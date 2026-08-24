@@ -130,31 +130,39 @@ class MsgraphBackupClient {
      */
     public function listObjects(string $prefix): array {
         $objects = [];
-        $url = $this->itemUrl(trim($prefix, '/')) . ':/children';
-        $query = ['$select' => 'id,name,size,folder,lastModifiedDateTime', '$top' => 200];
+        $firstUrl = $this->itemUrl(trim($prefix, '/')) . ':/children';
 
-        do {
-            $response = $this->api->getResponse($url, $query);
+        // CursorPaginator (Vollscan 2026-08-23, C3): der „Cursor" ist hier der
+        // @odata.nextLink (trägt die Query-Parameter bereits selbst).
+        $paginator = new \APIToolkit\API\Pagination\CursorPaginator(function (?string $nextLink) use ($firstUrl): \APIToolkit\API\Pagination\CursorPage {
+            $response = $nextLink === null
+                ? $this->api->getResponse($firstUrl, ['$select' => 'id,name,size,folder,lastModifiedDateTime', '$top' => 200])
+                : $this->api->getResponse($nextLink);
             if ($response->status() === 404) {
-                return []; // Prefix existiert (noch) nicht.
+                return new \APIToolkit\API\Pagination\CursorPage([], null); // Prefix existiert (noch) nicht.
             }
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException('Graph-Listing fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
 
             /** @var array{value?: list<array<string, mixed>>, "@odata.nextLink"?: string} $data */
             $data = (array) $response->json();
-            foreach ((array) ($data['value'] ?? []) as $row) {
-                $objects[] = new BackupRemoteObject(
-                    ref: (string) ($row['id'] ?? ''),
-                    name: (string) ($row['name'] ?? ''),
-                    size: (int) ($row['size'] ?? 0),
-                    modifiedAt: isset($row['lastModifiedDateTime']) ? (string) $row['lastModifiedDateTime'] : null,
-                );
+            $next = (string) ($data['@odata.nextLink'] ?? '');
+
+            return new \APIToolkit\API\Pagination\CursorPage((array) ($data['value'] ?? []), $next !== '' ? $next : null);
+        }, maxPages: 500);
+
+        foreach ($paginator as $row) {
+            if (! is_array($row)) {
+                continue;
             }
-            $url = (string) ($data['@odata.nextLink'] ?? '');
-            $query = []; // nextLink trägt die Parameter bereits
-        } while ($url !== '');
+            $objects[] = new BackupRemoteObject(
+                ref: (string) ($row['id'] ?? ''),
+                name: (string) ($row['name'] ?? ''),
+                size: (int) ($row['size'] ?? 0),
+                modifiedAt: isset($row['lastModifiedDateTime']) ? (string) $row['lastModifiedDateTime'] : null,
+            );
+        }
 
         return $objects;
     }

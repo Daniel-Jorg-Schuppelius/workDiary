@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Facility\{RoomRequirementKind, RoomUsageType};
-use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesGlobalDateRange};
 use App\Models\{Building, CleaningProfile, Customer, Floor, Room, Site};
 use App\Services\Event\RoomBookingService;
 use App\Support\Sqid;
@@ -23,13 +23,16 @@ use Illuminate\View\View;
 class RoomController extends Controller {
     use ParsesIndexQuery;
 
+    use ResolvesGlobalDateRange;
+
     private const ALLOWED_SORTS = ['name', 'code', 'capacity', 'is_active'];
 
     public function index(Request $request, RoomBookingService $bookings): View {
         Gate::authorize('viewAny', Room::class);
 
         $view = $request->query('view', 'list');
-        $day = $request->query('day') ? Carbon::parse((string) $request->query('day')) : Carbon::today();
+        // Guard statt Roh-Parse (Vollscan 2026-08-23, B10).
+        $day = Carbon::instance($this->resolveDateParam($request, 'day', static fn (): \Carbon\CarbonImmutable => \Carbon\CarbonImmutable::today()));
 
         ['search' => $search, 'sort' => $sort, 'dir' => $dir]
             = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'name');

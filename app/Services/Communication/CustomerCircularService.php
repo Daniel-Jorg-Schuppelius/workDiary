@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Communication;
 
 use App\Enums\Communication\CommunicationVisibility;
+use App\Jobs\Communication\CustomerCircularSendJob;
 use App\Mail\CustomerCircularMail;
 use App\Models\Communication\{CustomerCircular, CustomerCircularRecipient};
 use App\Models\{Customer, User};
@@ -73,15 +74,18 @@ class CustomerCircularService {
     }
 
     /**
-     * Versand: erzeugt je Empfänger eine Nachweiszeile und eine
-     * Kommunikationsnotiz. Idempotent über die Unique (circular, customer) —
-     * ein zweiter Klick verschickt nicht doppelt.
+     * Versand anstoßen: prüft Freigabe und Empfängerkreis, setzt `sending`
+     * und übergibt an die Queue ({@see CustomerCircularSendJob}) — die SMTP-
+     * Schleife gehört nicht in den HTTP-Request (Vollscan 2026-08-23, A3/J4).
+     * Ein hängendes `sending` (abgebrochener Lauf) darf erneut angestoßen
+     * werden; der Job überspringt bereits erreichte Empfänger.
      */
     public function send(CustomerCircular $circular, User $actor): CustomerCircular {
-        if (! $circular->isDraft()) {
+        $resume = $circular->status === CustomerCircular::STATUS_SENDING;
+        if (! $circular->isDraft() && ! $resume) {
             throw new RuntimeException((string) __('circular.already_sent'));
         }
-        if ($this->approvalRequired() && ! $circular->isApproved()) {
+        if (! $resume && $this->approvalRequired() && ! $circular->isApproved()) {
             throw new RuntimeException((string) __('circular.error.approval_missing'));
         }
 
@@ -91,9 +95,41 @@ class CustomerCircularService {
         }
 
         $circular->forceFill(['status' => CustomerCircular::STATUS_SENDING])->save();
+        if (! $resume) {
+            $circular->audit('circular.send_started', ['recipients' => $recipients->count(), 'by_user_id' => (int) $actor->id]);
+        }
 
-        foreach ($recipients as $customer) {
+        CustomerCircularSendJob::dispatch((int) $circular->id, (int) $actor->id);
+
+        return $circular->refresh();
+    }
+
+    /**
+     * Zustellung (Queue): je Empfänger eine Nachweiszeile und eine
+     * Kommunikationsnotiz. Idempotent über die Unique (circular, customer) —
+     * Empfänger mit Status sent/skipped werden beim Wiederanlauf übersprungen,
+     * fehlgeschlagene erneut versucht. Liefert false, solange nach dem Batch
+     * noch Empfänger offen sind.
+     */
+    public function deliver(CustomerCircular $circular, User $actor, ?int $batchSize = null): bool {
+        if ($circular->status !== CustomerCircular::STATUS_SENDING) {
+            return true;
+        }
+
+        $batchSize = max(1, $batchSize ?? (int) config('circular.batch_size', 200));
+        $recipients = $this->audience((array) ($circular->filters ?? []), (bool) $circular->is_mandatory);
+        $done = CustomerCircularRecipient::query()
+            ->where('customer_circular_id', $circular->id)
+            ->whereIn('status', [CustomerCircularRecipient::STATUS_SENT, CustomerCircularRecipient::STATUS_SKIPPED])
+            ->pluck('customer_id')
+            ->flip();
+
+        $open = $recipients->reject(fn (Customer $customer): bool => $done->has((int) $customer->id))->values();
+        foreach ($open->take($batchSize) as $customer) {
             $this->sendTo($circular, $customer, $actor);
+        }
+        if ($open->count() > $batchSize) {
+            return false; // nächster Batch folgt (Job reicht sich weiter)
         }
 
         $circular->forceFill([
@@ -107,7 +143,7 @@ class CustomerCircularService {
             'mandatory' => (bool) $circular->is_mandatory,
         ]);
 
-        return $circular->refresh();
+        return true;
     }
 
     /**

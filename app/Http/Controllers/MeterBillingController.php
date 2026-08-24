@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveMeterBillingAgreementRequest;
 use App\Models\{Asset, Customer, Project};
 use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
@@ -28,6 +29,8 @@ use Illuminate\View\View;
  * die Arbeit, die wirklich anfällt.
  */
 class MeterBillingController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly MeterBillingService $billing) {}
 
     public function index(): View {
@@ -65,7 +68,7 @@ class MeterBillingController extends Controller {
         $this->authorizeBilling();
 
         MeterBillingAgreement::query()->create($request->validated() + [
-            'organization_id' => $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => $request->user()?->id,
         ]);
 

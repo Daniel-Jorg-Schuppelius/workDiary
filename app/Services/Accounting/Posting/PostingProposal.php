@@ -14,6 +14,8 @@ namespace App\Services\Accounting\Posting;
 
 use App\Enums\Finance\PostingSourceKind;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\RoundingMode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -52,12 +54,14 @@ final class PostingProposal {
         return $this->blockers === [] && $this->lines !== [];
     }
 
+    /** @return numeric-string */
     public function debitTotal(): string {
-        return $this->sum(fn (PostingProposalLine $line): string => $line->debit);
+        return NumberHelper::sumPrecise(array_map(static fn (PostingProposalLine $line): string => $line->debit, $this->lines), 2, RoundingMode::HalfUp);
     }
 
+    /** @return numeric-string */
     public function creditTotal(): string {
-        return $this->sum(fn (PostingProposalLine $line): string => $line->credit);
+        return NumberHelper::sumPrecise(array_map(static fn (PostingProposalLine $line): string => $line->credit, $this->lines), 2, RoundingMode::HalfUp);
     }
 
     /** @return list<array<string, mixed>> */
@@ -84,15 +88,5 @@ final class PostingProposal {
             'credit_total' => $this->creditTotal(),
             'lines' => array_map(fn (PostingProposalLine $line): array => $line->toExplanation(), $this->lines),
         ] + $this->extra;
-    }
-
-    /** @param callable(PostingProposalLine): string $pick */
-    private function sum(callable $pick): string {
-        $total = '0.00';
-        foreach ($this->lines as $line) {
-            $total = number_format((float) $total + (float) $pick($line), 2, '.', '');
-        }
-
-        return $total;
     }
 }

@@ -160,6 +160,34 @@ class WeekViewTest extends TestCase {
         $response->assertSee('KW 19');
     }
 
+    /**
+     * Vollscan 2026-08-23, A15: buildMany() lädt alle Wochen in einem
+     * Durchlauf und muss dieselbe Zuordnung liefern wie build() je Woche —
+     * inklusive eines Eintrags, der über die Wochengrenze reicht.
+     */
+    public function test_build_many_matches_single_week_builds(): void {
+        $owner = User::factory()->user()->create();
+        $week1 = CarbonImmutable::parse('2026-04-27 00:00');
+        $week2 = $week1->addWeek();
+
+        OnCallShift::factory()->for($owner)->create(['start_at' => $week1->setTime(8, 0), 'end_at' => $week1->setTime(16, 0)]);
+        // Einsatz über die Wochengrenze (So 12:00 → Mo 12:00 UTC, zeitzonenrobust) gehört in BEIDE Wochen.
+        EmergencyAssignment::factory()->for($owner)->create(['start_at' => $week1->addDays(6)->setTime(12, 0), 'end_at' => $week2->setTime(12, 0)]);
+        DiaryEntry::factory()->for($owner)->create(['start_at' => $week2->addDays(2)->setTime(9, 0), 'end_at' => $week2->addDays(2)->setTime(10, 0)]);
+
+        $service = app(WeekViewService::class);
+        $many = $service->buildMany([$week1, $week2], $owner, teamScope: false);
+
+        foreach ([$week1, $week2] as $index => $anchor) {
+            $single = $service->build($anchor, $owner, teamScope: false);
+            $this->assertSame($single['shifts']->pluck('id')->all(), $many[$index]['shifts']->pluck('id')->all(), "Schichten KW-Index {$index}");
+            $this->assertSame($single['assignments']->pluck('id')->all(), $many[$index]['assignments']->pluck('id')->all(), "Einsätze KW-Index {$index}");
+            $this->assertSame($single['entries']->pluck('id')->all(), $many[$index]['entries']->pluck('id')->all(), "Aufträge KW-Index {$index}");
+        }
+        $this->assertCount(1, $many[0]['assignments']);
+        $this->assertCount(1, $many[1]['assignments']);
+    }
+
     public function test_date_query_param_redirects_for_backward_compat(): void {
         $user = User::factory()->user()->create();
 

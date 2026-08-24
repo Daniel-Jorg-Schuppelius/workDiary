@@ -230,7 +230,9 @@ class MsgraphAdminController extends ConnectionOAuthController {
             return back()->with('error', __('msgraph.flash.no_connection'));
         }
 
-        Artisan::call('msgraph:publish', ['--organization' => (string) $organization->id]);
+        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
+        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
+        Artisan::queue('msgraph:publish', ['--organization' => (string) $organization->id]);
         $connection->audit('msgraph.publish_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('msgraph.flash.publish_done'));

@@ -15,23 +15,38 @@ use App\Models\{ActivityCategory, Organization};
 use Illuminate\Database\Seeder;
 
 /**
- * Seeds the default catalog of non-project activity categories for every
- * organization (and globally, organization_id=NULL).
+ * Erstausstattung der Tätigkeitskategorien je Organisation (und global,
+ * organization_id=NULL). Bootstrap-only wie der EntryTypeSeeder: deploy.sh
+ * seedet bei jedem Deploy — Orgs mit vorhandenen Kategorien werden nie
+ * angefasst, sonst stellte updateOrCreate per UI geänderte Labels/Farben
+ * zurück und reaktivierte deaktivierte Kategorien (Vollscan 2026-08-23, J3).
+ * Neue Orgs laufen über den OrganizationObserver.
  */
 class ActivityCategorySeeder extends Seeder {
     public function run(): void {
         $orgs = Organization::query()->pluck('id')->all();
         $orgs[] = null; // global defaults
 
+        foreach ($orgs as $orgId) {
+            self::seedOrganization($orgId === null ? null : (int) $orgId);
+        }
+    }
+
+    /** Legt die Defaults nur an, wenn die Organisation noch keine Kategorie hat. */
+    public static function seedOrganization(?int $organizationId): void {
+        $exists = ActivityCategory::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->exists();
+        if ($exists) {
+            return;
+        }
+
         // Bypass BelongsToOrganization::creating so explicit organization_id=null is preserved.
-        ActivityCategory::withoutEvents(function () use ($orgs): void {
-            foreach ($orgs as $orgId) {
-                foreach ($this->defaults() as $i => $row) {
-                    ActivityCategory::query()->updateOrCreate(
-                        ['organization_id' => $orgId, 'key' => $row['key']],
-                        $row + ['sort_order' => ($i + 1) * 10, 'active' => true]
-                    );
-                }
+        ActivityCategory::withoutEvents(function () use ($organizationId): void {
+            foreach ((new self())->defaults() as $i => $row) {
+                ActivityCategory::query()->create(
+                    $row + ['organization_id' => $organizationId, 'sort_order' => ($i + 1) * 10, 'active' => true]
+                );
             }
         });
     }

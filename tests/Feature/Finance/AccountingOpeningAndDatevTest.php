@@ -41,7 +41,7 @@ class AccountingOpeningAndDatevTest extends TestCase {
         app()->instance('currentOrganization', $this->org);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->org->id]);
 
-        $this->startsOn = CarbonImmutable::create(2026, 1, 1);
+        $this->startsOn = CarbonImmutable::create(2026, 1, 1) ?? CarbonImmutable::parse('2026-01-01');
         app(AccountingProfileService::class)->configure($this->org, [
             'profit_determination' => ProfitDetermination::DoubleEntry,
             'base_currency' => CurrencyCode::Euro,
@@ -133,6 +133,51 @@ class AccountingOpeningAndDatevTest extends TestCase {
         $this->assertStringContainsString('Barverkauf', $result['csv']);
         // Gegenkonto wird bei zwei Zeilen gesetzt, nicht erfunden.
         $this->assertStringContainsString('9000', $result['csv']);
+    }
+
+    /**
+     * Vollscan 2026-08-23, C2: Die Übergabe aus dem Journal ist jetzt ein
+     * EXTF-V700-Buchungsstapel (financial-formats), den DATEV importieren
+     * kann — die Haus-CSV bleibt nur Fallback ohne das Paket. Der Stapel muss
+     * das Roundtrip-Parsing des Adapters bestehen.
+     */
+    public function test_datev_export_produces_an_importable_extf_batch(): void {
+        if (! \App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+            $this->markTestSkipped('php-financial-formats nicht installiert.');
+        }
+
+        $this->org->update(['settings' => array_merge((array) $this->org->settings, [
+            'datev' => ['advisor_number' => 12345, 'client_number' => 67890],
+        ])]);
+
+        app(JournalService::class)->postDirect($this->org, [
+            'booked_on' => $this->startsOn->addDays(3),
+            'memo' => 'Barverkauf EXTF',
+            'document_reference' => 'BV-2',
+            'source_key' => 'datev-test:extf',
+            'lines' => [
+                ['accounting_account_id' => $this->accounts['bank']->id, 'debit' => '123.45', 'credit' => '0.00'],
+                ['accounting_account_id' => $this->accounts['equity']->id, 'debit' => '0.00', 'credit' => '123.45'],
+            ],
+        ], $this->admin);
+
+        $result = app(LedgerDatevExportService::class)->buildExtf($this->org, $this->startsOn, $this->startsOn->addMonth());
+
+        $this->assertSame(2, $result['rows']);
+        $this->assertSame('123.45', $result['debit']);
+        $this->assertStringStartsWith('EXTF_Buchungsstapel_', $result['filename']);
+        $this->assertStringStartsWith('EXTF;700;', $result['content']);
+        $this->assertStringContainsString('123,45', $result['content']);
+        $this->assertStringContainsString('Barverkauf EXTF', $result['content']);
+
+        // Roundtrip: der Stapel muss sich mit dem financial-formats-Parser
+        // wieder einlesen lassen (Zeilenzahl wie erzeugt).
+        $roundtrip = app(\App\Services\Finance\Datev\DatevBookingAdapter::class)->validateRoundtrip(
+            $result['content'],
+            \App\Services\Finance\Datev\DatevBookingConfig::forOrganization($this->org),
+            2,
+        );
+        $this->assertTrue($roundtrip['ok'], json_encode($roundtrip) ?: '');
     }
 
     public function test_export_is_reproducible(): void {

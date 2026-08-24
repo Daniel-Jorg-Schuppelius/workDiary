@@ -114,7 +114,7 @@
                     <td class="text-xs text-base-content/70 whitespace-nowrap">{{ $check->ran_at->format('d.m.Y H:i:s') }}</td>
                     <td><x-status-badge :tone="$check->status->tone()" size="sm">{{ $check->status->label() }}</x-status-badge></td>
                     <td class="text-xs">{{ $check->baseline_source ?: '—' }}</td>
-                    <td class="text-right text-xs">{{ number_format($check->files_checked, 0, ',', '.') }}</td>
+                    <td class="text-right text-xs">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($check->files_checked, 0, withThousandsSeparator: true) }}</td>
                     <td class="text-right text-xs {{ $check->added_count > 0 ? 'text-error font-medium' : 'text-base-content/50' }}">{{ $check->added_count }}</td>
                     <td class="text-right text-xs {{ $check->modified_count > 0 ? 'text-error font-medium' : 'text-base-content/50' }}">{{ $check->modified_count }}</td>
                     <td class="text-right text-xs {{ $check->deleted_count > 0 ? 'text-error font-medium' : 'text-base-content/50' }}">{{ $check->deleted_count }}</td>

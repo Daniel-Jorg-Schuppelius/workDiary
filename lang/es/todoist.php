@@ -105,7 +105,7 @@ return [
         'link_removed' => 'Asignación eliminada.',
         'link_project_required' => 'Seleccione un proyecto de WorkDiary.',
         'no_connection' => 'Sin conexión activa con Todoist.',
-        'sync_done' => 'Sincronización completa ejecutada.',
+        'sync_done' => 'Sincronización completa iniciada.',
         'preflight_failed' => 'Preflight fallido (:class).',
         'sections_saved' => 'Asignaciones de secciones guardadas.',
         'collaborator_assigned' => 'Responsable asignado.',

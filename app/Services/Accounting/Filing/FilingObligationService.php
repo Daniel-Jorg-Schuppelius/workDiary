@@ -18,6 +18,7 @@ use App\Models\{Organization, User};
 use App\Services\Accounting\VatFilingProfileResolver;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Collection;
 
 /**
@@ -153,13 +154,13 @@ class FilingObligationService {
             if ($interval === VatFilingInterval::Monthly) {
                 for ($month = ($quarter - 1) * 3 + 1; $month <= $quarter * 3; $month++) {
                     $period = VatReturnPeriod::make(VatFilingInterval::Monthly, $year, $month);
-                    if ((float) $this->recapitulative->totalFor($organization, $period->from, $period->to) !== 0.0) {
+                    if (! NumberHelper::isZeroPrecise($this->recapitulative->totalFor($organization, $period->from, $period->to))) {
                         $periods[] = $period;
                     }
                 }
             } else {
                 $period = VatReturnPeriod::make(VatFilingInterval::Quarterly, $year, $quarter);
-                if ((float) $this->recapitulative->totalFor($organization, $period->from, $period->to) !== 0.0) {
+                if (! NumberHelper::isZeroPrecise($this->recapitulative->totalFor($organization, $period->from, $period->to))) {
                     $periods[] = $period;
                 }
             }

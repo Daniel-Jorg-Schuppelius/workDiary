@@ -541,6 +541,7 @@ return [
                 'componentEol' => 'Componente a fine vita (EOL)',
                 'pluginDisabled' => 'Plugin disattivato automaticamente',
                 'schedulerOverdue' => 'Attività pianificata in ritardo',
+                'queueDegraded' => 'Coda compromessa',
                 'maintenanceScheduled' => 'Finestra di manutenzione annunciata',
                 'problemReportReceived' => 'Nuova segnalazione di problema ricevuta',
                 'cloudIntakeReauth' => 'Ingresso cloud: nuovo accesso necessario',
@@ -560,6 +561,18 @@ return [
                 'threat' => 'Rilevamento attacchi',
                 'newDevice' => 'Accesso da nuovo dispositivo',
                 'lockout' => 'Account temporaneamente bloccato',
+            ],
+            'diary' => [
+                'commentCreated' => 'Nuovo commento nel registro ordini',
+                'problem' => 'Voce del registro con problema',
+                'completed' => 'Voce del registro completata',
+                'attachmentAdded' => 'Nuovo allegato nel registro ordini',
+            ],
+            'emergency' => ['assigned' => 'Servizio di emergenza assegnato'],
+            'timesheet' => ['signed' => 'Foglio ore firmato'],
+            'chat' => [
+                'message' => 'Messaggio di chat',
+                'reminder' => 'Promemoria di chat',
             ],
         ],
         'channel' => [

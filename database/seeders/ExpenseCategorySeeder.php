@@ -13,6 +13,13 @@ namespace Database\Seeders;
 use App\Models\{ExpenseCategory, Organization};
 use Illuminate\Database\Seeder;
 
+/**
+ * Erstausstattung der Spesenkategorien je Organisation. Bootstrap-only wie
+ * der EntryTypeSeeder: deploy.sh seedet bei jedem Deploy — Orgs mit
+ * vorhandenen Kategorien werden nie angefasst (updateOrCreate setzte vorher
+ * Label/Steuersatz/is_active zurück; Vollscan 2026-08-23, J3). Neue Orgs
+ * laufen über den OrganizationObserver.
+ */
 class ExpenseCategorySeeder extends Seeder {
     public function run(): void {
         $orgIds = Organization::query()->pluck('id')->all();
@@ -21,13 +28,23 @@ class ExpenseCategorySeeder extends Seeder {
         }
 
         foreach ($orgIds as $orgId) {
-            foreach (self::profiles() as $sort => $profile) {
-                $attrs = ['organization_id' => $orgId, 'slug' => $profile['slug']];
-                ExpenseCategory::query()->withoutGlobalScopes()->updateOrCreate(
-                    $attrs,
-                    array_merge($profile, ['sort' => $sort])
-                );
-            }
+            self::seedOrganization($orgId === null ? null : (int) $orgId);
+        }
+    }
+
+    /** Legt die Profile nur an, wenn die Organisation noch keine Kategorie hat. */
+    public static function seedOrganization(?int $organizationId): void {
+        $exists = ExpenseCategory::query()->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->exists();
+        if ($exists) {
+            return;
+        }
+
+        foreach (self::profiles() as $sort => $profile) {
+            ExpenseCategory::query()->withoutGlobalScopes()->create(
+                array_merge($profile, ['organization_id' => $organizationId, 'sort' => $sort])
+            );
         }
     }
 

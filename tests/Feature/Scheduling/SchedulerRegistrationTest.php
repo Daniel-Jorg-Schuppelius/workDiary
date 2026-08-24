@@ -63,6 +63,15 @@ class SchedulerRegistrationTest extends TestCase {
         'events:check-certificates' => ['0 6 * * *', true, true],
         'events:materialize-recurrences' => ['0 2 * * *', true, true],
         'plugin:healthcheck --no-fail' => ['0 * * * *', true, true],
+        // Vollscan 2026-08-23 (J1/J2): Hinweisgeber-Fristen/Aufbewahrung/Scan und
+        // Helpdesk-Polling waren in der Doku versprochen, aber nie registriert.
+        'whistleblowing:deadlines' => ['0 * * * *', true, true],
+        'whistleblowing:retention-review' => ['40 4 * * *', true, true],
+        'whistleblowing:scan' => ['*/5 * * * *', true, true],
+        'zammad:sync' => ['*/15 * * * *', true, true],
+        'github:sync' => ['0 * * * *', true, true],
+        'gitlab:sync' => ['0 * * * *', true, true],
+        'model:prune' => ['50 3 * * *', true, true],
         // Plugin-Review 2026-08: Bereinigung quittierter/alter Plugin-Fehler.
         'model:prune --model=App\\Models\\PluginError' => ['40 3 * * *', true, true],
         'remote:sync-sessions' => ['0 * * * *', true, true],

@@ -17,6 +17,7 @@ use App\Plugins\Toggl\Exceptions\TogglApiException;
 use App\Plugins\Toggl\Sources\TogglApiClient;
 use App\Plugins\Toggl\Support\TogglQuotaGuard;
 use App\Plugins\Toggl\{TogglConfig, TogglExportService, TogglPlugin};
+use GuzzleHttp\Exception\ConnectException;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Support\Facades\Log;
 
@@ -126,7 +127,11 @@ class TogglOutboxDispatcher extends TimeWritebackDispatcher implements MirrorsCr
 
         try {
             app(TogglExportService::class)->pushSingle($organization, TogglConfig::resolve($organization->id), $timeEntry);
-        } catch (ConnectionException $e) {
+        } catch (ConnectException|ConnectionException $e) {
+            // Der TogglApiClient läuft über das api-toolkit und wirft nach
+            // ausgeschöpften Versuchen Guzzles ConnectException (Vollscan
+            // 2026-08-23, B2: bisher wurde nur Laravels ConnectionException
+            // gefangen — der Schutz griff nie).
             // Toggl v9 kennt keine Request-Id-Dedup: nach Transport-Timeout
             // NICHT blind wiederholen (Duplikat, falls der POST doch ankam).
             // Echte Fehlschläge holt der stündliche toggl:push nach; ein doch

@@ -13,14 +13,14 @@ declare(strict_types=1);
 namespace App\Enums\Migration;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Status eines Buchhaltungswechsels (MVP-653, Issue #86). Der Lauf führt
  * von der Planung über Analyse und Zuordnung in den Doppelbetrieb, die
  * Umschaltung am Stichtag und die Prüfung bis zum Abschluss.
  */
-enum AccountingMigrationStatus: string implements HasLabel {
+enum AccountingMigrationStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Draft = 'draft';

@@ -128,7 +128,9 @@ class MailAdminController extends Controller {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
-        Artisan::call('mail:poll', ['--organization' => (string) $organization->id]);
+        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
+        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
+        Artisan::queue('mail:poll', ['--organization' => (string) $organization->id]);
 
         return back()->with('success', __('mail.flash.polled'));
     }

@@ -16,6 +16,9 @@ use App\Enums\Finance\{AccountingEntryStatus, VatFilingInterval};
 use App\Models\Accounting\{AccountingEntryLine, AccountingTaxCode};
 use App\Models\{Customer, Organization};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Money;
 
 /**
  * Zusammenfassende Meldung (Feature 125, MVP-687).
@@ -31,7 +34,7 @@ use Carbon\CarbonImmutable;
  */
 class RecapitulativeStatementService {
     /** § 18a Abs. 1 S. 2 UStG. */
-    public const QUARTERLY_THRESHOLD = 50000.0;
+    public const QUARTERLY_THRESHOLD = '50000.00';
 
     /** Kennziffer der innergemeinschaftlichen Lieferungen in der UStVA. */
     public const FIELD = '41';
@@ -47,9 +50,9 @@ class RecapitulativeStatementService {
 
         for ($back = 0; $back <= 4; $back++) {
             $from = $quarterStart->subMonths(3 * $back);
-            $sum = (float) $this->totalFor($organization, $from, $from->addMonths(2)->endOfMonth());
+            $sum = $this->totalFor($organization, $from, $from->addMonths(2)->endOfMonth());
 
-            if ($sum > self::QUARTERLY_THRESHOLD) {
+            if (NumberHelper::comparePrecise($sum, self::QUARTERLY_THRESHOLD, 2) > 0) {
                 return VatFilingInterval::Monthly;
             }
         }
@@ -57,16 +60,19 @@ class RecapitulativeStatementService {
         return VatFilingInterval::Quarterly;
     }
 
-    /** Summe der innergemeinschaftlichen Lieferungen im Zeitraum. */
+    /**
+     * Summe der innergemeinschaftlichen Lieferungen im Zeitraum.
+     *
+     * @return numeric-string
+     */
     public function totalFor(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): string {
-        $total = '0.00';
+        $lines = $this->lines($organization, $from, $to);
 
-        foreach ($this->lines($organization, $from, $to) as $line) {
-            $amount = (float) ($line->credit?->getAmount() ?? '0.00') - (float) ($line->debit?->getAmount() ?? '0.00');
-            $total = number_format((float) $total + $amount, 2, '.', '');
-        }
-
-        return $total;
+        // Erlöse stehen im Haben: Haben − Soll je Zeile, exakt summiert.
+        return Money::sum(
+            $lines->map(static fn (AccountingEntryLine $line): Money => $line->signedAmount()->negated()),
+            $lines->first()->currency ?? CurrencyCode::Euro,
+        )->getAmount();
     }
 
     /**
@@ -79,14 +85,15 @@ class RecapitulativeStatementService {
      * @return array{rows: list<array<string, mixed>>, total: string, unclear: list<string>, interval: VatFilingInterval}
      */
     public function report(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
-        /** @var array<string, array{vat_id: string, name: string, amount: string}> $rows */
+        /** @var array<string, array{vat_id: string, name: string, amount: numeric-string}> $rows */
         $rows = [];
         $unclear = [];
-        $total = '0.00';
+        $lines = $this->lines($organization, $from, $to);
+        $total = Money::zero($lines->first()->currency ?? CurrencyCode::Euro);
 
-        foreach ($this->lines($organization, $from, $to) as $line) {
-            $amount = (float) ($line->credit?->getAmount() ?? '0.00') - (float) ($line->debit?->getAmount() ?? '0.00');
-            $total = number_format((float) $total + $amount, 2, '.', '');
+        foreach ($lines as $line) {
+            $amount = $line->signedAmount()->negated();
+            $total = $total->plus($amount);
 
             $customer = $line->counterparty_type === Customer::class && $line->counterparty_id !== null
                 ? Customer::query()->find($line->counterparty_id)
@@ -104,14 +111,14 @@ class RecapitulativeStatementService {
             }
 
             $rows[$vatId] ??= ['vat_id' => $vatId, 'name' => $customer instanceof Customer ? (string) $customer->name : '', 'amount' => '0.00'];
-            $rows[$vatId]['amount'] = number_format((float) $rows[$vatId]['amount'] + $amount, 2, '.', '');
+            $rows[$vatId]['amount'] = NumberHelper::addPrecise($rows[$vatId]['amount'], $amount->getAmount(), 2);
         }
 
         ksort($rows);
 
         return [
             'rows' => array_values($rows),
-            'total' => $total,
+            'total' => $total->getAmount(),
             'unclear' => array_values(array_unique($unclear)),
             'interval' => $this->intervalFor($organization, $to),
         ];

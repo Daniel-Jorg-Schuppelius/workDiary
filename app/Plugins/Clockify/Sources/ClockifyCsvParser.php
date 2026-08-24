@@ -15,7 +15,8 @@ namespace App\Plugins\Clockify\Sources;
 use App\Plugins\Support\ImportedTimeEntry;
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 
 /**
  * Parst ein Clockify-Detailed-Report-CSV zu {@see ImportedTimeEntry}-DTOs.
@@ -83,18 +84,10 @@ class ClockifyCsvParser {
      */
     private function readRows(string $content): array {
         try {
-            return CsvFacade::parseRows($content, $this->sniffDelimiter($content));
+            return CsvFacade::parseRows($content, CsvStringHelper::detectDelimiter($content, [',', ';'], 1, ','));
         } catch (\Throwable) {
             return [];
         }
-    }
-
-    /** Erkennt das Trennzeichen aus der ersten Zeile (`;` vs `,`). */
-    private function sniffDelimiter(string $content): string {
-        $firstLine = strtok($content, "\r\n");
-        $firstLine = $firstLine === false ? '' : $firstLine;
-
-        return substr_count($firstLine, ';') > substr_count($firstLine, ',') ? ';' : ',';
     }
 
     /**
@@ -228,8 +221,8 @@ class ClockifyCsvParser {
             };
         }
 
-        $decimal = str_replace(',', '.', trim((string) $decimal));
-        if ($decimal !== '' && is_numeric($decimal)) {
+        $decimal = NumberHelper::normalizeDecimalStringOrNull((string) $decimal);
+        if ($decimal !== null) {
             return (int) round(((float) $decimal) * 3600);
         }
 

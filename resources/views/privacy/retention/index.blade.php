@@ -128,9 +128,7 @@
             @endif
         @endif
 
-        <div class="mt-3">
-            <x-pagination :paginator="$proposals" />
-        </div>
     </x-card>
+    <x-pagination :paginator="$proposals" standing />
 </x-page-shell>
 @endsection

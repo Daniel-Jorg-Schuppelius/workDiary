@@ -162,7 +162,9 @@ class GoogleCalendarAdminController extends ConnectionOAuthController {
             return back()->with('error', __('google_calendar.flash.no_connection'));
         }
 
-        Artisan::call('google-calendar:publish', ['--organization' => (string) $organization->id]);
+        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
+        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
+        Artisan::queue('google-calendar:publish', ['--organization' => (string) $organization->id]);
         $connection->audit('google_calendar.publish_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('google_calendar.flash.publish_done'));

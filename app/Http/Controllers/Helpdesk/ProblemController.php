@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Helpdesk;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{KnowledgeArticleLink, Problem, ServiceTicket, User};
 use App\Services\ServiceTicket\ProblemService;
@@ -29,6 +30,8 @@ use Illuminate\View\View;
  * Veröffentlichung in die Wissensbasis.
  */
 class ProblemController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly ProblemService $problems) {}
 
     public function index(Request $request): View {
@@ -104,7 +107,7 @@ class ProblemController extends Controller {
             $problem = $this->problems->openFromIncidents($tickets, $data['title'], $user, $data['description'] ?? null);
         } else {
             $problem = Problem::query()->create([
-                'organization_id' => (int) $user->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'owner_id' => $user->id,
@@ -240,7 +243,7 @@ class ProblemController extends Controller {
             $ticket = $id !== null
                 ? ServiceTicket::query()
                     ->whereKey($id)
-                    ->where('organization_id', (int) $user->organization_id)
+                    ->where('organization_id', $this->currentOrganization()->id)
                     ->first()
                 : null;
             if ($ticket === null) {

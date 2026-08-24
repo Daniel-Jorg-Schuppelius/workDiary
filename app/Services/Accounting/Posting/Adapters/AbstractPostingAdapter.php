@@ -64,6 +64,11 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
         ]);
     }
 
+    /**
+     * @param  numeric-string  $debit
+     * @param  numeric-string  $credit
+     * @param  numeric-string|null  $taxAmount
+     */
     protected function line(
         PostingAccountRole $role,
         AccountingPostingRule $rule,
@@ -134,9 +139,5 @@ abstract class AbstractPostingAdapter implements PostingSourceAdapter {
         $profile = AccountingProfile::query()->where('organization_id', $organization->id)->first();
 
         return $profile instanceof AccountingProfile ? $profile->base_currency : CurrencyCode::Euro;
-    }
-
-    protected function money(mixed $value): string {
-        return number_format((float) (is_object($value) && method_exists($value, 'getAmount') ? $value->getAmount() : $value), 2, '.', '');
     }
 }

@@ -94,7 +94,7 @@ class AssetComplianceReportController extends Controller {
         [$from, $to] = $this->period($request);
 
         AssetComplianceReportSnapshot::query()->create([
-            'organization_id' => $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'period_start' => $from->toDateString(),
             'period_end' => $to->toDateString(),
             'payload' => $this->aggregate($from, $to),

@@ -38,6 +38,7 @@ return [
     ],
 
     'action' => [
+        'confirm_iban' => 'Confirmar IBAN',
         'proposal' => 'Propuesta de pago',
         'create_run' => 'Crear remesa',
         'show' => 'Ver',
@@ -74,15 +75,20 @@ return [
         'cancelled' => 'anulada',
     ],
 
+    'iban_confirmed' => 'Se confirmó el IBAN divergente — la posición ya es pagadera.',
+
     'blocked' => [
         'missing_iban' => 'Falta el IBAN',
         'zero_amount' => 'Importe 0',
+        'iban_differs' => 'El IBAN difiere de los datos maestros',
     ],
 
     'error' => [
+        'no_iban_deviation' => 'El IBAN de la factura no difiere (ya) de los datos maestros del proveedor.',
         'no_positions' => 'La remesa no contiene posiciones.',
         'not_draft' => 'La remesa ya no es un borrador.',
         'not_released' => 'La remesa no está aprobada.',
+        'four_eyes' => 'Principio de los cuatro ojos: quien preparó la remesa no puede aprobarla por sí mismo.',
         'exported_final' => 'Una remesa exportada ya no se anula.',
         'invalid_amount' => 'El importe a pagar debe ser mayor que 0 y no puede superar el importe facturado.',
         'reason_required' => 'Un importe reducido requiere un motivo.',

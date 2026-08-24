@@ -110,37 +110,44 @@ class DropboxBackupClient {
     public function listObjects(string $prefix): array {
         $path = '/' . trim($prefix, '/');
         $objects = [];
-        $cursor = null;
 
-        do {
+        // CursorPaginator (Vollscan 2026-08-23, C3): Endlos-Guard + Seiten-Deckel.
+        $paginator = new \APIToolkit\API\Pagination\CursorPaginator(function (?string $cursor) use ($path): \APIToolkit\API\Pagination\CursorPage {
             $response = $cursor === null
                 ? $this->api->postJson($this->apiBase . '/files/list_folder', ['path' => $path, 'recursive' => false])
                 : $this->api->postJson($this->apiBase . '/files/list_folder/continue', ['cursor' => $cursor]);
 
             if ($response->status() === 409 && str_contains((string) $response->body(), 'not_found')) {
-                return []; // Prefix existiert (noch) nicht.
+                return new \APIToolkit\API\Pagination\CursorPage([], null); // Prefix existiert (noch) nicht.
             }
-            if (!$response->successful()) {
+            if (! $response->successful()) {
                 throw new RuntimeException('Dropbox list_folder fehlgeschlagen (HTTP ' . $response->status() . ').');
             }
 
             /** @var array{entries?: list<array<string, mixed>>, cursor?: string, has_more?: bool} $data */
             $data = (array) $response->json();
-            foreach ((array) ($data['entries'] ?? []) as $entry) {
-                $tag = (string) ($entry['.tag'] ?? '');
-                if ($tag !== 'file' && $tag !== 'folder') {
-                    continue;
-                }
-                $displayPath = (string) ($entry['path_display'] ?? '');
-                $objects[] = new BackupRemoteObject(
-                    ref: $displayPath,
-                    name: (string) ($entry['name'] ?? basename($displayPath)),
-                    size: (int) ($entry['size'] ?? 0),
-                    modifiedAt: isset($entry['server_modified']) ? (string) $entry['server_modified'] : null,
-                );
+            $cursorValue = (string) ($data['cursor'] ?? '');
+            $next = (bool) ($data['has_more'] ?? false) && $cursorValue !== '' ? $cursorValue : null;
+
+            return new \APIToolkit\API\Pagination\CursorPage((array) ($data['entries'] ?? []), $next);
+        }, maxPages: 500);
+
+        foreach ($paginator as $entry) {
+            if (! is_array($entry)) {
+                continue;
             }
-            $cursor = (string) ($data['cursor'] ?? '');
-        } while ((bool) ($data['has_more'] ?? false) && $cursor !== '');
+            $tag = (string) ($entry['.tag'] ?? '');
+            if ($tag !== 'file' && $tag !== 'folder') {
+                continue;
+            }
+            $displayPath = (string) ($entry['path_display'] ?? '');
+            $objects[] = new BackupRemoteObject(
+                ref: $displayPath,
+                name: (string) ($entry['name'] ?? basename($displayPath)),
+                size: (int) ($entry['size'] ?? 0),
+                modifiedAt: isset($entry['server_modified']) ? (string) $entry['server_modified'] : null,
+            );
+        }
 
         return $objects;
     }

@@ -11,7 +11,7 @@
 namespace App\Plugins\RemoteSupport\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
-use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportService};
+use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportConfig};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -28,7 +28,7 @@ class SyncSessionsCommand extends Command {
 
     protected $description = 'Importiert AnyDesk-/TeamViewer-Verbindungen als Zeiteinträge (Standardprojekt des Kunden).';
 
-    public function handle(RemoteSupportService $service): int {
+    public function handle(RemoteSessionImporter $service): int {
         $organizations = $this->organizationsToProcess();
         if ($organizations->isEmpty()) {
             $this->warn('Keine Organisationen gefunden.');

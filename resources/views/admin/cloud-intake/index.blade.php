@@ -223,7 +223,7 @@
                             </tr>
                         @endforeach
                     </x-table>
-                    <x-pagination :paginator="$items" />
+                    <x-pagination :paginator="$items" standing />
                 @endif
             </div>
         </div>

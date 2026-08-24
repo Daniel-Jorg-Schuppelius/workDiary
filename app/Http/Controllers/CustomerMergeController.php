@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\MergesDuplicates;
+use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
 use App\Models\{Customer, CustomerMergeDismissal, Organization};
 use App\Services\{CustomerDuplicateFinder, CustomerMergeService};
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +27,7 @@ use Illuminate\View\View;
 class CustomerMergeController extends Controller {
     /** @use MergesDuplicates<Customer> */
     use MergesDuplicates;
+    use ResolvesCurrentOrganization;
 
     public function index(Request $request, CustomerDuplicateFinder $finder): View {
         $user = $this->authorizeMerging();
@@ -98,7 +99,7 @@ class CustomerMergeController extends Controller {
         CustomerMergeDismissal::query()->updateOrCreate(
             CustomerMergeDismissal::pairKey((int) $source->getKey(), (int) $target->getKey()),
             [
-                'organization_id' => $user->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'dismissed_by' => $user->id,
             ],
         );

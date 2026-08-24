@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Finance;
 
 use App\Enums\User\Permission as P;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{TaxRule, User};
 use App\Services\Invoicing\TaxResolver;
@@ -28,11 +29,13 @@ use Illuminate\Support\Facades\Auth;
  * Recht: finance.config — kritische Änderungen sind auditiert.
  */
 class TaxRuleController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly TaxResolver $resolver) {}
 
     public function index(): View {
         $this->authorizeConfig();
-        $orgId = (int) Auth::user()?->organization_id;
+        $orgId = $this->currentOrganization()->id;
 
         $rules = TaxRule::query()
             ->where(fn($q) => $q->whereNull('organization_id')->orWhere('organization_id', $orgId))
@@ -82,7 +85,7 @@ class TaxRuleController extends Controller {
         $rule = new TaxRule([
             ...$data,
             'country' => strtoupper($data['country']),
-            'organization_id' => (int) Auth::user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'status' => 'active',
             'created_by' => (int) Auth::id(),
         ]);
@@ -103,7 +106,7 @@ class TaxRuleController extends Controller {
     public function retire(TaxRule $rule): RedirectResponse {
         $this->authorizeConfig();
         abort_if($rule->organization_id === null, 403, (string) __('Der ausgelieferte Katalog wird nicht verändert — Org-Override anlegen.'));
-        abort_unless((int) $rule->organization_id === (int) Auth::user()?->organization_id, 404);
+        abort_unless((int) $rule->organization_id === $this->currentOrganization()->id, 404);
 
         $rule->update(['status' => 'retired']);
         $rule->audit('tax_rule.retired', ['country' => $rule->country, 'category' => $rule->category]);
@@ -136,7 +139,7 @@ class TaxRuleController extends Controller {
                 continue;
             }
             $rule = new TaxRule([
-                'organization_id' => (int) Auth::user()?->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'country' => strtoupper($parts[0]),
                 'category' => $parts[1],
                 'rate_type' => $parts[2],

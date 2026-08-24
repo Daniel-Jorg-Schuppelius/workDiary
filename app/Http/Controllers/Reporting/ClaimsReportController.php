@@ -59,7 +59,7 @@ class ClaimsReportController extends Controller {
         $actor = $request->user() ?? abort(401);
         [$from, $to] = $this->resolveRange($request);
         ClaimReportSnapshot::query()->create([
-            'organization_id' => (int) $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'period_start' => $from->toDateString(),
             'period_end' => $to->toDateString(),
             'payload' => $this->aggregate($from, $to),

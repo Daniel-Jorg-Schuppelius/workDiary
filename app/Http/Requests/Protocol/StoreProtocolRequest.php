@@ -35,8 +35,6 @@ class StoreProtocolRequest extends BaseFormRequest {
             'state_initial' => ['nullable', 'string', 'max:10000'],
             'occurred_at' => ['nullable', 'date'],
             'visibility' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(ProtocolVisibility::class)],
-            'template_id' => ['nullable', 'integer', 'min:1'],
-            'template_version' => ['nullable', 'integer', 'min:1'],
             'tag_ids' => ['nullable', 'array'],
             'tag_ids.*' => ['nullable', 'string', 'max:64'],
             'new_tags' => ['nullable', 'string', 'max:500'],

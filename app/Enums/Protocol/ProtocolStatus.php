@@ -35,7 +35,7 @@ enum ProtocolStatus: string implements HasLabel {
     }
 
     /** @return list<string> */
-    public function allowedTransitions(): array {
+    public function allowedActions(): array {
         return match ($this) {
             self::Draft => ['requestReview', 'signDirect', 'archive'],
             self::InReview => ['returnToDraft', 'sign'],

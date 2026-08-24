@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Enums\Passenger;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Lebenszyklus einer Fahrtakte (MVP-456, Konzept §4 „Status"):
@@ -25,7 +25,7 @@ use App\Enums\Contracts\HasLabel;
  * `en_route_pickup`. Rückwärtsschritte gibt es nicht — Korrekturen laufen
  * über einen neuen Fahrtauftrag (auditiert).
  */
-enum RideStatus: string implements HasLabel {
+enum RideStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case Requested = 'requested';

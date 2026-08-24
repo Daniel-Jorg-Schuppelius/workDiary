@@ -26,7 +26,7 @@ use Illuminate\Support\Carbon;
  */
 class PurgeResolvedInboxItems extends Command {
     protected $signature = 'integration:purge-inbox
-        {--days= : Aufbewahrungsfrist in Tagen (Default aus config/integration.php, 90)}';
+        {--days= : Aufbewahrungsfrist in Tagen (Default aus config/integration.php (INTEGRATION_INBOX_RETENTION_DAYS), 90)}';
 
     protected $description = 'Entfernt abgeschlossene Integrations-Inbox-Einträge, deren Auflösung älter als die Aufbewahrungsfrist ist.';
 

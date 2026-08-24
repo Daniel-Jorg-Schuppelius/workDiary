@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "1b9e72436f427f589a163c35a73d6472",
+    "content-hash": "59a0bbb8741dd53d1706d567feb3cb19",
     "packages": [
         {
             "name": "azuyalabs/yasumi",
@@ -661,16 +661,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
-            "version": "v0.11",
+            "version": "v0.11.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit.git",
-                "reference": "2260b997495b316ca712e5308636ee9e49cb7269"
+                "reference": "d50d22bab2b9551f98d65c98a11487265df617c4"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/2260b997495b316ca712e5308636ee9e49cb7269",
-                "reference": "2260b997495b316ca712e5308636ee9e49cb7269",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/zipball/d50d22bab2b9551f98d65c98a11487265df617c4",
+                "reference": "d50d22bab2b9551f98d65c98a11487265df617c4",
                 "shasum": ""
             },
             "require": {
@@ -723,9 +723,9 @@
             ],
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.11"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-erechnung-toolkit/tree/v0.11.1"
             },
-            "time": "2026-08-20T12:21:08+00:00"
+            "time": "2026-08-23T17:35:44+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-pdf-toolkit",

@@ -1341,7 +1341,7 @@
                     // warnt nur noch vor der geplanten DATENLOESCHUNG – also nur fuer
                     // purgebare Module (aufbewahrungspflichtige bleiben dauerhaft erhalten).
                     $_graceItems = [];
-                    if (app()->bound('currentOrganization') && \Illuminate\Support\Facades\Schema::hasTable('plan_module_grace')) {
+                    if (app()->bound('currentOrganization')) {
                         $_purgeable = (array) config('plans.purgeable_on_downgrade', []);
                         foreach (\App\Models\PlanModuleGrace::query()
                             ->where('organization_id', app('currentOrganization')->id)

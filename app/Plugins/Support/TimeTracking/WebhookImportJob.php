@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\TimeTracking;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{Organization, TimeTrackingWebhookDelivery};
 use App\Plugins\Contracts\TimeImporter;
 use App\Plugins\PluginManager;
@@ -33,6 +34,7 @@ class WebhookImportJob implements ShouldQueue {
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;
+    use RetriesTransientFailures;
     use SerializesModels;
 
     public function __construct(

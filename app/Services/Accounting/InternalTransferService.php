@@ -15,6 +15,7 @@ namespace App\Services\Accounting;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingTransfer};
 use App\Models\{Organization, User};
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -60,7 +61,7 @@ class InternalTransferService {
             }
         }
 
-        if ((float) $data['amount'] <= 0.0) {
+        if (! Money::of($data['amount'], $this->journal->baseCurrency($organization))->isPositive()) {
             throw ValidationException::withMessages([
                 'amount' => [(string) __('accounting.transfer.error.amount_positive')],
             ]);

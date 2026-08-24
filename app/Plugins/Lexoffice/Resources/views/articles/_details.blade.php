@@ -58,7 +58,7 @@
                 <dt class="text-xs text-base-content/60">{{ __('Netto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->net_unit_price !== null)
-                        {{ number_format($article->net_unit_price?->toFloat() ?? 0.0, 2, ',', '.') }} {{ $article->currency->value }}
+                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
                     @else
                         —
                     @endif
@@ -68,7 +68,7 @@
                 <dt class="text-xs text-base-content/60">{{ __('Brutto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->gross_unit_price !== null)
-                        {{ number_format($article->gross_unit_price?->toFloat() ?? 0.0, 2, ',', '.') }} {{ $article->currency->value }}
+                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->gross_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
                     @else
                         —
                     @endif
@@ -78,7 +78,7 @@
                 <dt class="text-xs text-base-content/60">{{ __('Umsatzsteuersatz') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->vat_rate !== null)
-                        {{ number_format($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, ',', '.') }} %
+                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, withThousandsSeparator: true) }} %
                     @else
                         —
                     @endif

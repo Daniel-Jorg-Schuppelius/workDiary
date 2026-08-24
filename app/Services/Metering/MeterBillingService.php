@@ -303,8 +303,8 @@ class MeterBillingService {
                     'service_date' => $periodEnd->toDateString(),
                     'description' => __('metering.line.usage', [
                         'title' => $agreement->title,
-                        'consumption' => rtrim(rtrim(number_format($consumption, 3, ',', '.'), '0'), ','),
-                        'free' => rtrim(rtrim(number_format((float) $agreement->free_units, 3, ',', '.'), '0'), ','),
+                        'consumption' => rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($consumption, 3, withThousandsSeparator: true), '0'), ','),
+                        'free' => rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->free_units, 3, withThousandsSeparator: true), '0'), ','),
                         'unit' => (string) ($agreement->unit ?? ''),
                     ]) . ($estimated ? ' ' . __('metering.line.estimated') : ''),
                     'quantity' => number_format($billable, 3, '.', ''),

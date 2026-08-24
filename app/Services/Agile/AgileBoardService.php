@@ -14,7 +14,7 @@ namespace App\Services\Agile;
 
 use App\Enums\Agile\AgileColumnCategory;
 use App\Models\Agile\AgileBoard;
-use App\Models\{Project, User};
+use App\Models\{Project, Task, User};
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -179,6 +179,49 @@ class AgileBoardService {
 
             return $item->fresh(['column', 'task']) ?? $item;
         });
+    }
+
+    /**
+     * Task→Board-Nachzieh-Sync (Feature 064, P3): Statuswechsel außerhalb des
+     * Boards schiebt das Work-Item in die erste Spalte der Zielkategorie.
+     * Läuft BEWUSST an {@see move()} vorbei: Der Statuswechsel ist bereits
+     * vollzogen, hier wird nur gespiegelt — keine WIP-/Kriterien-Prüfung,
+     * keine optimistische Sperre. Kein Task-Write → keine Endlos-Schleife
+     * mit move(). Aufrufer: {@see \App\Observers\TaskObserver::saved()}.
+     */
+    public function syncColumnFromTask(Task $task): void {
+        if (! $task->wasChanged('status')) {
+            return;
+        }
+        $item = \App\Models\Agile\AgileWorkItem::query()->where('task_id', $task->id)->first();
+        if ($item === null) {
+            return;
+        }
+        $rawStatus = $task->getAttribute('status');
+        $status = (string) ($rawStatus instanceof \BackedEnum ? $rawStatus->value : $rawStatus);
+        $currentCategory = $item->column?->category?->value;
+        if ($currentCategory === $status) {
+            return;
+        }
+        $target = \App\Models\Agile\AgileBoardColumn::query()
+            ->where('board_id', $item->board_id)
+            ->where('category', $status)
+            ->orderBy('position')
+            ->first();
+        if ($target === null || (int) $target->id === (int) $item->column_id) {
+            return;
+        }
+        $from = $item->column_id;
+        \App\Models\Agile\AgileWorkItem::query()->whereKey($item->id)
+            ->update(['column_id' => $target->id, 'lock_version' => DB::raw('lock_version + 1')]);
+        \App\Models\Agile\AgileEvent::record([
+            'organization_id' => $item->organization_id,
+            'board_id' => $item->board_id,
+            'work_item_id' => $item->id,
+            'event' => 'column.moved',
+            'payload' => ['from' => $from, 'to' => $target->id, 'origin' => 'task_sync'],
+            'created_at' => now(),
+        ]);
     }
 
     /** Blockieren mit Pflichtgrund (Karte bleibt in der Spalte). */

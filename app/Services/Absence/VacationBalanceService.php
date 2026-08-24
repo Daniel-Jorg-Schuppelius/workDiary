@@ -124,19 +124,6 @@ class VacationBalanceService {
     }
 
     private function countWorkdays(CarbonInterface $start, CarbonInterface $end): int {
-        if ($start->greaterThan($end)) {
-            return 0;
-        }
-        $count = 0;
-        $cursor = Carbon::parse($start->toDateString());
-        $endDay = Carbon::parse($end->toDateString());
-        while ($cursor->lte($endDay)) {
-            if ($cursor->isWeekday() && ! $this->holidayService->isHoliday($cursor)) {
-                $count++;
-            }
-            $cursor->addDay();
-        }
-
-        return $count;
+        return $start->greaterThan($end) ? 0 : $this->holidayService->workingDaysBetween($start, $end);
     }
 }

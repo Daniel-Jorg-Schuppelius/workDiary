@@ -21,7 +21,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property ProtocolSignatureRole $role
  * @property string $signer_name
  * @property string|null $signer_email
- * @property int|null $signer_contact_id
  * @property \Illuminate\Support\Carbon $signed_at
  * @property ProtocolSignatureMethod $method
  * @property string|null $signature_image_path
@@ -35,7 +34,6 @@ class ProtocolSignature extends Model {
         'role',
         'signer_name',
         'signer_email',
-        'signer_contact_id',
         'signed_at',
         'method',
         'signature_image_path',

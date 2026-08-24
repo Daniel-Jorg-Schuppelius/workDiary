@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\ReviewStatus;
 use App\Models\Isms\{IsmsManagementReview, IsmsScope};
 use App\Models\User;
-use App\Services\Isms\Concerns\AssignsSequentialNo;
+use App\Services\Concerns\AssignsSequentialNo;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;

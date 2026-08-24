@@ -38,6 +38,7 @@ return [
     ],
 
     'action' => [
+        'confirm_iban' => 'Confirmer l’IBAN',
         'proposal' => 'Proposition de paiement',
         'create_run' => 'Créer l’ordre de paiement',
         'show' => 'Afficher',
@@ -74,15 +75,20 @@ return [
         'cancelled' => 'annulé',
     ],
 
+    'iban_confirmed' => 'L’IBAN divergent a été confirmé — la position est désormais payable.',
+
     'blocked' => [
         'missing_iban' => 'IBAN manquant',
         'zero_amount' => 'Montant nul',
+        'iban_differs' => 'IBAN différent des données de base',
     ],
 
     'error' => [
+        'no_iban_deviation' => 'L’IBAN de la facture ne diffère pas (ou plus) des données de base du fournisseur.',
         'no_positions' => 'L’ordre de paiement ne contient aucune position.',
         'not_draft' => 'L’ordre de paiement n’est plus un brouillon.',
         'not_released' => 'L’ordre de paiement n’est pas validé.',
+        'four_eyes' => 'Principe des quatre yeux : la personne qui a préparé l’ordre de paiement ne peut pas le valider elle-même.',
         'exported_final' => 'Un ordre de paiement exporté ne s’annule plus.',
         'invalid_amount' => 'Le montant payé doit être supérieur à 0 et ne pas dépasser le montant facturé.',
         'reason_required' => 'Un montant réduit exige un motif.',

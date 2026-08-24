@@ -12,12 +12,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Isms;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Isms\{IsmsAudit, IsmsAuditProgram, IsmsScope};
-use App\Models\User;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -28,6 +28,8 @@ use Illuminate\View\View;
  * Rechte folgen dem Audit-Muster (IsmsAudit-Policy).
  */
 class AuditProgramController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize('viewAny', IsmsAudit::class);
 
@@ -49,9 +51,6 @@ class AuditProgramController extends Controller {
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', IsmsAudit::class);
 
-        /** @var User $actor */
-        $actor = Auth::user();
-
         // Sqid-Input vor der Validierung dekodieren (numerischer Fallback für Alt-Clients).
         if ($request->filled('isms_scope_id')) {
             $request->merge(['isms_scope_id' => Sqid::decodeOrNumeric(IsmsScope::class, $request->input('isms_scope_id'))]);
@@ -61,7 +60,7 @@ class AuditProgramController extends Controller {
             'name' => ['required', 'string', 'min:3', 'max:180'],
             'isms_scope_id' => [
                 'required', 'integer',
-                Rule::exists('isms_scopes', 'id')->where('organization_id', $actor->organization_id),
+                Rule::exists('isms_scopes', 'id')->where('organization_id', $this->currentOrganization()->id),
             ],
             'norm' => ['nullable', 'string', 'max:64'],
             'edition' => ['nullable', 'string', 'max:16'],
@@ -71,7 +70,7 @@ class AuditProgramController extends Controller {
         ]);
 
         $program = IsmsAuditProgram::query()->create([
-            'organization_id' => $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'status' => 'active',
             ...$data,
         ]);
@@ -85,9 +84,6 @@ class AuditProgramController extends Controller {
     public function update(Request $request, IsmsAuditProgram $program): RedirectResponse {
         Gate::authorize('create', IsmsAudit::class);
 
-        /** @var User $actor */
-        $actor = Auth::user();
-
         if ($request->filled('attach_audit_id')) {
             $request->merge(['attach_audit_id' => Sqid::decodeOrNumeric(IsmsAudit::class, $request->input('attach_audit_id'))]);
         }
@@ -96,7 +92,7 @@ class AuditProgramController extends Controller {
             'status' => ['nullable', 'in:active,completed,cancelled'],
             'attach_audit_id' => [
                 'nullable', 'integer',
-                Rule::exists('isms_audits', 'id')->where('organization_id', $actor->organization_id),
+                Rule::exists('isms_audits', 'id')->where('organization_id', $this->currentOrganization()->id),
             ],
         ]);
 

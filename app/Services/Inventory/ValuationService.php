@@ -185,6 +185,25 @@ class ValuationService implements InventoryValuationStrategy {
         return bcmul($valuation->qty_on_hand, $valuation->avg_cost?->getAmount() ?? '0', self::SCALE);
     }
 
+    /**
+     * Bewertungen aller Varianten eines Lagers in einer Query (Vollscan
+     * 2026-08-23, A4) — Rückgabe variant_id → [avg, value].
+     *
+     * @return array<int, array{avg: numeric-string, value: numeric-string}>
+     */
+    public function summariesForWarehouse(Warehouse $warehouse): array {
+        $out = [];
+        foreach (StockValuation::query()->where('warehouse_id', $warehouse->id)->get() as $valuation) {
+            $avg = $valuation->avg_cost?->getAmount() ?? '0';
+            $out[(int) $valuation->article_variant_id] = [
+                'avg' => $avg,
+                'value' => bcmul($valuation->qty_on_hand, $avg, self::SCALE),
+            ];
+        }
+
+        return $out;
+    }
+
     private function valuationFor(ArticleVariant $variant, Warehouse $warehouse): StockValuation {
         /** @var StockValuation $valuation */
         $valuation = StockValuation::query()->firstOrNew([

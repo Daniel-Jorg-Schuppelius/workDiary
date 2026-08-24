@@ -32,6 +32,9 @@ return [
         'canceled' => 'Appointment request cancelled',
         'service_created' => 'Bookable service created',
     ],
+    'incomingEInvoice' => [
+        'ibanConfirmed' => 'Deviating invoice IBAN confirmed',
+    ],
     'paymentRun' => [
         'released' => 'Payment run released',
         'exported' => 'SEPA file created',
@@ -40,6 +43,7 @@ return [
         'revoked' => 'SEPA mandate revoked',
     ],
     'circular' => [
+        'send_started' => 'Circular dispatch started',
         'approved' => 'Circular approved',
         'sent' => 'Circular sent',
     ],
@@ -255,6 +259,7 @@ return [
     'cti' => [
         'connection_issued' => 'CTI connection issued',
         'dial_configured' => 'Click-to-dial configured',
+        'dial_started' => 'Call started via click-to-dial',
         'disconnected' => 'CTI disconnected',
     ],
     'datanorm' => [

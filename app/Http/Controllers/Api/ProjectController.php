@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveProjectRequest;
 use App\Http\Resources\ProjectResource;
@@ -21,6 +22,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use OpenApi\Attributes as OA;
 
 class ProjectController extends Controller {
+    use ResolvesCurrentOrganization;
+
     #[OA\Get(
         path: '/projects',
         summary: 'Projekte auflisten',
@@ -64,7 +67,7 @@ class ProjectController extends Controller {
         Gate::authorize('create', Project::class);
         $project = Project::create($request->validated() + [
             'created_by' => Auth::id(),
-            'organization_id' => $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
         ]);
 
         return new ProjectResource($project);

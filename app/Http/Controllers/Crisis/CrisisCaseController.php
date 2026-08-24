@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Crisis;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, MarkCrisisCommunicationSentRequest, StoreCrisisActionRequest, StoreCrisisCaseRequest, StoreCrisisCommunicationRequest, StoreCrisisContinuityImpactRequest, StoreCrisisDecisionRequest, StoreCrisisReviewRequest, StoreCrisisRoleRequest, StoreCrisisSituationReportRequest, UpdateCrisisActionRequest, UpdateCrisisCaseStatusRequest, UpdateCrisisContinuityImpactRequest};
 use App\Models\Crisis\{CrisisCase, CrisisCommunication, CrisisRole, CrisisTeamAssignment};
@@ -26,6 +27,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Entscheidungen/Maßnahmen, Kommunikation, BCM, Verknüpfungen, Nachbereitung.
  */
 class CrisisCaseController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly CrisisAlertService $alerts,
         private readonly CrisisDeadlineService $deadlines,
@@ -73,7 +76,7 @@ class CrisisCaseController extends Controller {
         $actor = Auth::user();
         $case = CrisisCase::query()->create([
             ...$data,
-            'organization_id' => (int) $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'status' => 'reported',
             'responsible_user_id' => $actor->id,
             'created_by' => $actor->id,
@@ -145,10 +148,8 @@ class CrisisCaseController extends Controller {
         Gate::authorize('create', CrisisCase::class);
         $data = $request->validated();
 
-        /** @var User $actor */
-        $actor = Auth::user();
         CrisisRole::query()->firstOrCreate(
-            ['organization_id' => (int) $actor->organization_id, 'name' => $data['name']],
+            ['organization_id' => $this->currentOrganization()->id, 'name' => $data['name']],
             ['description' => $data['description'] ?? null, 'active' => true],
         );
 

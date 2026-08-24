@@ -41,6 +41,15 @@ class NavigationRegistry {
     /** Request-Memo für {@see localLedgerVisible()}. */
     private ?bool $localLedgerVisible = null;
 
+    private ?int $overdueDocumentCount = null;
+
+    /**
+     * Sekunden, die Navigations-Badges je Org gecacht werden (Vollscan
+     * 2026-08-23, A7): die Layout-Baseline lag bei ~15 ungecachten Queries
+     * je Seitenaufruf. Ein Badge darf eine Minute hinterherlaufen.
+     */
+    public const BADGE_TTL = 60;
+
     public function __construct(
         private readonly FeatureFlagResolver $features,
         private readonly NavGate $gate,
@@ -1352,12 +1361,16 @@ class NavigationRegistry {
             return 0;
         }
 
-        return \App\Models\Quote::query()
-            ->whereIn('status', ['approved', 'sent'])
-            ->whereNotNull('follow_up_at')
-            ->whereNull('followed_up_at')
-            ->whereDate('follow_up_at', '<=', \Illuminate\Support\Carbon::today()->toDateString())
-            ->count();
+        return (int) Cache::remember(
+            'nav-badge:quote-followup:' . (int) $user->organization_id,
+            self::BADGE_TTL,
+            static fn (): int => \App\Models\Quote::query()
+                ->whereIn('status', ['approved', 'sent'])
+                ->whereNotNull('follow_up_at')
+                ->whereNull('followed_up_at')
+                ->where('follow_up_at', '<', \Illuminate\Support\Carbon::tomorrow()->startOfDay())
+                ->count(),
+        );
     }
 
     private function overdueDocumentCount(): int {
@@ -1366,7 +1379,18 @@ class NavigationRegistry {
         if ($user === null || $user->organization_id === null) {
             return 0;
         }
+        if ($this->overdueDocumentCount !== null) {
+            return $this->overdueDocumentCount; // Sidebar + Hauptnav fragen beide (A7)
+        }
 
+        return $this->overdueDocumentCount = (int) Cache::remember(
+            'nav-badge:overdue-docs:' . (int) $user->organization_id,
+            self::BADGE_TTL,
+            fn (): int => $this->countOverdueDocuments((int) $user->organization_id),
+        );
+    }
+
+    private function countOverdueDocuments(int $organizationId): int {
         $today = \Illuminate\Support\Carbon::today()->toDateString();
 
         $invoices = \App\Models\Invoice::query()
@@ -1376,7 +1400,7 @@ class NavigationRegistry {
             ->count();
 
         $vouchers = \App\Models\LexofficeVoucher::query()
-            ->where('organization_id', $user->organization_id)
+            ->where('organization_id', $organizationId)
             ->where('archived', false)
             ->whereIn('voucher_type', \App\Support\Billing\VoucherTypes::REVENUE)
             ->whereNotIn('voucher_status', ['draft', 'voided', 'paid', 'paidoff'])
@@ -1566,20 +1590,28 @@ class NavigationRegistry {
                 if ($user->canManageBilling() && Route::has('admin.integration.inbox')) {
                     $iiOrg = $user->organization_id;
                     $iiOpen = $iiOrg !== null
-                        ? \App\Models\IntegrationInboxItem::query()
-                        ->where('organization_id', $iiOrg)
-                        ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
-                        ->count()
+                        ? (int) Cache::remember(
+                            'nav-badge:integration-inbox:' . (int) $iiOrg,
+                            self::BADGE_TTL,
+                            static fn (): int => \App\Models\IntegrationInboxItem::query()
+                                ->where('organization_id', $iiOrg)
+                                ->where('status', \App\Models\IntegrationInboxItem::STATUS_OPEN)
+                                ->count(),
+                        )
                         : 0;
                     $adminNavItems[] = ['route' => 'admin.integration.inbox', 'label' => __('Zuordnungs-Inbox'), 'icon' => 'rule', 'modal' => false, 'matches' => ['admin.integration.*'], 'badge' => $iiOpen];
                 }
                 if (Route::has('admin.remote-support.pending.index')) {
-                    $rsOrg = $user->organization;
+                    $rsOrg = $user->organization_id;
                     $rsPending = $rsOrg !== null
-                        ? \App\Models\RemotePendingSession::query()
-                        ->where('organization_id', $rsOrg->id)
-                        ->where('status', \App\Models\RemotePendingSession::STATUS_OPEN)
-                        ->count()
+                        ? (int) Cache::remember(
+                            'nav-badge:remote-pending:' . (int) $rsOrg,
+                            self::BADGE_TTL,
+                            static fn (): int => \App\Models\RemotePendingSession::query()
+                                ->where('organization_id', $rsOrg)
+                                ->where('status', \App\Models\RemotePendingSession::STATUS_OPEN)
+                                ->count(),
+                        )
                         : 0;
                     $adminNavItems[] = ['route' => 'admin.remote-support.pending.index', 'label' => __('Fernwartung – Inbox'), 'icon' => 'inbox', 'modal' => false, 'badge' => $rsPending];
                 }

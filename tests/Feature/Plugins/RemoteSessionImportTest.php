@@ -17,7 +17,7 @@ use App\Enums\Import\{ImportEntity, ImportRunState};
 use App\Jobs\ProcessCsvImportJob;
 use App\Models\{Asset, Customer, ImportRun, RemotePendingSession, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\AnyDeskClient;
-use App\Plugins\RemoteSupport\RemoteSupportService;
+use App\Plugins\RemoteSupport\RemoteDeviceRegistry;
 use App\Services\Import\EntitySpecRegistry;
 use App\Services\Import\Source\ImportSourceFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -83,7 +83,7 @@ class RemoteSessionImportTest extends TestCase {
             'category_code' => 'notebook',
             'customer_id' => $customer->id,
         ]);
-        (new RemoteSupportService)->setRemoteId($asset, AnyDeskClient::ID, '362798056');
+        (new RemoteDeviceRegistry)->setRemoteId($asset, AnyDeskClient::ID, '362798056');
 
         $run = $this->preflight($this->orgAdmin());
         (new ProcessCsvImportJob($run->id))->handle(app(EntitySpecRegistry::class), app(ImportSourceFactory::class));
@@ -114,7 +114,7 @@ class RemoteSessionImportTest extends TestCase {
             'category_code' => 'notebook',
             'customer_id' => $customer->id,
         ]);
-        (new RemoteSupportService)->setRemoteId($asset, AnyDeskClient::ID, '362798056');
+        (new RemoteDeviceRegistry)->setRemoteId($asset, AnyDeskClient::ID, '362798056');
 
         $admin = $this->orgAdmin();
         foreach ([0, 1] as $_) {

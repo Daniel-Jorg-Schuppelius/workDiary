@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Requests\SaveTaskRequest;
 use App\Models\Task;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -21,19 +21,19 @@ use Illuminate\View\View;
 
 class GlobalTaskController extends Controller {
     use ParsesIndexQuery;
+    use ResolvesCurrentOrganization;
 
     private const ALLOWED_SORTS = ['title', 'status', 'priority', 'hourly_rate', 'time_budget', 'billable'];
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Task::class);
 
-        $user = $request->user();
         ['search' => $search, 'sort' => $sort, 'dir' => $dir]
             = $this->parseIndexQuery($request, self::ALLOWED_SORTS, 'title');
 
         $tasks = Task::query()
             ->where('is_global', true)
-            ->when($user?->organization_id, fn($q, $orgId) => $q->where('organization_id', $orgId))
+            ->where('organization_id', $this->currentOrganization()->id)
             ->when($search !== '', fn($q) => $q->search($search))
             ->orderBy($sort, $dir)
             ->paginate(50)
@@ -58,14 +58,11 @@ class GlobalTaskController extends Controller {
     public function store(SaveTaskRequest $request): RedirectResponse {
         Gate::authorize('create', Task::class);
 
-        $user = $request->user();
-        abort_unless($user && $user->organization_id, 403);
-
         Task::create(array_merge($request->validated(), [
             'is_global' => true,
             'project_id' => null,
             'parent_task_id' => null,
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => Auth::id(),
         ]));
 

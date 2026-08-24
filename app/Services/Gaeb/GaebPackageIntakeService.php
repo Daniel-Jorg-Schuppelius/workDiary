@@ -53,6 +53,12 @@ final class GaebPackageIntakeService {
     /** Was ein Paket an Einzeldateien enthalten darf, bevor abgebrochen wird. */
     private const MAX_ENTRIES = 500;
 
+    /** Obergrenze je Eintrag (entpackt) — GAEB-XML bleibt weit darunter. */
+    private const MAX_ENTRY_BYTES = 64 * 1024 * 1024;
+
+    /** Obergrenze der Summe aller entpackten Einträge. */
+    private const MAX_UNCOMPRESSED_BYTES = 256 * 1024 * 1024;
+
     public function __construct(
         private readonly DocumentService $documents,
         private readonly GaebFormatDetector $detector = new GaebFormatDetector,
@@ -196,6 +202,22 @@ final class GaebPackageIntakeService {
             $archive->close();
             unlink($path);
             throw new RuntimeException((string) __('Das Paket enthält :count Dateien — mehr als :max.', ['count' => $count, 'max' => self::MAX_ENTRIES]));
+        }
+
+        // ZIP-Bomb-Guard (Vollscan 2026-08-23, E7): die Summe der entpackten
+        // Größen ist VOR dem Lesen aus dem Verzeichnis bekannt — ein 100-MB-
+        // Upload darf nicht Gigabytes in den Speicher entfalten (Muster
+        // InvoicePdfImportService::openOfficeArchive).
+        $uncompressed = 0;
+        for ($i = 0; $i < $archive->numFiles; $i++) {
+            $stat = $archive->statIndex($i);
+            $entrySize = (int) ($stat['size'] ?? 0);
+            $uncompressed += $entrySize;
+            if ($entrySize > self::MAX_ENTRY_BYTES || $uncompressed > self::MAX_UNCOMPRESSED_BYTES) {
+                $archive->close();
+                unlink($path);
+                throw new RuntimeException((string) __('Das Paket überschreitet die zulässige entpackte Größe.'));
+            }
         }
 
         $entries = [];

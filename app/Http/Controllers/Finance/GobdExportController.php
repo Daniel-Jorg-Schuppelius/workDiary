@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers\Finance;
 
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\GobdExport;
 use App\Services\Finance\GdpduExportService;
@@ -29,6 +29,8 @@ use Illuminate\View\View;
  */
 class GobdExportController extends Controller {
     use ResolvesCurrentOrganization;
+
+    use ResolvesGlobalDateRange;
 
     public function __construct(private readonly GdpduExportService $service) {}
 
@@ -94,13 +96,12 @@ class GobdExportController extends Controller {
 
     /** @return array{0: Carbon, 1: Carbon} Vorjahr als Standard-Prüfungszeitraum. */
     private function period(Request $request): array {
-        $from = $request->filled('from')
-            ? Carbon::parse((string) $request->input('from'))
-            : Carbon::now()->subYear()->startOfYear();
-        $to = $request->filled('to')
-            ? Carbon::parse((string) $request->input('to'))
-            : Carbon::now()->subYear()->endOfYear();
+        // Guard statt Roh-Parse (Vollscan 2026-08-23, B10).
+        [$from, $to] = $this->resolveRangeWithDefault($request, static fn (): array => [
+            \Carbon\CarbonImmutable::now()->subYear()->startOfYear(),
+            \Carbon\CarbonImmutable::now()->subYear()->endOfYear(),
+        ]);
 
-        return [$from, $to];
+        return [Carbon::instance($from), Carbon::instance($to)];
     }
 }

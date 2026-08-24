@@ -10,11 +10,13 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Comment, DiaryEntry, EmergencyAssignment, PushSubscription, User};
-use App\Services\WebPushService;
+use App\Enums\Notification\NotificationEvent;
+use App\Enums\Timesheet\TimesheetStatus;
+use App\Jobs\Notification\WebPushDeliveryJob;
+use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Project, PushSubscription, Timesheet, User};
+use App\Notifications\GenericEventNotification;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Config;
-use Mockery;
+use Illuminate\Support\Facades\{Bus, Config, Notification};
 use Tests\TestCase;
 
 class WebPushTest extends TestCase {
@@ -71,64 +73,87 @@ class WebPushTest extends TestCase {
         $this->assertDatabaseHas('push_subscriptions', ['endpoint' => 'https://push.example.com/y']);
     }
 
-    public function test_new_comment_triggers_push_to_entry_owner(): void {
+    // Ab hier: Push-Zustellung über den zentralen NotificationDispatcher
+    // (Vollscan 2026-08-23, B7 — Nachfolger der Legacy-PushNotifier-Tests).
+    // Zustellung läuft asynchron über WebPushDeliveryJob je Empfänger.
+
+    public function test_new_comment_dispatches_push_job_to_entry_owner(): void {
         $owner = User::factory()->user()->create();
-        $commenter = User::factory()->user()->create();
+        $commenter = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
         $entry = DiaryEntry::factory()->for($owner)->create();
+        PushSubscription::create(['user_id' => $owner->id, 'endpoint' => 'https://push.example.com/o', 'p256dh' => 'p', 'auth' => 'a']);
 
-        $mock = Mockery::mock(WebPushService::class);
-        $mock->shouldReceive('sendToUser')
-            ->once()
-            ->withArgs(fn($u, $payload) => $u->id === $owner->id && isset($payload['title']));
-        $this->app->instance(WebPushService::class, $mock);
-
+        Notification::fake();
+        Bus::fake([WebPushDeliveryJob::class]);
         $this->actingAs($commenter);
         Comment::factory()->for($commenter)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'Hi']);
+
+        Bus::assertDispatched(WebPushDeliveryJob::class, fn(WebPushDeliveryJob $job): bool => $job->userId === (int) $owner->id
+            && $job->payload['title'] !== '');
     }
 
     public function test_own_comment_does_not_push(): void {
         $owner = User::factory()->user()->create();
         $entry = DiaryEntry::factory()->for($owner)->create();
+        PushSubscription::create(['user_id' => $owner->id, 'endpoint' => 'https://push.example.com/o', 'p256dh' => 'p', 'auth' => 'a']);
 
-        $mock = Mockery::mock(WebPushService::class);
-        $mock->shouldNotReceive('sendToUser');
-        $this->app->instance(WebPushService::class, $mock);
-
+        Notification::fake();
+        Bus::fake([WebPushDeliveryJob::class]);
         $this->actingAs($owner);
         Comment::factory()->for($owner)->create(['commentable_type' => DiaryEntry::class, 'commentable_id' => $entry->id, 'body' => 'self']);
+
+        Bus::assertNotDispatched(WebPushDeliveryJob::class);
     }
 
-    public function test_emergency_assignment_pushes_to_assignee(): void {
+    public function test_emergency_assignment_notifies_assignee(): void {
         $user = User::factory()->user()->create();
 
-        $mock = Mockery::mock(WebPushService::class);
-        $mock->shouldReceive('sendToUser')
-            ->once()
-            ->withArgs(fn($u, $payload) => $u->id === $user->id);
-        $this->app->instance(WebPushService::class, $mock);
-
+        Notification::fake();
         EmergencyAssignment::factory()->for($user)->create();
+
+        Notification::assertSentTo(
+            $user,
+            GenericEventNotification::class,
+            fn(GenericEventNotification $n): bool => $n->event === NotificationEvent::EmergencyAssigned,
+        );
     }
 
-    public function test_problem_diary_entry_pushes_to_admins(): void {
-        // Push geht an Admins derselben Organisation. Spatie-Rollen werden
-        // pro team_id (= organization_id) ausgewertet, daher müssen Admin
-        // und Autor zwingend in derselben Org liegen.
+    public function test_problem_diary_entry_notifies_admins(): void {
+        // Benachrichtigung geht an die Admin-/Callcenter-Rolle derselben
+        // Organisation; der meldende Besitzer selbst wird nicht adressiert.
         $author = User::factory()->user()->create();
         $admin = User::factory()->admin()->create(['organization_id' => $author->organization_id]);
 
-        $mock = Mockery::mock(WebPushService::class);
-        $mock->shouldReceive('sendToUser')
-            ->atLeast()->once()
-            ->withArgs(fn($u, $payload) => $u->id === $admin->id);
-        $this->app->instance(WebPushService::class, $mock);
-
-        // Spatie-Team-Kontext explizit auf die Author-Org setzen, damit
-        // User::role(...) im PushNotifier den Admin findet.
-        app(\Spatie\Permission\PermissionRegistrar::class)
-            ->setPermissionsTeamId((int) $author->organization_id);
-
+        Notification::fake();
         $this->actingAs($author);
         DiaryEntry::factory()->for($author)->create(['status' => 3, 'content' => 'Notlage']);
+
+        Notification::assertSentTo(
+            $admin,
+            GenericEventNotification::class,
+            fn(GenericEventNotification $n): bool => $n->event === NotificationEvent::DiaryProblem,
+        );
+        Notification::assertNotSentTo($author, GenericEventNotification::class);
+    }
+
+    public function test_timesheet_signed_notifies_owner(): void {
+        $owner = User::factory()->user()->create();
+        $project = Project::factory()->create(['organization_id' => $owner->organization_id]);
+        $timesheet = Timesheet::create([
+            'organization_id' => $owner->organization_id,
+            'project_id' => $project->id,
+            'user_id' => $owner->id,
+            'work_date' => now()->toDateString(),
+            'status' => TimesheetStatus::Draft->value,
+        ]);
+
+        Notification::fake();
+        $timesheet->update(['status' => TimesheetStatus::Signed->value]);
+
+        Notification::assertSentTo(
+            $owner,
+            GenericEventNotification::class,
+            fn(GenericEventNotification $n): bool => $n->event === NotificationEvent::TimesheetSigned,
+        );
     }
 }

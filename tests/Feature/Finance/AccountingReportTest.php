@@ -13,7 +13,8 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{AccountType, ProfitDetermination};
 use App\Models\Accounting\AccountingAccount;
 use App\Models\{Organization, User};
-use App\Services\Accounting\{AccountingProfileService, AccountingReportService, ChartOfAccountsService, FiscalYearService, JournalService};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService};
+use App\Services\Accounting\Reports\{AccountLedgerBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, LiquidityBuilder, ProfitAndLossBuilder, TrialBalanceBuilder, VatPreviewBuilder};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -96,10 +97,6 @@ class AccountingReportTest extends TestCase {
         ], $this->admin);
     }
 
-    private function reports(): AccountingReportService {
-        return app(AccountingReportService::class);
-    }
-
     private function range(): array {
         return [$this->startsOn, $this->startsOn->addMonth()];
     }
@@ -108,7 +105,7 @@ class AccountingReportTest extends TestCase {
     public function test_trial_balance_totals_are_balanced(): void {
         [$from, $to] = $this->range();
 
-        $data = $this->reports()->trialBalance($this->org, $from, $to);
+        $data = app(TrialBalanceBuilder::class)->build($this->org, $from, $to);
 
         $this->assertSame('159.00', $data['totals']['debit']);
         $this->assertSame('159.00', $data['totals']['credit']);
@@ -118,7 +115,7 @@ class AccountingReportTest extends TestCase {
     public function test_account_ledger_shows_movements_and_closing_balance(): void {
         [$from, $to] = $this->range();
 
-        $data = $this->reports()->accountLedger($this->org, $this->accounts['bank'], $from, $to);
+        $data = app(AccountLedgerBuilder::class)->build($this->org, $this->accounts['bank'], $from, $to);
 
         $this->assertSame('0.00', $data['opening']);
         $this->assertCount(2, $data['lines']);
@@ -128,7 +125,7 @@ class AccountingReportTest extends TestCase {
     public function test_vat_preview_separates_output_and_input(): void {
         [$from, $to] = $this->range();
 
-        $data = $this->reports()->vatPreview($this->org, $from, $to);
+        $data = app(VatPreviewBuilder::class)->build($this->org, $from, $to);
 
         $this->assertSame('19.00', $data['output']);
         $this->assertSame('0.00', $data['input']);
@@ -138,7 +135,7 @@ class AccountingReportTest extends TestCase {
     public function test_profit_and_loss_groups_income_and_expense(): void {
         [$from, $to] = $this->range();
 
-        $data = $this->reports()->profitAndLoss($this->org, $from, $to);
+        $data = app(ProfitAndLossBuilder::class)->build($this->org, $from, $to);
 
         $this->assertSame('100.00', $data['income_total']);
         $this->assertSame('40.00', $data['expense_total']);
@@ -149,7 +146,7 @@ class AccountingReportTest extends TestCase {
     public function test_liquidity_separates_actuals_from_forecast(): void {
         [, $to] = $this->range();
 
-        $data = $this->reports()->liquidity($this->org, $to);
+        $data = app(LiquidityBuilder::class)->build($this->org, $to);
 
         $this->assertSame('79.00', $data['cash_total']);
         $this->assertSame('0.00', $data['receivable']);
@@ -168,8 +165,8 @@ class AccountingReportTest extends TestCase {
             ],
         ], $this->admin);
 
-        $data = $this->reports()->profitAndLoss($this->org, $from, $to);
-        $quality = $this->reports()->dataQuality($this->org, $from, $to);
+        $data = app(ProfitAndLossBuilder::class)->build($this->org, $from, $to);
+        $quality = app(DataQualityBuilder::class)->build($this->org, $from, $to);
 
         $this->assertSame('40.00', $data['expense_total']);
         $this->assertSame(1, $quality['drafts']);
@@ -234,7 +231,7 @@ class AccountingReportTest extends TestCase {
     /** Der Vorbehalt steht auf dem Blatt, nicht nur auf dem Bildschirm. */
     public function test_the_preview_notice_is_printed_on_the_pdf_view(): void {
         [$from, $to] = $this->range();
-        $context = $this->reports()->exportContext($this->org, $from, $to);
+        $context = app(ExportContextBuilder::class)->build($this->org, $from, $to);
 
         $html = view('reports.pdf.accounting', [
             'title' => (string) __('accounting.reports.card.vat.title'),
@@ -252,7 +249,7 @@ class AccountingReportTest extends TestCase {
     public function test_euer_preview_reports_unclear_cases(): void {
         [$from, $to] = $this->range();
 
-        $data = $this->reports()->euerPreview($this->org, $from, $to);
+        $data = app(EuerPreviewBuilder::class)->build($this->org, $from, $to);
 
         $this->assertSame('0.00', $data['income']);
         $this->assertSame('0.00', $data['expense']);

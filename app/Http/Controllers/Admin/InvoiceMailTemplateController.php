@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\InvoiceMailTemplate;
 use Illuminate\Contracts\View\View;
@@ -17,6 +18,8 @@ use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};
 
 class InvoiceMailTemplateController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request): View {
         $this->authorizeBilling();
         $search = $request->string('q')->toString();
@@ -48,7 +51,7 @@ class InvoiceMailTemplateController extends Controller {
 
         DB::transaction(function () use ($data): InvoiceMailTemplate {
             $tpl = InvoiceMailTemplate::create($data + [
-                'organization_id' => Auth::user()?->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'created_by' => Auth::id(),
                 'updated_by' => Auth::id(),
             ]);

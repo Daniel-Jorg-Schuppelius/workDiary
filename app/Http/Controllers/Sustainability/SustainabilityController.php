@@ -40,7 +40,7 @@ class SustainabilityController extends Controller {
 
     public function index(Request $request): View|\Symfony\Component\HttpFoundation\Response {
         Gate::authorize('viewAny', SustainabilityAssessment::class);
-        $orgId = (int) Auth::user()?->organization_id;
+        $orgId = $this->currentOrganization()->id;
 
         $from = (string) $request->query('from', now()->startOfYear()->toDateString());
         $to = (string) $request->query('to', now()->toDateString());
@@ -118,7 +118,7 @@ class SustainabilityController extends Controller {
 
         SustainabilityCriterion::query()->create([
             ...$data,
-            'organization_id' => (int) Auth::user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'active' => true,
         ]);
 
@@ -142,7 +142,7 @@ class SustainabilityController extends Controller {
 
         SustainabilityActivityRecord::query()->create([
             ...$data,
-            'organization_id' => (int) Auth::user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => (int) Auth::id(),
         ]);
 
@@ -163,7 +163,7 @@ class SustainabilityController extends Controller {
             'source_note' => ['nullable', 'string', 'max:300'],
         ]);
 
-        $orgId = (int) Auth::user()?->organization_id;
+        $orgId = $this->currentOrganization()->id;
         // Org-Override-Set (P1): je Org+Jahr genau eines, wird bei Bedarf angelegt.
         $set = SustainabilityFactorSet::query()->firstOrCreate([
             'organization_id' => $orgId,
@@ -186,7 +186,7 @@ class SustainabilityController extends Controller {
 
         try {
             $assessment = $this->assessments->createDraft(
-                (int) Auth::user()?->organization_id,
+                $this->currentOrganization()->id,
                 null,
                 null,
                 $data['subject_label'],
@@ -276,7 +276,7 @@ class SustainabilityController extends Controller {
 
         SustainabilityMeasure::query()->create([
             ...$data,
-            'organization_id' => (int) Auth::user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'status' => 'proposed',
             'created_by' => (int) Auth::id(),
         ]);
@@ -323,7 +323,7 @@ class SustainabilityController extends Controller {
 
         SustainabilityTarget::query()->create([
             ...$data,
-            'organization_id' => (int) Auth::user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
         ]);
 
         return back()->with('status', __('Ziel angelegt.'));
@@ -333,7 +333,7 @@ class SustainabilityController extends Controller {
 
     public function storeSnapshot(Request $request): RedirectResponse {
         Gate::authorize('create', SustainabilityAssessment::class);
-        $orgId = (int) Auth::user()?->organization_id;
+        $orgId = $this->currentOrganization()->id;
         $from = (string) $request->input('from', now()->startOfYear()->toDateString());
         $to = (string) $request->input('to', now()->toDateString());
 

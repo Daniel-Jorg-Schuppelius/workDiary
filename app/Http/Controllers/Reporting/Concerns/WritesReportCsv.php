@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Reporting\Concerns;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{AuditLog, User};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
@@ -24,6 +25,8 @@ use Illuminate\Http\{Request, Response};
  * Eintrag wiederverwendet wird (vgl. report.exported).
  */
 trait WritesReportCsv {
+    use ResolvesCurrentOrganization;
+
     /**
      * Liefert eine CSV-Antwort mit optionalen Meta-Kommentarzeilen.
      *
@@ -92,12 +95,13 @@ trait WritesReportCsv {
      */
     protected function auditExport(Request $request, string $reportCode, string $format, array $filters): void {
         $user = $request->user();
-        if (! $user instanceof User || $user->organization_id === null) {
+        $organization = $this->currentOrganizationOrNull();
+        if (! $user instanceof User || $organization === null) {
             return;
         }
 
         AuditLog::create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $organization->id,
             'user_id' => $user->id,
             'event' => 'report.exported',
             'auditable_type' => self::class, // bindet im Trait an den konkreten Controller

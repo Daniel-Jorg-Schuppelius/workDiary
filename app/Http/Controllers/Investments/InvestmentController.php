@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Investments;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Investments\{AddInvestmentActualRequest, AddInvestmentDeviationRequest, AddInvestmentLinkRequest, AddInvestmentOptionRequest, DecideInvestmentDeviationRequest, RejectInvestmentBudgetRequest, SaveInvestmentCaseRequest, StoreCostCenterRequest, StoreInvestmentReviewRequest, SubmitInvestmentBudgetRequest, SupplementInvestmentBudgetRequest, UpdateInvestmentStatusRequest};
 use App\Models\CostCenter;
@@ -29,6 +30,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Ist-Werten, Abweichungen und Nachbewertung.
  */
 class InvestmentController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly InvestmentService $investments) {}
 
     public function index(Request $request): View {
@@ -74,7 +77,7 @@ class InvestmentController extends Controller {
         $actor = Auth::user();
         $case = InvestmentCase::query()->create([
             ...$request->validated(),
-            'organization_id' => (int) $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => $actor->id,
         ]);
         $case->audit('investment.created', ['title' => $case->title]);
@@ -134,10 +137,8 @@ class InvestmentController extends Controller {
         Gate::authorize('create', InvestmentCase::class);
         $data = $request->validated();
 
-        /** @var User $actor */
-        $actor = Auth::user();
         CostCenter::query()->firstOrCreate(
-            ['organization_id' => (int) $actor->organization_id, 'code' => $data['code']],
+            ['organization_id' => $this->currentOrganization()->id, 'code' => $data['code']],
             ['label' => $data['label'], 'active' => true],
         );
 

@@ -11,8 +11,10 @@
 namespace App\Observers;
 
 use App\Enums\Diary\Status;
+use App\Enums\Notification\NotificationEvent;
 use App\Models\{DiaryEntry, DiaryEntryEvent, User};
-use App\Services\{MailNotifier, PushNotifier};
+use App\Services\Notification\NotificationDispatcher;
+use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +32,11 @@ class DiaryEntryObserver {
             'occurred_at' => CarbonImmutable::now(),
         ]);
 
-        app(PushNotifier::class)->diaryProblem($entry);
+        if ($entry->status === Status::Problem) {
+            // Ersteller meldet das Problem selbst — nur die Default-Rollen
+            // (Admin/Callcenter) der Regel, keine „betroffene Person".
+            $this->notifyStatus($entry, NotificationEvent::DiaryProblem, null);
+        }
     }
 
     public function updated(DiaryEntry $entry): void {
@@ -38,16 +44,16 @@ class DiaryEntryObserver {
             return;
         }
 
-        app(PushNotifier::class)->diaryProblem($entry);
-        $original = $entry->getOriginal('status');
-        $oldValue = $original instanceof Status
-            ? $original->value
-            : ($original !== null ? (int) $original : null);
-        app(MailNotifier::class)->diaryStatusChanged(
-            $entry,
-            $oldValue,
-            $entry->status->value,
-        );
+        $entry->loadMissing('user');
+        $owner = $entry->user;
+        // Der Besitzer wird nur benachrichtigt, wenn er nicht selbst auslöst.
+        $affected = $owner instanceof User && $owner->id !== (int) Auth::id() ? $owner : null;
+
+        if ($entry->status === Status::Problem) {
+            $this->notifyStatus($entry, NotificationEvent::DiaryProblem, $affected);
+        } elseif ($entry->status === Status::Done && $affected !== null) {
+            $this->notifyStatus($entry, NotificationEvent::DiaryCompleted, $affected);
+        }
     }
 
     /**
@@ -56,5 +62,30 @@ class DiaryEntryObserver {
      */
     public function deleting(DiaryEntry $entry): void {
         $entry->comments()->delete();
+    }
+
+    /** Statuswechsel-Benachrichtigung über den zentralen Dispatcher (B7). */
+    private function notifyStatus(DiaryEntry $entry, NotificationEvent $event, ?User $affected): void {
+        $payload = [
+            'title' => $this->entryLabel($entry),
+            'url' => route('diary.show', $entry),
+        ];
+        if ($event === NotificationEvent::DiaryProblem) {
+            // Wie der Legacy-Push: Inhalt des Eintrags als Kurztext (Nutzer-
+            // text, bewusst ohne Lang-Key — es gibt nichts zu übersetzen).
+            $payload['message'] = mb_substr((string) $entry->content, 0, (int) Setting::get('notifications.push.body_truncate', 120));
+        } else {
+            $payload['message'] = (string) __('notification.message.diary_completed');
+            $payload['message_key'] = 'notification.message.diary_completed';
+            $payload['message_params'] = [];
+        }
+
+        app(NotificationDispatcher::class)->notify($event, $entry, $affected, $payload);
+    }
+
+    private function entryLabel(DiaryEntry $entry): string {
+        $title = trim((string) $entry->title);
+
+        return $title !== '' ? $title : '#' . $entry->id;
     }
 }

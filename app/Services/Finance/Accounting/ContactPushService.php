@@ -144,4 +144,37 @@ class ContactPushService {
 
         return $plugin instanceof ContactSyncer ? $plugin : null;
     }
+
+    /**
+     * Einzelnen Lieferanten übertragen (B6): gleiche Leitplanken wie
+     * {@see push()} — Führungsrichtung, Referenz-Nachweis mit synced_at.
+     */
+    public function pushSupplier(\App\Models\Supplier $supplier, string $pluginId): string {
+        if (! $this->pushAllowed()) {
+            throw new RuntimeException((string) __('accounting.error.accounting_leads'));
+        }
+
+        $plugin = $this->plugins->get($pluginId);
+        if (! $plugin instanceof \App\Plugins\Contracts\SupplierContactSyncer) {
+            throw new RuntimeException((string) __('accounting.error.no_syncer', ['plugin' => $pluginId]));
+        }
+
+        $externalId = $plugin->pushSupplierContact($supplier);
+
+        ExternalReference::query()->updateOrCreate(
+            [
+                'plugin_id' => $pluginId,
+                'external_type' => 'contact',
+                'referenceable_type' => $supplier->getMorphClass(),
+                'referenceable_id' => $supplier->getKey(),
+            ],
+            [
+                'organization_id' => $supplier->organization_id,
+                'external_id' => $externalId,
+                'synced_at' => now(),
+            ],
+        );
+
+        return $externalId;
+    }
 }

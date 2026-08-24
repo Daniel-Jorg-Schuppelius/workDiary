@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Plugins\Msgraph\Jobs;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{EmailConnection, Organization};
+use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Services\Mail\{MailIntakeService, MailboxGateway};
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -30,6 +32,11 @@ use Throwable;
  * Impulse.
  */
 class MsgraphMailWakeJob implements ShouldQueue {
+    use RetriesTransientFailures;
+
+    protected function pluginErrorId(): ?string {
+        return MsgraphPlugin::ID;
+    }
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;

@@ -13,7 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{AssessmentStatus, AuditPackageStatus, ReviewStatus};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsAudit, IsmsAuditFinding, IsmsAuditPackage, IsmsAuditPackageToken, IsmsCertificate, IsmsControl, IsmsCorrectiveAction, IsmsManagementReview, IsmsNormStatus, IsmsRequirement, IsmsRisk, IsmsRiskAssessment, IsmsScope, IsmsSoftwareProduct};
 use App\Models\User;
-use App\Services\Isms\Concerns\AssignsSequentialNo;
+use App\Services\Concerns\AssignsSequentialNo;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Storage};

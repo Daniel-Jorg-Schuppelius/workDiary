@@ -22,8 +22,6 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property int $id
  * @property int $organization_id
  * @property ProtocolType $type
- * @property int|null $template_id
- * @property int|null $template_version
  * @property string $subject_type
  * @property int $subject_id
  * @property string $title
@@ -54,8 +52,6 @@ class Protocol extends Model {
     protected $fillable = [
         'organization_id',
         'type',
-        'template_id',
-        'template_version',
         'subject_type',
         'subject_id',
         'title',

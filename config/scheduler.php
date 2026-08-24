@@ -383,6 +383,33 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        // --- Hinweisgebersystem (Feature 041): Vollscan 2026-08-23 (J1) — die
+        // Betriebsdoku versprach stündlich/täglich/5-min, registriert war
+        // keiner der drei Läufe. `whistleblowing:scan` ist der einzige
+        // Auslöser der Anhang-Quarantäne-Freigabe.
+        'whistleblowing.deadlines' => [
+            'command' => 'whistleblowing:deadlines',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+        'whistleblowing.retention_review' => [
+            'command' => 'whistleblowing:retention-review',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:40'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+        'whistleblowing.scan' => [
+            'command' => 'whistleblowing:scan',
+            'cadence' => ['type' => 'everyFiveMinutes'],
+            'allowed' => ['everyMinute', 'everyFiveMinutes', 'everyFifteenMinutes'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 3,
+            // Quarantäne-Freigabe darf im Wartungsfenster liegen bleiben.
+            'runs_in_maintenance' => false,
+        ],
         'notifications.scan_deadlines' => [
             'command' => 'notifications:scan-deadlines',
             'cadence' => ['type' => 'hourly'],
@@ -434,6 +461,16 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 2,
         ],
+        // Vollscan 2026-08-23 (J9): alle Prunable-Modelle (Webhook-Zustell-
+        // protokolle, Integration-/Inventory-Outbox, Plugin-Fehler) nach ihren
+        // Aufbewahrungsfristen räumen — vorher wuchsen acht Tabellen unbegrenzt.
+        'retention.prune_models' => [
+            'command' => 'model:prune',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:50'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 3,
+        ],
         'remote.sync_sessions' => [
             'command' => 'remote:sync-sessions',
             'plugin' => 'remote-support',
@@ -481,6 +518,35 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        // --- Helpdesk-/Issue-Polling (Feature 060): Vollscan 2026-08-23 (J2) —
+        // Polling ist laut Design die verlässliche Quelle („Webhook-Ausfall
+        // führt zu keinem Datenverlust"), war aber nie geplant. Der Watchdog
+        // blendet die Jobs auf Instanzen ohne das Plugin aus.
+        'zammad.sync' => [
+            'command' => 'zammad:sync',
+            'plugin' => 'zammad',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
+        'github.sync' => [
+            'command' => 'github:sync',
+            'plugin' => 'github',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
+        'gitlab.sync' => [
+            'command' => 'gitlab:sync',
+            'plugin' => 'gitlab',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 5,
+        ],
+
         // --- Calendly-Terminbuchung (Feature 095) ---
         'calendly.backfill' => [
             'command' => 'calendly:backfill',

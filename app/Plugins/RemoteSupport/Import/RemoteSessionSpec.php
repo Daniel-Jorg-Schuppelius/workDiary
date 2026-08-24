@@ -15,7 +15,7 @@ namespace App\Plugins\RemoteSupport\Import;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\Organization;
 use App\Plugins\RemoteSupport\Providers\{AnyDeskClient, RemoteSession};
-use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportService};
+use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportConfig};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use Carbon\CarbonImmutable;
@@ -26,7 +26,7 @@ use CommonToolkit\Helper\Data\StringHelper;
  * in den zentralen Import-Wizard (MVP-049).
  *
  * Anders als die Stammdaten-Specs upsertet sie keine Entität, sondern reicht jede
- * Zeile als {@see RemoteSession} an den {@see RemoteSupportService} weiter: bekannte
+ * Zeile als {@see RemoteSession} an den {@see RemoteSessionImporter} weiter: bekannte
  * Geräte-IDs werden sofort als Zeiteintrag gebucht (Created), bereits importierte
  * übersprungen und unbekannte IDs in die Fernwartungs-Inbox gelegt (jeweils Skipped).
  *
@@ -44,7 +44,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
     /** @var array<int, int|null> Org-ID → buchbarer Benutzer */
     private array $userCache = [];
 
-    public function __construct(private readonly RemoteSupportService $service) {}
+    public function __construct(private readonly RemoteSessionImporter $service) {}
 
     public function entity(): ImportEntity {
         return ImportEntity::RemoteSessions;

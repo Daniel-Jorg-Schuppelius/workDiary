@@ -29,11 +29,9 @@ class PerDiemTripControllerTest extends TestCase {
         $this->seed(PerDiemRateSeeder::class);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        ExpenseCategory::factory()->create([
-            'organization_id' => $this->organization->id,
-            'slug' => ExpenseCategory::SLUG_MEALS,
-            'label' => 'Verpflegung',
-        ]);
+        // Die Verpflegungs-Kategorie kommt seit J3 (Vollscan 2026-08-23) mit der
+        // Org-Erstausstattung über den OrganizationObserver.
+        $this->assertTrue(ExpenseCategory::query()->where('slug', ExpenseCategory::SLUG_MEALS)->exists());
     }
 
     public function test_index_renders(): void {

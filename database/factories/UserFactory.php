@@ -172,7 +172,7 @@ class UserFactory extends Factory {
             // Beide gleichnamigen Rollen-Zeilen anhängen — exakt wie die Admin-UI
             // ({@see \App\Http\Controllers\Admin\Access\MemberController}):
             //  - die GLOBALE Rolle (team_id = NULL) matcht team-lose Abfragen wie
-            //    User::role([...]) (z. B. PushNotifier) und den isAdmin()-Check,
+            //    User::role([...]) (z. B. NotificationDispatcher) und den isAdmin()-Check,
             //  - die PER-ORGANISATION-Rolle trägt die Permissions (work-schedule.manage,
             //    user.payroll.manage, …), die permission-basierte Policies prüfen.
             // Spaties findByName()/String-Sync würde nur die leere globale Rolle treffen.

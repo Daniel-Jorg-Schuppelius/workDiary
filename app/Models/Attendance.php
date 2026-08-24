@@ -12,7 +12,6 @@ namespace App\Models;
 
 use App\Enums\Attendance\{AttendanceSource, AttendanceStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Services\Timekeeping\BreakRuleEvaluator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Database\Factories\AttendanceFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -110,35 +109,6 @@ class Attendance extends Model {
         'source' => AttendanceSource::class,
         'status' => AttendanceStatus::class,
     ];
-
-    protected static function booted(): void {
-        static::saving(function (Attendance $a): void {
-            if (! $a->date && $a->started_at) {
-                // Kalendertag in der Anzeige-Zeitzone, nicht UTC (23:30 lokal sonst auf Folgetag); started_at bleibt UTC.
-                $a->date = $a->started_at->copy()->setTimezone(\App\Support\Tz::current())->startOfDay();
-            }
-            if ($a->started_at && $a->ended_at) {
-                // Gesetzliche Mindestpausen (ArbZG §4) in break_minutes_auto ergänzen, bevor die Netto-Dauer folgt.
-                $eval = app(BreakRuleEvaluator::class);
-                if ($eval->autoApplyEnabled()) {
-                    $eval->applyMissingBreak($a);
-                }
-
-                $gross = (int) $a->started_at->diffInMinutes($a->ended_at, false);
-                $breaks = (int) ($a->break_minutes_auto ?? 0)
-                    + (int) ($a->break_minutes_manual ?? 0);
-                $a->duration_minutes = max(0, $gross - $breaks);
-                if ($a->status === AttendanceStatus::Open) {
-                    $a->status = AttendanceStatus::Closed;
-                }
-            } else {
-                $a->duration_minutes = 0;
-                if (! $a->status) {
-                    $a->status = AttendanceStatus::Open;
-                }
-            }
-        });
-    }
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {

@@ -145,8 +145,13 @@ php artisan workdiary:backup:verify        # Commit-Manifest + Stichproben-Teile
 php artisan workdiary:backup:restore-test  # Generation isoliert wiederherstellen, Integrität protokollieren
 ```
 
-Die Befehle sind bewusst nicht im App-Scheduler — per Cron einplanen
-(z. B. `run` nightly, `verify` wöchentlich, `restore-test` monatlich).
+`run` (täglich 01:30) und `verify` (wöchentlich Sa 03:30) laufen über die
+Scheduler-Registry (`config/scheduler.php`: `backup.cloud-run`,
+`backup.cloud-verify`) und sind dort pausier-/umplanbar; nur `restore-test`
+wird bewusst manuell bzw. per Cron (z. B. monatlich) ausgelöst. **Nicht
+zusätzlich** `scripts/backup.sh` (Datei-/DB-Dump-Variante aus
+`deploy/cron.d`) für dieselbe Instanz einplanen — ein Backupverfahren pro
+Installation, sonst laufen zwei Sicherungen parallel.
 
 Wichtige Einstellungen (`config/backup_targets.php`):
 

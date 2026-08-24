@@ -197,5 +197,27 @@ return [
         'qualification_expiring' => 'La cualificación/formación caduca el :date.',
         'maintenance_due_soon' => 'El plan de mantenimiento :label vence el :date.',
         'maintenance_overdue' => 'El plan de mantenimiento :label está vencido desde el :date.',
+
+        // Sustitución de los notificadores heredados (escaneo completo 2026-08-23, B7).
+
+        'unknown_actor' => 'Desconocido',
+
+        'diary_comment_created' => ':actor ha comentado: :excerpt',
+
+        'diary_completed' => 'La entrada del libro se marcó como completada.',
+
+        'diary_attachment_added' => 'Nuevo adjunto: :name',
+
+        'emergency_assigned_title' => 'Servicio de urgencia asignado',
+
+        'emergency_assigned' => 'Servicio desde :start. :reason',
+
+        'timesheet_signed_title' => 'Hoja de horas firmada',
+
+        'timesheet_signed' => ':project · :date',
+
+        'chat_reminder_title' => 'Recordatorio · #:channel',
+
+        'chat_attachment' => '[Adjunto]',
     ],
 ];

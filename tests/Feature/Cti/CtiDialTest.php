@@ -30,7 +30,8 @@ class CtiDialTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        $this->user = User::factory()->create(['organization_id' => $this->organization->id]);
+        // Mitarbeiter-Rolle: Wählen verlangt ein Kundenkontakt-Sichtrecht (E8).
+        $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
     private function connection(array $attributes = []): CtiConnection {
@@ -127,6 +128,27 @@ class CtiDialTest extends TestCase {
             ->post(route('cti.dial'), ['number' => '+4951112345678'])
             ->assertRedirect();
         $this->assertNotNull(session('success'));
+    }
+
+    /**
+     * Vollscan 2026-08-23, E8: Wählen über die Org-Nebenstelle verlangt
+     * Kunden-Sichtrecht, ist gedrosselt und wird mit Auslöser auditiert.
+     */
+    public function test_endpoint_requires_customer_view_permission_and_audits_the_caller(): void {
+        $this->connection();
+        FakePluginHttp::fake([
+            'https://api.sipgate.com/v2/sessions/calls' => FakePluginHttp::response([], 200),
+        ]);
+
+        $stranger = User::factory()->create(['organization_id' => $this->organization->id]);
+        $stranger->syncRoles([]);
+        $stranger->syncPermissions([]);
+
+        $this->actingAs($stranger)->post(route('cti.dial'), ['number' => '+4951112345678'])->assertForbidden();
+
+        $this->actingAs($this->user)->post(route('cti.dial'), ['number' => '+4951112345678'])->assertRedirect();
+        $this->assertNotNull(session('success'));
+        $this->assertDatabaseHas('audit_logs', ['event' => 'cti.dial_started', 'user_id' => $this->user->id]);
     }
 
     public function test_customer_detail_shows_call_button_only_with_connection(): void {

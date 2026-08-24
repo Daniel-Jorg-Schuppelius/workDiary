@@ -114,7 +114,29 @@ class Quote extends Model {
         $currency = CurrencyCode::Euro;
         $sub = Money::zero($currency);
         $tax = Money::zero($currency);
+        foreach ($this->taxBreakdownByRate() as $row) {
+            $sub = $sub->plus($row['net']);
+            $tax = $tax->plus($row['tax']);
+        }
+        $this->subtotal = $sub;
+        $this->tax_amount = $tax;
+        $this->total = $sub->plus($tax);
+    }
+
+    /**
+     * Steuer je Satzgruppe auf die SUMME der Zeilennettos — dieselbe
+     * Rundungsregel wie InvoiceTotalsCalculator (Vollscan 2026-08-23, B3):
+     * zeilenweise Rundung (3 × 0,33 € à 19 % = 0,18) wich um Cent von der
+     * daraus erzeugten Rechnung (0,19) ab. Einzige Berechnungsstelle für
+     * recalculate() und den Angebots-PDF-Aufriss.
+     *
+     * @return list<array{rate: float, net: Money, tax: Money}>
+     */
+    public function taxBreakdownByRate(): array {
+        $currency = CurrencyCode::Euro;
         $fallbackRate = null;
+        /** @var array<string, Money> $netByRate */
+        $netByRate = [];
         foreach ($this->items as $item) {
             // Vor der Entscheidung (accepted=null) zählen Pflichtpositionen,
             // Optionen nicht; nach der Entscheidung zählt NUR Angenommenes.
@@ -122,20 +144,25 @@ class Quote extends Model {
             if (! $counts) {
                 continue;
             }
-            // MVP-416: Zeilennetto inkl. Positionsrabatt.
-            $net = $item->netAmount();
-            $sub = $sub->plus($net);
             // Positionen ohne eigenen Satz: Satz aus dem TaxResolver
             // (§ 19 UStG → 0, Org-Override, Länderkatalog) statt hart 19 % —
             // sonst zeigt eine Kleinunternehmer-Org falsche Bruttopreise.
             $rate = $item->tax_rate !== null
                 ? (float) $item->tax_rate->getNumericValue()
                 : ($fallbackRate ??= $this->defaultTaxRate());
-            $tax = $tax->plus($net->percentage($rate));
+            $key = number_format($rate, 2, '.', '');
+            // MVP-416: Zeilennetto inkl. Positionsrabatt.
+            $net = $item->netAmount();
+            $netByRate[$key] = isset($netByRate[$key]) ? $netByRate[$key]->plus($net) : $net;
         }
-        $this->subtotal = $sub;
-        $this->tax_amount = $tax;
-        $this->total = $sub->plus($tax);
+        ksort($netByRate, SORT_NATURAL);
+
+        $rows = [];
+        foreach ($netByRate as $key => $net) {
+            $rows[] = ['rate' => (float) $key, 'net' => $net, 'tax' => $net->percentage((float) $key)];
+        }
+
+        return $rows;
     }
 
     /** Steuersatz-Fallback für Positionen ohne eigenen Satz (s. recalculate). */

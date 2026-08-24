@@ -14,7 +14,11 @@ return [
         'schedule_type' => env('TIMESHEET_DEFAULT_SCHEDULE_TYPE', 'flextime'),
         'weekly_minutes' => (int) env('TIMESHEET_DEFAULT_WEEKLY_MINUTES', 2400),
         'daily_target_minutes' => (int) env('TIMESHEET_DEFAULT_DAILY_MINUTES', 480),
-        'working_days' => [1, 2, 3, 4, 5],
+        // ISO-Wochentage (1 = Montag); als Liste in der ENV, z. B. "1,2,3,4,5".
+        'working_days' => array_values(array_filter(array_map(
+            static fn (string $day): int => (int) trim($day),
+            explode(',', (string) env('TIMESHEET_DEFAULT_WORKING_DAYS', '1,2,3,4,5')),
+        ), static fn (int $day): bool => $day >= 1 && $day <= 7)),
         'core_start' => env('TIMESHEET_CORE_START', '09:00'),
         'core_end' => env('TIMESHEET_CORE_END', '15:00'),
         'frame_start' => env('TIMESHEET_FRAME_START', '06:00'),

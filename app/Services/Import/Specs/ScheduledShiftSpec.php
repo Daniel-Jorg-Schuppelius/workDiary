@@ -16,8 +16,7 @@ use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ImportValueMapping, Organization, ScheduledShift, ShiftType, User};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
-use App\Services\Import\Specs\Concerns\ResolvesImportUsers;
-use Carbon\CarbonImmutable;
+use App\Services\Import\Specs\Concerns\{ParsesLocalDateTime, ResolvesImportUsers};
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 
@@ -33,10 +32,8 @@ use Throwable;
  * wird per E-Mail aufgelöst, der Schichttyp per Name (mandantenweit, optional).
  */
 class ScheduledShiftSpec extends AbstractEntitySpec implements HasMappableValues {
+    use ParsesLocalDateTime;
     use ResolvesImportUsers;
-
-    /** @var list<string> */
-    private const DATE_FORMATS = ['Y-m-d', 'd.m.Y', 'd.m.y', 'd/m/Y', 'Y/m/d', 'm/d/Y'];
 
     public function entity(): ImportEntity {
         return ImportEntity::ScheduledShifts;
@@ -77,8 +74,8 @@ class ScheduledShiftSpec extends AbstractEntitySpec implements HasMappableValues
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
                 'user_email' => ($v = $this->trimmedString($raw)) !== null ? mb_strtolower($v) : null,
-                'date' => $this->normalizeDate($this->trimmedString($raw)),
-                'start_time', 'end_time' => $this->normalizeTime($this->trimmedString($raw)),
+                'date' => $this->normalizeImportDate($this->trimmedString($raw)),
+                'start_time', 'end_time' => $this->normalizeImportTime($this->trimmedString($raw)),
                 'status' => ($v = $this->trimmedString($raw)) !== null ? mb_strtolower($v) : null,
                 default => $this->trimmedString($raw),
             };
@@ -180,36 +177,4 @@ class ScheduledShiftSpec extends AbstractEntitySpec implements HasMappableValues
         }
     }
 
-    private function normalizeDate(?string $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        foreach (self::DATE_FORMATS as $format) {
-            try {
-                $parsed = CarbonImmutable::createFromFormat('!' . $format, $value);
-            } catch (Throwable) {
-                continue;
-            }
-            if ($parsed instanceof CarbonImmutable && $parsed->format($format) === $value) {
-                return $parsed->format('Y-m-d');
-            }
-        }
-
-        return null;
-    }
-
-    private function normalizeTime(?string $value): ?string {
-        if ($value === null) {
-            return null;
-        }
-        if (preg_match('/^(\d{1,2}):(\d{2})/', $value, $m) === 1) {
-            $h = (int) $m[1];
-            $min = (int) $m[2];
-            if ($h <= 23 && $min <= 59) {
-                return sprintf('%02d:%02d', $h, $min);
-            }
-        }
-
-        return $value; // ungültiges Format → validateRow markiert es
-    }
 }

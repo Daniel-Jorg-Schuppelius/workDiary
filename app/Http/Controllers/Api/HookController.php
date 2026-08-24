@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Enums\Integration\WebhookEvent;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Jobs\Integration\WebhookDeliveryJob;
 use App\Models\Integration\WebhookEndpoint;
@@ -32,9 +33,11 @@ use Illuminate\Validation\Rule;
  * genau einmal in der 201-Antwort zurück.
  */
 class HookController extends Controller {
+    use ResolvesCurrentOrganization;
+
     /** GET /api/hooks — die Hook-Subscriptions der Organisation. */
     public function index(Request $request): JsonResponse {
-        $organizationId = $this->organizationId($request);
+        $organizationId = $this->organizationId();
 
         $hooks = WebhookEndpoint::query()
             ->where('organization_id', $organizationId)
@@ -48,7 +51,7 @@ class HookController extends Controller {
 
     /** GET /api/hooks/events — Ereignis-Katalog mit Sample-Payload je Event. */
     public function events(Request $request, WebhookDispatchService $dispatch): JsonResponse {
-        $organizationId = $this->organizationId($request);
+        $organizationId = $this->organizationId();
         $now = Carbon::now();
 
         $catalog = array_map(static fn (WebhookEvent $event): array => [
@@ -63,7 +66,7 @@ class HookController extends Controller {
 
     /** POST /api/hooks {event, target_url} — 201 + id + einmaliges Secret. */
     public function store(Request $request): JsonResponse {
-        $organizationId = $this->organizationId($request);
+        $organizationId = $this->organizationId();
         $user = $request->user();
 
         $data = $request->validate([
@@ -106,7 +109,7 @@ class HookController extends Controller {
 
     /** POST /api/hooks/{hook}/test — Test-Event senden (Struktur-Lernen). */
     public function test(Request $request, WebhookEndpoint $hook, WebhookDispatchService $dispatch): JsonResponse {
-        $this->assertOwned($request, $hook);
+        $this->assertOwned($hook);
 
         $delivery = $dispatch->sendTest($hook);
 
@@ -115,7 +118,7 @@ class HookController extends Controller {
 
     /** DELETE /api/hooks/{hook} — Unsubscribe (Soft-Delete) → 204. */
     public function destroy(Request $request, WebhookEndpoint $hook): JsonResponse {
-        $this->assertOwned($request, $hook);
+        $this->assertOwned($hook);
 
         $hook->delete();
 
@@ -137,14 +140,11 @@ class HookController extends Controller {
         ];
     }
 
-    private function organizationId(Request $request): int {
-        $user = $request->user();
-        abort_unless($user instanceof User && $user->organization_id !== null, 403);
-
-        return (int) $user->organization_id;
+    private function organizationId(): int {
+        return $this->currentOrganization()->id;
     }
 
-    private function assertOwned(Request $request, WebhookEndpoint $hook): void {
-        abort_unless((int) $hook->organization_id === $this->organizationId($request), 404);
+    private function assertOwned(WebhookEndpoint $hook): void {
+        abort_unless((int) $hook->organization_id === $this->organizationId(), 404);
     }
 }

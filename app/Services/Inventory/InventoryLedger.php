@@ -15,6 +15,7 @@ namespace App\Services\Inventory;
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
 use App\Models\{ArticleVariant, StockMovement, Warehouse};
 use App\Support\DecimalQty;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -147,10 +148,53 @@ class InventoryLedger {
 
         $sum = '0';
         foreach ($query->pluck('qty_base') as $value) {
-            $sum = bcadd($sum, DecimalQty::sanitize((string) $value), self::SCALE);
+            $sum = bcadd($sum, NumberHelper::normalizeDecimalString((string) $value), self::SCALE);
         }
 
         return bcadd($sum, '0', self::SCALE);
+    }
+
+    /**
+     * Salden ALLER Varianten eines Lagers je Bestandszustand in einem Durchlauf
+     * (Vollscan 2026-08-23, A4): die Lagerübersicht rief sonst je Variante
+     * viermal balance() auf — jeder Aufruf ein Volldurchlauf des Buckets.
+     * Eine Query über die Skalarspalten, bc-Summe in PHP (exakt auf MariaDB
+     * wie SQLite — SUM() würde in SQLite als Float rechnen).
+     *
+     * @return array<int, array<string, numeric-string>> variant_id → [state => Saldo]
+     */
+    public function balancesByVariant(Warehouse $warehouse): array {
+        $sums = [];
+        $rows = StockMovement::query()
+            ->where('warehouse_id', $warehouse->id)
+            ->toBase()
+            ->get(['article_variant_id', 'stock_state', 'qty_base']);
+        foreach ($rows as $row) {
+            $variantId = (int) $row->article_variant_id;
+            $state = (string) $row->stock_state;
+            $sums[$variantId][$state] = bcadd(
+                $sums[$variantId][$state] ?? '0',
+                NumberHelper::normalizeDecimalString((string) $row->qty_base),
+                self::SCALE,
+            );
+        }
+
+        return $sums;
+    }
+
+    /**
+     * Verfügbar aus einem Saldensatz von {@see balancesByVariant()}.
+     *
+     * @param  array<string, numeric-string>  $balances  state → Saldo
+     * @return numeric-string
+     */
+    public static function availableFromBalances(array $balances): string {
+        $result = bcadd($balances[StockState::Physical->value] ?? '0', '0', self::SCALE);
+        foreach ([StockState::Reserved, StockState::Blocked, StockState::Quality] as $state) {
+            $result = bcsub($result, $balances[$state->value] ?? '0', self::SCALE);
+        }
+
+        return $result;
     }
 
     /**
@@ -191,7 +235,7 @@ class InventoryLedger {
 
         $result = '0';
         foreach ($rows as $row) {
-            $qty = DecimalQty::sanitize((string) $row->qty_base);
+            $qty = NumberHelper::normalizeDecimalString((string) $row->qty_base);
             $result = $row->stock_state === StockState::Physical
                 ? bcadd($result, $qty, self::SCALE)
                 : bcsub($result, $qty, self::SCALE);
@@ -233,7 +277,7 @@ class InventoryLedger {
 
     /** Inventurdifferenz/Gegenbuchung: signierte Menge auf einen Zustand. */
     public function correction(ArticleVariant $variant, Warehouse $warehouse, StockState $state, string $signedQty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, $state, DecimalQty::sanitize($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+        return $this->post(new StockPosting($variant, $warehouse, $state, NumberHelper::normalizeDecimalString($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
     }
 
     private function guardSufficient(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative): void {

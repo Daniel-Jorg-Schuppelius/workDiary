@@ -13,14 +13,14 @@ declare(strict_types=1);
 namespace App\Enums\Print;
 
 use App\Enums\Concerns\HasOptions;
-use App\Enums\Contracts\HasLabel;
+use App\Enums\Contracts\{HasLabel, HasStatusTransitions};
 
 /**
  * Druckauftrags-Status (MVP-459): Datenprüfung → Freigabe → Produktion →
  * Qualitätskontrolle → bereit → ausgegeben. Eine Dateiänderung nach Freigabe
  * setzt den Auftrag über den Service zurück auf Datenprüfung — nie still.
  */
-enum PrintOrderStatus: string implements HasLabel {
+enum PrintOrderStatus: string implements HasLabel, HasStatusTransitions {
     use HasOptions;
 
     case DataCheck = 'data_check';

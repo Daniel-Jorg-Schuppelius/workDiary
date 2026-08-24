@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Support\{SupportReportBuilder, SupportReportPackager};
@@ -22,6 +23,8 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SupportReportController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request, SupportReportBuilder $builder, SupportReportPackager $packager): View {
         Gate::authorize(Permission::PlatformSupportExport->value);
 
@@ -59,7 +62,7 @@ class SupportReportController extends Controller {
         $package = $packager->package($bundle, $password);
 
         AuditLog::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'support.reportGenerated',
             'auditable_type' => User::class,
@@ -74,7 +77,7 @@ class SupportReportController extends Controller {
         ]);
 
         AuditLog::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'support.reportDownloaded',
             'auditable_type' => User::class,
@@ -101,7 +104,7 @@ class SupportReportController extends Controller {
         $filename = 'support-report-' . Carbon::now()->format('Y-m-d') . '.json';
 
         AuditLog::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'support.reportDownloaded',
             'auditable_type' => User::class,

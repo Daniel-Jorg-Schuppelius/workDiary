@@ -91,8 +91,10 @@ class WeekController extends Controller {
         $weekViews = [];
         $activeKey = null;
 
-        foreach ($weeks as $weekStart) {
-            $data = $service->build($weekStart, $authUser, $teamScope, $filterUserId);
+        // Ein Ladevorgang für alle Wochen statt 3 Queries je Woche (A15).
+        $dataByWeek = $service->buildMany(array_values($weeks), $authUser, $teamScope, $filterUserId);
+        foreach (array_values($weeks) as $index => $weekStart) {
+            $data = $dataByWeek[$index];
             $key = sprintf('kw-%d-%d', $weekStart->isoWeek, $weekStart->isoWeekYear);
             $weekEndDay = $data['start']->addDays(6);
 
@@ -131,12 +133,14 @@ class WeekController extends Controller {
             return collect();
         }
 
-        $collected = collect();
+        $starts = [];
         foreach ($weekViews as $wv) {
-            $collected = $collected->merge($service->usersInWeek($wv['start']));
+            if ($wv['start'] instanceof CarbonImmutable) {
+                $starts[] = $wv['start'];
+            }
         }
 
-        return $collected->unique('id')->sortBy('name')->values();
+        return $service->usersInWeeks($starts)->values();
     }
 
     /**

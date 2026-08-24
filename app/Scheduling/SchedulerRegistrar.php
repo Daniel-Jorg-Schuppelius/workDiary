@@ -56,6 +56,9 @@ class SchedulerRegistrar {
             if ($definition->onOneServer) {
                 $event->onOneServer();
             }
+            if ($definition->runInBackground) {
+                $event->runInBackground();
+            }
         }
 
         // Heartbeat-Writer (schließt die Diagnose-Lücke: die Diagnose-

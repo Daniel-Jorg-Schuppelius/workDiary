@@ -10,9 +10,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{FlexEligibility, User};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 /**
@@ -22,6 +23,8 @@ use Illuminate\View\View;
  * Beenden über das valid_to-Feld.
  */
 class FlexEligibilityController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(User $user): View {
         Gate::authorize('viewAny', [FlexEligibility::class, $user]);
         $this->ensureSameOrg($user);
@@ -57,7 +60,7 @@ class FlexEligibilityController extends Controller {
                 'valid_from' => $data['valid_from'],
             ],
             [
-                'organization_id' => $user->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'valid_to' => $data['valid_to'] ?? null,
                 'note' => $data['note'] ?? null,
             ]
@@ -95,8 +98,6 @@ class FlexEligibilityController extends Controller {
     }
 
     private function ensureSameOrg(User $member): void {
-        /** @var User $auth */
-        $auth = Auth::user();
-        abort_unless($member->organization_id === $auth->organization_id, 403);
+        abort_unless($member->organization_id === $this->currentOrganization()->id, 403);
     }
 }

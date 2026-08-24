@@ -19,6 +19,7 @@ use App\Models\Organization;
 use App\Services\B2bCatalog\OciCartFormatter;
 use App\Services\Security\SecurityEventLogger;
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Crypt, DB};
@@ -130,7 +131,7 @@ class B2bPunchoutController extends Controller {
         $encoder = app(SqidEncoder::class);
         $quantities = [];
         foreach ((array) $request->input('qty', []) as $sqid => $value) {
-            $qty = (float) str_replace(',', '.', (string) $value);
+            $qty = (float) NumberHelper::normalizeDecimalString((string) $value);
             $id = $encoder->decode(B2bCatalogItem::class, (string) $sqid);
             if ($qty > 0 && $id !== null) {
                 $quantities[$id] = $qty;

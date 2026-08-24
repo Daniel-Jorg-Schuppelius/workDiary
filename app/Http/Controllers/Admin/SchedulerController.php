@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, ScheduledJobOverride, ScheduledJobState, User};
 use App\Scheduling\{Cadence, CadenceType, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
@@ -30,6 +31,8 @@ use Illuminate\View\View;
  * Testlauf — ausschließlich für allowlistete Registry-Jobs.
  */
 class SchedulerController extends Controller {
+    use ResolvesCurrentOrganization;
+
     private const TEST_RUN_COOLDOWN_MINUTES = 5;
 
     public function __construct(
@@ -200,7 +203,7 @@ class SchedulerController extends Controller {
         }
 
         AuditLog::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'user_id' => $user->id,
             'event' => 'scheduler.testRun',
             'auditable_type' => User::class,

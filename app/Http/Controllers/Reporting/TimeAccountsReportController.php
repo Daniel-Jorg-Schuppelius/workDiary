@@ -63,19 +63,23 @@ class TimeAccountsReportController extends Controller {
         }
         $users = $usersQuery->get(['id', 'name']);
 
+        // Eine Aggregation je Konto statt zwei Summen je Mitarbeiter (Vollscan
+        // 2026-08-23, A10): booking_date ist DATE, daher Bereichsvergleich ohne
+        // DATE()-Wrapper (Index bleibt nutzbar).
+        $sums = TimeAccountEntry::query()
+            ->where('time_account_id', $account->getKey())
+            ->whereIn('user_id', $users->pluck('id'))
+            ->where('booking_date', '<=', $to->toDateString())
+            ->selectRaw('user_id, SUM(CASE WHEN booking_date < ? THEN quantity ELSE 0 END) AS opening, SUM(CASE WHEN booking_date >= ? THEN quantity ELSE 0 END) AS turnover', [$from->toDateString(), $from->toDateString()])
+            ->groupBy('user_id')
+            ->get()
+            ->keyBy('user_id');
+
         $rows = [];
         foreach ($users as $user) {
-            $opening = (float) TimeAccountEntry::query()
-                ->where('time_account_id', $account->getKey())
-                ->where('user_id', $user->getKey())
-                ->whereDate('booking_date', '<', $from->toDateString())
-                ->sum('quantity');
-            $turnover = (float) TimeAccountEntry::query()
-                ->where('time_account_id', $account->getKey())
-                ->where('user_id', $user->getKey())
-                ->whereDate('booking_date', '>=', $from->toDateString())
-                ->whereDate('booking_date', '<=', $to->toDateString())
-                ->sum('quantity');
+            $sum = $sums->get($user->getKey());
+            $opening = (float) ($sum->opening ?? 0);
+            $turnover = (float) ($sum->turnover ?? 0);
             if ($opening === 0.0 && $turnover === 0.0) {
                 continue;
             }

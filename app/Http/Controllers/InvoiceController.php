@@ -16,6 +16,7 @@ use App\Mail\InvoiceMail;
 use App\Models\{Customer, Expense, ExternalReference, Invoice, InvoiceItem, InvoiceMailTemplate, Project};
 use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
+use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService};
 use App\Services\UI\DateRangeContext;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
@@ -405,56 +406,21 @@ class InvoiceController extends Controller {
     public function issue(Invoice $invoice): RedirectResponse {
         Gate::authorize('issue', $invoice);
 
-        // Pro-forma ist keine steuerliche Rechnung (MVP-171): kein
-        // Rechnungsstatus — Umwandlung läuft über proformaConvert().
-        if ($invoice->isProforma()) {
-            return back()->with('error', __('Eine Pro-forma-Rechnung wird nicht gestellt — wandeln Sie sie in eine echte Rechnung um.'));
-        }
-
-        // MVP-163 (Opt-in): Prüfung/Freigabe vor Ausstellung erzwingen.
-        $invoicingSettings = (array) data_get($invoice->organization?->settings, 'invoicing', []);
-        if ((string) ($invoicingSettings['require_approval'] ?? '0') === '1' && $invoice->approved_at === null) {
-            return back()->with('error', __('Die Rechnung braucht vor der Ausstellung eine Freigabe.'));
-        }
-
-        // MVP-164 (Opt-in): erzwungene E-Rechnungs-Validierung vor der
-        // Ausstellung — Fehler blocken; ohne das Setting bleibt das
-        // Bestandsverhalten (Bericht jederzeit manuell abrufbar).
-        $einvoiceSettings = (array) data_get($invoice->organization?->settings, 'einvoice', []);
-        if ((string) ($einvoiceSettings['enforce_validation'] ?? '0') === '1') {
-            $report = app(\App\Services\Invoicing\EInvoice\EInvoiceValidationService::class)->validate($invoice);
-            if (! $report['valid'] || $report['preflight_errors'] !== []) {
-                return redirect()->route('invoices.einvoice-validation', $invoice)
-                    ->with('error', __('Die Rechnung besteht die E-Rechnungs-Validierung nicht — Ausstellung abgebrochen.'));
+        // Ausstellung läuft über die einzige Schreibstelle (Vollscan 2026-08-23,
+        // B1): Pro-forma-Guard, Freigabepflicht (MVP-163), E-Rechnungs-
+        // Validierung (MVP-164), Partei-Snapshot + tax_context-Freeze (MVP-162/243).
+        $issuer = app(InvoiceIssueService::class);
+        try {
+            $issuer->assertIssuable($invoice);
+        } catch (InvoiceIssueException $e) {
+            if ($e->reason === InvoiceIssueException::REASON_EINVOICE_INVALID) {
+                return redirect()->route('invoices.einvoice-validation', $invoice)->with('error', $e->getMessage());
             }
+
+            return back()->with('error', $e->getMessage());
         }
 
-        // MVP-162: Zahlungsziel je Rechnung + Partei-Snapshot einfrieren —
-        // ab jetzt ist der Beleg fachlich unveränderlich (Model-Guard).
-        // Phase 23 (MVP-243): der tatsächlich verwendete Steuerkontext
-        // (Regelquelle, Stichtag, Kategorie, Aufriss) friert MIT ein.
-        $invoice->loadMissing(['items', 'customer', 'organization']);
-        $organization = $invoice->organization;
-        $taxResolution = $organization !== null
-            ? app(\App\Services\Invoicing\TaxResolver::class)->resolve($organization, $invoice->customer, $invoice->serviceDateTo() ?? now())
-            : null;
-        $invoice->freezeParties();
-        $invoice->update([
-            'status' => Invoice::STATUS_ISSUED,
-            'issued_on' => $invoice->number_source === 'file_import' && $invoice->issued_on !== null ? $invoice->issued_on : now(),
-            'due_on' => $invoice->number_source === 'file_import' && $invoice->due_on !== null
-                ? $invoice->due_on
-                : now()->addDays($invoice->payment_terms_days ?? 14),
-            'tax_context' => [
-                'resolved_on' => ($invoice->serviceDateTo() ?? now())->toDateString(),
-                'rate' => $invoice->tax_rate?->getNumericValue() ?? '',
-                'is_reverse_charge' => (bool) $invoice->is_reverse_charge,
-                'breakdown' => $invoice->tax_breakdown,
-                'category' => $taxResolution['category'] ?? null,
-                'rule' => $taxResolution['rule'] ?? null,
-                'item_categories' => $invoice->items->pluck('tax_category', 'id')->all(),
-            ],
-        ]);
+        $issuer->issue($invoice);
 
         return redirect()->route('invoices.show', $invoice)->with('status', __('Rechnung gestellt.'));
     }
@@ -848,6 +814,18 @@ class InvoiceController extends Controller {
      */
     public function send(Request $request, Invoice $invoice): RedirectResponse {
         Gate::authorize('send', $invoice);
+
+        // Der Versand stellt einen Entwurf aus (markSent) — dieselben
+        // Voraussetzungen wie issue(), sonst verließe eine unfreigegebene
+        // Rechnung das Haus (Vollscan 2026-08-23, B1).
+        $issuer = app(InvoiceIssueService::class);
+        if ($issuer->wouldIssue($invoice)) {
+            try {
+                $issuer->assertIssuable($invoice);
+            } catch (InvoiceIssueException $e) {
+                return back()->with('error', $e->getMessage());
+            }
+        }
 
         $data = $request->validate([
             'template_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('invoice_mail_templates')],

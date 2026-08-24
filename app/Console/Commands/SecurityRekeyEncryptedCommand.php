@@ -32,37 +32,30 @@ class SecurityRekeyEncryptedCommand extends Command {
 
     protected $description = 'Schlüsselt alle verschlüsselten DB-Felder auf den aktuellen APP_KEY um (APP_PREVIOUS_KEYS muss den alten Key enthalten).';
 
-    /** @var array<class-string, list<string>> Model → verschlüsselte Felder */
-    private const MAP = [
-        \App\Models\User::class => ['two_factor_secret', 'two_factor_recovery_codes', 'tax_identification_number', 'social_security_number'],
-        \App\Models\Auth\TwoFactorCredential::class => ['secret', 'data'],
-        \App\Models\ContactAddress::class => ['street', 'supplement', 'zip', 'city'],
-        \App\Models\ContactBankAccount::class => ['account_holder', 'iban', 'bic'],
-        \App\Models\Finance\BankAccount::class => ['iban', 'bic', 'account_holder'],
-        \App\Models\Finance\BankTransaction::class => ['counterparty_name', 'counterparty_iban', 'purpose'],
-        \App\Models\PluginSetting::class => ['settings'],
-        \App\Models\Integration\WebhookEndpoint::class => ['secret'],
-        \App\Models\SoftwareInstallation::class => ['license_key'],
-        \App\Models\SupplierCatalogSource::class => ['remote_password'],
-        \App\Models\Location\LocationPoint::class => ['lat', 'lng'],
+    /**
+     * Direktnutzer von Crypt::encryptString OHNE encrypted-Cast — die Ableitung
+     * aus den Casts sieht sie nicht. Neue Fundstellen erzwingt das Gate
+     * RekeyEncryptedCoverageRuleTest. Wert: Feld → zusätzliche Where-Bedingung.
+     *
+     * @var array<class-string<\Illuminate\Database\Eloquent\Model>, array<string, array<string, mixed>>>
+     */
+    private const DIRECT_USERS = [
+        \App\Models\SystemSetting::class => ['value' => ['is_sensitive' => 1]],
     ];
 
-    public function handle(): int {
+        public function handle(): int {
         $dry = (bool) $this->option('dry-run');
         $this->info(($dry ? '[DRY-RUN] ' : '') . 'Re-Key verschlüsselter Felder …');
 
         $sumRe = 0;
         $sumErr = 0;
 
-        foreach (self::MAP as $class => $fields) {
-            if (! class_exists($class)) {
-                continue;
-            }
+        foreach (self::encryptedFieldMap() as $class => $fields) {
             $model = new $class;
             $table = $model->getTable();
             $key = $model->getKeyName();
 
-            foreach ($fields as $field) {
+            foreach ($fields as $field => $conditions) {
                 $re = 0;
                 $err = 0;
 
@@ -70,6 +63,7 @@ class SecurityRekeyEncryptedCommand extends Command {
                     ->select([$key, $field])
                     ->whereNotNull($field)
                     ->where($field, '!=', '')
+                    ->where($conditions)
                     ->orderBy($key)
                     ->chunkById(500, function ($rows) use ($table, $field, $key, $dry, &$re, &$err): void {
                         foreach ($rows as $row) {
@@ -97,5 +91,57 @@ class SecurityRekeyEncryptedCommand extends Command {
         $this->info(($dry ? '[DRY-RUN] ' : '') . "Fertig — umgeschlüsselt: {$sumRe}, Fehler: {$sumErr}");
 
         return $sumErr === 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Model → verschlüsselte Felder, ABGELEITET aus den encrypted-Casts aller
+     * Modelle (Vollscan 2026-08-23, D1) statt hartkodiert: eine gepflegte
+     * 11er-Liste stand 47 Modellen mit encrypted-Casts gegenüber — jede neue
+     * Spalte wäre bei einer Key-Rotation stehen geblieben. Dazu die manuell
+     * registrierten Crypt::encryptString-Direktnutzer (DIRECT_USERS).
+     *
+     * @return array<class-string<\Illuminate\Database\Eloquent\Model>, array<string, array<string, mixed>>> Model → (Feld → Where-Bedingungen)
+     */
+    public static function encryptedFieldMap(): array {
+        $map = [];
+        foreach (self::modelClasses() as $class) {
+            $fields = [];
+            foreach ((new $class)->getCasts() as $field => $cast) {
+                if (is_string($cast) && str_starts_with($cast, 'encrypted')) {
+                    $fields[$field] = [];
+                }
+            }
+            if ($fields !== []) {
+                $map[$class] = $fields;
+            }
+        }
+        foreach (self::DIRECT_USERS as $class => $fields) {
+            $map[$class] = ($map[$class] ?? []) + $fields;
+        }
+        ksort($map);
+
+        return $map;
+    }
+
+    /** @return list<class-string<\Illuminate\Database\Eloquent\Model>> */
+    private static function modelClasses(): array {
+        $root = dirname(__DIR__, 3);
+        $files = glob($root . '/app/Models/{,*/,*/*/}*.php', GLOB_BRACE) ?: [];
+        foreach (glob($root . '/app/Plugins/*/Models/*.php') ?: [] as $file) {
+            $files[] = $file;
+        }
+
+        $classes = [];
+        foreach ($files as $file) {
+            /** @var class-string $class */
+            $class = 'App\\' . str_replace('/', '\\', substr($file, strlen($root . '/app/'), -strlen('.php')));
+            if (class_exists($class) && is_subclass_of($class, \Illuminate\Database\Eloquent\Model::class)
+                && (new \ReflectionClass($class))->isInstantiable()) {
+                $classes[] = $class;
+            }
+        }
+        sort($classes);
+
+        return $classes;
     }
 }

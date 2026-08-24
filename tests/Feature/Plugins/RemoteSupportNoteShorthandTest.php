@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Enums\Asset\AssetClass;
 use App\Models\{Asset, Customer, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\{RemoteSession, TeamViewerClient};
-use App\Plugins\RemoteSupport\RemoteSupportService;
+use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemoteSessionImporter};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -42,7 +42,7 @@ class RemoteSupportNoteShorthandTest extends TestCase {
             'asset_class' => AssetClass::Device->value,
             'customer_id' => $customer->id,
         ]);
-        (new RemoteSupportService)->setRemoteId($this->asset, TeamViewerClient::ID, '424242424');
+        (new RemoteDeviceRegistry)->setRemoteId($this->asset, TeamViewerClient::ID, '424242424');
     }
 
     /** Bucht eine Sitzung 10:00–11:00 mit der übergebenen Notiz und liefert den Eintrag. */
@@ -56,7 +56,7 @@ class RemoteSupportNoteShorthandTest extends TestCase {
             note: $note,
         );
 
-        $result = (new RemoteSupportService)->importSessions(
+        $result = (new RemoteSessionImporter)->importSessions(
             $this->organization,
             ['default_user_id' => null, 'default_billable' => true],
             [$session],

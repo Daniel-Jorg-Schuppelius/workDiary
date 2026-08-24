@@ -197,5 +197,27 @@ return [
         'qualification_expiring' => 'Qualifikation/Unterweisung läuft am :date ab.',
         'maintenance_due_soon' => 'Wartungsplan :label ist am :date fällig.',
         'maintenance_overdue' => 'Wartungsplan :label ist seit :date überfällig.',
+
+        // Legacy-Notifier-Ablösung (Vollscan 2026-08-23, B7).
+
+        'unknown_actor' => 'Unbekannt',
+
+        'diary_comment_created' => ':actor hat kommentiert: :excerpt',
+
+        'diary_completed' => 'Der Auftragsbuch-Eintrag wurde als erledigt markiert.',
+
+        'diary_attachment_added' => 'Neuer Anhang: :name',
+
+        'emergency_assigned_title' => 'Notdienst zugewiesen',
+
+        'emergency_assigned' => 'Einsatz ab :start. :reason',
+
+        'timesheet_signed_title' => 'Stundenzettel signiert',
+
+        'timesheet_signed' => ':project · :date',
+
+        'chat_reminder_title' => 'Erinnerung · #:channel',
+
+        'chat_attachment' => '[Anhang]',
     ],
 ];

@@ -92,6 +92,35 @@ final class QuoteProformaTest extends TestCase {
      * Überführung — die konvertierte Rechnung darf nie mehr fordern als
      * den angenommenen Angebots-Total.
      */
+    /**
+     * Vollscan 2026-08-23, B3: Angebote rundeten die Steuer zeilenweise,
+     * Rechnungen je Satzgruppe — 3 × 0,33 € à 19 % ergab 0,18 im Angebot und
+     * 0,19 in der daraus erzeugten Rechnung. Jetzt dieselbe Regel.
+     */
+    public function test_quote_tax_matches_invoice_tax_byte_for_byte(): void {
+        $service = app(QuoteService::class);
+        $quote = $service->create([
+            'customer_id' => $this->customer->id,
+            'valid_until' => now()->addWeeks(2)->toDateString(),
+        ], [
+            ['description' => 'A', 'quantity' => 1, 'unit_price' => '0.33', 'tax_rate' => '19.00'],
+            ['description' => 'B', 'quantity' => 1, 'unit_price' => '0.33', 'tax_rate' => '19.00'],
+            ['description' => 'C', 'quantity' => 1, 'unit_price' => '0.33', 'tax_rate' => '19.00'],
+        ], $this->user);
+
+        $this->assertSame('0.99', $quote->subtotal?->getAmount());
+        $this->assertSame('0.19', $quote->tax_amount?->getAmount(), 'Steuer auf die Satzgruppen-Summe, nicht zeilenweise.');
+
+        $quote = $service->approve($quote, $this->user);
+        ['quote' => $quote, 'acceptance_token' => $token] = $service->send($quote, $this->user);
+        $quote = $service->accept($quote, null, $token);
+        $invoice = $service->convertToInvoice($quote, $this->user);
+
+        $this->assertSame($quote->subtotal?->getAmount(), $invoice->subtotal?->getAmount());
+        $this->assertSame($quote->tax_amount?->getAmount(), $invoice->tax_amount?->getAmount());
+        $this->assertSame($quote->total?->getAmount(), $invoice->total?->getAmount());
+    }
+
     public function test_item_discounts_survive_acceptance_snapshot_and_conversion(): void {
         $service = app(QuoteService::class);
         $quote = $service->create([

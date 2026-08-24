@@ -15,6 +15,7 @@ namespace App\Services\Survey;
 use App\Models\Customer;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyInvitation, SurveyResponse};
 use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
@@ -88,7 +89,7 @@ class SurveyService {
     /**
      * Nimmt die Teilnahme entgegen.
      *
-     * @param array<int, int|string|null> $answers Frage-ID → Wert
+     * @param array<int, int|string|array<array-key, mixed>|null> $answers Frage-ID → Wert (Arrays wehrt die Prüfung ab)
      */
     public function submit(SurveyInvitation $invitation, array $answers): SurveyResponse {
         if (! $invitation->isUsable()) {
@@ -98,16 +99,15 @@ class SurveyService {
         /** @var Survey $survey */
         $survey = $invitation->survey()->withoutGlobalScopes()->firstOrFail();
 
-        $response = SurveyResponse::query()->create([
-            'organization_id' => $invitation->organization_id,
-            'survey_id' => $survey->id,
-            // Anonym: KEIN Einladungsbezug an der Antwort.
-            'survey_invitation_id' => $survey->anonymous ? null : $invitation->id,
-            'context_kind' => $invitation->context_kind,
-        ]);
-
+        // Erst prüfen, dann schreiben (Vollscan 2026-08-23, E1): eine
+        // Pflichtverletzung darf keine Antwort-Leiche hinterlassen, und
+        // Bereichsverletzungen (NPS 999) dürfen den Score nicht verfälschen.
+        $rows = [];
         foreach ($survey->questions()->withoutGlobalScopes()->get() as $question) {
             $value = $answers[$question->id] ?? null;
+            if (is_array($value)) {
+                throw new RuntimeException((string) __('Ungültige Antwort auf „:label".', ['label' => $question->label]));
+            }
             if ($value === null || $value === '') {
                 if ($question->required) {
                     throw new RuntimeException((string) __('Die Frage „:label" ist eine Pflichtfrage.', ['label' => $question->label]));
@@ -117,22 +117,53 @@ class SurveyService {
             }
 
             $isText = in_array($question->type, ['text', 'choice'], true);
-            SurveyAnswer::query()->create([
-                'organization_id' => $invitation->organization_id,
-                'survey_response_id' => $response->id,
+            $int = $isText ? null : (int) $value;
+            if (($question->type === 'nps' && ($int < 0 || $int > 10))
+                || ($question->type === 'scale' && ($int < 1 || $int > 5))
+                || ($question->type === 'choice' && ! in_array((string) $value, $question->options ?? [], true))) {
+                throw new RuntimeException((string) __('Ungültige Antwort auf „:label".', ['label' => $question->label]));
+            }
+
+            $rows[] = [
                 'survey_question_id' => $question->id,
-                'value_int' => $isText ? null : (int) $value,
+                'value_int' => $int,
                 'value_text' => $isText ? (string) $value : null,
-            ]);
+            ];
         }
 
-        $invitation->forceFill([
-            'status' => SurveyInvitation::STATUS_RESPONDED,
-            // Anonym: kein Antwortzeitpunkt - kein Join-Feld zur Antwort.
-            'responded_at' => $survey->anonymous ? null : Carbon::now(),
-        ])->save();
+        return DB::transaction(function () use ($invitation, $survey, $rows): SurveyResponse {
+            // Atomarer Claim: nur EIN Submit gewinnt das Statuswechsel-Update;
+            // der zweite sieht 0 Zeilen und legt keine Doppel-Antwort an.
+            $claimed = SurveyInvitation::query()
+                ->withoutGlobalScopes()
+                ->whereKey($invitation->id)
+                ->where('status', '!=', SurveyInvitation::STATUS_RESPONDED)
+                ->update([
+                    'status' => SurveyInvitation::STATUS_RESPONDED,
+                    // Anonym: kein Antwortzeitpunkt - kein Join-Feld zur Antwort.
+                    'responded_at' => $survey->anonymous ? null : Carbon::now(),
+                ]);
+            if ($claimed === 0) {
+                throw new RuntimeException((string) __('Dieser Umfrage-Link ist abgelaufen oder bereits verwendet.'));
+            }
 
-        return $response;
+            $response = SurveyResponse::query()->create([
+                'organization_id' => $invitation->organization_id,
+                'survey_id' => $survey->id,
+                // Anonym: KEIN Einladungsbezug an der Antwort.
+                'survey_invitation_id' => $survey->anonymous ? null : $invitation->id,
+                'context_kind' => $invitation->context_kind,
+            ]);
+
+            foreach ($rows as $row) {
+                SurveyAnswer::query()->create($row + [
+                    'organization_id' => $invitation->organization_id,
+                    'survey_response_id' => $response->id,
+                ]);
+            }
+
+            return $response;
+        });
     }
 
     /**
@@ -149,6 +180,7 @@ class SurveyService {
         $values = SurveyAnswer::query()
             ->where('survey_question_id', $question->id)
             ->whereNotNull('value_int')
+            ->whereBetween('value_int', [0, 10])
             ->pluck('value_int');
         if ($values->isEmpty()) {
             return null;

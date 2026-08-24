@@ -61,8 +61,8 @@ trait WithOrganization {
      * BEIDE gleichnamigen Rollen-Zeilen angehängt (MVP-538-Falle behoben):
      * die PER-ORG-Zeile (team_id = Org) trägt die Permissions für die
      * Policies, die GLOBALE Zeile (team_id = NULL) matcht team-lose
-     * Namens-Abfragen wie `User::role([...])` (NotificationDispatcher,
-     * PushNotifier). Der Spatie-Team-Kontext bleibt auf der Ziel-Organisation
+     * Namens-Abfragen wie `User::role([...])` (NotificationDispatcher).
+     * Der Spatie-Team-Kontext bleibt auf der Ziel-Organisation
      * stehen (Aufrufer setzen ihn in setUp()).
      *
      * @param  array<string, mixed>  $attributes

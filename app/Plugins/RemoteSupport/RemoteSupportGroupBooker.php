@@ -21,14 +21,14 @@ use Illuminate\Support\Collection;
  * an die universelle Zuordnungs-Inbox. Liest bewusst aus der bestehenden
  * {@see \App\Models\RemotePendingSession}-Inbox des Plugins und delegiert Buchung
  * (Geräte-ID → Asset binden + Sitzungen materialisieren) an den bewährten
- * {@see RemoteSupportService} — ohne Storage-Umbau.
+ * {@see RemotePendingAssignmentService} — ohne Storage-Umbau.
  *
  * Form-Typ `asset`: Bindung an ein BESTEHENDES Asset. Neuanlage eines Geräts und
  * der Mehrkundengeräte-Flow (Shared-Sessions → Kunde/Projekt) bleiben in der
  * RemoteSupport-Oberfläche (Deep-Link).
  */
 class RemoteSupportGroupBooker implements InboxGroupBooker {
-    public function __construct(private readonly RemoteSupportService $service) {}
+    public function __construct(private readonly RemotePendingAssignmentService $service) {}
 
     public function groups(Organization $organization): Collection {
         /** @var Collection<int, array<string, mixed>> $groups */

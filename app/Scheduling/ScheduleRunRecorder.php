@@ -14,7 +14,7 @@ namespace App\Scheduling;
 
 use App\Models\{ScheduledJobRun, ScheduledJobState};
 use Carbon\CarbonImmutable;
-use Illuminate\Console\Events\{ScheduledTaskFailed, ScheduledTaskFinished, ScheduledTaskSkipped, ScheduledTaskStarting};
+use Illuminate\Console\Events\{ScheduledBackgroundTaskFinished, ScheduledTaskFailed, ScheduledTaskFinished, ScheduledTaskSkipped, ScheduledTaskStarting};
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -51,12 +51,43 @@ class ScheduleRunRecorder {
             if ($jobKey === null) {
                 return;
             }
+            // Hintergrund-Jobs (J8): dieses Event feuert schon beim Start des
+            // Prozesses — das Ergebnis liefert ScheduledBackgroundTaskFinished.
+            if ($event->task->runInBackground) {
+                return;
+            }
             $exitCode = $event->task->exitCode;
             $success = $exitCode === null || $exitCode === 0;
             $this->finishRun(
                 $jobKey,
                 $success ? ScheduledJobRun::STATUS_SUCCESS : ScheduledJobRun::STATUS_FAILED,
                 (int) round($event->runtime * 1000),
+                $exitCode,
+            );
+        });
+    }
+
+    /** Ende eines Hintergrund-Jobs (schedule:finish) — Laufzeit aus dem Laufnachweis. */
+    public function handleBackgroundFinished(ScheduledBackgroundTaskFinished $event): void {
+        $this->safely(function () use ($event): void {
+            $jobKey = $this->registry->keyForEventCommand($event->task->command);
+            if ($jobKey === null) {
+                return;
+            }
+            $exitCode = $event->task->exitCode;
+            $success = $exitCode === null || $exitCode === 0;
+            $run = ScheduledJobRun::query()
+                ->where('job_key', $jobKey)
+                ->where('status', ScheduledJobRun::STATUS_RUNNING)
+                ->latest('id')
+                ->first();
+            $durationMs = $run?->started_at !== null
+                ? (int) $run->started_at->diffInMilliseconds(CarbonImmutable::now(), true)
+                : null;
+            $this->finishRun(
+                $jobKey,
+                $success ? ScheduledJobRun::STATUS_SUCCESS : ScheduledJobRun::STATUS_FAILED,
+                $durationMs,
                 $exitCode,
             );
         });

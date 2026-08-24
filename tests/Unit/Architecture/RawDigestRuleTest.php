@@ -52,6 +52,15 @@ class RawDigestRuleTest extends TestCase {
         'hash("sha256"',
         "hash('sha1'",
         'hash("sha1"',
+        // Datei-Digests gehören auf CommonToolkit File::hash($path) — der
+        // Sweep 2026-06 führte sie als migriert, 8 Stellen waren bis zum
+        // Vollscan 2026-08-23 (C11) wieder eingerissen.
+        "hash_file('sha256'",
+        'hash_file("sha256"',
+        "hash_file('sha1'",
+        'hash_file("sha1"',
+        "hash_file('md5'",
+        'hash_file("md5"',
     ];
 
     public function test_no_raw_digest_calls_in_app(): void {
@@ -77,7 +86,8 @@ class RawDigestRuleTest extends TestCase {
         $this->assertSame([], $violations, sprintf(
             "Roher Digest-Aufruf gefunden (Digest-Sweep C1, Toolkit-first).\n"
                 . "Stattdessen CommonToolkit\\Helper\\Data\\CryptoHelper::hash(\$data) nutzen\n"
-                . "(SHA-1: CryptoHelper::hash(\$data, HashAlgorithm::SHA1); Roh-Bytes: dritter Parameter true)\n"
+                . "(SHA-1: CryptoHelper::hash(\$data, HashAlgorithm::SHA1); Roh-Bytes: dritter Parameter true;\n"
+                . " Dateien: CommonToolkit\\Helper\\FileSystem\\File::hash(\$path) — wirft FileNotFoundException statt false)\n"
                 . "oder die Stelle mit fachlicher Begründung in die WHITELIST eintragen:\n%s",
             implode("\n", $violations),
         ));

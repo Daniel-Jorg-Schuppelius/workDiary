@@ -105,7 +105,7 @@ return [
         'link_removed' => 'Zuordnung entfernt.',
         'link_project_required' => 'Bitte ein WorkDiary-Projekt wählen.',
         'no_connection' => 'Keine aktive Todoist-Verbindung.',
-        'sync_done' => 'Vollabgleich ausgeführt.',
+        'sync_done' => 'Vollabgleich gestartet.',
         'preflight_failed' => 'Preflight fehlgeschlagen (:class).',
         'sections_saved' => 'Abschnitts-Zuordnungen gespeichert.',
         'collaborator_assigned' => 'Bearbeiter zugeordnet.',

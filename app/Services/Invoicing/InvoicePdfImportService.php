@@ -401,21 +401,18 @@ class InvoicePdfImportService {
         ];
     }
 
-    /** Rückrichtung des UNIT_CODES-Mappings im XRechnungGenerator. */
+    /**
+     * Anzeigeeinheit der importierten Position: Toolkit-Abkürzung
+     * ({@see UnitCode::abbreviation()}), nur die deutschen Faktura-Schreibweisen
+     * bleiben bewusst abweichend (Vollscan 2026-08-23, C8).
+     */
     private function unitLabel(UnitCode $code): string {
         return match ($code) {
             UnitCode::HOUR => 'Std.',
-            UnitCode::DAY => 'Tag(e)',
-            UnitCode::PIECE, UnitCode::UNIT_H87, UnitCode::UNIT => 'Stk.',
-            UnitCode::LUMP_SUM, UnitCode::JOB => 'pauschal',
-            UnitCode::KILOMETRE => 'km',
-            UnitCode::KILOGRAM => 'kg',
-            UnitCode::LITRE => 'l',
-            UnitCode::SQUARE_METRE => 'm²',
-            UnitCode::METRE => 'm',
+            UnitCode::JOB => 'pauschal',
             UnitCode::MINUTE => 'Min.',
             UnitCode::MONTH => 'Monat(e)',
-            default => $code->value,
+            default => $code->abbreviation(),
         };
     }
 

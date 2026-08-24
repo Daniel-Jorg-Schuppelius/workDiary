@@ -33,7 +33,10 @@ class ContactMasterDataPusher {
         'address_street', 'address_zip', 'address_city', 'country',
     ];
 
-    public function __construct(private readonly PluginManager $plugins) {}
+    public function __construct(
+        private readonly PluginManager $plugins,
+        private readonly \App\Services\Finance\Accounting\ContactPushService $pushService,
+    ) {}
 
     /**
      * @param  list<string>  $changedFields
@@ -44,30 +47,50 @@ class ContactMasterDataPusher {
             return false;
         }
 
-        $plugin = $this->plugins->get(LexofficePlugin::ID);
-        if (!$plugin instanceof LexofficePlugin || !$this->isLinked($contact)) {
+        // Führungsrichtung (Vollscan 2026-08-23, B6): führt die Buchhaltung
+        // die Stammdaten, wird NICHT gepusht — vorher fehlte das Gate hier.
+        if (! $this->pushService->pushAllowed()) {
             return false;
         }
 
-        try {
-            $contact instanceof Supplier
-                ? $plugin->pushSupplierContact($contact)
-                : $plugin->pushContact($contact);
-
-            return true;
-        } catch (Throwable $e) {
-            // Der lokale Stand bleibt gültig; die Übertragung holt der nächste
-            // Abgleich nach. Nur protokollieren, nicht den Request kippen.
-            report($e);
-
-            return false;
+        $pushed = false;
+        foreach ($this->linkedPluginIds($contact) as $pluginId) {
+            $plugin = $this->plugins->get($pluginId);
+            try {
+                if ($contact instanceof Supplier) {
+                    if ($plugin instanceof \App\Plugins\Contracts\SupplierContactSyncer) {
+                        $this->pushService->pushSupplier($contact, $pluginId);
+                        $pushed = true;
+                    }
+                } elseif ($plugin instanceof \App\Plugins\Contracts\ContactSyncer) {
+                    $this->pushService->push($contact, $pluginId);
+                    $pushed = true;
+                }
+            } catch (Throwable $e) {
+                // Der lokale Stand bleibt gültig; die Übertragung holt der
+                // nächste Abgleich nach. Nur protokollieren, nicht kippen.
+                report($e);
+            }
         }
+
+        return $pushed;
     }
 
-    private function isLinked(Customer|Supplier $contact): bool {
-        return \App\Models\ExternalReference::query()
-            ->forPlugin($contact->organization_id, LexofficePlugin::ID, LexofficePlugin::EXT_TYPE_CONTACT)
-            ->forReferenceable($contact)
-            ->exists();
+    /**
+     * Plugin-IDs mit bestehender Kontakt-Referenz (B6: nicht mehr hart
+     * Lexoffice — jedes verknüpfte Buchhaltungs-Plugin mit Syncer zieht mit).
+     *
+     * @return list<string>
+     */
+    private function linkedPluginIds(Customer|Supplier $contact): array {
+        return array_values(array_unique(array_map(
+            strval(...),
+            \App\Models\ExternalReference::query()
+                ->where('organization_id', $contact->organization_id)
+                ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
+                ->forReferenceable($contact)
+                ->pluck('plugin_id')
+                ->all(),
+        )));
     }
 }

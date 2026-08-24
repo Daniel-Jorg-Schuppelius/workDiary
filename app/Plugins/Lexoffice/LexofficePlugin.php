@@ -27,7 +27,7 @@ use Throwable;
  * Mappings between local entities and Lexoffice ids are persisted in the
  * external_references table. The plugin id is "lexoffice".
  */
-class LexofficePlugin extends AbstractPlugin implements ContactSyncer, PaymentSyncer, SlotRenderer, TimeExporter {
+class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\SupplierContactSyncer, ContactSyncer, PaymentSyncer, SlotRenderer, TimeExporter {
     public const ID = 'lexoffice';
 
     public const SERVICE_PROVIDER = LexofficeServiceProvider::class;

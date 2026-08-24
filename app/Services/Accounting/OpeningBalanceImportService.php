@@ -15,6 +15,7 @@ namespace App\Services\Accounting;
 use App\Models\Accounting\{AccountingAccount, AccountingEntry};
 use App\Models\{Organization, User};
 use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -46,13 +47,16 @@ class OpeningBalanceImportService {
     public function dryRun(Organization $organization, string $absolutePath): array {
         $lines = [];
         $errors = [];
-        $debit = '0.00';
-        $credit = '0.00';
+        // Money normalisiert die CSV-Schreibweise (Komma, Tausenderpunkt) und
+        // rundet kaufmännisch — ohne Float-Zwischenschritt (Vollscan 2026-08-23, C1).
+        $currency = $this->journal->baseCurrency($organization);
+        $debit = Money::zero($currency);
+        $credit = Money::zero($currency);
 
         foreach (CsvFacade::streamAssoc($absolutePath) as $lineNumber => $row) {
             $number = trim((string) ($row['account'] ?? ''));
-            $rowDebit = $this->amount($row['debit'] ?? '0');
-            $rowCredit = $this->amount($row['credit'] ?? '0');
+            $rowDebit = Money::of((string) ($row['debit'] ?? '0'), $currency);
+            $rowCredit = Money::of((string) ($row['credit'] ?? '0'), $currency);
 
             if ($number === '') {
                 $errors[] = (string) __('accounting.opening.error.missing_account', ['line' => (string) $lineNumber]);
@@ -71,7 +75,7 @@ class OpeningBalanceImportService {
                 continue;
             }
 
-            if ((float) $rowDebit > 0.0 && (float) $rowCredit > 0.0) {
+            if ($rowDebit->isPositive() && $rowCredit->isPositive()) {
                 $errors[] = (string) __('accounting.opening.error.both_sides', ['line' => (string) $lineNumber]);
 
                 continue;
@@ -80,19 +84,19 @@ class OpeningBalanceImportService {
             $lines[] = [
                 'accounting_account_id' => $account->id,
                 'account' => $account,
-                'debit' => $rowDebit,
-                'credit' => $rowCredit,
+                'debit' => $rowDebit->getAmount(),
+                'credit' => $rowCredit->getAmount(),
             ];
 
-            $debit = $this->add($debit, $rowDebit);
-            $credit = $this->add($credit, $rowCredit);
+            $debit = $debit->plus($rowDebit);
+            $credit = $credit->plus($rowCredit);
         }
 
         return [
             'lines' => $lines,
-            'debit' => $debit,
-            'credit' => $credit,
-            'balanced' => $debit === $credit && (float) $debit > 0.0,
+            'debit' => $debit->getAmount(),
+            'credit' => $credit->getAmount(),
+            'balanced' => $debit->equals($credit) && $debit->isPositive(),
             'errors' => $errors,
         ];
     }
@@ -138,16 +142,5 @@ class OpeningBalanceImportService {
         ], $entry, $actor);
 
         return $entry;
-    }
-
-    private function amount(mixed $value): string {
-        $normalized = str_replace([' ', "\u{00A0}"], '', (string) $value);
-        $normalized = str_replace(',', '.', $normalized);
-
-        return number_format((float) $normalized, 2, '.', '');
-    }
-
-    private function add(string $a, string $b): string {
-        return number_format((float) $a + (float) $b, 2, '.', '');
     }
 }

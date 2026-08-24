@@ -37,6 +37,9 @@ enum OperationsTaskType: string implements HasLabel {
     case ComponentEol = 'component_eol';
     case PluginDisabled = 'plugin_disabled';
     case SchedulerOverdue = 'scheduler_overdue';
+    // Vollscan 2026-08-23 (J6): Queue-Zustand war nur auf der Diagnoseseite sichtbar.
+    case QueueFailedJobs = 'queue_failed_jobs';
+    case QueueWorkerDown = 'queue_worker_down';
     case MaintenanceScheduled = 'maintenance_scheduled';
     case ConfigMissing = 'config_missing';
     case SupportGrantOpen = 'support_grant_open';
@@ -62,6 +65,7 @@ enum OperationsTaskType: string implements HasLabel {
             self::ComponentEol => NotificationEvent::OperationsComponentEol,
             self::PluginDisabled => NotificationEvent::OperationsPluginDisabled,
             self::SchedulerOverdue => NotificationEvent::OperationsSchedulerOverdue,
+            self::QueueFailedJobs, self::QueueWorkerDown => NotificationEvent::OperationsQueueDegraded,
             self::MaintenanceScheduled => NotificationEvent::OperationsMaintenanceScheduled,
             self::ProblemReportOpen => NotificationEvent::OperationsProblemReportReceived,
             self::CloudIntakeReauth => NotificationEvent::OperationsCloudIntakeReauth,

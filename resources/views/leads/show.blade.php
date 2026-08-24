@@ -67,7 +67,7 @@
             @if ($canManage && ! $lead->anonymized_at)
                 <x-card :title="__('Pipeline')">
                     <div class="flex flex-wrap gap-2">
-                        @foreach ($lead->status->next() as $next)
+                        @foreach ($lead->status->allowedTransitions() as $next)
                             @if ($next === LeadStatus::Discarded)
                                 <x-action-form :action="route('leads.transition', $lead)"
                                                :confirm="__('Lead verwerfen? Er läuft danach in die Anonymisierungsfrist.')"

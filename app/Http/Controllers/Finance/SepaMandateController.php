@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\Finance\{MandateKind, MandateStatus};
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveSepaMandateRequest;
 use App\Models\Customer;
@@ -31,6 +32,8 @@ use Illuminate\View\View;
  * werden durfte.
  */
 class SepaMandateController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         abort_unless(Gate::allows(Permission::FinancePaymentRun->value), 403);
 
@@ -53,7 +56,7 @@ class SepaMandateController extends Controller {
         $data = $request->validated();
 
         SepaMandate::query()->create([
-            'organization_id' => $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'customer_id' => $data['customer_id'],
             'reference' => $data['reference'],
             'kind' => $data['kind'],

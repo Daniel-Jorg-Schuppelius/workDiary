@@ -26,6 +26,9 @@ use Illuminate\Support\Facades\Auth;
  * @method static void creating(\Closure $callback)
  */
 trait BelongsToOrganization {
+    /** @var list<string> org-pflichtige Kerntabellen — Gegenstück zur Migration 2027_02_19_100800 (NOT NULL). */
+    private const ORG_REQUIRED_TABLES = ['invoices', 'time_entries', 'customers', 'tasks', 'suppliers', 'articles', 'timesheets'];
+
     public static function bootBelongsToOrganization(): void {
         static::addGlobalScope(new OrganizationScope);
 
@@ -66,6 +69,16 @@ trait BelongsToOrganization {
                 ) {
                     throw new MissingOrganizationException(static::class);
                 }
+            }
+
+            // Kerntabellen sind org-pflichtig (Vollscan 2026-08-23, F6/E5):
+            // eine NULL-org_id wäre durch den OrganizationScope unsichtbar —
+            // klare Exception statt DB-1048 (Spalten sind NOT NULL).
+            if (
+                empty($model->organization_id)
+                && in_array($model->getTable(), self::ORG_REQUIRED_TABLES, true)
+            ) {
+                throw new MissingOrganizationException(static::class);
             }
         });
     }

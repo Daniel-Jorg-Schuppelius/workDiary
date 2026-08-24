@@ -73,6 +73,62 @@ final class InvoiceWorkflowTest extends TestCase {
         $this->assertSame(Invoice::STATUS_ISSUED, $invoice->fresh()->status);
     }
 
+    /**
+     * Vollscan 2026-08-23, B1: Versand und Lexoffice-Push stellten Rechnungen
+     * ohne tax_context-Freeze und am Freigabe-Zwang vorbei aus. Alle Pfade
+     * laufen jetzt über InvoiceIssueService.
+     */
+    public function test_sending_a_draft_issues_it_with_a_frozen_tax_context(): void {
+        \Illuminate\Support\Facades\Mail::fake();
+        $template = \App\Models\InvoiceMailTemplate::query()->create([
+            'organization_id' => null, 'name' => 'T', 'is_default' => true,
+            'subject' => 'R {{invoice_number}}', 'body_html' => '<p>x</p>', 'body_text' => 'x',
+        ]);
+        $invoice = $this->draft();
+
+        $this->actingAs($this->user)->post(route('invoices.send', $invoice), [
+            'template_id' => $template->id,
+            'to' => ['kunde@example.test'],
+        ])->assertRedirect(route('invoices.show', $invoice));
+
+        $fresh = $invoice->fresh();
+        $this->assertSame(Invoice::STATUS_ISSUED, $fresh->status);
+        $this->assertNotNull($fresh->party_snapshot);
+        $this->assertNotNull($fresh->due_on);
+        $this->assertIsArray($fresh->tax_context);
+        $this->assertSame('19.00', (string) ($fresh->tax_context['rate'] ?? ''));
+        $this->assertArrayHasKey('resolved_on', $fresh->tax_context);
+    }
+
+    public function test_sending_respects_the_approval_requirement(): void {
+        \Illuminate\Support\Facades\Mail::fake();
+        $this->org->update(['settings' => ['invoicing' => ['require_approval' => '1']]]);
+        $template = \App\Models\InvoiceMailTemplate::query()->create([
+            'organization_id' => null, 'name' => 'T', 'is_default' => true,
+            'subject' => 'R {{invoice_number}}', 'body_html' => '<p>x</p>', 'body_text' => 'x',
+        ]);
+        $invoice = $this->draft();
+
+        $this->actingAs($this->user)->post(route('invoices.send', $invoice), [
+            'template_id' => $template->id,
+            'to' => ['kunde@example.test'],
+        ])->assertSessionHas('error');
+
+        \Illuminate\Support\Facades\Mail::assertNothingQueued();
+        $this->assertSame(Invoice::STATUS_DRAFT, $invoice->fresh()->status, 'Ohne Freigabe verlässt keine Rechnung das Haus.');
+    }
+
+    public function test_mark_sent_issues_through_the_single_write_path(): void {
+        $invoice = $this->draft();
+
+        $invoice->markSent();
+
+        $fresh = $invoice->fresh();
+        $this->assertSame(Invoice::STATUS_ISSUED, $fresh->status);
+        $this->assertSame(1, (int) $fresh->sent_count);
+        $this->assertIsArray($fresh->tax_context);
+    }
+
     public function test_payment_terms_days_drive_due_date(): void {
         $invoice = $this->draft(['payment_terms_days' => 30]);
 

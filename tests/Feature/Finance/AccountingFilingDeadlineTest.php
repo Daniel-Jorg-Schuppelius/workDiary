@@ -13,8 +13,9 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{FilingObligationKind, FilingObligationStatus, ProfitDetermination, VatFilingInterval};
 use App\Models\Accounting\AccountingFilingObligation;
 use App\Models\{Organization, User};
-use App\Services\Accounting\{AccountingProfileService, AccountingReportService, FiscalYearService, VatFilingProfileResolver};
+use App\Services\Accounting\{AccountingProfileService, FiscalYearService, VatFilingProfileResolver};
 use App\Services\Accounting\Filing\{FilingDeadlineCalculator, FilingObligationService, VatFilingPeriodService};
+use App\Services\Accounting\Reports\DataQualityBuilder;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -74,9 +75,9 @@ class AccountingFilingDeadlineTest extends TestCase {
     /** § 108 Abs. 3 AO: Ein Fristende am Wochenende rutscht auf Montag. */
     public function test_a_deadline_on_a_weekend_moves_to_the_next_business_day(): void {
         // 10.05.2026 ist ein Sonntag.
-        $this->assertSame('2026-05-11', $this->calculator()->nextBusinessDay(CarbonImmutable::create(2026, 5, 10))->toDateString());
+        $this->assertSame('2026-05-11', app(\App\Services\HolidayService::class)->nextBusinessDay(CarbonImmutable::create(2026, 5, 10) ?? CarbonImmutable::now())->toDateString());
         // 10.06.2026 ist ein Mittwoch und bleibt stehen.
-        $this->assertSame('2026-06-10', $this->calculator()->nextBusinessDay(CarbonImmutable::create(2026, 6, 10))->toDateString());
+        $this->assertSame('2026-06-10', app(\App\Services\HolidayService::class)->nextBusinessDay(CarbonImmutable::create(2026, 6, 10) ?? CarbonImmutable::now())->toDateString());
     }
 
     /** Die Dauerfristverlängerung schiebt die Voranmeldung um einen Monat. */
@@ -163,7 +164,7 @@ class AccountingFilingDeadlineTest extends TestCase {
     public function test_overdue_obligations_show_in_the_quality_report(): void {
         app(FilingObligationService::class)->syncYear($this->org, 2026);
 
-        $quality = app(AccountingReportService::class)->dataQuality(
+        $quality = app(DataQualityBuilder::class)->build(
             $this->org,
             CarbonImmutable::create(2026, 1, 1),
             CarbonImmutable::create(2026, 12, 31),

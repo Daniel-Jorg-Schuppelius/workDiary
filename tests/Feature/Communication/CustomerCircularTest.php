@@ -130,6 +130,52 @@ class CustomerCircularTest extends TestCase {
         $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
     }
 
+    /**
+     * Vollscan 2026-08-23, A3/J4: Der Versand läuft als Queue-Job; ein
+     * abgebrochener Lauf (status sending) wird wieder aufgenommen, ohne bereits
+     * erreichte Empfänger erneut anzuschreiben.
+     */
+    public function test_interrupted_send_resumes_without_duplicate_mails(): void {
+        Mail::fake();
+        $alpha = $this->customer(['name' => 'Alpha GmbH', 'company' => 'Alpha GmbH', 'email' => 'a@example.test']);
+        $this->customer(['name' => 'Beta GmbH', 'company' => 'Beta GmbH', 'email' => 'b@example.test']);
+        $circular = $this->circular();
+
+        // Simulierter Abbruch nach dem ersten Empfänger.
+        $circular->forceFill(['status' => CustomerCircular::STATUS_SENDING])->save();
+        CustomerCircularRecipient::query()->create([
+            'organization_id' => $circular->organization_id,
+            'customer_circular_id' => $circular->id,
+            'customer_id' => $alpha->id,
+            'email' => 'a@example.test',
+            'status' => CustomerCircularRecipient::STATUS_SENT,
+            'sent_at' => now(),
+        ]);
+
+        $this->service()->send($circular, $this->admin);
+
+        Mail::assertSent(CustomerCircularMail::class, 1);
+        Mail::assertSent(CustomerCircularMail::class, fn (CustomerCircularMail $mail) => $mail->hasTo('b@example.test'));
+        $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
+        $this->assertSame(2, CustomerCircularRecipient::query()->where('customer_circular_id', $circular->id)->count());
+    }
+
+    public function test_large_audience_is_delivered_in_batches_by_chained_jobs(): void {
+        Mail::fake();
+        config(['circular.batch_size' => 2]);
+        foreach (['a', 'b', 'c', 'd', 'e'] as $i) {
+            $this->customer(['name' => strtoupper($i) . ' GmbH', 'company' => strtoupper($i) . ' GmbH', 'email' => $i . '@example.test']);
+        }
+        $circular = $this->circular();
+
+        $this->service()->send($circular, $this->admin);
+
+        // sync-Queue: der Job reicht sich selbst weiter, bis alle fünf erreicht sind.
+        Mail::assertSent(CustomerCircularMail::class, 5);
+        $this->assertSame(CustomerCircular::STATUS_SENT, $circular->fresh()?->status);
+        $this->assertSame(5, CustomerCircularRecipient::query()->where('customer_circular_id', $circular->id)->where('status', CustomerCircularRecipient::STATUS_SENT)->count());
+    }
+
     public function test_customer_without_email_is_recorded_as_skipped(): void {
         Mail::fake();
         $this->customer(['name' => 'Ohne Mail', 'email' => null]);

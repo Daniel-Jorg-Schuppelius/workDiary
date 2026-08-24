@@ -14,7 +14,7 @@ use App\Enums\Asset\AssetClass;
 use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Asset, Customer, ForeignCustomer, RemotePendingSession, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\TeamViewerClient;
-use App\Plugins\RemoteSupport\{RemoteSupportService, RemoteSupportSuggestionService};
+use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportSuggestionService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -34,7 +34,7 @@ class RemoteSupportSuggestionTest extends TestCase {
     }
 
     private function suggester(): RemoteSupportSuggestionService {
-        return new RemoteSupportSuggestionService(new RemoteSupportService);
+        return new RemoteSupportSuggestionService(new RemoteSessionImporter);
     }
 
     private function pendingSession(string $remoteId, string $sessionId, string $start, string $end, ?string $alias = null, ?int $assetId = null): RemotePendingSession {
@@ -69,7 +69,7 @@ class RemoteSupportSuggestionTest extends TestCase {
 
     /** @return array<string, object{kind: string, customerSqid: string|null, customerName: string|null, foreignSqid: string|null, foreignName: string|null, assetSqid: string|null, assetLabel: string|null, matchcode: string|null, matchcodeScope: string|null, matched: int, total: int, reasons: array<int, string>}> */
     private function suggestionsForOpenGroups(): array {
-        $groups = (new RemoteSupportService)->openPendingGroups($this->organization);
+        $groups = (new RemotePendingAssignmentService(new RemoteDeviceRegistry, new RemoteSessionImporter))->openPendingGroups($this->organization);
 
         return $this->suggester()->suggestForGroups($this->organization, $groups);
     }
@@ -127,7 +127,7 @@ class RemoteSupportSuggestionTest extends TestCase {
             'customer_id' => $customer->id,
             'name' => 'GSL-DC01',
         ]);
-        (new RemoteSupportService)->setRemoteId($asset, TeamViewerClient::ID, '999888777');
+        (new RemoteDeviceRegistry)->setRemoteId($asset, TeamViewerClient::ID, '999888777');
 
         // Unbekanntes Gerät mit demselben Kürzel im Alias, ohne Zeitüberlappung.
         $this->pendingSession('333000333', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'GSL-Empfang');
@@ -217,7 +217,7 @@ class RemoteSupportSuggestionTest extends TestCase {
         $sessionB = $this->pendingSession('888000888', 's2', '2026-07-20 15:00:00', '2026-07-20 15:45:00', assetId: $asset->id);
         $none = $this->pendingSession('888000888', 's3', '2026-07-22 09:00:00', '2026-07-22 09:30:00', assetId: $asset->id);
 
-        $devices = (new RemoteSupportService)->openSharedSessions($this->organization);
+        $devices = (new RemotePendingAssignmentService(new RemoteDeviceRegistry, new RemoteSessionImporter))->openSharedSessions($this->organization);
         $suggestions = $this->suggester()->suggestForSharedSessions($this->organization, $devices);
 
         $this->assertSame($customerA->sqid, $suggestions[$sessionA->id]->customerSqid ?? null);
@@ -352,7 +352,7 @@ class RemoteSupportSuggestionTest extends TestCase {
             'foreign_customer_id' => $foreign->id,
             'name' => 'WBL-KASSE01',
         ]);
-        (new RemoteSupportService)->setRemoteId($asset, TeamViewerClient::ID, '161616161');
+        (new RemoteDeviceRegistry)->setRemoteId($asset, TeamViewerClient::ID, '161616161');
 
         $this->pendingSession('171717171', 's1', '2026-07-20 09:00:00', '2026-07-20 09:30:00', alias: 'WBL-Büro');
 
@@ -394,7 +394,7 @@ class RemoteSupportSuggestionTest extends TestCase {
 
         $session = $this->pendingSession('181818181', 's1', '2026-07-20 09:30:00', '2026-07-20 10:15:00', assetId: $asset->id);
 
-        $devices = (new RemoteSupportService)->openSharedSessions($this->organization);
+        $devices = (new RemotePendingAssignmentService(new RemoteDeviceRegistry, new RemoteSessionImporter))->openSharedSessions($this->organization);
         $suggestions = $this->suggester()->suggestForSharedSessions($this->organization, $devices);
 
         $this->assertSame($customer->sqid, $suggestions[$session->id]->customerSqid ?? null);

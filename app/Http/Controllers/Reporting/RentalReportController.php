@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Reporting;
 
 use App\Enums\Rental\{RentalCaseStatus, RentalChargeStatus, RentalReturnFollowUp};
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\Rental\{RentalCase, RentalCharge, RentalProfile, RentalReportSnapshot, RentalReturnReport};
 use Illuminate\Contracts\View\View;
@@ -27,6 +27,7 @@ use Illuminate\Support\Facades\Gate;
  * (P2 — spätere Datenänderungen bewerten alte Berichte nicht um).
  */
 class RentalReportController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     public function index(Request $request): View {
@@ -48,7 +49,7 @@ class RentalReportController extends Controller {
         [$from, $to] = $this->period($request);
 
         RentalReportSnapshot::query()->create([
-            'organization_id' => $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'period_start' => $from->toDateString(),
             'period_end' => $to->toDateString(),
             'payload' => $this->aggregate($from, $to),

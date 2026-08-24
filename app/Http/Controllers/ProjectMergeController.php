@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Http\Controllers\Concerns\MergesDuplicates;
+use App\Http\Controllers\Concerns\{MergesDuplicates, ResolvesCurrentOrganization};
 use App\Models\{Organization, Project, ProjectMergeDismissal};
 use App\Services\{ProjectDuplicateFinder, ProjectMergeService};
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +27,7 @@ use Illuminate\View\View;
 class ProjectMergeController extends Controller {
     /** @use MergesDuplicates<Project> */
     use MergesDuplicates;
+    use ResolvesCurrentOrganization;
 
     public function index(Request $request, ProjectDuplicateFinder $finder): View {
         $user = $this->authorizeMerging();
@@ -97,7 +98,7 @@ class ProjectMergeController extends Controller {
         ProjectMergeDismissal::query()->updateOrCreate(
             ProjectMergeDismissal::pairKey((int) $source->getKey(), (int) $target->getKey()),
             [
-                'organization_id' => $user->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'dismissed_by' => $user->id,
             ],
         );

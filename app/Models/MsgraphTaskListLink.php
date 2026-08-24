@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Plugins\Support\TaskSync\TaskSyncLink;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -36,7 +37,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_run_at
  * @property array<string, int>|null $last_run_counters
  */
-class MsgraphTaskListLink extends Model {
+class MsgraphTaskListLink extends Model implements TaskSyncLink {
     use Auditable;
     use BelongsToOrganization;
 
@@ -84,6 +85,11 @@ class MsgraphTaskListLink extends Model {
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {
         return $this->belongsTo(Project::class);
+    }
+
+    /** {@inheritDoc} */
+    public function organizationId(): int {
+        return (int) $this->organization_id;
     }
 
     public function importsFromTodo(): bool {

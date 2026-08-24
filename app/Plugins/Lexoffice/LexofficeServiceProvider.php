@@ -12,6 +12,7 @@ namespace App\Plugins\Lexoffice;
 
 use App\Plugins\Lexoffice\Console\{LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
@@ -58,6 +59,11 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function bootPlugin(): void {
+        // Belegfluss-Quelle (Feature 105; Vollscan B9): der Kern kennt die
+        // Tabelle `lexoffice_vouchers` nur noch über diese Registrierung.
+        $this->app->make(DocumentFeedSourceRegistry::class)
+            ->register(new LexofficeDocumentFeedSource);
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 LexofficeSyncArticlesCommand::class,

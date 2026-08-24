@@ -17,6 +17,7 @@ use App\Models\{ExternalReference, IntegrationInboxItem, MsgraphTaskConnection, 
 use App\Plugins\Msgraph\Api\MsgraphTodoClient;
 use App\Plugins\Msgraph\MsgraphPlugin;
 use App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver;
+use App\Plugins\Support\TaskSync\{AbstractTaskSyncService, TaskSyncLink};
 use App\Services\CloudIntake\StaleCheckpointException;
 use Illuminate\Support\Collection;
 use Throwable;
@@ -25,11 +26,9 @@ use Throwable;
  * Microsoft-To-Do-Sync (Feature 102, Schnitt E) nach dem Todoist-Muster
  * (Feature 055, {@see \App\Plugins\Todoist\Services\TodoistImportService}):
  * je aktiver Listen-Zuordnung wird über stabile Fremdreferenzen abgeglichen
- * (ein To-Do-Task je Org = eine lokale Aufgabe). Der `base`-Snapshot im
- * `ExternalReference.payload` ist die 3-Wege-Konfliktbasis — beidseitig
- * geändert + ungleich ⇒ `conflict` in die Integrations-Inbox, NIE
- * Last-write-wins. Remote verschwundene Aufgaben werden nur markiert
- * (Inbox-Fall), nie gelöscht.
+ * (ein To-Do-Task je Org = eine lokale Aufgabe). 3-Wege-Kern, Reopen-,
+ * Lösch- und Inbox-Semantik liefert {@see AbstractTaskSyncService}
+ * (B8/Welle 3).
  *
  * Unterschiede zu Todoist (bewusst, To-Do-API): keine Abschnitte, keine
  * Bearbeiter-Zuordnung, keine Unteraufgaben (Checklist-Items sind kein
@@ -39,15 +38,12 @@ use Throwable;
  * {@see \App\Plugins\Msgraph\Observers\MsgraphTodoTaskObserver} →
  * {@see MsgraphOutboxDispatcher} ({@see exportTask()}) — der Sync-Lauf
  * bleibt die heilende Quelle.
+ *
+ * @extends AbstractTaskSyncService<MsgraphTaskListLink>
  */
-class MsgraphTodoSyncService {
+class MsgraphTodoSyncService extends AbstractTaskSyncService {
     /** Felder des gemeinsamen base-Snapshots (Konfliktbasis). */
     public const SYNCED_FIELDS = ['title', 'description', 'status', 'priority', 'due_date'];
-
-    /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
-    public static function emptyCounters(): array {
-        return ['created' => 0, 'updated' => 0, 'unchanged' => 0, 'conflicts' => 0, 'inbox' => 0, 'failed' => 0];
-    }
 
     /** @return array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int} */
     public function syncOrganization(Organization $organization): array {
@@ -195,14 +191,15 @@ class MsgraphTodoSyncService {
             }
         }
 
-        // Teilsicht: NUR explizit gemeldete Löschungen markieren.
+        // Teilsicht: NUR explizit gemeldete Löschungen markieren — lokal
+        // erledigte trotzdem nicht (s. markRemoteDeleted-Hook-Doku im Kern).
         foreach ($removedIds as $externalId) {
             $reference = ExternalReference::query()
                 ->forPlugin($link->organization_id, MsgraphPlugin::ID, MsgraphPlugin::EXT_TYPE_TODO_TASK)
                 ->where('external_id', $externalId)
                 ->first();
             if ($reference !== null
-                && ($reference->payload['list_id'] ?? null) === $link->todo_list_id
+                && $this->referenceBelongsToLink($link, $reference)
                 && $this->markRemoteDeleted($link, $reference)) {
                 $counters['inbox']++;
             }
@@ -291,78 +288,6 @@ class MsgraphTodoSyncService {
         }
 
         return $this->applyThreeWay($link, $reference, $task, $remote, $mapped);
-    }
-
-    /**
-     * 3-Wege-Übernahme je Feld: base vs. lokal vs. remote — nur remote
-     * geänderte Felder fließen; beidseitig geändert + ungleich ⇒ Konflikt.
-     *
-     * @param  array<string, mixed>  $remote
-     * @param  array<string, mixed>  $mapped
-     * @return 'updated'|'unchanged'|'conflicts'
-     */
-    private function applyThreeWay(MsgraphTaskListLink $link, ExternalReference $reference, Task $task, array $remote, array $mapped): string {
-        $payload = (array) ($reference->payload ?? []);
-        $base = (array) ($payload['base'] ?? []);
-
-        $changes = [];
-        $conflicts = [];
-        foreach (self::SYNCED_FIELDS as $field) {
-            $remoteValue = $mapped[$field];
-            $baseValue = $base[$field] ?? null;
-            $localValue = $this->localValue($task, $field);
-
-            $remoteChanged = $this->differs($remoteValue, $baseValue);
-            $localChanged = $this->differs($localValue, $baseValue);
-
-            if (! $remoteChanged) {
-                continue; // lokale Änderungen exportiert ggf. der Export-Zweig
-            }
-            if ($localChanged && $this->differs($remoteValue, $localValue)) {
-                $conflicts[$field] = ['local' => $localValue, 'remote' => $remoteValue];
-
-                continue;
-            }
-            $changes[$field] = $remoteValue;
-        }
-
-        // Reopen-Regel (Todoist-Muster): „wieder geöffnet" setzt nur zurück,
-        // wenn der lokale done-Stand aus derselben To-Do-Synchronisation kam.
-        if (($changes['status'] ?? null) === TaskStatus::Open->value
-            && $task->status === TaskStatus::Done
-            && ($payload['done_origin'] ?? null) !== 'todo') {
-            unset($changes['status']);
-        }
-
-        if ($conflicts !== []) {
-            $this->stageConflict($link, $reference, $task, $remote, $conflicts);
-        }
-
-        if ($changes === [] && $conflicts === []) {
-            return 'unchanged';
-        }
-
-        if ($changes !== []) {
-            MsgraphTodoTaskObserver::suppressed(fn () => $task->forceFill($changes)->save());
-        }
-
-        // base nur für übernommene Felder fortschreiben — Konfliktfelder
-        // behalten die alte Basis (sonst Phantom-Konflikte).
-        $newBase = $this->baseFrom($task->refresh());
-        foreach (array_keys($conflicts) as $field) {
-            $newBase[$field] = $base[$field] ?? null;
-        }
-        $doneOrigin = ($changes['status'] ?? null) === TaskStatus::Done->value ? 'todo' : ($payload['done_origin'] ?? null);
-        if (($changes['status'] ?? null) === TaskStatus::Open->value) {
-            $doneOrigin = null;
-        }
-        unset($payload['remote_deleted_at']); // remote (wieder) vorhanden
-        $reference->forceFill([
-            'payload' => ['base' => $newBase, 'list_id' => $link->todo_list_id, 'done_origin' => $doneOrigin] + $payload,
-            'synced_at' => now(),
-        ])->save();
-
-        return $conflicts !== [] ? 'conflicts' : 'updated';
     }
 
     // ── Export: WorkDiary → To Do (im Sync-Lauf + live via Outbox) ──────
@@ -462,7 +387,7 @@ class MsgraphTodoSyncService {
             ->withoutGlobalScopes()
             ->where('organization_id', $link->organization_id)
             ->where('plugin_id', MsgraphPlugin::ID)
-            ->where('dedupe_key', 'todo-task-conflict:' . $reference->external_id)
+            ->where('dedupe_key', $this->dedupePrefix() . '-conflict:' . $reference->external_id)
             ->where('status', IntegrationInboxItem::STATUS_OPEN)
             ->exists();
         if ($hasOpenConflict) {
@@ -562,146 +487,58 @@ class MsgraphTodoSyncService {
         return $payload;
     }
 
-    /** @return array<string, mixed> */
-    private function baseFrom(Task $task): array {
-        $base = [];
-        foreach (self::SYNCED_FIELDS as $field) {
-            $base[$field] = $this->localValue($task, $field);
-        }
+    // ── Hooks des gemeinsamen Sync-Kerns ────────────────────────────────
 
-        return $base;
+    protected function pluginId(): string {
+        return MsgraphPlugin::ID;
     }
 
-    private function localValue(Task $task, string $field): mixed {
-        $value = $task->getAttribute($field);
-        if ($value instanceof \BackedEnum) {
-            return $value->value;
-        }
-        if ($value instanceof \DateTimeInterface) {
-            return $value->format('Y-m-d');
-        }
-
-        return $value;
+    protected function externalType(): string {
+        return MsgraphPlugin::EXT_TYPE_TODO_TASK;
     }
 
-    private function differs(mixed $a, mixed $b): bool {
-        return ($a === null ? null : (string) $a) !== ($b === null ? null : (string) $b);
+    protected function dedupePrefix(): string {
+        return 'todo-task';
     }
 
-    // ── Lösch-/Inbox-Semantik (Todoist-Muster) ──────────────────────────
-
-    /**
-     * @param  Collection<int, array<string, mixed>>  $remoteTasks
-     * @param  array{created: int, updated: int, unchanged: int, conflicts: int, inbox: int, failed: int}  $counters
-     */
-    private function flagRemoteDeletions(MsgraphTaskListLink $link, Collection $remoteTasks, array &$counters): void {
-        $remoteIds = $remoteTasks->pluck('id')->map(fn ($id) => (string) $id)->all();
-
-        $vanished = ExternalReference::query()
-            ->forPlugin($link->organization_id, MsgraphPlugin::ID, MsgraphPlugin::EXT_TYPE_TODO_TASK)
-            ->whereNotIn('external_id', $remoteIds)
-            ->get()
-            ->filter(fn (ExternalReference $ref): bool => (($ref->payload['list_id'] ?? null) === $link->todo_list_id));
-
-        foreach ($vanished as $reference) {
-            if ($this->markRemoteDeleted($link, $reference)) {
-                $counters['inbox']++;
-            }
-        }
+    protected function doneOriginMarker(): string {
+        return 'todo';
     }
 
-    /** @return bool true, wenn ein NEUER Inbox-Fall entstanden ist */
-    private function markRemoteDeleted(MsgraphTaskListLink $link, ExternalReference $reference): bool {
-        $task = $reference->referenceable;
-        if (! $task instanceof Task) {
-            return false; // beidseitig weg → nichts aufzulösen
-        }
-        // Erledigte bleiben außen vor: To Do liefert completed weiterhin in der
-        // Liste — Fehlen ist hier also ein echtes Löschsignal, aber lokale
-        // done-Aufgaben erzeugen keinen Handlungsbedarf.
-        if ($task->status === TaskStatus::Done) {
-            return false;
-        }
+    /** @return list<string> */
+    protected function syncedFields(): array {
+        return self::SYNCED_FIELDS;
+    }
 
-        $payload = (array) ($reference->payload ?? []);
-        if (! isset($payload['remote_deleted_at'])) {
-            $payload['remote_deleted_at'] = now()->toIso8601String();
-            $reference->forceFill(['payload' => $payload])->save();
-        }
+    /** @param MsgraphTaskListLink $link */
+    protected function displaySubtitle(TaskSyncLink $link): string {
+        return (string) ($link->todo_list_name ?? $link->todo_list_id);
+    }
 
-        $item = IntegrationInboxItem::query()->firstOrCreate([
-            'organization_id' => $link->organization_id,
-            'plugin_id' => MsgraphPlugin::ID,
-            'dedupe_key' => 'todo-task:' . $reference->external_id . ':remote_deleted',
-        ], [
-            'source' => MsgraphPlugin::ID,
-            'target_type' => $task->getMorphClass(),
-            'external_type' => MsgraphPlugin::EXT_TYPE_TODO_TASK,
-            'external_id' => $reference->external_id,
-            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
-            'referenceable_type' => $task->getMorphClass(),
-            'referenceable_id' => $task->getKey(),
-            'local_snapshot' => $this->baseFrom($task),
-            'remote_snapshot' => [],
-            'display_title' => (string) $task->title,
-            'display_subtitle' => (string) ($link->todo_list_name ?? $link->todo_list_id),
-            'occurred_at' => now(),
-        ]);
+    /** @param array<string, mixed> $remote */
+    protected function remoteDisplayTitle(array $remote): string {
+        return (string) (($remote['title'] ?? '') !== '' ? $remote['title'] : '—');
+    }
 
-        return $item->wasRecentlyCreated;
+    protected function withoutExportEcho(callable $callback): mixed {
+        return MsgraphTodoTaskObserver::suppressed($callback);
     }
 
     /**
+     * Bewusst OHNE remote-Snapshot (anders als Todoist) — nur list_id + base.
+     *
+     * @param  MsgraphTaskListLink  $link
      * @param  array<string, mixed>  $remote
-     * @return 'inbox'
+     * @param  array<string, mixed>  $newBase
+     * @return array<string, mixed>
      */
-    private function stageInbox(MsgraphTaskListLink $link, array $remote, string $case): string {
-        IntegrationInboxItem::query()->firstOrCreate([
-            'organization_id' => $link->organization_id,
-            'plugin_id' => MsgraphPlugin::ID,
-            'dedupe_key' => 'todo-task:' . (string) ($remote['id'] ?? '') . ':' . $case,
-        ], [
-            'source' => MsgraphPlugin::ID,
-            'target_type' => (new Task())->getMorphClass(),
-            'external_type' => MsgraphPlugin::EXT_TYPE_TODO_TASK,
-            'external_id' => (string) ($remote['id'] ?? ''),
-            'case_type' => IntegrationInboxItem::CASE_UNMATCHED,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
-            'remote_snapshot' => $remote,
-            'display_title' => (string) (($remote['title'] ?? '') !== '' ? $remote['title'] : '—'),
-            'display_subtitle' => (string) ($link->todo_list_name ?? $link->todo_list_id),
-            'occurred_at' => now(),
-        ]);
-
-        return 'inbox';
+    protected function updatedReferencePayload(TaskSyncLink $link, array $remote, array $newBase, mixed $doneOrigin): array {
+        return ['base' => $newBase, 'list_id' => $link->todo_list_id, 'done_origin' => $doneOrigin];
     }
 
-    /**
-     * @param  array<string, mixed>  $remote
-     * @param  array<string, array{local: mixed, remote: mixed}>  $conflicts
-     */
-    private function stageConflict(MsgraphTaskListLink $link, ExternalReference $reference, Task $task, array $remote, array $conflicts): void {
-        IntegrationInboxItem::query()->firstOrCreate([
-            'organization_id' => $link->organization_id,
-            'plugin_id' => MsgraphPlugin::ID,
-            'dedupe_key' => 'todo-task-conflict:' . $reference->external_id,
-        ], [
-            'source' => MsgraphPlugin::ID,
-            'target_type' => $task->getMorphClass(),
-            'external_type' => MsgraphPlugin::EXT_TYPE_TODO_TASK,
-            'external_id' => $reference->external_id,
-            'case_type' => IntegrationInboxItem::CASE_CONFLICT,
-            'status' => IntegrationInboxItem::STATUS_OPEN,
-            'referenceable_type' => $task->getMorphClass(),
-            'referenceable_id' => $task->getKey(),
-            'remote_snapshot' => $remote,
-            'local_snapshot' => $this->baseFrom($task),
-            'mapped_snapshot' => collect($conflicts)->map(fn (array $c) => $c['remote'])->all(),
-            'diff_fields' => array_keys($conflicts),
-            'display_title' => (string) $task->title,
-            'display_subtitle' => (string) ($link->todo_list_name ?? $link->todo_list_id),
-            'occurred_at' => now(),
-        ]);
+    /** Nur Referenzen dieser Listen-Zuordnung (payload.list_id). */
+    /** @param MsgraphTaskListLink $link */
+    protected function referenceBelongsToLink(TaskSyncLink $link, ExternalReference $reference): bool {
+        return ($reference->payload['list_id'] ?? null) === $link->todo_list_id;
     }
 }

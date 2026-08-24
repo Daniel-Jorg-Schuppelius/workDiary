@@ -493,6 +493,11 @@ class InvoiceTest extends TestCase {
         $invoice->refresh();
         $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
         $this->assertSame('RE-2030-007', $invoice->number);
+        // B1 (Vollscan 2026-08-23): auch der Lexoffice-Push friert Partei-Snapshot
+        // und Steuerkontext ein — vorher setzte er nur den Status.
+        $this->assertNotNull($invoice->party_snapshot);
+        $this->assertIsArray($invoice->tax_context);
+        $this->assertNotNull($invoice->due_on);
 
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => \App\Plugins\Lexoffice\LexofficePlugin::ID,

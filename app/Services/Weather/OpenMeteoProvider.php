@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Weather;
 
+use App\Plugins\Support\PluginApiClient;
 use App\Services\Weather\Contracts\WeatherProvider;
 use Carbon\CarbonInterface;
-use GuzzleHttp\ClientInterface;
 use Throwable;
 
 /**
@@ -26,7 +26,7 @@ use Throwable;
 class OpenMeteoProvider implements WeatherProvider {
     private const ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
 
-    public function __construct(private readonly ClientInterface $http) {}
+    public function __construct(private readonly PluginApiClient $http) {}
 
     public function key(): string {
         return 'open-meteo';
@@ -34,19 +34,21 @@ class OpenMeteoProvider implements WeatherProvider {
 
     public function daily(float $lat, float $lng, CarbonInterface $date): ?array {
         try {
-            $response = $this->http->request('GET', self::ENDPOINT, [
-                'query' => [
-                    'latitude' => $lat,
-                    'longitude' => $lng,
-                    'start_date' => $date->toDateString(),
-                    'end_date' => $date->toDateString(),
-                    'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,wind_gusts_10m_max,weather_code',
-                    'timezone' => 'auto',
-                ],
-                'timeout' => 8,
-            ]);
+            // api-toolkit-Fundament statt rohem Guzzle (Vollscan 2026-08-23,
+            // C10): Fehlerstatus kommt als Response — explizit prüfen.
+            $response = $this->http->getResponse(self::ENDPOINT, [
+                'latitude' => $lat,
+                'longitude' => $lng,
+                'start_date' => $date->toDateString(),
+                'end_date' => $date->toDateString(),
+                'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,wind_gusts_10m_max,weather_code',
+                'timezone' => 'auto',
+            ], ['timeout' => 8]);
+            if (! $response->successful()) {
+                return null;
+            }
             /** @var array<string, mixed> $json */
-            $json = json_decode((string) $response->getBody(), true, 512, JSON_THROW_ON_ERROR);
+            $json = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
         } catch (Throwable) {
             return null;
         }

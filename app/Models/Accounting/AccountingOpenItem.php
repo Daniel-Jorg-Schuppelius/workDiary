@@ -111,19 +111,9 @@ class AccountingOpenItem extends Model {
         return (int) $this->due_date->startOfDay()->diffInDays(now()->startOfDay(), false);
     }
 
-    /** Altersband der Fälligkeitsanalyse (0/30/60/90). */
+    /** Altersband der Fälligkeitsanalyse (0/30/60/90 — {@see \App\Support\Billing\AgingBuckets::accounting()}). */
     public function agingBucket(): string {
-        $age = $this->ageInDays();
-        if ($age === null || $age <= 0) {
-            return 'not_due';
-        }
-
-        return match (true) {
-            $age <= 30 => 'd30',
-            $age <= 60 => 'd60',
-            $age <= 90 => 'd90',
-            default => 'd90plus',
-        };
+        return \App\Support\Billing\AgingBuckets::accounting()->bucketFor($this->ageInDays());
     }
 
     public function settledAmount(): Money {

@@ -13,7 +13,8 @@ namespace Tests\Feature\Finance;
 use App\Enums\Finance\{AccountType, ProfitDetermination, SettlementKind, TaxationMethod};
 use App\Models\Accounting\{AccountingAccount, AccountingEvent, AccountingPostingRule, AccountingTaxationPeriod};
 use App\Models\{Customer, Invoice, Organization, User};
-use App\Services\Accounting\{AccountingProfileService, AccountingReportService, ChartOfAccountsService, FiscalYearService, JournalService, TaxationMethodResolver};
+use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, JournalService, TaxationMethodResolver};
+use App\Services\Accounting\Reports\VatPreviewBuilder;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -146,7 +147,7 @@ class AccountingTaxationTest extends TestCase {
     }
 
     private function vat(CarbonImmutable $from, CarbonImmutable $to): array {
-        return app(AccountingReportService::class)->vatPreview($this->org, $from, $to);
+        return app(VatPreviewBuilder::class)->build($this->org, $from, $to);
     }
 
     public function test_the_default_is_accrual_taxation(): void {

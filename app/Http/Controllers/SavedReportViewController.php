@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{SavedReportView, User};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Route as RouteFacade};
@@ -24,6 +25,8 @@ use Illuminate\View\View;
  * keine Fremd-URLs).
  */
 class SavedReportViewController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         /** @var User $user */
         $user = Auth::user();
@@ -59,7 +62,7 @@ class SavedReportViewController extends Controller {
         }
 
         $view = SavedReportView::query()->create([
-            'organization_id' => $user->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => $user->getKey(),
             'name' => $data['name'],
             'route_name' => $resolved['route'],

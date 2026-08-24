@@ -11,19 +11,20 @@
 namespace App\Console\Commands;
 
 use App\Models\Chat\Reminder;
-use App\Services\PushNotifier;
+use App\Services\Chat\ChatNotificationService;
 use Illuminate\Console\Command;
 
 /**
- * Verschickt fällige Chat-Erinnerungen (remind_at erreicht) per Web-Push
- * und markiert sie als versendet. Läuft minütlich über den Scheduler.
+ * Verschickt fällige Chat-Erinnerungen (remind_at erreicht) über den
+ * zentralen NotificationDispatcher (B7) und markiert sie als versendet.
+ * Läuft minütlich über den Scheduler.
  */
 class SendChatReminders extends Command {
     protected $signature = 'chat:send-reminders';
 
-    protected $description = 'Verschickt fällige Chat-Erinnerungen per Web-Push.';
+    protected $description = 'Verschickt fällige Chat-Erinnerungen.';
 
-    public function handle(PushNotifier $push): int {
+    public function handle(ChatNotificationService $chat): int {
         $due = Reminder::query()
             ->whereNull('sent_at')
             ->where('remind_at', '<=', now())
@@ -33,7 +34,7 @@ class SendChatReminders extends Command {
             ->get();
 
         foreach ($due as $reminder) {
-            $push->chatReminder($reminder);
+            $chat->reminderDue($reminder);
             $reminder->forceFill(['sent_at' => now()])->save();
         }
 

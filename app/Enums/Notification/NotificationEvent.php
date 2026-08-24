@@ -204,6 +204,7 @@ enum NotificationEvent: string implements HasLabel {
     case OperationsComponentEol = 'operations.componentEol';
     case OperationsPluginDisabled = 'operations.pluginDisabled';
     case OperationsSchedulerOverdue = 'operations.schedulerOverdue';
+    case OperationsQueueDegraded = 'operations.queueDegraded';
     case OperationsMaintenanceScheduled = 'operations.maintenanceScheduled';
     case OperationsProblemReportReceived = 'operations.problemReportReceived';
 
@@ -222,6 +223,26 @@ enum NotificationEvent: string implements HasLabel {
     case SecurityNewDevice = 'security.newDevice';
     case SecurityLockout = 'security.lockout';
 
+    // Vollscan 2026-08-23 (B7): Legacy-Mail-/PushNotifier abgelöst — Auftrags-
+    // buch-, Notdienst-, Stundenzettel- und Chat-Ereignisse laufen über den
+    // zentralen Dispatcher (Org-Regeln, Präferenzen und Ruhezeiten greifen).
+    /** Synchron: CommentObserver — Kommentar an einem Auftragsbuch-Eintrag. */
+    case DiaryCommentCreated = 'diary.commentCreated';
+    /** Synchron: DiaryEntryObserver — Eintrag steht auf „Problem". */
+    case DiaryProblem = 'diary.problem';
+    /** Synchron: DiaryEntryObserver — Eintrag wurde als erledigt markiert. */
+    case DiaryCompleted = 'diary.completed';
+    /** Synchron: AttachmentObserver — neuer Anhang an einem Eintrag. */
+    case DiaryAttachmentAdded = 'diary.attachmentAdded';
+    /** Synchron: EmergencyAssignmentObserver — Notdienst zugewiesen. */
+    case EmergencyAssigned = 'emergency.assigned';
+    /** Synchron: TimesheetObserver — Stundenzettel vom Kunden signiert. */
+    case TimesheetSigned = 'timesheet.signed';
+    /** Synchron: ChatNotificationService — Direktnachricht bzw. @-Erwähnung. */
+    case ChatMessage = 'chat.message';
+    /** Scanner: chat:send-reminders — fällige Chat-Erinnerung. */
+    case ChatReminder = 'chat.reminder';
+
     public function label(): string {
         return (string) __('enums.notification.event.' . $this->value);
     }
@@ -232,7 +253,21 @@ enum NotificationEvent: string implements HasLabel {
      * @return list<string>
      */
     public function defaultChannels(): array {
-        return [NotificationChannel::InApp->value, NotificationChannel::Mail->value];
+        return match ($this) {
+            // Migrierte Push-Ereignisse (B7): Mail bewusst kein Default — der
+            // alte MAIL_NOTIFICATIONS_ENABLED-Schalter stand default aus;
+            // Orgs schalten den Mail-Kanal je Regel zu.
+            self::DiaryCommentCreated,
+            self::DiaryProblem,
+            self::DiaryAttachmentAdded,
+            self::EmergencyAssigned,
+            self::TimesheetSigned => [NotificationChannel::InApp->value, NotificationChannel::Push->value],
+            self::DiaryCompleted => [NotificationChannel::InApp->value],
+            // Chat hat eigene Ungelesen-Zähler — kein In-App-Duplikat.
+            self::ChatMessage,
+            self::ChatReminder => [NotificationChannel::Push->value],
+            default => [NotificationChannel::InApp->value, NotificationChannel::Mail->value],
+        };
     }
 
     /**
@@ -380,6 +415,9 @@ enum NotificationEvent: string implements HasLabel {
             // dessen Zuständiger im Urlaub ist, darf nicht auslaufen.
             self::QuoteFollowUpDue,
             self::QuoteExpiringWithoutReaction => [UserRole::Teamleitung->value],
+            // Problem-Eintrag (B7): wie der Legacy-Push an Admin + Callcenter;
+            // der Eintrags-Besitzer läuft zusätzlich über notify_affected.
+            self::DiaryProblem => [UserRole::Admin->value, UserRole::Callcenter->value],
             default => [],
         };
     }
@@ -453,6 +491,7 @@ enum NotificationEvent: string implements HasLabel {
             self::OperationsComponentEol => 'inventory_2',
             self::OperationsPluginDisabled => 'extension_off',
             self::OperationsSchedulerOverdue => 'schedule',
+            self::OperationsQueueDegraded => 'pending_actions',
             self::OperationsMaintenanceScheduled => 'engineering',
             self::OperationsProblemReportReceived => 'flag',
             self::OperationsCloudIntakeReauth => 'cloud_off',
@@ -480,6 +519,14 @@ enum NotificationEvent: string implements HasLabel {
             self::SecurityThreat => 'gpp_bad',
             self::SecurityNewDevice => 'devices',
             self::SecurityLockout => 'lock_person',
+            self::DiaryCommentCreated => 'comment',
+            self::DiaryProblem => 'report',
+            self::DiaryCompleted => 'task_alt',
+            self::DiaryAttachmentAdded => 'attach_file',
+            self::EmergencyAssigned => 'e911_emergency',
+            self::TimesheetSigned => 'draw',
+            self::ChatMessage => 'chat',
+            self::ChatReminder => 'alarm',
         };
     }
 

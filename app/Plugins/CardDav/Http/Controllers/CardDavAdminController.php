@@ -198,7 +198,9 @@ class CardDavAdminController extends Controller {
             return back()->with('error', __('carddav.flash.not_syncable'));
         }
 
-        Artisan::call('carddav:sync', ['--organization' => (string) $organization->id]);
+        // Queue statt Request (Vollscan 2026-08-23, J17): ein Voll-Sync im Web-
+        // Request lief in den PHP-Timeout; der Worker hat Retry und Laufzeitbudget.
+        Artisan::queue('carddav:sync', ['--organization' => (string) $organization->id]);
         $connection->audit('carddav.sync_manual', ['by_user_id' => (int) $admin->id]);
 
         return back()->with('success', __('carddav.flash.sync_done'));

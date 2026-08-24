@@ -14,6 +14,7 @@ namespace App\Services\Inventory;
 
 use App\Models\{ArticleVariant, Customer, MaterialCostAllocation, StockMovement, Warehouse};
 use App\Support\DecimalQty;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -89,7 +90,7 @@ class CustomerStockAllocationService {
     private function describe(ArticleVariant $variant, string $qty): string {
         $name = trim((string) ($variant->article->name ?? $variant->sku ?? ''));
         $unit = (string) ($variant->article->base_unit ?? '');
-        $qtyLabel = rtrim(rtrim(DecimalQty::sanitize($qty), '0'), '.');
+        $qtyLabel = rtrim(rtrim(NumberHelper::normalizeDecimalString($qty), '0'), '.');
 
         return trim(sprintf('%s (%s %s)', $name !== '' ? $name : (string) __('customer-material.stock_item'), $qtyLabel, $unit));
     }

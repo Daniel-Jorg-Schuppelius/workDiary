@@ -12,8 +12,10 @@ declare(strict_types=1);
 
 namespace App\Plugins\Todoist\Jobs;
 
+use App\Jobs\Concerns\RetriesTransientFailures;
 use App\Models\{Organization, TodoistConnection, TodoistProjectLink, TodoistWebhookDelivery};
 use App\Plugins\Todoist\Services\TodoistImportService;
+use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -28,6 +30,11 @@ use Throwable;
  * (todoist:sync) ist die verlässliche Quelle und heilt verpasste Impulse.
  */
 class TodoistWebhookSyncJob implements ShouldQueue {
+    use RetriesTransientFailures;
+
+    protected function pluginErrorId(): ?string {
+        return TodoistPlugin::ID;
+    }
     use Dispatchable;
     use InteractsWithQueue;
     use Queueable;

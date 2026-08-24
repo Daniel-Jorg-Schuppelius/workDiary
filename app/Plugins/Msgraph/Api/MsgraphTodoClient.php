@@ -53,21 +53,11 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
      */
     public function lists(): array {
         $out = [];
-        $url = $this->base . '/me/todo/lists';
-        $query = ['$top' => '100'];
-        do {
-            $response = $this->api->getResponse($url, $query);
-            if (! $response->successful()) {
-                throw new RuntimeException('Graph /me/todo/lists fehlgeschlagen (HTTP ' . $response->status() . ').');
+        foreach ($this->graphPages($this->base . '/me/todo/lists', ['$top' => '100'], 'Graph /me/todo/lists') as $row) {
+            if (is_array($row) && is_string($row['id'] ?? null) && $row['id'] !== '') {
+                $out[] = ['id' => $row['id'], 'name' => (string) ($row['displayName'] ?? $row['id'])];
             }
-            foreach ((array) $response->json('value', []) as $row) {
-                if (is_array($row) && is_string($row['id'] ?? null) && $row['id'] !== '') {
-                    $out[] = ['id' => $row['id'], 'name' => (string) ($row['displayName'] ?? $row['id'])];
-                }
-            }
-            $url = $response->json('@odata.nextLink');
-            $query = []; // nextLink trägt die Parameter bereits
-        } while (is_string($url) && $url !== '');
+        }
 
         return $out;
     }
@@ -79,24 +69,41 @@ class MsgraphTodoClient implements GraphSubscriptionClient {
      */
     public function tasks(string $listId): array {
         $out = [];
-        $url = $this->base . '/me/todo/lists/' . rawurlencode($listId) . '/tasks';
-        $query = ['$top' => '100'];
-        do {
-            $response = $this->api->getResponse($url, $query);
-            if (! $response->successful()) {
-                throw new RuntimeException('Graph todo tasks fehlgeschlagen (HTTP ' . $response->status() . ').');
+        foreach ($this->graphPages($this->base . '/me/todo/lists/' . rawurlencode($listId) . '/tasks', ['$top' => '100'], 'Graph todo tasks') as $row) {
+            if (is_array($row)) {
+                /** @var array<string, mixed> $row */
+                $out[] = $row;
             }
-            foreach ((array) $response->json('value', []) as $row) {
-                if (is_array($row)) {
-                    /** @var array<string, mixed> $row */
-                    $out[] = $row;
-                }
-            }
-            $url = $response->json('@odata.nextLink');
-            $query = [];
-        } while (is_string($url) && $url !== '');
+        }
 
         return $out;
+    }
+
+    /**
+     * Alle Elemente über @odata.nextLink-Seiten (Vollscan 2026-08-23, C3):
+     * CursorPaginator mit Endlos-Guard und Seiten-Deckel; der „Cursor" ist
+     * der nextLink (trägt die Query-Parameter bereits selbst).
+     *
+     * @param  array<string, string>  $query
+     * @return \Generator<int, mixed>
+     */
+    private function graphPages(string $firstUrl, array $query, string $label): \Generator {
+        $paginator = new \APIToolkit\API\Pagination\CursorPaginator(function (?string $nextLink) use ($firstUrl, $query, $label): \APIToolkit\API\Pagination\CursorPage {
+            $response = $nextLink === null
+                ? $this->api->getResponse($firstUrl, $query)
+                : $this->api->getResponse($nextLink);
+            if (! $response->successful()) {
+                throw new RuntimeException($label . ' fehlgeschlagen (HTTP ' . $response->status() . ').');
+            }
+            $next = $response->json('@odata.nextLink');
+
+            return new \APIToolkit\API\Pagination\CursorPage(
+                (array) $response->json('value', []),
+                is_string($next) && $next !== '' ? $next : null,
+            );
+        }, maxPages: 500);
+
+        yield from $paginator;
     }
 
     /**

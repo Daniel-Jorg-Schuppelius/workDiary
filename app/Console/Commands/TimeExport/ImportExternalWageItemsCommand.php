@@ -11,6 +11,7 @@
 namespace App\Console\Commands\TimeExport;
 
 use App\Models\{ExternalWageItem, Organization, User};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Console\Command;
 
 /**
@@ -47,30 +48,27 @@ class ImportExternalWageItemsCommand extends Command {
         }
         $source = (string) $this->option('source');
 
-        $handle = fopen($file, 'rb');
-        if ($handle === false) {
-            $this->error('Datei konnte nicht geöffnet werden.');
+        // Toolkit-CSV statt fgetcsv-Handparser (Vollscan 2026-08-23, C5):
+        // Delimiter-Erkennung (Lohn-Exporte kommen mit ; ODER ,), BOM/Quoting.
+        try {
+            $delimiter = \CommonToolkit\Parsers\CSVDocumentParser::detectDelimiter($file);
+        } catch (\Throwable) {
+            $this->error('Leere Datei oder Datei konnte nicht geöffnet werden.');
 
             return self::FAILURE;
         }
-
-        $header = fgetcsv($handle, 0, ';');
-        if ($header === false) {
-            fclose($handle);
-            $this->error('Leere Datei.');
-
-            return self::FAILURE;
-        }
-        $columns = array_map(static fn ($c): string => strtolower(trim((string) $c)), $header);
 
         $created = 0;
         $skipped = 0;
-        while (($row = fgetcsv($handle, 0, ';')) !== false) {
-            $data = array_combine($columns, array_pad($row, count($columns), null));
+        foreach (\App\Support\Toolkit\CsvFacade::streamAssoc($file, $delimiter) as $row) {
+            $data = [];
+            foreach ($row as $column => $value) {
+                $data[strtolower(trim($column))] = $value;
+            }
             $who = trim((string) ($data['personnel_number'] ?? ''));
             $date = trim((string) ($data['date'] ?? ''));
             $code = trim((string) ($data['wage_type_code'] ?? ''));
-            $quantity = str_replace(',', '.', trim((string) ($data['quantity'] ?? '')));
+            $quantity = NumberHelper::normalizeDecimalStringOrNull((string) ($data['quantity'] ?? '')) ?? '';
 
             if ($who === '' || $date === '' || $code === '' || ! is_numeric($quantity)) {
                 $skipped++;
@@ -108,7 +106,6 @@ class ImportExternalWageItemsCommand extends Command {
             ]);
             $created++;
         }
-        fclose($handle);
 
         $this->info(sprintf('Import: %d Positionen übernommen, %d Zeilen übersprungen.', $created, $skipped));
 

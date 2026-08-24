@@ -12,9 +12,6 @@ declare(strict_types=1);
 
 namespace App\Services\Cti;
 
-use Illuminate\Support\Carbon;
-use Throwable;
-
 /**
  * Adapter für STARFACE-Call-Events (Feature 056, MVP-343). STARFACE meldet
  * Zustandswechsel je Anruf (`RINGING`/`CONNECTED`/`HANGUP`); protokolliert
@@ -23,7 +20,7 @@ use Throwable;
  * `callerNumber`/`calledNumber`, `durationInSeconds` (Fallback `duration`),
  * optional `timestamp` (ISO 8601).
  */
-class StarfaceNormalizer implements CtiEventNormalizer {
+class StarfaceNormalizer extends AbstractCtiNormalizer {
     public function normalize(array $payload): ?CtiCall {
         $state = strtoupper((string) ($payload['callState'] ?? $payload['state'] ?? ''));
         if (! in_array($state, ['HANGUP', 'ENDED'], true)) {
@@ -49,14 +46,4 @@ class StarfaceNormalizer implements CtiEventNormalizer {
         );
     }
 
-    private function parseDate(mixed $value): Carbon {
-        if (! is_string($value) || $value === '') {
-            return Carbon::now();
-        }
-        try {
-            return Carbon::parse($value);
-        } catch (Throwable) {
-            return Carbon::now();
-        }
-    }
 }

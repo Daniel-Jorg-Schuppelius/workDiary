@@ -226,8 +226,9 @@ class WorkBalanceReportController extends Controller {
      */
     private function resolveRange(Request $request): array {
         if ($request->filled('from') && $request->filled('to')) {
-            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
-            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
+            // Guard statt Roh-Parse (Vollscan 2026-08-23, B10): Müll-Input
+            // fällt auf den globalen Zeitraum zurück, verdrehte Grenzen tauschen.
+            [$from, $to] = $this->resolveRangeWithDefault($request, fn (): array => $this->globalDateRangeBounds());
 
             return [$from, $to, $this->formatLabel($from, $to)];
         }

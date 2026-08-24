@@ -10,24 +10,22 @@
 
 namespace App\Services\Billing;
 
-use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
-use App\Enums\Expense\ExpenseStatus;
-use App\Models\{Expense, IncomingEInvoice, Invoice};
-use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Support\Billing\VoucherTypes;
+use App\Models\Invoice;
+use App\Services\Billing\Feed\{DocumentFeedSourceRegistry, FeedProjection};
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 /**
- * Ein Belegfluss über sechs Quellen (Feature 105, MVP-543/654).
+ * Ein Belegfluss über alle registrierten Quellen (Feature 105, MVP-543/654).
  *
- * Angebote, lokale Rechnungen, gespiegelte Lexoffice-Belege, gespiegelte
- * orgaMAX-Rechnungen, Eingangsrechnungen und Auslagen werden auf eine
+ * Die Quellen (lokale Rechnungen, Angebote, Buchhaltungsspiegel,
+ * Eingangsrechnungen, Auslagen — Plugin-Quellen wie Lexoffice/orgaMAX bringen
+ * ihre eigene {@see Feed\DocumentFeedSource}-Klasse mit) werden auf eine
  * gemeinsame Zeilenform projiziert und per `UNION ALL` zusammengeführt —
  * Sortierung, Filterung und Aggregation laufen danach in SQL. Ein
- * Zusammenführen in PHP würde bei sechs paginierten Quellen weder sortieren
+ * Zusammenführen in PHP würde bei mehreren paginierten Quellen weder sortieren
  * noch summieren können.
  *
  * Die Projektion trägt ein vorberechnetes `sign` (−1/0/+1): geldwirksame
@@ -46,7 +44,11 @@ class DocumentFeedQuery {
         'amount' => 'amount_gross',
     ];
 
-    public function __construct(private readonly DocumentFeedFilters $filters) {}
+    private readonly DocumentFeedSourceRegistry $sources;
+
+    public function __construct(private readonly DocumentFeedFilters $filters, ?DocumentFeedSourceRegistry $sources = null) {
+        $this->sources = $sources ?? app(DocumentFeedSourceRegistry::class);
+    }
 
     /** @return LengthAwarePaginator<int, object> */
     public function paginate(int $perPage, string $sort, string $dir): LengthAwarePaginator {
@@ -234,17 +236,15 @@ class DocumentFeedQuery {
         return [];
     }
 
-    /** Vereinigung aller Quellen, die der Filter überhaupt zulässt. */
+    /** Vereinigung aller registrierten Quellen, die der Filter zulässt. */
     private function union(): Builder {
-        $parts = array_values(array_filter([
-            $this->invoices(),
-            $this->quotes(),
-            $this->vouchers(),
-            $this->accountingVouchers(),
-            $this->orgamaxInvoices(),
-            $this->incomingEInvoices(),
-            $this->expenses(),
-        ]));
+        $parts = [];
+        foreach ($this->sources->sources() as $source) {
+            $builder = $source->builder($this->filters);
+            if ($builder !== null) {
+                $parts[] = $builder;
+            }
+        }
 
         if ($parts === []) {
             // Kein Sub-Select passt zum Filter: leere, aber spaltengleiche Menge.
@@ -259,455 +259,10 @@ class DocumentFeedQuery {
         return $union;
     }
 
-    /**
-     * Lokale Rechnungen. An die Buchhaltung übergebene Rechnungen übernehmen
-     * deren Belegnummer — sie erscheinen dann nur einmal, und zwar als
-     * externer Beleg (Dublettenregel 1: extern führt).
-     */
-    private function invoices(): ?Builder {
-        $f = $this->filters;
-        if (! $f->allows('invoice') || ! $f->wantsOrigin(DocumentOrigin::Local) || ! $f->wantsFixed(DocumentDirection::Outgoing)) {
-            return null;
-        }
-
-        $kind = $this->caseMap('invoices.type', [
-            Invoice::TYPE_CREDIT_NOTE => DocumentKind::CreditNote->value,
-            Invoice::TYPE_CANCELLATION => DocumentKind::Cancellation->value,
-            Invoice::TYPE_DOWN_PAYMENT => DocumentKind::DownPayment->value,
-            Invoice::TYPE_PARTIAL => DocumentKind::DownPayment->value,
-        ], DocumentKind::Invoice->value);
-
-        $state = $this->caseMap('invoices.status', [
-            Invoice::STATUS_DRAFT => 'draft',
-            Invoice::STATUS_PAID => 'paid',
-            Invoice::STATUS_CANCELLED => 'cancelled',
-        ], 'open');
-
-        // Retainer-Pauschalen sind bewusst nicht erlöswirksam (Feature 098):
-        // die Buchhaltung finalisiert sie, die lokale Zeile ist nur Nachweis.
-        $sign = "CASE
-            WHEN invoices.status IN ('" . Invoice::STATUS_DRAFT . "', '" . Invoice::STATUS_CANCELLED . "') THEN 0
-            WHEN invoices.type = '" . Invoice::TYPE_RETAINER . "' THEN 0
-            WHEN invoices.type IN ('" . Invoice::TYPE_CREDIT_NOTE . "', '" . Invoice::TYPE_CANCELLATION . "') THEN -1
-            ELSE 1 END";
-
-        // Über das Modell statt DB::table(): `invoices` ist
-        // festschreibungspflichtig, Roh-Tabellenzugriffe sind dort gesperrt
-        // (GobdLockGuardRuleTest). toBase() liefert den Query-Builder
-        // inklusive Organisations-Scope.
-        $query = Invoice::query()->toBase()
-            ->selectRaw($this->projection([
-                "'invoice' AS source_type",
-                'invoices.id AS source_id',
-                'invoices.id AS link_id',
-                "'" . DocumentOrigin::Local->value . "' AS origin",
-                "'" . DocumentDirection::Outgoing->value . "' AS direction",
-                "$kind AS kind",
-                "$sign AS sign",
-                'invoices.number AS number',
-                'COALESCE(invoices.issued_on, DATE(invoices.created_at)) AS doc_date',
-                'invoices.due_on AS due_on',
-                "$state AS state",
-                '0 AS is_archived',
-                "'customer' AS contact_type",
-                'invoices.customer_id AS contact_id',
-                '(SELECT customers.name FROM customers WHERE customers.id = invoices.customer_id) AS contact_name',
-                'COALESCE(invoices.dunning_level, 0) AS dunning_level',
-                'COALESCE(invoices.total, 0) AS amount_gross',
-                "CASE WHEN $state = 'open' THEN COALESCE(invoices.total, 0) ELSE 0 END AS open_amount",
-                'invoices.currency AS currency',
-            ]))
-            ->where('invoices.organization_id', $f->organizationId)
-            ->whereBetween(DB::raw('COALESCE(invoices.issued_on, DATE(invoices.created_at))'), [$f->from->toDateString(), $f->to->toDateString()])
-            ->whereNotExists(function (Builder $sub): void {
-                $sub->select(DB::raw(1))
-                    ->from('lexoffice_vouchers')
-                    ->whereColumn('lexoffice_vouchers.organization_id', 'invoices.organization_id')
-                    ->where(function (Builder $q): void {
-                        $q->whereColumn('lexoffice_vouchers.voucher_number', 'invoices.number')
-                            ->orWhereColumn('lexoffice_vouchers.voucher_number', 'invoices.external_number');
-                    });
-            })
-            // Dieselbe Regel gegenüber dem orgaMAX-Spiegel (MVP-670).
-            ->whereNotExists(function (Builder $sub): void {
-                $sub->select(DB::raw(1))
-                    ->from('orgamax_invoices')
-                    ->whereColumn('orgamax_invoices.organization_id', 'invoices.organization_id')
-                    ->where(function (Builder $q): void {
-                        $q->whereColumn('orgamax_invoices.invoice_number', 'invoices.number')
-                            ->orWhereColumn('orgamax_invoices.invoice_number', 'invoices.external_number');
-                    });
-            });
-
-        return $query;
-    }
-
-    /** Angebote — ohne Geldwirkung, aber Teil des Vorgangsflusses. */
-    private function quotes(): ?Builder {
-        $f = $this->filters;
-        if (! $f->allows('quote') || ! $f->wantsOrigin(DocumentOrigin::Local) || ! $f->wantsFixed(DocumentDirection::Neutral, DocumentKind::Quote)) {
-            return null;
-        }
-
-        $state = $this->caseMap('quotes.status', [
-            'draft' => 'draft',
-            'accepted' => 'paid',
-            'partially_accepted' => 'paid',
-            'rejected' => 'cancelled',
-            'expired' => 'cancelled',
-        ], 'open');
-
-        return DB::table('quotes')
-            ->selectRaw($this->projection([
-                "'quote' AS source_type",
-                'quotes.id AS source_id',
-                'quotes.id AS link_id',
-                "'" . DocumentOrigin::Local->value . "' AS origin",
-                "'" . DocumentDirection::Neutral->value . "' AS direction",
-                "'" . DocumentKind::Quote->value . "' AS kind",
-                '0 AS sign',
-                'quotes.number AS number',
-                'DATE(quotes.created_at) AS doc_date',
-                'quotes.valid_until AS due_on',
-                "$state AS state",
-                '0 AS is_archived',
-                "'customer' AS contact_type",
-                'quotes.customer_id AS contact_id',
-                '(SELECT customers.name FROM customers WHERE customers.id = quotes.customer_id) AS contact_name',
-                '0 AS dunning_level',
-                'COALESCE(quotes.total, 0) AS amount_gross',
-                '0 AS open_amount',
-                "'" . $this->defaultCurrency() . "' AS currency",
-            ]))
-            ->where('quotes.organization_id', $f->organizationId)
-            ->whereBetween(DB::raw('DATE(quotes.created_at)'), [$f->from->toDateString(), $f->to->toDateString()]);
-    }
-
-    /** Gespiegelte Belege des führenden Buchhaltungssystems. */
-    private function vouchers(): ?Builder {
-        $f = $this->filters;
-        if (! $f->allows('voucher') || ! $f->wantsOrigin(DocumentOrigin::Lexoffice)) {
-            return null;
-        }
-
-        $directionCases = [];
-        $kindCases = [];
-        $signCases = [];
-        // array_merge, nicht `+`: bei Listen würde der Plus-Operator die
-        // gleichindizierten Elemente der Folgearrays verwerfen.
-        $allTypes = array_merge(
-            VoucherTypes::ofDirection(DocumentDirection::Outgoing),
-            VoucherTypes::ofDirection(DocumentDirection::Incoming),
-            VoucherTypes::ofDirection(DocumentDirection::Neutral),
-        );
-
-        foreach ($allTypes as $type) {
-            $class = VoucherTypes::classify($type);
-            $directionCases[$type] = $class->direction->value;
-            $kindCases[$type] = $class->kind->value;
-            $signCases[$type] = (string) $class->sign();
-        }
-
-        $direction = $this->caseMap('lexoffice_vouchers.voucher_type', $directionCases, DocumentDirection::Neutral->value);
-        $kind = $this->caseMap('lexoffice_vouchers.voucher_type', $kindCases, DocumentKind::Other->value);
-        $signMap = $this->caseMap('lexoffice_vouchers.voucher_type', $signCases, '0', quoted: false);
-
-        $ignored = "'" . implode("', '", VoucherTypes::IGNORED_STATUSES) . "'";
-        $sign = "CASE WHEN lexoffice_vouchers.voucher_status IN ($ignored) THEN 0 ELSE $signMap END";
-
-        $state = $this->caseMap('lexoffice_vouchers.voucher_status', [
-            'draft' => 'draft',
-            'voided' => 'cancelled',
-            'rejected' => 'cancelled',
-            'paid' => 'paid',
-            'paidoff' => 'paid',
-            'checked' => 'paid',
-            'transferred' => 'paid',
-            'accepted' => 'paid',
-        ], 'open');
-
-        return DB::table('lexoffice_vouchers')
-            ->selectRaw($this->projection([
-                "'voucher' AS source_type",
-                'lexoffice_vouchers.id AS source_id',
-                'lexoffice_vouchers.id AS link_id',
-                "'" . DocumentOrigin::Lexoffice->value . "' AS origin",
-                "$direction AS direction",
-                "$kind AS kind",
-                "$sign AS sign",
-                "COALESCE(lexoffice_vouchers.voucher_number, '') AS number",
-                'lexoffice_vouchers.voucher_date AS doc_date',
-                'lexoffice_vouchers.due_date AS due_on',
-                "$state AS state",
-                'CASE WHEN lexoffice_vouchers.archived THEN 1 ELSE 0 END AS is_archived',
-                "CASE WHEN lexoffice_vouchers.customer_id IS NOT NULL THEN 'customer'
-                    WHEN lexoffice_vouchers.supplier_id IS NOT NULL THEN 'supplier' ELSE NULL END AS contact_type",
-                'COALESCE(lexoffice_vouchers.customer_id, lexoffice_vouchers.supplier_id) AS contact_id',
-                'COALESCE(
-                    (SELECT customers.name FROM customers WHERE customers.id = lexoffice_vouchers.customer_id),
-                    (SELECT suppliers.name FROM suppliers WHERE suppliers.id = lexoffice_vouchers.supplier_id)
-                ) AS contact_name',
-                '0 AS dunning_level',
-                'COALESCE(lexoffice_vouchers.total_amount, 0) AS amount_gross',
-                "CASE WHEN $state = 'open'
-                    THEN COALESCE(lexoffice_vouchers.open_amount, lexoffice_vouchers.total_amount, 0) ELSE 0 END AS open_amount",
-                'lexoffice_vouchers.currency AS currency',
-            ]))
-            ->where('lexoffice_vouchers.organization_id', $f->organizationId)
-            ->whereNotNull('lexoffice_vouchers.voucher_date')
-            ->whereBetween('lexoffice_vouchers.voucher_date', [$f->from->toDateString(), $f->to->toDateString()]);
-    }
-
-    /**
-     * Gespiegelte Belege aus `accounting_vouchers` (Feature 122, MVP-611).
-     *
-     * Das sind die Belege, die DIREKT in der Buchhaltung entstanden sind —
-     * Kassenbon, per Mail eingegangene Lieferantenrechnung. Ohne sie hat der
-     * Belegfluss ein Loch, das niemand sieht. sevDesk kennt nur
-     * Einnahme/Ausgabe (`creditDebit`), keine Belegart-Taxonomie: daraus wird
-     * die Richtung abgeleitet, die Art bleibt „sonstiges".
-     */
-    private function accountingVouchers(): ?Builder {
-        $f = $this->filters;
-        if (! $f->allows('voucher') || ! $f->wantsOrigin(DocumentOrigin::SevDesk)) {
-            return null;
-        }
-
-        // C = Einnahme (Ausgangsrichtung), D = Ausgabe (Eingangsrichtung).
-        $direction = $this->caseMap('accounting_vouchers.voucher_type', [
-            'C' => DocumentDirection::Outgoing->value,
-            'D' => DocumentDirection::Incoming->value,
-        ], DocumentDirection::Neutral->value);
-        $sign = $this->caseMap('accounting_vouchers.voucher_type', [
-            'C' => '1',
-            'D' => '-1',
-        ], '0', quoted: false);
-        // sevDesk-Statuscodes sind Zahlen; PHP macht daraus int-Schlüssel,
-        // die caseMap() nicht annimmt. Deshalb explizit als String-Paare.
-        /** @var array<string, string> $statusMap */
-        $statusMap = array_combine(
-            ['50', '100', '750', '1000'],
-            ['draft', 'open', 'open', 'paid'],
-        );
-        $state = $this->caseMap('accounting_vouchers.voucher_status', $statusMap, 'open');
-
-        return DB::table('accounting_vouchers')
-            ->selectRaw($this->projection([
-                "'voucher' AS source_type",
-                'accounting_vouchers.id AS source_id',
-                'accounting_vouchers.id AS link_id',
-                "'" . DocumentOrigin::SevDesk->value . "' AS origin",
-                "$direction AS direction",
-                "'" . DocumentKind::Other->value . "' AS kind",
-                "$sign AS sign",
-                "COALESCE(accounting_vouchers.voucher_number, '') AS number",
-                'accounting_vouchers.voucher_date AS doc_date',
-                'accounting_vouchers.due_date AS due_on',
-                "$state AS state",
-                'CASE WHEN accounting_vouchers.archived THEN 1 ELSE 0 END AS is_archived',
-                "CASE WHEN accounting_vouchers.customer_id IS NOT NULL THEN 'customer'
-                    WHEN accounting_vouchers.supplier_id IS NOT NULL THEN 'supplier' ELSE NULL END AS contact_type",
-                'COALESCE(accounting_vouchers.customer_id, accounting_vouchers.supplier_id) AS contact_id',
-                'COALESCE(
-                    (SELECT customers.name FROM customers WHERE customers.id = accounting_vouchers.customer_id),
-                    (SELECT suppliers.name FROM suppliers WHERE suppliers.id = accounting_vouchers.supplier_id)
-                ) AS contact_name',
-                '0 AS dunning_level',
-                'COALESCE(accounting_vouchers.total_amount, 0) AS amount_gross',
-                "CASE WHEN $state = 'open'
-                    THEN COALESCE(accounting_vouchers.open_amount, accounting_vouchers.total_amount, 0) ELSE 0 END AS open_amount",
-                'accounting_vouchers.currency AS currency',
-            ]))
-            ->where('accounting_vouchers.organization_id', $f->organizationId)
-            ->whereNotNull('accounting_vouchers.voucher_date')
-            ->whereBetween('accounting_vouchers.voucher_date', [$f->from->toDateString(), $f->to->toDateString()]);
-    }
-
-    /**
-     * Gespiegelte orgaMAX-Rechnungen (MVP-670). Gleiche Rolle wie
-     * {@see self::vouchers()}, nur mit der Belegsemantik des anderen Systems:
-     * orgaMAX führt ausschließlich Ausgangsbelege, Wiederholungs-*Vorlagen*
-     * sind kein Beleg und bleiben draußen.
-     */
-    private function orgamaxInvoices(): ?Builder {
-        $f = $this->filters;
-        if (! $f->allows('voucher') || ! $f->wantsOrigin(DocumentOrigin::OrgaMax) || ! $f->wantsFixed(DocumentDirection::Outgoing)) {
-            return null;
-        }
-
-        // Abschlagsrechnung ist eine Anzahlung, Schluss- und
-        // Wiederholungsrechnung sind gewöhnliche Rechnungen.
-        $kind = $this->caseMap('orgamax_invoices.invoice_type', [
-            'depositInvoice' => DocumentKind::DownPayment->value,
-        ], DocumentKind::Invoice->value);
-
-        $state = $this->caseMap('orgamax_invoices.invoice_status', [
-            'draft' => 'draft',
-            'cancelled' => 'cancelled',
-            'paid' => 'paid',
-        ], 'open');
-
-        // Entwurf und Storno sind nicht geldwirksam; alles andere ist Erlös.
-        $sign = "CASE WHEN orgamax_invoices.invoice_status IN ('draft', 'cancelled') THEN 0 ELSE 1 END";
-
-        return DB::table('orgamax_invoices')
-            ->selectRaw($this->projection([
-                "'orgamax_invoice' AS source_type",
-                'orgamax_invoices.id AS source_id',
-                'orgamax_invoices.id AS link_id',
-                "'" . DocumentOrigin::OrgaMax->value . "' AS origin",
-                "'" . DocumentDirection::Outgoing->value . "' AS direction",
-                "$kind AS kind",
-                "$sign AS sign",
-                "COALESCE(orgamax_invoices.invoice_number, '') AS number",
-                'orgamax_invoices.invoice_date AS doc_date',
-                'orgamax_invoices.due_on AS due_on',
-                "$state AS state",
-                '0 AS is_archived',
-                "CASE WHEN orgamax_invoices.customer_id IS NOT NULL THEN 'customer' ELSE NULL END AS contact_type",
-                'orgamax_invoices.customer_id AS contact_id',
-                "COALESCE(
-                    (SELECT customers.name FROM customers WHERE customers.id = orgamax_invoices.customer_id),
-                    orgamax_invoices.customer_name,
-                    ''
-                ) AS contact_name",
-                '0 AS dunning_level',
-                'COALESCE(orgamax_invoices.total_gross, 0) AS amount_gross',
-                "CASE WHEN $state = 'open'
-                    THEN COALESCE(orgamax_invoices.outstanding_amount, orgamax_invoices.total_gross, 0) ELSE 0 END AS open_amount",
-                'orgamax_invoices.currency AS currency',
-            ]))
-            ->where('orgamax_invoices.organization_id', $f->organizationId)
-            ->where('orgamax_invoices.invoice_type', '!=', 'recurringInvoiceTemplate')
-            ->whereNotNull('orgamax_invoices.invoice_date')
-            ->whereBetween('orgamax_invoices.invoice_date', [$f->from->toDateString(), $f->to->toDateString()]);
-    }
-
-    /**
-     * Eingangsrechnungen aus dem Prüfbereich. Übertragene Belege werden
-     * ausgelassen — dort führt der Buchhaltungsbeleg (Dublettenregel 2).
-     */
-    private function incomingEInvoices(): ?Builder {
-        $f = $this->filters;
-        if (! $f->allows('incoming_einvoice') || ! $f->wantsOrigin(DocumentOrigin::Local) || ! $f->wantsFixed(DocumentDirection::Incoming, DocumentKind::Invoice)) {
-            return null;
-        }
-
-        $state = $this->caseMap('incoming_einvoices.status', [
-            IncomingEInvoice::STATUS_REJECTED => 'cancelled',
-            IncomingEInvoice::STATUS_PAYMENT_RELEASED => 'paid',
-        ], 'open');
-
-        $sign = "CASE WHEN incoming_einvoices.status = '" . IncomingEInvoice::STATUS_REJECTED . "' THEN 0 ELSE 1 END";
-
-        return DB::table('incoming_einvoices')
-            ->selectRaw($this->projection([
-                "'incoming_einvoice' AS source_type",
-                'incoming_einvoices.id AS source_id',
-                'incoming_einvoices.document_id AS link_id',
-                "'" . DocumentOrigin::Local->value . "' AS origin",
-                "'" . DocumentDirection::Incoming->value . "' AS direction",
-                "'" . DocumentKind::Invoice->value . "' AS kind",
-                "$sign AS sign",
-                "COALESCE(incoming_einvoices.invoice_number, '') AS number",
-                'COALESCE(incoming_einvoices.issue_date, DATE(incoming_einvoices.received_at)) AS doc_date',
-                'incoming_einvoices.due_date AS due_on',
-                "$state AS state",
-                '0 AS is_archived',
-                'NULL AS contact_type',
-                'NULL AS contact_id',
-                'incoming_einvoices.seller_name AS contact_name',
-                '0 AS dunning_level',
-                'COALESCE(incoming_einvoices.amount_gross, 0) AS amount_gross',
-                "CASE WHEN $state = 'open' THEN COALESCE(incoming_einvoices.amount_gross, 0) ELSE 0 END AS open_amount",
-                "COALESCE(incoming_einvoices.currency, '" . $this->defaultCurrency() . "') AS currency",
-            ]))
-            ->where('incoming_einvoices.organization_id', $f->organizationId)
-            ->whereNull('incoming_einvoices.transferred_at')
-            ->whereBetween(
-                DB::raw('COALESCE(incoming_einvoices.issue_date, DATE(incoming_einvoices.received_at))'),
-                [$f->from->toDateString(), $f->to->toDateString()]
-            );
-    }
-
-    /**
-     * Auslagen. Sichtbarkeit folgt der ExpensePolicy: eigene immer, alle nur
-     * mit Adminrecht — und dann steuert derselbe Umfang auch das
-     * Kennzahlenband.
-     *
-     * Verknüpfte Auslagen (MVP-551) sind nicht mehr geldwirksam: dort führt
-     * der zugeordnete Buchhaltungsbeleg.
-     */
-    private function expenses(): ?Builder {
-        $f = $this->filters;
-        if (! $f->allows('expense') || ! $f->wantsOrigin(DocumentOrigin::Local) || ! $f->wantsFixed(DocumentDirection::Incoming, DocumentKind::Expense)) {
-            return null;
-        }
-
-        $state = $this->caseMap('expenses.status', [
-            ExpenseStatus::Draft->value => 'draft',
-            ExpenseStatus::Rejected->value => 'cancelled',
-            ExpenseStatus::Cancelled->value => 'cancelled',
-            ExpenseStatus::Reimbursed->value => 'paid',
-            ExpenseStatus::Invoiced->value => 'paid',
-        ], 'open');
-
-        $sign = "CASE
-            WHEN expenses.status IN ('" . ExpenseStatus::Rejected->value . "', '" . ExpenseStatus::Cancelled->value . "', '" . ExpenseStatus::Draft->value . "') THEN 0
-            WHEN feed_link.id IS NOT NULL THEN 0
-            ELSE 1 END";
-
-        $query = DB::table('expenses')
-            // Bestätigte Zuordnung zum Buchhaltungsbeleg (MVP-551) als JOIN,
-            // nicht als SQL-Literal: der Klassenname enthält Backslashes, die
-            // MariaDB in Stringliteralen als Escapes liest.
-            ->leftJoin('external_references as feed_link', function ($join): void {
-                $join->on('feed_link.referenceable_id', '=', 'expenses.id')
-                    ->where('feed_link.referenceable_type', Expense::class)
-                    ->where('feed_link.plugin_id', LexofficePlugin::ID)
-                    ->where('feed_link.external_type', LexofficePlugin::EXT_TYPE_VOUCHER);
-            })
-            ->selectRaw($this->projection([
-                "'expense' AS source_type",
-                'expenses.id AS source_id',
-                'expenses.id AS link_id',
-                "'" . DocumentOrigin::Local->value . "' AS origin",
-                "'" . DocumentDirection::Incoming->value . "' AS direction",
-                "'" . DocumentKind::Expense->value . "' AS kind",
-                "$sign AS sign",
-                "COALESCE(expenses.reimbursement_reference, '') AS number",
-                'expenses.date AS doc_date',
-                'NULL AS due_on',
-                "$state AS state",
-                '0 AS is_archived',
-                'NULL AS contact_type',
-                'NULL AS contact_id',
-                "COALESCE(expenses.vendor, '') AS contact_name",
-                '0 AS dunning_level',
-                'COALESCE(expenses.amount_gross, 0) AS amount_gross',
-                '0 AS open_amount',
-                'expenses.currency AS currency',
-            ]))
-            ->where('expenses.organization_id', $f->organizationId)
-            ->whereBetween('expenses.date', [$f->from->toDateString(), $f->to->toDateString()]);
-
-        if (! $f->allExpenses) {
-            $query->where('expenses.user_id', $f->userId);
-        }
-
-        // Arbeitsliste „noch nicht verbucht": macht aus der Dublettengefahr
-        // eine abarbeitbare Aufgabe statt einer stillen Unschärfe.
-        if ($f->onlyUnlinkedExpenses) {
-            $query->whereNull('feed_link.id');
-        }
-
-        return $query;
-    }
-
     /** Spaltengleiche Leermenge, falls kein Sub-Select zum Filter passt. */
     private function emptySet(): Builder {
         return Invoice::query()->toBase()
-            ->selectRaw($this->projection([
+            ->selectRaw(FeedProjection::columns([
                 "'invoice' AS source_type",
                 'invoices.id AS source_id',
                 'invoices.id AS link_id',
@@ -726,46 +281,8 @@ class DocumentFeedQuery {
                 '0 AS dunning_level',
                 '0 AS amount_gross',
                 '0 AS open_amount',
-                "'" . $this->defaultCurrency() . "' AS currency",
+                "'" . FeedProjection::defaultCurrency() . "' AS currency",
             ]))
             ->whereRaw('1 = 0');
-    }
-
-    /**
-     * Spaltenliste einer Projektion. Jedes Fragment stammt aus Enums,
-     * Modellkonstanten oder festen Spaltennamen — nie aus Eingaben. Nach dem
-     * implode kann PHPStan die literal-string-Eigenschaft nicht mehr beweisen
-     * (Muster wie in Services/Integration/Match).
-     *
-     * @param  list<string>  $columns
-     * @return literal-string
-     */
-    private function projection(array $columns): string {
-        // @phpstan-ignore return.type
-        return implode(', ', $columns);
-    }
-
-    /**
-     * Baut ein `CASE <column> WHEN … END` aus einer Wertetabelle. Alle
-     * Schlüssel und Werte stammen aus Enums/Modellkonstanten, nie aus
-     * Nutzereingaben.
-     *
-     * @param  array<string, string>  $map
-     */
-    private function caseMap(string $column, array $map, string $default, bool $quoted = true): string {
-        $sql = "CASE $column";
-        foreach ($map as $when => $then) {
-            $value = $quoted ? "'" . $then . "'" : $then;
-            $sql .= " WHEN '" . $when . "' THEN " . $value;
-        }
-        $sql .= ' ELSE ' . ($quoted ? "'" . $default . "'" : $default) . ' END';
-
-        return $sql;
-    }
-
-    private function defaultCurrency(): string {
-        $code = (string) config('invoicing.default_currency', 'EUR');
-
-        return preg_match('/^[A-Z]{3}$/', $code) === 1 ? $code : 'EUR';
     }
 }

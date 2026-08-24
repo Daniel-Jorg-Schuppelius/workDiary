@@ -16,6 +16,7 @@ use App\Enums\Finance\{AccountingEntryStatus, TaxCodeDirection};
 use App\Models\Accounting\{AccountingEntryLine, AccountingTaxCode};
 use App\Models\Organization;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Aufteilung nach den Kennziffern der Voranmeldung (Feature 125, MVP-688).
@@ -45,7 +46,7 @@ class VatFieldBreakdownService {
             ->with('taxCode')
             ->get();
 
-        /** @var array<string, array{field: string, base: string, tax: string, direction: string}> $fields */
+        /** @var array<string, array{field: string, base: numeric-string, tax: numeric-string, direction: string}> $fields */
         $fields = [];
         $unclear = [];
 
@@ -58,10 +59,11 @@ class VatFieldBreakdownService {
             $isInput = $code->direction === TaxCodeDirection::Input;
 
             // Bemessungsgrundlage: der Netto-Anteil der Zeile. Die Steuer steht
-            // in `tax_amount`, den Rest trägt die Zeile selbst.
-            $amount = (float) ($line->credit?->getAmount() ?? '0.00') - (float) ($line->debit?->getAmount() ?? '0.00');
-            $base = $isInput ? -$amount : $amount;
-            $tax = (float) ($line->tax_amount?->getAmount() ?? '0.00');
+            // in `tax_amount`, den Rest trägt die Zeile selbst. Haben − Soll
+            // für Ausgangsumsätze, Soll − Haben für Vorsteuerfälle.
+            $signed = $line->signedAmount();
+            $base = ($isInput ? $signed : $signed->negated())->getAmount();
+            $tax = $line->tax_amount?->getAmount() ?? '0.00';
 
             if ($code->ustva_base_field === null && $code->ustva_tax_field === null) {
                 $unclear[$code->code] = (string) __('accounting.filing.fields.unclear', ['code' => $code->code . ' — ' . $code->name]);
@@ -80,7 +82,7 @@ class VatFieldBreakdownService {
                     'tax' => '0.00',
                     'direction' => $isInput ? 'input' : 'output',
                 ];
-                $fields[$field][$slot] = number_format((float) $fields[$field][$slot] + $value, 2, '.', '');
+                $fields[$field][$slot] = NumberHelper::addPrecise($fields[$field][$slot], $value, 2);
             }
         }
 

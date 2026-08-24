@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins;
 use App\Enums\Asset\AssetClass;
 use App\Models\{Asset, Customer, ForeignCustomer, PluginSetting, Project, RemotePendingSession, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\{RemoteSession, TeamViewerClient};
-use App\Plugins\RemoteSupport\{RemoteSupportConfig, RemoteSupportPlugin, RemoteSupportService};
+use App\Plugins\RemoteSupport\{RemoteDeviceRegistry, RemotePendingAssignmentService, RemoteSessionImporter, RemoteSupportConfig, RemoteSupportPlugin};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -32,8 +32,16 @@ class RemoteSupportSyncTest extends TestCase {
         $this->organization->forceFill(['owner_id' => $owner->id])->save();
     }
 
-    private function service(): RemoteSupportService {
-        return new RemoteSupportService;
+    private function devices(): RemoteDeviceRegistry {
+        return new RemoteDeviceRegistry;
+    }
+
+    private function importer(): RemoteSessionImporter {
+        return new RemoteSessionImporter;
+    }
+
+    private function pending(): RemotePendingAssignmentService {
+        return new RemotePendingAssignmentService($this->devices(), $this->importer());
     }
 
     private function enableTeamViewer(): array {
@@ -57,7 +65,7 @@ class RemoteSupportSyncTest extends TestCase {
             'asset_class' => AssetClass::Device->value,
             'customer_id' => $customer->id,
         ]);
-        $this->service()->setRemoteId($asset, TeamViewerClient::ID, $teamviewerId);
+        $this->devices()->setRemoteId($asset, TeamViewerClient::ID, $teamviewerId);
 
         return $asset;
     }
@@ -77,7 +85,7 @@ class RemoteSupportSyncTest extends TestCase {
             'asset_class' => AssetClass::Device->value,
         ]);
 
-        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '123456789');
+        $this->devices()->setRemoteId($asset, TeamViewerClient::ID, '123456789');
 
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => RemoteSupportPlugin::ID,
@@ -85,7 +93,7 @@ class RemoteSupportSyncTest extends TestCase {
             'referenceable_id' => $asset->id,
             'external_id' => '123456789',
         ]);
-        $this->assertSame('123456789', $this->service()->remoteId($asset, TeamViewerClient::ID));
+        $this->assertSame('123456789', $this->devices()->remoteId($asset, TeamViewerClient::ID));
     }
 
     public function test_import_creates_time_entry_in_customer_default_project(): void {
@@ -100,7 +108,7 @@ class RemoteSupportSyncTest extends TestCase {
             'username' => 'Techniker',
         ]]);
 
-        $result = $this->service()->import(
+        $result = $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
@@ -126,7 +134,7 @@ class RemoteSupportSyncTest extends TestCase {
 
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => RemoteSupportPlugin::ID,
-            'external_type' => RemoteSupportService::EXT_TYPE_SESSION,
+            'external_type' => RemoteSessionImporter::EXT_TYPE_SESSION,
             'external_id' => 'teamviewer:tv-session-1',
             'referenceable_id' => $entry->id,
         ]);
@@ -148,7 +156,7 @@ class RemoteSupportSyncTest extends TestCase {
             'username' => 'Techniker',
         ]]);
 
-        $result = $this->service()->import(
+        $result = $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
@@ -195,7 +203,7 @@ class RemoteSupportSyncTest extends TestCase {
             'username' => 'Techniker',
         ]]);
 
-        $result = $this->service()->import(
+        $result = $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
@@ -213,13 +221,13 @@ class RemoteSupportSyncTest extends TestCase {
         $this->assertEqualsCanonicalizing(['Remote', 'TeamViewer'], $existing->tags()->pluck('name')->all());
         $this->assertDatabaseHas('external_references', [
             'plugin_id' => RemoteSupportPlugin::ID,
-            'external_type' => RemoteSupportService::EXT_TYPE_SESSION,
+            'external_type' => RemoteSessionImporter::EXT_TYPE_SESSION,
             'external_id' => 'teamviewer:tv-covered-1',
             'referenceable_id' => $existing->id,
         ]);
 
         // Folgesync: Sitzung gilt als verarbeitet.
-        $second = $this->service()->import(
+        $second = $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
@@ -263,7 +271,7 @@ class RemoteSupportSyncTest extends TestCase {
             'username' => 'Techniker',
         ]]);
 
-        $result = $this->service()->import(
+        $result = $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
@@ -289,8 +297,8 @@ class RemoteSupportSyncTest extends TestCase {
         $from = CarbonImmutable::parse('2026-05-25');
         $to = CarbonImmutable::parse('2026-05-27');
 
-        $first = $this->service()->import($this->organization, $config, $from, $to);
-        $second = $this->service()->import($this->organization, $config, $from, $to);
+        $first = $this->importer()->import($this->organization, $config, $from, $to);
+        $second = $this->importer()->import($this->organization, $config, $from, $to);
 
         $this->assertSame(1, $first['created']);
         $this->assertSame(0, $second['created']);
@@ -308,7 +316,7 @@ class RemoteSupportSyncTest extends TestCase {
             'end_date' => CarbonImmutable::parse('2026-05-26 10:15:00')->toIso8601String(),
         ]]);
 
-        $result = $this->service()->import(
+        $result = $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
@@ -340,8 +348,8 @@ class RemoteSupportSyncTest extends TestCase {
 
         $from = CarbonImmutable::parse('2026-05-25');
         $to = CarbonImmutable::parse('2026-05-27');
-        $this->service()->import($this->organization, $config, $from, $to);
-        $this->service()->import($this->organization, $config, $from, $to);
+        $this->importer()->import($this->organization, $config, $from, $to);
+        $this->importer()->import($this->organization, $config, $from, $to);
 
         $this->assertSame(1, RemotePendingSession::query()->count());
     }
@@ -367,10 +375,10 @@ class RemoteSupportSyncTest extends TestCase {
             'customer_id' => $customer->id,
         ]);
 
-        $result = $this->service()->assignPending($this->organization, 'teamviewer', 'unknown-id', $asset);
+        $result = $this->pending()->assignPending($this->organization, 'teamviewer', 'unknown-id', $asset);
 
         $this->assertSame(1, $result['created']);
-        $this->assertSame('unknown-id', $this->service()->remoteId($asset, TeamViewerClient::ID));
+        $this->assertSame('unknown-id', $this->devices()->remoteId($asset, TeamViewerClient::ID));
 
         $project = $asset->customer->defaultProject();
         $entry = TimeEntry::query()->where('project_id', $project->id)->first();
@@ -414,7 +422,7 @@ class RemoteSupportSyncTest extends TestCase {
         $result = $booker->book($this->organization, 'teamviewer|inbox-dev', ['asset' => $asset->sqid]);
 
         $this->assertSame(1, $result['created']);
-        $this->assertSame('inbox-dev', $this->service()->remoteId($asset, TeamViewerClient::ID), 'Geräte-ID gebunden');
+        $this->assertSame('inbox-dev', $this->devices()->remoteId($asset, TeamViewerClient::ID), 'Geräte-ID gebunden');
 
         $entry = TimeEntry::query()->where('project_id', $asset->customer->defaultProject()->id)->first();
         $this->assertNotNull($entry);
@@ -457,7 +465,7 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $count = $this->service()->dismissPending($this->organization, 'anydesk', '999');
+        $count = $this->pending()->dismissPending($this->organization, 'anydesk', '999');
 
         $this->assertSame(1, $count);
         $this->assertSame(0, TimeEntry::query()->count());
@@ -477,7 +485,7 @@ class RemoteSupportSyncTest extends TestCase {
             'customer_id' => $customer->id,
             'shared_remote' => true,
         ]);
-        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '555');
+        $this->devices()->setRemoteId($asset, TeamViewerClient::ID, '555');
 
         $this->fakeConnections([[
             'id' => 'tv-shared-1',
@@ -486,7 +494,7 @@ class RemoteSupportSyncTest extends TestCase {
             'end_date' => CarbonImmutable::parse('2026-05-26 09:30:00')->toIso8601String(),
         ]]);
 
-        $result = $this->service()->import(
+        $result = $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
@@ -529,7 +537,7 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $result = $this->service()->assignSharedSessions($this->organization, collect([$row]), $target);
+        $result = $this->pending()->assignSharedSessions($this->organization, collect([$row]), $target);
 
         $this->assertSame(1, $result['created']);
 
@@ -576,7 +584,7 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $result = $this->service()->assignSharedSessions($this->organization, collect([$row]), $target, $project);
+        $result = $this->pending()->assignSharedSessions($this->organization, collect([$row]), $target, $project);
 
         $this->assertSame(1, $result['created']);
         $entry = TimeEntry::query()->where('project_id', $project->id)->first();
@@ -602,8 +610,8 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $this->assertTrue($this->service()->openPendingGroups($this->organization)->isEmpty());
-        $this->assertSame(1, $this->service()->openSharedSessions($this->organization)->count());
+        $this->assertTrue($this->pending()->openPendingGroups($this->organization)->isEmpty());
+        $this->assertSame(1, $this->pending()->openSharedSessions($this->organization)->count());
     }
 
     public function test_session_for_customerless_asset_books_internal_maintenance_project(): void {
@@ -614,7 +622,7 @@ class RemoteSupportSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'asset_class' => AssetClass::Device->value,
         ]);
-        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '555000111');
+        $this->devices()->setRemoteId($asset, TeamViewerClient::ID, '555000111');
 
         $session = new RemoteSession(
             provider: TeamViewerClient::ID,
@@ -624,7 +632,7 @@ class RemoteSupportSyncTest extends TestCase {
             endedAt: CarbonImmutable::parse('2026-07-20 09:30:00'),
         );
 
-        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+        $result = $this->importer()->importSessions($this->organization, $config, [$session]);
 
         $this->assertSame(1, $result['created']);
         $this->assertSame(0, $result['pending']);
@@ -650,7 +658,7 @@ class RemoteSupportSyncTest extends TestCase {
             startedAt: CarbonImmutable::parse('2026-07-20 10:00:00'),
             endedAt: CarbonImmutable::parse('2026-07-20 10:45:00'),
         );
-        $this->service()->importSessions($this->organization, $config, [$session]);
+        $this->importer()->importSessions($this->organization, $config, [$session]);
 
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
         $asset = Asset::factory()->create([
@@ -660,7 +668,7 @@ class RemoteSupportSyncTest extends TestCase {
             'shared_remote' => true,
         ]);
 
-        $result = $this->service()->assignPending($this->organization, TeamViewerClient::ID, '777000222', $asset);
+        $result = $this->pending()->assignPending($this->organization, TeamViewerClient::ID, '777000222', $asset);
 
         $this->assertSame(1, $result['pending']);
         $this->assertSame(0, $result['created']);
@@ -670,7 +678,7 @@ class RemoteSupportSyncTest extends TestCase {
             'asset_id' => $asset->id,
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
-        $this->assertSame(1, $this->service()->openSharedSessions($this->organization)->count());
+        $this->assertSame(1, $this->pending()->openSharedSessions($this->organization)->count());
     }
 
     public function test_assign_new_without_customer_creates_company_device_and_parks_sessions(): void {
@@ -683,7 +691,7 @@ class RemoteSupportSyncTest extends TestCase {
             startedAt: CarbonImmutable::parse('2026-07-20 11:00:00'),
             endedAt: CarbonImmutable::parse('2026-07-20 11:20:00'),
         );
-        $this->service()->importSessions($this->organization, $config, [$session]);
+        $this->importer()->importSessions($this->organization, $config, [$session]);
 
         $response = $this->actingAs($this->orgAdmin())->post(route('admin.remote-support.pending.assign-new'), [
             'provider' => TeamViewerClient::ID,
@@ -720,7 +728,7 @@ class RemoteSupportSyncTest extends TestCase {
             'customer_id' => $customer->id,
             'foreign_customer_id' => $foreign->id,
         ]);
-        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '444555666');
+        $this->devices()->setRemoteId($asset, TeamViewerClient::ID, '444555666');
 
         $session = new RemoteSession(
             provider: TeamViewerClient::ID,
@@ -730,7 +738,7 @@ class RemoteSupportSyncTest extends TestCase {
             endedAt: CarbonImmutable::parse('2026-07-20 13:30:00'),
         );
 
-        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+        $result = $this->importer()->importSessions($this->organization, $config, [$session]);
 
         $this->assertSame(1, $result['created']);
         $entry = TimeEntry::query()->firstOrFail();
@@ -765,7 +773,7 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $result = $this->service()->assignSharedSessions($this->organization, [$row], $customer, null, null, $foreign);
+        $result = $this->pending()->assignSharedSessions($this->organization, [$row], $customer, null, null, $foreign);
 
         $this->assertSame(1, $result['created']);
         $entry = TimeEntry::query()->firstOrFail();
@@ -826,7 +834,7 @@ class RemoteSupportSyncTest extends TestCase {
             endedAt: CarbonImmutable::parse('2026-07-20 12:58:00'),
         );
 
-        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+        $result = $this->importer()->importSessions($this->organization, $config, [$session]);
 
         $this->assertSame(1, $result['skipped']);
         $this->assertSame(0, $result['unmatched']);
@@ -835,10 +843,10 @@ class RemoteSupportSyncTest extends TestCase {
             'session_id' => 'tv-zero-1',
             'status' => RemotePendingSession::STATUS_ATTEMPT,
         ]);
-        $this->assertTrue($this->service()->openPendingGroups($this->organization)->isEmpty());
+        $this->assertTrue($this->pending()->openPendingGroups($this->organization)->isEmpty());
 
         // Erneuter Import bleibt idempotent (Dedupe per session_id).
-        $this->service()->importSessions($this->organization, $config, [$session]);
+        $this->importer()->importSessions($this->organization, $config, [$session]);
         $this->assertSame(1, RemotePendingSession::query()->count());
     }
 
@@ -855,14 +863,14 @@ class RemoteSupportSyncTest extends TestCase {
             ],
         ]);
 
-        $this->service()->import(
+        $this->importer()->import(
             $this->organization,
             $config,
             CarbonImmutable::parse('2026-05-25'),
             CarbonImmutable::parse('2026-05-27'),
         );
 
-        $group = $this->service()->openPendingGroups($this->organization)->firstOrFail();
+        $group = $this->pending()->openPendingGroups($this->organization)->firstOrFail();
         $this->assertSame('d987654321', $group->remote_id);
         $this->assertSame('KANZLEI-PC01', $group->alias);
     }
@@ -872,8 +880,8 @@ class RemoteSupportSyncTest extends TestCase {
         $asset = $this->deviceAssetWithCustomer('111222333');
 
         // Zweite ID additiv (Neuinstallation) — die erste bleibt bestehen.
-        $this->service()->setRemoteId($asset, TeamViewerClient::ID, '444555666');
-        $this->assertSame(['111222333', '444555666'], $this->service()->remoteIds($asset, TeamViewerClient::ID));
+        $this->devices()->setRemoteId($asset, TeamViewerClient::ID, '444555666');
+        $this->assertSame(['111222333', '444555666'], $this->devices()->remoteIds($asset, TeamViewerClient::ID));
 
         foreach ([['111222333', 'tv-mid-1', '10:00', '10:30'], ['444555666', 'tv-mid-2', '11:00', '11:30']] as [$rid, $sid, $from, $to]) {
             $session = new RemoteSession(
@@ -883,15 +891,15 @@ class RemoteSupportSyncTest extends TestCase {
                 startedAt: CarbonImmutable::parse("2026-07-20 {$from}:00"),
                 endedAt: CarbonImmutable::parse("2026-07-20 {$to}:00"),
             );
-            $this->service()->importSessions($this->organization, $config, [$session]);
+            $this->importer()->importSessions($this->organization, $config, [$session]);
         }
 
         // Beide IDs matchen dasselbe Gerät → beide Sitzungen gebucht.
         $this->assertSame(2, TimeEntry::query()->count());
 
         // Gezieltes Entfernen einer ID lässt die andere stehen.
-        $this->service()->forgetRemoteId($asset, TeamViewerClient::ID, '111222333');
-        $this->assertSame(['444555666'], $this->service()->remoteIds($asset, TeamViewerClient::ID));
+        $this->devices()->forgetRemoteId($asset, TeamViewerClient::ID, '111222333');
+        $this->assertSame(['444555666'], $this->devices()->remoteIds($asset, TeamViewerClient::ID));
     }
 
     public function test_merge_remote_device_moves_ids_and_sessions(): void {
@@ -901,7 +909,7 @@ class RemoteSupportSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'asset_class' => AssetClass::Device->value,
         ]);
-        $this->service()->setRemoteId($dup, TeamViewerClient::ID, '999000222');
+        $this->devices()->setRemoteId($dup, TeamViewerClient::ID, '999000222');
         RemotePendingSession::query()->create([
             'organization_id' => $this->organization->id,
             'asset_id' => $dup->id,
@@ -913,11 +921,11 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $result = $this->service()->mergeRemoteDevice($dup, $target);
+        $result = $this->devices()->mergeRemoteDevice($dup, $target);
 
         $this->assertSame(['ids' => 1, 'sessions' => 1], $result);
-        $this->assertSame([], $this->service()->remoteIds($dup, TeamViewerClient::ID));
-        $this->assertContains('999000222', $this->service()->remoteIds($target, TeamViewerClient::ID));
+        $this->assertSame([], $this->devices()->remoteIds($dup, TeamViewerClient::ID));
+        $this->assertContains('999000222', $this->devices()->remoteIds($target, TeamViewerClient::ID));
         $this->assertDatabaseHas('remote_pending_sessions', [
             'session_id' => 'tv-dup-1',
             'asset_id' => $target->id,
@@ -930,14 +938,14 @@ class RemoteSupportSyncTest extends TestCase {
             'organization_id' => $this->organization->id,
             'asset_class' => AssetClass::Device->value,
         ]);
-        $this->service()->setRemoteId($dup, TeamViewerClient::ID, '343434000');
+        $this->devices()->setRemoteId($dup, TeamViewerClient::ID, '343434000');
 
         $response = $this->actingAs($this->orgAdmin())->post(route('assets.remote-support.merge', $dup), [
             'target_asset_id' => (string) $target->id,
         ]);
 
         $response->assertRedirect(route('assets.show', $target));
-        $this->assertContains('343434000', $this->service()->remoteIds($target, TeamViewerClient::ID));
+        $this->assertContains('343434000', $this->devices()->remoteIds($target, TeamViewerClient::ID));
     }
 
     public function test_attempts_before_session_extend_booked_start(): void {
@@ -965,7 +973,7 @@ class RemoteSupportSyncTest extends TestCase {
             endedAt: CarbonImmutable::parse('2026-07-20 13:20:00'),
         );
 
-        $result = $this->service()->importSessions($this->organization, $config, [$session]);
+        $result = $this->importer()->importSessions($this->organization, $config, [$session]);
 
         $this->assertSame(1, $result['created']);
         $entry = TimeEntry::query()->firstOrFail();
@@ -1009,7 +1017,7 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_ATTEMPT,
         ]);
 
-        $device = $this->service()->openSharedSessions($this->organization)->firstOrFail();
+        $device = $this->pending()->openSharedSessions($this->organization)->firstOrFail();
         $this->assertSame(1, $device->sessions->count());
         $this->assertSame(1, $device->attempts);
     }
@@ -1036,7 +1044,7 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $service = $this->service();
+        $service = $this->pending();
         $this->assertSame(2, $service->openPendingGroups($this->organization)->count());
         $this->assertSame(1, $service->openPendingGroups($this->organization, 'MUELLER')->count());
         $this->assertSame(1, $service->openPendingGroups($this->organization, '222000')->count());
@@ -1063,7 +1071,7 @@ class RemoteSupportSyncTest extends TestCase {
             'status' => RemotePendingSession::STATUS_OPEN,
         ]);
 
-        $service = $this->service();
+        $service = $this->pending();
         $this->assertSame(1, $service->openSharedSessions($this->organization, 'kanzlei')->count());
         $this->assertSame(1, $service->openSharedSessions($this->organization, 'jahresabschluss')->count());
         $this->assertSame(0, $service->openSharedSessions($this->organization, 'unbekannt')->count());

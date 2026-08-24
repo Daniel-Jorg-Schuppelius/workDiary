@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Rental;
 
 use App\Enums\Rental\{RentalChargeKind, RentalRateCardStatus};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Rental\{RentalRateCard, RentalRateItem};
 use Illuminate\Contracts\View\View;
@@ -26,6 +27,8 @@ use Illuminate\Validation\Rule;
  * Snapshot referenzieren. Alte Fälle werden nie umbewertet.
  */
 class RentalRateCardController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(): View {
         Gate::authorize('viewAny', RentalRateCard::class);
 
@@ -55,7 +58,7 @@ class RentalRateCardController extends Controller {
             ->first();
 
         $card = RentalRateCard::query()->create([
-            'organization_id' => $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'name' => $data['name'],
             'version' => $previous !== null ? $previous->version + 1 : 1,
             'status' => RentalRateCardStatus::Draft->value,

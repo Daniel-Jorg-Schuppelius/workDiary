@@ -17,6 +17,8 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class MaintenancePlanService {
+    use \App\Services\Concerns\ParsesMixedDate;
+
     /** @param array<string, mixed> $payload */
     public function create(Asset $asset, User $actor, array $payload): MaintenancePlan {
         $kind = $this->parseKind((string) ($payload['interval_kind'] ?? MaintenanceIntervalKind::Months->value));
@@ -168,17 +170,6 @@ class MaintenancePlanService {
         }
 
         return $kind;
-    }
-
-    private function parseDate(mixed $value): ?Carbon {
-        if ($value === null || $value === '') {
-            return null;
-        }
-        if ($value instanceof Carbon) {
-            return $value;
-        }
-
-        return Carbon::parse((string) $value);
     }
 
     private function generateCode(Asset $asset): string {

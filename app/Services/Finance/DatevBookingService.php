@@ -51,6 +51,8 @@ use Illuminate\Support\Facades\{DB, Storage};
  * }
  */
 class DatevBookingService {
+    use \App\Services\Concerns\AssignsSequentialNo;
+
     use ResolvesActorId;
 
     public const DISK = ExportRunner::DISK;
@@ -724,12 +726,9 @@ class DatevBookingService {
     }
 
     private function nextBatchNo(Organization $organization): int {
-        $max = (int) DatevBookingBatch::query()
-            ->withTrashed()
-            ->where('organization_id', $organization->id)
-            ->max('batch_no');
-
-        return $max + 1;
+        // lockForUpdate über den Trait (Vollscan 2026-08-23, B18): ohne Sperre
+        // vergaben zwei parallele Läufe dieselbe batch_no → 1062 (org+batch_no).
+        return $this->nextNo(DatevBookingBatch::class, 'batch_no', 'organization_id', $organization->id);
     }
 
     private function sourceDate(DatevBookingSource $source, DatevBookingBatch $batch): string {

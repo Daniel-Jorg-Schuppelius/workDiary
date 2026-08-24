@@ -32,6 +32,8 @@ use Illuminate\Support\Facades\DB;
  * gemeinsame Sperrmodell (D12).
  */
 class RentalCaseService {
+    use \App\Services\Concerns\AssertsStatusTransition;
+
     public function __construct(
         private readonly NumberSequenceService $numbers,
         private readonly RentalAvailabilityService $availability,
@@ -516,11 +518,6 @@ class RentalCaseService {
     }
 
     private function assertTransition(RentalCase $case, RentalCaseStatus $target): void {
-        if (! in_array($target, $case->status->allowedTransitions(), true)) {
-            throw new \RuntimeException((string) __('Statuswechsel von :from nach :to ist nicht zulässig.', [
-                'from' => $case->status->label(),
-                'to' => $target->label(),
-            ]));
-        }
+        $this->assertStatusTransition($case->status, $target);
     }
 }

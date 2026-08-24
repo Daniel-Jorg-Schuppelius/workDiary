@@ -14,7 +14,7 @@ use App\Models\Organization;
 use App\Services\Licensing\PlanModuleService;
 use App\Services\Privacy\DataProtectionPermissions;
 use App\Services\Whistleblowing\WhistleblowingPermissions;
-use Database\Seeders\{EntryTypeSeeder, PermissionsSeeder};
+use Database\Seeders\{ActivityCategorySeeder, EntryTypeSeeder, ExpenseCategorySeeder, PermissionsSeeder};
 
 /**
  * Sorgt dafür, dass jede neu angelegte Organisation sofort über die
@@ -31,6 +31,9 @@ class OrganizationObserver {
         // Erstausstattung Eintragstypen (profil-gekoppelt) — der Deploy-Seeder
         // fasst bestehende Orgs bewusst nicht mehr an.
         EntryTypeSeeder::seedOrganization($organization);
+        // Tätigkeits-/Spesenkategorien ebenso bootstrap-only (Vollscan 2026-08-23, J3).
+        ActivityCategorySeeder::seedOrganization((int) $organization->id);
+        ExpenseCategorySeeder::seedOrganization((int) $organization->id);
     }
 
     /**

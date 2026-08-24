@@ -49,7 +49,11 @@ class ArticleExportController extends Controller {
         // W10/MVP-566: DATPREIS nur mit VK-Änderungen seit Datum bzw. X Tagen.
         $since = null;
         if ($request->filled('since')) {
-            $since = \Illuminate\Support\Carbon::parse((string) $request->input('since'))->startOfDay();
+            try {
+                $since = \Illuminate\Support\Carbon::parse((string) $request->input('since'))->startOfDay();
+            } catch (\Carbon\Exceptions\InvalidFormatException) {
+                $since = null; // Müll-Input wirkt wie „kein Stichtag" statt 500 (B10).
+            }
         } elseif ($request->filled('since_days')) {
             $since = now()->subDays((int) $request->input('since_days'))->startOfDay();
         }

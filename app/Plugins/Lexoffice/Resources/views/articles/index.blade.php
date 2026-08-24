@@ -88,14 +88,14 @@
                         <td class="text-base-content/70">{{ $article->unit_name }}</td>
                         <td class="text-right tabular-nums">
                             @if ($article->net_unit_price !== null)
-                                {{ number_format($article->net_unit_price?->toFloat() ?? 0.0, 2, ',', '.') }} {{ $article->currency->value }}
+                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
                             @else
                                 <span class="text-base-content/40">—</span>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">
                             @if ($article->vat_rate !== null)
-                                {{ number_format($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, ',', '.') }} %
+                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, withThousandsSeparator: true) }} %
                             @else
                                 <span class="text-base-content/40">—</span>
                             @endif

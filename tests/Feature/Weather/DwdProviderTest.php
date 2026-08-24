@@ -48,7 +48,12 @@ final class DwdProviderTest extends TestCase {
     }
 
     private function provider(MockHandler $mock): DwdProvider {
-        return new DwdProvider(new Client(['handler' => HandlerStack::create($mock)]));
+        // PluginApiClient mit Mock-Transport (C10): gleiche Naht wie produktiv.
+        return new DwdProvider(new \App\Plugins\Support\PluginApiClient(
+            'weather-dwd',
+            DwdProvider::BASE,
+            new Client(['handler' => HandlerStack::create($mock)]),
+        ));
     }
 
     /** Latin-1-Stationsliste (Festbreiten) — bewusst NICHT nach UTF-8 konvertiert. */

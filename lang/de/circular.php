@@ -16,7 +16,7 @@ return [
     'empty' => 'Noch kein Rundschreiben angelegt.',
     'empty_recipients' => 'Keine Empfänger erfasst.',
     'created' => 'Rundschreiben angelegt.',
-    'sent' => 'Rundschreiben versendet.',
+    'sent' => 'Versand gestartet — läuft im Hintergrund; der Stand erscheint je Empfänger in der Nachweisliste.',
     'already_sent' => 'Dieses Rundschreiben wurde bereits versendet.',
     'no_recipients' => 'Der gewählte Filter trifft auf keinen Kunden zu.',
     'mandatory_short' => 'Pflichtmitteilung',

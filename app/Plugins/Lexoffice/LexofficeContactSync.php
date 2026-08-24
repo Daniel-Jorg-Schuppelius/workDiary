@@ -361,10 +361,8 @@ class LexofficeContactSync {
             'mobile' => (string) data_get($remote, 'phoneNumbers.mobile.0', '') ?: null,
             'fax' => (string) data_get($remote, 'phoneNumbers.fax.0', '') ?: null,
             'comment' => (string) data_get($remote, 'note', '') ?: null,
-            'address_street' => (string) data_get($remote, 'addresses.billing.0.street', '') ?: null,
-            'address_zip' => (string) data_get($remote, 'addresses.billing.0.zip', '') ?: null,
-            'address_city' => (string) data_get($remote, 'addresses.billing.0.city', '') ?: null,
-            'country' => (string) data_get($remote, 'addresses.billing.0.countryCode', 'DE'),
+            // F8/E6: Adresse geht ausschließlich über syncAddresses() nach
+            // contact_addresses; die Inline-Spalten füllt die Projektion.
             'currency' => 'EUR',
         ];
 
@@ -746,10 +744,7 @@ class LexofficeContactSync {
             'mobile' => (string) data_get($remote, 'phoneNumbers.mobile.0', '') ?: null,
             'fax' => (string) data_get($remote, 'phoneNumbers.fax.0', '') ?: null,
             'comment' => (string) data_get($remote, 'note', '') ?: null,
-            'address_street' => (string) data_get($remote, 'addresses.billing.0.street', '') ?: null,
-            'address_zip' => (string) data_get($remote, 'addresses.billing.0.zip', '') ?: null,
-            'address_city' => (string) data_get($remote, 'addresses.billing.0.city', '') ?: null,
-            'country' => (string) data_get($remote, 'addresses.billing.0.countryCode', '') ?: null,
+            // F8/E6: Adresse nur noch über syncAddresses() → Projektion.
         ], static fn($v) => $v !== null);
 
         return $out;

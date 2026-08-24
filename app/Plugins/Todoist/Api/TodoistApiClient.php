@@ -168,18 +168,19 @@ class TodoistApiClient {
      * @return list<array<string, mixed>>
      */
     private function getAllPages(string $path, array $query = []): array {
-        $items = [];
-        $cursor = null;
-
-        do {
+        // CursorPaginator (Vollscan 2026-08-23, C3): erkennt nicht
+        // vorrückende Cursor (RuntimeException) und deckelt die Seitenzahl.
+        $paginator = new \APIToolkit\API\Pagination\CursorPaginator(function (?string $cursor) use ($path, $query): \APIToolkit\API\Pagination\CursorPage {
             $page = $this->getJson($path, $cursor !== null ? $query + ['cursor' => $cursor] : $query);
             /** @var list<array<string, mixed>> $results */
             $results = is_array($page['results'] ?? null) ? array_values($page['results']) : [];
-            $items = array_merge($items, $results);
-            $cursor = is_string($page['next_cursor'] ?? null) && $page['next_cursor'] !== '' ? $page['next_cursor'] : null;
-        } while ($cursor !== null);
+            $next = is_string($page['next_cursor'] ?? null) && $page['next_cursor'] !== '' ? $page['next_cursor'] : null;
 
-        return $items;
+            return new \APIToolkit\API\Pagination\CursorPage($results, $next);
+        }, maxPages: 500);
+
+        /** @var list<array<string, mixed>> */
+        return $paginator->toArray();
     }
 
     private function assertOk(int $status, string $path): void {

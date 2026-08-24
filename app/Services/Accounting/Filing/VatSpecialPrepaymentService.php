@@ -14,8 +14,10 @@ namespace App\Services\Accounting\Filing;
 
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingProfile, AccountingVatExtension};
 use App\Models\{Organization, User};
-use App\Services\Accounting\{AccountingReportService, JournalService, VatFilingProfileResolver};
+use App\Services\Accounting\{JournalService, VatFilingProfileResolver};
+use App\Services\Accounting\Reports\VatPreviewBuilder;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -32,7 +34,7 @@ use Illuminate\Validation\ValidationException;
 class VatSpecialPrepaymentService {
     public function __construct(
         private readonly VatFilingProfileResolver $profile,
-        private readonly AccountingReportService $reports,
+        private readonly VatPreviewBuilder $vatPreviews,
         private readonly JournalService $journal,
     ) {}
 
@@ -45,23 +47,24 @@ class VatSpecialPrepaymentService {
         $priorFrom = CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year - 1, 1, 1));
         $priorTo = $priorFrom->endOfYear();
 
-        $payable = (string) $this->reports->vatPreview($organization, $priorFrom, $priorTo)['payable'];
+        $payable = Money::of((string) $this->vatPreviews->build($organization, $priorFrom, $priorTo)['payable'], $this->journal->baseCurrency($organization));
         $months = $this->activeMonths($organization, $priorFrom, $priorTo);
 
         // § 47 Abs. 3 UStDV: Wer im Vorjahr nur einen Teil des Jahres tätig
-        // war, rechnet die Summe auf ein volles Jahr hoch.
+        // war, rechnet die Summe auf ein volles Jahr hoch. Erst multipliziert,
+        // dann geteilt — so rundet nur das Ergebnis (Vollscan 2026-08-23, C1).
         $annualised = $months > 0 && $months < 12
-            ? number_format((float) $payable * 12 / $months, 2, '.', '')
+            ? $payable->times(12)->dividedBy($months)
             : $payable;
 
         return [
             'required' => $this->profile->at($organization, CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year, 2, 10)))->requiresSpecialPrepayment(),
             'year' => $year,
             'prior_year' => $year - 1,
-            'prior_year_tax' => $payable,
+            'prior_year_tax' => $payable->getAmount(),
             'months_active' => $months,
-            'annualised' => $annualised,
-            'amount' => number_format((float) $annualised / 11, 2, '.', ''),
+            'annualised' => $annualised->getAmount(),
+            'amount' => $annualised->dividedBy(11)->getAmount(),
             'due_on' => CarbonImmutable::parse(sprintf('%04d-%02d-%02d', $year, 2, 10))->toDateString(),
         ];
     }
@@ -81,7 +84,7 @@ class VatSpecialPrepaymentService {
         CarbonImmutable $bookedOn,
         User $actor,
     ): AccountingEntry {
-        if ((float) $amount <= 0.0) {
+        if (! Money::of($amount, $this->journal->baseCurrency($organization))->isPositive()) {
             throw ValidationException::withMessages([
                 'amount' => [(string) __('accounting.filing.error.amount_positive')],
             ]);

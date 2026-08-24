@@ -58,6 +58,9 @@ class EventController extends Controller {
 
         $query = Event::query()
             ->with(['category', 'responsibleUser', 'customer', 'rooms'])
+            // Teilnehmerzahl mitladen — die View fällt sonst je Zeile auf
+            // participants()->count() zurück (Vollscan 2026-08-23, A11).
+            ->withCount('participants')
             ->when($filters['q'] !== '', fn($q) => $q->search($filters['q']))
             ->when($filters['event_type'], fn($q) => $q->where('event_type', $filters['event_type']))
             ->when($filters['status'], fn($q) => $q->where('status', $filters['status']))

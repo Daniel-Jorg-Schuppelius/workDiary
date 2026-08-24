@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, PluginSetting, PluginState, User};
 use App\Plugins\{PluginCompatibility, PluginManager};
@@ -27,12 +28,15 @@ use Throwable;
  * API-Keys werden in der plugin_settings-Tabelle verschlüsselt abgelegt.
  */
 class PluginController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function index(Request $request, PluginManager $manager): View {
-        $admin = $this->ensureAdmin($request);
+        $this->ensureAdmin($request);
+        $organizationId = $this->currentOrganization()->id;
 
         $rows = PluginSetting::query()
             ->withoutGlobalScopes()
-            ->where('organization_id', $admin->organization_id)
+            ->where('organization_id', $organizationId)
             ->get()
             ->keyBy('plugin_id');
 
@@ -54,8 +58,8 @@ class PluginController extends Controller {
         // gefilterte Inbox — eigener Org-Scope + globale Fehler, ein Query.
         $errorCounts = \App\Models\PluginError::query()
             ->whereNull('acknowledged_at')
-            ->where(function ($q) use ($admin): void {
-                $q->whereNull('organization_id')->orWhere('organization_id', (int) $admin->organization_id);
+            ->where(function ($q) use ($organizationId): void {
+                $q->whereNull('organization_id')->orWhere('organization_id', $organizationId);
             })
             ->selectRaw('plugin_id, count(*) as open_count')
             ->groupBy('plugin_id')
@@ -64,7 +68,7 @@ class PluginController extends Controller {
         return view('admin.plugins.index', [
             'plugins' => $manager->all(),
             'settings' => $rows,
-            'states' => PluginState::mapForOrganization((int) $admin->organization_id),
+            'states' => PluginState::mapForOrganization($organizationId),
             'compatibility' => $compatibility,
             'operational' => $operational,
             'errorCounts' => $errorCounts,
@@ -76,13 +80,13 @@ class PluginController extends Controller {
     }
 
     public function edit(Request $request, string $plugin, PluginManager $manager): View {
-        $admin = $this->ensureAdmin($request);
+        $this->ensureAdmin($request);
 
         $instance = $manager->get($plugin);
         abort_unless($instance !== null, 404);
 
-        $row = PluginSetting::forOrganization((int) $admin->organization_id, $plugin);
-        $state = PluginState::forContext($plugin, $instance->isPerOrganization() ? (int) $admin->organization_id : null);
+        $row = PluginSetting::forOrganization($this->currentOrganization()->id, $plugin);
+        $state = PluginState::forContext($plugin, $instance->isPerOrganization() ? $this->currentOrganization()->id : null);
 
         return view('admin.plugins._form_dialog', [
             'plugin' => $instance,
@@ -127,7 +131,7 @@ class PluginController extends Controller {
         $row = PluginSetting::query()
             ->withoutGlobalScopes()
             ->firstOrNew([
-                'organization_id' => $admin->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'plugin_id' => $plugin,
             ]);
 
@@ -211,7 +215,7 @@ class PluginController extends Controller {
         $row->save();
 
         // Lifecycle-Hooks: Settings gespeichert + (De-)Aktivierung in dieser Org.
-        $orgId = (int) $admin->organization_id;
+        $orgId = $this->currentOrganization()->id;
         $instance->onSettingsSaved($orgId, $settings);
         if ($row->enabled && ! $wasEnabled) {
             $instance->onActivate($orgId);
@@ -233,7 +237,7 @@ class PluginController extends Controller {
         }
         if ($changedKeys !== []) {
             AuditLog::query()->create([
-                'organization_id' => (int) $admin->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'user_id' => $admin->id,
                 'event' => 'integration.settings_changed',
                 'auditable_type' => PluginSetting::class,
@@ -303,7 +307,7 @@ class PluginController extends Controller {
         $row = PluginSetting::query()
             ->withoutGlobalScopes()
             ->firstOrNew([
-                'organization_id' => $admin->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'plugin_id' => $plugin,
             ]);
 
@@ -324,7 +328,7 @@ class PluginController extends Controller {
         $row->save();
 
         // Lifecycle-Hook für (De-)Aktivierung in dieser Organisation.
-        $orgId = (int) $admin->organization_id;
+        $orgId = $this->currentOrganization()->id;
         $row->enabled ? $instance->onActivate($orgId) : $instance->onDeactivate($orgId);
         $this->auditIntegrationChanged($admin, $row, $wasEnabled);
         if (! $row->enabled) {
@@ -346,7 +350,7 @@ class PluginController extends Controller {
      */
     private function auditIntegrationChanged(User $admin, PluginSetting $row, bool $wasEnabled): void {
         AuditLog::query()->create([
-            'organization_id' => (int) $admin->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'user_id' => $admin->id,
             'event' => 'integration.changed',
             'auditable_type' => PluginSetting::class,
@@ -367,17 +371,17 @@ class PluginController extends Controller {
      * Auto-Disable (Phase `manual`, E-1).
      */
     public function healthCheck(Request $request, string $plugin, PluginManager $manager, \App\Plugins\PluginHealthService $service): JsonResponse|RedirectResponse {
-        $admin = $this->ensureAdmin($request);
+        $this->ensureAdmin($request);
         $instance = $manager->get($plugin);
         abort_unless($instance !== null, 404);
 
         // Per-Org-Plugins: Zustand/Fehler der Org des Admins zuordnen (der
         // healthCheck() prüft denselben gebundenen Org-Kontext); globale Plugins → null.
-        $orgId = $instance->isPerOrganization() ? (int) $admin->organization_id : null;
+        $orgId = $instance->isPerOrganization() ? $this->currentOrganization()->id : null;
 
         // Deaktivierte Plugins werden nicht geprüft (W0e) — wie im Scheduler:
         // ein Check ohne Konfiguration erzeugte sonst nur Pseudo-Fehler.
-        $settingRow = PluginSetting::forOrganization((int) $admin->organization_id, $plugin);
+        $settingRow = PluginSetting::forOrganization($this->currentOrganization()->id, $plugin);
         $enabled = (bool) $settingRow->enabled || (bool) config('plugins.' . $plugin . '.enabled', false);
         if (! $enabled) {
             $message = __('Plugin ist deaktiviert — Healthcheck nicht ausgeführt.');

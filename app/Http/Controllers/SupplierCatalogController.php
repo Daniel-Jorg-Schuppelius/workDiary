@@ -196,11 +196,11 @@ class SupplierCatalogController extends Controller {
             ->when($status !== 'all', fn ($q) => $q->where('status', $status))
             // MVP-601: Suche inkl. Lieferanten-Matchcode.
             ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w
-                ->where('external_no', 'like', "%{$search}%")
-                ->orWhere('name', 'like', "%{$search}%")
-                ->orWhere('matchcode', 'like', "%{$search}%")
-                ->orWhere('gtin', 'like', "%{$search}%")
-                ->orWhere('manufacturer_no', 'like', "%{$search}%")))
+                ->whereLikeEscaped('external_no', $search)
+                ->orWhereLikeEscaped('name', $search)
+                ->orWhereLikeEscaped('matchcode', $search)
+                ->orWhereLikeEscaped('gtin', $search)
+                ->orWhereLikeEscaped('manufacturer_no', $search)))
             ->orderBy('external_no')
             ->paginate(50)
             ->withQueryString();

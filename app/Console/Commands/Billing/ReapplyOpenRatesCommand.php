@@ -78,8 +78,8 @@ class ReapplyOpenRatesCommand extends Command {
                             $entry->id,
                             $entry->date?->format('d.m.Y') ?? '—',
                             StringHelper::truncate((string) $entry->description, 40),
-                            number_format($old, 2, ',', '.'),
-                            number_format($new, 2, ',', '.'),
+                            \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($old, 2, withThousandsSeparator: true),
+                            \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($new, 2, withThousandsSeparator: true),
                         ));
                     }
 
@@ -100,8 +100,8 @@ class ReapplyOpenRatesCommand extends Command {
                 $org->name,
                 $touched,
                 $mode,
-                number_format($before, 2, ',', '.'),
-                number_format($after, 2, ',', '.'),
+                \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($before, 2, withThousandsSeparator: true),
+                \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($after, 2, withThousandsSeparator: true),
             ));
         });
 

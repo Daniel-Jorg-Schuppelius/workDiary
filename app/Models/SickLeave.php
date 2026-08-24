@@ -125,16 +125,7 @@ class SickLeave extends Model {
 
     /** Werktage (Mo–Fr, ohne Feiertage). */
     public function workingDays(HolidayService $holidayService): int {
-        $count = 0;
-        $cursor = $this->start_date->copy();
-        while ($cursor->lte($this->end_date)) {
-            if ($cursor->isWeekday() && ! $holidayService->isHoliday($cursor)) {
-                $count++;
-            }
-            $cursor->addDay();
-        }
-
-        return $count;
+        return $holidayService->workingDaysBetween($this->start_date, $this->end_date);
     }
 
     /** Kalendertage (inklusive Start- und Endtag). */

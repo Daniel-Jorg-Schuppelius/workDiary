@@ -152,10 +152,13 @@ final class DatevMasterDataExporter {
         $set(Field::Adressattyp, '2'); // Unternehmen (natürliche Personen pflegt DATEV-seitig der Berater)
         $set(Field::Kurzbezeichnung, mb_substr($companyName, 0, 15));
 
-        $vatId = strtoupper(str_replace(' ', '', (string) ($customer->vat_id ?? '')));
-        if (preg_match('/^[A-Z]{2}[0-9A-Z]+$/', $vatId) === 1) {
-            $set(Field::EULand, substr($vatId, 0, 2));
-            $set(Field::EUUStID, substr($vatId, 2));
+        // Toolkit statt Regex (Vollscan 2026-08-23, C21): VatNumber normalisiert
+        // und prüft das Format; strict=false, weil DATEV auch ohne
+        // Prüfziffern-Validierung importiert (die Regex tat das auch nicht).
+        $vat = \CommonToolkit\ValueObjects\VatNumber::tryFrom((string) ($customer->vat_id ?? ''), strict: false);
+        if ($vat !== null) {
+            $set(Field::EULand, $vat->getCountryCode());
+            $set(Field::EUUStID, $vat->getNationalNumber());
         }
 
         if (trim((string) $customer->address_street) !== '') {

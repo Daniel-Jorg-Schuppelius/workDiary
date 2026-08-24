@@ -95,6 +95,110 @@ class WeekViewService {
      *
      * @return Collection<int, User>
      */
+    /**
+     * Mehrere Wochen in EINEM Ladevorgang (Vollscan 2026-08-23, A15): die
+     * Wochenansicht rief build() bis zu zwölfmal auf — je 3 Queries. Hier
+     * werden Schichten/Einsätze/Aufträge über den Gesamtzeitraum einmal
+     * geladen und mit derselben Überlappungsregel je Woche verteilt.
+     *
+     * @param  list<CarbonInterface>  $anchors
+     * @return list<array{start: CarbonImmutable, end: CarbonImmutable, days: array<int, CarbonImmutable>, shifts: Collection<int, OnCallShift>, assignments: Collection<int, EmergencyAssignment>, entries: Collection<int, DiaryEntry>}>
+     */
+    public function buildMany(array $anchors, User $user, bool $teamScope, ?int $filterUserId = null): array {
+        if ($anchors === []) {
+            return [];
+        }
+
+        $tz = Tz::current();
+        $windows = [];
+        foreach ($anchors as $anchor) {
+            $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();
+            $windows[] = ['start' => $start, 'end' => $start->addDays(7)];
+        }
+        $rangeStart = min(array_map(fn (array $w) => $w['start'], $windows))->setTimezone('UTC');
+        $rangeEnd = max(array_map(fn (array $w) => $w['end'], $windows))->setTimezone('UTC');
+
+        $userFilter = fn ($q) => $q
+            ->when(! $teamScope, fn ($qq) => $qq->where('user_id', $user->id))
+            ->when($teamScope && $filterUserId, fn ($qq) => $qq->where('user_id', $filterUserId));
+
+        $shifts = OnCallShift::query()->with('user:id,name')->overlapping($rangeStart, $rangeEnd)->where('is_archived', false)->tap($userFilter)->orderBy('start_at')->get();
+        $assignments = EmergencyAssignment::query()->with('user:id,name')->overlapping($rangeStart, $rangeEnd)->where('is_archived', false)->tap($userFilter)->orderBy('start_at')->get();
+        $entries = DiaryEntry::query()
+            ->with('user:id,name')
+            ->where('is_archived', false)
+            ->where(function ($q) use ($rangeStart, $rangeEnd): void {
+                $q->whereBetween('start_at', [$rangeStart, $rangeEnd])
+                    ->orWhere(function ($q2) use ($rangeStart, $rangeEnd): void {
+                        $q2->whereNotNull('end_at')->where('start_at', '<', $rangeEnd)->where('end_at', '>', $rangeStart);
+                    });
+            })
+            ->tap($userFilter)
+            ->orderBy('start_at')
+            ->get();
+
+        $overlaps = static fn ($model, CarbonImmutable $start, CarbonImmutable $end): bool => $model->start_at !== null
+            && $model->start_at < $end && $model->end_at !== null && $model->end_at > $start;
+        $entryInWeek = static fn (DiaryEntry $entry, CarbonImmutable $start, CarbonImmutable $end): bool => $entry->start_at !== null
+            && (($entry->start_at >= $start && $entry->start_at <= $end)
+                || ($entry->end_at !== null && $entry->start_at < $end && $entry->end_at > $start));
+
+        $out = [];
+        foreach ($windows as $window) {
+            $start = $window['start'];
+            $end = $window['end'];
+            $days = [];
+            for ($i = 0; $i < 7; $i++) {
+                $days[$i] = $start->addDays($i);
+            }
+            $out[] = [
+                'start' => $start,
+                'end' => $end,
+                'days' => $days,
+                'shifts' => $shifts->filter(fn (OnCallShift $s): bool => $overlaps($s, $start, $end))->values(),
+                'assignments' => $assignments->filter(fn (EmergencyAssignment $a): bool => $overlaps($a, $start, $end))->values(),
+                'entries' => $entries->filter(fn (DiaryEntry $e): bool => $entryInWeek($e, $start, $end))->values(),
+            ];
+        }
+
+        return $out;
+    }
+
+    /**
+     * Nutzer mit Schichten/Einsätzen/Aufträgen in irgendeiner der Wochen —
+     * ein Ladevorgang statt vier Queries je Woche (A15).
+     *
+     * @param  list<CarbonInterface>  $anchors
+     * @return Collection<int, User>
+     */
+    public function usersInWeeks(array $anchors): Collection {
+        if ($anchors === []) {
+            return new Collection;
+        }
+        $tz = Tz::current();
+        $starts = array_map(fn (CarbonInterface $a) => CarbonImmutable::instance($a)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay(), $anchors);
+        $startUtc = min($starts)->setTimezone('UTC');
+        $endUtc = max($starts)->addDays(7)->setTimezone('UTC');
+
+        $entryUserIds = DiaryEntry::query()
+            ->where('is_archived', false)
+            ->where(function ($q) use ($startUtc, $endUtc): void {
+                $q->whereBetween('start_at', [$startUtc, $endUtc])
+                    ->orWhere(function ($q2) use ($startUtc, $endUtc): void {
+                        $q2->whereNotNull('end_at')->where('start_at', '<', $endUtc)->where('end_at', '>', $startUtc);
+                    });
+            })
+            ->distinct()
+            ->pluck('user_id');
+        $shiftUserIds = OnCallShift::query()->overlapping($startUtc, $endUtc)->where('is_archived', false)->distinct()->pluck('user_id');
+        $assignUserIds = EmergencyAssignment::query()->overlapping($startUtc, $endUtc)->where('is_archived', false)->distinct()->pluck('user_id');
+
+        $ids = $entryUserIds->merge($shiftUserIds)->merge($assignUserIds)->filter()->unique()->values();
+
+        return User::query()->whereIn('id', $ids)->orderBy('name')->get(['id', 'name']);
+    }
+
+    /** @return Collection<int, User> */
     public function usersInWeek(CarbonInterface $anchor): Collection {
         $tz = Tz::current();
         $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();

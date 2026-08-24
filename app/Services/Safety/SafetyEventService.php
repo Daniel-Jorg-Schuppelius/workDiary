@@ -31,6 +31,9 @@ use Illuminate\Validation\ValidationException;
  * werden.
  */
 class SafetyEventService {
+    use \App\Services\Concerns\AssignsSequentialNo;
+    use \App\Services\Isms\Concerns\AssertsIsmsTransition;
+
     public function __construct(
         private readonly NotificationDispatcher $dispatcher,
         private readonly OpenIssueService $openIssues,
@@ -100,14 +103,7 @@ class SafetyEventService {
             return $event;
         }
 
-        if (! in_array($target, $event->status->allowedTransitions(), true)) {
-            throw ValidationException::withMessages([
-                'status' => (string) __('safety.error.invalid_transition', [
-                    'from' => $event->status->label(),
-                    'to' => $target->label(),
-                ]),
-            ]);
-        }
+        $this->assertIsmsTransition($event->status, $target, 'safety.error.invalid_transition');
 
         $changes = ['status' => $target->value];
 
@@ -180,12 +176,6 @@ class SafetyEventService {
 
     /** Nächste laufende Ereignis-Nummer der Organisation (innerhalb der Transaktion). */
     private function nextEventNo(int $organizationId): int {
-        $max = SafetyEvent::query()
-            ->withTrashed()
-            ->where('organization_id', $organizationId)
-            ->lockForUpdate()
-            ->max('event_no');
-
-        return ((int) $max) + 1;
+        return $this->nextNo(SafetyEvent::class, 'event_no', 'organization_id', $organizationId);
     }
 }

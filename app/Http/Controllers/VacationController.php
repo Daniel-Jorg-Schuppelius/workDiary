@@ -192,7 +192,7 @@ class VacationController extends Controller {
             if ($balance->hasEntitlement && $balance->remainingDays() < 0) {
                 return redirect()->route('duties.index', ['tab' => 'urlaub'])
                     ->with('warning', __('Urlaubsantrag genehmigt — der Jahresanspruch ist damit um :days Tage überschritten.', [
-                        'days' => number_format(abs($balance->remainingDays()), 1, ',', '.'),
+                        'days' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($balance->remainingDays()), 1, withThousandsSeparator: true),
                     ]));
             }
         }

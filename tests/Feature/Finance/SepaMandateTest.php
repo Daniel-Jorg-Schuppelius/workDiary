@@ -179,4 +179,33 @@ class SepaMandateTest extends TestCase {
             'iban' => 'DE89370400440532013000',
         ])->assertSessionHasErrors('reference');
     }
+
+    /**
+     * Vollscan 2026-08-23, E2: Die Mandats-IBAN ging ohne Prüfziffer-Check und
+     * unnormalisiert in iban_hash und pain.008 — anders als beim eigenen Bankkonto.
+     */
+    public function test_mandate_iban_is_validated_and_normalized(): void {
+        $this->actingAs($this->admin)->post(route('finance.mandates.store'), [
+            'customer_id' => $this->customer->sqid,
+            'reference' => 'MND-IBAN-FALSCH',
+            'kind' => MandateKind::Recurring->value,
+            'signed_on' => CarbonImmutable::today()->subDay()->toDateString(),
+            'iban' => 'DE89370400440532013001',
+            'bic' => '12345678',
+        ])->assertSessionHasErrors(['iban', 'bic']);
+
+        $this->actingAs($this->admin)->post(route('finance.mandates.store'), [
+            'customer_id' => $this->customer->sqid,
+            'reference' => 'MND-IBAN-OK',
+            'kind' => MandateKind::Recurring->value,
+            'signed_on' => CarbonImmutable::today()->subDay()->toDateString(),
+            'iban' => 'de89 3704 0044 0532 0130 00',
+            'bic' => 'cobadeffxxx',
+        ])->assertSessionHasNoErrors();
+
+        $mandate = \App\Models\Finance\SepaMandate::query()->where('reference', 'MND-IBAN-OK')->firstOrFail();
+        $this->assertSame('DE89370400440532013000', $mandate->iban);
+        $this->assertSame('COBADEFFXXX', $mandate->bic);
+        $this->assertSame((string) \CommonToolkit\Helper\Data\BankHelper::hashIBAN('DE89370400440532013000'), $mandate->iban_hash);
+    }
 }

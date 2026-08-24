@@ -17,7 +17,7 @@ use App\Models\Accounting\AccountingEntry;
 use App\Models\Finance\PaymentAllocation;
 use App\Models\User;
 use App\Services\Accounting\JournalService;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Log};
 
 /**
  * Hält den Buchungskern mit dem Zahlungsabgleich in Takt (Feature 125,
@@ -43,11 +43,6 @@ class PaymentAllocationAccountingObserver {
             return;
         }
 
-        $actor = Auth::user();
-        if (! $actor instanceof User) {
-            return;
-        }
-
         if ($entry->status->isMutable()) {
             // Noch nicht festgeschrieben: Der Entwurf verliert seine Grundlage.
             $entry->delete();
@@ -56,6 +51,24 @@ class PaymentAllocationAccountingObserver {
         }
 
         if ($entry->status !== AccountingEntryStatus::Posted) {
+            return;
+        }
+
+        // Job-/Command-Kontext ohne Auth-User (Vollscan 2026-08-23, D3): Die
+        // Gegenbuchung darf daran nicht scheitern — sonst steht eine
+        // Festbuchung ohne Grundlage und ohne Storno im Hauptbuch. Als Akteur
+        // steht der Festschreiber der Ursprungsbuchung ein (FK-fest,
+        // auditierbar), zur Not deren Ersteller.
+        $actor = Auth::user();
+        if (! $actor instanceof User) {
+            $actor = $entry->postedBy()->first() ?? User::query()->find($entry->created_by);
+        }
+        if (! $actor instanceof User) {
+            Log::error('PaymentAllocationAccountingObserver: Festbuchung ohne auflösbaren Akteur — Gegenbuchung MANUELL nachholen.', [
+                'accounting_entry_id' => $entry->id,
+                'payment_allocation_id' => $allocation->id,
+            ]);
+
             return;
         }
 

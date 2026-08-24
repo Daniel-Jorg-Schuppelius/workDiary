@@ -156,12 +156,26 @@ class PeriodClosingController extends Controller {
             'from' => ['required', 'date'],
             'to' => ['required', 'date', 'after_or_equal:from'],
         ]);
+        $from = \Carbon\CarbonImmutable::parse((string) $data['from']);
+        $to = \Carbon\CarbonImmutable::parse((string) $data['to']);
 
-        $result = $this->datev->build(
-            $organization,
-            \Carbon\CarbonImmutable::parse((string) $data['from']),
-            \Carbon\CarbonImmutable::parse((string) $data['to']),
-        );
+        // EXTF-V700 (von DATEV importierbar), sobald das financial-formats-
+        // Paket vorliegt; sonst die einfache Journal-CSV als Zweitformat
+        // (Vollscan 2026-08-23, C2).
+        if (\App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+            try {
+                $result = $this->datev->buildExtf($organization, $from, $to);
+            } catch (\RuntimeException $e) {
+                return back()->with('error', $e->getMessage());
+            }
+
+            return response($result['content'], 200, [
+                'Content-Type' => 'text/csv; charset=UTF-8',
+                'Content-Disposition' => 'attachment; filename="' . $result['filename'] . '"',
+            ]);
+        }
+
+        $result = $this->datev->build($organization, $from, $to);
 
         return response($result['csv'], 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',

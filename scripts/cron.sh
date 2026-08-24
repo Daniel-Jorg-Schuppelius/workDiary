@@ -35,5 +35,8 @@ cd "$APP_DIR"
 #    oder QUEUE_MAX_TIME erreicht ist. Fehler hier dürfen den Cron-Lauf nicht
 #    abbrechen (z. B. wenn QUEUE_CONNECTION=sync ist).
 if [ "$RUN_QUEUE" = "1" ]; then
-    "$PHP_BIN" artisan queue:work --stop-when-empty --max-time="$QUEUE_MAX_TIME" || true
+    # --tries/--backoff: ohne sie zählt jeder transiente Fehler als endgültig
+    # (Default tries=1) — Jobs mit eigener $tries-/backoff()-Angabe behalten
+    # ihre Werte, die Optionen greifen nur als Untergrenze (Vollscan 2026-08-23, J7).
+    "$PHP_BIN" artisan queue:work --stop-when-empty --max-time="$QUEUE_MAX_TIME" --tries=3 --backoff=30 || true
 fi

@@ -24,7 +24,9 @@ class RemoteSupportServiceProvider extends PluginServiceProviderBase {
     }
 
     protected function registerPlugin(): void {
-        $this->app->singleton(RemoteSupportService::class, fn(): RemoteSupportService => new RemoteSupportService);
+        $this->app->singleton(RemoteDeviceRegistry::class);
+        $this->app->singleton(RemoteSessionImporter::class);
+        $this->app->singleton(RemotePendingAssignmentService::class);
     }
 
     protected function bootPlugin(): void {

@@ -198,8 +198,6 @@ return [
 
     'legacy_write_enabled' => (bool) env('LEGACY_WRITE_ENABLED', false),
 
-    'mail_notifications_enabled' => (bool) env('MAIL_NOTIFICATIONS_ENABLED', false),
-
     /*
     |--------------------------------------------------------------------------
     | Arbeitszeiten

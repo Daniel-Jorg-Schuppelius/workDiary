@@ -14,9 +14,11 @@
 
 @section('title', __('asset.components.title'))
 @section('nav-title', __('asset.components.title'))
+@section('wrapper-height-class', 'wd-page-fill')
+@section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-    <x-index-page :subtitle="$asset->name">
+    <x-index-page overflow="clip" :subtitle="$asset->name">
         <x-slot:actions>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

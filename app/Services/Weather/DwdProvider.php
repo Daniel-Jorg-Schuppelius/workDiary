@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Weather;
 
+use App\Plugins\Support\PluginApiClient;
 use App\Services\Location\GeofenceMatcher;
 use App\Services\Weather\Contracts\WeatherProvider;
 use App\Support\Setting;
@@ -21,7 +22,6 @@ use CommonToolkit\Helper\Data\{StringHelper, UnitConversionHelper};
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use CommonToolkit\Parsers\CSVDocumentParser;
-use GuzzleHttp\ClientInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -42,7 +42,7 @@ use Throwable;
  * injizierbar (Guzzle) — im Test über `MockHandler` ersetzt.
  */
 class DwdProvider implements WeatherProvider {
-    private const BASE = 'https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl';
+    public const BASE = 'https://opendata.dwd.de/climate_environment/CDC/observations_germany/climate/daily/kl';
     private const STATIONS_CACHE_KEY = 'weather.dwd.stations.v1';
     private const STATIONS_CACHE_DAYS = 7; // Liste ist groß und ändert sich selten.
     private const RECENT_WINDOW_DAYS = 500; // recent-ZIPs decken ca. die letzten 1,5 Jahre ab.
@@ -51,7 +51,7 @@ class DwdProvider implements WeatherProvider {
 
     public const DEFAULT_MAX_STATION_KM = 30;
 
-    public function __construct(private readonly ClientInterface $http) {}
+    public function __construct(private readonly PluginApiClient $http) {}
 
     public function key(): string {
         return 'dwd';
@@ -156,8 +156,11 @@ class DwdProvider implements WeatherProvider {
      * @return list<array{id: int, from: int, until: int, lat: float, lng: float, name: string}>
      */
     private function fetchStations(): array {
-        $response = $this->http->request('GET', self::BASE . '/recent/KL_Tageswerte_Beschreibung_Stationen.txt', ['timeout' => 20]);
-        $text = StringHelper::convertToUtf8((string) $response->getBody(), 'ISO-8859-1');
+        $response = $this->http->getResponse(self::BASE . '/recent/KL_Tageswerte_Beschreibung_Stationen.txt', [], ['timeout' => 20]);
+        if (! $response->successful()) {
+            return [];
+        }
+        $text = StringHelper::convertToUtf8($response->body(), 'ISO-8859-1');
 
         $stations = [];
         foreach (preg_split('/\r?\n/', $text) ?: [] as $line) {
@@ -195,8 +198,11 @@ class DwdProvider implements WeatherProvider {
             return null;
         }
 
-        $zipBody = (string) $this->http->request('GET', $zipUrl, ['timeout' => 30])->getBody();
-        $csv = $this->extractProductCsv($zipBody);
+        $zipResponse = $this->http->getResponse($zipUrl, [], ['timeout' => 30]);
+        if (! $zipResponse->successful()) {
+            return null;
+        }
+        $csv = $this->extractProductCsv($zipResponse->body());
         if ($csv === null) {
             return null;
         }
@@ -223,7 +229,11 @@ class DwdProvider implements WeatherProvider {
 
     /** Sucht im historical-Verzeichnislisting den ZIP-Namen der Station. */
     private function historicalZipUrl(int $stationId): ?string {
-        $listing = (string) $this->http->request('GET', self::BASE . '/historical/', ['timeout' => 20])->getBody();
+        $listingResponse = $this->http->getResponse(self::BASE . '/historical/', [], ['timeout' => 20]);
+        if (! $listingResponse->successful()) {
+            return null;
+        }
+        $listing = $listingResponse->body();
         if (! preg_match(sprintf('/tageswerte_KL_%05d_\d{8}_\d{8}_hist\.zip/', $stationId), $listing, $m)) {
             return null;
         }

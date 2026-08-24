@@ -15,7 +15,7 @@ namespace Tests\Feature;
 use App\Enums\Asset\AssetClass;
 use App\Models\{Asset, Customer, Organization, RemotePendingSession};
 use App\Plugins\RemoteSupport\Providers\AnyDeskClient;
-use App\Plugins\RemoteSupport\RemoteSupportService;
+use App\Plugins\RemoteSupport\RemoteDeviceRegistry;
 use App\Services\AssetMergeService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -44,7 +44,7 @@ class AssetMergeTest extends TestCase {
         $source = $this->makeAsset(['customer_id' => $customer->id, 'manufacturer' => 'Dell', 'shared_remote' => true]);
         $target = $this->makeAsset(['manufacturer' => null]);
 
-        $remote = new RemoteSupportService;
+        $remote = new RemoteDeviceRegistry;
         $remote->setRemoteId($source, AnyDeskClient::ID, '111000111');
         $remote->setRemoteId($target, AnyDeskClient::ID, '222000222');
 

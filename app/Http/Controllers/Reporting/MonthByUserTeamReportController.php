@@ -56,23 +56,29 @@ class MonthByUserTeamReportController extends Controller {
             $end->toImmutable(),
         );
 
+        // Aggregation in SQL statt Hydration des Jahresbestands (Vollscan
+        // 2026-08-23, A9); Monatsausdruck treiberabhängig wie im
+        // TimeAccountPostingService (strftime nur in SQLite).
+        $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
+        $monthExpr = $driver === 'mysql' ? 'MONTH(date)' : "CAST(strftime('%m', date) AS INTEGER)";
         $entriesQuery = TimeEntry::query()
             ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
-            ->select('user_id', 'date', 'minutes', 'rate');
-        $entries = $filters->applyToTimeEntryQuery($entriesQuery)->get();
+            ->selectRaw("user_id, {$monthExpr} AS month_idx, SUM(minutes) AS minutes_sum, SUM(rate) AS rate_sum")
+            ->groupBy('user_id')
+            ->groupByRaw($monthExpr);
+        $aggregates = $filters->applyToTimeEntryQuery($entriesQuery)->toBase()->get();
 
         /** @var array<int, array{months: array<int, int>, total: int, rate: float}> $byUser */
         $byUser = [];
-        foreach ($entries as $entry) {
-            /** @var TimeEntry $entry */
-            $uid = (int) $entry->user_id;
-            $monthIdx = (int) Carbon::parse((string) $entry->date)->month;
+        foreach ($aggregates as $row) {
+            $uid = (int) $row->user_id;
+            $monthIdx = (int) $row->month_idx;
             if (! isset($byUser[$uid])) {
                 $byUser[$uid] = ['months' => array_fill(1, 12, 0), 'total' => 0, 'rate' => 0.0];
             }
-            $byUser[$uid]['months'][$monthIdx] += (int) $entry->minutes;
-            $byUser[$uid]['total'] += (int) $entry->minutes;
-            $byUser[$uid]['rate'] += ($entry->rate?->toFloat() ?? 0.0);
+            $byUser[$uid]['months'][$monthIdx] += (int) $row->minutes_sum;
+            $byUser[$uid]['total'] += (int) $row->minutes_sum;
+            $byUser[$uid]['rate'] += (float) $row->rate_sum;
         }
 
         /** @var Collection<int, User> $users */

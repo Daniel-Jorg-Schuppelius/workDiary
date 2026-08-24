@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Plugins\Support\TaskSync\TaskSyncLink;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -33,7 +34,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $last_run_at
  * @property array<string, int>|null $last_run_counters
  */
-class TodoistProjectLink extends Model {
+class TodoistProjectLink extends Model implements TaskSyncLink {
     use Auditable;
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
@@ -82,6 +83,11 @@ class TodoistProjectLink extends Model {
     /** @return HasMany<TodoistSectionLink, $this> */
     public function sectionLinks(): HasMany {
         return $this->hasMany(TodoistSectionLink::class, 'todoist_project_link_id');
+    }
+
+    /** {@inheritDoc} */
+    public function organizationId(): int {
+        return (int) $this->organization_id;
     }
 
     /** Importrichtung aktiv (Todoist → WorkDiary)? */

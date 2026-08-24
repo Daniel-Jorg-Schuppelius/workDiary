@@ -1511,7 +1511,7 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/cti/dial-settings', [\App\Http\Controllers\Admin\CtiAdminController::class, 'dialSettings'])->name('admin.cti.dial-settings');
         Route::post('admin/cti/connection', [\App\Http\Controllers\Admin\CtiAdminController::class, 'store'])->name('admin.cti.connection.store');
         // Click-to-Dial (W4.5): startet den Anruf ueber die Anlage der Organisation.
-        Route::post('telefonie/waehlen', \App\Http\Controllers\CtiDialController::class)->name('cti.dial');
+        Route::post('telefonie/waehlen', \App\Http\Controllers\CtiDialController::class)->middleware('throttle:30,1')->name('cti.dial');
         Route::post('admin/cti/disconnect', [\App\Http\Controllers\Admin\CtiAdminController::class, 'disconnect'])->name('admin.cti.disconnect');
 
         // ── Versand-/Carrier-Anbindungen (Admin, Feature 059, module.versand) ────
@@ -2294,6 +2294,7 @@ Route::middleware('auth')->group(function () {
             Route::get('/', [\App\Http\Controllers\Finance\PaymentRunController::class, 'index'])->name('index');
             Route::get('vorschlag', [\App\Http\Controllers\Finance\PaymentRunController::class, 'proposals'])->name('proposals');
             Route::post('/', [\App\Http\Controllers\Finance\PaymentRunController::class, 'store'])->name('store');
+            Route::post('vorschlag/{invoice}/iban-bestaetigen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'confirmIban'])->name('proposals.confirm-iban');
             Route::get('{run}', [\App\Http\Controllers\Finance\PaymentRunController::class, 'show'])->name('show');
             Route::post('{run}/freigeben', [\App\Http\Controllers\Finance\PaymentRunController::class, 'release'])->name('release');
             Route::post('{run}/export', [\App\Http\Controllers\Finance\PaymentRunController::class, 'export'])->name('export');

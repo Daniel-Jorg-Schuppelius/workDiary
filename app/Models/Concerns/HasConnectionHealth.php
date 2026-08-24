@@ -26,6 +26,20 @@ use Carbon\CarbonImmutable;
  * Verbindungen als Betriebsaufgabe und löst sie bei Erholung auf.
  */
 trait HasConnectionHealth {
+    /**
+     * Liefert die Casts der Gesundheits-Zeitstempel für jedes Modell mit, das
+     * den Trait einbindet: Vollscan 2026-08-23 (F1) — sieben Konnektoren
+     * hatten keinen datetime-Cast, und die Admin-Listen riefen
+     * `last_error_at?->ftime()` auf einem String auf (Crash, sobald ein
+     * Fehler hinterlegt war).
+     */
+    public function initializeHasConnectionHealth(): void {
+        $this->mergeCasts([
+            'last_error_at' => 'datetime',
+            'disabled_at' => 'datetime',
+        ]);
+    }
+
     public function recordConnectionFailure(string $error): void {
         $failures = (int) $this->getAttribute('consecutive_failures') + 1;
         $threshold = (int) Setting::get('integrations.auto_disable_threshold', 10);

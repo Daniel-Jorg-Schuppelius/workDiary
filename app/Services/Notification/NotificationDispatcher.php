@@ -13,11 +13,11 @@ namespace App\Services\Notification;
 use App\Enums\Integration\WebhookEvent;
 use App\Enums\Notification\{NotificationChannel, NotificationEvent};
 use App\Jobs\Notification\{CalendarEventPublishJob, ChatWebhookDeliveryJob};
+use App\Jobs\Notification\WebPushDeliveryJob;
 use App\Models\{ChatWebhook, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Notifications\GenericEventNotification;
 use App\Services\Integration\WebhookDispatchService;
-use App\Services\WebPushService;
 use App\Support\{NotificationText, Setting};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Collection};
@@ -37,7 +37,7 @@ use Throwable;
  * scheitern: notify() fängt außerhalb von Tests alle Exceptions und loggt sie.
  */
 class NotificationDispatcher {
-    public function __construct(private readonly WebPushService $webPush) {}
+    public function __construct() {}
 
     /**
      * Versendet ein Ereignis gemäß Organisations-Regel.
@@ -338,13 +338,18 @@ class NotificationDispatcher {
             && filter_var(data_get($prefs, 'push_enabled', true), FILTER_VALIDATE_BOOL)) {
             $truncate = (int) Setting::get('notifications.push.body_truncate', 120);
             [$pushTitle, $pushBody] = $this->pushTextFor($user, $event, $payload);
-            $sent = $this->webPush->sendToUser($user, [
-                'title' => $pushTitle,
-                'body' => mb_substr($pushBody, 0, $truncate),
-                'url' => (string) ($payload['url'] ?? ''),
-                'tag' => 'notification-' . $event->value,
-            ]);
-            $delivered = $delivered || $sent > 0;
+            // Zustellung in der Queue (A2): ein Roundtrip je Subscription gehört
+            // nicht in den Request des Auslösers. "delivered" heißt hier: es
+            // gibt mindestens eine Subscription, an die zugestellt wird.
+            if ($user->pushSubscriptions()->exists()) {
+                WebPushDeliveryJob::dispatch((int) $user->id, [
+                    'title' => $pushTitle,
+                    'body' => mb_substr($pushBody, 0, $truncate),
+                    'url' => (string) ($payload['url'] ?? ''),
+                    'tag' => 'notification-' . $event->value,
+                ]);
+                $delivered = true;
+            }
         }
 
         return $delivered;

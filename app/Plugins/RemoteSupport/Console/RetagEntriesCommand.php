@@ -12,7 +12,7 @@ namespace App\Plugins\RemoteSupport\Console;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{ExternalReference, Organization, TimeEntry};
-use App\Plugins\RemoteSupport\{RemoteSupportPlugin, RemoteSupportService};
+use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportPlugin};
 use Illuminate\Console\Command;
 
 /**
@@ -29,7 +29,7 @@ class RetagEntriesCommand extends Command {
 
     protected $description = 'Bestehende Fernwartungs-Einträge: Provider-Präfix aus der Beschreibung entfernen und Tags (Anbieter + Remote) nachziehen.';
 
-    public function handle(RemoteSupportService $service): int {
+    public function handle(RemoteSessionImporter $service): int {
         $dryRun = (bool) $this->option('dry-run');
 
         $failures = $this->forEachOrganization(function (Organization $organization) use ($service, $dryRun): void {
@@ -41,7 +41,7 @@ class RetagEntriesCommand extends Command {
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('plugin_id', RemoteSupportPlugin::ID)
-                ->where('external_type', RemoteSupportService::EXT_TYPE_SESSION)
+                ->where('external_type', RemoteSessionImporter::EXT_TYPE_SESSION)
                 ->where('referenceable_type', (new TimeEntry)->getMorphClass())
                 ->chunkById(200, function ($references) use ($service, $organization, $dryRun, &$tagged, &$stripped, &$skippedExported): void {
                     foreach ($references as $reference) {

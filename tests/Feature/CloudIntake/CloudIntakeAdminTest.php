@@ -56,6 +56,23 @@ class CloudIntakeAdminTest extends TestCase {
         $this->actingAs($this->admin)->get(route('admin.cloud-intake.index'))->assertOk();
     }
 
+    /**
+     * Vollscan 2026-08-23, F1: Ohne datetime-Cast kam `last_error_at` als String
+     * aus der DB und die Liste crashte mit „Call to a member function ftime()“,
+     * sobald ein Fehler hinterlegt war.
+     */
+    public function test_index_renders_a_connection_with_a_recorded_error(): void {
+        $connection = $this->connection();
+        $connection->recordConnectionFailure('Token abgelaufen');
+
+        $this->assertInstanceOf(\Carbon\CarbonInterface::class, $connection->fresh()?->last_error_at);
+
+        $this->actingAs($this->admin)
+            ->get(route('admin.cloud-intake.index'))
+            ->assertOk()
+            ->assertSee('Token abgelaufen');
+    }
+
     public function test_index_loads_container_picker_options_on_demand(): void {
         config(['plugins.msgraph.client_id' => 'cid', 'plugins.msgraph.client_secret' => 'sec']);
         $connection = $this->connection([

@@ -105,7 +105,7 @@ return [
         'link_removed' => 'Association supprimée.',
         'link_project_required' => 'Veuillez choisir un projet WorkDiary.',
         'no_connection' => 'Aucune connexion Todoist active.',
-        'sync_done' => 'Synchronisation complète effectuée.',
+        'sync_done' => 'Synchronisation complète lancée.',
         'preflight_failed' => 'Échec de la préverification (:class).',
         'sections_saved' => 'Associations de sections enregistrées.',
         'collaborator_assigned' => 'Responsable associé.',

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\SaveCustomerRequest;
 use App\Http\Resources\CustomerResource;
@@ -20,6 +21,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use OpenApi\Attributes as OA;
 
 class CustomerController extends Controller {
+    use ResolvesCurrentOrganization;
+
     #[OA\Get(
         path: '/customers',
         summary: 'Kunden auflisten',
@@ -57,7 +60,7 @@ class CustomerController extends Controller {
         $data = $request->validated();
         $customer = Customer::create($data + [
             'created_by' => Auth::id(),
-            'organization_id' => $request->user()?->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
         ]);
 
         return new CustomerResource($customer);

@@ -43,16 +43,18 @@ class StockLevelService {
      * @return Collection<int, array{setting: StockLevelSetting, available: numeric-string, shortfall: numeric-string}>
      */
     public function belowReorder(Warehouse $warehouse): Collection {
+        $balances = $this->ledger->balancesByVariant($warehouse);
+
         return StockLevelSetting::query()
             ->where('warehouse_id', $warehouse->id)
             ->with('variant')
             ->get()
-            ->map(function (StockLevelSetting $setting) use ($warehouse): ?array {
+            ->map(function (StockLevelSetting $setting) use ($balances): ?array {
                 $variant = $setting->variant;
                 if ($variant === null) {
                     return null;
                 }
-                $available = $this->ledger->available($variant, $warehouse);
+                $available = InventoryLedger::availableFromBalances($balances[(int) $variant->id] ?? []);
                 if (bccomp($available, $setting->reorder_point, 4) >= 0) {
                     return null;
                 }

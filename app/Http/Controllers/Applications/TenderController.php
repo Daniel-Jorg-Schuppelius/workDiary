@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Applications;
 
 use App\Enums\Applications\TenderProcedureType;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Applications\{ApplicationOpportunity, ApplicationRequirement, TenderCompetitorBid};
 use App\Models\{Customer, Project, User};
@@ -29,6 +30,8 @@ use Illuminate\Validation\Rule;
  * Unterlagen-Checkliste, Einreichungspaketen, Go-/No-go und Entscheidung.
  */
 class TenderController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(private readonly TenderService $tenders) {}
 
     public function index(Request $request): View {
@@ -75,7 +78,7 @@ class TenderController extends Controller {
         $actor = Auth::user();
         $opportunity = ApplicationOpportunity::query()->create([
             ...$data,
-            'organization_id' => (int) $actor->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'created_by' => $actor->id,
         ]);
         $opportunity->audit('tender.created', ['title' => $opportunity->title]);

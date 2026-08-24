@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\PrunesWebhookDeliveries;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
@@ -29,6 +30,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $processed_at
  */
 class CalendlyWebhookDelivery extends Model {
+    use PrunesWebhookDeliveries;
+
     protected $fillable = [
         'delivery_hash',
         'event_name',

@@ -111,8 +111,12 @@ class SupplierScorecardController extends Controller {
         $kind = (string) $request->query('kind');
         abort_unless(in_array($kind, ['deliveries', 'claims', 'prices'], true), 404);
 
-        $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
-        $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
+        try {
+            $from = CarbonImmutable::parse((string) $request->query('from'))->startOfDay();
+            $to = CarbonImmutable::parse((string) $request->query('to'))->endOfDay();
+        } catch (\Carbon\Exceptions\InvalidFormatException) {
+            abort(404); // Drilldown ohne gültigen Zeitraum gibt es nicht (B10).
+        }
 
         [$title, $rows] = match ($kind) {
             'deliveries' => [__('scorecard.drill_deliveries'), $this->deliveriesRows($supplier, $from, $to)],

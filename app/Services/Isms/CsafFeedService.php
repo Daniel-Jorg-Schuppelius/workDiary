@@ -122,16 +122,12 @@ class CsafFeedService {
                 $changes = $this->http->coreClient('csaf', $directoryUrl)
                     ->getResponse($directoryUrl . '/changes.csv', [], ['timeout' => 30]);
                 if ($changes->successful()) {
-                    $rows = array_filter(array_map('trim', explode("\n", $changes->body())));
-                    // Format: "pfad/dokument.json","2026-07-01T00:00:00Z" — neueste zuerst.
-                    usort($rows, static function (string $a, string $b): int {
-                        $tsA = (string) (str_getcsv($a)[1] ?? '');
-                        $tsB = (string) (str_getcsv($b)[1] ?? '');
-
-                        return strcmp($tsB, $tsA);
-                    });
+                    // Format: "pfad/dokument.json","2026-07-01T00:00:00Z" — neueste
+                    // zuerst; Toolkit-Parser statt str_getcsv je Zeile (C5).
+                    $rows = \App\Support\Toolkit\CsvFacade::parseRows($changes->body(), ',');
+                    usort($rows, static fn (array $a, array $b): int => strcmp((string) ($b[1] ?? ''), (string) ($a[1] ?? '')));
                     foreach ($rows as $row) {
-                        $file = trim((string) (str_getcsv($row)[0] ?? ''));
+                        $file = trim((string) ($row[0] ?? ''));
                         if ($file !== '') {
                             $urls[] = $directoryUrl . '/' . ltrim($file, '/');
                         }
