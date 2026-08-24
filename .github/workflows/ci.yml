@@ -24,7 +24,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -37,7 +37,7 @@ jobs:
           tools: composer:v2
 
       - name: Cache Composer packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/composer/files
           key: composer-${{ runner.os }}-php-8.4-${{ hashFiles('composer.lock') }}
@@ -81,7 +81,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -94,7 +94,7 @@ jobs:
           tools: composer:v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -128,7 +128,7 @@ jobs:
         run: composer sbom -- "${{ runner.temp }}/sbom.cdx.json"
 
       - name: Upload SBOM artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sbom-cyclonedx
           path: ${{ runner.temp }}/sbom.cdx.json
@@ -168,12 +168,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Checkout system dependency installer
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           repository: DSchuppelius/install-dependencies
           ref: 8cfd278a89be3f58b734fac40779b5cb9d11a195
@@ -189,7 +189,7 @@ jobs:
           tools: composer:v2
 
       - name: Cache Composer packages
-        uses: actions/cache@v5
+        uses: actions/cache@v6
         with:
           path: ~/.cache/composer/files
           key: composer-${{ runner.os }}-php-8.4-${{ hashFiles('composer.lock') }}
@@ -310,12 +310,12 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
@@ -353,7 +353,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           persist-credentials: false
 
@@ -366,7 +366,7 @@ jobs:
           tools: composer:v2
 
       - name: Set up Node.js
-        uses: actions/setup-node@v6
+        uses: actions/setup-node@v7
         with:
           node-version: "22"
           cache: npm
