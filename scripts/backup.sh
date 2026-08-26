@@ -106,13 +106,17 @@ flock -n 9 || { echo "FEHLER: Es läuft bereits ein Backup (Lock $BACKUP_DIR/.${
 # (das Manifest entsteht zuletzt — nur vollständige Läufe haben eines).
 MYCNF=$(mktemp)
 TMP_SQLITE=""
+TAR_STAGING_FILE=""
+TAR_STAGING_DIR=""
 cleanup() {
   local rc=$?
-  rm -f "$MYCNF" ${TMP_SQLITE:+"$TMP_SQLITE"}
+  rm -f "$MYCNF" ${TMP_SQLITE:+"$TMP_SQLITE"} ${TAR_STAGING_FILE:+"$TAR_STAGING_FILE"}
+  [[ -n "$TAR_STAGING_DIR" ]] && rmdir "$TAR_STAGING_DIR" 2>/dev/null
   if [[ $rc -ne 0 ]]; then
     rm -f "$DB_FILE" "$STORAGE_FILE" "$ENV_COPY" "$MANIFEST"
     echo "FEHLER: Backup-Lauf $TS abgebrochen — unvollständige Dateien entfernt." >&2
   fi
+  return 0
 }
 trap cleanup EXIT
 PW_ESCAPED="${DB_PASS//\\/\\\\}"; PW_ESCAPED="${PW_ESCAPED//\"/\\\"}"
@@ -148,7 +152,34 @@ BACKUP_DIR_ABS="$(cd "$BACKUP_DIR" && pwd)"
 if [[ "$BACKUP_DIR_ABS/" == "$APP_DIR_ABS/storage/app/"* ]]; then
   TAR_EXCLUDES+=(--exclude "${BACKUP_DIR_ABS#"$APP_DIR_ABS/"}")
 fi
-tar -C "$APP_DIR" "${TAR_EXCLUDES[@]}" -czf "$STORAGE_FILE" storage/app
+
+# Erst NEBEN den gesicherten Baum schreiben, dann hineinschieben: solange das
+# wachsende Archiv in storage/app liegt, hängt die Sicherung davon ab, dass
+# jedes --exclude sitzt. Ein Ziel außerhalb von storage/app schließt das
+# strukturell aus — auch für Aufrufer mit eigenem BACKUP_DIR.
+TAR_STAGING_DIR="$APP_DIR_ABS/storage/backup-staging"
+mkdir -p "$TAR_STAGING_DIR"
+TAR_STAGING_FILE="$TAR_STAGING_DIR/$(basename "$STORAGE_FILE").part"
+rm -f "$TAR_STAGING_FILE"
+
+# tar meldet mit Exit 1 „Datei hat sich beim Lesen geändert". Auf einem
+# laufenden System ist das der Regelfall (Logs, Uploads, Sessions) und kein
+# Fehler: die betroffene Datei steckt mit dem Stand ihres Lesezeitpunkts im
+# Archiv. Nur ab Exit 2 ist das Archiv unbrauchbar. Ohne diese Unterscheidung
+# reißt `set -e` jeden Lauf ab, sobald jemand die Anwendung benutzt.
+set +e
+tar -C "$APP_DIR" "${TAR_EXCLUDES[@]}" --warning=no-file-changed -czf "$TAR_STAGING_FILE" storage/app
+TAR_RC=$?
+set -e
+if [[ $TAR_RC -eq 1 ]]; then
+  echo "HINWEIS: Während der Sicherung haben sich Dateien geändert (laufender Betrieb) — Archiv ist gültig, betroffene Dateien mit dem Stand des Lesezeitpunkts." >&2
+elif [[ $TAR_RC -ne 0 ]]; then
+  rm -f "$TAR_STAGING_FILE"
+  echo "FEHLER: tar brach mit Code $TAR_RC ab — Archiv verworfen." >&2
+  exit $TAR_RC
+fi
+mv "$TAR_STAGING_FILE" "$STORAGE_FILE"
+rmdir "$TAR_STAGING_DIR" 2>/dev/null || true
 
 # 3) .env separat (geschützt — enthält den APP_KEY: ohne ihn sind alle
 #    encrypted-Felder des DB-Dumps unbrauchbar)

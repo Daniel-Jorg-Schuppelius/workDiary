@@ -178,6 +178,13 @@ gunzip < <name>_db_YYYYMMDD_HHMMSS.sql.gz | mysql -u root -p "$DB_NAME"
 # 2) Storage
 tar -C /var/www/workdiary -xzf <name>_storage_YYYYMMDD_HHMMSS.tar.gz
 
+### Wenn `tar` „Datei hat sich beim Lesen geändert" meldet
+
+Das ist bei laufender Anwendung der Regelfall (Logs, Uploads, Sessions) und **kein** Fehlschlag: `tar` beendet sich dann mit Code 1, die betroffene Datei steckt mit dem Stand ihres Lesezeitpunkts im Archiv. `scripts/backup.sh` behandelt Code 1 deshalb als Hinweis und bricht erst ab Code 2 ab — vorher riss jeder Deploy, sobald jemand die Anwendung benutzte.
+
+Das Archiv entsteht zudem in `storage/backup-staging/` und wird erst nach dem Packen an seinen Zielort verschoben. Damit kann das wachsende Archiv nicht mehr sich selbst mitlesen — auch dann nicht, wenn das Backup-Ziel (wie beim Pre-Backup von `deploy.sh`) innerhalb von `storage/app/` liegt.
+
+
 # 3) .env zurückspielen
 cp <name>_env_YYYYMMDD_HHMMSS.txt /var/www/workdiary/.env
 chmod 600 /var/www/workdiary/.env
