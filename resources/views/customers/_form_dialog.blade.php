@@ -85,6 +85,11 @@
             {{-- E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10) — Pflicht in der XRechnung. --}}
             <x-input-field name="buyer_reference" :label="__('invoicing.buyer_reference')" maxlength="64"
                            :value="old('buyer_reference', $customer?->buyer_reference)" :hint="__('invoicing.buyer_reference_hint')" />
+            {{-- Peppol (Feature 066, MVP-734): Empfängerkennung für den Versand über
+                 den Access-Point-Provider. Das Schema bleibt der Peppol-Standard
+                 (iso6523-actorid-upis) und ist deshalb kein Formularfeld. --}}
+            <x-input-field name="peppol_participant_id" :label="__('peppol.field.participant_id')" maxlength="64"
+                           :value="old('peppol_participant_id', $customer?->peppol_participant_id)" :hint="__('peppol.field.participant_id_hint')" />
             <x-select-field name="delivery_format" :label="__('invoice-import.customer_default_format')" :hint="__('invoice-import.customer_default_format_hint')">
                 <option value="">{{ __('invoice-import.no_default_format') }}</option>
                 @foreach (\App\Enums\Invoicing\InvoiceDeliveryFormat::cases() as $format)

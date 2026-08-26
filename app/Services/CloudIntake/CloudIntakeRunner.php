@@ -208,9 +208,10 @@ class CloudIntakeRunner {
                 return;
             }
 
-            // 5. MIME-Prüfung auf dem tatsächlichen Inhalt.
-            $finfo = finfo_open(FILEINFO_MIME_TYPE);
-            $mime = $finfo !== false ? (string) (finfo_file($finfo, $quarantine) ?: '') : '';
+            // 5. MIME-Prüfung auf dem tatsächlichen Inhalt (common-toolkit
+            // v1.28, MVP-734): finfo mit Shell-/Magic-Bytes-Fallback statt
+            // rohem finfo_file — ohne ext-fileinfo lief der Filter sonst leer.
+            $mime = (string) (File::mimeType($quarantine) ?: '');
             if (in_array($mime, (array) config('cloud_intake.blocked_mimes', []), true)) {
                 $this->record($connection, $match['route']->id, $item, null, CloudIntakeItemStatus::Rejected, 'blocked_mime', null, $actor);
                 $result['rejected']++;

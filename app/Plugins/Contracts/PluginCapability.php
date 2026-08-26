@@ -64,6 +64,13 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     case SmsGateway = 'sms_gateway';
 
     /**
+     * Kann Belege über einen zertifizierten Peppol-Access-Point-Provider
+     * senden und empfangen (Feature 066, MVP-734). WorkDiary betreibt selbst
+     * keinen Access Point — das Plugin ist reine Provider-Anbindung.
+     */
+    case PeppolTransport = 'peppol_transport';
+
+    /**
      * Personenbeförderung (MVP-456): Taxameter-/Wegstreckenzähler-Import.
      * RESERVIERT — noch kein Plugin deklariert sie (Audit 2026-08, Welle 1.5:
      * geprüft und bewusst so belassen, bis ein Anbieter angebunden wird).
@@ -96,6 +103,7 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::DomainRegistrar => __('Domain-Registrar'),
             self::AppointmentSync => __('Terminsynchronisation'),
             self::SmsGateway => __('SMS-Gateway'),
+            self::PeppolTransport => __('Peppol-Transport'),
             self::FareMeter => __('Taxameter-Import'),
             self::PassengerDispatch => __('Fahrtvermittlung'),
             self::MobilityData => __('Mobilitätsdaten'),
@@ -121,6 +129,7 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::DomainRegistrar => DomainRegistrar::class,
             self::AppointmentSync => AppointmentSyncer::class,
             self::SmsGateway => SmsProvider::class,
+            self::PeppolTransport => PeppolTransportProvider::class,
             self::FareMeter => FareMeterProvider::class,
             self::PassengerDispatch => PassengerDispatchProvider::class,
             self::MobilityData => MobilityDataPublisher::class,

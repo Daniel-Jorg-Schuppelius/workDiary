@@ -92,6 +92,7 @@ return [
         ],
         'claims' => ['escalate' => 'Reklamations-Fristeneskalation'],
         'cloud-intake' => ['sync' => 'Cloud-Dokumenteingang abrufen', 'wake' => 'Geweckte Cloud-Verbindungen abrufen'],
+        'peppol' => ['receive' => 'Peppol-Eingang abrufen'],
         'compliance' => ['scan_findings' => 'Compliance-Befunde prüfen'],
         'shifts' => ['roll_forward' => 'Rollpläne fortschreiben'],
         'accounts' => ['post' => 'Zeitkonten bebuchen'],

@@ -1205,6 +1205,8 @@ Route::middleware('auth')->group(function () {
         // ── Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098) ───────────
         // Kunden-Sonderdesign (MVP-651, vormals invoice_template-Zuordnung).
         Route::post('customers/{customer}/design-profile', \App\Http\Controllers\Customers\CustomerDesignProfileController::class)->name('customers.design-profile');
+        // Peppol-Registrierungspruefung (Feature 066, MVP-734).
+        Route::post('customers/{customer}/peppol-pruefung', \App\Http\Controllers\Customers\CustomerPeppolController::class)->name('customers.peppol.check');
         Route::get('customers/{customer}/billing/agreement/edit', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'edit'])->name('customers.billing.agreement.edit');
         Route::get('customers/{customer}/billing/payments/create', [\App\Http\Controllers\Customers\AccountPaymentController::class, 'create'])->name('customers.billing.payments.create');
         Route::post('customers/{customer}/billing/agreement', [\App\Http\Controllers\Customers\BillingAgreementController::class, 'save'])->name('customers.billing.agreement.save');
@@ -1804,6 +1806,9 @@ Route::middleware('auth')->group(function () {
         Route::post('invoices/{invoice}/credit-note', [InvoiceController::class, 'creditNote'])->name('invoices.credit-note');
         Route::get('invoices/{invoice}/send', [InvoiceController::class, 'sendForm'])->name('invoices.send.form');
         Route::post('invoices/{invoice}/send', [InvoiceController::class, 'send'])->name('invoices.send');
+        // Peppol-Versand (Feature 066, MVP-734): eigener Zustellweg neben der
+        // Mail — Empfaenger ist eine Teilnehmerkennung, Nachweis die Quittung.
+        Route::post('invoices/{invoice}/peppol', [\App\Http\Controllers\InvoicePeppolController::class, 'send'])->name('invoices.peppol.send');
         Route::get('invoices/{invoice}/pdf', [InvoiceController::class, 'pdf'])->name('invoices.pdf');
         Route::get('invoices/{invoice}/einvoice', [InvoiceController::class, 'einvoiceDownload'])->name('invoices.einvoice');
         Route::get('invoices/{invoice}/gaeb', [InvoiceController::class, 'gaebDownload'])->name('invoices.gaeb');

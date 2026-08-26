@@ -36,6 +36,10 @@ class ForeignKeyCoverageTest extends TestCase {
         // SET NULL hätten beim Org-Purge die Kette gebrochen; Werte bleiben.
         'audit_logs.organization_id',
         'audit_logs.user_id',
+        // Feature 066 (MVP-734): Peppol-Teilnehmerkennung des Kunden ist eine
+        // EXTERNE Netzkennung (`<ICD>:<Wert>`), keine Zeilenreferenz — die
+        // Auflösung dazu liegt in peppol_participant_lookups.
+        'customers.peppol_participant_id',
         // Keine Referenz: USt-IdNr.-WERT aus der Rechnung (E3, Lieferanten-Matching).
         'incoming_einvoices.seller_vat_id',
         // Feature 128 (MVP-692): Zieltabelle hängt an document_kind (quasi-Morph

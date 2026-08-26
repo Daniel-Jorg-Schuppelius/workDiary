@@ -20,6 +20,7 @@ use App\Services\Document\DocumentService;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{ResolvesImportReferences, ValidatesImportDates};
 use App\Support\Filename;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
 
@@ -280,9 +281,14 @@ class DocumentSpec extends AbstractEntitySpec {
         return strtolower(pathinfo($file, PATHINFO_EXTENSION));
     }
 
+    /**
+     * MIME-Typ der entpackten Bytes (common-toolkit v1.28, MVP-734): finfo mit
+     * deterministischem Magic-Bytes-Fallback — der app-lokale Notbehelf aus
+     * MVP-707 hat ohne ext-fileinfo pauschal `application/octet-stream`
+     * gemeldet und damit jede Datei am Typfilter abgewiesen.
+     */
     private function mimeOf(string $content): string {
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = $finfo->buffer($content);
+        $mime = File::mimeTypeFromContent($content);
 
         return is_string($mime) && $mime !== '' ? $mime : 'application/octet-stream';
     }

@@ -593,6 +593,17 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 10,
         ],
+        // --- Peppol-Eingang (Feature 066, MVP-734) ---
+        // Der Provider haelt Eingaenge vor, bis sie quittiert sind; stuendlich
+        // abholen reicht, ein verpasster Lauf verliert nichts.
+        'peppol.receive' => [
+            'command' => 'peppol:receive',
+            'plugin' => 'peppol-access-point',
+            'cadence' => ['type' => 'hourly'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'integration',
+            'expected_runtime_minutes' => 10,
+        ],
         // --- Cloud-Backupziele (Feature 017 Phase 32, MVP-364/365) ---
         'backup.cloud-run' => [
             'command' => 'workdiary:backup:run',

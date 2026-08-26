@@ -59,6 +59,8 @@ use Illuminate\Support\Carbon;
  * @property bool $exclude_from_reports
  * @property bool $no_bulk_mail
  * @property string|null $buyer_reference
+ * @property string|null $peppol_participant_id
+ * @property string|null $peppol_scheme
  * @property \App\Enums\Invoicing\InvoiceDeliveryFormat|null $delivery_format
  * @property string|null $debtor_no
  * @property Carbon|null $archived_at
@@ -132,6 +134,9 @@ class Customer extends Model {
         'billing_cutover_on',
         'billing_cutover_from',
         'buyer_reference',
+        // Peppol-Empfängerkennung (Feature 066, MVP-734): `<ICD>:<Kennung>`.
+        'peppol_participant_id',
+        'peppol_scheme',
         'delivery_format',
         'debtor_no',
         'exclude_from_reports',

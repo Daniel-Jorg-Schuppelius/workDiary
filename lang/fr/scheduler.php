@@ -92,6 +92,7 @@ return [
         ],
         'claims' => ['escalate' => 'Escalade des délais de réclamation'],
         'cloud-intake' => ['sync' => 'Relever la réception de documents cloud', 'wake' => 'Récupérer les connexions cloud réveillées'],
+        'peppol' => ['receive' => 'Récupérer la réception Peppol'],
         'compliance' => ['scan_findings' => 'Analyser les constats de conformité'],
         'shifts' => ['roll_forward' => 'Prolonger les plans de rotation'],
         'accounts' => ['post' => 'Comptabiliser les comptes de temps'],

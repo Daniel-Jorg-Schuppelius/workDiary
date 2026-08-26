@@ -59,6 +59,8 @@ class SaveCustomerRequest extends BaseFormRequest {
             'no_bulk_mail' => ['sometimes', 'boolean'],
             // E-Rechnung (Feature 045): Leitweg-ID/Käuferreferenz (BT-10).
             'buyer_reference' => ['nullable', 'string', 'max:64'],
+            // Peppol-Empfängerkennung (Feature 066, MVP-734): `<ICD>:<Kennung>`.
+            'peppol_participant_id' => ['nullable', 'string', 'max:64', new \App\Rules\PeppolParticipantId],
             'delivery_format' => ['nullable', \Illuminate\Validation\Rule::enum(\App\Enums\Invoicing\InvoiceDeliveryFormat::class)],
             // Fakturierungsweg-Override (Feature 045): nur mit finance.config
             // änderbar — ohne die Permission wird das Feld verworfen (siehe

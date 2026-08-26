@@ -15145,6 +15145,8 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "phone_e164" varchar,
   "mobile_e164" varchar,
   "document_locale" varchar,
+  "peppol_participant_id" varchar,
+  "peppol_scheme" varchar,
   foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action,
   foreign key("created_by") references users("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action
@@ -17867,6 +17869,23 @@ CREATE INDEX "user_workspace_user_sort_idx" on "user_workspaces"(
   "user_id",
   "sort"
 );
+CREATE TABLE IF NOT EXISTS "peppol_participant_lookups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "participant" varchar not null,
+  "registered" tinyint(1) not null default '0',
+  "smp_base_url" varchar,
+  "document_types" text,
+  "message" varchar,
+  "checked_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "peppol_lookup_uq" on "peppol_participant_lookups"(
+  "organization_id",
+  "participant"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -18619,3 +18638,4 @@ INSERT INTO migrations VALUES(754,'2027_02_19_103700_create_commission_tables',1
 INSERT INTO migrations VALUES(755,'2027_02_19_103800_add_sms_channel_to_notification_dispatch_log',150);
 INSERT INTO migrations VALUES(756,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',151);
 INSERT INTO migrations VALUES(757,'2027_02_19_104000_create_user_workspaces_table',151);
+INSERT INTO migrations VALUES(758,'2027_02_19_104100_add_peppol_participant_and_lookups',152);

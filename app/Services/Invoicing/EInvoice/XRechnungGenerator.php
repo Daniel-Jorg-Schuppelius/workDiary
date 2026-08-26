@@ -176,8 +176,10 @@ class XRechnungGenerator {
             $warnings[] = (string) __('invoicing.einvoice.warning.buyer_address_incomplete');
         }
 
-        // BT-49: elektronische Empfängeradresse (wir nutzen die E-Mail).
-        if (trim((string) $customer->email) === '') {
+        // BT-49: elektronische Empfängeradresse — Peppol-Teilnehmerkennung
+        // (MVP-734) oder ersatzweise die E-Mail. Fehlt beides, ist der Beleg
+        // nur für den Papier-/PDF-Weg brauchbar.
+        if (trim((string) $customer->email) === '' && trim((string) $customer->peppol_participant_id) === '') {
             $warnings[] = (string) __('invoicing.einvoice.warning.missing_buyer_email');
         }
 
@@ -296,9 +298,16 @@ class XRechnungGenerator {
             $builder->withSellerBankAccount($seller['iban'], $seller['bic'] !== '' ? $seller['bic'] : null);
         }
 
-        // BT-49: elektronische Empfängeradresse (Schema EM = E-Mail).
+        // BT-49: elektronische Empfängeradresse. Die Peppol-Teilnehmerkennung
+        // gewinnt vor der E-Mail (Feature 066, MVP-734) — sie IST die
+        // elektronische Adresse im Peppol-Sinn, und der Empfänger-Access-Point
+        // prüft BT-49 gegen den Umschlag. Schema ist der ICD (z. B. 9930),
+        // nicht „EM". Ohne Kennung bleibt es bei der E-Mail.
+        $buyerParticipant = \App\Services\Peppol\PeppolParticipantService::forCustomer($customer);
         $buyerEmail = trim((string) $customer->email);
-        if ($buyerEmail !== '') {
+        if ($buyerParticipant !== null) {
+            $builder->withBuyerEndpoint($buyerParticipant->getIdentifier(), $buyerParticipant->getIcd());
+        } elseif ($buyerEmail !== '') {
             $builder->withBuyerEndpoint($buyerEmail, 'EM');
         }
 

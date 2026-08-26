@@ -233,6 +233,14 @@ class CustomerDetailAssembler {
             }
         }
 
+        // Peppol-Registrierungsstand (Feature 066, MVP-734): der zuletzt
+        // gespeicherte SMP-Befund, nie eine Live-Auflösung im Seitenaufbau.
+        $peppolParticipant = \App\Services\Peppol\PeppolParticipantService::forCustomer($customer);
+        $peppolLookup = $peppolParticipant === null ? null : \App\Models\PeppolParticipantLookup::query()
+            ->where('organization_id', $customer->organization_id)
+            ->where('participant', $peppolParticipant->canonical())
+            ->first();
+
         return [
             'identifierIssues' => $this->identifierIssues->forContact($customer),
             'customer' => $customer,
@@ -272,6 +280,7 @@ class CustomerDetailAssembler {
             'lexofficeVoucherRange' => $lexofficeVoucherRange,
             'localInvoices' => $localInvoices,
             'lexofficeVoucherCache' => $lexofficeVoucherCache,
+            'peppolLookup' => $peppolLookup,
             'attachments' => $customer->attachments()->get(),
             'tags' => $customer->tags()->get(),
             'auditLogs' => AuditLog::query()

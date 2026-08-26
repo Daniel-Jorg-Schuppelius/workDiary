@@ -122,6 +122,29 @@
             <x-detail-grid>
                 <x-detail-grid.row :label="__('Abrechenbar')" :value="$customer->billable ? __('Ja') : __('Nein')" />
                 <x-detail-grid.row :label="__('USt-IdNr.')" :value="$customer->vat_id" />
+                @if ($customer->peppol_participant_id)
+                    {{-- Peppol (Feature 066, MVP-734): Kennung plus der zuletzt
+                         gespeicherte SMP-Befund — die Prüfung löst neu auf. --}}
+                    <x-detail-grid.row :label="__('peppol.field.participant_id')">
+                        <span class="tabular-nums">{{ $customer->peppol_participant_id }}</span>
+                        <div class="text-xs text-muted">
+                            @if ($peppolLookup === null)
+                                {{ __('peppol.status.never_checked') }}
+                            @else
+                                {{ $peppolLookup->registered
+                                    ? __('peppol.status.registered', ['smp' => (string) $peppolLookup->smp_base_url, 'count' => count($peppolLookup->document_types ?? [])])
+                                    : __('peppol.status.not_registered') }}
+                                — {{ __('peppol.status.checked_at', ['at' => $peppolLookup->checked_at->fdatetime()]) }}
+                            @endif
+                        </div>
+                        @can('update', $customer)
+                            <form method="POST" action="{{ route('customers.peppol.check', $customer) }}" class="pt-1">
+                                @csrf
+                                <x-icon-btn icon="travel_explore" tone="ghost" size="xs" type="submit" show-label>{{ __('peppol.action.check') }}</x-icon-btn>
+                            </form>
+                        @endcan
+                    </x-detail-grid.row>
+                @endif
                 <x-detail-grid.row :label="__('Währung')" :value="$customer->currency->value" />
                 <x-detail-grid.row :label="__('Zeitzone')" :value="$customer->timezone" />
                 @if ($customer->hourly_rate !== null)

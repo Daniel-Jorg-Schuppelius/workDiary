@@ -415,6 +415,7 @@ return [
         'import_review_confirmed' => 'Import review confirmed',
         'objectionDocumented' => 'Invoice objection documented',
         'proforma_converted' => 'Proforma converted to invoice',
+        'peppolSent' => 'Invoice delivered via Peppol',
     ],
     'isms' => [
         'audit' => [
@@ -977,6 +978,7 @@ return [
     ],
     'customer' => [
         'design_profile_assigned' => 'Customer design profile assigned/changed',
+        'peppolChecked' => 'Peppol registration checked',
     ],
     // Lokale Buchhaltung (Feature 125, MVP-671).
     'accounting' => [

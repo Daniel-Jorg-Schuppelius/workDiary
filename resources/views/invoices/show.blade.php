@@ -199,6 +199,15 @@
                                 data-entry-modal-trigger
                                 :href="route('invoices.send.form', $invoice)"
                                 show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
+                    {{-- Peppol (Feature 066, MVP-734): nur sichtbar, wenn ein Access-Point-
+                         Provider konfiguriert ist UND der Kunde eine Teilnehmer-ID hat. --}}
+                    @if (app(\App\Services\Peppol\PeppolInvoiceDispatcher::class)->isOfferable($invoice))
+                        <form method="POST" action="{{ route('invoices.peppol.send', $invoice) }}" class="inline">
+                            @csrf
+                            <x-icon-btn icon="hub" tone="info" size="sm" type="submit" show-label
+                                        :title="__('peppol.action.send_title')">{{ __('peppol.action.send') }}</x-icon-btn>
+                        </form>
+                    @endif
                 @endcan
                 @can('update', $invoice)
                     @if ($invoice->status === \App\Models\Invoice::STATUS_DRAFT)

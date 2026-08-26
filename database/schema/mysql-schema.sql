@@ -5962,6 +5962,8 @@ CREATE TABLE `customers` (
   `billing_cutover_on` date DEFAULT NULL,
   `billing_cutover_from` varchar(32) DEFAULT NULL,
   `buyer_reference` varchar(64) DEFAULT NULL,
+  `peppol_participant_id` varchar(64) DEFAULT NULL,
+  `peppol_scheme` varchar(40) DEFAULT NULL,
   `delivery_format` varchar(24) DEFAULT NULL,
   `debtor_no` varchar(12) DEFAULT NULL,
   `archived_at` timestamp NULL DEFAULT NULL,
@@ -12236,6 +12238,25 @@ CREATE TABLE `pending_external_conflicts` (
   KEY `pending_external_conflicts_plugin_id_external_id_index` (`plugin_id`,`external_id`),
   CONSTRAINT `pending_external_conflicts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `pending_external_conflicts_resolved_by_foreign` FOREIGN KEY (`resolved_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `peppol_participant_lookups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `peppol_participant_lookups` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `participant` varchar(120) NOT NULL,
+  `registered` tinyint(1) NOT NULL DEFAULT 0,
+  `smp_base_url` varchar(255) DEFAULT NULL,
+  `document_types` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`document_types`)),
+  `message` varchar(255) DEFAULT NULL,
+  `checked_at` timestamp NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `peppol_lookup_uq` (`organization_id`,`participant`),
+  CONSTRAINT `peppol_participant_lookups_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `per_diem_days`;
@@ -19988,3 +20009,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (747,'2027_02_19_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (748,'2027_02_19_103800_add_sms_channel_to_notification_dispatch_log',24);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (749,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',25);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (750,'2027_02_19_104000_create_user_workspaces_table',25);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (751,'2027_02_19_104100_add_peppol_participant_and_lookups',26);
