@@ -51,6 +51,15 @@ use Illuminate\Support\Facades\{DB, Log, Schema};
 return new class extends Migration {
     private const CHUNK = 1000;
 
+    /**
+     * Zeiger-Risse der ALTEN Verkettung je Tabelle, die beim Beweisdurchlauf
+     * gefunden und (nach Freigabe) beim Umketten geglättet wurden. Sie gehören
+     * in den Nachweis, sonst verschwände die Störung spurlos in der neuen Kette.
+     *
+     * @var array<string, list<int>>
+     */
+    private array $pointerGaps = [];
+
     public function up(): void {
         $proofPath = storage_path('app/audit-chain-rechain-' . now()->format('Ymd_His') . '.jsonl');
 
@@ -66,7 +75,9 @@ return new class extends Migration {
             }
 
             if (DB::table($table)->exists()) {
-                foreach ($this->scopeValues($table, $modelClass) as $scopeValue) {
+                $scopeValues = $this->scopeValues($table, $modelClass);
+                $this->recordPointerGaps($table, $proofPath);
+                foreach ($scopeValues as $scopeValue) {
                     $this->rechain($table, $modelClass, $scopeValue, $proofPath);
                 }
             }
@@ -88,12 +99,19 @@ return new class extends Migration {
         $hasScope = Schema::hasColumn($table, 'organization_id');
         $expectedPrev = null;
         $values = [];
+        $pointerGaps = [];
 
         foreach (DB::table($table)->orderBy('id')->cursor() as $row) {
+            // Zeiger-Riss: die Reihenfolge-Verkettung springt. Wird gesammelt,
+            // nicht sofort geworfen — sonst bliebe unklar, ob dahinter auch
+            // Inhalte verändert wurden. Genau diese Unterscheidung braucht die
+            // Entscheidung (vgl. `audit:diagnose-legacy-chain`).
             if ($row->prev_hash !== $expectedPrev) {
-                throw new RuntimeException("[{$table}] prev_hash-Verkettung gebrochen bei id={$row->id} — keine Umkettung, audit:verify-Befund zuerst klären.");
+                $pointerGaps[] = (int) $row->id;
             }
 
+            // Immer gegen den GESPEICHERTEN prev_hash rechnen: nur so schleppt
+            // ein Riss nicht alle Folgezeilen als vermeintliche Fälschungen mit.
             $model = $modelClass::fromStorageRow((array) $row);
             $expected = $modelClass::chainHash($row->prev_hash, $model->hashPayload());
             if (! hash_equals($expected, (string) $row->hash)) {
@@ -105,7 +123,57 @@ return new class extends Migration {
             $expectedPrev = (string) $row->hash;
         }
 
+        if ($pointerGaps !== []) {
+            $this->pointerGaps[$table] = $pointerGaps;
+
+            // Ein Riss ohne Inhaltsänderung ist die Narbe eines Betriebsfehlers
+            // — bei der globalen Kette brachen parallele Einfügungen als
+            // Verklemmung ab (445 von 900, `audit:measure-chain-contention`).
+            // Die Umkettung darf ihn glätten, aber nur nach ausdrücklicher
+            // Freigabe; die Fundstellen gehen in den JSONL-Nachweis.
+            if (! self::pointerGapsAllowed()) {
+                $head = implode(', ', array_slice($pointerGaps, 0, 5)) . (count($pointerGaps) > 5 ? ' …' : '');
+                throw new RuntimeException("[{$table}] prev_hash-Verkettung gebrochen bei id={$head} (" . count($pointerGaps) . ' Fundstelle(n)); die Zeilen-Hashes selbst stimmen. '
+                    . 'Erst prüfen: php artisan audit:diagnose-legacy-chain. '
+                    . 'Danach bewusst freigeben: AUDIT_RECHAIN_ALLOW_POINTER_GAPS=1 php artisan migrate --force');
+            }
+        }
+
         return array_values($values);
+    }
+
+    /**
+     * Freigabe für das Glätten reiner Zeiger-Risse. Bewusst nur über die
+     * Umgebung und nicht als stiller Standard: das Glätten verändert
+     * `prev_hash`/`hash` von Bestandszeilen und gehört in eine Entscheidung,
+     * nicht in einen Automatismus.
+     */
+    private static function pointerGapsAllowed(): bool {
+        return filter_var(env('AUDIT_RECHAIN_ALLOW_POINTER_GAPS', false), FILTER_VALIDATE_BOOLEAN);
+    }
+
+    /**
+     * Schreibt die freigegebenen Zeiger-Risse VOR dem Umketten in den Nachweis
+     * und ins Log — die Fundstellen sind nach dem Glätten nicht mehr sichtbar.
+     */
+    private function recordPointerGaps(string $table, string $proofPath): void {
+        $gaps = $this->pointerGaps[$table] ?? [];
+        if ($gaps === []) {
+            return;
+        }
+
+        Log::warning('audit.chain_pointer_gaps_smoothed', ['table' => $table, 'ids' => $gaps, 'proof' => $proofPath]);
+
+        $line = json_encode([
+            'table' => $table,
+            'event' => 'pointer_gaps_smoothed',
+            'ids' => $gaps,
+            'note' => 'Zeiger-Risse der alten Tabellenkette; Zeilen-Hashes waren intakt (kein Inhaltsbefund). Freigabe über AUDIT_RECHAIN_ALLOW_POINTER_GAPS.',
+        ], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+        if ($line !== false) {
+            file_put_contents($proofPath, $line . PHP_EOL, FILE_APPEND | LOCK_EX);
+        }
     }
 
     /**

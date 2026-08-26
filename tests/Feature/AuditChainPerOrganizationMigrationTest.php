@@ -163,4 +163,68 @@ class AuditChainPerOrganizationMigrationTest extends TestCase {
         $this->assertSame($untouched, DB::table('audit_logs')->orderBy('id')->pluck('hash', 'id')->all(), 'Es darf nichts überschrieben worden sein.');
         $this->assertSame([], $this->auditChainProofs(), 'Ein Abbruch darf keinen Nachweis hinterlassen.');
     }
+
+    /**
+     * Ein Zeiger-Riss ohne Inhaltsbefund ist die Narbe abgebrochener paralleler
+     * Einfügungen (die Verklemmung, die diese Migration gerade abstellt). Er
+     * darf die Umkettung nicht stillschweigend passieren lassen — aber auch
+     * nicht dauerhaft blockieren.
+     */
+    public function test_pointer_gap_without_tampering_needs_explicit_release(): void {
+        $one = Organization::factory()->create();
+        $ids = $this->seedLegacyChain([$one]);
+
+        // Riss erzeugen: prev_hash der zweiten Zeile zeigt ins Leere, ihr
+        // eigener Zeilen-Hash bleibt dazu stimmig (kein Inhaltsbefund).
+        $this->tearPointerAt($ids[1]);
+        $before = DB::table('audit_logs')->orderBy('id')->pluck('hash', 'id')->all();
+
+        try {
+            $this->runMigration();
+            $this->fail('Ein Zeiger-Riss muss ohne Freigabe abbrechen.');
+        } catch (RuntimeException $exception) {
+            $this->assertStringContainsString('audit:diagnose-legacy-chain', $exception->getMessage());
+            $this->assertStringContainsString('AUDIT_RECHAIN_ALLOW_POINTER_GAPS', $exception->getMessage());
+        }
+
+        $this->assertSame($before, DB::table('audit_logs')->orderBy('id')->pluck('hash', 'id')->all(), 'Ohne Freigabe darf nichts umgeschrieben werden.');
+        $this->assertSame([], $this->auditChainProofs(), 'Ohne Freigabe kein Nachweis.');
+    }
+
+    public function test_released_pointer_gap_is_smoothed_and_recorded(): void {
+        $one = Organization::factory()->create();
+        $ids = $this->seedLegacyChain([$one]);
+        $this->tearPointerAt($ids[1]);
+
+        putenv('AUDIT_RECHAIN_ALLOW_POINTER_GAPS=1');
+        try {
+            $this->runMigration();
+        } finally {
+            putenv('AUDIT_RECHAIN_ALLOW_POINTER_GAPS');
+        }
+
+        $chain = 'audit_logs:' . $one->id;
+        $this->assertDatabaseHas('audit_chain_heads', ['chain' => $chain]);
+
+        $proofs = $this->auditChainProofs();
+        $this->assertNotSame([], $proofs, 'Die Umkettung muss einen Nachweis schreiben.');
+        $content = file_get_contents($proofs[0]);
+        $this->assertIsString($content);
+        $this->assertStringContainsString('pointer_gaps_smoothed', $content, 'Die geglättete Fundstelle muss im Nachweis stehen — nach dem Umketten ist sie nicht mehr sichtbar.');
+        $this->assertStringContainsString((string) $ids[1], $content);
+    }
+
+    /** Reißt die Zeiger-Kette an einer Zeile, ohne deren Inhalt anzutasten. */
+    private function tearPointerAt(int $id): void {
+        $row = DB::table('audit_logs')->where('id', $id)->first();
+        $this->assertNotNull($row);
+
+        $orphan = hash('sha256', 'verwaister-vorgaenger');
+        $model = AuditLog::fromStorageRow(array_merge((array) $row, ['prev_hash' => $orphan]));
+
+        DB::table('audit_logs')->where('id', $id)->update([
+            'prev_hash' => $orphan,
+            'hash' => AuditLog::chainHash($orphan, $model->hashPayload()),
+        ]);
+    }
 }
