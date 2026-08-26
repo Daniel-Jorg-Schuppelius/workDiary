@@ -77,6 +77,31 @@ class BackupHeartbeatEndpointTest extends TestCase {
         $this->assertSame($row->id, $audit->auditable_id);
     }
 
+    /**
+     * Das Pre-Backup von deploy.sh läuft, während die Anwendung wegen der
+     * Migration abgeriegelt ist. Bliebe der Endpunkt dann gesperrt, meldete
+     * ausgerechnet die Sicherung vor riskanten Änderungen ihren Erfolg nie —
+     * und `BackupStatusService` hielte das Backup danach für überfällig.
+     */
+    public function test_reachable_during_maintenance_mode(): void {
+        $this->app->make(\Illuminate\Contracts\Foundation\MaintenanceMode::class)->activate([]);
+
+        try {
+            $response = $this->withHeaders(['Authorization' => 'Bearer ' . self::TOKEN])
+                ->postJson('/admin/backup/heartbeat', [
+                    'manifest_sha256' => str_repeat('c', 64),
+                    'size_bytes' => 128,
+                    'source' => 'deploy-prebackup',
+                ]);
+
+            $response->assertStatus(201);
+        } finally {
+            $this->app->make(\Illuminate\Contracts\Foundation\MaintenanceMode::class)->deactivate();
+        }
+
+        $this->assertSame(1, BackupHeartbeat::query()->count());
+    }
+
     public function test_rejects_invalid_manifest_hash(): void {
         $response = $this->withHeaders(['Authorization' => 'Bearer ' . self::TOKEN])
             ->postJson('/admin/backup/heartbeat', [

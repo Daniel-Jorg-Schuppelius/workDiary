@@ -190,6 +190,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'portal.capability' => \App\Http\Middleware\EnsurePortalCapability::class,
         ]);
 
+        // Der Backup-Heartbeat muss auch im Wartungsmodus durchkommen: das
+        // Pre-Backup von deploy.sh läuft zwangsläufig, während die Anwendung
+        // wegen der Migration abgeriegelt ist. Sonst quittiert der Endpunkt mit
+        // 503, ausgerechnet die Sicherung vor riskanten Änderungen meldet ihren
+        // Erfolg nie, und `BackupStatusService` hält das Backup nach
+        // `heartbeat_freshness_hours` (26) für überfällig. Der Zugang bleibt
+        // Bearer-Token-geschützt und rate-limited.
+        $middleware->preventRequestsDuringMaintenance(except: [
+            'admin/backup/heartbeat',
+        ]);
+
         // Token-Endpunkte ohne Session/CSRF: Backup-Heartbeat (MVP-046 §5).
         $middleware->validateCsrfTokens(except: [
             'admin/backup/heartbeat',
