@@ -30,7 +30,7 @@
             <input type="hidden" name="results[{{ $i }}][requirement_id]" value="{{ $requirement->sqid }}">
             <x-input-field name="results[{{ $i }}][value]" type="number" step="0.0001"
                 :label="$requirement->label . ($requirement->unit !== null ? ' (' . $requirement->unit . ')' : '')" />
-            <span class="text-xs text-base-content/60">
+            <span class="text-xs text-muted">
                 {{ $requirement->limit_min !== null ? '≥ ' . $requirement->limit_min : '' }}
                 {{ $requirement->limit_max !== null ? '≤ ' . $requirement->limit_max : '' }}
             </span>

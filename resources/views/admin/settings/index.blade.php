@@ -59,7 +59,7 @@
                                     <x-status-badge size="xs" tone="error">{{ __('settingsregistry.field.sensitive') }}</x-status-badge>
                                 @endif
                                 @if ($definition->affects !== [])
-                                    <span class="text-base-content/50">{{ __('settingsregistry.field.affects') }}: {{ implode(', ', $definition->affects) }}</span>
+                                    <span class="text-muted">{{ __('settingsregistry.field.affects') }}: {{ implode(', ', $definition->affects) }}</span>
                                 @endif
                             </div>
                         </div>

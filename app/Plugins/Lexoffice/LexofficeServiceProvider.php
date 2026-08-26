@@ -10,8 +10,9 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Plugins\Lexoffice\Console\{LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
+use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
 use App\Plugins\Support\PluginServiceProviderBase;
+use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
 
 /**
@@ -64,11 +65,18 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         $this->app->make(DocumentFeedSourceRegistry::class)
             ->register(new LexofficeDocumentFeedSource);
 
+        // Auslagen-Belege (Feature 105/106; Vollscan B9, Entscheid E8: der
+        // aktive Push bleibt Lexoffice-only) — der Kern spricht nur noch das
+        // ExpenseLinkProvider-Interface.
+        $this->app->make(ExpenseLinkProviderResolver::class)
+            ->register(LexofficePlugin::ID, fn (): LexofficeExpenseLinkProvider => new LexofficeExpenseLinkProvider);
+
         if ($this->app->runningInConsole()) {
             $this->commands([
                 LexofficeSyncArticlesCommand::class,
                 LexofficeSyncContactsCommand::class,
                 LexofficeSyncVouchersCommand::class,
+                LexofficeMaterializeVoucherFilesCommand::class,
                 LexofficeWebhooksCommand::class,
             ]);
         }

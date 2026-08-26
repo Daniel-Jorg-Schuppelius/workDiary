@@ -17,6 +17,7 @@ use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFiscalY
 use App\Models\{Organization, User};
 use App\Services\Accounting\{AccountingProfileService, ChartOfAccountsService, FiscalYearService, OpenItemService};
 use App\Services\Accounting\Reports\{AccountLedgerBuilder, LiquidityBuilder, TrialBalanceBuilder};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Console\Command;
@@ -123,7 +124,7 @@ class SeedAccountingLoadCommand extends Command {
             $from = $start->addYears($i);
             $exists = AccountingFiscalYear::query()
                 ->where('organization_id', $organization->id)
-                ->whereDate('starts_on', $from->toDateString())
+                ->where('starts_on', DateRange::day($from))
                 ->exists();
 
             if (! $exists) {
@@ -348,8 +349,7 @@ class SeedAccountingLoadCommand extends Command {
             'journal' => fn () => AccountingEntry::query()
                 ->where('organization_id', $organization->id)
                 ->with(['lines.account', 'postedBy'])
-                ->whereDate('booked_on', '>=', $from->toDateString())
-                ->whereDate('booked_on', '<=', $to->toDateString())
+                ->whereBetween('booked_on', DateRange::days($from, $to))
                 ->orderByDesc('journal_no')
                 ->limit(50)
                 ->get(),

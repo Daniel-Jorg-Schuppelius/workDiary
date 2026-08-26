@@ -55,7 +55,7 @@
 
     @if ($articles->total() === 0)
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+            icon="inventory_2"
             :title="$q !== '' ? __('Keine Treffer für „:q“.', ['q' => $q]) : __('Noch keine Produkte oder Leistungen synchronisiert')" />
     @else
         <x-card padding="p-0" class="min-h-0 flex-1 flex flex-col overflow-hidden">
@@ -90,14 +90,14 @@
                             @if ($article->net_unit_price !== null)
                                 {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
                             @else
-                                <span class="text-base-content/40">—</span>
+                                <span class="text-muted">—</span>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">
                             @if ($article->vat_rate !== null)
                                 {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, withThousandsSeparator: true) }} %
                             @else
-                                <span class="text-base-content/40">—</span>
+                                <span class="text-muted">—</span>
                             @endif
                         </td>
                         <td>

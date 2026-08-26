@@ -25,8 +25,8 @@
 
     <x-form-group :legend="__('finance.title.transfer')" icon="outbox" tone="primary" cols="2">
         <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('finance.field.customer') }} *</label>
-            <select name="customer_id" required class="select select-bordered w-full">
+            <label for="customer_id" class="fieldset-label">{{ __('finance.field.customer') }} *</label>
+            <select id="customer_id" name="customer_id" required class="select select-bordered w-full">
                 <option value="">{{ __('-- bitte wählen --') }}</option>
                 @foreach ($customers as $c)
                     <option value="{{ $c->sqid }}"
@@ -34,7 +34,7 @@
                 @endforeach
             </select>
             @if ($selectedMode !== null)
-                <p class="mt-1 text-xs text-base-content/60">
+                <p class="mt-1 text-xs text-muted">
                     {{ __('finance.field.billing_mode') }}: {{ $selectedMode->label() }}
                 </p>
             @endif
@@ -47,8 +47,8 @@
         </x-select-field>
 
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('finance.field.target') }} *</label>
-            <select name="target" required class="select select-bordered w-full">
+            <label for="target" class="fieldset-label">{{ __('finance.field.target') }} *</label>
+            <select id="target" name="target" required class="select select-bordered w-full">
                 @foreach ($allowedTargets as $target)
                     <option value="{{ $target->value }}" @selected(old('target', $defaultTarget->value) === $target->value)>{{ $target->label() }}</option>
                 @endforeach
@@ -56,7 +56,7 @@
             @if ($showDatevHint)
                 <p class="mt-1 text-xs text-warning">{{ __('finance.hint.datev_desktop_api') }}</p>
             @else
-                <p class="mt-1 text-xs text-base-content/60">{{ __('finance.hint.target_by_mode') }}</p>
+                <p class="mt-1 text-xs text-muted">{{ __('finance.hint.target_by_mode') }}</p>
             @endif
         </div>
 
@@ -65,7 +65,7 @@
                           form-control
                           from-name="from" to-name="to"
                           :from="old('from')" :to="old('to')" />
-            <p class="mt-1 text-xs text-base-content/60">{{ __('finance.hint.period_sources') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('finance.hint.period_sources') }}</p>
         </div>
     </x-form-group>
 

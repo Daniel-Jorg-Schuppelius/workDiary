@@ -69,6 +69,13 @@ return [
             'monthClosure.submitted' => 'Cierre mensual enviado',
             'sla.breached' => 'Plazo de SLA incumplido',
             'document.expired' => 'Documento caducado',
+            'invoice.issued' => 'Factura emitida',
+            'invoice.paid' => 'Factura pagada',
+            'timesheet.submitted' => 'Parte de horas enviado',
+            'ticket.created' => 'Ticket creado',
+            'ticket.closed' => 'Ticket cerrado',
+            'protocol.signed' => 'Protocolo firmado',
+            'purchaseOrder.ordered' => 'Pedido de compra realizado',
         ],
         'delivery_status' => [
             'pending' => 'Pendiente',

@@ -26,7 +26,7 @@
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-1 mt-2">
                     @foreach ($items as $permission)
                         <div class="flex items-baseline gap-3 py-1 border-b border-base-200 last:border-0">
-                            <span class="font-mono text-xs text-base-content/60 w-1/2">{{ $permission->value }}</span>
+                            <span class="font-mono text-xs text-muted w-1/2">{{ $permission->value }}</span>
                             <span class="text-sm">{{ $permission->label() }}</span>
                         </div>
                     @endforeach

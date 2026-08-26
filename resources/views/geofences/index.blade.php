@@ -27,7 +27,7 @@
 
     @if ($geofences->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">pin_drop</span>' />
+            icon="pin_drop" />
     @else
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>

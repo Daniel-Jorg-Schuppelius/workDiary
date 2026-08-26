@@ -44,7 +44,7 @@
             <tr @class(['opacity-60' => ! $job['enabled']])>
                 <td>
                     <div class="font-medium">{{ $definition->label() }}</div>
-                    <div class="text-xs font-mono text-base-content/50">{{ $definition->key }} · {{ $definition->command }}</div>
+                    <div class="text-xs font-mono text-muted">{{ $definition->key }} · {{ $definition->command }}</div>
                     <div class="mt-1 flex flex-wrap gap-1">
                         <x-status-badge size="xs" :tone="$definition->criticality->tone()">{{ $definition->criticality->label() }}</x-status-badge>
                         @unless ($job['enabled'])
@@ -54,7 +54,7 @@
                 </td>
                 <td>
                     <div>{{ $job['cadence']->type->label() }}</div>
-                    <div class="text-xs font-mono text-base-content/50">{{ $job['expression'] }}</div>
+                    <div class="text-xs font-mono text-muted">{{ $job['expression'] }}</div>
                     <x-status-badge size="xs" tone="ghost">{{ __('scheduler.source.' . $job['source']) }}</x-status-badge>
                 </td>
                 <td class="text-sm">
@@ -69,7 +69,7 @@
                                 <x-status-badge size="xs" tone="neutral">{{ $state->last_status }}</x-status-badge>
                             @endif
                             @if ($state->last_duration_ms !== null)
-                                <span class="text-xs text-base-content/50">{{ number_format($state->last_duration_ms / 1000, 1) }}s</span>
+                                <span class="text-xs text-muted">{{ number_format($state->last_duration_ms / 1000, 1) }}s</span>
                             @endif
                         </div>
                     @else

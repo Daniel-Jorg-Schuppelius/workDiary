@@ -13,12 +13,40 @@ namespace App\Http\Controllers\Api;
 use App\Http\Controllers\Controller;
 use App\Models\{PushSubscription, User};
 use Illuminate\Http\{JsonResponse, Request};
+use OpenApi\Attributes as OA;
 
 class PushSubscriptionController extends Controller {
+    #[OA\Get(
+        path: '/push/vapid',
+        summary: 'VAPID Public Key',
+        tags: ['Push'],
+        security: [['bearerAuth' => []]],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+        ],
+    )]
     public function vapid(): JsonResponse {
         return response()->json(['data' => ['publicKey' => config('webpush.public_key')]]);
     }
 
+    #[OA\Post(
+        path: '/push/subscribe',
+        summary: 'Push-Subscription registrieren',
+        tags: ['Push'],
+        security: [['bearerAuth' => ['push:write']]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['endpoint', 'keys'], properties: [
+            new OA\Property(property: 'endpoint', type: 'string', maxLength: 500),
+            new OA\Property(property: 'keys', type: 'object', required: ['p256dh', 'auth'], properties: [new OA\Property(property: 'p256dh', type: 'string'), new OA\Property(property: 'auth', type: 'string')]),
+            new OA\Property(property: 'contentEncoding', type: 'string', maxLength: 32, nullable: true, example: 'aesgcm'),
+        ])),
+        responses: [
+            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function store(Request $request): JsonResponse {
         $data = $request->validate([
             'endpoint' => ['required', 'string', 'max:500'],
@@ -43,6 +71,20 @@ class PushSubscriptionController extends Controller {
         return response()->json(['data' => ['id' => $sub->id, 'status' => 'subscribed']], 201);
     }
 
+    #[OA\Delete(
+        path: '/push/unsubscribe',
+        summary: 'Push-Subscription entfernen',
+        tags: ['Push'],
+        security: [['bearerAuth' => ['push:write']]],
+        requestBody: new OA\RequestBody(required: false, content: new OA\JsonContent(properties: [
+            new OA\Property(property: 'endpoint', type: 'string', maxLength: 500),
+        ])),
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+        ],
+    )]
     public function destroy(Request $request): JsonResponse {
         /** @var User $user */
         $user = $request->user();

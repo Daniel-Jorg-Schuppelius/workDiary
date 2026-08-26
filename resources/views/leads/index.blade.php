@@ -49,7 +49,7 @@
     </x-filter-bar>
 
     @if ($leads->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">person_search</span>'
+        <x-empty-state framed icon="person_search"
                        :title="__('Keine Leads im gewählten Ausschnitt.')"
                        :message="__('Interessenten aus Empfehlung, Web oder Messe landen hier — bis sie Kunde werden oder fristgerecht verschwinden.')" />
     @else

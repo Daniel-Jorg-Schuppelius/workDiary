@@ -37,7 +37,7 @@
     {{-- Der Hinweis auf das fehlende Profil verdrängt keine vorhandenen Treffer:
          ein gelöschtes Profil löscht seine Funde nicht. --}}
     @if ($profileCount === 0 && $matches->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">radar</span>'
+        <x-empty-state framed icon="radar"
                        :title="__('Noch kein Suchprofil angelegt')"
                        :message="__('Ein Suchprofil sagt, welche Leistungen (CPV) in welcher Region (NUTS) infrage kommen. Ohne Profil sucht der Radar nichts.')">
             @if ($canManage)
@@ -46,7 +46,7 @@
             @endif
         </x-empty-state>
     @elseif ($matches->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">radar</span>'
+        <x-empty-state framed icon="radar"
                        :title="__('Keine Bekanntmachungen in dieser Ansicht')"
                        :message="__('Der Abruf läuft täglich und holt den Vortag — ein Tag ist erst am Folgetag vollständig.')" />
     @else
@@ -66,7 +66,7 @@
                 <tr class="hover">
                     <td class="font-medium">
                         {{ $notice?->title ?? '—' }}
-                        <div class="text-xs text-base-content/60">
+                        <div class="text-xs text-muted">
                             @if ($match->profile)
                                 {{ $match->profile->name }}
                             @endif

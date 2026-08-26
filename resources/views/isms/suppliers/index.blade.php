@@ -29,14 +29,14 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             <x-card>
-                <div class="text-xs text-base-content/60">{{ __('isms.suppliers.kpi_overdue') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.suppliers.kpi_overdue') }}</div>
                 <div class="text-2xl font-bold {{ $overdueCount > 0 ? 'text-warning' : '' }}">{{ $overdueCount }}</div>
-                <div class="text-xs text-base-content/50">{{ __('isms.suppliers.kpi_overdue_hint') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.suppliers.kpi_overdue_hint') }}</div>
             </x-card>
             <x-card>
-                <div class="text-xs text-base-content/60">{{ __('isms.suppliers.kpi_flagged') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.suppliers.kpi_flagged') }}</div>
                 <div class="text-2xl font-bold {{ $flaggedCount > 0 ? 'text-error' : '' }}">{{ $flaggedCount }}</div>
-                <div class="text-xs text-base-content/50">{{ __('isms.suppliers.kpi_flagged_hint') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.suppliers.kpi_flagged_hint') }}</div>
             </x-card>
         </div>
 

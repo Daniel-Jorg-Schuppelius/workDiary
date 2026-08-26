@@ -35,6 +35,33 @@ use Illuminate\Validation\ValidationException;
  */
 class DocumentService {
     /**
+     * Erlaubte Datei-Endungen (analog AttachmentController) — eine Wahrheit für
+     * Formular-Upload und Dokument-ZIP-Import (MVP-707).
+     *
+     * @var list<string>
+     */
+    public const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
+
+    /**
+     * Serverseitig akzeptierte MIME-Typen (PHP Fileinfo, nicht Client-Header).
+     *
+     * @var list<string>
+     */
+    public const ALLOWED_MIMES = [
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/webp',
+        'application/pdf',
+        'text/plain',
+        'text/csv',
+        'application/zip',
+        'application/x-zip-compressed',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    ];
+
+    /**
      * Legt ein Dokument inkl. Erst-Version aus dem Upload an.
      *
      * @param  Model|null  $documentable  Customer, Project, DiaryEntry oder Asset — null = freies Dokument
@@ -60,6 +87,9 @@ class DocumentService {
                 'created_by_user_id' => $creator->id,
                 // Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10).
                 'confidential' => (bool) ($attributes['confidential'] ?? false),
+                // Personalakte (Feature 141): Kategorie + Aufbewahrungsende, sonst null.
+                'hr_category' => $attributes['hr_category'] ?? null,
+                'retention_until' => $attributes['retention_until'] ?? null,
             ]);
 
             $this->storeVersion($document, $creator, $file, 1, $attributes['version_note'] ?? null);
@@ -200,10 +230,11 @@ class DocumentService {
                 'valid_from' => $validFrom,
                 'valid_until' => $validUntil,
                 'description' => array_key_exists('description', $attributes) ? $attributes['description'] : $document->description,
-                // Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10).
-                'confidential' => array_key_exists('confidential', $attributes)
+                // Vertraulichkeitsmerkmal (Vollaudit 2026-07, N10); Personalakten
+                // (Feature 141) bleiben immer vertraulich.
+                'confidential' => $document->isPersonnelFile() || (array_key_exists('confidential', $attributes)
                     ? (bool) $attributes['confidential']
-                    : $document->confidential,
+                    : $document->confidential),
             ]);
 
             return $document;
@@ -278,6 +309,20 @@ class DocumentService {
             $document->audit('document.deleted', ['actor_user_id' => $actor->id]);
             $document->delete();
         });
+    }
+
+    /**
+     * Erweiterungs- und Server-MIME-Prüfung (analog AttachmentController) —
+     * eine Wahrheit für Dokument-Upload, Versions-Upload und Personalakte.
+     */
+    public function assertAllowedFile(UploadedFile $file): void {
+        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
+        $serverMime = $file->getMimeType() ?? '';
+        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true) || ! in_array($serverMime, self::ALLOWED_MIMES, true)) {
+            throw ValidationException::withMessages([
+                'file' => (string) __('Dateityp nicht erlaubt.'),
+            ]);
+        }
     }
 
     /**

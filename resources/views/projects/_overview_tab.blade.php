@@ -54,22 +54,22 @@
                 @endphp
                 <li class="flex flex-wrap items-center gap-3 px-4 py-3">
                     <span class="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full text-xs
-                                 {{ $milestone->is_completed ? 'bg-success/20 text-success' : 'bg-base-300 text-base-content/50' }}">
+                                 {{ $milestone->is_completed ? 'bg-success/20 text-success' : 'bg-base-300 text-muted' }}">
                         {{ $milestone->is_completed ? '✓' : '○' }}
                     </span>
                     <div class="min-w-0 flex-1">
                         <div class="flex flex-wrap items-center gap-2">
-                            <span class="text-sm font-medium {{ $milestone->is_completed ? 'line-through text-base-content/40' : '' }}">
+                            <span class="text-sm font-medium {{ $milestone->is_completed ? 'line-through text-muted' : '' }}">
                                 {{ $milestone->title }}
                             </span>
                             @if ($milestone->due_date)
-                                <span class="text-xs text-base-content/50">{{ $milestone->due_date->fdate() }}</span>
+                                <span class="text-xs text-muted">{{ $milestone->due_date->fdate() }}</span>
                             @endif
                         </div>
                         @if ($mTotal > 0)
                             <div class="mt-1.5 flex items-center gap-2">
                                 <progress class="progress progress-primary h-1.5 flex-1" value="{{ $pct }}" max="100"></progress>
-                                <span class="shrink-0 text-xs text-base-content/50">{{ $mDone }}/{{ $mTotal }}</span>
+                                <span class="shrink-0 text-xs text-muted">{{ $mDone }}/{{ $mTotal }}</span>
                             </div>
                         @endif
                     </div>
@@ -94,7 +94,7 @@
     @else
         <x-card>
             <div class="flex flex-wrap items-center justify-between gap-3">
-                <span class="text-sm text-base-content/60">{{ __('Noch keine Milestones angelegt.') }}</span>
+                <span class="text-sm text-muted">{{ __('Noch keine Milestones angelegt.') }}</span>
                 @can('create', \App\Models\Milestone::class)
                     <x-icon-btn icon="add"
                                 data-entry-modal-trigger
@@ -131,7 +131,7 @@
                     @endphp
                     <li class="px-4 py-3">
                         <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="block">
-                            <div class="flex flex-wrap items-center gap-2 text-xs text-base-content/60">
+                            <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
                                 @if ($dateLabel)
                                     <span>{{ $dateLabel }}</span>
                                     <span>·</span>

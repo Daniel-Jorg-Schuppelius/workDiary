@@ -50,7 +50,7 @@
                 <tr>
                     <td>
                         <div class="font-medium">{{ $connection->name }}</div>
-                        <div class="text-xs text-base-content/60 font-mono">{{ $connection->provider->label() }}</div>
+                        <div class="text-xs text-muted font-mono">{{ $connection->provider->label() }}</div>
                     </td>
                     <td>{{ $connection->family->label() }}</td>
                     <td>
@@ -121,7 +121,7 @@
                 <tr>
                     <td>
                         <div class="font-medium">{{ $capability->label() }}</div>
-                        <div class="text-xs text-base-content/60 font-mono">{{ $capability->key }}</div>
+                        <div class="text-xs text-muted font-mono">{{ $capability->key }}</div>
                     </td>
                     <td>{{ $capability->verb->label() }}</td>
                     <td><x-status-badge tone="ghost" size="sm" outline>{{ $capability->sensitivity->label() }}</x-status-badge></td>

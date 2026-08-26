@@ -135,6 +135,7 @@
                                 <x-action-form :action="route('finance.accounting.inbox.prepare')" method="POST">
                                     <input type="hidden" name="kind" value="{{ $item['kind']->value }}">
                                     <input type="hidden" name="source_id" value="{{ $item['source']->getKey() }}">
+                                    <input type="hidden" name="source_key" value="{{ $item['source_key'] }}">
                                     <x-icon-btn icon="playlist_add" size="xs" tone="ghost" type="submit"
                                                 :label="__('accounting.inbox.action.prepare')" />
                                 </x-action-form>
@@ -142,6 +143,7 @@
                                     <x-action-form :action="route('finance.accounting.inbox.prepare')" method="POST">
                                         <input type="hidden" name="kind" value="{{ $item['kind']->value }}">
                                         <input type="hidden" name="source_id" value="{{ $item['source']->getKey() }}">
+                                    <input type="hidden" name="source_key" value="{{ $item['source_key'] }}">
                                         <input type="hidden" name="post" value="1">
                                         <x-icon-btn icon="task_alt" size="xs" tone="primary" type="submit"
                                                     :label="__('accounting.inbox.action.prepare_and_post')" />

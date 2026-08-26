@@ -71,12 +71,12 @@
                         <td>
                             <a class="link link-hover font-medium" href="{{ route('servicedesk.changes.show', $change) }}">{{ $change->title }}</a>
                             @if ($change->problem !== null)
-                                <div class="text-xs text-base-content/60">{{ __('Problem') }}: {{ $change->problem->title }}</div>
+                                <div class="text-xs text-muted">{{ __('Problem') }}: {{ $change->problem->title }}</div>
                             @endif
                         </td>
                         <td><x-status-badge tone="ghost" size="sm">{{ $typeLabels[$change->change_type] ?? $change->change_type }}</x-status-badge></td>
                         <td><x-status-badge size="sm" outline>{{ $statusLabels[$change->status] ?? $change->status }}</x-status-badge></td>
-                        <td class="text-sm text-base-content/60 whitespace-nowrap">
+                        <td class="text-sm text-muted whitespace-nowrap">
                             @if ($change->window_from !== null)
                                 {{ $change->window_from->translatedFormat('d.m.Y H:i') }}
                                 – {{ $change->window_to?->translatedFormat('d.m.Y H:i') ?? '…' }}
@@ -86,7 +86,7 @@
                         </td>
                         <td class="text-right tabular-nums">{{ $change->tickets_count }}</td>
                         <td class="text-right tabular-nums">{{ $change->assets_count }}</td>
-                        <td class="text-sm text-base-content/60">{{ $change->outcome !== null ? ($outcomeLabels[$change->outcome] ?? $change->outcome) : '—' }}</td>
+                        <td class="text-sm text-muted">{{ $change->outcome !== null ? ($outcomeLabels[$change->outcome] ?? $change->outcome) : '—' }}</td>
                         <td class="text-right">
                             <x-icon-btn icon="open_in_new" :href="route('servicedesk.changes.show', $change)" :label="__('Details')" />
                         </td>

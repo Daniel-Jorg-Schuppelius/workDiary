@@ -30,4 +30,13 @@ return [
         'success' => 'Meteo del giorno allegato.',
         'unavailable' => 'Nessun dato meteo disponibile (nessun luogo/coordinate o servizio non raggiungibile) — recuperabile in seguito.',
     ],
+    // Warnschwellen der Vorhersage (Feature 062, MVP-716).
+    'warning' => [
+        'threshold' => [
+            'rain' => 'Pioggia intensa',
+            'gust' => 'Raffiche di tempesta',
+            'frost' => 'Gelo',
+            'heat' => 'Caldo',
+        ],
+    ],
 ];

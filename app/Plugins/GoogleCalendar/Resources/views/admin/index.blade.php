@@ -37,7 +37,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('google_calendar.health.badge_inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-base-content/60">{{ __('google_calendar.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('google_calendar.intro') }}</p>
 
             @unless ($configured)
                 <div class="alert alert-warning text-sm">{{ __('google_calendar.not_configured_hint') }}</div>
@@ -68,7 +68,7 @@
                   class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 @csrf
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('google_calendar.calendar.heading') }}</h2>
-                <p class="text-sm text-base-content/60">{{ __('google_calendar.calendar.help') }}</p>
+                <p class="text-sm text-muted">{{ __('google_calendar.calendar.help') }}</p>
 
                 <label class="form-control max-w-md">
                     <span class="label-text">{{ __('google_calendar.calendar.target') }}</span>

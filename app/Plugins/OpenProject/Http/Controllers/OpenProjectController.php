@@ -138,10 +138,10 @@ class OpenProjectController extends Controller {
         ]);
     }
 
-    public function updateMapping(Request $request, int $reference): RedirectResponse {
+    public function updateMapping(Request $request, string $reference): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
-        $ref = $this->findMapping($organization, $reference);
+        $ref = $this->findMapping($organization, Sqid::decodeOrAbort(ExternalReference::class, $reference));
 
         $target = match ($ref->external_type) {
             OpenProjectStructureSync::EXT_TYPE_PROJECT => Project::query()->whereKey($this->decodeId(Project::class, $request->input('target_id')))->firstOrFail(),
@@ -159,11 +159,11 @@ class OpenProjectController extends Controller {
         return back()->with('status', (string) __('Zuordnung aktualisiert.'));
     }
 
-    public function deleteMapping(int $reference): RedirectResponse {
+    public function deleteMapping(string $reference): RedirectResponse {
         $admin = $this->admin();
         $organization = $this->organization($admin);
 
-        $this->findMapping($organization, $reference)->delete();
+        $this->findMapping($organization, Sqid::decodeOrAbort(ExternalReference::class, $reference))->delete();
 
         return back()->with('status', (string) __('Zuordnung entfernt.'));
     }

@@ -15,7 +15,7 @@
 
 @section('content')
     <h1 class="text-2xl font-semibold mb-1">{{ __('document.customer.portal.title') }}</h1>
-    <p class="text-sm text-base-content/60 mb-4">{{ __('document.customer.portal.subtitle') }}</p>
+    <p class="text-sm text-muted mb-4">{{ __('document.customer.portal.subtitle') }}</p>
 
     @php
         // Rückfragen (MVP-512): CTA nur mit eigener Capability.
@@ -51,7 +51,7 @@
                             <span>{{ __('document.action.download') }}</span>
                         </x-button>
                     @else
-                        <span class="text-base-content/40">—</span>
+                        <span class="text-muted">—</span>
                     @endif
                 </td>
             </tr>

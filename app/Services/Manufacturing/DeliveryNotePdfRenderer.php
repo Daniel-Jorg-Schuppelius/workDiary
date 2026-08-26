@@ -30,7 +30,8 @@ class DeliveryNotePdfRenderer {
         // MVP-650: gebuchte Auslieferungen rendern mit ihrem eingefrorenen Designstand.
         $design = app(DocumentDesignRenderer::class);
 
-        return $design->renderPdf(
+        // Belegsprache je Kunde (Feature 034, MVP-721): nur Darstellung.
+        return \App\Support\DocumentLocale::within($delivery->customer, $organization, fn (): string => $design->renderPdf(
             RenderDocumentKind::DeliveryNote,
             'pdf.delivery-note',
             [
@@ -40,7 +41,7 @@ class DeliveryNotePdfRenderer {
             ],
             $organization,
             payload: $design->payloadFromSnapshot($delivery, RenderDocumentKind::DeliveryNote),
-        );
+        ));
     }
 
     /** Lieferschein-Nummer (stabil aus der Auslieferungs-ID abgeleitet). */

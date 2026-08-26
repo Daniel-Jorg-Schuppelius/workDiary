@@ -65,6 +65,14 @@ enum ApiAbility: string implements HasLabel {
     case ExpensesRead = 'expenses:read';
     case InvoicesRead = 'invoices:read';
     case ScheduledShiftsRead = 'scheduled-shifts:read';
+    // MVP-718 (Vollscan J11): Read-only-Resources der Kernentitäten Artikel/
+    // Bestände/Bestellungen/Lieferanten/Protokolle/Fahrzeuge.
+    case ArticlesRead = 'articles:read';
+    case InventoryRead = 'inventory:read';
+    case PurchaseOrdersRead = 'purchase_orders:read';
+    case SuppliersRead = 'suppliers:read';
+    case ProtocolsRead = 'protocols:read';
+    case VehiclesRead = 'vehicles:read';
 
     public function label(): string {
         return match ($this) {
@@ -101,6 +109,12 @@ enum ApiAbility: string implements HasLabel {
             self::ExpensesRead => (string) __('Spesen lesen'),
             self::InvoicesRead => (string) __('Rechnungen lesen'),
             self::ScheduledShiftsRead => (string) __('Schichtplan lesen'),
+            self::ArticlesRead => (string) __('Artikel lesen'),
+            self::InventoryRead => (string) __('Bestände lesen'),
+            self::PurchaseOrdersRead => (string) __('Bestellungen lesen'),
+            self::SuppliersRead => (string) __('Lieferanten lesen'),
+            self::ProtocolsRead => (string) __('Protokolle lesen'),
+            self::VehiclesRead => (string) __('Fahrzeuge lesen'),
         };
     }
 }

@@ -64,7 +64,7 @@
     @if ($globalRoles->isNotEmpty())
         <section class="space-y-3">
             <h2 class="text-lg font-semibold">{{ __('access.title.global_roles') }}</h2>
-            <p class="text-sm text-base-content/60">{{ __('access.hint.global_roles') }}</p>
+            <p class="text-sm text-muted">{{ __('access.hint.global_roles') }}</p>
             <x-table table-sort="client">
                 <x-slot:head>
                     <tr>

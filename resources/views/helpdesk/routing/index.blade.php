@@ -20,8 +20,8 @@
             <form method="POST" action="{{ route('helpdesk.routing.dry-run') }}" class="flex items-end gap-2">
                 @csrf
                 <div class="fieldset grow">
-                    <label class="fieldset-label">{{ __('Ticket-Nummer') }}</label>
-                    <input name="ticket_no" required maxlength="40" class="input input-sm input-bordered w-full" placeholder="ST-2026-0001">
+                    <label for="ticket_no" class="fieldset-label">{{ __('Ticket-Nummer') }}</label>
+                    <input id="ticket_no" name="ticket_no" required maxlength="40" class="input input-sm input-bordered w-full" placeholder="ST-2026-0001">
                 </div>
                 <x-icon-btn icon="science" tone="outline" size="sm" type="submit" show-label>{{ __('Testen (ohne Änderung)') }}</x-icon-btn>
             </form>
@@ -32,14 +32,16 @@
                 @csrf
                 <x-input-field name="name" :label="__('Name')" required maxlength="120" />
                 <x-input-field name="position" type="number" :label="__('Position')" required min="1" max="999" :value="old('position', 1)" />
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Bedingungen (JSON)') }}</label>
-                    <textarea name="conditions" rows="3" required class="textarea textarea-bordered w-full font-mono text-xs">{{ old('conditions', '{"kind": "incident"}') }}</textarea>
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Aktionen (JSON)') }}</label>
-                    <textarea name="actions" rows="3" required class="textarea textarea-bordered w-full font-mono text-xs">{{ old('actions', '{"set_priority": "high"}') }}</textarea>
-                </div>
+                <x-textarea-field name="conditions"
+                                  :label="__('Bedingungen (JSON)')"
+                                  rows="3"
+                                  required
+                                  class="font-mono text-xs">{{ old('conditions', '{"kind": "incident"}') }}</x-textarea-field>
+                <x-textarea-field name="actions"
+                                  :label="__('Aktionen (JSON)')"
+                                  rows="3"
+                                  required
+                                  class="font-mono text-xs">{{ old('actions', '{"set_priority": "high"}') }}</x-textarea-field>
                 <div class="md:col-span-2">
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Anlegen') }}</x-icon-btn>
                 </div>

@@ -42,9 +42,9 @@
                         <x-icon :name="$rule->event->icon()" class="text-primary" />
                         {{ $rule->event->label() }}
                     </span>
-                    <div class="text-xs font-mono text-base-content/50">{{ $rule->event->value }}</div>
+                    <div class="text-xs font-mono text-muted">{{ $rule->event->value }}</div>
                     @unless ($rule->exists)
-                        <div class="text-xs text-base-content/60">{{ __('notification.field.default_rule') }}</div>
+                        <div class="text-xs text-muted">{{ __('notification.field.default_rule') }}</div>
                     @endunless
                 </td>
                 <td class="text-center">

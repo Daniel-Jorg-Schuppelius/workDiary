@@ -49,6 +49,31 @@
         </x-slot:extra>
     </x-filter-bar>
 
+    @if ($closings->isNotEmpty())
+        <x-card :title="__('Tagesabschlüsse (letzte 10)')" class="flex-none">
+            <x-table size="sm" :zebra="true">
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('Datum') }}</th>
+                        <th class="text-right">{{ __('Soll') }}</th>
+                        <th class="text-right">{{ __('Gezählt') }}</th>
+                        <th class="text-right">{{ __('Differenz') }}</th>
+                        <th>{{ __('Notiz') }}</th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($closings as $closing)
+                    <tr>
+                        <td class="whitespace-nowrap">{{ $closing->closing_date->fdate() }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->expected_balance?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
+                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->counted_balance?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
+                        <td @class(['text-right tabular-nums', 'text-error font-semibold' => ($closing->difference?->toFloat() ?? 0.0)!== 0.0])>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->difference?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
+                        <td class="max-w-xs truncate text-muted text-xs">{{ $closing->note }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+        </x-card>
+    @endif
+
     <x-table scroll="flex" :pinRows="true" :zebra="true" size="sm">
         <x-slot:head>
             <tr>
@@ -76,7 +101,7 @@
                     {{ $entry->booked_on->fdate() }}
                     @if ($closed)
                         <span class="tooltip tooltip-right" data-tip="{{ __('Tag abgeschlossen — festgeschrieben.') }}">
-                            <x-icon name="lock" class="text-base-content/40" />
+                            <x-icon name="lock" class="text-muted" />
                         </span>
                     @endif
                 </td>
@@ -86,7 +111,7 @@
                         <a href="{{ \App\Http\Controllers\AttachmentController::downloadUrl($receipt) }}"
                            class="link link-hover align-middle"
                            title="{{ __('Beleg: :name', ['name' => $receipt->original_name]) }}">
-                            <x-icon name="attach_file" class="text-base-content/50" />
+                            <x-icon name="attach_file" class="text-muted" />
                         </a>
                     @endforeach
                     @if ($entry->reversal_of_id !== null)
@@ -96,7 +121,7 @@
                         <x-status-badge size="sm" tone="neutral">{{ __('storniert') }}</x-status-badge>
                     @endif
                 </td>
-                <td class="text-base-content/60">{{ $entry->counterparty ?? '—' }}</td>
+                <td class="text-muted">{{ $entry->counterparty ?? '—' }}</td>
                 <td>
                     @if ($entry->invoice !== null)
                         <a href="{{ route('invoices.show', $entry->invoice) }}" class="link link-hover">{{ $entry->invoice->number }}</a>
@@ -113,7 +138,7 @@
                         @if ($posting)
                             <x-posting-state :state="$posting['state']" :blockers="$posting['blockers']" />
                         @else
-                            <span class="text-base-content/40">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                 @endif
@@ -129,36 +154,10 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">point_of_sale</span>' :colspan="$postingStates !== [] ? 9 : 8" :title="__('Noch keine Buchungen')" compact />
+            <x-table.empty icon="point_of_sale" :colspan="$postingStates !== [] ? 9 : 8" :title="__('Noch keine Buchungen')" compact />
         @endforelse
     </x-table>
 
     <x-pagination :paginator="$entries" standing />
-
-    @if ($closings->isNotEmpty())
-        <x-card :title="__('Tagesabschlüsse (letzte 10)')">
-            <x-table size="sm" :zebra="true">
-                <x-slot:head>
-                    <tr>
-                        <th>{{ __('Datum') }}</th>
-                        <th class="text-right">{{ __('Soll') }}</th>
-                        <th class="text-right">{{ __('Gezählt') }}</th>
-                        <th class="text-right">{{ __('Differenz') }}</th>
-                        <th>{{ __('Notiz') }}</th>
-                    </tr>
-                </x-slot:head>
-                @foreach ($closings as $closing)
-                    <tr>
-                        <td class="whitespace-nowrap">{{ $closing->closing_date->fdate() }}</td>
-                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->expected_balance?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
-                        <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->counted_balance?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
-                        <td @class(['text-right tabular-nums', 'text-error font-semibold' => ($closing->difference?->toFloat() ?? 0.0)!== 0.0])>{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($closing->difference?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
-                        <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $closing->note }}</td>
-                    </tr>
-                @endforeach
-            </x-table>
-        </x-card>
-    @endif
-
 </x-index-page>
 @endsection

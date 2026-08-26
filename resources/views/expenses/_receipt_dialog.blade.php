@@ -46,15 +46,19 @@
             @if ($linkedVoucher)
                 <div class="flex items-center justify-between gap-2 text-sm">
                     <div class="min-w-0">
-                        <a class="link link-hover font-medium"
-                           href="{{ route('lexoffice.vouchers.preview', $linkedVoucher) }}"
-                           data-entry-modal-trigger>
-                            {{ $linkedVoucher->voucher_number ?: '—' }}
-                        </a>
-                        <span class="text-base-content/60">
-                            · {{ optional($linkedVoucher->voucher_date)->format('d.m.Y') }}
-                            · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($linkedVoucher->total_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}
-                            {{ $linkedVoucher->currency->value }}
+                        @if ($linkedVoucher->previewUrl)
+                            <a class="link link-hover font-medium"
+                               href="{{ $linkedVoucher->previewUrl }}"
+                               data-entry-modal-trigger>
+                                {{ $linkedVoucher->number ?: '—' }}
+                            </a>
+                        @else
+                            <span class="font-medium">{{ $linkedVoucher->number ?: '—' }}</span>
+                        @endif
+                        <span class="text-muted">
+                            · {{ optional($linkedVoucher->date)->format('d.m.Y') }}
+                            · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($linkedVoucher->grossFloat(), 2, withThousandsSeparator: true) }}
+                            {{ $linkedVoucher->currencyLabel() }}
                         </span>
                     </div>
                     @if ($wasPushed ?? false)
@@ -86,8 +90,14 @@
                     <div class="divider my-2 text-xs">{{ __('oder vorhandenen Beleg zuordnen') }}</div>
                 @endif
                 @include('expenses._receipt_suggestions', ['suggestions' => $suggestions, 'expense' => $expense, 'canLink' => $canLink])
+            @elseif (! ($hasProvider ?? false))
+                {{-- B9: kein Buchhaltungssystem angebunden — klar sagen statt
+                     „keine Vorschläge" vorzutäuschen. --}}
+                <x-empty-state compact icon="link_off"
+                               :title="__('expenses.receipt.no_provider')"
+                               :message="__('expenses.receipt.no_provider_hint')" />
             @elseif ($suggestions->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">link_off</span>'
+                <x-empty-state compact icon="link_off"
                                :title="__('expenses.receipt.no_suggestions')"
                                :message="__('expenses.receipt.no_suggestions_hint')" />
             @else

@@ -56,7 +56,7 @@
                     <a href="{{ route('invoice-schedules.show', $schedule) }}" class="link link-hover">{{ $schedule->title }}</a>
                 </td>
                 <td>{{ $schedule->customer?->displayLabel() ?? '—' }}</td>
-                <td class="text-base-content/60">{{ $schedule->contract?->title ?? '—' }}</td>
+                <td class="text-muted">{{ $schedule->contract?->title ?? '—' }}</td>
                 <td>{{ __('alle :count :unit', ['count' => $schedule->interval_count, 'unit' => $schedule->unitLabel()]) }}</td>
                 <td class="whitespace-nowrap" data-sort-value="{{ $schedule->next_run_on->format('Y-m-d') }}">{{ $schedule->next_run_on->fdate() }}</td>
                 <td class="whitespace-nowrap">{{ $schedule->end_on?->fdate() ?? '—' }}</td>
@@ -81,7 +81,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">event_repeat</span>' :colspan="8" :title="__('Keine Abrechnungspläne angelegt')" compact />
+            <x-table.empty icon="event_repeat" :colspan="8" :title="__('Keine Abrechnungspläne angelegt')" compact />
         @endforelse
     </x-table>
 

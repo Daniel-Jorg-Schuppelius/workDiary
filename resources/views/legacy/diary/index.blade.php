@@ -86,7 +86,7 @@
                     @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
                     @if ($canViewAll && $users->isNotEmpty())
                         <div class="flex flex-1 flex-col min-w-44">
-                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
+                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($users as $u)
@@ -99,7 +99,7 @@
                         </div>
                     @endif
                     <div class="flex flex-1 flex-col min-w-48">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Status') }}</span></label>
                         <select name="status" class="select select-bordered select-sm w-full">
                             <option value="all" @selected(($filters['status'] ?? 'all') === 'all')>{{ __('Alle') }}</option>
                             <option value="2"   @selected(($filters['status'] ?? '') === '2')>{{ __('Offen') }}</option>
@@ -145,7 +145,7 @@
                     @endphp
                     <a href="{{ $tileUrl }}"
                        class="rounded-box border bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary hover:shadow-md {{ $isActive ? 'border-primary ring-1 ring-primary/40' : $borderClass }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
+                        <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ $label }}</p>
                         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($diaryCounts[$key], 0, withThousandsSeparator: true) }}</p>
                     </a>
                 @endforeach
@@ -157,7 +157,7 @@
                 <form method="POST" action="{{ route('legacy.diary.bulk') }}" id="bulk-form" class="flex h-full flex-col">
                     @csrf
                     <div class="flex-none flex flex-wrap items-center gap-2 border-b border-base-300 bg-base-200/60 px-3 py-2">
-                        <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Bulk-Aktionen') }}</span>
+                        <span class="text-xs uppercase tracking-wider text-muted">{{ __('Bulk-Aktionen') }}</span>
                         <span id="bulk-count" class="badge badge-sm badge-ghost">0 {{ __('ausgewählt') }}</span>
                         <select name="action" class="select select-bordered select-sm" required>
                             <option value="">{{ __('Aktion wählen…') }}</option>
@@ -222,7 +222,7 @@
                                     </td>
                                 </tr>
                             @empty
-                                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :colspan="8" :title="__('Keine Legacy-Einträge gefunden.')" compact />
+                                <x-table.empty icon="menu_book" :colspan="8" :title="__('Keine Legacy-Einträge gefunden.')" compact />
                             @endforelse
                         </x-table>
                     </div>
@@ -279,7 +279,7 @@
                 <div class="flex flex-wrap items-end gap-3">
                     @if ($canViewAll)
                         <div class="flex flex-col min-w-48">
-                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
+                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
@@ -305,7 +305,7 @@
             <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([['all', __('Gesamt'), 'border-base-300'], ['today', __('Heute aktiv'), 'border-primary/40'], ['upcoming', __('Kommend'), 'border-info/40'], ['past', __('Vergangen'), 'border-neutral/40']] as [$key, $label, $border])
                     <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $border }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
+                        <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ $label }}</p>
                         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($oncallCounts[$key] ?? 0, 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endforeach
@@ -343,7 +343,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :colspan="4" :title="__('Keine Bereitschaftseinträge gefunden.')" compact />
+                        <x-table.empty icon="notifications_active" :colspan="4" :title="__('Keine Bereitschaftseinträge gefunden.')" compact />
                     @endforelse
                 </x-table>
             </div>
@@ -357,7 +357,7 @@
                 <div class="flex flex-wrap items-end gap-3">
                     @if ($canViewAll)
                         <div class="flex flex-col min-w-48">
-                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
+                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @php /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Legacy\Models\LegacyUser> $users */ @endphp
@@ -383,7 +383,7 @@
             <div class="flex-none grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
                 @foreach ([['all', __('Gesamt'), 'border-base-300'], ['today', __('Heute aktiv'), 'border-warning/40'], ['upcoming', __('Kommend'), 'border-info/40'], ['past', __('Vergangen'), 'border-neutral/40']] as [$key, $label, $border])
                     <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $border }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
+                        <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ $label }}</p>
                         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($notdienstCounts[$key] ?? 0, 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endforeach
@@ -421,7 +421,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="4" :title="__('Keine Notdienst-Einträge gefunden.')" compact />
+                        <x-table.empty icon="medical_services" :colspan="4" :title="__('Keine Notdienst-Einträge gefunden.')" compact />
                     @endforelse
                 </x-table>
             </div>
@@ -434,7 +434,7 @@
                 <div class="flex flex-wrap items-end gap-3">
                     @if ($vacationIsAdmin)
                         <div class="flex flex-1 flex-col min-w-44">
-                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
+                            <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
                             <select name="user_id" class="select select-bordered select-sm w-full">
                                 <option value="">{{ __('Alle') }}</option>
                                 @foreach ($vacationUsers ?? [] as $u)
@@ -445,7 +445,7 @@
                         </div>
                     @endif
                     <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Typ') }}</span></label>
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Typ') }}</span></label>
                         <select name="vtype" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle Typen') }}</option>
                             <option value="{{ \App\Enums\Vacation\VacationType::Vacation->value }}" @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Vacation->value)>{{ __('Urlaub') }}</option>
@@ -455,7 +455,7 @@
                         </select>
                     </div>
                     <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Status') }}</span></label>
                         <select name="vstatus" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle Status') }}</option>
                             <option value="{{ \App\Enums\Vacation\VacationStatus::Pending->value }}"   @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Pending->value)>{{ __('Ausstehend') }}</option>
@@ -487,7 +487,7 @@
                     ['rejected', __('Abgelehnt'),        'border-error/40'],
                 ] as [$key, $label, $border])
                     <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs {{ $border }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $label }}</p>
+                        <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ $label }}</p>
                         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vacationKpis[$key] ?? 0, 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endforeach
@@ -551,7 +551,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$vacationIsAdmin ? 7 : 6" :title="__('Keine Einträge.')" compact />
+                        <x-table.empty icon="beach_access" :colspan="$vacationIsAdmin ? 7 : 6" :title="__('Keine Einträge.')" compact />
                     @endforelse
                 </x-table>
             </div>

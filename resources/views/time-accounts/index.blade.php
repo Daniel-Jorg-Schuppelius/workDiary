@@ -21,7 +21,7 @@
 
     @if (empty($rows))
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">account_balance</span>'
+            icon="account_balance"
             :title="__('Keine Zeitkonten eingerichtet')"
             :message="__('Ihre Organisation nutzt derzeit keine Zusatz-Zeitkonten.')" />
     @else
@@ -35,7 +35,7 @@
                             <span class="tabular-nums">{{ $row['account']->unit->format($row['balance']) }}</span>
                         </x-status-badge>
                     </div>
-                    <p class="text-sm text-base-content/60 mt-1">
+                    <p class="text-sm text-muted mt-1">
                         {{ __('Ø-Umsatz/Monat') }}: <span class="tabular-nums">{{ $row['account']->unit->format($row['avg_turnover']) }}</span>
                         · {{ __('Trend (+3 Monate)') }}: <span class="tabular-nums">{{ $row['account']->unit->format($row['projected']) }}</span>
                     </p>
@@ -52,7 +52,7 @@
             <x-card>
                 <h3 class="font-semibold mb-2">{{ __('Journal') }} — {{ $detail->name }}</h3>
                 @if ($entries->isEmpty())
-                    <p class="text-base-content/50">{{ __('Noch keine Buchungen.') }}</p>
+                    <p class="text-muted">{{ __('Noch keine Buchungen.') }}</p>
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -69,7 +69,7 @@
                                 <td class="text-right tabular-nums {{ (float) $entry->quantity < 0 ? 'text-error' : '' }}">
                                     {{ $detail->unit->format((float) $entry->quantity) }}
                                 </td>
-                                <td class="text-sm text-base-content/60">
+                                <td class="text-sm text-muted">
                                     @if ($entry->reversal_of_id !== null)
                                         {{ __('Storno') }}
                                     @elseif ($entry->source_type === null)

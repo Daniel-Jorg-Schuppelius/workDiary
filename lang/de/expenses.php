@@ -18,6 +18,8 @@ return [
         'suggestions_hint' => 'Belege mit gleichem Betrag im Zeitfenster. Zuordnen bestätigt, dass es derselbe Vorgang ist — die Auslage zählt dann nicht mehr doppelt.',
         'no_suggestions' => 'Kein passender Beleg gefunden',
         'no_suggestions_hint' => 'Ohne Zuordnung wird die Auslage getrennt als interne Auslage ausgewiesen.',
+        'no_provider' => 'Keine Buchhaltung angebunden',
+        'no_provider_hint' => 'Ohne angebundenes Buchhaltungssystem gibt es weder Belegvorschläge noch eine Übergabe — die Auslage wird getrennt als interne Auslage ausgewiesen.',
         'linked' => 'Beleg :number zugeordnet.',
         'unlinked' => 'Zuordnung gelöst.',
         'title' => 'Belegdatei',

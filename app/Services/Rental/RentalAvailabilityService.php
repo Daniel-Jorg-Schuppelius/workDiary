@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Rental;
 
+use App\Enums\Rental\RentalReservationKind;
 use App\Exceptions\{AssetNotUsableException, RentalConflictException};
 use App\Models\Asset;
 use App\Models\Rental\{RentalProfile, RentalReservation};
@@ -102,6 +103,44 @@ class RentalAvailabilityService {
                 $conflict,
             );
         }
+    }
+
+    /**
+     * Belegungsfenster ohne Akte (Wartung/Reinigung/Transport/Vormerkung) —
+     * einzige Schreibstelle für Kalenderfenster (MVP-260, aus dem
+     * RentalCalendarController gehoben für MVP-714). Harte Reservierungen
+     * und Verleih entstehen nur über die Verleihakte; blockierende Fenster
+     * werden gegen bestehende Belegungen geprüft.
+     *
+     * @throws \InvalidArgumentException bei kind hard/rental
+     * @throws RentalConflictException bei Kollision eines blockierenden Fensters
+     */
+    public function createWindow(Asset $asset, RentalReservationKind $kind, Carbon $from, Carbon $to, ?string $note = null, ?int $createdBy = null, ?int $rentalCaseId = null): RentalReservation {
+        if (in_array($kind, [RentalReservationKind::Rental, RentalReservationKind::Hard], true)) {
+            throw new \InvalidArgumentException((string) __('Harte Reservierungen entstehen nur über die Verleihakte.'));
+        }
+
+        if ($kind->isBlocking()) {
+            $conflict = $this->findConflict($asset, $from, $to, $rentalCaseId);
+            if ($conflict !== null) {
+                throw new RentalConflictException(
+                    (string) __('Der Zeitraum kollidiert mit einer bestehenden Belegung (:kind).', ['kind' => $conflict->kind->label()]),
+                    $conflict,
+                );
+            }
+        }
+
+        return RentalReservation::query()->create([
+            'organization_id' => $asset->organization_id,
+            'rental_case_id' => $rentalCaseId,
+            'asset_id' => $asset->id,
+            'kind' => $kind->value,
+            'status' => 'active',
+            'starts_at' => $from,
+            'ends_at' => $to,
+            'note' => $note,
+            'created_by' => $createdBy,
+        ]);
     }
 
     public function isAvailable(Asset $asset, Carbon $from, Carbon $to, ?int $ignoreCaseId = null): bool {

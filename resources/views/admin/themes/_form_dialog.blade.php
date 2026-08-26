@@ -98,13 +98,12 @@
 
             <x-form-group :legend="__('Geometrie')" icon="rounded_corner" tone="ghost" cols="2">
                 @foreach (['radius-box' => __('Radius Box'), 'radius-field' => __('Radius Feld'), 'radius-selector' => __('Radius Selektor'), 'border' => __('Rahmenbreite')] as $gk => $glabel)
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ $glabel }}</label>
-                        <input type="text" name="geometry[{{ $gk }}]"
-                               value="{{ old('geometry.'.$gk, $geometry[$gk] ?? '') }}"
-                               placeholder="z. B. 0.5rem"
-                               class="input input-bordered input-sm w-full font-mono @error('geometry.'.$gk) input-error @enderror">
-                    </div>
+                    <x-input-field name="geometry[{{ $gk }}]"
+                                   :label="$glabel"
+                                   type="text"
+                                   value="{{ old('geometry.'.$gk, $geometry[$gk] ?? '') }}"
+                                   class="input-sm font-mono"
+                                   placeholder="z. B. 0.5rem" />
                 @endforeach
             </x-form-group>
         </div>

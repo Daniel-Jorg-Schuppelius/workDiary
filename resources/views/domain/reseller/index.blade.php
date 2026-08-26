@@ -33,13 +33,13 @@
                 <td>
                     <div class="flex items-center gap-2 {{ $indentClass }}">
                         @if ($account->depth > 0)
-                            <x-icon name="subdirectory_arrow_right" class="text-base-content/40" />
+                            <x-icon name="subdirectory_arrow_right" class="text-muted" />
                         @endif
                         <a href="{{ route('domain-reseller.show', $account) }}" class="link link-hover font-mono">{{ $account->external_user }}</a>
                         @if ($account->user_class)<x-status-badge tone="ghost" size="sm">{{ $account->user_class }}</x-status-badge>@endif
                     </div>
                 </td>
-                <td class="font-mono text-xs text-base-content/60">{{ $account->parent_user ?? '—' }}</td>
+                <td class="font-mono text-xs text-muted">{{ $account->parent_user ?? '—' }}</td>
                 <td>{{ $account->customer?->name ?? '—' }}</td>
                 <td class="text-right tabular-nums">{{ $account->domains_count }}</td>
                 <td class="text-right tabular-nums">

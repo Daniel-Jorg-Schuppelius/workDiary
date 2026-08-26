@@ -29,7 +29,8 @@
 @section('pdf-table')
     @include('reports.pdf.charts._chart')
     @php
-        $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
+        // Einheit je Regel-Art (Minuten/Tage/Anzahl) — zentral im Finding-Objekt.
+        $fmtVal = fn (string $kind, int $value): string => \App\Services\Compliance\AttendanceComplianceFinding::formatValue($kind, $value);
     @endphp
 
     <table class="kpis">
@@ -58,8 +59,8 @@
                     <tr>
                         <td>{{ \Carbon\Carbon::parse($f['date'])->fdate() }}@if ($f['corrected']) · {{ __('compliance.report.corrected') }}@endif</td>
                         <td>{{ __('compliance.report.kind.' . $f['kind']) }}</td>
-                        <td class="right">{{ $fmtMin((int) $f['value']) }}</td>
-                        <td class="right">{{ $fmtMin((int) $f['threshold']) }}</td>
+                        <td class="right">{{ $fmtVal((string) $f['kind'], (int) $f['value']) }}</td>
+                        <td class="right">{{ $fmtVal((string) $f['kind'], (int) $f['threshold']) }}</td>
                         <td class="{{ $f['severity'] === 'error' ? 'err' : 'warn' }}">{{ __('compliance.report.severity.' . $f['severity']) }}</td>
                     </tr>
                 @endforeach

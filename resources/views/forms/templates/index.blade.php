@@ -61,11 +61,11 @@
                 <tr class="hover" id="form-template-{{ $template->id }}">
                     <td>
                         <span class="flex items-center gap-2 font-medium">
-                            <x-icon name="assignment" class="text-base-content/60" />
+                            <x-icon name="assignment" class="text-muted" />
                             {{ $template->name }}
                         </span>
                         @if ($template->description)
-                            <span class="block max-w-md truncate text-xs text-base-content/60">{{ $template->description }}</span>
+                            <span class="block max-w-md truncate text-xs text-muted">{{ $template->description }}</span>
                         @endif
                     </td>
                     <td><x-status-badge :tone="$template->status->tone()">{{ $template->status->label() }}</x-status-badge></td>

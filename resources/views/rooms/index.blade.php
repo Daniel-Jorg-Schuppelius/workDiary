@@ -177,7 +177,7 @@
                         </tr>
                     @empty
                         <x-table.empty :colspan="7"
-                            icon='<span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>'
+                            icon="meeting_room"
                             :title="__('Noch keine Räume angelegt')" compact />
                     @endforelse
             </x-table>

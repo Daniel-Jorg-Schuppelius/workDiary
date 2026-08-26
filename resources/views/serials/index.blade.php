@@ -51,7 +51,7 @@
             </tr>
         @empty
             <x-table.empty :colspan="4"
-                           icon='<span class="material-symbols-outlined" aria-hidden="true">qr_code_2</span>'
+                           icon="qr_code_2"
                            :title="__('inventory.serial.empty')" />
         @endforelse
     </x-table>

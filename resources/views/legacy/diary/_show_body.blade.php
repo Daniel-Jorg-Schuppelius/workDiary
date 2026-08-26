@@ -21,9 +21,9 @@
 <div class="mb-6 flex flex-wrap items-center justify-between gap-3">
     <div class="flex flex-wrap items-center gap-2 text-sm">
         <span class="badge badge-md {{ $badgeClass }}">{{ $entry->statusLabel() }}</span>
-        <span class="text-base-content/40">|</span>
+        <span class="text-muted">|</span>
         <span class="text-base-content/70">{{ optional($entry->author)->uname ?? __('Unbekannt') }}</span>
-        <span class="text-base-content/40">|</span>
+        <span class="text-muted">|</span>
         <span class="text-base-content/70">Legacy #{{ $entry->id }}</span>
     </div>
     @if (! $isDialog && ((int) $entry->user === (int) (Auth::user()->legacy_user_id ?? 0) || \App\Legacy\Support\LegacyRoleResolver::isAdmin(Auth::user())))
@@ -57,15 +57,15 @@
 
 <div class="mt-6 grid grid-cols-2 gap-4 text-sm md:grid-cols-3">
     <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-        <p class="mb-1 text-xs text-base-content/60">{{ __('Von') }}</p>
+        <p class="mb-1 text-xs text-muted">{{ __('Von') }}</p>
         <p class="text-base-content">{{ $entry->von?->fdatetime() ?? '—' }}</p>
     </div>
     <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-        <p class="mb-1 text-xs text-base-content/60">{{ __('Bis') }}</p>
+        <p class="mb-1 text-xs text-muted">{{ __('Bis') }}</p>
         <p class="text-base-content">{{ $entry->bis?->fdatetime() ?? '—' }}</p>
     </div>
     <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-        <p class="mb-1 text-xs text-base-content/60">{{ __('Aktuell') }}</p>
+        <p class="mb-1 text-xs text-muted">{{ __('Aktuell') }}</p>
         <p class="text-base-content">{{ $entry->aktuell?->fdatetime() ?? '—' }}</p>
     </div>
 </div>

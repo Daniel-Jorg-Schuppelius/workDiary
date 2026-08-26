@@ -54,6 +54,6 @@
         </x-select-field>
         <x-input-field name="due_on" type="date" :label="__('isms.field.due_on')" :value="old('due_on', $vulnerability?->due_on?->toDateString())" />
         <x-input-field name="advisory_ref" :label="__('isms.field.advisory_ref')" maxlength="250" span="2" :value="old('advisory_ref', $vulnerability?->advisory_ref)" />
-        <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('isms.hint.vulnerability_exploitability_note') }}</p>
+        <p class="text-xs text-muted sm:col-span-2">{{ __('isms.hint.vulnerability_exploitability_note') }}</p>
     </x-form-group>
 </x-modal>

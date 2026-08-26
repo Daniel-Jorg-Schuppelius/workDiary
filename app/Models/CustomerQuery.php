@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Customer\CustomerQueryStatus;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
@@ -22,7 +22,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * Portal bzw. den Signaturlink zu einem vorgelegten Vorgang (Protokoll,
  * Auftrag, Dokument) stellt. Die Organisation wird benachrichtigt und kann
  * intern antworten; die Antwort wird dem Kunden über denselben Kanal
- * angezeigt.
+ * angezeigt. Anhänge (MVP-712) hängen als kundensichtbare Attachments am
+ * Vorgang und sind wie der Text nach dem Absenden unveränderlich.
  *
  * @property int $id
  * @property int $organization_id
@@ -41,6 +42,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 class CustomerQuery extends Model {
     use Auditable;
     use BelongsToOrganization;
+    use HasAttachments;
     use HasSqid;
 
     protected $fillable = [

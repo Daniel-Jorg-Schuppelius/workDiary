@@ -60,6 +60,9 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
     /** Kann extern gebuchte Termine empfangen und Buchungslinks erzeugen (Feature 095, z. B. Calendly). */
     case AppointmentSync = 'appointment_sync';
 
+    /** Kann Kurznachrichten (SMS) über ein Gateway versenden (Feature 147, z. B. seven.io, sipgate). */
+    case SmsGateway = 'sms_gateway';
+
     /**
      * Personenbeförderung (MVP-456): Taxameter-/Wegstreckenzähler-Import.
      * RESERVIERT — noch kein Plugin deklariert sie (Audit 2026-08, Welle 1.5:
@@ -92,6 +95,7 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::BackupTarget => __('Backupziel'),
             self::DomainRegistrar => __('Domain-Registrar'),
             self::AppointmentSync => __('Terminsynchronisation'),
+            self::SmsGateway => __('SMS-Gateway'),
             self::FareMeter => __('Taxameter-Import'),
             self::PassengerDispatch => __('Fahrtvermittlung'),
             self::MobilityData => __('Mobilitätsdaten'),
@@ -116,6 +120,7 @@ enum PluginCapability: string implements HasLabel, PluginCapabilityContract {
             self::BackupTarget => BackupTarget::class,
             self::DomainRegistrar => DomainRegistrar::class,
             self::AppointmentSync => AppointmentSyncer::class,
+            self::SmsGateway => SmsProvider::class,
             self::FareMeter => FareMeterProvider::class,
             self::PassengerDispatch => PassengerDispatchProvider::class,
             self::MobilityData => MobilityDataPublisher::class,

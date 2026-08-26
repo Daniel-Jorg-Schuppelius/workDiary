@@ -38,7 +38,7 @@
                         @if ($row['on_break'])
                             <x-status-badge tone="warning" size="sm">{{ __('Pause') }}</x-status-badge>
                         @endif
-                        <span class="ml-auto text-sm text-base-content/60 tabular-nums">
+                        <span class="ml-auto text-sm text-muted tabular-nums">
                             @if ($row['since'])
                                 {{ __('seit') }} {{ $row['since']->setTimezone(\App\Support\Tz::current())->format('H:i') }}
                             @endif
@@ -51,7 +51,7 @@
                         </span>
                     </li>
                 @empty
-                    <li class="py-1.5 text-base-content/50">{{ __('Niemand eingestempelt.') }}</li>
+                    <li class="py-1.5 text-muted">{{ __('Niemand eingestempelt.') }}</li>
                 @endforelse
             </ul>
         </x-card>
@@ -65,10 +65,10 @@
                     @forelse ($snapshot['off_site'] as $row)
                         <li class="py-1.5 flex items-center gap-2">
                             <span class="font-medium">{{ $row['user']->name }}</span>
-                            <span class="ml-auto text-sm text-base-content/60">{{ $row['context'] ?? '' }}</span>
+                            <span class="ml-auto text-sm text-muted">{{ $row['context'] ?? '' }}</span>
                         </li>
                     @empty
-                        <li class="py-1.5 text-base-content/50">{{ __('Niemand im Außeneinsatz.') }}</li>
+                        <li class="py-1.5 text-muted">{{ __('Niemand im Außeneinsatz.') }}</li>
                     @endforelse
                 </ul>
             </x-card>
@@ -84,11 +84,11 @@
                         <li class="py-1.5 flex items-center gap-2">
                             <span>{{ $row['user']->name }}</span>
                             @if (isset($returns[(int) $row['user']->id]))
-                                <span class="ml-auto text-sm text-base-content/60 tabular-nums">{{ $returns[(int) $row['user']->id] }}</span>
+                                <span class="ml-auto text-sm text-muted tabular-nums">{{ $returns[(int) $row['user']->id] }}</span>
                             @endif
                         </li>
                     @empty
-                        <li class="py-1.5 text-base-content/50">{{ __('Keine ganztägigen Abwesenheiten.') }}</li>
+                        <li class="py-1.5 text-muted">{{ __('Keine ganztägigen Abwesenheiten.') }}</li>
                     @endforelse
                 </ul>
             </x-card>

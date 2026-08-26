@@ -25,7 +25,7 @@ return [
     'code' => 'pflege',
     'label' => 'Ambulante Pflege',
     // v2: Default-Eintragstypen (Struktur-Typen) ans Profil gekoppelt.
-    'version' => 2,
+    'version' => 3,
     // Default-Struktur-Typen (EntryTypeSeeder::profiles()) — nicht die
     // Classification-Domäne entry_type.
     'entry_type_defaults' => ['general', 'care_visit'],
@@ -258,5 +258,13 @@ return [
         ['key' => 'dpia_required', 'label' => 'DSFA bei Gesundheitsdaten (Art. 9) zwingend'],
         ['key' => 'tom_assigned'],
         ['key' => 'tom_proof_current'],
+    ],
+
+    // Schulungsvorschläge (Feature 145): Pflichtschulungen der Pflege — ohne
+    // Gesundheitsdaten, reine Teilnahme-/Fälligkeitsverwaltung.
+    'training_suggestions' => [
+        ['code' => 'hygiene', 'title' => 'Hygieneschulung', 'legal_basis' => '§ 4 IfSG / § 43 IfSG', 'validity_months' => 12, 'duration_minutes' => 120, 'roles' => ['aussendienst', 'teamleitung']],
+        ['code' => 'kinaesthetik', 'title' => 'Rückengerechtes Arbeiten / Kinästhetik', 'legal_basis' => 'DGUV I 207-022', 'validity_months' => 24, 'duration_minutes' => 240, 'roles' => ['aussendienst']],
+        ['code' => 'unterweisung-arbschg', 'title' => 'Jährliche Unterweisung Arbeitssicherheit', 'legal_basis' => '§ 12 ArbSchG / DGUV V1 § 4', 'validity_months' => 12, 'duration_minutes' => 60, 'roles' => ['aussendienst', 'teamleitung']],
     ],
 ];

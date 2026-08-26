@@ -36,14 +36,14 @@
         <div class="flex flex-wrap items-center gap-3">
             <x-status-badge size="md" outline>{{ $statusLabels[$problem->status] ?? $problem->status }}</x-status-badge>
             <x-status-badge tone="ghost" size="md">{{ $problem->visibility === 'customer' ? __('Kundenportal') : __('Intern') }}</x-status-badge>
-            <span class="ml-auto text-sm text-base-content/60">
+            <span class="ml-auto text-sm text-muted">
                 {{ __('Verantwortlich') }}: {{ $problem->owner?->name ?? '—' }}
             </span>
         </div>
 
         @if ($problem->description)
             <div class="mt-4">
-                <div class="text-xs uppercase text-base-content/60 mb-1">{{ __('Beschreibung') }}</div>
+                <div class="text-xs uppercase text-muted mb-1">{{ __('Beschreibung') }}</div>
                 <div class="prose prose-sm max-w-none whitespace-pre-wrap">{{ $problem->description }}</div>
             </div>
         @endif
@@ -51,10 +51,10 @@
 
     <x-card :title="__('Ursachenanalyse')" icon="troubleshoot">
         <dl class="grid grid-cols-1 gap-y-3 text-sm">
-            <div><dt class="text-base-content/60">{{ __('Ursache') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->root_cause ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Evidenz') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->evidence ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Workaround') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->workaround ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Dauerhafte Lösung') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->permanent_fix ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Ursache') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->root_cause ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Evidenz') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->evidence ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Workaround') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->workaround ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Dauerhafte Lösung') }}</dt><dd class="whitespace-pre-wrap">{{ $problem->permanent_fix ?: '—' }}</dd></div>
         </dl>
     </x-card>
 
@@ -64,12 +64,12 @@
 
     <x-card :title="__('Wirksamkeitsprüfung')" icon="fact_check">
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="text-base-content/60">{{ __('Fällig am') }}</dt><dd>{{ $problem->effectiveness_check_due_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Geprüft am') }}</dt><dd>{{ $problem->effectiveness_checked_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Fällig am') }}</dt><dd>{{ $problem->effectiveness_check_due_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Geprüft am') }}</dt><dd>{{ $problem->effectiveness_checked_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
         </dl>
         @if ($problem->effectiveness_result)
             <div class="mt-3">
-                <div class="text-xs uppercase text-base-content/60 mb-1">{{ __('Ergebnis') }}</div>
+                <div class="text-xs uppercase text-muted mb-1">{{ __('Ergebnis') }}</div>
                 <div class="prose prose-sm max-w-none whitespace-pre-wrap">{{ $problem->effectiveness_result }}</div>
             </div>
         @endif
@@ -92,11 +92,11 @@
     <x-card :title="__('Known Error & Wissensbasis')" icon="school">
         @if ($article !== null)
             <p class="text-sm">
-                <span class="text-base-content/60">{{ __('Wissensartikel') }}:</span>
+                <span class="text-muted">{{ __('Wissensartikel') }}:</span>
                 <a class="link link-hover font-medium" href="{{ route('knowledge.show', $article) }}">{{ $article->title }}</a>
             </p>
         @else
-            <p class="text-sm text-base-content/60">{{ __('Noch kein Wissensartikel veröffentlicht.') }}</p>
+            <p class="text-sm text-muted">{{ __('Noch kein Wissensartikel veröffentlicht.') }}</p>
         @endif
 
         @if ($canManage)
@@ -105,7 +105,7 @@
                 <x-icon-btn icon="publish" tone="primary" size="sm" type="submit"
                             show-label>{{ __('Known Error veröffentlichen') }}</x-icon-btn>
             </x-action-form>
-            <p class="text-xs text-base-content/60 mt-1">{{ __('Idempotent — ein erneutes Veröffentlichen verweist auf den bestehenden Artikel.') }}</p>
+            <p class="text-xs text-muted mt-1">{{ __('Idempotent — ein erneutes Veröffentlichen verweist auf den bestehenden Artikel.') }}</p>
         @endif
     </x-card>
 
@@ -126,7 +126,7 @@
 
     <x-card :title="__('Verknüpfte Incidents')" icon="link">
         @if ($problem->tickets->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Keine Incidents verknüpft.') }}</p>
+            <p class="text-sm text-muted">{{ __('Keine Incidents verknüpft.') }}</p>
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($problem->tickets as $ticket)

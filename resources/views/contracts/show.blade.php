@@ -57,7 +57,7 @@
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Vertragsdaten')">
             <x-detail-grid class="grid-cols-2">
-                <x-detail-grid.row :label="__('Vertragspartner')">{{ $contract->partnerLabel() ?: '—' }} <span class="text-base-content/50">({{ $contract->partner_type->label() }})</span></x-detail-grid.row>
+                <x-detail-grid.row :label="__('Vertragspartner')">{{ $contract->partnerLabel() ?: '—' }} <span class="text-muted">({{ $contract->partner_type->label() }})</span></x-detail-grid.row>
                 <x-detail-grid.row :label="__('Kündigungsfrist')">{{ $contract->notice_period_days !== null ? $contract->notice_period_days . ' ' . __('Tage') : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Mindestlaufzeit')">{{ $contract->min_term_months !== null ? $contract->min_term_months . ' ' . __('Monate') : '—' }}</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Automatische Verlängerung')">{{ $contract->auto_renew ? __('ja, um :n Monate', ['n' => $contract->renew_period_months ?? '—']) : __('nein') }}</x-detail-grid.row>
@@ -83,7 +83,7 @@
         <x-card :title="__('Kündigung & Laufzeit')">
             @if ($nextTermination !== null)
                 <div class="rounded-box bg-base-200 p-4">
-                    <div class="text-xs uppercase text-base-content/60">{{ __('Nächstmöglich kündbar zum') }}</div>
+                    <div class="text-xs uppercase text-muted">{{ __('Nächstmöglich kündbar zum') }}</div>
                     <div class="text-2xl font-semibold">{{ $nextTermination->fdate() }}</div>
                     @if ($noticeDeadline !== null)
                         <div class="mt-1 text-sm text-base-content/70">
@@ -96,11 +96,11 @@
                         </div>
                     @endif
                 </div>
-                <p class="mt-3 text-xs text-base-content/60">
+                <p class="mt-3 text-xs text-muted">
                     {{ __('Berechnet aus Laufzeitmodell, Kündigungsfrist und automatischer Verlängerung. Kein Rechtsrat — maßgeblich bleibt der Vertragstext.') }}
                 </p>
             @else
-                <p class="text-sm text-base-content/60">{{ __('Kein Kündigungstermin — Vertrag beendet/storniert.') }}</p>
+                <p class="text-sm text-muted">{{ __('Kein Kündigungstermin — Vertrag beendet/storniert.') }}</p>
             @endif
         </x-card>
     </div>
@@ -143,7 +143,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">event_upcoming</span>' :colspan="6" :title="__('Keine Obligationen — Termine über das Formular ergänzen.')" compact />
+                <x-table.empty icon="event_upcoming" :colspan="6" :title="__('Keine Obligationen — Termine über das Formular ergänzen.')" compact />
             @endforelse
         </x-table>
 
@@ -172,7 +172,7 @@
     </x-card>
 
     <x-card :title="__('Verknüpfte Leasing-/Finanzierungsverträge')">
-        <p class="text-sm text-base-content/60">{{ __('Ein Leasing-/Finanzierungsvertrag (Feature 074) kann optional auf diesen allgemeinen Vertrag verweisen. Der Spezialfall bleibt eigenständig.') }}</p>
+        <p class="text-sm text-muted">{{ __('Ein Leasing-/Finanzierungsvertrag (Feature 074) kann optional auf diesen allgemeinen Vertrag verweisen. Der Spezialfall bleibt eigenständig.') }}</p>
         @if ($linkedAssetFinance->isNotEmpty())
             <ul class="mt-2 list-disc pl-5 text-sm">
                 @foreach ($linkedAssetFinance as $af)

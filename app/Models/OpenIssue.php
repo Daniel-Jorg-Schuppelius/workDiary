@@ -36,6 +36,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property int|null $closed_by_user_id
  * @property string|null $closed_reason
  * @property int $created_by_user_id
+ * @property int|null $follow_up_diary_entry_id
  */
 class OpenIssue extends Model {
     use Auditable;
@@ -66,6 +67,7 @@ class OpenIssue extends Model {
         'closed_by_user_id',
         'closed_reason',
         'created_by_user_id',
+        'follow_up_diary_entry_id',
     ];
 
     protected $casts = [
@@ -95,6 +97,15 @@ class OpenIssue extends Model {
     /** @return BelongsTo<User, $this> */
     public function closer(): BelongsTo {
         return $this->belongsTo(User::class, 'closed_by_user_id');
+    }
+
+    /**
+     * Folgeauftrag (Feature 139): manuell aus dem Punkt angelegter Tagebuch-Eintrag.
+     *
+     * @return BelongsTo<DiaryEntry, $this>
+     */
+    public function followUpEntry(): BelongsTo {
+        return $this->belongsTo(DiaryEntry::class, 'follow_up_diary_entry_id');
     }
 
     /** @return HasMany<OpenIssueEvent, $this> */

@@ -33,27 +33,21 @@
     @endif
 
     <x-form-group :legend="__('Milestone')" icon="flag" tone="primary">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Titel') }}</label>
-                <input name="title" type="text" required maxlength="200"
-                       class="input input-bordered w-full"
-                       value="{{ old('title', $milestone?->title) }}">
-                @error('title')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-            </div>
+            <x-input-field name="title"
+                           :label="__('Titel')"
+                           type="text"
+                           value="{{ old('title', $milestone?->title) }}"
+                           required
+                           maxlength="200" />
 
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Beschreibung') }}</label>
-                <textarea name="description" rows="3" class="textarea textarea-bordered w-full">{{ old('description', $milestone?->description) }}</textarea>
-            </div>
+            <x-textarea-field name="description" :label="__('Beschreibung')" rows="3">{{ old('description', $milestone?->description) }}</x-textarea-field>
         </x-form-group>
 
         <x-form-group :legend="__('Status & Termin')" icon="event" tone="info" cols="2">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Fälligkeitsdatum') }}</label>
-                <input name="due_date" type="date"
-                       class="input input-bordered w-full"
-                       value="{{ old('due_date', $milestone?->due_date?->format('Y-m-d')) }}">
-            </div>
+            <x-input-field name="due_date"
+                           :label="__('Fälligkeitsdatum')"
+                           type="date"
+                           value="{{ old('due_date', $milestone?->due_date?->format('Y-m-d')) }}" />
 
             <div class="fieldset items-end">
                 <label class="label cursor-pointer items-center gap-3">

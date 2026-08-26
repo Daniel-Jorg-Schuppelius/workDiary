@@ -43,7 +43,7 @@
 
     <x-card>
         @if ($rows === [])
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">group_off</span>' :title="__('Keine Kunden mit Erstleistung in diesem Jahr.')" />
+            <x-empty-state icon="group_off" :title="__('Keine Kunden mit Erstleistung in diesem Jahr.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

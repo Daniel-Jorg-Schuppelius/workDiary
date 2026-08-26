@@ -72,7 +72,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' :colspan="7" :title="__('Noch keine Materialien')" compact />
+            <x-table.empty icon="inventory_2" :colspan="7" :title="__('Noch keine Materialien')" compact />
         @endforelse
     </x-table>
     <x-pagination :paginator="$materials" standing />

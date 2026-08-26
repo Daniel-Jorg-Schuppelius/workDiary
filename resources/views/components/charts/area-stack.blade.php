@@ -69,8 +69,8 @@
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="mt-2 w-full">
             <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
-            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
+            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
+            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
             @foreach ($bands as $bandIndex => $band)
                 <path d="{{ $paths[$bandIndex] }}" class="{{ $fills[$bandIndex % count($fills)] }} stroke-base-100" stroke-width="0.5" />
             @endforeach

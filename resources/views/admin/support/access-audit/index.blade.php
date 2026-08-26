@@ -42,7 +42,7 @@
 
     @if ($entries->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">policy</span>' />
+            icon="policy" />
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('admin.support.access-audit.index')" :current-sort="$sort" :current-dir="$dir"
@@ -61,7 +61,7 @@
                         @if ($entry->user_id && $actors->has($entry->user_id))
                             {{ $actors[$entry->user_id]->name }}
                         @else
-                            <span class="text-base-content/60">{{ __('System') }}</span>
+                            <span class="text-muted">{{ __('System') }}</span>
                         @endif
                     </td>
                     <td class="text-xs">

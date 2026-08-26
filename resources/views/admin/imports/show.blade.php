@@ -45,27 +45,27 @@
     {{-- Status-Kacheln --}}
     <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
         <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
-            <div class="text-xs text-base-content/60">{{ __('Status') }}</div>
+            <div class="text-xs text-muted">{{ __('Status') }}</div>
             <div class="font-semibold">{{ $run->state->label() }}</div>
         </div></div>
         <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
-            <div class="text-xs text-base-content/60">{{ __('Zeilen') }}</div>
+            <div class="text-xs text-muted">{{ __('Zeilen') }}</div>
             <div class="font-semibold tabular-nums">{{ $run->rows_total }}</div>
         </div></div>
         <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
-            <div class="text-xs text-base-content/60">{{ __('Neu') }}</div>
+            <div class="text-xs text-muted">{{ __('Neu') }}</div>
             <div class="font-semibold tabular-nums text-success">{{ $run->rows_created }}</div>
         </div></div>
         <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
-            <div class="text-xs text-base-content/60">{{ __('Aktualisiert') }}</div>
+            <div class="text-xs text-muted">{{ __('Aktualisiert') }}</div>
             <div class="font-semibold tabular-nums">{{ $run->rows_updated }}</div>
         </div></div>
         <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
-            <div class="text-xs text-base-content/60">{{ __('Übersprungen') }}</div>
+            <div class="text-xs text-muted">{{ __('Übersprungen') }}</div>
             <div class="font-semibold tabular-nums">{{ $run->rows_skipped }}</div>
         </div></div>
         <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
-            <div class="text-xs text-base-content/60">{{ __('Fehler') }}</div>
+            <div class="text-xs text-muted">{{ __('Fehler') }}</div>
             <div class="font-semibold tabular-nums {{ $run->rows_failed > 0 ? 'text-error' : '' }}">{{ $run->rows_failed }}</div>
         </div></div>
     </div>
@@ -75,12 +75,49 @@
         && $run->rows_skipped > 0
         && \Illuminate\Support\Facades\Route::has('admin.remote-support.pending.index'))
         <div class="alert alert-info">
-            <span class="material-symbols-outlined" aria-hidden="true">inbox</span>
+            <x-icon name="inbox" />
             <span>
                 {{ __(':n Sitzungen konnten keinem Gerät zugeordnet werden und liegen in der Fernwartungs-Inbox. Ordne die Geräte-IDs einem Asset zu, um sie als Zeiteinträge zu buchen.', ['n' => $run->rows_skipped]) }}
             </span>
             <x-button :href="route('admin.remote-support.pending.index')" tone="primary" size="sm" icon="arrow_forward">{{ __('Zur Inbox') }}</x-button>
         </div>
+    @endif
+
+    {{-- KI-Spaltenzuordnung (Feature 148, MVP-732): Vorschlag für Kopfzellen,
+         die der HeaderMapper nicht kennt — reiner Hinweis, ändert nichts. --}}
+    @php
+        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiMappingUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\ImportMappingSuggestionService::CAPABILITY)
+            && ! $run->entity->acceptsZip();
+        $aiMapping = $aiMappingUsable
+            ? $aiView->openSuggestionsFor($run->getMorphClass(), collect([$run]), \App\Services\Ai\Suggestions\ImportMappingSuggestionService::CAPABILITY)->get($run->id)
+            : null;
+    @endphp
+    @if ($aiMappingUsable)
+        <x-card :title="__('ai.assist.mapping_title')" icon="smart_toy">
+            @if ($aiMapping === null)
+                <x-action-form :action="route('ai.assist.import-mapping', $run)">
+                    <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
+                                :title="__('ai.assist.suggest_mapping')">{{ __('ai.assist.suggest_mapping') }}</x-icon-btn>
+                </x-action-form>
+            @else
+                <ul class="space-y-1 text-sm">
+                    @foreach (\App\Services\Ai\Suggestions\ImportMappingSuggestionService::mappingValues($aiMapping) as $aiPair)
+                        <li class="flex flex-wrap items-center gap-2">
+                            <span class="badge badge-ghost badge-sm font-mono">{{ $aiPair['header'] }}</span>
+                            <x-icon name="arrow_forward" class="text-muted" />
+                            <span class="badge badge-info badge-sm font-mono">{{ $aiPair['column'] }}</span>
+                        </li>
+                    @endforeach
+                </ul>
+                <p class="mt-2 text-xs text-muted">{{ __('ai.assist.mapping_hint') }}</p>
+                <div class="mt-2 flex justify-end">
+                    <x-action-form :action="route('ai.assist.reject', $aiMapping)">
+                        <x-button type="submit" tone="ghost" size="xs">{{ __('ai.suggestion.reject') }}</x-button>
+                    </x-action-form>
+                </div>
+            @endif
+        </x-card>
     @endif
 
     {{-- Wert-Mapping (Rang 58, A13): unbekannte Quellwerte zuordnen — Ziel je
@@ -90,7 +127,7 @@
     @php($supportsClassifications = $classificationOptions !== [])
     @if ($pendingValues !== [] && $pendingColumn === 'user_email')
         <x-card :title="__('Unbekannte Benutzer zuordnen')" icon="person" :count="count($pendingValues)">
-            <p class="mb-3 text-sm text-base-content/60">
+            <p class="mb-3 text-sm text-muted">
                 {{ __('Diese E-Mail-Adressen gehören zu keinem Benutzerkonto der Organisation. Ordne sie einem Benutzer zu oder überspringe die Zeilen — Entscheidungen werden je Organisation gemerkt, Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}
             </p>
             <form method="POST" action="{{ route('admin.imports.mapping', $run) }}" class="space-y-2">
@@ -114,7 +151,7 @@
         </x-card>
     @elseif ($pendingValues !== [])
         <x-card :title="__('Unbekannte Tags/Kategorien zuordnen')" icon="sell" :count="count($pendingValues)">
-            <p class="mb-3 text-sm text-base-content/60">
+            <p class="mb-3 text-sm text-muted">
                 {{ __('Diese Quellwerte sind weder gemappt noch als Tag bekannt. Entscheidungen werden je Organisation gemerkt — Wiederholimporte lösen automatisch auf. Der Import startet erst nach vollständiger Zuordnung.') }}
                 @if ($supportsClassifications)
                     {{ __('Alternativ kann ein Wert einer Klassifikation des Katalogs zugeordnet werden.') }}

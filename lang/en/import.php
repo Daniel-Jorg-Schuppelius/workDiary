@@ -24,6 +24,12 @@ return [
         'remote_sessions' => 'Remote support sessions',
         'attendances' => 'Attendances',
         'project_times' => 'Project times',
+        // MVP-707 (Vollscan H20): Altsystem-Übernahme.
+        'invoices' => 'Legacy invoices (open items)',
+        'quotes' => 'Quotes',
+        'assets' => 'Assets',
+        'contact_persons' => 'Contact persons',
+        'documents' => 'Documents (ZIP)',
     ],
 
     'template' => [
@@ -53,6 +59,7 @@ return [
         'headerUnknown' => 'Column unknown',
         'periodLocked' => 'Period locked',
         'skipped' => 'Skipped',
+        'blocked' => 'Blocked',
     ],
 
     'error' => [
@@ -74,14 +81,41 @@ return [
             'date' => 'Not a valid date (expected e.g. "28.05.2026, 09:42:09").',
             'time' => 'Not a valid time (expected HH:MM).',
             'status' => 'Value is not a valid status.',
+            'amount' => 'Not a valid amount.',
         ],
         'outOfRange' => [
             'rowLimit' => 'Row limit (:max) exceeded — remainder ignored.',
+            'contactPersons' => 'More than :max contact persons per customer/supplier are not supported.',
         ],
         'fkMissing' => [
             'customer' => 'No customer with number :number found.',
+            'supplier' => 'No supplier with number :number found.',
+            'asset' => 'No asset with number :number found.',
+            'article' => 'No article with number :number found.',
+            'projectNumber' => 'No project with number :number found.',
+            'customerName' => 'No unique customer named ":value" found.',
             'user' => 'No user with email :value found.',
             'project' => 'No project ":value" found — row moved to the assignment inbox.',
+        ],
+        // MVP-707: Altsystem-Übernahme (Rechnungshoheit, Altrechnungen, Dokument-ZIP).
+        'blocked' => [
+            'invoiceSovereignty' => 'Invoicing is owned by :program — local legacy invoices are blocked for this customer.',
+        ],
+        'invoice' => [
+            'amountMissing' => 'Gross or net amount (with tax rate) is missing.',
+            'paidExceedsTotal' => 'Paid amount (:paid) exceeds the invoice total (:total).',
+            'numberTaken' => 'Invoice number :number is already in use.',
+        ],
+        'document' => [
+            'manifestMissing' => 'The ZIP file does not contain a manifest.csv.',
+            'fileMissing' => 'File ":file" is not part of the ZIP.',
+            'extension' => 'File extension ":ext" is not allowed.',
+            'mime' => 'File content (:mime) is not allowed.',
+            'targetType' => 'Target type must be customer, project or asset.',
+            'noContent' => 'Documents can only be imported via the ZIP import (manifest.csv + files).',
+            'zipUnreadable' => 'ZIP file could not be read: :reason',
+            'tooLarge' => 'File ":file" exceeds the size limit of :max MB.',
+            'noActor' => 'Import run without triggering user — documents need a creator.',
         ],
         'persist' => [
             'noBookingUser' => 'No bookable user found in the organisation.',
@@ -100,5 +134,16 @@ return [
             'recurring' => 'Recurring event ":event": only the base instance was imported (series expansion comes later).',
             'unsupportedEntity' => 'iCal import is not supported for this import type.',
         ],
+    ],
+
+    // MVP-707: Upload-Hinweise je Dateiart + Texte der Altrechnungs-Übernahme.
+    'upload' => [
+        'csv' => 'CSV, Excel or iCal file (.csv, .xlsx, .ics, max. :mb MB, :rows rows)',
+        'zip' => 'ZIP file with manifest.csv and the document files (.zip, max. :mb MB, :entries files)',
+        'zipHint' => 'Each manifest.csv row (template above) references one file inside the ZIP and assigns it to a customer, project or asset.',
+    ],
+    'legacy' => [
+        'position' => 'Legacy system takeover — invoice :number',
+        'note' => 'Legacy invoice taken over from :source (opening open item, no journal entry).',
     ],
 ];

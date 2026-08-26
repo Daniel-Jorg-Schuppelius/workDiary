@@ -47,36 +47,32 @@ class PaymentAllocationsSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        $rows = [];
-        PaymentAllocation::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (PaymentAllocation::query()
             ->where('payment_allocations.organization_id', $organization->id)
             ->whereHas('transaction', fn ($q) => $q->whereBetween('booking_date', [$from->toDateString(), $to->toDateString()]))
             ->with(['transaction', 'allocatable'])
             ->orderBy('id')
-            ->get()
-            ->each(function (PaymentAllocation $allocation) use (&$rows): void {
-                $tx = $allocation->transaction;
-                $allocatable = $allocation->allocatable;
-                $document = match (true) {
-                    $allocatable instanceof Invoice => $this->str($allocatable->number),
-                    $allocatable instanceof Expense => 'E-' . $allocatable->id,
-                    default => '',
-                };
-                $rows[] = [
-                    $this->date($tx?->booking_date),
-                    $this->num($tx?->signedAmount(), 2),
-                    $this->str($tx?->currency->value),
-                    $this->str($tx?->end_to_end_id),
-                    $this->str($allocation->kind->value),
-                    $this->num($allocation->amount, 2),
-                    $allocatable !== null ? class_basename($allocatable) : '',
-                    $document,
-                    $this->dateTime($allocation->confirmed_at),
-                    $this->str($allocation->note),
-                ];
-            });
-
-        return $rows;
+            ->lazy() as $allocation) {
+            $tx = $allocation->transaction;
+            $allocatable = $allocation->allocatable;
+            $document = match (true) {
+                $allocatable instanceof Invoice => $this->str($allocatable->number),
+                $allocatable instanceof Expense => 'E-' . $allocatable->id,
+                default => '',
+            };
+            yield [
+                $this->date($tx?->booking_date),
+                $this->num($tx?->signedAmount(), 2),
+                $this->str($tx?->currency->value),
+                $this->str($tx?->end_to_end_id),
+                $this->str($allocation->kind->value),
+                $this->num($allocation->amount, 2),
+                $allocatable !== null ? class_basename($allocatable) : '',
+                $document,
+                $this->dateTime($allocation->confirmed_at),
+                $this->str($allocation->note),
+            ];
+        }
     }
 }

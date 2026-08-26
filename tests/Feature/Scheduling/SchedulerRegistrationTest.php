@@ -111,6 +111,8 @@ class SchedulerRegistrationTest extends TestCase {
         'workdiary:backup:check-restore' => ['0 5 * * *', true, true],
         'maintenance:scan-due' => ['30 5 * * *', true, true],
         'notifications:scan-deadlines' => ['0 * * * *', true, true],
+        'org:offboard-due' => ['10 0 * * *', true, true],
+        'travel-logs:lock-due' => ['20 0 * * *', true, true],
         'tickets:scan-sla-breaches' => ['*/5 * * * *', true, true],
         'lexoffice:sync-contacts' => ['0 * * * *', true, true],
         'lexoffice:sync-articles' => ['0 * * * *', true, true],

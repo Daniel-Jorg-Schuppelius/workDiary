@@ -18,7 +18,7 @@
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Workspaces direkt aus der Toggl-API importieren') }}</h1>
                 <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
             </div>
-            <p class="mb-4 text-sm text-base-content/60">
+            <p class="mb-4 text-sm text-muted">
                 {{ __('Importiert die Workspaces des hinterlegten API-Tokens ohne Datei-Export. Stammdaten kommen aus der Track-API (v9), die Zeiteinträge aller Benutzer aus der Reports-API (v3). Je gefundenem Workspace legst du fest, was passieren soll.') }}
             </p>
 
@@ -44,7 +44,7 @@
 
                 <div>
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Was soll mit jedem Workspace passieren?') }}</h2>
-                    <p class="text-sm text-base-content/60">
+                    <p class="text-sm text-muted">
                         {{ __('„Eigener Workspace" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).') }}
                     </p>
                 </div>
@@ -57,7 +57,7 @@
                             <input type="hidden" name="workspace_names[{{ $i }}]" value="{{ $ws['name'] }}">
                             <div class="md:col-span-5">
                                 <div class="font-semibold">{{ $ws['name'] }}</div>
-                                <div class="text-xs text-base-content/60">
+                                <div class="text-xs text-muted">
                                     {{ $ws['clients'] }} {{ __('Clients') }} · {{ $ws['projects'] }} {{ __('Projekte') }} · {{ $ws['users'] }} {{ __('Benutzer') }}
                                 </div>
                             </div>
@@ -110,14 +110,14 @@
 
                         @if (! empty($togglUsers))
                             <div class="mt-3 rounded-box border border-base-300 p-3">
-                                <p class="mb-2 text-xs text-base-content/60">
+                                <p class="mb-2 text-xs text-muted">
                                     {{ __('Optional: einzelne Toggl-Benutzer fest einem bestehenden Benutzer zuordnen. Eine Auswahl hier hat Vorrang vor der obigen Regel (auch vor „Standard-Benutzer"). „Automatisch" = nach obiger Regel.') }}
                                 </p>
                                 <div class="space-y-1">
                                     @foreach ($togglUsers as $tu)
                                         <div class="flex items-center gap-2">
                                             <span class="min-w-0 flex-1 truncate text-sm" title="{{ $tu['email'] }}">
-                                                {{ $tu['name'] }} <span class="text-base-content/50">({{ $tu['email'] }})</span>
+                                                {{ $tu['name'] }} <span class="text-muted">({{ $tu['email'] }})</span>
                                             </span>
                                             <select name="user_map[{{ $tu['email'] }}]" class="select select-sm select-bordered w-full max-w-xs">
                                                 <option value="">{{ __('— automatisch —') }}</option>
@@ -134,7 +134,7 @@
 
                     <div>
                         <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('Zeitraum (optional)') }}</h2>
-                        <p class="mb-2 text-xs text-base-content/60">{{ __('Leer lassen, um die vollständige Historie zu importieren.') }}</p>
+                        <p class="mb-2 text-xs text-muted">{{ __('Leer lassen, um die vollständige Historie zu importieren.') }}</p>
                         <div class="flex flex-wrap gap-2">
                             <label class="form-control">
                                 <span class="label-text text-xs">{{ __('Von') }}</span>

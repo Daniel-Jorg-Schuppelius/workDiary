@@ -39,7 +39,7 @@
                     @endif
                 </div>
             </div>
-            <p class="mb-2 text-sm text-base-content/60">{{ __('etsy.intro') }}</p>
+            <p class="mb-2 text-sm text-muted">{{ __('etsy.intro') }}</p>
 
             {{-- Verbindung --}}
             <div class="flex flex-wrap items-center gap-2 text-sm">
@@ -63,12 +63,12 @@
                         <button type="submit" class="btn btn-primary btn-xs">{{ __('etsy.connection.connect') }}</button>
                     </form>
                 @elseif (! $configured)
-                    <span class="text-base-content/60">{{ __('etsy.connection.not_configured') }}</span>
+                    <span class="text-muted">{{ __('etsy.connection.not_configured') }}</span>
                 @endif
             </div>
 
             {{-- Einrichtungshinweise: Redirect-URI (Seller-App) + Webhook-URL (Portal) --}}
-            <div class="mt-3 space-y-1 text-xs text-base-content/60">
+            <div class="mt-3 space-y-1 text-xs text-muted">
                 <div>{{ __('etsy.setup.callback') }} <code class="select-all">{{ $callbackUrl }}</code></div>
                 @if ($webhookUrl !== null)
                     <div>{{ __('etsy.setup.webhook') }} <code class="select-all">{{ $webhookUrl }}</code></div>
@@ -153,7 +153,7 @@
         @if ($ledgerSums->isNotEmpty())
             <div class="overflow-x-auto rounded-box border border-base-300 bg-base-100 shadow-xs">
                 <table class="table table-sm">
-                    <caption class="p-2 text-left text-xs text-base-content/60">{{ __('etsy.ledger.caption') }}</caption>
+                    <caption class="p-2 text-left text-xs text-muted">{{ __('etsy.ledger.caption') }}</caption>
                     <thead>
                         <tr>
                             <th>{{ __('etsy.ledger.type') }}</th>

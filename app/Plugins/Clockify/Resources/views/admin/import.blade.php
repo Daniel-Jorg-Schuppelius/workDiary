@@ -29,7 +29,7 @@
 
     <x-card>
         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('CSV hochladen') }}</h2>
-        <p class="mb-3 text-sm text-base-content/60">
+        <p class="mb-3 text-sm text-muted">
             {{ __('Clockify → Reports → Detailed → Export → CSV. Clients/Projekte werden über Namen bzw. gemerkte Zuordnungen gematcht; nicht Zuordenbares landet in der Zuordnungs-Inbox. Für Free-Konten (30 API-Requests/h) ist CSV der empfohlene Weg.') }}
         </p>
         <form method="POST" action="{{ route('admin.clockify.import-csv') }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2">
@@ -42,7 +42,7 @@
     <x-card>
         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Direkt aus der Clockify-API importieren') }}</h2>
         @if ($apiConfigured)
-            <p class="mb-3 text-sm text-base-content/60">
+            <p class="mb-3 text-sm text-muted">
                 {{ __('Holt Zeiteinträge aller Benutzer über die Reports-API (X-Api-Key). Ohne Zeitraum werden die letzten :days Tage abgefragt; bereits importierte Einträge werden übersprungen.', ['days' => $syncWindowDays]) }}
             </p>
             <form method="POST" action="{{ route('admin.clockify.import-api') }}" class="flex flex-wrap items-end gap-2">
@@ -65,7 +65,7 @@
     @if ($apiConfigured && ($exportEnabled ?? false))
         <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Zeiten nach Clockify übertragen') }}</h2>
-            <p class="mb-3 text-sm text-base-content/60">
+            <p class="mb-3 text-sm text-muted">
                 {{ __('Überträgt in workDiary erfasste Zeiten gemappter Projekte nach Clockify (z. B. Fernwartungssitzungen). Angelegt wird für den Inhaber des API-Keys; bereits übertragene oder aus Clockify importierte Einträge werden übersprungen, die Einträge bleiben lokal abrechenbar.') }}
             </p>
             <form method="POST" action="{{ route('admin.clockify.export-api') }}" class="flex flex-wrap items-end gap-2">
@@ -89,7 +89,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Zuordnungs-Inbox') }}</h2>
-                <p class="text-sm text-base-content/60">{{ __('Offene, noch nicht zugeordnete Import-Gruppen: :n', ['n' => $inboxOpenCount]) }}</p>
+                <p class="text-sm text-muted">{{ __('Offene, noch nicht zugeordnete Import-Gruppen: :n', ['n' => $inboxOpenCount]) }}</p>
             </div>
             <x-icon-btn icon="inbox" tone="outline" size="sm" :href="route('admin.integration.inbox')" show-label>{{ __('Zur Inbox') }}</x-icon-btn>
         </div>

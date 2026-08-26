@@ -20,7 +20,7 @@
         {{-- Punchout-Endpunkt für die Beschaffungsseite --}}
         <x-card>
             <div class="text-sm">
-                <span class="text-base-content/60">{{ __('b2b_catalog.punchout_url') }}:</span>
+                <span class="text-muted">{{ __('b2b_catalog.punchout_url') }}:</span>
                 <code class="rounded bg-base-200 px-2 py-0.5">{{ $punchoutUrl }}</code>
             </div>
         </x-card>
@@ -28,7 +28,7 @@
         {{-- Neuer Zugang --}}
         <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('b2b_catalog.access_new_heading') }}</h2>
-            <p class="mb-3 text-xs text-base-content/60">{{ __('b2b_catalog.access_new_hint') }}</p>
+            <p class="mb-3 text-xs text-muted">{{ __('b2b_catalog.access_new_hint') }}</p>
             <form method="POST" action="{{ route('b2b-catalog.store') }}" class="grid gap-3 md:grid-cols-4">
                 @csrf
                 <label class="form-control">
@@ -109,7 +109,7 @@
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('b2b_catalog.action.upload_order') }}</button>
                 </form>
             </div>
-            <p class="mb-3 text-xs text-base-content/60">{{ __('b2b_catalog.orders_hint') }}</p>
+            <p class="mb-3 text-xs text-muted">{{ __('b2b_catalog.orders_hint') }}</p>
             <x-table :bare="true" :empty-title="__('b2b_catalog.orders_empty')">
                 <x-slot:head>
                     <tr>

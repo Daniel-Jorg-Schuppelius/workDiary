@@ -213,8 +213,28 @@
                 $_helpContextTopic = null;
             }
         }
+        // Navigations-Kürzel (Feature 037, MVP-721): Ziel-URLs nur mit Recht
+        // (NavGate = viewAny der gemappten Policy, wie im Menü); ohne Attribut
+        // bleibt das Kürzel in resources/js/shortcuts.js stumm. Legacy-Modus
+        // hat andere Routen und keine Übersicht.
+        $_shortcutTargets = [];
+        if (Auth::check() && $_bodyMode !== 'legacy') {
+            $_navGate = app(\App\Services\Navigation\NavGate::class);
+            foreach (['diary' => 'diary.index', 'customers' => 'customers.index', 'projects' => 'projects.index', 'new-entry' => 'diary.create'] as $_shortcutKey => $_shortcutRoute) {
+                if (\Illuminate\Support\Facades\Route::has($_shortcutRoute) && $_navGate->allows($_shortcutRoute)) {
+                    $_shortcutTargets[$_shortcutKey] = route($_shortcutRoute);
+                }
+            }
+        }
+        // Als fertiger Attribut-String: Blade-Direktiven direkt hinter @endif
+        // (ohne Trennzeichen) werden nicht kompiliert.
+        $_shortcutAttrs = implode('', array_map(
+            static fn (string $key, string $url): string => ' data-shortcut-' . $key . '="' . e($url) . '"',
+            array_keys($_shortcutTargets),
+            $_shortcutTargets,
+        ));
     @endphp
-    <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-linear-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}"@if ($_helpContextTopic) data-help-context="{{ $_helpContextTopic }}"@endif>
+    <body class="min-h-screen text-base-content {{ $_bodyMode === 'legacy' ? 'bg-base-200' : 'bg-linear-to-b from-base-200 to-base-300' }}" data-mode="{{ $_bodyMode }}"@if ($_helpContextTopic) data-help-context="{{ $_helpContextTopic }}"@endif{!! $_shortcutAttrs !!}>
         {{-- Barrierefreiheit (WCAG 2.4.1): Sprunglink zum Hauptinhalt. Visuell
              ausgeblendet (sr-only), wird beim Tab-Fokus sichtbar und springt an
              das <main id="main-content"> — Tastaturnutzer überspringen so die
@@ -277,7 +297,7 @@
                         @else
                             <span class="font-['Space_Grotesk'] text-xs uppercase tracking-[0.35em] text-primary transition group-hover:opacity-80 shrink-0">{{ $_brandName }}</span>
                         @endif
-                        <span class="text-base-content/40">/</span>
+                        <span class="text-muted">/</span>
                         <span class="font-['Space_Grotesk'] font-semibold text-base-content truncate">@yield('nav-title', __('Auftragsbuch'))</span>
                     </a>
                 </div>
@@ -404,9 +424,7 @@
                                     aria-label="{{ __('Navigation öffnen') }}"
                                     aria-controls="app-sidebar"
                                     aria-expanded="false">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.75">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
-                                </svg>
+                                <x-icon name="menu" class="text-[1.25rem]" />
                             </button>
 
 
@@ -691,7 +709,7 @@
                                         @forelse ($_bookmarks as $_bm)
                                             <a href="{{ $_bm->url }}"
                                                class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0">
-                                                <span class="material-symbols-outlined text-base" aria-hidden="true">{{ $_bm->icon ?: 'bookmark' }}</span>
+                                                <x-icon name="{{ $_bm->icon ?: 'bookmark' }}" class="text-base" />
                                                 <span class="flex-1 min-w-0 text-sm font-medium truncate">{{ $_bm->label }}</span>
                                             </a>
                                         @empty
@@ -747,7 +765,7 @@
                                             @endphp
                                             <a href="{{ route('notifications.index') }}"
                                                class="flex items-start gap-3 px-4 py-3 hover:bg-base-200 border-b border-base-200 last:border-b-0 {{ $_nUnread ? 'bg-primary/5' : '' }}">
-                                                <span class="material-symbols-outlined text-base {{ $_nUnread ? 'text-primary' : 'opacity-50' }}" aria-hidden="true">{{ $_nd['icon'] ?? 'notifications' }}</span>
+                                                <x-icon name="{{ $_nd['icon'] ?? 'notifications' }}" class="text-base {{ $_nUnread ? 'text-primary' : 'opacity-50' }}" />
                                                 <span class="flex-1 min-w-0">
                                                     <span class="block text-sm font-medium truncate">{{ \App\Support\NotificationText::title($_nd) }}</span>
                                                     @if (($_nMessage = \App\Support\NotificationText::message($_nd)) !== '')
@@ -803,8 +821,7 @@
                                                         default => 'text-info',
                                                     };
                                                 @endphp
-                                                <span class="material-symbols-outlined text-base {{ $sevColor }}"
-                                                      aria-hidden="true">{{ $_r['icon'] }}</span>
+                                                <x-icon name="{{ $_r['icon'] }}" class="text-base {{ $sevColor }}" />
                                                 <span class="flex-1 min-w-0">
                                                     <span class="block text-sm font-medium">{{ $_r['title'] }}</span>
                                                     <span class="block text-xs opacity-60 mt-0.5">{{ $_r['description'] }}</span>
@@ -849,7 +866,7 @@
                                                 aria-label="{{ __('Farbschema wechseln') }}"
                                                 title="{{ __('Farbschema wechseln') }}"
                                                 class="btn btn-xs btn-ghost gap-2">
-                                            <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
+                                            <x-icon name="dark_mode" class="text-base leading-none" data-theme-label />
                                             <span class="text-xs opacity-70">{{ __('Wechseln') }}</span>
                                         </button>
                                     </div>
@@ -969,7 +986,7 @@
                     @else
                         <div class="flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                             <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                                <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
+                                <x-icon name="dark_mode" class="text-base leading-none" data-theme-label />
                             </button>
                             <x-locale-switcher />
                             <x-button href="{{ route('login') }}" tone="primary" size="sm">⇢ {{ __('Anmelden') }}</x-button>
@@ -987,6 +1004,7 @@
         @auth
             @if (! $isLegacyMode)
                 @include('partials.global-search')
+                @include('partials.shortcuts-dialog')
             @endif
         @endauth
 
@@ -1016,7 +1034,7 @@
                             <x-icon :name="$_focusMeta['icon'] ?? 'apps'" class="text-[1.1rem]" />
                         </span>
                         <span data-sidebar-label class="min-w-0 flex-1 leading-tight">
-                            <span class="block text-[0.6rem] font-medium uppercase tracking-wider text-base-content/60">{{ __('scope.focus.eyebrow') }}</span>
+                            <span class="block text-[0.6rem] font-medium uppercase tracking-wider text-muted">{{ __('scope.focus.eyebrow') }}</span>
                             <span class="block truncate text-sm font-semibold text-base-content">{{ $_focusMeta['label'] ?? __('scope.focus.all') }}</span>
                         </span>
                         <x-icon name="expand_more" data-sidebar-label class="shrink-0 text-[1.1rem] text-base-content/70" />
@@ -1087,7 +1105,7 @@
                                             <details class="sidebar-subgroup sidebar-subgroup-collapsible"
                                                      data-sidebar-subgroup-key="{{ $group['key'] ?? '' }}"
                                                      @if ($groupActive) open @endif>
-                                                <summary class="sidebar-subgroup-label flex items-center gap-2 px-2 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                                                <summary class="sidebar-subgroup-label flex items-center gap-2 px-2 pt-2 pb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                                                     <x-icon :name="$group['icon'] ?? 'label'" class="text-[0.95rem] opacity-70" />
                                                     <span data-sidebar-label class="truncate flex-1">{{ $group['label'] }}</span>
                                                     <x-icon name="expand_more" class="sidebar-subgroup-chevron" />
@@ -1413,7 +1431,7 @@
             <div class="mx-auto flex h-full w-full {{ $_wrapperMaxW }} flex-col items-center justify-center gap-0 px-4 text-center text-[0.65rem] leading-tight text-base-content/70 sm:flex-row sm:text-xs xl:px-8 2xl:px-12">
                 <div class="max-w-full"><x-footer-copyright /></div>
                 @php($buildHash = \Illuminate\Support\Facades\Cache::remember('build.hash', 3600, fn () => app(\App\Services\Isms\SbomGenerator::class)->resolveGitHash()))
-                <span class="whitespace-nowrap text-[0.6rem] text-base-content/40 sm:ml-1 sm:text-xs" title="{{ __('Version') }}"><span class="hidden sm:inline">&middot;&nbsp;</span>v{{ config('app.version', '0.1.0-dev') }}@if ($buildHash)<span class="hidden sm:inline">&nbsp;·&nbsp;{{ $buildHash }}</span>@endif</span>
+                <span class="whitespace-nowrap text-[0.6rem] text-muted sm:ml-1 sm:text-xs" title="{{ __('Version') }}"><span class="hidden sm:inline">&middot;&nbsp;</span>v{{ config('app.version', '0.1.0-dev') }}@if ($buildHash)<span class="hidden sm:inline">&nbsp;·&nbsp;{{ $buildHash }}</span>@endif</span>
             </div>
         </footer>
 

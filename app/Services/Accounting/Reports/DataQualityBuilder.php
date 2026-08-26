@@ -15,6 +15,7 @@ namespace App\Services\Accounting\Reports;
 use App\Enums\Finance\{AccountingEntryStatus, RecurringRunStatus};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingFilingObligation, AccountingRecurringRun};
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 
@@ -29,8 +30,7 @@ class DataQualityBuilder extends AbstractAccountingReportBuilder {
         $drafts = AccountingEntry::query()
             ->where('organization_id', $organization->id)
             ->whereIn('status', [AccountingEntryStatus::Draft->value, AccountingEntryStatus::Ready->value])
-            ->whereDate('booked_on', '>=', $from->toDateString())
-            ->whereDate('booked_on', '<=', $to->toDateString())
+            ->whereBetween('booked_on', DateRange::days($from, $to))
             ->count();
 
         $unbalanced = 0;
@@ -53,7 +53,7 @@ class DataQualityBuilder extends AbstractAccountingReportBuilder {
         $openExpectations = AccountingRecurringRun::query()
             ->where('organization_id', $organization->id)
             ->where('status', RecurringRunStatus::Expected->value)
-            ->whereDate('due_on', '<=', $to->toDateString())
+            ->where('due_on', '<=', DateRange::day($to))
             ->count();
 
         $tenDayCases = $this->tenDayRuleCases($organization, $from, $to);
@@ -63,7 +63,7 @@ class DataQualityBuilder extends AbstractAccountingReportBuilder {
         $overdueFilings = AccountingFilingObligation::query()
             ->where('organization_id', $organization->id)
             ->open()
-            ->whereDate('due_on', '<', $to->toDateString())
+            ->where('due_on', '<', DateRange::day($to))
             ->count();
 
         $findings = [];

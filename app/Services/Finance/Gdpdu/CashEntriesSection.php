@@ -46,32 +46,28 @@ class CashEntriesSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        $rows = [];
-        CashEntry::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (CashEntry::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereBetween('booked_on', [$from->toDateString(), $to->toDateString()])
             ->with(['register:id,name', 'invoice:id,number', 'reversalOf:id,seq_no'])
-            ->orderBy('cash_register_id')->orderBy('seq_no')
-            ->get()
-            ->each(function (CashEntry $entry) use (&$rows): void {
-                $rows[] = [
-                    $this->str($entry->register?->name),
-                    $this->num($entry->seq_no, 0),
-                    $this->date($entry->booked_on),
-                    $entry->direction === CashEntry::DIRECTION_IN ? 'Einnahme' : 'Ausgabe',
-                    $this->num($entry->amount?->toFloat(), 2),
-                    $this->num($entry->tax_rate !== null ? (float) $entry->tax_rate->getNumericValue() : null, 2),
-                    $this->str($entry->purpose),
-                    $this->str($entry->counterparty),
-                    $this->str($entry->invoice?->number),
-                    $this->str($entry->reversalOf?->seq_no),
-                    $this->dateTime($entry->created_at),
-                    $this->str($entry->hash),
-                ];
-            });
-
-        return $rows;
+            ->orderBy('cash_register_id')->orderBy('seq_no')->orderBy('id')
+            ->lazy() as $entry) {
+            yield [
+                $this->str($entry->register?->name),
+                $this->num($entry->seq_no, 0),
+                $this->date($entry->booked_on),
+                $entry->direction === CashEntry::DIRECTION_IN ? 'Einnahme' : 'Ausgabe',
+                $this->num($entry->amount?->toFloat(), 2),
+                $this->num($entry->tax_rate !== null ? (float) $entry->tax_rate->getNumericValue() : null, 2),
+                $this->str($entry->purpose),
+                $this->str($entry->counterparty),
+                $this->str($entry->invoice?->number),
+                $this->str($entry->reversalOf?->seq_no),
+                $this->dateTime($entry->created_at),
+                $this->str($entry->hash),
+            ];
+        }
     }
 }

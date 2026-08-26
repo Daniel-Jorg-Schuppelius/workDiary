@@ -12,7 +12,12 @@
 
 @section('content')
 <div class="space-y-4">
-    <h1 class="text-xl font-semibold">{{ __('Meine Leihgeräte') }}</h1>
+    <div class="flex flex-wrap items-center justify-between gap-2">
+        <h1 class="text-xl font-semibold">{{ __('Meine Leihgeräte') }}</h1>
+        @if (app(\App\Services\CustomerPortal\PortalVisibility::class)->allows(auth('customer')->user()?->customer, \App\Enums\CustomerPortal\PortalCapability::RentalRequests))
+            <a href="{{ route('customer.rentals.requests.index') }}" class="btn btn-sm btn-outline">{{ __('Verleih-Anfrage stellen') }}</a>
+        @endif
+    </div>
 
     @if (session('status'))
         <div class="alert alert-success">{{ session('status') }}</div>

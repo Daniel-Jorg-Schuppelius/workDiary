@@ -31,7 +31,7 @@
                             <x-status-badge tone="ghost" outline>{{ $tag->name }}</x-status-badge>
                         @endforeach
                     </div>
-                    <p class="text-xs text-base-content/60">
+                    <p class="text-xs text-muted">
                         {{ __('knowledge.field.creator') }}: {{ optional($article->creator)->name ?? '—' }}
                         @if ($article->published_at)
                             · {{ __('knowledge.field.published_at') }}: {{ $article->published_at->fdatetime() }}
@@ -101,7 +101,7 @@
             <x-card as="section">
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <h3 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                        <x-icon name="how_to_vote" class="text-base-content/60" /> {{ __('knowledge.feedback.title') }}
+                        <x-icon name="how_to_vote" class="text-muted" /> {{ __('knowledge.feedback.title') }}
                     </h3>
                     <div class="flex flex-wrap items-center gap-2">
                         <form method="POST" action="{{ route('knowledge.feedback', $article) }}">
@@ -123,7 +123,7 @@
                     </div>
                 </div>
                 @if ($ownFeedback !== null)
-                    <p class="mt-2 text-xs text-base-content/60">{{ __('knowledge.feedback.already_voted') }}</p>
+                    <p class="mt-2 text-xs text-muted">{{ __('knowledge.feedback.already_voted') }}</p>
                 @endif
             </x-card>
         @endcan
@@ -131,11 +131,11 @@
         {{-- ── Problemhistorie: Verknüpfungen ────────────────────────────── --}}
         <x-card as="section" id="knowledge-links">
             <h3 class="mb-3 flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                <x-icon name="link" class="text-base-content/60" /> {{ __('knowledge.title.links') }}
-                <span class="font-normal text-base-content/50">({{ $article->links->count() }})</span>
+                <x-icon name="link" class="text-muted" /> {{ __('knowledge.title.links') }}
+                <span class="font-normal text-muted">({{ $article->links->count() }})</span>
             </h3>
             @if ($article->links->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">link</span>'
+                <x-empty-state compact icon="link"
                                :title="__('knowledge.title.links')"
                                :message="__('knowledge.empty_links')" />
             @else
@@ -149,7 +149,7 @@
                             <div class="flex min-w-0 items-center gap-2">
                                 <x-status-badge tone="ghost" outline>{{ $linkLabels[$link->id] ?? '—' }}</x-status-badge>
                                 <span class="truncate text-sm font-medium">{{ $name }}</span>
-                                <span class="text-xs text-base-content/60">
+                                <span class="text-xs text-muted">
                                     {{ optional($link->creator)->name ?? '—' }} · {{ $link->created_at?->fdate() ?? '—' }}
                                 </span>
                             </div>

@@ -55,7 +55,7 @@
     ]" />
 
     @if ($suppliers->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>' :title="$search !== '' ? __('Keine Lieferanten für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Lieferanten in dieser Ansicht')" />
+        <x-empty-state framed icon="local_shipping" :title="$search !== '' ? __('Keine Lieferanten für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Lieferanten in dieser Ansicht')" />
     @else
         <x-table :zebra="true" table-sort="server"
                  :route="route('suppliers.index')"

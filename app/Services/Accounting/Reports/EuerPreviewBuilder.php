@@ -15,6 +15,7 @@ namespace App\Services\Accounting\Reports;
 use App\Enums\Finance\{AccountType, EuerCategory, SettlementKind};
 use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingOpenItem};
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -176,8 +177,7 @@ class EuerPreviewBuilder extends AbstractAccountingReportBuilder {
         return AccountingEntry::query()
             ->where('organization_id', $organization->id)
             ->whereIn('status', self::POSTED)
-            ->whereDate('booked_on', '>=', $from->toDateString())
-            ->whereDate('booked_on', '<=', $to->toDateString())
+            ->whereBetween('booked_on', DateRange::days($from, $to))
             ->whereHas('lines.account', function (Builder $query): void {
                 $query->where(function (Builder $inner): void {
                     $inner->where('is_bank', true)->orWhere('is_cash', true);

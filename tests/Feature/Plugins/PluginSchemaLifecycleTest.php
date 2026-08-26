@@ -13,27 +13,42 @@ namespace Tests\Feature\Plugins;
 use App\Models\PluginState;
 use App\Plugins\Contracts\{Plugin, PluginCapability};
 use App\Plugins\{PluginDefaults, PluginSchemaManager};
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\{DB, Schema};
+use Tests\Support\MigratedWithoutTransaction;
 use Tests\TestCase;
 
 /**
  * Reparierter Schema-Lifecycle (Review 2026-08, W6 / Entscheidung E-7):
  * Install → Uninstall → Re-Install-Zyklus, transaktionaler onInstall-Hook,
  * Downgrade-Schutz.
+ *
+ * Läuft seit MVP-725 auch auf MariaDB (Vollscan 2026-08-23, D7): Plugin-Install
+ * fährt echtes DDL, und auf MySQL/MariaDB committet DDL implizit — in der
+ * RefreshDatabase-Transaktion wären danach Savepoints weg und die DB
+ * verschmutzt. Deshalb {@see MigratedWithoutTransaction} (migrierte DB, keine
+ * Transaktion) plus punktgenaues Aufräumen in tearDown(): Probe-Tabelle,
+ * Migrations-Zeile und plugin_states-Zeile — der geseedete Grundbestand bleibt
+ * unangetastet.
  */
 class PluginSchemaLifecycleTest extends TestCase {
-    use RefreshDatabase;
+    use MigratedWithoutTransaction;
 
-    protected function setUp(): void {
-        parent::setUp();
+    /** Migrationsdatei aus tests/Fixtures/plugin-migrations (ohne .php). */
+    private const PROBE_MIGRATION = '2026_01_01_000000_create_wd_schema_probe_table';
 
-        // Plugin-Install fährt echtes DDL; auf MySQL/MariaDB committet DDL
-        // implizit die RefreshDatabase-Transaktion (Savepoints weg, DB
-        // verschmutzt). Lifecycle-Abdeckung liefert die CI auf SQLite.
-        if (in_array(\Illuminate\Support\Facades\DB::connection()->getDriverName(), ['mysql', 'mariadb'], true)) {
-            $this->markTestSkipped('Plugin-Schema-DDL ist auf MySQL/MariaDB nicht transaktional testbar.');
+    protected function tearDown(): void {
+        // Ohne Transaktion überlebt jeder Schreibvorgang den Test — die drei
+        // Spuren des Lifecycles selbst zurücknehmen (Reihenfolge egal, alle
+        // Schritte sind idempotent).
+        try {
+            Schema::dropIfExists('wd_schema_probe');
+            DB::table('migrations')->where('migration', self::PROBE_MIGRATION)->delete();
+            PluginState::query()->where('plugin_id', 'schema-probe')->delete();
+        } catch (\Throwable) {
+            // Aufräumen darf einen bereits roten Test nicht überdecken.
         }
+
+        parent::tearDown();
     }
 
     private function manager(): PluginSchemaManager {

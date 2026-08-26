@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
  * @property int|null $expense_id
  * @property int|null $material_usage_id
  * @property int|null $tour_id
+ * @property int|null $article_id
  * @property \Illuminate\Support\Carbon|null $service_date
  * @property string $description
  * @property string $quantity
@@ -52,6 +53,7 @@ class InvoiceItem extends Model {
         'expense_id',
         'material_usage_id',
         'tour_id',
+        'article_id',
         'rental_charge_id',
         'settled_invoice_id',
         'service_date',
@@ -114,6 +116,16 @@ class InvoiceItem extends Model {
     /** @return BelongsTo<Tour, $this> */
     public function tour(): BelongsTo {
         return $this->belongsTo(Tour::class);
+    }
+
+    /**
+     * Optionaler Artikelbezug (Feature 140) — Auswertungsanker, kein
+     * Preisautomat: Beschreibung/Einheit/Preis bleiben Positionswerte.
+     *
+     * @return BelongsTo<Article, $this>
+     */
+    public function article(): BelongsTo {
+        return $this->belongsTo(Article::class);
     }
 
     /**

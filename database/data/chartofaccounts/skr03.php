@@ -134,5 +134,10 @@ return [
         ['source_kind' => 'payment', 'role' => 'receivable', 'account' => '1400'],
         ['source_kind' => 'payment', 'role' => 'employee_payable', 'account' => '1740'],
         ['source_kind' => 'payment', 'role' => 'discount', 'account' => '8736'],
+
+        // Jahres-AfA (Feature 133): direkte Methode, BGA als Auffangkonto —
+        // Fuhrpark/Software werden je Anlage überschrieben.
+        ['source_kind' => 'depreciation', 'role' => 'fixed_asset', 'account' => '0410'],
+        ['source_kind' => 'depreciation', 'role' => 'depreciation', 'account' => '4830'],
     ],
 ];

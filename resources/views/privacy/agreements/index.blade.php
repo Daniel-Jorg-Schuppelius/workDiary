@@ -20,7 +20,7 @@
         </x-slot:actions>
 
         @if (session('status'))<div class="alert alert-success">{{ session('status') }}</div>@endif
-        <p class="text-sm text-base-content/60">{{ __('Neue AVV werden auf der jeweiligen Dienstleister-Seite angelegt.') }}</p>
+        <p class="text-sm text-muted">{{ __('Neue AVV werden auf der jeweiligen Dienstleister-Seite angelegt.') }}</p>
 
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>

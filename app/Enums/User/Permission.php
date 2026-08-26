@@ -315,6 +315,13 @@ enum Permission: string implements HasLabel {
     case InvoicePay = 'invoice.pay';
     case InvoiceExport = 'invoice.export';
 
+        // ── Provisionen (Feature 146) ──────────────────────────────────────
+        // Vertriebsleitung/Admin: `viewAny` sieht Regeln, Zeilen und Laeufe,
+        // `manage` pflegt Regeln, ordnet Belege zu, legt Laeufe an und
+        // schliesst sie. Eine Auszahlung gibt es bewusst nicht.
+    case CommissionViewAny = 'commission.viewAny';
+    case CommissionManage = 'commission.manage';
+
         // ── Diary / Tagebuch ───────────────────────────────────────────────
     case DiaryViewAny = 'diary.viewAny';
     case DiaryViewOwn = 'diary.viewOwn';
@@ -425,6 +432,10 @@ enum Permission: string implements HasLabel {
     case SafetyViewAny = 'safety.viewAny';
     case SafetyReport = 'safety.report';
     case SafetyManage = 'safety.manage';
+
+        // ── Trainingsmanagement (Feature 145) ──────────────────────────────
+    case TrainingViewAny = 'training.viewAny';
+    case TrainingManage = 'training.manage';
 
         // ── Benachrichtigungsregeln (MVP-018) ──────────────────────────────
     case NotificationRuleViewAny = 'notificationRule.viewAny';
@@ -750,6 +761,9 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'timeEntry.'), str_starts_with($this->value, 'project-time.') => PermissionGroup::TimeEntries,
             str_starts_with($this->value, 'timesheet.') => PermissionGroup::Timesheets,
             str_starts_with($this->value, 'invoice.') => PermissionGroup::Invoicing,
+            // Provisionen (146) sitzen fachlich bei Vertrieb & Abrechnung —
+            // ohne dieses Mapping fielen sie in den MasterData-Default.
+            str_starts_with($this->value, 'commission.') => PermissionGroup::Invoicing,
             str_starts_with($this->value, 'finance.'), str_starts_with($this->value, 'accountingMigration.') => PermissionGroup::Finance,
             str_starts_with($this->value, 'investment.') => PermissionGroup::Finance,
             str_starts_with($this->value, 'article.') => PermissionGroup::Invoicing,
@@ -781,7 +795,10 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'compliance.'),
             str_starts_with($this->value, 'overtime.'),
             str_starts_with($this->value, 'flex.') => PermissionGroup::WorkingTime,
-            str_starts_with($this->value, 'safety.') => PermissionGroup::Safety,
+            // Trainingsmanagement (145) sitzt fachlich in der Arbeitsschutz-
+            // Gruppe — ohne dieses Mapping fiele es in den MasterData-Default.
+            str_starts_with($this->value, 'safety.'),
+            str_starts_with($this->value, 'training.') => PermissionGroup::Safety,
             str_starts_with($this->value, 'openIssue.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'serviceTicket.') => PermissionGroup::OpenIssues,
             str_starts_with($this->value, 'helpdesk.') => PermissionGroup::OpenIssues,

@@ -18,7 +18,7 @@
     <div class="space-y-3">
         @forelse ($queries as $query)
             <div class="rounded-box border border-base-300 bg-base-100 p-4">
-                <div class="mb-2 flex flex-wrap items-center gap-2 text-xs text-base-content/60">
+                <div class="mb-2 flex flex-wrap items-center gap-2 text-xs text-muted">
                     <span class="font-medium text-base-content">{{ $query->subject !== null ? $subjects->label($query->subject) : __('(Vorgang nicht mehr verfügbar)') }}</span>
                     <span>·</span>
                     <span>{{ $query->created_at?->fdatetime() }}</span>
@@ -37,13 +37,24 @@
                 </div>
 
                 <div class="text-sm">
-                    <p class="text-xs font-semibold text-base-content/60">{{ $query->asker_name ?? __('Sie') }} ({{ __('Kunde') }})</p>
+                    <p class="text-xs font-semibold text-muted">{{ $query->asker_name ?? __('Sie') }} ({{ __('Kunde') }})</p>
                     <p class="whitespace-pre-line">{{ $query->question }}</p>
+                    @if ($query->attachments->isNotEmpty())
+                        <ul class="mt-2 flex flex-wrap gap-2 text-xs">
+                            @foreach ($query->attachments as $attachment)
+                                <li>
+                                    <a class="link link-hover inline-flex items-center gap-1" href="{{ route('customer.queries.attachments.download', [$query, $attachment]) }}">
+                                        <x-icon name="attach_file" class="text-sm" />{{ $attachment->original_name }}
+                                    </a>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
                 </div>
 
                 @if ($query->answer !== null)
                     <div class="mt-3 rounded-box bg-base-200/60 p-3 text-sm">
-                        <p class="text-xs font-semibold text-base-content/60">
+                        <p class="text-xs font-semibold text-muted">
                             {{ $query->answeredBy?->name ?? __('Service-Team') }} ({{ __('Team') }})
                             @if ($query->answered_at) · {{ $query->answered_at->fdatetime() }} @endif
                         </p>
@@ -60,9 +71,9 @@
             </div>
         @empty
             <div class="rounded-box border border-base-300 bg-base-100 p-8 text-center">
-                <span class="material-symbols-outlined mb-2 text-4xl text-base-content/40">forum</span>
+                <x-icon name="forum" class="mb-2 text-4xl text-muted" />
                 <p class="font-medium">{{ __('Noch keine Rückfragen.') }}</p>
-                <p class="mt-1 text-sm text-base-content/60">{{ __('Stellen Sie Rückfragen direkt an freigegebenen Aufträgen, Zeiten oder Dokumenten.') }}</p>
+                <p class="mt-1 text-sm text-muted">{{ __('Stellen Sie Rückfragen direkt an freigegebenen Aufträgen, Zeiten oder Dokumenten.') }}</p>
             </div>
         @endforelse
     </div>

@@ -27,7 +27,7 @@
 
     @if ($requirements->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">shield_person</span>'
+            icon="shield_person"
             :title="__('Noch keine Soll-Besetzungen für diesen Dienstplan definiert.')"
             :message="__('Hinweis: Ohne Anforderungen gilt die Mindestbesetzung des Dienstplans:') . ' ' . $dutyPlan->min_staff" />
     @else
@@ -59,7 +59,7 @@
                                 </span>
                                 {{ $req->shiftType->name }}
                             @else
-                                <span class="text-base-content/40">–</span>
+                                <span class="text-muted">–</span>
                             @endif
                         </td>
                         <td class="text-sm">
@@ -87,7 +87,7 @@
                                 </span>
                             @endforeach
                             @if (empty($req->required_qualification_ids) && $req->qualificationMinima() === [])
-                                <span class="text-base-content/30">–</span>
+                                <span class="text-muted">–</span>
                             @endif
                         </td>
                         <td class="text-sm text-base-content/70">{{ Str::limit((string) $req->notes, 40) }}</td>

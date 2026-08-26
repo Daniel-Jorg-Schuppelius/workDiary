@@ -125,7 +125,7 @@
     <div {{ $attributes->merge(['class' => $formControl ? 'fieldset w-full' : 'flex flex-col']) }} @if($linked) data-range-link @endif>
         @if ($label !== false && $label !== '')
             @if ($formControl)
-                <label class="fieldset-label">{{ $label }}</label>
+                <span class="fieldset-label">{{ $label }}</span>
             @else
                 <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ $label }}</span></label>
             @endif

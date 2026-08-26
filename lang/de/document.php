@@ -56,6 +56,7 @@ return [
         'project' => 'Projekt',
         'diary' => 'Auftrag',
         'asset' => 'Asset',
+        'user' => 'Mitarbeiter',
         'none' => 'Ohne Bezug',
     ],
 

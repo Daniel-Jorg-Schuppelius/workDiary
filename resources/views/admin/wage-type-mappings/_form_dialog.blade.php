@@ -48,7 +48,7 @@
                     </optgroup>
                 @endif
             </select>
-            <p class="text-xs text-base-content/60">{{ __('wage_types.field.wage_type_help') }}</p>
+            <p class="text-xs text-muted">{{ __('wage_types.field.wage_type_help') }}</p>
             @error('wage_type')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -57,7 +57,7 @@
             <input id="wtm-external-code" type="text" name="external_code" required maxlength="20"
                    value="{{ old('external_code', $mapping->external_code) }}"
                    class="input input-bordered w-full font-mono" placeholder="1000">
-            <p class="text-xs text-base-content/60">{{ __('wage_types.field.external_code_help') }}</p>
+            <p class="text-xs text-muted">{{ __('wage_types.field.external_code_help') }}</p>
             @error('external_code')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>

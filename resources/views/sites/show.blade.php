@@ -42,7 +42,7 @@
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                 @if ($site->address_street || $site->address_zip || $site->address_city)
                     <div>
-                        <dt class="text-base-content/60">{{ __('Adresse') }}</dt>
+                        <dt class="text-muted">{{ __('Adresse') }}</dt>
                         <dd>
                             @if ($site->address_street){{ $site->address_street }}<br>@endif
                             {{ trim(($site->address_zip ?? '').' '.($site->address_city ?? '')) }}
@@ -52,12 +52,12 @@
                 @endif
                 @if ($site->geo_lat !== null && $site->geo_lng !== null)
                     <div>
-                        <dt class="text-base-content/60">{{ __('Geo') }}</dt>
+                        <dt class="text-muted">{{ __('Geo') }}</dt>
                         <dd class="font-mono">{{ $site->geo_lat }}, {{ $site->geo_lng }}</dd>
                     </div>
                 @endif
                 <div>
-                    <dt class="text-base-content/60">{{ __('Status') }}</dt>
+                    <dt class="text-muted">{{ __('Status') }}</dt>
                     <dd>
                         @if ($site->is_active)
                             <x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge>
@@ -68,7 +68,7 @@
                 </div>
                 @if ($site->notes)
                     <div class="md:col-span-2">
-                        <dt class="text-base-content/60">{{ __('Notizen') }}</dt>
+                        <dt class="text-muted">{{ __('Notizen') }}</dt>
                         <dd class="whitespace-pre-line">{{ $site->notes }}</dd>
                     </div>
                 @endif
@@ -86,7 +86,7 @@
             @if ($buildings->isEmpty())
                 <div class="p-4">
                     <x-empty-state framed
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">apartment</span>' />
+                        icon="apartment" />
                 </div>
             @else
                 <x-table bare table-sort="client">
@@ -104,7 +104,7 @@
                         <tr>
                             <td>
                                 <a class="link link-hover" href="{{ route('buildings.show', $b) }}">{{ $b->name }}</a>
-                                @if ($b->code)<span class="text-base-content/60 ms-1">({{ $b->code }})</span>@endif
+                                @if ($b->code)<span class="text-muted ms-1">({{ $b->code }})</span>@endif
                             </td>
                             <td class="text-end">{{ $b->year_built ?? '—' }}</td>
                             <td class="text-end" data-sort-value="{{ $b->gross_area_m2 ?? '' }}">{{ $b->gross_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $b->gross_area_m2, 1, withThousandsSeparator: true) : '—' }}</td>

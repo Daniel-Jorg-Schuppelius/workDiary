@@ -29,7 +29,7 @@
         <x-input-field name="name" :label="__('isms.field.name')" required minlength="3" maxlength="180" :value="old('name', $scope?->name)" />
         <x-textarea-field name="description" :label="__('isms.field.description')" rows="3" maxlength="10000" :value="old('description', $scope?->description)" placeholder="{{ __('isms.hint.scope_description') }}" />
         @if ($isEdit && $scope->is_default)
-            <p class="text-xs text-base-content/60">{{ __('isms.scope.default_hint') }}</p>
+            <p class="text-xs text-muted">{{ __('isms.scope.default_hint') }}</p>
         @endif
     </x-form-group>
 </x-modal>

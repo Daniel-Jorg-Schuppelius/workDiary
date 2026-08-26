@@ -43,20 +43,20 @@
         @endif
 
         @if ($knowledgeLinks->isEmpty() && $knowledgeSuggestions->isEmpty())
-            <x-empty-state compact icon='<span class="material-symbols-outlined">school</span>'
+            <x-empty-state compact icon="school"
                            :title="__('knowledge.title.index')"
                            :message="__('knowledge.empty_context')" />
         @endif
 
         @if ($knowledgeLinks->isNotEmpty())
-            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('knowledge.title.linked') }}</h3>
+            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{{ __('knowledge.title.linked') }}</h3>
             <ul class="mb-4 space-y-2">
                 @foreach ($knowledgeLinks as $link)
                     @php $linkedArticle = $link->article; @endphp
                     <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 p-3">
                         <div class="min-w-0">
                             <a href="{{ route('knowledge.show', $linkedArticle) }}" class="link link-hover text-sm font-medium">{{ $linkedArticle->title }}</a>
-                            <p class="max-w-md truncate text-xs text-base-content/60">{{ $linkedArticle->problem }}</p>
+                            <p class="max-w-md truncate text-xs text-muted">{{ $linkedArticle->problem }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="flex items-center gap-1 text-xs text-success"><x-icon name="thumb_up" /> {{ $linkedArticle->helpful_count }}</span>
@@ -78,13 +78,13 @@
         @endif
 
         @if ($knowledgeSuggestions->isNotEmpty())
-            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('knowledge.title.suggestions') }}</h3>
+            <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{{ __('knowledge.title.suggestions') }}</h3>
             <ul class="space-y-2">
                 @foreach ($knowledgeSuggestions as $suggestion)
                     <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-dashed border-base-300 p-3">
                         <div class="min-w-0">
                             <a href="{{ route('knowledge.show', $suggestion) }}" class="link link-hover text-sm font-medium">{{ $suggestion->title }}</a>
-                            <p class="max-w-md truncate text-xs text-base-content/60">{{ $suggestion->problem }}</p>
+                            <p class="max-w-md truncate text-xs text-muted">{{ $suggestion->problem }}</p>
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="flex items-center gap-1 text-xs text-success"><x-icon name="thumb_up" /> {{ $suggestion->helpful_count }}</span>

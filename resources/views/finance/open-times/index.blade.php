@@ -59,12 +59,12 @@
         @if ($invoicedMismatches->isNotEmpty())
             <div class="rounded-box border border-warning/40 bg-warning/5 px-4 py-3">
                 <p class="text-sm font-medium">{{ __('finance.open_times.mismatch.heading') }}</p>
-                <p class="mt-1 text-xs text-base-content/60">{{ __('finance.open_times.mismatch.hint') }}</p>
+                <p class="mt-1 text-xs text-muted">{{ __('finance.open_times.mismatch.hint') }}</p>
                 <ul class="mt-2 space-y-1 text-sm">
                     @foreach ($invoicedMismatches as $diary)
                         <li class="flex flex-wrap items-center gap-2">
                             <a href="{{ route('diary.show', $diary) }}" class="link">{{ $diary->title ?? ('#' . $diary->sqid) }}</a>
-                            <span class="text-base-content/60">{{ $diary->customer->name ?? '—' }}</span>
+                            <span class="text-muted">{{ $diary->customer->name ?? '—' }}</span>
                             <x-status-badge tone="warning" outline>{{ trans_choice('finance.open_times.mismatch.open_entries', (int) $diary->open_time_entries_count, ['count' => (int) $diary->open_time_entries_count]) }}</x-status-badge>
                         </li>
                     @endforeach
@@ -193,7 +193,7 @@
                             $isLate = $latestBilled !== null && $entry->date !== null && $entry->date->lte($latestBilled);
                         @endphp
                         @if ($entry->billable)
-                            <span class="text-base-content/60">{{ __('Ja') }}</span>
+                            <span class="text-muted">{{ __('Ja') }}</span>
                         @else
                             <x-status-badge tone="warning" outline>{{ __('finance.open_times.badge.non_billable') }}</x-status-badge>
                         @endif

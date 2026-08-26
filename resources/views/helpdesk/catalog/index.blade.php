@@ -55,13 +55,13 @@
                     @endif
                 </div>
                 @if ($service->description)
-                    <p class="mt-1 text-sm text-base-content/60">{{ $service->description }}</p>
+                    <p class="mt-1 text-sm text-muted">{{ $service->description }}</p>
                 @endif
 
                 @forelse ($service->offerings as $offering)
                     <div class="mt-3 rounded-box border border-base-300 bg-base-200/40 p-3">
                         <div class="flex items-center gap-2">
-                            <x-icon name="widgets" class="text-base-content/60" />
+                            <x-icon name="widgets" class="text-muted" />
                             <span class="font-medium">{{ $offering->name }}</span>
                             @unless ($offering->active)
                                 <x-status-badge tone="ghost" size="xs">{{ __('Inaktiv') }}</x-status-badge>
@@ -117,13 +117,13 @@
                                                     <x-status-badge tone="ghost" size="xs">{{ __('Inaktiv') }}</x-status-badge>
                                                 @endunless
                                             </td>
-                                            <td class="text-sm text-base-content/60">{{ $item->formTemplate?->name ?? '—' }}</td>
+                                            <td class="text-sm text-muted">{{ $item->formTemplate?->name ?? '—' }}</td>
                                             @php($stepCount = count((array) ($item->approval_chain ?? [])))
                                             <td class="text-sm tabular-nums">
                                                 {{ $stepCount === 0 ? __('Keine') : __(':n Schritt(e)', ['n' => $stepCount]) }}
                                             </td>
                                             <td class="text-sm">{{ $fulfillmentLabels[$item->fulfillment] ?? $item->fulfillment }}</td>
-                                            <td class="text-sm text-base-content/60">{{ $item->slaContract?->label ?? '—' }}</td>
+                                            <td class="text-sm text-muted">{{ $item->slaContract?->label ?? '—' }}</td>
                                             <td class="text-sm">
                                                 @php($visibility = (array) ($item->visibility ?? []))
                                                 @if ((bool) ($visibility['portal'] ?? false))
@@ -136,7 +136,7 @@
                                                     <x-status-badge tone="ghost" size="xs">{{ __('Kundenbeschränkt') }}</x-status-badge>
                                                 @endif
                                                 @if ($visibility === [])
-                                                    <span class="text-base-content/50">{{ __('Intern') }}</span>
+                                                    <span class="text-muted">{{ __('Intern') }}</span>
                                                 @endif
                                             </td>
                                             <td class="text-right tabular-nums">v{{ $item->version }}</td>
@@ -160,16 +160,16 @@
                                 </tbody>
                             </x-table>
                         @else
-                            <p class="mt-2 text-sm text-base-content/50">{{ __('Noch keine Katalogeinträge in diesem Angebot.') }}</p>
+                            <p class="mt-2 text-sm text-muted">{{ __('Noch keine Katalogeinträge in diesem Angebot.') }}</p>
                         @endif
                     </div>
                 @empty
-                    <p class="mt-3 text-sm text-base-content/50">{{ __('Noch keine Angebote in diesem Fachdienst.') }}</p>
+                    <p class="mt-3 text-sm text-muted">{{ __('Noch keine Angebote in diesem Fachdienst.') }}</p>
                 @endforelse
             </x-card>
         @empty
             <x-card>
-                <div class="py-8 text-center text-base-content/60">
+                <div class="py-8 text-center text-muted">
                     <x-icon name="storefront" class="text-3xl" />
                     <p class="mt-2 font-medium">{{ __('Noch kein Servicekatalog angelegt') }}</p>
                     <p class="text-sm">{{ __('Lege zuerst einen Fachdienst an, dann Angebote und bestellbare Katalogeinträge.') }}</p>

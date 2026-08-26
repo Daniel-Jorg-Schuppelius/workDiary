@@ -22,7 +22,7 @@
         @if ($timesheets->isEmpty())
             <div class="p-4">
                 <x-empty-state compact
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>'
+                    icon="description"
                     :title="__('Noch keine Stundenzettel erfasst.')" />
             </div>
         @else

@@ -39,7 +39,7 @@
                         data-options="{{ route('two-factor.login.webauthn.options') }}"
                         data-target="{{ route('two-factor.login.webauthn') }}"
                         data-error="passkey-error" icon="key">{{ __('Mit Passkey / Sicherheitsschlüssel') }}</x-button>
-                <div class="my-4 flex items-center gap-3 text-xs text-base-content/50"><span class="h-px flex-1 bg-base-300"></span>{{ __('oder Code eingeben') }}<span class="h-px flex-1 bg-base-300"></span></div>
+                <div class="my-4 flex items-center gap-3 text-xs text-muted"><span class="h-px flex-1 bg-base-300"></span>{{ __('oder Code eingeben') }}<span class="h-px flex-1 bg-base-300"></span></div>
             </div>
         @endif
 

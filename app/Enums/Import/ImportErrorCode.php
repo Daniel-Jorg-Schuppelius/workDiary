@@ -30,4 +30,6 @@ enum ImportErrorCode: string {
     case PeriodLocked = 'periodLocked';
     // MVP-438: bewusst übersprungene Quellzeile (iCal-Ganztags-/OOF-/Serien-Hinweis).
     case Skipped = 'skipped';
+    // MVP-707: fachlich gesperrt (z. B. Rechnungshoheit extern) — kein Formatfehler.
+    case Blocked = 'blocked';
 }

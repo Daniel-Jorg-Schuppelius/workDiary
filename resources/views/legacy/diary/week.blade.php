@@ -57,7 +57,7 @@
         @endif
 
         {{-- Legende --}}
-        <div class="flex flex-wrap items-center gap-3 text-xs text-base-content/60 md:flex-nowrap">
+        <div class="flex flex-wrap items-center gap-3 text-xs text-muted md:flex-nowrap">
             <span class="inline-flex items-center gap-1.5">
                 <span class="inline-block h-3 w-3 rounded-xs bg-info/30 outline-info outline-1"></span>{{ __('Bereitschaft') }}
             </span>

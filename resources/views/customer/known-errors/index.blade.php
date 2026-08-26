@@ -15,7 +15,7 @@
 @section('content')
     <div class="mb-4">
         <h1 class="text-2xl font-semibold">{{ __('Bekannte Fehler') }}</h1>
-        <p class="text-sm text-base-content/60">{{ __('Bekannte Störungen mit empfohlenem Workaround — an der dauerhaften Lösung wird gearbeitet.') }}</p>
+        <p class="text-sm text-muted">{{ __('Bekannte Störungen mit empfohlenem Workaround — an der dauerhaften Lösung wird gearbeitet.') }}</p>
     </div>
 
     @forelse ($problems as $problem)
@@ -23,13 +23,13 @@
             <h2 class="font-semibold">{{ $problem->title }}</h2>
             @if ($problem->workaround)
                 <div class="mt-2 text-sm">
-                    <span class="text-xs uppercase text-base-content/60">{{ __('Workaround') }}</span>
+                    <span class="text-xs uppercase text-muted">{{ __('Workaround') }}</span>
                     <p class="whitespace-pre-wrap">{{ $problem->workaround }}</p>
                 </div>
             @endif
         </div>
     @empty
-        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-sm text-base-content/60">
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 text-sm text-muted">
             {{ __('Derzeit sind keine bekannten Fehler dokumentiert.') }}
         </div>
     @endforelse

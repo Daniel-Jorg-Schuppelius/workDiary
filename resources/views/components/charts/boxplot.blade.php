@@ -72,8 +72,8 @@
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <line x1="{{ $labelW }}" y1="{{ $padTop }}" x2="{{ $labelW }}" y2="{{ $height - $padBottom }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $labelW }}" y1="{{ $height - $padBottom }}" x2="{{ $labelW + $areaW }}" y2="{{ $height - $padBottom }}" class="stroke-base-300" stroke-width="1" />
-            <text x="{{ $labelW }}" y="{{ $height - $padBottom + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ $num($lo) }}</text>
-            <text x="{{ $labelW + $areaW }}" y="{{ $height - $padBottom + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ $num($hi) }}</text>
+            <text x="{{ $labelW }}" y="{{ $height - $padBottom + 12 }}" text-anchor="middle" class="fill-muted text-[10px]">{{ $num($lo) }}</text>
+            <text x="{{ $labelW + $areaW }}" y="{{ $height - $padBottom + 12 }}" text-anchor="middle" class="fill-muted text-[10px]">{{ $num($hi) }}</text>
             @foreach ($points as $i => $point)
                 @php
                     $cy = round($padTop + $i * $rowH + $rowH / 2, 1);

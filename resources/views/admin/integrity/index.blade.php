@@ -34,7 +34,7 @@
 
     <div class="grid gap-3 sm:grid-cols-3 mb-3 shrink-0">
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs uppercase tracking-wide text-base-content/60">{{ __('Letzter Prüflauf') }}</div>
+            <div class="text-xs uppercase tracking-wide text-muted">{{ __('Letzter Prüflauf') }}</div>
             @if ($latest !== null)
                 <div class="mt-1 flex items-center gap-2">
                     <x-status-badge :tone="$latest->status->tone()" size="sm">{{ $latest->status->label() }}</x-status-badge>
@@ -50,7 +50,7 @@
             @endif
         </div>
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs uppercase tracking-wide text-base-content/60">{{ __('Baseline') }}</div>
+            <div class="text-xs uppercase tracking-wide text-muted">{{ __('Baseline') }}</div>
             @if ($baseline !== null)
                 <div class="mt-1 flex items-center gap-2">
                     <x-status-badge :tone="$baseline['source'] === 'release' ? 'info' : 'warning'" size="sm" outline>
@@ -65,7 +65,7 @@
             @endif
         </div>
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs uppercase tracking-wide text-base-content/60">{{ __('Root-Hash') }}</div>
+            <div class="text-xs uppercase tracking-wide text-muted">{{ __('Root-Hash') }}</div>
             @if ($baseline !== null)
                 <code class="mt-1 block text-xs break-all">{{ $baseline['root'] }}</code>
             @else
@@ -79,7 +79,7 @@
             <div class="text-sm font-medium mb-1">{{ __('Befunde des letzten Laufs') }}</div>
             @foreach ($latest->findings as $category => $paths)
                 <div class="text-xs">
-                    <span class="font-mono text-base-content/60">[{{ $category }}]</span>
+                    <span class="font-mono text-muted">[{{ $category }}]</span>
                     @foreach ($paths as $path)
                         <div class="pl-4 font-mono break-all">{{ $path }}</div>
                     @endforeach
@@ -90,7 +90,7 @@
 
     @if ($checks->count() === 0)
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">verified_user</span>'
+            icon="verified_user"
             :title="__('Keine Prüfläufe')"
             :message="__('Noch keine Integritätsprüfung gelaufen — „Jetzt prüfen“ startet den ersten Lauf.')" />
     @else
@@ -115,10 +115,10 @@
                     <td><x-status-badge :tone="$check->status->tone()" size="sm">{{ $check->status->label() }}</x-status-badge></td>
                     <td class="text-xs">{{ $check->baseline_source ?: '—' }}</td>
                     <td class="text-right text-xs">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($check->files_checked, 0, withThousandsSeparator: true) }}</td>
-                    <td class="text-right text-xs {{ $check->added_count > 0 ? 'text-error font-medium' : 'text-base-content/50' }}">{{ $check->added_count }}</td>
-                    <td class="text-right text-xs {{ $check->modified_count > 0 ? 'text-error font-medium' : 'text-base-content/50' }}">{{ $check->modified_count }}</td>
-                    <td class="text-right text-xs {{ $check->deleted_count > 0 ? 'text-error font-medium' : 'text-base-content/50' }}">{{ $check->deleted_count }}</td>
-                    <td class="text-right text-xs {{ $check->packages_changed_count > 0 ? 'text-error font-medium' : 'text-base-content/50' }}">{{ $check->packages_changed_count }}</td>
+                    <td class="text-right text-xs {{ $check->added_count > 0 ? 'text-error font-medium' : 'text-muted' }}">{{ $check->added_count }}</td>
+                    <td class="text-right text-xs {{ $check->modified_count > 0 ? 'text-error font-medium' : 'text-muted' }}">{{ $check->modified_count }}</td>
+                    <td class="text-right text-xs {{ $check->deleted_count > 0 ? 'text-error font-medium' : 'text-muted' }}">{{ $check->deleted_count }}</td>
+                    <td class="text-right text-xs {{ $check->packages_changed_count > 0 ? 'text-error font-medium' : 'text-muted' }}">{{ $check->packages_changed_count }}</td>
                     <td class="text-right text-xs text-base-content/70">{{ $check->duration_ms }} ms</td>
                     <td class="text-xs text-base-content/70">{{ $check->triggered_by }}</td>
                 </tr>

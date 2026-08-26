@@ -49,17 +49,17 @@
         </x-slot:head>
             @forelse ($entryTypes as $type)
                 <tr>
-                    <td class="text-base-content/60">{{ $type->sort }}</td>
+                    <td class="text-muted">{{ $type->sort }}</td>
                     <td class="font-medium">
                         <span class="inline-flex items-center gap-2">
                             <x-icon :name="$type->icon ?: 'task_alt'" class="text-{{ $type->color ?: 'primary' }}" />
                             {{ $type->label }}
                         </span>
                         @if ($type->description)
-                            <div class="text-xs text-base-content/60">{{ $type->description }}</div>
+                            <div class="text-xs text-muted">{{ $type->description }}</div>
                         @endif
                     </td>
-                    <td class="font-mono text-sm text-base-content/60">{{ $type->slug }}</td>
+                    <td class="font-mono text-sm text-muted">{{ $type->slug }}</td>
                     <td>
                         <div class="flex flex-wrap gap-1">
                             @if ($type->requires_customer) <x-status-badge size="xs" tone="info">{{ __('Kunde') }}</x-status-badge> @endif
@@ -93,7 +93,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">list_alt</span>' :colspan="7" :title="__('Keine Eintragstypen vorhanden')" compact />
+                <x-table.empty icon="list_alt" :colspan="7" :title="__('Keine Eintragstypen vorhanden')" compact />
             @endforelse
     </x-table>
 

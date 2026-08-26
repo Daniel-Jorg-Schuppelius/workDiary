@@ -22,7 +22,7 @@
     <x-slot:toolbar>
         <x-page-toolbar>
             <div class="flex min-w-0 items-center gap-2">
-                <span class="truncate font-medium">{{ $medium->label ?: __('Medium') }} <span class="font-mono text-sm text-base-content/60">…{{ $medium->number_suffix }}</span></span>
+                <span class="truncate font-medium">{{ $medium->label ?: __('Medium') }} <span class="font-mono text-sm text-muted">…{{ $medium->number_suffix }}</span></span>
                 <x-status-badge :tone="$medium->status->tone()" size="sm">{{ $medium->status->label() }}</x-status-badge>
             </div>
             <x-slot:actions>
@@ -35,12 +35,12 @@
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Stammdaten')">
                 <dl class="grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Typ') }}</dt><dd>{{ $medium->type->label() }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Objekt / Standort') }}</dt><dd>{{ $medium->site?->name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Anlage / System') }}</dt><dd>{{ $medium->system_name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Inhaber') }}</dt><dd>{{ $medium->holderDisplay() ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Typ') }}</dt><dd>{{ $medium->type->label() }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Objekt / Standort') }}</dt><dd>{{ $medium->site?->name ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Anlage / System') }}</dt><dd>{{ $medium->system_name ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Inhaber') }}</dt><dd>{{ $medium->holderDisplay() ?? '—' }}</dd></div>
                     @if ($medium->blocked_at)
-                        <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Gesperrt am') }}</dt><dd>{{ $medium->blocked_at->format('d.m.Y H:i') }}</dd></div>
+                        <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Gesperrt am') }}</dt><dd>{{ $medium->blocked_at->format('d.m.Y H:i') }}</dd></div>
                     @endif
                 </dl>
                 @if ($medium->notes)
@@ -56,7 +56,7 @@
 
             <x-card :title="__('Historie')">
                 @if ($handovers->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch keine Übergaben.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch keine Übergaben.') }}</p>
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -76,7 +76,7 @@
                                 <td class="text-sm">{{ $handover->holderUser?->name ?? trim(($handover->holder_name ?? '') . ' ' . ($handover->holder_company ? '· ' . $handover->holder_company : '')) ?: '—' }}</td>
                                 <td class="whitespace-nowrap text-sm">{{ $handover->expected_return_at?->format('d.m.Y') ?? '—' }}</td>
                                 <td class="text-sm text-base-content/70">{{ $handover->condition ?? '—' }}</td>
-                                <td class="font-mono text-xs text-base-content/60">{{ $handover->signature_token ?? '—' }}</td>
+                                <td class="font-mono text-xs text-muted">{{ $handover->signature_token ?? '—' }}</td>
                             </tr>
                         @endforeach
                     </x-table>

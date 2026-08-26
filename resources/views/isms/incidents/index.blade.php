@@ -29,13 +29,13 @@
 
         <div class="grid gap-3 sm:grid-cols-2">
             <x-card>
-                <div class="text-xs text-base-content/60">{{ __('isms.incidents.kpi_open') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.incidents.kpi_open') }}</div>
                 <div class="text-2xl font-bold">{{ $openCount }}</div>
             </x-card>
             <x-card>
-                <div class="text-xs text-base-content/60">{{ __('isms.incidents.kpi_open_critical') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.incidents.kpi_open_critical') }}</div>
                 <div class="text-2xl font-bold {{ $openCriticalCount > 0 ? 'text-error' : '' }}">{{ $openCriticalCount }}</div>
-                <div class="text-xs text-base-content/50">{{ __('isms.incidents.kpi_open_critical_hint') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.incidents.kpi_open_critical_hint') }}</div>
             </x-card>
         </div>
 

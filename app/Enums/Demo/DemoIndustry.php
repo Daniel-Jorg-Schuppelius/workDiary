@@ -32,6 +32,11 @@ enum DemoIndustry: string implements HasLabel {
     case Elektro = 'elektro';
     case Facility = 'facility';
     case WartungService = 'wartung-service';
+    // Musterbranchen 5–8 (MVP-710, Vollscan G5).
+    case Sicherheitsdienst = 'sicherheitsdienst';
+    case BauAusbau = 'bau-ausbau';
+    case Spedition = 'spedition';
+    case Partyservice = 'partyservice';
 
     /** Branchenprofil-Code für den BranchProfileInstaller (database/data/branchprofiles/*.php). */
     public function branchProfileCode(): string {
@@ -40,6 +45,10 @@ enum DemoIndustry: string implements HasLabel {
             self::Elektro => 'elektro',
             self::Facility => 'facility',
             self::WartungService => 'anlagenwartung',
+            self::Sicherheitsdienst => 'sicherheitsdienst',
+            self::BauAusbau => 'bau-ausbau',
+            self::Spedition => 'spedition',
+            self::Partyservice => 'partyservice',
         };
     }
 
@@ -50,6 +59,10 @@ enum DemoIndustry: string implements HasLabel {
             self::Elektro => 'Elektro',
             self::Facility => 'Facility Management',
             self::WartungService => 'Wartung & Service',
+            self::Sicherheitsdienst => 'Sicherheitsdienst & Objektschutz',
+            self::BauAusbau => 'Bau & Ausbau',
+            self::Spedition => 'Spedition & Logistik',
+            self::Partyservice => 'Partyservice & Catering',
         };
     }
 
@@ -60,6 +73,10 @@ enum DemoIndustry: string implements HasLabel {
             self::Elektro => 'Elektro Muster GmbH',
             self::Facility => 'Muster Facility Service GmbH',
             self::WartungService => 'Muster Wartung & Service GmbH',
+            self::Sicherheitsdienst => 'Muster Sicherheitsdienst GmbH',
+            self::BauAusbau => 'Muster Ausbau GmbH',
+            self::Spedition => 'Muster Spedition GmbH',
+            self::Partyservice => 'Muster Partyservice GmbH',
         };
     }
 

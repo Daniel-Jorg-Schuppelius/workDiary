@@ -112,19 +112,19 @@
                 @if ($room || $site || $building || $floor)
                     <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
                         <div>
-                            <dt class="text-xs text-base-content/60">{{ __('Standort') }}</dt>
+                            <dt class="text-xs text-muted">{{ __('Standort') }}</dt>
                             <dd>{{ $site?->name ?: '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-base-content/60">{{ __('Gebäude') }}</dt>
+                            <dt class="text-xs text-muted">{{ __('Gebäude') }}</dt>
                             <dd>{{ $building?->name ?: '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-base-content/60">{{ __('Etage') }}</dt>
+                            <dt class="text-xs text-muted">{{ __('Etage') }}</dt>
                             <dd>{{ $floor?->label ?: '—' }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs text-base-content/60">{{ __('Raum') }}</dt>
+                            <dt class="text-xs text-muted">{{ __('Raum') }}</dt>
                             <dd>
                                 @if ($room)
                                     @if ($floor)
@@ -139,7 +139,7 @@
                         </div>
                     </dl>
                 @else
-                    <x-empty-state compact icon='<span class="material-symbols-outlined">location_off</span>'
+                    <x-empty-state compact icon="location_off"
                                    :title="__('Keinem Raum zugeordnet')"
                                    :message="__('Dieses Asset hat noch keine Verortung.')" />
                 @endif
@@ -175,13 +175,13 @@
                 @endif
                 @if ($os)
                     <dl class="grid gap-x-4 gap-y-3 text-sm sm:grid-cols-2">
-                        <div><dt class="text-xs text-base-content/60">{{ __('Software') }}</dt><dd class="font-medium">{{ $os->software?->name }}</dd></div>
-                        <div><dt class="text-xs text-base-content/60">{{ __('Version') }}</dt><dd>{{ $os->version ?: '—' }}</dd></div>
-                        <div><dt class="text-xs text-base-content/60">{{ __('Sitze') }}</dt><dd>{{ $os->seats ?: '—' }}</dd></div>
-                        <div><dt class="text-xs text-base-content/60">{{ __('Läuft ab') }}</dt><dd>{{ $os->expires_on?->isoFormat('L') ?: '—' }}</dd></div>
+                        <div><dt class="text-xs text-muted">{{ __('Software') }}</dt><dd class="font-medium">{{ $os->software?->name }}</dd></div>
+                        <div><dt class="text-xs text-muted">{{ __('Version') }}</dt><dd>{{ $os->version ?: '—' }}</dd></div>
+                        <div><dt class="text-xs text-muted">{{ __('Sitze') }}</dt><dd>{{ $os->seats ?: '—' }}</dd></div>
+                        <div><dt class="text-xs text-muted">{{ __('Läuft ab') }}</dt><dd>{{ $os->expires_on?->isoFormat('L') ?: '—' }}</dd></div>
                     </dl>
                 @else
-                    <x-empty-state compact icon='<span class="material-symbols-outlined">desktop_access_disabled</span>'
+                    <x-empty-state compact icon="desktop_access_disabled"
                                    :title="__('Kein Betriebssystem')"
                                    :message="__('Kein Betriebssystem hinterlegt.')" />
                 @endif
@@ -202,7 +202,7 @@
             @endif
             @php $apps = $installations->where('is_operating_system', false); @endphp
             @if ($apps->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">apps</span>'
+                <x-empty-state compact icon="apps"
                                :title="__('Keine Software')"
                                :message="__('Noch keine Software hinterlegt.')" />
             @else
@@ -219,7 +219,7 @@
                     </x-slot:head>
                             @foreach ($apps as $inst)
                                 <tr class="hover">
-                                    <td class="font-medium">{{ $inst->software?->name }}<div class="text-xs text-base-content/60">{{ $inst->software?->vendor }}</div></td>
+                                    <td class="font-medium">{{ $inst->software?->name }}<div class="text-xs text-muted">{{ $inst->software?->vendor }}</div></td>
                                     <td>{{ $inst->version ?: '—' }}</td>
                                     <td>{{ $inst->seats ?: '—' }}</td>
                                     <td>{{ $inst->installed_on?->isoFormat('L') ?: '—' }}</td>
@@ -252,7 +252,7 @@
             @endif
 
             @if ($maintenancePlans->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">event_repeat</span>'
+                <x-empty-state compact icon="event_repeat"
                                :title="__('Keine Wartungspläne')"
                                :message="__('Noch keine Wartungspläne hinterlegt.')" />
             @else
@@ -275,7 +275,7 @@
                                 <tr>
                                     <td>
                                         <div class="font-medium">{{ $plan->label }}</div>
-                                        <div class="text-xs text-base-content/60 font-mono">{{ $plan->code }}</div>
+                                        <div class="text-xs text-muted font-mono">{{ $plan->code }}</div>
                                     </td>
                                     <td>{{ $plan->interval_value }} {{ $intervalKindOptions[$kindValue] ?? $kindValue }}</td>
                                     <td>
@@ -387,7 +387,7 @@
                     </div>
                 </div>
             @else
-                <x-empty-state compact icon='<span class="material-symbols-outlined">check_circle</span>'
+                <x-empty-state compact icon="check_circle"
                                :title="__('Verfügbar')"
                                :message="__('Das Asset ist aktuell nicht ausgegeben.')" />
             @endif
@@ -424,7 +424,7 @@
             @endif
 
             @if ($defects->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">verified</span>'
+                <x-empty-state compact icon="verified"
                                :title="__('Keine Defekte')"
                                :message="__('Es liegen keine Defektmeldungen vor.')" />
             @else
@@ -446,14 +446,14 @@
                                     <td>
                                         <div class="font-medium">{{ $defect->title }}</div>
                                         @if ($defect->description)
-                                            <div class="text-xs text-base-content/60">{{ \Illuminate\Support\Str::limit($defect->description, 80) }}</div>
+                                            <div class="text-xs text-muted">{{ \Illuminate\Support\Str::limit($defect->description, 80) }}</div>
                                         @endif
                                         @if ($defect->attachments->isNotEmpty())
                                             <div class="mt-1 flex flex-wrap gap-1">
                                                 @foreach ($defect->attachments as $photo)
                                                     <a href="{{ route('attachments.download', $photo) }}" target="_blank" rel="noopener"
                                                        class="badge badge-ghost badge-sm gap-1" title="{{ $photo->original_name }}">
-                                                        <span class="material-symbols-outlined text-sm" aria-hidden="true">image</span>
+                                                        <x-icon name="image" class="text-sm" />
                                                         {{ \Illuminate\Support\Str::limit($photo->original_name, 16) }}
                                                     </a>
                                                 @endforeach
@@ -466,7 +466,7 @@
                                         @if ($defect->isBlocking())
                                             <x-status-badge tone="error" size="sm">{{ __('gesperrt') }}</x-status-badge>
                                         @else
-                                            <span class="text-base-content/50">—</span>
+                                            <span class="text-muted">—</span>
                                         @endif
                                     </td>
                                     <td class="text-base-content/70">{{ optional($defect->reported_at)->fdate() ?: '—' }}</td>
@@ -488,7 +488,7 @@
                                                        href="{{ route('assets.defects.resolve-form', [$asset, $defect, 'action' => 'writeOff']) }}"><x-icon name="delete_forever" /></a>
                                                 </div>
                                             @else
-                                                <span class="text-xs text-base-content/50">{{ optional($defect->resolved_at)->fdate() }}</span>
+                                                <span class="text-xs text-muted">{{ optional($defect->resolved_at)->fdate() }}</span>
                                             @endif
                                         </td>
                                     @endif
@@ -501,7 +501,7 @@
         {{-- ── Aufträge ─────────────────────────────────────────────────────── --}}
         <x-card :title="__('Aufträge')" icon="assignment" :count="$visibleCounts['diary']">
             @if ($diaryEntries->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">assignment</span>'
+                <x-empty-state compact icon="assignment"
                                :title="__('Keine Aufträge')"
                                :message="__('Keine verknüpften Aufträge sichtbar.')" />
             @else
@@ -531,7 +531,7 @@
         {{-- ── Protokolle ───────────────────────────────────────────────────── --}}
         <x-card :title="__('Protokolle')" icon="description" :count="$visibleCounts['protocols']">
             @if ($protocols->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">description</span>'
+                <x-empty-state compact icon="description"
                                :title="__('Keine Protokolle')"
                                :message="__('Keine verknüpften Protokolle sichtbar.')" />
             @else
@@ -559,7 +559,7 @@
         {{-- ── Materialeinsatz ──────────────────────────────────────────────── --}}
         <x-card :title="__('Materialeinsatz')" icon="inventory_2" :count="$visibleCounts['material']">
             @if ($materialUsages->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">inventory_2</span>'
+                <x-empty-state compact icon="inventory_2"
                                :title="__('Kein Materialeinsatz')"
                                :message="__('Kein verknüpfter Materialeinsatz sichtbar.')" />
             @else
@@ -590,7 +590,7 @@
         <div class="grid gap-4 md:grid-cols-2">
             <x-card :title="__('Timeline')" icon="timeline" :count="$timelineEntries->count()">
                 @if ($timelineEntries->isEmpty())
-                    <x-empty-state compact icon='<span class="material-symbols-outlined">timeline</span>'
+                    <x-empty-state compact icon="timeline"
                                    :title="__('Keine Timeline-Einträge')"
                                    :message="__('Keine Timeline-Einträge vorhanden.')" />
                 @else
@@ -603,7 +603,7 @@
                                         <div class="text-sm text-base-content/80">{{ $event['detail'] }}</div>
                                     @endif
                                 </div>
-                                <span class="shrink-0 text-xs text-base-content/60">{{ $event['occurred_at_formatted'] }}</span>
+                                <span class="shrink-0 text-xs text-muted">{{ $event['occurred_at_formatted'] }}</span>
                             </li>
                         @endforeach
                     </ul>
@@ -612,7 +612,7 @@
 
             <x-card :title="__('Anhänge')" icon="attach_file" :count="$visibleCounts['attachments']">
                 @if ($attachments->isEmpty())
-                    <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
+                    <x-empty-state compact icon="attach_file"
                                    :title="__('Keine Anhänge')"
                                    :message="__('Keine verknüpften Anhänge sichtbar.')" />
                 @else
@@ -620,7 +620,7 @@
                         @foreach ($attachments as $attachment)
                             <li class="flex items-center justify-between gap-3 py-2">
                                 <a href="{{ route('attachments.download', $attachment) }}" class="link link-hover truncate">{{ $attachment->original_name }}</a>
-                                <span class="text-base-content/60">{{ $attachment->humanSize() }}</span>
+                                <span class="text-muted">{{ $attachment->humanSize() }}</span>
                             </li>
                         @endforeach
                     </ul>

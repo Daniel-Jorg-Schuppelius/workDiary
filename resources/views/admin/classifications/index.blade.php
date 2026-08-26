@@ -36,7 +36,7 @@
             <div class="flex items-center justify-between gap-4">
                 <div>
                     <h2 class="text-lg font-semibold">{{ $domain->label() }}</h2>
-                    <p class="text-sm text-base-content/60">{{ __('Domain: :domain', ['domain' => $domain->value]) }}</p>
+                    <p class="text-sm text-muted">{{ __('Domain: :domain', ['domain' => $domain->value]) }}</p>
                 </div>
                 <x-icon-btn icon="add_circle" size="xs" tone="primary"
                             data-entry-modal-trigger
@@ -66,7 +66,7 @@
                                 <td>
                                     <div class="font-medium">{{ $classification->label }}</div>
                                     @if ($classification->description)
-                                        <div class="text-xs text-base-content/60">{{ $classification->description }}</div>
+                                        <div class="text-xs text-muted">{{ $classification->description }}</div>
                                     @endif
                                 </td>
                                 <td>{{ $classification->sort_order }}</td>
@@ -84,7 +84,7 @@
                                         {{ $classification->active ? __('Aktiv') : __('Inaktiv') }}
                                     </x-status-badge>
                                     @if (! $classification->active && $classification->deprecated_at)
-                                        <div class="mt-1 text-xs text-base-content/60" title="{{ __('Nicht mehr neu wählbar, für historische Daten weiterhin lesbar.') }}">
+                                        <div class="mt-1 text-xs text-muted" title="{{ __('Nicht mehr neu wählbar, für historische Daten weiterhin lesbar.') }}">
                                             {{ __('Stillgelegt am :date', ['date' => $classification->deprecated_at->fdate()]) }}
                                         </div>
                                     @endif
@@ -103,7 +103,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <x-table.empty :colspan="5" icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>' :title="__('Noch keine organisationsspezifischen Werte vorhanden.')" compact />
+                            <x-table.empty :colspan="5" icon="category" :title="__('Noch keine organisationsspezifischen Werte vorhanden.')" compact />
                         @endforelse
                     </x-table>
                     @if ($orgRows->isNotEmpty())
@@ -132,7 +132,7 @@
                                 <td class="font-mono text-sm">{{ $classification->code }}</td>
                                 <td>
                                     <div class="font-medium">{{ $classification->label }}</div>
-                                    <div class="text-xs text-base-content/60">{{ __('Sortierung: :sort', ['sort' => $classification->sort_order]) }}</div>
+                                    <div class="text-xs text-muted">{{ __('Sortierung: :sort', ['sort' => $classification->sort_order]) }}</div>
                                 </td>
                                 <td>
                                     @if ($override)
@@ -141,7 +141,7 @@
                                             {{ $override->active ? __('Override') : __('Deaktiviert') }}
                                         </x-status-badge>
                                     @else
-                                        <span class="text-sm text-base-content/60">{{ __('Kein Override') }}</span>
+                                        <span class="text-sm text-muted">{{ __('Kein Override') }}</span>
                                     @endif
                                 </td>
                                 <td class="text-right whitespace-nowrap">
@@ -158,7 +158,7 @@
                                 </td>
                             </tr>
                         @empty
-                            <x-table.empty :colspan="4" icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>' :title="__('Keine Plattform-Defaults vorhanden.')" compact />
+                            <x-table.empty :colspan="4" icon="category" :title="__('Keine Plattform-Defaults vorhanden.')" compact />
                         @endforelse
                     </x-table>
                 </section>

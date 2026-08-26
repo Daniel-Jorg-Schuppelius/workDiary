@@ -54,7 +54,7 @@
         @endif
 
         @if ($participants->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('external.panel.empty') }}</p>
+            <p class="text-sm text-muted">{{ __('external.panel.empty') }}</p>
         @else
             <x-table>
                 <x-slot:head>
@@ -71,7 +71,7 @@
                             <tr>
                                 <td>
                                     <span class="font-medium">{{ $p->name }}</span>
-                                    @if ($p->role)<span class="block text-xs text-base-content/60">{{ $p->role }}</span>@endif
+                                    @if ($p->role)<span class="block text-xs text-muted">{{ $p->role }}</span>@endif
                                 </td>
                                 <td>{{ $p->party->label() }}</td>
                                 <td>

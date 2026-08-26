@@ -37,7 +37,7 @@
     </x-filter-bar>
 
     @if ($products->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
+        <x-empty-state framed icon="category"
                        :title="$search !== '' ? __('products.title.empty_search', ['q' => $search]) : __('products.title.empty')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">

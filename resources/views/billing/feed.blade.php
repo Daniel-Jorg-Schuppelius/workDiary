@@ -278,7 +278,7 @@
                 </td>
                 <td class="whitespace-nowrap text-base-content/70">
                     @if ($direction)
-                        <x-icon :name="$direction->icon()" class="align-middle text-base-content/40" />
+                        <x-icon :name="$direction->icon()" class="align-middle text-muted" />
                     @endif
                     {{ $kind?->label() ?? '—' }}
                 </td>
@@ -303,12 +303,12 @@
                             </span>
                         @endif
                     @else
-                        <span class="text-base-content/40">—</span>
+                        <span class="text-muted">—</span>
                     @endif
                 </td>
                 <td @class(['text-right tabular-nums whitespace-nowrap', 'text-error' => $signed < 0.0])>
                     @if ((int) $row->sign === 0)
-                        <span class="text-base-content/40">{{ $money((float) $row->amount_gross) }}</span>
+                        <span class="text-muted">{{ $money((float) $row->amount_gross) }}</span>
                     @else
                         {{ $money($signed) }}
                     @endif
@@ -338,7 +338,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="10"
+            <x-table.empty icon="receipt_long" :colspan="10"
                 :title="$filters['q'] !== '' ? __('Keine Treffer für „:q“.', ['q' => $filters['q']]) : __('billing.feed.empty')"
                 compact />
         @endforelse

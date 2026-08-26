@@ -42,10 +42,15 @@ final class PdfGeneratorInventory {
         // Einkauf/Logistik
         'app/Services/Procurement/PurchaseOrderPdfRenderer.php' => ['purchase_order'],
         'app/Services/Manufacturing/DeliveryNotePdfRenderer.php' => ['delivery_note'],
+        // Kommissionierliste (Feature 048, MVP-706): interner Arbeitsbeleg.
+        'app/Services/Inventory/PickListPdfRenderer.php' => ['report'],
         // Leistung/Nachweis
         'app/Services/Protocol/ProtocolPdfRenderer.php' => ['protocol'],
         'app/Services/Disposal/DisposalRecordPdfRenderer.php' => ['protocol'],
         'app/Services/Manufacturing/ManufacturingRecordPdfRenderer.php' => ['manufacturing_record'],
+        // VOB/B-Schreiben (Feature 062, MVP-728): der Renderer bedient beide
+        // Arten, die Belegart kommt aus dem Schreiben selbst.
+        'app/Services/Construction/ConstructionNoticePdfRenderer.php' => ['construction_obstruction_notice', 'construction_concern_notice'],
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],
         'app/Services/Form/FormSubmissionPdfRenderer.php' => ['form'],
         'app/Http/Controllers/Reporting/Concerns/RendersReportPdf.php' => ['report'],
@@ -55,6 +60,10 @@ final class PdfGeneratorInventory {
         'app/Http/Controllers/CustomerPortal/BillingController.php' => ['report'],
         'app/Http/Controllers/Privacy/IncidentController.php' => ['report'],
         'app/Http/Controllers/Privacy/DpiaController.php' => ['report'],
+        // Betroffenen-Auskunft Art. 15 (Feature 129, MVP-693).
+        'app/Services/Privacy/SubjectDataExporter.php' => ['report'],
+        // GoBD-Verfahrensdokumentation (Feature 134, MVP-699).
+        'app/Services/Finance/ProcedureDocumentation/ProcedureDocumentationService.php' => ['report'],
         'app/Http/Controllers/Admin/PrivacyController.php' => ['report'],
         // HOAI-Stufenbericht (Feature 109, MVP-644).
         'app/Http/Controllers/Gaeb/HoaiCostReportController.php' => ['report'],

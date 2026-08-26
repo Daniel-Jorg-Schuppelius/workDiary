@@ -18,6 +18,11 @@ return [
         'foot' => 'On foot',
         'other' => 'Other',
     ],
+    'trip_kind' => [
+        'business' => 'Business',
+        'commute' => 'Commute',
+        'private' => 'Private',
+    ],
     'tour_leg_purpose' => 'Leg to :title',
     'tour_return_purpose' => 'Return trip',
 ];

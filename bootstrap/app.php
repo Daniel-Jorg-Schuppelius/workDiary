@@ -35,6 +35,9 @@ return Application::configure(basePath: dirname(__DIR__))
             // Oeffentlicher Karrierebereich (Feature 068, MVP-437): eigener
             // schlanker Public-Stack (kein Auth/Org-Context/Locale/2FA).
             Route::middleware('careers')->group(__DIR__ . '/../routes/careers.php');
+            // Oeffentliches Betroffenen-Selbstmeldeportal (Feature 043,
+            // MVP-728): schlanker Public-Stack, Org nur ueber den Portal-Slug.
+            Route::middleware('dsar')->group(__DIR__ . '/../routes/dsar.php');
             // SCIM-2.0-Provisioning (Feature 057): sessionlos, Bearer-Token-Auth
             // je Organisation über AuthenticateScim (kein web/api-Gruppen-Stack).
             Route::middleware(AuthenticateScim::class)->prefix('scim/v2')->group(__DIR__ . '/../routes/scim.php');
@@ -138,6 +141,20 @@ return Application::configure(basePath: dirname(__DIR__))
             \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
             \Illuminate\Routing\Middleware\SubstituteBindings::class,
             \App\Http\Middleware\Careers\CareerPortalSecurityHeaders::class,
+        ]);
+
+        // Schlanker Stack fuer das oeffentliche Betroffenenportal (MVP-728):
+        // wie das Meldeportal (Session/CSRF fuer das Formular, strikte Header),
+        // aber mit eigenen Headern — das Layout ist self-contained und braucht
+        // Inline-Styles, dafuer laeuft die Seite ganz ohne JavaScript.
+        $middleware->group('dsar', [
+            HandleDatabaseUnavailable::class,
+            \Illuminate\Cookie\Middleware\EncryptCookies::class,
+            \Illuminate\Session\Middleware\StartSession::class,
+            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
+            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
+            \Illuminate\Routing\Middleware\SubstituteBindings::class,
+            \App\Http\Middleware\Privacy\DsarPortalSecurityHeaders::class,
         ]);
 
         // Sessionloser Stack fuer den oeffentlichen OCI-Punchout-Katalog

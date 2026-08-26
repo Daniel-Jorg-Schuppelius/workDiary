@@ -43,7 +43,7 @@
 
     {{-- ── Header ── --}}
     <div class="sticky top-0 z-20 flex border-b border-base-300 bg-base-100 shadow-xs">
-        <div class="w-36 shrink-0 border-r border-base-300 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-base-content/50">
+        <div class="w-36 shrink-0 border-r border-base-300 px-3 py-2 text-xs font-semibold uppercase tracking-wider text-muted">
             {{ __('Mitarbeiter') }}
         </div>
         @foreach ($weekDays as $day)
@@ -53,7 +53,7 @@
                 } elseif ($day['isSunday']) {
                     $headerStateClass = 'bg-base-200/60 text-error';
                 } elseif ($day['isWeekend']) {
-                    $headerStateClass = 'bg-base-200/60 text-base-content/50';
+                    $headerStateClass = 'bg-base-200/60 text-muted';
                 } else {
                     $headerStateClass = '';
                 }
@@ -154,7 +154,7 @@
             @endforeach
         </div>
     @empty
-        <p class="py-12 text-center text-sm text-base-content/50">{{ __('Keine Schichten in diesem Zeitraum.') }}</p>
+        <p class="py-12 text-center text-sm text-muted">{{ __('Keine Schichten in diesem Zeitraum.') }}</p>
     @endforelse
 
     {{-- ── Open-slot row (Soll vs Ist) ── --}}

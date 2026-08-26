@@ -179,6 +179,7 @@ class QuoteService {
             $quote->decision_snapshot = [
                 'items' => $quote->items->map(fn($item): array => [
                     'id' => $item->id,
+                    'article_id' => $item->article_id,
                     'description' => $item->description,
                     'quantity' => (float) $item->quantity,
                     'unit' => $item->unit,
@@ -256,6 +257,8 @@ class QuoteService {
                 // invoice_items.unit ist NOT NULL (Default 'h'), daher nur setzen wenn vorhanden.
                 $payload = [
                     'organization_id' => $quote->organization_id,
+                    // Artikelbezug (Feature 140) wandert mit; Alt-Snapshots kennen ihn nicht → null.
+                    'article_id' => isset($item['article_id']) ? (int) $item['article_id'] : null,
                     'description' => (string) $item['description'],
                     'quantity' => (string) $item['quantity'],
                     'unit_price' => (string) $item['unit_price'],
@@ -309,6 +312,7 @@ class QuoteService {
             foreach ($proforma->items as $item) {
                 $invoice->items()->create([
                     'organization_id' => $proforma->organization_id,
+                    'article_id' => $item->article_id,
                     'description' => $item->description,
                     'quantity' => (string) $item->quantity,
                     'unit' => $item->unit,

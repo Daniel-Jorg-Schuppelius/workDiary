@@ -95,11 +95,11 @@
     <x-card id="vouchers" class="space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
             <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Rechnungen & Belege') }}
+                <x-icon name="receipt_long" class="text-muted" /> {{ __('Rechnungen & Belege') }}
                 <span class="badge badge-ghost badge-sm">{{ $range['label'] }}</span>
             </h2>
             <div class="flex items-center gap-3">
-                <span class="text-sm text-base-content/60">
+                <span class="text-sm text-muted">
                     {{ __('Rechnungssumme') }}:
                     <span class="font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $invoiceSum, 2, withThousandsSeparator: true) }}&nbsp;&euro;</span>
                 </span>
@@ -124,7 +124,7 @@
 
         @if ($rows->isEmpty())
             <x-empty-state compact wide
-                icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                icon="receipt_long"
                 :title="__('Keine Belege im gewählten Zeitraum')"
                 :message="$plugin && $plugin->isEnabled() && ! $contactRef
                     ? __('Kein Lexoffice-Kontakt verknüpft — verknüpfte Belege erscheinen erst nach Verknüpfung und Synchronisierung.')

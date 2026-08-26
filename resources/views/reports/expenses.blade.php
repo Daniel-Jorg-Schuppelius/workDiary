@@ -42,7 +42,7 @@
 
     <x-card class="overflow-x-auto">
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+            <x-empty-state icon="receipt_long"
                            :title="__('Keine Spesen im gewählten Zeitraum.')" />
         @else
             <x-table>
@@ -81,7 +81,7 @@
                                     @if (isset($row['months'][$m]))
                                         {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['months'][$m], 2, withThousandsSeparator: true) }}
                                     @else
-                                        <span class="text-base-content/30">—</span>
+                                        <span class="text-muted">—</span>
                                     @endif
                                 </td>
                             @endforeach

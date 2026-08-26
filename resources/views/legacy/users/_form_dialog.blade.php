@@ -35,7 +35,7 @@
     <div>
         <label for="userpw" class="label text-sm font-semibold pb-1">
             {{ __('Passwort') }}
-            @if ($isEdit)<span class="text-xs font-normal text-base-content/50"> - {{ __('leer lassen um beizubehalten') }}</span>@endif
+            @if ($isEdit)<span class="text-xs font-normal text-muted"> - {{ __('leer lassen um beizubehalten') }}</span>@endif
         </label>
         <input id="userpw" name="userpw" type="password" value="{{ old('userpw') }}" autocomplete="new-password" class="input input-bordered w-full @error('userpw') input-error @enderror" @if (! $isEdit) required @endif>
         @error('userpw')<p class="mt-2 text-sm text-error">{{ $message }}</p>@enderror

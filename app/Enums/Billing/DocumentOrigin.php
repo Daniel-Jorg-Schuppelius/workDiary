@@ -21,7 +21,8 @@ use App\Enums\Contracts\HasLabel;
  * Ein System erscheint hier, sobald es einen lokalen Belegspiegel führt —
  * Lexoffice über `lexoffice_vouchers`, orgaMAX seit MVP-670 über
  * `orgamax_invoices`. Weitere Faktura-Plugins (SevDesk, easybill,
- * InvoicePlane, JTL) kommen mit ihrer jeweiligen Spiegelung hinzu.
+ * InvoicePlane, JTL) spiegeln seit MVP-731 in dieselbe Tabelle — je
+ * Anbieter unterscheidet sie nur die `plugin_id`.
  */
 enum DocumentOrigin: string implements HasLabel {
     use HasOptions;
@@ -31,6 +32,10 @@ enum DocumentOrigin: string implements HasLabel {
     case OrgaMax = 'orgamax';
     // MVP-611: Belegspiegel über die anbieterneutrale `accounting_vouchers`.
     case SevDesk = 'sevdesk';
+    // MVP-731 (Vollscan G18): dieselbe Tabelle, weitere Anbieter.
+    case Easybill = 'easybill';
+    case InvoicePlane = 'invoiceplane';
+    case JtlWawi = 'jtl_wawi';
 
     public function label(): string {
         return (string) __('enums.billing.origin.' . $this->value);

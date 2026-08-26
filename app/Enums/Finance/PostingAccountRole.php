@@ -53,6 +53,12 @@ enum PostingAccountRole: string implements HasLabel {
     /** Gewährter Skonto (Erlösschmälerung bzw. Ertrag auf der Eingangsseite). */
     case Discount = 'discount';
 
+    /** Anlagenkonto (Sachanlage, Haben-Seite der direkten AfA — Feature 133). */
+    case FixedAsset = 'fixed_asset';
+
+    /** AfA-Aufwand (Abschreibungen auf Sachanlagen — Feature 133). */
+    case Depreciation = 'depreciation';
+
     public function label(): string {
         return (string) __('enums.finance.posting-account-role.' . $this->value);
     }
@@ -61,9 +67,9 @@ enum PostingAccountRole: string implements HasLabel {
         return match ($this) {
             self::Receivable, self::Payable, self::EmployeePayable => 'info',
             self::Revenue => 'success',
-            self::Expense => 'error',
+            self::Expense, self::Depreciation => 'error',
             self::TaxOutput, self::TaxInput => 'warning',
-            self::Cash, self::Bank => 'secondary',
+            self::Cash, self::Bank, self::FixedAsset => 'secondary',
             self::Discount => 'accent',
         };
     }

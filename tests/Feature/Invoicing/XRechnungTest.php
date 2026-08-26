@@ -159,7 +159,7 @@ class XRechnungTest extends TestCase {
         ])->assertRedirect(route('invoices.show', $invoice));
 
         $invoice->refresh();
-        $dispatch = \App\Models\InvoiceDispatch::query()->where('invoice_id', $invoice->id)->firstOrFail();
+        $dispatch = \App\Models\DocumentDispatch::query()->where('invoice_id', $invoice->id)->firstOrFail();
         $this->assertSame(Invoice::STATUS_ISSUED, $invoice->status);
         $this->assertSame('xrechnung_ubl', $dispatch->format);
         $this->assertNotNull($dispatch->sha256);

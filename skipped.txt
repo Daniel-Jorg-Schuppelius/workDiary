@@ -1,0 +1,391 @@
+resources/views/account/_profile_dialog.blade.php:119	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:127	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:136	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:144	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:119	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:127	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:136	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:144	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:119	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:127	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:136	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:144	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:119	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:127	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:136	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:144	kein direktes Control nach Label
+resources/views/account/_profile_dialog.blade.php:183	UNPARSE:: type="tel" name="cti_extension"                    value="{{ old('cti_extension', $user-
+resources/views/admin/branding/edit.blade.php:89	UNPARSE:: type="{{ $field === 'email' ? 'email' : ($field === 'web' ? 'url' : 'text') }}"                            name="brandi
+resources/views/admin/branding/edit.blade.php:110	UNPARSE:: type="text" name="branding[legal][{{ $field }}]"                            class="input input-bordered w-full"        
+resources/views/admin/branding/edit.blade.php:122	UNPARSE:: type="color"                        name="branding[colors][primary]"                        class="input input-bordered
+resources/views/admin/branding/edit.blade.php:130	UNPARSE:: type="color"                        name="branding[colors][accent]"                        class="input input-bordered 
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_compliance.blade.php:47	kein direktes Control nach Label
+resources/views/admin/organizations/_form_body.blade.php:18	kein direktes Control nach Label
+resources/views/admin/organizations/_form_body.blade.php:26	kein direktes Control nach Label
+resources/views/admin/organizations/_form_body.blade.php:34	kein direktes Control nach Label
+resources/views/admin/organizations/_form_body.blade.php:42	kein direktes Control nach Label
+resources/views/admin/organizations/_form_body.blade.php:50	kein direktes Control nach Label
+resources/views/admin/organizations/_form_body.blade.php:86	kein direktes Control nach Label
+resources/views/admin/organizations/_form_body.blade.php:97	kein direktes Control nach Label
+resources/views/admin/per-diem-rates/_form_body.blade.php:19	UNPARSE:: type="text" name="region_label" maxlength="100"                value="{{ old('region_label', $rate-
+resources/views/admin/plugins/_field.blade.php:17	kein direktes Control nach Label
+resources/views/admin/themes/index.blade.php:84	Inhalt vor dem Label
+resources/views/admin/time-accounts/index.blade.php:121	UNPARSE:: type="date" name="booking_date" class="input input-sm input-bordered" required                                value="{{
+resources/views/admin/time-accounts/index.blade.php:121	UNPARSE:: type="date" name="booking_date" class="input input-sm input-bordered" required                                value="{{
+resources/views/admin/time-accounts/index.blade.php:127	div-class fieldset grow
+resources/views/agile/backlog.blade.php:60	div-class fieldset grow
+resources/views/agile/board.blade.php:138	UNPARSE:: name="name" required minlength="2" maxlength="120" class="input input-bordered w-full" value="{{ old('name', $board-
+resources/views/agile/board.blade.php:138	UNPARSE:: name="name" required minlength="2" maxlength="120" class="input input-bordered w-full" value="{{ old('name', $board-
+resources/views/agile/board.blade.php:146	UNPARSE:: name="description" maxlength="500" class="input input-bordered w-full" value="{{ old('description', $board-
+resources/views/agile/board.blade.php:138	UNPARSE:: name="name" required minlength="2" maxlength="120" class="input input-bordered w-full" value="{{ old('name', $board-
+resources/views/agile/board.blade.php:146	UNPARSE:: name="description" maxlength="500" class="input input-bordered w-full" value="{{ old('description', $board-
+resources/views/agile/board.blade.php:164	div-class fieldset grow
+resources/views/agile/board.blade.php:138	UNPARSE:: name="name" required minlength="2" maxlength="120" class="input input-bordered w-full" value="{{ old('name', $board-
+resources/views/agile/board.blade.php:146	UNPARSE:: name="description" maxlength="500" class="input input-bordered w-full" value="{{ old('description', $board-
+resources/views/agile/board.blade.php:164	div-class fieldset grow
+resources/views/agile/board.blade.php:173	UNPARSE:: name="wip_limit" type="number" min="1" max="99" class="input input-sm input-bordered w-20" value="{{ $column-
+resources/views/agile/board.blade.php:177	UNPARSE:: name="position" type="number" min="1" max="50" class="input input-sm input-bordered w-20" value="{{ $column-
+resources/views/agile/board.blade.php:138	UNPARSE:: name="name" required minlength="2" maxlength="120" class="input input-bordered w-full" value="{{ old('name', $board-
+resources/views/agile/board.blade.php:146	UNPARSE:: name="description" maxlength="500" class="input input-bordered w-full" value="{{ old('description', $board-
+resources/views/agile/board.blade.php:164	div-class fieldset grow
+resources/views/agile/board.blade.php:173	UNPARSE:: name="wip_limit" type="number" min="1" max="99" class="input input-sm input-bordered w-20" value="{{ $column-
+resources/views/agile/board.blade.php:177	UNPARSE:: name="position" type="number" min="1" max="50" class="input input-sm input-bordered w-20" value="{{ $column-
+resources/views/agile/board.blade.php:199	div-class fieldset grow
+resources/views/agile/sprints.blade.php:37	div-class fieldset grow
+resources/views/agile/sprints.blade.php:41	div-class fieldset grow
+resources/views/assignments/_form_body.blade.php:39	kein direktes Control nach Label
+resources/views/chat/index.blade.php:203	kein direktes Control nach Label
+resources/views/chat/index.blade.php:215	Rest nach Control: @if ($orgUsers->isEmpty())             <p class="mt-1 text-x
+resources/views/chat/index.blade.php:267	kein direktes Control nach Label
+resources/views/chat/index.blade.php:300	div-class fieldset mt-3
+resources/views/chat/index.blade.php:203	kein direktes Control nach Label
+resources/views/chat/index.blade.php:215	Rest nach Control: @if ($orgUsers->isEmpty())             <p class="mt-1 text-x
+resources/views/chat/index.blade.php:267	kein direktes Control nach Label
+resources/views/chat/index.blade.php:300	div-class fieldset mt-3
+resources/views/chat/index.blade.php:317	div-class fieldset mt-2
+resources/views/chat/index.blade.php:341	kein direktes Control nach Label
+resources/views/communication-notes/_form_dialog.blade.php:89	kein name
+resources/views/communication-notes/_form_dialog.blade.php:95	kein name
+resources/views/communication-notes/_form_dialog.blade.php:102	kein name
+resources/views/components/date-range.blade.php:128	div hat weitere Attribute
+resources/views/components/facility-picker.blade.php:112	Rest nach Control: @error($customerName)<p class="text-error text-sm">{{ $messa
+resources/views/components/facility-picker.blade.php:125	div hat weitere Attribute
+resources/views/components/facility-picker.blade.php:139	Blade-Direktive @change im Tag
+resources/views/components/facility-picker.blade.php:150	Blade-Direktive @change im Tag
+resources/views/components/facility-picker.blade.php:162	UNPARSE:: name="{{ $floorName }}" x-ref="floorSelect" x-model.number="floor_id" @change="onFloorChange()" @if ($requireFloor) req
+resources/views/components/facility-picker.blade.php:176	UNPARSE:: name="{{ $roomName }}" x-ref="roomSelect" x-model.number="room_id" @if ($requireRoom) required @endif                  
+resources/views/diary/_form_fields.blade.php:168	div hat weitere Attribute
+resources/views/diary/_form_fields.blade.php:199	div hat weitere Attribute
+resources/views/duty-plans/_form.blade.php:25	kein direktes Control nach Label
+resources/views/events/_form_dialog.blade.php:104	kein direktes Control nach Label
+resources/views/events/_form_dialog.blade.php:192	kein name
+resources/views/events/_form_dialog.blade.php:203	kein direktes Control nach Label
+resources/views/events/_form_dialog.blade.php:219	kein name
+resources/views/events/_form_dialog.blade.php:226	kein name
+resources/views/events/_form_dialog.blade.php:260	kein name
+resources/views/events/_form_dialog.blade.php:270	kein name
+resources/views/expenses/_form_body.blade.php:14	Rest nach Control: <div data-meals-hint class="alert alert-info mt-2 hidden">  
+resources/views/finance/datev/config.blade.php:38	UNPARSE:: type="number" min="4" max="8" name="datev[account_length]"                            value="{{ old('datev.account_leng
+resources/views/finance/datev/config.blade.php:44	UNPARSE:: type="text" maxlength="12" name="datev[revenue_account]"                            value="{{ old('datev.revenue_accoun
+resources/views/finance/datev/config.blade.php:51	UNPARSE:: type="text" maxlength="12" name="datev[revenue_account_tax_free]"                            value="{{ old('datev.reven
+resources/views/finance/datev/config.blade.php:58	UNPARSE:: type="number" min="1" max="99999999" name="datev[debtor_base]"                            value="{{ old('datev.debtor_b
+resources/views/finance/datev/config.blade.php:68	UNPARSE:: type="text" maxlength="4" name="datev[tax_keys][19.00]"                            value="{{ old('datev.tax_keys.19\.00
+resources/views/finance/datev/config.blade.php:74	UNPARSE:: type="text" maxlength="4" name="datev[tax_keys][7.00]"                            value="{{ old('datev.tax_keys.7\.00',
+resources/views/finance/datev/config.blade.php:80	UNPARSE:: type="text" maxlength="4" name="datev[tax_keys][0.00]"                            value="{{ old('datev.tax_keys.0\.00',
+resources/views/finance/datev/config.blade.php:38	UNPARSE:: type="number" min="4" max="8" name="datev[account_length]"                            value="{{ old('datev.account_leng
+resources/views/finance/datev/config.blade.php:44	UNPARSE:: type="text" maxlength="12" name="datev[revenue_account]"                            value="{{ old('datev.revenue_accoun
+resources/views/finance/datev/config.blade.php:51	UNPARSE:: type="text" maxlength="12" name="datev[revenue_account_tax_free]"                            value="{{ old('datev.reven
+resources/views/finance/datev/config.blade.php:58	UNPARSE:: type="number" min="1" max="99999999" name="datev[debtor_base]"                            value="{{ old('datev.debtor_b
+resources/views/finance/datev/config.blade.php:68	UNPARSE:: type="text" maxlength="4" name="datev[tax_keys][19.00]"                            value="{{ old('datev.tax_keys.19\.00
+resources/views/finance/datev/config.blade.php:74	UNPARSE:: type="text" maxlength="4" name="datev[tax_keys][7.00]"                            value="{{ old('datev.tax_keys.7\.00',
+resources/views/finance/datev/config.blade.php:80	UNPARSE:: type="text" maxlength="4" name="datev[tax_keys][0.00]"                            value="{{ old('datev.tax_keys.0\.00',
+resources/views/finance/transfers/_form_dialog.blade.php:28	Rest nach Control: @if ($selectedMode !== null)                 <p class="mt-1 
+resources/views/finance/transfers/_form_dialog.blade.php:50	Rest nach Control: @if ($showDatevHint)                 <p class="mt-1 text-xs 
+resources/views/foreign-customers/_form_dialog.blade.php:45	UNPARSE:: name="name" type="text" required maxlength="200"                    class="input input-bordered w-full"                
+resources/views/foreign-customers/_form_dialog.blade.php:53	UNPARSE:: name="company" type="text" maxlength="200"                    class="input input-bordered w-full"                    va
+resources/views/foreign-customers/_form_dialog.blade.php:59	UNPARSE:: name="matchcode" type="text" maxlength="16"                    class="input input-bordered w-full"                    v
+resources/views/foreign-customers/_form_dialog.blade.php:67	UNPARSE:: name="color" type="text" maxlength="16"                    class="input input-bordered w-full"                    value
+resources/views/foreign-customers/_form_dialog.blade.php:76	UNPARSE:: name="contact_name" type="text" maxlength="200"                    class="input input-bordered w-full"                 
+resources/views/foreign-customers/_form_dialog.blade.php:82	UNPARSE:: name="email" type="email" maxlength="255"                    class="input input-bordered w-full"                    val
+resources/views/foreign-customers/_form_dialog.blade.php:90	UNPARSE:: name="phone" type="text" maxlength="64"                    class="input input-bordered w-full"                    value
+resources/views/foreign-customers/_form_dialog.blade.php:96	UNPARSE:: name="mobile" type="text" maxlength="64"                    class="input input-bordered w-full"                    valu
+resources/views/foreign-customers/_form_dialog.blade.php:45	UNPARSE:: name="name" type="text" required maxlength="200"                    class="input input-bordered w-full"                
+resources/views/foreign-customers/_form_dialog.blade.php:53	UNPARSE:: name="company" type="text" maxlength="200"                    class="input input-bordered w-full"                    va
+resources/views/foreign-customers/_form_dialog.blade.php:59	UNPARSE:: name="matchcode" type="text" maxlength="16"                    class="input input-bordered w-full"                    v
+resources/views/foreign-customers/_form_dialog.blade.php:67	UNPARSE:: name="color" type="text" maxlength="16"                    class="input input-bordered w-full"                    value
+resources/views/foreign-customers/_form_dialog.blade.php:76	UNPARSE:: name="contact_name" type="text" maxlength="200"                    class="input input-bordered w-full"                 
+resources/views/foreign-customers/_form_dialog.blade.php:82	UNPARSE:: name="email" type="email" maxlength="255"                    class="input input-bordered w-full"                    val
+resources/views/foreign-customers/_form_dialog.blade.php:90	UNPARSE:: name="phone" type="text" maxlength="64"                    class="input input-bordered w-full"                    value
+resources/views/foreign-customers/_form_dialog.blade.php:96	UNPARSE:: name="mobile" type="text" maxlength="64"                    class="input input-bordered w-full"                    valu
+resources/views/foreign-customers/_form_dialog.blade.php:106	UNPARSE:: name="country" type="text" maxlength="2"                    class="input input-bordered w-full uppercase"              
+resources/views/foreign-customers/_form_dialog.blade.php:112	UNPARSE:: name="homepage" type="url" maxlength="255"                    class="input input-bordered w-full"                    va
+resources/views/foreign-customers/_form_dialog.blade.php:45	UNPARSE:: name="name" type="text" required maxlength="200"                    class="input input-bordered w-full"                
+resources/views/foreign-customers/_form_dialog.blade.php:53	UNPARSE:: name="company" type="text" maxlength="200"                    class="input input-bordered w-full"                    va
+resources/views/foreign-customers/_form_dialog.blade.php:59	UNPARSE:: name="matchcode" type="text" maxlength="16"                    class="input input-bordered w-full"                    v
+resources/views/foreign-customers/_form_dialog.blade.php:67	UNPARSE:: name="color" type="text" maxlength="16"                    class="input input-bordered w-full"                    value
+resources/views/foreign-customers/_form_dialog.blade.php:76	UNPARSE:: name="contact_name" type="text" maxlength="200"                    class="input input-bordered w-full"                 
+resources/views/foreign-customers/_form_dialog.blade.php:82	UNPARSE:: name="email" type="email" maxlength="255"                    class="input input-bordered w-full"                    val
+resources/views/foreign-customers/_form_dialog.blade.php:90	UNPARSE:: name="phone" type="text" maxlength="64"                    class="input input-bordered w-full"                    value
+resources/views/foreign-customers/_form_dialog.blade.php:96	UNPARSE:: name="mobile" type="text" maxlength="64"                    class="input input-bordered w-full"                    valu
+resources/views/foreign-customers/_form_dialog.blade.php:106	UNPARSE:: name="country" type="text" maxlength="2"                    class="input input-bordered w-full uppercase"              
+resources/views/foreign-customers/_form_dialog.blade.php:112	UNPARSE:: name="homepage" type="url" maxlength="255"                    class="input input-bordered w-full"                    va
+resources/views/forms/templates/_form_dialog.blade.php:91	kein name
+resources/views/forms/templates/_form_dialog.blade.php:97	kein name
+resources/views/forms/templates/_form_dialog.blade.php:115	div hat weitere Attribute
+resources/views/forms/templates/_form_dialog.blade.php:122	div hat weitere Attribute
+resources/views/forms/templates/_form_dialog.blade.php:129	kein name
+resources/views/forms/templates/_form_dialog.blade.php:139	div-class grid grid-cols-1 items-end gap-2 rounded-box bg-base-100/60 p-2 sm:grid-cols-[auto_1fr_auto_1fr]
+resources/views/helpdesk/catalog/_item_dialog.blade.php:88	kein name
+resources/views/helpdesk/catalog/_item_dialog.blade.php:96	div hat weitere Attribute
+resources/views/helpdesk/catalog/_item_dialog.blade.php:106	div hat weitere Attribute
+resources/views/helpdesk/changes/_form_dialog.blade.php:119	kein name
+resources/views/helpdesk/changes/_form_dialog.blade.php:127	div hat weitere Attribute
+resources/views/helpdesk/changes/_form_dialog.blade.php:137	div hat weitere Attribute
+resources/views/helpdesk/routing/index.blade.php:23	div-class fieldset grow
+resources/views/helpdesk/routing/index.blade.php:23	div-class fieldset grow
+resources/views/helpdesk/routing/index.blade.php:23	div-class fieldset grow
+resources/views/inventory/counts/show.blade.php:32	div-class fieldset grow
+resources/views/inventory/counts/show.blade.php:32	div-class fieldset grow
+resources/views/inventory/scan/index.blade.php:41	Inhalt vor dem Label
+resources/views/inventory/scan/index.blade.php:41	Inhalt vor dem Label
+resources/views/inventory/scan/index.blade.php:41	Inhalt vor dem Label
+resources/views/inventory/scan/index.blade.php:41	Inhalt vor dem Label
+resources/views/inventory/scan/index.blade.php:41	Inhalt vor dem Label
+resources/views/legacy/diary/_form_fields.blade.php:51	kein direktes Control nach Label
+resources/views/legacy/notdienst/_form_dialog.blade.php:41	kein direktes Control nach Label
+resources/views/legacy/oncall/_form_dialog.blade.php:41	kein direktes Control nach Label
+resources/views/manufacturing/show.blade.php:131	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:131	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:138	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:178	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:195	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:201	UNPARSE:: name="minutes" type="number" min="0" value="{{ $order-
+resources/views/manufacturing/show.blade.php:203	UNPARSE:: name="day" type="date" value="{{ $order-
+resources/views/manufacturing/show.blade.php:131	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:138	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:178	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:195	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:201	UNPARSE:: name="minutes" type="number" min="0" value="{{ $order-
+resources/views/manufacturing/show.blade.php:203	UNPARSE:: name="day" type="date" value="{{ $order-
+resources/views/manufacturing/show.blade.php:131	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:138	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:178	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:195	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:201	UNPARSE:: name="minutes" type="number" min="0" value="{{ $order-
+resources/views/manufacturing/show.blade.php:203	UNPARSE:: name="day" type="date" value="{{ $order-
+resources/views/manufacturing/show.blade.php:131	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:138	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:178	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:195	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:201	UNPARSE:: name="minutes" type="number" min="0" value="{{ $order-
+resources/views/manufacturing/show.blade.php:203	UNPARSE:: name="day" type="date" value="{{ $order-
+resources/views/manufacturing/show.blade.php:131	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:138	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:178	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:195	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:201	UNPARSE:: name="minutes" type="number" min="0" value="{{ $order-
+resources/views/manufacturing/show.blade.php:203	UNPARSE:: name="day" type="date" value="{{ $order-
+resources/views/manufacturing/show.blade.php:131	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:138	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:178	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:195	div-class fieldset grow
+resources/views/manufacturing/show.blade.php:201	UNPARSE:: name="minutes" type="number" min="0" value="{{ $order-
+resources/views/manufacturing/show.blade.php:203	UNPARSE:: name="day" type="date" value="{{ $order-
+resources/views/org/members/_form.blade.php:66	UNPARSE:: type="text" class="input input-bordered w-full" value="{{ $member-
+resources/views/payroll/index.blade.php:82	div-class fieldset sm:col-span-2
+resources/views/privacy/incidents/show.blade.php:87	div-class grid md:grid-cols-3 gap-4
+resources/views/procedures/templates/edit.blade.php:166	kein name
+resources/views/procedures/templates/edit.blade.php:172	kein name
+resources/views/procedures/templates/edit.blade.php:178	kein name
+resources/views/procedures/templates/edit.blade.php:191	kein name
+resources/views/procedures/templates/edit.blade.php:217	kein name
+resources/views/procedures/templates/edit.blade.php:227	kein name
+resources/views/procedures/templates/edit.blade.php:233	kein name
+resources/views/procedures/templates/edit.blade.php:244	kein name
+resources/views/procedures/templates/edit.blade.php:251	kein name
+resources/views/projects/_billing_rule_form_dialog.blade.php:33	Rest nach Control: @if ($articles->isEmpty())                 <p class="text-xs
+resources/views/projects/_billing_rule_form_dialog.blade.php:33	Rest nach Control: @if ($articles->isEmpty())                 <p class="text-xs
+resources/views/projects/_billing_rule_form_dialog.blade.php:33	Rest nach Control: @if ($articles->isEmpty())                 <p class="text-xs
+resources/views/projects/_billing_rule_form_dialog.blade.php:33	Rest nach Control: @if ($articles->isEmpty())                 <p class="text-xs
+resources/views/projects/_billing_rule_form_dialog.blade.php:33	Rest nach Control: @if ($articles->isEmpty())                 <p class="text-xs
+resources/views/projects/_billing_tab.blade.php:37	Rest nach Control: <input type="number" name="billing_increment_minutes_custom"
+resources/views/projects/_billing_tab.blade.php:55	UNPARSE:: type="number" name="billing_grouping_gap_minutes" min="0" max="1440" step="1"                            value="{{ $gap
+resources/views/projects/_billing_tab.blade.php:94	UNPARSE:: type="number" name="hourly_rate" min="0" max="10000" step="0.01" inputmode="decimal"                            value="
+resources/views/projects/_billing_tab.blade.php:102	UNPARSE:: type="number" name="internal_rate" min="0" max="10000" step="0.01" inputmode="decimal"                            value
+resources/views/projects/_form_dialog.blade.php:92	div hat weitere Attribute
+resources/views/projects/_form_dialog.blade.php:105	div hat weitere Attribute
+resources/views/projects/_form_dialog.blade.php:150	kein direktes Control nach Label
+resources/views/projects/_form_dialog.blade.php:167	kein direktes Control nach Label
+resources/views/projects/_milestone_dialog.blade.php:37	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_milestone_dialog.blade.php:37	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_milestone_dialog.blade.php:49	UNPARSE:: name="due_date" type="date"                        class="input input-bordered w-full"                        value="{{
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:63	UNPARSE:: type="number" name="default_service_minutes" min="0" max="10080"                    value="{{ old('default_service_minu
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:63	UNPARSE:: type="number" name="default_service_minutes" min="0" max="10080"                    value="{{ old('default_service_minu
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:63	UNPARSE:: type="number" name="default_service_minutes" min="0" max="10080"                    value="{{ old('default_service_minu
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:63	UNPARSE:: type="number" name="default_service_minutes" min="0" max="10080"                    value="{{ old('default_service_minu
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:63	UNPARSE:: type="number" name="default_service_minutes" min="0" max="10080"                    value="{{ old('default_service_minu
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:36	UNPARSE:: type="text" name="name" maxlength="160" required                    value="{{ old('name', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:44	UNPARSE:: type="text" name="title_template" maxlength="200"                    value="{{ old('title_template', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:63	UNPARSE:: type="number" name="default_service_minutes" min="0" max="10080"                    value="{{ old('default_service_minu
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:102	UNPARSE:: type="number" name="interval" min="1" max="365" required                    value="{{ old('interval', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:109	kein direktes Control nach Label
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:124	UNPARSE:: type="number" name="bymonthday" min="1" max="31"                    value="{{ old('bymonthday', $rule-
+resources/views/projects/_recurrence_rule_form_dialog.blade.php:131	UNPARSE:: type="number" name="bymonth" min="1" max="12"                    value="{{ old('bymonth', $rule-
+resources/views/projects/_task_dialog.blade.php:51	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:51	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:51	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:51	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:90	kein direktes Control nach Label
+resources/views/projects/_task_dialog.blade.php:105	UNPARSE:: name="hourly_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"        
+resources/views/projects/_task_dialog.blade.php:111	UNPARSE:: name="internal_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"      
+resources/views/projects/_task_dialog.blade.php:117	UNPARSE:: name="time_budget" type="number" step="1" min="0"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:123	UNPARSE:: name="budget" type="number" step="0.01" min="0"                        class="input input-bordered w-full"             
+resources/views/projects/_task_dialog.blade.php:51	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:90	kein direktes Control nach Label
+resources/views/projects/_task_dialog.blade.php:105	UNPARSE:: name="hourly_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"        
+resources/views/projects/_task_dialog.blade.php:111	UNPARSE:: name="internal_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"      
+resources/views/projects/_task_dialog.blade.php:117	UNPARSE:: name="time_budget" type="number" step="1" min="0"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:123	UNPARSE:: name="budget" type="number" step="0.01" min="0"                        class="input input-bordered w-full"             
+resources/views/projects/_task_dialog.blade.php:134	kein direktes Control nach Label
+resources/views/projects/_task_dialog.blade.php:51	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:90	kein direktes Control nach Label
+resources/views/projects/_task_dialog.blade.php:105	UNPARSE:: name="hourly_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"        
+resources/views/projects/_task_dialog.blade.php:111	UNPARSE:: name="internal_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"      
+resources/views/projects/_task_dialog.blade.php:117	UNPARSE:: name="time_budget" type="number" step="1" min="0"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:123	UNPARSE:: name="budget" type="number" step="0.01" min="0"                        class="input input-bordered w-full"             
+resources/views/projects/_task_dialog.blade.php:134	kein direktes Control nach Label
+resources/views/projects/_task_dialog.blade.php:51	UNPARSE:: name="title" type="text" required maxlength="200"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:90	kein direktes Control nach Label
+resources/views/projects/_task_dialog.blade.php:105	UNPARSE:: name="hourly_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"        
+resources/views/projects/_task_dialog.blade.php:111	UNPARSE:: name="internal_rate" type="number" step="0.01" min="0"                        class="input input-bordered w-full"      
+resources/views/projects/_task_dialog.blade.php:117	UNPARSE:: name="time_budget" type="number" step="1" min="0"                        class="input input-bordered w-full"           
+resources/views/projects/_task_dialog.blade.php:123	UNPARSE:: name="budget" type="number" step="0.01" min="0"                        class="input input-bordered w-full"             
+resources/views/projects/_task_dialog.blade.php:134	kein direktes Control nach Label
+resources/views/projects/_time_entry_dialog.blade.php:50	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:67	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:75	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:105	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:50	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:67	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:75	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:105	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:50	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:67	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:75	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:105	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:139	UNPARSE:: name="description" type="text" maxlength="500"                        class="input input-bordered w-full"              
+resources/views/projects/_time_entry_dialog.blade.php:146	kein direktes Control nach Label
+resources/views/projects/_time_entry_dialog.blade.php:50	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:67	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:75	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:105	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:139	UNPARSE:: name="description" type="text" maxlength="500"                        class="input input-bordered w-full"              
+resources/views/projects/_time_entry_dialog.blade.php:146	kein direktes Control nach Label
+resources/views/projects/_time_entry_dialog.blade.php:50	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:67	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:75	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:105	div hat weitere Attribute
+resources/views/projects/_time_entry_dialog.blade.php:139	UNPARSE:: name="description" type="text" maxlength="500"                        class="input input-bordered w-full"              
+resources/views/projects/_time_entry_dialog.blade.php:146	kein direktes Control nach Label
+resources/views/purchase-orders/show.blade.php:73	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:73	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:73	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:81	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:87	UNPARSE:: name="freight_cost" type="number" step="0.01" min="0" value="{{ $order-
+resources/views/purchase-orders/show.blade.php:151	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:168	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:73	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:81	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:87	UNPARSE:: name="freight_cost" type="number" step="0.01" min="0" value="{{ $order-
+resources/views/purchase-orders/show.blade.php:151	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:168	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:73	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:81	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:87	UNPARSE:: name="freight_cost" type="number" step="0.01" min="0" value="{{ $order-
+resources/views/purchase-orders/show.blade.php:151	div-class fieldset grow
+resources/views/purchase-orders/show.blade.php:168	div-class fieldset grow
+resources/views/report-views/index.blade.php:31	div-class fieldset grow
+resources/views/schedule/partials/_shift_dialog.blade.php:43	kein direktes Control nach Label
+resources/views/schedule/partials/_shift_dialog.blade.php:43	kein direktes Control nach Label
+resources/views/schedule/partials/_shift_dialog.blade.php:43	kein direktes Control nach Label
+resources/views/schedule/partials/_shift_type_manager.blade.php:93	kein direktes Control nach Label
+resources/views/shifts/_form_body.blade.php:30	div-class fieldset w-full
+resources/views/shifts/_form_body.blade.php:61	div-class fieldset w-full
+resources/views/sick-leaves/_form_dialog.blade.php:80	kein direktes Control nach Label
+resources/views/sla-contracts/index.blade.php:38	kein direktes Control nach Label
+resources/views/tasks/global/_dialog.blade.php:46	UNPARSE:: name="title" type="text" required maxlength="200"                    class="input input-bordered w-full"               
+resources/views/tasks/global/_dialog.blade.php:46	UNPARSE:: name="title" type="text" required maxlength="200"                    class="input input-bordered w-full"               
+resources/views/tasks/global/_dialog.blade.php:46	UNPARSE:: name="title" type="text" required maxlength="200"                    class="input input-bordered w-full"               
+resources/views/tasks/global/_dialog.blade.php:46	UNPARSE:: name="title" type="text" required maxlength="200"                    class="input input-bordered w-full"               
+resources/views/tasks/global/_dialog.blade.php:71	UNPARSE:: name="hourly_rate" type="number" step="0.01" min="0"                    class="input input-bordered w-full"            
+resources/views/tasks/global/_dialog.blade.php:77	UNPARSE:: name="internal_rate" type="number" step="0.01" min="0"                    class="input input-bordered w-full"          
+resources/views/tasks/global/_dialog.blade.php:83	UNPARSE:: name="time_budget" type="number" step="1" min="0"                    class="input input-bordered w-full"               
+resources/views/tasks/global/_dialog.blade.php:89	UNPARSE:: name="budget" type="number" step="0.01" min="0"                    class="input input-bordered w-full"                 
+resources/views/tasks/global/_dialog.blade.php:46	UNPARSE:: name="title" type="text" required maxlength="200"                    class="input input-bordered w-full"               
+resources/views/tasks/global/_dialog.blade.php:71	UNPARSE:: name="hourly_rate" type="number" step="0.01" min="0"                    class="input input-bordered w-full"            
+resources/views/tasks/global/_dialog.blade.php:77	UNPARSE:: name="internal_rate" type="number" step="0.01" min="0"                    class="input input-bordered w-full"          
+resources/views/tasks/global/_dialog.blade.php:83	UNPARSE:: name="time_budget" type="number" step="1" min="0"                    class="input input-bordered w-full"               
+resources/views/tasks/global/_dialog.blade.php:89	UNPARSE:: name="budget" type="number" step="0.01" min="0"                    class="input input-bordered w-full"                 
+resources/views/tasks/global/_dialog.blade.php:100	kein direktes Control nach Label
+resources/views/time-approval/correction/_form_dialog.blade.php:65	kein name
+resources/views/time-approval/correction/_form_dialog.blade.php:74	kein name
+resources/views/time-approval/correction/_form_dialog.blade.php:79	kein name
+resources/views/time-approval/correction/_form_dialog.blade.php:90	kein name
+resources/views/time-approval/correction/_form_dialog.blade.php:96	kein name
+resources/views/time-entries/_admin_form_body.blade.php:26	UNPARSE:: type="date" name="date" required value="{{ old('date', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:30	UNPARSE:: type="number" name="minutes" min="1" max="1440" required value="{{ old('minutes', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:26	UNPARSE:: type="date" name="date" required value="{{ old('date', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:30	UNPARSE:: type="number" name="minutes" min="1" max="1440" required value="{{ old('minutes', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:26	UNPARSE:: type="date" name="date" required value="{{ old('date', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:30	UNPARSE:: type="number" name="minutes" min="1" max="1440" required value="{{ old('minutes', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:50	UNPARSE:: type="time" name="start_time" value="{{ old('start_time', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:54	UNPARSE:: type="time" name="end_time" value="{{ old('end_time', $entry?-
+resources/views/time-entries/_admin_form_body.blade.php:73	kein direktes Control nach Label
+resources/views/timesheets/_entry_form_dialog.blade.php:38	div hat weitere Attribute
+resources/views/timesheets/_entry_form_dialog.blade.php:112	kein direktes Control nach Label
+resources/views/timesheets/_form_body.blade.php:23	UNPARSE:: type="date" name="work_date" required                value="{{ old('work_date', optional($timesheet-
+resources/views/timesheets/index.blade.php:114	UNPARSE:: type="date" name="work_date" value="{{ now()-
+resources/views/users/_contact_fields.blade.php:26	UNPARSE:: type="text" name="first_name" maxlength="128"                class="input input-bordered w-full @error('first_name') in
+resources/views/users/_contact_fields.blade.php:34	UNPARSE:: type="text" name="middle_names" maxlength="128"                class="input input-bordered w-full @error('middle_names'
+resources/views/users/_contact_fields.blade.php:42	UNPARSE:: type="text" name="last_name" maxlength="128"                class="input input-bordered w-full @error('last_name') inpu
+resources/views/users/_contact_fields.blade.php:52	UNPARSE:: type="text" name="phone" maxlength="64"                class="input input-bordered w-full @error('phone') input-error @
+resources/views/users/_contact_fields.blade.php:60	UNPARSE:: type="text" name="mobile" maxlength="64"                class="input input-bordered w-full @error('mobile') input-error
+resources/views/users/_contact_fields.blade.php:68	UNPARSE:: type="text" name="fax" maxlength="64"                class="input input-bordered w-full @error('fax') input-error @ende
+resources/views/users/_contact_fields.blade.php:78	UNPARSE:: type="text" name="address[supplement]" maxlength="255"                class="input input-bordered w-full @error('addres
+resources/views/users/_contact_fields.blade.php:86	UNPARSE:: type="text" name="address[street]" maxlength="255"                class="input input-bordered w-full @error('address.st
+resources/views/users/_contact_fields.blade.php:94	UNPARSE:: type="text" name="address[zip]" maxlength="32"                class="input input-bordered w-full @error('address.zip') 
+resources/views/users/_contact_fields.blade.php:102	UNPARSE:: type="text" name="address[city]" maxlength="128"                class="input input-bordered w-full @error('address.city
+resources/views/users/_contact_fields.blade.php:110	UNPARSE:: type="text" name="address[country_code]" maxlength="2" placeholder="DE"                class="input input-bordered w-fu
+resources/views/users/_contact_fields.blade.php:120	UNPARSE:: type="text" name="bank[account_holder]" maxlength="200"                class="input input-bordered w-full @error('bank.
+resources/views/users/_contact_fields.blade.php:128	UNPARSE:: type="text" name="bank[iban]" maxlength="64"                class="input input-bordered w-full font-mono @error('bank.i
+resources/views/users/_contact_fields.blade.php:136	UNPARSE:: type="text" name="bank[bic]" maxlength="32"                class="input input-bordered w-full font-mono @error('bank.bi
+resources/views/users/_contact_fields.blade.php:144	UNPARSE:: type="text" name="bank[bank_name]" maxlength="200"                class="input input-bordered w-full @error('bank.bank_
+resources/views/vacations/_form_dialog.blade.php:78	kein direktes Control nach Label
+resources/views/work-schedules/_form_body.blade.php:41	Rest nach Control: <input type="number" min="0" :step="step" x-model="d.weekly"
+resources/views/work-schedules/_form_body.blade.php:46	div hat weitere Attribute
+resources/views/work-schedules/_form_body.blade.php:138	Rest nach Control: <input type="number" min="0" :step="step" x-model="d.breakAf
+resources/views/work-schedules/_form_body.blade.php:143	Rest nach Control: <input type="number" min="0" :step="step" x-model="d.breakMi

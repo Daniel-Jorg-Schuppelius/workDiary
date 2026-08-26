@@ -33,7 +33,7 @@
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('OpenProject-Zuordnungen') }}</h1>
                 <a href="{{ route('admin.openproject.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück') }}</a>
             </div>
-            <p class="mb-4 text-sm text-base-content/60">
+            <p class="mb-4 text-sm text-muted">
                 {{ __('Gemerkte Zuordnungen zwischen OpenProject (Projekt, Work Package, Benutzer) und workDiary. Hier lassen sie sich auf ein anderes Ziel umlegen oder entfernen.') }}
             </p>
 
@@ -45,7 +45,7 @@
             @endif
 
             @if ($mappings->isEmpty())
-                <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
+                <p class="rounded-box border border-base-300 p-6 text-center text-sm text-muted">
                     {{ __('Noch keine Zuordnungen. Starte einen Struktur-Abgleich.') }}
                 </p>
             @else
@@ -66,12 +66,12 @@
                                     <td>{{ $typeLabels[$mapping->external_type] ?? $mapping->external_type }}</td>
                                     <td class="font-mono text-xs">
                                         {{ data_get($mapping->payload, 'name', data_get($mapping->payload, 'subject', $mapping->external_id)) }}
-                                        <span class="text-base-content/50">#{{ $mapping->external_id }}</span>
+                                        <span class="text-muted">#{{ $mapping->external_id }}</span>
                                     </td>
                                     <td>{{ optional($mapping->referenceable)->name ?? optional($mapping->referenceable)->title ?? '—' }}</td>
                                     <td>
                                         <div class="flex items-center justify-end gap-2">
-                                            <form method="POST" action="{{ route('admin.openproject.mappings.update', $mapping->id) }}" class="flex items-center gap-1">
+                                            <form method="POST" action="{{ route('admin.openproject.mappings.update', $mapping->sqid) }}" class="flex items-center gap-1">
                                                 @csrf
                                                 <select name="target_id" class="select select-xs select-bordered">
                                                     <option value="">{{ __('— Ziel wählen —') }}</option>
@@ -81,7 +81,7 @@
                                                 </select>
                                                 <button type="submit" class="btn btn-xs">{{ __('Umlegen') }}</button>
                                             </form>
-                                            <form method="POST" action="{{ route('admin.openproject.mappings.delete', $mapping->id) }}"
+                                            <form method="POST" action="{{ route('admin.openproject.mappings.delete', $mapping->sqid) }}"
                                                   data-confirm-dialog data-confirm-message="{{ __('Zuordnung wirklich entfernen?') }}">
                                                 @csrf
                                                 <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('Entfernen') }}</button>

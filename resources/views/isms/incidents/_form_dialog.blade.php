@@ -76,7 +76,7 @@
                    @checked(old('personal_data_affected', $incident?->personal_data_affected))>
             <span class="label-text">{{ __('isms.field.personal_data_affected') }}</span>
         </label>
-        <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('isms.hint.personal_data_affected') }}</p>
+        <p class="text-xs text-muted sm:col-span-2">{{ __('isms.hint.personal_data_affected') }}</p>
         <x-input-field name="privacy_incident_ref" :label="__('isms.field.privacy_incident_ref')" maxlength="64"
                        span="2"
                        :value="old('privacy_incident_ref', $incident?->privacy_incident_ref)"
@@ -102,6 +102,6 @@
                 @endforeach
             </select>
         </label>
-        <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('isms.hint.incident_links') }}</p>
+        <p class="text-xs text-muted sm:col-span-2">{{ __('isms.hint.incident_links') }}</p>
     </x-form-group>
 </x-modal>

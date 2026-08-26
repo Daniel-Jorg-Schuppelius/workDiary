@@ -110,7 +110,7 @@
                                     <p class="mt-0.5 text-xs text-base-content/70">{{ __($module['description']) }}</p>
                                 @endif
                                 @if ($module['status'] === \App\Enums\Licensing\ModuleStatus::NotLicensed)
-                                    <p class="mt-0.5 text-xs text-base-content/50">{{ __('scope.modules.not_licensed_hint') }}</p>
+                                    <p class="mt-0.5 text-xs text-muted">{{ __('scope.modules.not_licensed_hint') }}</p>
                                 @endif
                             </div>
                         </li>

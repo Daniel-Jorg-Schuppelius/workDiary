@@ -24,7 +24,7 @@
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Offene Anfragen')">
                 @if ($requests->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Keine offenen Terminanfragen.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Keine offenen Terminanfragen.') }}</p>
                 @else
                     <div class="space-y-2">
                         @foreach ($requests as $request)
@@ -60,13 +60,13 @@
 
             <x-card :title="__('Zuletzt entschieden')">
                 @if ($decided->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch nichts entschieden.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch nichts entschieden.') }}</p>
                 @else
                     <ul class="space-y-1 text-sm">
                         @foreach ($decided as $request)
                             <li class="flex justify-between gap-2">
                                 <span class="min-w-0 truncate">{{ $request->start_at?->format('d.m.Y H:i') }} · {{ $request->customer?->name ?? $request->invitee_name }}</span>
-                                <span class="shrink-0 text-base-content/60">{{ [
+                                <span class="shrink-0 text-muted">{{ [
                                     'confirmed' => __('bestätigt'),
                                     'declined' => __('abgelehnt'),
                                     'canceled' => __('storniert'),
@@ -81,12 +81,12 @@
         <div class="space-y-4">
             <x-card :title="__('Buchbare Leistungsarten')">
                 @if ($services->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch keine Leistungsart buchbar — nichts ist automatisch buchbar.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch keine Leistungsart buchbar — nichts ist automatisch buchbar.') }}</p>
                 @else
                     <ul class="space-y-1 text-sm">
                         @foreach ($services as $service)
                             <li class="flex items-center justify-between gap-2">
-                                <span class="min-w-0 truncate">{{ $service->title }} <span class="text-xs text-base-content/60">({{ $service->duration_minutes }} min, {{ __('Vorlauf :h h', ['h' => $service->lead_time_hours]) }})</span></span>
+                                <span class="min-w-0 truncate">{{ $service->title }} <span class="text-xs text-muted">({{ $service->duration_minutes }} min, {{ __('Vorlauf :h h', ['h' => $service->lead_time_hours]) }})</span></span>
                                 @if ($canManage)
                                     <x-action-form :action="route('appointments.services.toggle', $service)">
                                         <x-icon-btn :icon="$service->active ? 'pause' : 'play_arrow'" size="sm" type="submit"

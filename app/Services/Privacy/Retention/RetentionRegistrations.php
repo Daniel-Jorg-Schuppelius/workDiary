@@ -237,5 +237,120 @@ class RetentionRegistrations {
                 $subject->audit('passenger.ride_anonymized', ['reason' => 'retention']);
             },
         ));
+
+        // Personalstamm ausgeschiedener Mitarbeiter (Feature 130, MVP-694 —
+        // H21): Kandidaten sind deaktivierte Konten mit Austrittsdatum älter
+        // als die Frist (keine Portal-Konten, keine Plattform-Admins). Der
+        // Vollzug ist die ANONYMISIERUNG (UserAnonymizationService) — nie
+        // Löschung, die Nachweis-FKs (RETENTION_FK_TABLES) bleiben verknüpft —
+        // und läuft nur als bestätigter Review-Vorschlag (approve → purge).
+        $registry->register(new RetentionPolicy(
+            area: 'employee_records',
+            modelClass: \App\Models\User::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\User::query()
+                ->where('organization_id', $organization->id)
+                ->whereNull('customer_id')
+                ->where('is_platform_admin', false)
+                ->whereNotNull('deactivated_at')
+                ->whereNotNull('left_at')
+                ->whereNull('anonymized_at')
+                ->whereDate('left_at', '<', $cutoff->toDateString()),
+            // Personalakte (Feature 141) blockt wie Strukturdaten beim Kunden:
+            // ihre Kategorie-Fristen laufen länger (bis 6 J.) und die Akte
+            // braucht den Personenbezug für ihren Zweck — erst vernichten
+            // (Bereich personnel_files), dann anonymisieren.
+            exempt: function (\App\Models\User $subject): ?string {
+                $open = app(\App\Services\Hr\PersonnelFileService::class)->openDocumentCount($subject);
+
+                return $open > 0
+                    ? "Personalakte mit {$open} Dokument(en) vorhanden — zuerst über den Bereich Personalakten vernichten."
+                    : null;
+            },
+            purge: function (\App\Models\User $subject, \App\Models\User $actor): void {
+                app(\App\Services\Privacy\UserAnonymizationService::class)->anonymize($subject, $actor);
+            },
+        ));
+
+        // Digitale Personalakte (Feature 141, MVP-708): Anker ist das am
+        // Dokument gesetzte Aufbewahrungsende (users.left_at + Kategorie-
+        // Jahre, beim Austritt bzw. Upload für Ausgetretene gesetzt) — der
+        // Katalog-Cutoff dient nur dem Ausweis. Vollzug = VERNICHTUNG
+        // (Dateien + Versionen + Dokument, Audit hrFile.deleted) und nur als
+        // bestätigter Review-Vorschlag (approve → purge).
+        $registry->register(new RetentionPolicy(
+            area: 'personnel_files',
+            modelClass: \App\Models\Document::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Document::query()
+                ->withoutGlobalScopes()
+                ->whereNull('deleted_at')
+                ->where('organization_id', $organization->id)
+                ->where('documentable_type', \App\Models\User::class)
+                ->whereNotNull('retention_until')
+                ->whereDate('retention_until', '<=', now()->toDateString()),
+            purge: function (\App\Models\Document $subject, \App\Models\User $actor): void {
+                app(\App\Services\Hr\PersonnelFileService::class)->destroy($subject, $actor, 'retention');
+            },
+        ));
+
+        // Kundenstammdaten ohne Geschäftsvorfälle (Feature 130, MVP-694 —
+        // H21): nur Review-Ausweis — Kandidaten sind Kunden OHNE Belege/
+        // Zeiten (keine Rechnungen, keine Diary-Einträge, keine Zeiten auf
+        // Kundenprojekten) und ohne Kontakt seit Frist (updated_at als
+        // Anker). Strukturdaten (echte Projekte/Standorte/Assets/Portal-
+        // Konten) blocken als Ausnahme — das vom CustomerObserver
+        // auto-angelegte Standardprojekt zählt NICHT als Struktur und wird
+        // beim Purge (nur leer) mitentfernt, sonst bliebe eine verwaiste
+        // Hülle (FK SET NULL). Gelöscht wird ausschließlich nach der
+        // zweistufigen Bestätigung.
+        $registry->register(new RetentionPolicy(
+            area: 'customer_master',
+            modelClass: \App\Models\Customer::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Customer::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('updated_at', '<', $cutoff)
+                ->whereNotExists(fn($query) => $query->select(\Illuminate\Support\Facades\DB::raw(1))
+                    ->from('diary_entries')->whereColumn('diary_entries.customer_id', 'customers.id'))
+                ->whereNotExists(fn($query) => $query->select(\Illuminate\Support\Facades\DB::raw(1))
+                    ->from('invoices')->whereColumn('invoices.customer_id', 'customers.id'))
+                ->whereNotExists(fn($query) => $query->select(\Illuminate\Support\Facades\DB::raw(1))
+                    ->from('time_entries')
+                    ->join('projects', 'projects.id', '=', 'time_entries.project_id')
+                    ->whereColumn('projects.customer_id', 'customers.id')),
+            exempt: function (\App\Models\Customer $subject): ?string {
+                $structures = [
+                    'Projekte' => \Illuminate\Support\Facades\DB::table('projects')->where('customer_id', $subject->id)->where('is_default', false),
+                    'Standorte' => \Illuminate\Support\Facades\DB::table('sites')->where('customer_id', $subject->id),
+                    'Assets' => \Illuminate\Support\Facades\DB::table('assets')->where('customer_id', $subject->id),
+                    'Portal-Konten' => \Illuminate\Support\Facades\DB::table('users')->where('customer_id', $subject->id),
+                ];
+                foreach ($structures as $label => $query) {
+                    if ($query->exists()) {
+                        return "Verknüpfte Strukturdaten vorhanden ({$label}) — zuerst bereinigen.";
+                    }
+                }
+
+                return null;
+            },
+            purge: function (\App\Models\Customer $subject): void {
+                \Illuminate\Support\Facades\DB::table('projects')
+                    ->where('customer_id', $subject->id)
+                    ->where('is_default', true)
+                    ->whereNotExists(fn($query) => $query->select(\Illuminate\Support\Facades\DB::raw(1))
+                        ->from('time_entries')->whereColumn('time_entries.project_id', 'projects.id'))
+                    ->delete();
+                $subject->delete();
+            },
+        ));
+
+        // location_points (Feature 130, H21) — BEWUSST KEINE Policy: Die
+        // GPS-Rohspur purgt der tägliche location:purge-points-Job selbst
+        // (config location.retention_days, nur verarbeitete Punkte). Der
+        // Bereich ist in config/retention.php als Ausweis verdrahtet
+        // (days_source) — eine Scan-Policy hier wäre eine Doppel-Löschung
+        // und würde zehntausende Punkt-Zeilen als Einzel-Vorschläge
+        // hydrieren. Gleiches gilt für time_records (attendances: ArbZG 2 J.,
+        // aber lohn-/steuerrelevant 10 J. via exports/gobd — MAX-Frist) und
+        // documents_general (nur Ausweis im MVP): Ausweis ohne Policy.
     }
 }

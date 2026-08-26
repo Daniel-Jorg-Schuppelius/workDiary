@@ -10,22 +10,32 @@
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Finance\GobdExportStatus;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
+use App\Jobs\Finance\GobdExportJob;
 use App\Models\GobdExport;
 use App\Services\Finance\GdpduExportService;
-use Illuminate\Http\{Request, Response};
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * GoBD-Z3-Datenträgerüberlassung (Feature 063, MVP-132): Auswahl von Zeitraum
- * und Datenbereichen mit Preflight (Vollständigkeitswarnungen) sowie Download
- * des GDPdU-Pakets. Erzeugung + revisionssicherer Nachweis laufen über den
- * {@see GdpduExportService}. Recht `finance.gobd.export`; Modul-Gating
+ * und Datenbereichen mit Preflight (Vollständigkeitswarnungen), Beauftragung
+ * des Paketbaus und Download. Erzeugung + revisionssicherer Nachweis laufen
+ * über den {@see GdpduExportService}. Recht `finance.gobd.export`; Modul-Gating
  * `module.finance` automatisch über die `finance.*`-Routen.
+ *
+ * Seit MVP-722 gibt es KEINEN synchronen Pfad mehr (Vollscan 2026-08-23, A16):
+ * `export()` reiht nur noch ein. Eine Schwelle „kleine Zeiträume synchron"
+ * hätte zwei Wege durch denselben, hash-relevanten Paketbau geführt — und der
+ * reproduzierbare Paket-Hash ist das ganze Versprechen dieses Features. Ein
+ * Prüfungspaket ist nie interaktiv-eilig; der Nachweis in der Liste zeigt den
+ * Lauf, der Download holt ihn ab.
  */
 class GobdExportController extends Controller {
     use ResolvesCurrentOrganization;
@@ -68,7 +78,8 @@ class GobdExportController extends Controller {
         ]);
     }
 
-    public function export(Request $request): Response {
+    /** Reiht den Paketbau ein; das Ergebnis erscheint als Nachweis in der Liste. */
+    public function export(Request $request): RedirectResponse {
         Gate::authorize('viewAny', GobdExport::class);
 
         $data = $request->validate([
@@ -79,19 +90,36 @@ class GobdExportController extends Controller {
             'encoding' => ['sometimes', 'string', Rule::in($this->service->availableEncodings())],
         ]);
 
-        $result = $this->service->build(
+        $export = $this->service->register(
             $this->currentOrganization(),
             Carbon::parse((string) $data['from']),
             Carbon::parse((string) $data['to']),
             array_values(array_filter((array) ($data['sections'] ?? $this->service->availableSections()), 'is_string')),
-            Auth::user(),
             (string) ($data['encoding'] ?? GdpduExportService::ENCODING_CP1252),
+            Auth::user(),
+            GobdExportStatus::Queued,
         );
 
-        return response($result['content'], 200, [
-            'Content-Type' => 'application/zip',
-            'Content-Disposition' => 'attachment; filename="' . $result['filename'] . '"',
-        ]);
+        GobdExportJob::dispatch($export->id);
+
+        return redirect()
+            ->route('finance.gobd.index', ['from' => $data['from'], 'to' => $data['to']])
+            ->with('status', __('gobd.queued'));
+    }
+
+    /** Herunterladen eines fertigen Pakets — Recht wie die Erzeugung, mit Audit. */
+    public function download(GobdExport $export): BinaryFileResponse {
+        Gate::authorize('viewAny', GobdExport::class);
+        abort_unless($export->organization_id === $this->currentOrganization()->id, 404);
+
+        $path = $export->packagePath();
+        abort_unless($export->status->isDownloadable() && $path !== null && is_file($path), 404);
+
+        // Die Datenträgerüberlassung verlässt das Haus — wer sie abgeholt hat,
+        // gehört in die Auditspur (GoBD).
+        $export->audit('gobd.downloaded', ['package_sha256' => $export->package_sha256]);
+
+        return response()->download($path, $export->downloadName(), ['Content-Type' => 'application/zip']);
     }
 
     /** @return array{0: Carbon, 1: Carbon} Vorjahr als Standard-Prüfungszeitraum. */

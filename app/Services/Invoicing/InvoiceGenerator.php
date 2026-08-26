@@ -579,6 +579,7 @@ class InvoiceGenerator {
             foreach ($original->items as $item) {
                 $cancellation->items()->create([
                     'organization_id' => $original->organization_id,
+                    'article_id' => $item->article_id,
                     'service_date' => $item->service_date?->toDateString(),
                     'description' => $item->description,
                     'quantity' => (string) (-1 * (float) $item->quantity),

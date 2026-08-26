@@ -18,7 +18,7 @@
             @if ($project->description)
                 <p class="max-w-prose">{{ $project->description }}</p>
             @endif
-            <div class="mt-1 flex flex-wrap gap-3 text-xs text-base-content/60">
+            <div class="mt-1 flex flex-wrap gap-3 text-xs text-muted">
                 @if ($project->starts_on)
                     <span>{{ __('Start') }}: {{ $project->starts_on->fdate() }}</span>
                 @endif
@@ -82,7 +82,7 @@
                 @endif
             </button>
             <button role="tab" @click="setTab('timeline')" :class="tabClass('timeline')" class="tab">
-                <span class="material-symbols-outlined text-base" aria-hidden="true">timeline</span>
+                <x-icon name="timeline" class="text-base" />
                 {{ __('Timeline') }}
             </button>
             <button role="tab" @click="setTab('recurrence')" :class="tabClass('recurrence')" class="tab">

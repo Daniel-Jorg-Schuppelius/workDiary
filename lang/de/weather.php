@@ -30,4 +30,13 @@ return [
         'success' => 'Wetterdaten des Tages angehängt.',
         'unavailable' => 'Keine Wetterdaten verfügbar (kein Ort/Koordinaten oder Dienst nicht erreichbar) — später nachholbar.',
     ],
+    // Warnschwellen der Vorhersage (Feature 062, MVP-716).
+    'warning' => [
+        'threshold' => [
+            'rain' => 'Starkregen',
+            'gust' => 'Sturmböen',
+            'frost' => 'Frost',
+            'heat' => 'Hitze',
+        ],
+    ],
 ];

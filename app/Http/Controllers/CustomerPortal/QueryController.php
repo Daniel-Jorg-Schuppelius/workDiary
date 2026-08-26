@@ -11,25 +11,33 @@
 namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Customer\CustomerQueryStatus;
-use App\Http\Controllers\Controller;
-use App\Models\{CustomerQuery, User};
+use App\Http\Controllers\{AttachmentController, Controller};
+use App\Models\{Attachment, CustomerQuery, User};
+use App\Services\Attachments\FileAttacher;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\CustomerPortal\PortalQuerySubjects;
-use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
+use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 /**
  * Rückfragen/Kommentare im Kundenportal (MVP-512): read-only bleibt das
  * Portal — hier entsteht ausschließlich ein nachvollziehbarer
  * Frage-Antwort-Vorgang je ausdrücklich sichtbarem Subject
- * ({@see PortalQuerySubjects}). Nach dem Absenden ist der Text aus
- * Nachweisgründen nicht editierbar; eine Rücknahme ist eine Statusänderung.
+ * ({@see PortalQuerySubjects}). Nach dem Absenden sind Text und Anhänge
+ * (MVP-712, Upload-Policy wie {@see TicketController}) aus Nachweisgründen
+ * nicht editierbar; eine Rücknahme ist eine Statusänderung.
  */
 class QueryController extends Controller {
+    /** Obergrenze je Rückfrage — identisch zum Portal-Ticket. */
+    public const MAX_FILES = 5;
+
     public function __construct(
         private readonly PortalQuerySubjects $subjects,
         private readonly CustomerQueryService $service,
+        private readonly FileAttacher $attacher,
     ) {}
 
     /** Eigene Rückfragen des Kunden mit Antwort, Status und Subject-Kontext. */
@@ -40,7 +48,7 @@ class QueryController extends Controller {
             ->withoutGlobalScopes()
             ->where('organization_id', $user->organization_id)
             ->where('customer_id', $user->customer_id)
-            ->with(['subject', 'answeredBy:id,name'])
+            ->with(['subject', 'answeredBy:id,name', 'attachments'])
             ->orderByDesc('created_at')
             ->paginate(25);
 
@@ -79,6 +87,8 @@ class QueryController extends Controller {
             'question' => ['required', 'string', 'max:2000'],
         ]);
 
+        $files = $this->validatedUploads($request);
+
         $subject = $this->subjects->resolve($user, (string) $data['subject_type'], (string) $data['subject']);
         abort_if($subject === null, 404);
 
@@ -86,7 +96,7 @@ class QueryController extends Controller {
             return back()->withErrors(['question' => (string) __('Die Rückfrage darf nicht leer sein.')]);
         }
 
-        $this->service->raise($subject, [
+        $query = $this->service->raise($subject, [
             'organization_id' => (int) $user->organization_id,
             'customer_id' => (int) $user->customer_id,
             'asker_name' => $user->name,
@@ -94,8 +104,77 @@ class QueryController extends Controller {
             'question' => (string) $data['question'],
         ]);
 
+        // Kunden-Uploads hängen kundensichtbar an der Rückfrage (MVP-712) —
+        // Ablage über den kanonischen FileAttacher inkl. Quota-Guard.
+        if ($files !== []) {
+            $names = [];
+            foreach ($files as $file) {
+                $attachment = $this->attacher->store($query, $file, (int) $user->id, [
+                    'organization_id' => (int) $user->organization_id,
+                    'customer_visible' => true,
+                ]);
+                $names[] = $attachment->original_name;
+            }
+            $query->audit('portal.query.attachments_added', ['count' => count($names), 'files' => $names, 'by_portal_user_id' => (int) $user->id]);
+        }
+
         return redirect()->route('customer.queries.index')
             ->with('status', __('Ihre Rückfrage wurde übermittelt. Sie werden benachrichtigt, sobald eine Antwort vorliegt.'));
+    }
+
+    /**
+     * Sicherer Portal-Download eines Rückfrage-Anhangs (MVP-712): gleiche
+     * Scope-Grenze wie die Liste (nur eigener Kunde), Anhang muss zur
+     * Rückfrage gehören und kundensichtbar sein — sonst 404. Pfade stammen
+     * ausschließlich aus der DB.
+     */
+    public function downloadAttachment(CustomerQuery $query, Attachment $attachment): BinaryFileResponse {
+        $user = $this->portalUser();
+
+        abort_unless(
+            (int) $query->organization_id === (int) $user->organization_id
+            && (int) $query->customer_id === (int) $user->customer_id,
+            404,
+        );
+        abort_unless(
+            $attachment->customer_visible
+            && $attachment->attachable_type === $query->getMorphClass()
+            && (int) $attachment->attachable_id === (int) $query->getKey(),
+            404,
+        );
+
+        $disk = Storage::disk($attachment->disk);
+        if (! $disk->exists($attachment->path)) {
+            abort(404);
+        }
+
+        return response()->download($disk->path($attachment->path), $attachment->original_name);
+    }
+
+    /**
+     * Datei-Uploads nach der zentralen Policy des {@see AttachmentController}
+     * prüfen (Extension-Whitelist + Server-MIME via Fileinfo + Größenlimit) —
+     * exakt das Muster des Portal-Tickets.
+     *
+     * @return list<UploadedFile>
+     */
+    private function validatedUploads(Request $request): array {
+        $request->validate([
+            'files' => ['nullable', 'array', 'max:' . self::MAX_FILES],
+            'files.*' => ['file', 'max:' . FileAttacher::maxKb()],
+        ]);
+
+        $files = array_values(array_filter((array) $request->file('files', []), fn ($f) => $f instanceof UploadedFile));
+        foreach ($files as $file) {
+            $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
+            $serverMime = $file->getMimeType() ?? '';
+            if (! in_array($ext, AttachmentController::ALLOWED_EXTENSIONS, true)
+                || ! in_array($serverMime, AttachmentController::ALLOWED_MIMES, true)) {
+                throw ValidationException::withMessages(['files' => (string) __('Dateityp nicht erlaubt.')]);
+            }
+        }
+
+        return $files;
     }
 
     /** Rücknahme = protokollierte Statusänderung, kein spurloses Löschen. */

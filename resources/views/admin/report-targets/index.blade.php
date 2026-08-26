@@ -67,7 +67,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">flag</span>' :colspan="7" :title="__('reporting.target.empty')" compact />
+            <x-table.empty icon="flag" :colspan="7" :title="__('reporting.target.empty')" compact />
         @endforelse
     </x-table>
 

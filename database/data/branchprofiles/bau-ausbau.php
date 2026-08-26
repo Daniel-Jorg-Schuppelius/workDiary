@@ -13,7 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'bau-ausbau',
     'label' => 'Bau, Ausbau und Trockenbau',
-    'version' => 1,
+    'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -249,5 +249,13 @@ return [
         '#wetter',
         '#fremdgewerk',
         '#abnahme',
+    ],
+
+    // Schulungsvorschläge (Feature 145): Pflichtunterweisungen des Bau-
+    // gewerks; Nachweise entstehen als Unterweisung im Arbeitsschutz-Register.
+    'training_suggestions' => [
+        ['code' => 'psaga', 'title' => 'PSA gegen Absturz', 'legal_basis' => 'DGUV R 112-198/199', 'validity_months' => 12, 'duration_minutes' => 180, 'roles' => ['aussendienst', 'teamleitung']],
+        ['code' => 'geruest-benutzung', 'title' => 'Gerüstbenutzung und Gerüstprüfung', 'legal_basis' => 'DGUV I 201-011', 'validity_months' => 12, 'duration_minutes' => 120, 'roles' => ['aussendienst']],
+        ['code' => 'unterweisung-arbschg', 'title' => 'Jährliche Unterweisung Arbeitssicherheit', 'legal_basis' => '§ 12 ArbSchG / DGUV V1 § 4', 'validity_months' => 12, 'duration_minutes' => 60, 'roles' => ['aussendienst', 'teamleitung']],
     ],
 ];

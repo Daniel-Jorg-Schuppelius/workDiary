@@ -66,7 +66,7 @@
                             @endif
                         @endif
                     </td>
-                    <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $v->note }}</td>
+                    <td class="max-w-xs truncate text-muted text-xs">{{ $v->note }}</td>
                     <td class="text-right">
                         <div class="flex items-center justify-end gap-1">
                             @can('decide', $v)
@@ -107,7 +107,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$isAdmin ? 7 : 6" :title="__('Keine Einträge gefunden')" compact />
+                <x-table.empty icon="beach_access" :colspan="$isAdmin ? 7 : 6" :title="__('Keine Einträge gefunden')" compact />
             @endforelse
 </x-table>
 @if ($vacations->hasPages())

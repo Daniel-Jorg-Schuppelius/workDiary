@@ -732,9 +732,9 @@ class InvoiceTest extends TestCase {
             'to' => ['kunde@example.test'],
         ], $invoice)->assertRedirect();
 
-        $dispatch = \App\Models\InvoiceDispatch::query()
+        $dispatch = \App\Models\DocumentDispatch::query()
             ->where('invoice_id', $invoice->id)
-            ->where('channel', \App\Models\InvoiceDispatch::CHANNEL_EMAIL)
+            ->where('channel', \App\Models\DocumentDispatch::CHANNEL_EMAIL)
             ->latest('id')
             ->firstOrFail();
 

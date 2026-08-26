@@ -170,7 +170,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="9"
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">event</span>'
+                        icon="event"
                         :title="__('Keine Veranstaltungen gefunden')" compact />
                 @endforelse
             </tbody>

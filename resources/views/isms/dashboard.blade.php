@@ -107,7 +107,7 @@
                         <a class="link text-xs" href="{{ route('isms.requirements.index', ['scope' => $scope->sqid]) }}">{{ __('isms.dashboard.open_register') }}</a>
                     </div>
                     @if ($readiness['soa']->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_soa') }}</p>
+                        <p class="text-sm text-muted">{{ __('isms.dashboard.empty_soa') }}</p>
                     @else
                         <x-table bare>
                             <x-slot:head>
@@ -143,16 +143,16 @@
                         <a class="link text-xs" href="{{ route('isms.risks.index', ['sort' => 'score']) }}">{{ __('isms.dashboard.open_register') }}</a>
                     </div>
                     @if ($readiness['high_risks']['top']->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_block') }}</p>
+                        <p class="text-sm text-muted">{{ __('isms.dashboard.empty_block') }}</p>
                     @else
                         <ul class="divide-y divide-base-200 text-sm">
                             @foreach ($readiness['high_risks']['top'] as $risk)
                                 <li class="flex items-center justify-between gap-2 py-2">
                                     <span>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $risk->displayNo() }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $risk->displayNo() }}</span>
                                         {{ $risk->title }}
                                         @if ($risk->owner !== null)
-                                            <span class="text-xs text-base-content/50">· {{ $risk->owner->name }}</span>
+                                            <span class="text-xs text-muted">· {{ $risk->owner->name }}</span>
                                         @endif
                                     </span>
                                     <x-status-badge :tone="\App\Models\Isms\IsmsRisk::scoreTone($risk->score)">{{ $risk->score }}</x-status-badge>
@@ -169,13 +169,13 @@
                         <a class="link text-xs" href="{{ route('isms.risks.index', ['sort' => 'review']) }}">{{ __('isms.dashboard.open_register') }}</a>
                     </div>
                     @if ($readiness['reviews']['overdue']->isEmpty() && $readiness['reviews']['unassessed']->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_block') }}</p>
+                        <p class="text-sm text-muted">{{ __('isms.dashboard.empty_block') }}</p>
                     @else
                         <ul class="divide-y divide-base-200 text-sm">
                             @foreach ($readiness['reviews']['overdue'] as $risk)
                                 <li class="flex items-center justify-between gap-2 py-2">
                                     <span>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $risk->displayNo() }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $risk->displayNo() }}</span>
                                         {{ $risk->title }}
                                     </span>
                                     <x-status-badge tone="warning" outline>{{ __('isms.dashboard.review_overdue') }}</x-status-badge>
@@ -184,7 +184,7 @@
                             @foreach ($readiness['reviews']['unassessed'] as $risk)
                                 <li class="flex items-center justify-between gap-2 py-2">
                                     <span>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $risk->displayNo() }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $risk->displayNo() }}</span>
                                         {{ $risk->title }}
                                     </span>
                                     <x-status-badge tone="ghost" outline>{{ __('isms.dashboard.review_unassessed') }}</x-status-badge>
@@ -201,15 +201,15 @@
                         <a class="link text-xs" href="{{ route('isms.requirements.index', ['scope' => $scope->sqid, 'applicable' => 'yes']) }}">{{ __('isms.dashboard.open_register') }}</a>
                     </div>
                     @if ($readiness['evidence_gaps']['top']->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_block') }}</p>
+                        <p class="text-sm text-muted">{{ __('isms.dashboard.empty_block') }}</p>
                     @else
                         <ul class="divide-y divide-base-200 text-sm">
                             @foreach ($readiness['evidence_gaps']['top'] as $statement)
                                 <li class="flex items-center justify-between gap-2 py-2">
                                     <span>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $statement->requirement?->ref_no }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $statement->requirement?->ref_no }}</span>
                                         {{ $statement->requirement?->title }}
-                                        <span class="text-xs text-base-content/50">· {{ $statement->requirement?->normLabel() }}</span>
+                                        <span class="text-xs text-muted">· {{ $statement->requirement?->normLabel() }}</span>
                                     </span>
                                     <x-status-badge :tone="$statement->implementation_status->tone()" outline>{{ $statement->implementation_status->label() }}</x-status-badge>
                                 </li>
@@ -225,13 +225,13 @@
                         <a class="link text-xs" href="{{ route('isms.audits.index') }}">{{ __('isms.dashboard.open_audits') }}</a>
                     </div>
                     @if ($readiness['actions']['overdue']->isEmpty() && $readiness['nonconformities']['open']->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_block') }}</p>
+                        <p class="text-sm text-muted">{{ __('isms.dashboard.empty_block') }}</p>
                     @else
                         <ul class="divide-y divide-base-200 text-sm">
                             @foreach ($readiness['actions']['overdue'] as $action)
                                 <li class="flex items-center justify-between gap-2 py-2">
                                     <span>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $action->finding?->ismsAudit?->displayNo() }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $action->finding?->ismsAudit?->displayNo() }}</span>
                                         {{ $action->title }}
                                     </span>
                                     <x-status-badge tone="error" outline>{{ __('isms.dashboard.due_since', ['date' => $action->due_on?->format('d.m.Y')]) }}</x-status-badge>
@@ -240,7 +240,7 @@
                             @foreach ($readiness['nonconformities']['open'] as $finding)
                                 <li class="flex items-center justify-between gap-2 py-2">
                                     <span>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $finding->ismsAudit?->displayNo() }} {{ $finding->displayNo() }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $finding->ismsAudit?->displayNo() }} {{ $finding->displayNo() }}</span>
                                         {{ $finding->title }}
                                     </span>
                                     <x-status-badge :tone="$finding->kind->tone()" outline>{{ $finding->kind->label() }}</x-status-badge>
@@ -257,7 +257,7 @@
                         <a class="link text-xs" href="{{ route('isms.conformity.index', ['scope' => $scope->sqid]) }}">{{ __('isms.dashboard.open_register') }}</a>
                     </div>
                     @if ($readiness['certificates']->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_certificates') }}</p>
+                        <p class="text-sm text-muted">{{ __('isms.dashboard.empty_certificates') }}</p>
                     @else
                         <ul class="divide-y divide-base-200 text-sm">
                             @foreach ($readiness['certificates'] as $row)
@@ -266,12 +266,12 @@
                                     <span class="flex flex-wrap items-center gap-2">
                                         <x-status-badge :tone="$row['status']->tone()">{{ $row['status']->label() }}</x-status-badge>
                                         @if ($row['valid_until'] !== null)
-                                            <span class="text-xs {{ $row['expiring'] ? 'font-semibold text-warning' : 'text-base-content/60' }}">
+                                            <span class="text-xs {{ $row['expiring'] ? 'font-semibold text-warning' : 'text-muted' }}">
                                                 {{ __('isms.dashboard.valid_until_short', ['date' => $row['valid_until']->format('d.m.Y')]) }}
                                             </span>
                                         @endif
                                         @if ($row['next_surveillance'] !== null)
-                                            <span class="text-xs {{ $row['surveillance_soon'] ? 'font-semibold text-warning' : 'text-base-content/60' }}">
+                                            <span class="text-xs {{ $row['surveillance_soon'] ? 'font-semibold text-warning' : 'text-muted' }}">
                                                 {{ __('isms.dashboard.surveillance_short', ['date' => $row['next_surveillance']->format('d.m.Y')]) }}
                                             </span>
                                         @endif
@@ -289,13 +289,13 @@
                         <a class="link text-xs" href="{{ route('isms.suppliers.index', ['sort' => 'review']) }}">{{ __('isms.dashboard.open_register') }}</a>
                     </div>
                     @if ($readiness['suppliers']['overdue']->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('isms.dashboard.empty_block') }}</p>
+                        <p class="text-sm text-muted">{{ __('isms.dashboard.empty_block') }}</p>
                     @else
                         <ul class="divide-y divide-base-200 text-sm">
                             @foreach ($readiness['suppliers']['overdue'] as $assessment)
                                 <li class="flex items-center justify-between gap-2 py-2">
                                     <span>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $assessment->displayNo() }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $assessment->displayNo() }}</span>
                                         {{ $assessment->displayName() }}
                                         <x-status-badge :tone="$assessment->criticality->tone()" outline class="ml-1">{{ $assessment->criticality->label() }}</x-status-badge>
                                     </span>

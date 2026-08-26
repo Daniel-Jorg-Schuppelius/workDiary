@@ -23,7 +23,7 @@
         <section class="rounded-box border border-base-300 bg-base-100 p-4">
             <h2 class="mb-2 font-semibold">{{ __('Prüf- & Wartungstermine') }}</h2>
             @if ($asset->maintenancePlans->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">event</span>' :title="__('Keine Termine hinterlegt.')" compact />
+                <x-empty-state icon="event" :title="__('Keine Termine hinterlegt.')" compact />
             @else
                 <x-table>
                     <x-slot:head>
@@ -45,7 +45,7 @@
         <section class="rounded-box border border-base-300 bg-base-100 p-4">
             <h2 class="mb-2 font-semibold">{{ __('Abgeschlossene Wartungen') }}</h2>
             @if ($timeline === [])
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">build</span>' :title="__('Noch keine abgeschlossenen Wartungen.')" compact />
+                <x-empty-state icon="build" :title="__('Noch keine abgeschlossenen Wartungen.')" compact />
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($timeline as $event)
@@ -61,7 +61,7 @@
         <section class="rounded-box border border-base-300 bg-base-100 p-4">
             <h2 class="mb-2 font-semibold">{{ __('Protokolle') }}</h2>
             @if ($asset->protocols->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :title="__('Keine freigegebenen Protokolle.')" compact />
+                <x-empty-state icon="description" :title="__('Keine freigegebenen Protokolle.')" compact />
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($asset->protocols as $protocol)

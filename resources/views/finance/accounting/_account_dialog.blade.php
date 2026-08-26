@@ -68,6 +68,15 @@
                        :label="__('accounting.ledger.field.deductible_percent')"
                        :hint="__('accounting.ledger.hint.deductible_percent')"
                        :value="old('deductible_percent', $account->deductible_percent ?? '100.00')" />
+
+        {{-- BWA-Zeile (Feature 142): ausdrückliche Zuordnung schlägt den SKR-Nummernkreis. --}}
+        <x-select-field name="bwa_group" :label="__('accounting.ledger.field.bwa_group')"
+                        :hint="__('accounting.ledger.hint.bwa_group')" span="2">
+            <option value="">{{ __('accounting.ledger.field.bwa_group_none') }}</option>
+            @foreach ($bwaGroups as $group)
+                <option value="{{ $group->value }}" @selected(old('bwa_group', $account->bwa_group?->value ?? '') === $group->value)>{{ $group->label() }}</option>
+            @endforeach
+        </x-select-field>
     </div>
 
     <x-input-field name="description" type="text" maxlength="500"

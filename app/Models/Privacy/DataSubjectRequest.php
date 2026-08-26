@@ -28,12 +28,16 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
  * pruefbare Verlauf liegt in der {@see RequestEvent}-Hash-Kette.
  *
  * @property string|null $subject_ciphertext  Klartext beim Lesen/Setzen
+ * @property string|null $contact_email_ciphertext
  * @property string|null $content_ciphertext
  * @property string|null $decision_note_ciphertext
  */
 class DataSubjectRequest extends Model implements ProvidesRecordDek {
     use BelongsToOrganization;
     use HasSqid;
+
+    /** Eingangskanal `channel` fuer Anfragen aus dem oeffentlichen Selbstmeldeportal (G11). */
+    public const CHANNEL_PORTAL = 'portal';
 
     protected $table = 'privacy_data_subject_requests';
 
@@ -44,10 +48,12 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
         'status',
         'channel',
         'identity_verified_at',
+        'contact_email_confirmed_at',
         'assigned_user_id',
         'received_at',
         'deadline_at',
         'subject_ciphertext',
+        'contact_email_ciphertext',
         'content_ciphertext',
         'decision_note_ciphertext',
         'dek_wrapped',
@@ -62,9 +68,11 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
         'type' => DataSubjectRequestType::class,
         'status' => DataSubjectRequestStatus::class,
         'subject_ciphertext' => RecordEncrypted::class,
+        'contact_email_ciphertext' => RecordEncrypted::class,
         'content_ciphertext' => RecordEncrypted::class,
         'decision_note_ciphertext' => RecordEncrypted::class,
         'identity_verified_at' => 'datetime',
+        'contact_email_confirmed_at' => 'datetime',
         'received_at' => 'datetime',
         'deadline_at' => 'datetime',
         'decided_at' => 'datetime',
@@ -115,6 +123,11 @@ class DataSubjectRequest extends Model implements ProvidesRecordDek {
     /** @return MorphMany<PrivacyAttachment, $this> */
     public function attachments(): MorphMany {
         return $this->morphMany(PrivacyAttachment::class, 'attachable')->latest('id');
+    }
+
+    /** Anfrage kam ueber das oeffentliche Selbstmeldeportal (ungeprueftes Gegenueber). */
+    public function isFromPortal(): bool {
+        return (string) $this->getAttribute('channel') === self::CHANNEL_PORTAL;
     }
 
     public function isOverdue(): bool {

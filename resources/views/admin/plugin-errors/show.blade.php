@@ -42,31 +42,31 @@
     <x-card class="space-y-3">
         <div class="flex flex-wrap gap-6">
             <div>
-                <div class="text-xs uppercase text-base-content/60">{{ __('Organisation') }}</div>
+                <div class="text-xs uppercase text-muted">{{ __('Organisation') }}</div>
                 <div class="text-sm">{{ $error->organization?->name ?? __('global') }}</div>
             </div>
             @if ((int) $error->occurrences > 1)
                 <div>
-                    <div class="text-xs uppercase text-base-content/60">{{ __('Wiederholungen') }}</div>
+                    <div class="text-xs uppercase text-muted">{{ __('Wiederholungen') }}</div>
                     <div class="text-sm tabular-nums">×{{ (int) $error->occurrences }}
                         @if ($error->last_occurred_at)
-                            <span class="text-base-content/50">({{ __('zuletzt :time', ['time' => $error->last_occurred_at->diffForHumans()]) }})</span>
+                            <span class="text-muted">({{ __('zuletzt :time', ['time' => $error->last_occurred_at->diffForHumans()]) }})</span>
                         @endif
                     </div>
                 </div>
             @endif
         </div>
         <div>
-            <div class="text-xs uppercase text-base-content/60">{{ __('Exception') }}</div>
+            <div class="text-xs uppercase text-muted">{{ __('Exception') }}</div>
             <div class="font-mono text-sm">{{ $error->exception_class }}</div>
         </div>
         <div>
-            <div class="text-xs uppercase text-base-content/60">{{ __('Nachricht') }}</div>
+            <div class="text-xs uppercase text-muted">{{ __('Nachricht') }}</div>
             <div class="text-sm whitespace-pre-wrap">{{ $error->message }}</div>
         </div>
         @if ($error->isAcknowledged())
             <div>
-                <div class="text-xs uppercase text-base-content/60">{{ __('Bestätigt') }}</div>
+                <div class="text-xs uppercase text-muted">{{ __('Bestätigt') }}</div>
                 <div class="text-sm">
                     {{ $error->acknowledged_at?->format('d.m.Y H:i') }}
                     @if ($error->acknowledger)
@@ -77,14 +77,14 @@
         @endif
         @if (! empty($error->context))
             <div>
-                <div class="text-xs uppercase text-base-content/60">{{ __('Kontext') }}</div>
+                <div class="text-xs uppercase text-muted">{{ __('Kontext') }}</div>
                 <pre class="text-xs bg-base-200 rounded p-2 overflow-auto">{{ json_encode($error->context, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</pre>
             </div>
         @endif
         @if (! empty($error->trace))
             <div>
                 <div class="flex items-center justify-between">
-                    <div class="text-xs uppercase text-base-content/60">{{ __('Stacktrace') }}</div>
+                    <div class="text-xs uppercase text-muted">{{ __('Stacktrace') }}</div>
                     <button type="button" class="btn btn-xs btn-ghost" data-copy-trace>{{ __('Kopieren') }}</button>
                 </div>
                 <pre class="text-xs bg-base-200 rounded p-2 overflow-auto max-h-150" data-trace-content>{{ $error->trace }}</pre>

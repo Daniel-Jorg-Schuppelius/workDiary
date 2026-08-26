@@ -52,7 +52,7 @@
                     @endif
                 @endforeach
                 @if ($findings->isEmpty())
-                    <span class="text-sm text-base-content/60">{{ __('Noch keine Analyse ausgeführt.') }}</span>
+                    <span class="text-sm text-muted">{{ __('Noch keine Analyse ausgeführt.') }}</span>
                 @endif
             </div>
         </x-card>
@@ -102,7 +102,7 @@
         @can('manage', \App\Models\Privacy\ComplianceFinding::class)
             <x-card>
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Anforderungskatalog') }}</h2>
-                <p class="mb-2 text-xs text-base-content/60">{{ __('Welche Prüfungen die Lückenanalyse ausführt. Deaktivierte Anforderungen werden übersprungen; Branchenprofile können Vorlagen liefern.') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('Welche Prüfungen die Lückenanalyse ausführt. Deaktivierte Anforderungen werden übersprungen; Branchenprofile können Vorlagen liefern.') }}</p>
                 <ul class="space-y-1">
                     @foreach ($requirements as $requirement)
                         <li class="rounded-box border border-base-300 px-3 py-2">
@@ -113,7 +113,7 @@
                                     <input type="checkbox" name="active" value="1" class="toggle toggle-sm toggle-primary" @checked($requirement->active)>
                                 </label>
                                 <input name="label" class="input input-sm input-bordered flex-1" value="{{ $requirement->label }}" maxlength="255" required>
-                                <span class="font-mono text-xs text-base-content/50">{{ $requirement->requirement_key }}</span>
+                                <span class="font-mono text-xs text-muted">{{ $requirement->requirement_key }}</span>
                                 @if ($requirement->source === 'profile')
                                     <x-status-badge tone="info" size="xs">{{ __('Branchenprofil') }}</x-status-badge>
                                 @endif

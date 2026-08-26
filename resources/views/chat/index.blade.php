@@ -87,13 +87,13 @@
                     <h1 class="truncate font-['Space_Grotesk'] text-lg font-semibold leading-tight">
                         <x-icon :name="$icon[$activeChannel->type] ?? 'tag'" size="1.1rem" class="opacity-60" /> {{ $channelTitle($activeChannel) }}
                     </h1>
-                    @if ($activeChannel->description)<p class="truncate text-xs text-base-content/60">{{ $activeChannel->description }}</p>@endif
+                    @if ($activeChannel->description)<p class="truncate text-xs text-muted">{{ $activeChannel->description }}</p>@endif
                 </div>
                 <div class="flex shrink-0 items-center gap-2">
                     <span id="chat-presence" data-tpl="{{ __(':count online') }}" class="hidden items-center gap-1 text-xs font-medium text-success">
                         <span class="inline-block size-2 rounded-full bg-success"></span><span data-count></span>
                     </span>
-                    <span class="text-xs text-base-content/50">{{ trans_choice(':count Mitglied|:count Mitglieder', $activeChannel->members->count(), ['count' => $activeChannel->members->count()]) }}</span>
+                    <span class="text-xs text-muted">{{ trans_choice(':count Mitglied|:count Mitglieder', $activeChannel->members->count(), ['count' => $activeChannel->members->count()]) }}</span>
                     @can('manageMembers', $activeChannel)
                         <button class="btn btn-xs btn-ghost btn-square" title="{{ __('Mitglieder einladen') }}" aria-label="{{ __('Mitglieder einladen') }}" data-open-dialog="chat-invite"><x-icon name="person_add" size="1.1rem" /></button>
                     @endcan
@@ -118,7 +118,7 @@
             </div>
 
             {{-- Tipp-Anzeige ("… schreibt …") --}}
-            <div id="chat-typing" class="hidden h-5 px-4 text-xs italic text-base-content/60"></div>
+            <div id="chat-typing" class="hidden h-5 px-4 text-xs italic text-muted"></div>
 
             {{-- Composer --}}
             <form id="chat-composer" class="border-t border-base-300 bg-base-200 p-3" enctype="multipart/form-data">
@@ -167,7 +167,7 @@
         @else
             {{-- Standard-Empty-State (graues Feld) füllt die Karte und wächst mit. --}}
             <x-empty-state class="m-3 min-h-0 flex-1"
-                           icon='<span class="material-symbols-outlined" aria-hidden="true">forum</span>'
+                           icon="forum"
                            :title="__('Kein Kanal ausgewählt')"
                            :message="__('Wähle links einen Kanal oder erstelle einen neuen.')" />
         @endif
@@ -195,24 +195,12 @@
 <x-modal id="chat-new-channel" :embedded="false" icon="forum" :eyebrow="__('Chat')" :title="__('Neuer Kanal')"
          :action="route('chat.channels.store')" method="POST" :submit-label="__('Erstellen')">
     <x-form-group :legend="__('Kanal')" icon="tag" tone="primary" cols="2">
+        <x-input-field span="2" name="name" :label="__('Name')" type="text" required maxlength="120" />
+        <x-textarea-field span="2" name="description" :label="__('Beschreibung (optional)')" rows="2" maxlength="1000"></x-textarea-field>
+        <x-select-field name="type" :label="__('Typ')"><option value="channel">{{ __('Kanal') }}</option><option value="group">{{ __('Gruppe') }}</option></x-select-field>
+        <x-select-field name="visibility" :label="__('Sichtbarkeit')"><option value="public">{{ __('Öffentlich') }}</option><option value="private">{{ __('Privat') }}</option></x-select-field>
         <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Name') }}</label>
-            <input type="text" name="name" required maxlength="120" class="input input-bordered w-full">
-        </div>
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Beschreibung (optional)') }}</label>
-            <textarea name="description" maxlength="1000" rows="2" class="textarea textarea-bordered w-full"></textarea>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Typ') }}</label>
-            <select name="type" class="select select-bordered w-full"><option value="channel">{{ __('Kanal') }}</option><option value="group">{{ __('Gruppe') }}</option></select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Sichtbarkeit') }}</label>
-            <select name="visibility" class="select select-bordered w-full"><option value="public">{{ __('Öffentlich') }}</option><option value="private">{{ __('Privat') }}</option></select>
-        </div>
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Mitglieder') }}</label>
+            <span class="fieldset-label">{{ __('Mitglieder') }}</span>
             <x-user-checklist name="members" :users="$orgUsers"
                               :placeholder="__('Mitarbeiter suchen…')"
                               :empty-text="__('Keine weiteren Mitarbeiter in dieser Organisation.')" />
@@ -224,13 +212,13 @@
 <x-modal id="chat-new-dm" :embedded="false" icon="person_add" :eyebrow="__('Chat')" :title="__('Direktnachricht')"
          :action="route('chat.direct')" method="POST" :submit-label="__('Öffnen')">
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Person') }}</label>
-        <select name="user_id" required class="select select-bordered w-full">
+        <label for="user_id" class="fieldset-label">{{ __('Person') }}</label>
+        <select id="user_id" name="user_id" required class="select select-bordered w-full">
             <option value="">{{ __('— Person wählen —') }}</option>
             @foreach ($orgUsers as $u)<option value="{{ $u->sqid }}">{{ $u->name }}</option>@endforeach
         </select>
         @if ($orgUsers->isEmpty())
-            <p class="mt-1 text-xs text-base-content/60">{{ __('Keine weiteren Mitarbeiter in dieser Organisation.') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Keine weiteren Mitarbeiter in dieser Organisation.') }}</p>
         @endif
     </div>
 </x-modal>
@@ -276,7 +264,7 @@
     {{-- Dialog: Senden planen (JS-gesteuert) --}}
     <x-modal id="chat-schedule-dialog" :embedded="false" icon="schedule" :eyebrow="__('Chat')" :title="__('Senden planen')">
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Zeitpunkt') }}</label>
+            <span class="fieldset-label">{{ __('Zeitpunkt') }}</span>
             <div class="flex gap-2">
                 <input type="date" id="chat-schedule-date" class="input input-bordered w-full">
                 <input type="time" id="chat-schedule-time" class="input input-bordered w-36">
@@ -309,7 +297,7 @@
             <button type="button" class="btn btn-sm" data-remind="tomorrow">{{ __('Morgen früh') }}</button>
         </div>
         <div class="fieldset mt-3">
-            <label class="fieldset-label">{{ __('Eigener Zeitpunkt') }}</label>
+            <span class="fieldset-label">{{ __('Eigener Zeitpunkt') }}</span>
             <div class="flex gap-2">
                 <input type="date" id="chat-remind-date" class="input input-bordered w-full">
                 <input type="time" id="chat-remind-time" class="input input-bordered w-32">
@@ -324,12 +312,9 @@
     {{-- Dialog: Umfrage --}}
     <x-modal id="chat-new-poll" :embedded="false" icon="bar_chart" :eyebrow="__('Chat')" :title="__('Umfrage erstellen')"
              :action="route('chat.polls.store', $activeChannel)" method="POST" :submit-label="__('Erstellen')">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Frage') }}</label>
-            <input type="text" name="question" required maxlength="300" class="input input-bordered w-full">
-        </div>
+        <x-input-field name="question" :label="__('Frage')" type="text" required maxlength="300" />
         <div class="fieldset mt-2">
-            <label class="fieldset-label">{{ __('Optionen') }}</label>
+            <span class="fieldset-label">{{ __('Optionen') }}</span>
             <div id="chat-poll-options" class="space-y-1" data-opt-placeholder="{{ __('Option') }}">
                 @for ($i = 0; $i < 2; $i++)
                     <div class="flex items-center gap-1">
@@ -353,7 +338,7 @@
         <x-modal id="chat-invite" :embedded="false" icon="person_add" :eyebrow="__('Chat')" :title="__('Mitglieder einladen')"
                  :action="route('chat.channels.invite', $activeChannel)" method="POST" :submit-label="__('Einladen')">
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('Mitglieder') }}</label>
+                <span class="fieldset-label">{{ __('Mitglieder') }}</span>
                 <x-user-checklist name="members" :users="$orgUsers"
                                   :placeholder="__('Mitarbeiter suchen…')"
                                   :empty-text="__('Keine weiteren Mitarbeiter in dieser Organisation.')" />

@@ -435,16 +435,26 @@
 /* ------------------------------------------------------------------ */
 /* Semantischer Token für Sekundärtext (Vollscan 2026-08-23, I2 /      */
 /* WCAG 1.4.3): text-base-content/60 und darunter unterschreiten in    */
-/* corporate/dim teils 4,5:1 (/60 → 3,88:1 dunkel). `.text-muted`      */
-/* setzt einheitlich 70 % base-content — für neuen Sekundärtext IMMER  */
-/* text-muted statt text-base-content/30–/60 verwenden (Gate:          */
-/* TextContrastRuleTest). Als @utility statt ungelayert, damit         */
+/* corporate/dim 4,5:1 (/60 → 4,53 hell, 3,90 dunkel; ColorHelper-     */
+/* Rechnung MVP-724). `.text-muted` setzt einheitlich 70 % base-content */
+/* (6,34 hell / 4,70 dunkel) — für Sekundärtext IMMER text-muted       */
+/* statt text-base-content/30–/60 verwenden; seit MVP-724 gilt das     */
+/* app-weit inkl. Plugin-Views und dekorativer Icons (Gate:            */
+/* TextContrastRuleTest, Baseline leer). Als @utility statt            */
+/* ungelayert, damit                                                   */
 /* bestehende hover:text-base-content-Kombis (help-drawer) weiter      */
 /* gewinnen und Varianten (hover:text-muted) möglich sind.             */
 /* Änderungen hier brauchen `npm run build`.                           */
 /* ------------------------------------------------------------------ */
 @utility text-muted {
     color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
+/* SVG-Pendant für Diagramm-Achsen/Legenden (x-charts): gleicher Ton,   */
+/* gleicher Kontrast — `fill-base-content/40–/60` fällt sonst unter     */
+/* 4,5:1 (MVP-724).                                                     */
+@utility fill-muted {
+    fill: color-mix(in oklab, var(--color-base-content) 70%, transparent);
 }
 
 @theme {
@@ -1787,7 +1797,7 @@
         @apply max-w-full max-h-full object-contain;
     }
     .wd-file-upload__placeholder {
-        @apply text-base-content/40;
+        @apply text-muted;
     }
     .wd-file-upload__placeholder .material-symbols-outlined {
         font-size: 2.5rem;
@@ -1861,4 +1871,18 @@
     #app-header {
         transition: none;
     }
+}
+
+/* ------------------------------------------------------------------ */
+/* Kanban: Zeigergeste (MVP-725)                                       */
+/*   kanban.js setzt .wd-kanban-dragging auf das Board, solange eine    */
+/*   Karte gezogen wird. Ohne user-select:none markiert der Zug unter   */
+/*   der Maus Text, und der Zeiger soll den Zustand zeigen.             */
+/* ------------------------------------------------------------------ */
+.wd-kanban-dragging {
+    user-select: none;
+    cursor: grabbing;
+}
+.wd-kanban-dragging [data-kanban-card] a {
+    cursor: grabbing;
 }

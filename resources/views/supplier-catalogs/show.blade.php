@@ -43,8 +43,8 @@
                 @if ($source->hasPunchout())
                     <form method="GET" action="{{ route('supplier-catalogs.punchout', $source) }}" class="flex items-end gap-2">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.field.warehouse') }}</label>
-                            <select name="warehouse" class="select select-sm select-bordered" required>
+                            <label for="warehouse" class="fieldset-label">{{ __('inventory.field.warehouse') }}</label>
+                            <select id="warehouse" name="warehouse" class="select select-sm select-bordered" required>
                                 @foreach ($warehouses as $warehouse)
                                     <option value="{{ $warehouse->sqid }}">{{ $warehouse->name }}</option>
                                 @endforeach

@@ -12,10 +12,12 @@ namespace App\Http\Controllers;
 
 use App\Enums\Diary\{DispatchStatus, Mode, Priority};
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Models\{Customer, User};
+use App\Services\Compliance\DrivingTimeBudget;
 use App\Services\Dispatch\DispatchBoardService;
 use App\Support\Sqid;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -33,6 +35,7 @@ use Symfony\Component\HttpKernel\Exception\AccessDeniedHttpException;
  * OrganizationScope der Modelle.
  */
 class DispatchBoardController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     public function __construct(private readonly DispatchBoardService $board) {}
@@ -69,12 +72,23 @@ class DispatchBoardController extends Controller {
 
         $groupBy = $request->query('group') === 'employee' ? 'employee' : 'status';
 
+        // Feature 144 (MVP-719): Lenkzeit-Budget je Fahrer am ersten Tag des
+        // Fensters — leer ohne Org-Schalter/geflaggte Fahrzeuge (eine Abfrage).
+        $employees = $this->board->groupByEmployee($items);
+        $drivingBudgets = [];
+        $organization = $this->currentOrganizationOrNull();
+        if ($organization !== null && $organization->drivingTimeRulesEnabled()) {
+            $driverIds = array_values(array_filter(array_map('intval', array_keys($employees)), static fn(int $id): bool => $id > 0));
+            $drivingBudgets = app(DrivingTimeBudget::class)->remainingForUsers($organization, $driverIds, $from, CarbonImmutable::now());
+        }
+
         return view('dispatch.board', [
             'from' => $from,
             'to' => $to,
             'groupBy' => $groupBy,
             'columns' => $this->board->groupByDispatchStatus($items),
-            'employees' => $this->board->groupByEmployee($items),
+            'employees' => $employees,
+            'drivingBudgets' => $drivingBudgets,
             'statusOptions' => DispatchStatus::cases(),
             'selectedStatus' => $statusFilter,
             'priorityOptions' => Priority::cases(),

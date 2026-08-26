@@ -36,7 +36,7 @@
     </x-slot:actions>
 
     @if ($connections->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_download</span>'
+        <x-empty-state framed icon="cloud_download"
                        :title="__('cloud_intake.title.empty')" />
     @else
         @foreach ($connections as $connection)
@@ -46,7 +46,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <h3 class="card-title text-base">{{ $connection->provider->label() }} — {{ $connection->name }}</h3>
                         <x-status-badge size="xs" :tone="$connection->status->tone()">{{ $connection->status->label() }}</x-status-badge>
-                        <span class="text-sm text-base-content/60">{{ $connection->external_account_label ?? __('cloud_intake.field.account_unconfirmed') }}</span>
+                        <span class="text-sm text-muted">{{ $connection->external_account_label ?? __('cloud_intake.field.account_unconfirmed') }}</span>
                         <div class="ml-auto flex items-center gap-1.5">
                             <form method="POST" action="{{ route('admin.cloud-intake.preview', $connection) }}" class="leading-none">
                                 @csrf
@@ -66,7 +66,7 @@
                     @if ($connection->last_error)
                         <div role="alert" class="alert alert-warning text-sm">
                             <x-icon name="warning" />
-                            <span>{{ $connection->last_error }} <span class="text-base-content/60">({{ $connection->last_error_at?->ftime() }})</span></span>
+                            <span>{{ $connection->last_error }} <span class="text-muted">({{ $connection->last_error_at?->ftime() }})</span></span>
                         </div>
                     @endif
 
@@ -148,7 +148,7 @@
                         @endif
                     </div>
                     @if ($connection->routes->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('cloud_intake.route.empty') }}</p>
+                        <p class="text-sm text-muted">{{ __('cloud_intake.route.empty') }}</p>
                     @else
                         <x-table>
                             <x-slot:head>
@@ -191,7 +191,7 @@
             <div class="card-body">
                 <h3 class="card-title text-base">{{ __('cloud_intake.log.heading') }}</h3>
                 @if ($items->total() === 0)
-                    <p class="text-sm text-base-content/60">{{ __('cloud_intake.log.empty') }}</p>
+                    <p class="text-sm text-muted">{{ __('cloud_intake.log.empty') }}</p>
                 @else
                     <x-table>
                         <x-slot:head>
@@ -211,7 +211,7 @@
                                 <td class="font-mono text-sm">{{ $item->source_path }}</td>
                                 <td class="font-mono text-xs">{{ $item->revision }}</td>
                                 <td><x-status-badge size="xs" :tone="$item->status->tone()">{{ $item->status->label() }}</x-status-badge></td>
-                                <td class="text-sm text-base-content/60">{{ $item->status_reason ?? '—' }}</td>
+                                <td class="text-sm text-muted">{{ $item->status_reason ?? '—' }}</td>
                                 <td class="text-sm tabular-nums">{{ $item->created_at?->ftime() }}</td>
                             </tr>
                         @endforeach

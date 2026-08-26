@@ -185,9 +185,25 @@ class AppServiceProvider extends ServiceProvider {
             return $registry;
         });
 
+        // Auslagen-Beleg-Provider (Feature 105/106; Vollscan 2026-08, B9):
+        // Singleton, damit das Buchhaltungs-Plugin beim Booten registrieren
+        // kann. Ohne Registrierung greift der NullExpenseLinkProvider.
+        $this->app->singleton(\App\Services\Billing\ExpenseLinkProviderResolver::class);
+
         // Versand-Provider (Feature 059, MVP-128): Carrier-Plugins registrieren
         // ihren ShippingProvider beim Booten, der ShipmentService löst darüber auf.
         $this->app->singleton(\App\Services\Shipping\ShippingProviderRegistry::class);
+
+        // Beleg-Rückabruf je Buchhaltungssystem (Feature 122, MVP-731): eine
+        // Registry statt Plugin-Capabilities — InvoicePlane hat mangels API
+        // gar keine Plugin-Klasse und muss trotzdem mitspielen können.
+        $this->app->singleton(\App\Services\Finance\Accounting\Vouchers\VoucherPullerRegistry::class);
+        // Ohne Pilotinstanz gibt es keinen InvoicePlane-Leser — und damit
+        // keinen erfundenen Beleg (Feature 086).
+        $this->app->bind(
+            \App\Plugins\InvoicePlane\Schema\VoucherReaderFactory::class,
+            \App\Plugins\InvoicePlane\Schema\NullVoucherReaderFactory::class,
+        );
 
         // Automation: RuleEngine bekommt alle registrierten Aktionen injiziert.
         $this->app->singleton(ConditionEvaluator::class);
@@ -407,6 +423,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Agile\AgileBoard::class, \App\Policies\Agile\AgileBoardPolicy::class);
         Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);
         Gate::policy(\App\Models\GobdExport::class, \App\Policies\GobdExportPolicy::class);
+        Gate::policy(\App\Models\Finance\ProcedureDocumentation::class, \App\Policies\Finance\ProcedureDocumentationPolicy::class);
         // Feature 068: Bewerbungs-/Ausschreibungsmodul (getrennte Rechtebereiche).
         Gate::policy(\App\Models\Ai\AiProviderConnection::class, \App\Policies\Ai\AiProviderConnectionPolicy::class);
         Gate::policy(\App\Models\Ai\AiMemoryEntry::class, \App\Policies\Ai\AiMemoryEntryPolicy::class);
@@ -473,6 +490,20 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(\App\Models\Isms\IsmsVulnerability::class, \App\Policies\Isms\IsmsVulnerabilityPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsAdvisory::class, \App\Policies\Isms\IsmsAdvisoryPolicy::class);
         Gate::policy(\App\Models\Isms\IsmsSupplierAssessment::class, \App\Policies\Isms\IsmsSupplierAssessmentPolicy::class);
+        // Arbeitsschutz-Register (Feature 132): GBU/Unterweisung/Vorsorge auf den safety.*-Rechten.
+        Gate::policy(\App\Models\Safety\HazardAssessment::class, \App\Policies\Safety\HazardAssessmentPolicy::class);
+        Gate::policy(\App\Models\Safety\SafetyInstruction::class, \App\Policies\Safety\SafetyInstructionPolicy::class);
+        Gate::policy(\App\Models\Safety\SafetyInstructionParticipant::class, \App\Policies\Safety\SafetyInstructionParticipantPolicy::class);
+        Gate::policy(\App\Models\Safety\MedicalCheckup::class, \App\Policies\Safety\MedicalCheckupPolicy::class);
+
+        // Provisionen (Feature 146).
+        Gate::policy(\App\Models\Sales\CommissionRule::class, \App\Policies\Sales\CommissionRulePolicy::class);
+        Gate::policy(\App\Models\Sales\CommissionSettlementRun::class, \App\Policies\Sales\CommissionSettlementRunPolicy::class);
+
+        // Trainingsmanagement (Feature 145).
+        Gate::policy(\App\Models\Training\TrainingCourse::class, \App\Policies\Training\TrainingCoursePolicy::class);
+        Gate::policy(\App\Models\Training\TrainingRequirement::class, \App\Policies\Training\TrainingRequirementPolicy::class);
+        Gate::policy(\App\Models\Training\TrainingAssignment::class, \App\Policies\Training\TrainingAssignmentPolicy::class);
         Gate::policy(\App\Models\ExternalParticipant::class, \App\Policies\ExternalParticipantPolicy::class);
         Gate::policy(DutyPlan::class, DutyPlanPolicy::class);
         Gate::policy(CoverageRequirement::class, CoverageRequirementPolicy::class);
@@ -621,6 +652,14 @@ class AppServiceProvider extends ServiceProvider {
         RateLimiter::for('wb-login', fn(Request $request) => [
             Limit::perMinute(5)->by('wbl:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
             Limit::perHour(30)->by('wblh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
+        ]);
+        // Betroffenen-Selbstmeldeportal (Feature 043, MVP-728): Ansicht
+        // moderat, Absenden streng — jede Anfrage loest eine Mail an eine frei
+        // eingegebene Adresse aus, deshalb zusaetzlich ein Stundenlimit.
+        RateLimiter::for('dsar-view', fn(Request $request) => Limit::perMinute(30)->by('dsv:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
+        RateLimiter::for('dsar-submit', fn(Request $request) => [
+            Limit::perMinute(3)->by('dss:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
+            Limit::perHour(10)->by('dssh:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)),
         ]);
         // Öffentlicher Karrierebereich (MVP-437): Ansicht großzügig, Bewerbungs-
         // eingang streng gegen Massensendungen — gehashte IP als Cache-Key.

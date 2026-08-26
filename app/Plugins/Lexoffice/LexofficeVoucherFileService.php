@@ -93,6 +93,71 @@ class LexofficeVoucherFileService {
         ];
     }
 
+    /**
+     * Sichert das Belegbild lokal (MVP-690, Vollscan G3 — GoBD nach
+     * Vertragsende). Idempotent; ein Beleg ohne Belegbild wird als „geprüft"
+     * markiert (file_materialized_at gesetzt, file_path NULL).
+     *
+     * @return bool true, wenn (jetzt) ein lokales Belegbild vorliegt
+     */
+    public function materialize(LexofficeVoucher $voucher): bool {
+        if ($voucher->file_materialized_at !== null) {
+            return $voucher->file_path !== null
+                && \Illuminate\Support\Facades\Storage::disk('local')->exists($voucher->file_path);
+        }
+
+        try {
+            $file = $this->download($voucher);
+        } catch (\Throwable $e) {
+            // Kein Belegbild (404/fehlende Datei-Referenz): als geprüft
+            // markieren — andere Fehler (Auth/Netz) nach oben, der Command
+            // zählt sie und der Abschluss-Blocker bleibt bestehen.
+            if (str_contains($e->getMessage(), '404') || $e instanceof \RuntimeException && str_contains($e->getMessage(), 'file')) {
+                $voucher->forceFill(['file_materialized_at' => now(), 'file_path' => null])->save();
+
+                return false;
+            }
+            throw $e;
+        }
+
+        $path = sprintf('lexoffice-vouchers/%d/%d.%s', $voucher->organization_id, $voucher->id, $file['extension']);
+        \Illuminate\Support\Facades\Storage::disk('local')->put($path, $file['body']);
+        $voucher->forceFill(['file_path' => $path, 'file_materialized_at' => now()])->save();
+
+        return true;
+    }
+
+    /**
+     * Lokal materialisiertes Belegbild, falls vorhanden — der Leseweg nach
+     * dem Buchhaltungswechsel (kein Live-API-Zugriff mehr nötig).
+     *
+     * @return array{body: string, content_type: string, extension: string}|null
+     */
+    public function localFile(LexofficeVoucher $voucher): ?array {
+        if ($voucher->file_path === null) {
+            return null;
+        }
+        $disk = \Illuminate\Support\Facades\Storage::disk('local');
+        if (! $disk->exists($voucher->file_path)) {
+            return null;
+        }
+
+        $extension = pathinfo($voucher->file_path, PATHINFO_EXTENSION) ?: 'pdf';
+
+        return [
+            'body' => (string) $disk->get($voucher->file_path),
+            'content_type' => match ($extension) {
+                'png' => 'image/png',
+                'jpg', 'jpeg' => 'image/jpeg',
+                'gif' => 'image/gif',
+                'tif', 'tiff' => 'image/tiff',
+                'xml' => 'application/xml',
+                default => 'application/pdf',
+            },
+            'extension' => $extension,
+        ];
+    }
+
     private function resolveFileId(LexofficeVoucher $voucher): string {
         $type = (string) ($voucher->voucher_type ?? '');
         $endpoint = self::SALES_DOCUMENT_ENDPOINTS[$type] ?? null;

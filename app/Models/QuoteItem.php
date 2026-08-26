@@ -24,6 +24,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  *
  * @property int $id
  * @property int $quote_id
+ * @property int|null $article_id
  * @property bool $optional
  * @property bool|null $accepted
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
@@ -38,7 +39,7 @@ class QuoteItem extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'quote_id', 'position', 'description',
+        'organization_id', 'quote_id', 'article_id', 'position', 'description',
         'quantity', 'unit', 'unit_price', 'discount_percent', 'discount_amount',
         'tax_rate', 'tax_category', 'optional', 'accepted',
     ];
@@ -68,5 +69,15 @@ class QuoteItem extends Model {
     /** @return BelongsTo<Quote, $this> */
     public function quote(): BelongsTo {
         return $this->belongsTo(Quote::class);
+    }
+
+    /**
+     * Optionaler Artikelbezug (Feature 140); wandert über Annahme-Snapshot
+     * und Überführung mit in die Rechnungsposition.
+     *
+     * @return BelongsTo<Article, $this>
+     */
+    public function article(): BelongsTo {
+        return $this->belongsTo(Article::class);
     }
 }

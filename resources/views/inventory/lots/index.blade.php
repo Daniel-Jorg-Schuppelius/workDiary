@@ -22,12 +22,12 @@
                 <h2 class="font-semibold mb-2">{{ __('inventory.lot.merge') }}</h2>
                 <form method="POST" action="{{ route('inventory.lots.merge') }}" class="flex flex-wrap items-end gap-2">
                     @csrf
-                    <div class="fieldset"><label class="fieldset-label">{{ __('inventory.lot.from') }}</label>
-                        <select name="from" class="select select-sm select-bordered" required>
+                    <div class="fieldset"><label for="from" class="fieldset-label">{{ __('inventory.lot.from') }}</label>
+                        <select id="from" name="from" class="select select-sm select-bordered" required>
                             @foreach ($lots as $lot)<option value="{{ $lot->sqid }}">{{ $lot->lot_no }}</option>@endforeach
                         </select></div>
-                    <div class="fieldset"><label class="fieldset-label">{{ __('inventory.lot.into') }}</label>
-                        <select name="into" class="select select-sm select-bordered" required>
+                    <div class="fieldset"><label for="into" class="fieldset-label">{{ __('inventory.lot.into') }}</label>
+                        <select id="into" name="into" class="select select-sm select-bordered" required>
                             @foreach ($lots as $lot)<option value="{{ $lot->sqid }}">{{ $lot->lot_no }}</option>@endforeach
                         </select></div>
                     <button type="submit" class="btn btn-sm">{{ __('inventory.lot.merge') }}</button>
@@ -65,7 +65,7 @@
                 </tr>
             @empty
                 <x-table.empty :colspan="$canManage ? 5 : 4"
-                               icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                               icon="inventory_2"
                                :title="__('inventory.lot.empty')" compact />
             @endforelse
         </x-table>

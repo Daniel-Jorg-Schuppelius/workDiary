@@ -30,14 +30,14 @@
 
             {{-- Mustervorlage je Entität (Feature 020 MVP; Vollaudit 2026-07, N8). --}}
             <a class="link link-hover inline-flex items-center gap-1 text-sm" href="{{ route('admin.imports.template', ['entity' => $entity->value]) }}">
-                <span class="material-symbols-outlined text-base" aria-hidden="true">download</span>
+                <x-icon name="download" class="text-base" />
                 {{ __('import.template.download') }} ({{ $entity->label() }})
             </a>
 
             {{-- MVP-438: iCal-Beispieldatei für die Zeiterfassungs-Importe. --}}
             @if(in_array($entity, [\App\Enums\Import\ImportEntity::Attendances, \App\Enums\Import\ImportEntity::ProjectTimes], true))
                 <a class="link link-hover inline-flex items-center gap-1 text-sm" href="{{ route('admin.imports.icalSample', ['entity' => $entity->value]) }}">
-                    <span class="material-symbols-outlined text-base" aria-hidden="true">calendar_month</span>
+                    <x-icon name="calendar_month" class="text-base" />
                     {{ __('iCal-Beispieldatei herunterladen') }}
                 </a>
             @endif
@@ -54,10 +54,19 @@
                 </label>
             </fieldset>
 
+            {{-- MVP-707: Dokumente kommen als ZIP (manifest.csv + Dateien) statt CSV. --}}
+            @php($acceptsZip = $entity->acceptsZip())
             <label class="form-control">
-                <span class="label-text">{{ __('CSV-, Excel- oder iCal-Datei (.csv, .xlsx, .ics, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(50000, 0, withThousandsSeparator: true)]) }}</span>
-                <input type="file" name="file" required accept=".csv,.txt,.xlsx,.ics"
+                @if($acceptsZip)
+                    <span class="label-text">{{ __('import.upload.zip', ['mb' => (int) round(\App\Services\Import\DocumentZipImportService::MAX_ZIP_KB / 1024), 'entries' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(\App\Services\Import\DocumentZipImportService::MAX_ENTRIES, 0, withThousandsSeparator: true)]) }}</span>
+                @else
+                    <span class="label-text">{{ __('CSV-, Excel- oder iCal-Datei (.csv, .xlsx, .ics, max. :mb MB, :rows Zeilen)', ['mb' => 5, 'rows' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(50000, 0, withThousandsSeparator: true)]) }}</span>
+                @endif
+                <input type="file" name="file" required accept="{{ $acceptsZip ? '.zip' : '.csv,.txt,.xlsx,.ics' }}"
                        class="file-input file-input-sm file-input-bordered w-full max-w-md" />
+                @if($acceptsZip)
+                    <span class="label-text-alt text-muted">{{ __('import.upload.zipHint') }}</span>
+                @endif
             </label>
 
             {{-- MVP-438: optionale iCal-Kategorie-Allowlist (nur Stempelungen) —
@@ -68,7 +77,7 @@
                     <input type="text" name="ical_category_allowlist" maxlength="500"
                            placeholder="{{ __('z. B. Arbeitszeit, Einsatz') }}"
                            class="input input-sm input-bordered w-full" />
-                    <span class="label-text-alt text-base-content/60">{{ __('Nur iCal-Events dieser Kategorien werden als Anwesenheit gewertet.') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('Nur iCal-Events dieser Kategorien werden als Anwesenheit gewertet.') }}</span>
                 </label>
             @endif
 

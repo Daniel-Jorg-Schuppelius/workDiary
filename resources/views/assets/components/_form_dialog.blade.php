@@ -76,7 +76,7 @@
                 <option value="{{ $serial->sqid }}" @selected(old('stock_serial_id') === $serial->sqid)>{{ $serial->serial_no }}@if ($serial->article) — {{ $serial->article->name }}@endif</option>
             @endforeach
         </select>
-        <p class="text-xs text-base-content/60">{{ __('asset.components.stock_serial_hint') }}</p>
+        <p class="text-xs text-muted">{{ __('asset.components.stock_serial_hint') }}</p>
     </div>
 
     <x-input-field name="note" type="text" maxlength="500"

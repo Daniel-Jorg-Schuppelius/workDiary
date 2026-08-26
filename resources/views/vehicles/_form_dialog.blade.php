@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Variablen: $vehicle (Model|null), $users, $types, $propulsions, $ownerships --}}
+{{-- Variablen: $vehicle (Model|null), $users, $assets, $types, $propulsions, $ownerships --}}
 @php
     $action = $vehicle
         ? route('vehicles.update', $vehicle)

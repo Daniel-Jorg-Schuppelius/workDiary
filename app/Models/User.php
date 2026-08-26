@@ -67,6 +67,11 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string|null $home_lat
  * @property string|null $home_lng
  * @property array<string, mixed>|null $preferences
+ * @property Carbon|null $deactivated_at
+ * @property string|null $portal_pending_email
+ * @property Carbon|null $portal_pending_email_requested_at
+ * @property Carbon|null $left_at
+ * @property Carbon|null $anonymized_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \Spatie\Permission\Models\Role> $roles
@@ -256,6 +261,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'legacy_user_id',
         'is_new_system',
         'deactivated_at',
+        'left_at',
         'must_change_password',
         'hourly_rate',
         'internal_rate',
@@ -270,6 +276,8 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'portal_invite_token_hash',
         'portal_invite_expires_at',
         'portal_invited_at',
+        'portal_pending_email',
+        'portal_pending_email_requested_at',
         // Stellvertretung für Genehmigungen bei Abwesenheit (MVP-523).
         'deputy_user_id',
     ];
@@ -288,6 +296,9 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'is_new_system' => 'boolean',
         'is_platform_admin' => 'boolean',
         'deactivated_at' => 'datetime',
+        'left_at' => 'date',
+        // Anonymisierungs-Marker (Feature 130): Konto PII-reduziert, Nachweise bleiben.
+        'anonymized_at' => 'datetime',
         // Break-Glass (Feature 057): bewusst NICHT fillable — nur Admin-Aktion.
         'sso_exempt' => 'boolean',
         'payroll_hourly_wage' => MoneyCast::class . ':currency,2',
@@ -311,6 +322,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'cti_extension' => 'encrypted',
         'portal_invite_expires_at' => 'datetime',
         'portal_invited_at' => 'datetime',
+        'portal_pending_email_requested_at' => 'datetime',
     ];
 
     /** @return BelongsTo<Organization, $this> */

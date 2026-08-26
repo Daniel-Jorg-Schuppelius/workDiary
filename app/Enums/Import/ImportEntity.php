@@ -31,6 +31,13 @@ enum ImportEntity: string implements HasLabel {
     // MVP-438: Zeiterfassungs-Import (CSV/XLSX/iCal) über die MVP-049-Engine.
     case Attendances = 'attendances';
     case ProjectTimes = 'project_times';
+    // MVP-707 (Vollscan H20): Altsystem-Übernahme — Rechnungen mit OP-Stand,
+    // Angebote, Assets, Ansprechpartner (JSON am Kunden/Lieferanten), Dokument-ZIP.
+    case Invoices = 'invoices';
+    case Quotes = 'quotes';
+    case Assets = 'assets';
+    case ContactPersons = 'contact_persons';
+    case Documents = 'documents';
 
     public function label(): string {
         return (string) __('import.entity.' . $this->value);
@@ -50,6 +57,12 @@ enum ImportEntity: string implements HasLabel {
             // MVP-438: Stempelungen streng (Admin/HR), Projektzeiten breiter vergebbar.
             self::Attendances => 'attendance.import',
             self::ProjectTimes => 'project-time.import',
+            // MVP-707: keine neuen Rechte — Altrechnungen/Angebote wie Rechnungs-
+            // anlage, Assets/Dokumente wie deren Anlage, Ansprechpartner wie Kunden-Import.
+            self::Invoices, self::Quotes => 'invoice.create',
+            self::Assets => 'asset.create',
+            self::ContactPersons => 'customer.import',
+            self::Documents => 'document.create',
         };
     }
 
@@ -72,6 +85,12 @@ enum ImportEntity: string implements HasLabel {
             self::RemoteSessions => null,
             self::Attendances => \App\Models\Attendance::class,
             self::ProjectTimes => \App\Models\TimeEntry::class,
+            self::Invoices => \App\Models\Invoice::class,
+            self::Quotes => \App\Models\Quote::class,
+            self::Assets => \App\Models\Asset::class,
+            // Ansprechpartner leben als JSON-Liste am Kunden/Lieferanten (kein eigenes Modell).
+            self::ContactPersons => null,
+            self::Documents => \App\Models\Document::class,
         };
     }
 
@@ -79,6 +98,13 @@ enum ImportEntity: string implements HasLabel {
      * A13 (MVP-049): Klassifikations-Ziele im Wert-Mapping nur für Entitäten,
      * deren Zielmodell Klassifikationen trägt ({@see \App\Models\Concerns\HasClassifications}).
      */
+    /**
+     * MVP-707: Dokumente kommen als ZIP (manifest.csv + Dateien) statt CSV/XLSX.
+     */
+    public function acceptsZip(): bool {
+        return $this === self::Documents;
+    }
+
     public function supportsClassifications(): bool {
         $model = $this->modelClass();
 

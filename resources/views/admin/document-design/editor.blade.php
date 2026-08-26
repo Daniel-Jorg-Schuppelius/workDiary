@@ -51,7 +51,7 @@
                             <span class="badge badge-info badge-sm">{{ __('document_design.editor.inherits_badge') }}</span>
                         @endif
                     </h1>
-                    <p class="text-sm text-base-content/60">
+                    <p class="text-sm text-muted">
                         {{ __('document_design.editor.version_line', ['v' => $version->version, 'status' => $isDraft ? __('Entwurf') : __('Aktiv')]) }}
                     </p>
                 </div>
@@ -59,7 +59,7 @@
                     {{-- Vollaudit 2026-07 (N3): x-page-shell hat keinen actions-Slot —
                          der Zurück-Link gehört in die Kopf-Karte. --}}
                     <a href="{{ route('admin.document-design.index') }}" class="btn btn-sm btn-ghost">{{ __('Zurück zur Übersicht') }}</a>
-                    <span class="text-xs text-base-content/50" x-show="dirty">{{ __('document_design.editor.unsaved') }}</span>
+                    <span class="text-xs text-muted" x-show="dirty">{{ __('document_design.editor.unsaved') }}</span>
                     <template x-if="message && message.tone === 'error'">
                         <span class="badge badge-error badge-sm" x-text="message.text"></span>
                     </template>
@@ -111,7 +111,7 @@
                         <button type="button" class="btn btn-xs join-item" :class="page === 'following' ? 'btn-primary' : 'btn-ghost'" @click="page = 'following'">{{ __('Folgeseiten') }}</button>
                     </div>
                 </div>
-                <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.preview_hint') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.preview_hint') }}</p>
 
                 <div data-page-canvas
                      class="relative mx-auto w-full max-w-105 border border-base-300 bg-white shadow-sm select-none"
@@ -204,7 +204,7 @@
                             <button type="button" class="btn btn-xs btn-outline" @click="reloadPreview()">{{ __('document_design.editor.pdf_preview_reload') }}</button>
                         </div>
                     </div>
-                    <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.pdf_preview_hint') }}</p>
+                    <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.pdf_preview_hint') }}</p>
                     {{-- Feinschliff: effektive Vererbungsquelle + Briefbogen-Blöcke direkt an der Vorschau. --}}
                     @if ($canInherit)
                         <p class="mb-1 text-xs" x-show="inheritEnabled" x-cloak>
@@ -227,7 +227,7 @@
                 @if ($canInherit)
                     <x-card>
                         <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.inherit_heading') }}</h2>
-                        <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.inherit_hint', ['base' => $baseName]) }}</p>
+                        <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.inherit_hint', ['base' => $baseName]) }}</p>
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" class="checkbox checkbox-sm" x-model="inheritEnabled" @change="markDirty()" :disabled="!editable">
                             {{ __('document_design.editor.inherit_toggle', ['base' => $baseName]) }}
@@ -253,7 +253,7 @@
                                           x-text="overrides.{{ $section }} ? '{{ __('document_design.editor.overridden') }}' : '{{ __('document_design.editor.inherited') }}'"></span>
                                 </div>
                             @endforeach
-                            <p class="text-xs text-base-content/50">{{ __('document_design.editor.inherit_reset_hint') }}</p>
+                            <p class="text-xs text-muted">{{ __('document_design.editor.inherit_reset_hint') }}</p>
                         </div>
                     </x-card>
                 @endif
@@ -379,7 +379,7 @@
                 {{-- Informationsblöcke --}}
                 <x-card>
                     <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.blocks_heading') }}</h2>
-                    <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.blocks_hint') }}</p>
+                    <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.blocks_hint') }}</p>
                     <div class="space-y-2">
                         @foreach ($blockCases as $block)
                             <div class="flex flex-wrap items-center justify-between gap-2 border-b border-base-200 pb-1 text-sm">
@@ -498,7 +498,7 @@
                 {{-- Kopf-/Fußtexte (MVP-651, vormals invoice_templates) --}}
                 <x-card>
                     <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.texts_heading') }}</h2>
-                    <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.texts_hint') }}</p>
+                    <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.texts_hint') }}</p>
                     <label class="form-control">
                         <span class="label-text text-sm">{{ __('document_design.editor.header_text') }}</span>
                         <textarea class="textarea textarea-bordered textarea-sm" rows="2" maxlength="2000"
@@ -514,7 +514,7 @@
                 {{-- Testdokumente --}}
                 <x-card>
                     <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.test_heading') }}</h2>
-                    <p class="mb-2 text-xs text-base-content/50">{{ __('document_design.editor.test_hint') }}</p>
+                    <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.test_hint') }}</p>
                     <div class="flex flex-wrap gap-2">
                         @foreach ($kinds as $kind)
                             <a class="btn btn-xs btn-outline"
@@ -545,7 +545,7 @@
                                     <option value="{{ $family->value }}" @selected($profile->document_family === $family)>{{ $family->label() }}</option>
                                 @endforeach
                             </select>
-                            <span class="label-text-alt text-xs text-base-content/50">{{ __('document_design.profile.family_hint') }}</span>
+                            <span class="label-text-alt text-xs text-muted">{{ __('document_design.profile.family_hint') }}</span>
                         </label>
                         <label class="flex items-center gap-2 text-sm">
                             <input type="checkbox" name="is_default" value="1" class="checkbox checkbox-sm" @checked($profile->is_default)>

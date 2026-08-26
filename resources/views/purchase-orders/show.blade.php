@@ -37,6 +37,11 @@
                     <a href="{{ route('purchase-orders.pdf', $order) }}" target="_blank" class="btn btn-sm btn-ghost gap-1">
                         <span class="material-symbols-rounded text-base">picture_as_pdf</span>{{ __('procurement.action.export_pdf') }}
                     </a>
+                    {{-- Feature 128 (MVP-692): Bestellung per E-Mail an den Lieferanten. --}}
+                    <x-icon-btn icon="mail" tone="ghost" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('purchase-orders.mail.form', $order)"
+                                show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
                     @if ($status !== 'draft')
                         <a href="{{ route('purchase-orders.order-xml', $order) }}" class="btn btn-sm btn-ghost gap-1">
                             <span class="material-symbols-rounded text-base">download</span>{{ __('procurement.action.export_xbestellung') }}
@@ -65,24 +70,24 @@
             <h2 class="font-semibold mb-3">{{ __('procurement.action.add_line') }}</h2>
             <form method="POST" action="{{ route('purchase-orders.lines.add', $order) }}" class="flex flex-wrap items-end gap-2">
                 @csrf
-                <div class="fieldset grow"><label class="fieldset-label">{{ __('procurement.field.article') }}</label>
-                    <select name="article" class="select select-sm select-bordered w-full" required>
+                <div class="fieldset grow"><label for="article" class="fieldset-label">{{ __('procurement.field.article') }}</label>
+                    <select id="article" name="article" class="select select-sm select-bordered w-full" required>
                         @foreach ($articles as $article)
                             <option value="{{ $article->sqid }}">{{ $article->name }}</option>
                         @endforeach
                     </select></div>
-                <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.qty') }}</label>
-                    <input name="qty" type="number" step="0.0001" min="0.0001" value="1" class="input input-sm input-bordered w-24"></div>
-                <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.unit_price') }}</label>
-                    <input name="unit_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28"></div>
-                <div class="fieldset grow"><label class="fieldset-label">{{ __('procurement.field.line_note') }}</label>
-                    <input name="note" maxlength="500" class="input input-sm input-bordered w-full"></div>
+                <div class="fieldset"><label for="qty" class="fieldset-label">{{ __('procurement.field.qty') }}</label>
+                    <input id="qty" name="qty" type="number" step="0.0001" min="0.0001" value="1" class="input input-sm input-bordered w-24"></div>
+                <div class="fieldset"><label for="unit_price" class="fieldset-label">{{ __('procurement.field.unit_price') }}</label>
+                    <input id="unit_price" name="unit_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28"></div>
+                <div class="fieldset grow"><label for="note" class="fieldset-label">{{ __('procurement.field.line_note') }}</label>
+                    <input id="note" name="note" maxlength="500" class="input input-sm input-bordered w-full"></div>
                 <x-button type="submit" tone="primary" size="sm">{{ __('procurement.action.add_line') }}</x-button>
             </form>
             <form method="POST" action="{{ route('purchase-orders.conditions', $order) }}" class="flex flex-wrap items-end gap-2 mt-3 pt-3 border-t border-base-300">
                 @csrf
-                <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.freight_cost') }}</label>
-                    <input name="freight_cost" type="number" step="0.01" min="0" value="{{ $order->freight_cost !== null ? rtrim(rtrim(number_format(($order->freight_cost?->toFloat() ?? 0.0), 2, '.', ''), '0'), '.') : '' }}" class="input input-sm input-bordered w-32"></div>
+                <div class="fieldset"><label for="freight_cost" class="fieldset-label">{{ __('procurement.field.freight_cost') }}</label>
+                    <input id="freight_cost" name="freight_cost" type="number" step="0.01" min="0" value="{{ $order->freight_cost !== null ? rtrim(rtrim(number_format(($order->freight_cost?->toFloat() ?? 0.0), 2, '.', ''), '0'), '.') : '' }}" class="input input-sm input-bordered w-32"></div>
                 <x-button type="submit" tone="ghost" size="sm">{{ __('procurement.action.save_conditions') }}</x-button>
             </form>
         </x-card>
@@ -145,8 +150,8 @@
                 <form method="POST" action="{{ route('purchase-orders.reconcile-invoice', $order) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2">
                     @csrf
                     <div class="fieldset grow">
-                        <label class="fieldset-label">{{ __('procurement.reconcile.upload') }}</label>
-                        <input name="invoice_ugl" type="file" accept=".ugl,text/plain" required class="file-input file-input-sm file-input-bordered">
+                        <label for="invoice_ugl" class="fieldset-label">{{ __('procurement.reconcile.upload') }}</label>
+                        <input id="invoice_ugl" name="invoice_ugl" type="file" accept=".ugl,text/plain" required class="file-input file-input-sm file-input-bordered">
                     </div>
                     <x-button type="submit" tone="secondary" size="sm">{{ __('procurement.reconcile.submit') }}</x-button>
                 </form>
@@ -162,8 +167,8 @@
                     <form method="POST" action="{{ route('purchase-orders.advices.import', $order) }}" enctype="multipart/form-data" class="flex flex-wrap items-end gap-2 mb-3">
                         @csrf
                         <div class="fieldset grow">
-                            <label class="fieldset-label">{{ __('procurement.advice.import') }}</label>
-                            <input name="advice_xml" type="file" accept=".xml,application/xml,text/xml" required class="file-input file-input-sm file-input-bordered">
+                            <label for="advice_xml" class="fieldset-label">{{ __('procurement.advice.import') }}</label>
+                            <input id="advice_xml" name="advice_xml" type="file" accept=".xml,application/xml,text/xml" required class="file-input file-input-sm file-input-bordered">
                         </div>
                         <x-button type="submit" tone="secondary" size="sm">{{ __('procurement.advice.import_submit') }}</x-button>
                     </form>
@@ -171,10 +176,10 @@
                 <form method="POST" action="{{ route('purchase-orders.advices.announce', $order) }}" class="flex flex-col gap-2">
                     @csrf
                     <div class="flex flex-wrap gap-2">
-                        <div class="fieldset"><label class="fieldset-label">{{ __('procurement.advice.reference') }}</label>
-                            <input name="reference" maxlength="128" class="input input-sm input-bordered"></div>
-                        <div class="fieldset"><label class="fieldset-label">{{ __('procurement.field.expected_at') }}</label>
-                            <input name="expected_at" type="date" class="input input-sm input-bordered"></div>
+                        <div class="fieldset"><label for="reference" class="fieldset-label">{{ __('procurement.advice.reference') }}</label>
+                            <input id="reference" name="reference" maxlength="128" class="input input-sm input-bordered"></div>
+                        <div class="fieldset"><label for="expected_at" class="fieldset-label">{{ __('procurement.field.expected_at') }}</label>
+                            <input id="expected_at" name="expected_at" type="date" class="input input-sm input-bordered"></div>
                     </div>
                     <x-table bare>
                         <x-slot:head>

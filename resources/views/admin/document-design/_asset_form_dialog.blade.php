@@ -18,7 +18,7 @@
     :submit-label="__('document_design.asset.upload_submit')"
 >
     <div class="space-y-3">
-        <p class="text-sm text-base-content/60">{{ __('document_design.asset.upload_hint') }}</p>
+        <p class="text-sm text-muted">{{ __('document_design.asset.upload_hint') }}</p>
 
         <label class="form-control w-full">
             <span class="label-text">{{ __('document_design.asset.name') }} *</span>

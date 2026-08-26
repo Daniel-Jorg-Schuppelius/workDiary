@@ -18,7 +18,8 @@
 
 @section('content')
 @php
-    $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
+    // Einheit je Regel-Art (Minuten/Tage/Anzahl) — zentral im Finding-Objekt.
+    $fmtVal = fn (string $kind, int $value): string => \App\Services\Compliance\AttendanceComplianceFinding::formatValue($kind, $value);
     $sevTone = fn (string $sev) => $sev === \App\Services\Compliance\AttendanceComplianceFinding::SEVERITY_ERROR ? 'error' : 'warning';
     $ackStatus = \App\Enums\Compliance\ComplianceFindingStatus::Acknowledged->value;
     $accStatus = \App\Enums\Compliance\ComplianceFindingStatus::Accepted->value;
@@ -71,7 +72,7 @@
 
     <x-card>
         @if ($findings->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">verified</span>'
+            <x-empty-state icon="verified"
                            :title="__('compliance.history.empty')" />
         @else
             <x-table bare>
@@ -92,13 +93,13 @@
                         <td>{{ $f->subject?->name ?? '—' }}</td>
                         <td class="tabular-nums">{{ $f->scope_date->fdate() }}</td>
                         <td>{{ __('compliance.report.kind.' . $f->rule_code) }}</td>
-                        <td class="text-right tabular-nums font-semibold">{{ $fmtMin((int) $f->detected_value) }}</td>
-                        <td class="text-right tabular-nums text-base-content/60">{{ $fmtMin((int) $f->threshold_value) }}</td>
+                        <td class="text-right tabular-nums font-semibold">{{ $fmtVal((string) $f->rule_code, (int) $f->detected_value) }}</td>
+                        <td class="text-right tabular-nums text-muted">{{ $fmtVal((string) $f->rule_code, (int) $f->threshold_value) }}</td>
                         <td><x-status-badge :tone="$sevTone($f->severity)" size="sm">{{ __('compliance.report.severity.' . $f->severity) }}</x-status-badge></td>
                         <td>
                             <x-status-badge :tone="$f->status->tone()" size="sm">{{ $f->status->label() }}</x-status-badge>
                             @if ($f->acknowledged_at)
-                                <div class="text-xs text-base-content/60 mt-0.5">
+                                <div class="text-xs text-muted mt-0.5">
                                     {{ $f->acknowledgedByUser?->name ?? '—' }} · {{ $f->acknowledged_at->fdate() }}
                                     @if ($f->acknowledge_note)
                                         <span class="italic">„{{ \Illuminate\Support\Str::limit($f->acknowledge_note, 80) }}"</span>

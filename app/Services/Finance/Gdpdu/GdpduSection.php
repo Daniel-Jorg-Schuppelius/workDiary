@@ -35,7 +35,12 @@ interface GdpduSection {
     /**
      * CSV-Datenzeilen des Prüfungszeitraums (deterministisch geordnet).
      *
-     * @return list<list<string>>
+     * Als Generator/LazyCollection: das Z3-Paket eines Prüfungszeitraums
+     * kann Hunderttausende Zeilen umfassen — sie alle im Speicher zu halten,
+     * bevor die erste CSV-Zeile geschrieben ist, war der Grund für den
+     * Speicher-Brennpunkt (Vollscan 2026-08-23, A16).
+     *
+     * @return iterable<int, list<string>>
      */
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array;
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable;
 }

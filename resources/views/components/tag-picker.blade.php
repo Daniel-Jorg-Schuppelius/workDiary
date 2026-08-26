@@ -13,6 +13,8 @@
     'name' => 'tag_ids',
     'newName' => 'new_tags',
     'allowCreate' => true,
+    'suggestFrom' => null,   // CSS-Selektor des Freitextfelds im selben <form> → KI-Tagvorschläge (Feature 143)
+    'customerFrom' => null,  // optional: Selektor des Kundenfelds (Sqid) als schwacher Prior
 ])
 
 {{--
@@ -29,6 +31,9 @@
       - name        : Feldname der bestehenden Tags (Default tag_ids)
       - newName     : Feldname neuer Tags (Default new_tags)
       - allowCreate : neue Tags anlegen erlauben (Default true)
+      - suggestFrom : Selektor des Freitextfelds → Button „KI-Tags vorschlagen" + Chips,
+                      nur wenn die Capability classification.tag_suggest nutzbar ist (MVP-711)
+      - customerFrom: Selektor des Kundenfelds (Sqid) — Tags dieses Kunden stehen vorn
 --}}
 
 @php
@@ -43,7 +48,11 @@
         ->map(fn ($v) => (string) $v)->values()->all();
     $tagPickerNew = collect(preg_split('/[,;\n]+/', (string) old($newName, '')) ?: [])
         ->map(fn ($v) => trim((string) $v))->filter()->values()->all();
-    $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => (bool) $allowCreate];
+    $tagSuggestUrl = $suggestFrom !== null
+        && app(\App\Services\Ai\Suggestions\SuggestionViewData::class)->capabilityUsable(\App\Services\Ai\Suggestions\ClassificationSuggestionService::CAPABILITY)
+        ? route('ai.suggest.tags')
+        : null;
+    $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => (bool) $allowCreate, 'suggestUrl' => $tagSuggestUrl, 'textSelector' => $suggestFrom, 'customerSelector' => $customerFrom];
 @endphp
 
 <div {{ $attributes->merge(['class' => 'fieldset']) }}
@@ -84,6 +93,10 @@
         </template>
     </div>
 
+    @if ($tagSuggestUrl !== null)
+        <x-tag-picker-ai />
+    @endif
+
     {{-- Such-/Eingabefeld mit Dropdown --}}
     <div class="relative mt-2">
         <input type="text"
@@ -96,6 +109,7 @@
                @keydown.escape="close()"
                autocomplete="off"
                class="input input-bordered input-sm w-full"
+               aria-label="{{ __('Tag suchen oder neuen Tag eingeben…') }}"
                placeholder="{{ __('Tag suchen oder neuen Tag eingeben…') }}">
 
         <ul x-show="showMenu" x-cloak x-transition.opacity

@@ -141,6 +141,18 @@ return [
     'invoicing.quote_follow_up_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 7],
     'invoicing.transfer_intro_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
     'invoicing.transfer_closing_text' => ['type' => 'text', 'scopes' => ['organization'], 'rules' => 'nullable|max:2000'],
+    // Mahnwesen (Feature 127, MVP-691): Karenz/Gebühr/Zahlungsfrist je Stufe
+    // + Verzugszins % p. a. (0 = aus). Defaults: config/invoicing.php.
+    'invoicing.dunning.level1.grace_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:365', 'fallback' => 7],
+    'invoicing.dunning.level1.fee' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
+    'invoicing.dunning.level1.pay_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 14],
+    'invoicing.dunning.level2.grace_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:365', 'fallback' => 7],
+    'invoicing.dunning.level2.fee' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
+    'invoicing.dunning.level2.pay_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 10],
+    'invoicing.dunning.level3.grace_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:365', 'fallback' => 7],
+    'invoicing.dunning.level3.fee' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:10000', 'fallback' => 0],
+    'invoicing.dunning.level3.pay_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:90', 'fallback' => 7],
+    'invoicing.dunning.interest_rate' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'nullable|min:0|max:30', 'fallback' => 0],
     'ui.dashboard.recent_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:1|max:1000'],
     'ui.calendar.slot_minutes' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'options' => [10, 15, 20, 30, 60]],
     // Neuigkeiten-Rail: externe Kommunikation bleibt installationsweit Opt-in.
@@ -156,6 +168,13 @@ return [
     // DWD: maximale Entfernung zur nächsten Station — darüber hinaus lieber
     // kein Snapshot als falsche Daten.
     'weather.dwd_max_station_km' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:200', 'fallback' => 30],
+    // Wetterwarnungen für disponierte Einsätze (Feature 062, MVP-716): Schalter +
+    // Schwellen je Org; Defaults siehe WeatherWarningThreshold::defaultLimit().
+    'weather.warnings_enabled' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => true],
+    'weather.warn_rain_mm' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'min:0|max:500', 'fallback' => 20],
+    'weather.warn_gust_kmh' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'min:0|max:300', 'fallback' => 60],
+    'weather.warn_frost_c' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'min:-50|max:50', 'fallback' => 0],
+    'weather.warn_heat_c' => ['type' => 'decimal', 'scopes' => ['organization'], 'rules' => 'min:-50|max:70', 'fallback' => 30],
     // edit_window_days: kein config-Default; null = kein Bearbeitungsfenster erzwungen
     'timesheet.edit_window_days' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:365'],
     // Schlüsselwort-Zuordnung importierter Zeiten (MVP-483)
@@ -192,6 +211,11 @@ return [
 
     // --- Benachrichtigungen (config/notifications.php) ---
     'notifications.push.body_truncate' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:20|max:500'],
+    // SMS-Kanal (Feature 147, MVP-730): Kürzung nie über einem GSM-7-Segment;
+    // Monatsdeckel in Segmenten (leer = unbegrenzt) mit Kostenwarnschwelle.
+    'notifications.sms.body_truncate' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:20|max:160'],
+    'notifications.sms.monthly_limit' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'nullable|min:0|max:100000'],
+    'notifications.sms.warn_percent' => ['type' => 'integer', 'scopes' => ['system', 'organization'], 'rules' => 'min:0|max:100'],
 
     // --- Routing/Karten (config/routing.php) ---
     'routing.nominatim.base_url' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'url|max:255'],

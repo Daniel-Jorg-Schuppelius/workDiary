@@ -67,12 +67,12 @@
                 <div class="flex flex-wrap items-center justify-between gap-3">
                     <div>
                         <h3 class="text-sm font-semibold">{{ __('isms.csf.overall') }}</h3>
-                        <p class="text-xs text-base-content/60">{{ __('isms.csf.overall_hint') }}</p>
+                        <p class="text-xs text-muted">{{ __('isms.csf.overall_hint') }}</p>
                     </div>
                     <div class="flex items-center gap-3">
                         <progress class="progress {{ $readiness['overall_tone'] === 'success' ? 'progress-success' : ($readiness['overall_tone'] === 'warning' ? 'progress-warning' : ($readiness['overall_tone'] === 'error' ? 'progress-error' : '')) }} w-40"
                                   value="{{ $readiness['overall_quote'] }}" max="100"></progress>
-                        <span class="font-['Space_Grotesk'] text-2xl font-semibold {{ $readiness['overall_tone'] === 'success' ? 'text-success' : ($readiness['overall_tone'] === 'warning' ? 'text-warning' : ($readiness['overall_tone'] === 'error' ? 'text-error' : 'text-base-content/50')) }}">{{ $readiness['overall_quote'] }}&nbsp;%</span>
+                        <span class="font-['Space_Grotesk'] text-2xl font-semibold {{ $readiness['overall_tone'] === 'success' ? 'text-success' : ($readiness['overall_tone'] === 'warning' ? 'text-warning' : ($readiness['overall_tone'] === 'error' ? 'text-error' : 'text-muted')) }}">{{ $readiness['overall_quote'] }}&nbsp;%</span>
                     </div>
                 </div>
             </x-card>
@@ -112,7 +112,7 @@
                                 @endphp
                                 <tr>
                                     <td>
-                                        <span class="font-mono text-xs text-base-content/60">{{ $function['ref'] }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $function['ref'] }}</span>
                                         <span class="font-medium">{{ $function['title'] }}</span>
                                     </td>
                                     <td>
@@ -120,7 +120,7 @@
                                     </td>
                                     <td>
                                         @if ($function['mode'] === 'none')
-                                            <span class="text-xs text-base-content/50">{{ __('isms.csf.source_none') }}</span>
+                                            <span class="text-xs text-muted">{{ __('isms.csf.source_none') }}</span>
                                         @else
                                             <div class="flex items-center gap-2">
                                                 <progress class="progress {{ $function['tone'] === 'success' ? 'progress-success' : ($function['tone'] === 'warning' ? 'progress-warning' : 'progress-error') }} w-24"

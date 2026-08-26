@@ -14,6 +14,7 @@ namespace App\Services\Finance\Gdpdu;
 
 use App\Models\Accounting\AccountingPeriod;
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 
 /** Buchungsperioden mit Abschluss- und Wiedereröffnungsnachweis. */
@@ -39,15 +40,15 @@ class LedgerPeriodsSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        return array_values(AccountingPeriod::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (AccountingPeriod::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('starts_on', '<=', $to->toDateString())
-            ->whereDate('ends_on', '>=', $from->toDateString())
+            ->where('starts_on', '<=', DateRange::day($to))
+            ->where('ends_on', '>=', DateRange::day($from))
             ->with('fiscalYear')
-            ->orderBy('starts_on')
-            ->get()
-            ->map(fn ($period): array => [
+            ->orderBy('starts_on')->orderBy('id')
+            ->lazy() as $period) {
+            yield [
                 $this->str($period->fiscalYear?->label),
                 $this->date($period->starts_on),
                 $this->date($period->ends_on),
@@ -55,8 +56,7 @@ class LedgerPeriodsSection extends AbstractGdpduSection {
                 $this->dateTime($period->closed_at),
                 $this->dateTime($period->reopened_at),
                 $this->str($period->reopen_reason),
-            ])
-            ->values()
-            ->all());
+            ];
+        }
     }
 }

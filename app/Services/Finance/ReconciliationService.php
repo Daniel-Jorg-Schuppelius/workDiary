@@ -437,13 +437,24 @@ class ReconciliationService {
      * einer teilweise bezahlten Rechnung lädt zur Doppelzahlung ein.
      */
     public function allocatedSum(Invoice $invoice): float {
-        return (float) PaymentAllocation::query()
+        $allocated = (float) PaymentAllocation::query()
             ->where('allocatable_type', Invoice::class)
             ->where('allocatable_id', $invoice->id)
             // Vollaudit 2026-07 (N12): Skonto-Sätze sind Erlösschmälerung,
             // keine Zahlungsdeckung — sonst würde der Auto-Satz die Deckung verfälschen.
             ->where('kind', '!=', AllocationKind::Skonto->value)
             ->sum('amount');
+
+        // MVP-707: Altrechnungen tragen den im Vorsystem bezahlten Betrag
+        // unveränderlich im Beleg (Eröffnungs-OP = Rest). Ohne Geldfluss-Satz
+        // (Bankumsatz/Kasse/Kundenkonto) ist das die eine Deckungs-Leseseite für
+        // Mahnlauf, Girocode und spätere echte Zahlungen.
+        $legacyPaid = data_get($invoice->import_metadata, 'paid_amount');
+        if (is_string($legacyPaid) || is_numeric($legacyPaid)) {
+            $allocated += (float) $legacyPaid;
+        }
+
+        return round($allocated, 2);
     }
 
     private function deriveKind(Invoice|Expense|CustomerBillingAgreement $target, float $amount): AllocationKind {

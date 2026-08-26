@@ -41,7 +41,7 @@
     @else
         <x-card :title="__('Freie Slots am :date (:name)', ['date' => $date->fdate(), 'name' => $selected->name])">
             @if ($slots === [])
-                <p class="text-sm text-base-content/60">{{ __('Keine freien Slots — der Tag ist voll belegt oder es gibt kein Arbeitsfenster.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine freien Slots — der Tag ist voll belegt oder es gibt kein Arbeitsfenster.') }}</p>
             @else
                 <div class="flex flex-wrap gap-2">
                     @foreach ($slots as $slot)

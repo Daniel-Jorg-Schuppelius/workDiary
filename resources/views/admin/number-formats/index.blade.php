@@ -16,6 +16,9 @@
 
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('Format pro Nummernkreis (Präfix, Jahr, Padding, Reset) für :org festlegen.', ['org' => $organization->name])">
+    <p class="text-muted text-xs flex-none">
+        {{ __('Hinweis: „Start bei" wird nur beim ersten Mal je Periode (Jahr) übernommen. Bestehende Sequenzen werden weitergezählt.') }}
+    </p>
     <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
             <tr>
@@ -85,9 +88,5 @@
             </tr>
         @endforeach
     </x-table>
-
-    <p class="text-base-content/60 text-xs mt-3">
-        {{ __('Hinweis: „Start bei" wird nur beim ersten Mal je Periode (Jahr) übernommen. Bestehende Sequenzen werden weitergezählt.') }}
-    </p>
 </x-index-page>
 @endsection

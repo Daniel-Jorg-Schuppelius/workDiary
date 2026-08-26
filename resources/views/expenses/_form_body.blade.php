@@ -11,8 +11,8 @@
 <x-form-group :legend="__('Spese')" icon="receipt_long" tone="primary" cols="2">
     <x-input-field name="date" type="date" :label="__('Datum')" required :value="old('date', $date)" />
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Kategorie') }}</label>
-        <select name="expense_category_id" class="select select-bordered w-full" data-expense-category>
+        <label for="expense_category_id" class="fieldset-label">{{ __('Kategorie') }}</label>
+        <select id="expense_category_id" name="expense_category_id" class="select select-bordered w-full" data-expense-category>
             <option value="">—</option>
             @foreach ($categories as $cat)
                 <option value="{{ $cat->sqid }}"

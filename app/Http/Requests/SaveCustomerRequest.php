@@ -52,6 +52,8 @@ class SaveCustomerRequest extends BaseFormRequest {
             'hourly_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
             'internal_rate' => ['nullable', 'numeric', 'min:0', 'max:99999.99'],
             'invoice_text' => ['nullable', 'string', 'max:5000'],
+            // Belegsprache (Feature 034, MVP-721): leer = wie Organisation.
+            'document_locale' => ['nullable', 'string', Rule::in(\App\Support\Locales::enabledCodes())],
             'billable' => ['sometimes', 'boolean'],
             'exclude_from_reports' => ['sometimes', 'boolean'],
             'no_bulk_mail' => ['sometimes', 'boolean'],
@@ -103,6 +105,10 @@ class SaveCustomerRequest extends BaseFormRequest {
             } elseif ($this->input('debtor_no') === '') {
                 $this->merge(['debtor_no' => null]);
             }
+        }
+
+        if ($this->input('document_locale') === '') {
+            $this->merge(['document_locale' => null]);
         }
 
         $this->merge(array_merge($this->partyNormalizedData(), [

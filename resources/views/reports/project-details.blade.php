@@ -55,17 +55,17 @@
                 <h2 class="font-['Space_Grotesk'] text-lg font-semibold">
                     {{ $project->name }}
                     @if ($project->customer)
-                        <span class="text-sm text-base-content/60">– {{ $project->customer->name }}</span>
+                        <span class="text-sm text-muted">– {{ $project->customer->name }}</span>
                     @endif
                 </h2>
                 <div class="flex items-baseline gap-4">
                     <div class="flex items-baseline gap-2">
-                        <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>
-                        <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearMinutes > 0 ? 'text-primary' : 'text-base-content/50' }}">{{ $fmt($yearMinutes) }}</span>
+                        <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ Std.</span>
+                        <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearMinutes > 0 ? 'text-primary' : 'text-muted' }}">{{ $fmt($yearMinutes) }}</span>
                     </div>
                     <div class="flex items-baseline gap-2">
-                        <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ €</span>
-                        <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearRate > 0 ? 'text-primary' : 'text-base-content/50' }}">{{ $money($yearRate) }}</span>
+                        <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ €</span>
+                        <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearRate > 0 ? 'text-primary' : 'text-muted' }}">{{ $money($yearRate) }}</span>
                     </div>
                 </div>
             </div>

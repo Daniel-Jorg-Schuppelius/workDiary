@@ -27,7 +27,7 @@
 
     @if ($readings->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">speed</span>' />
+            icon="speed" />
     @else
         <x-filter-bar :action="route('meter-readings.index')" method="GET" :reset="route('meter-readings.index')">
             @if (!empty($filters['asset']))
@@ -56,9 +56,9 @@
                     <td class="font-mono text-xs">{{ $r->read_at?->translatedFormat('d.m.Y H:i') }}</td>
                     <td>
                         @if ($r->asset)
-                            <span class="material-symbols-outlined text-[14px] align-middle">speed</span>
+                            <x-icon name="speed" class="text-[14px] align-middle" />
                             {{ $r->asset->name }}
-                            <span class="text-base-content/50 text-xs">{{ $r->asset->asset_no }}</span>
+                            <span class="text-muted text-xs">{{ $r->asset->asset_no }}</span>
                         @endif
                     </td>
                     <td class="text-right font-mono">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $r->value, 4, withThousandsSeparator: true) }}</td>

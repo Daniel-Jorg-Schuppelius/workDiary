@@ -130,6 +130,8 @@ return [
         'metering' => ['generate-invoices' => 'Générer les factures de relevés'],
         'maintenance' => ['scan_due' => 'Vérifier les plans de maintenance échus'],
         'notifications' => ['scan_deadlines' => 'Contrôler les échéances et notifier'],
+        'org' => ['offboard_due' => 'Exécuter les départs de collaborateurs échus'],
+        'travel_logs' => ['lock_due' => 'Verrouiller les trajets du carnet de bord après la fin de journée'],
         'news-feed' => ['refresh' => 'Actualiser le fil d’actualités'],
         'openproject' => [
             'import' => 'Import OpenProject',

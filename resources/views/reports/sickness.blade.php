@@ -49,7 +49,7 @@
 
     <x-card>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">sick</span>' :title="__('Keine Krankheitsdaten im gewählten Zeitraum.')" />
+            <x-empty-state icon="sick" :title="__('Keine Krankheitsdaten im gewählten Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -73,7 +73,7 @@
                         <td class="font-semibold">
                             {{ $r['user']->name }}
                             @if ($r['chain_start'])
-                                <div class="text-xs text-base-content/60">
+                                <div class="text-xs text-muted">
                                     {{ __('Kette seit') }} {{ \Carbon\Carbon::parse($r['chain_start'])->fdate() }}
                                 </div>
                             @endif
@@ -93,7 +93,7 @@
                             @if ($r['exhausted'])
                                 <x-status-badge tone="error">{{ __('Ausgeschöpft') }}</x-status-badge>
                                 @if ($r['exhaustion_date'])
-                                    <div class="text-xs text-base-content/60">
+                                    <div class="text-xs text-muted">
                                         {{ \Carbon\Carbon::parse($r['exhaustion_date'])->fdate() }}
                                     </div>
                                 @endif

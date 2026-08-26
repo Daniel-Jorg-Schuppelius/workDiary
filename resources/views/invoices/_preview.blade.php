@@ -26,7 +26,7 @@
                 <x-duration :minutes="$preview['totals']['minutes']" />
                 <span class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($preview['totals']['amount'], 2, withThousandsSeparator: true) }} €</span>
                 @if ($preview['travel']['count'] > 0)
-                    <span class="text-base-content/60">{{ __('invoicing.preview.travel', ['count' => $preview['travel']['count']]) }}</span>
+                    <span class="text-muted">{{ __('invoicing.preview.travel', ['count' => $preview['travel']['count']]) }}</span>
                 @endif
             </div>
 
@@ -72,16 +72,16 @@
                                 <label class="flex cursor-pointer items-center gap-2">
                                     <input type="checkbox" class="checkbox checkbox-xs"
                                            name="excluded_time_entry_ids[]" value="{{ $entry->sqid }}">
-                                    <span class="text-base-content/60">{{ __('invoicing.preview.exclude') }}</span>
+                                    <span class="text-muted">{{ __('invoicing.preview.exclude') }}</span>
                                 </label>
                                 <span class="whitespace-nowrap">{{ $entry->date?->format(\App\Support\Formats::date()) }}</span>
-                                <span class="text-base-content/60">{{ $entry->user->name ?? '—' }}</span>
+                                <span class="text-muted">{{ $entry->user->name ?? '—' }}</span>
                                 <span class="max-w-xs truncate" title="{{ $entry->description }}">{{ $entry->description }}</span>
                                 <x-duration :minutes="$entry->minutes" class="ml-auto" />
                             </li>
                         @endforeach
                     </ul>
-                    <p class="mt-1 text-xs text-base-content/50">{{ __('invoicing.preview.exclude_hint') }}</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('invoicing.preview.exclude_hint') }}</p>
                 </details>
             @endif
         </div>

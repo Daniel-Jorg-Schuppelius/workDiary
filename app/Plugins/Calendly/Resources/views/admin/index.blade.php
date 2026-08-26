@@ -72,7 +72,7 @@
 
         <div class="rounded-box border border-base-300 p-4 space-y-2">
             <h3 class="font-medium">{{ __('Einmal-Buchungslink') }}</h3>
-            <p class="text-xs text-base-content/60">
+            <p class="text-xs text-muted">
                 {{ __('Erzeugt einen einmaligen Calendly-Buchungslink je Lead/Leistung — nicht öffentlich gelistet, zum direkten Teilen.') }}
             </p>
             <form method="POST" action="{{ route('admin.calendly.booking-link') }}" class="flex flex-wrap items-end gap-2">
@@ -116,11 +116,11 @@
                 <tr>
                     <td class="whitespace-nowrap">
                         {{ optional($request->start_at)->timezone(config('app.timezone'))->format('d.m.Y H:i') ?? '—' }}
-                        <div class="text-xs text-base-content/50">{{ $request->service_label }}</div>
+                        <div class="text-xs text-muted">{{ $request->service_label }}</div>
                     </td>
                     <td>
                         {{ $request->invitee_name }}
-                        <div class="text-xs text-base-content/50">{{ $request->invitee_email }}</div>
+                        <div class="text-xs text-muted">{{ $request->invitee_email }}</div>
                     </td>
                     <td>
                         @if ($request->customer_id)

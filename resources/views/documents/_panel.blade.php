@@ -37,7 +37,7 @@
     @endif
 
     @if ($panelDocuments->isEmpty())
-        <x-empty-state compact icon='<span class="material-symbols-outlined">folder_open</span>'
+        <x-empty-state compact icon="folder_open"
                        :title="__('document.title.index')"
                        :message="__('document.empty')" />
     @else
@@ -49,11 +49,11 @@
                 <li id="document-{{ $panelDocument->id }}" class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                     <div class="min-w-0">
                         <span class="flex items-center gap-2 font-medium">
-                            <x-icon :name="$panelDocument->document_type->icon()" class="text-base-content/60" />
+                            <x-icon :name="$panelDocument->document_type->icon()" class="text-muted" />
                             {{ $panelDocument->title }}
                             <x-status-badge :tone="$panelEffective->tone()" size="sm">{{ $panelEffective->label() }}</x-status-badge>
                         </span>
-                        <span class="block text-xs text-base-content/60">
+                        <span class="block text-xs text-muted">
                             {{ $panelDocument->document_type->label() }}
                             · v{{ $panelDocument->currentVersion?->version_no ?? '—' }}
                             @if ($panelDocument->valid_until)

@@ -29,6 +29,9 @@ enum PostingSourceKind: string implements HasLabel {
     case CashEntry = 'cash_entry';
     case Payment = 'payment';
 
+    /** Jahres-AfA aus dem Anlagenregister (Feature 133, MVP-698). */
+    case Depreciation = 'depreciation';
+
     public function label(): string {
         return (string) __('enums.finance.posting-source-kind.' . $this->value);
     }
@@ -40,6 +43,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::Expense => 'warning',
             self::CashEntry => 'secondary',
             self::Payment => 'primary',
+            self::Depreciation => 'accent',
         };
     }
 
@@ -50,10 +54,11 @@ enum PostingSourceKind: string implements HasLabel {
             self::Expense => 'receipt',
             self::CashEntry => 'payments',
             self::Payment => 'account_balance',
+            self::Depreciation => 'trending_down',
         };
     }
 
-    /** Präfix des Idempotenzschlüssels (`invoice:42`). */
+    /** Präfix des Idempotenzschlüssels (`invoice:42`, `depreciation:7:2026`). */
     public function keyPrefix(): string {
         return match ($this) {
             self::SalesInvoice => 'invoice',
@@ -61,6 +66,7 @@ enum PostingSourceKind: string implements HasLabel {
             self::Expense => 'expense',
             self::CashEntry => 'cash',
             self::Payment => 'payment',
+            self::Depreciation => 'depreciation',
         };
     }
 }

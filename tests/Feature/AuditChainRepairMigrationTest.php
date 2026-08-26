@@ -14,7 +14,7 @@ use App\Models\AuditLog;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, DB};
 use RuntimeException;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{IsolatesAuditChainProofs, WithOrganization};
 use Tests\TestCase;
 
 /**
@@ -24,8 +24,19 @@ use Tests\TestCase;
  * echte Manipulation bricht die Migration ohne Rewrite ab.
  */
 class AuditChainRepairMigrationTest extends TestCase {
+    use IsolatesAuditChainProofs;
     use RefreshDatabase;
     use WithOrganization;
+
+    protected function setUp(): void {
+        parent::setUp();
+        $this->isolateAuditChainProofs();
+    }
+
+    protected function tearDown(): void {
+        $this->releaseAuditChainProofs();
+        parent::tearDown();
+    }
 
     private function makeEntry(string $event): AuditLog {
         return AuditLog::create([
@@ -48,8 +59,41 @@ class AuditChainRepairMigrationTest extends TestCase {
         return hash('sha256', (string) $prev . '|' . json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
     }
 
+    /**
+     * Versetzt den Bestand in den historischen Zustand EINER Tabellenkette
+     * (vor MVP-722) — die Reparatur-Migration von 2026-11 setzt genau den
+     * voraus. Nutzdaten bleiben unangetastet, nur prev_hash/hash werden in
+     * id-Reihenfolge durchgerechnet.
+     */
+    private function flattenToTableChain(): void {
+        $prev = null;
+        foreach (DB::table('audit_logs')->orderBy('id')->get() as $row) {
+            $model = AuditLog::fromStorageRow((array) $row);
+            $hash = AuditLog::chainHash($prev, $model->hashPayload());
+            DB::table('audit_logs')->where('id', $row->id)->update(['prev_hash' => $prev, 'hash' => $hash]);
+            $prev = $hash;
+        }
+
+        DB::table('audit_chain_heads')->where('chain', 'like', 'audit_logs%')->delete();
+        DB::table('audit_chain_heads')->insert([
+            'chain' => 'audit_logs',
+            'head_hash' => $prev,
+            'height' => DB::table('audit_logs')->count(),
+        ]);
+    }
+
     private function runRepair(): void {
         $migration = require database_path('migrations/2026_11_08_100000_rechain_audit_hashes_after_value_object_casts.php');
+        $migration->up();
+    }
+
+    /**
+     * Die Folge-Migration (MVP-722) teilt die reparierte Tabellenkette in eine
+     * Kette je Organisation — in dieser Reihenfolge laufen sie auch beim
+     * Deployment. `audit:verify` rechnet seither je Kette.
+     */
+    private function runPerOrganizationRechain(): void {
+        $migration = require database_path('migrations/2027_02_19_103100_rechain_audit_hashes_per_organization.php');
         $migration->up();
     }
 
@@ -89,6 +133,9 @@ class AuditChainRepairMigrationTest extends TestCase {
         $this->assertSame($a->hash, DB::table('audit_logs')->where('id', $a->id)->value('hash'));
         $this->assertSame($b->hash, DB::table('audit_logs')->where('id', $b->id)->value('hash'));
         $this->assertSame(0, Artisan::call('audit:verify'));
+        // MVP-723: ohne Umkettung kein GoBD-Nachweis — die Datei entsteht erst
+        // beim Schreiben des Puffers am Ende, nicht schon beim Start des Laufs.
+        $this->assertSame([], $this->auditChainProofs(), 'Eine intakte Kette darf keine Nachweisdatei anlegen.');
     }
 
     /**
@@ -111,12 +158,18 @@ class AuditChainRepairMigrationTest extends TestCase {
             'user_agent' => 'phpunit',
         ]);
 
+        // Ausgangslage von 2026-11: eine Kette über die ganze Tabelle.
+        $this->flattenToTableChain();
+
         // FK-Kaskade nachstellen: Spalte nullen, Hash bleibt der alte.
         DB::table('audit_logs')->where('id', $b->id)->update(['organization_id' => null]);
 
         $this->assertSame(1, Artisan::call('audit:verify'), 'Genullte FK-Spalte muss die Prüfung brechen.');
 
         $this->runRepair();
+        // Die genullte Spalte verschiebt die Zeile in die Kette `audit_logs:0`;
+        // erst die Aufteilung je Organisation macht den Bestand wieder prüfbar.
+        $this->runPerOrganizationRechain();
 
         $this->assertSame(0, Artisan::call('audit:verify'), 'Nach der Reparatur ist die Kette wieder prüfbar.');
         $this->assertNull(

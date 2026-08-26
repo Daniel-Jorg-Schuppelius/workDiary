@@ -89,7 +89,7 @@
                         </button>
                     </form>
                     @unless ($preflight->isReady())
-                        <p class="mt-2 text-xs text-base-content/60">{{ __('accounting.ledger.preflight.blocked_hint') }}</p>
+                        <p class="mt-2 text-xs text-muted">{{ __('accounting.ledger.preflight.blocked_hint') }}</p>
                     @endunless
                 @endif
             @endif
@@ -139,7 +139,7 @@
 
             <div class="flex items-center gap-2">
                 <x-status-badge :tone="$taxationMethod->tone()">{{ $taxationMethod->label() }}</x-status-badge>
-                <span class="text-xs text-base-content/60">{{ __('accounting.taxation.default_hint') }}</span>
+                <span class="text-xs text-muted">{{ __('accounting.taxation.default_hint') }}</span>
             </div>
 
             @if ($taxationPeriods->isNotEmpty())
@@ -195,7 +195,7 @@
                         {{ __('accounting.filing.extension.active', ['year' => $filingExtension->year]) }}
                     </x-status-badge>
                 @endif
-                <span class="text-xs text-base-content/60">{{ __('accounting.filing.default_hint') }}</span>
+                <span class="text-xs text-muted">{{ __('accounting.filing.default_hint') }}</span>
             </div>
 
             <p class="mt-2 text-xs text-base-content/70">
@@ -261,7 +261,7 @@
                         <td>
                             <x-status-badge :tone="$section->sovereignty->tone()">{{ $section->sovereignty->label() }}</x-status-badge>
                             @if ($section->external_provider)
-                                <span class="ml-1 text-xs text-base-content/60">{{ $section->external_provider }}</span>
+                                <span class="ml-1 text-xs text-muted">{{ $section->external_provider }}</span>
                             @endif
                         </td>
                         <td class="text-sm text-base-content/70">{{ $section->reason }}</td>

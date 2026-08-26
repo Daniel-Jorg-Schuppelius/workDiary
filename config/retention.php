@@ -15,9 +15,11 @@
  * RetentionRegistry; der Retention-Scan (Restpunkt 66) erzeugt daraus
  * Lösch-VORSCHLÄGE (Review-Queue statt Direktlöschung).
  *
- * Bewusst NICHT hier: location.retention_days (Rohdaten-Purge, eigene
- * Datenschutz-Semantik) und whistleblowing.retention_months (HinSchG §11,
- * pro Org überschreibbar) — beide behalten ihre eigene Mechanik.
+ * Bewusst NICHT hier: whistleblowing.retention_months (HinSchG §11, pro Org
+ * überschreibbar) behält seine eigene Mechanik. Der Bereich location_points
+ * WEIST die GPS-Frist nur aus und zeigt per days_source auf
+ * location.retention_days — der Vollzug bleibt beim
+ * location:purge-points-Scheduler (keine Doppel-Löschung, Feature 130).
  */
 return [
     'default_region' => env('RETENTION_DEFAULT_REGION', 'DE'),
@@ -128,6 +130,70 @@ return [
             'label' => 'Fahrtakten (Orts-/Fahrgastbezug)',
             'years' => ['DE' => 1, 'AT' => 1, 'CH' => 1],
             'basis' => ['DE' => '§ 49 Abs. 4 PBefG (1 J.) / Art. 5 Abs. 1 lit. e DSGVO', 'AT' => 'Art. 5 DSGVO (Speicherbegrenzung)', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
+        // ------- Große Personendaten-Bereiche (Feature 130, MVP-694 — H21) -------
+
+        // Personalstammdaten ausgeschiedener Mitarbeiter: Anker ist der
+        // Austritt (users.left_at). Vollzug = ANONYMISIERUNG des Kontos
+        // (UserAnonymizationService), nie Löschung — die Arbeitszeit-/Lohn-
+        // Nachweise (RETENTION_FK_TABLES) bleiben verknüpft. Lohn-/Steuer-
+        // Unterlagen selbst sind über exports/gobd_financial (10 J.) gedeckt.
+        'employee_records' => [
+            'label' => 'Personalstamm (ausgeschiedene Mitarbeiter)',
+            'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            'basis' => ['DE' => '§195 BGB (Regelverjährung, ab Austritt)', 'AT' => '§1486 ABGB (3 J.)', 'CH' => 'OR Art. 128 Ziff. 3 (5 J.)'],
+        ],
+
+        // Digitale Personalakte (Feature 141, MVP-708): Anker ist der Austritt;
+        // die konkrete Frist steht je Dokument (retention_until = left_at +
+        // Kategorie-Jahre, HrDocumentCategory: 3 J. Regelverjährung, 2 J.
+        // Abmahnung, 6 J. Lohnbezug-Verweise). Vollzug = Vernichtung nach
+        // zweistufiger Bestätigung; die Katalog-Jahre sind der Ausweis.
+        'personnel_files' => [
+            'label' => 'Personalakten (ausgeschiedene Mitarbeiter)',
+            'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            'basis' => ['DE' => '§195 BGB (Regelverjährung, ab Austritt); Kategorie-Frist am Dokument, Lohnbezug 6 J. (§41 EStG / §257 HGB)', 'AT' => '§1486 ABGB (3 J.)', 'CH' => 'OR Art. 128 Ziff. 3 (5 J.)'],
+        ],
+
+        // Kundenstammdaten OHNE Geschäftsvorfälle (keine Rechnungen, keine
+        // Zeiten): Anker ist der letzte Kontakt (updated_at). Kunden MIT
+        // Belegen folgen den kaufmännischen Fristen (gobd_financial u. a.).
+        'customer_master' => [
+            'label' => 'Kundenstamm (ohne Geschäftsvorfälle)',
+            'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. e DSGVO / §195 BGB (ab letztem Kontakt)', 'AT' => 'Art. 5 DSGVO / §1489 ABGB', 'CH' => 'DSG (Zweckbindung) / OR Art. 128'],
+        ],
+
+        // Arbeitszeit-Rohdaten (attendances): ArbZG-Frist. NUR Ausweis, keine
+        // Scan-Policy — lohn-/steuerrelevante Zeiten bleiben über exports/
+        // gobd_financial (10 J.) gedeckt; das Fristende ist das MAX der
+        // anwendbaren Bereiche (Konsistenz mit der GoBD-Ausnahme-Logik der
+        // bestehenden Policies, z. B. documents_invoice).
+        'time_records' => [
+            'label' => 'Arbeitszeit-Rohdaten (Anwesenheiten)',
+            'years' => ['DE' => 2, 'AT' => 2, 'CH' => 5],
+            'basis' => ['DE' => 'ArbZG §16 Abs. 2 (2 J.); lohn-/steuerrelevant: 10 J. via exports/gobd_financial', 'AT' => 'AZG §26', 'CH' => 'ArGV 1 Art. 73 (5 J.)'],
+        ],
+
+        // GPS-Rohspur (location_points): Tage statt Jahre; days_source zeigt
+        // auf die bestehende Frist location.retention_days (ENV
+        // LOCATION_RETENTION_DAYS, 0 = unbegrenzt). Vollzug: der tägliche
+        // location:purge-points-Job löscht verarbeitete Punkte selbst —
+        // hier bewusst KEINE Scan-Policy (keine Doppel-Löschung).
+        'location_points' => [
+            'label' => 'Standort-Rohdaten (GPS-Punkte)',
+            'days_source' => 'location.retention_days',
+            'basis' => ['DE' => 'Art. 5 Abs. 1 lit. c/e DSGVO (Datenminimierung); Vollzug: location:purge-points', 'AT' => 'Art. 5 DSGVO', 'CH' => 'DSG (Zweckbindung)'],
+        ],
+
+        // Allgemeine Dokumente ohne Steuer-/Handelsrecht-Bezug: NUR Ausweis/
+        // Review im MVP, kein Auto-Purge und keine Scan-Policy — die
+        // steuerrelevanten Dokumenttypen laufen über documents_invoice/gobd.
+        'documents_general' => [
+            'label' => 'Dokumente (ohne Steuer-/Handelsrecht-Bezug)',
+            'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            'basis' => ['DE' => '§195 BGB (Regelverjährung) — nur Ausweis, kein Auto-Purge', 'AT' => '§1489 ABGB', 'CH' => 'OR Art. 127/128'],
         ],
     ],
 ];

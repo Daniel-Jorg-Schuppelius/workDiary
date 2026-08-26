@@ -103,32 +103,32 @@
 
     <div class="mt-6 grid grid-cols-2 gap-4 text-sm md:grid-cols-4">
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-base-content/60">{{ __('Von') }}</p>
+            <p class="mb-1 text-xs text-muted">{{ __('Von') }}</p>
             <p class="text-base-content">{{ $diary->start_at?->fdatetime() ?? '—' }}</p>
         </div>
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-base-content/60">{{ __('Bis') }}</p>
+            <p class="mb-1 text-xs text-muted">{{ __('Bis') }}</p>
             <p class="text-base-content">{{ $diary->end_at?->fdatetime() ?? '—' }}</p>
         </div>
         @if ($diary->customer)
             <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-                <p class="mb-1 text-xs text-base-content/60">{{ __('Kunde') }}</p>
+                <p class="mb-1 text-xs text-muted">{{ __('Kunde') }}</p>
                 <p class="text-base-content">{{ $diary->customer->name }}@if ($diary->customer->company) — {{ $diary->customer->company }}@endif</p>
             </div>
         @endif
         {{-- Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5). --}}
         @if ($diary->asset)
             <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-                <p class="mb-1 text-xs text-base-content/60">{{ __('Objekt/Asset') }}</p>
+                <p class="mb-1 text-xs text-muted">{{ __('Objekt/Asset') }}</p>
                 <p class="text-base-content"><a href="{{ route('assets.show', $diary->asset) }}" class="link link-hover">{{ $diary->asset->name }}</a></p>
             </div>
         @endif
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-base-content/60">{{ __('Erstellt') }}</p>
+            <p class="mb-1 text-xs text-muted">{{ __('Erstellt') }}</p>
             <p class="text-base-content">{{ $diary->created_at->fdatetime() }}</p>
         </div>
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
-            <p class="mb-1 text-xs text-base-content/60">{{ __('Geändert') }}</p>
+            <p class="mb-1 text-xs text-muted">{{ __('Geändert') }}</p>
             <p class="text-base-content">{{ $diary->updated_at->diffForHumans() }}</p>
         </div>
     </div>
@@ -139,17 +139,17 @@
         <p class="mb-4 font-['Space_Grotesk'] font-semibold text-base-content">Legacy-Original (tagebuch #{{ $legacyEntry->id }})</p>
         <div class="grid gap-4 md:grid-cols-2">
             <div>
-                <p class="mb-2 text-xs text-base-content/60">Inhalt (original)</p>
+                <p class="mb-2 text-xs text-muted">Inhalt (original)</p>
                 <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($legacyEntry->inhalt, 400) }}</p>
             </div>
             @if ($legacyEntry->antwort)
                 <div>
-                    <p class="mb-2 text-xs text-base-content/60">Antwort (original)</p>
+                    <p class="mb-2 text-xs text-muted">Antwort (original)</p>
                     <p class="text-sm leading-relaxed whitespace-pre-wrap text-base-content/80">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($legacyEntry->antwort, 400) }}</p>
                 </div>
             @endif
         </div>
-        <p class="mt-4 text-xs text-base-content/60">Autor: {{ optional($legacyEntry->author)->uname ?? '—' }} · gelesen={{ $legacyEntry->gelesen }}</p>
+        <p class="mt-4 text-xs text-muted">Autor: {{ optional($legacyEntry->author)->uname ?? '—' }} · gelesen={{ $legacyEntry->gelesen }}</p>
     </section>
 @endif
 
@@ -168,6 +168,9 @@
 
 {{-- Formulare (Feature 032): ausgefüllte Formulare + „Formular ausfüllen" --}}
 @include('forms._panel', ['subject' => $diary, 'subjectKind' => 'diary'])
+
+{{-- VOB/B-Schreiben (Feature 062, MVP-728): Anzeige der Schreiben, deren Anlass dieser Eintrag ist --}}
+@include('construction-notices._diary_panel', ['diary' => $diary])
 
 {{-- Wissensbasis (Feature 011): verknüpfte Artikel + Vorschläge zum Auftrag --}}
 @include('knowledge._context_card', ['subject' => $diary, 'subjectKind' => 'diary', 'texts' => [(string) $diary->title, (string) $diary->content]])

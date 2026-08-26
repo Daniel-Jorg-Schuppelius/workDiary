@@ -29,7 +29,7 @@
     </x-filter-bar>
 
     @if (empty($suggestions))
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>'
+        <x-empty-state framed icon="local_shipping"
                        :title="__('procurement.ui.none')" />
     @else
         {{-- Übernehmen-Aktion VOR der Voll-Höhe-Tabelle (scroll=flex):

@@ -52,7 +52,7 @@
                         <x-status-badge tone="info" size="xs" class="ml-2">{{ __('access.badge.system') }}</x-status-badge>
                     @endif
                 </td>
-                <td class="font-mono text-xs text-base-content/60">{{ $group->slug }}</td>
+                <td class="font-mono text-xs text-muted">{{ $group->slug }}</td>
                 <td>{{ $group->members_count }}</td>
                 <td class="text-sm text-base-content/70">{{ $group->description }}</td>
                 <td class="text-right">
@@ -74,7 +74,7 @@
             </tr>
         @empty
             <x-table.empty :colspan="5"
-                icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>'
+                icon="groups"
                 :title="__('access.empty.groups')" compact />
         @endforelse
     </x-table>

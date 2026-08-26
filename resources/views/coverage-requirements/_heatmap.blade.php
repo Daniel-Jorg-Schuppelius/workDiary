@@ -53,13 +53,13 @@
             'over'  => 'bg-info/20 text-info',
             'tight' => 'bg-warning/20 text-warning',
             'ok'    => 'bg-success/20 text-success',
-            default => 'bg-base-200 text-base-content/40',
+            default => 'bg-base-200 text-muted',
         };
     };
 @endphp
 
 @if ($types->isEmpty())
-    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">table_view</span>' :title="__('Keine Schichttypen im Plan vorhanden.')" compact />
+    <x-empty-state icon="table_view" :title="__('Keine Schichttypen im Plan vorhanden.')" compact />
 @else
     <div class="overflow-x-auto rounded-box border border-base-300">
         <table class="table table-xs w-full">
@@ -84,7 +84,7 @@
                     @endphp
                     <tr class="{{ $isWeekend ? 'bg-base-200/40' : '' }} {{ $isSunday ? 'text-error' : '' }}">
                         <td class="whitespace-nowrap font-medium">
-                            <span class="text-xs {{ $isSunday ? 'text-error' : 'text-base-content/60' }}">{{ $day->isoFormat('dd') }}</span>
+                            <span class="text-xs {{ $isSunday ? 'text-error' : 'text-muted' }}">{{ $day->isoFormat('dd') }}</span>
                             {{ $day->format('d.m.') }}
                         </td>
                         @foreach ($types as $st)
@@ -124,7 +124,7 @@
         </table>
     </div>
     @if (!$compact)
-        <div class="mt-2 flex flex-wrap gap-3 text-xs text-base-content/60">
+        <div class="mt-2 flex flex-wrap gap-3 text-xs text-muted">
             <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('under') }}"></span> {{ __('Unterbesetzt') }}</span>
             <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('tight') }}"></span> {{ __('Gerade noch ausreichend') }}</span>
             <span class="flex items-center gap-1"><span class="inline-block h-3 w-3 rounded {{ $statusClass('ok') }}"></span> {{ __('Soll erfüllt') }}</span>
@@ -140,7 +140,7 @@
         @if ($qualGapRows !== [])
             <div class="mt-3 rounded-box border border-error/30 bg-error/5 p-3">
                 <div class="mb-1 flex items-center gap-1 text-sm font-semibold text-error">
-                    <span class="material-symbols-outlined text-base" aria-hidden="true">school</span>
+                    <x-icon name="school" class="text-base" />
                     {{ __('Qualifikations-Mindestbesetzung verfehlt') }}
                 </div>
                 <ul class="space-y-0.5 text-xs">

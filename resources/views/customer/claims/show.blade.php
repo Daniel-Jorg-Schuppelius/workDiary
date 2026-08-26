@@ -42,7 +42,7 @@
     <div class="card bg-base-100 shadow">
         <div class="card-body">
             <h2 class="card-title text-base">{{ __('Nachreichung') }}</h2>
-            <p class="text-sm text-base-content/60">{{ __('Ergänzende Informationen zu Ihrer Reklamation übermitteln.') }}</p>
+            <p class="text-sm text-muted">{{ __('Ergänzende Informationen zu Ihrer Reklamation übermitteln.') }}</p>
             <form method="POST" action="{{ route('customer.claims.note', $claim) }}" class="space-y-2">
                 @csrf
                 <textarea name="note" rows="3" class="textarea textarea-bordered w-full" required minlength="3" maxlength="2000" placeholder="{{ __('Ihre Nachricht …') }}"></textarea>

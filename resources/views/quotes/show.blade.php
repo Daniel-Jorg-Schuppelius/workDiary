@@ -18,7 +18,7 @@
     @endif
     @if (session('acceptance_url'))
         <div class="alert alert-info">
-            <span class="material-symbols-outlined" aria-hidden="true">link</span>
+            <x-icon name="link" />
             <div class="min-w-0">
                 <div class="font-bold">{{ __('Annahme-Link für den Kunden (wird nur EINMAL angezeigt):') }}</div>
                 <div class="break-all font-mono text-xs">{{ session('acceptance_url') }}</div>
@@ -29,7 +29,7 @@
 
     @if ($quote->isExpired())
         <div class="alert alert-warning text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">timer_off</span>
+            <x-icon name="timer_off" />
             {{ __('Die Bindefrist (:date) ist abgelaufen.', ['date' => optional($quote->valid_until)->fdate()]) }}
         </div>
     @endif
@@ -45,10 +45,21 @@
                 <x-icon-btn icon="picture_as_pdf" tone="ghost" size="sm"
                             :href="route('quotes.pdf', $quote)"
                             show-label>{{ __('PDF') }}</x-icon-btn>
+                {{-- Feature 128 (MVP-692): PDF-Mailversand — getrennt vom Annahme-Token-Flow („Versenden"). --}}
+                @if ($quote->status !== 'draft')
+                    <x-icon-btn icon="mail" tone="ghost" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('quotes.mail.form', $quote)"
+                                show-label>{{ __('Per E-Mail senden') }}</x-icon-btn>
+                @endif
                 @if (in_array($quote->status, ['accepted', 'partially_accepted'], true))
                     <x-icon-btn icon="assignment_turned_in" tone="ghost" size="sm"
                                 :href="route('quotes.order-confirmation', $quote)"
                                 show-label>{{ __('Auftragsbestätigung (PDF)') }}</x-icon-btn>
+                    <x-icon-btn icon="forward_to_inbox" tone="ghost" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('quotes.order-confirmation.mail.form', $quote)"
+                                show-label>{{ __('AB per E-Mail') }}</x-icon-btn>
                 @endif
                 @can('update', $quote)
                     <x-icon-btn icon="add" tone="primary" size="sm"
@@ -119,9 +130,20 @@
         $aiDraft = $quote->status === 'draft' && auth()->user()?->can('update', $quote);
         $aiSuggestEnabled = $aiDraft && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM);
         $aiSuggestions = $aiSuggestEnabled
-            ? $aiViewData->openSuggestionsFor((new \App\Models\QuoteItem)->getMorphClass(), $quote->items)
+            ? $aiViewData->openSuggestionsFor((new \App\Models\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Suggestions\ItemTextSuggestionService::CAPABILITY_QUOTE_ITEM)
             : collect();
         $aiColspan = 7 + ($quote->decided_at !== null ? 1 : 0);
+        // Belegsprache-Übersetzung (Feature 148, MVP-732): nur wenn die
+        // Belegsprache des Kunden von der Organisationssprache abweicht.
+        $aiTranslateEnabled = $aiDraft
+            && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)
+            && \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::isTranslatable($quote);
+        $aiTranslations = $aiTranslateEnabled
+            ? $aiViewData->openSuggestionsFor((new \App\Models\QuoteItem)->getMorphClass(), $quote->items, \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)
+            : collect();
+        $aiTermsSuggestion = $aiTranslateEnabled
+            ? $aiViewData->openSuggestionsFor((new \App\Models\Quote)->getMorphClass(), collect([$quote]), \App\Services\Ai\Suggestions\DocumentTranslationSuggestionService::CAPABILITY)->get($quote->id)
+            : null;
     @endphp
     @include('ai._learn_prompt')
 
@@ -146,7 +168,7 @@
         @forelse ($quote->items as $item)
             <tr>
                 <td>{{ $item->position }}</td>
-                <td>{{ $item->description }}</td>
+                <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif</td>
                 <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
                 <td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} EUR</td>
                 <td class="text-right">{{ $item->tax_rate !== null ? rtrim(rtrim($item->tax_rate?->getNumericValue() ?? '0', '0'), '.') : '—' }}</td>
@@ -159,6 +181,11 @@
                         @if ($aiSuggestEnabled)
                             <x-action-form :action="route('ai.suggestions.quote-item', [$quote, $item])">
                                 <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest')" />
+                            </x-action-form>
+                        @endif
+                        @if ($aiTranslateEnabled)
+                            <x-action-form :action="route('ai.assist.quote-item-translate', [$quote, $item])">
+                                <x-icon-btn icon="translate" size="xs" tone="info" type="submit" :title="__('ai.assist.translate_document')" />
                             </x-action-form>
                         @endif
                         <x-icon-btn icon="edit" size="xs" tone="ghost"
@@ -191,14 +218,45 @@
                     </td>
                 </tr>
             @endif
+            @if ($aiDraft && ($aiTranslations[$item->id] ?? null) !== null)
+                <tr data-ai-translation-row>
+                    <td colspan="{{ $aiColspan }}">
+                        <x-ai-suggestion
+                            :original="$aiTranslations[$item->id]->original"
+                            :suggestion="$aiTranslations[$item->id]->suggestion"
+                            :provider="$aiTranslations[$item->id]->provider"
+                            :fallback="$aiTranslations[$item->id]->fallback_used"
+                            :cached="$aiTranslations[$item->id]->from_cache"
+                            :accept-action="route('ai.assist.accept', $aiTranslations[$item->id])"
+                            :reject-action="route('ai.assist.reject', $aiTranslations[$item->id])"
+                            field-name="text"
+                        />
+                    </td>
+                </tr>
+            @endif
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">request_quote</span>' :colspan="6" :title="__('Keine Positionen.')" compact />
+            <x-table.empty icon="request_quote" :colspan="6" :title="__('Keine Positionen.')" compact />
         @endforelse
     </x-table>
 
     @if ($quote->terms)
         <x-card :title="__('Bedingungen / Leistungsumfang')">
+            @if ($aiTranslateEnabled)
+                <x-slot:actions>
+                    <x-action-form :action="route('ai.assist.quote-terms-translate', $quote)">
+                        <x-icon-btn icon="translate" size="xs" tone="info" type="submit" show-label
+                                    :title="__('ai.assist.translate_terms')">{{ __('ai.assist.translate_terms') }}</x-icon-btn>
+                    </x-action-form>
+                </x-slot:actions>
+            @endif
             <p class="whitespace-pre-line text-sm">{{ $quote->terms }}</p>
+            @if ($aiTermsSuggestion !== null)
+                @include('ai._insight', [
+                    'suggestion' => $aiTermsSuggestion,
+                    'acceptAction' => route('ai.assist.accept', $aiTermsSuggestion),
+                    'showOriginal' => true,
+                ])
+            @endif
         </x-card>
     @endif
 
@@ -212,7 +270,7 @@
                         @foreach ($quote->items as $item)
                             <label class="label cursor-pointer justify-start gap-2">
                                 <input type="checkbox" name="item_ids[]" value="{{ $item->sqid }}" class="checkbox checkbox-sm" @checked(! $item->optional)>
-                                <span class="label-text">{{ $item->position }}. {{ $item->description }} @if ($item->optional)<span class="text-xs text-base-content/60">({{ __('Option') }})</span>@endif</span>
+                                <span class="label-text">{{ $item->position }}. {{ $item->description }} @if ($item->optional)<span class="text-xs text-muted">({{ __('Option') }})</span>@endif</span>
                             </label>
                         @endforeach
                     </div>
@@ -221,7 +279,7 @@
                         <button type="submit" name="decision" value="accept" class="btn btn-primary btn-sm">{{ __('Annahme dokumentieren') }}</button>
                         <button type="submit" name="decision" value="reject" class="btn btn-outline btn-sm">{{ __('Ablehnung dokumentieren') }}</button>
                     </div>
-                    <p class="text-xs text-base-content/60">{{ __('Die Auswahl der Positionen bestimmt Voll- oder Teilannahme; der Stand wird eingefroren (kein Rückfluss).') }}</p>
+                    <p class="text-xs text-muted">{{ __('Die Auswahl der Positionen bestimmt Voll- oder Teilannahme; der Stand wird eingefroren (kein Rückfluss).') }}</p>
                 </form>
             </x-card>
         @endcan

@@ -66,7 +66,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">badge</span>' :colspan="6" :title="__('Keine Fahrer gefunden')" compact />
+            <x-table.empty icon="badge" :colspan="6" :title="__('Keine Fahrer gefunden')" compact />
         @endforelse
     </x-table>
 </x-page-shell>

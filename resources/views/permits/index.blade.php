@@ -44,7 +44,7 @@
     </x-filter-bar>
 
     @if ($permits->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">verified</span>' />
+        <x-empty-state framed icon="verified" />
     @else
         <x-table table-sort="server"
                  :route="route('permits.index')"
@@ -67,7 +67,7 @@
                     <td class="font-medium">
                         {{ $permit->title }}
                         @if ($permit->reference_no)
-                            <div class="text-xs text-base-content/60">{{ $permit->reference_no }}</div>
+                            <div class="text-xs text-muted">{{ $permit->reference_no }}</div>
                         @endif
                     </td>
                     <td class="text-base-content/70">{{ $permit->authority ?? '—' }}</td>

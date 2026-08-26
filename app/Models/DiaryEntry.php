@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Diary\{LocationMode, Mode, Priority, Status};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasCommunicationNotes, HasSqid, HasTags, Searchable};
+use App\Support\Query\DateRange;
 use Database\Factories\DiaryEntryFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -101,9 +102,6 @@ class DiaryEntry extends Model {
         'content',
         'response',
         'status',
-        'planned_start_at',
-        'planned_end_at',
-        'planned_duration_min',
         'accepted_at',
         'accepted_by_user_id',
         'started_at',
@@ -163,9 +161,6 @@ class DiaryEntry extends Model {
         'window_start_date' => 'date',
         'window_end_date' => 'date',
         'status' => Status::class,
-        'planned_start_at' => 'immutable_datetime',
-        'planned_end_at' => 'immutable_datetime',
-        'planned_duration_min' => 'integer',
         'accepted_at' => 'immutable_datetime',
         'started_at' => 'immutable_datetime',
         'paused_at' => 'immutable_datetime',
@@ -186,25 +181,6 @@ class DiaryEntry extends Model {
         'location_mode' => LocationMode::class,
         'mode' => Mode::class,
     ];
-
-    protected static function booted(): void {
-        static::saving(function (DiaryEntry $entry): void {
-            if (! in_array($entry->status, [Status::Planned, Status::Accepted], true)) {
-                return;
-            }
-
-            if ($entry->isDirty('start_at') || $entry->planned_start_at === null) {
-                // start_at ist 'datetime' (Carbon), planned_start_at 'immutable_datetime' — explizit wandeln.
-                $entry->planned_start_at = $entry->start_at?->toImmutable();
-            }
-            if ($entry->isDirty('end_at') || $entry->planned_end_at === null) {
-                $entry->planned_end_at = $entry->end_at?->toImmutable();
-            }
-            if ($entry->planned_duration_min === null) {
-                $entry->planned_duration_min = $entry->planned_minutes ?? $entry->service_minutes;
-            }
-        });
-    }
 
     /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo {
@@ -274,6 +250,15 @@ class DiaryEntry extends Model {
     /** @return MorphMany<Protocol, $this> */
     public function protocols(): MorphMany {
         return $this->morphMany(Protocol::class, 'subject')->latest('occurred_at');
+    }
+
+    /**
+     * VOB/B-Schreiben, deren Anlass dieser Eintrag ist (Feature 062, MVP-728).
+     *
+     * @return HasMany<\App\Models\Construction\ConstructionNotice, $this>
+     */
+    public function constructionNotices(): HasMany {
+        return $this->hasMany(\App\Models\Construction\ConstructionNotice::class, 'diary_entry_id');
     }
 
     /** @return BelongsTo<Protocol, $this> */
@@ -372,19 +357,20 @@ class DiaryEntry extends Model {
     public function scopeOverlappingDateRange(Builder $query, string $from, string $to): void {
         $query->where(function (Builder $q) use ($from, $to): void {
             $q->where(function (Builder $sub) use ($from, $to): void {
+                // Bereichsvergleich statt DATE(start_at): sonst bleibt
+                // diary_org_start_idx (organization_id, start_at) ungenutzt (A8).
                 $sub->where('mode', Mode::Fixed->value)
-                    ->whereDate('start_at', '<=', $to)
-                    ->whereRaw('DATE(COALESCE(end_at, start_at)) >= ?', [$from]);
+                    ->where('start_at', '<', DateRange::dayAfter($to))
+                    ->whereRaw('COALESCE(end_at, start_at) >= ?', [DateRange::dayStart($from)]);
             });
             $q->orWhere(function (Builder $sub) use ($from, $to): void {
-                $sub->where('mode', Mode::Deadline->value)
-                    ->whereDate('due_date', '>=', $from)
-                    ->whereDate('due_date', '<=', $to);
+                $sub->where('mode', Mode::Deadline->value);
+                DateRange::whereDateBetween($sub, 'due_date', $from, $to);
             });
             $q->orWhere(function (Builder $sub) use ($from, $to): void {
                 $sub->where('mode', Mode::Window->value)
-                    ->whereDate('window_end_date', '>=', $from)
-                    ->whereDate('window_start_date', '<=', $to);
+                    ->where('window_end_date', '>=', DateRange::day($from))
+                    ->where('window_start_date', '<=', DateRange::day($to));
             });
             $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
         });

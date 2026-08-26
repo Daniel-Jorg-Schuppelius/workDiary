@@ -83,7 +83,7 @@
                         @if ($package->file_hash !== null)
                             <span class="font-mono text-xs" title="{{ $package->file_hash }}">{{ substr($package->file_hash, 0, 12) }}…</span>
                         @else
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td class="text-base-content/70 text-xs">
@@ -96,7 +96,7 @@
                     </td>
                     <td class="text-center">
                         @if ($package->tokens->isEmpty())
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @else
                             <details>
                                 <summary class="cursor-pointer text-base-content/70">{{ $activeTokens }} / {{ $package->tokens->count() }}</summary>

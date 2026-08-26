@@ -81,7 +81,7 @@
                 <span class="label-text">{{ __('document.field.file') }} *</span>
                 <input type="file" name="file" required class="file-input file-input-bordered w-full"
                        accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.csv,.log,.zip,.docx,.xlsx">
-                <span class="label-text-alt mt-1 text-base-content/60">{{ __('document.hint.upload', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</span>
+                <span class="label-text-alt mt-1 text-muted">{{ __('document.hint.upload', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</span>
             </label>
             <label class="form-control sm:col-span-2">
                 <span class="label-text">{{ __('document.field.version_note') }}</span>

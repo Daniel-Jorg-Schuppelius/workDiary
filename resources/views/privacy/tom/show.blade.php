@@ -85,7 +85,7 @@
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Zugeordnete Verarbeitungstätigkeiten') }}</h2>
             @php $tomAssignments = $measure->assignments->whereNotNull('activity_id'); @endphp
             @if ($tomAssignments->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">link</span>' :title="__('Keine Zuordnung.')" compact />
+                <x-empty-state icon="link" :title="__('Keine Zuordnung.')" compact />
             @else
                 <ul class="text-sm space-y-1">
                     @foreach ($tomAssignments as $as)
@@ -108,14 +108,14 @@
         <x-card class="space-y-2">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Wirksamkeitsprüfungen') }}</h2>
             @if ($measure->reviews->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">fact_check</span>' :title="__('Noch keine Prüfung.')" compact />
+                <x-empty-state icon="fact_check" :title="__('Noch keine Prüfung.')" compact />
             @else
                 <ul class="text-sm space-y-1">
                     @foreach ($measure->reviews as $r)
                         <li class="rounded-box border border-base-300 px-3 py-2">
                             {{ $r->reviewed_at?->format('d.m.Y') }} — <span class="font-semibold">{{ $r->result->label() }}</span>
                             @if ($r->deviation) · {{ $r->deviation }} @endif
-                            @if ($r->due_at) <span class="text-base-content/60">({{ __('Folgemaßnahme bis') }} {{ $r->due_at->format('d.m.Y') }})</span> @endif
+                            @if ($r->due_at) <span class="text-muted">({{ __('Folgemaßnahme bis') }} {{ $r->due_at->format('d.m.Y') }})</span> @endif
                         </li>
                     @endforeach
                 </ul>

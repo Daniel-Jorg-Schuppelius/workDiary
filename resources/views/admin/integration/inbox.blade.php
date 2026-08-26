@@ -127,14 +127,14 @@
                         <span class="badge badge-sm badge-info">{{ $pluginNames[$g['plugin_id']] ?? $g['plugin_id'] }}</span>
                         @if ($form === 'asset')
                             <span class="font-semibold">{{ $g['alias'] ?: $g['remote_id'] }}</span>
-                            <span class="text-sm text-base-content/60">· {{ $g['provider'] }}</span>
+                            <span class="text-sm text-muted">· {{ $g['provider'] }}</span>
                         @elseif ($form === 'b2b_order')
                             <span class="font-semibold">{{ __('Bestellung') }} {{ $g['order_id'] }}</span>
-                            <span class="text-sm text-base-content/60">· {{ $g['customer_name'] ?? $g['buyer_name'] }}</span>
+                            <span class="text-sm text-muted">· {{ $g['customer_name'] ?? $g['buyer_name'] }}</span>
                             <span class="badge badge-sm badge-outline">{{ $g['source'] }}</span>
                         @elseif ($form === 'phone_number')
                             <span class="font-semibold">{{ $g['number'] }}</span>
-                            @if ($g['name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['name'] }}</span>@endif
+                            @if ($g['name'] ?? null)<span class="text-sm text-muted">· {{ $g['name'] }}</span>@endif
                             @foreach (($g['contact_sources'] ?? []) as $contactSource)
                                 <span class="badge badge-sm badge-info" title="{{ __('Treffer aus einem externen Kontaktverzeichnis') }}">{{ $contactSource }}</span>
                             @endforeach
@@ -144,10 +144,10 @@
                             @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Toggl-Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
                         @else
                             <span class="font-semibold">{{ $g['project_name'] ?: __('(ohne Projekt)') }}</span>
-                            @if ($g['client_name'] ?? null)<span class="text-sm text-base-content/60">· {{ $g['client_name'] }}</span>@endif
+                            @if ($g['client_name'] ?? null)<span class="text-sm text-muted">· {{ $g['client_name'] }}</span>@endif
                             @if ($g['workspace_name'] ?? null)<span class="badge badge-sm badge-outline" title="{{ __('Toggl-Workspace') }}">{{ $g['workspace_name'] }}</span>@endif
                         @endif
-                        <span class="ml-auto text-xs text-base-content/50">
+                        <span class="ml-auto text-xs text-muted">
                             @if ($form === 'b2b_order')
                                 {{ trans_choice(':count Position|:count Positionen', $g['count'], ['count' => $g['count']]) }}@if (($g['unmatched'] ?? 0) > 0) · <span class="text-warning">{{ __(':count ohne Artikel', ['count' => $g['unmatched']]) }}</span>@endif @if ($g['total'] ?? null) · {{ $g['total'] }}@endif
                             @else
@@ -160,7 +160,7 @@
                     @if (! empty($g['entries']))
                         @php $tz = \App\Support\Tz::current(); @endphp
                         <details class="mb-3">
-                            <summary class="cursor-pointer text-xs font-medium text-base-content/60">{{ __('Einträge anzeigen') }}</summary>
+                            <summary class="cursor-pointer text-xs font-medium text-muted">{{ __('Einträge anzeigen') }}</summary>
                             <div class="mt-2">
                                 <x-table :bare="true" size="xs">
                                     <x-slot:head>
@@ -182,12 +182,12 @@
                                                 <td class="whitespace-nowrap">{{ $entryStart?->format('H:i') }}–{{ $entryEnd?->format('H:i') }}</td>
                                                 <td class="text-right">{{ $e['minutes'] }}</td>
                                                 <td>{{ $e['description'] ?? '—' }}</td>
-                                                <td class="text-xs text-base-content/60">{{ $e['user_email'] ?? '—' }}</td>
+                                                <td class="text-xs text-muted">{{ $e['user_email'] ?? '—' }}</td>
                                             </tr>
                                         @endforeach
                                 </x-table>
                                 @if (($g['entries_more'] ?? 0) > 0)
-                                    <p class="mt-1 text-xs text-base-content/50">{{ __('… und :count weitere', ['count' => $g['entries_more']]) }}</p>
+                                    <p class="mt-1 text-xs text-muted">{{ __('… und :count weitere', ['count' => $g['entries_more']]) }}</p>
                                 @endif
                             </div>
                         </details>
@@ -276,7 +276,7 @@
                                     <option value="{{ $sqid }}">{{ $name }}</option>
                                 @endforeach
                             </select>
-                            <p class="w-full text-xs text-base-content/60 md:w-auto">{{ __('Die Zuordnung wird gemerkt; künftige Importe buchen diese Quell-E-Mail automatisch auf den gewählten Benutzer.') }}</p>
+                            <p class="w-full text-xs text-muted md:w-auto">{{ __('Die Zuordnung wird gemerkt; künftige Importe buchen diese Quell-E-Mail automatisch auf den gewählten Benutzer.') }}</p>
                             <div class="ms-auto flex flex-wrap items-center justify-end gap-2">
                                 <button type="submit" form="{{ $dismissFormId }}" class="btn btn-sm btn-ghost">{{ __('Gruppe verwerfen') }}</button>
                                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Benutzer zuordnen und buchen') }}</button>
@@ -440,7 +440,7 @@
                         @unless ($item->isOpen())
                             <span class="badge badge-sm badge-success">{{ $statusLabels[$item->status] ?? $item->status }}</span>
                         @endunless
-                        <span class="ml-auto text-xs text-base-content/50">{{ optional($item->created_at)->format('d.m.Y H:i') }}</span>
+                        <span class="ml-auto text-xs text-muted">{{ optional($item->created_at)->format('d.m.Y H:i') }}</span>
                     </div>
 
                     <div class="mb-3">
@@ -449,7 +449,7 @@
                             {{-- Gespeicherte Klartexte laufen durch __(): bekannte
                                  Meldungen („extern nicht bestätigt") werden übersetzt,
                                  unbekannte bleiben unverändert. --}}
-                            <div class="text-sm text-base-content/60">{{ __($item->display_subtitle) }}</div>
+                            <div class="text-sm text-muted">{{ __($item->display_subtitle) }}</div>
                         @endif
                     </div>
 
@@ -473,17 +473,17 @@
                             @endif
                             <span class="tabular-nums">· {{ \App\Support\Formats::duration((int) $timeEntry->minutes, 'clock') }}</span>
                             @if ($timeEntry->project)
-                                <span>· {{ $timeEntry->project->name }}@if ($timeEntry->project->customer) <span class="text-base-content/60">({{ $timeEntry->project->customer->name }})</span>@endif</span>
+                                <span>· {{ $timeEntry->project->name }}@if ($timeEntry->project->customer) <span class="text-muted">({{ $timeEntry->project->customer->name }})</span>@endif</span>
                             @endif
                             @if ($timeEntry->user)
-                                <span class="text-base-content/60">· {{ $timeEntry->user->name }}</span>
+                                <span class="text-muted">· {{ $timeEntry->user->name }}</span>
                             @endif
                             @if (trim((string) $timeEntry->description) !== '')
                                 <div class="w-full text-base-content/70">{{ \Illuminate\Support\Str::limit((string) $timeEntry->description, 160) }}</div>
                             @endif
                         </div>
                     @elseif ($item->referenceable_type === $timeMorph && $item->referenceable_id !== null)
-                        <div class="mb-3 text-sm text-base-content/60">{{ __('Zeiteintrag #:id existiert nicht mehr', ['id' => $item->referenceable_id]) }}</div>
+                        <div class="mb-3 text-sm text-muted">{{ __('Zeiteintrag #:id existiert nicht mehr', ['id' => $item->referenceable_id]) }}</div>
                     @endif
                     @if ($snapshotSides !== [] || $remoteMissing)
                         <div class="mb-3 space-y-1 text-xs">
@@ -640,7 +640,7 @@
                             </form>
                         </div>
                     @else
-                        <div class="text-right text-xs text-base-content/50">
+                        <div class="text-right text-xs text-muted">
                             {{ optional($item->resolved_at)->format('d.m.Y H:i') }}
                         </div>
                     @endif

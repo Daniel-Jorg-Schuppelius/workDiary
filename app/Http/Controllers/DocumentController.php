@@ -14,6 +14,7 @@ use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Asset, Customer, DiaryEntry, Document, DocumentVersion, Project, User};
 use App\Services\Attachments\FileAttacher;
 use App\Services\Document\DocumentService;
+use App\Services\Hr\PersonnelFileService;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
@@ -33,30 +34,18 @@ class DocumentController extends Controller {
         'project' => Project::class,
         'diary' => DiaryEntry::class,
         'asset' => Asset::class,
+        // Personalakte (Feature 141): eigener hrFile-Zugriffskreis, siehe DocumentPolicy.
+        'user' => User::class,
     ];
 
     // Größenlimit: {@see FileAttacher::maxKb()} (wie AttachmentController, org-konfigurierbar).
 
-    /** @var array<int, string> Erlaubte Datei-Endungen (analog AttachmentController). */
-    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp', 'pdf', 'txt', 'csv', 'log', 'zip', 'docx', 'xlsx'];
-
-    /** @var array<int, string> Serverseitig akzeptierte MIME-Typen (PHP Fileinfo, nicht Client-Header). */
-    private const ALLOWED_MIMES = [
-        'image/jpeg',
-        'image/png',
-        'image/gif',
-        'image/webp',
-        'application/pdf',
-        'text/plain',
-        'text/csv',
-        'application/zip',
-        'application/x-zip-compressed',
-        'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    ];
+    // Erlaubte Endungen/MIME-Typen: {@see DocumentService::ALLOWED_EXTENSIONS} /
+    // {@see DocumentService::ALLOWED_MIMES} (MVP-707: geteilt mit dem Dokument-ZIP-Import).
 
     public function __construct(
         private readonly DocumentService $service,
+        private readonly PersonnelFileService $personnelFiles,
     ) {}
 
     public function index(Request $request): View {
@@ -133,6 +122,14 @@ class DocumentController extends Controller {
     }
 
     public function create(Request $request): View {
+        // Personalakte (Feature 141): eigener Dialog + hrFile-Kreis statt document.create.
+        if ((string) $request->query('documentable_kind', '') === 'user') {
+            $member = $this->findMember((string) $request->query('documentable_id', ''));
+            Gate::authorize('createPersonnelFile', [Document::class, $member]);
+
+            return view('hr.personnel-file._form_dialog', ['member' => $member, 'document' => null]);
+        }
+
         Gate::authorize('create', Document::class);
 
         [$documentableKind, $documentableId] = $this->resolveOptionalDocumentableFromRequest($request);
@@ -145,6 +142,26 @@ class DocumentController extends Controller {
     }
 
     public function store(Request $request): RedirectResponse {
+        // Personalakte (Feature 141): Upload über den hrFile-Kreis, vertraulich erzwungen.
+        if ((string) $request->input('documentable_kind', '') === 'user') {
+            $member = $this->findMember((string) $request->input('documentable_id', ''));
+            Gate::authorize('createPersonnelFile', [Document::class, $member]);
+
+            $data = $request->validate(PersonnelFileService::rules(includeFile: true));
+            /** @var User $creator */
+            $creator = Auth::user();
+            /** @var UploadedFile $file */
+            $file = $request->file('file');
+            $this->service->assertAllowedFile($file);
+
+            $document = $this->personnelFiles->create($member, $creator, $data, $file);
+
+            return redirect()
+                ->back()
+                ->with('success', __('hr.personnel_file.flash.created'))
+                ->withFragment('document-' . $document->id);
+        }
+
         Gate::authorize('create', Document::class);
 
         $data = $this->validateDocument($request, includeFile: true);
@@ -158,7 +175,7 @@ class DocumentController extends Controller {
         $creator = Auth::user();
         /** @var UploadedFile $file */
         $file = $request->file('file');
-        $this->assertAllowedFile($file);
+        $this->service->assertAllowedFile($file);
 
         $document = $this->service->create($documentable, $creator, $data, $file);
 
@@ -171,6 +188,10 @@ class DocumentController extends Controller {
     public function edit(Document $document): View {
         Gate::authorize('update', $document);
 
+        if ($document->isPersonnelFile()) {
+            return view('hr.personnel-file._form_dialog', ['member' => $document->documentable, 'document' => $document]);
+        }
+
         return view('documents._form_dialog', [
             'document' => $document,
             'documentableKind' => $this->kindFor($document),
@@ -181,10 +202,20 @@ class DocumentController extends Controller {
     public function update(Request $request, Document $document): RedirectResponse {
         Gate::authorize('update', $document);
 
-        $data = $this->validateDocument($request, includeFile: false);
-
         /** @var User $actor */
         $actor = Auth::user();
+
+        if ($document->isPersonnelFile()) {
+            $data = $request->validate(PersonnelFileService::rules(includeFile: false));
+            $this->personnelFiles->update($document, $actor, $data);
+
+            return redirect()
+                ->back()
+                ->with('success', __('hr.personnel_file.flash.updated'))
+                ->withFragment('document-' . $document->id);
+        }
+
+        $data = $this->validateDocument($request, includeFile: false);
         $this->service->update($document, $actor, $data);
 
         return redirect()
@@ -252,7 +283,7 @@ class DocumentController extends Controller {
         $actor = Auth::user();
         /** @var UploadedFile $file */
         $file = $request->file('file');
-        $this->assertAllowedFile($file);
+        $this->service->assertAllowedFile($file);
 
         $version = $this->service->addVersion($document, $actor, $file, $data['note'] ?? null);
 
@@ -286,6 +317,15 @@ class DocumentController extends Controller {
             abort(404);
         }
 
+        // Personalakte (Feature 141): jeder Abruf wird auditiert — auch der eigene.
+        if ($document->isPersonnelFile()) {
+            $document->audit('hrFile.downloaded', [
+                'version_no' => $version->version_no,
+                'original_name' => $version->original_name,
+                'member_user_id' => $document->documentable_id,
+            ]);
+        }
+
         return response()->download($disk->path($version->path), $version->original_name);
     }
 
@@ -306,7 +346,12 @@ class DocumentController extends Controller {
 
         /** @var User $actor */
         $actor = Auth::user();
-        $this->service->delete($document, $actor);
+        if ($document->isPersonnelFile()) {
+            // Personalakte (Feature 141): Vernichtung statt Papierkorb.
+            $this->personnelFiles->destroy($document, $actor, 'manual');
+        } else {
+            $this->service->delete($document, $actor);
+        }
 
         return redirect()
             ->back()
@@ -349,6 +394,10 @@ class DocumentController extends Controller {
         if ($user === null || ! $document->confidential || (int) $document->created_by_user_id === (int) $user->id) {
             return;
         }
+        // Eigenauskunft der Personalakte (Feature 141) ist kein Fremdzugriff.
+        if ($document->isPersonnelFile() && (int) $document->documentable_id === (int) $user->id) {
+            return;
+        }
 
         \App\Models\AuditLog::query()->create([
             'organization_id' => $document->organization_id,
@@ -358,17 +407,6 @@ class DocumentController extends Controller {
             'auditable_id' => $document->id,
             'changes' => ['title' => $document->title],
         ]);
-    }
-
-    /** Erweiterungs- und Server-MIME-Prüfung analog AttachmentController. */
-    private function assertAllowedFile(UploadedFile $file): void {
-        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-        $serverMime = $file->getMimeType() ?? '';
-        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true) || ! in_array($serverMime, self::ALLOWED_MIMES, true)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
-                'file' => (string) __('Dateityp nicht erlaubt.'),
-            ]);
-        }
     }
 
     /**
@@ -399,13 +437,31 @@ class DocumentController extends Controller {
             abort(404);
         }
 
+        $query = $class::query();
+        if ($class === User::class) {
+            // users trägt keinen globalen Org-Scope — Mandantengrenze explizit.
+            /** @var User|null $auth */
+            $auth = Auth::user();
+            $query->where('organization_id', $auth?->organization_id);
+        }
+
         /** @var Model|null $documentable */
-        $documentable = $class::query()->find($id);
+        $documentable = $query->find($id);
         if ($documentable === null) {
             abort(404);
         }
 
         return $documentable;
+    }
+
+    /** Mitglied der eigenen Org für die Personalakte (Feature 141). */
+    private function findMember(string $rawId): User {
+        $member = $this->findDocumentable('user', $rawId);
+        if (! $member instanceof User) {
+            abort(404);
+        }
+
+        return $member;
     }
 
     private function kindFor(Document $document): ?string {

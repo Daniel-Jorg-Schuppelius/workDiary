@@ -70,7 +70,7 @@
             <x-card>
                 <x-slot:title>
                     <span class="flex items-center gap-2">
-                        <span class="material-symbols-outlined text-base" aria-hidden="true">{{ $group['icon'] }}</span>
+                        <x-icon name="{{ $group['icon'] }}" class="text-base" />
                         {{ $group['label'] }}
                         <span class="badge badge-sm">{{ count($group['items']) }}</span>
                     </span>
@@ -79,11 +79,11 @@
                     @foreach ($group['items'] as $item)
                         <li>
                             <a href="{{ $item['url'] }}" class="flex items-start gap-3 rounded-box px-2 py-2 hover:bg-base-200">
-                                <span class="material-symbols-outlined text-base text-base-content/60" aria-hidden="true">{{ $group['icon'] }}</span>
+                                <x-icon name="{{ $group['icon'] }}" class="text-base text-muted" />
                                 <span class="min-w-0 flex-1">
                                     <span class="block truncate text-sm font-medium">{{ $item['title'] }}</span>
                                     @if ($item['subtitle'])
-                                        <span class="block truncate text-xs text-base-content/60">{{ $item['subtitle'] }}</span>
+                                        <span class="block truncate text-xs text-muted">{{ $item['subtitle'] }}</span>
                                     @endif
                                 </span>
                             </a>

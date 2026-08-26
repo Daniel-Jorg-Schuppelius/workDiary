@@ -40,7 +40,7 @@
                   :from="old('issued_on', '')"
                   :to="old('valid_until', '')" />
 
-    <p class="text-xs text-base-content/60">{{ __('procurement.credentials.valid_until_hint') }}</p>
+    <p class="text-xs text-muted">{{ __('procurement.credentials.valid_until_hint') }}</p>
 
     <x-input-field name="note" type="text" maxlength="500"
                    :label="__('procurement.credentials.column.note')"

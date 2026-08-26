@@ -41,7 +41,7 @@
                 <textarea id="tedc-recipients" name="mail_recipients_raw" rows="3"
                           class="textarea textarea-bordered w-full font-mono text-sm"
                           placeholder="lohn@example.org">{{ $recipientsRaw }}</textarea>
-                <p class="text-xs text-base-content/60">{{ __('wage_types.field.mail_recipients_help') }}</p>
+                <p class="text-xs text-muted">{{ __('wage_types.field.mail_recipients_help') }}</p>
                 @error('mail_recipients')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
                 @error('mail_recipients.*')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
@@ -88,7 +88,7 @@
                 <input id="tedc-password" type="password" name="sftp_password" maxlength="255"
                        class="input input-bordered w-full" autocomplete="new-password">
                 @if ($config->exists && ($config->sftp_password ?? '') !== '')
-                    <p class="text-xs text-base-content/60">{{ __('wage_types.field.sftp_password_help') }}</p>
+                    <p class="text-xs text-muted">{{ __('wage_types.field.sftp_password_help') }}</p>
                 @endif
                 @error('sftp_password')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
@@ -98,7 +98,7 @@
                 <input id="tedc-root" type="text" name="sftp_root" maxlength="190"
                        value="{{ old('sftp_root', $config->sftp_root) }}"
                        class="input input-bordered w-full font-mono" placeholder="/upload">
-                <p class="text-xs text-base-content/60">{{ __('wage_types.field.sftp_root_help') }}</p>
+                <p class="text-xs text-muted">{{ __('wage_types.field.sftp_root_help') }}</p>
                 @error('sftp_root')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
         </x-form-group>

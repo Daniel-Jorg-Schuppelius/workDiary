@@ -35,9 +35,9 @@
                 <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
                     <div class="text-sm">
                         <span class="font-semibold">{{ optional($comment->user)->name ?? '—' }}</span>
-                        <span class="text-base-content/60">· {{ $comment->created_at->diffForHumans() }}</span>
+                        <span class="text-muted">· {{ $comment->created_at->diffForHumans() }}</span>
                         @if ($comment->updated_at->gt($comment->created_at))
-                            <span class="text-xs text-base-content/50">({{ __('bearbeitet') }})</span>
+                            <span class="text-xs text-muted">({{ __('bearbeitet') }})</span>
                         @endif
                     </div>
                     <div class="flex gap-1">
@@ -68,7 +68,7 @@
                 @endcan
             </article>
         @empty
-            <p class="text-sm text-base-content/60">{{ $emptyText }}</p>
+            <p class="text-sm text-muted">{{ $emptyText }}</p>
         @endforelse
     </div>
 

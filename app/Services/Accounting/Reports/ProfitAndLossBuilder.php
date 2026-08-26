@@ -15,19 +15,33 @@ namespace App\Services\Accounting\Reports;
 use App\Enums\Finance\AccountType;
 use App\Models\Accounting\AccountingAccount;
 use App\Models\Organization;
+use App\Services\Accounting\AccountingBudgetService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Ergebnisrechnung nach Kontengruppen — ausdrücklich keine testierte GuV
- * (Feature 125, MVP-676).
+ * (Feature 125, MVP-676). Vergleichsspalten (Vorjahr, Vormonat, Budget) und
+ * Kostenstellen-Filter teilt sie sich mit der BWA über die Basisklasse
+ * (Feature 142, MVP-709); das Monatsraster gibt es nur in der BWA.
  */
 class ProfitAndLossBuilder extends AbstractAccountingReportBuilder {
+    public function __construct(private readonly AccountingBudgetService $budgets) {}
+
     /**
-     * @return array{income: list<array<string, mixed>>, expense: list<array<string, mixed>>, income_total: string, expense_total: string, result: string}
+     * @return array{income: list<array<string, mixed>>, expense: list<array<string, mixed>>, income_total: string, expense_total: string, result: string, compare: string, compare_range: array{0: CarbonImmutable, 1: CarbonImmutable}|null, compare_totals: array{income_total: string, expense_total: string, result: string}|null}
      */
-    public function build(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
-        $sums = $this->sumsByAccount($organization, $from, $to);
+    public function build(Organization $organization, CarbonImmutable $from, CarbonImmutable $to, string $compare = self::COMPARE_NONE, ?int $costCenterId = null): array {
+        if (! in_array($compare, [self::COMPARE_PREVIOUS_YEAR, self::COMPARE_PREVIOUS_MONTH, self::COMPARE_BUDGET], true)) {
+            $compare = self::COMPARE_NONE;
+        }
+
+        $sums = $this->sumsByAccount($organization, $from, $to, null, $costCenterId);
+        $compareRange = $this->comparisonRange($from, $to, $compare);
+        $compareSums = $compareRange !== null ? $this->sumsByAccount($organization, $compareRange[0], $compareRange[1], null, $costCenterId) : null;
+        $planned = $compare === self::COMPARE_BUDGET ? $this->budgets->plannedByAccount($organization, $from, $to, $costCenterId) : null;
+        $hasCompare = $compareSums !== null || $planned !== null;
+
         $accounts = AccountingAccount::query()
             ->where('organization_id', $organization->id)
             ->whereIn('type', [AccountType::Income->value, AccountType::Expense->value])
@@ -36,35 +50,47 @@ class ProfitAndLossBuilder extends AbstractAccountingReportBuilder {
 
         $income = [];
         $expense = [];
-        $incomeTotal = '0.00';
-        $expenseTotal = '0.00';
+        $totals = ['income_total' => '0.00', 'expense_total' => '0.00'];
+        $compareTotals = ['income_total' => '0.00', 'expense_total' => '0.00'];
 
         foreach ($accounts as $account) {
-            $debit = $sums[$account->id]['debit'] ?? '0.00';
-            $credit = $sums[$account->id]['credit'] ?? '0.00';
-            if (NumberHelper::isZeroPrecise($debit) && NumberHelper::isZeroPrecise($credit)) {
+            $amount = $this->naturalAmount($account, $sums[$account->id] ?? null);
+            $compareAmount = $planned !== null
+                ? ($planned[$account->id] ?? '0.00')
+                : ($compareSums !== null ? $this->naturalAmount($account, $compareSums[$account->id] ?? null) : '0.00');
+
+            if (NumberHelper::isZeroPrecise($amount) && NumberHelper::isZeroPrecise($compareAmount)) {
                 continue;
             }
 
-            if ($account->type === AccountType::Income) {
-                $amount = NumberHelper::subtractPrecise($credit, $debit, 2);
-                $income[] = ['account' => $account, 'amount' => $amount];
-                $incomeTotal = NumberHelper::addPrecise($incomeTotal, $amount, 2);
-
-                continue;
+            $row = ['account' => $account, 'amount' => $amount];
+            if ($hasCompare) {
+                $row += ['compare' => $compareAmount] + $this->deltaOf($amount, $compareAmount);
             }
 
-            $amount = NumberHelper::subtractPrecise($debit, $credit, 2);
-            $expense[] = ['account' => $account, 'amount' => $amount];
-            $expenseTotal = NumberHelper::addPrecise($expenseTotal, $amount, 2);
+            $side = $account->type === AccountType::Income ? 'income' : 'expense';
+            if ($side === 'income') {
+                $income[] = $row;
+            } else {
+                $expense[] = $row;
+            }
+            $totals[$side . '_total'] = NumberHelper::addPrecise($totals[$side . '_total'], $amount, 2);
+            $compareTotals[$side . '_total'] = NumberHelper::addPrecise($compareTotals[$side . '_total'], $compareAmount, 2);
         }
 
         return [
             'income' => $income,
             'expense' => $expense,
-            'income_total' => $incomeTotal,
-            'expense_total' => $expenseTotal,
-            'result' => NumberHelper::subtractPrecise($incomeTotal, $expenseTotal, 2),
+            'income_total' => $totals['income_total'],
+            'expense_total' => $totals['expense_total'],
+            'result' => NumberHelper::subtractPrecise($totals['income_total'], $totals['expense_total'], 2),
+            'compare' => $compare,
+            'compare_range' => $compareRange,
+            'compare_totals' => $hasCompare ? [
+                'income_total' => $compareTotals['income_total'],
+                'expense_total' => $compareTotals['expense_total'],
+                'result' => NumberHelper::subtractPrecise($compareTotals['income_total'], $compareTotals['expense_total'], 2),
+            ] : null,
         ];
     }
 }

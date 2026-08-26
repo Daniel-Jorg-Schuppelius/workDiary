@@ -74,5 +74,5 @@
                   :from="old('next_run_on', $agreement?->next_run_on?->toDateString() ?? now()->endOfMonth()->toDateString())"
                   :to="old('end_on', $agreement?->end_on?->toDateString())" />
 
-    <p class="text-xs text-base-content/60">{{ __('metering.form_hint') }}</p>
+    <p class="text-xs text-muted">{{ __('metering.form_hint') }}</p>
 </x-modal>

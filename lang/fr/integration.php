@@ -69,6 +69,13 @@ return [
             'monthClosure.submitted' => 'Clôture mensuelle soumise',
             'sla.breached' => 'Délai SLA dépassé',
             'document.expired' => 'Document expiré',
+            'invoice.issued' => 'Facture émise',
+            'invoice.paid' => 'Facture payée',
+            'timesheet.submitted' => 'Feuille d’heures soumise',
+            'ticket.created' => 'Ticket créé',
+            'ticket.closed' => 'Ticket clôturé',
+            'protocol.signed' => 'Procès-verbal signé',
+            'purchaseOrder.ordered' => 'Commande fournisseur passée',
         ],
         'delivery_status' => [
             'pending' => 'En attente',

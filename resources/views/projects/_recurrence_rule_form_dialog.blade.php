@@ -32,103 +32,79 @@
     :submit-label="__('Regel speichern')"
 >
     <x-form-group :legend="__('Beschreibung')" icon="autorenew" tone="primary" cols="2">
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Bezeichnung') }} *</label>
-            <input type="text" name="name" maxlength="160" required
-                   value="{{ old('name', $rule->name) }}"
-                   placeholder="{{ __('z.B. DATEV-Update, Wartung Server, monatlicher Check') }}"
-                   class="input input-bordered w-full">
-            @error('name')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Titel-Template') }}</label>
-            <input type="text" name="title_template" maxlength="200"
-                   value="{{ old('title_template', $rule->title_template) }}"
-                   placeholder="{{ __('Wartung KW {week}') }}"
-                   class="input input-bordered w-full">
-            <p class="text-xs text-base-content/50 mt-1">{{ __('Platzhalter: {date}, {iso_date}, {year}, {month}, {week}') }}</p>
-            @error('title_template')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Eintragstyp') }}</label>
-            <select name="entry_type_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($entryTypes as $t)
-                    <option value="{{ $t->sqid }}" @selected((string) old('entry_type_id', \App\Support\Sqid::encode(\App\Models\EntryType::class, $rule->entry_type_id)) === $t->sqid)>{{ $t->label }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Inhalts-Template') }} *</label>
-            <textarea name="content_template" rows="3" required class="textarea textarea-bordered w-full">{{ old('content_template', $rule->content_template) }}</textarea>
-            @error('content_template')<p class="text-error text-sm">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field span="2" name="name"
+                       :label="__('Bezeichnung')"
+                       type="text"
+                       value="{{ old('name', $rule->name) }}"
+                       required
+                       maxlength="160"
+                       placeholder="{{ __('z.B. DATEV-Update, Wartung Server, monatlicher Check') }}" />
+        <x-input-field name="title_template"
+                       :label="__('Titel-Template')"
+                       type="text"
+                       value="{{ old('title_template', $rule->title_template) }}"
+                       :hint="__('Platzhalter: {date}, {iso_date}, {year}, {month}, {week}')"
+                       maxlength="200"
+                       placeholder="{{ __('Wartung KW {week}') }}" />
+        <x-select-field name="entry_type_id" :label="__('Eintragstyp')">
+            <option value="">—</option>
+            @foreach ($entryTypes as $t)
+                <option value="{{ $t->sqid }}" @selected((string) old('entry_type_id', \App\Support\Sqid::encode(\App\Models\EntryType::class, $rule->entry_type_id)) === $t->sqid)>{{ $t->label }}</option>
+            @endforeach
+        </x-select-field>
+        <x-textarea-field span="2" name="content_template" :label="__('Inhalts-Template')" rows="3" required>{{ old('content_template', $rule->content_template) }}</x-textarea-field>
     </x-form-group>
 
     <x-form-group :legend="__('Standard-Eigenschaften')" icon="settings" tone="info" cols="3">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Servicedauer (Min.)') }}</label>
-            <input type="number" name="default_service_minutes" min="0" max="10080"
-                   value="{{ old('default_service_minutes', $rule->default_service_minutes) }}"
-                   class="input input-bordered w-full">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Priorität') }}</label>
-            <select name="default_priority" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach (\App\Enums\Diary\Priority::cases() as $p)
-                    <option value="{{ $p->value }}" @selected(old('default_priority', $rule->default_priority?->value) === $p->value)>{{ $p->label() }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Standort') }} *</label>
-            <select name="default_location_mode" required class="select select-bordered w-full">
-                @php($currentLocation = old('default_location_mode', $rule->default_location_mode?->value ?? 'onsite'))
-                @foreach (\App\Enums\Diary\LocationMode::cases() as $lm)
-                    <option value="{{ $lm->value }}" @selected($currentLocation === $lm->value)>{{ $lm->label() }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Kunde (optional)') }}</label>
-            <select name="customer_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($customers as $c)
-                    <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $rule->customer_id)) === $c->sqid)>{{ $c->name }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Zuständig (optional)') }}</label>
-            <select name="assigned_user_id" class="select select-bordered w-full">
-                <option value="">—</option>
-                @foreach ($users as $u)
-                    <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $rule->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
-                @endforeach
-            </select>
-        </div>
+        <x-input-field name="default_service_minutes"
+                       :label="__('Servicedauer (Min.)')"
+                       type="number"
+                       value="{{ old('default_service_minutes', $rule->default_service_minutes) }}"
+                       min="0"
+                       max="10080" />
+        <x-select-field name="default_priority" :label="__('Priorität')">
+            <option value="">—</option>
+            @foreach (\App\Enums\Diary\Priority::cases() as $p)
+                <option value="{{ $p->value }}" @selected(old('default_priority', $rule->default_priority?->value) === $p->value)>{{ $p->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="default_location_mode" :label="__('Standort')" required>
+            @php($currentLocation = old('default_location_mode', $rule->default_location_mode?->value ?? 'onsite'))
+            @foreach (\App\Enums\Diary\LocationMode::cases() as $lm)
+                <option value="{{ $lm->value }}" @selected($currentLocation === $lm->value)>{{ $lm->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="customer_id" :label="__('Kunde (optional)')">
+            <option value="">—</option>
+            @foreach ($customers as $c)
+                <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $rule->customer_id)) === $c->sqid)>{{ $c->name }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field span="2" name="assigned_user_id" :label="__('Zuständig (optional)')">
+            <option value="">—</option>
+            @foreach ($users as $u)
+                <option value="{{ $u->sqid }}" @selected((string) old('assigned_user_id', \App\Support\Sqid::encode(\App\Models\User::class, $rule->assigned_user_id)) === $u->sqid)>{{ $u->name }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     <x-form-group :legend="__('Wiederholung')" icon="event_repeat" tone="accent" cols="3">
+        <x-select-field name="frequency" :label="__('Häufigkeit')" required>
+            @php($currentFrequency = old('frequency', $rule->frequency?->value ?? 'weekly'))
+            @foreach (\App\Enums\Recurrence\RecurrenceFrequency::cases() as $freq)
+                <option value="{{ $freq->value }}" @selected($currentFrequency === $freq->value)>{{ $freq->label() }}</option>
+            @endforeach
+        </x-select-field>
+        <x-input-field name="interval"
+                       :label="__('Intervall')"
+                       type="number"
+                       value="{{ old('interval', $rule->interval ?: 1) }}"
+                       required
+                       :hint="__('z.B. 2 = alle 2 Wochen/Monate')"
+                       min="1"
+                       max="365" />
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Häufigkeit') }} *</label>
-            <select name="frequency" required class="select select-bordered w-full">
-                @php($currentFrequency = old('frequency', $rule->frequency?->value ?? 'weekly'))
-                @foreach (\App\Enums\Recurrence\RecurrenceFrequency::cases() as $freq)
-                    <option value="{{ $freq->value }}" @selected($currentFrequency === $freq->value)>{{ $freq->label() }}</option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Intervall') }} *</label>
-            <input type="number" name="interval" min="1" max="365" required
-                   value="{{ old('interval', $rule->interval ?: 1) }}"
-                   class="input input-bordered w-full">
-            <p class="text-xs text-base-content/50 mt-1">{{ __('z.B. 2 = alle 2 Wochen/Monate') }}</p>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Wochentage (nur wöchentlich)') }}</label>
+            <span class="fieldset-label">{{ __('Wochentage (nur wöchentlich)') }}</span>
             <div class="flex flex-wrap gap-2">
                 @foreach (\App\Models\RecurrenceRule::WEEKDAY_CODES as $code)
                     <label class="cursor-pointer">
@@ -142,19 +118,19 @@
                 @endforeach
             </div>
         </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Tag im Monat (1–31)') }}</label>
-            <input type="number" name="bymonthday" min="1" max="31"
-                   value="{{ old('bymonthday', $rule->bymonthday) }}"
-                   class="input input-bordered w-full">
-            <p class="text-xs text-base-content/50 mt-1">{{ __('Nur bei monatlich/jährlich; klemmt am Monatsende.') }}</p>
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Monat (1–12, nur jährlich)') }}</label>
-            <input type="number" name="bymonth" min="1" max="12"
-                   value="{{ old('bymonth', $rule->bymonth) }}"
-                   class="input input-bordered w-full">
-        </div>
+        <x-input-field name="bymonthday"
+                       :label="__('Tag im Monat (1–31)')"
+                       type="number"
+                       value="{{ old('bymonthday', $rule->bymonthday) }}"
+                       :hint="__('Nur bei monatlich/jährlich; klemmt am Monatsende.')"
+                       min="1"
+                       max="31" />
+        <x-input-field name="bymonth"
+                       :label="__('Monat (1–12, nur jährlich)')"
+                       type="number"
+                       value="{{ old('bymonth', $rule->bymonth) }}"
+                       min="1"
+                       max="12" />
         <div class="fieldset flex items-center gap-2 pt-7">
             <input type="hidden" name="is_active" value="0">
             <input type="checkbox" name="is_active" id="rule_is_active" value="1"

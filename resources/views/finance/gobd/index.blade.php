@@ -24,7 +24,7 @@
         <x-card :title="__('gobd.preflight.title')" icon="fact_check">
             <x-slot:actions>
                 <span class="inline-flex items-center gap-1.5 rounded-box bg-base-200 px-3 py-1 text-sm font-medium text-base-content/80">
-                    <x-icon name="date_range" class="text-base-content/60" />
+                    <x-icon name="date_range" class="text-muted" />
                     <span class="tabular-nums">{{ \Illuminate\Support\Carbon::parse($from)->format('d.m.Y') }} – {{ \Illuminate\Support\Carbon::parse($to)->format('d.m.Y') }}</span>
                 </span>
             </x-slot:actions>
@@ -37,7 +37,7 @@
                         'border-base-300 bg-base-100' => $count > 0,
                         'border-dashed border-base-300 bg-base-200/40 opacity-70' => $count === 0,
                     ])>
-                        <span class="text-xs text-base-content/60">{{ __('gobd.section.' . $key) }}</span>
+                        <span class="text-xs text-muted">{{ __('gobd.section.' . $key) }}</span>
                         <strong class="font-['Space_Grotesk'] tabular-nums">{{ number_format((int) $count, 0, ',', '.') }}</strong>
                     </div>
                 @endforeach
@@ -73,7 +73,7 @@
                         @endforeach
                     </select>
                 </fieldset>
-                <x-icon-btn icon="download" tone="primary" size="sm" type="submit"
+                <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit"
                             show-label>{{ __('gobd.export') }}</x-icon-btn>
             </form>
         </x-card>
@@ -85,21 +85,38 @@
             <x-slot:head>
                 <tr>
                     <x-table.th>{{ __('gobd.period') }}</x-table.th>
+                    <x-table.th>{{ __('gobd.recent.status') }}</x-table.th>
                     <x-table.th align="right">{{ __('gobd.recent.records') }}</x-table.th>
                     <x-table.th>{{ __('gobd.recent.package_hash') }}</x-table.th>
                     <x-table.th>{{ __('gobd.recent.created') }}</x-table.th>
+                    <x-table.th align="right">{{ __('gobd.recent.actions') }}</x-table.th>
                 </tr>
             </x-slot:head>
             @forelse ($recent as $export)
                 <tr>
                     <td class="text-sm tabular-nums">{{ $export->period_from->fdate() }} – {{ $export->period_to->fdate() }}</td>
+                    <td>
+                        {{-- Lauf-Status ohne Polling: die Seite zeigt den Stand des letzten Aufrufs (MVP-722). --}}
+                        <span class="wd-badge badge-{{ $export->status->tone() }}">{{ $export->status->label() }}</span>
+                        @if ($export->error !== null)
+                            <span class="block text-xs text-error/80">{{ \Illuminate\Support\Str::limit($export->error, 80) }}</span>
+                        @endif
+                    </td>
                     <td class="text-right tabular-nums">{{ $export->record_count }}</td>
                     <td class="font-mono text-xs opacity-70">{{ \Illuminate\Support\Str::limit($export->package_sha256, 16) }}</td>
                     <td class="text-sm">{{ $export->created_at?->fdatetime() }}{{ $export->creator ? ' · ' . $export->creator->name : '' }}</td>
+                    <td class="text-right">
+                        <div class="flex justify-end">
+                            @if ($export->status->isDownloadable() && $export->file_path !== null)
+                                <x-icon-btn icon="download" size="sm" :href="route('finance.gobd.download', $export)"
+                                            :title="__('gobd.download')" />
+                            @endif
+                        </div>
+                    </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="4"
-                               icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                <x-table.empty :colspan="6"
+                               icon="inventory_2"
                                :title="__('gobd.recent.none')" compact />
             @endforelse
         </x-table>

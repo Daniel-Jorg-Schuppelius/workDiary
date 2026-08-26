@@ -83,7 +83,7 @@
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $transfer->total_amount, 2, withThousandsSeparator: true) }}</td>
                     <td><x-status-badge :tone="$transfer->status->tone()">{{ $transfer->status->label() }}</x-status-badge></td>
                     <td>
-                        <span class="font-mono text-xs text-base-content/60" title="{{ $transfer->payload_hash }}">
+                        <span class="font-mono text-xs text-muted" title="{{ $transfer->payload_hash }}">
                             {{ \Illuminate\Support\Str::limit($transfer->payload_hash, 12, '…') }}
                         </span>
                     </td>

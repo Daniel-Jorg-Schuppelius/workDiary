@@ -45,10 +45,15 @@ class InvoicePdfRenderer {
      * sichtbare PDF einbetten muss wie der direkte Download).
      */
     public function composedHtml(Invoice $invoice): string {
-        $payload = $this->designPayload($invoice);
-        $html = view('invoices.pdf', $this->viewData($invoice, $payload))->render();
+        $invoice->loadMissing(['customer', 'organization']);
 
-        return $this->design->compose($html, $payload);
+        // Belegsprache je Kunde (Feature 034, MVP-721): nur Darstellung.
+        return \App\Support\DocumentLocale::within($invoice->customer, $invoice->organization, function () use ($invoice): string {
+            $payload = $this->designPayload($invoice);
+            $html = view('invoices.pdf', $this->viewData($invoice, $payload))->render();
+
+            return $this->design->compose($html, $payload);
+        });
     }
 
     /**

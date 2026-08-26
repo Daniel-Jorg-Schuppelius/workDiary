@@ -96,10 +96,10 @@
                         <dl class="grid grid-cols-1 gap-1 text-sm">
                             @foreach ($section->metrics as $key => $value)
                                 <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                                    <dt class="text-base-content/60">{{ $key }}</dt>
+                                    <dt class="text-muted">{{ $key }}</dt>
                                     <dd class="text-right font-mono text-xs text-base-content/80 truncate">
                                         @if ($value === null)
-                                            <span class="italic text-base-content/40">—</span>
+                                            <span class="italic text-muted">—</span>
                                         @elseif (is_bool($value))
                                             {{ $value ? 'true' : 'false' }}
                                         @else
@@ -123,7 +123,7 @@
                     @endif
 
                     @if ($section->checkedAt)
-                        <footer class="border-t border-base-200/70 pt-2 text-xs text-base-content/50">
+                        <footer class="border-t border-base-200/70 pt-2 text-xs text-muted">
                             {{ __('Letzter Check: :at', ['at' => $section->checkedAt->translatedFormat('H:i:s')]) }}
                         </footer>
                     @endif

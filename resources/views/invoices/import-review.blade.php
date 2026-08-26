@@ -46,7 +46,7 @@
     @php $warnings = (array) ($extraction['warnings'] ?? []); @endphp
     @if ($warnings !== [])
         <div class="alert alert-warning">
-            <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+            <x-icon name="warning" />
             <ul class="list-inside list-disc text-sm">
                 @foreach ($warnings as $warning)
                     <li>{{ __("invoice-import.warning.$warning") }}</li>
@@ -61,11 +61,11 @@
                 <object data="{{ route('invoices.pdf-import.preview', $invoice) }}"
                         type="{{ $source === 'xml' ? 'text/xml' : 'application/pdf' }}"
                         class="h-[75vh] w-full">
-                    <p class="p-4 text-sm text-base-content/60">{{ __('invoice-import.review_no_preview') }}</p>
+                    <p class="p-4 text-sm text-muted">{{ __('invoice-import.review_no_preview') }}</p>
                 </object>
             @else
                 <div class="flex flex-col items-start gap-3 p-4">
-                    <p class="text-sm text-base-content/60">{{ __('invoice-import.review_no_preview') }}</p>
+                    <p class="text-sm text-muted">{{ __('invoice-import.review_no_preview') }}</p>
                     <x-icon-btn icon="download" tone="primary" size="sm"
                                 :href="route('invoices.pdf-import.source', $invoice)"
                                 show-label>{{ __('invoice-import.original') }}</x-icon-btn>
@@ -140,7 +140,7 @@
                         @endforeach
                     </tbody>
                 </x-table>
-                <p class="px-4 py-3 text-xs text-base-content/60">{{ __('invoice-import.review_items_hint') }}</p>
+                <p class="px-4 py-3 text-xs text-muted">{{ __('invoice-import.review_items_hint') }}</p>
             </x-card>
         </div>
     </div>

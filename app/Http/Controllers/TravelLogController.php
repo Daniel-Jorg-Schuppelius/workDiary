@@ -10,12 +10,14 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Travel\TravelLogVehicle;
+use App\Enums\Travel\{TravelLogVehicle, TripKind};
+use App\Exceptions\{LogbookViolationException, TravelLogLockedException};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveTravelLogRequest;
-use App\Models\{Customer, Project, TravelLog, User};
-use App\Services\Travel\TravelLogService;
-use App\Support\{CsvExport, SortableQuery};
+use App\Models\{Customer, Project, TravelLog, User, Vehicle};
+use App\Services\Travel\{LogbookRules, TravelLogService};
+use App\Support\{CsvExport, SortableQuery, Sqid};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -28,6 +30,7 @@ class TravelLogController extends Controller {
 
     public function __construct(
         private readonly TravelLogService $service,
+        private readonly LogbookRules $logbook,
     ) {}
 
     public function index(Request $request): View {
@@ -40,9 +43,9 @@ class TravelLogController extends Controller {
         $vehicleValue = $vehicleEnum?->value;
 
         $query = TravelLog::query()
+            ->with(['vehicleEntity:id,license_plate,label,logbook_mode', 'corrections:id,corrects_travel_log_id'])
             ->where('user_id', Auth::id())
-            ->whereDate('date', '>=', $from->toDateString())
-                ->whereDate('date', '<=', $to->toDateString())
+            ->whereBetween('date', DateRange::days($from, $to))
             ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue));
 
         [$sort, $dir] = SortableQuery::apply($query, $request, [
@@ -60,14 +63,12 @@ class TravelLogController extends Controller {
         $totals = [
             'distance_km' => (float) TravelLog::query()
                 ->where('user_id', Auth::id())
-                ->whereDate('date', '>=', $from->toDateString())
-                ->whereDate('date', '<=', $to->toDateString())
+                ->whereBetween('date', DateRange::days($from, $to))
                 ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue))
                 ->sum('distance_km'),
             'reimbursement' => (float) TravelLog::query()
                 ->where('user_id', Auth::id())
-                ->whereDate('date', '>=', $from->toDateString())
-                ->whereDate('date', '<=', $to->toDateString())
+                ->whereBetween('date', DateRange::days($from, $to))
                 ->when($vehicleValue, fn ($q) => $q->where('vehicle', $vehicleValue))
                 ->sum('reimbursement_total'),
         ];
@@ -87,14 +88,18 @@ class TravelLogController extends Controller {
     public function create(Request $request): View {
         Gate::authorize('create', TravelLog::class);
 
-        return view('travel-logs._form_dialog', [
+        // Stornofahrt (Feature 137): Vorbelegung aus der festgeschriebenen Original-Fahrt.
+        $correcting = null;
+        if ($request->filled('corrects')) {
+            $correcting = TravelLog::query()->findOrFail(Sqid::decodeOrAbort(TravelLog::class, $request->string('corrects')->toString()));
+            Gate::authorize('view', $correcting);
+        }
+
+        return view('travel-logs._form_dialog', array_merge($this->formOptions(), [
             'log' => null,
-            'date' => $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'vehicles' => TravelLogVehicle::cases(),
-            'rates' => (array) config('timesheet.travel.rates', []),
-        ]);
+            'correcting' => $correcting,
+            'date' => $correcting?->date?->toDateString() ?? $request->date('date')?->toDateString() ?? CarbonImmutable::today()->toDateString(),
+        ]));
     }
 
     public function store(SaveTravelLogRequest $request): RedirectResponse {
@@ -106,41 +111,86 @@ class TravelLogController extends Controller {
         $user = Auth::user();
         $data['organization_id'] = $user->organization_id;
 
-        $log = $this->service->create($data);
+        $correctsId = $data['corrects_travel_log_id'] ?? null;
+        $reason = (string) ($data['correction_reason'] ?? '');
+        unset($data['corrects_travel_log_id'], $data['correction_reason']);
+
+        try {
+            if ($correctsId !== null) {
+                $original = TravelLog::query()->findOrFail((int) $correctsId);
+                Gate::authorize('view', $original);
+                $log = $this->service->correct($original, $data, $reason, $user);
+            } else {
+                $log = $this->service->create($data);
+            }
+        } catch (LogbookViolationException $e) {
+            return back()->withInput()->withErrors($e->errors);
+        }
 
         return redirect()->route('travel-logs.index')
-            ->with('success', __('Fahrt erfasst (:km km).', ['km' => NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true)]));
+            ->with('success', __('Fahrt erfasst (:km km).', ['km' => NumberHelper::toGermanFormat((float) $log->distance_km, 2, withThousandsSeparator: true)]))
+            ->with('warning', $this->chainWarning($log));
     }
 
-    public function edit(TravelLog $travelLog): View {
+    public function edit(TravelLog $travelLog): View|RedirectResponse {
         Gate::authorize('update', $travelLog);
 
-        return view('travel-logs._form_dialog', [
+        if ($travelLog->isLocked()) {
+            return redirect()->route('travel-logs.index')->with('error', (new TravelLogLockedException($travelLog))->getMessage());
+        }
+
+        return view('travel-logs._form_dialog', array_merge($this->formOptions(), [
             'log' => $travelLog,
+            'correcting' => null,
             'date' => $travelLog->date?->toDateString(),
-            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'vehicles' => TravelLogVehicle::cases(),
-            'rates' => (array) config('timesheet.travel.rates', []),
-        ]);
+        ]));
     }
 
     public function update(SaveTravelLogRequest $request, TravelLog $travelLog): RedirectResponse {
         Gate::authorize('update', $travelLog);
 
-        $this->service->update($travelLog, $request->validated());
+        $data = $request->validated();
+        unset($data['corrects_travel_log_id'], $data['correction_reason']);
+
+        try {
+            $log = $this->service->update($travelLog, $data);
+        } catch (TravelLogLockedException $e) {
+            return redirect()->route('travel-logs.index')->with('error', $e->getMessage());
+        } catch (LogbookViolationException $e) {
+            return back()->withInput()->withErrors($e->errors);
+        }
 
         return redirect()->route('travel-logs.index')
-            ->with('success', __('Fahrt aktualisiert.'));
+            ->with('success', __('Fahrt aktualisiert.'))
+            ->with('warning', $this->chainWarning($log));
     }
 
     public function destroy(TravelLog $travelLog): RedirectResponse {
         Gate::authorize('delete', $travelLog);
 
-        $this->service->delete($travelLog);
+        try {
+            $this->service->delete($travelLog);
+        } catch (TravelLogLockedException $e) {
+            return redirect()->route('travel-logs.index')->with('error', $e->getMessage());
+        }
 
         return redirect()->route('travel-logs.index')
             ->with('success', __('Fahrt gelöscht.'));
+    }
+
+    /** Explizite Festschreibung (Feature 137) — nur Fahrtenbuch-Modus. */
+    public function lock(TravelLog $travelLog): RedirectResponse {
+        Gate::authorize('update', $travelLog);
+
+        if (! $travelLog->isLogbook()) {
+            return redirect()->route('travel-logs.index')->with('error', __('Nur Fahrten eines Fahrzeugs im Fahrtenbuch-Modus werden festgeschrieben.'));
+        }
+
+        /** @var User $user */
+        $user = Auth::user();
+        $this->service->lock($travelLog, $user);
+
+        return redirect()->route('travel-logs.index')->with('success', __('Fahrt festgeschrieben.'));
     }
 
     public function export(Request $request): StreamedResponse {
@@ -153,8 +203,7 @@ class TravelLogController extends Controller {
         $logs = TravelLog::query()
             ->with(['project:id,name,slug,customer_id', 'customer:id,name,slug'])
             ->where('user_id', Auth::id())
-            ->whereDate('date', '>=', $from->toDateString())
-                ->whereDate('date', '<=', $to->toDateString())
+            ->whereBetween('date', DateRange::days($from, $to))
             ->orderBy('date')
             ->get();
 
@@ -192,5 +241,40 @@ class TravelLogController extends Controller {
             'Zweck',
             'Dauer min',
         ], $rows);
+    }
+
+    /** @return array<string, mixed> */
+    private function formOptions(): array {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return [
+            'projects' => Project::query()->orderBy('name')->get(['id', 'name', 'customer_id', 'foreign_customer_id']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'vehicles' => TravelLogVehicle::cases(),
+            'fleetVehicles' => Vehicle::query()->active()->forUser((int) $user->id)->orderBy('label')->orderBy('license_plate')->get(),
+            'tripKinds' => TripKind::cases(),
+            'rates' => (array) config('timesheet.travel.rates', []),
+        ];
+    }
+
+    /**
+     * Erstattungsmodus: Lücke in der km-Kette ist nur eine Warnung (im
+     * Fahrtenbuch-Modus blockiert der Service).
+     */
+    private function chainWarning(TravelLog $log): ?string {
+        $vehicle = $log->vehicleEntity;
+        if (! $vehicle instanceof Vehicle || $vehicle->logbook_mode || $log->odometer_start_km === null) {
+            return null;
+        }
+        $expected = $this->logbook->lastOdometerEnd($vehicle, $log);
+        if ($expected === null || $expected === $log->odometer_start_km) {
+            return null;
+        }
+
+        return (string) __('Hinweis: Lücke in der km-Kette — letzte Fahrt endete bei :expected km, diese beginnt bei :start km.', [
+            'expected' => $expected,
+            'start' => $log->odometer_start_km,
+        ]);
     }
 }

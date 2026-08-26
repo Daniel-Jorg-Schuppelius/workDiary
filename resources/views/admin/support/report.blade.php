@@ -40,12 +40,41 @@
                 @foreach ($preview['top_sections'] as $section)
                     <li class="flex items-center justify-between gap-3 border-b border-base-200/70 pb-1 last:border-0">
                         <span class="font-mono text-xs text-base-content/80">{{ $section['key'] }}</span>
-                        <span class="text-xs text-base-content/60">{{ $section['kb'] }} KB</span>
+                        <span class="text-xs text-muted">{{ $section['kb'] }} KB</span>
                     </li>
                 @endforeach
             </ul>
         </div>
     </article>
+
+    {{-- Diagnose erklären (Feature 148, MVP-732): PII-freie Kennwerte des
+         Health-Blocks; Lesehilfe, ändert nichts an der Installation. --}}
+    @php
+        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiDiagnoseUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\SupportDiagnosisSuggestionService::CAPABILITY);
+        $aiDiagnose = $aiDiagnoseUsable && app()->bound('currentOrganization')
+            ? $aiView->openSuggestionsFor(
+                app('currentOrganization')->getMorphClass(),
+                collect([app('currentOrganization')]),
+                \App\Services\Ai\Suggestions\SupportDiagnosisSuggestionService::CAPABILITY,
+            )->first()
+            : null;
+    @endphp
+    @if ($aiDiagnoseUsable)
+        <article class="card border border-base-300 bg-base-100 shadow-sm">
+            <div class="card-body gap-3">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('ai.assist.insight_title') }}</h2>
+                @if ($aiDiagnose === null)
+                    <x-action-form :action="route('ai.assist.support-diagnose')">
+                        <x-icon-btn icon="psychology" tone="info" size="sm" type="submit" show-label
+                                    :title="__('ai.assist.explain_support')">{{ __('ai.assist.explain_support') }}</x-icon-btn>
+                    </x-action-form>
+                @else
+                    @include('ai._insight', ['suggestion' => $aiDiagnose])
+                @endif
+            </div>
+        </article>
+    @endif
 
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
@@ -67,7 +96,7 @@
                     <span class="text-sm">
                         {{ __('Anonymisierte Sample-Aufträge (10 Stück) einbeziehen') }}
                         @unless ($canExportWithSamples)
-                            <span class="block text-xs text-base-content/60">{{ __('Erfordert Plattform-Admin-Berechtigung.') }}</span>
+                            <span class="block text-xs text-muted">{{ __('Erfordert Plattform-Admin-Berechtigung.') }}</span>
                         @endunless
                     </span>
                 </label>
@@ -76,14 +105,14 @@
                     <label for="report-password" class="text-sm font-medium">{{ __('ZIP-Passwort (optional)') }}</label>
                     <input id="report-password" type="password" name="password" autocomplete="new-password"
                            class="input input-bordered input-sm w-full max-w-sm">
-                    <p class="mt-1 text-xs text-base-content/60">
+                    <p class="mt-1 text-xs text-muted">
                         {{ __('Wird auf das ZIP-Archiv angewendet. Out-of-Band an den Support weitergeben (nicht in derselben E-Mail).') }}
                     </p>
                 </div>
 
                 <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
                     <x-button type="submit" tone="primary" size="sm" icon="archive">{{ __('Bericht generieren und herunterladen') }}</x-button>
-                    <span class="text-xs text-base-content/60">
+                    <span class="text-xs text-muted">
                         {{ __('Der Bericht wird erst beim Klick erzeugt. Vorher werden keine Daten geschrieben.') }}
                     </span>
                 </div>
@@ -92,7 +121,7 @@
             <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
                 <x-button :href="route('admin.support.report.download')" tone="outline" size="sm" icon="download">{{ __('Als JSON-Datei herunterladen') }}</x-button>
                 <x-button :href="route('admin.support.report.preview')" target="_blank" rel="noopener" tone="ghost" size="sm" icon="visibility">{{ __('Im Browser anzeigen') }}</x-button>
-                <span class="text-xs text-base-content/60">
+                <span class="text-xs text-muted">
                     {{ __('Reine JSON-Variante ohne ZIP — gleiche datensparsame Felder.') }}
                 </span>
             </div>

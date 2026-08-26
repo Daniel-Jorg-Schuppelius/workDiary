@@ -30,4 +30,13 @@ return [
         'success' => 'Datos meteorológicos del día adjuntados.',
         'unavailable' => 'No hay datos meteorológicos (sin ubicación/coordenadas o servicio no disponible) — se puede añadir más tarde.',
     ],
+    // Warnschwellen der Vorhersage (Feature 062, MVP-716).
+    'warning' => [
+        'threshold' => [
+            'rain' => 'Lluvia intensa',
+            'gust' => 'Rachas de tormenta',
+            'frost' => 'Helada',
+            'heat' => 'Calor',
+        ],
+    ],
 ];

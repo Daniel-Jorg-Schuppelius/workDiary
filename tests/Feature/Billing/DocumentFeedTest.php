@@ -13,8 +13,8 @@ namespace Tests\Feature\Billing;
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Models\{Customer, Expense, Invoice, LexofficeVoucher, OrgaMaxInvoice, PluginSetting, Supplier, User};
-use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery, DocumentLinks};
+use App\Plugins\Lexoffice\{LexofficeExpenseLinkProvider, LexofficePlugin};
+use App\Services\Billing\{DocumentFeedFilters, DocumentFeedQuery};
 use App\Support\Billing\VoucherTypes;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -223,10 +223,10 @@ final class DocumentFeedTest extends TestCase {
             'voucher_type' => 'purchaseinvoice', 'voucher_status' => 'paid',
             'voucher_number' => 'ER-3', 'total_amount' => '39.15']);
 
-        $links = new DocumentLinks();
-        $this->assertTrue($links->suggestionsFor($expense)->contains('id', $voucher->id));
+        $links = new LexofficeExpenseLinkProvider();
+        $this->assertTrue($links->suggestionsFor($expense)->contains('externalId', $voucher->external_id));
 
-        $links->link($expense, $voucher);
+        $links->link($expense, (string) $voucher->sqid);
 
         $totals = (new DocumentFeedQuery($this->filters(allExpenses: true)))->totals();
         $this->assertEqualsWithDelta(39.15, $totals[0]['expense'], 0.001);
@@ -428,6 +428,79 @@ final class DocumentFeedTest extends TestCase {
             ->assertRedirect(route('billing.feed', ['tab' => 'quotes']));
         $this->actingAs($this->admin)->get(route('lexoffice.vouchers.index'))
             ->assertRedirect(route('billing.feed', ['origin' => 'lexoffice']));
+    }
+
+    /**
+     * MVP-722 (Vollscan 2026-08-23, A13): Kennzahlen, Tab-Zähler und die
+     * Gesamtzahl der Seite stammen aus EINER Aggregation. Vorher materialisierte
+     * jede der drei Fragen die UNION erneut — vier Läufe je Seitenaufruf.
+     */
+    public function test_metrics_tab_counts_and_page_total_come_from_one_aggregation(): void {
+        $this->voucher(['external_id' => 'v1', 'customer_id' => $this->customer->id,
+            'voucher_type' => 'salesinvoice', 'voucher_status' => 'paid',
+            'voucher_number' => 'RE/2026/1110', 'total_amount' => '1000.00']);
+        $this->voucher(['external_id' => 'v2', 'customer_id' => $this->customer->id,
+            'voucher_type' => 'salescreditnote', 'voucher_status' => 'paid',
+            'voucher_number' => 'GS/2026/0014', 'total_amount' => '100.00']);
+        $this->voucher(['external_id' => 'v3', 'supplier_id' => $this->supplier->id,
+            'voucher_type' => 'purchaseinvoice', 'voucher_status' => 'paid',
+            'voucher_number' => 'ER-1', 'total_amount' => '39.15']);
+
+        $feed = new DocumentFeedQuery($this->filters());
+
+        $queries = 0;
+        \Illuminate\Support\Facades\DB::listen(static function () use (&$queries): void {
+            $queries++;
+        });
+
+        $page = $feed->paginate(30, 'date', 'desc');
+        $totals = $feed->totals();
+        $counts = $feed->tabCounts();
+
+        $this->assertSame(2, $queries, 'Genau zwei Läufe: die Aggregation und die Seite selbst.');
+
+        $this->assertSame(3, $page->total(), 'Die Gesamtzahl kommt aus der Aggregation, nicht aus einer Zähl-Abfrage.');
+        $this->assertCount(3, $page->items());
+
+        // Werte identisch zur früheren Drei-Abfragen-Variante.
+        $this->assertEqualsWithDelta(900.0, $totals[0]['revenue'], 0.001);
+        $this->assertEqualsWithDelta(39.15, $totals[0]['expense'], 0.001);
+        $this->assertEqualsWithDelta(860.85, $totals[0]['balance'], 0.001);
+
+        $this->assertSame(1, $counts['outgoing:invoice'] ?? 0);
+        $this->assertSame(1, $counts['outgoing:credit_note'] ?? 0);
+        $this->assertSame(1, $counts['incoming:invoice'] ?? 0);
+        $this->assertSame(0, $counts['overdue']);
+    }
+
+    /** Ein Tab schränkt die Kennzahlen ein, die Tab-Zähler aber nicht. */
+    public function test_tab_filter_narrows_metrics_but_not_the_tab_counters(): void {
+        $this->voucher(['external_id' => 'v1', 'customer_id' => $this->customer->id,
+            'voucher_type' => 'salesinvoice', 'voucher_status' => 'paid',
+            'voucher_number' => 'RE/2026/1110', 'total_amount' => '1000.00']);
+        $this->voucher(['external_id' => 'v3', 'supplier_id' => $this->supplier->id,
+            'voucher_type' => 'purchaseinvoice', 'voucher_status' => 'paid',
+            'voucher_number' => 'ER-1', 'total_amount' => '39.15']);
+
+        $base = $this->filters();
+        $outgoing = new DocumentFeedQuery(new DocumentFeedFilters(
+            organizationId: $base->organizationId,
+            userId: $base->userId,
+            from: $base->from,
+            to: $base->to,
+            kinds: [DocumentKind::Invoice],
+            directions: [DocumentDirection::Outgoing],
+            sources: $base->sources,
+        ));
+
+        $totals = $outgoing->totals();
+        $this->assertEqualsWithDelta(1000.0, $totals[0]['revenue'], 0.001);
+        $this->assertEqualsWithDelta(0.0, $totals[0]['expense'], 0.001, 'Der Tab blendet die Eingangsrechnung aus.');
+        $this->assertSame(1, $outgoing->paginate(30, 'date', 'desc')->total());
+
+        $counts = $outgoing->tabCounts();
+        $this->assertSame(1, $counts['outgoing:invoice'] ?? 0);
+        $this->assertSame(1, $counts['incoming:invoice'] ?? 0, 'Tab-Zähler zählen über den Tab hinaus.');
     }
 
     /** @return array<string, string> */

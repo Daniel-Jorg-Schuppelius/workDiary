@@ -17,25 +17,25 @@
 @endphp
 <x-card as="section">
     <h2 class="mb-3 flex items-center gap-2 text-base font-semibold">
-        <span class="material-symbols-outlined" aria-hidden="true">report</span>
+        <x-icon name="report" />
         {{ __('day-close.section.issues') }}
     </h2>
     @if (empty($issues))
         <div role="alert" class="alert alert-success">
-            <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+            <x-icon name="check_circle" />
             <span>{{ __('day-close.hint.no_issues') }}</span>
         </div>
     @else
         <ul class="space-y-2">
             @foreach ($blockingIssues as $issue)
                 <li role="alert" class="alert alert-error">
-                    <span class="material-symbols-outlined" aria-hidden="true">block</span>
+                    <x-icon name="block" />
                     <span>{{ $validator->messageFor($issue) }}</span>
                 </li>
             @endforeach
             @foreach ($warningIssues as $issue)
                 <li role="alert" class="alert alert-warning">
-                    <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                    <x-icon name="warning" />
                     <span>{{ $validator->messageFor($issue) }}</span>
                 </li>
             @endforeach

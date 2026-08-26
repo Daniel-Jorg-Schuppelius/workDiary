@@ -99,10 +99,18 @@ class NotificationRuleController extends Controller {
             ->where('event', $eventEnum->value)
             ->first() ?? new NotificationRule;
 
+        // SMS (Feature 147) ist nur an kritischen Ereignissen erlaubt — sonst
+        // ließe sich der kostenpflichtige Kanal über ein manipuliertes
+        // Formular an jede Fristenmeldung hängen.
+        $channels = array_values(array_filter(
+            (array) ($data['channels'] ?? []),
+            static fn (string $channel): bool => $channel !== NotificationChannel::Sms->value || $eventEnum->supportsSms(),
+        ));
+
         $rule->fill([
             'event' => $eventEnum->value,
             'enabled' => (bool) $data['enabled'],
-            'channels' => array_values((array) ($data['channels'] ?? [])),
+            'channels' => $channels,
             'notify_affected' => (bool) $data['notify_affected'],
             'recipient_roles' => array_values((array) ($data['recipient_roles'] ?? [])),
             'recipient_user_ids' => $userIds,

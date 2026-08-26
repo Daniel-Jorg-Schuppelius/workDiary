@@ -64,7 +64,7 @@
                 </td>
                 <td class="font-mono text-sm">
                     {{ $rule->effectiveCode() }}@if ($rule->costCenter !== null && $rule->costCenter->label !== $rule->costCenter->code)
-                        <span class="font-sans text-xs text-base-content/60">— {{ $rule->costCenter->label }}</span>
+                        <span class="font-sans text-xs text-muted">— {{ $rule->costCenter->label }}</span>
                     @endif
                 </td>
                 <td class="text-right tabular-nums">{{ $rule->priority }}</td>

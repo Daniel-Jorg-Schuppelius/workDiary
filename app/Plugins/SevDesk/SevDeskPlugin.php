@@ -110,6 +110,10 @@ class SevDeskPlugin extends AbstractPlugin implements ContactSyncer {
             throw new RuntimeException('sevDesk contact push returned no id.');
         }
 
+        // Anschrift und Kommunikationswege sind in sevDesk eigene Objekte mit
+        // eigenem Endpunkt (MVP-731) — ohne sie bleibt der Kontakt ein Name.
+        app(Services\SevDeskContactDetailPushService::class)->push($client, $customer, $contactId);
+
         return $contactId;
     }
 

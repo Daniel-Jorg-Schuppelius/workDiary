@@ -12,6 +12,12 @@
     $assignableUsers = $assignableUsers ?? collect();
     $prefillStartAt = $prefillStartAt ?? null;
     $prefillUserId = $prefillUserId ?? 0;
+    // Fachliche Prefills (Feature 139: Folgeauftrag aus offenem Punkt).
+    $prefillCustomerId = $prefillCustomerId ?? null;
+    $prefillProjectId = $prefillProjectId ?? null;
+    $prefillTitle = $prefillTitle ?? '';
+    $prefillContent = $prefillContent ?? '';
+    $prefillOpenIssueSqid = $prefillOpenIssueSqid ?? null;
     $defaultUserId = old('user_id', $entry?->user_id ?? ($prefillUserId ?: auth()->id()));
 
     // Phase 6: EntryType-gesteuerte Felder
@@ -97,7 +103,7 @@
                 id="title"
                 name="title"
                 maxlength="200"
-                value="{{ old('title', $entry?->title) }}"
+                value="{{ old('title', $entry?->title ?? $prefillTitle) }}"
                 class="input input-bordered w-full @error('title') input-error @enderror"
                 placeholder="{{ __('Kurze Bezeichnung des Auftrags') }}"
             >
@@ -120,12 +126,19 @@
 @endif
 
 <x-form-group :legend="__('Eintrag')" icon="edit" tone="primary">
-    <x-textarea-field name="content" :label="__('Inhalt')" required rows="8" placeholder="{{ __('Beschreibe den Vorgang...') }}" :value="old('content', $entry?->content)" />
+    <x-textarea-field name="content" :label="__('Inhalt')" required rows="8" placeholder="{{ __('Beschreibe den Vorgang...') }}" :value="old('content', $entry?->content ?? $prefillContent)" />
 
     <x-textarea-field name="response" :label="__('Rückmeldung')" rows="4" placeholder="{{ __('Antwort oder Notiz (optional) ...') }}" :value="old('response', $entry?->response)" />
 </x-form-group>
 
 <input type="hidden" name="status" value="{{ $entry?->status?->value ?? \App\Enums\Diary\Status::Planned->value }}">
+@if (! $isEdit && $prefillOpenIssueSqid !== null)
+    {{-- Folgeauftrag (Feature 139): Rückverknüpfung + Projekt aus dem Subjekt des Punkts. --}}
+    <input type="hidden" name="open_issue_id" value="{{ old('open_issue_id', $prefillOpenIssueSqid) }}">
+    @if ($prefillProjectId !== null)
+        <input type="hidden" name="project_id" value="{{ old('project_id', \App\Support\Sqid::encode(\App\Models\Project::class, $prefillProjectId)) }}">
+    @endif
+@endif
 
 <x-form-group :legend="__('Zeitraum')" icon="event" tone="info" cols="2">
     <div class="fieldset">
@@ -152,7 +165,7 @@
 
     {{-- Fester Zeitraum --}}
     <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Fixed->value }}')" x-cloak>
-        <label class="fieldset-label">{{ __('Zeitraum') }}</label>
+        <span class="fieldset-label">{{ __('Zeitraum') }}</span>
         <x-date-range
             type="datetime-local"
             fromName="start_at"
@@ -183,7 +196,7 @@
 
     {{-- Zeitfenster --}}
     <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Window->value }}')" x-cloak>
-        <label class="fieldset-label">{{ __('Zeitfenster (Datum von/bis)') }}</label>
+        <span class="fieldset-label">{{ __('Zeitfenster (Datum von/bis)') }}</span>
         <x-date-range
             type="date"
             fromName="window_start_date"
@@ -201,7 +214,7 @@
 
     {{-- Backlog: keine Datumsfelder --}}
     <div class="fieldset md:col-span-2" x-show="isMode('{{ \App\Enums\Diary\Mode::Backlog->value }}')" x-cloak>
-        <p class="text-sm text-base-content/60">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
+        <p class="text-sm text-muted">{{ __('Kein Datum erfasst — erscheint im Backlog und kann später terminiert werden.') }}</p>
     </div>
 </x-form-group>
 
@@ -213,7 +226,7 @@
     <x-select-field name="customer_id" :label="__('Kunde')" x-bind:required="requiresCustomer">
         <option value="">—</option>
         @foreach ($customerOptions as $c)
-            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $entry?->customer_id)) === $c->sqid)>
+            <option value="{{ $c->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $entry?->customer_id ?? $prefillCustomerId)) === $c->sqid)>
                 {{ $c->name }}@if ($c->company) — {{ $c->company }}@endif
             </option>
         @endforeach
@@ -308,7 +321,11 @@
         // Bei Validierungsfehlern eingegebene neue Tags wiederherstellen.
         $tagPickerNew = collect(preg_split('/[,;\n]+/', (string) old('new_tags', '')) ?: [])
             ->map(fn ($v) => trim((string) $v))->filter()->values()->all();
-        $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => true];
+        // KI-Tagvorschläge (Feature 143, MVP-711): nur mit nutzbarer Capability.
+        $tagSuggestUrl = app(\App\Services\Ai\Suggestions\SuggestionViewData::class)->capabilityUsable(\App\Services\Ai\Suggestions\ClassificationSuggestionService::CAPABILITY)
+            ? route('ai.suggest.tags')
+            : null;
+        $tagPickerConfig = ['all' => $tagPickerAll, 'selectedIds' => $tagPickerSelected, 'recentIds' => $tagPickerRecent, 'initialNew' => $tagPickerNew, 'quickLimit' => 8, 'allowCreate' => true, 'suggestUrl' => $tagSuggestUrl, 'textSelector' => '[name="content"]', 'customerSelector' => '[name="customer_id"]'];
     @endphp
     <div class="fieldset"
          x-data="tagPicker"
@@ -348,6 +365,10 @@
             </template>
         </div>
 
+        @if ($tagSuggestUrl !== null)
+            <x-tag-picker-ai />
+        @endif
+
         {{-- Such-/Eingabefeld mit Dropdown --}}
         <div class="relative mt-2">
             <input type="text"
@@ -384,7 +405,7 @@
             </ul>
         </div>
 
-        <p class="text-xs text-base-content/50 mt-1">
+        <p class="text-xs text-muted mt-1">
             {{ __('Auf einen Tag klicken oder tippen, um zu suchen bzw. neue Tags anzulegen.') }}
         </p>
     </div>

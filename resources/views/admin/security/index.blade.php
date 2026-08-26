@@ -53,16 +53,16 @@
                 @if (($sessions['available'] ?? false) === true)
                     <dl class="grid grid-cols-1 gap-1 text-sm">
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('security.field.sessions_total') }}</dt>
+                            <dt class="text-muted">{{ __('security.field.sessions_total') }}</dt>
                             <dd class="font-mono text-xs">{{ $sessions['total'] ?? 0 }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2">
-                            <dt class="text-base-content/60">{{ __('security.field.sessions_active') }}</dt>
+                            <dt class="text-muted">{{ __('security.field.sessions_active') }}</dt>
                             <dd class="font-mono text-xs">{{ $sessions['active'] ?? 0 }}</dd>
                         </div>
                     </dl>
                 @else
-                    <p class="text-sm italic text-base-content/50">
+                    <p class="text-sm italic text-muted">
                         {{ __('security.hint.sessions_driver', ['driver' => $sessions['driver'] ?? config('session.driver')]) }}
                     </p>
                 @endif
@@ -78,19 +78,19 @@
                 </header>
                 <dl class="grid grid-cols-1 gap-1 text-sm">
                     <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-base-content/60">{{ __('security.field.users_total') }}</dt>
+                        <dt class="text-muted">{{ __('security.field.users_total') }}</dt>
                         <dd class="font-mono text-xs">{{ $twoFactor['users_total'] ?? 0 }}</dd>
                     </div>
                     <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-base-content/60">{{ __('security.field.users_with_2fa') }}</dt>
+                        <dt class="text-muted">{{ __('security.field.users_with_2fa') }}</dt>
                         <dd class="font-mono text-xs">{{ $twoFactor['users_with_2fa'] ?? 0 }}</dd>
                     </div>
                     <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-base-content/60">{{ __('security.field.credentials') }}</dt>
+                        <dt class="text-muted">{{ __('security.field.credentials') }}</dt>
                         <dd class="font-mono text-xs">{{ $twoFactor['credentials'] ?? 0 }}</dd>
                     </div>
                 </dl>
-                <p class="text-xs italic text-base-content/50">{{ __('security.hint.two_factor') }}</p>
+                <p class="text-xs italic text-muted">{{ __('security.hint.two_factor') }}</p>
             </div>
         </article>
 
@@ -103,11 +103,11 @@
                 </header>
                 <dl class="grid grid-cols-1 gap-1 text-sm">
                     <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-base-content/60">{{ __('security.field.plugins_active') }}</dt>
+                        <dt class="text-muted">{{ __('security.field.plugins_active') }}</dt>
                         <dd class="font-mono text-xs">{{ $integrations['count'] ?? 0 }}</dd>
                     </div>
                     <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-base-content/60">{{ __('security.field.external_references') }}</dt>
+                        <dt class="text-muted">{{ __('security.field.external_references') }}</dt>
                         <dd class="font-mono text-xs">{{ $integrations['references'] ?? 0 }}</dd>
                     </div>
                 </dl>
@@ -118,12 +118,12 @@
                         @endforeach
                     </div>
                 @else
-                    <p class="text-sm italic text-base-content/50">{{ __('security.empty.integrations') }}</p>
+                    <p class="text-sm italic text-muted">{{ __('security.empty.integrations') }}</p>
                 @endif
                 {{-- KI-Dienste (Feature 025): aktive Provider-Verbindungen, nie Schlüssel. --}}
                 <dl class="grid grid-cols-1 gap-1 text-sm">
                     <div class="flex items-baseline justify-between gap-2 border-t border-base-200/70 pt-1">
-                        <dt class="text-base-content/60">{{ __('ai.security.active_connections') }}</dt>
+                        <dt class="text-muted">{{ __('ai.security.active_connections') }}</dt>
                         <dd class="font-mono text-xs">{{ $integrations['ai_count'] ?? 0 }}</dd>
                     </div>
                 </dl>
@@ -141,7 +141,7 @@
 
     {{-- ── API-Tokens ─────────────────────────────────────────────────── --}}
     <x-card :title="__('security.section.tokens')">
-        <p class="mb-2 text-xs italic text-base-content/50">{{ __('security.hint.tokens_no_secret') }}</p>
+        <p class="mb-2 text-xs italic text-muted">{{ __('security.hint.tokens_no_secret') }}</p>
         @if (! empty($tokens['recent']))
             <x-table bare>
                 <x-slot:head>
@@ -202,7 +202,7 @@
                                         {{ $session['user'] }}
                                     </td>
                                     <td class="font-mono text-xs">{{ $session['ip'] ?? '—' }}</td>
-                                    <td class="text-xs text-base-content/60">{{ $session['user_agent'] ?? '—' }}</td>
+                                    <td class="text-xs text-muted">{{ $session['user_agent'] ?? '—' }}</td>
                                     <td class="font-mono text-xs">{{ $fmt($session['last_activity']) }}</td>
                                 </tr>
                             @endforeach
@@ -247,7 +247,7 @@
 
     {{-- ── Letzte Supportzugriffe ─────────────────────────────────────── --}}
     <x-card :title="__('security.section.support_access')">
-        <p class="mb-2 text-xs italic text-base-content/50">{{ __('security.hint.support_access') }}</p>
+        <p class="mb-2 text-xs italic text-muted">{{ __('security.hint.support_access') }}</p>
         @if (! empty($supportAccess['recent']))
             <x-table bare>
                 <x-slot:head>
@@ -263,7 +263,7 @@
                             <tr>
                                 <td class="font-mono text-xs">{{ $access['event'] }}</td>
                                 <td class="text-xs">{{ $access['user'] ?? '—' }}</td>
-                                <td class="text-xs text-base-content/60">{{ $access['subject'] ?? '—' }}</td>
+                                <td class="text-xs text-muted">{{ $access['subject'] ?? '—' }}</td>
                                 <td class="font-mono text-xs">{{ $access['ip'] ?? '—' }}</td>
                                 <td class="font-mono text-xs">{{ $fmt($access['created_at']) }}</td>
                             </tr>
@@ -277,7 +277,7 @@
     {{-- ── Sicherheitslage der Abhängigkeiten (OSV, Rang 70) ──────────── --}}
     <x-card :title="__('security.section.advisories')">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-            <p class="text-xs italic text-base-content/50">
+            <p class="text-xs italic text-muted">
                 {{ __('security.hint.advisories') }}
                 @if ($advisoriesLastPull)
                     · {{ __('security.field.last_pull') }}: {{ \Illuminate\Support\Carbon::parse($advisoriesLastPull)->translatedFormat('d.m.Y H:i') }}
@@ -320,7 +320,7 @@
                                 <td class="text-xs">
                                     <a href="https://osv.dev/vulnerability/{{ $advisory->external_id }}" target="_blank" rel="noopener noreferrer" class="link font-mono">{{ $advisory->external_id }}</a>
                                     @if ($advisory->summary)
-                                        <div class="max-w-md truncate text-base-content/60">{{ $advisory->summary }}</div>
+                                        <div class="max-w-md truncate text-muted">{{ $advisory->summary }}</div>
                                     @endif
                                 </td>
                                 <td class="font-mono text-xs">{{ $advisory->fixed_in ?? '—' }}</td>
@@ -355,7 +355,7 @@
             @endif
             <code class="text-xs">php artisan {{ $encryption['command'] ?? 'security:encrypt-existing' }}</code>
         </div>
-        <p class="mb-2 text-xs italic text-base-content/50">
+        <p class="mb-2 text-xs italic text-muted">
             {{ __('security.hint.encryption', ['command' => $encryption['command'] ?? 'security:encrypt-existing']) }}
         </p>
         @if (! empty($encryption['fields']))
@@ -382,7 +382,7 @@
         @endif
     </x-card>
 
-    <p class="text-right text-xs text-base-content/40">
+    <p class="text-right text-xs text-muted">
         {{ __('security.generated_at', ['at' => $fmt($security['generated_at'] ?? null)]) }}
     </p>
 </x-index-page>

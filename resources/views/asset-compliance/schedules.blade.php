@@ -69,7 +69,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">event_available</span>' :colspan="6" :title="__('Keine offenen Prüftermine.')" compact />
+                <x-table.empty icon="event_available" :colspan="6" :title="__('Keine offenen Prüftermine.')" compact />
             @endforelse
         </x-table>
     </x-card>

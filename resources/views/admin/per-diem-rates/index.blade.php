@@ -66,7 +66,7 @@
                 <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rate->partial_day_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}</td>
                 <td class="text-right tabular-nums">{{ $rate->overnight_amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($rate->overnight_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) : '—' }}</td>
                 <td>{{ $rate->currency->value }}</td>
-                <td class="text-base-content/60 text-sm">{{ $rate->source ?? '—' }}</td>
+                <td class="text-muted text-sm">{{ $rate->source ?? '—' }}</td>
                 <td class="text-right">
                     <div class="flex justify-end gap-1">
                         <x-icon-btn icon="edit"
@@ -82,7 +82,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">restaurant_menu</span>' :colspan="10" :title="__('Keine Pauschalensätze vorhanden')" compact />
+            <x-table.empty icon="restaurant_menu" :colspan="10" :title="__('Keine Pauschalensätze vorhanden')" compact />
         @endforelse
     </x-table>
 

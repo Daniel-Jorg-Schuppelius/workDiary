@@ -72,7 +72,7 @@
                 <tr class="hover" id="form-submission-{{ $submission->id }}">
                     <td>
                         <a href="{{ route('form-submissions.show', $submission) }}" class="flex items-center gap-2 font-medium link-hover">
-                            <x-icon name="edit_note" class="text-base-content/60" />
+                            <x-icon name="edit_note" class="text-muted" />
                             {{ optional($submission->template)->name ?? '—' }}
                         </a>
                     </td>

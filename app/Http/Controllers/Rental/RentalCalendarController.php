@@ -112,31 +112,24 @@ class RentalCalendarController extends Controller {
         ]);
 
         $kind = RentalReservationKind::from($data['kind']);
-        if (in_array($kind, [RentalReservationKind::Rental, RentalReservationKind::Hard], true)) {
-            return back()->withErrors(['kind' => __('Harte Reservierungen entstehen nur über die Verleihakte.')]);
-        }
-
         $asset = Asset::query()->whereKey($data['asset_id'])->firstOrFail();
-        $from = Carbon::parse($data['starts_at']);
-        $to = Carbon::parse($data['ends_at']);
 
-        if ($kind->isBlocking()) {
-            $conflict = $this->availability->findConflict($asset, $from, $to);
-            if ($conflict !== null) {
-                return back()->withErrors(['starts_at' => __('Der Zeitraum kollidiert mit einer bestehenden Belegung (:kind).', ['kind' => $conflict->kind->label()])]);
-            }
+        // Schreibstelle im Service (MVP-714): Kind-Regel + Konfliktprüfung
+        // gelten identisch für manuelle Fenster und Portal-Anfragen.
+        try {
+            $this->availability->createWindow(
+                $asset,
+                $kind,
+                Carbon::parse($data['starts_at']),
+                Carbon::parse($data['ends_at']),
+                $data['note'] ?? null,
+                $request->user()?->id,
+            );
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['kind' => $e->getMessage()]);
+        } catch (\App\Exceptions\RentalConflictException $e) {
+            return back()->withErrors(['starts_at' => $e->getMessage()]);
         }
-
-        RentalReservation::query()->create([
-            'organization_id' => $asset->organization_id,
-            'asset_id' => $asset->id,
-            'kind' => $kind->value,
-            'status' => 'active',
-            'starts_at' => $from,
-            'ends_at' => $to,
-            'note' => $data['note'] ?? null,
-            'created_by' => $request->user()?->id,
-        ]);
 
         return back()->with('status', __('Belegungsfenster eingetragen.'));
     }

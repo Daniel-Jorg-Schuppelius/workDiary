@@ -43,30 +43,30 @@
         <x-card :title="__('problemreport.section.what')">
             <dl class="space-y-2 text-sm">
                 <div>
-                    <dt class="text-xs uppercase tracking-wide text-base-content/60">{{ __('problemreport.field.reporter') }}</dt>
+                    <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.reporter') }}</dt>
                     <dd>{{ $report->reporter?->name ?? '—' }}
                         @if ($report->contact_ok)<x-status-badge size="xs" tone="success">{{ __('problemreport.field.contact_ok_short') }}</x-status-badge>@endif
                     </dd>
                 </div>
                 <div>
-                    <dt class="text-xs uppercase tracking-wide text-base-content/60">{{ __('problemreport.field.description') }}</dt>
+                    <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.description') }}</dt>
                     <dd class="whitespace-pre-wrap">{{ $report->description }}</dd>
                 </div>
                 @if ($report->expected_behavior)
                     <div>
-                        <dt class="text-xs uppercase tracking-wide text-base-content/60">{{ __('problemreport.field.expected') }}</dt>
+                        <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.expected') }}</dt>
                         <dd class="whitespace-pre-wrap">{{ $report->expected_behavior }}</dd>
                     </div>
                 @endif
                 @if ($report->actual_behavior)
                     <div>
-                        <dt class="text-xs uppercase tracking-wide text-base-content/60">{{ __('problemreport.field.actual') }}</dt>
+                        <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.actual') }}</dt>
                         <dd class="whitespace-pre-wrap">{{ $report->actual_behavior }}</dd>
                     </div>
                 @endif
                 @if ($report->attachments->isNotEmpty())
                     <div>
-                        <dt class="text-xs uppercase tracking-wide text-base-content/60">{{ __('problemreport.field.screenshots') }}</dt>
+                        <dt class="text-xs uppercase tracking-wide text-muted">{{ __('problemreport.field.screenshots') }}</dt>
                         <dd class="flex flex-wrap gap-2">
                             @foreach ($report->attachments as $attachment)
                                 <span class="badge badge-ghost">{{ $attachment->original_name }} ({{ $attachment->humanSize() }})</span>
@@ -85,7 +85,7 @@
                     <pre class="mt-2 max-h-72 overflow-auto text-xs leading-tight">{{ json_encode($report->diagnostic_excerpt, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                 </details>
             @else
-                <p class="mt-3 text-xs text-base-content/60">{{ __('problemreport.hint.no_diagnostics') }}</p>
+                <p class="mt-3 text-xs text-muted">{{ __('problemreport.hint.no_diagnostics') }}</p>
             @endif
             @if ($report->delivery_error)
                 <div role="alert" class="alert alert-error alert-soft mt-3 text-sm">

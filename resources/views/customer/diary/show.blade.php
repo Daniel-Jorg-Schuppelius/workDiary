@@ -31,7 +31,7 @@
         <section class="rounded-box border border-base-300 bg-base-100 p-4">
             <h2 class="mb-2 font-semibold">{{ __('Fotos') }}</h2>
             @if ($photos->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">photo_library</span>' :title="__('Keine freigegebenen Fotos.')" compact />
+                <x-empty-state icon="photo_library" :title="__('Keine freigegebenen Fotos.')" compact />
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($photos as $photo)
@@ -66,7 +66,7 @@
         <section class="rounded-box border border-base-300 bg-base-100 p-4">
             <h2 class="mb-2 font-semibold">{{ __('Material') }}</h2>
             @if ($materials->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' :title="__('Kein Material erfasst.')" compact />
+                <x-empty-state icon="inventory_2" :title="__('Kein Material erfasst.')" compact />
             @else
                 <x-table>
                     <x-slot:head>
@@ -88,7 +88,7 @@
         <section class="rounded-box border border-base-300 bg-base-100 p-4">
             <h2 class="mb-2 font-semibold">{{ __('Protokolle') }}</h2>
             @if ($protocols->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :title="__('Keine freigegebenen Protokolle.')" compact />
+                <x-empty-state icon="description" :title="__('Keine freigegebenen Protokolle.')" compact />
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($protocols as $protocol)
@@ -105,7 +105,7 @@
         <section class="rounded-box border border-base-300 bg-base-100 p-4">
             <h2 class="mb-2 font-semibold">{{ __('Kommunikation') }}</h2>
             @if ($notes->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">forum</span>' :title="__('Keine freigegebenen Notizen.')" compact />
+                <x-empty-state icon="forum" :title="__('Keine freigegebenen Notizen.')" compact />
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($notes as $note)
@@ -151,16 +151,16 @@
                        class="btn btn-primary btn-sm">{{ __('Rückfrage stellen') }}</a>
                 </div>
                 @if ($diaryQueries->isEmpty())
-                    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">contact_support</span>' :title="__('Noch keine Rückfragen zu diesem Auftrag.')" compact />
+                    <x-empty-state icon="contact_support" :title="__('Noch keine Rückfragen zu diesem Auftrag.')" compact />
                 @else
                     <ul class="divide-y divide-base-300 text-sm">
                         @foreach ($diaryQueries as $query)
                             <li class="py-2">
-                                <p class="text-xs font-semibold text-base-content/60">{{ $query->asker_name ?? __('Sie') }} ({{ __('Kunde') }}) · {{ $query->created_at?->fdatetime() }}</p>
+                                <p class="text-xs font-semibold text-muted">{{ $query->asker_name ?? __('Sie') }} ({{ __('Kunde') }}) · {{ $query->created_at?->fdatetime() }}</p>
                                 <p class="whitespace-pre-line">{{ $query->question }}</p>
                                 @if ($query->answer !== null)
                                     <div class="mt-2 rounded-box bg-base-200/60 p-2">
-                                        <p class="text-xs font-semibold text-base-content/60">{{ $query->answeredBy?->name ?? __('Service-Team') }} ({{ __('Team') }})@if ($query->answered_at) · {{ $query->answered_at->fdatetime() }}@endif</p>
+                                        <p class="text-xs font-semibold text-muted">{{ $query->answeredBy?->name ?? __('Service-Team') }} ({{ __('Team') }})@if ($query->answered_at) · {{ $query->answered_at->fdatetime() }}@endif</p>
                                         <p class="whitespace-pre-line">{{ $query->answer }}</p>
                                     </div>
                                 @endif

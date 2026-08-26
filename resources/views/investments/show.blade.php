@@ -118,7 +118,7 @@
                                     <td>
                                         {{ $option->title }}
                                         @if ($option->recommended)<span class="badge badge-success badge-xs">{{ __('Empfehlung') }}</span>@endif
-                                        @if ($option->supplier)<div class="text-xs text-base-content/60">{{ $option->supplier->displayLabel() }}</div>@endif
+                                        @if ($option->supplier)<div class="text-xs text-muted">{{ $option->supplier->displayLabel() }}</div>@endif
                                     </td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->one_time_cost, 2, withThousandsSeparator: true) }} €</td>
                                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $option->recurring_cost_yearly, 2, withThousandsSeparator: true) }} €</td>
@@ -147,7 +147,7 @@
             @if (in_array($case->status, \App\Models\Investments\InvestmentCase::PLANNING_STATUSES, true))
                 @unless ($hasCostCenters)
                     <div class="alert alert-warning text-sm">
-                        <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                        <x-icon name="warning" />
                         <div class="flex flex-wrap items-center gap-2">
                             {{ __('Noch keine Kostenstellen angelegt — für saubere Budgetauswertung zuerst eine anlegen:') }}
                             <form method="POST" action="{{ route('investments.cost-centers.store') }}" class="flex flex-wrap items-center gap-1">
@@ -190,7 +190,7 @@
                         <div class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">V{{ $request->version }} · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $request->amount, 2, withThousandsSeparator: true) }} €</span>
                             <x-status-badge size="xs" outline>{{ __("values.{$request->status}") }}</x-status-badge>
-                            <span class="text-xs text-base-content/60">{{ __("values.{$request->cost_kind}") }} · {{ __("values.{$request->financing}") }}</span>
+                            <span class="text-xs text-muted">{{ __("values.{$request->cost_kind}") }} · {{ __("values.{$request->financing}") }}</span>
                         </div>
                         <div class="mt-1 text-sm">
                             @foreach ($request->approvals->sortBy('step') as $approval)
@@ -244,7 +244,7 @@
                         <li>
                             <span class="badge badge-outline badge-xs">{{ \App\Support\EntityType::label($link->linkable_type) }}</span>
                             {{ $link->linkable?->getAttribute('title') ?? $link->linkable?->getAttribute('name') ?? $link->linkable?->getAttribute('number') ?? ('#' . $link->linkable_id) }}
-                            @if ($link->note)<span class="text-base-content/60">— {{ $link->note }}</span>@endif
+                            @if ($link->note)<span class="text-muted">— {{ $link->note }}</span>@endif
                         </li>
                     @endforeach
                 </ul>
@@ -340,7 +340,7 @@
                 </form>
             @endcan
         @else
-            <p class="text-sm text-base-content/60">{{ __('Nachbewertung wird nach Abschluss oder Abbruch möglich.') }}</p>
+            <p class="text-sm text-muted">{{ __('Nachbewertung wird nach Abschluss oder Abbruch möglich.') }}</p>
         @endif
     </x-card>
 </x-page-shell>

@@ -21,7 +21,7 @@
         <x-input-field name="name" :label="__('Bezeichnung')" required maxlength="120" :value="old('name', '')" />
         <x-input-field name="opening_balance" type="number" :label="__('Anfangsbestand (EUR)')" required min="0" step="0.01" :value="old('opening_balance', '0.00')" />
         <x-input-field name="opened_on" type="date" :label="__('Eröffnet am')" required :value="old('opened_on', now()->format('Y-m-d'))" />
-        <p class="text-xs text-base-content/60">{{ __('Hinweis: Buchungen sind unveränderlich (GoBD) — Korrekturen nur als Storno-Gegenbuchung.') }}</p>
+        <p class="text-xs text-muted">{{ __('Hinweis: Buchungen sind unveränderlich (GoBD) — Korrekturen nur als Storno-Gegenbuchung.') }}</p>
     </x-form-group>
 
     <x-validation-errors />

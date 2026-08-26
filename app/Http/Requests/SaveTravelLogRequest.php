@@ -10,7 +10,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\Travel\TravelLogVehicle;
+use App\Enums\Travel\{TravelLogVehicle, TripKind};
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use Carbon\CarbonImmutable;
 use Illuminate\Validation\{Rule, Validator};
@@ -25,6 +25,7 @@ class SaveTravelLogRequest extends BaseFormRequest {
         'customer_id' => \App\Models\Customer::class,
         'attendance_id' => \App\Models\Attendance::class,
         'vehicle_id' => \App\Models\Vehicle::class,
+        'corrects_travel_log_id' => \App\Models\TravelLog::class,
     ];
 
     /**
@@ -88,6 +89,12 @@ class SaveTravelLogRequest extends BaseFormRequest {
             'from_address' => ['nullable', 'string', 'max:255'],
             'to_address' => ['nullable', 'string', 'max:255'],
             'distance_km' => ['required', 'numeric', 'min:0', 'max:10000'],
+            // Fahrtenbuch (Feature 137): Pflicht/Kette/Plausibilität prüft der Service je Fahrzeugmodus.
+            'odometer_start_km' => ['nullable', 'integer', 'min:0', 'max:9999999'],
+            'odometer_end_km' => ['nullable', 'integer', 'min:0', 'max:9999999', 'gte:odometer_start_km'],
+            'trip_kind' => ['nullable', Rule::enum(TripKind::class)],
+            'corrects_travel_log_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('travel_logs')],
+            'correction_reason' => ['nullable', 'string', 'max:255', 'required_with:corrects_travel_log_id'],
             'vehicle' => ['required', Rule::enum(TravelLogVehicle::class)],
             'vehicle_label' => ['nullable', 'string', 'max:64'],
             'purpose' => ['nullable', 'string', 'max:255'],
@@ -111,6 +118,12 @@ class SaveTravelLogRequest extends BaseFormRequest {
         $data = parent::validated();
         $data['round_trip'] = (bool) ($data['round_trip'] ?? false);
         $data['reimbursable'] = (bool) ($data['reimbursable'] ?? true);
+        $data['trip_kind'] = ($data['trip_kind'] ?? null) ?: TripKind::Business->value;
+        foreach (['odometer_start_km', 'odometer_end_km'] as $field) {
+            if (($data[$field] ?? '') === '') {
+                $data[$field] = null;
+            }
+        }
 
         return $data;
     }

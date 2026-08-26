@@ -65,18 +65,18 @@
                     <td>
                         <span class="font-medium">{{ $control->title }}</span>
                         @if ($control->description)
-                            <span class="block max-w-md truncate text-xs text-base-content/60"
+                            <span class="block max-w-md truncate text-xs text-muted"
                                   title="{{ $control->description }}">{{ $control->description }}</span>
                         @endif
                         @if ($control->evidence_note)
-                            <span class="block max-w-md truncate text-xs text-base-content/50"
+                            <span class="block max-w-md truncate text-xs text-muted"
                                   title="{{ $control->evidence_note }}"><x-icon name="attachment" /> {{ $control->evidence_note }}</span>
                         @endif
                     </td>
                     <td><x-status-badge :tone="$control->implementation_status->tone()">{{ $control->implementation_status->label() }}</x-status-badge></td>
                     <td>
                         @if ($control->requirements->isEmpty())
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @else
                             <div class="flex max-w-xs flex-wrap gap-1">
                                 @foreach ($control->requirements as $requirement)

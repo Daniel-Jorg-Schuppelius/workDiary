@@ -49,6 +49,7 @@
                     <th>{{ __('Standardfahrer') }}</th>
                     <x-table.th sort="rate" align="right">{{ __('Satz €/km') }}</x-table.th>
                     <x-table.th sort="odometer" align="right">{{ __('Tachostand') }}</x-table.th>
+                    <th>{{ __('Prüffristen') }}</th>
                     <th></th>
                 </tr>
             </x-slot:head>
@@ -66,7 +67,27 @@
                             —
                         @endif
                     </td>
-                    <td class="text-right">{{ $vehicle->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vehicle->odometer_km, 0, withThousandsSeparator: true) . ' km' : '—' }}</td>
+                    <td class="text-right">
+                        {{ $vehicle->odometer_km !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($vehicle->odometer_km, 0, withThousandsSeparator: true) . ' km' : '—' }}
+                        @if ($vehicle->logbook_mode)
+                            <x-status-badge tone="info" size="xs" class="ml-1">{{ __('Fahrtenbuch') }}</x-status-badge>
+                        @endif
+                        @if ($vehicle->subject_to_driving_time_rules)
+                            <x-status-badge tone="warning" size="xs" class="ml-1" title="{{ __('Lenk- und Ruhezeitregeln anwenden') }}">{{ __('Lenkzeit') }}</x-status-badge>
+                        @endif
+                    </td>
+                    <td class="whitespace-nowrap">
+                        {{-- Feature 138: Fristen-Ampel aus dem zugeordneten Asset --}}
+                        @if (isset($inspections[$vehicle->id]))
+                            @php($insp = $inspections[$vehicle->id])
+                            <x-status-badge :tone="$inspectionTones[$insp['status']->value] ?? 'ghost'" size="xs">{{ $insp['status']->label() }}</x-status-badge>
+                            @if ($insp['next_due_on'])
+                                <span class="ml-1 text-xs">{{ $insp['next_profile'] }} · {{ $insp['next_due_on']->fdate() }}</span>
+                            @endif
+                        @else
+                            <span class="text-xs">—</span>
+                        @endif
+                    </td>
                     <td class="text-right">
                         <x-icon-btn icon="edit"
                                     data-entry-modal-trigger
@@ -86,7 +107,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :colspan="8" :title="__('Keine Fahrzeuge erfasst')" compact />
+                <x-table.empty icon="directions_car" :colspan="9" :title="__('Keine Fahrzeuge erfasst')" compact />
             @endforelse
         </x-table>
 

@@ -41,12 +41,12 @@
                     @endif
                 </div>
                 <div>
-                    <div class="text-xs uppercase text-base-content/60">{{ __('Begründung') }}</div>
+                    <div class="text-xs uppercase text-muted">{{ __('Begründung') }}</div>
                     <div class="whitespace-pre-wrap">{{ $request->reason }}</div>
                 </div>
                 @if ($request->decision_note)
                     <div>
-                        <div class="text-xs uppercase text-base-content/60">{{ __('Entscheidungs-Notiz') }}</div>
+                        <div class="text-xs uppercase text-muted">{{ __('Entscheidungs-Notiz') }}</div>
                         <div class="whitespace-pre-wrap">{{ $request->decision_note }}</div>
                     </div>
                 @endif
@@ -56,7 +56,7 @@
         <h3 class="text-base font-semibold mt-4">{{ __('Items (:n)', ['n' => $request->items->count()]) }}</h3>
         @foreach ($request->items as $item)
             <div class="border border-base-300 rounded-md p-3 mb-2">
-                <div class="text-xs text-base-content/60">
+                <div class="text-xs text-muted">
                     {{ \App\Support\EntityType::label($item->target_type) }} #{{ $item->target_id ?? '—' }} · {{ \App\Support\Trans::or('attendance.correction.action.' . $item->action, $item->action) }}
                 </div>
                 <div class="grid md:grid-cols-2 gap-3 mt-2">

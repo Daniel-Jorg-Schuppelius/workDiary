@@ -76,13 +76,13 @@
                             {{ $deadline['immediate'] ? __('unverzüglich') : ($deadline['due_at'] !== null ? $deadline['due_at']->fdatetime() : '—') }}
                         </x-status-badge>
                         <span>{{ $deadline['label'] }}</span>
-                        @if ($deadline['source'])<span class="text-xs text-base-content/60">({{ $deadline['source'] }})</span>@endif
+                        @if ($deadline['source'])<span class="text-xs text-muted">({{ $deadline['source'] }})</span>@endif
                         @if ($deadline['overdue'])<span class="text-error text-xs font-semibold">{{ __('überfällig') }}</span>@endif
                     </li>
                 @endforeach
             </ul>
             @unless ($case->activated_at)
-                <p class="mt-1 text-xs text-base-content/60">{{ __('Fristen laufen ab der Aktivierung (aktuell: ab Meldung gerechnet).') }}</p>
+                <p class="mt-1 text-xs text-muted">{{ __('Fristen laufen ab der Aktivierung (aktuell: ab Meldung gerechnet).') }}</p>
             @endunless
         </x-card>
     @endif
@@ -128,8 +128,8 @@
                         <li class="flex flex-wrap items-center gap-2">
                             <span class="badge badge-outline badge-sm">{{ $assignment->role->name ?? '—' }}</span>
                             <span class="font-medium">{{ $assignment->user->name ?? '—' }}</span>
-                            @if ($assignment->deputy)<span class="text-xs text-base-content/60">{{ __('Vertretung: :name', ['name' => $assignment->deputy->name]) }}</span>@endif
-                            @if ($assignment->contact_note)<span class="text-xs text-base-content/60">{{ $assignment->contact_note }}</span>@endif
+                            @if ($assignment->deputy)<span class="text-xs text-muted">{{ __('Vertretung: :name', ['name' => $assignment->deputy->name]) }}</span>@endif
+                            @if ($assignment->contact_note)<span class="text-xs text-muted">{{ $assignment->contact_note }}</span>@endif
                             @if ($assignment->acknowledged_at)
                                 <x-status-badge size="xs" tone="success">{{ __('quittiert :time', ['time' => $assignment->acknowledged_at->fdatetime()]) }}</x-status-badge>
                             @elseif ($assignment->alerted_at)
@@ -173,7 +173,7 @@
                 <div class="max-h-72 space-y-2 overflow-y-auto">
                     @foreach ($case->situationReports as $report)
                         <div class="rounded-box border border-base-300 p-2 text-sm">
-                            <div class="flex items-center gap-2 text-xs text-base-content/60">
+                            <div class="flex items-center gap-2 text-xs text-muted">
                                 <span class="badge badge-outline badge-xs">V{{ $report->version }}</span>
                                 {{ $report->created_at->fdatetime() }}
                             </div>
@@ -196,9 +196,9 @@
             <ul class="space-y-1 text-sm">
                 @foreach ($case->decisions as $decision)
                     <li>
-                        <span class="text-xs text-base-content/60">{{ $decision->decided_at->fdatetime() }}</span>
+                        <span class="text-xs text-muted">{{ $decision->decided_at->fdatetime() }}</span>
                         {{ $decision->decision }}
-                        @if ($decision->rationale)<span class="text-xs text-base-content/60">— {{ $decision->rationale }}</span>@endif
+                        @if ($decision->rationale)<span class="text-xs text-muted">— {{ $decision->rationale }}</span>@endif
                     </li>
                 @endforeach
             </ul>
@@ -235,9 +235,9 @@
                         <li class="flex flex-wrap items-center gap-2">
                             <x-status-badge size="xs" outline>{{ __("values.{$action->status}") }}</x-status-badge>
                             <span @class(['line-through opacity-60' => in_array($action->status, ['done', 'cancelled'], true)])>{{ $action->title }}</span>
-                            @if ($action->assignee)<span class="text-xs text-base-content/60">{{ $action->assignee->name }}</span>@endif
+                            @if ($action->assignee)<span class="text-xs text-muted">{{ $action->assignee->name }}</span>@endif
                             @if ($action->due_at)
-                                <span @class(['text-xs', 'text-error font-semibold' => $action->due_at->isPast() && ! in_array($action->status, ['done', 'cancelled'], true), 'text-base-content/60' => ! $action->due_at->isPast()])>{{ $action->due_at->fdatetime() }}</span>
+                                <span @class(['text-xs', 'text-error font-semibold' => $action->due_at->isPast() && ! in_array($action->status, ['done', 'cancelled'], true), 'text-muted' => ! $action->due_at->isPast()])>{{ $action->due_at->fdatetime() }}</span>
                             @endif
                             @if ($canManage && ! in_array($action->status, ['done', 'cancelled'], true))
                                 <form method="POST" action="{{ route('crisis.actions.update', [$case, $action]) }}" class="ml-auto flex items-center gap-1">
@@ -282,7 +282,7 @@
                                 <span class="badge badge-outline badge-xs">{{ __("values.{$communication->audience}") }}</span>
                                 <span class="font-medium">{{ $communication->subject }}</span>
                                 <x-status-badge size="xs" :tone="$communication->status === 'sent' ? 'success' : ($communication->status === 'approved' ? 'info' : 'outline')">{{ __("values.{$communication->status}") }}</x-status-badge>
-                                @if ($communication->sent_at)<span class="text-xs text-base-content/60">{{ $communication->sent_at->fdatetime() }} · {{ $communication->channel }}</span>@endif
+                                @if ($communication->sent_at)<span class="text-xs text-muted">{{ $communication->sent_at->fdatetime() }} · {{ $communication->channel }}</span>@endif
                             </div>
                             @if ($communication->status === 'draft')
                                 @can('approve', $case)
@@ -325,9 +325,9 @@
                         <li class="flex flex-wrap items-center gap-2">
                             <x-status-badge size="xs" :tone="$impact->status === 'restored' ? 'success' : ($impact->status === 'down' ? 'error' : 'warning')">{{ __("values.{$impact->status}") }}</x-status-badge>
                             <span class="font-medium">{{ $impact->process_name }}</span>
-                            @if ($impact->rto_hours !== null)<span class="text-xs text-base-content/60">RTO {{ $impact->rto_hours }} h</span>@endif
-                            @if ($impact->rpo_hours !== null)<span class="text-xs text-base-content/60">RPO {{ $impact->rpo_hours }} h</span>@endif
-                            @if ($impact->workaround)<span class="text-xs text-base-content/60">{{ $impact->workaround }}</span>@endif
+                            @if ($impact->rto_hours !== null)<span class="text-xs text-muted">RTO {{ $impact->rto_hours }} h</span>@endif
+                            @if ($impact->rpo_hours !== null)<span class="text-xs text-muted">RPO {{ $impact->rpo_hours }} h</span>@endif
+                            @if ($impact->workaround)<span class="text-xs text-muted">{{ $impact->workaround }}</span>@endif
                             @if ($canManage)
                                 <form method="POST" action="{{ route('crisis.bcm.update', [$case, $impact]) }}" class="ml-auto flex items-center gap-1">
                                     @csrf @method('PUT')
@@ -396,7 +396,7 @@
                 </form>
             @endif
         @else
-            <p class="text-sm text-base-content/60">{{ __('Nachbereitung wird nach der Entwarnung möglich.') }}</p>
+            <p class="text-sm text-muted">{{ __('Nachbereitung wird nach der Entwarnung möglich.') }}</p>
         @endif
     </x-card>
 </x-page-shell>

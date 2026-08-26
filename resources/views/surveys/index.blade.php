@@ -24,7 +24,7 @@
     </x-slot:actions>
 
     @if ($surveys->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">reviews</span>'
+        <x-empty-state framed icon="reviews"
                        :title="__('Noch keine Fragebögen.')"
                        :message="__('NPS, Projektabschluss-Feedback oder freie Umfragen — angelegt in Minuten, versendet als Einmal-Link.')" />
     @else

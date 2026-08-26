@@ -68,7 +68,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">gavel</span>' :colspan="7" :title="__('Keine Ausschreibungen — „Ausschreibung erfassen“ startet die erste Akte.')" compact />
+            <x-table.empty icon="gavel" :colspan="7" :title="__('Keine Ausschreibungen — „Ausschreibung erfassen“ startet die erste Akte.')" compact />
         @endforelse
     </x-table>
 

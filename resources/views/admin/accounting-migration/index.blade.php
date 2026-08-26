@@ -21,7 +21,7 @@
                   class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 @csrf
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('accounting_migration.plan_heading') }}</h2>
-                <p class="text-xs text-base-content/60">{{ __('accounting_migration.plan_hint') }}</p>
+                <p class="text-xs text-muted">{{ __('accounting_migration.plan_hint') }}</p>
 
                 {{-- Richtung: Quelle und Ziel sind frei wählbar (MVP-653). --}}
                 <div class="grid gap-2 sm:grid-cols-2">
@@ -59,7 +59,7 @@
                 <label class="form-control max-w-xs">
                     <span class="label-text text-sm">{{ __('accounting_migration.cutover_on') }}</span>
                     <input type="date" name="cutover_on" class="input input-bordered input-sm" value="{{ old('cutover_on') }}">
-                    <span class="label-text-alt text-xs text-base-content/50">{{ __('accounting_migration.cutover_hint') }}</span>
+                    <span class="label-text-alt text-xs text-muted">{{ __('accounting_migration.cutover_hint') }}</span>
                 </label>
 
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('accounting_migration.plan_submit') }}</button>
@@ -73,7 +73,7 @@
                             {{ __('accounting_migration.run_heading', ['source' => $run->source()->label(), 'target' => $run->target()->label()]) }}
                             <span class="badge badge-{{ $run->status->tone() }} badge-sm">{{ $run->status->label() }}</span>
                         </h2>
-                        <p class="text-sm text-base-content/60">
+                        <p class="text-sm text-muted">
                             {{ __('accounting_migration.cutover_on') }}:
                             {{ $run->cutover_on?->fdate() ?? __('accounting_migration.no_cutover') }}
                             @if ($run->dry_run_only)
@@ -176,7 +176,7 @@
                                                 {{ __('accounting_migration.status.' . $item->status) }}
                                             </span>
                                             @if ($item->note)
-                                                <div class="text-xs text-base-content/60">{{ $item->note }}</div>
+                                                <div class="text-xs text-muted">{{ $item->note }}</div>
                                             @endif
                                         </td>
                                         <td class="text-right">

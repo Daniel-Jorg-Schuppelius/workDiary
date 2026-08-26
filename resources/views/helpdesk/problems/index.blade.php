@@ -64,8 +64,8 @@
                             <x-status-badge size="sm" outline>{{ $statusLabels[$problem->status] ?? $problem->status }}</x-status-badge>
                         </td>
                         <td class="text-right tabular-nums">{{ $problem->tickets_count }}</td>
-                        <td class="text-sm text-base-content/60">{{ $problem->owner?->name ?? '—' }}</td>
-                        <td class="text-sm {{ $checkOverdue ? 'text-error font-medium' : 'text-base-content/60' }}">
+                        <td class="text-sm text-muted">{{ $problem->owner?->name ?? '—' }}</td>
+                        <td class="text-sm {{ $checkOverdue ? 'text-error font-medium' : 'text-muted' }}">
                             @if ($problem->effectiveness_checked_at !== null)
                                 {{ __('Geprüft am') }} {{ $problem->effectiveness_checked_at->translatedFormat('d.m.Y') }}
                             @elseif ($due !== null)

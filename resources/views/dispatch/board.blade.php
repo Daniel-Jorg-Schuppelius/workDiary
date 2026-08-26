@@ -74,8 +74,10 @@
                     <section class="rounded-box border border-base-300 bg-base-100 shadow-xs"
                              data-dispatch-lane data-user="{{ $userId }}">
                         <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
-                            <span class="font-['Space_Grotesk'] font-semibold">
+                            <span class="flex items-center gap-2 font-['Space_Grotesk'] font-semibold">
                                 {{ $lane['name'] !== '' ? $lane['name'] : __('Nicht zugewiesen') }}
+                                {{-- Feature 144: Rest-Lenkzeit / nächste Fahrtunterbrechung des Fahrers --}}
+                                <x-driving-time-badge :budget="$drivingBudgets[$userId] ?? null" />
                             </span>
                             <span class="badge badge-sm">{{ count($lane['items']) }}</span>
                         </header>
@@ -86,7 +88,7 @@
                         </div>
                     </section>
                 @empty
-                    <p class="px-2 py-8 text-center text-sm text-base-content/50">{{ __('Keine Aufträge im gewählten Zeitraum.') }}</p>
+                    <p class="px-2 py-8 text-center text-sm text-muted">{{ __('Keine Aufträge im gewählten Zeitraum.') }}</p>
                 @endforelse
             </div>
         @else
@@ -108,7 +110,7 @@
                             @foreach ($items as $item)
                                 @include('dispatch._board_card', ['item' => $item])
                             @endforeach
-                            <p class="px-2 py-4 text-center text-xs text-base-content/50 {{ count($items) ? 'hidden' : '' }}">{{ __('Keine Aufträge') }}</p>
+                            <p class="px-2 py-4 text-center text-xs text-muted {{ count($items) ? 'hidden' : '' }}">{{ __('Keine Aufträge') }}</p>
                         </div>
                     </section>
                 @endforeach

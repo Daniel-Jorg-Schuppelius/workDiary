@@ -42,10 +42,10 @@
         @include('reports._standard_filters', ['idPrefix' => 'economics'])
     </x-filter-bar>
 
-    <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+    <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
 
     <div role="alert" class="alert alert-info mb-4 text-sm">
-        <span class="material-symbols-outlined" aria-hidden="true">info</span>
+        <x-icon name="info" />
         <div>
             {{ __('Erlös = abrechenbare Zeiten (Satz) + abgerechnetes Material + abrechenbare Spesen. Kosten = interner Zeit-Kostensatz + Material- und Beleg-Direktaufwand. Maßgebliche Rechnungen führt das externe Fakturierungssystem; hier dienen die erfassten Beträge als Projektion.') }}
             @if($costRateMissing)
@@ -67,7 +67,7 @@
             <div class="flex flex-wrap items-center justify-between gap-3">
                 <div>
                     <div class="text-sm font-semibold">{{ __('reporting.target.metric.contributionMargin') }}</div>
-                    <div class="text-xs text-base-content/60">{{ __('reporting.target.subtitle') }}</div>
+                    <div class="text-xs text-muted">{{ __('reporting.target.subtitle') }}</div>
                 </div>
                 <div class="flex items-center gap-3">
                     <span class="text-2xl font-semibold tabular-nums {{ $contribTone($marginTarget['met'] ? 1 : -1) }}">{{ $actualMargin === null ? '–' : $pct($actualMargin) }}</span>
@@ -88,7 +88,7 @@
                 @forelse($topProjects as $row)
                     <tr><td>{{ $row['projectName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
+                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
                 @endforelse
             </x-table>
         </x-card>
@@ -102,7 +102,7 @@
                 @forelse($flopProjects as $row)
                     <tr><td>{{ $row['projectName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
+                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
                 @endforelse
             </x-table>
         </x-card>
@@ -116,7 +116,7 @@
                 @forelse($topCustomers as $row)
                     <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
+                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
                 @endforelse
             </x-table>
         </x-card>
@@ -130,7 +130,7 @@
                 @forelse($flopCustomers as $row)
                     <tr><td>{{ $row['customerName'] }}</td><td class="text-right tabular-nums {{ $contribTone($row['contribution']) }}">{{ $eur($row['contribution']) }}</td><td class="text-right tabular-nums">{{ $pct($row['margin']) }}</td></tr>
                 @empty
-                    <tr><td colspan="3" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
+                    <tr><td colspan="3" class="text-muted">{{ __('Keine Daten') }}</td></tr>
                 @endforelse
             </x-table>
         </x-card>
@@ -140,7 +140,7 @@
     <x-card class="mb-4">
         <div class="mb-3 text-sm font-semibold">{{ __('Wirtschaftlichkeit je Kunde') }}</div>
         @if(count($byCustomer) === 0)
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Daten im gewählten Zeitraum.')" />
+            <x-empty-state icon="analytics" :title="__('Keine Daten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>
@@ -176,10 +176,26 @@
     </x-card>
 
     {{-- Projekt-Übersicht inkl. Plan-vs-Ist --}}
+    @php
+        // Plan-Ist erklären (Feature 148, MVP-732): Lesehilfe je Projektzeile;
+        // in den Prompt gehen nur Kennzahlen, keine Namen.
+        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiPlanActualUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\PlanActualExplainService::CAPABILITY);
+        $aiProjects = $aiPlanActualUsable
+            ? \App\Models\Project::query()->whereIn('id', collect($byProject)->pluck('projectId')->all())->get(['id'])->keyBy('id')
+            : collect();
+        $aiPlanActualSuggestions = $aiPlanActualUsable
+            ? $aiView->openSuggestionsFor(
+                (new \App\Models\Project)->getMorphClass(),
+                $aiProjects,
+                \App\Services\Ai\Suggestions\PlanActualExplainService::CAPABILITY,
+            )
+            : collect();
+    @endphp
     <x-card>
         <div class="mb-3 text-sm font-semibold">{{ __('Wirtschaftlichkeit & Plan-vs-Ist je Projekt') }}</div>
         @if(count($byProject) === 0)
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Daten im gewählten Zeitraum.')" />
+            <x-empty-state icon="analytics" :title="__('Keine Daten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>
@@ -198,6 +214,7 @@
                         <x-table.th sort type="number" align="right">{{ __('Δ Min.') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Plan-Budget') }}</x-table.th>
                         <x-table.th sort type="number" align="right">{{ __('Δ Budget') }}</x-table.th>
+                        @if($aiPlanActualUsable)<x-table.th align="right">{{ __('Aktionen') }}</x-table.th>@endif
                     </tr>
                 </x-slot:head>
                 @foreach($byProject as $row)
@@ -217,7 +234,7 @@
                         <td class="text-right tabular-nums">{{ $eur($row['revenue']) }}</td>
                         <td class="text-right tabular-nums">
                             {{ $eur($row['cost']) }}@if($row['costRateMissing'])<span class="text-warning" title="{{ __('Kostensätze nicht vollständig gepflegt') }}"> *</span>@endif
-                            <div class="whitespace-nowrap text-xs text-base-content/60">
+                            <div class="whitespace-nowrap text-xs text-muted">
                                 <a class="link link-hover" href="{{ $drill('time', (float) $row['costTime']) }}" title="{{ __('Belegtiefe: Zeiteinträge') }}">{{ __('Zeit') }} {{ $eur($row['costTime']) }}</a>
                                 · <a class="link link-hover" href="{{ $drill('material', (float) $row['costMaterial']) }}" title="{{ __('Belegtiefe: Material') }}">{{ __('Material') }} {{ $eur($row['costMaterial']) }}</a>
                                 · <a class="link link-hover" href="{{ $drill('expense', (float) $row['costExpense']) }}" title="{{ __('Belegtiefe: Spesen/Belege') }}">{{ __('Belege') }} {{ $eur($row['costExpense']) }}</a>
@@ -238,10 +255,26 @@
                         <td class="text-right tabular-nums">{{ $row['planMinutesDelta'] === null ? '–' : (($row['planMinutesDelta'] > 0 ? '+' : '') . $row['planMinutesDelta']) }}</td>
                         <td class="text-right tabular-nums">{{ $row['planBudget'] === null ? '–' : $eur($row['planBudget']) }}</td>
                         <td class="text-right tabular-nums {{ $row['planBudgetDelta'] !== null && $row['planBudgetDelta'] > 0 ? 'text-error' : '' }}">{{ $row['planBudgetDelta'] === null ? '–' : $signEur($row['planBudgetDelta']) }}</td>
+                        @if($aiPlanActualUsable)
+                            <td class="text-right">
+                                @if(\App\Services\Ai\Suggestions\PlanActualExplainService::hasPlan($row) && $aiProjects->has($row['projectId']))
+                                    <div class="flex justify-end">
+                                        <x-action-form :action="route('ai.assist.plan-actual', $aiProjects[$row['projectId']])">
+                                            <input type="hidden" name="from" value="{{ $from->toDateString() }}">
+                                            <input type="hidden" name="to" value="{{ $to->toDateString() }}">
+                                            <x-icon-btn icon="psychology" size="xs" tone="info" type="submit" :title="__('ai.assist.explain_plan_actual')" />
+                                        </x-action-form>
+                                    </div>
+                                @endif
+                            </td>
+                        @endif
                     </tr>
                 @endforeach
             </x-table>
-            <div class="mt-2 text-xs text-base-content/60">{{ __('Plan-Werte stammen aus dem Projekt-Zeitbudget (Minuten) und Projekt-Budget (€). Projekte ohne gepflegten Plan zeigen „–".') }}</div>
+            @foreach($aiPlanActualSuggestions as $aiPlanActualSuggestion)
+                @include('ai._insight', ['suggestion' => $aiPlanActualSuggestion])
+            @endforeach
+            <div class="mt-2 text-xs text-muted">{{ __('Plan-Werte stammen aus dem Projekt-Zeitbudget (Minuten) und Projekt-Budget (€). Projekte ohne gepflegten Plan zeigen „–".') }}</div>
         @endif
     </x-card>
 
@@ -351,10 +384,10 @@
                         </tr>
                     @endif
                 </x-table>
-                <div class="mt-2 text-xs text-base-content/60">{{ __('Erlös je Position = im Zeitraum aufgemessene Menge × Einheitspreis (Projektion der Abrechnung nach Aufmaß). Kostenzuordnung über Bautagebuch-/Material-Verknüpfungen der Aufmaß-Meldungen und Positions-Mappings; mehrdeutige oder fehlende Verknüpfungen sowie Spesen (ohne LV-Anker) erscheinen unter „Ohne LV-Zuordnung". Kosten der Positionen + „Ohne LV-Zuordnung" entsprechen den Projektkosten.') }}</div>
+                <div class="mt-2 text-xs text-muted">{{ __('Erlös je Position = im Zeitraum aufgemessene Menge × Einheitspreis (Projektion der Abrechnung nach Aufmaß). Kostenzuordnung über Bautagebuch-/Material-Verknüpfungen der Aufmaß-Meldungen und Positions-Mappings; mehrdeutige oder fehlende Verknüpfungen sowie Spesen (ohne LV-Anker) erscheinen unter „Ohne LV-Zuordnung". Kosten der Positionen + „Ohne LV-Zuordnung" entsprechen den Projektkosten.') }}</div>
                 @if($boqDimension['hasCalculation'])
                     {{-- Ohne diese Zeile sähe eine fremde Kalkulation wie die eigene Planung aus. --}}
-                    <div class="mt-1 text-xs text-base-content/60">
+                    <div class="mt-1 text-xs text-muted">
                         {{ $boqDimension['calculationImported']
                             ? __('Die Spalte „Kalkuliert" stammt aus eingelesenen GAEB-Kalkulationsdaten (X52) — der Rechnung eines anderen Betriebs, nicht der eigenen Planung. Sie ist auf die aufgemessene Menge skaliert; ohne LV-Menge bleibt sie leer.')
                             : __('Die Spalte „Kalkuliert" stammt aus den eigenen GAEB-Kalkulationsdaten (X52), skaliert auf die aufgemessene Menge; ohne LV-Menge bleibt sie leer.') }}

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Accounting;
 
 use App\Casts\MoneyCast;
-use App\Models\{Asset, Project};
+use App\Models\{Asset, CostCenter, Project};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -33,6 +33,7 @@ use RuntimeException;
  * Hash-Kette; ein zweiter Audit-Eintrag je Zeile brächte nur Rauschen.
  *
  * @property CurrencyCode $currency
+ * @property ?int $cost_center_id
  */
 class AccountingEntryLine extends Model {
     use BelongsToOrganization;
@@ -52,6 +53,7 @@ class AccountingEntryLine extends Model {
         'counterparty_id',
         'project_id',
         'asset_id',
+        'cost_center_id',
         'cost_group',
         'memo',
     ];
@@ -103,6 +105,15 @@ class AccountingEntryLine extends Model {
     /** @return BelongsTo<Asset, $this> */
     public function asset(): BelongsTo {
         return $this->belongsTo(Asset::class);
+    }
+
+    /**
+     * Kostenstelle als Analysebezug (Feature 142, MVP-709).
+     *
+     * @return BelongsTo<CostCenter, $this>
+     */
+    public function costCenter(): BelongsTo {
+        return $this->belongsTo(CostCenter::class);
     }
 
     /** Betrag mit Vorzeichen aus Sicht des Kontos (Soll +, Haben −). */

@@ -27,7 +27,7 @@
     </x-slot:actions>
 
     @if ($elements->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">price_change</span>'
+        <x-empty-state framed icon="price_change"
                        :title="__('Der Katalog enthält keine Elemente.')" />
     @else
         <x-table scroll="flex" :pinRows="true">

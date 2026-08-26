@@ -21,7 +21,7 @@
                     <x-icon name="shield_person" class="text-primary text-3xl" />
                     <div>
                         <div class="text-2xl font-semibold">{{ $rolesCount }}</div>
-                        <div class="text-sm text-base-content/60">{{ __('access.kpi.roles') }}</div>
+                        <div class="text-sm text-muted">{{ __('access.kpi.roles') }}</div>
                     </div>
                 </div>
             </div>
@@ -32,7 +32,7 @@
                     <x-icon name="groups" class="text-secondary text-3xl" />
                     <div>
                         <div class="text-2xl font-semibold">{{ $groupsCount }}</div>
-                        <div class="text-sm text-base-content/60">{{ __('access.kpi.groups') }}</div>
+                        <div class="text-sm text-muted">{{ __('access.kpi.groups') }}</div>
                     </div>
                 </div>
             </div>
@@ -43,7 +43,7 @@
                     <x-icon name="group" class="text-accent text-3xl" />
                     <div>
                         <div class="text-2xl font-semibold">{{ $membersCount }}</div>
-                        <div class="text-sm text-base-content/60">{{ __('access.kpi.members') }}</div>
+                        <div class="text-sm text-muted">{{ __('access.kpi.members') }}</div>
                     </div>
                 </div>
             </div>
@@ -54,7 +54,7 @@
                     <x-icon name="key" class="text-info text-3xl" />
                     <div>
                         <div class="text-2xl font-semibold">{{ $permissionsCount }}</div>
-                        <div class="text-sm text-base-content/60">{{ __('access.kpi.permissions') }}</div>
+                        <div class="text-sm text-muted">{{ __('access.kpi.permissions') }}</div>
                     </div>
                 </div>
             </div>

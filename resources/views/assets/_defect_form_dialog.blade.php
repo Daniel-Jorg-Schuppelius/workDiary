@@ -46,6 +46,6 @@
         <span class="label-text">{{ __('Fotos (optional)') }}</span>
         <input type="file" name="photos[]" accept="image/*" capture="environment" multiple
                class="file-input file-input-bordered file-input-sm" />
-        <span class="label-text-alt text-base-content/50">{{ __('JPEG/PNG/WebP, bis :mb MB je Datei.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</span>
+        <span class="label-text-alt text-muted">{{ __('JPEG/PNG/WebP, bis :mb MB je Datei.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</span>
     </label>
 </x-modal>

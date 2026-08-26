@@ -69,6 +69,13 @@ return [
             'monthClosure.submitted' => 'Monthly closure submitted',
             'sla.breached' => 'SLA deadline breached',
             'document.expired' => 'Document expired',
+            'invoice.issued' => 'Invoice issued',
+            'invoice.paid' => 'Invoice paid',
+            'timesheet.submitted' => 'Timesheet submitted',
+            'ticket.created' => 'Ticket created',
+            'ticket.closed' => 'Ticket closed',
+            'protocol.signed' => 'Protocol signed',
+            'purchaseOrder.ordered' => 'Purchase order placed',
         ],
         'delivery_status' => [
             'pending' => 'Pending',

@@ -25,6 +25,13 @@
                     :subtitle="$year->starts_on->fdate() . ' – ' . $year->ends_on->fdate()">
                 <x-slot:actions>
                     <x-status-badge :tone="$year->status->tone()">{{ $year->status->label() }}</x-status-badge>
+                    @if ($canPrepare && ! $year->status->isHardClosed())
+                        {{-- Jahres-AfA als Inbox-Entwürfe (Feature 133) — gebucht wird in der Inbox. --}}
+                        <x-action-form :action="route('finance.accounting.closing.depreciation', $year)" method="POST"
+                                       :confirm="__('accounting.closing.confirm.depreciation', ['year' => $year->label])">
+                            <x-button type="submit" tone="ghost" size="sm">{{ __('accounting.closing.action.propose_depreciation') }}</x-button>
+                        </x-action-form>
+                    @endif
                     @if ($canClose && ! $year->status->isHardClosed())
                         <x-action-form :action="route('finance.accounting.closing.close-year', $year)" method="POST"
                                        :confirm="__('accounting.closing.confirm.year')">
@@ -98,7 +105,7 @@
                     <button type="submit" name="dry_run" value="1" class="btn btn-ghost btn-sm">{{ __('accounting.opening.action.dry_run') }}</button>
                     <button type="submit" name="dry_run" value="0" class="btn btn-primary btn-sm">{{ __('accounting.opening.action.import') }}</button>
                 </form>
-                <p class="mt-2 text-xs text-base-content/60">{{ __('accounting.opening.hint') }}</p>
+                <p class="mt-2 text-xs text-muted">{{ __('accounting.opening.hint') }}</p>
             </x-card>
 
             <x-card :title="__('accounting.datev.title')" icon="account_tree" :subtitle="__('accounting.datev.subtitle')">
@@ -111,7 +118,7 @@
                                   :to="now()->toDateString()" />
                     <button type="submit" class="btn btn-primary btn-sm">{{ __('accounting.datev.action.export') }}</button>
                 </form>
-                <p class="mt-2 text-xs text-base-content/60">{{ __('accounting.datev.hint') }}</p>
+                <p class="mt-2 text-xs text-muted">{{ __('accounting.datev.hint') }}</p>
             </x-card>
         @endif
     </x-index-page>

@@ -9,7 +9,7 @@
 {{-- Attendance-Panel — erwartet: $current (App\Models\Attendance|null) --}}
 <x-card padding="px-4 py-3" data-attendance-panel>
     <div class="flex flex-wrap items-center justify-between gap-2">
-        <h2 class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Stempeluhr') }}</h2>
+        <h2 class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Stempeluhr') }}</h2>
         <div class="flex flex-wrap items-center justify-end gap-1.5">
             @if ($current)
                 <x-status-badge tone="success" size="sm">{{ __('Offen') }}</x-status-badge>
@@ -62,7 +62,7 @@
                 <form method="POST" action="{{ route('attendance.clock-out') }}" class="flex flex-wrap items-center justify-end gap-1.5" data-offline-sync="attendance.clock-out">
                     @csrf
                     <div class="join">
-                        <span class="join-item flex h-7 items-center border border-base-300 bg-base-200 px-2 text-xs text-base-content/60">{{ __('Pause') }}</span>
+                        <span class="join-item flex h-7 items-center border border-base-300 bg-base-200 px-2 text-xs text-muted">{{ __('Pause') }}</span>
                         <input type="number" name="break_minutes" min="0" max="600" value="0" class="input input-bordered input-xs join-item h-7 min-h-7 w-16 px-2 text-right tabular-nums" aria-label="{{ __('Pause (Min.)') }}">
                     </div>
                     <x-button type="submit" tone="warning" size="xs" class="h-7 min-h-7 gap-1 px-2" icon="logout">{{ __('Ausstempeln') }}</x-button>

@@ -124,10 +124,10 @@
                                             <x-status-badge :tone="$finding->kind->tone()" outline>{{ $finding->kind->label() }}</x-status-badge>
                                             <span class="font-medium">{{ $finding->title }}</span>
                                             @if ($finding->requirement !== null)
-                                                <span class="text-base-content/60">{{ $finding->requirement->normLabel() }} · {{ $finding->requirement->ref_no }}</span>
+                                                <span class="text-muted">{{ $finding->requirement->normLabel() }} · {{ $finding->requirement->ref_no }}</span>
                                             @endif
                                             <x-status-badge :tone="$finding->status->tone()">{{ $finding->status->label() }}</x-status-badge>
-                                            <span class="text-base-content/60">{{ __('isms.audit.actions_count', ['count' => $finding->correctiveActions->count()]) }}</span>
+                                            <span class="text-muted">{{ __('isms.audit.actions_count', ['count' => $finding->correctiveActions->count()]) }}</span>
                                             @can('manageFindings', $audit)
                                                 <span class="ml-auto flex items-center gap-1">
                                                     <x-icon-btn icon="edit" tone="outline" size="xs"
@@ -178,15 +178,15 @@
                                                             <span class="font-medium">{{ $action->title }}</span>
                                                             <x-status-badge :tone="$action->status->tone()">{{ $action->status->label() }}</x-status-badge>
                                                             @if ($action->owner !== null)
-                                                                <span class="text-base-content/60">{{ $action->owner->name }}</span>
+                                                                <span class="text-muted">{{ $action->owner->name }}</span>
                                                             @endif
                                                             @if ($action->due_on !== null)
-                                                                <span class="{{ $action->due_on->isPast() && $action->status->isPending() ? 'text-error font-semibold' : 'text-base-content/60' }}">
+                                                                <span class="{{ $action->due_on->isPast() && $action->status->isPending() ? 'text-error font-semibold' : 'text-muted' }}">
                                                                     {{ __('isms.field.due_on') }}: {{ $action->due_on->format('d.m.Y') }}
                                                                 </span>
                                                             @endif
                                                             @if ($action->completed_on !== null)
-                                                                <span class="text-base-content/60">{{ __('isms.field.completed_on') }}: {{ $action->completed_on->format('d.m.Y') }}</span>
+                                                                <span class="text-muted">{{ __('isms.field.completed_on') }}: {{ $action->completed_on->format('d.m.Y') }}</span>
                                                             @endif
                                                             @can('manageFindings', $audit)
                                                                 <span class="ml-auto flex items-center gap-1">
@@ -241,7 +241,7 @@
                                                         @endif
                                                     </div>
                                                 @empty
-                                                    <p class="text-base-content/60">{{ __('isms.audit.empty_actions') }}</p>
+                                                    <p class="text-muted">{{ __('isms.audit.empty_actions') }}</p>
                                                 @endforelse
                                                 @can('manageFindings', $audit)
                                                     @if ($finding->status !== \App\Enums\Isms\FindingStatus::Closed)
@@ -264,7 +264,7 @@
                                                     :href="route('isms.audits.findings.create', $audit)"
                                                     show-label>{{ __('isms.action.create_finding') }}</x-icon-btn>
                                     @else
-                                        <p class="text-base-content/50">{{ __('isms.audit.findings_require_running') }}</p>
+                                        <p class="text-muted">{{ __('isms.audit.findings_require_running') }}</p>
                                     @endif
                                 @endcan
                             </div>

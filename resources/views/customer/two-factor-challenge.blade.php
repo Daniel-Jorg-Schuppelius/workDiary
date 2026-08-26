@@ -11,7 +11,7 @@
 @section('content')
     <div class="max-w-md mx-auto bg-base-100 border border-base-300 rounded p-6 mt-10" x-data="twoFactorChallenge">
         <h1 class="text-xl font-semibold mb-2 flex items-center gap-2">
-            <span class="material-symbols-outlined">verified_user</span>
+            <x-icon name="verified_user" />
             {{ __('Zwei-Faktor-Bestätigung') }}
         </h1>
         <p class="text-sm text-base-content/70 mb-4" x-show="authMode">{{ __('Geben Sie den 6-stelligen Code aus Ihrer Authenticator-App ein.') }}</p>
@@ -26,7 +26,7 @@
                         data-options="{{ route('customer.two-factor.login.webauthn.options') }}"
                         data-target="{{ route('customer.two-factor.login.webauthn') }}"
                         data-error="passkey-error" icon="key">{{ __('Mit Passkey / Sicherheitsschlüssel') }}</x-button>
-                <div class="my-4 flex items-center gap-3 text-xs text-base-content/50"><span class="h-px flex-1 bg-base-300"></span>{{ __('oder Code eingeben') }}<span class="h-px flex-1 bg-base-300"></span></div>
+                <div class="my-4 flex items-center gap-3 text-xs text-muted"><span class="h-px flex-1 bg-base-300"></span>{{ __('oder Code eingeben') }}<span class="h-px flex-1 bg-base-300"></span></div>
             </div>
         @endif
 
@@ -68,7 +68,7 @@
 
         <form method="POST" action="{{ route('customer.logout') }}" class="mt-4 text-center">
             @csrf
-            <button type="submit" class="text-sm text-base-content/60 hover:underline">← {{ __('Abbrechen') }}</button>
+            <button type="submit" class="text-sm text-muted hover:underline">← {{ __('Abbrechen') }}</button>
         </form>
     </div>
     @include('partials.webauthn-script')

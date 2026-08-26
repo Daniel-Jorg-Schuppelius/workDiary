@@ -51,7 +51,7 @@ class WebdavBackupTest extends TestCase {
     }
 
     /** @param list<Response> $responses */
-    private function client(array $responses): WebdavBackupClient {
+    private function client(array $responses, int $chunkBytes = 0): WebdavBackupClient {
         $mock = new MockHandler($responses);
         $stack = HandlerStack::create($mock);
         $stack->push(function (callable $handler) {
@@ -62,7 +62,7 @@ class WebdavBackupTest extends TestCase {
             };
         });
 
-        return new WebdavBackupClient($this->connection->fresh(), $this->apiClient($stack));
+        return new WebdavBackupClient($this->connection->fresh(), $this->apiClient($stack), chunkBytes: $chunkBytes);
     }
 
     /** PluginApiClient mit Mock-Transport — gleiche Naht wie produktiv (C4-Rest). */
@@ -218,6 +218,110 @@ class WebdavBackupTest extends TestCase {
 
         try {
             $this->expectException(RuntimeException::class);
+            $client->upload($path, 'wd-backups-abc/snapshot.age');
+        } finally {
+            @unlink($path);
+        }
+    }
+
+    // ── Fortsetzbarer Upload (MVP-721, Vollscan G13) ─────────────────────
+
+    private function tempFile(string $content): string {
+        $path = (string) tempnam(sys_get_temp_dir(), 'wdb');
+        file_put_contents($path, $content);
+
+        return $path;
+    }
+
+    /** @return list<Request> */
+    private function recordedPuts(): array {
+        return array_values(array_filter($this->recorded, static fn (Request $r): bool => $r->getMethod() === 'PUT'));
+    }
+
+    public function test_large_upload_goes_in_content_range_chunks(): void {
+        $path = $this->tempFile(str_repeat('A', 8) . str_repeat('B', 8) . str_repeat('C', 4));
+
+        $client = $this->client([
+            new Response(201),                                  // MKCOL Elternordner
+            new Response(404),                                  // HEAD: noch nichts vorhanden
+            new Response(201),                                  // PUT Chunk 0–7 (legt Datei an)
+            new Response(204),                                  // PUT Chunk 8–15
+            new Response(204),                                  // PUT Chunk 16–19
+            new Response(200, ['Content-Length' => '20']),      // HEAD Verifikation
+        ], chunkBytes: 8);
+
+        $ref = $client->upload($path, 'wd-backups-abc/snapshot.age');
+
+        $this->assertSame('wd-backups-abc/snapshot.age', $ref);
+        $puts = $this->recordedPuts();
+        $this->assertCount(3, $puts);
+        // Erster Chunk ohne Range (Ressource entsteht), danach RFC-9110-Ranges.
+        $this->assertFalse($puts[0]->hasHeader('Content-Range'));
+        $this->assertSame(str_repeat('A', 8), (string) $puts[0]->getBody());
+        $this->assertSame('bytes 8-15/20', $puts[1]->getHeaderLine('Content-Range'));
+        $this->assertSame(str_repeat('B', 8), (string) $puts[1]->getBody());
+        $this->assertSame('bytes 16-19/20', $puts[2]->getHeaderLine('Content-Range'));
+        $this->assertSame(str_repeat('C', 4), (string) $puts[2]->getBody());
+        @unlink($path);
+    }
+
+    public function test_interrupted_upload_resumes_after_the_bytes_already_present(): void {
+        $path = $this->tempFile(str_repeat('A', 8) . str_repeat('B', 8) . str_repeat('C', 4));
+
+        $client = $this->client([
+            new Response(201),                                  // MKCOL
+            new Response(200, ['Content-Length' => '12']),      // HEAD: 12 B vom letzten Lauf
+            new Response(204),                                  // PUT Rest von Chunk 2 (12–15)
+            new Response(204),                                  // PUT Chunk 16–19
+            new Response(200, ['Content-Length' => '20']),      // HEAD Verifikation
+        ], chunkBytes: 8);
+
+        $client->upload($path, 'wd-backups-abc/snapshot.age');
+
+        $puts = $this->recordedPuts();
+        $this->assertCount(2, $puts, 'Vorhandene Bytes werden nicht erneut gesendet.');
+        $this->assertSame('bytes 12-15/20', $puts[0]->getHeaderLine('Content-Range'));
+        $this->assertSame(str_repeat('B', 4), (string) $puts[0]->getBody());
+        $this->assertSame('bytes 16-19/20', $puts[1]->getHeaderLine('Content-Range'));
+        @unlink($path);
+    }
+
+    public function test_server_without_partial_put_falls_back_to_a_single_put(): void {
+        $path = $this->tempFile(str_repeat('A', 20));
+
+        $client = $this->client([
+            new Response(201),                                  // MKCOL
+            new Response(404),                                  // HEAD
+            new Response(201),                                  // PUT Chunk 1
+            new Response(400),                                  // PUT mit Content-Range → abgelehnt (SabreDAV)
+            new Response(201),                                  // PUT ganze Datei (Fallback)
+            new Response(200, ['Content-Length' => '20']),      // HEAD Verifikation
+        ], chunkBytes: 8);
+
+        $client->upload($path, 'wd-backups-abc/snapshot.age');
+
+        $puts = $this->recordedPuts();
+        $this->assertCount(3, $puts);
+        $this->assertFalse($puts[2]->hasHeader('Content-Range'));
+        $this->assertSame(20, $puts[2]->getBody()->getSize());
+        @unlink($path);
+    }
+
+    public function test_resumable_upload_rejects_a_truncated_remote_file(): void {
+        $path = $this->tempFile(str_repeat('A', 20));
+
+        $client = $this->client([
+            new Response(201),
+            new Response(404),
+            new Response(201),
+            new Response(204),
+            new Response(204),
+            new Response(200, ['Content-Length' => '16']),      // HEAD: zu wenig
+        ], chunkBytes: 8);
+
+        $this->expectException(RuntimeException::class);
+        $this->expectExceptionMessage('unvollständig');
+        try {
             $client->upload($path, 'wd-backups-abc/snapshot.age');
         } finally {
             @unlink($path);

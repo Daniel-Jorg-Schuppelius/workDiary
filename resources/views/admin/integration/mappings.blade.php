@@ -34,7 +34,7 @@
         @if ($references->isEmpty())
             {{-- Prerequisite-Audit (MVP-181): erklären, WIE Zuordnungen
                  entstehen, statt nur den leeren Zustand zu zeigen. --}}
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">link</span>'
+            <x-empty-state icon="link"
                            :title="__('Keine Zuordnungen im gewählten Filter.')"
                            :message="__('prerequisites.mappings.hint')">
                 <x-slot:action>
@@ -69,7 +69,7 @@
                                         <span class="text-error">{{ __('(verwaist)') }}</span>
                                     @endif
                                 </td>
-                                <td class="text-xs text-base-content/60">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</td>
+                                <td class="text-xs text-muted">{{ optional($ref->synced_at)->format('d.m.Y H:i') }}</td>
                                 <td class="text-right">
                                     <form method="POST" action="{{ route('admin.integration.mappings.destroy', $ref) }}"
                                           data-confirm-dialog data-confirm-message="{{ __('Diese Verknüpfung wirklich lösen?') }}">

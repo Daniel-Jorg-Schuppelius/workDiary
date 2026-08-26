@@ -74,7 +74,7 @@
                             <td>
                                 {{ $line->getItemName() }}
                                 @if ($line->getItemDescription())
-                                    <p class="text-xs text-base-content/60">{{ $line->getItemDescription() }}</p>
+                                    <p class="text-xs text-muted">{{ $line->getItemDescription() }}</p>
                                 @endif
                             </td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($line->getQuantity(), 2, withThousandsSeparator: true) }}</td>
@@ -103,7 +103,7 @@
                     </ul>
                 @endif
             @else
-                <p class="text-sm text-base-content/60">{{ __('Kein UBL-Schema anwendbar (z. B. CII) — Regelprüfung siehe KoSIT.') }}</p>
+                <p class="text-sm text-muted">{{ __('Kein UBL-Schema anwendbar (z. B. CII) — Regelprüfung siehe KoSIT.') }}</p>
             @endif
             @if (! $validation['kosit_available'])
                 <p class="mt-1 text-sm text-warning">{{ __('KoSIT-Validator nicht verfügbar — Regelprüfung wurde nicht durchgeführt.') }}</p>
@@ -124,7 +124,7 @@
         <x-card :title="__('Zuordnung und Abweichungen (beim Empfang)')">
             @foreach ((array) ($incoming->summary['deviations'] ?? []) as $deviation)
                 <div class="alert alert-warning text-sm">
-                    <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                    <x-icon name="warning" />
                     {{ $deviation }}
                 </div>
             @endforeach
@@ -133,26 +133,26 @@
                 @if (($suggestions['suppliers'] ?? []) !== [])
                     <x-detail-grid.row :label="__('Lieferanten-Vorschlag')">
                         @foreach ($suggestions['suppliers'] as $candidate)
-                            <div>{{ $candidate['label'] }} <span class="text-xs text-base-content/60">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
                         @endforeach
                     </x-detail-grid.row>
                 @endif
                 @if (($suggestions['purchase_orders'] ?? []) !== [])
                     <x-detail-grid.row :label="__('Bestell-Vorschlag')">
                         @foreach ($suggestions['purchase_orders'] as $candidate)
-                            <div>{{ $candidate['label'] }} <span class="text-xs text-base-content/60">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
                         @endforeach
                     </x-detail-grid.row>
                 @endif
                 @if (($suggestions['projects'] ?? []) !== [])
                     <x-detail-grid.row :label="__('Projekt-Vorschlag')">
                         @foreach ($suggestions['projects'] as $candidate)
-                            <div>{{ $candidate['label'] }} <span class="text-xs text-base-content/60">({{ implode(', ', $candidate['reasons']) }})</span></div>
+                            <div>{{ $candidate['label'] }} <span class="text-xs text-muted">({{ implode(', ', $candidate['reasons']) }})</span></div>
                         @endforeach
                     </x-detail-grid.row>
                 @endif
             </x-detail-grid>
-            <p class="mt-2 text-xs text-base-content/60">{{ __('Vorschläge sind unverbindlich — es werden nie automatisch Stammdaten angelegt oder geändert.') }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __('Vorschläge sind unverbindlich — es werden nie automatisch Stammdaten angelegt oder geändert.') }}</p>
         </x-card>
     @endif
 

@@ -225,7 +225,7 @@ class DemoSeederService {
 
             // Vorführ-Ausbau (Feature 040 Nachtrag): Beispiel-Anhänge + Prozedurlauf.
             $counts['attachments'] = $this->seedAttachments($organization, $mainDiary, $users);
-            $counts['procedure_runs'] = $this->seedProcedureRun($organization, $mainDiary, $users);
+            $counts['procedure_runs'] = $this->seedProcedureRun($organization, $mainDiary, $users, $blueprint);
 
             // Agile Vorführ-Boards (Feature 064, P7): Scrum + Kanban.
             $showcase = $this->showcaseSeeder();
@@ -346,10 +346,19 @@ class DemoSeederService {
 
             // User der Org bleiben — sie hängen am Auth-Konto. Nur Demo-User
             // mit Marker-Email werden entfernt; reguläre Admin-Konten bleiben.
-            User::query()
+            $demoUserIds = User::query()
                 ->where('organization_id', $organization->id)
                 ->where('email', 'like', 'demo+%@workdiary.test')
-                ->delete();
+                ->pluck('id');
+
+            // Seit MVP-689 (RESTRICT-FKs auf die Nachweistabellen): Demo-
+            // Nachweise sind KEINE echten Nachweise — vor dem User-Delete
+            // leerräumen, sonst blockt der FK.
+            foreach (\App\Services\Org\UserOffboardingService::RETENTION_FK_TABLES as $table => $column) {
+                \Illuminate\Support\Facades\DB::table($table)->whereIn($column, $demoUserIds)->delete();
+            }
+
+            User::query()->whereKey($demoUserIds)->delete();
         });
 
         return $this->doSeed($organization, $actor, $industry);
@@ -868,18 +877,20 @@ class DemoSeederService {
      * veröffentlichte Vorlage wird still übersprungen (0).
      *
      * @param Collection<int, User> $users
+     * @param array<string, mixed> $blueprint
      */
-    private function seedProcedureRun(Organization $organization, DiaryEntry $entry, Collection $users): int {
+    private function seedProcedureRun(Organization $organization, DiaryEntry $entry, Collection $users, array $blueprint): int {
         $templates = app(ProcedureTemplateService::class);
         $executor = app(ProcedureExecutionService::class);
         $gate = app(SecondPersonGate::class);
         $backups = app(BackupProofService::class);
 
-        // Bevorzugt eine Vorlage mit Backup- und Freigabe-Schritten (IT),
+        // Bevorzugt die im Blueprint benannte Vorlage der Branche (MVP-710),
         // sonst die erste mit veröffentlichter Version.
+        $preferredCode = (string) ($blueprint['procedure_code'] ?? '');
         $candidates = ProcedureTemplate::query()
             ->where('organization_id', $organization->id)
-            ->orderByRaw("CASE WHEN code = 'IT_NETWORK_CHANGE' THEN 0 ELSE 1 END")
+            ->orderByRaw('CASE WHEN code = ? THEN 0 ELSE 1 END', [$preferredCode])
             ->orderBy('id')
             ->get();
         $template = null;

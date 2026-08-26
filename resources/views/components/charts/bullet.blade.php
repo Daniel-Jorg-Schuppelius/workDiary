@@ -105,7 +105,7 @@
                     <text x="{{ round($labelW + $areaW + 4, 1) }}" y="{{ round($rowY + $rowH / 2 + 3, 1) }}" class="fill-base-content/70 text-[10px] tabular-nums">{{ $point['y'] }}</text>
                 </a>
             @endforeach
-            <text x="{{ $width - $padR + 48 }}" y="{{ $height - 4 }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ __('Max.') }} {{ $maxY }}</text>
+            <text x="{{ $width - $padR + 48 }}" y="{{ $height - 4 }}" text-anchor="end" class="fill-muted text-[10px]">{{ __('Max.') }} {{ $maxY }}</text>
         </svg>
 
         <p class="mt-1 flex flex-wrap gap-3 text-xs">

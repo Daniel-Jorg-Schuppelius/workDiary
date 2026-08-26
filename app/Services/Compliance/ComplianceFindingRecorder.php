@@ -138,7 +138,15 @@ final class ComplianceFindingRecorder {
      * Org-Regel zum Event kann den Versand abschalten.
      */
     private function notifyAffected(ComplianceFinding $model, string $category): void {
-        if ($category !== AttendancePlausibilityScanService::CATEGORY || $model->subject_type !== User::class) {
+        if ($model->subject_type !== User::class) {
+            return;
+        }
+        if ($category === DrivingTimeComplianceChecker::CATEGORY) {
+            $this->notifyDrivingTime($model);
+
+            return;
+        }
+        if ($category !== AttendancePlausibilityScanService::CATEGORY) {
             return;
         }
         $user = User::query()->find($model->subject_id);
@@ -158,6 +166,36 @@ final class ComplianceFindingRecorder {
                 'message' => (string) __('compliance.report.kind.' . $model->rule_code),
                 'message_key' => 'compliance.report.kind.' . $model->rule_code,
                 'url' => route('overtime.index'),
+            ],
+            dedup: true,
+        );
+    }
+
+    /**
+     * Feature 144 (MVP-719): neuer Lenk-/Ruhezeit-Befund an den Fahrer
+     * (notify_affected) und die Disposition (Default-Rolle Teamleitung) —
+     * render-time über title_key/message_key, einmal je Befund.
+     */
+    private function notifyDrivingTime(ComplianceFinding $model): void {
+        $driver = User::query()->find($model->subject_id);
+        if ($driver === null) {
+            return;
+        }
+        $kindKey = 'compliance.report.kind.' . $model->rule_code;
+        app(NotificationDispatcher::class)->notify(
+            NotificationEvent::DrivingTimeViolation,
+            $model,
+            $driver,
+            [
+                'title' => (string) __('notification.message.driving_time_violation_title', [
+                    'date' => $model->scope_date->format('d.m.Y'),
+                    'driver' => $driver->name,
+                ]),
+                'title_key' => 'notification.message.driving_time_violation_title',
+                'title_params' => ['date' => $model->scope_date->toDateString(), 'driver' => $driver->name],
+                'message' => (string) __($kindKey),
+                'message_key' => $kindKey,
+                'url' => route('reports.arbzg-compliance', ['category' => DrivingTimeComplianceChecker::CATEGORY]),
             ],
             dedup: true,
         );

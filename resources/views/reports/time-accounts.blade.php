@@ -32,7 +32,7 @@
 
     @if ($account === null)
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">account_balance</span>'
+            icon="account_balance"
             :title="__('Keine Zeitkonten eingerichtet')" />
     @else
         <x-filter-bar :action="route('reports.time-accounts')" :reset="route('reports.time-accounts')">
@@ -48,7 +48,7 @@
 
         <x-card>
             @if (empty($rows))
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">account_balance</span>'
+                <x-empty-state icon="account_balance"
                                :title="__('Keine Buchungen im gewählten Zeitraum.')" />
             @else
                 <x-table bare>

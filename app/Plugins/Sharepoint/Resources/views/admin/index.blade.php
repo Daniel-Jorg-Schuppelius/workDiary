@@ -37,7 +37,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('sharepoint.health.badge_inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-base-content/60">{{ __('sharepoint.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('sharepoint.intro') }}</p>
 
             @unless ($configured)
                 <div class="alert alert-warning text-sm">{{ __('sharepoint.not_configured_hint') }}</div>
@@ -68,7 +68,7 @@
         @if ($connection && $connection->status === \App\Models\SharepointConnection::STATUS_ACTIVE)
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('sharepoint.target.heading') }}</h2>
-                <p class="text-sm text-base-content/60">{{ __('sharepoint.target.help') }}</p>
+                <p class="text-sm text-muted">{{ __('sharepoint.target.help') }}</p>
 
                 @if ($connection->site_id)
                     <p class="text-sm">
@@ -90,7 +90,7 @@
                 </form>
 
                 @if ($siteSearch !== '' && $sites === [])
-                    <p class="text-sm text-base-content/60">{{ __('sharepoint.target.no_sites') }}</p>
+                    <p class="text-sm text-muted">{{ __('sharepoint.target.no_sites') }}</p>
                 @endif
 
                 @if ($sites !== [])
@@ -100,7 +100,7 @@
                             <div class="flex flex-wrap items-center gap-2 text-sm">
                                 <a class="link link-primary"
                                    href="{{ route('admin.sharepoint.index', ['site_search' => $siteSearch, 'site_id' => $site['id']]) }}">{{ $site['name'] }}</a>
-                                <span class="text-xs text-base-content/50">{{ $site['url'] }}</span>
+                                <span class="text-xs text-muted">{{ $site['url'] }}</span>
                                 @if ($selectedSiteId === $site['id'])
                                     <span class="badge badge-sm badge-outline">{{ __('sharepoint.target.selected') }}</span>
                                 @endif
@@ -125,7 +125,7 @@
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('sharepoint.action.save') }}</button>
                     </form>
                 @elseif ($selectedSiteId !== '')
-                    <p class="text-sm text-base-content/60">{{ __('sharepoint.target.no_drives') }}</p>
+                    <p class="text-sm text-muted">{{ __('sharepoint.target.no_drives') }}</p>
                 @endif
             </div>
 
@@ -164,13 +164,13 @@
                             </label>
                         @endforeach
                     </div>
-                    <span class="label-text-alt text-base-content/50">{{ __('sharepoint.field.sources_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('sharepoint.field.sources_help') }}</span>
                 </div>
 
                 {{-- Dokumenttyp → Ordner --}}
                 <div>
                     <h3 class="mb-1 text-sm font-semibold">{{ __('sharepoint.folder.heading') }}</h3>
-                    <p class="mb-2 text-xs text-base-content/60">{{ __('sharepoint.folder.help') }}</p>
+                    <p class="mb-2 text-xs text-muted">{{ __('sharepoint.folder.help') }}</p>
                     <div class="space-y-2">
                         @php $map = $connection->folder_map ?? []; @endphp
                         @foreach (array_merge(array_keys($map), array_fill(0, 3, '')) as $mapType)
@@ -181,7 +181,7 @@
                                         <option value="{{ $type->value }}" @selected($mapType === $type->value)>{{ $type->value }}</option>
                                     @endforeach
                                 </select>
-                                <span class="text-base-content/50">→</span>
+                                <span class="text-muted">→</span>
                                 <input type="text" name="folder_path[]" value="{{ $mapType !== '' ? ($map[$mapType] ?? '') : '' }}"
                                        placeholder="{{ __('sharepoint.folder.path_placeholder') }}" class="input input-bordered input-sm w-64">
                             </div>

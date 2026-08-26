@@ -57,7 +57,7 @@
                 </option>
             @endforeach
         </select>
-        <div class="fieldset-label text-xs text-base-content/60">{{ __('Leer = an allen Tagen') }}</div>
+        <div class="fieldset-label text-xs text-muted">{{ __('Leer = an allen Tagen') }}</div>
     </label>
 
     <label class="fieldset w-full">
@@ -65,7 +65,7 @@
         <input type="date" name="specific_date"
                value="{{ old('specific_date', $requirement?->specific_date?->toDateString()) }}"
                class="input input-bordered w-full">
-        <div class="fieldset-label text-xs text-base-content/60">{{ __('Überschreibt Wochentag-Regel') }}</div>
+        <div class="fieldset-label text-xs text-muted">{{ __('Überschreibt Wochentag-Regel') }}</div>
     </label>
 </x-form-group>
 
@@ -82,7 +82,7 @@
         <input type="number" name="max_staff" min="0" max="99"
                value="{{ old('max_staff', $requirement?->max_staff) }}"
                class="input input-bordered w-full">
-        <div class="fieldset-label text-xs text-base-content/60">{{ __('Leer = unbegrenzt') }}</div>
+        <div class="fieldset-label text-xs text-muted">{{ __('Leer = unbegrenzt') }}</div>
     </label>
 
     <label class="fieldset w-full">
@@ -90,7 +90,7 @@
         <input type="number" name="ideal_staff" min="0" max="99"
                value="{{ old('ideal_staff', $requirement?->ideal_staff) }}"
                class="input input-bordered w-full">
-        <div class="fieldset-label text-xs text-base-content/60">{{ __('Unter Ideal = „gerade noch ausreichend" (gelb)') }}</div>
+        <div class="fieldset-label text-xs text-muted">{{ __('Unter Ideal = „gerade noch ausreichend" (gelb)') }}</div>
     </label>
 </x-form-group>
 
@@ -112,7 +112,7 @@
                                    @checked(in_array($q->id, (array) $selectedQualIds, false))>
                             <span class="label-text">{{ $q->name }}</span>
                         </label>
-                        <label class="flex items-center gap-1 text-xs text-base-content/60 whitespace-nowrap">
+                        <label class="flex items-center gap-1 text-xs text-muted whitespace-nowrap">
                             {{ __('davon mind.') }}
                             <input type="number" name="qualification_minima[{{ $q->sqid }}]"
                                    min="1" max="99" value="{{ $minimaVal }}"
@@ -122,7 +122,7 @@
                     </div>
                 @endforeach
             </div>
-            <div class="fieldset-label text-xs text-base-content/60">
+            <div class="fieldset-label text-xs text-muted">
                 {{ __('Häkchen = jede eingeteilte Person braucht die Qualifikation. Zahl = mindestens so viele Personen mit dieser Qualifikation (Rest darf ohne sein).') }}
             </div>
         </div>

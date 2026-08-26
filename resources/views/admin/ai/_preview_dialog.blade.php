@@ -17,12 +17,12 @@
     <div class="space-y-4 text-sm">
         <div>
             <h4 class="font-semibold">{{ __('ai.preview.data_classes') }}</h4>
-            <p class="text-xs text-base-content/60">{{ __('ai.preview.data_classes_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.preview.data_classes_help') }}</p>
             <div class="mt-1 flex flex-wrap gap-1">
                 @forelse ($definition->dataClasses as $dataClass)
                     <span class="badge badge-outline badge-sm font-mono">{{ $dataClass }}</span>
                 @empty
-                    <span class="text-base-content/50 italic">—</span>
+                    <span class="text-muted italic">—</span>
                 @endforelse
             </div>
         </div>
@@ -33,10 +33,10 @@
                 @forelse ($definition->memoryScopes as $scope)
                     <span class="badge badge-outline badge-sm">{{ __('ai.field.scope_' . $scope) }}</span>
                 @empty
-                    <span class="text-base-content/50 italic">{{ __('ai.preview.no_memory') }}</span>
+                    <span class="text-muted italic">{{ __('ai.preview.no_memory') }}</span>
                 @endforelse
             </div>
-            <p class="mt-1 text-xs text-base-content/60">
+            <p class="mt-1 text-xs text-muted">
                 {{ __('ai.preview.memory_counts', [
                     'glossary' => $memoryCounts['glossary'],
                     'rules' => $memoryCounts['style_rules'],
@@ -47,7 +47,7 @@
 
         <div>
             <h4 class="font-semibold">{{ __('ai.preview.routing') }}</h4>
-            <p class="text-xs {{ $cloudAllowed ? 'text-base-content/60' : 'text-warning' }}">
+            <p class="text-xs {{ $cloudAllowed ? 'text-muted' : 'text-warning' }}">
                 {{ $cloudAllowed ? __('ai.preview.cloud_allowed') : __('ai.preview.cloud_blocked') }}
             </p>
             @if ($unavailableReason !== null)
@@ -73,7 +73,7 @@
             @endif
         </div>
 
-        <p class="text-xs text-base-content/50">
+        <p class="text-xs text-muted">
             {{ __('ai.preview.prompt_version') }}: v{{ $definition->promptVersion }} —
             {{ __('ai.preview.no_call_hint') }}
         </p>

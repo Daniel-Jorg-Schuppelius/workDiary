@@ -48,7 +48,7 @@
                 </label>
                 <x-icon-btn icon="unarchive" tone="primary" size="sm" type="submit" show-label>{{ __('Paket einlesen') }}</x-icon-btn>
             </form>
-            <p class="mt-2 text-xs text-base-content/60">
+            <p class="mt-2 text-xs text-muted">
                 {{ __('Ohne zugeordneten Vergabevorgang werden nur GAEB-Dateien übernommen — Restdokumente hätten keine Akte, an die sie gehören.') }}
             </p>
         </x-card>

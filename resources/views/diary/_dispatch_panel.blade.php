@@ -120,13 +120,13 @@
                         'badge-warning' => $qStatus === 'expiring',
                         'badge-error' => $qStatus === 'missing',
                     ])>
-                        <span class="material-symbols-outlined text-xs">{{ $qStatus === 'ok' ? 'check' : ($qStatus === 'expiring' ? 'schedule' : 'close') }}</span>
+                        <x-icon name="{{ $qStatus === 'ok' ? 'check' : ($qStatus === 'expiring' ? 'schedule' : 'close') }}" class="text-xs" />
                         {{ $qualification->abbreviation ?? $qualification->name }}
                     </span>
                 @endforeach
             </div>
         @elseif ($requiredQualifications->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Keine Qualifikationen gefordert.') }}</p>
+            <p class="text-sm text-muted">{{ __('Keine Qualifikationen gefordert.') }}</p>
         @endif
 
         @if ($canDispatch && $allQualifications->isNotEmpty())
@@ -173,7 +173,7 @@
                 @endforeach
             </ul>
         @else
-            <p class="text-sm text-base-content/60">{{ __('dispatch.vehicle.none') }}</p>
+            <p class="text-sm text-muted">{{ __('dispatch.vehicle.none') }}</p>
         @endif
 
         @if ($canReserve && $vehicles->isNotEmpty())

@@ -50,7 +50,7 @@
                         <option value="{{ $option->key }}" @selected($option->key === $period->key)>{{ $option->label() }}</option>
                     @endforeach
                 </select>
-                <span class="text-xs text-base-content/60">
+                <span class="text-xs text-muted">
                     {{ $interval->label() }}@if ($has_extension) · {{ __('accounting.filing.extension.short') }}@endif
                 </span>
             </x-filter-bar>

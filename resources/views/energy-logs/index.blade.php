@@ -111,7 +111,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">bolt</span>' :colspan="9" :title="__('Keine Einträge im gewählten Zeitraum')" compact />
+                <x-table.empty icon="bolt" :colspan="9" :title="__('Keine Einträge im gewählten Zeitraum')" compact />
             @endforelse
         </x-table>
 

@@ -10,17 +10,33 @@
 
 namespace App\Http\Requests;
 
-use App\Models\Warehouse;
+use App\Enums\Inventory\WarehouseKind;
+use App\Http\Requests\Concerns\DecodesSqidInputs;
+use App\Models\{Site, Team, Vehicle, Warehouse};
+use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
 class SaveWarehouseRequest extends BaseFormRequest {
+    use DecodesSqidInputs;
+
     /** @var list<string> */
     private const FLAGS = ['is_default', 'active', 'blocked'];
+
+    /** @var array<string, class-string> Bezug (MVP-706) kommt als Sqid aus dem Formular. */
+    protected array $sqidFields = [
+        'site_id' => Site::class,
+        'vehicle_id' => Vehicle::class,
+        'team_id' => Team::class,
+    ];
 
     protected function prepareForValidation(): void {
         $merge = [];
         foreach (self::FLAGS as $flag) {
             $merge[$flag] = $this->boolean($flag);
+        }
+        // Art ist optional (Altaufrufer ohne Feld bleiben feste Lager).
+        if (! $this->filled('kind')) {
+            $merge['kind'] = WarehouseKind::Fixed->value;
         }
         $this->merge($merge);
     }
@@ -41,11 +57,31 @@ class SaveWarehouseRequest extends BaseFormRequest {
                     ->where(fn ($q) => $q->where('organization_id', $organizationId))
                     ->ignore($warehouse?->id),
             ],
+            'kind' => ['required', Rule::enum(WarehouseKind::class)],
+            'site_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('sites')],
+            'vehicle_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('vehicles')],
+            'team_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('teams')],
             'location_note' => ['nullable', 'string', 'max:255'],
             'is_default' => ['boolean'],
             'active' => ['boolean'],
             'blocked' => ['boolean'],
         ];
+    }
+
+    /**
+     * Validierte Daten mit konsistentem Bezug: nur die Spalte der gewählten
+     * Art bleibt gesetzt (ein Fahrzeuglager trägt keinen Standort).
+     *
+     * @return array<string, mixed>
+     */
+    public function warehouseData(): array {
+        $data = $this->validated();
+        $kind = WarehouseKind::from((string) $data['kind']);
+        foreach (['site_id', 'vehicle_id', 'team_id'] as $column) {
+            $data[$column] = $kind->referenceColumn() === $column ? ($data[$column] ?? null) : null;
+        }
+
+        return $data;
     }
 
     private function currentOrganizationId(): ?int {

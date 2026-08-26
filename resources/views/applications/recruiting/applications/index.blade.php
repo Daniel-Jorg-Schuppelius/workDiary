@@ -64,7 +64,7 @@
                 <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.applications.show', $application)" :label="__('Anzeigen')" /></td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">person_search</span>' :colspan="7" :title="__('Keine Bewerbungen — „Bewerbung erfassen“ legt die erste Akte an.')" compact />
+            <x-table.empty icon="person_search" :colspan="7" :title="__('Keine Bewerbungen — „Bewerbung erfassen“ legt die erste Akte an.')" compact />
         @endforelse
     </x-table>
 

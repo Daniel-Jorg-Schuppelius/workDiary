@@ -67,7 +67,7 @@
 
     <x-form-group :legend="__('customer-billing.rates')" icon="payments" tone="warning" cols="1"
                   :description="__('customer-billing.rates_hint')">
-        <div class="grid grid-cols-[1fr_8rem_7rem] gap-2 text-xs font-medium text-base-content/60">
+        <div class="grid grid-cols-[1fr_8rem_7rem] gap-2 text-xs font-medium text-muted">
             <span>{{ __('customer-billing.activity_category') }}</span>
             <span>{{ __('customer-billing.day_type') }}</span>
             <span>{{ __('customer-billing.hourly_rate') }}</span>
@@ -119,9 +119,9 @@
                           :checked="(bool) old('holidays_as_weekend', $agreement?->holidays_as_weekend ?? false)" />
         <div class="md:col-span-2">
             <p class="fieldset-label">{{ __('customer-billing.travel_categories') }}</p>
-            <p class="text-xs text-base-content/60 mb-2">{{ __('customer-billing.travel_categories_hint') }}</p>
+            <p class="text-xs text-muted mb-2">{{ __('customer-billing.travel_categories_hint') }}</p>
             @if ($travelCategoryOptions->isEmpty())
-                <p class="text-xs text-base-content/60">{{ __('customer-billing.travel_categories_none') }}</p>
+                <p class="text-xs text-muted">{{ __('customer-billing.travel_categories_none') }}</p>
             @else
                 <div class="flex flex-wrap gap-x-6">
                     @foreach ($travelCategoryOptions as $category)

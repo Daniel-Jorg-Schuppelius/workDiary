@@ -97,7 +97,7 @@
                         —
                     @endif
                 </td>
-                <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $entitlement->note }}</td>
+                <td class="max-w-xs truncate text-muted text-xs">{{ $entitlement->note }}</td>
                 <td class="text-right">
                     <div class="flex items-center justify-end gap-1">
                         <x-icon-btn icon="edit"
@@ -113,7 +113,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">event_available</span>' :colspan="9" :title="__('Keine Ansprüche für dieses Jahr angelegt')" compact />
+            <x-table.empty icon="event_available" :colspan="9" :title="__('Keine Ansprüche für dieses Jahr angelegt')" compact />
         @endforelse
     </x-table>
 

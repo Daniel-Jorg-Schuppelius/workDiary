@@ -9,13 +9,13 @@
 
 @extends('layouts.app')
 
-@section('title', __('Rechnungs-Mail-Templates'))
+@section('title', __('Beleg-Mail-Templates'))
 @section('nav-title', __('Mail-Templates'))
 @section('wrapper-height-class', 'wd-page-fill')
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @section('content')
-<x-index-page overflow="clip" :subtitle="__('E-Mail-Vorlagen für den Rechnungsversand verwalten.')">
+<x-index-page overflow="clip" :subtitle="__('E-Mail-Vorlagen für den Belegversand (Rechnung, Angebot, AB, Bestellung, Lieferschein) verwalten.')">
     <x-slot:actions>
         <x-icon-btn icon="add" tone="primary" size="sm"
                     :href="route('admin.invoice-mail-templates.create')"
@@ -32,10 +32,25 @@
                placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
     </x-filter-bar>
 
+    {{-- Platzhalter-Doku je Belegart (Feature 128). --}}
+    <div class="flex-none space-y-2 text-sm text-base-content/70">
+        @foreach ($variablesByKind as $kindDoc)
+            <details>
+                <summary class="cursor-pointer"><strong>{{ __('Verfügbare Variablen') }}: {{ $kindDoc['label'] }}</strong></summary>
+                <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                    @foreach ($kindDoc['variables'] as $key => $label)
+                        <li><code>&#123;&#123;{{ $key }}&#125;&#125;</code> – {{ $label }}</li>
+                    @endforeach
+                </ul>
+            </details>
+        @endforeach
+    </div>
+
     <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>
             <tr>
                 <x-table.th sort type="string">{{ __('Name') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('Belegart') }}</x-table.th>
                 <x-table.th sort type="string">{{ __('Betreff') }}</x-table.th>
                 <x-table.th sort type="string">{{ __('Scope') }}</x-table.th>
                 <x-table.th sort type="number">{{ __('Standard') }}</x-table.th>
@@ -45,6 +60,7 @@
         @forelse ($templates as $tpl)
             <tr>
                 <td>{{ $tpl->name }}</td>
+                <td>{{ \App\Enums\DocumentDesign\RenderDocumentKind::tryFrom($tpl->document_kind)?->label() ?? $tpl->document_kind }}</td>
                 <td class="text-sm">{{ $tpl->subject }}</td>
                 <td>{{ $tpl->organization_id === null ? __('Global') : __('Organisation') }}</td>
                 <td data-sort-value="{{ $tpl->is_default ? 1 : 0 }}">
@@ -64,18 +80,10 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">mail</span>'
-                           :colspan="5" :title="__('Noch keine Templates angelegt.')" compact/>
+            <x-table.empty icon="mail"
+                           :colspan="6" :title="__('Noch keine Templates angelegt.')" compact/>
         @endforelse
     </x-table>
 
-    <div class="mt-6 text-sm text-base-content/70">
-        <strong>{{ __('Verfügbare Variablen') }}:</strong>
-        <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-            @foreach ($variables as $key => $label)
-                <li><code>&#123;&#123;{{ $key }}&#125;&#125;</code> – {{ $label }}</li>
-            @endforeach
-        </ul>
-    </div>
 </x-index-page>
 @endsection

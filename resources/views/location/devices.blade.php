@@ -98,7 +98,7 @@
                 </tr>
             @empty
                 <x-table.empty :colspan="4"
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">smartphone</span>'
+                    icon="smartphone"
                     :title="__('Noch kein Gerät verbunden')" compact />
             @endforelse
         </tbody>

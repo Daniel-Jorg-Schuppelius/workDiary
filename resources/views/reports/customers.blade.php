@@ -74,7 +74,7 @@
                     <td class="text-right tabular-nums"><a href="{{ $diaryRangeUrl($row['customerId']) }}" class="link link-hover">{{ $row['totalMinutes'] }}</a></td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
+                <tr><td colspan="2" class="text-muted">{{ __('Keine Daten') }}</td></tr>
             @endforelse
         </x-table>
 
@@ -94,7 +94,7 @@
                     </td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
+                <tr><td colspan="2" class="text-muted">{{ __('Keine Daten') }}</td></tr>
             @endforelse
         </x-table>
 
@@ -108,16 +108,16 @@
                     <td class="text-right tabular-nums"><a href="{{ $diaryRangeUrl($row['customerId']) }}" class="link link-hover">{{ $row['nonBillableMinutes'] }}</a></td>
                 </tr>
             @empty
-                <tr><td colspan="2" class="text-base-content/60">{{ __('Keine Daten') }}</td></tr>
+                <tr><td colspan="2" class="text-muted">{{ __('Keine Daten') }}</td></tr>
             @endforelse
         </x-table>
     </div>
 
     <x-card class="mt-4">
-        <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+        <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if($rows->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Kundendaten im gewählten Zeitraum.')" />
+            <x-empty-state icon="analytics" :title="__('Keine Kundendaten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

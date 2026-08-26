@@ -38,7 +38,7 @@
     </div>
 
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Zeitraum') }}</label>
+        <span class="fieldset-label">{{ __('Zeitraum') }}</span>
         <x-date-range
             fromName="von"
             toName="bis"

@@ -80,7 +80,7 @@
     <x-card class="mt-4">
         <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Kritische A-Lieferanten (Klumpenrisiko)') }}</h2>
         @if (count($riskRows) === 0)
-            <p class="text-sm text-base-content/60">{{ __('Kein Lieferant überschreitet den eingestellten Ausgabenanteil — gute Streuung.') }}</p>
+            <p class="text-sm text-muted">{{ __('Kein Lieferant überschreitet den eingestellten Ausgabenanteil — gute Streuung.') }}</p>
         @else
             <x-table bare>
                 <x-slot:head>
@@ -109,7 +109,7 @@
 
     <x-card id="lieferantenliste" class="mt-4 scroll-mt-24">
         <div class="mb-2 flex flex-wrap items-center gap-3">
-            <div class="text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+            <div class="text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
             @if ($segment !== null)
                 <span class="badge badge-sm {{ $segmentBadge[$segment] ?? 'badge-ghost' }}">
                     {{ __('Segment') }}: {{ $segmentLabels[$segment] ?? $segment }}
@@ -134,7 +134,7 @@
         </details>
 
         @if ($tableRows->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>' :title="__('Keine Lieferantendaten im gewählten Zeitraum.')" />
+            <x-empty-state icon="local_shipping" :title="__('Keine Lieferantendaten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

@@ -18,41 +18,23 @@
     :submit-label="__('Hinzufügen')"
 >
     <x-form-group :legend="__('Material')" icon="category" tone="primary" cols="2">
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Aus Stamm (optional)') }}</label>
-            <select name="material_id" class="select select-bordered w-full">
-                <option value="">— {{ __('frei') }} —</option>
-                @foreach ($materials as $m)
-                    <option value="{{ $m->sqid }}" @selected((string) old('material_id') === $m->sqid)
-                            data-unit="{{ $m->unit }}"
-                            data-price="{{ $m->default_unit_price }}"
-                            data-tax="{{ $m->tax_rate }}"
-                            data-name="{{ $m->name }}">
-                        {{ $m->name }} ({{ $m->unit }})
-                    </option>
-                @endforeach
-            </select>
-        </div>
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Bezeichnung') }} *</label>
-            <input type="text" name="description" maxlength="255" required class="input input-bordered w-full">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Menge') }} *</label>
-            <input type="number" step="0.001" min="0.001" name="quantity" value="1" required class="input input-bordered w-full">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Einheit') }} *</label>
-            <input type="text" name="unit" value="Stk." maxlength="20" required class="input input-bordered w-full">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('EP netto') }}</label>
-            <input type="number" step="0.0001" min="0" name="unit_price" class="input input-bordered w-full">
-        </div>
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('USt %') }}</label>
-            <input type="number" step="0.01" min="0" max="100" name="tax_rate" class="input input-bordered w-full">
-        </div>
+        <x-select-field span="2" name="material_id" :label="__('Aus Stamm (optional)')">
+            <option value="">— {{ __('frei') }} —</option>
+            @foreach ($materials as $m)
+                <option value="{{ $m->sqid }}" @selected((string) old('material_id') === $m->sqid)
+                        data-unit="{{ $m->unit }}"
+                        data-price="{{ $m->default_unit_price }}"
+                        data-tax="{{ $m->tax_rate }}"
+                        data-name="{{ $m->name }}">
+                    {{ $m->name }} ({{ $m->unit }})
+                </option>
+            @endforeach
+        </x-select-field>
+        <x-input-field span="2" name="description" :label="__('Bezeichnung')" type="text" required maxlength="255" />
+        <x-input-field name="quantity" :label="__('Menge')" type="number" value="1" required step="0.001" min="0.001" />
+        <x-input-field name="unit" :label="__('Einheit')" type="text" value="Stk." required maxlength="20" />
+        <x-input-field name="unit_price" :label="__('EP netto')" type="number" step="0.0001" min="0" />
+        <x-input-field name="tax_rate" :label="__('USt %')" type="number" step="0.01" min="0" max="100" />
     </x-form-group>
 
     <x-validation-errors />

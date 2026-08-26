@@ -11,7 +11,7 @@
 @section('content')
     <div class="max-w-md mx-auto bg-base-100 border border-base-300 rounded p-6 mt-10">
         <h1 class="text-xl font-semibold mb-4 flex items-center gap-2">
-            <span class="material-symbols-outlined">login</span>
+            <x-icon name="login" />
             {{ __('Anmelden') }}
         </h1>
         <form method="POST" action="{{ route('customer.login.attempt') }}" class="space-y-4">

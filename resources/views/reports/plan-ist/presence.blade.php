@@ -60,7 +60,7 @@
                 <tr>
                     <td class="font-medium" data-sort-value="{{ \Carbon\CarbonImmutable::parse($r['date'])->format('Y-m-d') }}">{{ \Carbon\CarbonImmutable::parse($r['date'])->format('D d.m.') }}</td>
                     <td class="text-right tabular-nums" data-sort-value="{{ $r['no_plan'] ? '' : $r['plan_minutes'] }}">
-                        @if ($r['no_plan'])<span class="text-base-content/40">—</span>
+                        @if ($r['no_plan'])<span class="text-muted">—</span>
                         @else{{ $fmt($r['plan_minutes']) }}@endif
                     </td>
                     <td class="text-right tabular-nums" data-sort-value="{{ $r['actual_minutes'] }}">{{ $fmt($r['actual_minutes']) }}</td>
@@ -70,7 +70,7 @@
                     <td class="text-xs">
                         {{ $r['plan_start'] ?? '—' }} / {{ $r['actual_start'] ?? '—' }}
                         @if ($r['late_start_minutes'] !== null)
-                            <span class="text-base-content/60">({{ $r['late_start_minutes'] > 0 ? '+' : '' }}{{ $r['late_start_minutes'] }}m)</span>
+                            <span class="text-muted">({{ $r['late_start_minutes'] > 0 ? '+' : '' }}{{ $r['late_start_minutes'] }}m)</span>
                         @endif
                     </td>
                     <td>

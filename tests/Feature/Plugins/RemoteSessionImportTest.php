@@ -18,8 +18,6 @@ use App\Jobs\ProcessCsvImportJob;
 use App\Models\{Asset, Customer, ImportRun, RemotePendingSession, TimeEntry, User};
 use App\Plugins\RemoteSupport\Providers\AnyDeskClient;
 use App\Plugins\RemoteSupport\RemoteDeviceRegistry;
-use App\Services\Import\EntitySpecRegistry;
-use App\Services\Import\Source\ImportSourceFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -86,7 +84,7 @@ class RemoteSessionImportTest extends TestCase {
         (new RemoteDeviceRegistry)->setRemoteId($asset, AnyDeskClient::ID, '362798056');
 
         $run = $this->preflight($this->orgAdmin());
-        (new ProcessCsvImportJob($run->id))->handle(app(EntitySpecRegistry::class), app(ImportSourceFactory::class));
+        app()->call([new ProcessCsvImportJob($run->id), 'handle']);
         $run->refresh();
 
         $this->assertSame(ImportRunState::Succeeded, $run->state);
@@ -119,7 +117,7 @@ class RemoteSessionImportTest extends TestCase {
         $admin = $this->orgAdmin();
         foreach ([0, 1] as $_) {
             $run = $this->preflight($admin);
-            (new ProcessCsvImportJob($run->id))->handle(app(EntitySpecRegistry::class), app(ImportSourceFactory::class));
+            app()->call([new ProcessCsvImportJob($run->id), 'handle']);
         }
 
         $this->assertSame(1, TimeEntry::query()->count());

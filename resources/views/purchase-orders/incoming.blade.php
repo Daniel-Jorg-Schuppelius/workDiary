@@ -19,7 +19,7 @@
     </x-slot:actions>
 
     @if ($lines->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>'
+        <x-empty-state framed icon="local_shipping"
                        :title="__('procurement.ui.incoming_none')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">

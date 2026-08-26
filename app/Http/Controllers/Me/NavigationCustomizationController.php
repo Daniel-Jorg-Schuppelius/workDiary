@@ -100,34 +100,12 @@ class NavigationCustomizationController extends Controller {
 
     /**
      * Whitelist aller ausblendbaren Schlüssel (nur was der Nutzer sehen darf).
+     * Dieselbe Liste bedient die eigenen Arbeitsbereiche (MVP-731) — zwei
+     * Whitelists für dieselbe Frage wären eine zu viel.
      *
      * @return list<string>
      */
     private function allowedKeys(): array {
-        $keys = [];
-        foreach ($this->customizableSections() as $section) {
-            $keys[] = NavigationRegistry::KEY_SECTION . (string) $section['key'];
-            foreach ((array) ($section['items'] ?? []) as $item) {
-                if (is_array($item)) {
-                    $keys[] = NavigationRegistry::KEY_ITEM . (string) $item['route'];
-                }
-            }
-            foreach ((array) ($section['groups'] ?? []) as $group) {
-                if (! is_array($group)) {
-                    continue;
-                }
-                $keys[] = NavigationRegistry::KEY_GROUP . (string) $group['key'];
-                foreach ((array) ($group['items'] ?? []) as $item) {
-                    if (is_array($item)) {
-                        $keys[] = NavigationRegistry::KEY_ITEM . (string) $item['route'];
-                    }
-                }
-            }
-        }
-        foreach ($this->customizableCreateGroups() as $group) {
-            $keys[] = NavigationRegistry::KEY_CREATE . (string) $group['key'];
-        }
-
-        return array_values(array_unique($keys));
+        return $this->registry->selectableKeys();
     }
 }

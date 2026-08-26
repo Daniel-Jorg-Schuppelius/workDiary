@@ -30,7 +30,7 @@
 
     <x-card>
         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Anrufliste hochladen') }}</h2>
-        <p class="mb-3 text-sm text-base-content/60">
+        <p class="mb-3 text-sm text-muted">
             {{ __('FRITZ!Box → Telefonie → Anrufe → Sichern (CSV). Nummern bekannter Kunden buchen automatisch; Anrufe, die eine gebuchte Fernwartungszeit desselben Kunden überlappen oder ihr bis zu :lead Minuten vorausgehen, verschmelzen mit dem bestehenden Eintrag. Gespräche unter :min Minuten und verpasste Anrufe werden ausgefiltert; unbekannte Nummern landen in der Zuordnungs-Inbox.', ['lead' => $leadMinutes, 'min' => $minCallMinutes]) }}
         </p>
         <div class="mb-3 flex items-start gap-2 rounded-box bg-base-200 p-3 text-sm">
@@ -55,7 +55,7 @@
         <div class="flex items-center justify-between">
             <div>
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Zuordnungs-Inbox') }}</h2>
-                <p class="text-sm text-base-content/60">{{ __('Offene, noch nicht zugeordnete Import-Gruppen: :n', ['n' => $inboxOpenCount]) }}</p>
+                <p class="text-sm text-muted">{{ __('Offene, noch nicht zugeordnete Import-Gruppen: :n', ['n' => $inboxOpenCount]) }}</p>
             </div>
             <x-icon-btn icon="inbox" tone="outline" size="sm" :href="route('admin.integration.inbox')" show-label>{{ __('Zur Inbox') }}</x-icon-btn>
         </div>
@@ -64,7 +64,7 @@
     {{-- Telefonstempeln (Feature 103, MVP-534) --}}
     <x-card>
         <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('Telefonstempeln') }}</h2>
-        <p class="mb-3 text-sm text-base-content/60">
+        <p class="mb-3 text-sm text-muted">
             @if ($stampLinesActive === [])
                 {{ __('Keine Stempel-Rufnummer konfiguriert — in den Plugin-Einstellungen eine eigene Rufnummer für Kommen/Gehen hinterlegen. Der Anruf wird nicht angenommen; die Rufnummer des Anrufenden wirkt als Ausweis.') }}
             @else

@@ -37,7 +37,7 @@
             <span class="fieldset-label">{{ __('scheduler.field.time') }}</span>
             <input type="time" name="time" class="input input-bordered w-full"
                    value="{{ old('time', $cadence->time) }}">
-            <p class="mt-1 text-xs text-base-content/60">{{ __('scheduler.hint.time') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('scheduler.hint.time') }}</p>
             @error('time')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -45,7 +45,7 @@
             <span class="fieldset-label">{{ __('scheduler.field.day') }}</span>
             <input type="number" name="day" min="0" max="31" class="input input-bordered w-full"
                    value="{{ old('day', $cadence->day) }}">
-            <p class="mt-1 text-xs text-base-content/60">{{ __('scheduler.hint.day') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('scheduler.hint.day') }}</p>
             @error('day')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -55,7 +55,7 @@
                 <input type="text" name="expression" class="input input-bordered w-full font-mono"
                        placeholder="0 4 15 1,7 *"
                        value="{{ old('expression', $cadence->expression) }}">
-                <p class="mt-1 text-xs text-base-content/60">{{ __('scheduler.hint.expression') }}</p>
+                <p class="mt-1 text-xs text-muted">{{ __('scheduler.hint.expression') }}</p>
                 @error('expression')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             </div>
         @endif

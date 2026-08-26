@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{ComplianceFinding, Organization, Team, TimeCorrectionRequest, User};
-use App\Services\Compliance\{AttendanceComplianceChecker, AttendancePlausibilityScanService, ComplianceFindingRecorder, ComplianceFindingService, ComplianceScanService};
+use App\Services\Compliance\{AttendanceComplianceChecker, AttendanceComplianceFinding, AttendancePlausibilityScanService, ComplianceFindingRecorder, ComplianceFindingService, ComplianceScanService, DrivingTimeComplianceChecker};
 use App\Services\Reporting\ReportFilters;
 use App\Support\{ChartBucket, Sqid};
 use Carbon\{Carbon, CarbonImmutable};
@@ -54,27 +54,18 @@ class ArbZgComplianceReportController extends Controller {
         $kindFilter = $request->string('kind')->toString();
         $kindFilter = in_array($kindFilter, $this->kinds(), true) ? $kindFilter : '';
 
+        // Feature 144 (MVP-719): Bereichsfilter ArbZG / Lenkzeiten — nur mit aktiven Lenkzeitregeln.
+        $categoryFilter = $request->string('category')->toString();
+        $categoryFilter = $this->drivingTimeEnabled() && in_array($categoryFilter, $this->categories(), true) ? $categoryFilter : '';
+
         $data = $this->build($from, $to);
         $rows = $this->filterRowsByUserTeam($data['rows'], $filters);
-        if ($kindFilter !== '') {
-            // Auf die gewählte Verstoßart eingrenzen (Zeilen, Befunde und Counts).
-            $filtered = [];
-            foreach ($rows as $r) {
-                $findings = array_values(array_filter(
-                    $r['findings'],
-                    static fn(array $f): bool => $f['kind'] === $kindFilter,
-                ));
-                if ($findings === []) {
-                    continue;
-                }
-                $counts = array_fill_keys($this->kinds(), 0);
-                $counts[$kindFilter] = count($findings);
-                $filtered[] = ['user' => $r['user'], 'findings' => $findings, 'counts' => $counts];
-            }
-            $rows = $filtered;
+        $allowedKinds = $this->allowedKinds($kindFilter, $categoryFilter);
+        if ($allowedKinds !== null) {
+            $rows = $this->filterRowsByKinds($rows, $allowedKinds);
         }
         $summary = $this->summarize($rows);
-        $exportFilters = array_merge(['kind' => $kindFilter], $filters->toAuditArray());
+        $exportFilters = array_merge(['kind' => $kindFilter, 'category' => $categoryFilter], $filters->toAuditArray());
 
         if (in_array($request->query('export'), ['csv', 'xlsx'], true)) {
             return $this->exportCsv($rows, $fromStr, $toStr, $exportFilters, $request);
@@ -92,6 +83,9 @@ class ArbZgComplianceReportController extends Controller {
             'to' => $toStr,
             'kinds' => $this->kinds(),
             'kindFilter' => $kindFilter,
+            'categories' => $this->categories(),
+            'categoryFilter' => $categoryFilter,
+            'drivingTimeEnabled' => $this->drivingTimeEnabled(),
             'thresholds' => $this->thresholdLabels(),
             'standardFilters' => $filters,
             'filterFields' => ['user', 'team'],
@@ -126,6 +120,50 @@ class ArbZgComplianceReportController extends Controller {
 
             return $teamUserIds === [] || in_array($uid, $teamUserIds, true);
         }));
+    }
+
+    /**
+     * Wirksame Verstoßarten aus Art- und Bereichsfilter; null = ungefiltert.
+     *
+     * @return list<string>|null
+     */
+    private function allowedKinds(string $kindFilter, string $categoryFilter): ?array {
+        if ($kindFilter !== '') {
+            return [$kindFilter];
+        }
+
+        return match ($categoryFilter) {
+            DrivingTimeComplianceChecker::CATEGORY => DrivingTimeComplianceChecker::kinds(),
+            ComplianceFindingRecorder::CATEGORY => $this->arbzgKinds(),
+            default => null,
+        };
+    }
+
+    /**
+     * Auf die gewählten Verstoßarten eingrenzen (Zeilen, Befunde und Counts).
+     *
+     * @param  array<int, array{user: User, findings: list<array<string, mixed>>, counts: array<string,int>}>  $rows
+     * @param  list<string>  $allowedKinds
+     * @return array<int, array{user: User, findings: list<array<string, mixed>>, counts: array<string,int>}>
+     */
+    private function filterRowsByKinds(array $rows, array $allowedKinds): array {
+        $filtered = [];
+        foreach ($rows as $r) {
+            $findings = array_values(array_filter(
+                $r['findings'],
+                static fn(array $f): bool => in_array($f['kind'], $allowedKinds, true),
+            ));
+            if ($findings === []) {
+                continue;
+            }
+            $counts = array_fill_keys($this->kinds(), 0);
+            foreach ($findings as $f) {
+                $counts[(string) $f['kind']] = ($counts[(string) $f['kind']] ?? 0) + 1;
+            }
+            $filtered[] = ['user' => $r['user'], 'findings' => $findings, 'counts' => $counts];
+        }
+
+        return $filtered;
     }
 
     /**
@@ -335,7 +373,16 @@ class ArbZgComplianceReportController extends Controller {
 
         // Ermittlung im ComplianceScanService, damit Report (Anzeige) und Scan-Command
         // (Persistenz) dieselbe Logik teilen; Anzeige-Aufbereitung (Sqid, Korrektur-Badge) bleibt hier.
-        $findingsByUser = app(ComplianceScanService::class)->findingsForRange($org, $from, $to);
+        $scanner = app(ComplianceScanService::class);
+        $findingsByUser = $scanner->findingsForRange($org, $from, $to);
+
+        // Feature 144 (MVP-719): Lenk-/Ruhezeit-Befunde im selben Cockpit —
+        // leer ohne Org-Schalter/geflaggte Fahrzeuge.
+        foreach ($scanner->drivingTimeFindingsForRange($org, $from, $to) as $uid => $drivingFindings) {
+            $merged = array_merge($findingsByUser[$uid] ?? [], $drivingFindings);
+            usort($merged, static fn(AttendanceComplianceFinding $a, AttendanceComplianceFinding $b): int => [$a->date, $a->kind] <=> [$b->date, $b->kind]);
+            $findingsByUser[$uid] = $merged;
+        }
         if ($findingsByUser === []) {
             return ['rows' => []];
         }
@@ -404,7 +451,8 @@ class ArbZgComplianceReportController extends Controller {
 
         // MVP-519: ArbZG-Verstöße und Plausibilitäts-Befunde („Ungeklärte
         // Fälle") teilen sich die Historie; die Kategorie grenzt ein.
-        $categories = [ComplianceFindingRecorder::CATEGORY, AttendancePlausibilityScanService::CATEGORY];
+        // Feature 144: Lenk-/Ruhezeit-Befunde als dritte Kategorie („Lenkzeiten").
+        $categories = [ComplianceFindingRecorder::CATEGORY, AttendancePlausibilityScanService::CATEGORY, DrivingTimeComplianceChecker::CATEGORY];
         $categoryFilter = $request->string('category')->toString();
         $categoryFilter = in_array($categoryFilter, $categories, true) ? $categoryFilter : '';
 
@@ -545,13 +593,46 @@ class ArbZgComplianceReportController extends Controller {
         ];
     }
 
-    /** @return list<string> */
+    /**
+     * Verstoßarten des Cockpits: ArbZG-Regeln plus — nur mit aktiven
+     * Lenkzeitregeln (Feature 144) — die Lenk-/Ruhezeit-Arten.
+     *
+     * @return list<string>
+     */
     private function kinds(): array {
+        return $this->drivingTimeEnabled()
+            ? array_merge($this->arbzgKinds(), DrivingTimeComplianceChecker::kinds())
+            : $this->arbzgKinds();
+    }
+
+    /**
+     * Bereiche des Bereichsfilters (Feature 144).
+     *
+     * @return list<string>
+     */
+    private function categories(): array {
+        return [ComplianceFindingRecorder::CATEGORY, DrivingTimeComplianceChecker::CATEGORY];
+    }
+
+    private ?bool $drivingTimeEnabled = null;
+
+    private function drivingTimeEnabled(): bool {
+        return $this->drivingTimeEnabled ??= ($this->currentOrganizationOrNull()?->drivingTimeRulesEnabled() ?? false);
+    }
+
+    /** @return list<string> */
+    private function arbzgKinds(): array {
         return [
             AttendanceComplianceChecker::KIND_MAX_DAILY_HOURS,
             AttendanceComplianceChecker::KIND_REST_PERIOD,
             AttendanceComplianceChecker::KIND_BREAK_MISSING,
             AttendanceComplianceChecker::KIND_MAX_WEEKLY_HOURS,
+            // Feature 131 (MVP-695/696): MiLoG-Erfassungsfrist + ArbZG §3/§6/§11.
+            AttendanceComplianceChecker::KIND_LATE_RECORDING,
+            AttendanceComplianceChecker::KIND_SIX_MONTH_AVERAGE,
+            AttendanceComplianceChecker::KIND_NIGHT_WORK,
+            AttendanceComplianceChecker::KIND_SUBSTITUTE_REST_DAY,
+            AttendanceComplianceChecker::KIND_FREE_SUNDAYS,
         ];
     }
 
@@ -590,8 +671,8 @@ class ArbZgComplianceReportController extends Controller {
                     (string) $f['date'],
                     (string) __('compliance.report.kind.' . $f['kind']),
                     (string) __('compliance.report.severity.' . $f['severity']),
-                    $this->fmtMinutes((int) $f['value']),
-                    $this->fmtMinutes((int) $f['threshold']),
+                    AttendanceComplianceFinding::formatValue((string) $f['kind'], (int) $f['value']),
+                    AttendanceComplianceFinding::formatValue((string) $f['kind'], (int) $f['threshold']),
                     $f['corrected'] ? (string) __('compliance.report.csv.yes') : '',
                 ];
             }
@@ -624,10 +705,4 @@ class ArbZgComplianceReportController extends Controller {
         ], $filename, request: $request, reportCode: 'arbzg_compliance', filters: $exportFilters);
     }
 
-    private function fmtMinutes(int $minutes): string {
-        $sign = $minutes < 0 ? '-' : '';
-        $abs = abs($minutes);
-
-        return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT);
-    }
 }

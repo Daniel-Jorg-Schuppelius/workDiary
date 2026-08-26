@@ -27,7 +27,7 @@
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
 
         @if ($conflicts->isEmpty())
-            <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
+            <p class="rounded-box border border-base-300 p-6 text-center text-sm text-muted">
                 {{ __('Keine Konflikte im gewählten Status.') }}
             </p>
         @else
@@ -53,7 +53,7 @@
                                     @if ($customer)
                                         <a href="{{ route('customers.show', $customer) }}" class="link">{{ $customer->name }}</a>
                                     @else
-                                        <span class="text-base-content/60">{{ __('(gelöscht)') }}</span>
+                                        <span class="text-muted">{{ __('(gelöscht)') }}</span>
                                     @endif
                                 </td>
                                 <td class="font-mono text-xs">{{ $conflict->external_id }}</td>
@@ -92,7 +92,7 @@
                                             </form>
                                         </div>
                                     @else
-                                        <span class="text-xs text-base-content/60">
+                                        <span class="text-xs text-muted">
                                             {{ optional($conflict->resolved_at)->format('d.m.Y H:i') }}
                                         </span>
                                     @endif

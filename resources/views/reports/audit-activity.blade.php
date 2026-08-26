@@ -82,7 +82,7 @@
                 @forelse ($byEvent as $ev => $c)
                     <tr><td>{{ $eventLabel($ev) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
                 @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
+                    <x-table.empty icon="history" :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -99,7 +99,7 @@
                 @forelse ($byType as $t => $c)
                     <tr><td class="text-xs">{{ $shortType($t) }}</td><td class="text-right tabular-nums">{{ $c }}</td></tr>
                 @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
+                    <x-table.empty icon="history" :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -116,7 +116,7 @@
                 @forelse ($byUser as $u)
                     <tr><td>{{ $userLabel($u['user']?->name) }}</td><td class="text-right tabular-nums">{{ $u['count'] }}</td></tr>
                 @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="2" :title="__('Keine Daten')" compact />
+                    <x-table.empty icon="history" :colspan="2" :title="__('Keine Daten')" compact />
                 @endforelse
             </x-table>
         </x-card>
@@ -125,7 +125,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Letzte 100 Events') }}</h3>
         @if ($recent->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :title="__('Keine Events im Zeitraum.')" />
+            <x-empty-state icon="history" :title="__('Keine Events im Zeitraum.')" />
         @else
             <x-table size="xs" table-sort="client" bare>
                 <x-slot:head>
@@ -145,7 +145,7 @@
                         <td>{{ $eventLabel($log->event) }}</td>
                         <td class="text-xs">{{ $shortType($log->auditable_type) }}</td>
                         <td class="tabular-nums">{{ $log->auditable_id }}</td>
-                        <td class="text-xs text-base-content/60">{{ $log->ip?->getValue() }}</td>
+                        <td class="text-xs text-muted">{{ $log->ip?->getValue() }}</td>
                     </tr>
                 @endforeach
             </x-table>

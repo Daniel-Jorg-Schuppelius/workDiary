@@ -35,7 +35,7 @@
 
     @if ($accounts->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">account_balance</span>'
+            icon="account_balance"
             :title="__('Keine Zeitkonten')"
             :message="__('Legen Sie ein Konto an, z. B. einen Nachtdienst-Zähler oder ein Freizeitkonto.')" />
     @else
@@ -47,7 +47,7 @@
                     <x-status-badge :tone="$account->is_active ? 'success' : 'ghost'" size="sm">
                         {{ $account->is_active ? __('aktiv') : __('inaktiv') }}
                     </x-status-badge>
-                    <span class="text-sm text-base-content/60">
+                    <span class="text-sm text-muted">
                         {{ $account->unit->label() }} · {{ $account->carryover_policy->label() }}
                         @if ($account->cap_amount !== null)
                             ({{ $account->unit->format((float) $account->cap_amount) }})
@@ -97,21 +97,21 @@
                       class="mt-2 flex flex-wrap items-end gap-2">
                     @csrf
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Quelle') }}</label>
-                        <select name="source_type" class="select select-sm select-bordered w-64" required>
+                        <label for="ta-{{ $account->sqid }}-source_type" class="fieldset-label">{{ __('Quelle') }}</label>
+                        <select id="ta-{{ $account->sqid }}-source_type" name="source_type" class="select select-sm select-bordered w-64" required>
                             @foreach ($sources as $source)
                                 <option value="{{ $source->value }}">{{ $source->label() }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Match (Lohnart-Muster / Art / Schichttyp-Sqid)') }}</label>
-                        <input type="text" name="match_value" class="input input-sm input-bordered w-64"
+                        <label for="ta-{{ $account->sqid }}-match_value" class="fieldset-label">{{ __('Match (Lohnart-Muster / Art / Schichttyp-Sqid)') }}</label>
+                        <input id="ta-{{ $account->sqid }}-match_value" type="text" name="match_value" class="input input-sm input-bordered w-64"
                                placeholder="z. B. surcharge.night* | vacation | sick">
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Faktor') }}</label>
-                        <input type="number" step="0.0001" name="factor" value="1"
+                        <label for="ta-{{ $account->sqid }}-factor" class="fieldset-label">{{ __('Faktor') }}</label>
+                        <input id="ta-{{ $account->sqid }}-factor" type="number" step="0.0001" name="factor" value="1"
                                class="input input-sm input-bordered w-28" required>
                     </div>
                     <button type="submit" class="btn btn-sm btn-outline">{{ __('Regel hinzufügen') }}</button>
@@ -124,25 +124,25 @@
                       class="flex flex-wrap items-end gap-2">
                     @csrf
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Mitarbeiter:in') }}</label>
-                        <select name="user_id" class="select select-sm select-bordered w-52" required>
+                        <label for="ta-{{ $account->sqid }}-user_id" class="fieldset-label">{{ __('Mitarbeiter:in') }}</label>
+                        <select id="ta-{{ $account->sqid }}-user_id" name="user_id" class="select select-sm select-bordered w-52" required>
                             @foreach ($members as $member)
                                 <option value="{{ $member->sqid }}">{{ $member->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Datum') }}</label>
-                        <input type="date" name="booking_date" class="input input-sm input-bordered" required
+                        <label for="ta-{{ $account->sqid }}-booking_date" class="fieldset-label">{{ __('Datum') }}</label>
+                        <input id="ta-{{ $account->sqid }}-booking_date" type="date" name="booking_date" class="input input-sm input-bordered" required
                                value="{{ now()->toDateString() }}">
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Menge (:unit, ± möglich)', ['unit' => $account->unit->label()]) }}</label>
-                        <input type="number" step="0.01" name="quantity" class="input input-sm input-bordered w-32" required>
+                        <label for="ta-{{ $account->sqid }}-quantity" class="fieldset-label">{{ __('Menge (:unit, ± möglich)', ['unit' => $account->unit->label()]) }}</label>
+                        <input id="ta-{{ $account->sqid }}-quantity" type="number" step="0.01" name="quantity" class="input input-sm input-bordered w-32" required>
                     </div>
                     <div class="fieldset grow">
-                        <label class="fieldset-label">{{ __('Begründung (Pflicht)') }}</label>
-                        <input type="text" name="note" minlength="5" maxlength="500"
+                        <label for="ta-{{ $account->sqid }}-note" class="fieldset-label">{{ __('Begründung (Pflicht)') }}</label>
+                        <input id="ta-{{ $account->sqid }}-note" type="text" name="note" minlength="5" maxlength="500"
                                class="input input-sm input-bordered w-full" required>
                     </div>
                     <button type="submit" class="btn btn-sm btn-warning">{{ __('Buchen') }}</button>

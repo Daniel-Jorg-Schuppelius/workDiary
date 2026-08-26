@@ -50,7 +50,7 @@
                     <option value="{{ $provider->value }}" @selected(old('provider', $connection?->provider->value) === $provider->value)>{{ $provider->label() }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-base-content/60">{{ __('ai.field.provider_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.field.provider_help') }}</p>
         </div>
 
         <div class="fieldset">
@@ -58,7 +58,7 @@
             <input id="ai-base-url" type="url" name="base_url" maxlength="500"
                    value="{{ old('base_url', $connection?->base_url) }}" class="input input-bordered w-full font-mono"
                    placeholder="https://…">
-            <p class="text-xs text-base-content/60">{{ __('ai.field.base_url_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.field.base_url_help') }}</p>
             @error('base_url')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -67,7 +67,7 @@
             <label class="fieldset-label" for="ai-key">{{ __('ai.field.api_key') }}</label>
             <input id="ai-key" type="password" name="api_key" maxlength="2000" autocomplete="new-password"
                    class="input input-bordered w-full font-mono" placeholder="••••••••">
-            <p class="text-xs text-base-content/60">{{ __('ai.field.api_key_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.field.api_key_help') }}</p>
         </div>
         @endif
 
@@ -76,7 +76,7 @@
             <input id="ai-model" type="text" name="model" maxlength="120"
                    value="{{ old('model', $connection?->model) }}" class="input input-bordered w-full font-mono"
                    placeholder="gpt-4o-mini">
-            <p class="text-xs text-base-content/60">{{ __('ai.field.model_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.field.model_help') }}</p>
             @error('model')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -87,7 +87,7 @@
                            @checked(old('is_local'))>
                     <span class="label-text">{{ __('ai.field.is_local') }}</span>
                 </label>
-                <p class="text-xs text-base-content/60">{{ __('ai.field.is_local_help') }}</p>
+                <p class="text-xs text-muted">{{ __('ai.field.is_local_help') }}</p>
             </div>
         @endif
     </x-form-group>

@@ -12,7 +12,7 @@
     <h1 class="text-2xl font-semibold mb-4">{{ __('open-issue.title.index') }}</h1>
 
     @if ($issues->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">flag</span>'
+        <x-empty-state framed icon="flag"
                        :title="__('Keine offenen Punkte für Sie freigegeben.')" />
     @else
         <ul class="space-y-3">
@@ -43,7 +43,7 @@
                             @if ($issue->description)
                                 <p class="mt-1 whitespace-pre-wrap text-sm text-base-content/80">{{ $issue->description }}</p>
                             @endif
-                            <p class="mt-2 text-xs text-base-content/60">
+                            <p class="mt-2 text-xs text-muted">
                                 {{ __('open-issue.field.assignee') }}: {{ optional($issue->assignee)->name ?? '—' }}
                                 @if ($issue->closed_at)
                                     · {{ __('open-issue.field.closed_at') }}: {{ $issue->closed_at->fdatetime() }}

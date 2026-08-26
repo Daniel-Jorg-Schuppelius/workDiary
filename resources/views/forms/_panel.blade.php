@@ -50,8 +50,8 @@
 <x-card as="section" id="forms">
     <div class="mb-4 flex flex-wrap items-center justify-between gap-2">
         <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold text-base-content">
-            <x-icon name="edit_note" class="text-base-content/60" /> {{ __('form.title.panel') }}
-            <span class="font-normal text-base-content/50">({{ $panelSubmissions->count() }})</span>
+            <x-icon name="edit_note" class="text-muted" /> {{ __('form.title.panel') }}
+            <span class="font-normal text-muted">({{ $panelSubmissions->count() }})</span>
         </h2>
         @if ($panelActiveTemplates->isNotEmpty())
             <div class="dropdown dropdown-end">
@@ -73,7 +73,7 @@
     </div>
 
     @if ($panelSubmissions->isEmpty())
-        <x-empty-state compact icon='<span class="material-symbols-outlined">edit_note</span>'
+        <x-empty-state compact icon="edit_note"
                        :title="__('form.title.panel')"
                        :message="__('form.empty_panel')" />
     @else
@@ -82,10 +82,10 @@
                 <li id="form-submission-{{ $panelSubmission->id }}" class="flex flex-wrap items-center justify-between gap-2 py-2 text-sm">
                     <div class="min-w-0">
                         <a href="{{ route('form-submissions.show', $panelSubmission) }}" class="flex items-center gap-2 font-medium link-hover">
-                            <x-icon name="edit_note" class="text-base-content/60" />
+                            <x-icon name="edit_note" class="text-muted" />
                             {{ optional($panelSubmission->template)->name ?? '—' }}
                         </a>
-                        <span class="block text-xs text-base-content/60">
+                        <span class="block text-xs text-muted">
                             {{ optional($panelSubmission->submitter)->name ?? '—' }}
                             · {{ $panelSubmission->submitted_at?->fdatetime() ?? '—' }}
                         </span>

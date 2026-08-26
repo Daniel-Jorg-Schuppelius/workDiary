@@ -14,6 +14,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Enums\ServiceTicket\{ServiceTicketPriority, ServiceTicketSource, ServiceTicketStatus};
 use App\Exceptions\ServiceTicketException;
 use App\Models\{DiaryEntry, Organization, ServiceQueue, ServiceTicket, SlaClockSegment, SlaContract, User};
+use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Numbering\NumberSequenceService;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -111,7 +112,11 @@ class ServiceTicketService {
         // Routing-Regeln (Feature 065, P3): deterministisch, protokolliert.
         app(TicketRoutingService::class)->apply($ticket);
 
-        return $ticket->refresh();
+        $ticket->refresh();
+        // Lifecycle-Webhook (MVP-718): ticket.created nach Routing (Queue/Zuweisung final).
+        app(LifecycleWebhookPublisher::class)->ticketCreated($ticket);
+
+        return $ticket;
     }
 
     public function transition(ServiceTicket $ticket, User $actor, ServiceTicketStatus $to): ServiceTicket {
@@ -139,6 +144,11 @@ class ServiceTicketService {
             'from' => $from->value,
             'to' => $to->value,
         ]);
+
+        // Lifecycle-Webhook (MVP-718): ticket.closed an der Service-Schreibstelle.
+        if ($to === ServiceTicketStatus::Closed) {
+            app(LifecycleWebhookPublisher::class)->ticketClosed($ticket);
+        }
 
         // SLA-Verletzungsregister (Feature 010): je Ticket+Typ genau eine Violation (idempotent).
         if (! $wasAcknowledged && $ticket->acknowledged_at !== null

@@ -416,6 +416,22 @@ return [
             'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly', 'dailyAt'],
             'criticality' => 'core',
         ],
+        // Mitarbeiter-Austritt (Feature 126, MVP-689): vorgemerkte Austritte
+        // am Stichtag vollziehen (Deaktivierung, Sitzungs-/Token-Ende).
+        'org.offboard_due' => [
+            'command' => 'org:offboard-due',
+            'cadence' => ['type' => 'dailyAt', 'time' => '00:10'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+        ],
+        // Fahrtenbuch-Festschreibung (Feature 137, MVP-702): Fahrten im
+        // Logbook-Modus vergangener Tage nach Tagesende festschreiben.
+        'travel_logs.lock_due' => [
+            'command' => 'travel-logs:lock-due',
+            'cadence' => ['type' => 'dailyAt', 'time' => '00:20'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+        ],
         // Bekanntmachungs-Radar (Feature 108, MVP-629): Der Bund stellt einen
         // Veröffentlichungstag erst am Folgetag vollständig bereit — der Abruf
         // holt deshalb nachts den Vortag.

@@ -98,11 +98,11 @@
                         </tr>
                     @endforeach
                 </x-table>
-                <p class="mt-2 text-xs text-base-content/60">
+                <p class="mt-2 text-xs text-muted">
                     {{ __('Eingefroren aus :name (Version :version) — spätere Preisänderungen bewerten diese Akte nicht um.', ['name' => data_get($case->terms_snapshot, 'name'), 'version' => data_get($case->terms_snapshot, 'version')]) }}
                 </p>
             @else
-                <p class="text-sm text-base-content/60">{{ __('Keine Preisliste hinterlegt — Positionen werden manuell erfasst.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Preisliste hinterlegt — Positionen werden manuell erfasst.') }}</p>
             @endif
         </x-card>
     </div>
@@ -123,7 +123,7 @@
                     <td>
                         <x-status-badge size="md" outline>{{ __("values.{$caseAsset->status}") }}</x-status-badge>
                         @if ($caseAsset->replacedBy !== null)
-                            <span class="text-xs text-base-content/60">{{ __('ersetzt durch :name', ['name' => $caseAsset->replacedBy->asset->name ?? '—']) }}</span>
+                            <span class="text-xs text-muted">{{ __('ersetzt durch :name', ['name' => $caseAsset->replacedBy->asset->name ?? '—']) }}</span>
                         @endif
                     </td>
                     <td class="text-sm">{{ collect($caseAsset->accessories ?? [])->implode(', ') ?: '—' }}</td>
@@ -182,8 +182,8 @@
                         <td>{{ $report->asset->name ?? '—' }}</td>
                         <td>{{ $report->reported_at->fdatetime() }}</td>
                         <td>{{ $report->condition->label() }}
-                            @if ($report->meter_value !== null)<span class="text-xs text-base-content/60"> · {{ __('Zähler') }} {{ $report->meter_value }}</span>@endif
-                            @if ($report->operating_hours !== null)<span class="text-xs text-base-content/60"> · {{ $report->operating_hours }} h</span>@endif
+                            @if ($report->meter_value !== null)<span class="text-xs text-muted"> · {{ __('Zähler') }} {{ $report->meter_value }}</span>@endif
+                            @if ($report->operating_hours !== null)<span class="text-xs text-muted"> · {{ $report->operating_hours }} h</span>@endif
                         </td>
                         <td>{{ $report->signature_name ?? '—' }}</td>
                         <td>{{ $report->portal_confirmed_at !== null ? $report->portal_confirmed_at->fdatetime() : '—' }}</td>

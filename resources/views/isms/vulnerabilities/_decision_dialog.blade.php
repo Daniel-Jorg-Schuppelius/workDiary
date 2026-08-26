@@ -34,7 +34,7 @@
             <textarea name="exploitability_note" rows="4" maxlength="10000"
                       class="textarea textarea-bordered w-full"
                       placeholder="{{ __('isms.hint.exploitability_note') }}">{{ old('exploitability_note', $vulnerability->exploitability_note) }}</textarea>
-            <span class="text-xs text-base-content/60">{{ __('isms.hint.exploitability_note_required') }}</span>
+            <span class="text-xs text-muted">{{ __('isms.hint.exploitability_note_required') }}</span>
         </label>
     </x-form-group>
 </x-modal>

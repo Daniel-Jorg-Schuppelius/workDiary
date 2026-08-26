@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{CtiConnection, Organization};
 use App\Services\Cti\{CtiCallService, CtiNormalizerResolver};
 use Illuminate\Http\{JsonResponse, Request};
+use OpenApi\Attributes as OA;
 
 /**
  * Eingehender CTI-Webhook (Feature 056, MVP-118). Sessionlos und ohne CSRF;
@@ -25,6 +26,19 @@ use Illuminate\Http\{JsonResponse, Request};
  * Metadaten). Zwischenzustände werden ignoriert.
  */
 class CtiWebhookController extends Controller {
+    #[OA\Post(
+        path: '/cti/webhook/{token}',
+        summary: 'CTI-Webhook (Anruf-Ereignis)',
+        description: 'Auth über Gerätetoken im Pfad; nur Metadaten, nie Gesprächsinhalte.',
+        tags: ['Ingest'],
+        parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Webhook-Token der CTI-Verbindung', schema: new OA\Schema(type: 'string'))],
+        requestBody: new OA\RequestBody(required: false, description: 'Providerspezifisches Anruf-Ereignis (z. B. sipgate)', content: new OA\JsonContent(type: 'object')),
+        responses: [
+            new OA\Response(response: 200, description: 'OK (status: recorded/ignored)'),
+            new OA\Response(response: 404, description: 'Unbekannter oder inaktiver Token'),
+            new OA\Response(response: 503, description: 'Wartungsmodus (Retry-After)'),
+        ],
+    )]
     public function __invoke(Request $request, string $token, CtiNormalizerResolver $resolver, CtiCallService $service): JsonResponse {
         $connection = CtiConnection::query()->withoutGlobalScopes()
             ->where('webhook_token_hash', CtiConnection::hashToken($token))

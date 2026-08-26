@@ -71,7 +71,7 @@
 
     <x-card>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :title="__('Keine Bereitschaftszeiten im gewählten Zeitraum.')" />
+            <x-empty-state icon="medical_services" :title="__('Keine Bereitschaftszeiten im gewählten Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

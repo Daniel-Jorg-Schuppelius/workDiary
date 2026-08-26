@@ -101,7 +101,7 @@ final class AccountingSymmetryTest extends TestCase {
 
         $result = app(SevDeskVoucherPullService::class)->pull($this->org->id, 1);
 
-        $this->assertSame(['read' => 0, 'created' => 0, 'updated' => 0], $result);
+        $this->assertSame(['read' => 0, 'created' => 0, 'updated' => 0, 'skipped' => 0], $result);
         $fake->assertNothingSent();
     }
 
@@ -183,7 +183,9 @@ final class AccountingSymmetryTest extends TestCase {
 
         $fake->assertSent(fn ($request): bool => $request->getMethod() === 'PUT'
             && str_contains((string) $request->getUri(), '/Contact/4711'));
-        $this->assertSame(1, ExternalReference::query()->count());
+        // Genau EINE Kontaktreferenz; Adressen/Kommunikationswege (MVP-731)
+        // führen eigene Referenztypen und zählen hier nicht mit.
+        $this->assertSame(1, ExternalReference::query()->where('external_type', 'contact')->count());
     }
 
     public function test_http_push_action_reports_the_external_id(): void {

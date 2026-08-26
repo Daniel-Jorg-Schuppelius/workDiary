@@ -23,7 +23,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int $id
  * @property int $communication_note_id
  * @property int|null $user_id
- * @property int|null $customer_contact_id
  * @property string $name
  * @property string|null $role
  * @property ParticipantParty $party
@@ -35,7 +34,6 @@ class CommunicationNoteParticipant extends Model {
     protected $fillable = [
         'communication_note_id',
         'user_id',
-        'customer_contact_id',
         'name',
         'role',
         'party',

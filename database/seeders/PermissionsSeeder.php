@@ -416,6 +416,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::SafetyViewAny,
             PermissionEnum::SafetyReport,
             PermissionEnum::SafetyManage,
+            // Trainingsmanagement (Feature 145): Teamleitung führt Katalog,
+            // Pflichtmatrix und Soll-Einträge ihres Bereichs.
+            PermissionEnum::TrainingViewAny,
+            PermissionEnum::TrainingManage,
             // Benachrichtigungsregeln (MVP-018): Teamleitung lesend,
             // Bearbeitung bleibt Admin.
             PermissionEnum::NotificationRuleViewAny,
@@ -573,6 +577,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::RecruitingManage,
             PermissionEnum::RecruitingDecide,
             PermissionEnum::RecruitingPrivacy,
+            // Trainingsmanagement (Feature 145): Schulungsplanung ist HR-Arbeit.
+            PermissionEnum::TrainingViewAny,
+            PermissionEnum::TrainingManage,
         ];
 
         $buchhaltung = [
@@ -674,6 +681,10 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::InvoiceIssue,
             PermissionEnum::InvoicePay,
             PermissionEnum::InvoiceExport,
+            // Provisionen (Feature 146): die Buchhaltung fuehrt den
+            // Abrechnungslauf und liefert den Lohn-Export.
+            PermissionEnum::CommissionViewAny,
+            PermissionEnum::CommissionManage,
             PermissionEnum::OrderMarkInvoiced,
             // Finanzschnittstelle (Feature 045): Übergaben vorbereiten und
             // übertragen — bewusst OHNE finance.config (Konfiguration des

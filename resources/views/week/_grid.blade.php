@@ -46,7 +46,7 @@
             @endphp
             <div class="wd-week-day-header {{ $isToday ? 'is-today' : '' }} {{ $isWeekend ? 'is-weekend' : '' }} {{ $isSunday ? 'is-sunday' : '' }} {{ $isHoliday ? 'is-holiday' : '' }}"
                  @if ($isHoliday) title="{{ $holidayName }}" @endif>
-                <div class="text-xs uppercase tracking-[0.2em] text-base-content/60">{{ $day->isoFormat('dd') }}</div>
+                <div class="text-xs uppercase tracking-[0.2em] text-muted">{{ $day->isoFormat('dd') }}</div>
                 <div class="font-['Space_Grotesk'] text-lg">{{ $day->isoFormat('DD.MM.') }}</div>
                 @if ($isHoliday)
                     <div class="mt-0.5 truncate text-[0.65rem] font-medium uppercase tracking-wider text-error">{{ $holidayName }}</div>

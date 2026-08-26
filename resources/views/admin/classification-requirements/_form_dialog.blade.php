@@ -104,7 +104,7 @@
         <div class="md:col-span-2">
             <label class="label" for="req-only-if"><span class="label-text">{{ __('only_if_json (optional)') }}</span></label>
             <textarea id="req-only-if" name="only_if_json" rows="5" class="textarea textarea-bordered w-full font-mono" placeholder='{"priority": ["high", "critical"]}'>{{ old('only_if_json', $onlyIfJsonText) }}</textarea>
-            <p class="text-xs text-base-content/60 mt-1">{{ __('JSON-Objekt mit Schlüsseln und erlaubten Werten, z. B. {"priority": ["high"]}.') }}</p>
+            <p class="text-xs text-muted mt-1">{{ __('JSON-Objekt mit Schlüsseln und erlaubten Werten, z. B. {"priority": ["high"]}.') }}</p>
         </div>
         <div class="md:col-span-2">
             <label class="label" for="req-note"><span class="label-text">{{ __('Hinweis') }}</span></label>

@@ -28,7 +28,7 @@
                        class="file-input file-input-bordered file-input-sm w-52"
                        aria-label="{{ __('Beleg scannen (PDF oder Foto)') }}">
                 <button type="submit" class="btn btn-ghost btn-sm gap-1">
-                    <span class="material-symbols-outlined text-base" aria-hidden="true">document_scanner</span>
+                    <x-icon name="document_scanner" class="text-base" />
                     {{ __('Scannen') }}
                 </button>
             </form>
@@ -94,7 +94,7 @@
                                 {{ $expense->category->label }}
                             </span>
                         @else
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td>{{ $expense->vendor ?: '—' }}</td>
@@ -139,7 +139,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                <x-table.empty icon="receipt_long"
                                :colspan="7"
                                :title="__('Keine Spesen im gewählten Zeitraum')"
                                compact />

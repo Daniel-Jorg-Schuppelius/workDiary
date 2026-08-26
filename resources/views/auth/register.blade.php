@@ -22,7 +22,7 @@
 
             {{-- Organisation --}}
             <div>
-                <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-base-content/50">{{ __('Organisation') }}</p>
+                <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-muted">{{ __('Organisation') }}</p>
                 <label for="org_name" class="mb-2 block text-sm font-medium text-base-content">{{ __('Name der Organisation') }}</label>
                 <input
                     id="org_name"
@@ -39,7 +39,7 @@
                 @enderror
             </div>
 
-            <div class="divider text-xs text-base-content/40">{{ __('Administrator-Account') }}</div>
+            <div class="divider text-xs text-muted">{{ __('Administrator-Account') }}</div>
 
             {{-- Name --}}
             <div>

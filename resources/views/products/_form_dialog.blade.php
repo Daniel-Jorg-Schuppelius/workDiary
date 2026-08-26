@@ -42,7 +42,7 @@
             <input id="prod-name" type="text" name="name" maxlength="190"
                    value="{{ old('name', $product->name) }}"
                    class="input input-bordered w-full" placeholder="{{ __('products.field.name_placeholder') }}">
-            <p class="text-xs text-base-content/60">{{ __('products.field.name_help') }}</p>
+            <p class="text-xs text-muted">{{ __('products.field.name_help') }}</p>
             @error('name')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 

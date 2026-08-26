@@ -46,7 +46,7 @@
                 <tr>
                     <td>{{ $assignment->asset->name ?? '—' }}</td>
                     <td>{{ $assignment->profile->name ?? '—' }}
-                        <span class="text-xs text-base-content/60">({{ $assignment->profile?->inspection_kind->label() }})</span>
+                        <span class="text-xs text-muted">({{ $assignment->profile?->inspection_kind->label() }})</span>
                     </td>
                     <td>
                         @if ($assignment->isOverdue())
@@ -64,7 +64,7 @@
                     <td>{{ $assignment->responsible->name ?? '—' }}</td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">rule_settings</span>' :colspan="5" :title="__('Keine Prüfpflichten — Prüfprofile zuweisen (Prüfprofile-Seite).')" compact />
+                <x-table.empty icon="rule_settings" :colspan="5" :title="__('Keine Prüfpflichten — Prüfprofile zuweisen (Prüfprofile-Seite).')" compact />
             @endforelse
         </x-table>
     </x-card>
@@ -86,7 +86,7 @@
                     <td>
                         <span class="badge badge-error badge-outline">{{ $block->reason->label() }}</span>
                         @if ($block->note !== null)
-                            <span class="block text-xs text-base-content/60">{{ \Illuminate\Support\Str::limit($block->note, 80) }}</span>
+                            <span class="block text-xs text-muted">{{ \Illuminate\Support\Str::limit($block->note, 80) }}</span>
                         @endif
                     </td>
                     <td>{{ $block->blocked_from->fdate() }}{{ $block->blocked_until !== null ? ' – ' . $block->blocked_until->fdate() : '' }}</td>

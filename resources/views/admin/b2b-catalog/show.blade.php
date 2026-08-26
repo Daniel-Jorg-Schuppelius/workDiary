@@ -37,9 +37,9 @@
 
         <x-card>
             <div class="mb-3 space-y-1 text-sm">
-                <div><span class="text-base-content/60">{{ __('b2b_catalog.field.customer') }}:</span> {{ $access->customer?->name }}</div>
-                <div><span class="text-base-content/60">{{ __('b2b_catalog.field.username') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5 text-xs">{{ $access->username }}</code></div>
-                <div><span class="text-base-content/60">{{ __('b2b_catalog.field.last_used') }}:</span> {{ $access->last_used_at?->diffForHumans() ?? '—' }}</div>
+                <div><span class="text-muted">{{ __('b2b_catalog.field.customer') }}:</span> {{ $access->customer?->name }}</div>
+                <div><span class="text-muted">{{ __('b2b_catalog.field.username') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5 text-xs">{{ $access->username }}</code></div>
+                <div><span class="text-muted">{{ __('b2b_catalog.field.last_used') }}:</span> {{ $access->last_used_at?->diffForHumans() ?? '—' }}</div>
             </div>
             <div class="flex flex-wrap gap-2">
                 <form method="POST" action="{{ route('b2b-catalog.rotate', $access) }}">
@@ -59,7 +59,7 @@
         {{-- Artikel-Freigaben --}}
         <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('b2b_catalog.items_heading') }}</h2>
-            <p class="mb-3 text-xs text-base-content/60">{{ __('b2b_catalog.items_hint') }}</p>
+            <p class="mb-3 text-xs text-muted">{{ __('b2b_catalog.items_hint') }}</p>
 
             <form method="POST" action="{{ route('b2b-catalog.items.store', $access) }}" class="mb-4 flex flex-wrap items-end gap-2">
                 @csrf

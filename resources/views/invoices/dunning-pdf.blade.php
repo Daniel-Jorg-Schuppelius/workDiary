@@ -24,7 +24,10 @@
     // beschädigt die Geschäftsbeziehung mehr als die offene Restsumme wert ist.
     $retained = app(\App\Services\Invoicing\RetentionService::class)->openAmountOf($invoice);
     $openAmount = round(($invoice->total?->toFloat() ?? 0.0) - $retained, 2);
-    $claimTotal = $openAmount + ($fee ?? 0.0);
+    // Verzugszins-Ausweis (MVP-691): berechnet im DunningService (act/365),
+    // hier nur Anzeige — gebucht wird nichts.
+    $interest ??= null;
+    $claimTotal = round($openAmount + ($fee ?? 0.0) + ($interest['amount'] ?? 0.0), 2);
     $hasRetention = $retained > 0.0;
 @endphp
 <style>
@@ -114,6 +117,9 @@
             @endif
             @if (($fee ?? null) !== null)
                 <tr><td colspan="3" class="num">{{ __('Mahngebühr') }}</td><td class="num">{{ $fmt($fee) }} {{ $invoice->currency->value }}</td></tr>
+            @endif
+            @if ($interest !== null)
+                <tr><td colspan="3" class="num">{{ __('finance.dunning.interest_row', ['rate' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interest['rate'], 2), 'days' => $interest['days']]) }}</td><td class="num">{{ $fmt($interest['amount']) }} {{ $invoice->currency->value }}</td></tr>
             @endif
             <tr><td colspan="3" class="num">{{ __('Gesamtforderung') }}</td><td class="num">{{ $fmt($claimTotal) }} {{ $invoice->currency->value }}</td></tr>
         </tfoot>

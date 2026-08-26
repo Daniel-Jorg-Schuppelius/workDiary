@@ -41,7 +41,7 @@
             @if ($canShare)
                 <button type="button" class="btn btn-sm btn-ghost gap-1 ml-auto"
                         data-open-dialog="ideas-shares-dialog">
-                    <span class="material-symbols-outlined text-base" aria-hidden="true">group</span>
+                    <x-icon name="group" class="text-base" />
                     {{ __('ideas.share.title') }}
                     @if ($shares->isNotEmpty())
                         <span class="badge badge-sm">{{ $shares->count() }}</span>
@@ -66,7 +66,7 @@
                 <ul class="space-y-1">
                     @foreach ($shares as $share)
                         <li class="flex items-center gap-2 text-sm">
-                            <span class="material-symbols-outlined text-base opacity-60" aria-hidden="true">{{ $share->team_id ? 'groups' : 'person' }}</span>
+                            <x-icon name="{{ $share->team_id ? 'groups' : 'person' }}" class="text-base opacity-60" />
                             <span>{{ $share->team?->name ?? $share->user?->name ?? '—' }}</span>
                             <span class="badge badge-sm">{{ $share->role->label() }}</span>
                             <form method="POST" action="{{ route('ideas.shares.destroy', [$map, $share]) }}" class="ml-auto">
@@ -82,8 +82,8 @@
                 <form method="POST" action="{{ route('ideas.shares.store', $map) }}" class="flex flex-wrap items-end gap-2 border-t border-base-200 pt-4">
                     @csrf
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('ideas.share.user') }}</label>
-                        <select name="user" class="select select-sm select-bordered">
+                        <label for="user" class="fieldset-label">{{ __('ideas.share.user') }}</label>
+                        <select id="user" name="user" class="select select-sm select-bordered">
                             <option value="">—</option>
                             @foreach ($shareUsers as $user)
                                 <option value="{{ $user->sqid }}">{{ $user->name }}</option>
@@ -91,8 +91,8 @@
                         </select>
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('ideas.share.team') }}</label>
-                        <select name="team" class="select select-sm select-bordered">
+                        <label for="team" class="fieldset-label">{{ __('ideas.share.team') }}</label>
+                        <select id="team" name="team" class="select select-sm select-bordered">
                             <option value="">—</option>
                             @foreach ($shareTeams as $team)
                                 <option value="{{ $team->sqid }}">{{ $team->name }}</option>
@@ -100,8 +100,8 @@
                         </select>
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('ideas.share.role') }}</label>
-                        <select name="role" class="select select-sm select-bordered">
+                        <label for="role" class="fieldset-label">{{ __('ideas.share.role') }}</label>
+                        <select id="role" name="role" class="select select-sm select-bordered">
                             <option value="viewer">{{ __('ideas.share_role.viewer') }}</option>
                             <option value="editor">{{ __('ideas.share_role.editor') }}</option>
                         </select>
@@ -226,7 +226,7 @@
         {{-- Konfliktdialog (MVP-108): nie stilles Last-write-wins --}}
         <template x-if="conflict">
             <div class="alert alert-warning mb-3" role="alertdialog" aria-live="assertive">
-                <span class="material-symbols-outlined" aria-hidden="true">sync_problem</span>
+                <x-icon name="sync_problem" />
                 <div class="grow">
                     <p class="font-medium">{{ __('ideas.editor.conflict_title') }}</p>
                     <p class="text-sm" x-text="conflict && conflict.current ? conflict.current.title : ''"></p>
@@ -282,37 +282,37 @@
                              :class="selected === sqid ? 'opacity-100' : ''">
                             <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="addChild(sqid)"
                                     aria-label="{{ __('ideas.editor.add_child') }}" title="{{ __('ideas.editor.add_child') }}">
-                                <span class="material-symbols-outlined text-base" aria-hidden="true">add</span>
+                                <x-icon name="add" class="text-base" />
                             </button>
                             <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="startRename(sqid)"
                                     aria-label="{{ __('ideas.editor.rename') }}" title="{{ __('ideas.editor.rename') }}">
-                                <span class="material-symbols-outlined text-base" aria-hidden="true">edit</span>
+                                <x-icon name="edit" class="text-base" />
                             </button>
                             <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="openDetails(sqid)"
                                     aria-label="{{ __('ideas.editor.details') }}" title="{{ __('ideas.editor.details') }}">
-                                <span class="material-symbols-outlined text-base" aria-hidden="true">tune</span>
+                                <x-icon name="tune" class="text-base" />
                             </button>
                             <template x-if="!isRoot(sqid)">
                                 <span class="flex items-center gap-0.5">
                                     <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="moveUp(sqid)"
                                             aria-label="{{ __('ideas.editor.move_up') }}" title="{{ __('ideas.editor.move_up') }}">
-                                        <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_upward</span>
+                                        <x-icon name="arrow_upward" class="text-base" />
                                     </button>
                                     <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="moveDown(sqid)"
                                             aria-label="{{ __('ideas.editor.move_down') }}" title="{{ __('ideas.editor.move_down') }}">
-                                        <span class="material-symbols-outlined text-base" aria-hidden="true">arrow_downward</span>
+                                        <x-icon name="arrow_downward" class="text-base" />
                                     </button>
                                     <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="outdent(sqid)"
                                             aria-label="{{ __('ideas.editor.outdent') }}" title="{{ __('ideas.editor.outdent') }}">
-                                        <span class="material-symbols-outlined text-base" aria-hidden="true">format_indent_decrease</span>
+                                        <x-icon name="format_indent_decrease" class="text-base" />
                                     </button>
                                     <button type="button" class="btn btn-ghost btn-xs px-1" x-on:click.stop="indent(sqid)"
                                             aria-label="{{ __('ideas.editor.indent') }}" title="{{ __('ideas.editor.indent') }}">
-                                        <span class="material-symbols-outlined text-base" aria-hidden="true">format_indent_increase</span>
+                                        <x-icon name="format_indent_increase" class="text-base" />
                                     </button>
                                     <button type="button" class="btn btn-ghost btn-xs px-1 text-error" x-on:click.stop="removeNode(sqid)"
                                             aria-label="{{ __('ideas.editor.delete') }}" title="{{ __('ideas.editor.delete') }}">
-                                        <span class="material-symbols-outlined text-base" aria-hidden="true">delete</span>
+                                        <x-icon name="delete" class="text-base" />
                                     </button>
                                 </span>
                             </template>
@@ -337,18 +337,18 @@
                     {{-- Bild-Export (MVP-138): Mind Elixir rendert clientseitig --}}
                     <button type="button" class="btn btn-ghost btn-xs gap-1" x-on:click="exportSvg()"
                             title="{{ __('ideas.editor.export_svg') }}">
-                        <span class="material-symbols-outlined text-base" aria-hidden="true">image</span>SVG
+                        <x-icon name="image" class="text-base" />SVG
                     </button>
                     <button type="button" class="btn btn-ghost btn-xs gap-1" x-on:click="exportPng()"
                             title="{{ __('ideas.editor.export_png') }}">
-                        <span class="material-symbols-outlined text-base" aria-hidden="true">photo</span>PNG
+                        <x-icon name="photo" class="text-base" />PNG
                     </button>
                     <span class="opacity-60 hidden sm:inline">{{ __('ideas.editor.canvas_a11y_hint') }}</span>
                 </div>
             </div>
             <template x-if="conflict">
                 <div class="alert alert-warning mb-2" role="alertdialog" aria-live="assertive">
-                    <span class="material-symbols-outlined" aria-hidden="true">sync_problem</span>
+                    <x-icon name="sync_problem" />
                     <span class="grow">{{ __('ideas.editor.conflict_title') }}</span>
                     <button type="button" class="btn btn-sm" x-on:click="reloadFromConflict()">{{ __('ideas.editor.conflict_take_server') }}</button>
                 </div>
@@ -372,13 +372,13 @@
                         <template x-if="cfg.can_update">
                             <button type="button" class="btn btn-primary btn-xs gap-1"
                                     x-on:click="saveDetailsFromRefs()">
-                                <span class="material-symbols-outlined text-base" aria-hidden="true">save</span>
+                                <x-icon name="save" class="text-base" />
                                 {{ __('Speichern') }}
                             </button>
                         </template>
                         <button type="button" class="btn btn-ghost btn-xs"
                                 x-on:click="closeDetailsFromRefs()" aria-label="{{ __('Schließen') }}">
-                            <span class="material-symbols-outlined text-base" aria-hidden="true">close</span>
+                            <x-icon name="close" class="text-base" />
                         </button>
                     </div>
                 </div>

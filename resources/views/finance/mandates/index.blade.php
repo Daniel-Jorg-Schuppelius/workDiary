@@ -48,7 +48,7 @@
                     <td>
                         <x-status-badge :tone="$mandate->isUsable() ? 'success' : 'warning'" outline>{{ $mandate->status->label() }}</x-status-badge>
                         @unless ($mandate->isUsable())
-                            <span class="text-xs text-base-content/60">{{ __('sepa.mandate.not_usable') }}</span>
+                            <span class="text-xs text-muted">{{ __('sepa.mandate.not_usable') }}</span>
                         @endunless
                     </td>
                     <td class="text-right">

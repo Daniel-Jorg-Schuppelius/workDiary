@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  *
  * @property int $id
  * @property int|null $organization_id
+ * @property int|null $bin_id
  * @property numeric-string $quantity
  * @property numeric-string $consumed_qty
  * @property ReservationStatus $status
@@ -39,6 +40,7 @@ class StockReservation extends Model {
         'organization_id',
         'article_variant_id',
         'warehouse_id',
+        'bin_id',
         'quantity',
         'consumed_qty',
         'ownership_type',
@@ -78,6 +80,11 @@ class StockReservation extends Model {
     /** @return BelongsTo<Warehouse, $this> */
     public function warehouse(): BelongsTo {
         return $this->belongsTo(Warehouse::class);
+    }
+
+    /** @return BelongsTo<WarehouseBin, $this> */
+    public function bin(): BelongsTo {
+        return $this->belongsTo(WarehouseBin::class, 'bin_id');
     }
 
     /** @return MorphTo<Model, $this> */

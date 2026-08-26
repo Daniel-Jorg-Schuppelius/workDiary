@@ -79,7 +79,7 @@
                 </tr>
             @empty
                 <x-table.empty :colspan="7"
-                               icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                               icon="receipt_long"
                                :title="__('finance.datev.empty')" />
             @endforelse
         </x-table>

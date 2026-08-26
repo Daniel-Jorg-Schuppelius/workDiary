@@ -39,8 +39,12 @@ return [
         'draft_batches' => ':count lote(s) contable(s) no consolidado(s) (borrador) en el periodo — falta(n) en la evidencia de lotes contables.',
         'empty_invoices' => 'No hay facturas emitidas en el periodo seleccionado.',
     ],
-    'export' => 'Descargar paquete Z3',
+    'export' => 'Crear paquete Z3',
+    'queued' => 'La creación del paquete está en cola — el comprobante aparece abajo y se actualiza en la próxima carga.',
+    'download' => 'Descargar paquete',
     'recent' => [
+        'status' => 'Estado',
+        'actions' => 'Acciones',
         'title' => 'Exportaciones recientes',
         'package_hash' => 'Hash del paquete (SHA-256)',
         'records' => 'Registros',

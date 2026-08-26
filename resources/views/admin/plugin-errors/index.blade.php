@@ -58,7 +58,7 @@
     @if ($pluginErrors->isEmpty())
         @if ($hasFilter)
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">filter_alt_off</span>'
+                icon="filter_alt_off"
                 :title="__('Keine Treffer')"
                 :message="__('Der aktuelle Filter trifft keine Fehler.')">
                 <x-slot:action>
@@ -67,7 +67,7 @@
             </x-empty-state>
         @else
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">inbox</span>'
+                icon="inbox"
                 :title="__('Keine Fehler')"
                 :message="__('Aktuell sind keine Plugin-Fehler verzeichnet.')" />
         @endif
@@ -79,6 +79,11 @@
             <input type="hidden" name="phase" value="{{ $filters['phase'] ?? '' }}">
             <input type="hidden" name="q" value="{{ $filters['q'] ?? '' }}">
         </form>
+        <div class="flex flex-none items-center gap-2">
+            <button type="submit" form="bulk-ack-form" class="btn btn-sm">{{ __('Auswahl als gesehen markieren') }}</button>
+            <button type="submit" form="bulk-ack-form" name="all_filtered" value="1" class="btn btn-sm btn-ghost"
+                    title="{{ __('Quittiert alle offenen Fehler des aktuellen Filters (Plugin/Phase/Suche).') }}">{{ __('Alle gefilterten quittieren') }}</button>
+        </div>
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('admin.plugin-errors.index')" :current-sort="$sort" :current-dir="$dir"
                  :sort-params="array_filter(['plugin' => $filters['plugin'] ?: null, 'phase' => $filters['phase'] ?: null, 'status' => $filters['status'] ?: null, 'q' => $filters['q'] ?: null, 'from' => $filters['from'] ?: null, 'to' => $filters['to'] ?: null])">
@@ -106,7 +111,7 @@
                     <td class="text-xs text-base-content/70 whitespace-nowrap" title="{{ $err->occurred_at->toDayDateTimeString() }}">
                         {{ $err->occurred_at->format('d.m.Y H:i') }}
                         @if ($err->last_occurred_at && ! $err->last_occurred_at->equalTo($err->occurred_at))
-                            <span class="block text-base-content/40">{{ __('zuletzt :time', ['time' => $err->last_occurred_at->diffForHumans()]) }}</span>
+                            <span class="block text-muted">{{ __('zuletzt :time', ['time' => $err->last_occurred_at->diffForHumans()]) }}</span>
                         @endif
                     </td>
                     <td>
@@ -150,12 +155,6 @@
                 </tr>
             @endforeach
         </x-table>
-
-        <div class="flex items-center gap-2 mt-2">
-            <button type="submit" form="bulk-ack-form" class="btn btn-sm">{{ __('Auswahl als gesehen markieren') }}</button>
-            <button type="submit" form="bulk-ack-form" name="all_filtered" value="1" class="btn btn-sm btn-ghost"
-                    title="{{ __('Quittiert alle offenen Fehler des aktuellen Filters (Plugin/Phase/Suche).') }}">{{ __('Alle gefilterten quittieren') }}</button>
-        </div>
 
         <x-pagination :paginator="$pluginErrors" standing />
     @endif

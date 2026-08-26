@@ -61,13 +61,13 @@
 <x-form-group :legend="__('permit.fields.evidence')" icon="attachment" cols="1">
     @if ($evidence)
         <div class="flex items-center gap-2 text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">description</span>
+            <x-icon name="description" />
             <a class="link" href="{{ \App\Http\Controllers\AttachmentController::downloadUrl($evidence) }}">{{ $evidence->original_name }}</a>
         </div>
-        <p class="text-xs text-base-content/60 mt-1">{{ __('permit.evidence.replace_hint') }}</p>
+        <p class="text-xs text-muted mt-1">{{ __('permit.evidence.replace_hint') }}</p>
     @endif
     <x-input-field name="evidence_document" type="file" :label="$evidence ? __('permit.evidence.replace') : __('permit.evidence.upload')" />
-    <p class="text-xs text-base-content/60 mt-1">{{ __('permit.evidence.hint', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+    <p class="text-xs text-muted mt-1">{{ __('permit.evidence.hint', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
 </x-form-group>
 
 <x-validation-errors />

@@ -71,8 +71,8 @@
                         <li class="flex flex-wrap items-center gap-2">
                             <x-status-badge size="xs" outline>{{ __("values.{$posting->status}") }}</x-status-badge>
                             {{ __("values.{$posting->channel}") }}
-                            @if ($posting->reference)<span class="text-base-content/60">{{ $posting->reference }}</span>@endif
-                            @if ($posting->expires_at)<span class="text-xs text-base-content/60">{{ __('bis :date', ['date' => $posting->expires_at->fdate()]) }}</span>@endif
+                            @if ($posting->reference)<span class="text-muted">{{ $posting->reference }}</span>@endif
+                            @if ($posting->expires_at)<span class="text-xs text-muted">{{ __('bis :date', ['date' => $posting->expires_at->fdate()]) }}</span>@endif
                             @if ($posting->status === 'published')
                                 @can('update', $requisition)
                                     <x-action-form :action="route('recruiting.requisitions.postings.close', [$requisition, $posting])" class="ml-auto">

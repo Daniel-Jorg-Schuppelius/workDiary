@@ -10,7 +10,7 @@
 
 namespace App\Models;
 
-use App\Enums\Travel\TravelLogVehicle;
+use App\Enums\Travel\{TravelLogVehicle, TripKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\TravelLogFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -38,6 +38,9 @@ use Illuminate\Support\Carbon;
  * @property float|null $to_lat
  * @property float|null $to_lng
  * @property string $distance_km
+ * @property int|null $odometer_start_km
+ * @property int|null $odometer_end_km
+ * @property TripKind $trip_kind
  * @property TravelLogVehicle $vehicle
  * @property string|null $vehicle_label
  * @property string|null $purpose
@@ -46,6 +49,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $rate_per_km
  * @property string $reimbursement_total
  * @property string|null $notes
+ * @property Carbon|null $locked_at
+ * @property int|null $corrects_travel_log_id
+ * @property string|null $correction_reason
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property Carbon|null $created_at
@@ -59,6 +65,16 @@ class TravelLog extends Model {
     use HasFactory;
 
     use HasSqid;
+
+    /**
+     * Nach der Festschreibung (Feature 137, GoBD „unveränderlich") dürfen sich
+     * über normale save()-Wege nur noch diese Felder ändern — Korrekturen
+     * laufen als Stornofahrt mit Referenz (corrects_travel_log_id) + Grund.
+     */
+    public const MUTABLE_AFTER_LOCK = [
+        'updated_at',
+        'updated_by',
+    ];
 
     protected $fillable = [
         'organization_id',
@@ -79,6 +95,9 @@ class TravelLog extends Model {
         'to_lat',
         'to_lng',
         'distance_km',
+        'odometer_start_km',
+        'odometer_end_km',
+        'trip_kind',
         'vehicle',
         'vehicle_label',
         'purpose',
@@ -87,6 +106,9 @@ class TravelLog extends Model {
         'rate_per_km',
         'reimbursement_total',
         'notes',
+        'locked_at',
+        'corrects_travel_log_id',
+        'correction_reason',
         'created_by',
         'updated_by',
     ];
@@ -102,6 +124,10 @@ class TravelLog extends Model {
         'to_lat' => 'float',
         'to_lng' => 'float',
         'distance_km' => 'decimal:2',
+        'odometer_start_km' => 'integer',
+        'odometer_end_km' => 'integer',
+        'trip_kind' => TripKind::class,
+        'locked_at' => 'datetime',
         'rate_per_km' => 'decimal:4',
         'reimbursement_total' => 'decimal:2',
         'round_trip' => 'boolean',
@@ -110,6 +136,25 @@ class TravelLog extends Model {
     ];
 
     protected static function booted(): void {
+        // Festschreibungs-Guard (Feature 137, MVP-702): Anker ist locked_at im
+        // Original — ab dann sind fachliche Felder gesperrt (nur MUTABLE_AFTER_LOCK).
+        static::updating(function (TravelLog $t): void {
+            if ($t->getRawOriginal('locked_at') === null) {
+                return;
+            }
+            $blocked = array_diff(array_keys($t->getDirty()), self::MUTABLE_AFTER_LOCK);
+            if ($blocked !== []) {
+                throw new \RuntimeException(
+                    'Festgeschriebene Fahrten sind unveränderlich (Felder: ' . implode(', ', $blocked) . ') — Stornofahrt erfassen.',
+                );
+            }
+        });
+        static::deleting(function (TravelLog $t): void {
+            if ($t->getRawOriginal('locked_at') !== null) {
+                throw new \RuntimeException('Festgeschriebene Fahrten können nicht gelöscht werden — Stornofahrt erfassen.');
+            }
+        });
+
         static::saving(function (TravelLog $t): void {
             if (! $t->date && $t->started_at) {
                 $t->date = $t->started_at->copy()->startOfDay();
@@ -162,6 +207,39 @@ class TravelLog extends Model {
         return $this->hasMany(TimeEntry::class);
     }
 
+    /** Stornierte Original-Fahrt, die diese Fahrt korrigiert (Feature 137). */
+    /** @return BelongsTo<TravelLog, $this> */
+    public function corrects(): BelongsTo {
+        return $this->belongsTo(TravelLog::class, 'corrects_travel_log_id');
+    }
+
+    /** @return HasMany<TravelLog, $this> */
+    public function corrections(): HasMany {
+        return $this->hasMany(TravelLog::class, 'corrects_travel_log_id');
+    }
+
+    public function isLocked(): bool {
+        return $this->locked_at !== null;
+    }
+
+    /** Fahrt gehört zu einem Fahrzeug im Fahrtenbuch-Modus (Feature 137). */
+    public function isLogbook(): bool {
+        return $this->vehicle_id !== null && (bool) $this->vehicleEntity?->logbook_mode;
+    }
+
+    public function isCorrection(): bool {
+        return $this->corrects_travel_log_id !== null;
+    }
+
+    /** Gefahrene km laut Tacho (End − Start), null ohne Stände. */
+    public function odometerDistance(): ?int {
+        if ($this->odometer_start_km === null || $this->odometer_end_km === null) {
+            return null;
+        }
+
+        return $this->odometer_end_km - $this->odometer_start_km;
+    }
+
     /**
      * @param  Builder<TravelLog>  $q
      * @return Builder<TravelLog>
@@ -176,5 +254,15 @@ class TravelLog extends Model {
      */
     public function scopeReimbursable(Builder $q): Builder {
         return $q->where('reimbursable', true);
+    }
+
+    /**
+     * Wirksame Fahrten: ohne stornierte Originale (deren Korrektur existiert).
+     *
+     * @param  Builder<TravelLog>  $q
+     * @return Builder<TravelLog>
+     */
+    public function scopeEffective(Builder $q): Builder {
+        return $q->whereDoesntHave('corrections');
     }
 }

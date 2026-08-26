@@ -322,8 +322,22 @@ return [
             'deleted' => 'Modello di modulo eliminato',
         ],
     ],
+    'hrFile' => [
+        'created' => 'Documento del fascicolo personale aggiunto',
+        'updated' => 'Documento del fascicolo personale modificato',
+        'downloaded' => 'Documento del fascicolo personale scaricato',
+        'deleted' => 'Documento del fascicolo personale distrutto',
+    ],
     'gobd' => [
         'exported' => 'Esportazione GoBD creata',
+        'downloaded' => 'Esportazione GoBD scaricata',
+    ],
+    // Strumento di misura (MVP-722): righe da audit:measure-chain-contention.
+    'perf' => [
+        'measure' => 'Misurazione (contesa del lock della catena di audit)',
+    ],
+    'procedure_documentation' => [
+        'published' => 'Documentazione delle procedure pubblicata',
     ],
     'google_calendar' => [
         'calendar_selected' => 'Calendario Google selezionato',
@@ -393,6 +407,8 @@ return [
         'retention_secured' => 'Ritenuta sostituita da fideiussione',
         'approved' => 'Fattura approvata',
         'dunned' => 'Fattura sollecitata',
+        'dunningBlocked' => 'Blocco sollecito impostato',
+        'dunningUnblocked' => 'Blocco sollecito rimosso',
         'document_imported' => 'File fattura importato',
         'einvoice_exported' => 'Fattura elettronica esportata',
         'einvoice_options_updated' => 'Opzioni fattura elettronica aggiornate',
@@ -595,7 +611,13 @@ return [
             'invited' => 'Accesso al portale invitato',
             'reactivated' => 'Accesso al portale riattivato',
         ],
+        'profile' => [
+            'email_change_requested' => 'Modifica e-mail richiesta nel portale',
+            'email_changed' => 'Indirizzo e-mail modificato nel portale',
+            'email_change_blocked' => 'Modifica e-mail nel portale non eseguita',
+        ],
         'query' => [
+            'attachments_added' => 'Allegati caricati alla domanda del portale',
             'withdrawn' => 'Richiesta del portale ritirata',
         ],
         'visibility' => [
@@ -627,6 +649,7 @@ return [
         'ropa' => [
             'exported' => 'Registro delle attività di trattamento esportato',
         ],
+        'subjectExportGenerated' => 'Riscontro all\'interessato generato',
     ],
     'problem' => [
         'effectiveness_checked' => 'Efficacia verificata',
@@ -639,7 +662,17 @@ return [
         'signatureLinkOpened' => 'Link di firma aperto',
         'signatureRequested' => 'Firma richiesta',
     ],
+    'order_confirmation' => [
+        'mailed' => 'Conferma d\'ordine inviata via e-mail',
+    ],
+    'purchase_order' => [
+        'mailed' => 'Ordine di acquisto inviato via e-mail',
+    ],
+    'delivery_note' => [
+        'mailed' => 'Bolla di consegna inviata via e-mail',
+    ],
     'quote' => [
+        'mailed' => 'Preventivo inviato via e-mail',
         'followed_up' => 'Preventivo sollecitato',
         'accepted' => 'Preventivo accettato',
         'approved' => 'Preventivo approvato',
@@ -671,6 +704,10 @@ return [
     ],
     'render_profile_activated' => 'Profilo di rendering attivato',
     'rental' => [
+        'requested' => 'Richiesta di noleggio inviata dal portale',
+        'requestAccepted' => 'Richiesta di noleggio accettata',
+        'requestDeclined' => 'Richiesta di noleggio rifiutata',
+        'requestWithdrawn' => 'Richiesta di noleggio ritirata dal cliente',
         'active' => 'Noleggio attivo',
         'assetSwapped' => 'Attrezzatura a noleggio sostituita',
         'cancelled' => 'Noleggio annullato',
@@ -714,6 +751,16 @@ return [
     ],
     'rules' => [
         'recalculated' => 'Risultati delle regole orarie ricalcolati',
+    ],
+    'safety' => [
+        'hazard_assessment' => [
+            'approved' => 'Valutazione dei rischi approvata',
+            'transitioned' => 'Valutazione dei rischi: stato modificato',
+            'superseded' => 'Valutazione dei rischi sostituita da una versione successiva',
+        ],
+        'instruction_participant' => [
+            'signed' => 'Partecipazione alla formazione confermata',
+        ],
     ],
     'scheduler' => [
         'testRun' => 'Esecuzione di prova dello scheduler',
@@ -769,6 +816,13 @@ return [
     'shipping' => [
         'connection_saved' => 'Connessione di spedizione salvata',
         'disconnected' => 'Connessione di spedizione disconnessa',
+    ],
+    'sms' => [
+        'sent' => 'SMS di allarme inviato',
+        'opt_in' => 'Allarme via SMS confermato',
+        'opt_out' => 'Allarme via SMS revocato',
+        'verification_started' => 'Codice di conferma SMS richiesto',
+        'budget_warning' => 'Soglia di avviso costi SMS raggiunta',
     ],
     'sla_violation' => [
         'acknowledged' => 'Violazione di SLA confermata',
@@ -881,7 +935,14 @@ return [
         'revoked' => 'Token revocato',
     ],
     'updated' => 'Aggiornato',
+    'travelLog' => [
+        'locked' => 'Viaggio bloccato',
+        'corrected' => 'Viaggio corretto tramite viaggio di storno',
+    ],
     'user' => [
+        'anonymized' => 'Collaboratore anonimizzato (dati personali rimossi, giustificativi conservati)',
+        'offboardingScheduled' => 'Uscita programmata',
+        'offboarded' => 'Collaboratore uscito (account disattivato)',
         'permission' => [
             'granted' => 'Permesso concesso',
             'revoked' => 'Permesso revocato',
@@ -931,6 +992,8 @@ return [
         'taxation_method_switched' => 'Regime IVA cambiato',
         'filing_interval_switched' => 'Periodo di liquidazione modificato',
         'vat_extension_recorded' => 'Proroga registrata',
+        'fixed_asset_disposed' => 'Dismissione cespite registrata',
+        'depreciation_proposed' => 'Ammortamento annuale proposto',
     ],
     'accounting_migration' => [
         'planned' => 'Cambio contabile pianificato',
@@ -942,5 +1005,8 @@ return [
         'blocked' => 'Cambio bloccato',
         'completed' => 'Cambio contabile concluso',
         'cancelled' => 'Cambio contabile annullato',
+    ],
+    'openIssue' => [
+        'followUpCreated' => 'Incarico di follow-up creato dal punto aperto',
     ],
 ];

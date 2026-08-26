@@ -143,7 +143,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Touren – pro Mitarbeiter') }}</h3>
         @if (empty($tours['per_user']))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">engineering</span>' :title="__('Keine Touren im Zeitraum.')" />
+            <x-empty-state icon="engineering" :title="__('Keine Touren im Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

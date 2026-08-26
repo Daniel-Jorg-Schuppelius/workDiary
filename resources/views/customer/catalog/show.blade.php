@@ -84,13 +84,13 @@
                     </label>
             @endswitch
             @if (filled($field['help'] ?? null))
-                <p class="-mt-2 text-xs text-base-content/60">{{ $field['help'] }}</p>
+                <p class="-mt-2 text-xs text-muted">{{ $field['help'] }}</p>
             @endif
             @error($errKey)
                 <p class="-mt-2 text-error text-sm">{{ $message }}</p>
             @enderror
         @empty
-            <p class="text-sm text-base-content/60">{{ __('Für diese Leistung sind keine weiteren Angaben nötig.') }}</p>
+            <p class="text-sm text-muted">{{ __('Für diese Leistung sind keine weiteren Angaben nötig.') }}</p>
         @endforelse
 
         <button type="submit" class="btn btn-primary">{{ __('Bestellung absenden') }}</button>

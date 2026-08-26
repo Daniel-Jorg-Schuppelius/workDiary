@@ -18,6 +18,8 @@ return [
         'suggestions_hint' => 'Vouchers with the same amount within the time window. Linking confirms it is the same transaction — the expense then stops counting twice.',
         'no_suggestions' => 'No matching voucher found',
         'no_suggestions_hint' => 'Without a link the expense is reported separately as an internal expense.',
+        'no_provider' => 'No accounting system connected',
+        'no_provider_hint' => 'Without a connected accounting system there are neither voucher suggestions nor a hand-over — the expense is reported separately as an internal expense.',
         'linked' => 'Voucher :number linked.',
         'unlinked' => 'Link removed.',
         'title' => 'Receipt file',

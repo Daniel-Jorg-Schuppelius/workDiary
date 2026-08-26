@@ -31,6 +31,13 @@ enum NotificationChannel: string implements HasLabel {
     case Teams = 'teams';
     case Mattermost = 'mattermost';
     case Calendar = 'calendar';
+    /**
+     * SMS-Kurznachricht (Feature 147, MVP-730) — empfängerbezogen, aber nur
+     * für als kritisch markierte Ereignisse ({@see NotificationEvent::supportsSms()})
+     * und nur an Mitarbeitende mit bestätigtem Opt-in. Versand über die
+     * SMS-Gateway-Plugins (seven.io/sipgate) der Organisation.
+     */
+    case Sms = 'sms';
 
     public function label(): string {
         return (string) __('enums.notification.channel.' . $this->value);
@@ -39,5 +46,14 @@ enum NotificationChannel: string implements HasLabel {
     /** Org-weite ausgehende Chat-Webhook-Kanäle (nicht empfängerbezogen). */
     public function isChatChannel(): bool {
         return $this === self::Teams || $this === self::Mattermost;
+    }
+
+    /**
+     * Kanäle, die je Ereignis freigeschaltet sein müssen: SMS kostet Geld und
+     * verlässt die Plattform (Rufnummer beim Gateway), darum ist er nirgends
+     * Default und nur an kritischen Ereignissen überhaupt wählbar.
+     */
+    public function isRestrictedToCriticalEvents(): bool {
+        return $this === self::Sms;
     }
 }

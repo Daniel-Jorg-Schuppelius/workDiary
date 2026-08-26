@@ -18,7 +18,7 @@
 <body class="min-h-screen bg-base-200">
 <main class="mx-auto max-w-2xl p-4">
     <div class="rounded-box bg-base-100 p-8 text-center shadow">
-        <span class="material-symbols-outlined text-5xl text-success" aria-hidden="true">check_circle</span>
+        <x-icon name="check_circle" class="text-5xl text-success" />
         <h1 class="mt-2 text-xl font-semibold">{{ __('Vielen Dank!') }}</h1>
         <p class="mt-1 text-sm text-base-content/70">{{ __('Ihre Antworten zu „:title" sind angekommen.', ['title' => $survey->title]) }}</p>
     </div>

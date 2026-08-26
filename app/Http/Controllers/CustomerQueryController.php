@@ -36,18 +36,34 @@ class CustomerQueryController extends Controller {
 
         $queries = CustomerQuery::query()
             ->when($status, fn($q, CustomerQueryStatus $s) => $q->where('status', $s->value))
-            ->with(['customer', 'answeredBy', 'subject'])
+            ->with(['customer', 'answeredBy', 'subject', 'attachments'])
             ->orderByRaw("CASE WHEN status = 'open' THEN 0 ELSE 1 END")
             ->orderByDesc('id')
             ->paginate(25)
             ->withQueryString();
 
+        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        // Rückfrage verstehen (Feature 148, MVP-732): Übersetzung + Kurzfassung
+        // als Lesehilfe unter der Rückfrage — ändert nichts am Vorgang.
+        $understandUsable = $aiViewData->capabilityUsable(
+            \App\Services\Ai\Suggestions\PortalQuerySuggestionService::CAPABILITY
+        );
+
         return view('customer-queries.index', [
             'queries' => $queries,
             'status' => $status,
             // Portal-Antwort-Übersetzung (Feature 084, Phase-36-Rest).
-            'translateUsable' => app(\App\Services\Ai\Suggestions\SuggestionViewData::class)
-                ->capabilityUsable(\App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_ANSWER_TRANSLATE),
+            'translateUsable' => $aiViewData->capabilityUsable(
+                \App\Services\Ai\Suggestions\CoveringTextSuggestionService::CAPABILITY_ANSWER_TRANSLATE
+            ),
+            'understandUsable' => $understandUsable,
+            'understandSuggestions' => $understandUsable
+                ? $aiViewData->openSuggestionsFor(
+                    (new CustomerQuery)->getMorphClass(),
+                    $queries->getCollection(),
+                    \App\Services\Ai\Suggestions\PortalQuerySuggestionService::CAPABILITY,
+                )
+                : collect(),
         ]);
     }
 

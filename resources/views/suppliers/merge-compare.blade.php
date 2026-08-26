@@ -77,10 +77,10 @@
                             $sv = (string) ($source->getAttribute($field) ?? '');
                         @endphp
                         <tr>
-                            <td class="text-base-content/60">{{ $label }}</td>
+                            <td class="text-muted">{{ $label }}</td>
                             <td>{{ $tv !== '' ? $tv : '—' }}</td>
-                            <td class="{{ $tv !== $sv ? 'text-warning' : 'text-base-content/50' }}">{{ $sv !== '' ? $sv : '—' }}</td>
-                            <td class="text-center text-base-content/30">—</td>
+                            <td class="{{ $tv !== $sv ? 'text-warning' : 'text-muted' }}">{{ $sv !== '' ? $sv : '—' }}</td>
+                            <td class="text-center text-muted">—</td>
                         </tr>
                     @endforeach
 
@@ -91,15 +91,15 @@
                         @endphp
                         @if ($tv !== '' || $sv !== '')
                             <tr>
-                                <td class="text-base-content/60">{{ $label }}</td>
-                                <td class="{{ $tv === '' ? 'text-base-content/30' : '' }}">{{ $tv !== '' ? $tv : '—' }}</td>
-                                <td class="{{ $tv !== $sv ? 'text-warning' : 'text-base-content/50' }}">{{ $sv !== '' ? $sv : '—' }}</td>
+                                <td class="text-muted">{{ $label }}</td>
+                                <td class="{{ $tv === '' ? 'text-muted' : '' }}">{{ $tv !== '' ? $tv : '—' }}</td>
+                                <td class="{{ $tv !== $sv ? 'text-warning' : 'text-muted' }}">{{ $sv !== '' ? $sv : '—' }}</td>
                                 <td class="text-center">
                                     @if ($sv !== '' && $tv !== $sv)
                                         <input type="checkbox" class="checkbox checkbox-sm"
                                                name="prefer_source[]" value="{{ $field }}">
                                     @else
-                                        <span class="text-base-content/30">—</span>
+                                        <span class="text-muted">—</span>
                                     @endif
                                 </td>
                             </tr>

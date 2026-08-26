@@ -20,11 +20,11 @@
         <p class="text-sm text-base-content/70">{{ __('ai.learn.question') }}</p>
         <div class="grid grid-cols-1 gap-2 md:grid-cols-2 text-sm">
             <div>
-                <div class="text-xs text-base-content/60">{{ __('ai.suggestion.original') }}</div>
+                <div class="text-xs text-muted">{{ __('ai.suggestion.original') }}</div>
                 <div class="rounded bg-base-200/60 p-2 whitespace-pre-wrap">{{ $aiLearn['source_text'] }}</div>
             </div>
             <div>
-                <div class="text-xs text-base-content/60">{{ __('ai.learn.corrected') }}</div>
+                <div class="text-xs text-muted">{{ __('ai.learn.corrected') }}</div>
                 <div class="rounded bg-base-100 border border-base-200 p-2 whitespace-pre-wrap">{{ $aiLearn['content'] }}</div>
             </div>
         </div>

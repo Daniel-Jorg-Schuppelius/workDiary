@@ -19,6 +19,7 @@ use App\Models\Finance\{BankTransaction, DatevBookingBatch};
 use App\Models\{IncomingEInvoice, Invoice, Organization};
 use App\Models\Migration\AccountingMigrationRun;
 use App\Services\Accounting\Preflight\{AccountingPreflightCheck, AccountingPreflightReport};
+use App\Support\Query\DateRange;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 
@@ -78,8 +79,8 @@ class AccountingSetupPreflight {
     private function checkFiscalYear(Organization $organization, CarbonImmutable $startsOn): AccountingPreflightCheck {
         $year = AccountingFiscalYear::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('starts_on', '<=', $startsOn->toDateString())
-            ->whereDate('ends_on', '>=', $startsOn->toDateString())
+            ->where('starts_on', '<=', DateRange::day($startsOn))
+            ->where('ends_on', '>=', DateRange::day($startsOn))
             ->withCount('periods')
             ->first();
 
@@ -127,7 +128,7 @@ class AccountingSetupPreflight {
         $batch = DatevBookingBatch::query()
             ->where('organization_id', $organization->id)
             ->where('status', DatevBatchStatus::Exported->value)
-            ->whereDate('period_to', '>=', $startsOn->toDateString())
+            ->where('period_to', '>=', DateRange::day($startsOn))
             ->orderByDesc('period_to')
             ->first();
 
@@ -147,9 +148,9 @@ class AccountingSetupPreflight {
             ->where('organization_id', $organization->id)
             ->where('sovereignty', '!=', AccountingSovereignty::Local->value)
             ->where(function ($query) use ($startsOn): void {
-                $query->whereNull('valid_to')->orWhereDate('valid_to', '>=', $startsOn->toDateString());
+                $query->whereNull('valid_to')->orWhere('valid_to', '>=', DateRange::day($startsOn));
             })
-            ->whereDate('valid_from', '>=', $startsOn->toDateString())
+            ->where('valid_from', '>=', DateRange::day($startsOn))
             ->first();
 
         if ($conflicting instanceof AccountingSovereigntyPeriod) {
@@ -172,20 +173,20 @@ class AccountingSetupPreflight {
 
         $count = Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('issued_on', '>=', $date)
+            ->where('issued_on', '>=', DateRange::day($date))
             ->where('currency', '!=', $base)
             ->count();
 
         $count += IncomingEInvoice::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('issue_date', '>=', $date)
+            ->where('issue_date', '>=', DateRange::day($date))
             ->whereNotNull('currency')
             ->where('currency', '!=', $base)
             ->count();
 
         $count += BankTransaction::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('booking_date', '>=', $date)
+            ->where('booking_date', '>=', DateRange::day($date))
             ->whereNotNull('currency')
             ->where('currency', '!=', $base)
             ->count();

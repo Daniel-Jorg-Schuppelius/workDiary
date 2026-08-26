@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, ReservationStatus};
-use App\Models\{ArticleVariant, StockReservation, Warehouse};
+use App\Models\{ArticleVariant, StockReservation, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -44,14 +44,15 @@ class ReservationService {
         int $priority = 100,
         ?Model $source = null,
         ?int $createdBy = null,
+        ?WarehouseBin $bin = null,
     ): StockReservation {
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy): StockReservation {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy, $bin): StockReservation {
             $qty = DecimalQty::positive($qty);
-            if (bccomp($this->ledger->available($variant, $warehouse), $qty, self::SCALE) < 0) {
+            if (bccomp($this->availableAt($variant, $warehouse, $bin), $qty, self::SCALE) < 0) {
                 throw new RuntimeException('Reservierung übersteigt die verfügbare Menge.');
             }
 
-            return $this->commit($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy);
+            return $this->commit($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy, $bin);
         });
     }
 
@@ -68,9 +69,10 @@ class ReservationService {
         int $priority = 100,
         ?Model $source = null,
         ?int $createdBy = null,
+        ?WarehouseBin $bin = null,
     ): ?StockReservation {
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy): ?StockReservation {
-            $available = $this->ledger->available($variant, $warehouse);
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $priority, $source, $createdBy, $bin): ?StockReservation {
+            $available = $this->availableAt($variant, $warehouse, $bin);
             $want = DecimalQty::positive($qty);
             $take = bccomp($available, $want, self::SCALE) < 0 ? $available : $want;
 
@@ -78,7 +80,7 @@ class ReservationService {
                 return null;
             }
 
-            return $this->commit($variant, $warehouse, $take, $ownership, $priority, $source, $createdBy);
+            return $this->commit($variant, $warehouse, $take, $ownership, $priority, $source, $createdBy, $bin);
         });
     }
 
@@ -91,8 +93,9 @@ class ReservationService {
 
         return DB::transaction(function () use ($reservation, $qty): StockReservation {
             [$variant, $warehouse] = $this->endpoints($reservation);
-            $this->ledger->releaseReservation($variant, $warehouse, $qty, $reservation->ownership_type);
-            $this->ledger->issue($variant, $warehouse, $qty, $reservation->ownership_type, allowNegative: true);
+            $bin = $reservation->bin;
+            $this->ledger->releaseReservation($variant, $warehouse, $qty, $reservation->ownership_type, bin: $bin);
+            $this->ledger->issue($variant, $warehouse, $qty, $reservation->ownership_type, allowNegative: true, bin: $bin);
 
             $reservation->consumed_qty = bcadd($reservation->consumed_qty, $qty, self::SCALE);
             if (bccomp($reservation->consumed_qty, $reservation->quantity, self::SCALE) >= 0) {
@@ -117,7 +120,7 @@ class ReservationService {
             }
 
             [$variant, $warehouse] = $this->endpoints($reservation);
-            $this->ledger->releaseReservation($variant, $warehouse, $amount, $reservation->ownership_type);
+            $this->ledger->releaseReservation($variant, $warehouse, $amount, $reservation->ownership_type, bin: $reservation->bin);
 
             $reservation->quantity = bcsub($reservation->quantity, $amount, self::SCALE);
             if (bccomp($reservation->openQuantity(), '0', self::SCALE) <= 0) {
@@ -131,13 +134,25 @@ class ReservationService {
         });
     }
 
-    private function commit(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership, int $priority, ?Model $source, ?int $createdBy): StockReservation {
-        $this->ledger->reserve($variant, $warehouse, $qty, $ownership);
+    /**
+     * Verfügbarkeit am Lagerort bzw. — mit Platz (MVP-706) — nur auf diesem Platz.
+     *
+     * @return numeric-string
+     */
+    private function availableAt(ArticleVariant $variant, Warehouse $warehouse, ?WarehouseBin $bin): string {
+        return $bin === null
+            ? $this->ledger->available($variant, $warehouse)
+            : $this->ledger->availableInBin($variant, $warehouse, $bin);
+    }
+
+    private function commit(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership, int $priority, ?Model $source, ?int $createdBy, ?WarehouseBin $bin = null): StockReservation {
+        $this->ledger->reserve($variant, $warehouse, $qty, $ownership, bin: $bin);
 
         return StockReservation::query()->create([
             'organization_id' => $variant->organization_id,
             'article_variant_id' => $variant->id,
             'warehouse_id' => $warehouse->id,
+            'bin_id' => $bin?->id,
             'quantity' => $qty,
             'consumed_qty' => '0',
             'ownership_type' => $ownership->value,

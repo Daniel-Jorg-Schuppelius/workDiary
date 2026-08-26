@@ -24,7 +24,7 @@
                 <div class="flex flex-wrap items-center justify-between gap-2 rounded bg-base-100 border border-base-200 p-2 text-sm">
                     <div class="flex items-center gap-2">
                         <span class="rounded bg-base-200/60 px-2 py-0.5 font-mono">{{ $pair['wrong'] }}</span>
-                        <x-icon name="arrow_forward" class="text-base-content/50" />
+                        <x-icon name="arrow_forward" class="text-muted" />
                         <span class="rounded bg-base-200/60 px-2 py-0.5 font-mono">{{ $pair['correct'] }}</span>
                     </div>
                     <form method="POST" action="{{ route('text-corrections.learn') }}" class="inline">

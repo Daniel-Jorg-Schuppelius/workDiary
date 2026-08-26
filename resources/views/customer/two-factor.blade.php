@@ -19,7 +19,7 @@
     <div class="max-w-2xl mx-auto mt-8 space-y-4">
         <div class="flex items-center justify-between gap-3">
             <h1 class="text-2xl font-semibold flex items-center gap-2">
-                <span class="material-symbols-outlined">verified_user</span>
+                <x-icon name="verified_user" />
                 {{ __('Zwei-Faktor-Authentifizierung') }}
             </h1>
             <x-status-badge :tone="$statusTone" size="sm">{{ $statusBadge }}</x-status-badge>
@@ -44,11 +44,11 @@
                 <p class="font-semibold">{{ __('Aktive Faktoren') }}</p>
                 <ul class="mt-2 divide-y divide-base-200">
                     @if ($hasTotp)
-                        <li class="flex items-center justify-between py-2 text-sm"><span class="flex items-center gap-2"><span class="material-symbols-outlined">smartphone</span> {{ __('Authenticator-App') }}</span><x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge></li>
+                        <li class="flex items-center justify-between py-2 text-sm"><span class="flex items-center gap-2"><x-icon name="smartphone" /> {{ __('Authenticator-App') }}</span><x-status-badge tone="success" size="sm">{{ __('aktiv') }}</x-status-badge></li>
                     @endif
                     @foreach ($credentials as $cred)
                         <li class="flex items-center justify-between py-2 text-sm">
-                            <span class="flex items-center gap-2"><span class="material-symbols-outlined">{{ $cred->type->icon() }}</span> {{ $cred->type->label() }} <span class="text-base-content/50">{{ $cred->label }}</span></span>
+                            <span class="flex items-center gap-2"><x-icon name="{{ $cred->type->icon() }}" /> {{ $cred->type->label() }} <span class="text-muted">{{ $cred->label }}</span></span>
                             <form method="POST" action="{{ route('customer.2fa.credential.destroy', $cred) }}">@csrf @method('DELETE')<x-icon-btn icon="delete" tone="error" size="sm" type="submit" :label="__('Entfernen')" /></form>
                         </li>
                     @endforeach
@@ -62,13 +62,13 @@
             <div class="mt-2 grid gap-4 md:grid-cols-2">
                 {{-- Authenticator-App --}}
                 <div class="border border-base-300 rounded p-4 space-y-3">
-                    <p class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined">smartphone</span> {{ __('Authenticator-App') }}</p>
+                    <p class="flex items-center gap-2 font-semibold"><x-icon name="smartphone" /> {{ __('Authenticator-App') }}</p>
                     @if ($hasTotp)
                         <p class="text-sm text-success">{{ __('Aktiv.') }}</p>
                     @elseif ($pendingTotp)
                         <div class="flex flex-col items-center gap-2">
                             <div class="border border-base-300 bg-white p-3 rounded">{!! $qrSvg !!}</div>
-                            <p class="text-xs text-base-content/60">{{ __('Schlüssel') }}: <code class="select-all">{{ $secret }}</code></p>
+                            <p class="text-xs text-muted">{{ __('Schlüssel') }}: <code class="select-all">{{ $secret }}</code></p>
                         </div>
                         <form method="POST" action="{{ route('customer.2fa.confirm') }}" class="flex items-end gap-2">
                             @csrf
@@ -83,7 +83,7 @@
 
                 {{-- E-Mail-Code --}}
                 <div class="border border-base-300 rounded p-4 space-y-3">
-                    <p class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined">mail</span> {{ __('E-Mail-Code') }}</p>
+                    <p class="flex items-center gap-2 font-semibold"><x-icon name="mail" /> {{ __('E-Mail-Code') }}</p>
                     @if ($emailActive)
                         <p class="text-sm text-success">{{ __('Aktiv.') }}</p>
                     @elseif ($pendingEmail)
@@ -102,7 +102,7 @@
 
                 {{-- Sicherheitsschlüssel / Passkey (FIDO2) --}}
                 <div class="border border-base-300 rounded p-4 space-y-3 md:col-span-2" data-webauthn-block>
-                    <p class="flex items-center gap-2 font-semibold"><span class="material-symbols-outlined">key</span> {{ __('Sicherheitsschlüssel / Passkey (FIDO2)') }}</p>
+                    <p class="flex items-center gap-2 font-semibold"><x-icon name="key" /> {{ __('Sicherheitsschlüssel / Passkey (FIDO2)') }}</p>
                     <p class="text-sm text-base-content/70">{{ __('Phishing-resistente Anmeldung mit Passkey, Smartphone oder Hardware-Schlüssel.') }}</p>
                     <p id="passkey-error" class="hidden text-sm text-error"></p>
                     <x-icon-btn icon="key" tone="primary" size="sm" show-label
@@ -120,7 +120,7 @@
                 @if ($hasTotp)
                     <form method="POST" action="{{ route('customer.2fa.recovery') }}" class="space-y-2 border border-base-300 bg-base-200/40 rounded p-3">
                         @csrf
-                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Recovery-Codes neu erzeugen') }}</label>
+                        <label class="text-xs uppercase tracking-wider text-muted">{{ __('Recovery-Codes neu erzeugen') }}</label>
                         <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100" placeholder="{{ __('Aktueller App-Code') }}">
                         <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit" show-label>{{ __('Neu erzeugen') }}</x-icon-btn>
                     </form>
@@ -128,12 +128,12 @@
                 @unless (auth('customer')->user()->organization?->two_factor_required)
                     <form method="POST" action="{{ route('customer.2fa.disable') }}" class="space-y-2 border border-error/30 bg-error/5 rounded p-3">
                         @csrf @method('DELETE')
-                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Alles deaktivieren') }}</label>
+                        <label class="text-xs uppercase tracking-wider text-muted">{{ __('Alles deaktivieren') }}</label>
                         <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="w-full border border-base-300 rounded px-3 py-2 bg-base-100" placeholder="{{ __('App- oder Recovery-Code') }}">
                         <x-icon-btn icon="gpp_bad" tone="error" size="sm" type="submit" show-label>{{ __('Deaktivieren') }}</x-icon-btn>
                     </form>
                 @else
-                    <div class="flex items-center border border-base-300 bg-base-200/40 rounded p-3 text-sm text-base-content/60">{{ __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung; Deaktivieren ist nicht möglich.') }}</div>
+                    <div class="flex items-center border border-base-300 bg-base-200/40 rounded p-3 text-sm text-muted">{{ __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung; Deaktivieren ist nicht möglich.') }}</div>
                 @endunless
             </div>
         @endif

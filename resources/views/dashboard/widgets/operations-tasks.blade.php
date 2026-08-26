@@ -18,7 +18,7 @@
         </a>
 
         @if ($tasks->isEmpty())
-            <p class="text-xs text-base-content/60">{{ __('operations.widget.empty') }}</p>
+            <p class="text-xs text-muted">{{ __('operations.widget.empty') }}</p>
         @else
             <ul class="space-y-1">
                 @foreach ($tasks as $task)

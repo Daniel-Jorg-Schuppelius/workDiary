@@ -52,13 +52,13 @@
     <x-card :title="__('scorecard.overall_title')">
         <div class="flex items-baseline gap-3">
             @if ($card['overall'] === null)
-                <span class="text-2xl font-semibold text-base-content/40">{{ __('scorecard.no_data') }}</span>
+                <span class="text-2xl font-semibold text-muted">{{ __('scorecard.no_data') }}</span>
             @else
                 <span class="text-4xl font-semibold tabular-nums">{{ $card['overall'] }}</span>
-                <span class="text-base-content/60">/ 100</span>
+                <span class="text-muted">/ 100</span>
             @endif
         </div>
-        <p class="mt-1 text-xs text-base-content/60">{{ __('scorecard.overall_hint') }}</p>
+        <p class="mt-1 text-xs text-muted">{{ __('scorecard.overall_hint') }}</p>
     </x-card>
 
     {{-- Kennzahlkacheln --}}
@@ -66,11 +66,11 @@
         {{-- Termintreue --}}
         <x-card :title="__('scorecard.metric_ontime')">
             @if (! $ontime['available'])
-                <p class="text-base-content/40">{{ __('scorecard.no_data') }}</p>
-                <p class="text-xs text-base-content/50">{{ __('scorecard.ontime_no_source') }}</p>
+                <p class="text-muted">{{ __('scorecard.no_data') }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.ontime_no_source') }}</p>
             @else
                 <p class="text-2xl font-semibold tabular-nums">{{ round($ontime['rate'] * 100) }} %</p>
-                <p class="text-xs text-base-content/60">{{ __('scorecard.ontime_detail', ['on' => $ontime['on_time'], 'total' => $ontime['evaluated']]) }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.ontime_detail', ['on' => $ontime['on_time'], 'total' => $ontime['evaluated']]) }}</p>
                 <x-status-badge :tone="$toneFor($ontime['goodness'])" size="sm" class="mt-1">{{ __('scorecard.goodness', ['g' => $ontime['goodness']]) }}</x-status-badge>
             @endif
             <a class="mt-2 inline-block text-xs link link-hover" href="{{ $drill('deliveries') }}">{{ __('scorecard.drill_deliveries') }} →</a>
@@ -79,11 +79,11 @@
         {{-- Reklamationsquote --}}
         <x-card :title="__('scorecard.metric_complaints')">
             @if (! $complaints['available'])
-                <p class="text-base-content/40">{{ __('scorecard.no_data') }}</p>
-                <p class="text-xs text-base-content/50">{{ __('scorecard.complaints_no_source') }}</p>
+                <p class="text-muted">{{ __('scorecard.no_data') }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.complaints_no_source') }}</p>
             @else
                 <p class="text-2xl font-semibold tabular-nums">{{ round($complaints['rate'] * 100) }} %</p>
-                <p class="text-xs text-base-content/60">{{ __('scorecard.complaints_detail', ['count' => $complaints['count'], 'base' => $complaints['base']]) }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.complaints_detail', ['count' => $complaints['count'], 'base' => $complaints['base']]) }}</p>
                 <x-status-badge :tone="$toneFor($complaints['goodness'])" size="sm" class="mt-1">{{ __('scorecard.goodness', ['g' => $complaints['goodness']]) }}</x-status-badge>
             @endif
             <a class="mt-2 inline-block text-xs link link-hover" href="{{ $drill('claims') }}">{{ __('scorecard.drill_claims') }} →</a>
@@ -92,15 +92,15 @@
         {{-- Preisentwicklung --}}
         <x-card :title="__('scorecard.metric_price')">
             @if (! $price['available'])
-                <p class="text-base-content/40">{{ __('scorecard.no_data') }}</p>
-                <p class="text-xs text-base-content/50">{{ __('scorecard.price_no_source') }}</p>
+                <p class="text-muted">{{ __('scorecard.no_data') }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.price_no_source') }}</p>
             @else
                 @php $dir = $price['direction']; @endphp
                 <p class="text-2xl font-semibold tabular-nums inline-flex items-center gap-1 {{ $dir === 'up' ? 'text-error' : ($dir === 'down' ? 'text-success' : '') }}">
                     <x-icon :name="$dir === 'up' ? 'trending_up' : ($dir === 'down' ? 'trending_down' : 'trending_flat')" />
                     {{ ($price['trend_pct'] > 0 ? '+' : '') . $price['trend_pct'] }} %
                 </p>
-                <p class="text-xs text-base-content/60">{{ __('scorecard.price_dir_' . $dir) }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.price_dir_' . $dir) }}</p>
                 <x-status-badge :tone="$toneFor($price['goodness'])" size="sm" class="mt-1">{{ __('scorecard.goodness', ['g' => $price['goodness']]) }}</x-status-badge>
             @endif
             <a class="mt-2 inline-block text-xs link link-hover" href="{{ $drill('prices') }}">{{ __('scorecard.drill_prices') }} →</a>
@@ -109,11 +109,11 @@
         {{-- ISMS-Qualität --}}
         <x-card :title="__('scorecard.metric_quality')">
             @if (! $quality['available'])
-                <p class="text-base-content/40">{{ __('scorecard.no_data') }}</p>
-                <p class="text-xs text-base-content/50">{{ __('scorecard.quality_no_source') }}</p>
+                <p class="text-muted">{{ __('scorecard.no_data') }}</p>
+                <p class="text-xs text-muted">{{ __('scorecard.quality_no_source') }}</p>
             @else
                 <x-status-badge :tone="$quality['rating']->tone()" size="lg">{{ $quality['rating']->label() }}</x-status-badge>
-                <p class="mt-1 text-xs text-base-content/60">{{ __('scorecard.quality_detail') }}</p>
+                <p class="mt-1 text-xs text-muted">{{ __('scorecard.quality_detail') }}</p>
                 @if ($quality['assessment'])
                     <a class="mt-2 inline-block text-xs link link-hover" href="{{ route('isms.suppliers.edit', $quality['assessment']) }}">{{ $quality['assessment']->displayNo() }} →</a>
                 @endif

@@ -53,36 +53,48 @@
                         @csrf
                         <input type="hidden" name="warehouse" value="{{ $selected->sqid }}">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.field.variant') }}</label>
-                            <select name="variant" class="select select-sm select-bordered" required>
+                            <label for="variant" class="fieldset-label">{{ __('inventory.field.variant') }}</label>
+                            <select id="variant" name="variant" class="select select-sm select-bordered" required>
                                 @foreach ($pickerVariants as $v)
                                     <option value="{{ $v->sqid }}">{{ $v->article?->name }} — {{ $v->name ?? $v->option_signature }} ({{ $v->sku ?? '—' }})</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.field.movement') }}</label>
-                            <select name="movement" class="select select-sm select-bordered">
+                            <label for="movement" class="fieldset-label">{{ __('inventory.field.movement') }}</label>
+                            <select id="movement" name="movement" class="select select-sm select-bordered">
                                 @foreach ($movements as $key => $label)
                                     <option value="{{ $key }}">{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
+                        @if ($bins->isNotEmpty())
+                            {{-- Lagerplatz (MVP-706), optional --}}
+                            <div class="fieldset">
+                                <label class="fieldset-label" for="movement-bin">{{ __('inventory.field.bin') }}</label>
+                                <select name="bin" id="movement-bin" class="select select-sm select-bordered">
+                                    <option value="">{{ __('inventory.field.no_bin') }}</option>
+                                    @foreach ($bins as $bin)
+                                        <option value="{{ $bin->sqid }}" @disabled(! $bin->isUsable())>{{ $bin->displayLabel() }}</option>
+                                    @endforeach
+                                </select>
+                            </div>
+                        @endif
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.field.quantity') }}</label>
-                            <input name="qty" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-28">
+                            <label for="qty" class="fieldset-label">{{ __('inventory.field.quantity') }}</label>
+                            <input id="qty" name="qty" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-28">
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.field.ownership') }}</label>
-                            <select name="ownership" class="select select-sm select-bordered">
+                            <label for="ownership" class="fieldset-label">{{ __('inventory.field.ownership') }}</label>
+                            <select id="ownership" name="ownership" class="select select-sm select-bordered">
                                 @foreach ($ownerships as $own)
                                     <option value="{{ $own->value }}">{{ $own->label() }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('customer-material.book_to_customer') }}</label>
-                            <select name="cost_customer" class="select select-sm select-bordered">
+                            <label for="cost_customer" class="fieldset-label">{{ __('customer-material.book_to_customer') }}</label>
+                            <select id="cost_customer" name="cost_customer" class="select select-sm select-bordered">
                                 <option value="">{{ __('customer-material.no_customer') }}</option>
                                 @foreach ($costCustomers as $c)
                                     <option value="{{ $c->sqid }}">{{ $c->name }}</option>
@@ -107,6 +119,7 @@
                         <th>{{ __('article.field.sku') }}</th>
                         <th class="text-right">{{ __('inventory.field.available') }}</th>
                         <th class="text-right">{{ __('inventory.field.physical') }}</th>
+                        @if ($bins->isNotEmpty())<th>{{ __('inventory.field.bin') }}</th>@endif
                         <th class="text-right">{{ __('inventory.field.reserved') }}</th>
                         <th class="text-right">{{ __('inventory.overview.avg') }}</th>
                         <th class="text-right">{{ __('inventory.overview.value') }}</th>
@@ -119,12 +132,21 @@
                         <td class="font-mono text-sm">{{ $row['variant']->sku ?? '—' }}</td>
                         <td class="text-right tabular-nums font-medium {{ $short ? 'text-warning' : '' }}">{{ $row['available'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['physical'] }}</td>
+                        @if ($bins->isNotEmpty())
+                            <td class="font-mono text-xs">
+                                @forelse ($row['bins'] as $code => $sum)
+                                    <span class="badge badge-sm badge-ghost mr-1">{{ $code }}: {{ $sum }}</span>
+                                @empty
+                                    —
+                                @endforelse
+                            </td>
+                        @endif
                         <td class="text-right tabular-nums">{{ $row['reserved'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['avg'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['value'] }}</td>
                     </tr>
                 @empty
-                    <x-table.empty :colspan="7" :title="__('inventory.empty.stock')" />
+                    <x-table.empty :colspan="$bins->isNotEmpty() ? 8 : 7" :title="__('inventory.empty.stock')" />
                 @endforelse
             </x-table>
 
@@ -193,20 +215,20 @@
                         @csrf
                         <input type="hidden" name="warehouse" value="{{ $selected->sqid }}">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.field.variant') }}</label>
-                            <select name="variant" class="select select-sm select-bordered" required>
+                            <label for="variant-2" class="fieldset-label">{{ __('inventory.field.variant') }}</label>
+                            <select id="variant-2" name="variant" class="select select-sm select-bordered" required>
                                 @foreach ($pickerVariants as $v)
                                     <option value="{{ $v->sqid }}">{{ $v->article?->name }} — {{ $v->name ?? $v->option_signature }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.overview.min_stock') }}</label>
-                            <input name="min_stock" type="number" step="0.0001" min="0" value="0" required class="input input-sm input-bordered w-24">
+                            <label for="min_stock" class="fieldset-label">{{ __('inventory.overview.min_stock') }}</label>
+                            <input id="min_stock" name="min_stock" type="number" step="0.0001" min="0" value="0" required class="input input-sm input-bordered w-24">
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('inventory.overview.reorder_point') }}</label>
-                            <input name="reorder_point" type="number" step="0.0001" min="0" value="0" required class="input input-sm input-bordered w-24">
+                            <label for="reorder_point" class="fieldset-label">{{ __('inventory.overview.reorder_point') }}</label>
+                            <input id="reorder_point" name="reorder_point" type="number" step="0.0001" min="0" value="0" required class="input input-sm input-bordered w-24">
                         </div>
                         <button type="submit" class="btn btn-sm">{{ __('inventory.overview.set_levels') }}</button>
                     </form>

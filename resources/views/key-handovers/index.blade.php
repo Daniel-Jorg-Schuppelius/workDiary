@@ -42,7 +42,7 @@
 
     @if ($handovers->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' />
+            icon="key" />
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('key-handovers.index')" :current-sort="$sort" :current-dir="$dir"
@@ -62,9 +62,9 @@
                     <td class="font-mono text-xs">{{ $h->occurred_at?->translatedFormat('d.m.Y H:i') }}</td>
                     <td>
                         @if ($h->asset)
-                            <span class="material-symbols-outlined text-[14px] align-middle">key</span>
+                            <x-icon name="key" class="text-[14px] align-middle" />
                             {{ $h->asset->name }}
-                            <span class="text-base-content/50 text-xs">{{ $h->asset->asset_no }}</span>
+                            <span class="text-muted text-xs">{{ $h->asset->asset_no }}</span>
                         @endif
                     </td>
                     <td>
@@ -75,7 +75,7 @@
                     <td>
                         <div class="font-medium">{{ $h->person_name }}</div>
                         @if ($h->person_reference)
-                            <div class="text-xs text-base-content/50">{{ $h->person_reference }}</div>
+                            <div class="text-xs text-muted">{{ $h->person_reference }}</div>
                         @endif
                     </td>
                     <td class="text-base-content/70 text-xs">{{ $h->handedBy?->name ?: $h->returnedTo?->name ?: '—' }}</td>

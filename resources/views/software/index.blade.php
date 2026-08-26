@@ -45,7 +45,7 @@
     </x-filter-bar>
 
     @if ($softwareItems->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">apps</span>' />
+        <x-empty-state framed icon="apps" />
     @else
         <x-table table-sort="server"
                  :route="route('software.index')"
@@ -71,7 +71,7 @@
                             <x-status-badge tone="ghost" size="xs" class="ml-1">{{ __('inaktiv') }}</x-status-badge>
                         @endif
                         @if ($software->default_version)
-                            <div class="text-xs text-base-content/60">{{ $software->default_version }}</div>
+                            <div class="text-xs text-muted">{{ $software->default_version }}</div>
                         @endif
                     </td>
                     <td class="text-base-content/70">{{ $software->vendor ?? '—' }}</td>

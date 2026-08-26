@@ -27,7 +27,7 @@
 
     @if ($floors->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">layers</span>' />
+            icon="layers" />
     @else
         <x-filter-bar :action="route('floors.index')" method="GET" :reset="route('floors.index')">
             @if ($building)

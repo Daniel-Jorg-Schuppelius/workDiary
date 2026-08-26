@@ -75,7 +75,7 @@
             <input id="ve-disabled" type="number" name="severely_disabled_days" min="0" max="365" step="0.5"
                    class="input input-bordered w-full"
                    value="{{ old('severely_disabled_days', $entitlement?->severely_disabled_days ?? 0) }}">
-            <p class="text-xs text-base-content/60">{{ __('SGB IX § 208 — wird zum Gesamtanspruch addiert, aber getrennt ausgewiesen.') }}</p>
+            <p class="text-xs text-muted">{{ __('SGB IX § 208 — wird zum Gesamtanspruch addiert, aber getrennt ausgewiesen.') }}</p>
             @error('severely_disabled_days')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
@@ -84,7 +84,7 @@
             <input id="ve-other" type="number" name="other_days" min="0" max="365" step="0.5"
                    class="input input-bordered w-full"
                    value="{{ old('other_days', $entitlement?->other_days ?? 0) }}">
-            <p class="text-xs text-base-content/60">{{ __('z. B. Betriebsvereinbarung oder Jubiläum.') }}</p>
+            <p class="text-xs text-muted">{{ __('z. B. Betriebsvereinbarung oder Jubiläum.') }}</p>
             @error('other_days')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
 
@@ -101,7 +101,7 @@
             <input id="ve-expires" type="date" name="carryover_expires_on"
                    class="input input-bordered w-full"
                    value="{{ old('carryover_expires_on', $entitlement?->carryover_expires_on?->format('Y-m-d')) }}">
-            <p class="text-xs text-base-content/60">{{ __('Üblich: 31.03. des Anspruchsjahres; leer = kein Verfall.') }}</p>
+            <p class="text-xs text-muted">{{ __('Üblich: 31.03. des Anspruchsjahres; leer = kein Verfall.') }}</p>
             @error('carryover_expires_on')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>
     </x-form-group>

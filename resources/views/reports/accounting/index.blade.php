@@ -46,7 +46,10 @@
                 ['route' => 'reports.accounting.euer', 'icon' => 'savings', 'key' => 'euer'],
                 ['route' => 'reports.accounting.recapitulative', 'icon' => 'public', 'key' => 'recapitulative'],
                 ['route' => 'reports.accounting.profit-and-loss', 'icon' => 'trending_up', 'key' => 'pnl'],
+                ['route' => 'reports.accounting.bwa', 'icon' => 'analytics', 'key' => 'bwa'],
+                ['route' => 'reports.accounting.budget.index', 'icon' => 'edit_calendar', 'key' => 'budget'],
                 ['route' => 'reports.accounting.liquidity', 'icon' => 'account_balance', 'key' => 'liquidity'],
+                ['route' => 'reports.accounting.liquidity-forecast', 'icon' => 'timeline', 'key' => 'liquidity_forecast'],
                 ['route' => 'reports.accounting.quality', 'icon' => 'fact_check', 'key' => 'quality'],
                 ['route' => 'finance.accounting.journal.index', 'icon' => 'receipt_long', 'key' => 'journal'],
                 ['route' => 'finance.accounting.open-items.index', 'icon' => 'account_balance_wallet', 'key' => 'open_items'],
@@ -57,7 +60,7 @@
                         <x-icon :name="$card['icon']" class="text-[1.2rem]" />
                         <span class="font-medium">{{ __('accounting.reports.card.' . $card['key'] . '.title') }}</span>
                     </div>
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('accounting.reports.card.' . $card['key'] . '.text') }}</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('accounting.reports.card.' . $card['key'] . '.text') }}</p>
                 </a>
             @endforeach
         </div>

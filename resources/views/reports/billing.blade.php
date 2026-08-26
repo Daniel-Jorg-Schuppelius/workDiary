@@ -115,7 +115,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Top-Kunden (ausgestellt + bezahlt im Zeitraum)') }}</h3>
         @if (empty($perCustomer))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>' :title="__('Keine Rechnungen im Zeitraum.')" />
+            <x-empty-state icon="payments" :title="__('Keine Rechnungen im Zeitraum.')" />
         @else
             @php($hasExternal = collect($perCustomer)->contains(fn (array $r): bool => ($r['external'] ?? 0.0) != 0.0))
             <x-table table-sort="client" bare>
@@ -148,7 +148,7 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Eingangs-E-Rechnungen (im Zeitraum)') }}</h3>
             @if (empty($einvoicing['incoming']))
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">move_to_inbox</span>' :title="__('Keine Eingänge im Zeitraum.')" />
+                <x-empty-state icon="move_to_inbox" :title="__('Keine Eingänge im Zeitraum.')" />
             @else
                 <x-table bare>
                     <x-slot:head>

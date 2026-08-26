@@ -28,6 +28,7 @@ return [
         'closed_by' => 'Closed by',
         'reason' => 'Reason',
         'resolution' => 'Resolution',
+        'follow_up' => 'Follow-up job',
     ],
 
     'action' => [
@@ -42,6 +43,7 @@ return [
         'reopen' => 'Reopen',
         'delete' => 'Delete',
         'publishToCustomer' => 'Share with customer',
+        'followUp' => 'Create follow-up job',
     ],
 
     'flash' => [
@@ -57,5 +59,9 @@ return [
             'wontDo' => 'Open issue marked as won\'t do.',
             'reopened' => 'Open issue has been reopened.',
         ],
+    ],
+
+    'follow_up' => [
+        'content_intro' => 'Follow-up job for open issue #:id “:title”',
     ],
 ];

@@ -15,6 +15,7 @@ use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolItemType,
 use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
 use App\Models\{DiaryEntry, Protocol, ProtocolEvent, ProtocolItem, ProtocolSignature, User};
 use App\Services\Diary\OrderService;
+use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\OpenIssue\OpenIssueService;
 use DateTimeInterface;
 use Illuminate\Database\Eloquent\Model;
@@ -127,7 +128,7 @@ class ProtocolService {
         $this->assertTransition($protocol, $protocol->status === ProtocolStatus::Draft ? 'signDirect' : 'sign');
         $this->assertProtocolValid($protocol);
 
-        return DB::transaction(function () use ($protocol, $actor, $signatureData): Protocol {
+        $signed = DB::transaction(function () use ($protocol, $actor, $signatureData): Protocol {
             $protocol->update([
                 'status' => ProtocolStatus::Signed->value,
                 'signed_at' => Carbon::now(),
@@ -150,6 +151,11 @@ class ProtocolService {
 
             return $protocol->refresh();
         });
+
+        // Lifecycle-Webhook (MVP-718): protocol.signed erst nach der Transaktion.
+        app(LifecycleWebhookPublisher::class)->protocolSigned($signed);
+
+        return $signed;
     }
 
     /**
@@ -334,6 +340,26 @@ class ProtocolService {
         $this->record($protocol, ProtocolEventType::ItemFilled, $actor, [
             'item_id' => $item->id,
             'result' => $result?->value,
+        ]);
+
+        return $item->refresh();
+    }
+
+    /**
+     * Beschreibungstext eines Punkts ersetzen (Feature 143, MVP-711: Übernahme
+     * eines KI-Vorschlags) — dieselben Freeze-Regeln wie fillItem(), Ereignis
+     * mit `ai_assisted`-Kennzeichen statt stiller Änderung.
+     */
+    public function updateItemText(ProtocolItem $item, User $actor, string $description, bool $aiAssisted = false): ProtocolItem {
+        $protocol = $this->protocolOf($item);
+        $this->assertEditable($protocol);
+
+        $item->update(['description' => $description]);
+
+        $this->record($protocol, ProtocolEventType::ItemFilled, $actor, [
+            'item_id' => $item->id,
+            'field' => 'description',
+            'ai_assisted' => $aiAssisted,
         ]);
 
         return $item->refresh();

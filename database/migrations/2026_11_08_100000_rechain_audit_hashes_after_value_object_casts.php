@@ -101,7 +101,10 @@ return new class extends Migration {
             return;
         }
 
-        DB::transaction(function () use ($table, $modelClass, $proofPath, $brokenVariants): void {
+        /** @var list<string> $proof gepufferte Nachweiszeilen (siehe unten) */
+        $proof = [];
+
+        DB::transaction(function () use ($table, $modelClass, $proofPath, $brokenVariants, &$proof): void {
             // Kettenkopf sperren — serialisiert gegen parallele Live-Inserts (wie HashChained::performInsert).
             DB::table('audit_chain_heads')->insertOrIgnore(['chain' => $table, 'head_hash' => null, 'height' => 0]);
             DB::table('audit_chain_heads')->where('chain', $table)->lockForUpdate()->first();
@@ -137,7 +140,7 @@ return new class extends Migration {
                 $newHash = $modelClass::chainHash($runningPrev, $payload);
                 if (! hash_equals($newHash, (string) $row->hash) || $row->prev_hash !== $runningPrev) {
                     DB::table($table)->where('id', $row->id)->update(['prev_hash' => $runningPrev, 'hash' => $newHash]);
-                    file_put_contents($proofPath, json_encode([
+                    $proof[] = json_encode([
                         'table' => $table,
                         'id' => $row->id,
                         'variant' => $variant ?? 'rechained_after_divergence',
@@ -145,7 +148,7 @@ return new class extends Migration {
                         'old_hash' => $row->hash,
                         'new_prev_hash' => $runningPrev,
                         'new_hash' => $newHash,
-                    ], JSON_UNESCAPED_SLASHES) . "\n", FILE_APPEND | LOCK_EX);
+                    ], JSON_UNESCAPED_SLASHES) . "\n";
                     $rewritten++;
                 }
 
@@ -155,9 +158,18 @@ return new class extends Migration {
 
             if ($rewritten > 0) {
                 DB::table('audit_chain_heads')->where('chain', $table)->update(['head_hash' => $runningPrev, 'height' => $rows]);
-                Log::notice('audit.chain_repaired', ['table' => $table, 'rows' => $rows, 'rewritten' => $rewritten, 'proof' => $proofPath]);
+                Log::notice('audit.chain_repaired', ['table' => $table, 'rows' => $rows, 'rewritten' => count($proof), 'proof' => $proofPath]);
             }
         });
+
+        // Nachweisdatei erst NACH dem Commit und nur bei echter Umkettung
+        // (MVP-723): vorher entstand bei jedem Migrationslauf eine Datei,
+        // sobald auch nur eine Zeile angefasst wurde — und bei einem Abbruch
+        // (RuntimeException → Rollback) stand ein Nachweis über Rewrites da,
+        // die es nie gab. Kein Rewrite ⇒ keine Datei.
+        if ($proof !== []) {
+            file_put_contents($proofPath, implode('', $proof), FILE_APPEND | LOCK_EX);
+        }
     }
 
     /**

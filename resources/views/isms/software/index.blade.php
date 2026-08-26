@@ -90,7 +90,7 @@
                                         <x-status-badge tone="ghost" outline>{{ $installation->installed_version ?? '—' }}</x-status-badge>
                                         <span>{{ $installation->asset_ref ?? '—' }}</span>
                                         @if ($installation->location)
-                                            <span class="text-base-content/50">({{ $installation->location }})</span>
+                                            <span class="text-muted">({{ $installation->location }})</span>
                                         @endif
                                         @can('update', $installation)
                                             <x-icon-btn icon="edit" tone="outline" size="xs"
@@ -143,7 +143,7 @@
                                 <x-status-badge tone="warning" outline>{{ __('isms.software.eol_soon') }}</x-status-badge>
                             @endif
                         @else
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td class="text-center text-base-content/70">{{ $product->installations_count }}</td>

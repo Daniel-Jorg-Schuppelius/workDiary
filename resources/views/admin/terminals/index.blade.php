@@ -21,7 +21,7 @@
         @if ($issuedUrl)
             <div class="rounded-box border border-warning/40 bg-warning/10 p-4">
                 <div class="mb-1 text-sm font-semibold">{{ __('terminal.new_heading') }}</div>
-                <p class="mb-2 text-xs text-base-content/60">{{ __('terminal.new_hint') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('terminal.new_hint') }}</p>
                 <code class="block break-all rounded bg-base-100 px-3 py-2 text-sm">{{ $issuedUrl }}</code>
             </div>
         @endif
@@ -35,7 +35,7 @@
                             show-label>{{ __('terminal.action.register') }}</x-icon-btn>
             </x-slot:actions>
             @if ($terminals->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('terminal.no_terminals') }}</p>
+                <p class="text-sm text-muted">{{ __('terminal.no_terminals') }}</p>
             @else
                 <x-table :bare="true">
                     <x-slot:head>
@@ -51,7 +51,7 @@
                             @foreach ($terminals as $terminal)
                                 <tr>
                                     <td>{{ $terminal->name }}</td>
-                                    <td class="text-base-content/60">{{ $terminal->site?->name ?? '—' }}</td>
+                                    <td class="text-muted">{{ $terminal->site?->name ?? '—' }}</td>
                                     <td>
                                         @if ($terminal->isActive())
                                             <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
@@ -72,7 +72,7 @@
                                             </button>
                                         </form>
                                     </td>
-                                    <td class="text-base-content/60">
+                                    <td class="text-muted">
                                         {{ $terminal->last_seen_at?->diffForHumans() ?? '—' }}
                                         @if (($terminal->last_buffer_size ?? 0) > 0)
                                             <span class="badge badge-warning badge-sm" title="{{ __('terminal.buffer.help') }}">{{ __('terminal.buffer.label') }}: {{ $terminal->last_buffer_size }}</span>
@@ -107,7 +107,7 @@
                             show-label>{{ __('terminal.action.assign') }}</x-icon-btn>
             </x-slot:actions>
             @if ($badges->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('terminal.no_badges') }}</p>
+                <p class="text-sm text-muted">{{ __('terminal.no_badges') }}</p>
             @else
                 <x-table :bare="true">
                     <x-slot:head>
@@ -122,8 +122,8 @@
                             @foreach ($badges as $badge)
                                 <tr>
                                     <td>{{ $badge->user?->name ?? '—' }}</td>
-                                    <td class="text-base-content/60">{{ $badge->label ?? '—' }}</td>
-                                    <td class="text-base-content/60 whitespace-nowrap">
+                                    <td class="text-muted">{{ $badge->label ?? '—' }}</td>
+                                    <td class="text-muted whitespace-nowrap">
                                         @if ($badge->valid_from || $badge->valid_until)
                                             {{ $badge->valid_from?->format('d.m.Y') ?? '…' }}–{{ $badge->valid_until?->format('d.m.Y') ?? '…' }}
                                             @unless ($badge->isUsableOn(now()))

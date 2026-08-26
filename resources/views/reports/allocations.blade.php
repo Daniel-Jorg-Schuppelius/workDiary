@@ -39,7 +39,7 @@
 
     @if ($groups === [])
         <x-card>
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">call_split</span>'
+            <x-empty-state icon="call_split"
                            :title="__('reporting.allocations.empty')" />
         </x-card>
     @else
@@ -63,7 +63,7 @@
                 </x-table>
             </x-card>
         @endforeach
-        <p class="text-xs text-base-content/50">{{ __('reporting.allocations.note') }}</p>
+        <p class="text-xs text-muted">{{ __('reporting.allocations.note') }}</p>
     @endif
 </x-page-shell>
 @endsection

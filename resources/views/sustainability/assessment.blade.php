@@ -65,14 +65,14 @@
                             @if ($candidate->rating)
                                 <x-status-badge size="xs" :tone="$candidate->rating === 'green' ? 'success' : ($candidate->rating === 'yellow' ? 'warning' : 'error')">{{ $candidate->total_score }} / 5</x-status-badge>
                             @else
-                                <span class="text-base-content/60">{{ __('noch nicht finalisiert') }}</span>
+                                <span class="text-muted">{{ __('noch nicht finalisiert') }}</span>
                             @endif
-                            <span class="text-xs text-base-content/60">{{ __('Datenqualität: :quality', ['quality' => $candidate->data_quality !== null ? __("values.{$candidate->data_quality}") : '—']) }}</span>
+                            <span class="text-xs text-muted">{{ __('Datenqualität: :quality', ['quality' => $candidate->data_quality !== null ? __("values.{$candidate->data_quality}") : '—']) }}</span>
                         </div>
                     </div>
                 @endforeach
             </div>
-            <p class="mt-2 text-xs text-base-content/60">{{ __('Nachhaltigkeit nie isoliert entscheiden — Kosten/Nutzen/Risiko der Alternativen gehören in die Begründung (z. B. über die Investitionsakte).') }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __('Nachhaltigkeit nie isoliert entscheiden — Kosten/Nutzen/Risiko der Alternativen gehören in die Begründung (z. B. über die Investitionsakte).') }}</p>
         @endif
     </x-card>
 
@@ -121,7 +121,7 @@
                     @endforeach
         </x-table>
         @if ($assessment->isFinal() && $assessment->snapshot !== null)
-            <p class="mt-2 text-xs text-base-content/60">
+            <p class="mt-2 text-xs text-muted">
                 {{ __('Methodik (eingefroren): :scoring · Faktor-Sets: :sets', [
                     'scoring' => (string) data_get($assessment->snapshot, 'methodology.scoring'),
                     'sets' => implode('; ', (array) data_get($assessment->snapshot, 'methodology.factor_sets', [])),

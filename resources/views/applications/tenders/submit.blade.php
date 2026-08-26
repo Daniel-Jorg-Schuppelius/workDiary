@@ -37,19 +37,19 @@
     <x-card :title="__('1. Prüfung')">
         @if (empty($findings))
             <div class="alert alert-success">
-                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                <x-icon name="check_circle" />
                 <span>{{ __('Keine Beanstandungen. Die Akte ist abgabebereit.') }}</span>
             </div>
         @else
             @foreach ($blockers as $finding)
                 <div class="alert alert-error mb-2">
-                    <span class="material-symbols-outlined" aria-hidden="true">block</span>
+                    <x-icon name="block" />
                     <span>{{ $finding['message'] }}</span>
                 </div>
             @endforeach
             @foreach ($warnings as $finding)
                 <div class="alert alert-warning mb-2">
-                    <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                    <x-icon name="warning" />
                     <span>{{ $finding['message'] }}</span>
                 </div>
             @endforeach

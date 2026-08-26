@@ -32,16 +32,17 @@
                 {{-- Optionale Projektbindung (W5.4): projektgebundener Vertrag gewinnt vor Kunden-/Default-Vertrag. --}}
                 <x-project-select :label="__('Projekt (optional)')" :placeholder="__('ohne Projektbezug (kunden-/org-weit)')"
                     span="2" :projects="$projects" :selected="(string) old('project_id')" />
-                <div class="fieldset md:col-span-2">
-                    <label class="fieldset-label">{{ __('Prioritätstabelle (JSON)') }}</label>
-                    <textarea name="priority_table" rows="3" required class="textarea textarea-bordered w-full font-mono text-xs">{{ old('priority_table', '{"normal": {"reaction_minutes": 240, "resolution_minutes": 2880} }') }}</textarea>
-                </div>
-                <div class="fieldset md:col-span-2">
-                    <label class="fieldset-label">{{ __('Geschäftszeiten (JSON, leer = Kalenderzeit)') }}</label>
-                    <textarea name="business_hours" rows="2" class="textarea textarea-bordered w-full font-mono text-xs">{{ old('business_hours') }}</textarea>
-                </div>
+                <x-textarea-field span="2" name="priority_table"
+                                  :label="__('Prioritätstabelle (JSON)')"
+                                  rows="3"
+                                  required
+                                  class="font-mono text-xs">{{ old('priority_table', '{"normal": {"reaction_minutes": 240, "resolution_minutes": 2880} }') }}</x-textarea-field>
+                <x-textarea-field span="2" name="business_hours"
+                                  :label="__('Geschäftszeiten (JSON, leer = Kalenderzeit)')"
+                                  rows="2"
+                                  class="font-mono text-xs">{{ old('business_hours') }}</x-textarea-field>
                 <div class="fieldset">
-                    <label class="fieldset-label">{{ __('SLA-Pause bei') }}</label>
+                    <span class="fieldset-label">{{ __('SLA-Pause bei') }}</span>
                     <label class="label cursor-pointer justify-start gap-2"><input type="checkbox" name="pause_rules[]" value="waiting_customer" class="checkbox checkbox-sm">{{ __('Wartet auf Kunde') }}</label>
                     <label class="label cursor-pointer justify-start gap-2"><input type="checkbox" name="pause_rules[]" value="waiting_external" class="checkbox checkbox-sm">{{ __('Wartet auf Dritte') }}</label>
                     <label class="label cursor-pointer justify-start gap-2"><input type="checkbox" name="pause_rules[]" value="paused" class="checkbox checkbox-sm">{{ __('Pausiert') }}</label>
@@ -60,7 +61,7 @@
 
     <x-card>
         @if ($contracts->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">gavel</span>'
+            <x-empty-state icon="gavel"
                            :title="__('Noch keine SLA-Verträge angelegt.')" />
         @else
             <x-table table-sort="client" bare>

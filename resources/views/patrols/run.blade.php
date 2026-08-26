@@ -23,7 +23,7 @@
         <x-page-toolbar>
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $run->route?->name }}</span>
-                <span class="text-sm text-base-content/60">{{ __('gestartet :time', ['time' => $run->started_at->format('H:i')]) }}</span>
+                <span class="text-sm text-muted">{{ __('gestartet :time', ['time' => $run->started_at->format('H:i')]) }}</span>
             </div>
             <x-slot:actions>
                 @if ($run->status !== PatrolRun::STATUS_RUNNING)
@@ -58,7 +58,7 @@
                            @else border-base-300 @endif">
                     <div class="min-w-0">
                         <span class="font-medium">{{ $checkpoint->position }}. {{ $checkpoint->label }}</span>
-                        <span class="block text-xs text-base-content/60">
+                        <span class="block text-xs text-muted">
                             {{ __('Soll: +:offset min ± :tol', ['offset' => $checkpoint->expected_offset_minutes, 'tol' => $checkpoint->tolerance_minutes]) }}
                         </span>
                     </div>
@@ -70,7 +70,7 @@
                                 <span class="block text-warning">{{ $scan->delta_minutes > 0 ? '+' : '' }}{{ $scan->delta_minutes }} min</span>
                             @endunless
                         @else
-                            <span class="text-base-content/50">{{ __('ausstehend') }}</span>
+                            <span class="text-muted">{{ __('ausstehend') }}</span>
                         @endif
                     </div>
                 </li>

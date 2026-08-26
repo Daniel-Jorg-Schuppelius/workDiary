@@ -50,7 +50,7 @@
                         <option value="{{ $option->key }}" @selected($option->key === $period->key)>{{ $option->label() }}</option>
                     @endforeach
                 </select>
-                <span class="text-xs text-base-content/60">{{ __('accounting.recapitulative.interval', ['interval' => $interval->label()]) }}</span>
+                <span class="text-xs text-muted">{{ __('accounting.recapitulative.interval', ['interval' => $interval->label()]) }}</span>
             </x-filter-bar>
         @endif
 
@@ -61,7 +61,7 @@
 
         <x-card :title="__('accounting.reports.unclear.title')" icon="help">
             @if ($unclear === [])
-                <p class="text-sm text-base-content/60">{{ __('accounting.reports.unclear.none') }}</p>
+                <p class="text-sm text-muted">{{ __('accounting.reports.unclear.none') }}</p>
             @else
                 <ul class="list-disc pl-5 text-sm">
                     @foreach ($unclear as $item)

@@ -15,7 +15,7 @@
 <x-page-shell>
     @if ($application->isAnonymized())
         <div class="alert alert-info text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">shield</span>
+            <x-icon name="shield" />
             {{ __('Diese Akte wurde am :date anonymisiert — es sind keine personenbezogenen Daten mehr gespeichert.', ['date' => $application->anonymized_at->fdatetime()]) }}
         </div>
     @endif
@@ -66,7 +66,7 @@
                 </form>
             @endcan
             @if ($application->documents->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine Unterlagen abgelegt.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Unterlagen abgelegt.') }}</p>
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($application->documents as $link)
@@ -124,7 +124,7 @@
                         <li class="flex flex-wrap items-center gap-2">
                             <x-status-badge size="xs" outline>{{ __("values.{$interview->status}") }}</x-status-badge>
                             {{ $interview->scheduled_at->fdatetime() }} · {{ __("values.{$interview->mode}") }}
-                            @if ($interview->interviewer)<span class="text-base-content/60">{{ $interview->interviewer->name }}</span>@endif
+                            @if ($interview->interviewer)<span class="text-muted">{{ $interview->interviewer->name }}</span>@endif
                             @if ($interview->rating)<span class="text-xs">{{ str_repeat('★', (int) $interview->rating) }}</span>@endif
                             @if ($interview->status === 'planned')
                                 @can('update', $application)
@@ -161,7 +161,7 @@
                     @foreach ($application->reviews as $review)
                         <li>
                             <span>{{ str_repeat('★', (int) $review->rating) }}</span>
-                            <span class="text-base-content/60">{{ $review->reviewer->name ?? '—' }}</span>
+                            <span class="text-muted">{{ $review->reviewer->name ?? '—' }}</span>
                             @if ($review->comment) — {{ $review->comment }} @endif
                         </li>
                     @endforeach
@@ -190,7 +190,7 @@
                     </label>
                     <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
                 </form>
-                <p class="mt-2 text-xs text-base-content/60">{{ __('Absage/Rückzug startet die Löschvormerkung (:months Monate, konfigurierbar); Talentpool braucht eine befristete Einwilligung.', ['months' => (int) config('applications.rejected_retention_months', 6)]) }}</p>
+                <p class="mt-2 text-xs text-muted">{{ __('Absage/Rückzug startet die Löschvormerkung (:months Monate, konfigurierbar); Talentpool braucht eine befristete Einwilligung.', ['months' => (int) config('applications.rejected_retention_months', 6)]) }}</p>
             </x-card>
         @endif
     @endcan
@@ -205,7 +205,7 @@
                         <textarea name="qualifications" rows="2" class="textarea textarea-bordered textarea-sm flex-1" placeholder="{{ __('Qualifikationen (eine je Zeile)') }}"></textarea>
                         <x-icon-btn icon="badge" tone="primary" size="sm" type="submit" show-label>{{ __('Entwurf anlegen') }}</x-icon-btn>
                     </form>
-                    <p class="mt-2 text-xs text-base-content/60">{{ __('Der Entwurf ist KEIN Live-Konto — erst die bewusste Einladung erzeugt einen Nutzer.') }}</p>
+                    <p class="mt-2 text-xs text-muted">{{ __('Der Entwurf ist KEIN Live-Konto — erst die bewusste Einladung erzeugt einen Nutzer.') }}</p>
                 @endcan
             @else
                 @php $draft = $application->employeeDraft; @endphp

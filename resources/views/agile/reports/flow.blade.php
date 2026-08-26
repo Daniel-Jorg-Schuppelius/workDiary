@@ -41,7 +41,7 @@
     @if ($flowEfficiency->data['available'])
         <x-card :title="__('Flow-Effizienz')">
             <p class="text-2xl font-semibold tabular-nums">{{ $flowEfficiency->data['median'] }} %</p>
-            <p class="text-xs text-base-content/60">{{ __('Median über :count erledigte Elemente (Arbeitszeit an der Gesamtdurchlaufzeit).', ['count' => $flowEfficiency->data['sample_size']]) }}</p>
+            <p class="text-xs text-muted">{{ __('Median über :count erledigte Elemente (Arbeitszeit an der Gesamtdurchlaufzeit).', ['count' => $flowEfficiency->data['sample_size']]) }}</p>
         </x-card>
     @else
         <div class="alert alert-warning">
@@ -114,7 +114,7 @@
                 @foreach ($aging->data['items'] as $row)
                     <tr>
                         <td>{{ $row['title'] ?? '—' }}</td>
-                        <td class="text-sm text-base-content/60">{{ $row['column'] ?? '—' }}</td>
+                        <td class="text-sm text-muted">{{ $row['column'] ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $row['age_days'] ?? '—' }}</td>
                         <td>
                             @if ($row['blocked'])

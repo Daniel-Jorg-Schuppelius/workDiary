@@ -8,6 +8,7 @@
  */
 
 import { __ } from "../i18n.js";
+import { getJson } from "../lib/http.js";
 
 /**
  * Eingabeleiste auf „Heute" (Toggl-artig): Beschreibung + durchsuchbare
@@ -380,13 +381,11 @@ export function registerEntryBar(Alpine) {
                     this.applyOptions(optionsCache.get(projectId));
                     return;
                 }
-                fetch(this.optionsUrl.replace("__ID__", encodeURIComponent(projectId)), {
-                    headers: { Accept: "application/json" },
-                    credentials: "same-origin",
-                })
-                    .then((r) => {
-                        if (!r.ok) throw new Error(String(r.status));
-                        return r.json();
+                // Zentrale HTTP-Naht (lib/http.js): CSRF/credentials/419 einheitlich.
+                getJson(this.optionsUrl.replace("__ID__", encodeURIComponent(projectId)))
+                    .then((res) => {
+                        if (!res.ok) throw new Error(String(res.status));
+                        return res.data;
                     })
                     .then((data) => {
                         optionsCache.set(projectId, data);

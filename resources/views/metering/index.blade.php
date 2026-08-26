@@ -41,8 +41,8 @@
                     @foreach ($skipped as $run)
                         <li class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">{{ $run->agreement?->asset?->name ?? '—' }}</span>
-                            <span class="text-base-content/60">{{ $run->agreement?->customer?->displayLabel() ?? '—' }}</span>
-                            <span class="text-base-content/60 tabular-nums">{{ $run->period_start->fdate() }} – {{ $run->period_end->fdate() }}</span>
+                            <span class="text-muted">{{ $run->agreement?->customer?->displayLabel() ?? '—' }}</span>
+                            <span class="text-muted tabular-nums">{{ $run->period_start->fdate() }} – {{ $run->period_end->fdate() }}</span>
                             <x-status-badge tone="warning" outline>{{ __('metering.skipped.reason.' . $run->skipped_reason) }}</x-status-badge>
                         </li>
                     @endforeach

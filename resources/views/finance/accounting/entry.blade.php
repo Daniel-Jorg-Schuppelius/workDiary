@@ -37,27 +37,27 @@
         <x-card :title="__('accounting.ledger.entry.head')" icon="receipt_long">
             <dl class="grid gap-3 sm:grid-cols-3">
                 <div>
-                    <dt class="text-xs text-base-content/60">{{ __('accounting.ledger.column.journal_no') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.journal_no') }}</dt>
                     <dd class="font-mono">{{ $entry->journal_no ?? '—' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs text-base-content/60">{{ __('accounting.ledger.column.booked_on') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.booked_on') }}</dt>
                     <dd>{{ $entry->booked_on->fdate() }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs text-base-content/60">{{ __('accounting.ledger.column.document_on') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.document_on') }}</dt>
                     <dd>{{ $entry->document_on?->fdate() ?? '—' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs text-base-content/60">{{ __('accounting.ledger.column.document_reference') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.document_reference') }}</dt>
                     <dd>{{ $entry->document_reference ?? '—' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs text-base-content/60">{{ __('accounting.ledger.column.posted_by') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.posted_by') }}</dt>
                     <dd>{{ $entry->postedBy?->name ?? '—' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-xs text-base-content/60">{{ __('accounting.ledger.column.source') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('accounting.ledger.column.source') }}</dt>
                     <dd class="font-mono text-xs">{{ $entry->source_key ?? '—' }}</dd>
                 </div>
             </dl>

@@ -66,7 +66,7 @@
                 </x-detail-grid>
             @else
                 <div class="flex items-center justify-between gap-2">
-                    <p class="text-sm text-base-content/60">{{ __('Kein Wetter-Snapshot vorhanden.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Kein Wetter-Snapshot vorhanden.') }}</p>
                     @can('update', $protocol)
                         <x-action-form :action="route('protocols.weather', $protocol)" method="POST">
                             <x-icon-btn icon="cloud_download" tone="outline" size="sm" type="submit" show-label>{{ __('Wetter abrufen') }}</x-icon-btn>
@@ -77,9 +77,23 @@
         </x-card>
     </div>
 
+    @php
+        // KI-Welle 1 (Feature 143, MVP-711): Vorschläge nur in bearbeitbaren
+        // Protokollen und nur, wenn die Capability für diese Org nutzbar ist.
+        $aiViewData = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiEditable = (bool) (auth()->user()?->can('update', $protocol)) && $protocol->status->isEditable();
+        $aiTextUsable = $aiEditable && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_TEXT);
+        $aiClassifyUsable = $aiEditable && $aiViewData->capabilityUsable(\App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_CLASSIFY);
+        $aiItems = $protocol->items->flatMap(fn ($i) => collect([$i])->merge($i->children));
+        $aiMorph = (new \App\Models\ProtocolItem)->getMorphClass();
+        $aiTextSuggestions = $aiTextUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_TEXT) : collect();
+        $aiClassifySuggestions = $aiClassifyUsable ? $aiViewData->openSuggestionsFor($aiMorph, $aiItems, \App\Services\Ai\Suggestions\ProtocolTextSuggestionService::CAPABILITY_CLASSIFY) : collect();
+        $aiActions = $aiTextUsable || $aiClassifyUsable;
+        $aiColumns = $aiActions ? 5 : 4;
+    @endphp
     <x-card :title="__('Positionen')" icon="checklist" :count="$protocol->items->count()">
         @if ($protocol->items->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">checklist</span>' :title="__('Keine Positionen erfasst.')" compact />
+            <x-empty-state icon="checklist" :title="__('Keine Positionen erfasst.')" compact />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -88,6 +102,9 @@
                         <th>{{ __('Ergebnis') }}</th>
                         <th>{{ __('Notiz') }}</th>
                         <th>{{ __('Gemessen') }}</th>
+                        @if ($aiActions)
+                            <th class="text-right">{{ __('Aktionen') }}</th>
+                        @endif
                     </tr>
                 </x-slot:head>
                 @foreach ($protocol->items as $item)
@@ -96,12 +113,31 @@
                         <td>{{ $item->result?->label() ?? '—' }}</td>
                         <td class="text-sm text-base-content/70">{{ $item->note ?? '—' }}</td>
                         <td class="text-sm tabular-nums">{{ $item->measured_at?->fdatetime() ?? '—' }}</td>
+                        @if ($aiActions)
+                            <td class="text-right whitespace-nowrap">
+                                <div class="flex justify-end gap-1">
+                                    @if ($aiTextUsable)
+                                        <x-action-form :action="route('ai.suggestions.protocol-item', $item)">
+                                            <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest_protocol_item')" />
+                                        </x-action-form>
+                                    @endif
+                                    @if ($aiClassifyUsable)
+                                        <x-action-form :action="route('ai.suggestions.protocol-item-classify', $item)">
+                                            <x-icon-btn icon="label" size="xs" tone="info" type="submit" :title="__('ai.suggestion.classify_protocol_item')" />
+                                        </x-action-form>
+                                    @endif
+                                </div>
+                            </td>
+                        @endif
                     </tr>
+                    @if ($aiActions)
+                        @include('protocols._item_ai_rows', ['item' => $item])
+                    @endif
                     @php($canManagePhotos = auth()->user()?->can('update', $protocol) && $protocol->status->isEditable())
                     @if ($item->photos->isNotEmpty() || $canManagePhotos)
                         {{-- Vollaudit 2026-07 (H7): Foto-Strip je Punkt (MVP-023 §3). --}}
                         <tr>
-                            <td colspan="4" class="bg-base-200/40">
+                            <td colspan="{{ $aiColumns }}" class="bg-base-200/40">
                                 <x-photo-strip :item="$item" :can-manage="(bool) $canManagePhotos" />
                             </td>
                         </tr>
@@ -112,7 +148,26 @@
                             <td>{{ $child->result?->label() ?? '—' }}</td>
                             <td class="text-sm text-base-content/70">{{ $child->note ?? '—' }}</td>
                             <td class="text-sm tabular-nums">{{ $child->measured_at?->fdatetime() ?? '—' }}</td>
+                            @if ($aiActions)
+                                <td class="text-right whitespace-nowrap">
+                                    <div class="flex justify-end gap-1">
+                                        @if ($aiTextUsable)
+                                            <x-action-form :action="route('ai.suggestions.protocol-item', $child)">
+                                                <x-icon-btn icon="auto_awesome" size="xs" tone="info" type="submit" :title="__('ai.suggestion.suggest_protocol_item')" />
+                                            </x-action-form>
+                                        @endif
+                                        @if ($aiClassifyUsable)
+                                            <x-action-form :action="route('ai.suggestions.protocol-item-classify', $child)">
+                                                <x-icon-btn icon="label" size="xs" tone="info" type="submit" :title="__('ai.suggestion.classify_protocol_item')" />
+                                            </x-action-form>
+                                        @endif
+                                    </div>
+                                </td>
+                            @endif
                         </tr>
+                        @if ($aiActions)
+                            @include('protocols._item_ai_rows', ['item' => $child])
+                        @endif
                     @endforeach
                 @endforeach
             </x-table>
@@ -122,14 +177,14 @@
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('Signaturen')" icon="draw" :count="$protocol->signatures->count()">
             @if ($protocol->signatures->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">draw</span>' :title="__('Noch keine Signaturen.')" compact />
+                <x-empty-state icon="draw" :title="__('Noch keine Signaturen.')" compact />
             @else
                 <ul class="divide-y divide-base-300 text-sm">
                     @foreach ($protocol->signatures as $signature)
                         <li class="flex items-center justify-between gap-2 py-2">
                             <div class="min-w-0">
                                 <span class="font-medium">{{ $signature->signer_name }}</span>
-                                <span class="text-base-content/60">· {{ $signature->role }}</span>
+                                <span class="text-muted">· {{ $signature->role }}</span>
                             </div>
                             <span class="tabular-nums text-base-content/70">{{ $signature->signed_at?->fdatetime() }}</span>
                         </li>
@@ -141,13 +196,13 @@
                  offen/eingelöst/abgelaufen mit Widerruf für offene Links. --}}
             @if ($protocol->signatureTokens->isNotEmpty())
                 <div class="mt-3 border-t border-base-300 pt-2">
-                    <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-base-content/50">{{ __('protocol.signature.tokenList') }}</p>
+                    <p class="mb-1 text-xs font-semibold uppercase tracking-wider text-muted">{{ __('protocol.signature.tokenList') }}</p>
                     <ul class="divide-y divide-base-200 text-sm">
                         @foreach ($protocol->signatureTokens as $token)
                             <li class="flex items-center justify-between gap-2 py-1.5">
                                 <div class="min-w-0">
                                     <span>{{ $token->signer_name ?? $token->signer_email ?? __('protocol.signature.externalLink') }}</span>
-                                    <span class="text-base-content/60">· {{ $token->expires_at->fdatetime() }}</span>
+                                    <span class="text-muted">· {{ $token->expires_at->fdatetime() }}</span>
                                 </div>
                                 <div class="flex items-center gap-2">
                                     @if ($token->used_at !== null)
@@ -182,7 +237,7 @@
 
     <x-card :title="__('Verlauf')" icon="history" :count="$protocol->events->count()">
         @if ($protocol->events->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :title="__('Keine Ereignisse.')" compact />
+            <x-empty-state icon="history" :title="__('Keine Ereignisse.')" compact />
         @else
             <ul class="divide-y divide-base-300 text-sm">
                 @foreach ($protocol->events as $event)
@@ -190,7 +245,7 @@
                         <div class="min-w-0">
                             <span class="font-medium">{{ \App\Support\Trans::or('protocol.event.' . $event->event, $event->event) }}</span>
                             @if ($event->actor)
-                                <span class="text-base-content/60">· {{ $event->actor->name }}</span>
+                                <span class="text-muted">· {{ $event->actor->name }}</span>
                             @endif
                         </div>
                         <span class="tabular-nums text-base-content/70">{{ $event->created_at?->fdatetime() }}</span>

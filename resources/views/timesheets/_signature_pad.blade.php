@@ -44,7 +44,7 @@
 
     <div class="flex flex-wrap items-center justify-between gap-2">
         <button type="button" class="btn btn-ghost btn-xs" @click="clear()">{{ __('Leeren') }}</button>
-        <span class="text-xs text-base-content/60" x-show="hasSignature">{{ __('Mit dem Klick auf "Signieren" bestätigen Sie die Richtigkeit.') }}</span>
+        <span class="text-xs text-muted" x-show="hasSignature">{{ __('Mit dem Klick auf "Signieren" bestätigen Sie die Richtigkeit.') }}</span>
     </div>
 
     <form method="POST" action="{{ $action }}" @submit="prepare($event)" class="flex">

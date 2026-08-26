@@ -15,12 +15,41 @@ namespace App\Services\Compliance;
 /**
  * Ein einzelner ArbZG-Verstoss auf der Ist-Arbeitszeit (vgl.
  * {@see AttendanceComplianceChecker}). Reines, unveränderliches Ergebnis-
- * objekt — value/threshold sind in Minuten.
+ * objekt — value/threshold sind in Minuten; Ausnahmen je Regel-Art
+ * (Tage/Anzahl) liefert {@see unitFor()}.
  */
 final class AttendanceComplianceFinding {
     public const SEVERITY_ERROR = 'error';
 
     public const SEVERITY_WARNING = 'warning';
+
+    public const UNIT_MINUTES = 'minutes';
+
+    public const UNIT_DAYS = 'days';
+
+    public const UNIT_COUNT = 'count';
+
+    /**
+     * Einheit von value/threshold je Regel-Art — Standard sind Minuten;
+     * Verzugs- (Tage) und Zähl-Regeln (§11) weichen ab.
+     */
+    public static function unitFor(string $kind): string {
+        return match ($kind) {
+            AttendanceComplianceChecker::KIND_LATE_RECORDING => self::UNIT_DAYS,
+            AttendanceComplianceChecker::KIND_SUBSTITUTE_REST_DAY,
+            AttendanceComplianceChecker::KIND_FREE_SUNDAYS => self::UNIT_COUNT,
+            default => self::UNIT_MINUTES,
+        };
+    }
+
+    /** Anzeige-Formatierung von value/threshold gemäß Einheit (Report/History/CSV). */
+    public static function formatValue(string $kind, int $value): string {
+        return match (self::unitFor($kind)) {
+            self::UNIT_DAYS => trans_choice('compliance.report.unit.days', $value, ['count' => $value]),
+            self::UNIT_COUNT => (string) $value,
+            default => \App\Support\Formats::duration($value, 'clock'),
+        };
+    }
 
     public function __construct(
         public readonly int $userId,

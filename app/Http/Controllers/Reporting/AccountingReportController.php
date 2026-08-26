@@ -12,16 +12,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Reporting;
 
-use App\Enums\Finance\OpenItemDirection;
+use App\Enums\Finance\{BwaGroup, OpenItemDirection};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
 use App\Models\Accounting\AccountingAccount;
+use App\Models\CostCenter;
 use App\Services\Accounting\Filing\{FilingDeadlineCalculator, RecapitulativeStatementService, VatFilingPeriodService, VatReturnService};
 use App\Services\Accounting\{OpenItemService, TaxationMethodResolver, VatFilingProfileResolver};
-use App\Services\Accounting\Reports\{AccountLedgerBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, LiquidityBuilder, ProfitAndLossBuilder, TrialBalanceBuilder};
-use App\Support\Sqid;
+use App\Services\Accounting\Reports\{AbstractAccountingReportBuilder, AccountLedgerBuilder, BwaBuilder, DataQualityBuilder, EuerPreviewBuilder, ExportContextBuilder, LiquidityBuilder, LiquidityForecastBuilder, ProfitAndLossBuilder, TrialBalanceBuilder};
+use App\Support\{Sqid, Tz};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
@@ -47,7 +48,9 @@ class AccountingReportController extends Controller {
         private readonly AccountLedgerBuilder $accountLedgers,
         private readonly EuerPreviewBuilder $euerPreviews,
         private readonly ProfitAndLossBuilder $profitAndLosses,
+        private readonly BwaBuilder $bwas,
         private readonly LiquidityBuilder $liquidities,
+        private readonly LiquidityForecastBuilder $forecasts,
         private readonly DataQualityBuilder $qualities,
         private readonly ExportContextBuilder $exportContexts,
         private readonly OpenItemService $openItems,
@@ -291,25 +294,180 @@ class AccountingReportController extends Controller {
     public function profitAndLoss(Request $request): View|SymfonyResponse {
         $this->authorizeView();
         [$from, $to] = $this->range();
-        $data = $this->profitAndLosses->build($this->currentOrganizationOrAbort(), $from, $to);
+        $organization = $this->currentOrganizationOrAbort();
+        $compare = $this->compareMode($request);
+        $costCenters = $this->costCenters($organization);
+        $costCenter = $this->costCenter($request, $costCenters);
+        $data = $this->profitAndLosses->build($organization, $from, $to, $compare, $costCenter?->id);
+        $hasCompare = $data['compare_totals'] !== null;
 
         if ($this->wantsExport($request)) {
-            $rows = [[
+            $header = [
                 (string) __('accounting.ledger.column.account'),
                 (string) __('accounting.reports.column.section'),
                 (string) __('accounting.ledger.column.amount'),
-            ]];
-            foreach ($data['income'] as $row) {
-                $rows[] = [(string) $row['account']->displayLabel(), (string) __('accounting.reports.section.income'), (string) $row['amount']];
+            ];
+            if ($hasCompare) {
+                $header[] = (string) __('accounting.bwa.compare.' . $compare);
+                $header[] = (string) __('accounting.bwa.column.delta');
+                $header[] = (string) __('accounting.bwa.column.delta_pct');
             }
-            foreach ($data['expense'] as $row) {
-                $rows[] = [(string) $row['account']->displayLabel(), (string) __('accounting.reports.section.expense'), (string) $row['amount']];
+            $rows = [$header];
+            foreach (['income', 'expense'] as $side) {
+                foreach ($data[$side] as $row) {
+                    $line = [(string) $row['account']->displayLabel(), (string) __('accounting.reports.section.' . $side), (string) $row['amount']];
+                    if ($hasCompare) {
+                        $line[] = (string) $row['compare'];
+                        $line[] = (string) $row['delta'];
+                        $line[] = (string) ($row['delta_pct'] ?? '');
+                    }
+                    $rows[] = $line;
+                }
             }
 
             return $this->export($request, 'accounting-pnl', 'accounting.pnl', $from, $to, $rows);
         }
 
-        return view('reports.accounting.profit-and-loss', $data + ['from' => $from, 'to' => $to]);
+        return view('reports.accounting.profit-and-loss', $data + [
+            'from' => $from,
+            'to' => $to,
+            'costCenters' => $costCenters,
+            'costCenter' => $costCenter,
+            'compareModes' => [
+                AbstractAccountingReportBuilder::COMPARE_NONE,
+                AbstractAccountingReportBuilder::COMPARE_PREVIOUS_YEAR,
+                AbstractAccountingReportBuilder::COMPARE_PREVIOUS_MONTH,
+                AbstractAccountingReportBuilder::COMPARE_BUDGET,
+            ],
+        ]);
+    }
+
+    /**
+     * Betriebswirtschaftliche Auswertung (Feature 142, MVP-709) — eigener
+     * Zeitraum in der Filterleiste (Vormonat/Monatsraster brauchen
+     * Monatsgrenzen), Vergleichsmodus und Kostenstelle als Filter.
+     */
+    public function bwa(Request $request): View|SymfonyResponse {
+        $this->authorizeView();
+        [$from, $to] = $this->resolveRange($request);
+        [$from, $to] = [$from->startOfDay(), $to->startOfDay()];
+        $organization = $this->currentOrganizationOrAbort();
+        $compare = $this->compareMode($request);
+        $costCenters = $this->costCenters($organization);
+        $costCenter = $this->costCenter($request, $costCenters);
+        $data = $this->bwas->build($organization, $from, $to, $compare, $costCenter?->id);
+        $hasDelta = $compare !== AbstractAccountingReportBuilder::COMPARE_NONE && $compare !== AbstractAccountingReportBuilder::COMPARE_MONTHS;
+
+        if ($this->wantsExport($request)) {
+            $header = [(string) __('accounting.bwa.column.row')];
+            foreach ($data['columns'] as $column) {
+                $header[] = $column['label'];
+            }
+            if ($hasDelta) {
+                $header[] = (string) __('accounting.bwa.column.delta');
+                $header[] = (string) __('accounting.bwa.column.delta_pct');
+            }
+            $rows = [$header];
+            foreach ($data['rows'] as $row) {
+                $line = [str_repeat('  ', $row['depth']) . $row['label']];
+                foreach ($data['columns'] as $column) {
+                    $line[] = (string) ($row['values'][$column['key']] ?? '0.00');
+                }
+                if ($hasDelta) {
+                    $line[] = (string) ($row['delta'] ?? '');
+                    $line[] = (string) ($row['delta_pct'] ?? '');
+                }
+                $rows[] = $line;
+            }
+
+            return $this->export($request, 'accounting-bwa', 'accounting.bwa', $from, $to, $rows);
+        }
+
+        return view('reports.accounting.bwa', $data + [
+            'from' => $from,
+            'to' => $to,
+            'costCenters' => $costCenters,
+            'costCenter' => $costCenter,
+            'compareModes' => AbstractAccountingReportBuilder::COMPARE_MODES,
+            'hasDelta' => $hasDelta,
+            'chartSeries' => $this->bwaChartSeries($data, $compare),
+            'chartSecondLabel' => $hasDelta ? (string) __('accounting.bwa.compare.' . $compare) : ($compare === AbstractAccountingReportBuilder::COMPARE_MONTHS ? (string) __('accounting.bwa.subtotal.total_costs') : null),
+        ]);
+    }
+
+    /**
+     * Balken je BWA-Gruppe (Ist, dazu Vergleich als Zweitserie); im
+     * Monatsraster je Monat Umsatz gegen Gesamtkosten. Ohne Bewegung bleibt
+     * die Serie leer (Leerzustand statt Null-Säulen); negative Gruppenwerte
+     * kann die Komponente nicht zeichnen und werden auf null gekappt.
+     *
+     * @param  array<string, mixed>  $data
+     * @return list<array{x: string, y: float, y2?: float}>
+     */
+    private function bwaChartSeries(array $data, string $compare): array {
+        $clamp = static fn (string $value): float => max(0.0, (float) $value);
+        $series = [];
+
+        if ($compare === AbstractAccountingReportBuilder::COMPARE_MONTHS) {
+            foreach ($data['columns'] as $column) {
+                if ($column['key'] === BwaBuilder::COL_TOTAL) {
+                    continue;
+                }
+                $revenue = $data['groups'][BwaGroup::Revenue->value][$column['key']] ?? '0.00';
+                $costs = $data['subtotals']['total_costs'][$column['key']] ?? '0.00';
+                if ((float) $revenue !== 0.0 || (float) $costs !== 0.0) {
+                    $series[] = ['x' => $column['label'], 'y' => $clamp($revenue), 'y2' => $clamp($costs)];
+                }
+            }
+
+            return $series;
+        }
+
+        $hasCompare = count($data['columns']) > 1;
+        foreach (BwaGroup::cases() as $group) {
+            $actual = $data['groups'][$group->value][BwaBuilder::COL_ACTUAL] ?? '0.00';
+            $second = $data['groups'][$group->value][BwaBuilder::COL_COMPARE] ?? '0.00';
+            if ((float) $actual === 0.0 && (float) $second === 0.0) {
+                continue;
+            }
+            $point = ['x' => $group->label(), 'y' => $clamp($actual)];
+            if ($hasCompare) {
+                $point['y2'] = $clamp($second);
+            }
+            $series[] = $point;
+        }
+
+        return $series;
+    }
+
+    private function compareMode(Request $request): string {
+        $mode = (string) $request->query('compare', AbstractAccountingReportBuilder::COMPARE_NONE);
+
+        return in_array($mode, AbstractAccountingReportBuilder::COMPARE_MODES, true) ? $mode : AbstractAccountingReportBuilder::COMPARE_NONE;
+    }
+
+    /** @return Collection<int, CostCenter> */
+    private function costCenters(\App\Models\Organization $organization): Collection {
+        return CostCenter::query()
+            ->where('organization_id', $organization->id)
+            ->orderBy('code')
+            ->get();
+    }
+
+    /**
+     * Kostenstellen-Filter aus dem Request — nur Stammsätze der eigenen
+     * Organisation, fremde Sqids fallen still auf „alle".
+     *
+     * @param  Collection<int, CostCenter>  $costCenters
+     */
+    private function costCenter(Request $request, Collection $costCenters): ?CostCenter {
+        $raw = (string) $request->query('cost_center', '');
+        if ($raw === '') {
+            return null;
+        }
+        $costCenter = $costCenters->firstWhere('id', (int) Sqid::decodeOrNumeric(CostCenter::class, $raw));
+
+        return $costCenter instanceof CostCenter ? $costCenter : null;
     }
 
     public function liquidity(Request $request): View|SymfonyResponse {
@@ -339,6 +497,53 @@ class AccountingReportController extends Controller {
             'to' => $to,
             'receivableAging' => $this->openItems->aging($organization, OpenItemDirection::Receivable, withItems: false)['buckets'],
             'payableAging' => $this->openItems->aging($organization, OpenItemDirection::Payable, withItems: false)['buckets'],
+        ]);
+    }
+
+    /**
+     * 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701) — ab heute, nicht
+     * ab dem globalen Zeitraum: Eine Vorschau in die Vergangenheit gibt es nicht.
+     */
+    public function liquidityForecast(Request $request): View|SymfonyResponse {
+        $this->authorizeView();
+        $organization = $this->currentOrganizationOrAbort();
+        $weeks = (int) $request->query('weeks', (string) LiquidityForecastBuilder::DEFAULT_WEEKS);
+        $data = $this->forecasts->build($organization, Tz::now(), $weeks);
+
+        $rows = [[
+            (string) __('accounting.reports.forecast.column.week'),
+            (string) __('accounting.reports.forecast.column.period'),
+            (string) __('accounting.reports.forecast.column.inflow'),
+            (string) __('accounting.reports.forecast.column.outflow'),
+            (string) __('accounting.reports.forecast.column.net'),
+            (string) __('accounting.reports.forecast.column.closing'),
+        ]];
+        foreach ($data['buckets'] as $bucket) {
+            $rows[] = [
+                $bucket['label'],
+                \App\Support\CarbonFmt::fdate($bucket['from']) . ' – ' . \App\Support\CarbonFmt::fdate($bucket['to']),
+                $bucket['inflow'],
+                $bucket['outflow'],
+                $bucket['net'],
+                $bucket['closing'],
+            ];
+        }
+
+        if ($this->wantsExport($request)) {
+            return $this->export($request, 'accounting-liquidity-forecast', 'accounting.liquidity_forecast', $data['from'], $data['to'], $rows);
+        }
+
+        // Dieselben Wochen für beide Diagramme; ohne einen einzigen Posten
+        // bleibt die Fluss-Serie leer (Leerzustand statt Null-Säulen).
+        $closingSeries = array_map(static fn (array $bucket): array => ['x' => $bucket['label'], 'y' => (float) $bucket['closing']], $data['buckets']);
+        $flowSeries = $data['totals']['items'] > 0
+            ? array_map(static fn (array $bucket): array => ['x' => $bucket['label'], 'y' => (float) $bucket['inflow'], 'y2' => (float) $bucket['outflow']], $data['buckets'])
+            : [];
+
+        return view('reports.accounting.liquidity-forecast', $data + [
+            'closingSeries' => $closingSeries,
+            'flowSeries' => $flowSeries,
+            'horizons' => LiquidityForecastBuilder::HORIZONS,
         ]);
     }
 
@@ -414,6 +619,8 @@ class AccountingReportController extends Controller {
             'accounting.vat' => (string) __('accounting.reports.vat_preview_hint'),
             'accounting.euer' => (string) __('accounting.reports.euer_preview_hint'),
             'accounting.pnl' => (string) __('accounting.reports.pnl_hint'),
+            'accounting.bwa' => (string) __('accounting.bwa.hint'),
+            'accounting.liquidity_forecast' => (string) __('accounting.reports.forecast.hint'),
             default => null,
         };
     }

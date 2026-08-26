@@ -31,7 +31,7 @@
                 <x-button type="submit" tone="ghost" size="sm" class="text-base-content/70">{{ __('onboarding.widget.dismiss') }}</x-button>
             </form>
         @else
-            <span class="text-xs text-base-content/60">
+            <span class="text-xs text-muted">
                 {{ __('onboarding.widget.dismissed_at', ['date' => $widgetDismissedAt]) }}
             </span>
         @endif
@@ -64,7 +64,7 @@
                         <div class="min-w-0">
                             <div class="flex flex-wrap items-center gap-2">
                                 <x-icon :name="$step['done'] ? 'task_alt' : 'radio_button_unchecked'"
-                                        class="{{ $step['done'] ? 'text-success' : 'text-base-content/50' }}" />
+                                        class="{{ $step['done'] ? 'text-success' : 'text-muted' }}" />
                                 <h3 class="font-['Space_Grotesk'] text-base font-semibold text-base-content">{{ $step['title'] }}</h3>
                                 @if ($step['required'])
                                     <x-status-badge tone="primary" size="sm" outline>{{ __('onboarding.page.badge_required') }}</x-status-badge>
@@ -76,7 +76,7 @@
                                 <p class="mt-1 text-sm text-base-content/70">{{ $step['description'] }}</p>
                             @endif
                             @if ($step['state'] === 'skipped' && ! empty($step['skipped_reason']))
-                                <p class="mt-1 text-xs text-base-content/60">
+                                <p class="mt-1 text-xs text-muted">
                                     {{ __('onboarding.page.badge_skipped') }}: {{ $step['skipped_reason'] }}
                                 </p>
                             @endif

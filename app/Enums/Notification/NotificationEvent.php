@@ -87,6 +87,14 @@ enum NotificationEvent: string implements HasLabel {
     case MaintenanceOverdue = 'maintenance.overdue';
     /** Synchron: neues kritisches Sicherheitsereignis (Unfall/critical) — SafetyEventService::create (Feature 013) */
     case SafetyCriticalEvent = 'safety.criticalEvent';
+    /** Scanner: freigegebene Gefährdungsbeurteilung mit Wiedervorlage innerhalb des Vorlaufs bzw. überschritten (Feature 132) */
+    case SafetyAssessmentReviewDue = 'safety.assessmentReviewDue';
+    /** Scanner: Wiederholungsunterweisung je Teilnehmer fällig/überfällig — jüngster Nachweis je Person+Thema (Feature 132) */
+    case SafetyInstructionDue = 'safety.instructionDue';
+    /** Scanner: arbeitsmedizinische Vorsorge fällig/überfällig — jüngste Vorsorge je Person+Art (Feature 132) */
+    case SafetyCheckupDue = 'safety.checkupDue';
+    /** Scanner: Pflichtschulung fällig/überfällig — Soll-Eintrag im Vorlauf des Kurses (Feature 145) */
+    case TrainingDue = 'training.due';
     /** Scanner: Mitarbeiter-Qualifikation/Unterweisung läuft innerhalb des Vorlaufs (30 Tage) ab (Feature 013) */
     case QualificationExpiring = 'qualification.expiring';
     /** Synchron: Schichttausch beantragt (Feature 007) — an Ziel-Kollegen bzw. Teamleitung */
@@ -121,6 +129,8 @@ enum NotificationEvent: string implements HasLabel {
 
     // Feature 073: überfällige Verleih-Rückgabe (MVP-264).
     case RentalReturnOverdue = 'rental.returnOverdue';
+    /** Synchron: Portal-Verleihanfrage eingegangen (Feature 073, MVP-714) — an die Leitung zur Entscheidung. */
+    case RentalRequested = 'rental.requested';
 
     // Feature 074: Leasing-/Vertragsfrist wird fällig (MVP-273/278).
     case AssetFinanceDeadline = 'assetFinance.deadline';
@@ -140,6 +150,8 @@ enum NotificationEvent: string implements HasLabel {
 
     // MVP-417: Führerscheinkontrolle fällig/überfällig (Halterhaftung).
     case DriverLicenseCheckDue = 'fleet.licenseCheckDue';
+    /** Synchron: ComplianceFindingRecorder — neuer Lenk-/Ruhezeit-Befund an Fahrer + Disposition (Feature 144, MVP-719) */
+    case DrivingTimeViolation = 'drivingTime.violation';
 
     // MVP-437: Öffentliche Bewerbung eingegangen (an die verantwortliche Person,
     // ohne Bewerberunterlagen im Text).
@@ -242,6 +254,8 @@ enum NotificationEvent: string implements HasLabel {
     case ChatMessage = 'chat.message';
     /** Scanner: chat:send-reminders — fällige Chat-Erinnerung. */
     case ChatReminder = 'chat.reminder';
+    /** Scanner: Wettervorhersage reißt eine Org-Schwelle für einen disponierten Einsatz (Feature 062, MVP-716) */
+    case WeatherWarning = 'weather.warning';
 
     public function label(): string {
         return (string) __('enums.notification.event.' . $this->value);
@@ -282,7 +296,7 @@ enum NotificationEvent: string implements HasLabel {
             return false;
         }
 
-        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
+        return ! in_array($this, [self::TimeCorrectionRequested, self::OvertimeRequested, self::VacationRequested, self::MonthClosureSubmitted, self::IsmsCertificateExpiring, self::IsmsIncidentCritical, self::SafetyCriticalEvent, self::SafetyAssessmentReviewDue, self::ShiftExchangeRequested, self::CustomerQueryRaised, self::RentalRequested, self::ShipmentDeliveryProblem, self::SlaQuotaWarning,
             // Domain-/Finanz-/Fristereignisse betreffen keine Einzelperson (Vollaudit 2026-07, W3.2).
             self::DomainExpiring, self::DomainTransferChanged, self::DomainSyncFailed, self::DomainHighRiskAction,
             self::FinanceTransferFailed, self::FinanceBankImportFailed, self::FinanceReconciliationReview, self::RetentionReleaseDue,
@@ -349,6 +363,14 @@ enum NotificationEvent: string implements HasLabel {
             // Kritisches Sicherheitsereignis: betrifft keine einzelne Person —
             // synchron an die Leitungs-/Admin-Rollen der Organisation.
             self::SafetyCriticalEvent => [UserRole::Teamleitung->value, UserRole::Admin->value],
+            // Arbeitsschutz-Fristen (Feature 132): GBU-Wiedervorlage betrifft keine
+            // Einzelperson; Unterweisung/Vorsorge primär die Person (notify_affected),
+            // die Teamleitung führt das Register und ist Fallback.
+            self::SafetyAssessmentReviewDue,
+            self::SafetyInstructionDue,
+            self::SafetyCheckupDue,
+            // Feature 145: Eskalation der Schulungspflicht an die Teamleitung.
+            self::TrainingDue => [UserRole::Teamleitung->value],
             // Ablaufende Qualifikation/Unterweisung: primär die betroffene
             // Person (notify_affected), Default-Fallback die Teamleitung.
             self::QualificationExpiring => [UserRole::Teamleitung->value],
@@ -364,6 +386,8 @@ enum NotificationEvent: string implements HasLabel {
             // Überfällige Verleih-Rückgabe (Feature 073): an die Leitung —
             // der Akten-Verantwortliche wird im Service separat adressiert.
             self::RentalReturnOverdue => [UserRole::Teamleitung->value],
+            // Portal-Verleihanfrage (MVP-714): Entscheidung ist Leitungsaufgabe.
+            self::RentalRequested => [UserRole::Teamleitung->value],
             // Leasingfristen (Feature 074): Vertrags-/Fristensteuerung ist
             // Leitungsaufgabe; der Verantwortliche der Akte via Service.
             self::AssetFinanceDeadline => [UserRole::Teamleitung->value],
@@ -377,6 +401,9 @@ enum NotificationEvent: string implements HasLabel {
             // Führerscheinkontrolle (MVP-417): Fahrer selbst (notify_affected)
             // plus Teamleitung (Fuhrparkverantwortung).
             self::DriverLicenseCheckDue => [UserRole::Teamleitung->value],
+            // Lenk-/Ruhezeit-Befund (Feature 144): Fahrer selbst (notify_affected)
+            // plus Disposition/Teamleitung (Fuhrpark- und Tourenverantwortung).
+            self::DrivingTimeViolation => [UserRole::Teamleitung->value],
             // Prüffälligkeit (Feature 075): betrifft keine Einzelperson —
             // an die Teamleitung (Prüfmittelverantwortung).
             self::AssetInspectionDue => [UserRole::Teamleitung->value],
@@ -415,6 +442,8 @@ enum NotificationEvent: string implements HasLabel {
             // dessen Zuständiger im Urlaub ist, darf nicht auslaufen.
             self::QuoteFollowUpDue,
             self::QuoteExpiringWithoutReaction => [UserRole::Teamleitung->value],
+            // Wetterwarnung: zugewiesene Person + Disposition (Teamleitung).
+            self::WeatherWarning => [UserRole::Teamleitung->value],
             // Problem-Eintrag (B7): wie der Legacy-Push an Admin + Callcenter;
             // der Eintrags-Besitzer läuft zusätzlich über notify_affected.
             self::DiaryProblem => [UserRole::Admin->value, UserRole::Callcenter->value],
@@ -456,15 +485,21 @@ enum NotificationEvent: string implements HasLabel {
             self::MaintenanceDueSoon,
             self::MaintenanceOverdue => 'handyman',
             self::SafetyCriticalEvent => 'e911_emergency',
+            self::SafetyAssessmentReviewDue => 'checklist',
+            self::SafetyInstructionDue => 'school',
+            self::SafetyCheckupDue => 'medical_services',
+            self::TrainingDue => 'school',
             self::CrisisAlert => 'emergency_home',
             self::ClaimEscalation => 'assignment_late',
             self::RentalReturnOverdue => 'forklift',
+            self::RentalRequested => 'forklift',
             self::AssetFinanceDeadline => 'request_quote',
             self::ContractDeadlineDue => 'contract',
             self::InvoiceRecurringDraft => 'receipt_long',
             self::AccountingRecurringOverdue => 'event_repeat',
             self::AccountingFilingDue => 'event_available',
             self::DriverLicenseCheckDue => 'badge',
+            self::DrivingTimeViolation => 'local_shipping',
             self::RecruitingApplicationReceived => 'work',
             self::AssetInspectionDue => 'rule_settings',
             self::QualificationExpiring => 'workspace_premium',
@@ -515,6 +550,7 @@ enum NotificationEvent: string implements HasLabel {
             self::SupplierCredentialExpiring => 'verified_user',
             self::QuoteFollowUpDue => 'phone_forwarded',
             self::QuoteExpiringWithoutReaction => 'running_with_errors',
+            self::WeatherWarning => 'thunderstorm',
             self::SecurityIntegrity => 'verified_user',
             self::SecurityThreat => 'gpp_bad',
             self::SecurityNewDevice => 'devices',
@@ -528,6 +564,34 @@ enum NotificationEvent: string implements HasLabel {
             self::ChatMessage => 'chat',
             self::ChatReminder => 'alarm',
         };
+    }
+
+    /**
+     * Darf dieses Ereignis über den SMS-Kanal gehen (Feature 147, MVP-730)?
+     *
+     * SMS ist der einzige Kanal ohne Datenverbindung und damit der
+     * Alarmierungsweg der Krisen-/Notfalllage (Feature 070) — er kostet aber
+     * Geld je Nachricht und trägt die Rufnummer zu einem Gateway. Deshalb ist
+     * die Liste bewusst KURZ und hier hart verankert: eine Organisation kann
+     * den Kanal in ihrer Regel nur an diesen Ereignissen überhaupt wählen,
+     * nicht an den restlichen Fristen-/Workflow-Meldungen.
+     */
+    public function supportsSms(): bool {
+        return in_array($this, [
+            // Krisenstab-Alarmierung (Feature 070, D7) — der Anlass des Kanals.
+            self::CrisisAlert,
+            // Notfalleinsatz an eine konkrete Person (Feature 007/070).
+            self::EmergencyAssigned,
+            // Unfall/kritisches Sicherheitsereignis (Feature 013).
+            self::SafetyCriticalEvent,
+            // Kritischer Sicherheitsvorfall im ISMS (Feature 044).
+            self::IsmsIncidentCritical,
+            // Aktive Bedrohung/Angriff auf die Installation (Feature 095/096).
+            self::SecurityThreat,
+            // Wetterwarnung für einen disponierten Einsatz (Feature 062) —
+            // optional: draußen ohne Datenverbindung ist SMS oft der einzige Weg.
+            self::WeatherWarning,
+        ], true);
     }
 
     /**

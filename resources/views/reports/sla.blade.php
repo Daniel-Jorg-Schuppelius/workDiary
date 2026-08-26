@@ -104,7 +104,7 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.by_cause') }}</h3>
             @if (empty($by_cause))
-                <p class="text-sm text-base-content/60">{{ __('sla.report.no_causes') }}</p>
+                <p class="text-sm text-muted">{{ __('sla.report.no_causes') }}</p>
             @else
                 <x-table table-sort="client" bare>
                     <x-slot:head>
@@ -124,7 +124,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.by_customer') }}</h3>
         @if (empty($by_customer))
-            <p class="text-sm text-base-content/60">{{ __('sla.report.no_violations') }}</p>
+            <p class="text-sm text-muted">{{ __('sla.report.no_violations') }}</p>
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -145,18 +145,18 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.quotas_heading') }}</h3>
         @if (empty($quotas))
-            <p class="text-sm text-base-content/60">{{ __('sla.report.no_quotas') }}</p>
+            <p class="text-sm text-muted">{{ __('sla.report.no_quotas') }}</p>
         @else
             <div class="space-y-3">
                 @foreach ($quotas as $q)
                     <div>
                         <div class="mb-1 flex items-center justify-between gap-2 text-sm">
                             <span class="font-medium">{{ $q['contract'] }}</span>
-                            <span class="text-xs tabular-nums text-base-content/60">{{ $q['percentage'] }} %</span>
+                            <span class="text-xs tabular-nums text-muted">{{ $q['percentage'] }} %</span>
                         </div>
                         <progress class="progress w-full {{ $q['threshold_reached'] ? 'progress-warning' : 'progress-success' }}"
                                   value="{{ min(100, $q['percentage']) }}" max="100"></progress>
-                        <div class="mt-0.5 text-xs tabular-nums text-base-content/60">
+                        <div class="mt-0.5 text-xs tabular-nums text-muted">
                             {{ __('sla.report.quota_usage', [
                                 'consumed' => number_format($q['consumed'] / 60, 1),
                                 'included' => number_format($q['included'] / 60, 1),
@@ -175,7 +175,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('sla.report.violation_list') }}</h3>
         @if ($violations->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">verified</span>'
+            <x-empty-state icon="verified"
                            :title="__('sla.report.no_violations')" />
         @else
             <x-table table-sort="client" bare>

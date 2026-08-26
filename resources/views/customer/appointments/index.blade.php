@@ -40,7 +40,7 @@
             @endif
             <div class="mt-4">
                 @if ($windows === [])
-                    <p class="text-sm text-base-content/60">{{ __('An diesem Tag sind keine Fenster frei — bitte einen anderen Tag wählen.') }}</p>
+                    <p class="text-sm text-muted">{{ __('An diesem Tag sind keine Fenster frei — bitte einen anderen Tag wählen.') }}</p>
                 @else
                     <div class="flex flex-wrap gap-2">
                         @foreach ($windows as $window)
@@ -84,7 +84,7 @@
                     @php([$tone, $label] = $statusMap[$request->status] ?? ['badge-ghost', $request->status])
                     <span class="badge {{ $tone }} badge-sm">{{ $label }}</span>
                     @if ($request->status === 'declined' && $request->decline_reason)
-                        <span class="block text-xs text-base-content/60">{{ $request->decline_reason }}</span>
+                        <span class="block text-xs text-muted">{{ $request->decline_reason }}</span>
                     @endif
                 </td>
                 <td class="text-right">

@@ -12,7 +12,7 @@ namespace App\Services\OpenIssue;
 
 use App\Enums\OpenIssue\{OpenIssueEventType, OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Exceptions\InvalidOpenIssueTransitionException;
-use App\Models\{OpenIssue, OpenIssueEvent, User};
+use App\Models\{DiaryEntry, OpenIssue, OpenIssueEvent, User};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -122,6 +122,21 @@ class OpenIssueService {
         if ($assignee !== null && (int) $assignee->id !== (int) $actor->id) {
             $this->notifyAssigned($issue, $actor);
         }
+
+        return $issue;
+    }
+
+    /**
+     * Verknüpft den manuell angelegten Folgeauftrag (Feature 139). Bewusst
+     * kein Statuswechsel — ob der Punkt damit erledigt ist, entscheidet der
+     * Bearbeiter beim Abschluss des Auftrags.
+     */
+    public function linkFollowUp(OpenIssue $issue, DiaryEntry $entry, User $actor): OpenIssue {
+        $issue->update(['follow_up_diary_entry_id' => $entry->id]);
+        $issue->audit('openIssue.followUpCreated', [
+            'diary_entry_id' => (int) $entry->id,
+            'actor_user_id' => (int) $actor->id,
+        ]);
 
         return $issue;
     }

@@ -34,12 +34,12 @@
             <form method="POST" action="{{ route('agile.sprints.store', $project) }}" class="flex flex-wrap items-end gap-2">
                 @csrf
                 <div class="fieldset grow">
-                    <label class="fieldset-label">{{ __('Name') }}</label>
-                    <input name="name" required minlength="2" maxlength="120" class="input input-sm input-bordered w-full" placeholder="{{ __('Sprint 1') }}">
+                    <label for="name" class="fieldset-label">{{ __('Name') }}</label>
+                    <input id="name" name="name" required minlength="2" maxlength="120" class="input input-sm input-bordered w-full" placeholder="{{ __('Sprint 1') }}">
                 </div>
                 <div class="fieldset grow">
-                    <label class="fieldset-label">{{ __('Ziel (Pflicht zum Start)') }}</label>
-                    <input name="goal" maxlength="500" class="input input-sm input-bordered w-full">
+                    <label for="goal" class="fieldset-label">{{ __('Ziel (Pflicht zum Start)') }}</label>
+                    <input id="goal" name="goal" maxlength="500" class="input input-sm input-bordered w-full">
                 </div>
                 <x-date-range from-name="starts_on" to-name="ends_on" size="sm" />
                 <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Planen') }}</x-icon-btn>
@@ -71,7 +71,7 @@
                 </p>
 
                 @if ($sprint->items->isEmpty())
-                    <p class="mt-2 text-xs text-base-content/50">{{ __('Keine Elemente zugeordnet.') }}</p>
+                    <p class="mt-2 text-xs text-muted">{{ __('Keine Elemente zugeordnet.') }}</p>
                 @else
                     <ul class="mt-2 space-y-1">
                         @foreach ($sprint->items as $assignment)
@@ -126,7 +126,7 @@
                         @endif
 
                         <details>
-                            <summary class="cursor-pointer text-xs text-base-content/60">{{ __('Abbrechen…') }}</summary>
+                            <summary class="cursor-pointer text-xs text-muted">{{ __('Abbrechen…') }}</summary>
                             <form method="POST" action="{{ route('agile.sprints.cancel', [$project, $sprint]) }}" class="mt-1 flex items-center gap-1">
                                 @csrf
                                 <input name="reason" required minlength="3" maxlength="300" placeholder="{{ __('Grund (Pflicht)') }}" class="input input-xs input-bordered">
@@ -142,9 +142,9 @@
                         @csrf
                         <p class="mb-1 text-sm font-semibold">{{ __('Sprint abschließen') }}</p>
                         @if ($openAssignments->isEmpty())
-                            <p class="text-xs text-base-content/60">{{ __('Alle Elemente sind erledigt.') }}</p>
+                            <p class="text-xs text-muted">{{ __('Alle Elemente sind erledigt.') }}</p>
                         @else
-                            <p class="mb-1 text-xs text-base-content/60">{{ __('Je unerledigtem Element eine Entscheidung treffen (Pflicht, kein Standard):') }}</p>
+                            <p class="mb-1 text-xs text-muted">{{ __('Je unerledigtem Element eine Entscheidung treffen (Pflicht, kein Standard):') }}</p>
                             <div class="space-y-1">
                                 @foreach ($openAssignments as $assignment)
                                     <label class="flex items-center gap-2 text-sm">
@@ -165,7 +165,7 @@
                 @endif
 
                 @if ($sprint->completion_snapshot !== null)
-                    <p class="mt-2 text-xs text-base-content/60">
+                    <p class="mt-2 text-xs text-muted">
                         {{ __(':done von :committed Punkten erledigt, :open Elemente offen übergeben.', [
                             'done' => $sprint->completion_snapshot['done_points'] ?? 0,
                             'committed' => $sprint->completion_snapshot['committed_points'] ?? 0,

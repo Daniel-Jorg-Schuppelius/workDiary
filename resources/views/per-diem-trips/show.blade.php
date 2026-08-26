@@ -63,9 +63,9 @@
         <x-card :title="__('Zweck')" icon="info">
             <p class="text-base-content/80">{{ $trip->purpose }}</p>
             @if ($trip->notes)
-                <p class="mt-2 text-sm text-base-content/60 whitespace-pre-line">{{ $trip->notes }}</p>
+                <p class="mt-2 text-sm text-muted whitespace-pre-line">{{ $trip->notes }}</p>
             @endif
-            <p class="mt-2 text-xs text-base-content/60">
+            <p class="mt-2 text-xs text-muted">
                 {{ $trip->started_at->fdatetime() }} – {{ $trip->ended_at->fdatetime() }}
                 @if ($trip->accommodation_provided)
                     · <x-status-badge tone="ghost" size="xs">{{ __('Übernachtung gestellt') }}</x-status-badge>

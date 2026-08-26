@@ -86,7 +86,7 @@
             </select>
         </label>
         @if ($controls->isEmpty())
-            <p class="text-xs text-base-content/60">{{ __('isms.hint.no_controls_yet') }}</p>
+            <p class="text-xs text-muted">{{ __('isms.hint.no_controls_yet') }}</p>
         @endif
     </x-form-group>
 </x-modal>

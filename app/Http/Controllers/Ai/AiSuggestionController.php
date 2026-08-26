@@ -16,11 +16,11 @@ use App\Enums\Ai\AiMemoryEntryType;
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\{Customer, Invoice, InvoiceItem, Quote, QuoteItem};
+use App\Models\{Customer, Invoice, InvoiceItem, ProtocolItem, Quote, QuoteItem, User};
 use App\Models\Finance\BillingTransferPosition;
 use App\Services\Ai\AiMemoryService;
 use App\Services\Ai\Exceptions\AiException;
-use App\Services\Ai\Suggestions\ItemTextSuggestionService;
+use App\Services\Ai\Suggestions\{ItemTextSuggestionService, ProtocolTextSuggestionService};
 use App\Support\Locales;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -35,7 +35,10 @@ use Illuminate\View\View;
  * enden IMMER als Flash — der Beleg-Workflow hängt nie an der KI.
  */
 class AiSuggestionController extends Controller {
-    public function __construct(private readonly ItemTextSuggestionService $suggestions) {}
+    public function __construct(
+        private readonly ItemTextSuggestionService $suggestions,
+        private readonly ProtocolTextSuggestionService $protocolSuggestions,
+    ) {}
 
     public function invoiceItem(Invoice $invoice, InvoiceItem $item): RedirectResponse {
         $this->authorizeInvoice($invoice, $item);
@@ -92,6 +95,46 @@ class AiSuggestionController extends Controller {
         });
     }
 
+    /** Protokollpunkt: Freitext veredeln (Feature 143, MVP-711). */
+    public function protocolItem(ProtocolItem $item): RedirectResponse {
+        $this->authorizeProtocolItem($item);
+
+        return $this->guarded(function () use ($item): string {
+            $this->protocolSuggestions->suggestForItem($item, Auth::user());
+
+            return __('ai.flash.suggestion_created');
+        });
+    }
+
+    /** Protokollpunkt: Schweregrad/Kategorie/Ergebnis als Chips vorschlagen. */
+    public function protocolItemClassify(ProtocolItem $item): RedirectResponse {
+        $this->authorizeProtocolItem($item);
+
+        return $this->guarded(function () use ($item): string {
+            $suggestion = $this->protocolSuggestions->classifyItem($item, Auth::user());
+
+            return $suggestion === null
+                ? __('ai.flash.classification_none')
+                : __('ai.flash.classification_created');
+        });
+    }
+
+    /** Einen Klassifikations-Chip übernehmen — nie Auto-Apply. */
+    public function apply(Request $request, AiTextSuggestion $suggestion): RedirectResponse {
+        $this->authorizeSuggestion($suggestion);
+
+        $data = $request->validate([
+            'kind' => ['required', 'string', 'in:severity,category,result'],
+            'value' => ['required', 'string', 'max:120'],
+        ]);
+
+        return $this->guarded(function () use ($suggestion, $data): string {
+            $this->protocolSuggestions->applyValue($suggestion, $this->actor(), $data['kind'], $data['value']);
+
+            return __('ai.flash.classification_applied', ['value' => $data['value']]);
+        });
+    }
+
     public function accept(Request $request, AiTextSuggestion $suggestion): RedirectResponse {
         $this->authorizeSuggestion($suggestion);
 
@@ -100,7 +143,9 @@ class AiSuggestionController extends Controller {
         ]);
 
         return $this->guarded(function () use ($suggestion, $data): string {
-            $edited = $this->suggestions->accept($suggestion, Auth::user(), $data['text']);
+            $edited = $suggestion->subject instanceof ProtocolItem
+                ? $this->protocolSuggestions->accept($suggestion, $this->actor(), $data['text'])
+                : $this->suggestions->accept($suggestion, Auth::user(), $data['text']);
 
             if ($edited) {
                 // MVP-404: „Merken?"-Dialog — nie stilles Lernen.
@@ -119,7 +164,11 @@ class AiSuggestionController extends Controller {
     public function reject(AiTextSuggestion $suggestion): RedirectResponse {
         $this->authorizeSuggestion($suggestion);
 
-        $this->suggestions->reject($suggestion, Auth::user());
+        if ($suggestion->subject instanceof ProtocolItem) {
+            $this->protocolSuggestions->reject($suggestion, Auth::user());
+        } else {
+            $this->suggestions->reject($suggestion, Auth::user());
+        }
 
         return back()->with('success', __('ai.flash.suggestion_rejected'));
     }
@@ -171,11 +220,31 @@ class AiSuggestionController extends Controller {
         }
     }
 
+    /**
+     * Protokollpunkt: Mandantengrenze über das org-gescopte Protokoll (fremde
+     * Org → 404), dann Update-Policy (signiert/archiviert → 403) + ai.use.
+     */
+    private function authorizeProtocolItem(ProtocolItem $item): void {
+        $protocol = $item->protocol;
+        abort_if($protocol === null, 404);
+        Gate::authorize('update', $protocol);
+        abort_unless(Gate::allows(Permission::AiUse->value), 403);
+    }
+
+    private function actor(): User {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $user;
+    }
+
     private function authorizeSuggestion(AiTextSuggestion $suggestion): void {
         abort_unless(Gate::allows(Permission::AiUse->value), 403);
 
         $subject = $suggestion->subject;
-        if ($subject instanceof InvoiceItem) {
+        if ($subject instanceof ProtocolItem) {
+            $this->authorizeProtocolItem($subject);
+        } elseif ($subject instanceof InvoiceItem) {
             Gate::authorize('update', $subject->invoice);
         } elseif ($subject instanceof QuoteItem) {
             Gate::authorize('update', $subject->quote);

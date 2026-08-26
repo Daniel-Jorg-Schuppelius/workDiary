@@ -67,7 +67,7 @@
                 <td class="text-right"><x-icon-btn icon="visibility" :href="route('print-orders.show', $order)" :label="__('Anzeigen')" /></td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">print</span>' :colspan="8" :title="__('print.orders.empty')" compact />
+            <x-table.empty icon="print" :colspan="8" :title="__('print.orders.empty')" compact />
         @endforelse
     </x-table>
 

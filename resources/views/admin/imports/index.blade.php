@@ -39,7 +39,7 @@
 
     @if ($runs->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>' />
+            icon="cloud_upload" />
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('admin.imports.index')" :current-sort="$sort" :current-dir="$dir"

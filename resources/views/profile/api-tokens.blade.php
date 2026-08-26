@@ -62,7 +62,7 @@
                         </td>
                     </tr>
                 @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :colspan="5" :title="__('Keine API-Token vorhanden')" compact />
+                    <x-table.empty icon="key" :colspan="5" :title="__('Keine API-Token vorhanden')" compact />
                 @endforelse
             </tbody>
         </x-table>

@@ -1,0 +1,35 @@
+{
+  "_source": "InvoicePlane 1.x — Zeilen aus ip_invoices + ip_invoice_amounts (+ ip_clients). InvoicePlane hat keine REST-API; die Anbindung ist eine schreibgeschuetzte DB-Sicht (Feature 086, MVP-419). Status: 1 Entwurf, 2 versendet, 3 gesehen, 4 bezahlt, 5 ueberfaellig.",
+  "rows": [
+    {
+      "invoice_id": 12,
+      "client_id": 3,
+      "client_name": "Muster GmbH",
+      "invoice_number": "INV-0012",
+      "invoice_date_created": "2026-08-01",
+      "invoice_date_modified": "2026-08-02 12:00:00",
+      "invoice_date_due": "2026-08-15",
+      "invoice_status_id": 2,
+      "creditinvoice_parent_id": 0,
+      "invoice_total": "119.00",
+      "invoice_item_subtotal": "100.00",
+      "invoice_paid": "0.00",
+      "invoice_balance": "119.00"
+    },
+    {
+      "invoice_id": 13,
+      "client_id": 3,
+      "client_name": "Muster GmbH",
+      "invoice_number": "INV-0013",
+      "invoice_date_created": "2026-08-09",
+      "invoice_date_modified": "2026-08-09 08:30:00",
+      "invoice_date_due": "2026-08-23",
+      "invoice_status_id": 4,
+      "creditinvoice_parent_id": 12,
+      "invoice_total": "-119.00",
+      "invoice_item_subtotal": "-100.00",
+      "invoice_paid": "0.00",
+      "invoice_balance": "0.00"
+    }
+  ]
+}

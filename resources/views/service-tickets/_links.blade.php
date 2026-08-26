@@ -47,7 +47,7 @@
     @endif
 
     @if ($ticket->links->isEmpty())
-        <p class="text-sm text-base-content/60">{{ __('Noch keine Verknüpfungen.') }}</p>
+        <p class="text-sm text-muted">{{ __('Noch keine Verknüpfungen.') }}</p>
     @else
         <ul class="space-y-1 text-sm">
             @foreach ($ticket->links as $link)
@@ -55,7 +55,7 @@
                     <x-status-badge tone="ghost" size="xs" outline>
                         {{ \App\Support\Trans::or('helpdesk.link.kind.' . $link->kind, $linkKindLabels[$link->kind] ?? $link->kind) }}
                     </x-status-badge>
-                    <span class="text-base-content/60">{{ \App\Support\EntityType::label($link->linked_type) }}</span>
+                    <span class="text-muted">{{ \App\Support\EntityType::label($link->linked_type) }}</span>
                     @if ($link->linked instanceof \App\Models\ServiceTicket)
                         <a href="{{ route('service-tickets.show', $link->linked) }}" class="link link-hover">
                             <span class="font-mono text-xs">{{ $link->linked->ticket_no }}</span>
@@ -71,7 +71,7 @@
 
     @if ($ticket->problems->isNotEmpty())
         <div class="mt-3">
-            <div class="text-xs uppercase text-base-content/60 mb-1">{{ __('Zugeordnete Probleme') }}</div>
+            <div class="text-xs uppercase text-muted mb-1">{{ __('Zugeordnete Probleme') }}</div>
             <ul class="space-y-1 text-sm">
                 @foreach ($ticket->problems as $problem)
                     <li>
@@ -85,7 +85,7 @@
     @if ($ticket->changes->isNotEmpty())
         {{-- Changes am Ticket (MVP-157, change_ticket-Pivot) — rein informativ. --}}
         <div class="mt-3">
-            <div class="text-xs uppercase text-base-content/60 mb-1">{{ __('Zugeordnete Changes') }}</div>
+            <div class="text-xs uppercase text-muted mb-1">{{ __('Zugeordnete Changes') }}</div>
             <ul class="space-y-1 text-sm">
                 @foreach ($ticket->changes as $change)
                     <li class="flex flex-wrap items-center gap-2">

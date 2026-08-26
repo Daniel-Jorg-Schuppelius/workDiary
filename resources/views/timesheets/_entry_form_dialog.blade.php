@@ -35,7 +35,7 @@
 
     <x-form-group :legend="__('Zeit')" icon="schedule" tone="primary" cols="2">
         <div class="fieldset md:col-span-2" data-time-mode-toggle>
-            <label class="fieldset-label">{{ __('Erfassungsart') }}</label>
+            <span class="fieldset-label">{{ __('Erfassungsart') }}</span>
             <div class="join">
                 <input type="radio" name="_time_mode" value="range"
                        data-time-mode-radio data-target="range"
@@ -59,7 +59,7 @@
         <div data-time-mode-pane="range">
             <x-input-field name="end_time" type="time" :label="__('Ende (Uhrzeit)')" />
         </div>
-        <p class="text-xs text-base-content/60 md:col-span-2" data-time-mode-pane="range">
+        <p class="text-xs text-muted md:col-span-2" data-time-mode-pane="range">
             {{ __('Datum stammt aus dem Stundenzettel (:date). Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen.', ['date' => optional($timesheet->work_date)->fdate()]) }}
         </p>
         <div data-time-mode-pane="range">
@@ -109,7 +109,7 @@
             </datalist>
         @endif
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Tags') }}</label>
+            <span class="fieldset-label">{{ __('Tags') }}</span>
             <x-tag-picker :tags="$allTags" :selected="$selectedTagIds" :recent="$recentTagIds" />
         </div>
     </x-form-group>

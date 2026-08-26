@@ -45,7 +45,7 @@
     </x-filter-bar>
 
     @if ($rows->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>' :title="__('Noch keine Projekte angelegt')" />
+        <x-empty-state framed icon="folder_open" :title="__('Noch keine Projekte angelegt')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true" table-sort="client">
             <x-slot:head>
@@ -81,7 +81,7 @@
                             <td>
                                 <div class="flex items-center gap-2 {{ $indentClass }}">
                                     @if ($depth > 0)
-                                        <x-icon name="subdirectory_arrow_right" class="text-base-content/40" />
+                                        <x-icon name="subdirectory_arrow_right" class="text-muted" />
                                     @endif
                                     <span class="inline-block h-3 w-3 shrink-0 rounded-full"
                                           style="background:{{ $project->color ?: '#94a3b8' }}"></span>
@@ -95,7 +95,7 @@
                                     @endif
                                 </div>
                                 @if ($project->description)
-                                    <div class="line-clamp-1 text-xs text-base-content/60 {{ $indentClass }} mt-0.5">
+                                    <div class="line-clamp-1 text-xs text-muted {{ $indentClass }} mt-0.5">
                                         {{ $project->description }}
                                     </div>
                                 @endif
@@ -106,7 +106,7 @@
                                     @if ($project->foreignCustomer)
                                         <span class="badge badge-sm badge-outline gap-1"
                                               title="{{ __('Fremdkunde') }}">
-                                            <span class="material-symbols-outlined text-[14px]" aria-hidden="true">handshake</span>
+                                            <x-icon name="handshake" class="text-[14px]" />
                                             {{ $project->foreignCustomer->name }}
                                         </span>
                                     @endif
@@ -118,9 +118,9 @@
                             <td class="text-right tabular-nums">{{ $cOpen }}</td>
                             <td class="text-right tabular-nums {{ $cAlert > 0 ? 'text-error font-semibold' : '' }}">{{ $cAlert }}</td>
                             <td class="text-right tabular-nums">{{ $cProgress }}</td>
-                            <td class="text-right tabular-nums text-base-content/60">{{ $cDone }}</td>
+                            <td class="text-right tabular-nums text-muted">{{ $cDone }}</td>
                             <td class="text-right tabular-nums">{{ $users }}</td>
-                            <td class="text-xs text-base-content/60" data-sort-value="{{ $last ? \Carbon\CarbonImmutable::parse($last)->format('Y-m-d H:i:s') : '' }}">
+                            <td class="text-xs text-muted" data-sort-value="{{ $last ? \Carbon\CarbonImmutable::parse($last)->format('Y-m-d H:i:s') : '' }}">
                                 @if ($last)
                                     {{ \Carbon\CarbonImmutable::parse($last)->diffForHumans() }}
                                 @else

@@ -29,7 +29,7 @@
             <div class="fieldset min-w-0 grow">
                 <label class="fieldset-label" for="scan-code">{{ __('inventory.scan.code') }}</label>
                 <div class="relative">
-                    <x-icon name="barcode_scanner" class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-base text-base-content/40" />
+                    <x-icon name="barcode_scanner" class="pointer-events-none absolute left-2.5 top-1/2 -translate-y-1/2 text-base text-muted" />
                     <input id="scan-code" name="code" value="{{ $code }}" autofocus inputmode="text" autocomplete="off"
                            class="input input-sm input-bordered w-full pl-9 font-mono tracking-wide"
                            placeholder="GTIN / SKU / SN / LOT">
@@ -38,7 +38,7 @@
             <div class="fieldset">
                 {{-- Unsichtbarer Label-Platzhalter, damit der Button bündig zum
                      Eingabefeld steht (Label + Control wie die Feld-Spalte). --}}
-                <label class="fieldset-label invisible select-none hidden sm:block" aria-hidden="true">&nbsp;</label>
+                <span class="fieldset-label invisible select-none hidden sm:block" aria-hidden="true">&nbsp;</span>
                 <x-icon-btn icon="search" tone="primary" size="sm" type="submit" show-label
                             class="w-full sm:w-auto">{{ __('inventory.serial.action.search') }}</x-icon-btn>
             </div>
@@ -83,36 +83,29 @@
                            class="input input-sm input-bordered w-full font-mono">
                 </div>
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('inventory.scan.action_label') }}</label>
-                        <select name="action" class="select select-sm select-bordered w-full">
-                            @foreach ($actions as $a)
-                                <option value="{{ $a->value }}">{{ $a->label() }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('inventory.scan.qty') }}</label>
-                        <input name="qty" type="number" step="0.0001" min="0.0001" value="1"
-                               class="input input-sm input-bordered w-full">
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('inventory.field.warehouse') }}</label>
-                        <select name="warehouse" class="select select-sm select-bordered w-full">
-                            @foreach ($warehouses as $wh)
-                                <option value="{{ $wh->sqid }}">{{ $wh->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('inventory.scan.target') }}</label>
-                        <select name="target" class="select select-sm select-bordered w-full">
-                            <option value="">—</option>
-                            @foreach ($warehouses as $wh)
-                                <option value="{{ $wh->sqid }}">{{ $wh->name }}</option>
-                            @endforeach
-                        </select>
-                    </div>
+                    <x-select-field name="action" :label="__('inventory.scan.action_label')" class="select-sm">
+                        @foreach ($actions as $a)
+                            <option value="{{ $a->value }}">{{ $a->label() }}</option>
+                        @endforeach
+                    </x-select-field>
+                    <x-input-field name="qty"
+                                   :label="__('inventory.scan.qty')"
+                                   type="number"
+                                   value="1"
+                                   class="input-sm"
+                                   step="0.0001"
+                                   min="0.0001" />
+                    <x-select-field name="warehouse" :label="__('inventory.field.warehouse')" class="select-sm">
+                        @foreach ($warehouses as $wh)
+                            <option value="{{ $wh->sqid }}">{{ $wh->name }}</option>
+                        @endforeach
+                    </x-select-field>
+                    <x-select-field name="target" :label="__('inventory.scan.target')" class="select-sm">
+                        <option value="">—</option>
+                        @foreach ($warehouses as $wh)
+                            <option value="{{ $wh->sqid }}">{{ $wh->name }}</option>
+                        @endforeach
+                    </x-select-field>
                 </div>
                 <x-icon-btn icon="inventory_2" tone="primary" size="sm" type="submit" show-label
                             class="mt-1 self-start">{{ __('inventory.scan.book') }}</x-icon-btn>

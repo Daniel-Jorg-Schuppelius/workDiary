@@ -15,7 +15,7 @@
             <h1 class="mb-1 text-xl font-semibold">{{ __('Rückfrage stellen') }}</h1>
             <p class="mb-4 text-sm text-base-content/70">{{ $subjectLabel }}</p>
 
-            <form method="POST" action="{{ route('customer.queries.store') }}" class="space-y-3">
+            <form method="POST" action="{{ route('customer.queries.store') }}" enctype="multipart/form-data" class="space-y-3">
                 @csrf
                 <input type="hidden" name="subject_type" value="{{ $subjectType }}">
                 <input type="hidden" name="subject" value="{{ $subjectSqid }}">
@@ -24,8 +24,17 @@
                     <label class="fieldset-label" for="query-question">{{ __('Ihre Rückfrage oder Ihr Kommentar') }}</label>
                     <textarea id="query-question" name="question" rows="5" required maxlength="2000"
                               class="textarea textarea-bordered w-full">{{ old('question') }}</textarea>
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('Nach dem Absenden ist der Text aus Nachweisgründen nicht änderbar.') }}</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('Nach dem Absenden ist der Text aus Nachweisgründen nicht änderbar.') }}</p>
                     @error('question')<p class="text-error text-sm">{{ $message }}</p>@enderror
+                </div>
+
+                {{-- Anhänge (MVP-712): Upload-Policy wie Portal-Tickets, nach dem Absenden unveränderlich. --}}
+                <div class="fieldset">
+                    <label class="fieldset-label" for="query-files">{{ __('Anhänge (optional)') }}</label>
+                    <input id="query-files" name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered w-full">
+                    <p class="mt-1 text-xs text-muted">{{ __('Bis zu :max Dateien, je max. :mb MB (PDF, Bilder, Office, Text, ZIP).', ['max' => \App\Http\Controllers\CustomerPortal\QueryController::MAX_FILES, 'mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+                    @error('files')<p class="text-error text-sm">{{ $message }}</p>@enderror
+                    @error('files.*')<p class="text-error text-sm">{{ $message }}</p>@enderror
                 </div>
 
                 <div class="flex justify-end gap-2">

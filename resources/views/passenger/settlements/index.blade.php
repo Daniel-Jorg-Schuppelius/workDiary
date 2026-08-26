@@ -104,7 +104,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>' :colspan="9" :title="__('passenger.settlements.empty')" compact />
+            <x-table.empty icon="payments" :colspan="9" :title="__('passenger.settlements.empty')" compact />
         @endforelse
     </x-table>
 

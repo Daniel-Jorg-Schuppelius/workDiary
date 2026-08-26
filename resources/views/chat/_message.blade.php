@@ -16,7 +16,7 @@
     $reactions = $message->reactions->groupBy('emoji');
     $poll = $message->type === 'poll' ? $message->poll : null;
     $initials = \Illuminate\Support\Str::of($message->user?->name ?? '–')->substr(0, 2)->upper();
-    $metaTone = $isMine ? 'text-primary-content/70' : 'text-base-content/50';
+    $metaTone = $isMine ? 'text-primary-content/70' : 'text-muted';
 @endphp
 <div class="chat-msg group relative flex items-start gap-2 px-3 py-0.5 {{ $isMine ? 'flex-row-reverse' : '' }}"
      data-message-id="{{ $message->sqid }}" id="chat-msg-{{ $message->sqid }}"
@@ -47,13 +47,13 @@
                         <button type="button" class="block w-full text-left" data-action="vote" data-poll-id="{{ $poll->sqid }}" data-option-id="{{ $opt->id }}" @disabled($poll->isClosed())>
                             <div class="flex items-center justify-between text-sm">
                                 <span class="{{ $mine ? 'font-semibold text-primary' : '' }}">{{ $mine ? '✓ ' : '' }}{{ $opt->label }}</span>
-                                <span class="tabular-nums text-base-content/60">{{ $c }} · {{ $pct }}%</span>
+                                <span class="tabular-nums text-muted">{{ $c }} · {{ $pct }}%</span>
                             </div>
                             <progress class="progress progress-primary h-1.5 w-full" value="{{ $pct }}" max="100"></progress>
                         </button>
                     @endforeach
                 </div>
-                <p class="mt-2 text-xs text-base-content/50">
+                <p class="mt-2 text-xs text-muted">
                     {{ trans_choice(':count Stimme|:count Stimmen', $total, ['count' => $total]) }}
                     @if ($poll->multiple) · {{ __('Mehrfachauswahl') }} @endif
                     @if ($poll->isClosed()) · {{ __('beendet') }} @endif

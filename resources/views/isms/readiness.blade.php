@@ -55,9 +55,9 @@
             <x-card>
                 <div class="flex flex-wrap items-center justify-between gap-4">
                     <div>
-                        <div class="text-xs uppercase tracking-wide text-base-content/50">{{ __('isms.readiness.overall_label') }}</div>
+                        <div class="text-xs uppercase tracking-wide text-muted">{{ __('isms.readiness.overall_label') }}</div>
                         <div class="mt-1 flex items-center gap-3">
-                            <span class="text-3xl font-bold text-{{ $assessment['overall_tone'] }}">{{ $assessment['overall_score'] }}<span class="text-base text-base-content/50">/100</span></span>
+                            <span class="text-3xl font-bold text-{{ $assessment['overall_tone'] }}">{{ $assessment['overall_score'] }}<span class="text-base text-muted">/100</span></span>
                             @if ($assessment['audit_ready'])
                                 <x-status-badge tone="success">{{ __('isms.readiness.ready_yes') }}</x-status-badge>
                             @else
@@ -103,7 +103,7 @@
                         <ul class="space-y-1 text-xs text-base-content/70">
                             @foreach ($domain['signals'] as $signal)
                                 <li class="flex items-start gap-1.5">
-                                    <x-icon name="chevron_right" class="mt-0.5 text-base-content/40" />
+                                    <x-icon name="chevron_right" class="mt-0.5 text-muted" />
                                     <span>{{ $signal }}</span>
                                 </li>
                             @endforeach

@@ -34,13 +34,26 @@
         <x-input-field name="email" type="email" :label="__('Empfänger')" :value="$defaultTo"
                        placeholder="empfaenger@firma.de" />
 
-        {{-- MVP-650: optionale Mahngebühr + Zahlungsziel fürs Mahnschreiben. --}}
+        {{-- MVP-650: optionale Mahngebühr + Zahlungsziel fürs Mahnschreiben.
+             Vorbelegung aus der Org-Konfiguration (MVP-691); Eingaben bleiben Override. --}}
         <div class="grid grid-cols-2 gap-2">
             <x-input-field name="fee" type="number" step="0.01" min="0" :label="__('Mahngebühr (optional)')"
-                           :value="old('fee')" placeholder="0,00" />
+                           :value="old('fee', $defaultFee ?? null)" placeholder="0,00" />
             <x-input-field name="pay_until" type="date" :label="__('Zahlbar bis (optional)')"
-                           :value="old('pay_until', now()->addDays(14)->toDateString())" />
+                           :value="old('pay_until', $defaultPayUntil ?? now()->addDays(14)->toDateString())" />
         </div>
+
+        @if (($interest ?? null) !== null)
+            {{-- Verzugszins-Ausweis (MVP-691): reine Anzeige, keine Buchung. --}}
+            <div class="text-xs text-base-content/70">
+                {{ __('finance.dunning.interest_hint_dialog', [
+                    'amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interest['amount'], 2, withThousandsSeparator: true),
+                    'currency' => $invoice->currency->value,
+                    'rate' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interest['rate'], 2),
+                    'days' => $interest['days'],
+                ]) }}
+            </div>
+        @endif
 
         <x-textarea-field name="note" :label="__('Individueller Zusatztext (optional)')" rows="3"
                           :value="old('note', $aiText ?? '')" />
@@ -54,7 +67,7 @@
                             :href="route('invoices.dun.form', [$invoice, 'ki' => 1])"
                             show-label>{{ __('ai.covering.suggest_dunning') }}</x-icon-btn>
                 @if (! empty($aiText))
-                    <span class="text-xs text-base-content/60">{{ __('ai.covering.draft_hint') }}</span>
+                    <span class="text-xs text-muted">{{ __('ai.covering.draft_hint') }}</span>
                 @elseif (! empty($aiError))
                     <span class="text-xs text-warning">{{ $aiError }}</span>
                 @endif

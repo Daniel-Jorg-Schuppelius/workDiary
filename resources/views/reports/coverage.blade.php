@@ -62,7 +62,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Pro Schichttyp') }}</h3>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">shield_person</span>' :title="__('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.')" />
+            <x-empty-state icon="shield_person" :title="__('Keine Soll-Vorgaben oder Plan-Einträge im gewählten Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -95,7 +95,7 @@
                             @endif
                             {{ $r['shiftType']->name }}
                             @if ($r['shiftType']->abbreviation)
-                                <span class="ml-1 text-xs text-base-content/50">{{ $r['shiftType']->abbreviation }}</span>
+                                <span class="ml-1 text-xs text-muted">{{ $r['shiftType']->abbreviation }}</span>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $r['required'] }}</td>
@@ -115,7 +115,7 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-error/80">
                 {{ __('Tage mit Unterdeckung') }}
-                <span class="text-base-content/50">({{ count($underfilled) }})</span>
+                <span class="text-muted">({{ count($underfilled) }})</span>
             </h3>
             <x-table size="xs" table-sort="client" bare>
                 <x-slot:head>

@@ -39,8 +39,12 @@ return [
         'draft_batches' => ':count lotto/i contabile/i non consolidato/i (bozza) nel periodo — assente/i dalla prova dei lotti contabili.',
         'empty_invoices' => 'Nessuna fattura emessa nel periodo selezionato.',
     ],
-    'export' => 'Scarica pacchetto Z3',
+    'export' => 'Crea pacchetto Z3',
+    'queued' => 'La creazione del pacchetto è in coda — la prova compare sotto e viene aggiornata al prossimo caricamento.',
+    'download' => 'Scarica pacchetto',
     'recent' => [
+        'status' => 'Stato',
+        'actions' => 'Azioni',
         'title' => 'Esportazioni recenti',
         'package_hash' => 'Hash del pacchetto (SHA-256)',
         'records' => 'Record',

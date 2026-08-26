@@ -61,12 +61,12 @@
                         <td class="font-semibold">
                             <div class="flex items-center gap-2">
                                 @if ($cat->icon)
-                                    <span class="material-symbols-outlined text-base opacity-70" aria-hidden="true">{{ $cat->icon }}</span>
+                                    <x-icon name="{{ $cat->icon }}" class="text-base opacity-70" />
                                 @endif
                                 <span>{{ $cat->label }}</span>
                             </div>
                             @if ($cat->description)
-                                <div class="text-xs text-base-content/60 truncate max-w-md">{{ $cat->description }}</div>
+                                <div class="text-xs text-muted truncate max-w-md">{{ $cat->description }}</div>
                             @endif
                         </td>
                         <td>
@@ -112,7 +112,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="8"
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
+                        icon="category"
                         :title="__('Noch keine Tätigkeiten angelegt')" compact />
                 @endforelse
         </x-table>

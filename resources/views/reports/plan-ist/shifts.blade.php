@@ -46,7 +46,7 @@
 
     @if ($report['rows'] === [])
         <x-card>
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">event_repeat</span>'
+            <x-empty-state icon="event_repeat"
                            :title="__('Keine geplanten Schichten im Zeitraum.')"
                            :message="__('Soll-Werte entstehen aus veröffentlichten oder bestätigten Schichten des Schichtplans.')" />
         </x-card>
@@ -97,7 +97,7 @@
                         <td class="text-right tabular-nums {{ $row['delta_minutes'] < 0 ? 'text-error' : '' }}" data-sort-value="{{ $row['delta_minutes'] }}">{{ $fmtH($row['delta_minutes']) }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ $row['coverage_pct'] ?? -1 }}">
                             @if ($row['coverage_pct'] === null)
-                                <span class="text-base-content/40">—</span>
+                                <span class="text-muted">—</span>
                             @elseif ($row['coverage_pct'] < 100)
                                 {{-- Unterdeckung hervorheben (§2.3): Ist deckt das Soll-Fenster nicht. --}}
                                 <x-status-badge size="xs" tone="warning">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['coverage_pct'], 1, withThousandsSeparator: true) }} %</x-status-badge>
@@ -108,7 +108,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <p class="mt-2 text-xs text-base-content/60">
+            <p class="mt-2 text-xs text-muted">
                 {{ __('Soll = veröffentlichte/bestätigte Schichten × Fensterdauer; Ist = Überlappung der Anwesenheiten mit dem Schichtfenster.') }}
             </p>
         </x-card>

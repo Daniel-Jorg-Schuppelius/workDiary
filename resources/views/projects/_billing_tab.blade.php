@@ -23,7 +23,7 @@
          x-data="reveal('{{ $increment === null ? '' : ($isPreset ? (int) $increment : 'custom') }}')">
         <header class="border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Taktung & Zusammenfassung') }}</span>
-            <p class="mt-0.5 text-xs text-base-content/60">
+            <p class="mt-0.5 text-xs text-muted">
                 {{ __('Abrechenbare Zeit wird auf die Taktung aufgerundet (jede angefangene Einheit zählt voll). Liegen Einträge desselben Projekts höchstens die eingestellte Lücke auseinander, werden sie zu einem Block zusammengefasst und gemeinsam einmal aufgerundet.') }}
             </p>
         </header>
@@ -34,9 +34,9 @@
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Taktung') }}</label>
+                    <label :for="choose('custom', 'billing_increment_select', 'billing_increment_minutes')" class="fieldset-label">{{ __('Taktung') }}</label>
                     <select class="select select-bordered w-full" x-model="value"
-                            x-bind:name="choose('custom', 'billing_increment_select', 'billing_increment_minutes')">
+                            :id="choose('custom', 'billing_increment_select', 'billing_increment_minutes')" x-bind:name="choose('custom', 'billing_increment_select', 'billing_increment_minutes')">
                         <option value="">{{ __('Erben (aktuell: :min Min)', ['min' => $effectiveIncrement]) }}</option>
                         @foreach ($presetIncrements as $min => $label)
                             <option value="{{ $min }}" @selected($isPreset && (int) $increment === $min)>{{ $label }} ({{ $min }} Min)</option>
@@ -51,14 +51,15 @@
                            x-bind:name="choose('custom', 'billing_increment_minutes', 'billing_increment_minutes_custom')">
                 </div>
 
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Max. Lücke zum Zusammenfassen (Min)') }}</label>
-                    <input type="number" name="billing_grouping_gap_minutes" min="0" max="1440" step="1"
-                           value="{{ $gap === null ? '' : (int) $gap }}"
-                           placeholder="{{ __('Erben (aktuell: :min)', ['min' => $effectiveGap]) }}"
-                           class="input input-bordered w-full">
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('0 = keine Zusammenfassung. Leer = erben.') }}</p>
-                </div>
+                <x-input-field name="billing_grouping_gap_minutes"
+                               :label="__('Max. Lücke zum Zusammenfassen (Min)')"
+                               type="number"
+                               value="{{ $gap === null ? '' : (int) $gap }}"
+                               :hint="__('0 = keine Zusammenfassung. Leer = erben.')"
+                               min="0"
+                               max="1440"
+                               step="1"
+                               placeholder="{{ __('Erben (aktuell: :min)', ['min' => $effectiveGap]) }}" />
             </div>
 
             <div class="flex justify-end">
@@ -80,7 +81,7 @@
     <x-card padding="p-0">
         <header class="border-b border-base-300 px-4 py-3">
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Sätze') }}</span>
-            <p class="mt-0.5 text-xs text-base-content/60">
+            <p class="mt-0.5 text-xs text-muted">
                 {{ __('Gilt für Zeiten dieses Projekts, sofern weder Eintrag, Kundenkondition, Mitarbeiter noch Tätigkeit einen Satz setzen. Leer = Satz des Kunden bzw. der Organisations-Standardsatz.') }}
             </p>
         </header>
@@ -90,21 +91,25 @@
             @method('PATCH')
 
             <div class="grid grid-cols-1 gap-4 md:grid-cols-2">
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Stundensatz (Erlös)') }}</label>
-                    <input type="number" name="hourly_rate" min="0" max="10000" step="0.01" inputmode="decimal"
-                           value="{{ old('hourly_rate', $project->hourly_rate?->getAmount()) }}"
-                           placeholder="{{ $ratePlaceholder($inheritedHourly) }}"
-                           class="input input-bordered w-full">
-                </div>
+                <x-input-field name="hourly_rate"
+                               :label="__('Stundensatz (Erlös)')"
+                               type="number"
+                               value="{{ old('hourly_rate', $project->hourly_rate?->getAmount()) }}"
+                               min="0"
+                               max="10000"
+                               step="0.01"
+                               inputmode="decimal"
+                               placeholder="{{ $ratePlaceholder($inheritedHourly) }}" />
 
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Interner Satz (Kosten)') }}</label>
-                    <input type="number" name="internal_rate" min="0" max="10000" step="0.01" inputmode="decimal"
-                           value="{{ old('internal_rate', $project->internal_rate?->getAmount()) }}"
-                           placeholder="{{ $ratePlaceholder($inheritedInternal) }}"
-                           class="input input-bordered w-full">
-                </div>
+                <x-input-field name="internal_rate"
+                               :label="__('Interner Satz (Kosten)')"
+                               type="number"
+                               value="{{ old('internal_rate', $project->internal_rate?->getAmount()) }}"
+                               min="0"
+                               max="10000"
+                               step="0.01"
+                               inputmode="decimal"
+                               placeholder="{{ $ratePlaceholder($inheritedInternal) }}" />
             </div>
 
             <div class="flex justify-end">
@@ -118,7 +123,7 @@
         <header class="flex items-center justify-between gap-3 border-b border-base-300 px-4 py-3">
             <div>
                 <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Abrechnungs-Regeln (Lexoffice)') }}</span>
-                <p class="mt-0.5 text-xs text-base-content/60">
+                <p class="mt-0.5 text-xs text-muted">
                     {{ __('Pro Tätigkeitsart lässt sich festlegen, welcher Lexoffice-Artikel beim Rechnungs-Export verwendet wird. Ohne Tätigkeitsart = Fallback für alle Einträge. Sub-Projekte erben Regeln vom Parent, können sie aber überschreiben.') }}
                 </p>
             </div>
@@ -137,14 +142,14 @@
         @if ($billingRules->isEmpty())
             <div class="p-4">
                 <x-empty-state compact
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                    icon="receipt_long"
                     :title="__('Noch keine Regeln definiert.')"
                     :message="__('Beim Rechnungs-Export wird der Default-Stundensatz genommen.')" />
             </div>
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
-                    <tr class="text-xs text-base-content/50">
+                    <tr class="text-xs text-muted">
                         <x-table.th sort type="string">{{ __('Art') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Lexoffice-Artikel') }}</x-table.th>
                         <x-table.th sort type="string">{{ __('Item-Typ') }}</x-table.th>
@@ -168,7 +173,7 @@
                             @if ($rule->lexoffice_article_id)
                                 {{ $billingArticles->firstWhere('external_id', $rule->lexoffice_article_id)?->name ?? $rule->lexoffice_article_id }}
                             @else
-                                <span class="text-base-content/50">—</span>
+                                <span class="text-muted">—</span>
                             @endif
                         </td>
                         <td class="text-xs">{{ $itemTypes[$rule->item_type] ?? $rule->item_type }}</td>

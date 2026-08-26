@@ -77,7 +77,7 @@
 
     @if ($filtered->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">checklist</span>'
+            icon="checklist"
             :title="__('Keine Aufgaben vorhanden.')" />
     @else
         @foreach ($grouped->sortKeys() as $milestoneId => $tasks)
@@ -85,7 +85,7 @@
                 $ms = $milestoneId > 0 ? ($milestoneMap->get($milestoneId)) : null;
             @endphp
             <x-card padding="p-0">
-                <header class="flex items-center gap-2 border-b border-base-300 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-base-content/50">
+                <header class="flex items-center gap-2 border-b border-base-300 px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted">
                     @if ($ms)
                         <span class="inline-flex h-4 w-4 items-center justify-center rounded-full text-[10px]
                                      {{ $ms->is_completed ? 'bg-success/20 text-success' : 'bg-base-300' }}">
@@ -110,7 +110,7 @@
                                 <li class="px-4 py-1.5 pl-12">
                                     <a href="{{ route('projects.tasks.create', ['project' => $project, 'parent_id' => $task->sqid]) }}"
                                        data-entry-modal-trigger
-                                       class="inline-flex items-center gap-1 text-xs text-base-content/40 hover:text-primary">
+                                       class="inline-flex items-center gap-1 text-xs text-muted hover:text-primary">
                                         <x-icon name="add" /> {{ __('Sub-Aufgabe') }}
                                     </a>
                                 </li>

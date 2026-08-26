@@ -26,7 +26,7 @@
         <x-input-field name="occurred_at" type="datetime-local" :label="__('Zeitpunkt des Ereignisses')" :value="old('occurred_at')" />
         <x-input-field name="summary" :label="__('Sachverhalt')" required span="2">
             <textarea id="summary" name="summary" rows="4" class="textarea textarea-bordered w-full" required>{{ old('summary') }}</textarea>
-            <p class="text-xs text-base-content/60 mt-1">{{ __('Wird verschlüsselt gespeichert.') }}</p>
+            <p class="text-xs text-muted mt-1">{{ __('Wird verschlüsselt gespeichert.') }}</p>
         </x-input-field>
         <x-input-field name="affected" :label="__('Betroffene Daten / Personen / Systeme')" span="2">
             <textarea id="affected" name="affected" rows="3" class="textarea textarea-bordered w-full">{{ old('affected') }}</textarea>
@@ -50,7 +50,7 @@
                     </option>
                 @endforeach
             </select>
-            <p class="mt-1 text-xs text-base-content/60">{{ __('Bei AV-Vorfällen wird daraus die Kundenadresse für den Bundesland-Vorschlag verwendet.') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Bei AV-Vorfällen wird daraus die Kundenadresse für den Bundesland-Vorschlag verwendet.') }}</p>
         </x-input-field>
         <x-input-field name="own_infrastructure_affected" :label="__('Eigene Infrastruktur mitbetroffen')" span="2">
             <label class="label cursor-pointer justify-start gap-2">

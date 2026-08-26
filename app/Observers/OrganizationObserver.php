@@ -28,6 +28,8 @@ class OrganizationObserver {
         WhistleblowingPermissions::seedOrganization($organization);
         // Eigene Datenschutz-Rolle (ebenfalls vom Admin getrennt).
         DataProtectionPermissions::seedOrganization($organization);
+        // Personalakten-Kreis (Feature 141): hrFile.* nie automatisch an Admins.
+        \App\Services\Hr\PersonnelFilePermissions::seedOrganization($organization);
         // Erstausstattung Eintragstypen (profil-gekoppelt) — der Deploy-Seeder
         // fasst bestehende Orgs bewusst nicht mehr an.
         EntryTypeSeeder::seedOrganization($organization);

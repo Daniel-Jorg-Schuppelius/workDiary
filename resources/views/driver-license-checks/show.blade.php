@@ -59,10 +59,10 @@
                 <td>{{ $check->license_classes ?? '—' }}</td>
                 <td class="whitespace-nowrap">{{ $check->license_valid_until?->fdate() ?? '—' }}</td>
                 <td class="whitespace-nowrap">{{ $check->next_due_on->fdate() }}</td>
-                <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $check->note }}</td>
+                <td class="max-w-xs truncate text-muted text-xs">{{ $check->note }}</td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">badge</span>' :colspan="6" :title="__('Noch keine Kontrolle dokumentiert')" compact />
+            <x-table.empty icon="badge" :colspan="6" :title="__('Noch keine Kontrolle dokumentiert')" compact />
         @endforelse
     </x-table>
 </x-page-shell>

@@ -51,7 +51,7 @@
         ] as $tile)
             <article class="card border border-base-300 bg-base-100 shadow-sm">
                 <div class="card-body gap-1 p-4">
-                    <header class="flex items-center gap-2 text-base-content/60">
+                    <header class="flex items-center gap-2 text-muted">
                         <x-icon :name="$tile['icon']" />
                         <span class="text-xs">{{ $tile['label'] }}</span>
                     </header>
@@ -78,9 +78,9 @@
                         @if ($u['is_online'])
                             <span class="badge badge-success badge-sm gap-1"><x-icon name="bolt" class="text-xs" />{{ __('sessions.badge.online') }}</span>
                         @endif
-                        <span class="text-xs text-base-content/50">{{ $u['email'] }}</span>
+                        <span class="text-xs text-muted">{{ $u['email'] }}</span>
                     </div>
-                    <div class="flex items-center gap-3 text-xs text-base-content/60">
+                    <div class="flex items-center gap-3 text-xs text-muted">
                         <span title="{{ __('sessions.last_login') }}">
                             <x-icon name="login" class="text-sm" />
                             {{ $u['last_login_at'] ? $fmtAgo($u['last_login_at']) : '—' }}
@@ -103,7 +103,7 @@
                 {{-- Web-/App-Sitzungen --}}
                 @if (! empty($u['sessions']))
                     <div>
-                        <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('sessions.section.sessions') }}</h3>
+                        <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">{{ __('sessions.section.sessions') }}</h3>
                         <x-table>
                             <x-slot:head>
                                     <tr>
@@ -119,7 +119,7 @@
                                         <tr @class(['bg-success/5' => $s['is_online']])>
                                             <td class="max-w-xs">
                                                 <span class="flex items-center gap-1 text-sm" title="{{ $s['user_agent'] }}">
-                                                    <x-icon :name="match ($s['device_type']) { 'mobile' => 'smartphone', 'tablet' => 'tablet', 'bot' => 'smart_toy', default => 'computer' }" class="text-sm text-base-content/50" />
+                                                    <x-icon :name="match ($s['device_type']) { 'mobile' => 'smartphone', 'tablet' => 'tablet', 'bot' => 'smart_toy', default => 'computer' }" class="text-sm text-muted" />
                                                     {{ $s['device_label'] }}
                                                 </span>
                                                 @if ($s['is_current'])
@@ -131,14 +131,14 @@
                                             <td class="font-mono text-xs">
                                                 {{ $s['ip'] ?? '—' }}
                                                 @if (! empty($s['location']))
-                                                    <span class="block font-sans text-base-content/50">{{ $s['location'] }}</span>
+                                                    <span class="block font-sans text-muted">{{ $s['location'] }}</span>
                                                 @endif
                                             </td>
                                             <td class="text-xs" title="{{ $fmtDate($s['last_activity']) }}">{{ $fmtAgo($s['last_activity']) }}</td>
                                             @if ($canRevoke)
                                                 <td class="text-right">
                                                     @if ($s['is_current'])
-                                                        <span class="text-xs italic text-base-content/40">{{ __('sessions.badge.this_device') }}</span>
+                                                        <span class="text-xs italic text-muted">{{ __('sessions.badge.this_device') }}</span>
                                                     @else
                                                         <x-action-form :action="route('admin.sessions.destroy', ['id' => $s['id']])"
                                                               method="DELETE"
@@ -160,7 +160,7 @@
                 {{-- API-Tokens --}}
                 @if (! empty($u['tokens']))
                     <div>
-                        <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('sessions.section.tokens') }}</h3>
+                        <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">{{ __('sessions.section.tokens') }}</h3>
                         <x-table>
                             <x-slot:head>
                                     <tr>
@@ -198,7 +198,7 @@
                 {{-- Standort-Erfassungsgeräte --}}
                 @if (! empty($u['location_devices']))
                     <div>
-                        <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/50">{{ __('sessions.section.devices') }}</h3>
+                        <h3 class="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">{{ __('sessions.section.devices') }}</h3>
                         <x-table>
                             <x-slot:head>
                                     <tr>
@@ -234,7 +234,7 @@
         </article>
     @empty
         <x-empty-state
-            icon='<span class="material-symbols-outlined" aria-hidden="true">devices_off</span>'
+            icon="devices_off"
             :title="__('sessions.empty.title')"
             :description="__('sessions.empty.description')" />
     @endforelse
@@ -247,7 +247,7 @@
                     <x-icon name="point_of_sale" />
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('sessions.section.terminals') }}</h2>
                 </header>
-                <p class="text-xs text-base-content/50">{{ __('sessions.hint.terminals') }}</p>
+                <p class="text-xs text-muted">{{ __('sessions.hint.terminals') }}</p>
                 <x-table bare>
                     <x-slot:head>
                             <tr>
@@ -284,7 +284,7 @@
                                                     <x-button type="submit" tone="ghost" size="xs" class="text-error">{{ __('sessions.action.deactivate_terminal') }}</x-button>
                                                 </x-action-form>
                                             @else
-                                                <span class="text-xs italic text-base-content/40">{{ __('sessions.terminal.inactive') }}</span>
+                                                <span class="text-xs italic text-muted">{{ __('sessions.terminal.inactive') }}</span>
                                             @endif
                                         </td>
                                     @endif
@@ -303,7 +303,7 @@
                     <x-icon name="support_agent" />
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('sessions.section.remote_support') }}</h2>
                 </header>
-                <p class="text-xs text-base-content/50">{{ __('sessions.hint.remote_support') }}</p>
+                <p class="text-xs text-muted">{{ __('sessions.hint.remote_support') }}</p>
                 <x-table bare>
                     <x-slot:head>
                             <tr>

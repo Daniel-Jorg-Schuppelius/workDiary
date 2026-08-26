@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
+use App\Enums\Hr\HrDocumentCategory;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Database\Factories\DocumentFactory;
 use Illuminate\Database\Eloquent\Builder;
@@ -40,6 +41,8 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $customer_released_at
  * @property int|null $customer_released_by
  * @property bool $confidential
+ * @property HrDocumentCategory|null $hr_category
+ * @property Carbon|null $retention_until
  */
 class Document extends Model {
     use Auditable;
@@ -69,6 +72,8 @@ class Document extends Model {
         'customer_released_at',
         'customer_released_by',
         'confidential',
+        'hr_category',
+        'retention_until',
     ];
 
     protected $casts = [
@@ -81,6 +86,8 @@ class Document extends Model {
         'customer_visible' => 'boolean',
         'customer_released_at' => 'datetime',
         'confidential' => 'boolean',
+        'hr_category' => HrDocumentCategory::class,
+        'retention_until' => 'date',
     ];
 
     /** @return MorphTo<Model, $this> */
@@ -184,32 +191,63 @@ class Document extends Model {
     }
 
     /**
-     * Gültigkeit läuft innerhalb der nächsten $days Tage ab
-     * (heute eingeschlossen, bereits abgelaufene ausgenommen).
+     * Personalakte (Feature 141): Dokument am Mitarbeiter — eigener
+     * hrFile-Zugriffskreis, immer vertraulich, nie kundenfreigebbar.
+     */
+    public function isPersonnelFile(): bool {
+        return $this->documentable_type === User::class;
+    }
+
+    /**
+     * Akte eines Mitglieds (Feature 141).
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
+    public function scopePersonnelFilesOf(Builder $query, User $member): Builder {
+        return $query
+            ->where('documentable_type', User::class)
+            ->where('documentable_id', $member->id);
+    }
+
     /**
-     * Blendet vertrauliche Dokumente anderer Erfasser aus, sofern der Benutzer
-     * keine `document.confidential.manage`-Permission besitzt — Muster
+     * Sichtbarkeit in Listen: Personalakten (Feature 141) sehen NUR Inhaber
+     * von hrFile.viewAny — auch Admins nicht (die eigene Akte liest die
+     * betroffene Person unter „Mein Konto", nicht in der Übersicht).
+     * Allgemeine Dokumente: vertrauliche Dokumente anderer Erfasser werden
+     * ohne `document.confidential.manage` ausgeblendet — Muster
      * Kommunikationsnotizen (Vollaudit 2026-07, N10).
      *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder {
-        if ($user->isAdmin() || $user->can(\App\Enums\User\Permission::DocumentConfidentialManage->value)) {
-            return $query;
-        }
+        $seesConfidential = $user->isAdmin() || $user->can(\App\Enums\User\Permission::DocumentConfidentialManage->value);
+        $seesPersonnelFiles = $user->hasEffectivePermission(\App\Services\Hr\PersonnelFilePermissions::VIEW_ANY);
 
-        return $query->where(function (Builder $q) use ($user): void {
-            $q->where('confidential', false)
-                ->orWhere('created_by_user_id', $user->id);
+        return $query->where(function (Builder $outer) use ($user, $seesConfidential, $seesPersonnelFiles): void {
+            $outer->where(function (Builder $general) use ($user, $seesConfidential): void {
+                $general->where(function (Builder $q): void {
+                    $q->whereNull('documentable_type')
+                        ->orWhere('documentable_type', '!=', User::class);
+                });
+                if (! $seesConfidential) {
+                    $general->where(function (Builder $q) use ($user): void {
+                        $q->where('confidential', false)
+                            ->orWhere('created_by_user_id', $user->id);
+                    });
+                }
+            });
+            if ($seesPersonnelFiles) {
+                $outer->orWhere('documentable_type', User::class);
+            }
         });
     }
 
     /**
+     * Gültigkeit läuft innerhalb der nächsten $days Tage ab
+     * (heute eingeschlossen, bereits abgelaufene ausgenommen).
+     *
      * @param  Builder<self>  $query
      * @return Builder<self>
      */

@@ -44,33 +44,29 @@ class CustomersSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         $customerIds = InvoicesSection::invoicesInPeriod($organization, $from, $to)
             ->pluck('customer_id')
             ->filter()
             ->unique()
             ->all();
 
-        $rows = [];
-        Customer::query()
+        foreach (Customer::query()
             ->whereIn('id', $customerIds)
-            ->orderBy('number')
-            ->get()
-            ->each(function (Customer $c) use (&$rows): void {
-                $rows[] = [
-                    $this->str($c->number),
-                    $this->str($c->name),
-                    $this->str($c->company),
-                    $this->str($c->vat_id),
-                    $this->str($c->tax_number),
-                    $this->str($c->address_street),
-                    $this->str($c->address_zip),
-                    $this->str($c->address_city),
-                    $this->str($c->country),
-                    $this->str($c->email),
-                ];
-            });
-
-        return $rows;
+            ->orderBy('number')->orderBy('id')
+            ->lazy() as $c) {
+            yield [
+                $this->str($c->number),
+                $this->str($c->name),
+                $this->str($c->company),
+                $this->str($c->vat_id),
+                $this->str($c->tax_number),
+                $this->str($c->address_street),
+                $this->str($c->address_zip),
+                $this->str($c->address_city),
+                $this->str($c->country),
+                $this->str($c->email),
+            ];
+        }
     }
 }

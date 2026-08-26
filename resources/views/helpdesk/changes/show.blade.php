@@ -39,14 +39,14 @@
             @if ($change->outcome !== null)
                 <x-status-badge tone="info" size="md">{{ $outcomeLabels[$change->outcome] ?? $change->outcome }}</x-status-badge>
             @endif
-            <span class="ml-auto text-sm text-base-content/60">
+            <span class="ml-auto text-sm text-muted">
                 {{ __('Angelegt von') }}: {{ $change->creator?->name ?? '—' }}
             </span>
         </div>
 
         <dl class="mt-4 grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div>
-                <dt class="text-base-content/60">{{ __('Wartungsfenster') }}</dt>
+                <dt class="text-muted">{{ __('Wartungsfenster') }}</dt>
                 <dd>
                     @if ($change->window_from !== null)
                         {{ $change->window_from->translatedFormat('d.m.Y H:i') }}
@@ -57,18 +57,18 @@
                 </dd>
             </div>
             <div>
-                <dt class="text-base-content/60">{{ __('Risiko / Auswirkung / Dringlichkeit') }}</dt>
+                <dt class="text-muted">{{ __('Risiko / Auswirkung / Dringlichkeit') }}</dt>
                 <dd class="tabular-nums">{{ $change->risk ?? '—' }} / {{ $change->impact ?? '—' }} / {{ $change->urgency ?? '—' }}</dd>
             </div>
             @if ($change->reason)
                 <div class="md:col-span-2">
-                    <dt class="text-base-content/60">{{ __('Grund') }}</dt>
+                    <dt class="text-muted">{{ __('Grund') }}</dt>
                     <dd class="whitespace-pre-wrap">{{ $change->reason }}</dd>
                 </div>
             @endif
             @if ($change->scope)
                 <div class="md:col-span-2">
-                    <dt class="text-base-content/60">{{ __('Umfang') }}</dt>
+                    <dt class="text-muted">{{ __('Umfang') }}</dt>
                     <dd class="whitespace-pre-wrap">{{ $change->scope }}</dd>
                 </div>
             @endif
@@ -77,9 +77,9 @@
 
     <x-card :title="__('Pläne')" icon="checklist">
         <dl class="grid grid-cols-1 gap-y-3 text-sm">
-            <div><dt class="text-base-content/60">{{ __('Umsetzungsplan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->implementation_plan ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Testplan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->test_plan ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Rollback-Plan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->rollback_plan ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Umsetzungsplan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->implementation_plan ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Testplan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->test_plan ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Rollback-Plan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->rollback_plan ?: '—' }}</dd></div>
         </dl>
 
         @if ($canManage && $change->status === 'approved')
@@ -106,16 +106,16 @@
              spätere Vorlagenänderungen deuten den Change nicht um. --}}
         <x-card :title="__('Vorlagen-Snapshot (eingefroren)')" icon="ac_unit">
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                <div><dt class="text-base-content/60">{{ __('Vorlage') }}</dt><dd>{{ $change->template_snapshot['name'] ?? '—' }}</dd></div>
-                <div><dt class="text-base-content/60">{{ __('Version') }}</dt><dd class="tabular-nums">{{ $change->template_snapshot['version'] ?? '—' }}</dd></div>
-                <div class="md:col-span-2"><dt class="text-base-content/60">{{ __('Rollback-Plan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->template_snapshot['rollback_plan'] ?? '—' }}</dd></div>
+                <div><dt class="text-muted">{{ __('Vorlage') }}</dt><dd>{{ $change->template_snapshot['name'] ?? '—' }}</dd></div>
+                <div><dt class="text-muted">{{ __('Version') }}</dt><dd class="tabular-nums">{{ $change->template_snapshot['version'] ?? '—' }}</dd></div>
+                <div class="md:col-span-2"><dt class="text-muted">{{ __('Rollback-Plan') }}</dt><dd class="whitespace-pre-wrap">{{ $change->template_snapshot['rollback_plan'] ?? '—' }}</dd></div>
             </dl>
         </x-card>
     @endif
 
     <x-card :title="__('Freigaben')" icon="approval">
         @if ($change->approvals->isEmpty())
-            <p class="text-sm text-base-content/60">
+            <p class="text-sm text-muted">
                 {{ $change->change_type === 'standard'
                     ? __('Standard-Change — vorab genehmigt über die freigegebene Vorlage.')
                     : __('Keine Genehmigungsschritte hinterlegt.') }}
@@ -126,7 +126,7 @@
                     @php $rule = (array) $approval->approver_rule; @endphp
                     <li class="flex flex-wrap items-center gap-2">
                         <span class="font-mono text-xs">{{ __('Schritt') }} {{ $approval->step }}</span>
-                        <span class="text-base-content/60">
+                        <span class="text-muted">
                             @if ((string) ($rule['type'] ?? '') === 'role')
                                 {{ __('Rolle') }}: {{ \App\Enums\User\UserRole::tryFrom((string) ($rule['value'] ?? ''))?->label() ?? (string) ($rule['value'] ?? '') }}
                             @else
@@ -138,25 +138,25 @@
                         @else
                             <x-status-badge size="xs" outline>{{ $approval->decision }}</x-status-badge>
                             @if ($approval->decidedBy !== null)
-                                <span class="text-base-content/60">{{ $approval->decidedBy->name }}</span>
+                                <span class="text-muted">{{ $approval->decidedBy->name }}</span>
                             @endif
                             @if ($approval->reason)
-                                <span class="text-base-content/60">— {{ $approval->reason }}</span>
+                                <span class="text-muted">— {{ $approval->reason }}</span>
                             @endif
                         @endif
                     </li>
                 @endforeach
             </ul>
         @endif
-        <p class="text-xs text-base-content/60 mt-2">{{ __('Entschieden wird in der gemeinsamen Genehmigungs-Inbox.') }}</p>
+        <p class="text-xs text-muted mt-2">{{ __('Entschieden wird in der gemeinsamen Genehmigungs-Inbox.') }}</p>
     </x-card>
 
     <x-card :title="__('Verknüpfungen')" icon="link">
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-                <div class="text-xs uppercase text-base-content/60 mb-1">{{ __('Tickets') }}</div>
+                <div class="text-xs uppercase text-muted mb-1">{{ __('Tickets') }}</div>
                 @if ($change->tickets->isEmpty())
-                    <p class="text-base-content/60">—</p>
+                    <p class="text-muted">—</p>
                 @else
                     <ul class="space-y-1">
                         @foreach ($change->tickets as $ticket)
@@ -171,11 +171,11 @@
                 @endif
             </div>
             <div>
-                <div class="text-xs uppercase text-base-content/60 mb-1">{{ __('Problem') }}</div>
+                <div class="text-xs uppercase text-muted mb-1">{{ __('Problem') }}</div>
                 @if ($change->problem !== null)
                     <a href="{{ route('servicedesk.problems.show', $change->problem) }}" class="link link-hover">{{ $change->problem->title }}</a>
                 @else
-                    <p class="text-base-content/60">—</p>
+                    <p class="text-muted">—</p>
                 @endif
             </div>
         </div>
@@ -183,7 +183,7 @@
 
     <x-card :title="__('Betroffene Assets')" icon="devices">
         @if ($change->assets->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Keine Assets verknüpft.') }}</p>
+            <p class="text-sm text-muted">{{ __('Keine Assets verknüpft.') }}</p>
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($change->assets as $asset)
@@ -222,9 +222,9 @@
     <x-card :title="__('Post Implementation Review (PIR)')" icon="fact_check">
         @if ($change->pir_notes)
             <div class="prose prose-sm max-w-none whitespace-pre-wrap">{{ $change->pir_notes }}</div>
-            <p class="text-xs text-base-content/60 mt-2">{{ __('Dokumentiert am') }} {{ $change->pir_done_at?->translatedFormat('d.m.Y H:i') ?? '—' }}</p>
+            <p class="text-xs text-muted mt-2">{{ __('Dokumentiert am') }} {{ $change->pir_done_at?->translatedFormat('d.m.Y H:i') ?? '—' }}</p>
         @else
-            <p class="text-sm text-base-content/60">
+            <p class="text-sm text-muted">
                 {{ $change->change_type === 'emergency'
                     ? __('Pflicht bei Emergency-Changes — ohne PIR kein Abschluss.')
                     : __('Noch kein PIR dokumentiert.') }}

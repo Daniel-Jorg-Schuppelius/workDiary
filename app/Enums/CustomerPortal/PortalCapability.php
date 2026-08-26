@@ -57,6 +57,9 @@ enum PortalCapability: string implements HasLabel {
     /** Online-Terminbuchung (Feature 087): Slots anfragen, nie direkt buchen. */
     case Appointments = 'appointments';
 
+    /** Verleih-Anfrage (Feature 073, MVP-714): Zeitraum anfragen, nie direkt reservieren. */
+    case RentalRequests = 'rental_requests';
+
     public function label(): string {
         return (string) match ($this) {
             self::Diary => __('Aufträge & Fallakte'),
@@ -70,6 +73,7 @@ enum PortalCapability: string implements HasLabel {
             self::Rentals => __('Verleihvorgänge'),
             self::Queries => __('Rückfragen & Kommentare'),
             self::Appointments => __('Online-Terminbuchung'),
+            self::RentalRequests => __('Verleih-Anfrage'),
         };
     }
 
@@ -81,7 +85,7 @@ enum PortalCapability: string implements HasLabel {
         return match ($this) {
             self::Tickets => 'module.helpdesk',
             self::Claims => 'module.claims',
-            self::Rentals => 'module.rental',
+            self::Rentals, self::RentalRequests => 'module.rental',
             self::Documents => 'module.documents',
             self::Appointments => 'module.planung',
             default => null,

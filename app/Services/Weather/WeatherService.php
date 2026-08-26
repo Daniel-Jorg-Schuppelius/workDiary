@@ -17,6 +17,7 @@ use App\Services\Weather\Contracts\WeatherProvider;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 /**
  * Wetter-Snapshots je Ort und Tag (Feature 062, MVP-131). Idempotent: ein
@@ -24,9 +25,81 @@ use Illuminate\Support\Carbon;
  * unverändert zurückgegeben, nie neu abgerufen. Provider-Ausfall führt zu
  * `null` (kein Snapshot, kein Fehler) — der Tag bleibt „nachholbar". Auch für
  * vergangene Tage nutzbar (nachträglicher Abruf).
+ *
+ * Vorhersagen (MVP-716, {@see self::forecast}) werden bewusst NICHT
+ * persistiert: ein Snapshot ist ein unveränderlicher Ist-Messwert mit
+ * Beweiswert, eine Vorhersage ändert sich mit jedem Modelllauf. Sie wird nur
+ * kurz gecacht (Scanner läuft stündlich, Modellläufe sind seltener).
  */
 class WeatherService {
+    /** Cache-Dauer der Tagesvorhersage je Koordinate/Provider. */
+    public const FORECAST_CACHE_MINUTES = 180;
+
     public function __construct(private readonly WeatherProvider $provider) {}
+
+    public function providerKey(): string {
+        return $this->provider->key();
+    }
+
+    /**
+     * Tagesvorhersage (≤ 7 Tage) je Koordinate — gecacht, nie als Snapshot
+     * gespeichert. `null` bei Provider ohne Vorhersage (DWD) oder Ausfall.
+     * Koordinaten auf 3 Nachkommastellen (~100 m) gerundet: benachbarte
+     * Einsatzorte teilen sich die Antwort.
+     *
+     * @return array<string, array{date: string, temp_min: float|null, temp_max: float|null, precipitation_mm: float|null, wind_max_kmh: float|null, wind_gust_kmh: float|null, weather_code: int|null}>|null
+     */
+    public function forecast(Organization $organization, float $lat, float $lng, int $days = 3): ?array {
+        $lat = round($lat, 3);
+        $lng = round($lng, 3);
+        $days = max(1, min(7, $days));
+        $key = sprintf('weather.forecast.%s.%s.%s.%d.%s', $this->provider->key(), $lat, $lng, $days, Carbon::today()->toDateString());
+
+        /** @var array<string, array{date: string, temp_min: float|null, temp_max: float|null, precipitation_mm: float|null, wind_max_kmh: float|null, wind_gust_kmh: float|null, weather_code: int|null}>|null $cached */
+        $cached = Cache::get($key);
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $forecast = $this->provider->forecast($lat, $lng, $days);
+        if ($forecast !== null) {
+            // Ausfälle (null) bewusst nicht cachen — nächster Lauf versucht es erneut.
+            Cache::put($key, $forecast, Carbon::now()->addMinutes(self::FORECAST_CACHE_MINUTES));
+        }
+
+        return $forecast;
+    }
+
+    /**
+     * Bequemabruf der Vorhersage für einen Einsatzort mit Koordinaten.
+     *
+     * @return array<string, array{date: string, temp_min: float|null, temp_max: float|null, precipitation_mm: float|null, wind_max_kmh: float|null, wind_gust_kmh: float|null, weather_code: int|null}>|null
+     */
+    public function forecastForSite(Site $site, int $days = 3): ?array {
+        if ($site->geo_lat === null || $site->geo_lng === null) {
+            return null;
+        }
+        $organization = $site->organization;
+        if (! $organization instanceof Organization) {
+            return null;
+        }
+
+        return $this->forecast($organization, (float) $site->geo_lat, (float) $site->geo_lng, $days);
+    }
+
+    /**
+     * Koordinaten eines Einsatzes: Auftragsadresse, sonst Kunde (MVP-716,
+     * `coordsForSubject`-Muster).
+     *
+     * @return array{0: float, 1: float}|null
+     */
+    public function coordsForDiaryEntry(DiaryEntry $entry): ?array {
+        if ($entry->hasCoordinates()) {
+            return [(float) $entry->address_lat, (float) $entry->address_lng];
+        }
+
+        return $this->coordsForSubject($entry);
+    }
 
     public function snapshot(Organization $organization, float $lat, float $lng, CarbonInterface $date, ?User $actor = null): ?WeatherSnapshot {
         $lat = round($lat, 6);

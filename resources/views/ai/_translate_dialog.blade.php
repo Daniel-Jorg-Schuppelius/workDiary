@@ -20,6 +20,6 @@
     <div class="fieldset">
         <label class="fieldset-label" for="ai-target-lang">{{ __('ai.suggestion.target_language') }}</label>
         <x-locale-select id="ai-target-lang" name="target_language" :selected="old('target_language', 'en')" />
-        <p class="text-xs text-base-content/60">{{ __('ai.suggestion.translate_help') }}</p>
+        <p class="text-xs text-muted">{{ __('ai.suggestion.translate_help') }}</p>
     </div>
 </x-modal>

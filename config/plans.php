@@ -282,6 +282,14 @@ return [
         'geofences.*' => 'module.standorterfassung',
 
         'articles.*' => 'module.lager',
+        // MVP-718: Read-only-REST der Kernentitäten — gleiche Modulhoheit wie
+        // die Web-Routen; Alias-Pfade (api.legacy.*) identisch gegated.
+        'api.articles.*' => 'module.lager',
+        'api.legacy.articles.*' => 'module.lager',
+        'api.inventory.*' => 'module.lager',
+        'api.legacy.inventory.*' => 'module.lager',
+        'api.purchase-orders.*' => 'module.lager',
+        'api.legacy.purchase-orders.*' => 'module.lager',
         'warehouses.*' => 'module.lager',
         'inventory.*' => 'module.lager',
         'manufacturing-orders.*' => 'module.lager',
@@ -303,6 +311,7 @@ return [
         'admin.billbee.*' => 'module.lager', // Feature 093 Billbee-Multichannel (Bestellspiegel + Bestandsrückkanal)
         'admin.etsy.*' => 'module.lager', // Feature 101 Etsy-Marktplatz-Plugin (Bestellspiegel + Versand-Rückkanal)
 
+        'construction-notices.*' => 'module.bau', // Feature 062 VOB/B-Schreiben (MVP-728)
         'bill-of-quantities.*' => 'module.bau', // Feature 049 GAEB-Leistungsverzeichnisse
         'catalog-rules.*' => 'module.bau', // Feature 109 Zuordnungsregeln
         'cost-catalogs.*' => 'module.bau', // Feature 109 Baukostenkataloge
@@ -328,16 +337,27 @@ return [
         'contracts.*' => 'module.contracts', // Welle D — Allgemeines Contract-Lifecycle-Management
         'admin.ai.*' => 'module.ai', // Feature 025 KI-Assistenz
         'ai.suggestions.*' => 'module.ai', // Feature 084 KI-Leistungstexte an Belegen
+        'ai.suggest.*' => 'module.ai', // Feature 143 KI-Tag-/Katalogvorschläge (MVP-711)
+        'ai.assist.*' => 'module.ai', // Feature 148 KI-Welle 2/3 (MVP-732)
         'admin.domain-provider.*' => 'module.domain', // Feature 083 Domainverwaltung/DomainReselling
         'domains.*' => 'module.domain',
         'domain-reseller.*' => 'module.domain',
         'customers.*' => 'module.vertrieb',
         'leads.*' => 'module.vertrieb', // Lead-Pipeline (Feature 091) hängt am Vertrieb, kein eigenes Modul
+        // Provisionen (Feature 146, MVP-729): Regeln, Zeilen und Abrechnungsläufe
+        // sitzen fachlich zwischen Lead-Pipeline und Faktura — gleiches Modul.
+        'commissions.*' => 'module.vertrieb',
+        'commission-rules.*' => 'module.vertrieb',
+        'commission-runs.*' => 'module.vertrieb',
         'surveys.*' => 'module.vertrieb', // Umfragen (Feature 090): Kundenfeedback ist Kundenpflege
         'suppliers.*' => 'module.vertrieb',
+        'api.suppliers.*' => 'module.vertrieb', // MVP-718
+        'api.legacy.suppliers.*' => 'module.vertrieb',
         'projects.*' => 'module.vertrieb',
         'billing.feed' => 'module.vertrieb', // Belegfluss (Feature 105) — gleiche Sicht wie invoices.*
         'invoices.*' => 'module.vertrieb',
+        'api.invoices.*' => 'module.vertrieb', // MVP-718 (Liste/Detail/PDF)
+        'api.legacy.invoices.*' => 'module.vertrieb',
         'invoice-schedules.*' => 'module.vertrieb', // MVP-415 wiederkehrende Rechnungen
         'cash-registers.*' => 'module.kasse', // MVP-414 Kassenbuch
         'quotes.*' => 'module.vertrieb', // Angebote (Feature 066, MVP-170) — Portal-Annahme läuft token-basiert außerhalb
@@ -350,6 +370,8 @@ return [
         'assets.*' => 'module.fuhrpark',
         'access-media.*' => 'module.fuhrpark', // Zutrittsmedien (Feature 092) sind Dienstmittel wie Schlüssel
         'vehicles.*' => 'module.fuhrpark',
+        'api.vehicles.*' => 'module.fuhrpark', // MVP-718
+        'api.legacy.vehicles.*' => 'module.fuhrpark',
         'driver-license-checks.*' => 'module.fuhrpark', // MVP-417 Führerscheinkontrolle
         'vehicle-reservations.*' => 'module.fuhrpark',
         'energy-logs.*' => 'module.fuhrpark',

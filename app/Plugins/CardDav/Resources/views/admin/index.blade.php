@@ -37,7 +37,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('carddav.health.inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-base-content/60">{{ __('carddav.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('carddav.intro') }}</p>
 
             @if ($connection && $connection->hasConnectionError())
                 <div class="alert alert-warning mb-4 text-sm">
@@ -63,7 +63,7 @@
                     </form>
                 </div>
                 @if ($connection->last_synced_at)
-                    <p class="mt-2 text-xs text-base-content/50">
+                    <p class="mt-2 text-xs text-muted">
                         {{ __('carddav.status.last_synced', ['at' => $connection->last_synced_at->diffForHumans()]) }}
                     </p>
                 @endif
@@ -89,7 +89,7 @@
                                 <input type="radio" name="addressbook_url" value="{{ $book['url'] }}" class="radio radio-sm"
                                        @checked(($connection->addressbook_url ?? null) === $book['url'])>
                                 <span class="label-text">{{ $book['name'] ?: $book['url'] }}</span>
-                                <span class="text-xs text-base-content/40">{{ $book['url'] }}</span>
+                                <span class="text-xs text-muted">{{ $book['url'] }}</span>
                             </label>
                         @endforeach
                         <div class="flex justify-end">
@@ -97,7 +97,7 @@
                         </div>
                     </form>
                 @else
-                    <p class="text-xs text-base-content/50">{{ __('carddav.addressbook.hint') }}</p>
+                    <p class="text-xs text-muted">{{ __('carddav.addressbook.hint') }}</p>
                 @endif
             </div>
         @endif
@@ -118,7 +118,7 @@
                     <span class="label-text">{{ __('carddav.field.base_url') }}</span>
                     <input type="url" name="base_url" value="{{ old('base_url', $connection->base_url ?? '') }}"
                            placeholder="https://cloud.example.com/remote.php/dav" class="input input-bordered input-sm" required>
-                    <span class="label-text-alt text-base-content/50">{{ __('carddav.field.base_url_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('carddav.field.base_url_help') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('carddav.field.username') }}</span>
@@ -130,7 +130,7 @@
                     <input type="password" name="app_password" autocomplete="new-password"
                            placeholder="{{ $connection ? __('carddav.field.password_keep') : '' }}"
                            class="input input-bordered input-sm" @required(! $connection)>
-                    <span class="label-text-alt text-base-content/50">{{ __('carddav.field.password_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('carddav.field.password_help') }}</span>
                 </label>
                 <label class="form-control justify-end">
                     <span class="label cursor-pointer justify-start gap-2">
@@ -139,7 +139,7 @@
                                @checked(old('allow_private_network', $connection->allow_private_network ?? false))>
                         <span class="label-text">{{ __('carddav.field.allow_private_network') }}</span>
                     </span>
-                    <span class="label-text-alt text-base-content/50">{{ __('carddav.field.allow_private_network_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('carddav.field.allow_private_network_help') }}</span>
                 </label>
                 <label class="form-control justify-end">
                     <span class="label cursor-pointer justify-start gap-2">

@@ -46,6 +46,9 @@
             <span class="fieldset-label">{{ __('notification.field.channels') }}</span>
             <div class="flex flex-wrap gap-4">
                 @foreach (\App\Enums\Notification\NotificationChannel::cases() as $channel)
+                    {{-- SMS (Feature 147) nur an kritischen Ereignissen anbieten: der Kanal
+                         kostet je Nachricht und trägt die Rufnummer zum Gateway. --}}
+                    @continue($channel === \App\Enums\Notification\NotificationChannel::Sms && ! $event->supportsSms())
                     <label class="label cursor-pointer justify-start gap-2">
                         <input type="checkbox" name="channels[]" value="{{ $channel->value }}" class="checkbox checkbox-sm"
                                @checked(in_array($channel->value, $channels, true))>
@@ -53,6 +56,9 @@
                     </label>
                 @endforeach
             </div>
+            @if ($event->supportsSms())
+                <p class="mt-1 text-xs opacity-70">{{ __('notification.field.channels_sms_hint') }}</p>
+            @endif
             @error('channels')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
             @error('channels.*')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>

@@ -33,7 +33,7 @@
             <span class="label-text">{{ __('isms.field.advisory_file') }} *</span>
             <input type="file" name="advisory" required accept=".json,application/json"
                    class="file-input file-input-bordered w-full">
-            <span class="text-xs text-base-content/60">{{ __('isms.hint.advisory_file') }}</span>
+            <span class="text-xs text-muted">{{ __('isms.hint.advisory_file') }}</span>
         </label>
     </x-form-group>
 </x-modal>

@@ -37,7 +37,7 @@
             <x-status-badge size="md" outline>{{ $ticket->status->label() }}</x-status-badge>
             <x-status-badge tone="ghost" size="md">{{ $ticket->source->label() }}</x-status-badge>
             <span class="ml-auto {{ $slaStatus->textClass() }} font-medium">
-                <span class="material-symbols-outlined align-middle text-[16px]">timer</span>
+                <x-icon name="timer" class="align-middle text-[16px]" />
                 {{ $slaStatus->label() }}
                 @if ($resDue)
                     · {{ __('Lösung bis :date', ['date' => $resDue->translatedFormat('d.m.Y H:i')]) }}
@@ -51,19 +51,19 @@
         <div class="divider my-3"></div>
 
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="text-base-content/60">{{ __('Gemeldet von') }}</dt><dd>{{ $ticket->reportedBy?->name ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Gemeldet am') }}</dt><dd>{{ $ticket->reported_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Bearbeiter') }}</dt><dd>{{ $ticket->assignedTo?->name ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Bestätigt') }}</dt><dd>{{ $ticket->acknowledged_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Reaktion bis') }}</dt><dd class="flex items-center gap-2">{{ $reactDue?->translatedFormat('d.m.Y H:i') ?: '—' }}@if ($reactDue)<x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>@endif</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Lösung bis') }}</dt><dd>{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Asset') }}</dt><dd>{{ $ticket->asset?->name ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Kunde') }}</dt><dd>{{ $ticket->customer?->name ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Gemeldet von') }}</dt><dd>{{ $ticket->reportedBy?->name ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Gemeldet am') }}</dt><dd>{{ $ticket->reported_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Bearbeiter') }}</dt><dd>{{ $ticket->assignedTo?->name ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Bestätigt') }}</dt><dd>{{ $ticket->acknowledged_at?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Reaktion bis') }}</dt><dd class="flex items-center gap-2">{{ $reactDue?->translatedFormat('d.m.Y H:i') ?: '—' }}@if ($reactDue)<x-status-badge :tone="$reactionStatus->tone()" size="sm" outline>{{ $reactionStatus->label() }}</x-status-badge>@endif</dd></div>
+            <div><dt class="text-muted">{{ __('Lösung bis') }}</dt><dd>{{ $resDue?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Asset') }}</dt><dd>{{ $ticket->asset?->name ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Kunde') }}</dt><dd>{{ $ticket->customer?->name ?: '—' }}</dd></div>
         </dl>
 
         @if ($ticket->description)
             <div class="mt-4">
-                <div class="text-xs uppercase text-base-content/60 mb-1">{{ __('Beschreibung') }}</div>
+                <div class="text-xs uppercase text-muted mb-1">{{ __('Beschreibung') }}</div>
                 <div class="prose prose-sm max-w-none whitespace-pre-wrap">{{ $ticket->description }}</div>
             </div>
         @endif

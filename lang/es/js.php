@@ -26,11 +26,38 @@ return [
         'invalid_move' => 'Este cambio de estado no está previsto en el flujo de trabajo del pedido.',
         'not_allowed' => 'No tienes permiso para esta acción del pedido.',
         'handover_via_order' => 'La recepción requiere un protocolo firmado y se realiza directamente en el pedido.',
+        'no_targets' => 'Actualmente no hay ningún movimiento permitido para esta tarjeta.',
     ],
     'entry_bar' => [
         'options_failed' => 'No se pudieron cargar las tareas/pedidos.',
     ],
     'http' => [
         'session_expired' => 'Tu sesión ha caducado — la página se recargará.',
+    ],
+    // KI-Tagvorschläge im Tag-Picker (Feature 143, MVP-711)
+    'ai' => [
+        'tags_no_text' => 'Introduce primero un contenido — la IA sugiere etiquetas a partir del texto.',
+        'tags_none' => 'Ninguna etiqueta existente coincide con el texto.',
+        'tags_failed' => 'Sugerencia de etiquetas IA no posible: :message',
+        'tags_loading' => 'La IA busca etiquetas adecuadas …',
+    ],
+    // Tastenkürzel-Übersicht (Feature 037, MVP-721): Labels der Registry resources/js/shortcuts.js
+    'shortcuts' => [
+        'title' => 'Atajos de teclado',
+        'scope' => [
+            'global' => 'Global',
+            'navigation' => 'Navegación',
+            'search' => 'Búsqueda',
+        ],
+        'search' => 'Abrir la búsqueda global',
+        'shortcuts' => 'Mostrar este resumen',
+        'escape' => 'Cerrar diálogo o búsqueda',
+        'search_move' => 'Moverse por los resultados de búsqueda',
+        'search_open' => 'Abrir resultado',
+        'go_diary' => 'Ir al diario',
+        'go_customers' => 'Ir a los clientes',
+        'go_projects' => 'Ir a los proyectos',
+        'new_entry' => 'Nueva entrada',
+        'then' => 'luego',
     ],
 ];

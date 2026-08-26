@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingFiscalYear, AccountingPeriod};
-use App\Services\Accounting\{LedgerDatevExportService, OpeningBalanceImportService, PeriodClosingService};
+use App\Services\Accounting\{FixedAssetService, LedgerDatevExportService, OpeningBalanceImportService, PeriodClosingService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -34,6 +34,7 @@ class PeriodClosingController extends Controller {
         private readonly PeriodClosingService $closing,
         private readonly OpeningBalanceImportService $openingBalances,
         private readonly LedgerDatevExportService $datev,
+        private readonly FixedAssetService $fixedAssets,
     ) {}
 
     public function index(): View {
@@ -50,6 +51,7 @@ class PeriodClosingController extends Controller {
             'years' => $years,
             'canClose' => Gate::allows(Permission::AccountingLedgerClose->value),
             'canReopen' => Gate::allows(Permission::AccountingLedgerReopen->value),
+            'canPrepare' => Gate::allows(Permission::AccountingLedgerPrepare->value),
         ]);
     }
 
@@ -114,6 +116,27 @@ class PeriodClosingController extends Controller {
         $this->closing->closeFiscalYear($year, $actor);
 
         return back()->with('status', __('accounting.closing.flash.year_closed'));
+    }
+
+    /**
+     * Jahres-AfA aller Anlagen als Inbox-Entwürfe vorschlagen (Feature 133).
+     * Festgeschrieben wird in der Inbox — nie hier.
+     */
+    public function proposeDepreciation(Request $request, AccountingFiscalYear $year): RedirectResponse {
+        abort_unless(Gate::allows(Permission::AccountingLedgerPrepare->value), 403);
+        $organization = $this->currentOrganizationOrAbort();
+        abort_unless((int) $year->organization_id === (int) $organization->id, 404);
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $result = $this->fixedAssets->proposeForYear($organization, $year, $actor);
+
+        return back()->with('status', __('accounting.closing.flash.depreciation_proposed', [
+            'year' => $year->label,
+            'prepared' => $result['prepared'],
+            'skipped' => $result['skipped'],
+            'failed' => count($result['failed']),
+        ]));
     }
 
     /** Startsalden als Probelauf prüfen oder übernehmen. */

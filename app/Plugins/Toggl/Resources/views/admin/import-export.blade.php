@@ -18,7 +18,7 @@
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Vollständigen Workspace-Export importieren') }}</h1>
                 <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
             </div>
-            <p class="mb-4 text-sm text-base-content/60">
+            <p class="mb-4 text-sm text-muted">
                 {{ __('Einmaliger Import eines kompletten Toggl-Exports (Ordner mit clients.json, projects.json, workspace_users.json und den Jahres-CSVs je Workspace). Gib den Server-Pfad zum Export an; je gefundenem Workspace legst du dann fest, was passieren soll.') }}
             </p>
 
@@ -39,7 +39,7 @@
                 <button type="submit" class="btn btn-sm">{{ __('Ordner einlesen') }}</button>
             </form>
 
-            <div class="divider my-2 text-xs text-base-content/50">{{ __('oder') }}</div>
+            <div class="divider my-2 text-xs text-muted">{{ __('oder') }}</div>
 
             {{-- Schritt 1b: ZIP-Upload (Toggl liefert den Export als ZIP) --}}
             <form method="POST" action="{{ route('admin.toggl.import-export.upload') }}"
@@ -69,7 +69,7 @@
 
                 <div>
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Was soll mit jedem Workspace passieren?') }}</h2>
-                    <p class="text-sm text-base-content/60">
+                    <p class="text-sm text-muted">
                         {{ __('„Eigener Workspace" = Toggl-Clients werden zu Kunden, Projekte zu Projekten. „Als ein Kunde" = der ganze Workspace wird zu genau einem Kunden; jeder interne Toggl-Client (Endkunde der Firma) wird als Fremdkunde angelegt, die Projekte verweisen darauf — so bleibt die Endkunden-Trennung erhalten. Bestehende Kunden/Fremdkunden/Projekte werden per Name wiederverwendet (keine Duplikate).') }}
                     </p>
                 </div>
@@ -81,7 +81,7 @@
                             <input type="hidden" name="folders[{{ $i }}]" value="{{ $ws['folder'] }}">
                             <div class="md:col-span-5">
                                 <div class="font-semibold">{{ $ws['folder'] }}</div>
-                                <div class="text-xs text-base-content/60">
+                                <div class="text-xs text-muted">
                                     {{ $ws['clients'] }} {{ __('Clients') }} · {{ $ws['projects'] }} {{ __('Projekte') }} · {{ $ws['users'] }} {{ __('Benutzer') }}
                                 </div>
                             </div>
@@ -133,14 +133,14 @@
 
                     @if (! empty($togglUsers))
                         <div class="mt-3 rounded-box border border-base-300 p-3">
-                            <p class="mb-2 text-xs text-base-content/60">
+                            <p class="mb-2 text-xs text-muted">
                                 {{ __('Optional: einzelne Toggl-Benutzer fest einem bestehenden Benutzer zuordnen. Eine Auswahl hier hat Vorrang vor der obigen Regel (auch vor „Standard-Benutzer"). „Automatisch" = nach obiger Regel.') }}
                             </p>
                             <div class="space-y-1">
                                 @foreach ($togglUsers as $tu)
                                     <div class="flex items-center gap-2">
                                         <span class="min-w-0 flex-1 truncate text-sm" title="{{ $tu['email'] }}">
-                                            {{ $tu['name'] }} <span class="text-base-content/50">({{ $tu['email'] }})</span>
+                                            {{ $tu['name'] }} <span class="text-muted">({{ $tu['email'] }})</span>
                                         </span>
                                         <select name="user_map[{{ $tu['email'] }}]" class="select select-sm select-bordered w-full max-w-xs">
                                             <option value="">{{ __('— automatisch —') }}</option>

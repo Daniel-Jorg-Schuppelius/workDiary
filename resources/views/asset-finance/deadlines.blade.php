@@ -51,7 +51,7 @@
                     <td>
                         @if ($deadline->contract !== null)
                             <a class="link font-mono" href="{{ route('asset-finance.show', $deadline->contract) }}">{{ $deadline->contract->number }}</a>
-                            <span class="text-sm text-base-content/60">{{ $deadline->contract->partner_name }}</span>
+                            <span class="text-sm text-muted">{{ $deadline->contract->partner_name }}</span>
                         @else
                             —
                         @endif

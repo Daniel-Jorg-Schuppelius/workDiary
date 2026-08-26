@@ -37,3 +37,19 @@ export async function ensureClockedOut(page: Page) {
         await expect(clockInSubmit(page)).toBeVisible();
     }
 }
+
+/**
+ * Status-Codes aus App\Enums\Diary\Status — die Kanban-Spalten tragen sie als
+ * data-status. Bewusst als Konstanten statt magischer Zahlen im Spec.
+ */
+export const STATUS = {
+    COMPLETED: -1,
+    IN_PROGRESS: 1,
+    PLANNED: 2,
+    WAITING_CUSTOMER: 3,
+    ACCEPTED: 4,
+    WAITING_MATERIAL: 5,
+    ACCEPTED_FINAL: 6,
+    INVOICED: 7,
+    CANCELLED: 8,
+} as const;

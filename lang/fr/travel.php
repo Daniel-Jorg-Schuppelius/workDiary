@@ -18,6 +18,11 @@ return [
         'foot' => 'À pied',
         'other' => 'Autre',
     ],
+    'trip_kind' => [
+        'business' => 'Professionnel',
+        'commute' => 'Domicile–travail',
+        'private' => 'Privé',
+    ],
     'tour_leg_purpose' => 'Trajet vers :title',
     'tour_return_purpose' => 'Trajet de retour',
 ];

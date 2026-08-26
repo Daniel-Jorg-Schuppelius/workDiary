@@ -38,6 +38,11 @@ class ForeignKeyCoverageTest extends TestCase {
         'audit_logs.user_id',
         // Keine Referenz: USt-IdNr.-WERT aus der Rechnung (E3, Lieferanten-Matching).
         'incoming_einvoices.seller_vat_id',
+        // Feature 128 (MVP-692): Zieltabelle hängt an document_kind (quasi-Morph
+        // ohne *able-Namen) — Nachweis-Log bleibt bewusst ohne FK stehen,
+        // auch wenn der Beleg(-Entwurf) gelöscht wird; Rechnungen zusätzlich
+        // über den echten FK invoice_id (Cascade).
+        'document_dispatches.document_id',
         'accounting_events.accounting_entry_id',
         'accounting_events.actor_user_id',
         'accounting_events.organization_id',
@@ -59,7 +64,6 @@ class ForeignKeyCoverageTest extends TestCase {
         'cloud_document_connections.root_folder_id',
         'cloud_document_items.imported_id',
         'cloud_document_routes.target_ref_id',
-        'communication_note_participants.customer_contact_id',
         'customer_merge_dismissals.customer_high_id',
         'customer_merge_dismissals.customer_low_id',
         'customers.vat_id',
@@ -95,6 +99,9 @@ class ForeignKeyCoverageTest extends TestCase {
         'model_has_roles.team_id',
         'msgraph_connections.calendar_id',
         'msgraph_task_list_links.todo_list_id',
+        // Feature 147 (MVP-730): Nachrichten-ID des SMS-Gateways (seven.io) —
+        // eine Fremdkennung beim Anbieter, zu der es keine lokale Tabelle gibt.
+        'notification_dispatch_log.provider_message_id',
         'on_call_shifts.legacy_id',
         'open_issues.source_ref_id',
         'orgamax_connections.ownership_id',

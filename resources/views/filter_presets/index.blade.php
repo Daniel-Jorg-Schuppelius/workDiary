@@ -20,7 +20,7 @@
 
         @if ($presets->isEmpty())
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">filter_alt</span>'
+                icon="filter_alt"
                 :title="__('Noch keine Filter-Presets gespeichert.')" />
         @else
             <x-table :zebra="true" zebra scroll="flex" :pinRows="true" table-sort="client">

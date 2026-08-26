@@ -66,6 +66,8 @@ return [
             'datev_account' => 'DATEV-Konto',
             'euer_category' => 'EÜR-Zeile',
             'euer_category_none' => '— ohne Zuordnung —',
+            'bwa_group' => 'BWA-Zeile',
+            'bwa_group_none' => '— aus Nummernkreis ableiten —',
             'deductible_percent' => 'Abziehbarer Anteil (%)',
             'description' => 'Beschreibung',
             'post_now' => 'Sofort festschreiben',
@@ -83,6 +85,7 @@ return [
             'external_provider' => 'Nur bei externer Hoheit: Name des führenden Systems (z. B. lexoffice).',
             'datev_account' => 'Nur für den Export; die lokale Buchung hängt nicht daran.',
             'euer_category' => 'Bestimmt, in welcher Zeile der Anlage EÜR das Konto erscheint. Ohne Zuordnung landet es in den ungeklärten Fällen.',
+            'bwa_group' => 'Zeile der betriebswirtschaftlichen Auswertung. Ohne Zuordnung leitet die BWA die Zeile aus dem SKR03/SKR04-Nummernkreis ab; bleibt auch das offen, erscheint das Konto unter „nicht zugeordnet".',
             'deductible_percent' => 'Wirkt nur in der EÜR-Auswertung — im Journal steht immer der volle Betrag (z. B. 70 % bei Bewirtung).',
             'normal_balance' => 'Vorbelegt aus der Kontoart, im Einzelfall überschreibbar.',
             'post_now' => 'Nach dem Festschreiben ist die Buchung nur noch über eine Gegenbuchung korrigierbar.',
@@ -158,6 +161,7 @@ return [
             'entry_frozen' => 'Die Buchung ist festgeschrieben — Korrektur nur über eine Gegenbuchung.',
             'needs_two_lines' => 'Eine Buchung braucht mindestens zwei Zeilen.',
             'unknown_account' => 'Eine Zeile verweist auf ein unbekanntes Konto.',
+            'unknown_cost_center' => 'Die Kostenstelle gehört nicht zu dieser Organisation.',
             'inactive_account' => 'Das Konto :account ist stillgelegt.',
             'foreign_currency_line' => 'Alle Zeilen müssen auf :currency lauten.',
             'negative_amount' => 'Beträge sind positiv; die Richtung ergibt sich aus Soll oder Haben.',
@@ -292,6 +296,8 @@ return [
             'sovereignty' => 'Für diesen Zeitraum führt die Organisation kein lokales Hauptbuch.',
             'foreign_currency' => 'Der Beleg lautet auf :currency, die Buchhaltung führt :base — eine belegbare Umrechnung gibt es noch nicht.',
             'unsupported_target' => 'Für dieses Zahlungsziel gibt es noch keinen Buchungsweg.',
+            'year_closed' => 'Das Geschäftsjahr :year ist geschlossen.',
+            'period_closed' => 'Die Periode zum :date ist geschlossen.',
         ],
         'memo' => [
             'sales_invoice' => 'Rechnung :number · :customer',
@@ -299,9 +305,85 @@ return [
             'expense' => 'Auslage :description · :user',
             'cash_entry' => 'Kasse :register · :purpose',
             'payment' => 'Zahlung (:kind) · :target',
+            'depreciation' => 'AfA :year · :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Zahlungszuordnung aufgehoben — Gegenbuchung.',
+        ],
+    ],
+    // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
+    'fixed_assets' => [
+        'title' => 'Anlagenregister',
+        'menu' => 'Anlagen',
+        'subtitle' => 'Wirtschaftsgüter mit AK/HK, Nutzungsdauer und AfA-Plan — die Jahres-AfA wird als Vorschlag über die Buchungs-Inbox gebucht.',
+        'empty' => 'Noch keine Anlagen im Register.',
+        'months' => ':count Monate',
+        'account_from_rule' => 'aus Buchungsregel',
+        'kpi' => [
+            'active' => 'Aktive Anlagen',
+            'total' => 'Anlagen gesamt',
+            'book_value_year' => 'Restbuchwert Ende :year',
+        ],
+        'filter' => [
+            'all' => 'Alle Anlagen',
+        ],
+        'column' => [
+            'no' => 'Nr.',
+            'name' => 'Bezeichnung',
+            'acquired_on' => 'Anschaffung',
+            'cost' => 'AK/HK',
+            'useful_life' => 'Nutzungsdauer',
+            'book_value' => 'Restbuchwert :year',
+        ],
+        'field' => [
+            'device' => 'Gerät (Asset)',
+            'residual_value' => 'Restwert',
+            'method' => 'AfA-Methode',
+            'asset_account' => 'Anlagenkonto',
+            'depreciation_account' => 'AfA-Aufwandskonto',
+            'disposed_on' => 'Abgang am',
+            'created_by' => 'Angelegt von',
+        ],
+        'section' => [
+            'master' => 'Stammdaten',
+            'accounts' => 'Konten',
+            'schedule' => 'AfA-Plan',
+            'posting' => 'Buchung',
+        ],
+        'schedule' => [
+            'year' => 'Geschäftsjahr',
+            'months' => 'Monate',
+            'amount' => 'AfA-Betrag',
+            'book_value_end' => 'Restbuchwert',
+            'empty' => 'Kein AfA-Plan — Bemessungsgrundlage oder Nutzungsdauer fehlt.',
+        ],
+        'hint' => [
+            'device' => 'Optionaler Bezug zum Geräte-Register; nicht jede Anlage ist ein Gerät.',
+            'residual_value' => 'Bleibt am Ende der Nutzungsdauer stehen; Standard 0.',
+            'useful_life' => 'Betriebsgewöhnliche Nutzungsdauer laut AfA-Tabelle, in Monaten.',
+            'accounts' => 'Leer lassen, dann greift die Buchungsregel der Rolle (Anlagenkonto / AfA-Aufwand).',
+            'frozen' => 'Eine AfA-Buchung ist festgeschrieben — Anschaffung, AK/HK, Restwert und Nutzungsdauer sind eingefroren.',
+            'schedule' => 'Linear, monatsgenau im Anschaffungs- und Abgangsjahr (§ 7 Abs. 1 S. 4 EStG); das letzte Jahr nimmt die Restdifferenz.',
+            'posting' => 'Die Jahres-AfA wird im Abschluss je Geschäftsjahr vorgeschlagen und in der Inbox festgeschrieben — nie direkt.',
+            'dispose' => 'Der Abgang beendet den AfA-Plan im Abgangsmonat. Der verbleibende Buchwert wird nicht automatisch ausgebucht.',
+        ],
+        'action' => [
+            'add' => 'Anlage anlegen',
+            'edit' => 'Anlage bearbeiten',
+            'dispose' => 'Abgang erfassen',
+            'dispose_submit' => 'Abgang buchen',
+        ],
+        'flash' => [
+            'created' => 'Anlage :no angelegt.',
+            'updated' => 'Anlage gespeichert.',
+            'disposed' => 'Abgang erfasst.',
+        ],
+        'error' => [
+            'disposed_frozen' => 'Eine abgegangene Anlage ist nicht mehr änderbar.',
+            'values_frozen' => 'Wertbestimmende Felder sind nach der ersten festgeschriebenen AfA gesperrt.',
+            'disposed_before_acquired' => 'Der Abgang kann nicht vor der Anschaffung liegen.',
+            'residual_exceeds_cost' => 'Der Restwert muss kleiner als die AK/HK sein.',
+            'useful_life_required' => 'Die Nutzungsdauer muss mindestens einen Monat betragen.',
         ],
     ],
     'rules' => [
@@ -511,6 +593,45 @@ return [
                 'open_expectations' => 'Offene Erwartungen',
             ],
         ],
+        // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        'forecast' => [
+            'subtitle' => 'Startsaldo Bank & Kasse und erwartete Zahlungen je Kalenderwoche ab :date — :weeks Wochen.',
+            'hint' => 'Erwartung, kein Kontostand: offene Posten nach Zahlungsverhalten und Skontoterminen, Belegerwartungen, Rechnungspläne, freigegebene Zahlläufe, Finanzierungsraten und bezifferbare Steuertermine. Überfälliges zählt in der laufenden Woche.',
+            'horizon' => ':weeks Wochen',
+            'column' => [
+                'week' => 'Woche',
+                'period' => 'Zeitraum',
+                'inflow' => 'Einzahlungen',
+                'outflow' => 'Auszahlungen',
+                'net' => 'Netto',
+                'closing' => 'Saldo',
+            ],
+            'kpi' => [
+                'opening' => 'Startsaldo',
+                'inflow' => 'Einzahlungen',
+                'outflow' => 'Auszahlungen',
+                'min_closing' => 'Tiefster Saldo',
+                'min_week' => 'in :week',
+            ],
+            'chart' => [
+                'closing' => 'Kumulierter Saldo je Woche',
+                'flows' => 'Ein- und Auszahlungen je Woche',
+            ],
+            'source' => [
+                'receivables' => 'Forderungen',
+                'payables' => 'Verbindlichkeiten',
+                'recurring' => 'Belegerwartungen',
+                'invoice_schedules' => 'Rechnungspläne',
+                'payment_runs' => 'Zahlläufe',
+                'finance_rates' => 'Raten',
+                'filings' => 'Steuern',
+            ],
+            'note' => [
+                'overdue' => 'überfällig — laufende Woche',
+                'delay' => 'Ø-Verzug :days Tage',
+                'discount' => 'Skonto :percent % zum Skontotermin',
+            ],
+        ],
         'card' => [
             'trial_balance' => [
                 'title' => 'Summen- und Saldenliste',
@@ -540,9 +661,21 @@ return [
                 'title' => 'Liquidität',
                 'text' => 'Ist-Salden, offene Posten und Vorschau — getrennt ausgewiesen.',
             ],
+            'liquidity_forecast' => [
+                'title' => 'Liquiditätsvorschau',
+                'text' => '13 Wochen Ein- und Auszahlungen mit Zahlungsverhalten und kumuliertem Saldo.',
+            ],
             'quality' => [
                 'title' => 'Buchungsqualität',
                 'text' => 'Entwürfe, blockierte Läufe und offene Erwartungen.',
+            ],
+            'bwa' => [
+                'title' => 'BWA',
+                'text' => 'Kurzfristige Erfolgsrechnung mit Vorjahr, Vormonat, Monatsraster und Budget.',
+            ],
+            'budget' => [
+                'title' => 'Budget',
+                'text' => 'Planwerte je Konto und Geschäftsjahr — als Jahreswert oder Monatswerte.',
             ],
             'journal' => [
                 'title' => 'Journal',
@@ -577,9 +710,11 @@ return [
             'reopen' => 'Wieder öffnen',
             'reopen_submit' => 'Periode öffnen',
             'close_year' => 'Geschäftsjahr schließen',
+            'propose_depreciation' => 'AfA-Buchungen vorschlagen',
         ],
         'confirm' => [
             'year' => 'Geschäftsjahr schließen? Alle Perioden müssen geschlossen sein.',
+            'depreciation' => 'Jahres-AfA :year für alle Anlagen als Entwürfe in die Buchungs-Inbox stellen? Festgeschrieben wird dort.',
         ],
         'check' => [
             'no_drafts' => 'Keine offenen Entwürfe in der Periode.',
@@ -588,10 +723,13 @@ return [
             'unbalanced' => ':count Buchungen sind nicht ausgeglichen.',
             'sequence_ok' => 'Keine früheren Perioden mehr offen.',
             'earlier_open' => ':count frühere Perioden sind noch offen.',
+            'depreciation_ok' => 'Die Jahres-AfA aller Anlagen ist festgeschrieben.',
+            'depreciation_open' => 'Für :count Anlagen ist die Jahres-AfA noch nicht festgeschrieben.',
             'key' => [
                 'drafts' => 'Entwürfe',
                 'balanced' => 'Ausgleich',
                 'sequence' => 'Reihenfolge',
+                'depreciation' => 'AfA',
             ],
         ],
         'flash' => [
@@ -599,6 +737,7 @@ return [
             'closed' => 'Periode geschlossen.',
             'reopened' => 'Periode wieder geöffnet.',
             'year_closed' => 'Geschäftsjahr geschlossen.',
+            'depreciation_proposed' => 'AfA :year: :prepared Entwürfe vorbereitet, :skipped bereits vorhanden, :failed blockiert.',
         ],
         'error' => [
             'reason_required' => 'Für die Wiedereröffnung ist eine Begründung Pflicht.',
@@ -868,6 +1007,95 @@ return [
         'unclear' => [
             'missing_vat_id' => 'Buchung :entry (:customer) ohne USt-IdNr. des Empfängers.',
             'unknown_customer' => 'ohne Kunde',
+        ],
+    ],
+
+    // Betriebswirtschaftliche Auswertung und Budget (Feature 142, MVP-709).
+    'bwa' => [
+        'title' => 'Betriebswirtschaftliche Auswertung',
+        'menu' => 'BWA & Budget',
+        'hint' => 'Kurzfristige Erfolgsrechnung nach Kontengruppen — Zuordnung über die BWA-Zeile des Kontos oder den SKR-Nummernkreis, keine testierte BWA.',
+        'compare_range' => 'Vergleichszeitraum :from – :to',
+        'scheme' => [
+            'skr03' => 'Kontenrahmen SKR03 erkannt.',
+            'skr04' => 'Kontenrahmen SKR04 erkannt.',
+            'none' => 'Kein Standardkontenrahmen erkannt — nur ausdrückliche BWA-Zeilen der Konten wirken.',
+        ],
+        'column' => [
+            'row' => 'Zeile',
+            'actual' => 'Ist',
+            'budget' => 'Plan',
+            'total' => 'Summe',
+            'delta' => 'Abweichung',
+            'delta_pct' => 'Abw. %',
+        ],
+        'compare' => [
+            'none' => 'Kein Vergleich',
+            'previous_year' => 'Vorjahr',
+            'previous_month' => 'Vormonat',
+            'months' => 'Monatsraster',
+            'budget' => 'Budget',
+        ],
+        'filter' => [
+            'compare' => 'Vergleich',
+            'cost_center' => 'Kostenstelle',
+            'all_cost_centers' => 'Alle Kostenstellen',
+        ],
+        'subtotal' => [
+            'total_output' => 'Gesamtleistung',
+            'gross_profit' => 'Rohertrag',
+            'operating_gross_profit' => 'Betrieblicher Rohertrag',
+            'total_costs' => 'Gesamtkosten',
+            'operating_result' => 'Betriebsergebnis',
+            'result_before_tax' => 'Ergebnis vor Steuern',
+            'result' => 'Vorläufiges Ergebnis',
+            'result_total' => 'Ergebnis inkl. nicht zugeordneter Konten',
+        ],
+        'unmapped' => [
+            'title' => 'Nicht zugeordnet',
+            'hint' => ':count Konten mit Bewegung haben keine BWA-Zeile — Zuordnung im Konto pflegen; sie fließen in keine Gruppe, aber in die Schlusszeile.',
+        ],
+        'chart' => [
+            'groups' => 'Ist je BWA-Zeile',
+            'months' => 'Umsatzerlöse und Gesamtkosten je Monat',
+        ],
+    ],
+
+    'budget' => [
+        'title' => 'Budget',
+        'subtitle' => 'Planwerte je Konto für Geschäftsjahr :year',
+        'empty' => 'Keine Erfolgskonten im Kontenplan.',
+        'total' => 'Planergebnis',
+        'column' => [
+            'year_value' => 'Jahreswert',
+            'mode' => 'Art',
+            'note' => 'Notiz',
+        ],
+        'filter' => [
+            'year' => 'Geschäftsjahr',
+        ],
+        'action' => [
+            'edit' => 'Budget bearbeiten',
+            'copy_previous' => 'Vorjahr-Ist als Budget',
+            'save' => 'Speichern',
+        ],
+        'confirm' => [
+            'copy_previous' => 'Ist-Werte des Geschäftsjahres :year als Budget übernehmen? Vorhandene Budgets des gewählten Jahres werden ersetzt.',
+        ],
+        'mode' => [
+            'year' => 'Jahreswert',
+            'months' => 'Monatswerte',
+        ],
+        'hint' => [
+            'mode' => 'Ein Jahreswert wird für Monatsvergleiche gleichmäßig auf zwölf Monate verteilt; Monatswerte gelten je Monat.',
+            'sign' => 'Positive Werte: erwarteter Ertrag bzw. erwarteter Aufwand.',
+        ],
+        'flash' => [
+            'saved' => 'Budget für :account gespeichert.',
+            'copied' => ':count Konten mit Ist-Werten aus :year als Budget übernommen.',
+        ],
+        'note' => [
+            'copied_from' => 'Übernommen aus Ist :year',
         ],
     ],
 

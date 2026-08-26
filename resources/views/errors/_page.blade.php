@@ -75,12 +75,12 @@
                 {{ $message }}
             </p>
             @if (! empty($extraNote))
-                <p class="mt-3 text-xs text-base-content/60">
+                <p class="mt-3 text-xs text-muted">
                     {{ $extraNote }}
                 </p>
             @endif
             @if ($requestId !== null)
-                <p class="mt-3 text-xs text-base-content/50">
+                <p class="mt-3 text-xs text-muted">
                     {{ __('errors.request_id') }}: <span class="font-mono select-all">{{ $requestId }}</span>
                 </p>
             @endif
@@ -107,7 +107,7 @@
             @endif
             @if (! empty($details))
                 <details class="mt-6 text-left text-xs">
-                    <summary class="cursor-pointer text-base-content/60">{{ __('Technische Details') }}</summary>
+                    <summary class="cursor-pointer text-muted">{{ __('Technische Details') }}</summary>
                     <pre class="mt-2 overflow-auto rounded-md bg-base-200 p-3 text-[0.7rem]">{{ $details }}</pre>
                 </details>
             @endif

@@ -30,4 +30,13 @@ return [
         'success' => 'Météo du jour ajoutée.',
         'unavailable' => 'Aucune donnée météo disponible (pas de lieu/coordonnées ou service injoignable) — à compléter ultérieurement.',
     ],
+    // Warnschwellen der Vorhersage (Feature 062, MVP-716).
+    'warning' => [
+        'threshold' => [
+            'rain' => 'Fortes pluies',
+            'gust' => 'Rafales de tempête',
+            'frost' => 'Gel',
+            'heat' => 'Chaleur',
+        ],
+    ],
 ];

@@ -73,14 +73,14 @@
 
         @if (session('success'))
             <div role="status" class="alert alert-success mb-4">
-                <span class="material-symbols-outlined" aria-hidden="true">check_circle</span>
+                <x-icon name="check_circle" />
                 <span>{{ session('success') }}</span>
             </div>
         @endif
 
         @if ($errors->any())
             <div class="alert alert-error mb-4">
-                <span class="material-symbols-outlined" aria-hidden="true">error</span>
+                <x-icon name="error" />
                 <div>
                     <ul class="list-disc ps-4">
                         @foreach ($errors->all() as $error)
@@ -97,7 +97,7 @@
             </div>
         </div>
 
-        <p class="mt-6 text-center text-xs text-base-content/50">
+        <p class="mt-6 text-center text-xs text-muted">
             {{ __('Schritt :n von :total', ['n' => $currentIndex + 1, 'total' => count($steps ?? [])]) }}
         </p>
     </div>

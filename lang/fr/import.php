@@ -22,6 +22,12 @@ return [
         'remote_sessions' => 'Sessions de maintenance à distance',
         'attendances' => 'Pointages',
         'project_times' => 'Temps de projet',
+        // MVP-707 (Vollscan H20): Altsystem-Übernahme.
+        'invoices' => 'Anciennes factures (postes ouverts)',
+        'quotes' => 'Devis',
+        'assets' => 'Actifs',
+        'contact_persons' => 'Interlocuteurs',
+        'documents' => 'Documents (ZIP)',
     ],
     'template' => [
         'example_required' => "Valeur d'exemple (obligatoire)",
@@ -49,6 +55,7 @@ return [
         'headerUnknown' => 'Colonne inconnue',
         'periodLocked' => 'Période verrouillée',
         'skipped' => 'Ignoré',
+        'blocked' => 'Bloqué',
     ],
     'error' => [
         'required' => 'Le champ obligatoire :field est manquant.',
@@ -69,14 +76,41 @@ return [
             'date' => 'Date invalide (attendu p. ex. « 28.05.2026, 09:42:09 »).',
             'time' => 'Heure invalide (attendu HH:MM).',
             'status' => 'La valeur n\'est pas un statut valide.',
+            'amount' => 'Montant invalide.',
         ],
         'outOfRange' => [
             'rowLimit' => 'Limite de lignes (:max) dépassée — reste ignoré.',
+            'contactPersons' => 'Plus de :max interlocuteurs par client/fournisseur ne sont pas prévus.',
         ],
         'fkMissing' => [
             'customer' => 'Aucun client avec le numéro :number trouvé.',
+            'supplier' => 'Aucun fournisseur avec le numéro :number trouvé.',
+            'asset' => 'Aucun actif avec le numéro :number trouvé.',
+            'article' => 'Aucun article avec le numéro :number trouvé.',
+            'projectNumber' => 'Aucun projet avec le numéro :number trouvé.',
+            'customerName' => 'Aucun client unique nommé « :value » trouvé.',
             'user' => 'Aucun utilisateur avec l\'e-mail :value trouvé.',
             'project' => 'Aucun projet « :value » trouvé — ligne placée dans la boîte d\'affectation.',
+        ],
+        // MVP-707: Altsystem-Übernahme (Rechnungshoheit, Altrechnungen, Dokument-ZIP).
+        'blocked' => [
+            'invoiceSovereignty' => 'La facturation est gérée par :program — les anciennes factures locales sont bloquées pour ce client.',
+        ],
+        'invoice' => [
+            'amountMissing' => 'Montant brut ou net (avec taux de TVA) manquant.',
+            'paidExceedsTotal' => 'Le montant payé (:paid) dépasse le montant de la facture (:total).',
+            'numberTaken' => 'Le numéro de facture :number est déjà utilisé.',
+        ],
+        'document' => [
+            'manifestMissing' => 'Le fichier ZIP ne contient pas de manifest.csv.',
+            'fileMissing' => 'Le fichier « :file » ne figure pas dans le ZIP.',
+            'extension' => 'L\'extension « :ext » n\'est pas autorisée.',
+            'mime' => 'Le contenu du fichier (:mime) n\'est pas autorisé.',
+            'targetType' => 'Le type de cible doit être customer, project ou asset.',
+            'noContent' => 'Les documents ne peuvent être repris que via l\'import ZIP (manifest.csv + fichiers).',
+            'zipUnreadable' => 'Le fichier ZIP n\'a pas pu être lu : :reason',
+            'tooLarge' => 'Le fichier « :file » dépasse la limite de :max Mo.',
+            'noActor' => 'Exécution d\'import sans utilisateur déclencheur — les documents ont besoin d\'un créateur.',
         ],
         'persist' => [
             'noBookingUser' => 'Aucun utilisateur imputable trouvé dans l\'organisation.',
@@ -95,5 +129,16 @@ return [
             'recurring' => 'Événement récurrent « :event » : seule l\'instance de base a été importée (l\'expansion de la série viendra plus tard).',
             'unsupportedEntity' => 'L\'import iCal n\'est pas pris en charge pour ce type d\'import.',
         ],
+    ],
+
+    // MVP-707: Upload-Hinweise je Dateiart + Texte der Altrechnungs-Übernahme.
+    'upload' => [
+        'csv' => 'Fichier CSV, Excel ou iCal (.csv, .xlsx, .ics, max. :mb Mo, :rows lignes)',
+        'zip' => 'Fichier ZIP avec manifest.csv et les fichiers de documents (.zip, max. :mb Mo, :entries fichiers)',
+        'zipHint' => 'Chaque ligne du manifest.csv (modèle ci-dessus) référence un fichier du ZIP et l\'affecte à un client, un projet ou un actif.',
+    ],
+    'legacy' => [
+        'position' => 'Reprise de l\'ancien système — facture :number',
+        'note' => 'Ancienne facture reprise depuis :source (poste ouvert d\'ouverture, sans écriture au journal).',
     ],
 ];

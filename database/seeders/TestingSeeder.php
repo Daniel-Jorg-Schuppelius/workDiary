@@ -47,6 +47,7 @@ class TestingSeeder extends Seeder {
         // ~2,2 s je Testmethode (Messung 2026-08-19).
         \App\Services\Whistleblowing\WhistleblowingPermissions::ensurePermissionsExist();
         \App\Services\Privacy\DataProtectionPermissions::ensurePermissionsExist();
+        \App\Services\Hr\PersonnelFilePermissions::ensurePermissionsExist();
 
         $registrar->setPermissionsTeamId(null);
         foreach (UserRole::values() as $role) {

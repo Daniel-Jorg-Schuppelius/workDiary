@@ -66,6 +66,8 @@ return [
             'datev_account' => 'Conto DATEV',
             'euer_category' => 'Riga entrate-uscite',
             'euer_category_none' => '— senza assegnazione —',
+            'bwa_group' => 'Riga BWA',
+            'bwa_group_none' => '— derivare dall\'intervallo numerico —',
             'deductible_percent' => 'Quota deducibile (%)',
             'description' => 'Descrizione',
             'post_now' => 'Registrare subito',
@@ -83,6 +85,7 @@ return [
             'external_provider' => 'Solo con autorità esterna: nome del sistema principale (ad es. lexoffice).',
             'datev_account' => 'Solo per l\'esportazione; la registrazione locale non ne dipende.',
             'euer_category' => 'Determina in quale riga del modulo compare il conto. Senza assegnazione finisce tra i casi non chiariti.',
+            'bwa_group' => 'Riga dell\'analisi gestionale (BWA). Senza assegnazione il report deriva la riga dall\'intervallo SKR03/SKR04; se resta aperto, il conto appare sotto «non assegnato».',
             'deductible_percent' => "Agisce solo sull'anteprima entrate-uscite — nel giornale resta sempre l'importo pieno (p. es. 70 % per le spese di rappresentanza).",
             'normal_balance' => 'Precompilata dal tipo di conto, modificabile caso per caso.',
             'post_now' => 'Dopo la registrazione la correzione avviene solo tramite contro-registrazione.',
@@ -158,6 +161,7 @@ return [
             'entry_frozen' => 'La registrazione è definitiva — correzione solo tramite contro-registrazione.',
             'needs_two_lines' => 'Una registrazione richiede almeno due righe.',
             'unknown_account' => 'Una riga rimanda a un conto sconosciuto.',
+            'unknown_cost_center' => 'Il centro di costo non appartiene a questa organizzazione.',
             'inactive_account' => 'Il conto :account è disattivato.',
             'foreign_currency_line' => 'Tutte le righe devono essere in :currency.',
             'negative_amount' => 'Gli importi sono positivi; la direzione deriva da Dare o Avere.',
@@ -292,6 +296,8 @@ return [
             'sovereignty' => 'In questo periodo l\'organizzazione non tiene un libro mastro locale.',
             'foreign_currency' => 'Il documento è in :currency, la contabilità in :base — non esiste ancora una conversione documentabile.',
             'unsupported_target' => 'Per questa destinazione di pagamento non esiste ancora un percorso contabile.',
+            'year_closed' => 'L\'esercizio :year è chiuso.',
+            'period_closed' => 'Il periodo del :date è chiuso.',
         ],
         'memo' => [
             'sales_invoice' => 'Fattura :number · :customer',
@@ -299,9 +305,85 @@ return [
             'expense' => 'Spesa :description · :user',
             'cash_entry' => 'Cassa :register · :purpose',
             'payment' => 'Pagamento (:kind) · :target',
+            'depreciation' => 'Ammortamento :year · :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Assegnazione del pagamento annullata — contro-registrazione.',
+        ],
+    ],
+    // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
+    'fixed_assets' => [
+        'title' => 'Registro cespiti',
+        'menu' => 'Cespiti',
+        'subtitle' => 'Beni con costo d\'acquisto, vita utile e piano di ammortamento — l\'ammortamento annuale viene registrato come proposta tramite la posta contabile.',
+        'empty' => 'Nessun cespite nel registro.',
+        'months' => ':count mesi',
+        'account_from_rule' => 'da regola contabile',
+        'kpi' => [
+            'active' => 'Cespiti attivi',
+            'total' => 'Cespiti in totale',
+            'book_value_year' => 'Valore residuo fine :year',
+        ],
+        'filter' => [
+            'all' => 'Tutti i cespiti',
+        ],
+        'column' => [
+            'no' => 'N.',
+            'name' => 'Denominazione',
+            'acquired_on' => 'Acquisto',
+            'cost' => 'Costo d\'acquisto',
+            'useful_life' => 'Vita utile',
+            'book_value' => 'Valore residuo :year',
+        ],
+        'field' => [
+            'device' => 'Dispositivo (asset)',
+            'residual_value' => 'Valore residuo finale',
+            'method' => 'Metodo di ammortamento',
+            'asset_account' => 'Conto cespite',
+            'depreciation_account' => 'Conto ammortamento',
+            'disposed_on' => 'Dismesso il',
+            'created_by' => 'Creato da',
+        ],
+        'section' => [
+            'master' => 'Dati anagrafici',
+            'accounts' => 'Conti',
+            'schedule' => 'Piano di ammortamento',
+            'posting' => 'Registrazione',
+        ],
+        'schedule' => [
+            'year' => 'Esercizio',
+            'months' => 'Mesi',
+            'amount' => 'Quota',
+            'book_value_end' => 'Valore residuo',
+            'empty' => 'Nessun piano — manca la base ammortizzabile o la vita utile.',
+        ],
+        'hint' => [
+            'device' => 'Collegamento facoltativo al registro dispositivi; non ogni cespite è un dispositivo.',
+            'residual_value' => 'Resta alla fine della vita utile; predefinito 0.',
+            'useful_life' => 'Vita utile ordinaria secondo la tabella di ammortamento, in mesi.',
+            'accounts' => 'Lasciare vuoto per applicare la regola contabile del ruolo (conto cespite / ammortamento).',
+            'frozen' => 'Una quota è registrata — data d\'acquisto, costo, valore residuo e vita utile sono bloccati.',
+            'schedule' => 'Lineare, pro rata mensile nell\'anno di acquisto e di dismissione; l\'ultimo anno prende il resto.',
+            'posting' => 'L\'ammortamento annuale viene proposto per esercizio nella chiusura e registrato nella posta contabile — mai direttamente.',
+            'dispose' => 'La dismissione termina il piano nel mese di dismissione. Il valore residuo non viene stornato automaticamente.',
+        ],
+        'action' => [
+            'add' => 'Aggiungi cespite',
+            'edit' => 'Modifica cespite',
+            'dispose' => 'Registra dismissione',
+            'dispose_submit' => 'Registra dismissione',
+        ],
+        'flash' => [
+            'created' => 'Cespite :no creato.',
+            'updated' => 'Cespite salvato.',
+            'disposed' => 'Dismissione registrata.',
+        ],
+        'error' => [
+            'disposed_frozen' => 'Un cespite dismesso non è più modificabile.',
+            'values_frozen' => 'I campi che determinano il valore sono bloccati dopo la prima quota registrata.',
+            'disposed_before_acquired' => 'La dismissione non può precedere l\'acquisto.',
+            'residual_exceeds_cost' => 'Il valore residuo deve essere inferiore al costo d\'acquisto.',
+            'useful_life_required' => 'La vita utile deve essere di almeno un mese.',
         ],
     ],
     'rules' => [
@@ -511,6 +593,45 @@ return [
                 'open_expectations' => 'Attese aperte',
             ],
         ],
+        // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        'forecast' => [
+            'subtitle' => 'Saldo iniziale banca e cassa e pagamenti attesi per settimana di calendario dal :date — :weeks settimane.',
+            'hint' => 'Un’aspettativa, non un saldo: partite aperte secondo il comportamento di pagamento e le scadenze di sconto, attese di documenti, piani di fatturazione, ordini di pagamento rilasciati, rate di finanziamento e scadenze fiscali quantificabili. Gli scaduti contano nella settimana corrente.',
+            'horizon' => ':weeks settimane',
+            'column' => [
+                'week' => 'Settimana',
+                'period' => 'Periodo',
+                'inflow' => 'Entrate',
+                'outflow' => 'Uscite',
+                'net' => 'Netto',
+                'closing' => 'Saldo',
+            ],
+            'kpi' => [
+                'opening' => 'Saldo iniziale',
+                'inflow' => 'Entrate',
+                'outflow' => 'Uscite',
+                'min_closing' => 'Saldo minimo',
+                'min_week' => 'in :week',
+            ],
+            'chart' => [
+                'closing' => 'Saldo cumulato per settimana',
+                'flows' => 'Entrate e uscite per settimana',
+            ],
+            'source' => [
+                'receivables' => 'Crediti',
+                'payables' => 'Debiti',
+                'recurring' => 'Attese di documenti',
+                'invoice_schedules' => 'Piani di fatturazione',
+                'payment_runs' => 'Ordini di pagamento',
+                'finance_rates' => 'Rate',
+                'filings' => 'Imposte',
+            ],
+            'note' => [
+                'overdue' => 'scaduto — settimana corrente',
+                'delay' => 'ritardo medio :days giorni',
+                'discount' => 'sconto :percent % alla scadenza di sconto',
+            ],
+        ],
         'card' => [
             'trial_balance' => [
                 'title' => 'Bilancio di verifica',
@@ -540,9 +661,21 @@ return [
                 'title' => 'Liquidità',
                 'text' => 'Saldi effettivi, partite aperte e previsione — separati.',
             ],
+            'liquidity_forecast' => [
+                'title' => 'Previsione di liquidità',
+                'text' => '13 settimane di entrate e uscite con comportamento di pagamento e saldo cumulato.',
+            ],
             'quality' => [
                 'title' => 'Qualità contabile',
                 'text' => 'Bozze, esecuzioni bloccate e attese aperte.',
+            ],
+            'bwa' => [
+                'title' => 'Analisi gestionale (BWA)',
+                'text' => 'Conto economico a breve termine con anno precedente, mese precedente, griglia mensile e budget.',
+            ],
+            'budget' => [
+                'title' => 'Budget',
+                'text' => 'Valori pianificati per conto ed esercizio — valore annuo o valori mensili.',
             ],
             'journal' => [
                 'title' => 'Giornale',
@@ -577,9 +710,11 @@ return [
             'reopen' => 'Riaprire',
             'reopen_submit' => 'Aprire il periodo',
             'close_year' => 'Chiudere l\'esercizio',
+            'propose_depreciation' => 'Proporre gli ammortamenti',
         ],
         'confirm' => [
             'year' => 'Chiudere l\'esercizio? Tutti i periodi devono essere chiusi.',
+            'depreciation' => 'Inserire l\'ammortamento :year di tutti i cespiti nella posta contabile come bozze? La registrazione avviene lì.',
         ],
         'check' => [
             'no_drafts' => 'Nessuna bozza aperta nel periodo.',
@@ -588,10 +723,13 @@ return [
             'unbalanced' => ':count registrazioni non sono in pareggio.',
             'sequence_ok' => 'Nessun periodo precedente aperto.',
             'earlier_open' => ':count periodi precedenti sono ancora aperti.',
+            'depreciation_ok' => 'L\'ammortamento annuale di tutti i cespiti è registrato.',
+            'depreciation_open' => 'L\'ammortamento annuale non è ancora registrato per :count cespiti.',
             'key' => [
                 'drafts' => 'Bozze',
                 'balanced' => 'Pareggio',
                 'sequence' => 'Sequenza',
+                'depreciation' => 'Ammortamento',
             ],
         ],
         'flash' => [
@@ -599,6 +737,7 @@ return [
             'closed' => 'Periodo chiuso.',
             'reopened' => 'Periodo riaperto.',
             'year_closed' => 'Esercizio chiuso.',
+            'depreciation_proposed' => 'Ammortamento :year: :prepared bozze preparate, :skipped già presenti, :failed bloccate.',
         ],
         'error' => [
             'reason_required' => 'La riapertura richiede una motivazione.',
@@ -868,6 +1007,95 @@ return [
         'unclear' => [
             'missing_vat_id' => 'Registrazione :entry (:customer) senza partita IVA del destinatario.',
             'unknown_customer' => 'senza cliente',
+        ],
+    ],
+
+    // Betriebswirtschaftliche Auswertung und Budget (Feature 142, MVP-709).
+    'bwa' => [
+        'title' => 'Analisi gestionale (BWA)',
+        'menu' => 'BWA & budget',
+        'hint' => 'Conto economico a breve termine per gruppi di conti — assegnazione tramite la riga BWA del conto o l\'intervallo SKR, non un report certificato.',
+        'compare_range' => 'Periodo di confronto :from – :to',
+        'scheme' => [
+            'skr03' => 'Piano dei conti SKR03 rilevato.',
+            'skr04' => 'Piano dei conti SKR04 rilevato.',
+            'none' => 'Nessun piano dei conti standard rilevato — valgono solo le righe BWA esplicite dei conti.',
+        ],
+        'column' => [
+            'row' => 'Riga',
+            'actual' => 'Effettivo',
+            'budget' => 'Piano',
+            'total' => 'Totale',
+            'delta' => 'Scostamento',
+            'delta_pct' => 'Scost. %',
+        ],
+        'compare' => [
+            'none' => 'Nessun confronto',
+            'previous_year' => 'Anno precedente',
+            'previous_month' => 'Mese precedente',
+            'months' => 'Griglia mensile',
+            'budget' => 'Budget',
+        ],
+        'filter' => [
+            'compare' => 'Confronto',
+            'cost_center' => 'Centro di costo',
+            'all_cost_centers' => 'Tutti i centri di costo',
+        ],
+        'subtotal' => [
+            'total_output' => 'Produzione complessiva',
+            'gross_profit' => 'Margine lordo',
+            'operating_gross_profit' => 'Margine lordo operativo',
+            'total_costs' => 'Costi totali',
+            'operating_result' => 'Risultato operativo',
+            'result_before_tax' => 'Risultato ante imposte',
+            'result' => 'Risultato provvisorio',
+            'result_total' => 'Risultato incl. conti non assegnati',
+        ],
+        'unmapped' => [
+            'title' => 'Non assegnato',
+            'hint' => ':count conti con movimenti non hanno una riga BWA — assegnarla sul conto; non alimentano alcun gruppo ma la riga finale.',
+        ],
+        'chart' => [
+            'groups' => 'Effettivo per riga BWA',
+            'months' => 'Ricavi e costi totali per mese',
+        ],
+    ],
+
+    'budget' => [
+        'title' => 'Budget',
+        'subtitle' => 'Valori pianificati per conto per l\'esercizio :year',
+        'empty' => 'Nessun conto economico nel piano dei conti.',
+        'total' => 'Risultato pianificato',
+        'column' => [
+            'year_value' => 'Valore annuo',
+            'mode' => 'Tipo',
+            'note' => 'Nota',
+        ],
+        'filter' => [
+            'year' => 'Esercizio',
+        ],
+        'action' => [
+            'edit' => 'Modifica budget',
+            'copy_previous' => 'Effettivo anno precedente come budget',
+            'save' => 'Salva',
+        ],
+        'confirm' => [
+            'copy_previous' => 'Riprendere l\'effettivo dell\'esercizio :year come budget? I budget esistenti dell\'anno scelto verranno sostituiti.',
+        ],
+        'mode' => [
+            'year' => 'Valore annuo',
+            'months' => 'Valori mensili',
+        ],
+        'hint' => [
+            'mode' => 'Un valore annuo viene ripartito uniformemente su dodici mesi per i confronti mensili; i valori mensili valgono per mese.',
+            'sign' => 'Valori positivi: ricavo atteso o costo atteso.',
+        ],
+        'flash' => [
+            'saved' => 'Budget per :account salvato.',
+            'copied' => ':count conti con effettivo di :year ripresi come budget.',
+        ],
+        'note' => [
+            'copied_from' => 'Ripreso dall\'effettivo :year',
         ],
     ],
 

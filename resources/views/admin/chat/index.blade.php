@@ -25,7 +25,7 @@
         <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('chat.channels_heading') }}</h2>
             @if ($webhooks->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('chat.no_channels') }}</p>
+                <p class="text-sm text-muted">{{ __('chat.no_channels') }}</p>
             @else
                 <x-table>
                     <x-slot:head>
@@ -39,7 +39,7 @@
                             @foreach ($webhooks as $webhook)
                                 <tr>
                                     <td>{{ $webhook->name }}</td>
-                                    <td class="text-base-content/60">{{ __('chat.kind.' . $webhook->kind) }}</td>
+                                    <td class="text-muted">{{ __('chat.kind.' . $webhook->kind) }}</td>
                                     <td>
                                         @if ($webhook->isActive())
                                             <span class="badge badge-success badge-sm">{{ __('chat.status.active') }}</span>
@@ -92,7 +92,7 @@
                 <label class="form-control md:col-span-2">
                     <span class="label-text">{{ __('chat.field.webhook_url') }}</span>
                     <input type="url" name="webhook_url" value="{{ old('webhook_url') }}" placeholder="https://…" class="input input-bordered input-sm" required>
-                    <span class="label-text-alt text-base-content/50">{{ __('chat.field.webhook_url_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('chat.field.webhook_url_help') }}</span>
                 </label>
             </div>
             <div class="mt-3 flex justify-end">

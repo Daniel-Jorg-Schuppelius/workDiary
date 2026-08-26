@@ -62,8 +62,8 @@
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3 space-y-2">
                     <div class="grid gap-2 md:grid-cols-3">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Ziel-Typ') }}</label>
-                            <select :name="fieldName(i, 'target_type')" x-model="it.target_type"
+                            <label :for="fieldName(i, 'target_type')" class="fieldset-label">{{ __('Ziel-Typ') }}</label>
+                            <select :id="fieldName(i, 'target_type')" :name="fieldName(i, 'target_type')" x-model="it.target_type"
                                     class="select select-sm select-bordered w-full">
                                 @foreach ($targetTypes as $cls => $label)
                                     <option value="{{ $cls }}">{{ $label }}</option>
@@ -71,13 +71,13 @@
                             </select>
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Ziel-ID (leer für create)') }}</label>
-                            <input type="number" :name="fieldName(i, 'target_id')" x-model="it.target_id"
+                            <label :for="fieldName(i, 'target_id')" class="fieldset-label">{{ __('Ziel-ID (leer für create)') }}</label>
+                            <input type="number" :id="fieldName(i, 'target_id')" :name="fieldName(i, 'target_id')" x-model="it.target_id"
                                    class="input input-sm input-bordered w-full">
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Aktion') }}</label>
-                            <select :name="fieldName(i, 'action')" x-model="it.action"
+                            <label :for="fieldName(i, 'action')" class="fieldset-label">{{ __('Aktion') }}</label>
+                            <select :id="fieldName(i, 'action')" :name="fieldName(i, 'action')" x-model="it.action"
                                     class="select select-sm select-bordered w-full">
                                 @foreach ($actions as $val => $label)
                                     <option value="{{ $val }}">{{ $label }}</option>
@@ -87,14 +87,14 @@
                     </div>
                     <div class="grid gap-2 md:grid-cols-2">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Vorher (JSON, optional)') }}</label>
-                            <textarea :name="fieldName(i, 'before')" x-model="it.before" rows="3"
+                            <label :for="fieldName(i, 'before')" class="fieldset-label">{{ __('Vorher (JSON, optional)') }}</label>
+                            <textarea :id="fieldName(i, 'before')" :name="fieldName(i, 'before')" x-model="it.before" rows="3"
                                       class="textarea textarea-bordered textarea-sm w-full font-mono text-xs"
                                       placeholder='{"minutes": 60}'></textarea>
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Nachher (JSON)') }}</label>
-                            <textarea :name="fieldName(i, 'after')" x-model="it.after" rows="3"
+                            <label :for="fieldName(i, 'after')" class="fieldset-label">{{ __('Nachher (JSON)') }}</label>
+                            <textarea :id="fieldName(i, 'after')" :name="fieldName(i, 'after')" x-model="it.after" rows="3"
                                       class="textarea textarea-bordered textarea-sm w-full font-mono text-xs"
                                       placeholder='{"minutes": 90}'></textarea>
                         </div>

@@ -50,7 +50,7 @@
             <x-card padding="p-0">
                 <div class="border-b border-base-300 px-4 py-3">
                     <h2 class="text-sm font-semibold uppercase tracking-wider opacity-60">{{ __('scope.customize.create_heading') }}</h2>
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('scope.customize.create_hint') }}</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('scope.customize.create_hint') }}</p>
                 </div>
                 <ul class="divide-y divide-base-300">
                     @foreach ($createGroups as $group)
@@ -130,7 +130,7 @@
     @push('page-footer')
         <div class="shrink-0 mt-(--sidebar-gap) max-md:px-1">
             <div class="flex flex-wrap items-center justify-between gap-3 rounded-(--panel-radius) border border-base-300 bg-base-100 px-4 py-2.5 shadow-xs">
-                <span class="text-xs text-base-content/60">{{ __('scope.customize.checkbox_hint') }}</span>
+                <span class="text-xs text-muted">{{ __('scope.customize.checkbox_hint') }}</span>
                 <x-button type="submit" form="nav-customize-form" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
             </div>
         </div>

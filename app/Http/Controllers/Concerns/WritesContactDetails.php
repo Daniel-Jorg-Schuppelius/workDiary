@@ -24,10 +24,7 @@ use App\Services\Stammdaten\ContactDetailsWriter;
  */
 trait WritesContactDetails {
     /** @var list<string> */
-    private static array $contactDetailFields = [
-        'address_street', 'address_zip', 'address_city', 'country',
-        'bank_account_holder', 'bank_iban', 'bank_bic', 'bank_name',
-    ];
+    private static array $contactDetailFields = ContactDetailsWriter::INLINE_FIELDS;
 
     /**
      * Nimmt die Kontakt-Felder aus den validierten Daten heraus.

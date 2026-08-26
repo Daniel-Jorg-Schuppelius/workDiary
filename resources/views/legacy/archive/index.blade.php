@@ -137,7 +137,7 @@
             <div class="flex flex-wrap items-end gap-3">
                 @if ($canViewAll)
                     <div class="flex flex-1 flex-col min-w-44">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
                         <select name="user" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle') }}</option>
                             @foreach ($legacyUsers as $legacyUser)
@@ -151,7 +151,7 @@
                 @endif
                 @if ($activeTab === 'auftraege')
                     <div class="flex flex-1 flex-col min-w-44">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Status') }}</span></label>
                         <select name="status" class="select select-bordered select-sm w-full">
                             <option value="all" @selected(($statusFilter ?? 'all') === 'all')>{{ __('Alle') }}</option>
                             <option value="2" @selected(($statusFilter ?? '') === '2')>{{ __('Offen') }}</option>
@@ -162,7 +162,7 @@
                     </div>
                 @elseif ($activeTab === 'urlaub')
                     <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Typ') }}</span></label>
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Typ') }}</span></label>
                         <select name="vtype" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle Typen') }}</option>
                             <option value="{{ \App\Enums\Vacation\VacationType::Vacation->value }}" @selected(($filters['vtype'] ?? '') === \App\Enums\Vacation\VacationType::Vacation->value)>{{ __('Urlaub') }}</option>
@@ -172,7 +172,7 @@
                         </select>
                     </div>
                     <div class="flex flex-1 flex-col min-w-40">
-                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</span></label>
+                        <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Status') }}</span></label>
                         <select name="vstatus" class="select select-bordered select-sm w-full">
                             <option value="">{{ __('Alle Status') }}</option>
                             <option value="{{ \App\Enums\Vacation\VacationStatus::Rejected->value }}"  @selected(($filters['vstatus'] ?? '') === \App\Enums\Vacation\VacationStatus::Rejected->value)>{{ __('Abgelehnt') }}</option>
@@ -271,7 +271,7 @@
                             <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$vacationIsAdmin ? 6 : 5" :title="__('Keine Einträge.')" compact />
+                        <x-table.empty icon="beach_access" :colspan="$vacationIsAdmin ? 6 : 5" :title="__('Keine Einträge.')" compact />
                     @endforelse
                 </x-table>
             @elseif ($activeTab === 'auftraege')
@@ -315,7 +315,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :colspan="5" :title="__('Keine Einträge.')" compact />
+                        <x-table.empty icon="menu_book" :colspan="5" :title="__('Keine Einträge.')" compact />
                     @endforelse
                 </x-table>
             @elseif ($activeTab === 'bereitschaft')
@@ -342,7 +342,7 @@
                             <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :colspan="4" :title="__('Keine Einträge.')" compact />
+                        <x-table.empty icon="notifications_active" :colspan="4" :title="__('Keine Einträge.')" compact />
                     @endforelse
                 </x-table>
             @elseif ($activeTab === 'notdienst')
@@ -369,7 +369,7 @@
                             <td class="text-xs text-base-content/70">{{ $duration !== null ? trans_choice('{1} :n Tag|[2,*] :n Tage', $duration, ['n' => $duration]) : '—' }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="4" :title="__('Keine Einträge.')" compact />
+                        <x-table.empty icon="medical_services" :colspan="4" :title="__('Keine Einträge.')" compact />
                     @endforelse
                 </x-table>
             @endif

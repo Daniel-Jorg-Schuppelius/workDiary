@@ -31,7 +31,7 @@
         ]))->all()" />
 
     @if ($orders->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">shopping_cart</span>'
+        <x-empty-state framed icon="shopping_cart"
                        :title="__('procurement.empty')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">

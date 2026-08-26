@@ -62,7 +62,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty :colspan="7" icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :title="__('Noch keine Schichttypen angelegt.')" compact />
+                        <x-table.empty :colspan="7" icon="schedule" :title="__('Noch keine Schichttypen angelegt.')" compact />
                     @endforelse
         </x-table>
     </x-form-group>
@@ -76,7 +76,7 @@
 
             <div class="flex flex-wrap items-center gap-3">
                 <label class="flex cursor-pointer items-center gap-1.5 text-sm">
-                    <span class="text-xs text-base-content/60">{{ __('Farbe') }}</span>
+                    <span class="text-xs text-muted">{{ __('Farbe') }}</span>
                     <input type="color" id="shift-type-color" name="color" value="#3b82f6"
                            class="h-7 w-9 cursor-pointer rounded border border-base-300 p-0.5">
                 </label>
@@ -87,18 +87,23 @@
             </div>
 
             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Name') }} *</label>
-                    <input type="text" id="shift-type-name" name="name" maxlength="100" required
-                           class="input input-bordered w-full" placeholder="{{ __('z.B. Frühschicht') }}">
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Kürzel') }} (max. 5) *</label>
-                    <input type="text" id="shift-type-abbr" name="abbreviation" maxlength="5" required
-                           class="input input-bordered w-full font-mono uppercase" placeholder="{{ __('z.B. F') }}">
-                </div>
+                <x-input-field name="name"
+                               :label="__('Name')"
+                               type="text"
+                               required
+                               id="shift-type-name"
+                               maxlength="100"
+                               placeholder="{{ __('z.B. Frühschicht') }}" />
+                <x-input-field name="abbreviation"
+                               label="{{ __('Kürzel') }} (max. 5)"
+                               type="text"
+                               required
+                               class="font-mono uppercase"
+                               id="shift-type-abbr"
+                               maxlength="5"
+                               placeholder="{{ __('z.B. F') }}" />
                 <div class="fieldset md:col-span-2">
-                    <label class="fieldset-label">{{ __('Von – Bis') }}</label>
+                    <span class="fieldset-label">{{ __('Von – Bis') }}</span>
                     <div class="join w-full">
                         <input type="time" id="shift-type-start" name="default_start_time"
                                class="join-item input input-bordered flex-1 min-w-0"

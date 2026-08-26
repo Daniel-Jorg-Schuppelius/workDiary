@@ -63,8 +63,8 @@
     {{-- Personalverwaltung/Geschäftsführung: Identität read-only, voller Personal-/Payroll-Block editierbar. --}}
     <x-form-group :legend="__('Mitarbeiter')" icon="person" tone="primary" cols="2">
         <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
-            <input type="text" class="input input-bordered w-full" value="{{ $member->name }}" disabled>
+            <label for="member-name-readonly" class="fieldset-label">{{ __('Mitarbeiter') }}</label>
+            <input id="member-name-readonly" type="text" class="input input-bordered w-full" value="{{ $member->name }}" disabled>
         </div>
     </x-form-group>
 

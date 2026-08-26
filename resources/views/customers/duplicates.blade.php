@@ -55,7 +55,7 @@
         <details @if (session('manual_open')) open @endif>
             <summary class="cursor-pointer text-sm font-medium">
                 {{ __('Manuell zusammenführen') }}
-                <span class="ml-1 text-base-content/50">{{ __('— zwei Kunden frei wählen (für Dubletten, die der Abgleich nicht erkennt)') }}</span>
+                <span class="ml-1 text-muted">{{ __('— zwei Kunden frei wählen (für Dubletten, die der Abgleich nicht erkennt)') }}</span>
             </summary>
             <form method="GET" action="{{ route('customers.duplicates.compare') }}"
                   class="mt-3 grid grid-cols-1 gap-3 md:grid-cols-[1fr_1fr_auto] md:items-end">
@@ -87,7 +87,7 @@
     </x-card>
 
     @if ($candidates->isEmpty())
-        <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">difference</span>' :title="__('Keine Dubletten-Kandidaten im gewählten Filter.')" tone="success" framed />
+        <x-empty-state icon="difference" :title="__('Keine Dubletten-Kandidaten im gewählten Filter.')" tone="success" framed />
     @else
         {{-- Logik in Alpine.data("pairSelection") (components.js) — CSP-Build-konform. --}}
         <div x-data="pairSelection"
@@ -95,7 +95,7 @@
             <label class="mb-3 inline-flex cursor-pointer items-center gap-2 text-sm">
                 <input type="checkbox" class="checkbox checkbox-sm" :checked="allSelected()" @change="toggleAll()">
                 {{ __('Alle auswählen') }}
-                <span class="text-base-content/50">({{ $candidates->count() }})</span>
+                <span class="text-muted">({{ $candidates->count() }})</span>
             </label>
             <div x-cloak x-show="hasSelection()"
                  class="sticky top-2 z-10 mb-3 flex items-center justify-between gap-2 rounded-box border border-primary/40 bg-base-100 px-4 py-2 shadow-md">
@@ -163,14 +163,14 @@
                                     @endphp
                                     @if ($tv !== '' || $sv !== '')
                                         <tr>
-                                            <td class="text-base-content/60">{{ $label }}</td>
-                                            <td class="{{ $tv === '' ? 'text-base-content/30' : '' }}">{{ $tv !== '' ? $tv : '—' }}</td>
-                                            <td class="{{ $tv !== $sv ? 'text-warning' : 'text-base-content/50' }}">{{ $sv !== '' ? $sv : '—' }}</td>
+                                            <td class="text-muted">{{ $label }}</td>
+                                            <td class="{{ $tv === '' ? 'text-muted' : '' }}">{{ $tv !== '' ? $tv : '—' }}</td>
+                                            <td class="{{ $tv !== $sv ? 'text-warning' : 'text-muted' }}">{{ $sv !== '' ? $sv : '—' }}</td>
                                         </tr>
                                     @endif
                                 @endforeach
                                 <tr>
-                                    <td class="text-base-content/60">{{ __('Projekte') }}</td>
+                                    <td class="text-muted">{{ __('Projekte') }}</td>
                                     <td>{{ (int) ($target->projects_count ?? 0) }}</td>
                                     <td>{{ (int) ($source->projects_count ?? 0) }}</td>
                                 </tr>

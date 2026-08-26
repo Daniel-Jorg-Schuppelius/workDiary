@@ -19,10 +19,10 @@
 
     {{-- ── File info ── --}}
     <div class="mb-4 flex items-center gap-3 rounded-box border border-base-300 bg-base-200/40 px-4 py-3 text-sm">
-        <span class="text-base-content/60">{{ __('Datei:') }}</span>
+        <span class="text-muted">{{ __('Datei:') }}</span>
         <span class="font-medium">{{ basename($filePath) }}</span>
-        <span class="text-base-content/40">·</span>
-        <span class="text-base-content/60">{{ count($rows) }} {{ __('Zeilen erkannt') }}</span>
+        <span class="text-muted">·</span>
+        <span class="text-muted">{{ count($rows) }} {{ __('Zeilen erkannt') }}</span>
     </div>
 
     {{-- ── Preview table ── --}}
@@ -44,7 +44,7 @@
                 @endforeach
         </x-table>
         @if (count($rows) > 5)
-            <p class="px-4 py-2 text-xs text-base-content/50">… {{ count($rows) - 5 }} {{ __('weitere Zeilen') }}</p>
+            <p class="px-4 py-2 text-xs text-muted">… {{ count($rows) - 5 }} {{ __('weitere Zeilen') }}</p>
         @endif
     </div>
 

@@ -86,21 +86,21 @@
             <template x-for="(it, i) in items" :key="i">
                 <div class="grid grid-cols-1 items-end gap-2 rounded-box border border-base-300 bg-base-200/40 p-3 sm:grid-cols-[1fr_1fr_auto]">
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('communication.field.participant_name') }}</label>
+                        <label :for="fieldName(i, 'name')" class="fieldset-label">{{ __('communication.field.participant_name') }}</label>
                         <input type="text" maxlength="120"
-                               :name="fieldName(i, 'name')" x-model="it.name"
+                               :id="fieldName(i, 'name')" :name="fieldName(i, 'name')" x-model="it.name"
                                class="input input-sm input-bordered w-full">
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('communication.field.participant_role') }}</label>
+                        <label :for="fieldName(i, 'role')" class="fieldset-label">{{ __('communication.field.participant_role') }}</label>
                         <input type="text" maxlength="40"
-                               :name="fieldName(i, 'role')" x-model="it.role"
+                               :id="fieldName(i, 'role')" :name="fieldName(i, 'role')" x-model="it.role"
                                class="input input-sm input-bordered w-full">
                     </div>
                     <div class="flex items-end gap-2">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('communication.field.participant_party') }}</label>
-                            <select :name="fieldName(i, 'party')" x-model="it.party"
+                            <label :for="fieldName(i, 'party')" class="fieldset-label">{{ __('communication.field.participant_party') }}</label>
+                            <select :id="fieldName(i, 'party')" :name="fieldName(i, 'party')" x-model="it.party"
                                     class="select select-sm select-bordered">
                                 @foreach (\App\Enums\Communication\ParticipantParty::cases() as $party)
                                     <option value="{{ $party->value }}">{{ $party->label() }}</option>

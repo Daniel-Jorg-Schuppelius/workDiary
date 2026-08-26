@@ -84,6 +84,6 @@
         </x-table>
     </x-card>
 
-    <p class="text-xs text-base-content/60">{{ $disclaimer }}</p>
+    <p class="text-xs text-muted">{{ $disclaimer }}</p>
 </x-index-page>
 @endsection

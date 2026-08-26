@@ -67,7 +67,7 @@
             </tr>
         @empty
             <x-table.empty :colspan="5"
-                icon='<span class="material-symbols-outlined" aria-hidden="true">person</span>'
+                icon="person"
                 :title="__('access.empty.members')" compact />
         @endforelse
     </x-table>

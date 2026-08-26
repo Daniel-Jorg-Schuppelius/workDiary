@@ -18,6 +18,7 @@ use App\Enums\TimeAccount\{CarryoverPolicy, TimeAccountSource};
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{Attendance, ExternalWageItem, Organization, ScheduledShift, SickLeave, TimeAccount, TimeAccountEntry, TimeAccountRule, User, Vacation};
 use App\Models\Surcharge\TimeRuleResult;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 
@@ -244,8 +245,8 @@ final class TimeAccountPostingService {
                     SickLeave::query()
                         ->withoutGlobalScopes()
                         ->where('organization_id', $orgId)
-                        ->whereDate('start_date', '<=', $toStr)
-                        ->whereDate('end_date', '>=', $fromStr)
+                        ->where('start_date', '<=', DateRange::day($toStr))
+                        ->where('end_date', '>=', DateRange::day($fromStr))
                         ->get(['id', 'user_id', 'start_date', 'end_date'])
                         ->each(function (SickLeave $s) use (&$out, $from, $to): void {
                             foreach ($this->expandDays($s->start_date->toDateString(), $s->end_date->toDateString(), $from, $to) as $day) {
@@ -259,8 +260,8 @@ final class TimeAccountPostingService {
                     ->where('organization_id', $orgId)
                     ->where('status', VacationStatus::Approved->value)
                     ->when($rule->match_value !== null, fn ($q) => $q->where('type', $rule->match_value))
-                    ->whereDate('start_date', '<=', $toStr)
-                    ->whereDate('end_date', '>=', $fromStr)
+                    ->where('start_date', '<=', DateRange::day($toStr))
+                    ->where('end_date', '>=', DateRange::day($fromStr))
                     ->get(['id', 'user_id', 'start_date', 'end_date'])
                     ->each(function (Vacation $v) use (&$out, $from, $to): void {
                         foreach ($this->expandDays($v->start_date->toDateString(), $v->end_date->toDateString(), $from, $to) as $day) {
@@ -323,7 +324,7 @@ final class TimeAccountPostingService {
             ->withoutGlobalScopes()
             ->where('time_account_id', $account->getKey())
             ->where('user_id', $candidate['user_id'])
-            ->whereDate('booking_date', $candidate['booking_date'])
+            ->where('booking_date', DateRange::day($candidate['booking_date']))
             ->where('source_id', $candidate['source_id'])
             ->whereNull('reversal_of_id')
             ->whereNotExists(function ($q): void {
@@ -378,7 +379,7 @@ final class TimeAccountPostingService {
                     ->withoutGlobalScopes()
                     ->where('time_account_id', $account->getKey())
                     ->where('user_id', $userId)
-                    ->whereDate('booking_date', '<=', $monthEnd->toDateString())
+                    ->where('booking_date', '<=', DateRange::day($monthEnd))
                     ->sum('quantity');
                 if ($balance <= $cap) {
                     continue;

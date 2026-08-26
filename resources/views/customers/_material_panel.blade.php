@@ -34,15 +34,15 @@
 
     <div class="grid grid-cols-1 gap-px border-b border-base-300 bg-base-300 sm:grid-cols-3">
         <div class="bg-base-100 px-4 py-3">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('customer-material.revenue') }}</div>
+            <div class="text-xs uppercase tracking-wider text-muted">{{ __('customer-material.revenue') }}</div>
             <div class="font-['Space_Grotesk'] text-lg font-semibold tabular-nums">{{ $fmt($invoicedRange) }}</div>
         </div>
         <div class="bg-base-100 px-4 py-3">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">{{ __('customer-material.material_cost') }}</div>
+            <div class="text-xs uppercase tracking-wider text-muted">{{ __('customer-material.material_cost') }}</div>
             <div class="font-['Space_Grotesk'] text-lg font-semibold tabular-nums">{{ $fmt($materialRange) }}</div>
         </div>
         <div class="bg-base-100 px-4 py-3">
-            <div class="text-xs uppercase tracking-wider text-base-content/60">
+            <div class="text-xs uppercase tracking-wider text-muted">
                 {{ __('customer-material.profit') }}
                 @if ($margin !== null)
                     <span class="ml-1 font-normal normal-case">({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($margin, 1) }} % {{ __('customer-material.margin') }})</span>
@@ -52,11 +52,11 @@
         </div>
     </div>
 
-    <p class="px-4 pt-2 text-xs text-base-content/50">{{ __('customer-material.range_hint', ['range' => $statsRangeLabel]) }}</p>
-    <p class="px-4 pb-1 text-xs text-base-content/50">{{ __('customer-material.double_count_hint') }}</p>
+    <p class="px-4 pt-2 text-xs text-muted">{{ __('customer-material.range_hint', ['range' => $statsRangeLabel]) }}</p>
+    <p class="px-4 pb-1 text-xs text-muted">{{ __('customer-material.double_count_hint') }}</p>
 
     @if ($materialAllocations->isEmpty())
-        <p class="px-4 py-6 text-sm text-base-content/60">{{ __('customer-material.empty_hint') }}</p>
+        <p class="px-4 py-6 text-sm text-muted">{{ __('customer-material.empty_hint') }}</p>
     @else
         <x-table bare>
             <x-slot:head>

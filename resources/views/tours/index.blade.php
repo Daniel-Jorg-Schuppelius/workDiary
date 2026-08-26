@@ -95,7 +95,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">route</span>' :colspan="8" :title="__('Keine Touren im gewählten Zeitraum')" compact />
+                <x-table.empty icon="route" :colspan="8" :title="__('Keine Touren im gewählten Zeitraum')" compact />
             @endforelse
         </x-table>
 

@@ -164,6 +164,45 @@ class NavigationRegistry {
         ));
     }
 
+    /**
+     * Alle Navigations-Schlüssel, die der aktuelle Nutzer sehen DARF —
+     * Modul-/Plan-Gating und Rechte an, Per-User-Ausblendungen bewusst aus
+     * (Ausgeblendetes bleibt wählbar, sonst könnte man es nie zurückholen).
+     *
+     * Gemeinsame Whitelist der Menüanpassung (Feature 081) und der eigenen
+     * Arbeitsbereiche (Feature 082 Phase 2): Beide dürfen exakt dasselbe
+     * anbieten, sonst wäre eine der beiden Oberflächen ein Rechteleck.
+     *
+     * @return list<string>
+     */
+    public function selectableKeys(): array {
+        $keys = [];
+        foreach ($this->filterSidebar($this->sidebarBlueprint('duties.index'), []) as $section) {
+            $keys[] = self::KEY_SECTION . (string) $section['key'];
+            foreach ((array) ($section['items'] ?? []) as $item) {
+                if (\is_array($item)) {
+                    $keys[] = self::KEY_ITEM . (string) $item['route'];
+                }
+            }
+            foreach ((array) ($section['groups'] ?? []) as $group) {
+                if (! \is_array($group)) {
+                    continue;
+                }
+                $keys[] = self::KEY_GROUP . (string) $group['key'];
+                foreach ((array) ($group['items'] ?? []) as $item) {
+                    if (\is_array($item)) {
+                        $keys[] = self::KEY_ITEM . (string) $item['route'];
+                    }
+                }
+            }
+        }
+        foreach ($this->filterCreateGroups($this->createGroupsBlueprint(), []) as $group) {
+            $keys[] = self::KEY_CREATE . (string) ($group['key'] ?? '');
+        }
+
+        return array_values(array_unique($keys));
+    }
+
     /** Rechte-Ebene einer Route (NavGate::mayAccess) — für den Funktionskatalog. */
     public function mayAccessRoute(string $route): bool {
         return $this->gate->mayAccess($route);
@@ -232,6 +271,7 @@ class NavigationRegistry {
             'rental.profiles.index' => 'module.rental',
             'rental.rates.index' => 'module.rental',
             'rental.reports.index' => 'module.rental',
+            'rental.requests.index' => 'module.rental',
             'disposal.index' => 'module.entsorgung',
             'disposal.reports.index' => 'module.entsorgung',
             'asset-finance.index' => 'module.asset_finance',
@@ -250,11 +290,13 @@ class NavigationRegistry {
             'ideas.index' => 'module.ideas',
             'form-submissions.index' => 'module.forms',
             'finance.open-times.index' => 'module.finance',
+            'finance.dunning.index' => 'module.finance',
             'finance.transfers.index' => 'module.finance',
             'finance.reconciliation.index' => 'module.finance',
             'finance.bank-accounts.index' => 'module.finance',
             'finance.datev.index' => 'module.finance',
             'finance.gobd.index' => 'module.finance',
+            'finance.procedure-documentation.index' => 'module.finance',
             'finance.payment-runs.index' => 'module.finance',
             'finance.mandates.index' => 'module.finance',
             'finance.accounting.setup' => 'module.finance',
@@ -267,7 +309,9 @@ class NavigationRegistry {
             'finance.accounting.filings.index' => 'module.finance',
             'reports.accounting.index' => 'module.finance',
             'reports.accounting.recapitulative' => 'module.finance',
+            'reports.accounting.bwa' => 'module.finance',
             'finance.accounting.rules.index' => 'module.finance',
+            'finance.accounting.fixed-assets.index' => 'module.finance',
             // Lager & Fertigung: ohne module.lager ausblenden statt nur per Route-Gate (423) sperren.
             'articles.index' => 'module.lager',
             'warehouses.index' => 'module.lager',
@@ -281,6 +325,7 @@ class NavigationRegistry {
             'inventory.lots' => 'module.lager',
             'inventory.label-templates.index' => 'module.lager',
             'b2b-catalog.index' => 'module.b2b_katalog',
+            'construction-notices.index' => 'module.bau',
             'bill-of-quantities.index' => 'module.bau',
             'bill-of-quantities.packages' => 'module.bau',
             'catalog-rules.index' => 'module.bau',
@@ -569,6 +614,11 @@ class NavigationRegistry {
                         ...(Gate::allows('timeEntry.viewAny')
                             ? [['route' => 'finance.open-times.index', 'label' => __('finance.open_times.menu'), 'icon' => 'pending_actions', 'modal' => false, 'matches' => ['finance.open-times.*']]]
                             : []),
+                        // Mahnlauf (Feature 127, MVP-691): Arbeitsliste fälliger
+                        // Mahnstufen lokal geführter Rechnungen.
+                        ...((Auth::user()?->canManageBilling() ?? false)
+                            ? [['route' => 'finance.dunning.index', 'label' => __('finance.dunning.menu'), 'icon' => 'notification_important', 'modal' => false, 'matches' => ['finance.dunning.*']]]
+                            : []),
                         // Bürgschaftsregister (Feature 114, MVP-603): Sicherheiten
                         // für Geld gehören zur Abrechnung, nicht zum Projekt.
                         ['route' => 'guarantees.index', 'label' => __('guarantee.title'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['guarantees.*']],
@@ -576,8 +626,18 @@ class NavigationRegistry {
                         // Einbehalt (602) und Bürgschaft (603) — deshalb hier und
                         // nicht am Projekt.
                         ['route' => 'warranties.index', 'label' => __('warranty.title'), 'icon' => 'shield_with_heart', 'modal' => false, 'matches' => ['warranties.*']],
+                        // VOB/B-Schreiben (Feature 062, MVP-728): Behinderungsanzeige und
+                        // Bedenkenanmeldung — sie wirken auf Bauzeit und Gewährleistung,
+                        // deshalb neben den Fristen statt beim Bautagebuch.
+                        ['route' => 'construction-notices.index', 'label' => __('construction.title'), 'icon' => 'report', 'modal' => false, 'matches' => ['construction-notices.*']],
                         // Zählerstands-Faktura (Feature 116, MVP-605).
                         ['route' => 'metering.index', 'label' => __('metering.title'), 'icon' => 'speed', 'modal' => false, 'matches' => ['metering.*']],
+                        // Provisionen (Feature 146, MVP-729): Basis ist die BEZAHLTE
+                        // Rechnung — deshalb bei der Abrechnung und nicht bei den Leads.
+                        // Ein Eintrag für alle drei Seiten (Zeilen, Regeln, Läufe).
+                        ...(($user?->can(Permission::CommissionViewAny->value) || $user?->can(Permission::CommissionManage->value))
+                            ? [['route' => 'commissions.index', 'label' => __('commission.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['commissions.*', 'commission-rules.*', 'commission-runs.*']]]
+                            : []),
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
                     ],
@@ -613,6 +673,7 @@ class NavigationRegistry {
                                 ['route' => 'finance.accounting.filings.index', 'label' => __('accounting.filing.calendar.menu'), 'icon' => 'event_available', 'modal' => false, 'matches' => ['finance.accounting.filings.*']],
                                 ['route' => 'finance.accounting.closing.index', 'label' => __('accounting.closing.menu'), 'icon' => 'lock_clock', 'modal' => false, 'matches' => ['finance.accounting.closing.*']],
                                 ['route' => 'finance.accounting.recurring.index', 'label' => __('accounting.recurring.menu'), 'icon' => 'event_repeat', 'modal' => false, 'matches' => ['finance.accounting.recurring.*']],
+                                ['route' => 'finance.accounting.fixed-assets.index', 'label' => __('accounting.fixed_assets.menu'), 'icon' => 'precision_manufacturing', 'modal' => false, 'matches' => ['finance.accounting.fixed-assets.*']],
                                 // Einrichtung zuletzt: Kontenplan und Regeln richtet
                                 // man einmal ein, gebucht wird täglich.
                                 ['route' => 'finance.accounting.accounts.index', 'label' => __('accounting.ledger.accounts.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.accounting.accounts.*']],
@@ -628,6 +689,7 @@ class NavigationRegistry {
                             : []),
                         ['route' => 'finance.datev.index', 'label' => __('finance.datev.menu'), 'icon' => 'account_tree', 'modal' => false, 'matches' => ['finance.datev.*']],
                         ['route' => 'finance.gobd.index', 'label' => __('gobd.title'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['finance.gobd.*']],
+                        ['route' => 'finance.procedure-documentation.index', 'label' => __('procedure-documentation.menu'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['finance.procedure-documentation.*']],
                     ],
                 ],
             ],
@@ -641,6 +703,39 @@ class NavigationRegistry {
                 'items' => [
                     ['route' => 'whistleblowing.internal.index', 'label' => __('Meldestelle'), 'icon' => 'report', 'modal' => false, 'matches' => ['whistleblowing.internal.*']],
                 ],
+            ];
+        }
+        // Arbeitsschutz-Register (Feature 132): GBU, Unterweisung, Vorsorge — safety.viewAny/manage,
+        // Kernmodul ohne Plan-Gate (wie die Sicherheitsereignisse unter „Wissen & Doku").
+        // Trainingsmanagement (Feature 145) hängt in derselben Sektion, hat aber
+        // eigene Rechte — Personalverwaltung sieht Schulungen ohne GBU-Zugriff.
+        $showSafetyRegister = Gate::allows('viewAny', \App\Models\Safety\HazardAssessment::class);
+        $showTraining = Gate::allows('viewAny', \App\Models\Training\TrainingCourse::class);
+        if ($showSafetyRegister || $showTraining) {
+            $sidebarSections[] = [
+                'key' => 'safety',
+                'label' => __('safety.register.section'),
+                'collapsible' => true,
+                'items' => $this->compactItems([
+                    $showSafetyRegister
+                        ? ['route' => 'safety.assessments.index', 'label' => __('safety.register.nav.assessments'), 'icon' => 'checklist', 'modal' => false, 'matches' => ['safety.assessments.*']]
+                        : null,
+                    $showSafetyRegister
+                        ? ['route' => 'safety.instructions.index', 'label' => __('safety.register.nav.instructions'), 'icon' => 'school', 'modal' => false, 'matches' => ['safety.instructions.*']]
+                        : null,
+                    $showSafetyRegister
+                        ? ['route' => 'safety.checkups.index', 'label' => __('safety.register.nav.checkups'), 'icon' => 'medical_services', 'modal' => false, 'matches' => ['safety.checkups.*']]
+                        : null,
+                    $showTraining
+                        ? ['route' => 'training.courses.index', 'label' => __('training.nav.courses'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['training.courses.*']]
+                        : null,
+                    $showTraining
+                        ? ['route' => 'training.requirements.index', 'label' => __('training.nav.requirements'), 'icon' => 'grid_view', 'modal' => false, 'matches' => ['training.requirements.*']]
+                        : null,
+                    $showTraining
+                        ? ['route' => 'training.assignments.index', 'label' => __('training.nav.assignments'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['training.assignments.*']]
+                        : null,
+                ]),
             ];
         }
         if (Gate::allows('viewAny', \App\Models\Sustainability\SustainabilityAssessment::class)) {
@@ -719,6 +814,7 @@ class NavigationRegistry {
                 'items' => [
                     ['route' => 'rental.index', 'label' => __('Verleihakten'), 'icon' => 'forklift', 'modal' => false, 'matches' => ['rental.index', 'rental.show']],
                     ['route' => 'rental.calendar', 'label' => __('Verfügbarkeitskalender'), 'icon' => 'calendar_month', 'modal' => false, 'matches' => ['rental.calendar']],
+                    ['route' => 'rental.requests.index', 'label' => __('Verleih-Anfragen'), 'icon' => 'mark_email_unread', 'modal' => false, 'matches' => ['rental.requests.*']],
                     ['route' => 'rental.profiles.index', 'label' => __('Gerätepool'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['rental.profiles.*']],
                     ['route' => 'rental.rates.index', 'label' => __('Preislisten'), 'icon' => 'price_change', 'modal' => false, 'matches' => ['rental.rates.*']],
                     ['route' => 'rental.reports.index', 'label' => __('Verleihbericht'), 'icon' => 'query_stats', 'modal' => false, 'matches' => ['rental.reports.*']],
@@ -787,6 +883,16 @@ class NavigationRegistry {
             Gate::allows('viewAny', \App\Models\Privacy\ProcessingActivity::class)
             || Gate::allows('viewAny', \App\Models\Privacy\DataSubjectRequest::class)
         ) {
+            $caseItems = [
+                ['route' => 'dataprotection.requests.index', 'label' => __('Betroffenenanfragen'), 'icon' => 'contact_mail', 'modal' => false, 'matches' => ['dataprotection.requests.*']],
+                ['route' => 'dataprotection.incidents.index', 'label' => __('Datenschutzvorfälle'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['dataprotection.incidents.*']],
+                ['route' => 'dataprotection.compliance.index', 'label' => __('Lückenanalyse'), 'icon' => 'rule', 'modal' => false, 'matches' => ['dataprotection.compliance.*']],
+            ];
+            // Betroffenenportal (G11, MVP-728) haengt an einer eigenen Permission.
+            if (Gate::allows('dataprotection.portal.manage')) {
+                $caseItems[] = ['route' => 'dataprotection.portal.edit', 'label' => __('dsar.admin.nav'), 'icon' => 'contact_support', 'modal' => false, 'matches' => ['dataprotection.portal.*']];
+            }
+
             $sidebarSections[] = [
                 'key' => 'datenschutz',
                 'label' => __('Datenschutz'),
@@ -807,11 +913,7 @@ class NavigationRegistry {
                         'key' => 'datenschutz-cases',
                         'label' => __('Vorfälle & Prüfung'),
                         'icon' => 'gpp_maybe',
-                        'items' => [
-                            ['route' => 'dataprotection.requests.index', 'label' => __('Betroffenenanfragen'), 'icon' => 'contact_mail', 'modal' => false, 'matches' => ['dataprotection.requests.*']],
-                            ['route' => 'dataprotection.incidents.index', 'label' => __('Datenschutzvorfälle'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['dataprotection.incidents.*']],
-                            ['route' => 'dataprotection.compliance.index', 'label' => __('Lückenanalyse'), 'icon' => 'rule', 'modal' => false, 'matches' => ['dataprotection.compliance.*']],
-                        ],
+                        'items' => $caseItems,
                     ],
                 ],
             ];
@@ -929,6 +1031,10 @@ class NavigationRegistry {
                         $user?->can(Permission::SafetyViewAny->value)
                             ? ['route' => 'reports.safety', 'label' => __('safety.report.nav'), 'icon' => 'health_and_safety', 'modal' => false, 'matches' => ['reports.safety']]
                             : null,
+                        // Schulungs-Auswertung (Feature 145, MVP-727).
+                        ($user?->can(Permission::TrainingViewAny->value) || $user?->can(Permission::TrainingManage->value))
+                            ? ['route' => 'reports.training', 'label' => __('training.report.nav'), 'icon' => 'school', 'modal' => false, 'matches' => ['reports.training']]
+                            : null,
                     ]),
                 ],
                 [
@@ -962,6 +1068,10 @@ class NavigationRegistry {
                         $user?->can(Permission::SlaContractView->value)
                             ? ['route' => 'sla-contracts.index', 'label' => __('SLA-Verträge'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['sla-contracts.index', 'sla-contracts.show']]
                             : null,
+                        // Prozedur-Abweichungen (Feature 026, MVP-713): Recht wie die Abweichungserfassung.
+                        $user?->can(Permission::ProcedureDeviationView->value)
+                            ? ['route' => 'reports.procedure-deviations', 'label' => __('procedure.report.nav'), 'icon' => 'rule', 'modal' => false, 'matches' => ['reports.procedure-deviations']]
+                            : null,
                     ]),
                 ],
                 [
@@ -970,6 +1080,8 @@ class NavigationRegistry {
                     'icon' => 'inventory_2',
                     'items' => $this->compactItems([
                         ['route' => 'reports.fleet', 'label' => __('Fuhrpark'), 'icon' => 'directions_car', 'modal' => false, 'matches' => ['reports.fleet']],
+                        // Feature 137: steuerliches Fahrtenbuch (Fahrzeug + Zeitraum, Fahrtarten, privater Anteil).
+                        ['route' => 'reports.logbook', 'label' => __('Fahrtenbuch-Nachweis'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['reports.logbook']],
                         ['route' => 'reports.materials', 'label' => __('Materialien'), 'icon' => 'inventory', 'modal' => false, 'matches' => ['reports.materials']],
                         ['route' => 'reports.on-call', 'label' => __('Notdienst'), 'icon' => 'notifications_active', 'modal' => false, 'matches' => ['reports.on-call']],
                         // Importbericht Cloud-Dokumenteingang (Feature 080 P9): org-weite
@@ -989,10 +1101,18 @@ class NavigationRegistry {
                             ? ['route' => 'reports.economics', 'label' => __('Wirtschaftlichkeit'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['reports.economics']]
                             : null,
                         ['route' => 'reports.billing', 'label' => __('Abrechnung'), 'icon' => 'request_quote', 'modal' => false, 'matches' => ['reports.billing']],
+                        // Umsatz je Produkt (MVP-705, Feature 140): Rechnungsdaten → Recht wie der Abrechnungsbericht.
+                        ($user?->isAdmin() || Gate::allows('timeEntry.viewAny'))
+                            ? ['route' => 'reports.product-revenue', 'label' => __('Umsatz je Produkt'), 'icon' => 'inventory', 'modal' => false, 'matches' => ['reports.product-revenue']]
+                            : null,
                         // Finanzberichte der lokalen Buchhaltung (Feature 125, MVP-676) —
                         // wie der Hauptbuch-Arbeitsplatz nur bei lokaler Führung.
                         ...(Gate::allows(\App\Enums\User\Permission::AccountingLedgerView->value) && $this->localLedgerVisible()
-                            ? [['route' => 'reports.accounting.index', 'label' => __('accounting.reports.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['reports.accounting.*']]]
+                            ? [
+                                ['route' => 'reports.accounting.index', 'label' => __('accounting.reports.menu'), 'icon' => 'account_balance_wallet', 'modal' => false, 'matches' => ['reports.accounting.*']],
+                                // BWA & Budget (Feature 142, MVP-709): spezifischeres Muster gewinnt die Aktiv-Markierung.
+                                ['route' => 'reports.accounting.bwa', 'label' => __('accounting.bwa.menu'), 'icon' => 'analytics', 'modal' => false, 'matches' => ['reports.accounting.bwa', 'reports.accounting.budget.*']],
+                            ]
                             : []),
                         // Zahlungsverhalten (MVP-468): lokale Rechnungsdaten → nur report.view/Admin.
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
@@ -1752,6 +1872,8 @@ class NavigationRegistry {
             $userNavItems[] = ['route' => 'account.profile.edit', 'label' => __('Profil bearbeiten'), 'modal' => true];
             $userNavItems[] = ['route' => 'account.work-schedule', 'label' => __('Arbeitszeit-Modell'), 'modal' => true];
             $userNavItems[] = ['route' => 'account.calendar.show', 'label' => __('Kalender-Abo'), 'modal' => false];
+            // Eigenauskunft Personalakte (Feature 141): eigene Akte lesend.
+            $userNavItems[] = ['route' => 'account.personnel-file', 'label' => __('hr.personnel_file.nav'), 'modal' => false];
         } else {
             $userNavItems[] = ['route' => 'legacy.account.password.edit', 'label' => __('Passwort ändern'), 'modal' => true];
         }

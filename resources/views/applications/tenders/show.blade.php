@@ -146,7 +146,7 @@
                             <x-status-badge size="xs" outline>{{ __("values.{$requirement->status}") }}</x-status-badge>
                             <span @class(['font-medium', 'line-through opacity-60' => $requirement->status === 'not_applicable'])>{{ $requirement->label }}</span>
                             @unless ($requirement->required)<span class="badge badge-ghost badge-xs">{{ __('optional') }}</span>@endunless
-                            @if ($requirement->due_on)<span class="text-xs text-base-content/60">{{ __('bis :date', ['date' => $requirement->due_on->fdate()]) }}</span>@endif
+                            @if ($requirement->due_on)<span class="text-xs text-muted">{{ __('bis :date', ['date' => $requirement->due_on->fdate()]) }}</span>@endif
                             @if ($requirement->document)
                                 <a class="link text-xs" href="{{ route('documents.show', $requirement->document) }}">{{ __('Dokument') }}</a>
                             @endif
@@ -255,7 +255,7 @@
                             {{ $bid->bidder_name }}
                             @if ($bid->is_own)<span class="wd-badge badge-outline">{{ __('eigenes Angebot') }}</span>@endif
                             @if ($bid->is_winner)<span class="wd-badge badge-success">{{ __('Zuschlag') }}</span>@endif
-                            @if ($bid->note)<div class="text-xs text-base-content/60">{{ $bid->note }}</div>@endif
+                            @if ($bid->note)<div class="text-xs text-muted">{{ $bid->note }}</div>@endif
                         </td>
                         <td class="text-right tabular-nums">
                             {{ $bid->amount !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $bid->amount, 2, withThousandsSeparator: true) . ' €' : '—' }}

@@ -71,7 +71,7 @@
                                     @if ($entry['visible'])
                                         <a href="{{ route($entry['route']) }}" class="link link-hover font-medium">{{ $entry['label'] }}</a>
                                     @else
-                                        <span class="font-medium text-base-content/60">{{ $entry['label'] }}</span>
+                                        <span class="font-medium text-muted">{{ $entry['label'] }}</span>
                                     @endif
                                     @if ($entry['status'] === \App\Enums\Licensing\ModuleStatus::NotLicensed)
                                         <span class="badge badge-ghost badge-sm">{{ __('Nicht lizenziert') }}</span>
@@ -86,7 +86,7 @@
                                     @endif
                                 </div>
                                 @if ($entry['status'] === \App\Enums\Licensing\ModuleStatus::NotLicensed && $entry['module_description'])
-                                    <p class="mt-0.5 text-xs text-base-content/60">{{ __($entry['module_description']) }} {{ __('scope.functions.upsell_hint') }}</p>
+                                    <p class="mt-0.5 text-xs text-muted">{{ __($entry['module_description']) }} {{ __('scope.functions.upsell_hint') }}</p>
                                 @endif
                             </div>
                             @if ($entry['status'] === \App\Enums\Licensing\ModuleStatus::InactiveByCustomer && $canManageScope)

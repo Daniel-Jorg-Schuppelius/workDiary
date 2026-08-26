@@ -101,7 +101,7 @@
     {{-- Termin ------------------------------------------------------------- --}}
     <x-form-group :legend="__('Termin')" icon="schedule" tone="info" cols="2">
         <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
+            <span class="fieldset-label">{{ __('Zeitraum') }} *</span>
             <x-date-range
                 type="datetime-local"
                 fromName="started_at"
@@ -189,8 +189,8 @@
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3 space-y-2">
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-2 items-end">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Raum') }}</label>
-                            <select :name="fieldName(i, 'room_id')" x-model="it.room_id"
+                            <label :for="fieldName(i, 'room_id')" class="fieldset-label">{{ __('Raum') }}</label>
+                            <select :id="fieldName(i, 'room_id')" :name="fieldName(i, 'room_id')" x-model="it.room_id"
                                     class="select select-sm select-bordered w-full" required>
                                 <option value="">—</option>
                                 @foreach ($rooms as $room)
@@ -200,7 +200,7 @@
                         </div>
 
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Belegung (Von – Bis)') }}</label>
+                            <span class="fieldset-label">{{ __('Belegung (Von – Bis)') }}</span>
                             <div class="join w-full">
                                 <input type="datetime-local"
                                        :name="fieldName(i, 'started_at')" x-model="it.started_at"
@@ -216,16 +216,16 @@
 
                     <div class="grid grid-cols-3 gap-2 items-end">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Aufbau (Min)') }}</label>
+                            <label :for="fieldName(i, 'setup_minutes_before')" class="fieldset-label">{{ __('Aufbau (Min)') }}</label>
                             <input type="number" min="0"
-                                   :name="fieldName(i, 'setup_minutes_before')"
+                                   :id="fieldName(i, 'setup_minutes_before')" :name="fieldName(i, 'setup_minutes_before')"
                                    x-model.number="it.setup_minutes_before"
                                    class="input input-sm input-bordered w-full">
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Abbau (Min)') }}</label>
+                            <label :for="fieldName(i, 'teardown_minutes_after')" class="fieldset-label">{{ __('Abbau (Min)') }}</label>
                             <input type="number" min="0"
-                                   :name="fieldName(i, 'teardown_minutes_after')"
+                                   :id="fieldName(i, 'teardown_minutes_after')" :name="fieldName(i, 'teardown_minutes_after')"
                                    x-model.number="it.teardown_minutes_after"
                                    class="input input-sm input-bordered w-full">
                         </div>
@@ -257,8 +257,8 @@
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
                     <div class="grid grid-cols-1 md:grid-cols-5 gap-2 items-end">
                         <div class="fieldset md:col-span-3">
-                            <label class="fieldset-label">{{ __('Benutzer') }}</label>
-                            <select :name="fieldName(i, 'user_id')" x-model="it.user_id"
+                            <label :for="fieldName(i, 'user_id')" class="fieldset-label">{{ __('Benutzer') }}</label>
+                            <select :id="fieldName(i, 'user_id')" :name="fieldName(i, 'user_id')" x-model="it.user_id"
                                     class="select select-sm select-bordered w-full" required>
                                 <option value="">—</option>
                                 @foreach ($users as $u)
@@ -267,8 +267,8 @@
                             </select>
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Rolle') }}</label>
-                            <select :name="fieldName(i, 'role')" x-model="it.role"
+                            <label :for="fieldName(i, 'role')" class="fieldset-label">{{ __('Rolle') }}</label>
+                            <select :id="fieldName(i, 'role')" :name="fieldName(i, 'role')" x-model="it.role"
                                     class="select select-sm select-bordered w-full">
                                 @foreach ($roles as $val => $label)
                                     <option value="{{ $val }}">{{ $label }}</option>

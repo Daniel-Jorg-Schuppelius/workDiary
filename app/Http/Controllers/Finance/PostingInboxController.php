@@ -78,16 +78,22 @@ class PostingInboxController extends Controller {
         $data = $request->validate([
             'kind' => ['required', 'string', 'in:' . implode(',', array_column(PostingSourceKind::cases(), 'value'))],
             'source_id' => ['required', 'integer'],
+            // Quellen mit Kontext (AfA: Anlage × Jahr) sind nur über den
+            // Idempotenzschlüssel eindeutig — die ID allein reicht dort nicht.
+            'source_key' => ['nullable', 'string', 'max:96'],
             'post' => ['nullable', 'boolean'],
         ]);
 
         $kind = PostingSourceKind::from((string) $data['kind']);
         $adapter = $this->registry->for($kind);
+        $sourceKey = (string) ($data['source_key'] ?? '');
 
         [$from, $to] = $this->globalDateRangeBounds();
         $source = $adapter
             ->candidates($organization, \Carbon\CarbonImmutable::parse($from), \Carbon\CarbonImmutable::parse($to))
-            ->first(fn ($candidate): bool => (int) $candidate->getKey() === (int) $data['source_id']);
+            ->first(fn ($candidate): bool => $sourceKey !== ''
+                ? $adapter->sourceKey($candidate) === $sourceKey
+                : (int) $candidate->getKey() === (int) $data['source_id']);
         abort_if($source === null, 404);
 
         $entry = $this->inbox->prepare($organization, $adapter->proposalFor($organization, $source), $actor);

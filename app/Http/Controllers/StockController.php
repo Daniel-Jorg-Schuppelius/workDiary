@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Inventory\OwnershipType;
 use App\Enums\User\Permission as P;
-use App\Models\{ArticleVariant, Customer, StockLevelSetting, StockMovement, StockReservation, Warehouse};
+use App\Models\{ArticleVariant, Customer, StockLevelSetting, StockMovement, StockReservation, Warehouse, WarehouseBin};
 use App\Services\Inventory\{CustomerStockAllocationService, InventoryLedger, ReservationService, StockLevelService, ValuationService};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -44,7 +44,12 @@ class StockController extends Controller {
         $rows = [];
         $reservations = collect();
         $belowReorder = collect();
+        $bins = collect();
         if ($selected instanceof Warehouse) {
+            // Lagerplätze (MVP-706): Spalte + Buchungsauswahl nur, wenn das Lager welche hat.
+            $bins = $selected->bins()->get();
+            $binBalances = $bins->isNotEmpty() ? $this->ledger->binBalancesByVariant($selected) : [];
+            $binsById = $bins->keyBy('id');
             $variantIds = StockMovement::query()
                 ->where('warehouse_id', $selected->id)
                 ->distinct()
@@ -73,6 +78,11 @@ class StockController extends Controller {
                     'avg' => $valuations[(int) $variant->id]['avg'] ?? '0',
                     'value' => $valuations[(int) $variant->id]['value'] ?? '0',
                     'reorder' => $level?->reorder_point,
+                    // bin_code → physischer Saldo (0 = ohne Platz wird nicht gelistet).
+                    'bins' => collect($binBalances[(int) $variant->id] ?? [])
+                        ->filter(fn (string $sum, int $binId): bool => $binId > 0 && bccomp($sum, '0', InventoryLedger::SCALE) !== 0)
+                        ->mapWithKeys(fn (string $sum, int $binId): array => [(string) ($binsById[$binId]->code ?? $binId) => $sum])
+                        ->all(),
                 ];
             }
 
@@ -92,6 +102,7 @@ class StockController extends Controller {
             'rows' => $rows,
             'reservations' => $reservations,
             'belowReorder' => $belowReorder,
+            'bins' => $bins,
             'canPost' => Auth::user()?->can(P::InventoryPost->value) ?? false,
             'canConfigure' => Auth::user()?->can(P::InventoryConfigure->value) ?? false,
             'pickerVariants' => ArticleVariant::query()->with('article')
@@ -140,10 +151,20 @@ class StockController extends Controller {
             'ownership' => ['required', \Illuminate\Validation\Rule::enum(OwnershipType::class)],
             'allow_negative' => ['sometimes', 'boolean'],
             'cost_customer' => ['nullable', 'string'],
+            'bin' => ['nullable', 'string'],
         ]);
 
         $warehouse = Warehouse::query()->findOrFail(Sqid::decodeOrNumeric(Warehouse::class, $data['warehouse']));
         $variant = ArticleVariant::query()->findOrFail(Sqid::decodeOrNumeric(ArticleVariant::class, $data['variant']));
+
+        // Optionaler Lagerplatz (MVP-706): muss zum gewählten Lager gehören.
+        $bin = null;
+        if (! empty($data['bin'])) {
+            $bin = $warehouse->bins()->find(Sqid::decodeOrNumeric(WarehouseBin::class, (string) $data['bin']));
+            if (! $bin instanceof WarehouseBin) {
+                return back()->with('error', __('inventory.error.bin_foreign'));
+            }
+        }
         $ownership = OwnershipType::from((string) $data['ownership']);
         $qty = (string) $data['qty'];
         $actor = Auth::id() !== null ? (int) Auth::id() : null;
@@ -155,6 +176,10 @@ class StockController extends Controller {
         if (! empty($data['cost_customer'])) {
             $costCustomerId = Sqid::decodeOrNumeric(Customer::class, (string) $data['cost_customer']);
             $costCustomer = $costCustomerId !== null ? Customer::query()->find($costCustomerId) : null;
+        }
+        // Der Kundenpfad läuft über die Bewertung ohne Platzbezug — nicht still den Platz verlieren.
+        if ($costCustomer instanceof Customer && $bin instanceof WarehouseBin) {
+            return back()->with('error', __('inventory.error.bin_with_customer'));
         }
 
         // Vollaudit 2026-07 (M19, E2): chargen-/serienpflichtige Artikel nicht
@@ -184,12 +209,12 @@ class StockController extends Controller {
 
         try {
             match ((string) $data['movement']) {
-                'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
+                'receipt' => $this->ledger->receipt($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
                 'issue' => $costCustomer instanceof Customer && $ownership === OwnershipType::Own
                     ? app(CustomerStockAllocationService::class)->issueForCustomer($costCustomer, $variant, $warehouse, $qty, actorUserId: $actor)
-                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor),
-                'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
-                'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor),
+                    : $this->ledger->issue($variant, $warehouse, $qty, $ownership, allowNegative: $allowNegative, actorUserId: $actor, bin: $bin),
+                'reserve' => $this->ledger->reserve($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
+                'release' => $this->ledger->releaseReservation($variant, $warehouse, $qty, $ownership, actorUserId: $actor, bin: $bin),
                 default => throw new RuntimeException('Unbekannte Bewegungsart.'),
             };
         } catch (RuntimeException $e) {

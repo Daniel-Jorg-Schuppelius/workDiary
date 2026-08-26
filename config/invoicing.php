@@ -64,4 +64,19 @@ return [
      */
     'transfer_intro_text' => null,
     'transfer_closing_text' => null,
+
+    /*
+     * Mahnwesen (Feature 127, MVP-691): Stufen-Defaults für Einzelmahnung
+     * (Dialog-Vorbelegung) und Mahnlauf. grace_days = Karenz seit Fälligkeit
+     * (Stufe 1) bzw. seit der letzten Mahnung (Stufen 2/3); fee in EUR;
+     * pay_days = Zahlungsfrist des Mahnschreibens. interest_rate = Verzugszins
+     * in % p. a. auf den offenen Betrag (0 = aus; § 288 BGB als Anhalt, KEIN
+     * Basiszins-Feed — der Satz wird bewusst von Hand gepflegt).
+     */
+    'dunning' => [
+        'level1' => ['grace_days' => 7, 'fee' => 0.0, 'pay_days' => 14],
+        'level2' => ['grace_days' => 7, 'fee' => 0.0, 'pay_days' => 10],
+        'level3' => ['grace_days' => 7, 'fee' => 0.0, 'pay_days' => 7],
+        'interest_rate' => 0.0,
+    ],
 ];

@@ -69,6 +69,13 @@ return [
             'monthClosure.submitted' => 'Monatsabschluss eingereicht',
             'sla.breached' => 'SLA-Frist verletzt',
             'document.expired' => 'Dokument abgelaufen',
+            'invoice.issued' => 'Rechnung ausgestellt',
+            'invoice.paid' => 'Rechnung bezahlt',
+            'timesheet.submitted' => 'Stundenzettel eingereicht',
+            'ticket.created' => 'Ticket angelegt',
+            'ticket.closed' => 'Ticket geschlossen',
+            'protocol.signed' => 'Protokoll unterzeichnet',
+            'purchaseOrder.ordered' => 'Bestellung ausgelöst',
         ],
         'delivery_status' => [
             'pending' => 'Ausstehend',

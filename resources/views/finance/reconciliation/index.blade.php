@@ -35,11 +35,11 @@
 
         <div class="grid grid-cols-2 gap-3 mb-4 sm:max-w-md">
             <x-card>
-                <div class="text-sm text-base-content/60">{{ __('bank.field.open') }}</div>
+                <div class="text-sm text-muted">{{ __('bank.field.open') }}</div>
                 <div class="text-2xl font-semibold text-warning">{{ $totals['open'] }}</div>
             </x-card>
             <x-card>
-                <div class="text-sm text-base-content/60">{{ __('bank.field.matched') }}</div>
+                <div class="text-sm text-muted">{{ __('bank.field.matched') }}</div>
                 <div class="text-2xl font-semibold text-success">{{ $totals['matched'] }}</div>
             </x-card>
         </div>

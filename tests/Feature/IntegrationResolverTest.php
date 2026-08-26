@@ -176,6 +176,72 @@ class IntegrationResolverTest extends TestCase {
         $this->assertSame('new@kappa.test', $c->fresh()->email);
     }
 
+    /**
+     * F8/E6 (Vollscan 2026-08-23, MVP-723): Der Resolver legt Adresse und
+     * Bankverbindung in contact_addresses/contact_bank_accounts an — die
+     * Inline-Spalten entstehen nur noch über die Projektion. Sonst hätte der
+     * Import eine zweite Wahrheit neben der führenden Tabelle geschrieben.
+     */
+    public function test_create_routes_contact_details_into_contact_tables(): void {
+        $outcome = $this->resolve('client', 'tg-contact-1', [
+            'name' => 'My GmbH',
+            'address_street' => 'Hauptstr. 1',
+            'address_zip' => '10115',
+            'address_city' => 'Berlin',
+            'country' => 'DE',
+            'bank_iban' => 'DE02120300000000202051',
+        ], ImportMatchPolicy::AutoLinkAndCreate);
+
+        $customer = $outcome->model;
+        $this->assertInstanceOf(Customer::class, $customer);
+
+        // Adress-/Bankfelder liegen verschlüsselt in der Tabelle — über das
+        // Modell prüfen statt über assertDatabaseHas.
+        $address = $customer->addresses()->firstOrFail();
+        $this->assertSame('Hauptstr. 1', $address->street);
+        $this->assertSame('10115', $address->zip);
+        $this->assertSame('Berlin', $address->city);
+        $this->assertSame('DE', $address->country_code);
+        $this->assertTrue((bool) $address->is_primary);
+
+        $this->assertSame('DE02120300000000202051', $customer->bankAccounts()->firstOrFail()->iban);
+
+        // Projektion: die Inline-Spalten bleiben lesbar wie bisher.
+        $this->assertSame('Berlin', $customer->fresh()->address_city);
+        $this->assertSame('DE02120300000000202051', $customer->fresh()->bank_iban);
+    }
+
+    /**
+     * Teil-Update aus einem Konflikt: Nur das abweichende Adressfeld ändert
+     * sich, der Rest der primären Adresse bleibt stehen (kein Leerräumen).
+     */
+    public function test_remote_wins_updates_the_primary_address_in_place(): void {
+        $c = $this->customer(['name' => 'Ny GmbH']);
+        app(\App\Services\Stammdaten\ContactDetailsWriter::class)->writeAddress($c, [
+            'street' => 'Altweg 2', 'zip' => '20095', 'city' => 'Hamburg', 'country' => 'DE',
+        ]);
+        $c->refresh();
+
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => 'lexoffice', 'external_type' => 'contact',
+            'referenceable_type' => $c->getMorphClass(), 'referenceable_id' => $c->id,
+            'external_id' => 'lx-addr-1',
+        ]);
+
+        $attrs = ['name' => 'Ny GmbH', 'address_city' => 'Bremen'];
+        $this->resolver->resolve(
+            $this->organization, 'lexoffice', $this->profile, 'contact', 'lx-addr-1',
+            $attrs, $attrs, ImportMatchPolicy::AutoLinkExactOnly, ConflictFieldPolicy::RemoteWins, 'api',
+        );
+
+        $this->assertSame(1, $c->addresses()->count(), 'Kein zweiter Adressdatensatz.');
+        $address = $c->addresses()->firstOrFail();
+        $this->assertSame('Bremen', $address->city);
+        $this->assertSame('Altweg 2', $address->street, 'Nicht gelieferte Felder bleiben stehen.');
+        $this->assertSame('Bremen', $c->fresh()->address_city);
+    }
+
     public function test_staging_is_idempotent(): void {
         $attrs = ['name' => 'Lambda Brandneu KG', 'vat_id' => 'DE555'];
         $this->resolve('client', 'tg-9', $attrs, ImportMatchPolicy::AutoLinkExactOnly);

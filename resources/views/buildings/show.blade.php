@@ -47,19 +47,19 @@
             <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                 @if ($building->code)
                     <div>
-                        <dt class="text-base-content/60">{{ __('Code') }}</dt>
+                        <dt class="text-muted">{{ __('Code') }}</dt>
                         <dd class="font-mono">{{ $building->code }}</dd>
                     </div>
                 @endif
                 @if ($building->year_built)
                     <div>
-                        <dt class="text-base-content/60">{{ __('Baujahr') }}</dt>
+                        <dt class="text-muted">{{ __('Baujahr') }}</dt>
                         <dd>{{ $building->year_built }}</dd>
                     </div>
                 @endif
                 @if ($building->notes)
                     <div class="md:col-span-2">
-                        <dt class="text-base-content/60">{{ __('Notizen') }}</dt>
+                        <dt class="text-muted">{{ __('Notizen') }}</dt>
                         <dd class="whitespace-pre-line">{{ $building->notes }}</dd>
                     </div>
                 @endif
@@ -77,7 +77,7 @@
             @if ($floors->isEmpty())
                 <div class="p-4">
                     <x-empty-state framed
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">layers</span>' />
+                        icon="layers" />
                 </div>
             @else
                 <x-table bare table-sort="client">

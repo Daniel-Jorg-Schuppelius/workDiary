@@ -72,7 +72,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">work_history</span>' :colspan="6" :title="__('Keine Einträge')" compact />
+                        <x-table.empty icon="work_history" :colspan="6" :title="__('Keine Einträge')" compact />
                     @endforelse
         </x-table>
     </x-index-page>

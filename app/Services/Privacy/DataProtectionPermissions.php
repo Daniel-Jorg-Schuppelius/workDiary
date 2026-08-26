@@ -44,6 +44,7 @@ final class DataProtectionPermissions {
         'dataprotection.dpia.manage',   // Datenschutz-Folgenabschaetzung
         'dataprotection.dsr.manage',    // Betroffenenanfragen bearbeiten/entscheiden
         'dataprotection.dsr.assign',    // Anfragen zuweisen
+        'dataprotection.portal.manage', // Betroffenenportal (G11) konfigurieren
         'dataprotection.export',        // VVT-/Fall-Exporte
         'dataprotection.audit.view',    // Ereignisprotokoll einsehen
     ];

@@ -21,6 +21,7 @@ use Illuminate\Support\Carbon;
 /**
  * @property int $id
  * @property int|null $organization_id
+ * @property int|null $asset_id
  * @property string $license_plate
  * @property string|null $label
  * @property VehicleType $vehicle_type
@@ -38,6 +39,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $battery_capacity_kwh
  * @property string|null $wltp_consumption
  * @property int|null $odometer_km
+ * @property bool $logbook_mode
+ * @property bool $subject_to_driving_time_rules
  * @property string|null $notes
  * @property Carbon|null $archived_at
  * @property Carbon|null $created_at
@@ -54,6 +57,7 @@ class Vehicle extends Model {
 
     protected $fillable = [
         'organization_id',
+        'asset_id',
         'license_plate',
         'label',
         'vehicle_type',
@@ -71,6 +75,8 @@ class Vehicle extends Model {
         'battery_capacity_kwh',
         'wltp_consumption',
         'odometer_km',
+        'logbook_mode',
+        'subject_to_driving_time_rules',
         'notes',
         'archived_at',
     ];
@@ -80,6 +86,8 @@ class Vehicle extends Model {
         'propulsion' => VehiclePropulsion::class,
         'ownership' => VehicleOwnership::class,
         'odometer_km' => 'integer',
+        'logbook_mode' => 'boolean',
+        'subject_to_driving_time_rules' => 'boolean',
         'archived_at' => 'datetime',
         'rental_start' => 'date',
         'rental_end' => 'date',
@@ -91,6 +99,17 @@ class Vehicle extends Model {
         'battery_capacity_kwh' => 'decimal:2',
         'wltp_consumption' => 'decimal:3',
     ];
+
+    /**
+     * Fahrzeug unterliegt den Lenk-/Ruhezeitregeln (Feature 144): nur Fahrten
+     * mit diesem Flag zählen für Lenkzeit-Befunde und -Budget.
+     *
+     * @param  Builder<Vehicle>  $query
+     * @return Builder<Vehicle>
+     */
+    public function scopeSubjectToDrivingTimeRules(Builder $query): Builder {
+        return $query->where('subject_to_driving_time_rules', true);
+    }
 
     public function isElectric(): bool {
         return in_array($this->propulsion, [VehiclePropulsion::Electric, VehiclePropulsion::Hybrid], true);
@@ -148,6 +167,16 @@ class Vehicle extends Model {
         return $query->where(function (Builder $q) use ($userId): void {
             $q->whereNull('default_user_id')->orWhere('default_user_id', $userId);
         });
+    }
+
+    /**
+     * Asset-Zuordnung (Feature 138): HU/AU/UVV/SP hängen am Asset-Prüfwesen;
+     * mit Zuordnung greifen überfällige Pflichtprüfungen auf Reservierungen durch.
+     *
+     * @return BelongsTo<Asset, $this>
+     */
+    public function asset(): BelongsTo {
+        return $this->belongsTo(Asset::class);
     }
 
     /** @return BelongsTo<User, $this> */

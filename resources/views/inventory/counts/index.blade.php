@@ -60,8 +60,8 @@
                         <form method="POST" action="{{ route('inventory.counts.cycle') }}" class="flex items-end gap-2">
                             @csrf
                             <input type="hidden" name="warehouse" value="{{ $selected->sqid }}">
-                            <div class="fieldset"><label class="fieldset-label">{{ __('inventory.count_ui.cycle') }}</label>
-                                <select name="abc_class" class="select select-sm select-bordered">
+                            <div class="fieldset"><label for="abc_class" class="fieldset-label">{{ __('inventory.count_ui.cycle') }}</label>
+                                <select id="abc_class" name="abc_class" class="select select-sm select-bordered">
                                     <option value="A">A</option>
                                     <option value="B">B</option>
                                     <option value="C">C</option>
@@ -88,7 +88,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="3"
-                                   icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                                   icon="inventory_2"
                                    :title="__('inventory.count_ui.no_counts')" compact />
                 @endforelse
             </x-table>

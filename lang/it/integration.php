@@ -69,6 +69,13 @@ return [
             'monthClosure.submitted' => 'Chiusura mensile inviata',
             'sla.breached' => 'Scadenza SLA violata',
             'document.expired' => 'Documento scaduto',
+            'invoice.issued' => 'Fattura emessa',
+            'invoice.paid' => 'Fattura pagata',
+            'timesheet.submitted' => 'Foglio ore inviato',
+            'ticket.created' => 'Ticket creato',
+            'ticket.closed' => 'Ticket chiuso',
+            'protocol.signed' => 'Verbale firmato',
+            'purchaseOrder.ordered' => 'Ordine di acquisto inviato',
         ],
         'delivery_status' => [
             'pending' => 'In sospeso',

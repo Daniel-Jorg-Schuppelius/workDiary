@@ -86,13 +86,13 @@
                         <td>{{ $row['customer'] ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $row['orders'] }} ({{ $row['planned_orders'] }})</td>
                         <td class="text-right tabular-nums">
-                            @if ($row['no_plan'])<span class="text-base-content/40">—</span>
+                            @if ($row['no_plan'])<span class="text-muted">—</span>
                             @else{{ $fmtH($row['plan_minutes']) }}@endif
                         </td>
                         <td class="text-right tabular-nums">{{ $fmtH($row['actual_minutes']) }}</td>
                         <td class="text-right tabular-nums">{{ $fmtH($row['billable_minutes']) }}</td>
                         <td class="text-right tabular-nums {{ ! $row['no_plan'] && $row['delta_minutes'] > 0 ? 'text-warning' : '' }}">
-                            @if ($row['no_plan'])<span class="text-base-content/40">—</span>
+                            @if ($row['no_plan'])<span class="text-muted">—</span>
                             @else{{ $fmtH($row['delta_minutes']) }}@endif
                         </td>
                         <td>
@@ -104,7 +104,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <p class="mt-2 text-xs text-base-content/60">
+            <p class="mt-2 text-xs text-muted">
                 {{ __('Soll = geplante Minuten der Aufträge im Zeitraum; Budget-Vergleiche (Zeitbudget/€) liefert der Wirtschaftlichkeits-Report.') }}
             </p>
         </x-card>

@@ -35,7 +35,7 @@
 
     @if ($profiles->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">store</span>'
+            icon="store"
             :title="__('Keine Branchenprofile für den aktuellen Filter gefunden.')" />
     @else
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
@@ -45,7 +45,7 @@
                     <div class="flex items-start justify-between gap-3">
                         <div>
                             <h2 class="text-lg font-semibold">{{ $profile['label'] }}</h2>
-                            <p class="text-sm text-base-content/60 font-mono">{{ $profile['code'] }} · v{{ $profile['version'] }}</p>
+                            <p class="text-sm text-muted font-mono">{{ $profile['code'] }} · v{{ $profile['version'] }}</p>
                         </div>
                         @if (in_array($profile['code'], $installedCodes, true))
                             @php $appliedVersion = (int) ($installedVersions[$profile['code']] ?? 0); @endphp
@@ -60,27 +60,27 @@
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-3 text-sm">
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['entry_type_count'] }}</div>
-                            <div class="text-base-content/60">{{ __('Auftragsarten') }}</div>
+                            <div class="text-muted">{{ __('Auftragsarten') }}</div>
                         </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['classification_count'] }}</div>
-                            <div class="text-base-content/60">{{ __('Kategorien') }}</div>
+                            <div class="text-muted">{{ __('Kategorien') }}</div>
                         </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['requirement_count'] }}</div>
-                            <div class="text-base-content/60">{{ __('Pflichtregeln') }}</div>
+                            <div class="text-muted">{{ __('Pflichtregeln') }}</div>
                         </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['procedure_count'] }}</div>
-                            <div class="text-base-content/60">{{ __('Checklisten') }}</div>
+                            <div class="text-muted">{{ __('Checklisten') }}</div>
                         </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['room_requirement_count'] }}</div>
-                            <div class="text-base-content/60">{{ __('Raumanforderungen') }}</div>
+                            <div class="text-muted">{{ __('Raumanforderungen') }}</div>
                         </div>
                         <div class="rounded-box bg-base-200 px-3 py-2">
                             <div class="text-lg font-semibold">{{ $profile['tag_count'] }}</div>
-                            <div class="text-base-content/60">{{ __('Tags') }}</div>
+                            <div class="text-muted">{{ __('Tags') }}</div>
                         </div>
                     </div>
 
@@ -88,7 +88,7 @@
                         <div class="space-y-3 text-sm">
                             @if (! empty($profile['entry_types']))
                                 <div>
-                                    <div class="text-base-content/60 mb-1">{{ __('Enthaltene Auftragsarten') }}</div>
+                                    <div class="text-muted mb-1">{{ __('Enthaltene Auftragsarten') }}</div>
                                     <div class="flex flex-wrap gap-1">
                                         @foreach ($profile['entry_types'] as $entryType)
                                             <span class="badge badge-ghost badge-sm">{{ $entryType }}</span>
@@ -102,7 +102,7 @@
 
                             @if (! empty($profile['procedures']))
                                 <div>
-                                    <div class="text-base-content/60 mb-1">{{ __('Enthaltene Checklisten') }}</div>
+                                    <div class="text-muted mb-1">{{ __('Enthaltene Checklisten') }}</div>
                                     <ul class="list-disc list-inside text-base-content/80">
                                         @foreach ($profile['procedures'] as $procedure)
                                             <li>{{ $procedure }}</li>
@@ -141,7 +141,7 @@
 
     {{-- Marketplace-Import (Restpunkt 042): kuratiertes JSON-Profil hochladen. --}}
     <x-card :title="__('Profil importieren')">
-        <p class="mb-2 text-xs text-base-content/60">{{ __('JSON-Profil (Struktur wie die mitgelieferten Branchenprofile). Klassifikations-Domänen sind hart begrenzt — unbekannte Domänen werden abgelehnt.') }}</p>
+        <p class="mb-2 text-xs text-muted">{{ __('JSON-Profil (Struktur wie die mitgelieferten Branchenprofile). Klassifikations-Domänen sind hart begrenzt — unbekannte Domänen werden abgelehnt.') }}</p>
         <form method="POST" action="{{ route('admin.branch-profiles.import') }}" enctype="multipart/form-data" class="flex flex-wrap items-center gap-2">
             @csrf
             <input type="file" name="file" accept=".json,application/json" class="file-input file-input-bordered file-input-sm max-w-64" required>

@@ -34,7 +34,7 @@
                    value="{{ old('url', $endpoint->url) }}"
                    class="input input-bordered w-full font-mono"
                    placeholder="https://example.com/hooks/workdiary">
-            <p class="text-xs text-base-content/60">{{ __('integration.webhook.field.url_help') }}</p>
+            <p class="text-xs text-muted">{{ __('integration.webhook.field.url_help') }}</p>
             @error('url')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>
@@ -50,7 +50,7 @@
                         <x-icon :name="$event->icon()" class="text-sm text-primary" />
                         <span>
                             <span class="label-text block">{{ $event->label() }}</span>
-                            <span class="block font-mono text-xs text-base-content/50">{{ $event->value }}</span>
+                            <span class="block font-mono text-xs text-muted">{{ $event->value }}</span>
                         </span>
                     </span>
                 </label>
@@ -76,7 +76,7 @@
                 <div class="flex items-center gap-2">
                     <code class="rounded bg-base-300 px-2 py-1 font-mono text-sm">{{ $endpoint->secretPreview() }}</code>
                 </div>
-                <p class="text-xs text-base-content/60">{{ __('integration.webhook.secret.rotate_help') }}</p>
+                <p class="text-xs text-muted">{{ __('integration.webhook.secret.rotate_help') }}</p>
             </div>
         @endif
     </x-form-group>

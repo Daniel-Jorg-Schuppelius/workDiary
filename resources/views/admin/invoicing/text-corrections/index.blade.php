@@ -54,7 +54,7 @@
                         {{ __('textcorrections.field.origin_' . $correction->origin) }}
                     </x-status-badge>
                     @if ($correction->creator !== null)
-                        <div class="text-xs text-base-content/60">{{ $correction->creator->name }}</div>
+                        <div class="text-xs text-muted">{{ $correction->creator->name }}</div>
                     @endif
                 </td>
                 <td class="text-sm">{{ $correction->usage_count }}</td>

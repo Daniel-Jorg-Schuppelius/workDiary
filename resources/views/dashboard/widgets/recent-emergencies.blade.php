@@ -17,6 +17,6 @@
             @endforeach
         </ul>
     @else
-        <p class="text-sm text-base-content/60">{{ __('Keine anstehenden Notdienste.') }}</p>
+        <p class="text-sm text-muted">{{ __('Keine anstehenden Notdienste.') }}</p>
     @endif
 </x-card>

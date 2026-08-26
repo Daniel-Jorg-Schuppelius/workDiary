@@ -17,7 +17,7 @@
                 <span class="inline-block h-3 w-3 rounded-full" style="background:{{ $project->color ?: '#94a3b8' }}"></span>
                 <a class="link link-hover truncate" href="{{ route('projects.show', $project) }}">{{ $project->name }}</a>
                 @if ($showForeign && $project->foreignCustomer)
-                    <span class="truncate text-xs text-base-content/50">— {{ $project->foreignCustomer->name }}</span>
+                    <span class="truncate text-xs text-muted">— {{ $project->foreignCustomer->name }}</span>
                 @endif
                 @if ($project->is_default)
                     <x-icon name="star" class="text-primary" :filled="true" :title="__('Standardprojekt')" />

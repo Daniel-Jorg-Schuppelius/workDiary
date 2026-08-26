@@ -67,7 +67,7 @@
 
     <x-card>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :title="__('Keine Fahrzeug-Daten im gewählten Zeitraum.')" />
+            <x-empty-state icon="directions_car" :title="__('Keine Fahrzeug-Daten im gewählten Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -104,7 +104,7 @@
                         <td>
                             <span class="font-semibold">{{ $r['vehicle']->license_plate }}</span>
                             @if ($r['vehicle']->label)
-                                <span class="ml-1 text-xs text-base-content/60">{{ $r['vehicle']->label }}</span>
+                                <span class="ml-1 text-xs text-muted">{{ $r['vehicle']->label }}</span>
                             @endif
                         </td>
                         <td class="text-xs text-base-content/70">{{ $r['vehicle']->propulsion->label() }}</td>

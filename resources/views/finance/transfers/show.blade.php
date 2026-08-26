@@ -25,7 +25,7 @@
             <div>
                 <h2 class="text-lg font-semibold">
                     {{ $transfer->customer?->name ?? '—' }}
-                    <span class="text-base-content/50">·</span>
+                    <span class="text-muted">·</span>
                     {{ $transfer->channel->label() }}
                 </h2>
                 <div class="mt-2 flex flex-wrap items-center gap-2 text-sm">
@@ -45,36 +45,36 @@
                 </div>
                 <dl class="mt-3 grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
                     <div class="flex gap-2">
-                        <dt class="text-base-content/60">{{ __('finance.field.period') }}:</dt>
+                        <dt class="text-muted">{{ __('finance.field.period') }}:</dt>
                         <dd>{{ $transfer->period_from?->format('d.m.Y') ?? '—' }} – {{ $transfer->period_to?->format('d.m.Y') ?? '—' }}</dd>
                     </div>
                     {{-- Kopfzahlen = das, was fakturiert wird (Positionen).
                          Die ungetaktete Quellsumme steht bei den Einzelquellen. --}}
                     <div class="flex gap-2">
-                        <dt class="text-base-content/60">{{ __('finance.field.position_count') }}:</dt>
+                        <dt class="text-muted">{{ __('finance.field.position_count') }}:</dt>
                         <dd class="tabular-nums">{{ $positions->count() }}</dd>
                     </div>
                     <div class="flex gap-2">
-                        <dt class="text-base-content/60">{{ __('finance.field.total_quantity') }}:</dt>
+                        <dt class="text-muted">{{ __('finance.field.total_quantity') }}:</dt>
                         <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['quantity'], 2, withThousandsSeparator: true) }}</dd>
                     </div>
                     <div class="flex gap-2">
-                        <dt class="text-base-content/60">{{ __('finance.field.total_amount') }}:</dt>
+                        <dt class="text-muted">{{ __('finance.field.total_amount') }}:</dt>
                         <dd class="tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $positionTotals['amount'], 2, withThousandsSeparator: true) }}</dd>
                     </div>
                     @if (filled($transfer->correction_reason))
                         <div class="flex gap-2 sm:col-span-2">
-                            <dt class="text-base-content/60">{{ __('finance.field.correction_reason') }}:</dt>
+                            <dt class="text-muted">{{ __('finance.field.correction_reason') }}:</dt>
                             <dd>{{ $transfer->correction_reason }}</dd>
                         </div>
                     @endif
                     <div class="flex gap-2 sm:col-span-2">
-                        <dt class="text-base-content/60">{{ __('finance.field.payload_hash') }}:</dt>
+                        <dt class="text-muted">{{ __('finance.field.payload_hash') }}:</dt>
                         <dd class="break-all font-mono text-xs">{{ $transfer->payload_hash }}</dd>
                     </div>
                     @if ($transfer->transferred_at !== null)
                         <div class="flex gap-2">
-                            <dt class="text-base-content/60">{{ __('finance.field.transferred_at') }}:</dt>
+                            <dt class="text-muted">{{ __('finance.field.transferred_at') }}:</dt>
                             <dd>{{ $transfer->transferred_at->format('d.m.Y H:i') }}</dd>
                         </div>
                     @endif
@@ -229,11 +229,11 @@
         @else
             <dl class="grid gap-2 text-sm">
                 <div>
-                    <dt class="text-base-content/60">{{ __('finance.field.intro_text') }}</dt>
+                    <dt class="text-muted">{{ __('finance.field.intro_text') }}</dt>
                     <dd class="whitespace-pre-line">{{ $transfer->intro_text ?: '—' }}</dd>
                 </div>
                 <div>
-                    <dt class="text-base-content/60">{{ __('finance.field.closing_text') }}</dt>
+                    <dt class="text-muted">{{ __('finance.field.closing_text') }}</dt>
                     <dd class="whitespace-pre-line">{{ $transfer->closing_text ?: '—' }}</dd>
                 </div>
             </dl>
@@ -290,9 +290,9 @@
                             <div class="min-w-0">
                                 <span class="font-medium">{{ $position->name }}</span>
                                 @if (filled($position->description))
-                                    <p class="mt-0.5 whitespace-pre-line text-xs text-base-content/60">{{ $position->description }}</p>
+                                    <p class="mt-0.5 whitespace-pre-line text-xs text-muted">{{ $position->description }}</p>
                                 @endif
-                                <p class="mt-0.5 text-xs text-base-content/50">
+                                <p class="mt-0.5 text-xs text-muted">
                                     {{ __('finance.field.price_source') }}: {{ $position->priceSourceLabel() }}
                                     @if ($position->article_id !== null)
                                         · {{ __('finance.field.article') }}: {{ $position->article_id }}
@@ -312,7 +312,7 @@
                     <tr>
                         <td colspan="{{ $canEditPositionPrices && $positions->count() > 1 ? 6 : 5 }}" class="py-1">
                             <details class="text-xs">
-                                <summary class="cursor-pointer text-base-content/60">{{ __('finance.action.edit_position') }}</summary>
+                                <summary class="cursor-pointer text-muted">{{ __('finance.action.edit_position') }}</summary>
                                 <form method="POST" action="{{ route('finance.transfers.positions.update', [$transfer, $position]) }}"
                                       class="mt-2 grid gap-2 md:grid-cols-4">
                                     @csrf
@@ -410,7 +410,7 @@
             </div>
         @endif
         @if ($transfer->channel === \App\Enums\Finance\TransferChannel::Time)
-            <p class="mt-2 text-xs text-base-content/60">{{ __('finance.hint.positions_increment') }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __('finance.hint.positions_increment') }}</p>
         @endif
     </x-card>
 
@@ -441,21 +441,21 @@
                         <td>{{ $item->source->date?->format('d.m.Y') ?? '—' }}</td>
                         <td>
                             {{ $item->source->project?->name ?? '—' }}
-                            <span class="text-base-content/50">·</span>
+                            <span class="text-muted">·</span>
                             {{ $item->source->user?->name ?? '—' }}
                             @if (trim((string) $item->source->description) !== '')
-                                <span class="block text-xs text-base-content/60">{{ $item->source->description }}</span>
+                                <span class="block text-xs text-muted">{{ $item->source->description }}</span>
                             @endif
                         </td>
                     @elseif ($item->source instanceof \App\Models\MaterialUsage)
                         <td>{{ $item->source->timesheet?->work_date?->format('d.m.Y') ?? '—' }}</td>
                         <td>
                             {{ trim((string) $item->source->description) ?: __('Material') }}
-                            <span class="block text-xs text-base-content/60">{{ $item->source->timesheet?->project?->name ?? '' }}</span>
+                            <span class="block text-xs text-muted">{{ $item->source->timesheet?->project?->name ?? '' }}</span>
                         </td>
                     @else
                         <td>—</td>
-                        <td class="text-base-content/50">{{ __('finance.field.source_deleted') }}</td>
+                        <td class="text-muted">{{ __('finance.field.source_deleted') }}</td>
                     @endif
                     <td class="text-right tabular-nums">{{ $item->quantity !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, 2, withThousandsSeparator: true) : '—' }}</td>
                     @if ($isMaterial)
@@ -483,7 +483,7 @@
         <ul class="space-y-1 text-sm">
             @foreach ($transfer->events as $event)
                 <li class="flex flex-wrap items-center gap-2">
-                    <span class="font-mono text-xs text-base-content/50">{{ $event->created_at?->format('d.m.Y H:i:s') }}</span>
+                    <span class="font-mono text-xs text-muted">{{ $event->created_at?->format('d.m.Y H:i:s') }}</span>
                     <x-status-badge tone="ghost" outline>{{ \App\Support\Trans::or('finance.event.' . $event->event, $event->event) }}</x-status-badge>
                     @if (data_get($event->payload, 'failure_reason'))
                         <span class="text-error">{{ data_get($event->payload, 'failure_reason') }}</span>

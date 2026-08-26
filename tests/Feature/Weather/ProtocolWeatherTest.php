@@ -48,6 +48,10 @@ final class ProtocolWeatherTest extends TestCase {
             public function daily(float $lat, float $lng, CarbonInterface $date): ?array {
                 return ['temp_min' => 10.0, 'temp_max' => 20.0, 'precipitation_mm' => 1.5, 'wind_gust_kmh' => 33.0, 'weather_code' => 3, 'raw' => ['ok' => true]];
             }
+
+            public function forecast(float $lat, float $lng, int $days): ?array {
+                return null; // Kein Vorhersage-Pfad in diesem Test (MVP-716).
+            }
         });
     }
 

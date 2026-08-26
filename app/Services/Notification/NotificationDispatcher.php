@@ -18,6 +18,7 @@ use App\Models\{ChatWebhook, User};
 use App\Models\Notification\{NotificationDispatchLog, NotificationRule};
 use App\Notifications\GenericEventNotification;
 use App\Services\Integration\WebhookDispatchService;
+use App\Services\Notification\Sms\SmsChannelService;
 use App\Support\{NotificationText, Setting};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Collection};
@@ -180,7 +181,7 @@ class NotificationDispatcher {
 
         $sent = 0;
         foreach ($recipients as $user) {
-            if ($this->deliverTo($user, $rule, $event, $payload, $stage)) {
+            if ($this->deliverTo($user, $rule, $event, $subject, $payload, $stage)) {
                 $sent++;
             }
         }
@@ -313,7 +314,7 @@ class NotificationDispatcher {
      *
      * @param  array{title: string, message?: string|null, url?: string|null, icon?: string|null}  $payload
      */
-    private function deliverTo(User $user, NotificationRule $rule, NotificationEvent $event, array $payload, string $stage): bool {
+    private function deliverTo(User $user, NotificationRule $rule, NotificationEvent $event, Model $subject, array $payload, string $stage): bool {
         $prefs = (array) $user->getPreference('notifications', []);
         // Krisen-/Notfallregeln dürfen Ruhezeiten überstimmen (Feature 070, D7).
         $quiet = $this->isQuietNow($user, $prefs) && ! $rule->override_quiet_hours;
@@ -331,6 +332,14 @@ class NotificationDispatcher {
         $delivered = false;
         if ($channels !== []) {
             $user->notify(new GenericEventNotification($event, $payload, $channels, $stage));
+            $delivered = true;
+        }
+
+        // SMS (Feature 147): eigener Weg, weil er Geld kostet und die Rufnummer
+        // die Plattform verlässt — alle Tore (kritisches Ereignis, Opt-in der
+        // Person, Gateway, Budget) liegen im SmsChannelService.
+        if ($rule->usesChannel(NotificationChannel::Sms) && ! $quiet
+            && app(SmsChannelService::class)->send($user, $event, $subject, $payload, $stage)) {
             $delivered = true;
         }
 

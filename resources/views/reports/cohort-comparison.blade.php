@@ -66,7 +66,7 @@
     </x-filter-bar>
 
     <div role="alert" class="alert alert-info mb-4 text-sm">
-        <span class="material-symbols-outlined" aria-hidden="true">info</span>
+        <x-icon name="info" />
         <div>{{ __('reporting.cohort.data_note') }}</div>
     </div>
 
@@ -76,7 +76,7 @@
     </div>
 
     @if($result === null)
-        <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' :title="__('reporting.cohort.choose')" />
+        <x-empty-state icon="groups" :title="__('reporting.cohort.choose')" />
     @else
         @php $agg = $result['aggregate']; @endphp
         <div class="grid gap-3 grid-cols-2 sm:grid-flow-col sm:auto-cols-fr mb-4">
@@ -90,7 +90,7 @@
 
         @if($agg['membersWithoutDate'] > 0)
             <div role="alert" class="alert alert-warning mb-4 text-sm">
-                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                <x-icon name="warning" />
                 <div>{{ $agg['membersWithoutDate'] }} {{ __('reporting.cohort.members_without_date') }} — {{ __('reporting.cohort.no_date_hint') }}</div>
             </div>
         @endif

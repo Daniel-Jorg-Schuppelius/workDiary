@@ -133,7 +133,7 @@
             </x-detail-grid>
             @if ($customer->invoice_text)
                 <div class="pt-2 text-sm">
-                    <div class="text-base-content/60">{{ __('Rechnungstext') }}</div>
+                    <div class="text-muted">{{ __('Rechnungstext') }}</div>
                     <p class="whitespace-pre-line">{{ $customer->invoice_text }}</p>
                 </div>
             @endif
@@ -211,19 +211,19 @@
                         <a class="link link-hover truncate font-medium" href="{{ route('projects.show', $defaultProject) }}">{{ $defaultProject->name }}</a>
                         <x-status-badge tone="ghost">{{ __('Standardprojekt') }}</x-status-badge>
                     </div>
-                    <span class="text-xs text-base-content/60">{{ __('Auto-Bucket für Ad-hoc-/Notfalleinsätze') }}</span>
+                    <span class="text-xs text-muted">{{ __('Auto-Bucket für Ad-hoc-/Notfalleinsätze') }}</span>
                 </div>
             @endisset
 
             @if ($projects->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">folder_off</span>'
+                <x-empty-state compact icon="folder_off"
                                :title="__('Keine Projekte')"
                                :message="__('Diesem Kunden sind noch keine Projekte zugeordnet.')" />
             @else
                 @include('customers._project_list_items', ['items' => $topProjects, 'showForeign' => true])
                 @if ($restProjects->isNotEmpty())
                     <details class="mt-2">
-                        <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                        <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted hover:bg-base-200">
                             {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $restProjects->count() }})</span>
                         </summary>
                         <div class="pt-1">
@@ -237,26 +237,26 @@
         {{-- Fremdkunden (Endkunden dieser Firma) --}}
         <div x-show="isTab('foreign')" x-cloak>
             @if ($foreignCustomers->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine Fremdkunden. Endkunden dieser Firma hier erfassen, um Zeiten/Abrechnung pro Endkunde zu trennen.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Fremdkunden. Endkunden dieser Firma hier erfassen, um Zeiten/Abrechnung pro Endkunde zu trennen.') }}</p>
             @else
                 <ul class="divide-y divide-base-200">
                     @foreach ($topForeign as $fc)
                         <li class="flex items-center justify-between py-1.5 text-sm">
                             <a class="link link-hover" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
-                            <span class="text-base-content/50 tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
+                            <span class="text-muted tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
                         </li>
                     @endforeach
                 </ul>
                 @if ($restForeign->isNotEmpty())
                     <details class="mt-2">
-                        <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                        <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted hover:bg-base-200">
                             {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $restForeign->count() }})</span>
                         </summary>
                         <ul class="mt-1 divide-y divide-base-200">
                             @foreach ($restForeign as $fc)
                                 <li class="flex items-center justify-between py-1.5 text-sm">
                                     <a class="link link-hover" href="{{ route('foreign-customers.show', $fc) }}">{{ $fc->name }}</a>
-                                    <span class="text-base-content/50 tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
+                                    <span class="text-muted tabular-nums">{{ trans_choice(':count Projekt|:count Projekte', $fc->projects_count, ['count' => $fc->projects_count]) }}</span>
                                 </li>
                             @endforeach
                         </ul>
@@ -271,7 +271,7 @@
         <x-card x-data="tabs('month')">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="analytics" class="text-base-content/60" /> {{ __('Auswertung') }}
+                    <x-icon name="analytics" class="text-muted" /> {{ __('Auswertung') }}
                 </h2>
                 <div role="tablist" class="tabs tabs-box tabs-sm">
                     {{-- Zeitraum-Tab folgt dem global gewählten Header-Zeitraum. --}}
@@ -283,11 +283,11 @@
                 <div x-show="isTab('{{ $key }}')" x-cloak>
                     <div class="mb-3 grid grid-cols-2 gap-3 text-sm">
                         <div class="rounded-box bg-base-200 p-3">
-                            <div class="text-xs text-base-content/60">{{ __('Stunden gesamt') }}</div>
+                            <div class="text-xs text-muted">{{ __('Stunden gesamt') }}</div>
                             <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($set['total_minutes'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                         <div class="rounded-box bg-base-200 p-3">
-                            <div class="text-xs text-base-content/60">{{ __('davon abrechenbar') }}</div>
+                            <div class="text-xs text-muted">{{ __('davon abrechenbar') }}</div>
                             <div class="font-['Space_Grotesk'] text-xl font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($set['billable_minutes'] / 60, 2, withThousandsSeparator: true) }} h</div>
                         </div>
                     </div>
@@ -314,7 +314,7 @@
                                         @endif
                                         {{ $row['name'] }}
                                         @if (! empty($row['foreign_customer']))
-                                            <span class="text-base-content/50">— {{ $row['foreign_customer'] }}</span>
+                                            <span class="text-muted">— {{ $row['foreign_customer'] }}</span>
                                         @endif
                                     </td>
                                     <td class="text-right" data-sort-value="{{ (float) $row['minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['minutes'] / 60, 2, withThousandsSeparator: true) }}</td>
@@ -324,7 +324,7 @@
                         </x-table>
                         @if ($statRest->isNotEmpty())
                             <details class="mt-2">
-                                <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                                <summary class="cursor-pointer select-none rounded-md px-1 py-1.5 text-xs font-semibold uppercase tracking-wide text-muted hover:bg-base-200">
                                     {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $statRest->count() }})</span>
                                 </summary>
                                 <div class="pt-1">
@@ -344,7 +344,7 @@
                                                     @endif
                                                     {{ $row['name'] }}
                                                     @if (! empty($row['foreign_customer']))
-                                                        <span class="text-base-content/50">— {{ $row['foreign_customer'] }}</span>
+                                                        <span class="text-muted">— {{ $row['foreign_customer'] }}</span>
                                                     @endif
                                                 </td>
                                                 <td class="text-right" data-sort-value="{{ (float) $row['minutes'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['minutes'] / 60, 2, withThousandsSeparator: true) }}</td>
@@ -377,7 +377,7 @@
         <x-card class="space-y-4">
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="sync" class="text-base-content/60" /> {{ __('Lexoffice') }}
+                    <x-icon name="sync" class="text-muted" /> {{ __('Lexoffice') }}
                 </h2>
                 @if ($lexofficeContactRef)
                     <x-status-badge tone="success">{{ __('Kontakt verknüpft') }} · {{ Str::limit($lexofficeContactRef->external_id, 8, '…') }}</x-status-badge>
@@ -391,7 +391,7 @@
                       class="flex h-full flex-col gap-3 rounded-box border border-base-300 bg-base-200/40 p-3">
                     @csrf
                     <div class="flex items-center gap-2 text-sm font-semibold">
-                        <x-icon name="contacts" class="text-base-content/60" /> {{ __('Kontakt') }}
+                        <x-icon name="contacts" class="text-muted" /> {{ __('Kontakt') }}
                     </div>
                     <p class="text-sm text-base-content/70">
                         {{ __('Kunde als Kontakt in Lexoffice anlegen oder aktualisieren.') }}
@@ -407,7 +407,7 @@
                       class="flex h-full flex-col gap-3 rounded-box border border-base-300 bg-base-200/40 p-3">
                     @csrf
                     <div class="flex items-center gap-2 text-sm font-semibold">
-                        <x-icon name="receipt_long" class="text-base-content/60" /> {{ __('Zeiten als Beleg') }}
+                        <x-icon name="receipt_long" class="text-muted" /> {{ __('Zeiten als Beleg') }}
                     </div>
                     <p class="text-sm text-base-content/70">
                         {{ __('Abrechenbare, noch nicht übertragene Zeiten als Beleg übertragen.') }}
@@ -430,7 +430,7 @@
                         @foreach ($lexofficeVouchers as $ref)
                             <li class="flex items-center justify-between gap-2 py-1.5">
                                 <code class="text-xs text-base-content/80">{{ $ref->external_id }}</code>
-                                <span class="text-xs text-base-content/60">{{ optional($ref->synced_at)->fdatetime() }}</span>
+                                <span class="text-xs text-muted">{{ optional($ref->synced_at)->fdatetime() }}</span>
                             </li>
                         @endforeach
                     </ul>

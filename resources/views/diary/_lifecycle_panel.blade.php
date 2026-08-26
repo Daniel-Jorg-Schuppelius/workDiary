@@ -32,7 +32,7 @@
 <section class="mb-6 rounded-box border border-base-300 bg-base-200/40 p-4">
     <div class="flex flex-wrap items-start justify-between gap-3">
         <div>
-            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-base-content/60">{{ __('Auftragsstatus') }}</p>
+            <p class="text-xs font-semibold uppercase tracking-[0.16em] text-muted">{{ __('Auftragsstatus') }}</p>
             <div class="mt-2 flex flex-wrap items-center gap-2">
                 <x-status-badge :tone="$statusTone" icon="route">{{ $diary->statusLabel() }}</x-status-badge>
                 @if ($diary->assignedUser)
@@ -110,13 +110,13 @@
         <ol class="mt-4 grid gap-2 border-t border-base-300 pt-3 text-sm md:grid-cols-2">
             @foreach ($diary->lifecycleEvents->take(-4) as $event)
                 <li class="flex items-start gap-2">
-                    <x-icon name="history" size="1rem" class="mt-0.5 shrink-0 text-base-content/50" />
+                    <x-icon name="history" size="1rem" class="mt-0.5 shrink-0 text-muted" />
                     <span>
                         <span class="font-medium">{{ __(':from → :to', [
                             'from' => $event->from_status ? ($eventStatusLabels[$event->from_status] ?? $event->from_status) : '—',
                             'to' => $eventStatusLabels[$event->to_status] ?? $event->to_status,
                         ]) }}</span>
-                        <span class="block text-xs text-base-content/60">
+                        <span class="block text-xs text-muted">
                             {{ $event->occurred_at->fdatetime() }} · {{ $event->actor?->name ?? __('System') }}
                         </span>
                     </span>

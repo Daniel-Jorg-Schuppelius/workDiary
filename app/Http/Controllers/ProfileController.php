@@ -85,6 +85,17 @@ class ProfileController extends Controller {
             $existing = (array) ($user->preferences ?? []);
             $formKeys = ['theme', 'locale', 'timezone', 'date_format', 'time_format', 'startpage', 'notifications'];
             $preserved = array_diff_key($existing, array_flip($formKeys));
+            // Innerhalb von `notifications` gibt es Schlüssel, die das Formular
+            // NICHT kennt: das SMS-Opt-in (Feature 147) entsteht über den
+            // Bestätigungscode-Weg. Ohne diese Rettung würde jedes Speichern des
+            // Profils eine erteilte Einwilligung stillschweigend löschen.
+            $keptNotifications = array_intersect_key(
+                (array) ($existing['notifications'] ?? []),
+                array_flip(['sms_opt_in', 'sms_number_hash', 'sms_verified_at']),
+            );
+            if ($keptNotifications !== []) {
+                $submitted['notifications'] = array_merge($keptNotifications, (array) ($submitted['notifications'] ?? []));
+            }
             $merged = array_merge($preserved, $submitted);
             $user->preferences = $merged === [] ? null : $merged;
         }

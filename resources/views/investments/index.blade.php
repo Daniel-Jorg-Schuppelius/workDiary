@@ -69,7 +69,7 @@
                 <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('investments.show', $case)" :label="__('Anzeigen')" /></td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">trending_up</span>' :colspan="6" :title="__('Keine Investitionen — „Investition erfassen“ startet die erste Akte.')" compact />
+            <x-table.empty icon="trending_up" :colspan="6" :title="__('Keine Investitionen — „Investition erfassen“ startet die erste Akte.')" compact />
         @endforelse
     </x-table>
 

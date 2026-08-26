@@ -21,86 +21,78 @@
             @method('PUT')
 
             <x-form-group :legend="__('finance.datev.config.client_group')" icon="badge" tone="info" cols="2" compact>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.advisor_number') }}</label>
-                    <input type="number" min="1" max="9999999" name="datev[advisor_number]"
-                           value="{{ old('datev.advisor_number', data_get($stored, 'advisor_number', '')) }}"
-                           class="input input-bordered w-full">
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.client_number') }}</label>
-                    <input type="number" min="1" max="99999" name="datev[client_number]"
-                           value="{{ old('datev.client_number', data_get($stored, 'client_number', '')) }}"
-                           class="input input-bordered w-full">
-                </div>
+                <x-input-field name="datev[advisor_number]"
+                               :label="__('finance.datev.config.advisor_number')"
+                               type="number"
+                               value="{{ old('datev.advisor_number', data_get($stored, 'advisor_number', '')) }}"
+                               min="1"
+                               max="9999999" />
+                <x-input-field name="datev[client_number]"
+                               :label="__('finance.datev.config.client_number')"
+                               type="number"
+                               value="{{ old('datev.client_number', data_get($stored, 'client_number', '')) }}"
+                               min="1"
+                               max="99999" />
             </x-form-group>
 
             <x-form-group :legend="__('finance.datev.config.accounts_group')" icon="account_tree" tone="success" cols="2" compact>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.skr') }}</label>
-                    <select name="datev[skr]" class="select select-bordered w-full">
-                        @foreach ($chartOptions as $chart)
-                            <option value="{{ $chart->value }}"
-                                @selected(old('datev.skr', data_get($stored, 'skr', $config->skr->value)) === $chart->value)>
-                                {{ $chart->label() }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.account_length') }}</label>
-                    <input type="number" min="4" max="8" name="datev[account_length]"
-                           value="{{ old('datev.account_length', data_get($stored, 'account_length', $config->accountLength)) }}"
-                           class="input input-bordered w-full">
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.revenue_account') }}</label>
-                    <input type="text" maxlength="12" name="datev[revenue_account]"
-                           value="{{ old('datev.revenue_account', data_get($stored, 'revenue_account', '')) }}"
-                           placeholder="{{ $config->skr->defaultRevenueAccount() }}"
-                           class="input input-bordered w-full">
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.revenue_account_tax_free') }}</label>
-                    <input type="text" maxlength="12" name="datev[revenue_account_tax_free]"
-                           value="{{ old('datev.revenue_account_tax_free', data_get($stored, 'revenue_account_tax_free', '')) }}"
-                           placeholder="{{ $config->skr->defaultTaxFreeRevenueAccount() }}"
-                           class="input input-bordered w-full">
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.debtor_base') }}</label>
-                    <input type="number" min="1" max="99999999" name="datev[debtor_base]"
-                           value="{{ old('datev.debtor_base', data_get($stored, 'debtor_base', $config->debtorBase)) }}"
-                           class="input input-bordered w-full">
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.config.debtor_base_hint') }}</p>
-                </div>
+                <x-select-field name="datev[skr]" :label="__('finance.datev.config.skr')">
+                    @foreach ($chartOptions as $chart)
+                        <option value="{{ $chart->value }}"
+                            @selected(old('datev.skr', data_get($stored, 'skr', $config->skr->value)) === $chart->value)>
+                            {{ $chart->label() }}
+                        </option>
+                    @endforeach
+                </x-select-field>
+                <x-input-field name="datev[account_length]"
+                               :label="__('finance.datev.config.account_length')"
+                               type="number"
+                               value="{{ old('datev.account_length', data_get($stored, 'account_length', $config->accountLength)) }}"
+                               min="4"
+                               max="8" />
+                <x-input-field name="datev[revenue_account]"
+                               :label="__('finance.datev.config.revenue_account')"
+                               type="text"
+                               value="{{ old('datev.revenue_account', data_get($stored, 'revenue_account', '')) }}"
+                               maxlength="12"
+                               placeholder="{{ $config->skr->defaultRevenueAccount() }}" />
+                <x-input-field name="datev[revenue_account_tax_free]"
+                               :label="__('finance.datev.config.revenue_account_tax_free')"
+                               type="text"
+                               value="{{ old('datev.revenue_account_tax_free', data_get($stored, 'revenue_account_tax_free', '')) }}"
+                               maxlength="12"
+                               placeholder="{{ $config->skr->defaultTaxFreeRevenueAccount() }}" />
+                <x-input-field name="datev[debtor_base]"
+                               :label="__('finance.datev.config.debtor_base')"
+                               type="number"
+                               value="{{ old('datev.debtor_base', data_get($stored, 'debtor_base', $config->debtorBase)) }}"
+                               :hint="__('finance.datev.config.debtor_base_hint')"
+                               min="1"
+                               max="99999999" />
             </x-form-group>
 
             <x-form-group :legend="__('finance.datev.config.tax_group')" icon="percent" tone="warning" cols="3" compact>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.tax_key_19') }}</label>
-                    <input type="text" maxlength="4" name="datev[tax_keys][19.00]"
-                           value="{{ old('datev.tax_keys.19\.00', data_get($stored, 'tax_keys.19\.00', $config->taxKeyFor(19.0))) }}"
-                           class="input input-bordered w-full">
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.tax_key_7') }}</label>
-                    <input type="text" maxlength="4" name="datev[tax_keys][7.00]"
-                           value="{{ old('datev.tax_keys.7\.00', data_get($stored, 'tax_keys.7\.00', $config->taxKeyFor(7.0))) }}"
-                           class="input input-bordered w-full">
-                </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.tax_key_0') }}</label>
-                    <input type="text" maxlength="4" name="datev[tax_keys][0.00]"
-                           value="{{ old('datev.tax_keys.0\.00', data_get($stored, 'tax_keys.0\.00', $config->taxKeyFor(0.0))) }}"
-                           class="input input-bordered w-full">
-                </div>
+                <x-input-field name="datev[tax_keys][19.00]"
+                               :label="__('finance.datev.config.tax_key_19')"
+                               type="text"
+                               value="{{ old('datev.tax_keys.19\.00', data_get($stored, 'tax_keys.19\.00', $config->taxKeyFor(19.0))) }}"
+                               maxlength="4" />
+                <x-input-field name="datev[tax_keys][7.00]"
+                               :label="__('finance.datev.config.tax_key_7')"
+                               type="text"
+                               value="{{ old('datev.tax_keys.7\.00', data_get($stored, 'tax_keys.7\.00', $config->taxKeyFor(7.0))) }}"
+                               maxlength="4" />
+                <x-input-field name="datev[tax_keys][0.00]"
+                               :label="__('finance.datev.config.tax_key_0')"
+                               type="text"
+                               value="{{ old('datev.tax_keys.0\.00', data_get($stored, 'tax_keys.0\.00', $config->taxKeyFor(0.0))) }}"
+                               maxlength="4" />
             </x-form-group>
 
             {{-- MVP-334: differenzierte Aufwands-/Vorsteuerkonten je Spesenkategorie. --}}
             @if ($expenseCategories->isNotEmpty())
                 <x-form-group :legend="__('finance.datev.config.expense_group')" icon="receipt" tone="error" cols="1" compact>
-                    <p class="text-xs text-base-content/60">{{ __('finance.datev.config.expense_group_hint') }}</p>
+                    <p class="text-xs text-muted">{{ __('finance.datev.config.expense_group_hint') }}</p>
                     <x-table>
                         <x-slot:head>
                                 <tr>
@@ -138,17 +130,15 @@
                                @checked(old('datev.finalize', data_get($stored, 'finalize', $config->finalize))) class="checkbox checkbox-sm">
                         <span class="label-text">{{ __('finance.datev.config.finalize') }}</span>
                     </label>
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.config.finalize_hint') }}</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('finance.datev.config.finalize_hint') }}</p>
                 </div>
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('finance.datev.config.encoding') }}</label>
-                    <select name="datev[encoding]" class="select select-bordered w-full">
-                        @foreach (['ISO-8859-1', 'UTF-8'] as $enc)
-                            <option value="{{ $enc }}" @selected(old('datev.encoding', data_get($stored, 'encoding', $config->encoding)) === $enc)>{{ $enc }}</option>
-                        @endforeach
-                    </select>
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.config.encoding_hint') }}</p>
-                </div>
+                <x-select-field name="datev[encoding]"
+                                :label="__('finance.datev.config.encoding')"
+                                :hint="__('finance.datev.config.encoding_hint')">
+                    @foreach (['ISO-8859-1', 'UTF-8'] as $enc)
+                        <option value="{{ $enc }}" @selected(old('datev.encoding', data_get($stored, 'encoding', $config->encoding)) === $enc)>{{ $enc }}</option>
+                    @endforeach
+                </x-select-field>
             </x-form-group>
 
             <x-validation-errors />

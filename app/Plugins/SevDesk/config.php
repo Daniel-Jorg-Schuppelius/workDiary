@@ -34,6 +34,15 @@ return [
     // sevDesk-Standardkatalog).
     'contact_category_id' => (int) env('SEVDESK_CONTACT_CATEGORY_ID', 3),
 
+    // Adress-/Kommunikationskataloge des Kontakt-Push (MVP-731). sevDesk
+    // führt Adressen und Kommunikationswege als EIGENE Objekte mit eigenem
+    // Endpunkt; beide verlangen Katalog-IDs des Accounts. Die Defaults sind
+    // Standardkatalogwerte — Verifikation am Pilot-Account (GET /Category?
+    // objectType=ContactAddress bzw. GET /CommunicationWayKey).
+    'address_category_id' => (int) env('SEVDESK_ADDRESS_CATEGORY_ID', 47),
+    'address_country_id' => (int) env('SEVDESK_ADDRESS_COUNTRY_ID', 1),
+    'communication_way_key_id' => (int) env('SEVDESK_COMMUNICATION_WAY_KEY_ID', 1),
+
     // sevDesk-Mengeneinheiten (Unity-Katalog): 1 = Stück, 9 = Stunde(n).
     // Katalog-IDs sind Standardwerte — Verifikation am Pilot-Account.
     'unity_piece_id' => (int) env('SEVDESK_UNITY_PIECE_ID', 1),

@@ -13,10 +13,10 @@ namespace App\Http\Controllers;
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Requests\SaveExpenseRequest;
-use App\Models\{Customer, Expense, ExpenseCategory, LexofficeVoucher, Project, User};
-use App\Services\Billing\DocumentLinks;
+use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
+use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Expense\ExpenseService;
-use App\Support\{CsvExport, SortableQuery, Sqid};
+use App\Support\{CsvExport, SortableQuery};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -166,12 +166,11 @@ class ExpenseController extends Controller {
      * Beleg ist die Auslage für sich prüfbar — und erst dann lässt sie sich
      * später überhaupt in die Buchhaltung übernehmen (Feature 106).
      */
-    public function receipt(Expense $expense, DocumentLinks $links): View {
+    public function receipt(Expense $expense, ExpenseLinkProviderResolver $providers): View {
         Gate::authorize('view', $expense);
 
-        $linked = $links->voucherFor($expense);
-
-        $push = app(\App\Services\Billing\ExpenseVoucherPush::class);
+        $provider = $providers->current();
+        $linked = $provider->voucherFor($expense);
 
         return view('expenses._receipt_dialog', [
             'expense' => $expense,
@@ -179,12 +178,16 @@ class ExpenseController extends Controller {
             'canUpload' => Gate::allows('update', $expense),
             'canLink' => Gate::allows('link', $expense),
             'linkedVoucher' => $linked,
+            // Ohne angebundene Buchhaltung (NullExpenseLinkProvider) sagt der
+            // Dialog das klar, statt nur „keine Vorschläge" zu zeigen (B9).
+            'hasProvider' => $provider->isAvailable(),
+            'providerLabel' => $provider->label(),
             // Feature 106: aktiver Belegpush - nur anbieten, wo er möglich ist.
-            'canPush' => Gate::allows('link', $expense) && $push->available($expense),
-            'wasPushed' => $linked !== null && $push->wasPushed($expense),
+            'canPush' => Gate::allows('link', $expense) && $provider->canPush($expense),
+            'wasPushed' => $linked !== null && $provider->wasPushed($expense),
             // Vorschläge nur, solange nichts zugeordnet ist — sonst lädt der
             // Dialog Kandidaten, die niemand mehr braucht.
-            'suggestions' => $linked === null ? $links->suggestionsFor($expense) : collect(),
+            'suggestions' => $linked === null ? $provider->suggestionsFor($expense) : collect(),
         ]);
     }
 
@@ -193,25 +196,24 @@ class ExpenseController extends Controller {
      * MVP-551). Ab dann führt der Beleg: die Auslage zählt nicht mehr
      * eigenständig in den Aufwand.
      */
-    public function linkVoucher(Request $request, Expense $expense, DocumentLinks $links): RedirectResponse {
-        Gate::authorize('link', $expense);
-
-        $voucherId = Sqid::decodeOrNumeric(LexofficeVoucher::class, (string) $request->input('voucher'));
-        $voucher = LexofficeVoucher::query()
-            ->where('organization_id', $expense->organization_id)
-            ->findOrFail($voucherId);
-
-        $links->link($expense, $voucher);
-        $expense->audit('expense.voucher_linked', ['voucher_number' => $voucher->voucher_number]);
-
-        return back()->with('success', __('expenses.receipt.linked', ['number' => $voucher->voucher_number ?? '—']));
-    }
-
-    public function unlinkVoucher(Expense $expense, DocumentLinks $links): RedirectResponse {
+    public function linkVoucher(Request $request, Expense $expense, ExpenseLinkProviderResolver $providers): RedirectResponse {
         Gate::authorize('link', $expense);
 
         try {
-            $links->unlink($expense);
+            $voucher = $providers->current()->link($expense, (string) $request->input('voucher'));
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+        $expense->audit('expense.voucher_linked', ['voucher_number' => $voucher->number]);
+
+        return back()->with('success', __('expenses.receipt.linked', ['number' => $voucher->number ?? '—']));
+    }
+
+    public function unlinkVoucher(Expense $expense, ExpenseLinkProviderResolver $providers): RedirectResponse {
+        Gate::authorize('link', $expense);
+
+        try {
+            $providers->current()->unlink($expense);
         } catch (\RuntimeException $e) {
             // Gepushte Verknüpfung (Feature 106): der Beleg existiert
             // unwiderruflich - die Verknüpfung bleibt.
@@ -230,11 +232,11 @@ class ExpenseController extends Controller {
      * Der Push ist terminal (kein Update/Delete im Zielsystem); Korrekturen
      * laufen als Gegenbeleg dort, die Auslage bleibt verknüpft und gesperrt.
      */
-    public function pushVoucher(Expense $expense, \App\Services\Billing\ExpenseVoucherPush $push): RedirectResponse {
+    public function pushVoucher(Expense $expense, ExpenseLinkProviderResolver $providers): RedirectResponse {
         Gate::authorize('link', $expense);
 
         try {
-            $voucher = $push->push($expense);
+            $voucher = $providers->current()->pushVoucher($expense);
         } catch (\RuntimeException $e) {
             return back()->with('error', $e->getMessage());
         } catch (\Throwable $e) {
@@ -243,9 +245,9 @@ class ExpenseController extends Controller {
             return back()->with('error', __('Die Übergabe an die Buchhaltung ist fehlgeschlagen — es wurde kein Beleg angelegt.'));
         }
 
-        $expense->audit('expense.voucher_pushed', ['external_id' => $voucher->external_id]);
+        $expense->audit('expense.voucher_pushed', ['external_id' => $voucher->externalId]);
 
-        return back()->with('success', __('Auslage als Beleg übergeben (ID :id). Ab jetzt führt der Beleg.', ['id' => $voucher->external_id]));
+        return back()->with('success', __('Auslage als Beleg übergeben (ID :id). Ab jetzt führt der Beleg.', ['id' => $voucher->externalId]));
     }
 
     public function update(SaveExpenseRequest $request, Expense $expense): RedirectResponse {

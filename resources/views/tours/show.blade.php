@@ -81,7 +81,7 @@
                             <td><x-status-badge tone="ghost" size="xs">{{ $s->statusLabel() }}</x-status-badge></td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">route</span>' :colspan="5" :title="__('Keine Stopps zugewiesen.')" compact />
+                        <x-table.empty icon="route" :colspan="5" :title="__('Keine Stopps zugewiesen.')" compact />
                     @endforelse
                 </x-table>
             </div>

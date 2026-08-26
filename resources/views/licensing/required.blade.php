@@ -49,11 +49,11 @@
                 <div class="rounded-4xl border border-base-300 bg-base-100 p-8 shadow-xs">
                     <dl class="mb-6 grid grid-cols-1 gap-3 rounded-2xl border border-base-300 bg-base-200/60 px-4 py-3 text-sm sm:grid-cols-2">
                         <div>
-                            <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Domain') }}</dt>
+                            <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Domain') }}</dt>
                             <dd class="mt-1 font-mono text-sm text-base-content">{{ $host }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Status') }}</dt>
+                            <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Status') }}</dt>
                             <dd class="mt-1 text-sm text-base-content">
                                 <span class="inline-flex items-center gap-1.5 rounded-full bg-warning/15 px-2.5 py-0.5 text-xs font-medium text-warning">
                                     <span class="inline-block h-1.5 w-1.5 rounded-full bg-warning"></span>
@@ -94,7 +94,7 @@
                                 class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 font-mono text-xs leading-relaxed text-base-content placeholder-base-content/40 transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25"
                                 placeholder="eyJsaWNlbnNlX2lkIjoi..."
                             >{{ old('license_key') }}</textarea>
-                            <p class="mt-2 text-xs text-base-content/60">
+                            <p class="mt-2 text-xs text-muted">
                                 {{ __('Den vollständigen Schlüssel einschließlich Signaturteil einfügen.') }}
                             </p>
                         </div>

@@ -14,8 +14,9 @@ namespace App\Services\Finance\Gdpdu;
 
 use App\Models\Accounting\AccountingEntry;
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
-use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\LazyCollection;
 
 /** Festgeschriebene Buchungen des Prüfungszeitraums (nach Buchungsdatum). */
 class LedgerEntriesSection extends AbstractGdpduSection {
@@ -51,22 +52,21 @@ class LedgerEntriesSection extends AbstractGdpduSection {
      * Journal- und Zeilen-Export ({@see LedgerEntryLinesSection}), damit
      * beide zwangsläufig zusammenpassen.
      *
-     * @return Collection<int, AccountingEntry>
+     * @return LazyCollection<int, AccountingEntry>
      */
-    public static function postedEntries(Organization $organization, CarbonInterface $from, CarbonInterface $to): Collection {
+    public static function postedEntries(Organization $organization, CarbonInterface $from, CarbonInterface $to): LazyCollection {
         return AccountingEntry::query()
             ->where('organization_id', $organization->id)
             ->whereIn('status', ['posted', 'reversed'])
-            ->whereDate('booked_on', '>=', $from->toDateString())
-            ->whereDate('booked_on', '<=', $to->toDateString())
+            ->whereBetween('booked_on', DateRange::days($from, $to))
             ->with(['lines.account', 'lines.taxCode', 'reversedBy'])
-            ->orderBy('journal_no')
-            ->get();
+            ->orderBy('journal_no')->orderBy('id')
+            ->lazy();
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        return array_values(self::postedEntries($organization, $from, $to)
-            ->map(fn ($entry): array => [
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (self::postedEntries($organization, $from, $to) as $entry) {
+            yield [
                 $this->num($entry->journal_no, 0),
                 $this->date($entry->booked_on),
                 $this->date($entry->document_on),
@@ -80,8 +80,7 @@ class LedgerEntriesSection extends AbstractGdpduSection {
                 $this->str($entry->rule_version),
                 $this->str($entry->reversed_by_entry_id === null ? '' : (string) $entry->reversedBy?->journal_no),
                 $this->dateTime($entry->posted_at),
-            ])
-            ->values()
-            ->all());
+            ];
+        }
     }
 }

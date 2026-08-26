@@ -14,6 +14,7 @@ namespace App\Services\Integration\Profiles;
 
 use App\Models\{Customer, Organization};
 use App\Services\Integration\Match\{AbstractMatchProfile, CompositeField, ExactField, FuzzyField, MatchStrategy};
+use App\Services\Stammdaten\ContactDetailsWriter;
 use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
@@ -62,11 +63,20 @@ class CustomerMatchProfile extends AbstractMatchProfile {
     public function create(Organization $organization, array $mapped): Model {
         $this->requireName($mapped);
         $attributes = array_intersect_key($mapped, array_flip((new Customer)->getFillable()));
+        // F8/E6: Adresse und Bankverbindung gehören nach contact_*; die
+        // Inline-Spalten füllt danach die Projektion (nie inline anlegen).
+        $contactFields = ContactDetailsWriter::pullInline($attributes);
         $attributes['organization_id'] = $organization->id;
         if (! array_key_exists('billable', $attributes)) {
             $attributes['billable'] = true;
         }
 
-        return Customer::create($attributes);
+        $contact = Customer::create($attributes);
+        if ($contactFields !== []) {
+            app(ContactDetailsWriter::class)->writeInline($contact, $contactFields);
+            $contact->refresh();
+        }
+
+        return $contact;
     }
 }

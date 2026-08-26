@@ -47,7 +47,7 @@
                     $isUnread = $notification->read_at === null;
                 @endphp
                 <li class="flex items-start gap-3 px-4 py-3 {{ $isUnread ? 'bg-primary/5' : '' }}">
-                    <x-icon :name="$data['icon'] ?? 'notifications'" class="mt-0.5 {{ $isUnread ? 'text-primary' : 'text-base-content/50' }}" />
+                    <x-icon :name="$data['icon'] ?? 'notifications'" class="mt-0.5 {{ $isUnread ? 'text-primary' : 'text-muted' }}" />
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-2">
                             <span class="text-sm font-medium {{ $isUnread ? '' : 'opacity-70' }}">{{ \App\Support\NotificationText::title($data) }}</span>
@@ -91,7 +91,7 @@
                 </li>
             @empty
                 <li>
-                    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_off</span>'
+                    <x-empty-state icon="notifications_off"
                                    :title="__('notification.title.empty')"
                                    :message="__('notification.title.empty_message')"
                                    compact />

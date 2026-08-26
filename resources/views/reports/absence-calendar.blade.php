@@ -75,7 +75,7 @@
         </div>
 
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">event_busy</span>'
+            <x-empty-state icon="event_busy"
                            :title="__('Keine Mitarbeiter im gewählten Bereich.')" />
         @else
             <div class="overflow-x-auto">
@@ -85,7 +85,7 @@
                         <div class="w-48 shrink-0"></div>
                         <div class="relative flex-1 h-6 border-b border-base-300">
                             @foreach ($monthStarts as $month)
-                                <span class="absolute top-0 text-xs text-base-content/60 border-l border-base-300 pl-1"
+                                <span class="absolute top-0 text-xs text-muted border-l border-base-300 pl-1"
                                       style="left: {{ $month['left'] }}%">{{ $month['label'] }}</span>
                             @endforeach
                         </div>

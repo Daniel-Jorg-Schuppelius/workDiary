@@ -17,7 +17,7 @@
     </x-slot:actions>
 
     @if ($comparison['bidders'] === [])
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">table_chart</span>'
+        <x-empty-state framed icon="table_chart"
                        :title="__('gaeb.comparison.empty_title')" :description="__('gaeb.comparison.empty_hint')" />
     @else
         {{-- Angebotssummen mit Rang und Abstand zum nächstgünstigeren Angebot. --}}

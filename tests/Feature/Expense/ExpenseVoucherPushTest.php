@@ -14,8 +14,9 @@ namespace Tests\Feature\Expense;
 
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Models\{Expense, ExpenseCategory, LexofficeVoucher, PluginSetting, User};
-use App\Plugins\Lexoffice\{LexofficeMapper, LexofficePlugin, LexofficeService};
-use App\Services\Billing\{DocumentLinks, ExpenseVoucherPush};
+use App\Plugins\Lexoffice\{LexofficeExpenseLinkProvider, LexofficeMapper, LexofficePlugin, LexofficeService};
+use App\Plugins\PluginManager;
+use App\Services\Billing\NullExpenseLinkProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -101,20 +102,20 @@ final class ExpenseVoucherPushTest extends TestCase {
 
         // Die Verknüpfung trägt das pushed-Kennzeichen: aktiver Push, keine
         // nachträgliche Zuordnung.
-        $this->assertNotNull(app(DocumentLinks::class)->voucherFor($expense));
-        $this->assertTrue(app(ExpenseVoucherPush::class)->wasPushed($expense));
+        $this->assertNotNull(app(LexofficeExpenseLinkProvider::class)->voucherFor($expense));
+        $this->assertTrue(app(LexofficeExpenseLinkProvider::class)->wasPushed($expense));
     }
 
     /** Der zweite Klick findet den Beleg des ersten — kein zweiter Beleg. */
     public function test_push_is_idempotent(): void {
         $this->fakeCreate();
         $expense = $this->expense();
-        $push = app(ExpenseVoucherPush::class);
+        $push = app(LexofficeExpenseLinkProvider::class);
 
-        $first = $push->push($expense);
-        $second = $push->push($expense);
+        $first = $push->pushVoucher($expense);
+        $second = $push->pushVoucher($expense);
 
-        $this->assertSame($first->id, $second->id);
+        $this->assertSame($first->externalId, $second->externalId);
         $this->assertSame(1, LexofficeVoucher::query()->count());
     }
 
@@ -124,7 +125,7 @@ final class ExpenseVoucherPushTest extends TestCase {
         $expense = $this->expense(ExpenseStatus::Draft->value);
 
         $this->expectException(\RuntimeException::class);
-        app(ExpenseVoucherPush::class)->push($expense);
+        app(LexofficeExpenseLinkProvider::class)->pushVoucher($expense);
     }
 
     /** Ohne Kategorie-Zuordnung kein Push — Fehlermeldung statt Rateweg. */
@@ -139,21 +140,70 @@ final class ExpenseVoucherPushTest extends TestCase {
         $expense = $this->expense(categoryId: (int) $bare->id);
 
         $this->expectException(\RuntimeException::class);
-        app(ExpenseVoucherPush::class)->push($expense);
+        app(LexofficeExpenseLinkProvider::class)->pushVoucher($expense);
     }
 
     /** Der Beleg existiert unwiderruflich — die Verknüpfung bleibt. */
     public function test_pushed_link_cannot_be_removed(): void {
         $this->fakeCreate();
         $expense = $this->expense();
-        app(ExpenseVoucherPush::class)->push($expense);
+        app(LexofficeExpenseLinkProvider::class)->pushVoucher($expense);
 
         $this->actingAs($this->admin)
             ->delete(route('expenses.unlink-voucher', $expense))
             ->assertRedirect()
             ->assertSessionHas('error');
 
-        $this->assertNotNull(app(DocumentLinks::class)->voucherFor($expense));
+        $this->assertNotNull(app(LexofficeExpenseLinkProvider::class)->voucherFor($expense));
+    }
+
+    /**
+     * Ohne angebundene Buchhaltung greift der {@see NullExpenseLinkProvider}
+     * (Vollscan 2026-08-23, B9): keine Vorschläge, kein Push — und der Dialog
+     * sagt das klar, statt „kein passender Beleg gefunden" vorzutäuschen.
+     */
+    public function test_without_accounting_plugin_the_null_provider_answers(): void {
+        PluginSetting::query()->where('plugin_id', LexofficePlugin::ID)->update(['enabled' => false]);
+        app(PluginManager::class)->flushRuntimeCaches();
+        $expense = $this->expense();
+
+        $this->actingAs($this->admin)
+            ->get(route('expenses.receipt', $expense))
+            ->assertOk()
+            ->assertSee(__('expenses.receipt.no_provider'));
+
+        $this->actingAs($this->admin)
+            ->post(route('expenses.push-voucher', $expense))
+            ->assertRedirect()
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, LexofficeVoucher::query()->count(), 'Ohne Provider entsteht kein Beleg.');
+    }
+
+    /** Der Null-Provider antwortet leer statt zu raten. */
+    public function test_null_provider_offers_nothing(): void {
+        $provider = new NullExpenseLinkProvider();
+        $expense = $this->expense();
+
+        $this->assertFalse($provider->isAvailable());
+        $this->assertNull($provider->label());
+        $this->assertNull($provider->voucherFor($expense));
+        $this->assertTrue($provider->suggestionsFor($expense)->isEmpty());
+        $this->assertFalse($provider->canPush($expense));
+        $this->assertFalse($provider->wasPushed($expense));
+
+        $this->expectException(\RuntimeException::class);
+        $provider->pushVoucher($expense);
+    }
+
+    /** Mit aktiviertem Plugin trägt der Lexoffice-Provider — kein Null-Hinweis. */
+    public function test_enabled_plugin_keeps_the_lexoffice_provider(): void {
+        $expense = $this->expense();
+
+        $this->actingAs($this->admin)
+            ->get(route('expenses.receipt', $expense))
+            ->assertOk()
+            ->assertDontSee(__('expenses.receipt.no_provider'));
     }
 
     /** Eine bloß ZUGEORDNETE Verknüpfung (MVP-551) bleibt dagegen lösbar. */
@@ -165,13 +215,13 @@ final class ExpenseVoucherPushTest extends TestCase {
             'voucher_type' => 'purchaseinvoice',
             'currency' => 'EUR',
         ]);
-        app(DocumentLinks::class)->link($expense, $voucher);
+        app(LexofficeExpenseLinkProvider::class)->link($expense, (string) $voucher->sqid);
 
         $this->actingAs($this->admin)
             ->delete(route('expenses.unlink-voucher', $expense))
             ->assertRedirect()
             ->assertSessionHas('success');
 
-        $this->assertNull(app(DocumentLinks::class)->voucherFor($expense));
+        $this->assertNull(app(LexofficeExpenseLinkProvider::class)->voucherFor($expense));
     }
 }

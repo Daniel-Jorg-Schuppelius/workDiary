@@ -322,8 +322,22 @@ return [
             'deleted' => 'Plantilla de formulario eliminada',
         ],
     ],
+    'hrFile' => [
+        'created' => 'Documento del expediente personal añadido',
+        'updated' => 'Documento del expediente personal editado',
+        'downloaded' => 'Documento del expediente personal descargado',
+        'deleted' => 'Documento del expediente personal destruido',
+    ],
     'gobd' => [
         'exported' => 'Exportación GoBD creada',
+        'downloaded' => 'Exportación GoBD descargada',
+    ],
+    // Herramienta de medición (MVP-722): filas de audit:measure-chain-contention.
+    'perf' => [
+        'measure' => 'Medición (contención de bloqueo de la cadena de auditoría)',
+    ],
+    'procedure_documentation' => [
+        'published' => 'Documentación de procedimientos publicada',
     ],
     'google_calendar' => [
         'calendar_selected' => 'Calendario de Google seleccionado',
@@ -393,6 +407,8 @@ return [
         'retention_secured' => 'Retención sustituida por un aval',
         'approved' => 'Factura aprobada',
         'dunned' => 'Factura reclamada',
+        'dunningBlocked' => 'Bloqueo de reclamación establecido',
+        'dunningUnblocked' => 'Bloqueo de reclamación retirado',
         'document_imported' => 'Archivo de factura importado',
         'einvoice_exported' => 'Factura electrónica exportada',
         'einvoice_options_updated' => 'Opciones de factura electrónica actualizadas',
@@ -595,7 +611,13 @@ return [
             'invited' => 'Acceso al portal invitado',
             'reactivated' => 'Acceso al portal reactivado',
         ],
+        'profile' => [
+            'email_change_requested' => 'Cambio de correo solicitado en el portal',
+            'email_changed' => 'Dirección de correo cambiada en el portal',
+            'email_change_blocked' => 'Cambio de correo en el portal no ejecutado',
+        ],
         'query' => [
+            'attachments_added' => 'Adjuntos subidos a la consulta del portal',
             'withdrawn' => 'Consulta del portal retirada',
         ],
         'visibility' => [
@@ -627,6 +649,7 @@ return [
         'ropa' => [
             'exported' => 'Registro de actividades de tratamiento exportado',
         ],
+        'subjectExportGenerated' => 'Respuesta al interesado generada',
     ],
     'problem' => [
         'effectiveness_checked' => 'Eficacia comprobada',
@@ -639,7 +662,17 @@ return [
         'signatureLinkOpened' => 'Enlace de firma abierto',
         'signatureRequested' => 'Firma solicitada',
     ],
+    'order_confirmation' => [
+        'mailed' => 'Confirmación de pedido enviada por correo electrónico',
+    ],
+    'purchase_order' => [
+        'mailed' => 'Pedido de compra enviado por correo electrónico',
+    ],
+    'delivery_note' => [
+        'mailed' => 'Albarán enviado por correo electrónico',
+    ],
     'quote' => [
+        'mailed' => 'Presupuesto enviado por correo electrónico',
         'followed_up' => 'Seguimiento del presupuesto realizado',
         'accepted' => 'Presupuesto aceptado',
         'approved' => 'Presupuesto aprobado',
@@ -671,6 +704,10 @@ return [
     ],
     'render_profile_activated' => 'Perfil de renderizado activado',
     'rental' => [
+        'requested' => 'Solicitud de alquiler enviada desde el portal',
+        'requestAccepted' => 'Solicitud de alquiler aceptada',
+        'requestDeclined' => 'Solicitud de alquiler rechazada',
+        'requestWithdrawn' => 'Solicitud de alquiler retirada por el cliente',
         'active' => 'Alquiler activo',
         'assetSwapped' => 'Equipo de alquiler cambiado',
         'cancelled' => 'Alquiler anulado',
@@ -714,6 +751,16 @@ return [
     ],
     'rules' => [
         'recalculated' => 'Resultados de reglas de tiempo recalculados',
+    ],
+    'safety' => [
+        'hazard_assessment' => [
+            'approved' => 'Evaluación de riesgos aprobada',
+            'transitioned' => 'Evaluación de riesgos: estado cambiado',
+            'superseded' => 'Evaluación de riesgos sustituida por una versión siguiente',
+        ],
+        'instruction_participant' => [
+            'signed' => 'Participación en la formación confirmada',
+        ],
     ],
     'scheduler' => [
         'testRun' => 'Ejecución de prueba del planificador',
@@ -769,6 +816,13 @@ return [
     'shipping' => [
         'connection_saved' => 'Conexión de envío guardada',
         'disconnected' => 'Conexión de envío desconectada',
+    ],
+    'sms' => [
+        'sent' => 'SMS de alerta enviado',
+        'opt_in' => 'Alerta por SMS confirmada',
+        'opt_out' => 'Alerta por SMS revocada',
+        'verification_started' => 'Código de confirmación SMS solicitado',
+        'budget_warning' => 'Umbral de aviso de coste de SMS alcanzado',
     ],
     'sla_violation' => [
         'acknowledged' => 'Incumplimiento de SLA confirmado',
@@ -881,7 +935,14 @@ return [
         'revoked' => 'Token revocado',
     ],
     'updated' => 'Actualizado',
+    'travelLog' => [
+        'locked' => 'Trayecto bloqueado',
+        'corrected' => 'Trayecto corregido mediante trayecto de anulación',
+    ],
     'user' => [
+        'anonymized' => 'Empleado anonimizado (datos personales eliminados, justificantes conservados)',
+        'offboardingScheduled' => 'Salida programada',
+        'offboarded' => 'Empleado dado de baja (cuenta desactivada)',
         'permission' => [
             'granted' => 'Permiso concedido',
             'revoked' => 'Permiso revocado',
@@ -931,6 +992,8 @@ return [
         'taxation_method_switched' => 'Régimen de IVA cambiado',
         'filing_interval_switched' => 'Periodo de liquidación cambiado',
         'vat_extension_recorded' => 'Prórroga registrada',
+        'fixed_asset_disposed' => 'Baja de activo fijo registrada',
+        'depreciation_proposed' => 'Amortización anual propuesta',
     ],
     'accounting_migration' => [
         'planned' => 'Cambio contable planificado',
@@ -942,5 +1005,8 @@ return [
         'blocked' => 'Cambio bloqueado',
         'completed' => 'Cambio contable finalizado',
         'cancelled' => 'Cambio contable cancelado',
+    ],
+    'openIssue' => [
+        'followUpCreated' => 'Encargo de seguimiento creado desde el punto abierto',
     ],
 ];

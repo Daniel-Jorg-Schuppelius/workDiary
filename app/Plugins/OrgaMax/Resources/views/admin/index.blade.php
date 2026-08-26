@@ -51,8 +51,8 @@
                     @endif
                 </div>
             </div>
-            <p class="text-sm text-base-content/60">{{ __('orgamax.intro') }}</p>
-            <p class="mt-1 text-xs text-base-content/50">{{ __('orgamax.erp_notice') }}</p>
+            <p class="text-sm text-muted">{{ __('orgamax.intro') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('orgamax.erp_notice') }}</p>
 
             @if ($connection === null || $connection->status === \App\Models\OrgaMaxConnection::STATUS_DISCONNECTED || $connection->status === \App\Models\OrgaMaxConnection::STATUS_DRAFT)
                 {{-- Geführter Verbindungsdialog --}}
@@ -76,7 +76,7 @@
                     </label>
                     <div class="sm:col-span-2">
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('orgamax.connect.start') }}</button>
-                        <p class="mt-1 text-xs text-base-content/50">{{ __('orgamax.connect.start_hint') }}</p>
+                        <p class="mt-1 text-xs text-muted">{{ __('orgamax.connect.start_hint') }}</p>
                     </div>
                 </form>
             @else
@@ -86,7 +86,7 @@
                     </span>
                     <span class="badge badge-ghost badge-sm">{{ __('orgamax.connect.mode') }}: {{ __('orgamax.connect.mode_' . $connection->mode) }}</span>
                     @if ($connection->last_sync_at)
-                        <span class="text-xs text-base-content/50">{{ __('orgamax.sync.last', ['at' => $connection->last_sync_at->fdatetime()]) }}</span>
+                        <span class="text-xs text-muted">{{ __('orgamax.sync.last', ['at' => $connection->last_sync_at->fdatetime()]) }}</span>
                     @endif
                 </div>
                 @if ($connection->blocked_reason)
@@ -105,7 +105,7 @@
                     </div>
                 @endif
 
-                <div class="mt-2 text-xs text-base-content/50">
+                <div class="mt-2 text-xs text-muted">
                     {{ __('orgamax.connect.scopes') }}: {{ implode(', ', (array) ($connection->granted_scopes ?? [])) ?: '—' }}
                 </div>
 
@@ -121,7 +121,7 @@
             {{-- Capability-Matrix / Datenführerschaft --}}
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('orgamax.capabilities.heading') }}</h2>
-                <p class="mb-2 text-xs text-base-content/50">{{ __('orgamax.capabilities.hint') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('orgamax.capabilities.hint') }}</p>
                 <form method="POST" action="{{ route('admin.orgamax.capabilities') }}">
                     @csrf
                     <div class="overflow-x-auto">
@@ -164,7 +164,7 @@
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="text-xs text-base-content/50">{{ implode(', ', $requiredScopes[$capability] ?? []) }}</td>
+                                        <td class="text-xs text-muted">{{ implode(', ', $requiredScopes[$capability] ?? []) }}</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -178,7 +178,7 @@
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('orgamax.orders.heading') }}</h2>
                 @if ($orders->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('orgamax.orders.empty') }}</p>
+                    <p class="text-sm text-muted">{{ __('orgamax.orders.empty') }}</p>
                 @else
                     <div class="overflow-x-auto">
                         <table class="table table-sm">
@@ -195,7 +195,7 @@
                                     <tr>
                                         <td class="font-mono text-xs">{{ $order->external_id }}</td>
                                         <td class="font-mono text-xs">{{ (string) data_get($order->payload, 'marker', '—') }}</td>
-                                        <td class="text-xs text-base-content/60">{{ $order->synced_at?->fdatetime() ?? '—' }}</td>
+                                        <td class="text-xs text-muted">{{ $order->synced_at?->fdatetime() ?? '—' }}</td>
                                         <td class="text-right">
                                             <form method="POST" action="{{ route('admin.orgamax.invoices.convert') }}" class="inline"
                                                   data-confirm-dialog data-confirm="{{ __('orgamax.invoice.convert_confirm') }}">
@@ -215,9 +215,9 @@
             {{-- Rechnungs-Projektion (Herkunft orgaMAX) --}}
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                 <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('orgamax.invoices.heading') }}</h2>
-                <p class="mb-2 text-xs text-base-content/50">{{ __('orgamax.invoices.hint') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('orgamax.invoices.hint') }}</p>
                 @if ($invoices->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('orgamax.invoices.empty') }}</p>
+                    <p class="text-sm text-muted">{{ __('orgamax.invoices.empty') }}</p>
                 @else
                     <div class="overflow-x-auto">
                         <table class="table table-sm">
@@ -239,7 +239,7 @@
                                         <td><span class="badge badge-ghost badge-sm">{{ (string) ($p['status'] ?? '—') }}</span></td>
                                         <td class="text-sm">{{ (string) ($p['customer'] ?? '—') }}</td>
                                         <td class="text-right tabular-nums">{{ $p['total_gross'] ?? '—' }}</td>
-                                        <td class="text-xs text-base-content/60">{{ $projection->synced_at?->fdatetime() ?? '—' }}</td>
+                                        <td class="text-xs text-muted">{{ $projection->synced_at?->fdatetime() ?? '—' }}</td>
                                         <td class="text-right">
                                             <div class="flex justify-end gap-1">
                                                 <a class="btn btn-xs btn-ghost" href="{{ route('admin.orgamax.invoices.pdf', $projection->external_id) }}">PDF</a>
@@ -268,7 +268,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-sm text-base-content/60">{{ __('orgamax.sync.never') }}</p>
+                    <p class="text-sm text-muted">{{ __('orgamax.sync.never') }}</p>
                 @endif
                 @if ($connection->last_error)
                     <p class="mt-1 text-sm text-error">{{ __('orgamax.sync.error', ['error' => $connection->last_error]) }}</p>

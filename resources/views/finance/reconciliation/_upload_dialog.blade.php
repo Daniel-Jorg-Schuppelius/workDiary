@@ -17,7 +17,7 @@
     :submit-label="__('bank.action.upload')"
 >
     <div class="text-sm text-base-content/70">{{ __('bank.import.dialog_hint') }}</div>
-    <div class="text-xs text-base-content/60">{{ __('bank.import.format_hint') }}</div>
+    <div class="text-xs text-muted">{{ __('bank.import.format_hint') }}</div>
 
     <div>
         <label class="label" for="bank-import-file">

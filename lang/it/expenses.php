@@ -18,6 +18,8 @@ return [
         'suggestions_hint' => 'Documenti con lo stesso importo nella finestra temporale. Il collegamento conferma che si tratta della stessa operazione — la nota spese non conta più due volte.',
         'no_suggestions' => 'Nessun documento corrispondente',
         'no_suggestions_hint' => 'Senza collegamento la nota spese viene esposta separatamente come costo interno.',
+        'no_provider' => 'Nessuna contabilità collegata',
+        'no_provider_hint' => 'Senza un sistema contabile collegato non ci sono né proposte di documenti né trasferimento — la nota spese viene esposta separatamente come costo interno.',
         'linked' => 'Documento :number collegato.',
         'unlinked' => 'Collegamento rimosso.',
         'title' => 'File del giustificativo',

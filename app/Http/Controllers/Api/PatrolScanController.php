@@ -17,6 +17,7 @@ use App\Models\Location\LocationDeviceToken;
 use App\Models\Patrol\{PatrolCheckpoint, PatrolRun};
 use App\Services\Patrol\PatrolService;
 use Illuminate\Http\{JsonResponse, Request};
+use OpenApi\Attributes as OA;
 use RuntimeException;
 
 /**
@@ -31,6 +32,22 @@ use RuntimeException;
  * eine stille Datenhalde.
  */
 class PatrolScanController extends Controller {
+    #[OA\Post(
+        path: '/patrol/scan/{token}',
+        summary: 'Checkpoint-Scan eines Wächterrundgangs',
+        description: 'Auth über Gerätetoken im Pfad.',
+        tags: ['Ingest'],
+        parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Standort-Geräte-Token', schema: new OA\Schema(type: 'string'))],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['checkpoint'], properties: [
+            new OA\Property(property: 'checkpoint', type: 'string', maxLength: 64, description: 'Checkpoint-Token'),
+        ])),
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Ungültiger Gerätetoken'),
+            new OA\Response(response: 404, description: 'Unbekannter Checkpoint'),
+            new OA\Response(response: 422, description: 'Kein laufender Rundgang oder Scan abgewiesen'),
+        ],
+    )]
     public function scan(Request $request, string $token, PatrolService $service): JsonResponse {
         $device = LocationDeviceToken::query()
             ->where('token_hash', LocationDeviceToken::hashToken($token))

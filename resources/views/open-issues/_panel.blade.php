@@ -9,7 +9,7 @@
 {{-- Offene-Punkte-Panel. Erwartet: $subject (Model), $subjectKind ('diary'|'project'|'customer') --}}
 @php
     /** @var \Illuminate\Database\Eloquent\Collection<int, \App\Models\OpenIssue> $issues */
-    $issues = $subject->openIssues()->with(['assignee', 'creator'])->get();
+    $issues = $subject->openIssues()->with(['assignee', 'creator', 'followUpEntry'])->get();
     $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\OpenIssue::class);
     $canAssign = \Illuminate\Support\Facades\Gate::allows('assign', \App\Models\OpenIssue::class);
     $canPublishToCustomer = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\OpenIssue::class);
@@ -26,7 +26,7 @@
     @endif
 
     @if ($issues->isEmpty())
-        <x-empty-state compact icon='<span class="material-symbols-outlined">flag</span>'
+        <x-empty-state compact icon="flag"
                        :title="__('open-issue.title.index')"
                        :message="__('Noch keine offenen Punkte vorhanden.')" />
     @else
@@ -68,7 +68,7 @@
                             @if ($issue->description)
                                 <p class="mt-1 whitespace-pre-wrap text-sm text-base-content/80">{{ $issue->description }}</p>
                             @endif
-                            <p class="mt-2 text-xs text-base-content/60">
+                            <p class="mt-2 text-xs text-muted">
                                 {{ __('open-issue.field.creator') }}: {{ optional($issue->creator)->name ?? '—' }}
                                 · {{ __('open-issue.field.assignee') }}: {{ optional($issue->assignee)->name ?? '—' }}
                                 @if ($issue->closed_at)
@@ -78,6 +78,12 @@
                             @if ($issue->closed_reason)
                                 <p class="mt-1 text-xs italic text-base-content/70">
                                     {{ __('open-issue.field.reason') }}: {{ $issue->closed_reason }}
+                                </p>
+                            @endif
+                            @if ($issue->followUpEntry !== null)
+                                <p class="mt-1 text-xs text-base-content/70">
+                                    {{ __('open-issue.field.follow_up') }}:
+                                    <a href="{{ route('diary.show', $issue->followUpEntry) }}" class="link link-primary">{{ $issue->followUpEntry->title ?: __('Auftrag') }} · {{ $issue->followUpEntry->start_at?->fdate() ?? '—' }}</a>
                                 </p>
                             @endif
                         </div>
@@ -106,6 +112,14 @@
                                         </form>
                                     @endif
                                 @endforeach
+
+                                {{-- Folgeauftrag (Feature 139): öffnet den Auftragsdialog vorbefüllt; Verknüpfung beim Speichern. --}}
+                                @if ($canUpdate && $issue->follow_up_diary_entry_id === null && ! $issue->closed_at)
+                                    <x-icon-btn icon="add_task" size="xs" tone="outline"
+                                                data-entry-modal-trigger
+                                                :href="route('diary.create', ['open_issue' => $issue->sqid])"
+                                                show-label>{{ __('open-issue.action.followUp') }}</x-icon-btn>
+                                @endif
 
                                 @if ($canDelete)
                                     <x-action-form :action="route('open-issues.destroy', $issue)" method="DELETE"

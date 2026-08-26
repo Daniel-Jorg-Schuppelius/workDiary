@@ -320,6 +320,10 @@ return [
          */
         'constants' => [
             'L5_SWAGGER_CONST_HOST' => env('L5_SWAGGER_CONST_HOST', 'http://my-default-host.com'),
+            // MVP-717: info.version aus APP_VERSION (config app.version); die
+            // CI generiert ohne APP_VERSION → Default, damit das Drift-Gate
+            // (git diff storage/api-docs) reproduzierbar bleibt.
+            'L5_SWAGGER_APP_VERSION' => (string) config('app.version', '0.1.0-dev'),
         ],
     ],
 ];

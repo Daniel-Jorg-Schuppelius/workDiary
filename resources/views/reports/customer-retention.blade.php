@@ -74,7 +74,7 @@
         <x-card id="neukunden" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Neukunden') }} ({{ count($bridge['new']) + count($bridge['newChurned']) }})</h2>
             @if ($bridge['new'] === [] && $bridge['newChurned'] === [])
-                <p class="text-sm text-base-content/60">{{ __('Keine Neukunden im Zeitraum.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Neukunden im Zeitraum.') }}</p>
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($bridge['new'] as $c)
@@ -93,7 +93,7 @@
         <x-card id="zurueckgewonnen" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zurückgewonnen') }} ({{ count($bridge['reactivated']) }})</h2>
             @if ($bridge['reactivated'] === [])
-                <p class="text-sm text-base-content/60">{{ __('Keine zurückgewonnenen Kunden im Zeitraum.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine zurückgewonnenen Kunden im Zeitraum.') }}</p>
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($bridge['reactivated'] as $c)
@@ -106,7 +106,7 @@
         <x-card id="verloren" class="scroll-mt-24">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Verlorene Kunden') }} ({{ count($bridge['lost']) }})</h2>
             @if ($bridge['lost'] === [])
-                <p class="text-sm text-base-content/60">{{ __('Keine verlorenen Kunden im Zeitraum — gut so.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine verlorenen Kunden im Zeitraum — gut so.') }}</p>
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($bridge['lost'] as $c)
@@ -117,7 +117,7 @@
         </x-card>
     </div>
 
-    <p class="mt-3 text-xs text-base-content/60">
+    <p class="mt-3 text-xs text-muted">
         {{ __('Zeitraum') }}: {{ $label }} · {{ __('Kohortenbasis: Erstleistungsjahr (org-weit, unabhängig vom Zeitraumfilter).') }}
     </p>
 </x-page-shell>

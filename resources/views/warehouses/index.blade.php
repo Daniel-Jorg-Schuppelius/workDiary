@@ -23,7 +23,7 @@
     </x-slot:actions>
 
     @if ($warehouses->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">warehouse</span>'
+        <x-empty-state framed icon="warehouse"
                        :title="__('inventory.empty.warehouses')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">
@@ -31,6 +31,8 @@
                 <tr>
                     <th>{{ __('Name') }}</th>
                     <th>{{ __('inventory.field.code') }}</th>
+                    <th>{{ __('inventory.field.kind') }}</th>
+                    <th>{{ __('inventory.bins') }}</th>
                     <th>{{ __('inventory.field.movement') }}</th>
                     <th>{{ __('Status') }}</th>
                     <th></th>
@@ -43,6 +45,13 @@
                         @if ($warehouse->is_default)<span class="badge badge-sm badge-primary ml-2">{{ __('inventory.field.default') }}</span>@endif
                     </td>
                     <td class="font-mono text-sm">{{ $warehouse->code ?? '—' }}</td>
+                    <td>
+                        {{ $warehouse->kind->label() }}
+                        @if ($warehouse->referenceLabel())<span class="text-xs text-muted ml-1">{{ $warehouse->referenceLabel() }}</span>@endif
+                    </td>
+                    <td class="tabular-nums">
+                        <a href="{{ route('warehouses.bins.index', $warehouse) }}" class="link link-hover">{{ $warehouse->bins_count }}</a>
+                    </td>
                     <td class="tabular-nums">{{ $warehouse->movements_count }}</td>
                     <td>
                         @if ($warehouse->blocked)
@@ -54,6 +63,7 @@
                         @endif
                     </td>
                     <td class="text-right">
+                        <x-icon-btn icon="shelves" size="xs" :href="route('warehouses.bins.index', $warehouse)" :title="__('inventory.action.manage_bins')" />
                         @can('update', $warehouse)
                             <x-icon-btn icon="edit" size="xs" data-entry-modal-trigger
                                         :href="route('warehouses.edit', $warehouse)" :title="__('Bearbeiten')" />

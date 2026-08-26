@@ -70,7 +70,7 @@
                    :value="old('note', $template->note ?? '')" />
 
     @if ($preview !== [])
-        <p class="text-xs text-base-content/60">
+        <p class="text-xs text-muted">
             {{ __('accounting.recurring.preview', ['dates' => implode(', ', $preview)]) }}
         </p>
     @endif

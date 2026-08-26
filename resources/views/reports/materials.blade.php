@@ -63,7 +63,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Verbrauch pro Material') }}</h3>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' :title="__('Im Zeitraum wurden keine Materialien verbucht.')" />
+            <x-empty-state icon="inventory_2" :title="__('Im Zeitraum wurden keine Materialien verbucht.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

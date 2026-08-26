@@ -74,7 +74,7 @@
             <tr>
                 <td>
                     <a href="{{ route('domains.show', $domain) }}" class="link link-hover font-medium">{{ $domain->external_domain }}</a>
-                    <div class="text-xs text-base-content/60 font-mono">{{ $domain->external_user }}</div>
+                    <div class="text-xs text-muted font-mono">{{ $domain->external_user }}</div>
                 </td>
                 <td>{{ $domain->customer?->name ?? '—' }}</td>
                 <td class="tabular-nums">{{ $domain->expiration_at?->format('d.m.Y') ?? '—' }}</td>

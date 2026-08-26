@@ -13,6 +13,7 @@ namespace App\Services\Billing;
 use App\Enums\Billing\AccountPaymentSource;
 use App\Models\Billing\{CustomerAccountPayment, CustomerBillingAgreement, CustomerBillingStatement};
 use App\Models\{TimeEntry, User};
+use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonInterface;
 use CommonToolkit\Enums\CurrencyCode;
@@ -85,7 +86,7 @@ class CustomerAccountStatementService {
 
         $query = $this->entriesQuery($agreement);
         if ($openStart !== null) {
-            $query->whereDate('date', '>=', $openStart->toDateString());
+            $query->where('date', '>=', DateRange::day($openStart));
         }
 
         foreach ($query->get() as $entry) {
@@ -403,8 +404,7 @@ class CustomerAccountStatementService {
         $end = $start->copy()->endOfMonth();
 
         $entries = $this->entriesQuery($agreement)
-            ->whereDate('date', '>=', $start->toDateString())
-            ->whereDate('date', '<=', $end->toDateString())
+            ->whereBetween('date', DateRange::days($start, $end))
             ->get();
 
         $payments = $this->paymentsFor($agreement, $statement, $start, $end);
@@ -436,8 +436,7 @@ class CustomerAccountStatementService {
         $currency = $agreement->currency;
 
         $entries = $this->entriesQuery($agreement)
-            ->whereDate('date', '>=', $start->toDateString())
-            ->whereDate('date', '<=', $end->toDateString())
+            ->whereBetween('date', DateRange::days($start, $end))
             ->with('activityCategory')
             ->orderBy('started_at')
             ->get();
@@ -517,8 +516,7 @@ class CustomerAccountStatementService {
                 ->where('customer_billing_statement_id', $statement->id)
                 ->orWhere(fn ($unassigned) => $unassigned
                     ->whereNull('customer_billing_statement_id')
-                    ->whereDate('paid_on', '>=', $start->toDateString())
-                    ->whereDate('paid_on', '<=', $end->toDateString())))
+                    ->whereBetween('paid_on', DateRange::days($start, $end))))
             ->orderBy('paid_on')
             ->get();
     }
@@ -565,8 +563,7 @@ class CustomerAccountStatementService {
             $end = $start->copy()->endOfMonth();
 
             $entries = $this->entriesQuery($agreement)
-                ->whereDate('date', '>=', $start->toDateString())
-                ->whereDate('date', '<=', $end->toDateString())
+                ->whereBetween('date', DateRange::days($start, $end))
                 ->whereNotIn('id', $snapshotIds === [] ? [0] : $snapshotIds)
                 ->get(['id', 'date', 'minutes']);
 

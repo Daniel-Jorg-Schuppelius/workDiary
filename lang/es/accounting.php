@@ -66,6 +66,8 @@ return [
             'datev_account' => 'Cuenta DATEV',
             'euer_category' => 'Línea ingresos-gastos',
             'euer_category_none' => '— sin asignación —',
+            'bwa_group' => 'Línea BWA',
+            'bwa_group_none' => '— derivar del rango numérico —',
             'deductible_percent' => 'Parte deducible (%)',
             'description' => 'Descripción',
             'post_now' => 'Contabilizar de inmediato',
@@ -83,6 +85,7 @@ return [
             'external_provider' => 'Solo con autoridad externa: nombre del sistema principal (p. ej. lexoffice).',
             'datev_account' => 'Solo para la exportación; el asiento local no depende de ella.',
             'euer_category' => 'Determina en qué línea del formulario aparece la cuenta. Sin asignación queda entre los casos sin aclarar.',
+            'bwa_group' => 'Línea del análisis de gestión (BWA). Sin asignación, el informe deriva la línea del rango SKR03/SKR04; si sigue abierto, la cuenta aparece bajo «sin asignar».',
             'deductible_percent' => 'Solo afecta a la vista previa de ingresos-gastos — en el diario siempre consta el importe íntegro (p. ej. 70 % en gastos de representación).',
             'normal_balance' => 'Preseleccionado según el tipo de cuenta, modificable en cada caso.',
             'post_now' => 'Una vez contabilizado, el asiento solo se corrige con un contraasiento.',
@@ -158,6 +161,7 @@ return [
             'entry_frozen' => 'El asiento está contabilizado — corrección solo mediante contraasiento.',
             'needs_two_lines' => 'Un asiento necesita al menos dos líneas.',
             'unknown_account' => 'Una línea remite a una cuenta desconocida.',
+            'unknown_cost_center' => 'El centro de coste no pertenece a esta organización.',
             'inactive_account' => 'La cuenta :account está desactivada.',
             'foreign_currency_line' => 'Todas las líneas deben estar en :currency.',
             'negative_amount' => 'Los importes son positivos; el sentido lo da el Debe o el Haber.',
@@ -292,6 +296,8 @@ return [
             'sovereignty' => 'En este periodo la organización no lleva un libro mayor local.',
             'foreign_currency' => 'El documento está en :currency, la contabilidad en :base — todavía no hay una conversión justificable.',
             'unsupported_target' => 'Todavía no hay vía contable para este destino de pago.',
+            'year_closed' => 'El ejercicio :year está cerrado.',
+            'period_closed' => 'El periodo del :date está cerrado.',
         ],
         'memo' => [
             'sales_invoice' => 'Factura :number · :customer',
@@ -299,9 +305,85 @@ return [
             'expense' => 'Gasto :description · :user',
             'cash_entry' => 'Caja :register · :purpose',
             'payment' => 'Pago (:kind) · :target',
+            'depreciation' => 'Amortización :year · :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Asignación de pago anulada — contraasiento.',
+        ],
+    ],
+    // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
+    'fixed_assets' => [
+        'title' => 'Registro de activos fijos',
+        'menu' => 'Activos fijos',
+        'subtitle' => 'Bienes con coste de adquisición, vida útil y plan de amortización — la amortización anual se contabiliza como propuesta a través de la bandeja contable.',
+        'empty' => 'Todavía no hay activos fijos en el registro.',
+        'months' => ':count meses',
+        'account_from_rule' => 'según regla contable',
+        'kpi' => [
+            'active' => 'Activos activos',
+            'total' => 'Activos en total',
+            'book_value_year' => 'Valor contable fin :year',
+        ],
+        'filter' => [
+            'all' => 'Todos los activos',
+        ],
+        'column' => [
+            'no' => 'N.º',
+            'name' => 'Denominación',
+            'acquired_on' => 'Adquisición',
+            'cost' => 'Coste de adquisición',
+            'useful_life' => 'Vida útil',
+            'book_value' => 'Valor contable :year',
+        ],
+        'field' => [
+            'device' => 'Equipo (asset)',
+            'residual_value' => 'Valor residual',
+            'method' => 'Método de amortización',
+            'asset_account' => 'Cuenta de activo',
+            'depreciation_account' => 'Cuenta de gasto por amortización',
+            'disposed_on' => 'Baja el',
+            'created_by' => 'Creado por',
+        ],
+        'section' => [
+            'master' => 'Datos maestros',
+            'accounts' => 'Cuentas',
+            'schedule' => 'Plan de amortización',
+            'posting' => 'Contabilización',
+        ],
+        'schedule' => [
+            'year' => 'Ejercicio',
+            'months' => 'Meses',
+            'amount' => 'Amortización',
+            'book_value_end' => 'Valor contable',
+            'empty' => 'Sin plan — falta la base amortizable o la vida útil.',
+        ],
+        'hint' => [
+            'device' => 'Enlace opcional al registro de equipos; no todo activo fijo es un equipo.',
+            'residual_value' => 'Permanece al final de la vida útil; por defecto 0.',
+            'useful_life' => 'Vida útil habitual según la tabla de amortización, en meses.',
+            'accounts' => 'Dejar vacío para aplicar la regla contable del rol (cuenta de activo / gasto por amortización).',
+            'frozen' => 'Hay una amortización contabilizada — fecha de adquisición, coste, valor residual y vida útil quedan congelados.',
+            'schedule' => 'Lineal, prorrateo mensual en el año de adquisición y de baja; el último año toma el resto.',
+            'posting' => 'La amortización anual se propone por ejercicio en el cierre y se contabiliza en la bandeja — nunca directamente.',
+            'dispose' => 'La baja termina el plan en el mes de baja. El valor contable restante no se da de baja automáticamente.',
+        ],
+        'action' => [
+            'add' => 'Añadir activo fijo',
+            'edit' => 'Editar activo fijo',
+            'dispose' => 'Registrar baja',
+            'dispose_submit' => 'Registrar baja',
+        ],
+        'flash' => [
+            'created' => 'Activo fijo :no creado.',
+            'updated' => 'Activo fijo guardado.',
+            'disposed' => 'Baja registrada.',
+        ],
+        'error' => [
+            'disposed_frozen' => 'Un activo fijo dado de baja ya no se puede modificar.',
+            'values_frozen' => 'Los campos que determinan el valor quedan bloqueados tras la primera amortización contabilizada.',
+            'disposed_before_acquired' => 'La baja no puede ser anterior a la adquisición.',
+            'residual_exceeds_cost' => 'El valor residual debe ser inferior al coste de adquisición.',
+            'useful_life_required' => 'La vida útil debe ser de al menos un mes.',
         ],
     ],
     'rules' => [
@@ -511,6 +593,45 @@ return [
                 'open_expectations' => 'Expectativas abiertas',
             ],
         ],
+        // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        'forecast' => [
+            'subtitle' => 'Saldo inicial de banco y caja y pagos esperados por semana natural desde el :date — :weeks semanas.',
+            'hint' => 'Una expectativa, no un saldo: partidas abiertas según el comportamiento de pago y los plazos de descuento, expectativas de documentos, planes de facturación, remesas liberadas, cuotas de financiación y vencimientos fiscales cuantificables. Lo vencido cuenta en la semana en curso.',
+            'horizon' => ':weeks semanas',
+            'column' => [
+                'week' => 'Semana',
+                'period' => 'Periodo',
+                'inflow' => 'Cobros',
+                'outflow' => 'Pagos',
+                'net' => 'Neto',
+                'closing' => 'Saldo',
+            ],
+            'kpi' => [
+                'opening' => 'Saldo inicial',
+                'inflow' => 'Cobros',
+                'outflow' => 'Pagos',
+                'min_closing' => 'Saldo mínimo',
+                'min_week' => 'en :week',
+            ],
+            'chart' => [
+                'closing' => 'Saldo acumulado por semana',
+                'flows' => 'Cobros y pagos por semana',
+            ],
+            'source' => [
+                'receivables' => 'Cuentas por cobrar',
+                'payables' => 'Cuentas por pagar',
+                'recurring' => 'Expectativas de documentos',
+                'invoice_schedules' => 'Planes de facturación',
+                'payment_runs' => 'Remesas',
+                'finance_rates' => 'Cuotas',
+                'filings' => 'Impuestos',
+            ],
+            'note' => [
+                'overdue' => 'vencido — semana en curso',
+                'delay' => 'retraso medio :days días',
+                'discount' => 'descuento :percent % en el plazo de descuento',
+            ],
+        ],
         'card' => [
             'trial_balance' => [
                 'title' => 'Balance de sumas y saldos',
@@ -540,9 +661,21 @@ return [
                 'title' => 'Liquidez',
                 'text' => 'Saldos reales, partidas abiertas y previsión — por separado.',
             ],
+            'liquidity_forecast' => [
+                'title' => 'Previsión de liquidez',
+                'text' => '13 semanas de cobros y pagos con comportamiento de pago y saldo acumulado.',
+            ],
             'quality' => [
                 'title' => 'Calidad contable',
                 'text' => 'Borradores, ejecuciones bloqueadas y expectativas abiertas.',
+            ],
+            'bwa' => [
+                'title' => 'Análisis de gestión (BWA)',
+                'text' => 'Cuenta de resultados a corto plazo con año anterior, mes anterior, cuadrícula mensual y presupuesto.',
+            ],
+            'budget' => [
+                'title' => 'Presupuesto',
+                'text' => 'Valores planificados por cuenta y ejercicio — valor anual o valores mensuales.',
             ],
             'journal' => [
                 'title' => 'Diario',
@@ -577,9 +710,11 @@ return [
             'reopen' => 'Reabrir',
             'reopen_submit' => 'Abrir el periodo',
             'close_year' => 'Cerrar el ejercicio',
+            'propose_depreciation' => 'Proponer amortizaciones',
         ],
         'confirm' => [
             'year' => '¿Cerrar el ejercicio? Todos los periodos deben estar cerrados.',
+            'depreciation' => '¿Colocar la amortización :year de todos los activos fijos en la bandeja contable como borradores? La contabilización se hace allí.',
         ],
         'check' => [
             'no_drafts' => 'No hay borradores abiertos en el periodo.',
@@ -588,10 +723,13 @@ return [
             'unbalanced' => ':count asientos no están cuadrados.',
             'sequence_ok' => 'No quedan periodos anteriores abiertos.',
             'earlier_open' => ':count periodos anteriores siguen abiertos.',
+            'depreciation_ok' => 'La amortización anual de todos los activos fijos está contabilizada.',
+            'depreciation_open' => 'La amortización anual aún no está contabilizada para :count activos fijos.',
             'key' => [
                 'drafts' => 'Borradores',
                 'balanced' => 'Cuadre',
                 'sequence' => 'Orden',
+                'depreciation' => 'Amortización',
             ],
         ],
         'flash' => [
@@ -599,6 +737,7 @@ return [
             'closed' => 'Periodo cerrado.',
             'reopened' => 'Periodo reabierto.',
             'year_closed' => 'Ejercicio cerrado.',
+            'depreciation_proposed' => 'Amortización :year: :prepared borradores preparados, :skipped ya existentes, :failed bloqueados.',
         ],
         'error' => [
             'reason_required' => 'La reapertura exige un motivo.',
@@ -868,6 +1007,95 @@ return [
         'unclear' => [
             'missing_vat_id' => 'Asiento :entry (:customer) sin NIF-IVA del destinatario.',
             'unknown_customer' => 'sin cliente',
+        ],
+    ],
+
+    // Betriebswirtschaftliche Auswertung und Budget (Feature 142, MVP-709).
+    'bwa' => [
+        'title' => 'Análisis de gestión (BWA)',
+        'menu' => 'BWA & presupuesto',
+        'hint' => 'Cuenta de resultados a corto plazo por grupos de cuentas — asignación mediante la línea BWA de la cuenta o el rango SKR, no es un informe auditado.',
+        'compare_range' => 'Periodo de comparación :from – :to',
+        'scheme' => [
+            'skr03' => 'Plan contable SKR03 detectado.',
+            'skr04' => 'Plan contable SKR04 detectado.',
+            'none' => 'No se detectó un plan contable estándar — solo aplican las líneas BWA explícitas de las cuentas.',
+        ],
+        'column' => [
+            'row' => 'Línea',
+            'actual' => 'Real',
+            'budget' => 'Plan',
+            'total' => 'Total',
+            'delta' => 'Desviación',
+            'delta_pct' => 'Desv. %',
+        ],
+        'compare' => [
+            'none' => 'Sin comparación',
+            'previous_year' => 'Año anterior',
+            'previous_month' => 'Mes anterior',
+            'months' => 'Cuadrícula mensual',
+            'budget' => 'Presupuesto',
+        ],
+        'filter' => [
+            'compare' => 'Comparación',
+            'cost_center' => 'Centro de coste',
+            'all_cost_centers' => 'Todos los centros de coste',
+        ],
+        'subtotal' => [
+            'total_output' => 'Producción total',
+            'gross_profit' => 'Margen bruto',
+            'operating_gross_profit' => 'Margen bruto operativo',
+            'total_costs' => 'Costes totales',
+            'operating_result' => 'Resultado operativo',
+            'result_before_tax' => 'Resultado antes de impuestos',
+            'result' => 'Resultado provisional',
+            'result_total' => 'Resultado incl. cuentas sin asignar',
+        ],
+        'unmapped' => [
+            'title' => 'Sin asignar',
+            'hint' => ':count cuentas con movimientos no tienen línea BWA — asignarla en la cuenta; no alimentan ningún grupo, pero sí la línea final.',
+        ],
+        'chart' => [
+            'groups' => 'Real por línea BWA',
+            'months' => 'Ingresos y costes totales por mes',
+        ],
+    ],
+
+    'budget' => [
+        'title' => 'Presupuesto',
+        'subtitle' => 'Valores planificados por cuenta para el ejercicio :year',
+        'empty' => 'No hay cuentas de resultados en el plan contable.',
+        'total' => 'Resultado planificado',
+        'column' => [
+            'year_value' => 'Valor anual',
+            'mode' => 'Tipo',
+            'note' => 'Nota',
+        ],
+        'filter' => [
+            'year' => 'Ejercicio',
+        ],
+        'action' => [
+            'edit' => 'Editar presupuesto',
+            'copy_previous' => 'Real del año anterior como presupuesto',
+            'save' => 'Guardar',
+        ],
+        'confirm' => [
+            'copy_previous' => '¿Tomar el real del ejercicio :year como presupuesto? Los presupuestos existentes del año elegido se sustituirán.',
+        ],
+        'mode' => [
+            'year' => 'Valor anual',
+            'months' => 'Valores mensuales',
+        ],
+        'hint' => [
+            'mode' => 'Un valor anual se reparte uniformemente en doce meses para las comparaciones mensuales; los valores mensuales aplican por mes.',
+            'sign' => 'Valores positivos: ingreso esperado o gasto esperado.',
+        ],
+        'flash' => [
+            'saved' => 'Presupuesto de :account guardado.',
+            'copied' => ':count cuentas con real de :year tomadas como presupuesto.',
+        ],
+        'note' => [
+            'copied_from' => 'Tomado del real :year',
         ],
     ],
 

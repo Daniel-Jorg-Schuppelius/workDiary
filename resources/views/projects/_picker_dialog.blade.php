@@ -69,12 +69,12 @@
                             <span class="min-w-0 flex-1">
                                 <span class="block text-sm font-medium truncate">{{ $root->name }}</span>
                                 @if ($root->customer)
-                                    <span class="block text-xs text-base-content/60 truncate">{{ $root->customer->name }}</span>
+                                    <span class="block text-xs text-muted truncate">{{ $root->customer->name }}</span>
                                 @else
-                                    <span class="block text-xs text-base-content/40 truncate">{{ __('Intern (ohne Kunde)') }}</span>
+                                    <span class="block text-xs text-muted truncate">{{ __('Intern (ohne Kunde)') }}</span>
                                 @endif
                             </span>
-                            <x-icon name="chevron_right" class="text-base-content/40" />
+                            <x-icon name="chevron_right" class="text-muted" />
                         </a>
 
                         @if ($children->isNotEmpty())
@@ -88,11 +88,11 @@
                                         <a href="{{ route($targetRoute, $child) }}"
                                            data-entry-modal-trigger
                                            class="flex items-center gap-2 pl-9 pr-3 py-1.5 hover:bg-primary/10 transition cursor-pointer border-t border-base-200 first:border-t-0">
-                                            <x-icon name="subdirectory_arrow_right" class="text-base-content/40 text-sm shrink-0" />
+                                            <x-icon name="subdirectory_arrow_right" class="text-muted text-sm shrink-0" />
                                             <span class="inline-block h-2 w-2 shrink-0 rounded-full"
                                                   style="background:{{ $child->color ?: '#cbd5e1' }}"></span>
                                             <span class="min-w-0 flex-1 text-sm truncate">{{ $child->name }}</span>
-                                            <x-icon name="chevron_right" class="text-base-content/30 text-sm" />
+                                            <x-icon name="chevron_right" class="text-muted text-sm" />
                                         </a>
                                     </li>
                                 @endforeach
@@ -101,7 +101,7 @@
                     </li>
                 @endforeach
             </ul>
-            <p data-filter-empty class="hidden mt-3 text-sm text-base-content/60 text-center">
+            <p data-filter-empty class="hidden mt-3 text-sm text-muted text-center">
                 {{ __('Keine Projekte passen zu den Filtern.') }}
             </p>
         </div>

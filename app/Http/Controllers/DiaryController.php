@@ -13,12 +13,13 @@ namespace App\Http\Controllers;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Legacy\LegacyBridge;
-use App\Models\{Customer, DiaryEntry, EntryType, Tag, Tour, User};
+use App\Models\{Customer, DiaryEntry, EntryType, OpenIssue, Project, Tag, Tour, User};
 use App\Services\Archive\ArchiveService;
+use App\Services\OpenIssue\OpenIssueService;
 use App\Services\SqidEncoder;
 use App\Services\Timeline\DiaryEntryTimelineService;
 use App\Services\UI\DateRangeContext;
-use App\Support\LookupCache;
+use App\Support\{LookupCache, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -104,6 +105,27 @@ class DiaryController extends Controller {
         }
         $prefillEntryTypeId = (int) $request->query('entry_type_id', 0);
 
+        // Fachliche Prefills (Sqids; fremde/ungültige IDs fallen still auf null).
+        $q = static fn(string $key): ?string => is_string($v = $request->query($key)) ? $v : null;
+        $prefill = [
+            'customerId' => Sqid::decode(Customer::class, $q('customer_id')),
+            'projectId' => Sqid::decode(Project::class, $q('project_id')),
+            'title' => (string) $q('title'),
+            'content' => (string) $q('content'),
+            'openIssueSqid' => null,
+        ];
+
+        // Folgeauftrag aus offenem Punkt (Feature 139): Kunde/Projekt aus dem
+        // Subjekt, Titel/Inhalt aus dem Punkt, Rückverknüpfung über das
+        // Hidden-Feld open_issue_id — der Nutzer speichert selbst.
+        $openIssueId = Sqid::decode(OpenIssue::class, $q('open_issue'));
+        if ($openIssueId !== null) {
+            $issue = OpenIssue::query()->with('subject')->findOrFail($openIssueId);
+            Gate::authorize('update', $issue);
+            $prefill = array_merge($prefill, $this->openIssuePrefill($issue));
+            $prefillDate ??= CarbonImmutable::now()->format('Y-m-d\TH:i');
+        }
+
         return view('diary._form_dialog', [
             'entry' => null,
             'isEdit' => false,
@@ -116,7 +138,39 @@ class DiaryController extends Controller {
             'prefillStartAt' => $prefillDate,
             'prefillUserId' => $prefillUserId,
             'prefillEntryTypeId' => $prefillEntryTypeId,
+            'prefillCustomerId' => $prefill['customerId'],
+            'prefillProjectId' => $prefill['projectId'],
+            'prefillTitle' => $prefill['title'],
+            'prefillContent' => $prefill['content'],
+            'prefillOpenIssueSqid' => $prefill['openIssueSqid'],
         ] + $this->entryTypeFormData());
+    }
+
+    /**
+     * Kunde/Projekt aus dem Subjekt des Punkts (DiaryEntry/Project/Customer),
+     * Titel = Punkt-Titel, Inhalt = Verweis + Beschreibung.
+     *
+     * @return array{customerId: ?int, projectId: ?int, title: string, content: string, openIssueSqid: string}
+     */
+    private function openIssuePrefill(OpenIssue $issue): array {
+        $subject = $issue->subject;
+        [$customerId, $projectId] = match (true) {
+            $subject instanceof DiaryEntry => [$subject->customer_id, $subject->project_id],
+            $subject instanceof Project => [$subject->customer_id, (int) $subject->id],
+            $subject instanceof Customer => [(int) $subject->id, null],
+            default => [null, null],
+        };
+
+        $intro = (string) __('open-issue.follow_up.content_intro', ['id' => $issue->id, 'title' => $issue->title]);
+        $content = trim($intro . "\n\n" . (string) $issue->description);
+
+        return [
+            'customerId' => $customerId !== null ? (int) $customerId : null,
+            'projectId' => $projectId !== null ? (int) $projectId : null,
+            'title' => $issue->title,
+            'content' => $content,
+            'openIssueSqid' => $issue->sqid,
+        ];
     }
 
     private function parsePrefillDate(?string $value): ?string {
@@ -149,9 +203,22 @@ class DiaryController extends Controller {
         }
         unset($data['user_id']);
 
+        // Folgeauftrag (Feature 139): Punkt-ID ist kein Eintragsfeld —
+        // Verknüpfung erst nach dem Anlegen, nur mit Bearbeitungsrecht am Punkt.
+        $openIssueId = (int) ($data['open_issue_id'] ?? 0);
+        unset($data['open_issue_id']);
+        $issue = $openIssueId > 0 ? OpenIssue::query()->findOrFail($openIssueId) : null;
+        if ($issue !== null) {
+            Gate::authorize('update', $issue);
+        }
+
         /** @var DiaryEntry $entry */
         $entry = $owner->diaryEntries()->create($data);
         $entry->syncTagsFromInput($tagIds, $newTagNames);
+
+        if ($issue !== null) {
+            app(OpenIssueService::class)->linkFollowUp($issue, $entry, $auth);
+        }
 
         return redirect()->route('diary.show', $entry)->with('success', __('Eintrag gespeichert.'));
     }

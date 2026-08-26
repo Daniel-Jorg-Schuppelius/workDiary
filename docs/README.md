@@ -7,6 +7,10 @@ Architekturdoku liegt bewusst getrennt im Schwester-Repo
 - [systemdienste.md](systemdienste.md) — Systemdienst-Installer
   (`scripts/install-system.sh`): Cron/Queue-Worker/Reverb/Integritätswächter/
   fail2ban nach der Web-Installation in einem Schritt einrichten.
+- [on-premise-docker.md](on-premise-docker.md) — Container-Distribution
+  (`Dockerfile`, `compose.yml`, `.env.docker.example`): Single-Host-Betrieb
+  mit php-fpm/nginx/MariaDB/Queue/Scheduler, Erststart, Updates, Volumes,
+  Backup, Reverse-Proxy/TrustProxies, Ressourcen und Grenzen.
 - [backup-restore.md](backup-restore.md) — Backup-Strategie, Heartbeat,
   verschlüsselte Cloud-Backupziele (`BACKUP_MASTER_KEY`), Restore-Anleitung
   und Restore-Tests.

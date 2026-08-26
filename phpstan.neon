@@ -10,6 +10,8 @@ parameters:
     # liefert PHPStan die IN_*-Konstanten/inotify_*-Funktionen symbolisch.
     scanFiles:
         - stubs/inotify.php
+        # l5-swagger definiert L5_SWAGGER_* erst beim Generieren (MVP-717).
+        - stubs/l5-swagger.php
     excludePaths:
         - app/Legacy/Models/*
         # Plugin-eigene Config-Dateien sind reine config()-Rückgaben (wie config/,

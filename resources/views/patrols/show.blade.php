@@ -18,7 +18,7 @@
         <x-page-toolbar>
             <div class="flex min-w-0 items-center gap-2">
                 <span class="truncate font-medium">{{ $route->name }}</span>
-                @if ($route->site)<span class="text-sm text-base-content/60">· {{ $route->site->name }}</span>@endif
+                @if ($route->site)<span class="text-sm text-muted">· {{ $route->site->name }}</span>@endif
             </div>
             <x-slot:actions>
                 <x-action-form :action="route('patrols.start', $route)">
@@ -33,7 +33,7 @@
         {{-- Der Klartext-Token erscheint genau EINMAL — er gehört auf den Tag,
              nicht in die Datenbank (nur der Hash bleibt). --}}
         <div class="alert alert-warning text-sm" role="alert">
-            <span class="material-symbols-outlined" aria-hidden="true">key</span>
+            <x-icon name="key" />
             <div>
                 <p class="font-semibold">{{ __('Token — nur jetzt sichtbar (auf den Tag drucken/schreiben):') }}</p>
                 <code class="font-mono text-base">{{ session('patrol_token_once') }}</code>
@@ -45,7 +45,7 @@
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Kontrollpunkte')">
                 @if ($route->checkpoints->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch keine Kontrollpunkte — unten hinzufügen.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch keine Kontrollpunkte — unten hinzufügen.') }}</p>
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -64,7 +64,7 @@
                                 <td>{{ $checkpoint->label }}</td>
                                 <td class="tabular-nums">+{{ $checkpoint->expected_offset_minutes }} min</td>
                                 <td class="tabular-nums">± {{ $checkpoint->tolerance_minutes }} min</td>
-                                <td class="font-mono text-xs text-base-content/60">…{{ $checkpoint->token_suffix }}</td>
+                                <td class="font-mono text-xs text-muted">…{{ $checkpoint->token_suffix }}</td>
                                 @if ($canManage)
                                     <td class="text-right">
                                         <x-action-form :action="route('patrols.checkpoints.reissue', [$route, $checkpoint])"
@@ -94,7 +94,7 @@
         <div class="space-y-4">
             <x-card :title="__('Letzte Rundgänge')">
                 @if ($runs->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch keine Rundgänge.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch keine Rundgänge.') }}</p>
                 @else
                     <ul class="space-y-1 text-sm">
                         @foreach ($runs as $run)
@@ -102,7 +102,7 @@
                                 <a class="link link-hover min-w-0 truncate" href="{{ route('patrols.runs.show', $run) }}">
                                     {{ $run->started_at->format('d.m.Y H:i') }} · {{ $run->starter?->name ?? '—' }}
                                 </a>
-                                <span class="shrink-0 text-base-content/60">{{ $run->scans_count }} {{ __('Scans') }}</span>
+                                <span class="shrink-0 text-muted">{{ $run->scans_count }} {{ __('Scans') }}</span>
                             </li>
                         @endforeach
                     </ul>

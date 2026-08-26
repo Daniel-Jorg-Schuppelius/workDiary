@@ -31,11 +31,38 @@ return [
         'invalid_move' => 'Dieser Statuswechsel ist im Auftragsworkflow nicht vorgesehen.',
         'not_allowed' => 'Keine Berechtigung für diese Auftragsaktion.',
         'handover_via_order' => 'Die Abnahme erfordert ein signiertes Protokoll und wird direkt im Auftrag ausgeführt.',
+        'no_targets' => 'Für diese Karte gibt es aktuell keinen zulässigen Zug.',
     ],
     'entry_bar' => [
         'options_failed' => 'Aufgaben/Aufträge konnten nicht geladen werden.',
     ],
     'http' => [
         'session_expired' => 'Deine Sitzung ist abgelaufen — die Seite wird neu geladen.',
+    ],
+    // KI-Tagvorschläge im Tag-Picker (Feature 143, MVP-711)
+    'ai' => [
+        'tags_no_text' => 'Bitte zuerst einen Inhalt eingeben — die KI schlägt Tags aus dem Text vor.',
+        'tags_none' => 'Kein bestehendes Tag passt zum Text.',
+        'tags_failed' => 'KI-Tagvorschlag nicht möglich: :message',
+        'tags_loading' => 'KI sucht passende Tags …',
+    ],
+    // Tastenkürzel-Übersicht (Feature 037, MVP-721): Labels der Registry resources/js/shortcuts.js
+    'shortcuts' => [
+        'title' => 'Tastenkürzel',
+        'scope' => [
+            'global' => 'Global',
+            'navigation' => 'Navigation',
+            'search' => 'Suche',
+        ],
+        'search' => 'Globale Suche öffnen',
+        'shortcuts' => 'Diese Übersicht anzeigen',
+        'escape' => 'Dialog oder Suche schließen',
+        'search_move' => 'In den Suchergebnissen bewegen',
+        'search_open' => 'Treffer öffnen',
+        'go_diary' => 'Zum Tagebuch',
+        'go_customers' => 'Zu den Kunden',
+        'go_projects' => 'Zu den Projekten',
+        'new_entry' => 'Neuer Eintrag',
+        'then' => 'dann',
     ],
 ];

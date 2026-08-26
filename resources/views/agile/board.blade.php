@@ -73,7 +73,7 @@
                         </span>
                     </div>
                     @if ($column->workItems->isEmpty())
-                        <p class="text-xs text-base-content/50">{{ __('Keine Elemente.') }}</p>
+                        <p class="text-xs text-muted">{{ __('Keine Elemente.') }}</p>
                     @else
                         <ul class="space-y-1">
                             @foreach ($column->workItems as $item)
@@ -112,7 +112,7 @@
                                         </form>
                                     @else
                                         <details class="mt-1">
-                                            <summary class="cursor-pointer text-xs text-base-content/60">{{ __('Blockieren…') }}</summary>
+                                            <summary class="cursor-pointer text-xs text-muted">{{ __('Blockieren…') }}</summary>
                                             <form method="POST" action="{{ route('agile.items.block', [$project, $item]) }}" class="mt-1 flex items-center gap-1">
                                                 @csrf
                                                 <input name="reason" required minlength="3" maxlength="300" placeholder="{{ __('Grund (Pflicht)') }}" class="input input-xs input-bordered flex-1">
@@ -134,25 +134,23 @@
                     @csrf @method('PATCH')
                     <input type="hidden" name="lock_version" value="{{ $board->lock_version }}">
                     <x-form-group :legend="__('Einstellungen')" icon="tune" tone="ghost" cols="2" compact>
-                        <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Name') }}</label>
-                            <input name="name" required minlength="2" maxlength="120" class="input input-bordered w-full" value="{{ old('name', $board->name) }}">
-                        </div>
-                        <div class="fieldset">
-                            <label class="fieldset-label">{{ __('Methode') }}</label>
-                            <select name="method" class="select select-bordered w-full">
-                                <option value="kanban" @selected($board->method === 'kanban')>{{ __('Kanban') }}</option>
-                                <option value="scrum" @selected($board->method === 'scrum')>{{ __('Scrum') }}</option>
-                            </select>
-                        </div>
-                        <div class="fieldset md:col-span-2">
-                            <label class="fieldset-label">{{ __('Beschreibung') }}</label>
-                            <input name="description" maxlength="500" class="input input-bordered w-full" value="{{ old('description', $board->description) }}">
-                        </div>
-                        <div class="fieldset md:col-span-2">
-                            <label class="fieldset-label">{{ __('Definition of Done (eine Zeile je Punkt)') }}</label>
-                            <textarea name="dod_items" rows="3" class="textarea textarea-bordered w-full">{{ old('dod_items', implode("\n", (array) ($board->dod_items ?? []))) }}</textarea>
-                        </div>
+                        <x-input-field name="name"
+                                       :label="__('Name')"
+                                       value="{{ old('name', $board->name) }}"
+                                       required
+                                       minlength="2"
+                                       maxlength="120" />
+                        <x-select-field name="method" :label="__('Methode')">
+                            <option value="kanban" @selected($board->method === 'kanban')>{{ __('Kanban') }}</option>
+                            <option value="scrum" @selected($board->method === 'scrum')>{{ __('Scrum') }}</option>
+                        </x-select-field>
+                        <x-input-field span="2" name="description"
+                                       :label="__('Beschreibung')"
+                                       value="{{ old('description', $board->description) }}"
+                                       maxlength="500" />
+                        <x-textarea-field span="2" name="dod_items"
+                                          :label="__('Definition of Done (eine Zeile je Punkt)')"
+                                          rows="3">{{ old('dod_items', implode("\n", (array) ($board->dod_items ?? []))) }}</x-textarea-field>
                     </x-form-group>
                     <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Speichern') }}</x-icon-btn>
                 </form>
@@ -167,28 +165,28 @@
                             <form method="POST" action="{{ route('agile.columns.update', [$project, $column]) }}" class="flex grow flex-wrap items-end gap-2">
                                 @csrf @method('PATCH')
                                 <div class="fieldset grow">
-                                    <label class="fieldset-label">{{ __('Name') }}</label>
-                                    <input name="name" required minlength="2" maxlength="80" class="input input-sm input-bordered w-full" value="{{ $column->name }}">
+                                    <label for="col-{{ $column->sqid }}-name" class="fieldset-label">{{ __('Name') }}</label>
+                                    <input id="col-{{ $column->sqid }}-name" name="name" required minlength="2" maxlength="80" class="input input-sm input-bordered w-full" value="{{ $column->name }}">
                                 </div>
                                 <div class="fieldset">
-                                    <label class="fieldset-label">{{ __('Kategorie') }}</label>
-                                    <select name="category" class="select select-sm select-bordered">
+                                    <label for="col-{{ $column->sqid }}-category" class="fieldset-label">{{ __('Kategorie') }}</label>
+                                    <select id="col-{{ $column->sqid }}-category" name="category" class="select select-sm select-bordered">
                                         @foreach (\App\Enums\Agile\AgileColumnCategory::cases() as $category)
                                             <option value="{{ $category->value }}" @selected($column->category === $category)>{{ $category->label() }}</option>
                                         @endforeach
                                     </select>
                                 </div>
                                 <div class="fieldset">
-                                    <label class="fieldset-label"><x-term glossary="wip">{{ __('WIP-Limit') }}</x-term></label>
-                                    <input name="wip_limit" type="number" min="1" max="99" class="input input-sm input-bordered w-20" value="{{ $column->wip_limit }}">
+                                    <label for="col-{{ $column->sqid }}-wip_limit" class="fieldset-label"><x-term glossary="wip">{{ __('WIP-Limit') }}</x-term></label>
+                                    <input id="col-{{ $column->sqid }}-wip_limit" name="wip_limit" type="number" min="1" max="99" class="input input-sm input-bordered w-20" value="{{ $column->wip_limit }}">
                                 </div>
                                 <div class="fieldset">
-                                    <label class="fieldset-label">{{ __('Position') }}</label>
-                                    <input name="position" type="number" min="1" max="50" class="input input-sm input-bordered w-20" value="{{ $column->position }}">
+                                    <label for="col-{{ $column->sqid }}-position" class="fieldset-label">{{ __('Position') }}</label>
+                                    <input id="col-{{ $column->sqid }}-position" name="position" type="number" min="1" max="50" class="input input-sm input-bordered w-20" value="{{ $column->position }}">
                                 </div>
                                 <div class="fieldset">
-                                    <label class="fieldset-label">{{ __('Berichtsrolle') }}</label>
-                                    <select name="report_role" class="select select-sm select-bordered">
+                                    <label for="col-{{ $column->sqid }}-report_role" class="fieldset-label">{{ __('Berichtsrolle') }}</label>
+                                    <select id="col-{{ $column->sqid }}-report_role" name="report_role" class="select select-sm select-bordered">
                                         <option value="">{{ __('Unklassifiziert') }}</option>
                                         <option value="working" @selected($column->report_role === 'working')>{{ __('Arbeitszeit') }}</option>
                                         <option value="waiting" @selected($column->report_role === 'waiting')>{{ __('Wartezeit') }}</option>
@@ -208,8 +206,8 @@
                 <form method="POST" action="{{ route('agile.columns.store', $project) }}" class="mt-3 flex flex-wrap items-end gap-2">
                     @csrf
                     <div class="fieldset grow">
-                        <label class="fieldset-label">{{ __('Neue Spalte') }}</label>
-                        <input name="name" required minlength="2" maxlength="80" class="input input-sm input-bordered w-full" placeholder="{{ __('Name') }}">
+                        <label for="name-2" class="fieldset-label">{{ __('Neue Spalte') }}</label>
+                        <input id="name-2" name="name" required minlength="2" maxlength="80" class="input input-sm input-bordered w-full" placeholder="{{ __('Name') }}">
                     </div>
                     <select name="category" class="select select-sm select-bordered">
                         @foreach (\App\Enums\Agile\AgileColumnCategory::cases() as $category)

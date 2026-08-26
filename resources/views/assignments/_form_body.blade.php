@@ -36,7 +36,7 @@
 
 <x-form-group :legend="__('Einsatz')" icon="warning" tone="error">
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
+        <span class="fieldset-label">{{ __('Zeitraum') }} *</span>
         <x-date-range
             type="datetime-local"
             :from="$startAt"

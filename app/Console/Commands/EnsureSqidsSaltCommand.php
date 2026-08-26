@@ -30,9 +30,12 @@ class EnsureSqidsSaltCommand extends Command {
 
     protected $description = 'Stellt sicher, dass SQIDS_SALT in der .env gesetzt ist (erzeugt ihn bei Bedarf).';
 
-    public function handle(): int {
-        $installer = InstallationManager::make();
-
+    /**
+     * {@see InstallationManager} kommt aus dem Container (wie in AdminCommand)
+     * statt aus ::make() — sonst schreibt jeder Lauf zwingend in die echte
+     * .env und der Befehl wäre nicht testbar.
+     */
+    public function handle(InstallationManager $installer): int {
         if ($installer->hasSqidsSalt() && ! $this->option('force')) {
             $this->info('SQIDS_SALT ist bereits gesetzt – keine Änderung.');
 

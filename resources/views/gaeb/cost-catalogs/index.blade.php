@@ -35,7 +35,7 @@
     @endif
 
     @if ($catalogs->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">price_change</span>'
+        <x-empty-state framed icon="price_change"
                        :title="__('Noch kein Baukostenkatalog vorhanden.')"
                        :message="__('Ein Baukostenkatalog (GAEB X50) liefert Kennwerte für die frühen Kostenstufen — Kostenschätzung und -berechnung, für die aus dem eigenen Bestand keine Zahlen vorliegen.')" />
     @else

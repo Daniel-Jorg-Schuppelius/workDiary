@@ -14,7 +14,7 @@
 @if ($correctionRequests->isNotEmpty())
     <x-card as="section">
         <h2 class="mb-3 flex items-center gap-2 text-base font-semibold">
-            <span class="material-symbols-outlined" aria-hidden="true">rule</span>
+            <x-icon name="rule" />
             {{ __('day-close.section.corrections') }}
         </h2>
         <ul class="space-y-3 text-sm">

@@ -144,6 +144,64 @@ class SevDeskClient {
         return $this->rows($body);
     }
 
+    /**
+     * POST /ContactAddress — Adresse als **eigenes Objekt** am Kontakt
+     * (MVP-731). sevDesk führt Adressen nicht als Felder des Kontakts,
+     * sondern als eigene Ressource mit eigenem Endpunkt.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    public function createContactAddress(array $payload): array {
+        $body = (array) $this->guard($this->authed('post', '/ContactAddress', ['json' => $payload]), '/ContactAddress');
+
+        return $this->object($body);
+    }
+
+    /**
+     * PUT /ContactAddress/{id} — bestehende Adresse aktualisieren; gelöscht
+     * wird im Fremdsystem nie.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    public function updateContactAddress(string $addressId, array $payload): array {
+        $body = (array) $this->guard(
+            $this->authed('put', '/ContactAddress/' . rawurlencode($addressId), ['json' => $payload]),
+            '/ContactAddress/{id}',
+        );
+
+        return $this->object($body);
+    }
+
+    /**
+     * POST /CommunicationWay — E-Mail/Telefon am Kontakt (MVP-731), ebenfalls
+     * eigene Ressource mit eigenem Endpunkt.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    public function createCommunicationWay(array $payload): array {
+        $body = (array) $this->guard($this->authed('post', '/CommunicationWay', ['json' => $payload]), '/CommunicationWay');
+
+        return $this->object($body);
+    }
+
+    /**
+     * PUT /CommunicationWay/{id} — bestehenden Kommunikationsweg aktualisieren.
+     *
+     * @param array<string, mixed> $payload
+     * @return array<string, mixed>
+     */
+    public function updateCommunicationWay(string $wayId, array $payload): array {
+        $body = (array) $this->guard(
+            $this->authed('put', '/CommunicationWay/' . rawurlencode($wayId), ['json' => $payload]),
+            '/CommunicationWay/{id}',
+        );
+
+        return $this->object($body);
+    }
+
     // ── Rechnungen ──────────────────────────────────────────────────────
 
     /**

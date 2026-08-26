@@ -31,7 +31,7 @@
                 <option value="user">{{ __('costcenter.field.source_user') }}</option>
                 <option value="team">{{ __('costcenter.field.source_team') }}</option>
             </select>
-            <p class="text-xs text-base-content/60">{{ __('costcenter.field.source_help') }}</p>
+            <p class="text-xs text-muted">{{ __('costcenter.field.source_help') }}</p>
             @error('source')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -43,7 +43,7 @@
                     <option value="{{ $c['sqid'] }}" @selected(old('cost_center_id', $rule->costCenter?->sqid) === $c['sqid'])>{{ $c['label'] }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-base-content/60">{{ __('costcenter.field.cost_center_master_help') }}</p>
+            <p class="text-xs text-muted">{{ __('costcenter.field.cost_center_master_help') }}</p>
             @error('cost_center_id')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -79,7 +79,7 @@
             <input id="ccr-priority" type="number" name="priority" required min="0" max="1000"
                    value="{{ old('priority', $rule->priority ?? 0) }}"
                    class="input input-bordered w-full tabular-nums">
-            <p class="text-xs text-base-content/60">{{ __('costcenter.field.priority_help') }}</p>
+            <p class="text-xs text-muted">{{ __('costcenter.field.priority_help') }}</p>
             @error('priority')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>

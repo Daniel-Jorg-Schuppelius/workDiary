@@ -12,10 +12,10 @@
 <div class="rounded-box border border-base-300 bg-base-200/40 p-3 space-y-2" data-msgraph-availability>
     <div class="flex items-center gap-2">
         <button type="button" class="btn btn-sm btn-ghost" data-availability-check>
-            <span class="material-symbols-outlined" aria-hidden="true">event_available</span>
+            <x-icon name="event_available" />
             <span>{{ __('msgraph.availability.check') }}</span>
         </button>
-        <span class="text-sm text-base-content/60">{{ __('msgraph.availability.hint') }}</span>
+        <span class="text-sm text-muted">{{ __('msgraph.availability.hint') }}</span>
     </div>
     <ul class="hidden space-y-1 text-sm" data-availability-results></ul>
     <p class="hidden text-sm text-error" data-availability-error></p>
@@ -62,7 +62,7 @@
                 return;
             }
             const labels = { free: @json(__('msgraph.availability.free')), busy: @json(__('msgraph.availability.busy')), unknown: @json(__('msgraph.availability.unknown')) };
-            const tones = { free: 'text-success', busy: 'text-error', unknown: 'text-base-content/60' };
+            const tones = { free: 'text-success', busy: 'text-error', unknown: 'text-muted' };
             results.innerHTML = '';
             (data.results || []).forEach(function (row) {
                 const li = document.createElement('li');

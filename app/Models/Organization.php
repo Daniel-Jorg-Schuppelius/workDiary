@@ -71,6 +71,9 @@ class Organization extends Model {
         'max_consecutive_days' => 6,
         // Bagatellgrenze (Minuten) für Rahmenzeit-Überschreitungen der Stempelzeiten.
         'frame_tolerance_minutes' => 15,
+        // Feature 144: Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV) auf
+        // Fahrten mit geflaggten Fahrzeugen anwenden — Opt-in je Organisation.
+        'driving_time_rules' => false,
         'rules' => [
             'overlap' => true,
             'rest_period' => true,
@@ -216,8 +219,11 @@ class Organization extends Model {
      * explizit ohne Scopes gegen `organization_id` zählen.
      */
     public function activeUserCount(): int {
+        // Ausgeschiedene (deaktivierte) Konten geben ihren Lizenzsitz frei
+        // (Feature 126, MVP-689 — Entscheid E4).
         return User::withoutGlobalScopes()
             ->where('organization_id', $this->getKey())
+            ->whereNull('deactivated_at')
             ->count();
     }
 
@@ -314,15 +320,23 @@ class Organization extends Model {
     /**
      * Compliance-Settings inkl. Defaults (rekursiv gemerged).
      *
-     * @return array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, rules:array<string,bool>}
+     * @return array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, driving_time_rules:bool, rules:array<string,bool>}
      */
     public function complianceSettings(): array {
         $settings = $this->settings ?? [];
         $stored = is_array($settings['compliance'] ?? null) ? $settings['compliance'] : [];
         $merged = array_replace_recursive(self::COMPLIANCE_DEFAULTS, $stored);
 
-        /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, rules:array<string,bool>} $merged */
+        /** @var array{mode:string, max_hours_day:int, min_rest_hours:int, max_hours_week:int, max_consecutive_days:int, frame_tolerance_minutes:int, driving_time_rules:bool, rules:array<string,bool>} $merged */
         return $merged;
+    }
+
+    /**
+     * Lenk-/Ruhezeitregeln aktiv (Feature 144)? Zweiter Schalter ist das
+     * Fahrzeug-Flag `subject_to_driving_time_rules` — beide müssen gesetzt sein.
+     */
+    public function drivingTimeRulesEnabled(): bool {
+        return filter_var($this->complianceSettings()['driving_time_rules'], FILTER_VALIDATE_BOOL);
     }
 
     /**

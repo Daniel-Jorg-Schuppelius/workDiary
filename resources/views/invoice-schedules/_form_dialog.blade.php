@@ -53,7 +53,7 @@
                     <option value="{{ $ksqid }}" @selected($selectedContract === $ksqid)>{{ $contract->title }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-base-content/60">{{ __('Endet der Vertrag, endet der Plan automatisch.') }}</p>
+            <p class="text-xs text-muted">{{ __('Endet der Vertrag, endet der Plan automatisch.') }}</p>
         </div>
         <x-input-field name="title" :label="__('Titel')" required maxlength="180" span="2" :value="old('title', $schedule->title ?? '')" />
     </x-form-group>

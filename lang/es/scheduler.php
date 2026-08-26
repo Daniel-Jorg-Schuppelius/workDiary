@@ -130,6 +130,8 @@ return [
         'metering' => ['generate-invoices' => 'Generar facturas por lecturas'],
         'maintenance' => ['scan_due' => 'Comprobar planes de mantenimiento vencidos'],
         'notifications' => ['scan_deadlines' => 'Comprobar plazos y notificar'],
+        'org' => ['offboard_due' => 'Ejecutar las bajas de empleados vencidas'],
+        'travel_logs' => ['lock_due' => 'Bloquear los trayectos del libro de ruta tras el fin del día'],
         'news-feed' => ['refresh' => 'Actualizar el canal de noticias'],
         'openproject' => [
             'import' => 'Importación de OpenProject',

@@ -44,7 +44,7 @@
         </div>
         {{-- MVP-535: Anspruchskomponenten getrennt ausweisen (Q1 S. 70/90). --}}
         @if ($balance->severelyDisabledDays > 0 || $balance->otherDays > 0)
-            <p class="text-xs text-base-content/60">
+            <p class="text-xs text-muted">
                 {{ __('Davon: :tarif Tarifurlaub, :sb Zusatzurlaub Schwerbehinderung, :other sonstiger Anspruch, :carry Übertrag.', [
                     'tarif' => $balance->entitledDays,
                     'sb' => $balance->severelyDisabledDays,
@@ -62,7 +62,7 @@
                     <tr>
                         <th class="w-24"></th>
                         @for ($d = 1; $d <= 31; $d++)
-                            <th class="text-center px-0.5 text-base-content/50">{{ $d }}</th>
+                            <th class="text-center px-0.5 text-muted">{{ $d }}</th>
                         @endfor
                     </tr>
                 </thead>

@@ -17,20 +17,20 @@
 
         @if (! $configured)
             <div class="alert alert-warning">
-                <span class="material-symbols-outlined" aria-hidden="true">key_off</span>
+                <x-icon name="key_off" />
                 <span>{{ __('todoist.flash.not_configured') }}</span>
             </div>
         @elseif ($connection === null || $connection->status === \App\Models\TodoistConnection::STATUS_DISCONNECTED)
             <p class="text-sm opacity-80 mb-3">{{ __('todoist.connection.none') }}</p>
             {{-- Datenübertragungs-Hinweis VOR OAuth (MVP-116): was an Todoist geht --}}
             <div class="alert mb-3">
-                <span class="material-symbols-outlined" aria-hidden="true">privacy_tip</span>
+                <x-icon name="privacy_tip" />
                 <span class="text-sm">{{ __('todoist.connection.privacy_note') }}</span>
             </div>
             <form method="POST" action="{{ route('admin.todoist.oauth.start') }}">
                 @csrf
                 <button type="submit" class="btn btn-primary btn-sm gap-1">
-                    <span class="material-symbols-outlined text-base" aria-hidden="true">link</span>{{ __('todoist.connection.connect') }}
+                    <x-icon name="link" class="text-base" />{{ __('todoist.connection.connect') }}
                 </button>
             </form>
         @else
@@ -55,12 +55,12 @@
                     <form method="POST" action="{{ route('admin.todoist.sync') }}">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-primary gap-1">
-                            <span class="material-symbols-outlined text-base" aria-hidden="true">sync</span>{{ __('todoist.connection.sync_now') }}
+                            <x-icon name="sync" class="text-base" />{{ __('todoist.connection.sync_now') }}
                         </button>
                     </form>
                 @endif
                 <a href="{{ route('admin.integration.inbox', ['plugin' => \App\Plugins\Todoist\TodoistPlugin::ID]) }}" class="btn btn-sm gap-1">
-                    <span class="material-symbols-outlined text-base" aria-hidden="true">inbox</span>{{ __('todoist.connection.open_inbox') }}
+                    <x-icon name="inbox" class="text-base" />{{ __('todoist.connection.open_inbox') }}
                 </a>
                 <form method="POST" action="{{ route('admin.todoist.oauth.start') }}">
                     @csrf
@@ -142,8 +142,8 @@
                   x-data="{ kind: 'project' }">
                 @csrf
                 <div class="fieldset grow">
-                    <label class="fieldset-label">{{ __('todoist.links.col.todoist_project') }}</label>
-                    <select name="todoist_project_id" class="select select-sm select-bordered w-full" required
+                    <label class="fieldset-label" for="todoist_project_id">{{ __('todoist.links.col.todoist_project') }}</label>
+                    <select id="todoist_project_id" name="todoist_project_id" class="select select-sm select-bordered w-full" required
                             x-on:change="$refs.pname.value = $event.target.selectedOptions[0]?.dataset.name || ''">
                         @foreach ($remoteProjects as $remote)
                             <option value="{{ $remote['id'] ?? '' }}" data-name="{{ $remote['name'] ?? '' }}">{{ $remote['name'] ?? ($remote['id'] ?? '—') }}</option>
@@ -152,15 +152,15 @@
                     <input type="hidden" name="todoist_project_name" x-ref="pname" value="{{ $remoteProjects[0]['name'] ?? '' }}">
                 </div>
                 <div class="fieldset">
-                    <label class="fieldset-label">{{ __('todoist.links.col.target') }}</label>
-                    <select name="target_kind" class="select select-sm select-bordered" x-on:change="kind = $event.target.value">
+                    <label class="fieldset-label" for="todoist_target_kind">{{ __('todoist.links.col.target') }}</label>
+                    <select id="todoist_target_kind" name="target_kind" class="select select-sm select-bordered" x-on:change="kind = $event.target.value">
                         <option value="project">{{ __('todoist.links.target_project') }}</option>
                         <option value="global_kanban">{{ __('todoist.links.global_kanban') }}</option>
                     </select>
                 </div>
                 <div class="fieldset" x-show="kind === 'project'">
-                    <label class="fieldset-label">{{ __('todoist.links.workdiary_project') }}</label>
-                    <select name="project" class="select select-sm select-bordered">
+                    <label class="fieldset-label" for="todoist_workdiary_project">{{ __('todoist.links.workdiary_project') }}</label>
+                    <select id="todoist_workdiary_project" name="project" class="select select-sm select-bordered">
                         <option value="">—</option>
                         @foreach ($projects as $project)
                             <option value="{{ $project->sqid }}">{{ $project->name }}</option>
@@ -168,8 +168,8 @@
                     </select>
                 </div>
                 <div class="fieldset">
-                    <label class="fieldset-label">{{ __('todoist.links.col.mode') }}</label>
-                    <select name="sync_mode" class="select select-sm select-bordered">
+                    <label class="fieldset-label" for="todoist_sync_mode">{{ __('todoist.links.col.mode') }}</label>
+                    <select id="todoist_sync_mode" name="sync_mode" class="select select-sm select-bordered">
                         <option value="todoist_to_workdiary">{{ __('todoist.mode.todoist_to_workdiary') }}</option>
                         <option value="workdiary_to_todoist">{{ __('todoist.mode.workdiary_to_todoist') }}</option>
                         <option value="bidirectional">{{ __('todoist.mode.bidirectional') }}</option>

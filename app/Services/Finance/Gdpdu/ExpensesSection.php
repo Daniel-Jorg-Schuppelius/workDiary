@@ -51,34 +51,30 @@ class ExpensesSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        $rows = [];
-        Expense::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (Expense::query()
             ->where('organization_id', $organization->id)
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
             ->whereIn('status', [ExpenseStatus::Approved->value, ExpenseStatus::Reimbursed->value, ExpenseStatus::Invoiced->value])
             ->with('category:id,label')
             ->orderBy('date')->orderBy('id')
-            ->get()
-            ->each(function (Expense $expense) use (&$rows): void {
-                $rows[] = [
-                    'E-' . $expense->id,
-                    $this->date($expense->date),
-                    $this->str($expense->category?->label),
-                    $this->str($expense->vendor),
-                    $this->str($expense->description),
-                    $this->str($expense->currency->value),
-                    $this->num($expense->amount_net?->toFloat(), 2),
-                    $this->num($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : null, 2),
-                    $this->num($expense->tax_amount?->toFloat(), 2),
-                    $this->num($expense->amount_gross?->toFloat(), 2),
-                    $this->str($expense->status->value),
-                    $this->dateTime($expense->decided_at),
-                    $this->str($expense->decided_by),
-                    $this->dateTime($expense->reimbursed_at),
-                ];
-            });
-
-        return $rows;
+            ->lazy() as $expense) {
+            yield [
+                'E-' . $expense->id,
+                $this->date($expense->date),
+                $this->str($expense->category?->label),
+                $this->str($expense->vendor),
+                $this->str($expense->description),
+                $this->str($expense->currency->value),
+                $this->num($expense->amount_net?->toFloat(), 2),
+                $this->num($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : null, 2),
+                $this->num($expense->tax_amount?->toFloat(), 2),
+                $this->num($expense->amount_gross?->toFloat(), 2),
+                $this->str($expense->status->value),
+                $this->dateTime($expense->decided_at),
+                $this->str($expense->decided_by),
+                $this->dateTime($expense->reimbursed_at),
+            ];
+        }
     }
 }

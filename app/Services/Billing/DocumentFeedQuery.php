@@ -46,8 +46,76 @@ class DocumentFeedQuery {
 
     private readonly DocumentFeedSourceRegistry $sources;
 
+    /** @var list<array<string, mixed>>|null Einmal je Instanz materialisiert (A13). */
+    private ?array $aggregate = null;
+
     public function __construct(private readonly DocumentFeedFilters $filters, ?DocumentFeedSourceRegistry $sources = null) {
         $this->sources = $sources ?? app(DocumentFeedSourceRegistry::class);
+    }
+
+    /**
+     * Eine Aggregation für Kennzahlen, Tab-Zähler UND die Gesamtzahl der
+     * Seite (Vollscan 2026-08-23, A13). Vorher materialisierte jede der drei
+     * Fragen die UNION erneut — zusammen mit der Seitenabfrage viermal je
+     * Aufruf. Gruppiert wird über die Achsen, die alle drei brauchen:
+     * Währung × Richtung × Vorgangsart.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function aggregate(): array {
+        if ($this->aggregate !== null) {
+            return $this->aggregate;
+        }
+
+        $today = Carbon::today()->toDateString();
+        $expense = "source_type = 'expense'";
+
+        $rows = $this->filtered(ignoreKindAndDirection: true)
+            ->selectRaw('currency, direction, kind')
+            ->selectRaw('COUNT(*) AS row_count')
+            ->selectRaw('SUM(sign * amount_gross) AS signed_total')
+            ->selectRaw("SUM(CASE WHEN NOT ($expense) THEN sign * amount_gross ELSE 0 END) AS signed_without_expense")
+            ->selectRaw("SUM(CASE WHEN $expense THEN sign * amount_gross ELSE 0 END) AS internal_total")
+            ->selectRaw("SUM(CASE WHEN $expense AND state = 'open' THEN amount_gross ELSE 0 END) AS internal_pending")
+            ->selectRaw("SUM(CASE WHEN state = 'open' THEN open_amount ELSE 0 END) AS open_total")
+            // Grundmenge zur Überfälligkeit: „7 Belege" beantwortet erst mit
+            // dem Nenner die Frage, wovon sieben.
+            ->selectRaw("SUM(CASE WHEN state = 'open' THEN 1 ELSE 0 END) AS open_count")
+            ->selectRaw("SUM(CASE WHEN state = 'open' AND due_on IS NOT NULL AND due_on < ? THEN open_amount ELSE 0 END) AS overdue_total", [$today])
+            ->selectRaw("SUM(CASE WHEN state = 'open' AND due_on IS NOT NULL AND due_on < ? THEN 1 ELSE 0 END) AS overdue_count", [$today])
+            ->groupBy('currency', 'direction', 'kind')
+            ->orderBy('currency')
+            ->get();
+
+        return $this->aggregate = array_values($rows->map(
+            static fn (object $row): array => (array) $row,
+        )->all());
+    }
+
+    /**
+     * Gilt der Art-/Richtungsfilter für diese Gruppe? Die Achsen liegen als
+     * Spalten in der Aggregation, der Filter wird deshalb hier statt in SQL
+     * angelegt — sonst bräuchte er eine zweite Materialisierung.
+     */
+    /** @param array<string, mixed> $row */
+    private function matchesKindAndDirection(array $row): bool {
+        $kinds = $this->filters->kindValues();
+        $directions = $this->filters->directionValues();
+
+        return ($kinds === [] || in_array((string) $row['kind'], $kinds, true))
+            && ($directions === [] || in_array((string) $row['direction'], $directions, true));
+    }
+
+    /** Zeilenzahl der gefilterten Menge — Gesamtwert des Paginators. */
+    private function filteredCount(): int {
+        $count = 0;
+        foreach ($this->aggregate() as $row) {
+            if ($this->matchesKindAndDirection($row)) {
+                $count += (int) $row['row_count'];
+            }
+        }
+
+        return $count;
     }
 
     /** @return LengthAwarePaginator<int, object> */
@@ -63,7 +131,9 @@ class DocumentFeedQuery {
             ->orderByDesc('doc_date')
             ->orderBy('source_type')
             ->orderByDesc('source_id')
-            ->paginate($perPage)
+            // Gesamtzahl aus der Aggregation: die Zähl-Abfrage des Paginators
+            // wäre die vierte Materialisierung derselben UNION.
+            ->paginate($perPage, ['*'], 'page', null, $this->filteredCount())
             ->withQueryString();
 
         return $page;
@@ -82,60 +152,67 @@ class DocumentFeedQuery {
      *     overdue: float, overdueCount: int, neutralCount: int}>
      */
     public function totals(): array {
-        $today = Carbon::today()->toDateString();
-        $expense = "source_type = 'expense'";
+        $byCurrency = [];
 
-        $rows = $this->filtered()
-            ->selectRaw('currency')
-            ->selectRaw("SUM(CASE WHEN direction = 'outgoing' THEN sign * amount_gross ELSE 0 END) AS revenue")
-            ->selectRaw("SUM(CASE WHEN direction = 'incoming' AND NOT ($expense) THEN sign * amount_gross ELSE 0 END) AS expense_total")
-            ->selectRaw("SUM(CASE WHEN $expense THEN sign * amount_gross ELSE 0 END) AS internal_total")
-            ->selectRaw("SUM(CASE WHEN $expense AND state = 'open' THEN amount_gross ELSE 0 END) AS internal_pending")
-            ->selectRaw("SUM(CASE WHEN state = 'open' THEN open_amount ELSE 0 END) AS open_total")
-            // Grundmenge zur Überfälligkeit: „7 Belege" beantwortet erst mit
-            // dem Nenner die Frage, wovon sieben.
-            ->selectRaw("SUM(CASE WHEN state = 'open' THEN 1 ELSE 0 END) AS open_count")
-            ->selectRaw("SUM(CASE WHEN state = 'open' AND due_on IS NOT NULL AND due_on < ? THEN open_amount ELSE 0 END) AS overdue_total", [$today])
-            ->selectRaw("SUM(CASE WHEN state = 'open' AND due_on IS NOT NULL AND due_on < ? THEN 1 ELSE 0 END) AS overdue_count", [$today])
-            ->selectRaw("SUM(CASE WHEN direction = 'neutral' THEN 1 ELSE 0 END) AS neutral_count")
-            ->groupBy('currency')
-            ->orderBy('currency')
-            ->get();
+        foreach ($this->aggregate() as $row) {
+            if (! $this->matchesKindAndDirection($row)) {
+                continue;
+            }
 
-        return array_values($rows->map(static fn(object $row): array => [
-            'currency' => (string) $row->currency,
-            'revenue' => (float) $row->revenue,
-            'expense' => (float) $row->expense_total,
-            'internal' => (float) $row->internal_total,
-            'internalPending' => (float) $row->internal_pending,
-            'balance' => (float) $row->revenue - (float) $row->expense_total,
-            'open' => (float) $row->open_total,
-            'openCount' => (int) $row->open_count,
-            'overdue' => (float) $row->overdue_total,
-            'overdueCount' => (int) $row->overdue_count,
-            'neutralCount' => (int) $row->neutral_count,
-        ])->all());
+            $currency = (string) $row['currency'];
+            $bucket = $byCurrency[$currency] ?? [
+                'currency' => $currency, 'revenue' => 0.0, 'expense' => 0.0, 'internal' => 0.0,
+                'internalPending' => 0.0, 'balance' => 0.0, 'open' => 0.0, 'openCount' => 0,
+                'overdue' => 0.0, 'overdueCount' => 0, 'neutralCount' => 0,
+            ];
+
+            $direction = (string) $row['direction'];
+            if ($direction === 'outgoing') {
+                $bucket['revenue'] += (float) $row['signed_total'];
+            } elseif ($direction === 'incoming') {
+                // Auslagen bleiben aus dem Aufwand heraus (Dublettenregel 3).
+                $bucket['expense'] += (float) $row['signed_without_expense'];
+            } elseif ($direction === 'neutral') {
+                $bucket['neutralCount'] += (int) $row['row_count'];
+            }
+
+            $bucket['internal'] += (float) $row['internal_total'];
+            $bucket['internalPending'] += (float) $row['internal_pending'];
+            $bucket['open'] += (float) $row['open_total'];
+            $bucket['openCount'] += (int) $row['open_count'];
+            $bucket['overdue'] += (float) $row['overdue_total'];
+            $bucket['overdueCount'] += (int) $row['overdue_count'];
+
+            $byCurrency[$currency] = $bucket;
+        }
+
+        ksort($byCurrency);
+
+        // Cent-Beträge, in PHP über die Gruppen addiert: auf zwei Stellen
+        // festzurren, damit Gleitkomma-Reste nicht in der Kachel landen.
+        return array_values(array_map(static function (array $bucket): array {
+            foreach (['revenue', 'expense', 'internal', 'internalPending', 'open', 'overdue'] as $key) {
+                $bucket[$key] = round((float) $bucket[$key], 2);
+            }
+            $bucket['balance'] = round($bucket['revenue'] - $bucket['expense'], 2);
+
+            return $bucket;
+        }, $byCurrency));
     }
 
     /**
-     * Zeilenzahl je Vorgangsart und Richtung für die Tab-Zähler — ein Lauf
-     * statt eines Zählers je Tab.
+     * Zeilenzahl je Vorgangsart und Richtung für die Tab-Zähler — aus derselben
+     * Aggregation wie die Kennzahlen.
      *
      * @return array<string, int> Schlüssel `<direction>:<kind>` und `overdue`
      */
     public function tabCounts(): array {
-        $today = Carbon::today()->toDateString();
-
-        $rows = $this->filtered(ignoreKindAndDirection: true)
-            ->selectRaw('direction, kind, COUNT(*) AS row_count')
-            ->selectRaw("SUM(CASE WHEN state = 'open' AND due_on IS NOT NULL AND due_on < ? THEN 1 ELSE 0 END) AS overdue_count", [$today])
-            ->groupBy('direction', 'kind')
-            ->get();
-
         $counts = ['overdue' => 0];
-        foreach ($rows as $row) {
-            $counts[$row->direction . ':' . $row->kind] = (int) $row->row_count;
-            $counts['overdue'] += (int) $row->overdue_count;
+
+        foreach ($this->aggregate() as $row) {
+            $key = (string) $row['direction'] . ':' . (string) $row['kind'];
+            $counts[$key] = ($counts[$key] ?? 0) + (int) $row['row_count'];
+            $counts['overdue'] += (int) $row['overdue_count'];
         }
 
         return $counts;

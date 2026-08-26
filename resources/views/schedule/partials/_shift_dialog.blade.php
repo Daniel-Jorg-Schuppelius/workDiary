@@ -25,36 +25,32 @@
         {{-- Mitarbeiter / Datum --}}
         <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary" cols="2">
             @if (auth()->user()->isAdmin())
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
-                    <select id="shift-dialog-user" name="user_id" class="select select-bordered w-full" required>
-                        @foreach ($users as $u)
-                            <option value="{{ $u->sqid }}">{{ $u->name }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-select-field name="user_id" :label="__('Mitarbeiter')" required id="shift-dialog-user">
+                    @foreach ($users as $u)
+                        <option value="{{ $u->sqid }}">{{ $u->name }}</option>
+                    @endforeach
+                </x-select-field>
             @else
                 <input type="hidden" id="shift-dialog-user" name="user_id" value="{{ auth()->user()?->sqid }}">
             @endif
 
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Datum') }}</label>
-                <input type="date" id="shift-dialog-date" name="date" class="input input-bordered w-full" required>
-            </div>
+            <x-input-field name="date" :label="__('Datum')" type="date" required id="shift-dialog-date" />
         </x-form-group>
 
         {{-- Schichttyp + Zeit --}}
         <x-form-group :legend="__('Schicht')" icon="schedule" tone="info">
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('Schichttyp') }}</label>
                 @if ($shiftTypes->isEmpty())
-                    {{-- MVP-181: kein leeres Select — erklärender Setup-Hinweis. --}}
+                    {{-- MVP-181: kein leeres Select — erklärender Setup-Hinweis.
+                         Ohne Control ist die Beschriftung nur Überschrift, kein <label>. --}}
+                    <span class="fieldset-label">{{ __('Schichttyp') }}</span>
                     <div role="alert" class="alert alert-warning alert-soft text-sm" data-prerequisite="shift-types-dialog">
                         <x-icon name="settings_alert" />
                         <span>{{ __('prerequisites.shift_types.dialog_hint') }}</span>
                     </div>
                     <input type="hidden" name="shift_type_id" value="">
                 @else
+                    <label class="fieldset-label" for="shift-dialog-type">{{ __('Schichttyp') }}</label>
                     <select id="shift-dialog-type" name="shift_type_id" class="select select-bordered w-full">
                         <option value="">— {{ __('kein Typ') }} —</option>
                         @foreach ($shiftTypes as $t)
@@ -80,21 +76,19 @@
 
         {{-- Notiz + Status --}}
         <x-form-group :legend="__('Details')" icon="description" tone="ghost">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Notiz') }}</label>
-                <textarea id="shift-dialog-note" name="note" rows="2" maxlength="1000"
-                          class="textarea textarea-bordered w-full resize-none"></textarea>
-            </div>
+            <x-textarea-field name="note"
+                              :label="__('Notiz')"
+                              rows="2"
+                              class="resize-none"
+                              id="shift-dialog-note"
+                              maxlength="1000"></x-textarea-field>
 
             <div id="shift-dialog-status-row" class="hidden">
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ __('Status') }}</label>
-                    <select id="shift-dialog-status" name="status" class="select select-bordered w-full">
-                        @foreach (\App\Enums\Shift\ScheduledShiftStatus::cases() as $status)
-                            <option value="{{ $status->value }}">{{ $status->label() }}</option>
-                        @endforeach
-                    </select>
-                </div>
+                <x-select-field name="status" :label="__('Status')" id="shift-dialog-status">
+                    @foreach (\App\Enums\Shift\ScheduledShiftStatus::cases() as $status)
+                        <option value="{{ $status->value }}">{{ $status->label() }}</option>
+                    @endforeach
+                </x-select-field>
             </div>
         </x-form-group>
 

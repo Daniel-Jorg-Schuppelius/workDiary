@@ -69,6 +69,8 @@ class BranchProfileInstaller {
             'room_requirement_templates' => 0,
             'dataprotection_requirements' => 0,
             'qualifications' => 0,
+            'training_courses' => 0,
+            'training_requirements' => 0,
         ];
         $created = $counterTemplate;
         $updated = $counterTemplate;
@@ -575,6 +577,81 @@ class BranchProfileInstaller {
                 'created_by' => $actor?->id,
             ]);
             $created['qualifications']++;
+        }
+
+        // Schulungsvorschläge je Gewerk (Feature 145, MVP-727): Kurs im
+        // Katalog plus Pflichtzuordnung je Rolle. Idempotent über (org, code)
+        // bzw. (org, kurs, zielgruppe); Bestehendes wird nie überschrieben —
+        // der Katalog gehört der Organisation. Aus den Zuordnungen entstehen
+        // die Soll-Einträge erst beim Abgleich (TrainingAssignmentService).
+        /** @var list<array<string, mixed>> $trainingSuggestions */
+        $trainingSuggestions = (array) Arr::get($profile, 'training_suggestions', []);
+        foreach ($trainingSuggestions as $row) {
+            $code = trim((string) ($row['code'] ?? ''));
+            $title = trim((string) ($row['title'] ?? ''));
+            if ($code === '' || $title === '') {
+                continue;
+            }
+
+            $course = \App\Models\Training\TrainingCourse::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('code', $code)
+                ->first();
+
+            if ($course instanceof \App\Models\Training\TrainingCourse) {
+                $skipped['training_courses']++;
+            } else {
+                $course = \App\Models\Training\TrainingCourse::query()->create([
+                    'organization_id' => $organization->id,
+                    'code' => $code,
+                    'title' => $title,
+                    'provider_kind' => (string) ($row['provider_kind'] ?? 'internal'),
+                    'provider_name' => isset($row['provider_name']) ? (string) $row['provider_name'] : null,
+                    'duration_minutes' => isset($row['duration_minutes']) ? (int) $row['duration_minutes'] : null,
+                    'validity_months' => isset($row['validity_months']) ? (int) $row['validity_months'] : null,
+                    'is_mandatory' => (bool) ($row['is_mandatory'] ?? true),
+                    'legal_basis' => isset($row['legal_basis']) ? (string) $row['legal_basis'] : null,
+                    'lead_days' => max(0, (int) ($row['lead_days'] ?? 30)),
+                    'is_active' => true,
+                    'source' => 'profile',
+                    'created_by_user_id' => $actor?->id,
+                ]);
+                $course->versions()->create([
+                    'organization_id' => $organization->id,
+                    'version' => 1,
+                    'label' => null,
+                    'is_current' => true,
+                ]);
+                $created['training_courses']++;
+            }
+
+            /** @var list<string> $roles */
+            $roles = array_values(array_filter((array) ($row['roles'] ?? []), 'is_string'));
+            foreach ($roles as $role) {
+                $exists = \App\Models\Training\TrainingRequirement::query()->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
+                    ->where('training_course_id', $course->id)
+                    ->where('subject_kind', 'role')
+                    ->where('subject_key', $role)
+                    ->exists();
+                if ($exists) {
+                    $skipped['training_requirements']++;
+
+                    continue;
+                }
+
+                \App\Models\Training\TrainingRequirement::query()->create([
+                    'organization_id' => $organization->id,
+                    'training_course_id' => $course->id,
+                    'subject_kind' => 'role',
+                    'subject_key' => $role,
+                    'first_due_days' => max(0, (int) ($row['first_due_days'] ?? 30)),
+                    'is_active' => true,
+                    'source' => 'profile',
+                    'note' => null,
+                ]);
+                $created['training_requirements']++;
+            }
         }
 
         $installedProfileCode = (string) ($profile['code'] ?? $profileCode);

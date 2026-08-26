@@ -192,7 +192,7 @@
                                 {{ $activeCertificate->valid_until->format('d.m.Y') }}
                             </span>
                         @else
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td>
@@ -202,7 +202,7 @@
                                 <x-status-badge tone="warning" outline>{{ __('isms.conformity.surveillance_soon') }}</x-status-badge>
                             @endif
                         @else
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td class="max-w-64 truncate text-base-content/70" title="{{ $status->notes }}">{{ $status->notes ?? '—' }}</td>
@@ -225,7 +225,7 @@
                                                 <li>
                                                     @if ($target === \App\Enums\Isms\NormConformityStatus::Certified && $activeCertificate === null)
                                                         {{-- Hinweis statt Aktion: certified nur mit heute gültigem Zertifikat (serverseitig erzwungen). --}}
-                                                        <span class="cursor-not-allowed text-base-content/40"
+                                                        <span class="cursor-not-allowed text-muted"
                                                               title="{{ __('isms.conformity.certified_requires_certificate') }}">
                                                             {{ $target->label() }} — {{ __('isms.conformity.certificate_missing_short') }}
                                                         </span>

@@ -48,7 +48,7 @@
         @foreach (['by_cause' => __('Nach Ursache'), 'by_defect' => __('Nach Mangelart'), 'by_article' => __('Nach Artikel'), 'by_supplier' => __('Nach Lieferant')] as $key => $label)
             <x-card :title="$label">
                 @if ($data[$key] === [])
-                    <p class="text-sm text-base-content/60">{{ __('Keine Daten im Zeitraum.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Keine Daten im Zeitraum.') }}</p>
                 @else
                     <x-table bare>
                         @foreach ($data[$key] as $name => $count)
@@ -65,7 +65,7 @@
 
     <x-card :title="__('Wiederholfehler (Artikel × Ursache mehrfach)')">
         @if ($data['repeats'] === [])
-            <p class="text-sm text-base-content/60">{{ __('Keine Wiederholfehler im Zeitraum.') }}</p>
+            <p class="text-sm text-muted">{{ __('Keine Wiederholfehler im Zeitraum.') }}</p>
         @else
             <x-table bare>
                 <x-slot:head>
@@ -84,7 +84,7 @@
 
     <x-card :title="__('Eingefrorene Berichtsstände')">
         @if ($snapshots->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Noch keine Snapshots.') }}</p>
+            <p class="text-sm text-muted">{{ __('Noch keine Snapshots.') }}</p>
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($snapshots as $snapshot)

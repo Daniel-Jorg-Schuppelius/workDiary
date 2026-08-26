@@ -34,12 +34,12 @@
 
     <x-card>
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">
-            <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Summe') }}</span>
-            <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $total > 0 ? 'text-primary' : 'text-base-content/50' }}">{{ $money($total) }}</span>
+            <span class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Summe') }}</span>
+            <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $total > 0 ? 'text-primary' : 'text-muted' }}">{{ $money($total) }}</span>
         </div>
 
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>'
+            <x-empty-state icon="payments"
                            :title="__('Keine externen Mitarbeiter')"
                            :message="__('Es sind keine Mitarbeiter mit pauschaler oder zeitbasierter Vergütung hinterlegt.')" />
         @else
@@ -73,7 +73,7 @@
             </x-table>
         @endif
 
-        <p class="mt-4 text-xs text-base-content/50">
+        <p class="mt-4 text-xs text-muted">
             {{ __('Pauschalen je Intervall (monatlich × Monate, pro Einsatz × Einsatztage, einmalig) und zeitbasierte Vergütung (erfasste Zeit × Stundensatz). Brutto, ohne Steuer/SV.') }}
         </p>
     </x-card>

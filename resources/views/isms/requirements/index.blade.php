@@ -168,11 +168,11 @@
                     <td>
                         <span class="font-medium">{{ $requirement->title }}</span>
                         @if ($statement?->justification)
-                            <span class="block max-w-md truncate text-xs text-base-content/60"
+                            <span class="block max-w-md truncate text-xs text-muted"
                                   title="{{ $statement->justification }}">{{ $statement->justification }}</span>
                         @endif
                         @if ($statement?->evidence_note)
-                            <span class="block max-w-md truncate text-xs text-base-content/50"
+                            <span class="block max-w-md truncate text-xs text-muted"
                                   title="{{ $statement->evidence_note }}"><x-icon name="attachment" /> {{ $statement->evidence_note }}</span>
                         @endif
                     </td>
@@ -181,7 +181,7 @@
                     </td>
                     <td>
                         @if ($statement === null)
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @elseif ($statement->applicable)
                             <x-status-badge tone="success">{{ __('isms.filter.applicable_yes') }}</x-status-badge>
                         @else
@@ -190,7 +190,7 @@
                     </td>
                     <td>
                         @if ($statement === null)
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @else
                             <x-status-badge :tone="$statement->implementation_status->tone()">{{ $statement->implementation_status->label() }}</x-status-badge>
                         @endif

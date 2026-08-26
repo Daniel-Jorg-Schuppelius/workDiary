@@ -55,7 +55,7 @@ class DirectCsvImportService {
             return $this->failure((string) __('errors.csv.header_missing', ['error' => $e->getMessage()]));
         }
 
-        $headerMap = $this->buildHeaderMap($rawHeader, $spec);
+        $headerMap = HeaderMapper::map($spec, $rawHeader);
         foreach ($spec->requiredColumns() as $required) {
             if (! in_array($required, $headerMap, true)) {
                 return $this->failure($required === 'name'
@@ -76,7 +76,7 @@ class DirectCsvImportService {
         TimeWritebackObserver::suppressed(function () use ($path, $delimiter, $headerMap, $spec, $organization, &$created, &$updated, &$skipped, &$errors): void {
             DB::transaction(function () use ($path, $delimiter, $headerMap, $spec, $organization, &$created, &$updated, &$skipped, &$errors): void {
             foreach (CsvFacade::streamAssoc($path, $delimiter) as $lineNumber => $rawRow) {
-                $mapped = $this->applyHeaderMap($rawRow, $headerMap);
+                $mapped = HeaderMapper::apply($rawRow, $headerMap);
                 $normalized = $spec->normalize($mapped);
 
                 // Zeilen ohne Pflichtwert still überspringen (Alt-Importer-Verhalten, fängt Leerzeilen ab).
@@ -127,44 +127,5 @@ class DirectCsvImportService {
      */
     private function failure(string $message): array {
         return ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => [$message]];
-    }
-
-    /**
-     * @param  list<string>  $rawHeader
-     * @return array<int, string|null>
-     */
-    private function buildHeaderMap(array $rawHeader, EntitySpec $spec): array {
-        $aliases = [];
-        foreach ($spec->headerAliases() as $alias => $canonical) {
-            $aliases[mb_strtolower(trim($alias))] = $canonical;
-        }
-        foreach ($spec->columns() as $col) {
-            $aliases[mb_strtolower(trim($col))] = $col;
-        }
-
-        $out = [];
-        foreach ($rawHeader as $i => $h) {
-            $out[$i] = $aliases[mb_strtolower(trim($h))] ?? null;
-        }
-
-        return $out;
-    }
-
-    /**
-     * @param  array<string, string>  $raw
-     * @param  array<int, string|null>  $headerMap
-     * @return array<string, string>
-     */
-    private function applyHeaderMap(array $raw, array $headerMap): array {
-        $values = array_values($raw);
-        $out = [];
-        foreach ($headerMap as $i => $canonical) {
-            if ($canonical === null) {
-                continue;
-            }
-            $out[$canonical] = $values[$i] ?? '';
-        }
-
-        return $out;
     }
 }

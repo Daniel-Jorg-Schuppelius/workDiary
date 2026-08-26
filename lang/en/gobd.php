@@ -39,8 +39,12 @@ return [
         'draft_batches' => ':count non-finalized booking batch(es) (draft) in the period — missing from the booking batch evidence.',
         'empty_invoices' => 'No outgoing invoices in the selected period.',
     ],
-    'export' => 'Download Z3 package',
+    'export' => 'Create Z3 package',
+    'queued' => 'The package build has been queued — the record appears below and is updated on the next page load.',
+    'download' => 'Download package',
     'recent' => [
+        'status' => 'Status',
+        'actions' => 'Actions',
         'title' => 'Recent exports',
         'package_hash' => 'Package hash (SHA-256)',
         'records' => 'Records',

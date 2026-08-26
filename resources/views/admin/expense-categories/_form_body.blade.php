@@ -60,7 +60,7 @@
                 @endforeach
             </select>
         </div>
-        <p class="mt-1 text-[0.7rem] text-base-content/60">
+        <p class="mt-1 text-[0.7rem] text-muted">
             {{ __('Bestimmt die Akzentfarbe für Icon, Badge und Hervorhebungen in Listen.') }}
         </p>
     </x-filter-field>
@@ -82,7 +82,7 @@
                    class="input input-bordered input-sm w-full font-mono"
                    placeholder="{{ __('Kategorie-ID des Buchhaltungssystems (Lexoffice: UUID)') }}">
         </x-filter-field>
-        <p class="mt-1 text-[0.7rem] text-base-content/60">
+        <p class="mt-1 text-[0.7rem] text-muted">
             {{ __('Nur mit dieser Zuordnung lässt sich eine genehmigte Auslage als Beleg an die Buchhaltung übergeben.') }}
         </p>
     </div>

@@ -54,7 +54,7 @@
                 </div>
 
                 @if ($type->values->isEmpty())
-                    <p class="mb-3 text-sm text-base-content/60">{{ __('allocation.dimensions.no_values') }}</p>
+                    <p class="mb-3 text-sm text-muted">{{ __('allocation.dimensions.no_values') }}</p>
                 @else
                     <x-table class="mb-3">
                         <x-slot:head>
@@ -68,8 +68,8 @@
                         @foreach ($type->values as $value)
                             <tr>
                                 <td>{{ $value->name }}</td>
-                                <td class="text-base-content/60">{{ $value->external_id ?? '—' }}</td>
-                                <td class="text-base-content/60 whitespace-nowrap">
+                                <td class="text-muted">{{ $value->external_id ?? '—' }}</td>
+                                <td class="text-muted whitespace-nowrap">
                                     @if ($value->valid_from || $value->valid_until)
                                         {{ $value->valid_from?->format('d.m.Y') ?? '…' }}–{{ $value->valid_until?->format('d.m.Y') ?? '…' }}
                                     @else
@@ -106,7 +106,7 @@
                 </form>
             </x-card>
         @empty
-            <x-card class="text-sm text-base-content/60">
+            <x-card class="text-sm text-muted">
                 {{ __('allocation.dimensions.no_types') }}
             </x-card>
         @endforelse

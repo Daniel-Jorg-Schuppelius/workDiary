@@ -59,7 +59,7 @@
                @disabled(! $canManagePayroll)>
         @error('payroll_hourly_wage')<p class="text-error text-sm">{{ $message }}</p>@enderror
         @if ($minWage !== null)
-            <p class="mt-1 text-xs {{ $belowMin ? 'text-warning font-medium' : 'text-base-content/60' }}">
+            <p class="mt-1 text-xs {{ $belowMin ? 'text-warning font-medium' : 'text-muted' }}">
                 @if ($belowMin)
                     {{ __('Unter dem aktuellen Mindestlohn von :min €.', ['min' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minWage, 2, withThousandsSeparator: true)]) }}
                 @else
@@ -116,12 +116,12 @@
             @if ($member)
                 <a href="{{ route('users.work-schedule.edit', $member) }}" data-entry-modal-trigger
                    class="link link-primary mt-1 inline-flex items-center gap-1 text-xs">
-                    <span class="material-symbols-outlined text-[1rem]" aria-hidden="true">schedule</span>
+                    <x-icon name="schedule" class="text-[1rem]" />
                     {{ __('Arbeitszeit-Modell bearbeiten') }}
                 </a>
             @endif
         @endcan
-        <p class="mt-1 text-xs text-base-content/60">{{ __('Stammt aus dem Arbeitszeit-Modell.') }}</p>
+        <p class="mt-1 text-xs text-muted">{{ __('Stammt aus dem Arbeitszeit-Modell.') }}</p>
     </div>
 
     {{-- Ein-/Austritt als gekoppeltes Von-Bis (I6): Austritt nie vor Eintritt;
@@ -143,7 +143,7 @@
 
     @if ($employmentHint)
         <div class="alert alert-warning md:col-span-2 py-2 text-sm" x-show="isAny('payroll', '')" x-cloak>
-            <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">info</span>
+            <x-icon name="info" class="text-[1.1rem]" />
             <span>{{ $employmentHint }}</span>
         </div>
     @endif

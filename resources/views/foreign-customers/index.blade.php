@@ -55,7 +55,7 @@
     ]" />
 
     @if ($foreignCustomers->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' :title="$search !== '' ? __('Keine Fremdkunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Fremdkunden in dieser Ansicht')" />
+        <x-empty-state framed icon="groups" :title="$search !== '' ? __('Keine Fremdkunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Fremdkunden in dieser Ansicht')" />
     @else
         <x-table :zebra="true" table-sort="server"
                  :route="route('foreign-customers.index')"

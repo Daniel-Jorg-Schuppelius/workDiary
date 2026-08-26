@@ -130,6 +130,8 @@ return [
         'metering' => ['generate-invoices' => 'Generate meter-based invoices'],
         'maintenance' => ['scan_due' => 'Check maintenance plans for due work'],
         'notifications' => ['scan_deadlines' => 'Scan deadlines and notify'],
+        'org' => ['offboard_due' => 'Process due employee offboardings'],
+        'travel_logs' => ['lock_due' => 'Lock logbook trips after end of day'],
         'news-feed' => ['refresh' => 'Refresh news feed'],
         'openproject' => [
             'import' => 'OpenProject import',

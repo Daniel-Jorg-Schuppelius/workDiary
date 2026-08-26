@@ -6,7 +6,7 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- Variablen: $log (Model|null), $date, $projects, $customers, $vehicles, $rates --}}
+{{-- Variablen: $log (Model|null), $correcting (Model|null, Stornofahrt), $date, $projects, $customers, $vehicles, $fleetVehicles, $tripKinds, $rates --}}
 @php
     $action = $log
         ? route('travel-logs.update', $log)
@@ -14,7 +14,7 @@
 @endphp
 
 <x-modal
-    :title="$log ? __('Fahrt bearbeiten') : __('Neue Fahrt erfassen')"
+    :title="$log ? __('Fahrt bearbeiten') : (($correcting ?? null) ? __('Stornofahrt erfassen') : __('Neue Fahrt erfassen'))"
     :eyebrow="__('Fahrtenbuch')"
     icon="directions_car"
     tone="primary"
@@ -23,7 +23,7 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$log ? __('Speichern') : __('Erfassen')">
 
-    @include('travel-logs._form_body', ['log' => $log ?? null])
+    @include('travel-logs._form_body', ['log' => $log ?? null, 'correcting' => $correcting ?? null])
 
     @if ($log)
         <x-slot:footerExtra>

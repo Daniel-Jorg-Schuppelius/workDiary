@@ -34,6 +34,8 @@ class ReportChartsSmokeTest extends TestCase {
     public static function chartRoutes(): array {
         return [
             'overview' => ['reports.index', []],
+            // BWA (Feature 142, MVP-709): Balken Ist/Vergleich je Gruppe.
+            'accounting-bwa' => ['reports.accounting.bwa', []],
             'my-year' => ['reports.my-year', []],
             'my-month' => ['reports.my-month', []],
             'month-by-user-team' => ['reports.month-by-user-team', []],
@@ -69,12 +71,16 @@ class ReportChartsSmokeTest extends TestCase {
             // Importbericht Cloud-Dokumenteingang (Feature 080 P9; Audit 2026-08, W4.4).
             'cloud-intake' => ['reports.cloud-intake', []],
             'safety' => ['reports.safety', []],
+            // Prozedur-Abweichungen (Feature 026, MVP-713).
+            'procedure-deviations' => ['reports.procedure-deviations', []],
             // Bewerbungsbericht hängt unter applications.* (module.applications,
             // in der Enterprise-Factory-Org enthalten).
             'applications' => ['applications.report', []],
             'cohort-comparison' => ['reports.cohort-comparison', []],
             // Entscheidungsanalysen (Phase 53, MVP-465–468).
             'customer-value' => ['reports.customer-value', []],
+            // Umsatz je Produkt (Feature 140, MVP-705).
+            'product-revenue' => ['reports.product-revenue', []],
             'customer-retention' => ['reports.customer-retention', []],
             'utilization' => ['reports.utilization', []],
             'payment-behavior' => ['reports.payment-behavior', []],

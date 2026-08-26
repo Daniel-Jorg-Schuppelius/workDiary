@@ -14,6 +14,7 @@ namespace App\Services\Accounting\Reports;
 
 use App\Models\Accounting\{AccountingAccount, AccountingEntryLine};
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
@@ -33,11 +34,11 @@ class AccountLedgerBuilder extends AbstractAccountingReportBuilder {
      *
      * @return array{opening: string, lines: Collection<int, AccountingEntryLine>|LengthAwarePaginator<int, AccountingEntryLine>, closing: string}
      */
-    public function build(Organization $organization, AccountingAccount $account, CarbonImmutable $from, CarbonImmutable $to, ?int $perPage = null): array {
-        $before = $this->sumsByAccount($organization, null, $from->subDay(), $account->id);
+    public function build(Organization $organization, AccountingAccount $account, CarbonImmutable $from, CarbonImmutable $to, ?int $perPage = null, ?int $costCenterId = null): array {
+        $before = $this->sumsByAccount($organization, null, $from->subDay(), $account->id, $costCenterId);
         $opening = NumberHelper::subtractPrecise($before[$account->id]['debit'] ?? '0.00', $before[$account->id]['credit'] ?? '0.00', 2);
 
-        $period = $this->sumsByAccount($organization, $from, $to, $account->id);
+        $period = $this->sumsByAccount($organization, $from, $to, $account->id, $costCenterId);
         $closing = NumberHelper::addPrecise(
             $opening,
             NumberHelper::subtractPrecise($period[$account->id]['debit'] ?? '0.00', $period[$account->id]['credit'] ?? '0.00', 2),
@@ -49,8 +50,8 @@ class AccountLedgerBuilder extends AbstractAccountingReportBuilder {
             ->where('accounting_entry_lines.accounting_account_id', $account->id)
             ->join('accounting_entries', 'accounting_entries.id', '=', 'accounting_entry_lines.accounting_entry_id')
             ->whereIn('accounting_entries.status', self::POSTED)
-            ->whereDate('accounting_entries.booked_on', '>=', $from->toDateString())
-            ->whereDate('accounting_entries.booked_on', '<=', $to->toDateString())
+            ->whereBetween('accounting_entries.booked_on', DateRange::days($from, $to))
+            ->when($costCenterId !== null, fn ($q) => $q->where('accounting_entry_lines.cost_center_id', $costCenterId))
             ->orderBy('accounting_entries.booked_on')
             ->orderBy('accounting_entries.journal_no')
             ->select('accounting_entry_lines.*')

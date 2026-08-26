@@ -61,18 +61,18 @@
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $monthMinutes > 0 ? 'text-primary' : 'text-base-content/50' }}">{{ $fmt($monthMinutes) }}</span>
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ Std.</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $monthMinutes > 0 ? 'text-primary' : 'text-muted' }}">{{ $fmt($monthMinutes) }}</span>
                 </div>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ €</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $monthRate > 0 ? 'text-primary' : 'text-base-content/50' }}">{{ $money($monthRate) }}</span>
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ €</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $monthRate > 0 ? 'text-primary' : 'text-muted' }}">{{ $money($monthRate) }}</span>
                 </div>
             </div>
         </div>
 
         @if (empty($byDay))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>' :title="__('Keine Zeiteinträge in diesem Monat.')" />
+            <x-empty-state icon="calendar_month" :title="__('Keine Zeiteinträge in diesem Monat.')" />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -113,7 +113,7 @@
                                 @if ($e->started_at && $e->ended_at)
                                     {{ $e->started_at->ftime() }}–{{ $e->ended_at->ftime() }}
                                 @else
-                                    <span class="text-base-content/40">—</span>
+                                    <span class="text-muted">—</span>
                                 @endif
                             </td>
                             <td>
@@ -122,7 +122,7 @@
                             <td class="text-sm">
                                 @if ($e->project)
                                     @if ($e->project->customer)
-                                        <span class="text-base-content/60">{{ $e->project->customer->name }} ·</span>
+                                        <span class="text-muted">{{ $e->project->customer->name }} ·</span>
                                     @endif
                                     @if ($e->project->color)
                                         <span class="mr-1 inline-block size-2 rounded-full align-middle" style="background-color: {{ $e->project->color }};"></span>

@@ -13,13 +13,13 @@
 --}}
 <x-card :title="__('Timeline')" icon="timeline" :count="count($timeline)">
     @if ($timeline === [])
-        <p class="text-sm text-base-content/60">{{ __('Noch keine Ereignisse zu diesem Projekt.') }}</p>
+        <p class="text-sm text-muted">{{ __('Noch keine Ereignisse zu diesem Projekt.') }}</p>
     @else
         <ul class="divide-y divide-base-300 text-sm">
             @foreach ($timeline as $item)
                 <li class="flex items-start justify-between gap-3 py-2">
                     <div class="flex min-w-0 items-start gap-2">
-                        <span class="material-symbols-outlined text-base text-base-content/60" aria-hidden="true">{{ $item->icon }}</span>
+                        <x-icon name="{{ $item->icon }}" class="text-base text-muted" />
                         <div class="min-w-0">
                             @if ($item->url !== null)
                                 <a class="link link-hover font-medium" href="{{ $item->url }}">{{ $item->title }}</a>
@@ -27,14 +27,14 @@
                                 <span class="font-medium">{{ $item->title }}</span>
                             @endif
                             @if ($item->summary !== null)
-                                <div class="text-base-content/60">{{ $item->summary }}</div>
+                                <div class="text-muted">{{ $item->summary }}</div>
                             @endif
                             @if ($item->actor !== null)
-                                <div class="text-xs text-base-content/50">{{ $item->actor }}</div>
+                                <div class="text-xs text-muted">{{ $item->actor }}</div>
                             @endif
                         </div>
                     </div>
-                    <span class="shrink-0 tabular-nums text-base-content/60">{{ $item->occurredAt?->fdate() ?? '—' }}</span>
+                    <span class="shrink-0 tabular-nums text-muted">{{ $item->occurredAt?->fdate() ?? '—' }}</span>
                 </li>
             @endforeach
         </ul>

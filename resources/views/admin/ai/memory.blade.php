@@ -49,10 +49,10 @@
                 <td>
                     @if ($entry->customer_id !== null)
                         <x-status-badge tone="info" size="sm">{{ __('ai.field.scope_customer') }}</x-status-badge>
-                        <div class="text-xs text-base-content/60">{{ $entry->customer?->name }}</div>
+                        <div class="text-xs text-muted">{{ $entry->customer?->name }}</div>
                     @elseif ($entry->capability !== null)
                         <x-status-badge tone="ghost" size="sm">{{ __('ai.field.scope_capability') }}</x-status-badge>
-                        <div class="text-xs text-base-content/60">{{ \App\Services\Ai\Dto\AiCapability::labelFor($entry->capability) }}</div>
+                        <div class="text-xs text-muted">{{ \App\Services\Ai\Dto\AiCapability::labelFor($entry->capability) }}</div>
                     @else
                         <x-status-badge tone="neutral" size="sm">{{ __('ai.field.scope_organization') }}</x-status-badge>
                     @endif
@@ -61,7 +61,7 @@
                 <td class="font-mono text-xs">{{ $entry->term ?? '—' }}</td>
                 <td class="max-w-md">
                     @if ($entry->source_text !== null)
-                        <div class="text-xs text-base-content/60 line-clamp-1">{{ $entry->source_text }}</div>
+                        <div class="text-xs text-muted line-clamp-1">{{ $entry->source_text }}</div>
                         <div class="text-xs">→ {{ \Illuminate\Support\Str::limit($entry->content, 120) }}</div>
                     @else
                         <div class="text-xs">{{ \Illuminate\Support\Str::limit($entry->content, 160) }}</div>

@@ -21,19 +21,19 @@
 
     <x-card>
         <h3 class="font-semibold mb-2">{{ __('Neue Ansicht speichern') }}</h3>
-        <p class="text-sm text-base-content/60 mb-2">
+        <p class="text-sm text-muted mb-2">
             {{ __('Auswertung öffnen, Filter einstellen, dann die Adresszeilen-URL hier einfügen.') }}
         </p>
         <form method="POST" action="{{ route('report-views.store') }}" class="flex flex-wrap items-end gap-2">
             @csrf
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('Name') }}</label>
-                <input type="text" name="name" maxlength="255" class="input input-sm input-bordered w-64" required
+                <label for="name" class="fieldset-label">{{ __('Name') }}</label>
+                <input id="name" type="text" name="name" maxlength="255" class="input input-sm input-bordered w-64" required
                        value="{{ old('name') }}">
             </div>
             <div class="fieldset grow">
-                <label class="fieldset-label">{{ __('Report-URL') }}</label>
-                <input type="url" name="url" maxlength="2000" class="input input-sm input-bordered w-full" required
+                <label for="url" class="fieldset-label">{{ __('Report-URL') }}</label>
+                <input id="url" type="url" name="url" maxlength="2000" class="input input-sm input-bordered w-full" required
                        placeholder="{{ url('/reports/…') }}" value="{{ old('url') }}">
             </div>
             <label class="label cursor-pointer gap-2">
@@ -46,7 +46,7 @@
 
     <x-card>
         @if ($views->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">bookmark</span>'
+            <x-empty-state icon="bookmark"
                            :title="__('Noch keine gespeicherten Ansichten')" />
         @else
             <x-table bare>
@@ -63,7 +63,7 @@
                         <td>
                             <a class="link link-hover font-medium" href="{{ $view->targetUrl() }}">{{ $view->name }}</a>
                         </td>
-                        <td class="text-sm text-base-content/60">{{ $view->creator?->name }}</td>
+                        <td class="text-sm text-muted">{{ $view->creator?->name }}</td>
                         <td>
                             <x-status-badge :tone="$view->is_shared ? 'info' : 'ghost'" size="sm">
                                 {{ $view->is_shared ? __('geteilt') : __('persönlich') }}

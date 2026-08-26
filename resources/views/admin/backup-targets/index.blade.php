@@ -54,7 +54,7 @@
     @endif
 
     @if ($connections->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_upload</span>'
+        <x-empty-state framed icon="cloud_upload"
                        :title="__('backup_targets.no_connections')" />
     @else
         @foreach ($connections as $connection)
@@ -64,7 +64,7 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <h3 class="card-title text-base">{{ $connection->provider->label() }} — {{ $connection->name }}</h3>
                         <x-status-badge size="xs" :tone="$connection->status->tone()">{{ $connection->status->label() }}</x-status-badge>
-                        <span class="text-sm text-base-content/60">{{ $connection->external_account_label ?? __('backup_targets.account') }}</span>
+                        <span class="text-sm text-muted">{{ $connection->external_account_label ?? __('backup_targets.account') }}</span>
                         <div class="ml-auto flex items-center gap-1.5">
                             @if ($connection->provider === \App\Enums\Backup\BackupProvider::Nextcloud)
                                 {{-- Nextcloud: Re-Auth über den Zugangsdaten-Dialog (kein OAuth-Redirect). --}}
@@ -91,7 +91,7 @@
                     @if ($connection->last_error)
                         <div role="alert" class="alert alert-warning text-sm">
                             <x-icon name="warning" />
-                            <span>{{ $connection->last_error }} <span class="text-base-content/60">({{ $connection->last_error_at?->ftime() }})</span></span>
+                            <span>{{ $connection->last_error }} <span class="text-muted">({{ $connection->last_error_at?->ftime() }})</span></span>
                         </div>
                     @endif
 
@@ -104,7 +104,7 @@
                         @endif
                     </p>
 
-                    <p class="text-xs text-base-content/50">{{ __('backup_targets.pilot_note') }}</p>
+                    <p class="text-xs text-muted">{{ __('backup_targets.pilot_note') }}</p>
                 </div>
             </div>
         @endforeach
@@ -115,7 +115,7 @@
             <h3 class="card-title text-base">{{ __('backup_targets.generations.title') }}</h3>
 
             @if ($generations->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('backup_targets.generations.empty') }}</p>
+                <p class="text-sm text-muted">{{ __('backup_targets.generations.empty') }}</p>
             @else
                 <x-table bare>
                     <x-slot:head>
@@ -146,7 +146,7 @@
                                         @if ($generation->restore_tested_at !== null)
                                             {{ $generation->restore_tested_at->ftime() }}
                                         @else
-                                            <span class="text-base-content/60">{{ __('backup_targets.generations.restore_pending') }}</span>
+                                            <span class="text-muted">{{ __('backup_targets.generations.restore_pending') }}</span>
                                         @endif
                                     </td>
                                     <td>

@@ -146,6 +146,35 @@
             @endcan
         </x-form-group>
 
+        {{-- MAHNWESEN (Feature 127, MVP-691): Stufen-Defaults für Einzelmahnung und Mahnlauf. --}}
+        <x-form-group :legend="__('settings.dunning.heading')" icon="notification_important" tone="warning" cols="3" compact
+                      :description="__('settings.dunning.description')">
+            @foreach ([1, 2, 3] as $dunLevel)
+                <x-input-field name="settings[invoicing][dunning][level{{ $dunLevel }}][grace_days]" type="number" min="0" max="365" step="1"
+                               :label="__('settings.dunning.grace_days', ['level' => $dunLevel])"
+                               error="settings.invoicing.dunning.level{{ $dunLevel }}.grace_days"
+                               :value="old('settings.invoicing.dunning.level' . $dunLevel . '.grace_days', data_get($stored, 'invoicing.dunning.level' . $dunLevel . '.grace_days', ''))"
+                               :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.dunning.level' . $dunLevel . '.grace_days')])"
+                               :hint="$dunLevel === 1 ? __('settings.dunning.grace_days_hint_first') : __('settings.dunning.grace_days_hint_next')" />
+                <x-input-field name="settings[invoicing][dunning][level{{ $dunLevel }}][fee]" type="number" min="0" max="10000" step="0.01"
+                               :label="__('settings.dunning.fee', ['level' => $dunLevel])" inputmode="decimal"
+                               error="settings.invoicing.dunning.level{{ $dunLevel }}.fee"
+                               :value="old('settings.invoicing.dunning.level' . $dunLevel . '.fee', data_get($stored, 'invoicing.dunning.level' . $dunLevel . '.fee', ''))"
+                               :placeholder="__('settings.placeholder_default', ['value' => '0,00'])" />
+                <x-input-field name="settings[invoicing][dunning][level{{ $dunLevel }}][pay_days]" type="number" min="0" max="90" step="1"
+                               :label="__('settings.dunning.pay_days', ['level' => $dunLevel])"
+                               error="settings.invoicing.dunning.level{{ $dunLevel }}.pay_days"
+                               :value="old('settings.invoicing.dunning.level' . $dunLevel . '.pay_days', data_get($stored, 'invoicing.dunning.level' . $dunLevel . '.pay_days', ''))"
+                               :placeholder="__('settings.placeholder_default', ['value' => (string) config('invoicing.dunning.level' . $dunLevel . '.pay_days')])" />
+            @endforeach
+            <x-input-field name="settings[invoicing][dunning][interest_rate]" type="number" min="0" max="30" step="0.01"
+                           :label="__('settings.dunning.interest_rate')" inputmode="decimal"
+                           error="settings.invoicing.dunning.interest_rate"
+                           :value="old('settings.invoicing.dunning.interest_rate', data_get($stored, 'invoicing.dunning.interest_rate', ''))"
+                           :placeholder="__('settings.placeholder_default', ['value' => '0'])"
+                           :hint="__('settings.dunning.interest_rate_hint')" />
+        </x-form-group>
+
         {{-- E-RECHNUNG (Feature 045, Abschnitt 8): Verkäuferstammdaten für XRechnung (EN 16931). --}}
         <x-form-group :legend="__('settings.einvoice.heading')" icon="receipt" tone="info" cols="3" compact
                       :description="__('settings.einvoice.description')">
@@ -424,7 +453,7 @@
                             @selected((string) old('settings.weather.provider', data_get($stored, 'weather.provider', '')) === $weatherProvider)>{{ __('weather.providers.' . $weatherProvider) }}</option>
                     @endforeach
                 </select>
-                <p class="fieldset-label text-base-content/60">{{ __('settings.weather.provider_hint') }}</p>
+                <p class="fieldset-label text-muted">{{ __('settings.weather.provider_hint') }}</p>
             </div>
             <div class="fieldset">
                 <label class="label" for="settings_weather_dwd_max_station_km">{{ __('settings.weather.dwd_max_station_km') }}</label>
@@ -432,8 +461,28 @@
                        name="settings[weather][dwd_max_station_km]" class="input input-bordered w-full"
                        placeholder="{{ \App\Services\Weather\DwdProvider::DEFAULT_MAX_STATION_KM }}"
                        value="{{ old('settings.weather.dwd_max_station_km', data_get($stored, 'weather.dwd_max_station_km', '')) }}">
-                <p class="fieldset-label text-base-content/60">{{ __('settings.weather.dwd_max_station_km_hint') }}</p>
+                <p class="fieldset-label text-muted">{{ __('settings.weather.dwd_max_station_km_hint') }}</p>
             </div>
+        </x-form-group>
+
+        {{-- Wetterwarnungen für die Disposition (Feature 062, MVP-716) --}}
+        <x-form-group :legend="__('settings.weather.warnings_heading')" icon="thunderstorm" tone="warning" cols="2" compact
+                      :description="__('settings.weather.warn_hint')">
+            <x-checkbox-field name="settings[weather][warnings_enabled]" tone="warning" class="sm:col-span-2"
+                             :label="__('settings.weather.warnings_enabled')"
+                             error="settings.weather.warnings_enabled"
+                             :checked="(string) old('settings.weather.warnings_enabled', data_get($stored, 'weather.warnings_enabled', '1')) === '1'"
+                             :hint="__('settings.weather.warnings_enabled_hint')" />
+            @foreach (\App\Enums\Weather\WeatherWarningThreshold::cases() as $weatherThreshold)
+                @php($weatherSettingKey = substr($weatherThreshold->settingKey(), strlen('weather.')))
+                <div class="fieldset">
+                    <label class="label" for="settings_weather_{{ $weatherSettingKey }}">{{ __('settings.weather.' . $weatherSettingKey) }}</label>
+                    <input type="number" step="0.1" id="settings_weather_{{ $weatherSettingKey }}"
+                           name="settings[weather][{{ $weatherSettingKey }}]" class="input input-bordered w-full"
+                           placeholder="{{ $weatherThreshold->defaultLimit() }}"
+                           value="{{ old('settings.weather.' . $weatherSettingKey, data_get($stored, 'weather.' . $weatherSettingKey, '')) }}">
+                </div>
+            @endforeach
         </x-form-group>
     </div>
 

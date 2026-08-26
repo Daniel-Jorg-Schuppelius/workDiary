@@ -14,20 +14,20 @@
 <x-card>
     <div class="flex flex-wrap items-center justify-between gap-2">
         <h2 class="text-base font-semibold">
-            <span class="material-symbols-outlined align-middle" aria-hidden="true">support_agent</span>
+            <x-icon name="support_agent" class="align-middle" />
             {{ __('Fernwartung') }}
         </h2>
         <div class="flex items-center gap-2">
             @if (($pendingCount ?? 0) > 0)
                 <a href="{{ route('admin.remote-support.pending.index') }}" class="btn btn-sm btn-warning">
-                    <span class="material-symbols-outlined" aria-hidden="true">help</span>
+                    <x-icon name="help" />
                     {{ trans_choice(':count unzugeordnet|:count unzugeordnet', $pendingCount, ['count' => $pendingCount]) }}
                 </a>
             @endif
             <form method="POST" action="{{ route('assets.remote-support.sync', $asset) }}" class="inline">
                 @csrf
                 <button type="submit" class="btn btn-sm">
-                    <span class="material-symbols-outlined" aria-hidden="true">sync</span>
+                    <x-icon name="sync" />
                     {{ __('Verbindungen importieren') }}
                 </button>
             </form>
@@ -51,7 +51,7 @@
                                     <input type="hidden" name="remote_id" value="{{ $id }}">
                                     <button type="submit" class="btn btn-ghost btn-sm btn-square text-error"
                                             title="{{ __('Entfernen') }}" aria-label="{{ __('Entfernen') }}">
-                                        <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">delete</span>
+                                        <x-icon name="delete" class="text-[1.1rem]" />
                                     </button>
                                 </form>
                             </li>
@@ -82,7 +82,7 @@
                    @checked($asset->shared_remote) data-autosubmit>
             <span>
                 <span class="font-medium">{{ __('Mehrkundengerät') }}</span>
-                <span class="block text-xs text-base-content/60">
+                <span class="block text-xs text-muted">
                     {{ __('Dieser Rechner wird für mehrere Kunden genutzt. Sitzungen werden nicht automatisch gebucht, sondern in der Inbox je Sitzung einem Kunden zugeordnet.') }}
                 </span>
             </span>
@@ -97,7 +97,7 @@
             @csrf
             <div class="rounded-box border border-base-300 p-3">
                 <span class="font-medium">{{ __('Fernwartungsdaten übertragen') }}</span>
-                <span class="block text-xs text-base-content/60">
+                <span class="block text-xs text-muted">
                     {{ __('Für doppelt angelegte Geräte: verschiebt alle Geräte-IDs und Pending-Sitzungen auf das Zielgerät. Das leere Duplikat kann danach archiviert werden.') }}
                 </span>
                 <div class="mt-2 flex items-end gap-2">
@@ -111,7 +111,7 @@
                         </select>
                     </label>
                     <button type="submit" class="btn btn-sm">
-                        <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">move_up</span>{{ __('Übertragen') }}
+                        <x-icon name="move_up" class="text-[1.1rem]" />{{ __('Übertragen') }}
                     </button>
                 </div>
             </div>

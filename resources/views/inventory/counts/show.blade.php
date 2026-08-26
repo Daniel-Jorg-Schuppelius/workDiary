@@ -29,10 +29,10 @@
         <x-card>
             <form method="POST" action="{{ route('inventory.counts.scan', $count) }}" class="flex items-end gap-2">
                 @csrf
-                <div class="fieldset grow"><label class="fieldset-label">{{ __('inventory.scan.code') }}</label>
-                    <input name="code" autofocus autocomplete="off" class="input input-sm input-bordered w-full font-mono" placeholder="GTIN / SKU / SN / LOT"></div>
-                <div class="fieldset"><label class="fieldset-label">{{ __('inventory.count_ui.counted') }}</label>
-                    <input name="qty" type="number" step="0.0001" min="0" value="1" class="input input-sm input-bordered w-24"></div>
+                <div class="fieldset grow"><label for="code" class="fieldset-label">{{ __('inventory.scan.code') }}</label>
+                    <input id="code" name="code" autofocus autocomplete="off" class="input input-sm input-bordered w-full font-mono" placeholder="GTIN / SKU / SN / LOT"></div>
+                <div class="fieldset"><label for="qty" class="fieldset-label">{{ __('inventory.count_ui.counted') }}</label>
+                    <input id="qty" name="qty" type="number" step="0.0001" min="0" value="1" class="input input-sm input-bordered w-24"></div>
                 <x-button type="submit" tone="primary" size="sm">{{ __('inventory.scan.title') }}</x-button>
             </form>
         </x-card>
@@ -70,7 +70,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="5"
-                                   icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                                   icon="inventory_2"
                                    :title="__('inventory.count_ui.no_counts')" compact />
                 @endforelse
             </x-table>

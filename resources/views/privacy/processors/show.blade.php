@@ -33,7 +33,7 @@
                         <x-status-badge tone="ghost" size="sm">{{ $a->status->label() }}</x-status-badge>
                     </li>
                 @empty
-                    <li class="text-sm text-base-content/60">{{ __('Noch kein AVV.') }}</li>
+                    <li class="text-sm text-muted">{{ __('Noch kein AVV.') }}</li>
                 @endforelse
             </ul>
         </x-card>

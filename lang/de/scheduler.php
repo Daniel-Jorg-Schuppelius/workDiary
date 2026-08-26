@@ -130,6 +130,8 @@ return [
         'metering' => ['generate-invoices' => 'Zählerstands-Rechnungen erzeugen'],
         'maintenance' => ['scan_due' => 'Wartungspläne auf Fälligkeit prüfen'],
         'notifications' => ['scan_deadlines' => 'Fristen prüfen und erinnern'],
+        'org' => ['offboard_due' => 'Fällige Mitarbeiter-Austritte vollziehen'],
+        'travel_logs' => ['lock_due' => 'Fahrtenbuch-Fahrten nach Tagesende festschreiben'],
         'news-feed' => ['refresh' => 'Neuigkeiten-Feed aktualisieren'],
         'openproject' => [
             'import' => 'OpenProject-Import',

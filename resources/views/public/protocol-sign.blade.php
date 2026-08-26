@@ -125,11 +125,11 @@
                         <div class="text-sm font-medium">{{ $q->question }}</div>
                         @if($q->answer)
                             <div class="mt-2 border-l-2 border-primary/40 pl-3 text-sm text-base-content/80">
-                                <span class="text-xs uppercase text-base-content/50">{{ __('protocol.signature.queryAnswer') }}</span><br>
+                                <span class="text-xs uppercase text-muted">{{ __('protocol.signature.queryAnswer') }}</span><br>
                                 {{ $q->answer }}
                             </div>
                         @else
-                            <div class="mt-1 text-xs text-base-content/50">{{ __('protocol.signature.queryPending') }}</div>
+                            <div class="mt-1 text-xs text-muted">{{ __('protocol.signature.queryPending') }}</div>
                         @endif
                     </li>
                 @endforeach

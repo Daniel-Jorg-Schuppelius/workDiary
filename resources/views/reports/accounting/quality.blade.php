@@ -35,7 +35,7 @@
 
         <x-card :title="__('accounting.reports.quality.headline')" icon="fact_check">
             @if ($findings === [])
-                <p class="text-sm text-base-content/60">{{ __('accounting.reports.quality.none') }}</p>
+                <p class="text-sm text-muted">{{ __('accounting.reports.quality.none') }}</p>
             @else
                 <ul class="list-disc pl-5 text-sm">
                     @foreach ($findings as $finding)

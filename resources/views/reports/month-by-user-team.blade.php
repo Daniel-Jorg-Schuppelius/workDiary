@@ -58,14 +58,14 @@
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $year }}</h2>
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearTotal > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ Std.</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearTotal > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $fmt($yearTotal) }}
                     </span>
                 </div>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ €</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearRate > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ €</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $yearRate > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $money($yearRate) }}
                     </span>
                 </div>
@@ -73,7 +73,7 @@
         </div>
 
         @if (count($byUser) === 0)
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">view_module</span>' :title="__('Keine Einträge in diesem Jahr.')" />
+            <x-empty-state icon="view_module" :title="__('Keine Einträge in diesem Jahr.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

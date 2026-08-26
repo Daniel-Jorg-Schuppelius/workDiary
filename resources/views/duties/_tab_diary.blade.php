@@ -12,7 +12,7 @@
         @include('diary._entry_card', ['entry' => $entry, 'filters' => $filters])
     @empty
         <x-card>
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :title="__('Keine Einträge gefunden')">
+            <x-empty-state icon="menu_book" :title="__('Keine Einträge gefunden')">
                 @if (! empty($tabFilters))
                     <x-slot:action>
                         <x-icon-btn icon="restart_alt" size="sm" :href="route('duties.index', ['tab' => 'diary'])" show-label>{{ __('Filter zurücksetzen') }}</x-icon-btn>

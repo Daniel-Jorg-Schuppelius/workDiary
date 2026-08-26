@@ -24,20 +24,20 @@
     @php($t = $timeline)
     <div class="card bg-base-100 shadow-sm">
         <div class="card-body">
-            <div class="mb-2 flex items-center justify-between text-xs text-base-content/60">
+            <div class="mb-2 flex items-center justify-between text-xs text-muted">
                 <span>{{ $t['from']->isoFormat('DD.MM.YYYY') }} – {{ $t['to']->isoFormat('DD.MM.YYYY') }}</span>
                 <span class="hidden sm:inline">{{ __('Balken ziehen zum Verschieben · Ränder ziehen zum Verlängern') }}</span>
             </div>
 
             @if ($t['groups']->isEmpty())
                 <x-empty-state compact
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">checklist</span>'
+                    icon="checklist"
                     :title="__('Noch keine Aufgaben für diesen Auftrag.')" />
             @else
                 {{-- Wochen-Achse --}}
                 <div class="relative ml-44 h-6 border-b border-base-300">
                     @foreach ($t['weeks'] as $w)
-                        <div class="absolute top-0 h-full border-l border-base-200 pl-1 text-[10px] text-base-content/50"
+                        <div class="absolute top-0 h-full border-l border-base-200 pl-1 text-[10px] text-muted"
                              style="left: {{ $w['offsetPct'] }}%">{{ $w['label'] }}</div>
                     @endforeach
                     @if ($t['todayPct'] !== null)
@@ -51,7 +51,7 @@
                         @foreach ($t['milestones'] as $m)
                             <div class="absolute top-0 -translate-x-1/2 text-[10px] text-warning"
                                  style="left: {{ $m['offsetPct'] }}%" title="{{ $m['milestone']->title }} · {{ \Illuminate\Support\Carbon::parse($m['milestone']->due_date)->fdate() }}">
-                                <span class="material-symbols-outlined text-[14px]" aria-hidden="true">flag</span>
+                                <x-icon name="flag" class="text-[14px]" />
                             </div>
                         @endforeach
                     </div>
@@ -79,7 +79,6 @@
                                                      data-url="{{ route('projects.tasks.schedule', [$project, $row['task']]) }}"
                                                      data-editable="{{ $row['editable'] ? '1' : '0' }}"
                                                      data-color="{{ $row['task']->color ?: ($overdue ? '#dc2626' : '#3b82f6') }}"
-                                                     data-csrf="{{ csrf_token() }}"
                                                      class="group absolute top-0 flex h-5 items-center overflow-visible rounded text-[10px] text-white select-none"
                                                      :class="cursorClass"
                                                      :style="barStyle"
@@ -96,7 +95,7 @@
                                                     </template>
                                                 </div>
                                             @else
-                                                <span class="absolute left-2 top-0 flex h-5 items-center text-[10px] italic text-base-content/50">{{ __('ohne Termin') }}</span>
+                                                <span class="absolute left-2 top-0 flex h-5 items-center text-[10px] italic text-muted">{{ __('ohne Termin') }}</span>
                                             @endif
                                         </div>
                                     </div>

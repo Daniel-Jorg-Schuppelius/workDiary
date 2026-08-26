@@ -78,12 +78,12 @@
                                 <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
                             </x-action-form>
                         @else
-                            <span class="text-xs text-base-content/40">{{ __('—') }}</span>
+                            <span class="text-xs text-muted">{{ __('—') }}</span>
                         @endif
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">event</span>' :colspan="5" :title="__('Keine Feiertage in diesem Jahr')" compact />
+                <x-table.empty icon="event" :colspan="5" :title="__('Keine Feiertage in diesem Jahr')" compact />
             @endforelse
         </x-table>
     </div>
@@ -127,7 +127,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">event</span>' :colspan="4" :title="__('Keine eigenen Feiertage vorhanden')" compact />
+                <x-table.empty icon="event" :colspan="4" :title="__('Keine eigenen Feiertage vorhanden')" compact />
             @endforelse
         </x-table>
     </div>

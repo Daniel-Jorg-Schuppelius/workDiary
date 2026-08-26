@@ -41,7 +41,7 @@
                    value="{{ old('server_url', $connection->server_url ?? '') }}"
                    class="input input-bordered w-full font-mono"
                    placeholder="https://dav.example.com/remote.php/dav/files/backup/">
-            <p class="text-xs text-base-content/60">{{ __('backup_targets.webdav.field.server_url_help') }}</p>
+            <p class="text-xs text-muted">{{ __('backup_targets.webdav.field.server_url_help') }}</p>
             @error('server_url')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -57,7 +57,7 @@
             <label class="fieldset-label" for="wdb-pass">{{ __('backup_targets.webdav.field.password') }}</label>
             <input id="wdb-pass" type="password" name="password" required maxlength="512" autocomplete="new-password"
                    class="input input-bordered w-full font-mono" placeholder="••••••••">
-            <p class="text-xs text-base-content/60">{{ __('backup_targets.webdav.field.password_help') }}</p>
+            <p class="text-xs text-muted">{{ __('backup_targets.webdav.field.password_help') }}</p>
             @error('password')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -66,7 +66,7 @@
             <input id="wdb-path" type="text" name="base_path" maxlength="255"
                    value="{{ old('base_path', '') }}"
                    class="input input-bordered w-full font-mono" placeholder="workdiary">
-            <p class="text-xs text-base-content/60">{{ __('backup_targets.webdav.field.base_path_help') }}</p>
+            <p class="text-xs text-muted">{{ __('backup_targets.webdav.field.base_path_help') }}</p>
             @error('base_path')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>

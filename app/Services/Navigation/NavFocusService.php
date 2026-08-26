@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Navigation;
 
-use App\Models\{Organization, User};
+use App\Models\{Organization, User, UserWorkspace};
+use Illuminate\Support\Facades\Auth;
 
 /**
  * Arbeitsbereiche — schaltbare, rein kosmetische Fokus-Ansichten (D13): filtert
@@ -20,6 +21,11 @@ use App\Models\{Organization, User};
  * nie Rechte/Module frei. Kapselt Definition (config/navigation_focus.php),
  * Org-Kuratierung und Auflösung (Session → Preference → Org-Default → Config,
  * jeder Wert gegen die verfügbaren Bereiche validiert).
+ * Seit MVP-731 (Phase 2) kommen **eigene Arbeitsbereiche** dazu: Zeilen der
+ * Tabelle `user_workspaces`, angeboten unter dem Schlüssel `user:<sqid>`.
+ * Sie stehen gleichberechtigt neben den Produkt-Bereichen, sind aber immer
+ * nur für ihren Besitzer sichtbar — und filtern ausschließlich die Sidebar
+ * (das Verwaltungsmenü bleibt unangetastet, sonst verschwände es komplett).
  * Konzept: Feature 082 (WorkDiary-Architecture).
  */
 class NavFocusService {
@@ -40,6 +46,45 @@ class NavFocusService {
 
     /** Org-Einstellung: Zeitpunkt der Arbeitsbereich-Kuratierung (Onboarding). */
     public const SETTING_CONFIGURED_AT = 'nav_focus_configured_at';
+
+    /** Schlüsselpräfix eines eigenen Arbeitsbereichs (`user:<sqid>`). */
+    public const PERSONAL_PREFIX = 'user:';
+
+    /** Schlüssel eines eigenen Arbeitsbereichs. */
+    public static function personalKey(UserWorkspace $workspace): string {
+        return self::PERSONAL_PREFIX . $workspace->sqid;
+    }
+
+    public static function isPersonalKey(string $key): bool {
+        return str_starts_with($key, self::PERSONAL_PREFIX);
+    }
+
+    /**
+     * Eigene Arbeitsbereiche der Person (leer ohne Person).
+     *
+     * @return list<UserWorkspace>
+     */
+    public function personalFor(?User $user): array {
+        if (! $user instanceof User) {
+            return [];
+        }
+
+        return array_values(UserWorkspace::query()->forUser($user)->get()->all());
+    }
+
+    /** Eigener Arbeitsbereich zum Schlüssel — nur der eigene, nie ein fremder. */
+    public function personalByKey(?User $user, string $key): ?UserWorkspace {
+        if (! self::isPersonalKey($key)) {
+            return null;
+        }
+        foreach ($this->personalFor($user) as $workspace) {
+            if (self::personalKey($workspace) === $key) {
+                return $workspace;
+            }
+        }
+
+        return null;
+    }
 
     /** @return array<string, array<string, mixed>> Rohdefinitionen aus der Config. */
     public function all(): array {
@@ -67,6 +112,15 @@ class NavFocusService {
      * @return list<string>|null
      */
     public function keepKeys(string $key): ?array {
+        if (self::isPersonalKey($key)) {
+            // Eigener Arbeitsbereich: die gespeicherte Auswahl. Eine leere
+            // Auswahl filtert bewusst NICHT (sonst wäre die Sidebar leer).
+            $workspace = $this->personalByKey($this->currentUser(), $key);
+            $keys = $workspace?->keys() ?? [];
+
+            return $keys !== [] ? $keys : null;
+        }
+
         $keys = $this->all()[$key]['keys'] ?? null;
 
         return is_array($keys) ? array_values(array_map('strval', $keys)) : null;
@@ -78,6 +132,12 @@ class NavFocusService {
      * @return list<string>|null
      */
     public function manageKeep(string $key): ?array {
+        if (self::isPersonalKey($key)) {
+            // Eigene Arbeitsbereiche kuratieren nur die Sidebar; das
+            // Verwaltungsmenü bliebe sonst leer.
+            return null;
+        }
+
         $manage = $this->all()[$key]['manage'] ?? null;
 
         return is_array($manage) ? array_values(array_map('strval', $manage)) : null;
@@ -86,10 +146,12 @@ class NavFocusService {
     /**
      * Für die Organisation verfügbare Arbeitsbereiche in Anzeigereihenfolge.
      * Ohne Kuratierung: alle Produkt-Defaults. 'all' ist immer enthalten.
+     * Danach die eigenen Arbeitsbereiche der Person (MVP-731) — sie sind
+     * nicht kuratierbar, weil sie niemandem sonst gehören.
      *
-     * @return list<array{key: string, label: string, description: string, icon: string}>
+     * @return list<array{key: string, label: string, description: string, icon: string, personal: bool}>
      */
-    public function availableFor(?Organization $organization): array {
+    public function availableFor(?Organization $organization, ?User $user = null): array {
         $settings = $this->settings($organization);
         $whitelist = $settings[self::SETTING_AVAILABLE] ?? null;
         $labels = is_array($settings[self::SETTING_LABELS] ?? null) ? $settings[self::SETTING_LABELS] : [];
@@ -105,6 +167,17 @@ class NavFocusService {
                 'label' => $this->labelFrom($def, $labels, (string) $key),
                 'description' => __((string) ($def['description'] ?? '')),
                 'icon' => (string) ($def['icon'] ?? 'apps'),
+                'personal' => false,
+            ];
+        }
+
+        foreach ($this->personalFor($user ?? $this->currentUser()) as $workspace) {
+            $out[] = [
+                'key' => self::personalKey($workspace),
+                'label' => (string) $workspace->name,
+                'description' => (string) __('scope.focus.personal.description'),
+                'icon' => (string) ($workspace->icon ?: 'dashboard_customize'),
+                'personal' => true,
             ];
         }
 
@@ -123,6 +196,12 @@ class NavFocusService {
 
     /** Anzeigename eines Arbeitsbereichs (Org-Label-Override vor Config-Label). */
     public function label(?Organization $organization, string $key): string {
+        if (self::isPersonalKey($key)) {
+            $workspace = $this->personalByKey($this->currentUser(), $key);
+
+            return $workspace !== null ? (string) $workspace->name : (string) __('scope.focus.personal.title');
+        }
+
         $settings = $this->settings($organization);
         $labels = is_array($settings[self::SETTING_LABELS] ?? null) ? $settings[self::SETTING_LABELS] : [];
         $def = $this->all()[$key] ?? [];
@@ -131,7 +210,21 @@ class NavFocusService {
     }
 
     public function icon(string $key): string {
+        if (self::isPersonalKey($key)) {
+            $workspace = $this->personalByKey($this->currentUser(), $key);
+            $icon = $workspace !== null ? trim((string) $workspace->icon) : '';
+
+            return $icon !== '' ? $icon : 'dashboard_customize';
+        }
+
         return (string) ($this->all()[$key]['icon'] ?? 'apps');
+    }
+
+    /** Angemeldete Person (oder null) — die eigenen Bereiche hängen an ihr. */
+    private function currentUser(): ?User {
+        $user = Auth::user();
+
+        return $user instanceof User ? $user : null;
     }
 
     /**

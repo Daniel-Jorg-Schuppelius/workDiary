@@ -30,7 +30,7 @@
                        @checked(old('enabled', $setting?->enabled ?? false))>
                 <span class="label-text">{{ __('ai.capability.enable') }}</span>
             </label>
-            <p class="text-xs text-base-content/60">{{ __('ai.capability.enable_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.capability.enable_help') }}</p>
         </div>
 
         <div class="fieldset">
@@ -48,9 +48,9 @@
                     </span>
                 </label>
             @empty
-                <p class="text-sm italic text-base-content/50">{{ __('ai.empty.connections') }}</p>
+                <p class="text-sm italic text-muted">{{ __('ai.empty.connections') }}</p>
             @endforelse
-            <p class="text-xs text-base-content/60">{{ __('ai.capability.allowed_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.capability.allowed_help') }}</p>
         </div>
 
         <div class="fieldset">
@@ -72,7 +72,7 @@
                        @checked(old('allow_user_choice', $setting?->allow_user_choice ?? false))>
                 <span class="label-text">{{ __('ai.capability.user_choice') }}</span>
             </label>
-            <p class="text-xs text-base-content/60">{{ __('ai.capability.user_choice_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.capability.user_choice_help') }}</p>
         </div>
     </x-form-group>
 </x-modal>

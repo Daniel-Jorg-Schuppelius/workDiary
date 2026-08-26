@@ -50,7 +50,7 @@
 
     <x-card :title="__('2. UBL-2.1-Schema (XSD)')">
         @if (! $report['xml_generated'])
-            <p class="text-sm text-base-content/60">{{ __('Übersprungen — der Preflight hat Fehler, es wurde kein XML erzeugt.') }}</p>
+            <p class="text-sm text-muted">{{ __('Übersprungen — der Preflight hat Fehler, es wurde kein XML erzeugt.') }}</p>
         @elseif ($report['schema_errors'] === [])
             <p class="text-sm text-success">{{ __('Schema-valide.') }}</p>
         @else
@@ -84,7 +84,7 @@
 
     <x-card :title="__('4. Betragsabgleich XML/PDF (XRechnung vs. ZUGFeRD)')">
         @if (! $report['xml_generated'])
-            <p class="text-sm text-base-content/60">{{ __('Übersprungen — der Preflight hat Fehler, es wurde kein XML erzeugt.') }}</p>
+            <p class="text-sm text-muted">{{ __('Übersprungen — der Preflight hat Fehler, es wurde kein XML erzeugt.') }}</p>
         @else
             @if ($report['consistency']['errors'] === [])
                 <p class="text-sm text-success">
@@ -101,7 +101,7 @@
                 </ul>
             @endif
             @unless ($report['consistency']['zugferd_checked'])
-                <p class="mt-2 text-sm text-base-content/60">{{ __('ZUGFeRD-Abgleich nicht durchgeführt (PDF-Toolkit/ZUGFeRD nicht verfügbar).') }}</p>
+                <p class="mt-2 text-sm text-muted">{{ __('ZUGFeRD-Abgleich nicht durchgeführt (PDF-Toolkit/ZUGFeRD nicht verfügbar).') }}</p>
             @endunless
         @endif
     </x-card>

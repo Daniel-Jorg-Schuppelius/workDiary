@@ -78,7 +78,7 @@
 
     <x-card :title="__('reporting.presence_emergency.group_present')">
         @if ($snapshot['present'] === [])
-            <p class="text-sm text-base-content/60">{{ __('reporting.presence_emergency.empty_group') }}</p>
+            <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>
         @else
             <x-table bare>
                 <x-slot:head>
@@ -127,7 +127,7 @@
 
     <x-card :title="__('reporting.presence_emergency.group_off_site')">
         @if ($snapshot['off_site'] === [])
-            <p class="text-sm text-base-content/60">{{ __('reporting.presence_emergency.empty_group') }}</p>
+            <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>
         @else
             <x-table bare>
                 <x-slot:head>
@@ -150,7 +150,7 @@
 
     <x-card :title="__('reporting.presence_emergency.group_absent')">
         @if ($snapshot['absent'] === [])
-            <p class="text-sm text-base-content/60">{{ __('reporting.presence_emergency.empty_group') }}</p>
+            <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>
         @else
             <x-table bare>
                 <x-slot:head>
@@ -170,9 +170,9 @@
     </x-card>
 
     <x-card :title="__('reporting.presence_emergency.group_unaccounted')">
-        <p class="mb-2 text-sm text-base-content/60">{{ __('reporting.presence_emergency.unaccounted_hint') }}</p>
+        <p class="mb-2 text-sm text-muted">{{ __('reporting.presence_emergency.unaccounted_hint') }}</p>
         @if ($snapshot['unaccounted'] === [])
-            <p class="text-sm text-base-content/60">{{ __('reporting.presence_emergency.empty_group') }}</p>
+            <p class="text-sm text-muted">{{ __('reporting.presence_emergency.empty_group') }}</p>
         @else
             <ul class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3">
                 @foreach ($snapshot['unaccounted'] as $row)
@@ -182,7 +182,7 @@
         @endif
     </x-card>
 
-    <p class="text-xs text-base-content/50">{{ __('reporting.presence_emergency.deviation_note') }}</p>
+    <p class="text-xs text-muted">{{ __('reporting.presence_emergency.deviation_note') }}</p>
 </x-page-shell>
 
 @include('partials.print-script')

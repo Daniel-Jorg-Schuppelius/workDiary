@@ -55,7 +55,7 @@
             <ul class="space-y-1 text-sm">
                 @foreach ($article->attachments as $att)
                     <li class="flex items-center gap-2 text-base-content/70">
-                        <x-icon :name="$att->isImage() ? 'image' : 'attach_file'" class="text-base-content/50" />
+                        <x-icon :name="$att->isImage() ? 'image' : 'attach_file'" class="text-muted" />
                         <span class="truncate">{{ $att->original_name }}</span>
                     </li>
                 @endforeach
@@ -68,6 +68,6 @@
                    class="file-input file-input-bordered w-full" />
         </label>
         @error('attachments.*')<p class="text-sm text-error">{{ $message }}</p>@enderror
-        <p class="text-xs text-base-content/50">{{ __('Max. :mb MB pro Datei. Verwalten/Löschen auf der Artikelseite.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+        <p class="text-xs text-muted">{{ __('Max. :mb MB pro Datei. Verwalten/Löschen auf der Artikelseite.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
     </x-form-group>
 </x-modal>

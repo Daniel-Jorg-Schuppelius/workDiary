@@ -44,7 +44,7 @@
             <div class="mx-auto max-w-2xl space-y-4">
                 {{-- Fortschritt --}}
                 <div>
-                    <div class="mb-1 flex items-center justify-between text-xs text-base-content/60">
+                    <div class="mb-1 flex items-center justify-between text-xs text-muted">
                         <span>{{ __('procedure.run.progress') }}</span>
                         <span>{{ $progressDone }} / {{ $progressTotal }}</span>
                     </div>
@@ -77,7 +77,7 @@
                                         <span class="badge badge-sm badge-ghost">{{ $def?->sort_order ?? $i + 1 }}</span>
                                         <span class="font-medium">{{ $def?->label ?? __('procedure.print.unknownStep') }}</span>
                                     </div>
-                                    <div class="mt-1 flex flex-wrap items-center gap-1 text-xs text-base-content/50">
+                                    <div class="mt-1 flex flex-wrap items-center gap-1 text-xs text-muted">
                                         <span>{{ $def?->step_type?->label() ?? '—' }}</span>
                                         @if ($def?->required)<span class="badge badge-xs">{{ __('procedure.field.required') }}</span>@endif
                                         @if ($def?->requires_second_person)<span class="badge badge-xs">{{ __('procedure.field.secondPerson') }}</span>@endif
@@ -92,7 +92,7 @@
 
                             {{-- Ergebnis abgeschlossener Schritte --}}
                             @if ($isFinal)
-                                <div class="mt-2 text-xs text-base-content/60">
+                                <div class="mt-2 text-xs text-muted">
                                     @if ($sr->executedBy){{ __('procedure.print.executedBy') }}: {{ $sr->executedBy->name }}@endif
                                     @if ($sr->executed_at) · {{ $sr->executed_at->format('d.m.Y H:i') }}@endif
                                     @if (data_get($sr->value_json, 'value')) · {{ __('procedure.run.value') }}: {{ data_get($sr->value_json, 'value') }}@endif
@@ -103,8 +103,8 @@
 
                             {{-- Sperrgrund --}}
                             @if (! $isFinal && $step['blockReason'])
-                                <div class="mt-3 flex items-center gap-2 rounded-box bg-base-300/40 px-3 py-2 text-xs text-base-content/60">
-                                    <x-icon name="lock" class="text-base-content/40" />
+                                <div class="mt-3 flex items-center gap-2 rounded-box bg-base-300/40 px-3 py-2 text-xs text-muted">
+                                    <x-icon name="lock" class="text-muted" />
                                     {{ __('procedure.blocked.' . $step['blockReason']) }}
                                 </div>
                             @endif
@@ -140,7 +140,7 @@
                                                 {{ __('procedure.run.waitRemaining', ['until' => $sr->wait_until->format('d.m.Y H:i')]) }}
                                             </div>
                                             <details class="text-xs">
-                                                <summary class="cursor-pointer text-base-content/50">{{ __('procedure.run.overrideWait') }}</summary>
+                                                <summary class="cursor-pointer text-muted">{{ __('procedure.run.overrideWait') }}</summary>
                                                 <form method="POST" action="{{ route('procedure-runs.steps.wait.continue', [$run, $sr]) }}" class="mt-2 space-y-2">
                                                     @csrf
                                                     <textarea name="reason" rows="2" minlength="5" required
@@ -217,7 +217,7 @@
                         @endif
                     </div>
                     @if (! empty($missingRequired))
-                        <p class="text-xs text-base-content/50">{{ __('procedure.run.completeHint') }}</p>
+                        <p class="text-xs text-muted">{{ __('procedure.run.completeHint') }}</p>
                     @endif
                 @endif
             </div>

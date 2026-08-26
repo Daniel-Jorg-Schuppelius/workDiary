@@ -73,11 +73,11 @@
     @endif
 
     <x-card>
-        <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+        <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if(empty($rows))
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>' />
+                icon="inventory_2" />
         @else
             <x-table table-sort="client" :caption="__('Produktanalyse')">
                 <x-slot:head>

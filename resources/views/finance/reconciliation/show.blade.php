@@ -40,19 +40,19 @@
         <x-card class="mb-4">
             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
                 <div>
-                    <div class="text-base-content/60">{{ __('bank.field.format') }}</div>
+                    <div class="text-muted">{{ __('bank.field.format') }}</div>
                     <x-status-badge :tone="$statement->source_format->tone()" :label="$statement->source_format->label()" />
                 </div>
                 <div>
-                    <div class="text-base-content/60">{{ __('bank.field.balance_check') }}</div>
+                    <div class="text-muted">{{ __('bank.field.balance_check') }}</div>
                     <x-status-badge :tone="$statement->balance_check->tone()" :label="$statement->balance_check->label()" />
                 </div>
                 <div>
-                    <div class="text-base-content/60">{{ __('bank.field.opening_balance') }}</div>
+                    <div class="text-muted">{{ __('bank.field.opening_balance') }}</div>
                     <div>{{ $statement->opening_balance !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $statement->opening_balance, 2, withThousandsSeparator: true) : '—' }}</div>
                 </div>
                 <div>
-                    <div class="text-base-content/60">{{ __('bank.field.closing_balance') }}</div>
+                    <div class="text-muted">{{ __('bank.field.closing_balance') }}</div>
                     <div>{{ $statement->closing_balance !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $statement->closing_balance, 2, withThousandsSeparator: true) : '—' }}</div>
                 </div>
             </div>
@@ -72,7 +72,7 @@
                             <div class="text-sm text-base-content/70">
                                 {{ $transaction->counterparty_name ?? '—' }}
                                 @if ($transaction->purpose)
-                                    · <span class="text-base-content/50">{{ \Illuminate\Support\Str::limit($transaction->purpose, 80) }}</span>
+                                    · <span class="text-muted">{{ \Illuminate\Support\Str::limit($transaction->purpose, 80) }}</span>
                                 @endif
                             </div>
                         </div>
@@ -175,7 +175,7 @@
                                                             · {{ $detail['counterparty_name'] }}
                                                         @endif
                                                         @if (! empty($detail['end_to_end_id']))
-                                                            · <span class="text-base-content/50">{{ $detail['end_to_end_id'] }}</span>
+                                                            · <span class="text-muted">{{ $detail['end_to_end_id'] }}</span>
                                                         @endif
                                                         @if ($splitRow['suggestion'] !== null)
                                                             @foreach ($splitRow['suggestion']['reasons'] as $reason)
@@ -264,7 +264,7 @@
                                     </div>
                                 </form>
                             @elseif ($txDetailOrigins === [])
-                                <div class="text-sm text-base-content/60">{{ __('bank.empty.suggestions') }}</div>
+                                <div class="text-sm text-muted">{{ __('bank.empty.suggestions') }}</div>
                             @endif
 
                             {{-- Sammel-Rücklastschrift (Toolkit-Folgepaket 2): Kompensation je
@@ -280,7 +280,7 @@
                                         @endphp
                                         <form method="POST" action="{{ route('finance.reconciliation.return', $transaction->sqid) }}" class="mb-2">
                                             @csrf
-                                            <div class="text-xs text-base-content/60 mb-1">
+                                            <div class="text-xs text-muted mb-1">
                                                 {{ $detailSigned >= 0 ? '+' : '−' }}{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($detailSigned), 2, withThousandsSeparator: true) }}
                                                 @if (! empty($detail['counterparty_name']))
                                                     · {{ $detail['counterparty_name'] }}
@@ -370,7 +370,7 @@
                     @endif
                 </x-card>
             @empty
-                <div class="text-center text-base-content/60 py-6">{{ __('bank.empty.transactions') }}</div>
+                <div class="text-center text-muted py-6">{{ __('bank.empty.transactions') }}</div>
             @endforelse
         </div>
     </x-index-page>

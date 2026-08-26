@@ -37,7 +37,7 @@
 
     <x-card>
         @if ($protocols->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">fact_check</span>' :title="__('Keine Defektprotokolle für diesen Drilldown gefunden.')" />
+            <x-empty-state icon="fact_check" :title="__('Keine Defektprotokolle für diesen Drilldown gefunden.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

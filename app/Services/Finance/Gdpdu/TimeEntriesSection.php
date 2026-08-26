@@ -40,33 +40,29 @@ class TimeEntriesSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        $rows = [];
-        TimeEntry::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (TimeEntry::query()
             ->where('organization_id', $organization->id)
             ->whereNotNull('date')
             ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
             ->with(['user:id,name,personnel_number', 'project:id,name,customer_id', 'project.customer:id,name'])
             ->orderBy('date')->orderBy('id')
-            ->get()
-            ->each(function (TimeEntry $entry) use (&$rows): void {
-                $personnelNo = $entry->user?->personnel_number;
-                if ($personnelNo === null || $personnelNo === '') {
-                    $personnelNo = (string) ($entry->user_id ?? '');
-                }
-                $rows[] = [
-                    $this->date($entry->date),
-                    $this->str($personnelNo),
-                    $this->str($entry->user?->name),
-                    $this->str($entry->project?->customer?->name),
-                    $this->str($entry->project?->name),
-                    $this->str($entry->activity_type->value),
-                    $this->str($entry->description),
-                    $this->num($entry->minutes / 60, 2),
-                    $entry->billable ? 'Ja' : 'Nein',
-                ];
-            });
-
-        return $rows;
+            ->lazy() as $entry) {
+            $personnelNo = $entry->user?->personnel_number;
+            if ($personnelNo === null || $personnelNo === '') {
+                $personnelNo = (string) ($entry->user_id ?? '');
+            }
+            yield [
+                $this->date($entry->date),
+                $this->str($personnelNo),
+                $this->str($entry->user?->name),
+                $this->str($entry->project?->customer?->name),
+                $this->str($entry->project?->name),
+                $this->str($entry->activity_type->value),
+                $this->str($entry->description),
+                $this->num($entry->minutes / 60, 2),
+                $entry->billable ? 'Ja' : 'Nein',
+            ];
+        }
     }
 }

@@ -31,7 +31,7 @@
     @if ($required->isEmpty())
         <x-card>
             {{-- Prerequisite-Audit (MVP-181): Hinweis mit direktem CTA. --}}
-            <p class="text-sm text-base-content/60">{{ __('Für diesen Auftrag sind keine Qualifikationen gefordert — Anforderungen lassen sich im Dispositions-Panel des Auftrags pflegen.') }}</p>
+            <p class="text-sm text-muted">{{ __('Für diesen Auftrag sind keine Qualifikationen gefordert — Anforderungen lassen sich im Dispositions-Panel des Auftrags pflegen.') }}</p>
             <div class="mt-3">
                 <x-button :href="route('diary.show', $diary)" tone="primary" size="sm" icon="arrow_forward">
                     {{ __('prerequisites.dispatch.cta') }}
@@ -61,18 +61,18 @@
                                     @php $status = $row['status'][$qualification->id] ?? 'missing'; @endphp
                                     <td class="text-center">
                                         @if ($status === 'ok')
-                                            <span class="badge badge-success badge-sm gap-1"><span class="material-symbols-outlined text-xs">check</span>{{ __('erfüllt') }}</span>
+                                            <span class="badge badge-success badge-sm gap-1"><x-icon name="check" class="text-xs" />{{ __('erfüllt') }}</span>
                                         @elseif ($status === 'expiring')
-                                            <span class="badge badge-warning badge-sm gap-1"><span class="material-symbols-outlined text-xs">schedule</span>{{ __('läuft ab') }}</span>
+                                            <span class="badge badge-warning badge-sm gap-1"><x-icon name="schedule" class="text-xs" />{{ __('läuft ab') }}</span>
                                         @else
-                                            <span class="badge badge-error badge-sm gap-1"><span class="material-symbols-outlined text-xs">close</span>{{ __('fehlt') }}</span>
+                                            <span class="badge badge-error badge-sm gap-1"><x-icon name="close" class="text-xs" />{{ __('fehlt') }}</span>
                                         @endif
                                     </td>
                                 @endforeach
                             </tr>
                         @endforeach
             </x-table>
-            <p class="mt-2 text-xs text-base-content/60">
+            <p class="mt-2 text-xs text-muted">
                 {{ __('„Läuft ab" = gültig am Stichtag, aber Befristung endet binnen 30 Tagen.') }}
             </p>
         </x-card>

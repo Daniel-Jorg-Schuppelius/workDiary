@@ -63,13 +63,13 @@
                         </td>
                         <td class="text-xs">
                             @if ($requirement->controls->isEmpty())
-                                <span class="text-base-content/50">—</span>
+                                <span class="text-muted">—</span>
                             @else
                                 @foreach ($requirement->controls as $control)
                                     <span class="block">
                                         {{ $control->title }}
                                         @if ($control->risks->isNotEmpty())
-                                            <span class="font-mono text-base-content/60">({{ $control->risks->map(fn($r) => $r->displayNo())->implode(', ') }})</span>
+                                            <span class="font-mono text-muted">({{ $control->risks->map(fn($r) => $r->displayNo())->implode(', ') }})</span>
                                         @endif
                                     </span>
                                 @endforeach
@@ -78,13 +78,13 @@
                     </tr>
                 @empty
                     <tr>
-                        <td colspan="6" class="text-base-content/50">{{ __('isms.empty_requirements') }}</td>
+                        <td colspan="6" class="text-muted">{{ __('isms.empty_requirements') }}</td>
                     </tr>
                 @endforelse
         </x-table>
     </div>
 
-    <p class="mt-3 text-xs text-base-content/60">{{ __('isms.soa.disclaimer') }}</p>
+    <p class="mt-3 text-xs text-muted">{{ __('isms.soa.disclaimer') }}</p>
 
     <x-slot:footerExtra>
         <x-icon-btn icon="print" tone="outline" size="sm"

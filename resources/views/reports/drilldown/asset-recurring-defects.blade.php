@@ -37,7 +37,7 @@
 
     <x-card>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">check_circle</span>'
+            <x-empty-state icon="check_circle"
                            :title="__('Keine Defekte im gewählten Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
@@ -72,7 +72,7 @@
                             @if ($row['is_recurring'])
                                 <x-status-badge tone="warning" size="sm">{{ __('Wiederholdefekt') }}</x-status-badge>
                             @else
-                                <span class="text-base-content/40">—</span>
+                                <span class="text-muted">—</span>
                             @endif
                         </td>
                     </tr>

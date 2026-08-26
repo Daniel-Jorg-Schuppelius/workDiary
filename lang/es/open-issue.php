@@ -27,6 +27,7 @@ return [
         'closed_by' => 'Cerrado por',
         'reason' => 'Motivo',
         'resolution' => 'Resolución',
+        'follow_up' => 'Encargo de seguimiento',
     ],
     'action' => [
         'create' => 'Crear punto abierto',
@@ -40,6 +41,7 @@ return [
         'reopen' => 'Reabrir',
         'delete' => 'Eliminar',
         'publishToCustomer' => 'Compartir con el cliente',
+        'followUp' => 'Crear encargo de seguimiento',
     ],
     'flash' => [
         'created' => 'Punto abierto creado.',
@@ -54,5 +56,9 @@ return [
             'wontDo' => 'Punto abierto marcado como «no se hará».',
             'reopened' => 'El punto abierto ha sido reabierto.',
         ],
+    ],
+
+    'follow_up' => [
+        'content_intro' => 'Encargo de seguimiento del punto abierto #:id «:title»',
     ],
 ];

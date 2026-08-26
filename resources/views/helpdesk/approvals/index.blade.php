@@ -42,13 +42,13 @@
                         <td>
                             @if ($ticket !== null)
                                 <a class="link link-hover font-medium" href="{{ route('service-tickets.show', $ticket) }}">{{ $ticket->title }}</a>
-                                <div class="text-xs text-base-content/60 font-mono">{{ $ticket->ticket_no }}</div>
+                                <div class="text-xs text-muted font-mono">{{ $ticket->ticket_no }}</div>
                             @else
                                 <span class="font-medium">{{ $approvable?->title ?? $approvable?->name ?? '—' }}</span>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $approval->step }}</td>
-                        <td class="text-sm text-base-content/60">
+                        <td class="text-sm text-muted">
                             @if ((string) ($rule['type'] ?? '') === 'role')
                                 {{ __('Rolle') }}: {{ \App\Enums\User\UserRole::tryFrom((string) ($rule['value'] ?? ''))?->label() ?? (string) ($rule['value'] ?? '') }}
                             @else

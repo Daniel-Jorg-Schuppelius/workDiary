@@ -47,7 +47,7 @@
                     <tr class="hover">
                         <td class="text-right tabular-nums">{{ $bookmark->sort_order }}</td>
                         <td>
-                            <span class="material-symbols-outlined" aria-hidden="true">{{ $bookmark->icon ?: 'bookmark' }}</span>
+                            <x-icon name="{{ $bookmark->icon ?: 'bookmark' }}" />
                         </td>
                         <td class="font-semibold">{{ $bookmark->label }}</td>
                         <td class="truncate max-w-md">
@@ -69,7 +69,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="5"
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">bookmark</span>'
+                        icon="bookmark"
                         :title="__('Noch keine Lesezeichen angelegt')" compact />
                 @endforelse
             </tbody>

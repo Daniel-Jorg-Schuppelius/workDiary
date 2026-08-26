@@ -40,7 +40,7 @@
                 <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
                     <div>
                         <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ $program->name }}</h2>
-                        <p class="text-xs text-base-content/60">
+                        <p class="text-xs text-muted">
                             {{ $program->scope?->name }} ·
                             {{ trim(($program->norm ?? '—') . ' ' . ($program->edition ?? '')) }} ·
                             {{ __(':years Jahre ab :start', ['years' => $program->cycle_years, 'start' => $program->starts_on->format('d.m.Y')]) }}
@@ -76,18 +76,18 @@
                     @for ($year = 1; $year <= $program->cycle_years; $year++)
                         @php $yearAudits = $program->auditsByCycleYear()[$year] ?? []; @endphp
                         <div class="rounded-box border border-base-300 p-3">
-                            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-base-content/60">
+                            <p class="mb-1 text-xs font-semibold uppercase tracking-wide text-muted">
                                 {{ __('Jahr :n', ['n' => $year]) }} ({{ $program->starts_on->copy()->addYears($year - 1)->format('Y') }})
                             </p>
                             @if ($yearAudits === [])
-                                <p class="text-xs text-base-content/50">{{ __('Kein Audit geplant.') }}</p>
+                                <p class="text-xs text-muted">{{ __('Kein Audit geplant.') }}</p>
                             @else
                                 <ul class="space-y-1 text-sm">
                                     @foreach ($yearAudits as $audit)
                                         <li>
-                                            <span class="font-mono text-xs text-base-content/60">{{ $audit->audit_no }}</span>
+                                            <span class="font-mono text-xs text-muted">{{ $audit->audit_no }}</span>
                                             {{ $audit->title }}
-                                            <span class="text-xs text-base-content/60">({{ $audit->status->label() }}@if ($audit->planned_on), {{ $audit->planned_on->format('d.m.Y') }}@endif)</span>
+                                            <span class="text-xs text-muted">({{ $audit->status->label() }}@if ($audit->planned_on), {{ $audit->planned_on->format('d.m.Y') }}@endif)</span>
                                         </li>
                                     @endforeach
                                 </ul>

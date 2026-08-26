@@ -15,19 +15,19 @@
     @foreach ($suggestions as $candidate)
         <li class="flex items-center justify-between gap-2 py-2">
             <div class="min-w-0">
-                <span class="font-medium">{{ $candidate->voucher_number ?: '—' }}</span>
-                <span class="text-base-content/60">
-                    · {{ optional($candidate->voucher_date)->format('d.m.Y') }}
-                    · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($candidate->total_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }}
-                    {{ $candidate->currency->value }}
-                    @if ($candidate->supplier)
-                        · {{ $candidate->supplier->name }}
+                <span class="font-medium">{{ $candidate->number ?: '—' }}</span>
+                <span class="text-muted">
+                    · {{ optional($candidate->date)->format('d.m.Y') }}
+                    · {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($candidate->grossFloat(), 2, withThousandsSeparator: true) }}
+                    {{ $candidate->currencyLabel() }}
+                    @if ($candidate->partyName)
+                        · {{ $candidate->partyName }}
                     @endif
                 </span>
             </div>
             @if ($canLink)
                 <x-action-form :action="route('expenses.link-voucher', $expense)">
-                    <input type="hidden" name="voucher" value="{{ $candidate->sqid }}">
+                    <input type="hidden" name="voucher" value="{{ $candidate->key }}">
                     <x-icon-btn icon="link" tone="primary" size="sm" type="submit"
                                 :label="__('expenses.receipt.link')" />
                 </x-action-form>

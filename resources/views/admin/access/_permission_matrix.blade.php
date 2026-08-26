@@ -14,7 +14,7 @@
 
 <div x-data="permissionMatrix">
     <label class="input input-bordered input-sm flex items-center gap-2 mb-3 max-w-md">
-        <x-icon name="search" class="text-base-content/60" />
+        <x-icon name="search" class="text-muted" />
         <input type="text" x-model="filter" class="grow" placeholder="{{ __('access.placeholder.filter_permissions') }}" />
     </label>
 
@@ -58,7 +58,7 @@
                                        @checked(isset($assignedSet[$permission->value])) />
                                 <span class="flex-1">
                                     <span class="block text-sm">{{ $permission->label() }}</span>
-                                    <span class="block text-xs text-base-content/50 font-mono">{{ $permission->value }}</span>
+                                    <span class="block text-xs text-muted font-mono">{{ $permission->value }}</span>
                                 </span>
                             </label>
                         @endforeach

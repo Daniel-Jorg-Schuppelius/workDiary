@@ -39,7 +39,7 @@
                     {{ $health['healthy'] ? __('isms.components.health.healthy') : __('isms.components.health.unhealthy', ['count' => $health['failed']]) }}
                 </x-status-badge>
             </header>
-            <p class="text-sm text-base-content/60">{{ __('isms.components.health.run_after_update') }}</p>
+            <p class="text-sm text-muted">{{ __('isms.components.health.run_after_update') }}</p>
             <ul class="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
                 @foreach ($health['checks'] as $check)
                     <li class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
@@ -47,7 +47,7 @@
                             <x-icon :name="$check['ok'] ? 'check_circle' : 'error'" class="{{ $check['ok'] ? 'text-success' : 'text-error' }}" />
                             {{ $check['name'] }}
                         </span>
-                        <span class="text-right text-xs text-base-content/60">{{ $check['details'] }}</span>
+                        <span class="text-right text-xs text-muted">{{ $check['details'] }}</span>
                     </li>
                 @endforeach
             </ul>
@@ -64,11 +64,11 @@
                 </header>
                 <dl class="grid grid-cols-1 gap-1 text-sm">
                     <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-base-content/60">{{ __('isms.components.field.app_version') }}</dt>
+                        <dt class="text-muted">{{ __('isms.components.field.app_version') }}</dt>
                         <dd class="font-mono text-xs">{{ $appVersion }}</dd>
                     </div>
                     <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-base-content/60">{{ __('isms.components.field.build') }}</dt>
+                        <dt class="text-muted">{{ __('isms.components.field.build') }}</dt>
                         <dd class="font-mono text-xs">{{ $gitHash ?? '—' }}</dd>
                     </div>
                 </dl>
@@ -84,15 +84,15 @@
                 </header>
                 <dl class="grid grid-cols-1 gap-1 text-sm">
                     <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-base-content/60">{{ __('isms.components.field.php') }}</dt>
+                        <dt class="text-muted">{{ __('isms.components.field.php') }}</dt>
                         <dd class="font-mono text-xs">{{ $phpVersion }}</dd>
                     </div>
                     <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-base-content/60">{{ __('isms.components.field.laravel') }}</dt>
+                        <dt class="text-muted">{{ __('isms.components.field.laravel') }}</dt>
                         <dd class="font-mono text-xs">{{ $laravelVersion }}</dd>
                     </div>
                     <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-base-content/60">{{ __('isms.components.field.database') }}</dt>
+                        <dt class="text-muted">{{ __('isms.components.field.database') }}</dt>
                         <dd class="font-mono text-xs">{{ $dbDriver }}{{ $dbVersion !== null ? ' (' . $dbVersion . ')' : '' }}</dd>
                     </div>
                 </dl>
@@ -109,7 +109,7 @@
                 <ul class="space-y-1 text-sm">
                     @foreach ($modules as $module)
                         <li class="flex items-center justify-between gap-2 border-b border-base-200/70 pb-1 last:border-b-0">
-                            <span>{{ $module['label'] }} <span class="font-mono text-xs text-base-content/50">{{ $module['code'] }}</span></span>
+                            <span>{{ $module['label'] }} <span class="font-mono text-xs text-muted">{{ $module['code'] }}</span></span>
                             <x-status-badge :tone="$module['enabled'] ? 'success' : 'ghost'" outline>
                                 {{ $module['enabled'] ? __('isms.components.status.enabled') : __('isms.components.status.disabled') }}
                             </x-status-badge>
@@ -127,12 +127,12 @@
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('isms.components.section.plugins') }}</h2>
                 </header>
                 @if ($plugins === [])
-                    <p class="text-sm italic text-base-content/50">—</p>
+                    <p class="text-sm italic text-muted">—</p>
                 @else
                     <ul class="space-y-1 text-sm">
                         @foreach ($plugins as $plugin)
                             <li class="flex items-center justify-between gap-2 border-b border-base-200/70 pb-1 last:border-b-0">
-                                <span>{{ $plugin['name'] }} <span class="font-mono text-xs text-base-content/50">{{ $plugin['version'] }}</span></span>
+                                <span>{{ $plugin['name'] }} <span class="font-mono text-xs text-muted">{{ $plugin['version'] }}</span></span>
                                 <x-status-badge :tone="$plugin['enabled'] ? 'success' : 'ghost'" outline>
                                     {{ $plugin['enabled'] ? __('isms.components.status.enabled') : __('isms.components.status.disabled') }}
                                 </x-status-badge>
@@ -153,28 +153,28 @@
                 @if ($sbom !== null)
                     <dl class="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.field.generated_at') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.field.generated_at') }}</dt>
                             <dd class="font-mono text-xs">{{ $sbom['generated_at'] ?? '—' }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.field.component_count') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.field.component_count') }}</dt>
                             <dd class="font-mono text-xs">{{ $sbom['total'] }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.field.composer_count') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.field.composer_count') }}</dt>
                             <dd class="font-mono text-xs">{{ $sbom['composer'] }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.field.npm_count') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.field.npm_count') }}</dt>
                             <dd class="font-mono text-xs">{{ $sbom['npm'] }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 md:col-span-2">
-                            <dt class="text-base-content/60">{{ __('isms.components.field.sha256') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.field.sha256') }}</dt>
                             <dd class="break-all font-mono text-xs">{{ $sbom['sha256'] }}</dd>
                         </div>
                     </dl>
                 @else
-                    <p class="text-sm italic text-base-content/60">
+                    <p class="text-sm italic text-muted">
                         {{ __('isms.components.sbom_missing', ['command' => 'php artisan sbom:generate']) }}
                     </p>
                 @endif
@@ -206,23 +206,23 @@
                     <x-icon name="verified" />
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('isms.components.manifest.title') }}</h2>
                 </header>
-                <p class="text-sm text-base-content/60">{{ __('isms.components.manifest.note') }}</p>
+                <p class="text-sm text-muted">{{ __('isms.components.manifest.note') }}</p>
                 @if ($manifest !== null)
                     <dl class="grid grid-cols-1 gap-1 text-sm md:grid-cols-2">
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.field.generated_at') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.field.generated_at') }}</dt>
                             <dd class="font-mono text-xs">{{ $manifest['generated_at'] ?? '—' }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.field.build') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.field.build') }}</dt>
                             <dd class="font-mono text-xs">{{ $manifest['build'] ?? '—' }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.manifest.artifacts') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.manifest.artifacts') }}</dt>
                             <dd class="font-mono text-xs">{{ $manifest['artifacts'] }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('isms.components.manifest.signature') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.manifest.signature') }}</dt>
                             <dd class="text-xs">
                                 @if (! $manifest['signed'])
                                     <x-status-badge tone="ghost" size="sm">{{ __('isms.components.manifest.unsigned') }}</x-status-badge>
@@ -234,7 +234,7 @@
                             </dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2 md:col-span-2">
-                            <dt class="text-base-content/60">{{ __('isms.components.manifest.integrity') }}</dt>
+                            <dt class="text-muted">{{ __('isms.components.manifest.integrity') }}</dt>
                             <dd class="text-xs">
                                 <x-status-badge :tone="$manifest['valid'] ? 'success' : 'error'" size="sm">
                                     {{ $manifest['valid'] ? __('isms.components.manifest.integrity_ok') : __('isms.components.manifest.integrity_broken') }}
@@ -243,7 +243,7 @@
                         </div>
                     </dl>
                 @else
-                    <p class="text-sm italic text-base-content/60">
+                    <p class="text-sm italic text-muted">
                         {{ __('isms.components.manifest.missing', ['command' => 'php artisan release:manifest']) }}
                     </p>
                 @endif
@@ -270,7 +270,7 @@
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
             <div>
                 <h2 class="font-semibold">{{ __('updates.title.section') }}</h2>
-                <p class="text-xs text-base-content/60">
+                <p class="text-xs text-muted">
                     {{ __('updates.field.mode') }}: <span class="font-mono">{{ $updatesMode }}</span>
                     @if ($updatesLastCheckedAt)
                         · {{ __('updates.field.last_checked') }}: {{ $updatesLastCheckedAt->format('d.m.Y H:i') }}
@@ -306,7 +306,7 @@
                             <tr @class(['opacity-50' => $update->isMuted() && ! $update->isSecurityRelevant()])>
                                 <td>
                                     <span class="font-medium">{{ $update->component_key }}</span>
-                                    <span class="text-xs text-base-content/50">({{ $update->component_type }}, {{ $update->channel }})</span>
+                                    <span class="text-xs text-muted">({{ $update->component_type }}, {{ $update->channel }})</span>
                                 </td>
                                 <td class="font-mono text-sm">{{ $update->installed_version }} → {{ $update->available_version }}</td>
                                 <td>
@@ -323,7 +323,7 @@
                                         @if (($requires['backup'] ?? false))<x-status-badge size="xs" tone="warning">{{ __('updates.requires.backup') }}</x-status-badge>@endif
                                         @if (($requires['maintenance_window'] ?? false))<x-status-badge size="xs" tone="warning">{{ __('updates.requires.maintenance_window') }}</x-status-badge>@endif
                                         @if (($requires['migrations'] ?? false))<x-status-badge size="xs" tone="ghost">{{ __('updates.requires.migrations') }}</x-status-badge>@endif
-                                        @if (is_string($requires['manual_steps'] ?? null))<span class="text-base-content/60">{{ $requires['manual_steps'] }}</span>@endif
+                                        @if (is_string($requires['manual_steps'] ?? null))<span class="text-muted">{{ $requires['manual_steps'] }}</span>@endif
                                         @if ($update->changelog_url)
                                             <a href="{{ $update->changelog_url }}" target="_blank" rel="noopener noreferrer" class="link link-hover">{{ __('updates.field.changelog') }}</a>
                                         @endif

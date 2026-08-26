@@ -27,7 +27,7 @@
 
     @if ($buildings->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">apartment</span>' />
+            icon="apartment" />
     @else
         <x-filter-bar :action="route('buildings.index')" method="GET" :reset="route('buildings.index')">
             @if ($site)
@@ -55,7 +55,7 @@
                     <td>
                         <a class="link link-hover" href="{{ route('buildings.show', $building) }}">{{ $building->name }}</a>
                         @if ($building->code)
-                            <span class="text-base-content/60 ms-1">({{ $building->code }})</span>
+                            <span class="text-muted ms-1">({{ $building->code }})</span>
                         @endif
                     </td>
                     <td>{{ $building->site?->name }}</td>

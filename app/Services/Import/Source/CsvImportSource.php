@@ -12,8 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Import\Source;
 
-use App\Enums\Import\ImportErrorCode;
-use App\Services\Import\{EntitySpec, ValidationIssue};
+use App\Services\Import\{EntitySpec, HeaderMapper};
 use App\Support\Toolkit\CsvFacade;
 use CommonToolkit\Parsers\CSVDocumentParser;
 
@@ -45,106 +44,30 @@ final class CsvImportSource implements ImportSource {
     }
 
     public function headerIssues(EntitySpec $spec): array {
-        $aliases = $this->aliasMap($spec);
-        $seen = [];
-        $issues = [];
-
-        foreach ($this->rawHeader() as $headerCell) {
-            $canonical = $aliases[$this->normKey($headerCell)] ?? null;
-            if ($canonical === null) {
-                continue;
-            }
-            if (isset($seen[$canonical])) {
-                $issues[] = new ValidationIssue(
-                    ImportErrorCode::HeaderUnknown,
-                    $canonical,
-                    (string) __('import.error.header.duplicate', ['column' => $canonical]),
-                );
-            } else {
-                $seen[$canonical] = true;
-            }
-        }
-
-        foreach ($spec->requiredColumns() as $required) {
-            if (! isset($seen[$required])) {
-                $issues[] = new ValidationIssue(
-                    ImportErrorCode::HeaderMissing,
-                    $required,
-                    (string) __('import.error.header.missing', ['column' => $required]),
-                );
-            }
-        }
-
-        return $issues;
+        return HeaderMapper::issues($spec, $this->rawHeader());
     }
 
     public function rows(EntitySpec $spec): iterable {
-        $headerMap = $this->buildHeaderMap($spec);
+        // MVP-707: Kopfzeilen-Zuordnung zentral im HeaderMapper (auch Dokument-Manifest).
+        $headerMap = HeaderMapper::map($spec, $this->rawHeader());
         $number = 0;
 
         foreach (CsvFacade::streamAssoc($this->absolutePath, $this->delimiter()) as $rawRow) {
             $number++;
 
-            yield SourceRow::data($number, $this->applyHeaderMap($rawRow, $headerMap));
+            yield SourceRow::data($number, HeaderMapper::apply($rawRow, $headerMap));
         }
     }
 
     /**
+     * Roh-Kopfzeile der Datei — öffentlich seit MVP-732 (Feature 148): die
+     * KI-Spaltenzuordnung braucht die unaufgelösten Kopfzellen, um sie gegen
+     * die Spec-Spalten vorzuschlagen. Der {@see HeaderMapper} bleibt die
+     * deterministische Zuordnung; die KI ergänzt nur, was er nicht kennt.
+     *
      * @return list<string>
      */
-    private function rawHeader(): array {
+    public function rawHeader(): array {
         return array_values(CSVDocumentParser::readHeader($this->absolutePath, $this->delimiter())->getColumnNames());
-    }
-
-    /**
-     * {alias|kanonischer Code (normalisiert) => kanonischer Code}.
-     *
-     * @return array<string, string>
-     */
-    private function aliasMap(EntitySpec $spec): array {
-        $aliases = [];
-        foreach ($spec->headerAliases() as $alias => $canonical) {
-            $aliases[$this->normKey($alias)] = $canonical;
-        }
-        foreach ($spec->columns() as $col) {
-            $aliases[$this->normKey($col)] = $col;
-        }
-
-        return $aliases;
-    }
-
-    /**
-     * @return array<int, string|null>
-     */
-    private function buildHeaderMap(EntitySpec $spec): array {
-        $aliases = $this->aliasMap($spec);
-        $map = [];
-        foreach ($this->rawHeader() as $idx => $headerCell) {
-            $map[$idx] = $aliases[$this->normKey($headerCell)] ?? null;
-        }
-
-        return $map;
-    }
-
-    /**
-     * @param  array<string, string>  $raw
-     * @param  array<int, string|null>  $headerMap
-     * @return array<string, string>
-     */
-    private function applyHeaderMap(array $raw, array $headerMap): array {
-        $values = array_values($raw);
-        $out = [];
-        foreach ($headerMap as $idx => $canonical) {
-            if ($canonical === null) {
-                continue;
-            }
-            $out[$canonical] = $values[$idx] ?? '';
-        }
-
-        return $out;
-    }
-
-    private function normKey(string $key): string {
-        return mb_strtolower(trim($key));
     }
 }

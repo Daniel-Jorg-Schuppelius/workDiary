@@ -17,6 +17,7 @@ use App\Models\Surcharge\SurchargeRule;
 use App\Services\Flextime\FlexCalculator;
 use App\Services\HolidayService;
 use App\Services\Surcharge\TimeRuleEngine;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
@@ -84,8 +85,7 @@ class TimeExportLineAggregator {
 
             $minutes = (int) Attendance::query()
                 ->where('user_id', $uid)
-                ->whereDate('date', '>=', $start->toDateString())
-                ->whereDate('date', '<=', $end->toDateString())
+                ->whereBetween('date', DateRange::days($start, $end))
                 ->sum('duration_minutes');
 
             if ($minutes <= 0) {
@@ -128,8 +128,8 @@ class TimeExportLineAggregator {
         $vacations = Vacation::query()
             ->where('user_id', $uid)
             ->approved()
-            ->whereDate('start_date', '<=', $end->toDateString())
-            ->whereDate('end_date', '>=', $start->toDateString())
+            ->where('start_date', '<=', DateRange::day($end))
+            ->where('end_date', '>=', DateRange::day($start))
             ->get(['id', 'start_date', 'end_date']);
         foreach ($vacations as $vacation) {
             $vacationDays += $this->workingDaysInPeriod(CarbonImmutable::parse((string) $vacation->start_date), CarbonImmutable::parse((string) $vacation->end_date), $start, $end);
@@ -154,8 +154,8 @@ class TimeExportLineAggregator {
         $sickLeaves = SickLeave::query()
             ->where('user_id', $uid)
             ->whereNull('cancelled_at')
-            ->whereDate('start_date', '<=', $end->toDateString())
-            ->whereDate('end_date', '>=', $start->toDateString())
+            ->where('start_date', '<=', DateRange::day($end))
+            ->where('end_date', '>=', DateRange::day($start))
             ->get(['id', 'start_date', 'end_date']);
         foreach ($sickLeaves as $sickLeave) {
             $sickDays += $this->workingDaysInPeriod(CarbonImmutable::parse((string) $sickLeave->start_date), CarbonImmutable::parse((string) $sickLeave->end_date), $start, $end);
@@ -207,8 +207,7 @@ class TimeExportLineAggregator {
         $travel = TimeEntry::query()
             ->where('user_id', $uid)
             ->where('kind', TimeEntryKind::Travel)
-            ->whereDate('date', '>=', $start->toDateString())
-            ->whereDate('date', '<=', $end->toDateString())
+            ->whereBetween('date', DateRange::days($start, $end))
             ->get(['id', 'minutes']);
         $travelMinutes = (int) $travel->sum('minutes');
         if ($travelMinutes > 0) {
@@ -239,8 +238,7 @@ class TimeExportLineAggregator {
     private function aggregateExternalWageItems(TimeExport $export, int $uid, CarbonImmutable $start, CarbonImmutable $end, ?string $costCenter): int {
         $items = \App\Models\ExternalWageItem::query()
             ->where('user_id', $uid)
-            ->whereDate('item_date', '>=', $start->toDateString())
-            ->whereDate('item_date', '<=', $end->toDateString())
+            ->whereBetween('item_date', DateRange::days($start, $end))
             ->get(['id', 'wage_type_code', 'quantity', 'unit']);
         if ($items->isEmpty()) {
             return 0;
@@ -303,8 +301,7 @@ class TimeExportLineAggregator {
                     $entries = TimeEntry::query()
                         ->where('user_id', $uid)
                         ->where('kind', TimeEntryKind::Standby)
-                        ->whereDate('date', '>=', $start->toDateString())
-                        ->whereDate('date', '<=', $end->toDateString())
+                        ->whereBetween('date', DateRange::days($start, $end))
                         ->get(['id', 'minutes']);
 
                     return [(int) $entries->sum('minutes'), ['time_entry_ids' => $entries->pluck('id')->all()]];

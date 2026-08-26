@@ -46,23 +46,23 @@
             <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
                 @if ($floor->building?->site?->customer)
                     <div>
-                        <dt class="text-base-content/60">{{ __('Kunde') }}</dt>
+                        <dt class="text-muted">{{ __('Kunde') }}</dt>
                         <dd>{{ $floor->building->site->customer->name }}</dd>
                     </div>
                 @endif
                 @if ($floor->building?->site)
                     <div>
-                        <dt class="text-base-content/60">{{ __('Standort') }}</dt>
+                        <dt class="text-muted">{{ __('Standort') }}</dt>
                         <dd><a class="link link-hover" href="{{ route('sites.show', $floor->building->site) }}">{{ $floor->building->site->name }}</a></dd>
                     </div>
                 @endif
                 <div>
-                    <dt class="text-base-content/60">{{ __('BGF (m²)') }}</dt>
+                    <dt class="text-muted">{{ __('BGF (m²)') }}</dt>
                     <dd>{{ $floor->gross_area_m2 !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $floor->gross_area_m2, 1, withThousandsSeparator: true) : '—' }}</dd>
                 </div>
                 @if ($floor->notes)
                     <div class="md:col-span-3">
-                        <dt class="text-base-content/60">{{ __('Notizen') }}</dt>
+                        <dt class="text-muted">{{ __('Notizen') }}</dt>
                         <dd class="whitespace-pre-line">{{ $floor->notes }}</dd>
                     </div>
                 @endif
@@ -80,7 +80,7 @@
             @if ($rooms->isEmpty())
                 <div class="p-4">
                     <x-empty-state framed
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">meeting_room</span>' />
+                        icon="meeting_room" />
                 </div>
             @else
                 <x-table bare table-sort="client">
@@ -99,7 +99,7 @@
                         <tr class="{{ $r->is_active ? '' : 'opacity-60' }}">
                             <td>
                                 {{ $r->name }}
-                                @if ($r->code)<span class="text-base-content/60 ms-1 font-mono">({{ $r->code }})</span>@endif
+                                @if ($r->code)<span class="text-muted ms-1 font-mono">({{ $r->code }})</span>@endif
                             </td>
                             <td>
                                 @if ($r->usage_type)

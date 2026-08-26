@@ -290,7 +290,6 @@ class CommunicationNoteService {
 
             $note->participants()->create([
                 'user_id' => $userId,
-                'customer_contact_id' => filled($participant['customer_contact_id'] ?? null) ? (int) $participant['customer_contact_id'] : null,
                 'name' => $name,
                 'role' => filled($participant['role'] ?? null) ? trim((string) $participant['role']) : null,
                 'party' => $party->value,

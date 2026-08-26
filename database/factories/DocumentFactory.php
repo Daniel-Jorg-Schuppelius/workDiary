@@ -59,6 +59,18 @@ class DocumentFactory extends Factory {
         ]);
     }
 
+    /** Personalakten-Dokument eines Mitglieds (Feature 141): vertraulich, HR-Kategorie. */
+    public function personnelFile(User $member, \App\Enums\Hr\HrDocumentCategory $category = \App\Enums\Hr\HrDocumentCategory::Contract): self {
+        return $this->state(fn() => [
+            'organization_id' => $member->organization_id,
+            'documentable_type' => User::class,
+            'documentable_id' => $member->id,
+            'document_type' => $category->documentType()->value,
+            'confidential' => true,
+            'hr_category' => $category->value,
+        ]);
+    }
+
     /** Fürs Kundenportal freigegeben (Welle D — Dokument-Spiegelung). */
     public function releasedToCustomer(): self {
         return $this->state(fn() => [

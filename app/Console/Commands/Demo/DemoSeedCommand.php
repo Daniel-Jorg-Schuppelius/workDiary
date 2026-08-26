@@ -24,7 +24,7 @@ use Illuminate\Console\Command;
  * Branchenprofil samt End-to-End-Beispielauftrag.
  */
 class DemoSeedCommand extends Command {
-    protected $signature = 'demo:seed {org? : Organisations-ID (Default: erste Org)} {--industry= : Musterbranche (it-service|elektro|facility)} {--list : Verfügbare Musterbranchen anzeigen}';
+    protected $signature = 'demo:seed {org? : Organisations-ID (Default: erste Org)} {--industry= : Musterbranche (Schlüssel aus --list)} {--list : Verfügbare Musterbranchen anzeigen}';
 
     protected $description = 'Erzeugt branchenspezifische Demo-Daten für eine Organisation (Feature 040).';
 
@@ -32,7 +32,7 @@ class DemoSeedCommand extends Command {
         if ((bool) $this->option('list')) {
             $this->line('Verfügbare Musterbranchen:');
             foreach (DemoIndustry::all() as $industry) {
-                $this->line(sprintf('  %-12s %s (Profil: %s)', $industry->value, $industry->label(), $industry->branchProfileCode()));
+                $this->line(sprintf('  %-18s %s (Profil: %s)', $industry->value, $industry->label(), $industry->branchProfileCode()));
             }
 
             return self::SUCCESS;

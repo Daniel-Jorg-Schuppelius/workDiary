@@ -23,7 +23,7 @@
     :submit-label="__('access.action.add')"
 >
     @if ($addableUsers->isEmpty())
-        <p class="text-sm text-base-content/60">{{ __('access.empty.members') }}</p>
+        <p class="text-sm text-muted">{{ __('access.empty.members') }}</p>
     @else
         <x-form-group :label="__('access.field.add_member')" name="user_id" required>
             <x-user-select name="user_id" :users="$addableUsers" required />

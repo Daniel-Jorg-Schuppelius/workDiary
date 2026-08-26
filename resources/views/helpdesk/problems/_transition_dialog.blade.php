@@ -39,5 +39,5 @@
         @error('status')<p class="text-error text-xs w-full">{{ $message }}</p>@enderror
         @error('effectiveness_check_due_at')<p class="text-error text-xs w-full">{{ $message }}</p>@enderror
     </form>
-    <p class="text-xs text-base-content/60 mt-2">{{ __('Pflicht beim Lösen: Termin, an dem die Wirkung der Lösung geprüft wird.') }}</p>
+    <p class="text-xs text-muted mt-2">{{ __('Pflicht beim Lösen: Termin, an dem die Wirkung der Lösung geprüft wird.') }}</p>
 </x-card>

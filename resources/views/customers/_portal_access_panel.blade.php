@@ -62,7 +62,7 @@
                         @if ($portalUser->hasTwoFactorEnabled())
                             <x-status-badge tone="success" size="xs">{{ __('aktiv') }}</x-status-badge>
                         @else
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td class="text-right whitespace-nowrap">

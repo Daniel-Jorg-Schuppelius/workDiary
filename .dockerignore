@@ -1,0 +1,46 @@
+# Build-Kontext für das Container-Image (MVP-720). Alles, was das Image nicht
+# braucht oder das zur Laufzeit aus Volumes/ENV kommt, bleibt draußen.
+.git
+.github
+.claude
+.codex
+.vscode
+.idea
+node_modules
+vendor
+public/build
+public/hot
+public/storage
+
+# Laufzeitdaten: storage/ ist ein Volume, das Skelett legt das Dockerfile an.
+storage/*
+!storage/.gitignore
+
+# Geheimnisse und lokale Konfiguration — kommen ausschließlich per ENV.
+.env
+.env.*
+!.env.docker.example
+license-keys.env
+*license-keys*.env
+*.key
+auth.json
+composer.local.json
+phpunit.xml
+
+# Tests, Werkzeuge, Doku (keine Laufzeitartefakte)
+tests
+test-results
+playwright-report
+tools
+docs
+/*.md
+!/README.md
+carbon_file.txt
+carbon_version.txt
+.phpunit.result.cache
+.phpunit.cache
+database/*.sqlite
+database/*.sqlite-*
+Dockerfile
+compose.yml
+compose.override.yml

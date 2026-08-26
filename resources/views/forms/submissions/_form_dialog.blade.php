@@ -145,7 +145,7 @@
                     </label>
             @endswitch
             @if (filled($field['help'] ?? null))
-                <p class="-mt-1 text-xs text-base-content/60 sm:col-span-2">{{ $field['help'] }}</p>
+                <p class="-mt-1 text-xs text-muted sm:col-span-2">{{ $field['help'] }}</p>
             @endif
             @error($errKey)
                 <p class="-mt-1 text-error text-sm sm:col-span-2">{{ $message }}</p>

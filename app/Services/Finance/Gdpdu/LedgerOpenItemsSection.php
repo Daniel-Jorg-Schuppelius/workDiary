@@ -14,6 +14,7 @@ namespace App\Services\Finance\Gdpdu;
 
 use App\Models\Accounting\AccountingOpenItem;
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 
 /** Offene Posten aus den Festbuchungen mit Ausgleichsstand. */
@@ -41,15 +42,14 @@ class LedgerOpenItemsSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        return array_values(AccountingOpenItem::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (AccountingOpenItem::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('document_date', '>=', $from->toDateString())
-            ->whereDate('document_date', '<=', $to->toDateString())
+            ->whereBetween('document_date', DateRange::days($from, $to))
             ->with('account')
             ->orderBy('id')
-            ->get()
-            ->map(fn ($item): array => [
+            ->lazy() as $item) {
+            yield [
                 $this->str($item->document_reference),
                 $this->str($item->direction->value),
                 $this->str($item->account?->number),
@@ -59,8 +59,7 @@ class LedgerOpenItemsSection extends AbstractGdpduSection {
                 $this->num((float) ($item->original_amount?->getAmount() ?? '0.00'), 2),
                 $this->num((float) ($item->open_amount?->getAmount() ?? '0.00'), 2),
                 $this->str($item->status->value),
-            ])
-            ->values()
-            ->all());
+            ];
+        }
     }
 }

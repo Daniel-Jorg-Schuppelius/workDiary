@@ -60,7 +60,7 @@
                 @endif
                 @foreach ($credentials as $cred)
                     <li class="flex items-center justify-between py-2">
-                        <span class="flex items-center gap-2 text-sm"><x-icon :name="$cred->type->icon()" /> {{ $cred->type->label() }} <span class="text-base-content/50">{{ $cred->label }}</span></span>
+                        <span class="flex items-center gap-2 text-sm"><x-icon :name="$cred->type->icon()" /> {{ $cred->type->label() }} <span class="text-muted">{{ $cred->label }}</span></span>
                         <form method="POST" action="{{ route('account.2fa.credential.destroy', $cred) }}">
                             @csrf @method('DELETE')
                             <x-icon-btn icon="delete" tone="error" size="sm" type="submit" :label="__('Entfernen')" />
@@ -84,7 +84,7 @@
                 @elseif ($pendingTotp)
                     <div class="flex flex-col items-center gap-2">
                         <div class="rounded-box border border-base-300 bg-white p-3">{!! $qrSvg !!}</div>
-                        <p class="text-xs text-base-content/60">{{ __('Manueller Schlüssel') }}: <code class="select-all">{{ $secret }}</code></p>
+                        <p class="text-xs text-muted">{{ __('Manueller Schlüssel') }}: <code class="select-all">{{ $secret }}</code></p>
                     </div>
                     <form method="POST" action="{{ route('account.2fa.confirm') }}" class="flex items-end gap-2">
                         @csrf
@@ -148,7 +148,7 @@
                 @if ($hasTotp)
                     <form method="POST" action="{{ route('account.2fa.recovery') }}" class="space-y-2 rounded-box border border-base-300 bg-base-200/40 p-3">
                         @csrf
-                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Recovery-Codes neu erzeugen') }}</label>
+                        <label class="text-xs uppercase tracking-wider text-muted">{{ __('Recovery-Codes neu erzeugen') }}</label>
                         <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-sm input-bordered w-full" placeholder="{{ __('Aktueller App-Code') }}">
                         <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit" show-label>{{ __('Neu erzeugen') }}</x-icon-btn>
                     </form>
@@ -156,12 +156,12 @@
                 @unless (auth()->user()->organization?->two_factor_required)
                     <form method="POST" action="{{ route('account.2fa.disable') }}" class="space-y-2 rounded-box border border-error/30 bg-error/5 p-3">
                         @csrf @method('DELETE')
-                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Alles deaktivieren') }}</label>
+                        <label class="text-xs uppercase tracking-wider text-muted">{{ __('Alles deaktivieren') }}</label>
                         <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-sm input-bordered w-full" placeholder="{{ __('App- oder Recovery-Code') }}">
                         <x-icon-btn icon="gpp_bad" tone="error" size="sm" type="submit" show-label>{{ __('Deaktivieren') }}</x-icon-btn>
                     </form>
                 @else
-                    <div class="flex items-center rounded-box border border-base-300 bg-base-200/40 p-3 text-sm text-base-content/60">
+                    <div class="flex items-center rounded-box border border-base-300 bg-base-200/40 p-3 text-sm text-muted">
                         {{ __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung; vollständiges Deaktivieren ist nicht möglich.') }}
                     </div>
                 @endunless

@@ -20,14 +20,11 @@
     $weatherInherit = $weatherValue === '';
 @endphp
 <x-form-group :legend="__('Wetter-Auto-Abruf')" icon="partly_cloudy_day" tone="info">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Automatischer Wetter-Abruf') }}</label>
-        <select name="weather_auto_fetch" class="select select-bordered w-full">
-            <option value="" @selected($weatherInherit)>{{ __('Erben (Org-Einstellung)') }}</option>
-            <option value="1" @selected($weatherValue === '1')>{{ __('An') }}</option>
-            <option value="0" @selected($weatherValue === '0')>{{ __('Aus') }}</option>
-        </select>
-        <p class="text-xs text-base-content/60">{{ __('Überschreibt die Org-Einstellung für dieses Projekt und Sub-Projekte; Erben nutzt den Org-Standard.') }}</p>
-        @error('weather_auto_fetch')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
+    <x-select-field name="weather_auto_fetch"
+                    :label="__('Automatischer Wetter-Abruf')"
+                    :hint="__('Überschreibt die Org-Einstellung für dieses Projekt und Sub-Projekte; Erben nutzt den Org-Standard.')">
+        <option value="" @selected($weatherInherit)>{{ __('Erben (Org-Einstellung)') }}</option>
+        <option value="1" @selected($weatherValue === '1')>{{ __('An') }}</option>
+        <option value="0" @selected($weatherValue === '0')>{{ __('Aus') }}</option>
+    </x-select-field>
 </x-form-group>

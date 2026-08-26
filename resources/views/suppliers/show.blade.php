@@ -110,7 +110,7 @@
             @endif
             @if ($supplier->comment)
                 <div class="pt-3 text-sm">
-                    <div class="text-base-content/60">{{ __('Notiz') }}</div>
+                    <div class="text-muted">{{ __('Notiz') }}</div>
                     <p class="whitespace-pre-line">{{ $supplier->comment }}</p>
                 </div>
             @endif
@@ -122,7 +122,7 @@
         <x-card>
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
-                    <x-icon name="sync" class="text-base-content/60" /> {{ __('Lexoffice') }}
+                    <x-icon name="sync" class="text-muted" /> {{ __('Lexoffice') }}
                 </h2>
                 @if ($lexofficeContactRef)
                     <x-status-badge tone="success">{{ __('Kontakt verknüpft') }} · {{ Str::limit($lexofficeContactRef->external_id, 8, '…') }}</x-status-badge>

@@ -53,7 +53,7 @@
                     <span class="badge badge-outline">v{{ $card->version }}</span>
                     <x-status-badge size="md" outline>{{ $card->status->label() }}</x-status-badge>
                     @if ($card->valid_from !== null)
-                        <span class="text-xs text-base-content/60">{{ __('gültig ab') }} {{ $card->valid_from->fdate() }}</span>
+                        <span class="text-xs text-muted">{{ __('gültig ab') }} {{ $card->valid_from->fdate() }}</span>
                     @endif
                 </div>
                 @can('update', $card)

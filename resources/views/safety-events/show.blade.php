@@ -26,7 +26,7 @@
         'warning' => 'text-warning',
         'info' => 'text-info',
         'success' => 'text-success',
-        default => 'text-base-content/60',
+        default => 'text-muted',
     };
 @endphp
 <x-page-shell>
@@ -64,7 +64,7 @@
                         <p class="mt-1 text-sm text-base-content/70">
                             {{ $event->kind->label() }}
                             @if ($event->occurred_at)
-                                <span class="text-base-content/40">·</span>
+                                <span class="text-muted">·</span>
                                 {{ $event->occurred_at->format('d.m.Y H:i') }}
                             @endif
                         </p>
@@ -95,11 +95,11 @@
             {{-- Anhänge (Foto-Nachweise) --}}
             <x-card>
                 <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <x-icon name="attach_file" class="text-base-content/60" /> {{ __('safety.section.attachments') }}
-                    <span class="font-normal text-base-content/50">({{ $event->attachments->count() }})</span>
+                    <x-icon name="attach_file" class="text-muted" /> {{ __('safety.section.attachments') }}
+                    <span class="font-normal text-muted">({{ $event->attachments->count() }})</span>
                 </h3>
                 @if ($event->attachments->isEmpty())
-                    <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
+                    <x-empty-state compact icon="attach_file"
                                    :title="__('safety.no_attachments')"
                                    :message="__('safety.no_attachments')" />
                 @else
@@ -108,7 +108,7 @@
                             <li class="flex items-center justify-between gap-2 py-2">
                                 <div class="min-w-0 truncate">
                                     <a class="link link-hover" href="{{ URL::signedRoute('attachments.download', $att) }}">{{ $att->original_name }}</a>
-                                    <span class="text-base-content/60">· {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($att->size / 1024, 0, withThousandsSeparator: true) }} KB</span>
+                                    <span class="text-muted">· {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($att->size / 1024, 0, withThousandsSeparator: true) }} KB</span>
                                 </div>
                                 @can('delete', $att)
                                     <x-action-form :action="route('attachments.destroy', $att)" method="DELETE"
@@ -148,11 +148,11 @@
             {{-- Folgemaßnahmen (offene Punkte) --}}
             <x-card id="open-issues">
                 <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
-                    <x-icon name="checklist" class="text-base-content/60" /> {{ __('safety.section.followups') }}
-                    <span class="font-normal text-base-content/50">({{ $event->openIssues->count() }})</span>
+                    <x-icon name="checklist" class="text-muted" /> {{ __('safety.section.followups') }}
+                    <span class="font-normal text-muted">({{ $event->openIssues->count() }})</span>
                 </h3>
                 @if ($event->openIssues->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('safety.no_followups') }}</p>
+                    <p class="text-sm text-muted">{{ __('safety.no_followups') }}</p>
                 @else
                     <ul class="space-y-2">
                         @foreach ($event->openIssues as $issue)
@@ -165,7 +165,7 @@
                                 @if ($issue->description)
                                     <p class="mt-1 text-xs text-base-content/70">{{ \Illuminate\Support\Str::limit($issue->description, 140) }}</p>
                                 @endif
-                                <div class="mt-1 flex flex-wrap gap-x-3 text-xs text-base-content/60">
+                                <div class="mt-1 flex flex-wrap gap-x-3 text-xs text-muted">
                                     @if ($issue->assignee)
                                         <span class="inline-flex items-center gap-1"><x-icon name="person" class="size-3.5" />{{ $issue->assignee->name }}</span>
                                     @endif
@@ -224,7 +224,7 @@
                                   placeholder="{{ __('safety.field.followup_description') }}"></textarea>
                         <x-icon-btn type="submit" size="sm" tone="primary" icon="add_task" show-label>{{ __('safety.action.create_followup') }}</x-icon-btn>
                     </form>
-                    <p class="mt-2 text-xs text-base-content/60">{{ __('safety.hint.followup') }}</p>
+                    <p class="mt-2 text-xs text-muted">{{ __('safety.hint.followup') }}</p>
                 @endif
             </x-card>
         </div>

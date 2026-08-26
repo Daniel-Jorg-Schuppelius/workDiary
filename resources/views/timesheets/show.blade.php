@@ -98,7 +98,7 @@
                     <div class="min-w-0 flex-1">
                         <p class="truncate font-['Space_Grotesk'] text-sm font-semibold">{{ __('Läuft…') }}</p>
                         @if ($runningEntry->description)
-                            <p class="truncate text-xs text-base-content/60">{{ $runningEntry->description }}</p>
+                            <p class="truncate text-xs text-muted">{{ $runningEntry->description }}</p>
                         @endif
                     </div>
                     <span class="font-['Space_Grotesk'] text-2xl font-semibold tabular-nums text-primary"
@@ -289,7 +289,7 @@
                     <div><strong>{{ $timesheet->customer_name ?: __('Unbekannt') }}</strong> @if($timesheet->customer_role) ({{ $timesheet->customer_role }}) @endif</div>
                     @if($timesheet->customer_email)<div>{{ $timesheet->customer_email }}</div>@endif
                     @if($timesheet->signed_at || $timesheet->signed_ip)
-                        <div class="mt-1 text-base-content/60">
+                        <div class="mt-1 text-muted">
                             @if($timesheet->signed_at)
                                 {{ __('Signiert am') }}: {{ $timesheet->signed_at?->fdatetime() }}
                             @endif
@@ -300,7 +300,7 @@
                         </div>
                     @endif
                     @if($timesheet->signature_hash)
-                        <div class="text-xs break-all text-base-content/50">SHA-256: {{ $timesheet->signature_hash }}</div>
+                        <div class="text-xs break-all text-muted">SHA-256: {{ $timesheet->signature_hash }}</div>
                     @endif
                 </div>
                 @if($timesheet->signatureAttachment)
@@ -316,7 +316,7 @@
                 'timesheet'     => $timesheet,
             ])
         @else
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>' :message="__('Stundenzettel ist noch nicht zur Signatur freigegeben.')" />
+            <x-empty-state icon="description" :message="__('Stundenzettel ist noch nicht zur Signatur freigegeben.')" />
         @endif
     </x-card>
 </x-page-shell>

@@ -35,17 +35,17 @@
         <div class="mb-3 flex flex-wrap items-baseline justify-between gap-2">
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold">
                 {{ __('Keine Aktivität im Zeitraum') }}
-                <span class="text-xs uppercase tracking-[0.18em] text-base-content/60 ml-2">
+                <span class="text-xs uppercase tracking-[0.18em] text-muted ml-2">
                     {{ $rangeFrom->fdate() }} – {{ $rangeTo->fdate() }}
                 </span>
             </h2>
-            <div class="text-xs uppercase tracking-[0.18em] text-base-content/60">
+            <div class="text-xs uppercase tracking-[0.18em] text-muted">
                 {{ trans_choice('{0}Keine Projekte|{1}1 Projekt|[2,*]:count Projekte', $projects->count(), ['count' => $projects->count()]) }}
             </div>
         </div>
 
         @if ($projects->count() === 0)
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">folder_off</span>' :title="__('Keine inaktiven Projekte im gewählten Zeitraum.')" />
+            <x-empty-state icon="folder_off" :title="__('Keine inaktiven Projekte im gewählten Zeitraum.')" />
         @else
             <form method="POST" action="{{ route('reports.project-inactive.archive') }}">
                 @csrf

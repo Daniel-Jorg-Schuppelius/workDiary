@@ -55,19 +55,19 @@
                         <td>
                             @if ($row['ticket'] !== null)
                                 <a href="{{ route('service-tickets.show', $row['ticket']) }}" class="link">{{ $row['ticket']->ticket_no }}</a>
-                                <span class="text-base-content/60">{{ \Illuminate\Support\Str::limit($row['ticket']->title, 60, '…') }}</span>
+                                <span class="text-muted">{{ \Illuminate\Support\Str::limit($row['ticket']->title, 60, '…') }}</span>
                             @else
                                 —
                             @endif
                         </td>
-                        <td class="text-sm text-base-content/60">{{ $row['ticket']?->queue?->name ?? '—' }}</td>
+                        <td class="text-sm text-muted">{{ $row['ticket']?->queue?->name ?? '—' }}</td>
                         <td class="text-sm">{{ $row['ticket']?->status?->label() ?? '—' }}</td>
-                        <td class="text-sm text-base-content/60">{{ $row['at'] ?? '—' }}</td>
+                        <td class="text-sm text-muted">{{ $row['at'] ?? '—' }}</td>
                         <td class="text-sm">{{ $row['detail'] ?? '—' }}</td>
                     </tr>
                 @endforeach
             </x-table>
-            <p class="mt-2 text-xs text-base-content/60">{{ __(':count Datensätze insgesamt.', ['count' => $rows->total()]) }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __(':count Datensätze insgesamt.', ['count' => $rows->total()]) }}</p>
         @endif
     </x-card>
 

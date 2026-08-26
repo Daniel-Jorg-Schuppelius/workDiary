@@ -12,14 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\SevDesk\Services;
 
-use App\Models\Finance\AccountingVoucher;
-use App\Models\Supplier;
+use App\Enums\Billing\{DocumentDirection, DocumentKind};
 use App\Plugins\SevDesk\Api\SevDeskClientFactory;
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
-use Illuminate\Support\Carbon;
+use App\Services\Finance\Accounting\Vouchers\{MirroredVoucher, VoucherMirror, VoucherPuller};
 
 /**
- * Beleg-Rückabruf aus sevDesk (Feature 122, MVP-611).
+ * Beleg-Rückabruf aus sevDesk (Feature 122, MVP-611; auf den gemeinsamen
+ * {@see VoucherPuller}-Vertrag gehoben mit MVP-731).
  *
  * Belege, die direkt in der Buchhaltung entstehen — Kassenbon, per Mail an
  * den Steuerberater gegangene Lieferantenrechnung — tauchen in workDiary
@@ -27,19 +27,45 @@ use Illuminate\Support\Carbon;
  *
  * Gespiegelt wird, nicht übernommen: Der Beleg gehört sevDesk. workDiary
  * schreibt nichts zurück und löscht nichts.
+ *
+ * - **Endpunkt** `GET /Voucher` (jüngste zuerst), Paginierung `offset`/`limit`.
+ * - **Richtung** aus `creditDebit`: C = Einnahme (ausgehend), D = Ausgabe
+ *   (eingehend). Eine Belegart-Taxonomie hat sevDesk nicht — die Art bleibt
+ *   bewusst „sonstiges".
+ * - **Status** (`status`): 50 Entwurf, 100/750 offen, 1000 bezahlt.
+ * - **Storno**: sevDesk führt am Beleg kein Stornokennzeichen; ein
+ *   Stornovorgang ist dort eine Buchung, kein Beleg-Attribut. Deshalb wird
+ *   hier nichts als Storno markiert — geraten wird nicht.
  */
-class SevDeskVoucherPullService {
+class SevDeskVoucherPullService implements VoucherPuller {
     /** Seitengröße des Abrufs; sevDesk liefert jüngste zuerst. */
     private const PAGE_SIZE = 50;
 
-    public function __construct(private readonly SevDeskClientFactory $clients) {}
+    /** sevDesk-Statuskatalog → normalisierter Belegzustand. */
+    private const STATES = [
+        '50' => 'draft',
+        '100' => 'open',
+        '750' => 'open',
+        '1000' => 'paid',
+    ];
 
-    /** @return array{read: int, created: int, updated: int} */
+    public function __construct(
+        private readonly SevDeskClientFactory $clients,
+        private readonly VoucherMirror $mirror,
+    ) {}
+
+    public function pluginId(): string {
+        return SevDeskPlugin::ID;
+    }
+
+    public function isConfigured(int $organizationId): bool {
+        return ! empty(SevDeskConfig::resolve($organizationId)['api_key']);
+    }
+
+    /** @return array{read: int, created: int, updated: int, skipped: int} */
     public function pull(int $organizationId, int $pages = 2): array {
-        $counters = ['read' => 0, 'created' => 0, 'updated' => 0];
-
-        $config = SevDeskConfig::resolve($organizationId);
-        if (empty($config['api_key'])) {
+        $counters = VoucherMirror::counters();
+        if (! $this->isConfigured($organizationId)) {
             return $counters;
         }
 
@@ -56,7 +82,7 @@ class SevDeskVoucherPullService {
                     continue;
                 }
                 $counters['read']++;
-                $this->mirror($organizationId, $row, $counters);
+                $this->mirror->store($organizationId, $this->pluginId(), $this->map($row), $counters);
             }
 
             if (count($rows) < self::PAGE_SIZE) {
@@ -67,59 +93,38 @@ class SevDeskVoucherPullService {
         return $counters;
     }
 
-    /**
-     * @param  array<string, mixed>  $row
-     * @param  array{read: int, created: int, updated: int}  $counters
-     */
-    private function mirror(int $organizationId, array $row, array &$counters): void {
-        $externalId = trim((string) ($row['id'] ?? ''));
-        if ($externalId === '') {
-            return;
-        }
+    /** @param array<string, mixed> $row */
+    private function map(array $row): MirroredVoucher {
+        $creditDebit = strtoupper(trim((string) ($row['creditDebit'] ?? '')));
+        $status = trim((string) ($row['status'] ?? ''));
 
-        $supplierName = trim((string) ($row['supplierName'] ?? ($row['supplier']['name'] ?? '')));
-        $supplier = $supplierName !== ''
-            ? Supplier::query()->where('organization_id', $organizationId)->where('name', $supplierName)->first()
-            : null;
-
-        $voucher = AccountingVoucher::query()->firstOrNew([
-            'organization_id' => $organizationId,
-            'plugin_id' => SevDeskPlugin::ID,
-            'external_id' => $externalId,
-        ]);
-        $existed = $voucher->exists;
-
-        $voucher->fill([
-            'contact_external_id' => trim((string) ($row['supplier']['id'] ?? '')) ?: null,
-            'supplier_id' => $supplier?->id,
-            'voucher_type' => trim((string) ($row['creditDebit'] ?? '')) ?: null,
-            'voucher_status' => trim((string) ($row['status'] ?? '')) ?: null,
-            'voucher_number' => trim((string) ($row['voucherNumber'] ?? ($row['description'] ?? ''))) ?: null,
-            'voucher_date' => $this->date($row['voucherDate'] ?? null),
-            'due_date' => $this->date($row['dueDate'] ?? null),
-            'paid_date' => $this->date($row['payDate'] ?? null),
-            'total_amount' => $this->amount($row['sumGross'] ?? null),
-            'net_amount' => $this->amount($row['sumNet'] ?? null),
+        return new MirroredVoucher(
+            externalId: trim((string) ($row['id'] ?? '')),
+            direction: match ($creditDebit) {
+                'C' => DocumentDirection::Outgoing,
+                'D' => DocumentDirection::Incoming,
+                default => DocumentDirection::Neutral,
+            },
+            // sevDesk kennt keine Belegart-Taxonomie (MVP-611).
+            kind: DocumentKind::Other,
+            rawType: $creditDebit !== '' ? $creditDebit : null,
+            rawStatus: $status !== '' ? $status : null,
+            state: self::STATES[$status] ?? 'open',
+            number: trim((string) ($row['voucherNumber'] ?? ($row['description'] ?? ''))) ?: null,
+            date: VoucherMirror::date($row['voucherDate'] ?? null),
+            dueDate: VoucherMirror::date($row['dueDate'] ?? null),
+            paidDate: VoucherMirror::date($row['payDate'] ?? null),
+            totalAmount: VoucherMirror::decimal($row['sumGross'] ?? null),
+            netAmount: VoucherMirror::decimal($row['sumNet'] ?? null),
             // sevDesk führt keinen Offenposten am Beleg; er ergibt sich aus
             // dem Zahldatum. Eine erfundene Zahl wäre schlechter als keine.
-            'open_amount' => null,
-            'currency' => trim((string) ($row['currency'] ?? 'EUR')) ?: 'EUR',
-            'archived' => false,
-            'payload' => $row,
-            'synced_at' => Carbon::now(),
-        ]);
-        $voucher->save();
-
-        $counters[$existed ? 'updated' : 'created']++;
-    }
-
-    private function date(mixed $value): ?string {
-        $value = trim((string) (is_scalar($value) ? $value : ''));
-
-        return $value !== '' ? Carbon::parse($value)->toDateString() : null;
-    }
-
-    private function amount(mixed $value): ?string {
-        return is_numeric($value) ? number_format((float) $value, 2, '.', '') : null;
+            openAmount: null,
+            currency: trim((string) ($row['currency'] ?? 'EUR')) ?: 'EUR',
+            archived: false,
+            contactExternalId: trim((string) ($row['supplier']['id'] ?? '')) ?: null,
+            supplierName: trim((string) ($row['supplierName'] ?? ($row['supplier']['name'] ?? ''))) ?: null,
+            sourceChangedAt: VoucherMirror::timestamp($row['update'] ?? ($row['create'] ?? null)),
+            payload: $row,
+        );
     }
 }

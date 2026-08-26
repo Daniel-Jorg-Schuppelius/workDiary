@@ -45,6 +45,9 @@ use Illuminate\Support\Carbon;
  * @property string|null $cancel_reason
  * @property Carbon|null $sent_at
  * @property int $sent_count
+ * @property int $dunning_level
+ * @property Carbon|null $dunned_at
+ * @property Carbon|null $dunning_blocked_at
  * @property CurrencyCode $currency
  * @property Money|null $subtotal
  * @property \CommonToolkit\ValueObjects\Percentage|null $tax_rate
@@ -56,6 +59,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $skonto_days
  * @property string|null $notes
  * @property int|null $created_by
+ * @property int|null $sales_user_id
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property-read Collection<int, InvoiceItem> $items
@@ -134,8 +138,12 @@ class Invoice extends Model {
         'updated_at',
         'dunning_level',
         'dunned_at', // Mahnstatus ist Lifecycle, kein Beleginhalt
+        'dunning_blocked_at', // Mahnsperre ist Lifecycle (MVP-691)
         'objection_at',
         'objection_note', // Widerspruch (§ 14 Abs. 2 UStG) ist Lifecycle
+        // Vertriebszuordnung (Feature 146) ist kein Beleginhalt: sie steht in
+        // keiner Belegdarstellung und darf auch nachträglich korrigiert werden.
+        'sales_user_id',
     ];
 
     protected $fillable = [
@@ -182,9 +190,12 @@ class Invoice extends Model {
         'approved_by',
         'dunning_level',
         'dunned_at',
+        'dunning_blocked_at',
         'objection_at',
         'objection_note',
         'quote_id',
+        // Vertriebszuordnung fuer die Provisionsabrechnung (Feature 146).
+        'sales_user_id',
     ];
 
     /** @var array<string, string> */
@@ -197,6 +208,7 @@ class Invoice extends Model {
         'tax_breakdown' => 'array',
         'approved_at' => 'datetime',
         'dunned_at' => 'datetime',
+        'dunning_blocked_at' => 'datetime',
         'objection_at' => 'datetime',
         'issued_on' => 'date',
         'due_on' => 'date',
@@ -260,9 +272,24 @@ class Invoice extends Model {
             ->where('type', self::TYPE_CREDIT_NOTE);
     }
 
-    /** @return HasMany<InvoiceDispatch, $this> */
+    /** @return HasMany<DocumentDispatch, $this> */
     public function dispatches(): HasMany {
-        return $this->hasMany(InvoiceDispatch::class)->orderByDesc('created_at');
+        return $this->hasMany(DocumentDispatch::class)->orderByDesc('created_at');
+    }
+
+    /**
+     * Manuell zugeordnete Vertriebsperson (Feature 146). `null` = die
+     * Zuordnung kommt aus der Lead-Pipeline oder es gibt keine.
+     *
+     * @return BelongsTo<User, $this>
+     */
+    public function salesUser(): BelongsTo {
+        return $this->belongsTo(User::class, 'sales_user_id');
+    }
+
+    /** @return HasMany<\App\Models\Sales\InvoiceCommission, $this> */
+    public function commissions(): HasMany {
+        return $this->hasMany(\App\Models\Sales\InvoiceCommission::class, 'invoice_id');
     }
 
     /**
@@ -353,6 +380,23 @@ class Invoice extends Model {
             }
         });
 
+        // Lifecycle-Webhook invoice.paid (MVP-718): „bezahlt" wird an mehreren Stellen geschrieben (Bankabgleich,
+        // Kassenbuch, Retainer-Abgleich, Web-Aktion) — der Modell-Statuswechsel ist die einzige gemeinsame Naht.
+        // Provisionen (Feature 146, MVP-729) hängen an derselben Naht: Basis ist die BEZAHLTE Rechnung, nie die
+        // ausgestellte. Storno läuft über den Gegen-Statuswechsel und erzeugt eine Rückrechnung.
+        static::updated(function (self $invoice): void {
+            if (! $invoice->wasChanged('status')) {
+                return;
+            }
+            if ($invoice->status === self::STATUS_PAID) {
+                app(\App\Services\Integration\LifecycleWebhookPublisher::class)->invoicePaid($invoice);
+                app(\App\Services\Sales\CommissionAccrualService::class)->onInvoicePaid($invoice);
+            }
+            if ($invoice->status === self::STATUS_CANCELLED) {
+                app(\App\Services\Sales\CommissionAccrualService::class)->onInvoiceCancelled($invoice);
+            }
+        });
+
         // Positionen per Eloquent löschen (nicht DB-Cascade): nur so feuern die InvoiceItem-Hooks, die die
         // Quellposten (Zeiten/Material/Touren/Spesen) wieder freigeben — sonst bleiben sie dauerhaft "abgerechnet" (G2).
         static::deleting(function (self $invoice): void {
@@ -391,6 +435,11 @@ class Invoice extends Model {
         return in_array($this->status, [self::STATUS_ISSUED, self::STATUS_PARTIALLY_PAID], true)
             && $this->due_on !== null
             && $this->due_on->isPast();
+    }
+
+    /** Mahnsperre (MVP-691): gesetzt = weder Einzel- noch Sammelmahnung. */
+    public function isDunningBlocked(): bool {
+        return $this->dunning_blocked_at !== null;
     }
 
     public function isCreditNote(): bool {

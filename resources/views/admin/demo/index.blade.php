@@ -77,7 +77,7 @@
             </div>
 
             @if ($alreadySeeded && $organization->demo_seeded_at)
-                <p class="text-xs text-base-content/60">
+                <p class="text-xs text-muted">
                     {{ __('Letzter Seed: :at', ['at' => $organization->demo_seeded_at->translatedFormat('d.m.Y H:i')]) }}
                 </p>
             @endif
@@ -87,7 +87,7 @@
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Inhalt des Demo-Mandanten') }}</h2>
-            <p class="text-xs text-base-content/60">{{ __('Inhalt richtet sich nach der gewählten Musterbranche und installiert das passende Branchenprofil.') }}</p>
+            <p class="text-xs text-muted">{{ __('Inhalt richtet sich nach der gewählten Musterbranche und installiert das passende Branchenprofil.') }}</p>
             <ul class="space-y-1 text-sm text-base-content/80">
                 <li>{{ __('Branchenprofil je Musterbranche (Klassifikationen, Tags, SLAs, Prozeduren)') }}</li>
                 <li>{{ __('3 Demo-Kunden und 5 Demo-Projekte') }}</li>

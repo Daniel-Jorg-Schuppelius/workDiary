@@ -27,8 +27,8 @@
 @if ($canAssignOthers)
     <x-form-group :legend="__('Zuordnung')" icon="person" tone="primary">
         <div class="fieldset w-full">
-            <label class="fieldset-label">{{ __('Mitarbeiter') }}</label>
-            <select name="user_id" class="select select-bordered w-full">
+            <label for="user_id" class="fieldset-label">{{ __('Mitarbeiter') }}</label>
+            <select id="user_id" name="user_id" class="select select-bordered w-full">
                 @foreach ($assignableUsers as $u)
                     <option value="{{ $u['id'] }}" @selected($selectedUser === (int) $u['id'])>{{ $u['name'] }}</option>
                 @endforeach
@@ -58,8 +58,8 @@
 
 <x-form-group :legend="__('Details')" icon="description" tone="ghost">
     <div class="fieldset w-full">
-        <label class="fieldset-label">{{ __('Notiz') }}</label>
-        <textarea name="note" rows="3" class="textarea textarea-bordered w-full">{{ $note }}</textarea>
+        <label for="note" class="fieldset-label">{{ __('Notiz') }}</label>
+        <textarea id="note" name="note" rows="3" class="textarea textarea-bordered w-full">{{ $note }}</textarea>
     </div>
 </x-form-group>
 

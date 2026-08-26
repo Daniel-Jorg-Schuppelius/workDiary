@@ -42,12 +42,12 @@ class LedgerAccountsSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        return array_values(AccountingAccount::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (AccountingAccount::query()
             ->where('organization_id', $organization->id)
-            ->orderBy('number')
-            ->get()
-            ->map(fn ($account): array => [
+            ->orderBy('number')->orderBy('id')
+            ->lazy() as $account) {
+            yield [
                 $this->str($account->number),
                 $this->str($account->name),
                 $this->str($account->type->value),
@@ -55,8 +55,7 @@ class LedgerAccountsSection extends AbstractGdpduSection {
                 $account->is_open_item ? 'Ja' : 'Nein',
                 $this->str($account->datev_account),
                 $account->is_active ? 'Ja' : 'Nein',
-            ])
-            ->values()
-            ->all());
+            ];
+        }
     }
 }

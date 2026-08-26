@@ -31,6 +31,6 @@
         <x-input-field name="days" type="number" :label="__('isms.field.token_days')" required min="1" max="90" step="1"
                        :value="old('days', 14)"
                        :hint="__('isms.hint.token_days')" />
-        <p class="text-xs text-base-content/60">{{ __('isms.package.token_once_hint') }}</p>
+        <p class="text-xs text-muted">{{ __('isms.package.token_once_hint') }}</p>
     </x-form-group>
 </x-modal>

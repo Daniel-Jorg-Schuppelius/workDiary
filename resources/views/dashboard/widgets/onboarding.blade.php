@@ -23,6 +23,6 @@
         </div>
         <progress class="progress progress-primary w-full" value="{{ $percent }}" max="100"></progress>
     @else
-        <p class="text-sm text-base-content/60">{{ __('Keine Onboarding-Daten verfügbar.') }}</p>
+        <p class="text-sm text-muted">{{ __('Keine Onboarding-Daten verfügbar.') }}</p>
     @endif
 </x-card>

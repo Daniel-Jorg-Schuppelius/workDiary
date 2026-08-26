@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Integration;
 
 use App\Enums\Integration\{ConflictFieldPolicy, ImportMatchPolicy};
-use App\Models\{ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization};
+use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, IntegrationInboxItem, Organization, Supplier};
 use App\Services\Integration\Match\{EntityMatcher, MatchProfile};
+use App\Services\Stammdaten\ContactDetailsWriter;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +34,10 @@ use Illuminate\Database\Eloquent\Model;
  *   5. sonst → UNMATCHED-Inbox-Item
  */
 class IntegrationResolver {
-    public function __construct(private readonly EntityMatcher $matcher) {}
+    public function __construct(
+        private readonly EntityMatcher $matcher,
+        private readonly ContactDetailsWriter $contactDetails,
+    ) {}
 
     /**
      * @param  string  $pluginId       Quelle: toggl | lexoffice | … | csv-import
@@ -136,7 +140,7 @@ class IntegrationResolver {
         }
 
         if ($onConflict === ConflictFieldPolicy::RemoteWins) {
-            $model->fill($this->onlyKeys($attributes, $diff))->save();
+            $this->applyRemote($model, $this->onlyKeys($attributes, $diff));
             $this->writeReference($org, $pluginId, $externalType, $morph, $externalId, $model, $rawRemote);
 
             return ResolveOutcome::linked($model);
@@ -159,6 +163,31 @@ class IntegrationResolver {
         $this->writeReference($org, $pluginId, $externalType, $morph, $externalId, $model, $rawRemote);
 
         return ResolveOutcome::conflict($item);
+    }
+
+    /**
+     * Übernimmt den Fremdstand auf den lokalen Datensatz. Kontakt-Inline-Felder
+     * (address_…/bank_…) gehen dabei NICHT inline aufs Model, sondern über den
+     * {@see ContactDetailsWriter} nach contact_addresses/contact_bank_accounts —
+     * F8/Entscheid E6: contact_* ist führend, die Inline-Spalten füllt die
+     * Projektion nach ({@see \App\Observers\ContactDetailsProjectionObserver}).
+     *
+     * @param  array<string, mixed>  $values
+     */
+    private function applyRemote(Model $model, array $values): void {
+        $contactFields = $model instanceof Customer || $model instanceof Supplier
+            ? ContactDetailsWriter::pullInline($values)
+            : [];
+
+        if ($values !== []) {
+            $model->fill($values)->save();
+        }
+
+        if ($contactFields !== []) {
+            /** @var Customer|Supplier $model */
+            $this->contactDetails->writeInline($model, $contactFields);
+            $model->refresh(); // Projektion hat die Inline-Spalten frisch gesetzt
+        }
     }
 
     /**

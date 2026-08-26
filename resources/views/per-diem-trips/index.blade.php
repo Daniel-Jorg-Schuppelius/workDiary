@@ -68,13 +68,13 @@
                         <span class="inline-flex items-center gap-1">
                             <x-icon name="place" class="text-info" />
                             {{ $trip->location }}
-                            <span class="text-xs text-base-content/60">({{ $trip->country }})</span>
+                            <span class="text-xs text-muted">({{ $trip->country }})</span>
                         </span>
                     </td>
                     <td class="max-w-xs truncate">{{ $trip->purpose }}</td>
                     <td class="text-right whitespace-nowrap">
                         {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $trip->totalAmount(), 2, withThousandsSeparator: true) }} €
-                        <span class="text-xs text-base-content/60 ml-1">({{ $trip->days->count() }} {{ __('Tage') }})</span>
+                        <span class="text-xs text-muted ml-1">({{ $trip->days->count() }} {{ __('Tage') }})</span>
                     </td>
                     <td>
                         <x-status-badge :tone="$trip->status->tone()" size="sm">
@@ -101,7 +101,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">restaurant_menu</span>'
+                <x-table.empty icon="restaurant_menu"
                                :colspan="7"
                                :title="__('Keine Reisen im gewählten Zeitraum')"
                                compact />

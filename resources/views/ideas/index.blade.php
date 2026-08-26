@@ -18,7 +18,7 @@
         @can('create', \App\Models\IdeaMap::class)
             <button type="button" class="btn btn-sm btn-ghost gap-1"
                     data-open-dialog="ideas-import-dialog">
-                <span class="material-symbols-outlined text-base" aria-hidden="true">upload_file</span>
+                <x-icon name="upload_file" class="text-base" />
                 {{ __('ideas.import.action') }}
             </button>
             <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger
@@ -28,7 +28,7 @@
 
     @error('file')
         <div class="alert alert-error mb-4" role="alert">
-            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <x-icon name="error" />
             <span>{{ $message }}</span>
         </div>
     @enderror
@@ -43,7 +43,7 @@
     </div>
 
     @if ($maps->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">emoji_objects</span>'
+        <x-empty-state framed icon="emoji_objects"
                        :title="__('ideas.empty')" />
     @else
         <x-table scroll="flex" :pinRows="true">

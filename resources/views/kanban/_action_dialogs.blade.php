@@ -50,3 +50,15 @@
         </div>
     </x-form-group>
 </x-modal>
+
+{{--
+    „Verschieben nach" — barrierefreier Zweitweg zum Zug (MVP-725):
+    Karte fokussieren + `m`/Leertaste bzw. Karten-Button. kanban.js füllt die
+    Optionsliste mit genau den fachlich erlaubten Zielspalten (TRANSITIONS ∩
+    data-actions); die Auswahl löst denselben diary.lifecycle-Weg aus wie die
+    Zeigergeste — nie ein direkter Status-Schreibzugriff.
+--}}
+<x-modal id="kanban-move-dialog" :embedded="false" tone="primary" icon="drag_indicator"
+    :eyebrow="__('Kanban')" :title="__('Verschieben nach')" size="sm">
+    <div class="flex flex-col gap-2" data-kanban-move-options></div>
+</x-modal>

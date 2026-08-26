@@ -27,14 +27,11 @@
             <option value="{{ $p->value }}" @selected(old('propulsion', $vehicle?->propulsion?->value) === $p->value)>{{ $p->label() }}</option>
         @endforeach
     </x-select-field>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Eigentum') }} *</label>
-        <select name="ownership" required class="select select-bordered w-full" x-model="value">
-            @foreach ($ownerships as $o)
-                <option value="{{ $o->value }}" @selected(old('ownership', $vehicle?->ownership?->value ?? 'owned') === $o->value)>{{ $o->label() }}</option>
-            @endforeach
-        </select>
-    </div>
+    <x-select-field name="ownership" :label="__('Eigentum')" required x-model="value">
+        @foreach ($ownerships as $o)
+            <option value="{{ $o->value }}" @selected(old('ownership', $vehicle?->ownership?->value ?? 'owned') === $o->value)>{{ $o->label() }}</option>
+        @endforeach
+    </x-select-field>
     <x-select-field name="default_user_id" :label="__('Standardfahrer')">
         <option value="">{{ __('— frei verfügbar —') }}</option>
         @foreach ($users as $u)
@@ -64,6 +61,22 @@
         <x-input-field name="rental_extra_cost_per_km" type="number" :label="__('Extrakosten €/km')" step="0.0001" min="0" :value="old('rental_extra_cost_per_km', $vehicle?->rental_extra_cost_per_km)" />
     </x-form-group>
 </div>
+
+<x-form-group :legend="__('Fahrtenbuch & Prüffristen')" icon="menu_book" tone="success" cols="2">
+    {{-- Feature 137: steuerliches Fahrtenbuch — km-Stände Pflicht, Festschreibung nach Tagesende, Änderung nur als Stornofahrt --}}
+    <x-checkbox-field name="logbook_mode" :label="__('Fahrtenbuch-Modus (steuerlich)')" :checked="(bool) old('logbook_mode', $vehicle?->logbook_mode ?? false)"
+                      :hint="__('Km-Stände sind Pflicht, die Kette muss lückenlos sein; Fahrten werden nach Tagesende festgeschrieben.')" />
+    {{-- Feature 144: Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV) — wirkt nur mit dem Org-Schalter „Lenkzeitregeln anwenden" --}}
+    <x-checkbox-field name="subject_to_driving_time_rules" :label="__('Lenk- und Ruhezeitregeln anwenden')" :checked="(bool) old('subject_to_driving_time_rules', $vehicle?->subject_to_driving_time_rules ?? false)"
+                      :hint="__('Fahrten mit diesem Fahrzeug fließen in die Lenkzeit-Prüfung (Tages-/Wochenlenkzeit, Fahrtunterbrechung, Ruhezeiten).')" />
+    {{-- Feature 138: Asset-Zuordnung — HU/AU/UVV/SP aus dem Prüfwesen sperren Reservierungen --}}
+    <x-select-field name="asset_id" :label="__('Zugeordnetes Asset (Prüffristen)')" :hint="__('Überfällige Pflichtprüfungen des Assets sperren die Reservierung.')">
+        <option value="">—</option>
+        @foreach ($assets as $asset)
+            <option value="{{ $asset->sqid }}" @selected((string) old('asset_id', \App\Support\Sqid::encode(\App\Models\Asset::class, $vehicle?->asset_id)) === $asset->sqid)>{{ $asset->name }} ({{ $asset->asset_no }})</option>
+        @endforeach
+    </x-select-field>
+</x-form-group>
 
 <x-form-group :legend="__('Notizen')" icon="edit_note" tone="ghost">
     <x-textarea-field name="notes" :label="__('Notizen')" rows="3" :value="old('notes', $vehicle?->notes)" />

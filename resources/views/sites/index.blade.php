@@ -27,7 +27,7 @@
 
     @if ($sites->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">location_on</span>' />
+            icon="location_on" />
     @else
         <x-table table-sort="server"
                  :route="route('sites.index')"
@@ -49,7 +49,7 @@
                     <td>
                         <a class="link link-hover" href="{{ route('sites.show', $site) }}">{{ $site->name }}</a>
                         @if ($site->code)
-                            <span class="text-base-content/60 ms-1">({{ $site->code }})</span>
+                            <span class="text-muted ms-1">({{ $site->code }})</span>
                         @endif
                     </td>
                     <td>{{ $site->customer?->name }}</td>

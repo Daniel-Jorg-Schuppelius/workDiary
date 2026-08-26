@@ -26,6 +26,7 @@
     size="md">
 
     <x-form-group :legend="__('Position')" icon="receipt_long" tone="primary" cols="2">
+        <x-article-picker :articles="$articles ?? collect()" :selected="$item->article_id ?? null" />
         <x-input-field name="description" :label="__('Beschreibung')" required maxlength="1000" span="2" :value="old('description', $item->description ?? '')" />
         <x-input-field name="service_date" type="date" :label="__('Leistungsdatum')" :value="old('service_date', optional($item->service_date ?? null)->format('Y-m-d'))" :hint="__('Bei mehreren Tagen Pflicht je Position.')" />
         <x-input-field name="quantity" type="number" :label="__('Menge')" required min="0" step="0.01" :value="old('quantity', (string) ($item->quantity ?? '1.00'))" />

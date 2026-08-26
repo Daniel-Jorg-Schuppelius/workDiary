@@ -71,7 +71,7 @@
 
     <x-card>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">event_busy</span>' :title="__('Keine Abwesenheits- oder Flex-Daten im gewählten Zeitraum.')" />
+            <x-empty-state icon="event_busy" :title="__('Keine Abwesenheits- oder Flex-Daten im gewählten Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

@@ -14,13 +14,13 @@
             <div class="text-2xl font-bold tabular-nums" x-data="stopwatch('{{ $current->started_at?->toIso8601String() }}')">
                 <span x-text="display"></span>
             </div>
-            <div class="mt-1 text-xs text-base-content/60">{{ $current->description ?: __('Läuft…') }}</div>
+            <div class="mt-1 text-xs text-muted">{{ $current->description ?: __('Läuft…') }}</div>
             <form method="POST" action="{{ route('stopwatch.stop') }}" class="mt-2">
                 @csrf
                 <x-button tone="error" size="sm">{{ __('Stoppen') }}</x-button>
             </form>
         </div>
     @else
-        <div class="mt-2 text-sm text-base-content/60">{{ __('Keine laufende Erfassung.') }}</div>
+        <div class="mt-2 text-sm text-muted">{{ __('Keine laufende Erfassung.') }}</div>
     @endif
 </x-card>

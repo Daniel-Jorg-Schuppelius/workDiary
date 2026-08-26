@@ -24,7 +24,7 @@
 
     @foreach ($gaps as $gap)
         <div class="alert alert-warning text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+            <x-icon name="warning" />
             {{ __('Lückenwarnung: :gap', ['gap' => $gap]) }}
         </div>
     @endforeach
@@ -56,7 +56,7 @@
             @csrf
             <input type="file" name="file" required accept=".csv,.txt" class="file-input file-input-sm file-input-bordered">
             <x-icon-btn icon="upload" size="sm" type="submit" show-label>{{ __('CSV-Import') }}</x-icon-btn>
-            <span class="text-xs text-base-content/60">{{ __('Format: country;category;rate_type;rate;valid_from;valid_to;source;note') }}</span>
+            <span class="text-xs text-muted">{{ __('Format: country;category;rate_type;rate;valid_from;valid_to;source;note') }}</span>
         </form>
     </x-card>
 

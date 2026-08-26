@@ -24,7 +24,6 @@ class CommunicationNoteParticipantFactory extends Factory {
         return [
             'communication_note_id' => CommunicationNote::factory(),
             'user_id' => null,
-            'customer_contact_id' => null,
             'name' => fake()->name(),
             'role' => null,
             'party' => ParticipantParty::Customer->value,

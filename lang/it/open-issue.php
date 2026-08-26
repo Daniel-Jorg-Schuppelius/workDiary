@@ -27,6 +27,7 @@ return [
         'closed_by' => 'Chiuso da',
         'reason' => 'Motivo',
         'resolution' => 'Soluzione',
+        'follow_up' => 'Incarico di follow-up',
     ],
     'action' => [
         'create' => 'Crea punto aperto',
@@ -40,6 +41,7 @@ return [
         'reopen' => 'Riapri',
         'delete' => 'Elimina',
         'publishToCustomer' => 'Condividi con il cliente',
+        'followUp' => 'Crea incarico di follow-up',
     ],
     'flash' => [
         'created' => 'Punto aperto creato.',
@@ -54,5 +56,9 @@ return [
             'wontDo' => 'Punto aperto contrassegnato come «non verrà fatto».',
             'reopened' => 'Il punto aperto è stato riaperto.',
         ],
+    ],
+
+    'follow_up' => [
+        'content_intro' => 'Incarico di follow-up per il punto aperto #:id «:title»',
     ],
 ];

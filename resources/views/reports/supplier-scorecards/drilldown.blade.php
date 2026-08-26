@@ -25,7 +25,7 @@
     </x-slot:toolbar>
 
     @if ($rows->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :title="__('scorecard.no_data')" />
+        <x-empty-state framed icon="receipt_long" :title="__('scorecard.no_data')" />
     @else
         <x-card padding="p-0">
             <x-table bare>

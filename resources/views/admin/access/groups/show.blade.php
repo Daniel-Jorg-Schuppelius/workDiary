@@ -32,10 +32,10 @@
             <div class="card-body space-y-4">
                 <h3 class="card-title">{{ __('access.title.metadata') }}</h3>
                 <dl class="space-y-2 text-sm">
-                    <div class="flex justify-between"><dt class="text-base-content/60">{{ __('access.field.group_name') }}</dt><dd>{{ $group->name }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-base-content/60">{{ __('access.field.group_slug') }}</dt><dd class="font-mono text-xs">{{ $group->slug }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-muted">{{ __('access.field.group_name') }}</dt><dd>{{ $group->name }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-muted">{{ __('access.field.group_slug') }}</dt><dd class="font-mono text-xs">{{ $group->slug }}</dd></div>
                     @if ($group->description)
-                        <div><dt class="text-base-content/60">{{ __('access.field.description') }}</dt><dd>{{ $group->description }}</dd></div>
+                        <div><dt class="text-muted">{{ __('access.field.description') }}</dt><dd>{{ $group->description }}</dd></div>
                     @endif
                 </dl>
             </div>
@@ -47,12 +47,12 @@
                 @forelse ($group->roles as $role)
                     <x-status-badge size="md" outline>{{ \Illuminate\Support\Facades\Lang::has("user.role.{$role->name}") ? __("user.role.{$role->name}") : $role->name }}</x-status-badge>
                 @empty
-                    <p class="text-sm text-base-content/60">{{ __('access.empty.assigned_roles') }}</p>
+                    <p class="text-sm text-muted">{{ __('access.empty.assigned_roles') }}</p>
                 @endforelse
 
                 <h3 class="card-title mt-4">{{ __('access.title.direct_permissions') }}</h3>
                 @if ($group->permissions->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('access.empty.direct_permissions') }}</p>
+                    <p class="text-sm text-muted">{{ __('access.empty.direct_permissions') }}</p>
                 @else
                     <div class="flex flex-wrap gap-1">
                         @foreach ($group->permissions as $permission)

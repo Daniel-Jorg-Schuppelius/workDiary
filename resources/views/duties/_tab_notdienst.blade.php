@@ -30,7 +30,7 @@
                     <td>{{ $a->user?->name ?? '—' }}</td>
                     <td class="whitespace-nowrap">{{ $a->start_at?->fdatetime() ?? '—' }}</td>
                     <td class="whitespace-nowrap">{{ $a->end_at?->fdatetime() ?? '—' }}</td>
-                    <td class="text-base-content/60 whitespace-nowrap text-xs">
+                    <td class="text-muted whitespace-nowrap text-xs">
                         @if ($a->shift)
                             {{ $a->shift->start_at?->format('d.m.') }}–{{ $a->shift->end_at?->format('d.m.') }}
                         @else — @endif
@@ -44,7 +44,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="6" :title="__('Keine Einträge')" compact />
+                <x-table.empty icon="medical_services" :colspan="6" :title="__('Keine Einträge')" compact />
             @endforelse
 </x-table>
 @if ($assignments->total() > 0)

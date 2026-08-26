@@ -63,10 +63,10 @@
                     <td>
                         <x-status-badge size="sm" :tone="$a->isOpen() ? 'success' : 'ghost'">{{ $a->statusLabel() }}</x-status-badge>
                     </td>
-                    <td class="text-xs text-base-content/60">{{ $a->sourceLabel() }}</td>
+                    <td class="text-xs text-muted">{{ $a->sourceLabel() }}</td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :colspan="7" :title="__('Keine Stempelungen im Zeitraum')" compact />
+                <x-table.empty icon="schedule" :colspan="7" :title="__('Keine Stempelungen im Zeitraum')" compact />
             @endforelse
         </x-table>
         <x-pagination :paginator="$attendances" standing />

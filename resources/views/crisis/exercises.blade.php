@@ -42,7 +42,7 @@
                 <tr>
                     <td>
                         <span class="font-medium">{{ $exercise->title }}</span>
-                        <div class="text-xs text-base-content/60">{{ \Illuminate\Support\Str::limit($exercise->scenario, 80) }}</div>
+                        <div class="text-xs text-muted">{{ \Illuminate\Support\Str::limit($exercise->scenario, 80) }}</div>
                     </td>
                     <td>{{ $exercise->playbookTemplate->name ?? '—' }}</td>
                     <td>{{ optional($exercise->exercised_at)->fdatetime() ?? '—' }}</td>
@@ -58,7 +58,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">model_training</span>' :colspan="6" :title="__('Noch keine Übungen geplant.')" compact />
+                <x-table.empty icon="model_training" :colspan="6" :title="__('Noch keine Übungen geplant.')" compact />
             @endforelse
         </x-table>
     </x-card>

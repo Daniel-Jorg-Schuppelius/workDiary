@@ -45,31 +45,27 @@ class CashDailyClosingsSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        $rows = [];
-        CashDailyClosing::query()
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (CashDailyClosing::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereBetween('closing_date', [$from->toDateString(), $to->toDateString()])
             ->with(['register:id,name,currency,opening_balance,opened_on', 'closedBy:id,name'])
-            ->orderBy('cash_register_id')->orderBy('closing_date')
-            ->get()
-            ->each(function (CashDailyClosing $closing) use (&$rows): void {
-                $rows[] = [
-                    $this->str($closing->register?->name),
-                    $this->str($closing->register?->currency),
-                    $this->num($closing->register?->opening_balance, 2),
-                    $this->date($closing->register?->opened_on),
-                    $this->date($closing->closing_date),
-                    $this->num($closing->expected_balance?->toFloat(), 2),
-                    $this->num($closing->counted_balance?->toFloat(), 2),
-                    $this->num($closing->difference?->toFloat(), 2),
-                    $this->str($closing->note),
-                    $this->str($closing->closedBy?->name),
-                    $this->dateTime($closing->created_at),
-                ];
-            });
-
-        return $rows;
+            ->orderBy('cash_register_id')->orderBy('closing_date')->orderBy('id')
+            ->lazy() as $closing) {
+            yield [
+                $this->str($closing->register?->name),
+                $this->str($closing->register?->currency),
+                $this->num($closing->register?->opening_balance, 2),
+                $this->date($closing->register?->opened_on),
+                $this->date($closing->closing_date),
+                $this->num($closing->expected_balance?->toFloat(), 2),
+                $this->num($closing->counted_balance?->toFloat(), 2),
+                $this->num($closing->difference?->toFloat(), 2),
+                $this->str($closing->note),
+                $this->str($closing->closedBy?->name),
+                $this->dateTime($closing->created_at),
+            ];
+        }
     }
 }

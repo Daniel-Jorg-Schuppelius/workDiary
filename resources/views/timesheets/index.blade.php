@@ -44,7 +44,7 @@
 
     @if($timesheets->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">description</span>'
+            icon="description"
             :title="__('Keine Stundenzettel gefunden')"
             :message="__('Lege den ersten Stundenzettel über den Button oben rechts an.')"
         />
@@ -101,23 +101,19 @@
              :submitLabel="__('Anlegen')">
 
         <x-form-group :legend="__('Kunde')" icon="business" tone="primary">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Kunde') }}</label>
-                <select name="customer_id" required class="select select-bordered w-full">
-                    <option value="">{{ __('Kunde wählen…') }}</option>
-                    @foreach (\App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
-                        <option value="{{ $c->sqid }}">{{ $c->name }}</option>
-                    @endforeach
-                </select>
-                <p class="text-xs text-base-content/60">{{ __('Ohne Projektwahl landet der Stundenzettel im Standardprojekt des Kunden (z. B. Wartung).') }}</p>
-            </div>
+            <x-select-field name="customer_id"
+                            :label="__('Kunde')"
+                            required
+                            :hint="__('Ohne Projektwahl landet der Stundenzettel im Standardprojekt des Kunden (z. B. Wartung).')">
+                <option value="">{{ __('Kunde wählen…') }}</option>
+                @foreach (\App\Models\Customer::query()->whereNull('archived_at')->orderBy('name')->get(['id','name']) as $c)
+                    <option value="{{ $c->sqid }}">{{ $c->name }}</option>
+                @endforeach
+            </x-select-field>
         </x-form-group>
 
         <x-form-group :legend="__('Zeitraum')" icon="event" tone="info">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Datum') }}</label>
-                <input type="date" name="work_date" value="{{ now()->format('Y-m-d') }}" class="input input-bordered w-full">
-            </div>
+            <x-input-field name="work_date" :label="__('Datum')" type="date" value="{{ now()->format('Y-m-d') }}" />
         </x-form-group>
     </x-modal>
 @endcan

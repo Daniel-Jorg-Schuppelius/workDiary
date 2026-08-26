@@ -49,7 +49,7 @@
                         @foreach ($items as $item)
                             <li>
                                 <a href="{{ route($item['route']) }}" class="flex items-center gap-2">
-                                    <span class="material-symbols-outlined text-base text-base-content/60" aria-hidden="true">{{ $item['icon'] ?? 'insights' }}</span>
+                                    <x-icon name="{{ $item['icon'] ?? 'insights' }}" class="text-base text-muted" />
                                     {{ $item['label'] }}
                                 </a>
                             </li>

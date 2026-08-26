@@ -31,7 +31,7 @@
                     <option value="{{ $env->value }}" @selected(old('environment', 'ote') === $env->value)>{{ $env->label() }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-base-content/60">{{ __('domain.field.environment_help') }}</p>
+            <p class="text-xs text-muted">{{ __('domain.field.environment_help') }}</p>
         </div>
 
         <div class="fieldset">
@@ -45,7 +45,7 @@
             <label class="fieldset-label" for="dr-pass">{{ __('domain.field.password') }}</label>
             <input id="dr-pass" type="password" name="password" required maxlength="512" autocomplete="new-password"
                    class="input input-bordered w-full font-mono" placeholder="••••••••">
-            <p class="text-xs text-base-content/60">{{ __('domain.field.password_help') }}</p>
+            <p class="text-xs text-muted">{{ __('domain.field.password_help') }}</p>
             @error('password')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -53,7 +53,7 @@
             <label class="fieldset-label" for="dr-suser">{{ __('domain.field.default_user') }}</label>
             <input id="dr-suser" type="text" name="default_user" maxlength="190"
                    value="{{ old('default_user') }}" class="input input-bordered w-full">
-            <p class="text-xs text-base-content/60">{{ __('domain.field.default_user_help') }}</p>
+            <p class="text-xs text-muted">{{ __('domain.field.default_user_help') }}</p>
         </div>
     </x-form-group>
 </x-modal>

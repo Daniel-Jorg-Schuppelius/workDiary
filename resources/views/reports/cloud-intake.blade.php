@@ -21,7 +21,7 @@
             <x-slot:subtitle>{{ __('cloud_intake.report.subtitle') }} · {{ $label }}</x-slot:subtitle>
             <x-slot:actions>
                 <a class="btn btn-sm btn-ghost" href="{{ route('reports.cloud-intake', ['export' => 'csv']) }}">
-                    <span class="material-symbols-outlined" aria-hidden="true">download</span>
+                    <x-icon name="download" />
                     <span>{{ __('CSV') }}</span>
                 </a>
             </x-slot:actions>
@@ -47,7 +47,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('cloud_intake.report.section.connections') }}</h3>
         @if (empty($connections))
-            <p class="text-sm text-base-content/60">{{ __('cloud_intake.report.empty.connections') }}</p>
+            <p class="text-sm text-muted">{{ __('cloud_intake.report.empty.connections') }}</p>
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -77,7 +77,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('cloud_intake.report.section.reasons') }}</h3>
         @if (empty($byReason))
-            <p class="text-sm text-base-content/60">{{ __('cloud_intake.report.empty.reasons') }}</p>
+            <p class="text-sm text-muted">{{ __('cloud_intake.report.empty.reasons') }}</p>
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -99,7 +99,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('cloud_intake.report.section.items') }}</h3>
         @if (empty($rows))
-            <p class="text-sm text-base-content/60">{{ __('cloud_intake.report.empty.items') }}</p>
+            <p class="text-sm text-muted">{{ __('cloud_intake.report.empty.items') }}</p>
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

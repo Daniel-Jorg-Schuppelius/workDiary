@@ -14,7 +14,7 @@ namespace App\Services\Import;
 
 use App\Enums\Import\ImportEntity;
 use App\Plugins\RemoteSupport\Import\RemoteSessionSpec;
-use App\Services\Import\Specs\{ArticleSpec, AttendanceSpec, CustomerSpec, MaterialSpec, ProjectSpec, ProjectTimeSpec, ScheduledShiftSpec, SupplierSpec, UserSpec, VehicleSpec};
+use App\Services\Import\Specs\{ArticleSpec, AssetSpec, AttendanceSpec, ContactPersonSpec, CustomerSpec, DocumentSpec, InvoiceSpec, MaterialSpec, ProjectSpec, ProjectTimeSpec, QuoteSpec, ScheduledShiftSpec, SupplierSpec, UserSpec, VehicleSpec};
 use InvalidArgumentException;
 
 /**
@@ -33,6 +33,12 @@ class EntitySpecRegistry {
         private readonly RemoteSessionSpec $remoteSessions,
         private readonly AttendanceSpec $attendances,
         private readonly ProjectTimeSpec $projectTimes,
+        // MVP-707 (Vollscan H20): Altsystem-Übernahme.
+        private readonly InvoiceSpec $invoices,
+        private readonly QuoteSpec $quotes,
+        private readonly AssetSpec $assets,
+        private readonly ContactPersonSpec $contactPersons,
+        private readonly DocumentSpec $documents,
     ) {}
 
     public function for(ImportEntity $entity): EntitySpec {
@@ -48,6 +54,11 @@ class EntitySpecRegistry {
             ImportEntity::RemoteSessions => $this->remoteSessions,
             ImportEntity::Attendances => $this->attendances,
             ImportEntity::ProjectTimes => $this->projectTimes,
+            ImportEntity::Invoices => $this->invoices,
+            ImportEntity::Quotes => $this->quotes,
+            ImportEntity::Assets => $this->assets,
+            ImportEntity::ContactPersons => $this->contactPersons,
+            ImportEntity::Documents => $this->documents,
         };
     }
 

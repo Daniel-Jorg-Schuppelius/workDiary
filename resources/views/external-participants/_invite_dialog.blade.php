@@ -52,7 +52,7 @@
     </x-form-group>
 
     <x-form-group :legend="__('external.group.abilities')" icon="lock" tone="primary" cols="1">
-        <p class="text-xs text-base-content/60">{{ __('external.hint.abilities') }}</p>
+        <p class="text-xs text-muted">{{ __('external.hint.abilities') }}</p>
         <div class="flex flex-wrap gap-4">
             @foreach ($abilities as $ability)
                 <label class="label cursor-pointer justify-start gap-2">
@@ -65,6 +65,6 @@
 
     <x-form-group :legend="__('external.group.validity')" icon="schedule" tone="primary" cols="1">
         <x-input-field name="ttl_days" type="number" :label="__('external.field.ttl_days')" required min="1" max="180" step="1" :value="old('ttl_days', $defaultTtl)" :hint="__('external.hint.ttl_days')" />
-        <p class="text-xs text-base-content/60">{{ __('external.invite.once_hint') }}</p>
+        <p class="text-xs text-muted">{{ __('external.invite.once_hint') }}</p>
     </x-form-group>
 </x-modal>

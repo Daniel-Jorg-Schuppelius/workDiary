@@ -43,7 +43,7 @@
                 </select>
                 <x-icon-btn icon="save" size="sm" type="submit" :title="__('domain.action.save')" />
             </x-action-form>
-            <p class="mt-1 text-xs text-base-content/60">{{ __('domain.mapping.reseller_hint') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('domain.mapping.reseller_hint') }}</p>
             @if ($reseller->customer_id !== null && $reseller->domains->isNotEmpty())
                 <x-action-form :action="route('domain-reseller.assign-domains', $reseller)" class="mt-2"
                                :confirm="__('domain.mapping.assign_all_confirm', ['customer' => $reseller->customer?->name])">
@@ -66,7 +66,7 @@
             @forelse ($reseller->domains as $domain)
                 <tr>
                     <td><a href="{{ route('domains.show', $domain) }}" class="link link-hover">{{ $domain->external_domain }}</a>
-                        <span class="text-xs text-base-content/50">{{ __('domain.reseller.managed_under', ['user' => $reseller->external_user]) }}</span></td>
+                        <span class="text-xs text-muted">{{ __('domain.reseller.managed_under', ['user' => $reseller->external_user]) }}</span></td>
                     <td>{{ $domain->customer?->name ?? '—' }}</td>
                     <td class="tabular-nums">{{ $domain->expiration_at?->format('d.m.Y') ?? '—' }}</td>
                 </tr>

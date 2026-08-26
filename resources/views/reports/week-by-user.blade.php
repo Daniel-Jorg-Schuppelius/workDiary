@@ -79,7 +79,7 @@
                    href="{{ route('reports.week-by-user', array_merge($linkParams, ['week' => $tab['key']])) }}"
                    class="tab whitespace-nowrap gap-1.5 {{ $tab['key'] === $activeKey ? 'tab-active' : '' }}">
                     <span class="font-semibold">{{ __('KW') }} {{ $tab['week'] }}</span>
-                    <span class="text-[0.65rem] text-base-content/50 tabular-nums">{{ $tab['shortLabel'] }}</span>
+                    <span class="text-[0.65rem] text-muted tabular-nums">{{ $tab['shortLabel'] }}</span>
                 </a>
             @endforeach
         </div>
@@ -90,14 +90,14 @@
             <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $weekLabel }}</h2>
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $weekTotal > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ Std.</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $weekTotal > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $fmt($weekTotal) }}
                     </span>
                 </div>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ €</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $weekRate > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ €</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $weekRate > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $money($weekRate) }}
                     </span>
                 </div>
@@ -105,7 +105,7 @@
         </div>
 
         @if (count($byUser) === 0)
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">view_week</span>' :title="__('Keine Einträge in dieser Woche.')" />
+            <x-empty-state icon="view_week" :title="__('Keine Einträge in dieser Woche.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

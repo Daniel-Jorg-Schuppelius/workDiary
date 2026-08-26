@@ -17,7 +17,7 @@
     </x-slot:actions>
 
     @if ($alerts->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">check_circle</span>'
+        <x-empty-state framed icon="check_circle"
                        :title="__('procurement.alert.empty')" />
     @else
         <x-card padding="p-0">

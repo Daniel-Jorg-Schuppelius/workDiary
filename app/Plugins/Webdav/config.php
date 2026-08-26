@@ -24,4 +24,9 @@ return [
     // öffentlich routbare HTTPS-Ziele (SSRF/DNS-Rebinding). On-Premise-
     // Installationen dürfen den eigenen Server im internen Netz freigeben.
     'allow_private_targets' => env('WEBDAV_ALLOW_PRIVATE_TARGETS', false),
+    // Fortsetzbarer Upload (MVP-721): Backup-Teile über dieser Größe gehen in
+    // Content-Range-PUTs dieser Größe und laufen nach einem Abbruch ab dem
+    // vorhandenen Byte weiter; 0 = immer ein einzelner PUT. Server ohne
+    // Teil-PUT (Nextcloud/SabreDAV) fallen automatisch zurück.
+    'backup_chunk_bytes' => (int) env('WEBDAV_BACKUP_CHUNK_BYTES', 16 * 1024 * 1024),
 ];

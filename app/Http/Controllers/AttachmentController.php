@@ -224,6 +224,9 @@ class AttachmentController extends Controller {
         // löschbar (Vollaudit 2026-07, M37) — der Admin-Bypass der Policy
         // (HasAdminBypass::before) greift hier bewusst nicht.
         abort_if($attachment->attachable instanceof \App\Models\CashEntry, 403);
+        // Portal-Rückfragen (MVP-712): Text UND Anhänge sind nach dem Absenden
+        // Nachweis — auch intern nicht löschbar.
+        abort_if($attachment->attachable instanceof \App\Models\CustomerQuery, 403);
 
         Gate::authorize('delete', $attachment);
 

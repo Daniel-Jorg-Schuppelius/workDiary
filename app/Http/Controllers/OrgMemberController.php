@@ -345,6 +345,41 @@ class OrgMemberController extends Controller {
             ->with('success', __('Mitglied wurde aktualisiert.'));
     }
 
+    /**
+     * Austritt (Feature 126, MVP-689 — H1/E4): der Regelweg für ausscheidende
+     * Mitarbeiter. Deaktiviert zum Stichtag, Nachweise bleiben stehen, der
+     * Lizenzsitz wird frei. Zutrittsmedien-Guard wie beim Entfernen.
+     */
+    public function offboard(\Illuminate\Http\Request $request, User $member): RedirectResponse {
+        Gate::authorize('manage-members');
+        $this->ensureSameOrg($member);
+
+        /** @var User $auth */
+        $auth = Auth::user();
+        if ($member->id === $auth->id) {
+            return back()->with('error', __('Sie können sich nicht selbst entfernen.'));
+        }
+
+        $data = $request->validate(['left_at' => ['required', 'date']]);
+
+        $openMedia = app(\App\Services\Access\AccessMediumService::class)->openMediaFor($member);
+        if ($openMedia->isNotEmpty()) {
+            return back()->with('error', __(':name hält noch :count Zutrittsmedien (:list) — erst zurücknehmen, dann entfernen.', [
+                'name' => $member->name,
+                'count' => $openMedia->count(),
+                'list' => $openMedia->map(fn ($m) => ($m->label ?: __('Medium')) . ' …' . $m->number_suffix)->implode(', '),
+            ]));
+        }
+
+        app(\App\Services\Org\UserOffboardingService::class)
+            ->initiate($member, \Carbon\CarbonImmutable::parse($data['left_at']), $auth);
+
+        return redirect()->route('org.members.index')
+            ->with('success', $member->fresh()?->isDeactivated()
+                ? __(':name ist ausgeschieden — das Konto ist deaktiviert, der Lizenzsitz ist frei.', ['name' => $member->name])
+                : __('Austritt von :name zum :date vorgemerkt.', ['name' => $member->name, 'date' => \Carbon\CarbonImmutable::parse($data['left_at'])->format('d.m.Y')]));
+    }
+
     public function destroy(User $member): RedirectResponse {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
@@ -354,6 +389,13 @@ class OrgMemberController extends Controller {
 
         if ($member->id === $auth->id) {
             return back()->with('error', __('Sie können sich nicht selbst entfernen.'));
+        }
+
+        // H1/E4: Konten mit aufbewahrungspflichtigen Nachweisen (ArbZG/MiLoG/
+        // GoBD) werden nie gelöscht — der Austritt ist der Regelweg; die
+        // RESTRICT-FKs (Migration 101000) sind das Netz darunter.
+        if (app(\App\Services\Org\UserOffboardingService::class)->hasEvidence($member)) {
+            return back()->with('error', __(':name hat aufbewahrungspflichtige Nachweise (Zeiten/Lohn) — bitte den Austritt nutzen statt zu löschen.', ['name' => $member->name]));
         }
 
         // Offboarding-Check (Feature 092): Wer geht, gibt erst ab. Offene

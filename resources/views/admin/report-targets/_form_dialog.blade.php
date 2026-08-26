@@ -76,8 +76,8 @@
                         @endforeach
                     </select>
                 </template>
-                <div x-show="is('org')" class="text-sm text-base-content/50 py-2">{{ __('reporting.target.scope.org') }}</div>
-                <p class="text-xs text-base-content/50" x-show="isNot('org')">{{ __('reporting.target.scope_ref_hint') }}</p>
+                <div x-show="is('org')" class="text-sm text-muted py-2">{{ __('reporting.target.scope.org') }}</div>
+                <p class="text-xs text-muted" x-show="isNot('org')">{{ __('reporting.target.scope_ref_hint') }}</p>
             </x-filter-field>
         </div>
 

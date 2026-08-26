@@ -32,7 +32,7 @@
         ]))->all()" />
 
     @if ($orders->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">precision_manufacturing</span>'
+        <x-empty-state framed icon="precision_manufacturing"
                        :title="__('manufacturing.order.empty')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">

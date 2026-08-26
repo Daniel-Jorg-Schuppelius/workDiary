@@ -27,6 +27,7 @@ return [
         'closed_by' => 'Clôturé par',
         'reason' => 'Motif',
         'resolution' => 'Résolution',
+        'follow_up' => 'Mission de suivi',
     ],
     'action' => [
         'create' => 'Créer un point ouvert',
@@ -40,6 +41,7 @@ return [
         'reopen' => 'Rouvrir',
         'delete' => 'Supprimer',
         'publishToCustomer' => 'Partager avec le client',
+        'followUp' => 'Créer une mission de suivi',
     ],
     'flash' => [
         'created' => 'Point ouvert créé.',
@@ -54,5 +56,9 @@ return [
             'wontDo' => 'Point ouvert marqué « ne sera pas fait ».',
             'reopened' => 'Le point ouvert a été rouvert.',
         ],
+    ],
+
+    'follow_up' => [
+        'content_intro' => 'Mission de suivi du point ouvert n° :id « :title »',
     ],
 ];

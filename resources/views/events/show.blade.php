@@ -153,7 +153,7 @@
                             </tr>
                         @empty
                             <x-table.empty :colspan="5"
-                                icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
+                                icon="group"
                                 :title="__('Noch keine Teilnehmer')" compact />
                         @endforelse
                 </x-table>

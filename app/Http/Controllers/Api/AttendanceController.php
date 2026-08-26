@@ -16,11 +16,23 @@ use App\Services\Attendance\AttendanceClockService;
 use App\Support\Setting;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
+use OpenApi\Attributes as OA;
 use RuntimeException;
 
 class AttendanceController extends Controller {
     public function __construct(protected AttendanceClockService $clock) {}
 
+    #[OA\Get(
+        path: '/attendance/current',
+        summary: 'Aktuelle Anwesenheit',
+        tags: ['Attendance'],
+        security: [['bearerAuth' => ['attendance:read']]],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+        ],
+    )]
     public function current(): JsonResponse {
         $user = Auth::user();
         $a = $user ? $this->clock->current($user) : null;
@@ -31,6 +43,25 @@ class AttendanceController extends Controller {
         ]);
     }
 
+    #[OA\Post(
+        path: '/attendance/clock-in',
+        summary: 'Einstempeln',
+        tags: ['Attendance'],
+        security: [['bearerAuth' => ['attendance:write']]],
+        requestBody: new OA\RequestBody(required: false, content: new OA\JsonContent(properties: [
+            new OA\Property(property: 'lat', type: 'number', format: 'float', nullable: true),
+            new OA\Property(property: 'lng', type: 'number', format: 'float', nullable: true),
+            new OA\Property(property: 'device', type: 'string', maxLength: 64, nullable: true),
+            new OA\Property(property: 'note', type: 'string', maxLength: 1000, nullable: true),
+        ])),
+        responses: [
+            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 409, description: 'Bereits eingestempelt'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function clockIn(Request $request): JsonResponse {
         Gate::authorize('create', Attendance::class);
 
@@ -53,6 +84,26 @@ class AttendanceController extends Controller {
         return response()->json($this->serialize($a), 201);
     }
 
+    #[OA\Post(
+        path: '/attendance/clock-out',
+        summary: 'Ausstempeln',
+        tags: ['Attendance'],
+        security: [['bearerAuth' => ['attendance:write']]],
+        requestBody: new OA\RequestBody(required: false, content: new OA\JsonContent(properties: [
+            new OA\Property(property: 'lat', type: 'number', format: 'float', nullable: true),
+            new OA\Property(property: 'lng', type: 'number', format: 'float', nullable: true),
+            new OA\Property(property: 'device', type: 'string', maxLength: 64, nullable: true),
+            new OA\Property(property: 'note', type: 'string', maxLength: 1000, nullable: true),
+            new OA\Property(property: 'break_minutes', type: 'integer', minimum: 0, maximum: 600, nullable: true),
+        ])),
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Keine offene Anwesenheit'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function clockOut(Request $request): JsonResponse {
         Gate::authorize('create', Attendance::class);
 

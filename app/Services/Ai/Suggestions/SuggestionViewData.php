@@ -54,12 +54,14 @@ class SuggestionViewData {
     }
 
     /**
-     * Offene Vorschläge je Positions-ID.
+     * Offene Vorschläge je Positions-ID. Mit $capability nur die Vorschläge
+     * dieser Einsatzstelle — Protokollpunkte (MVP-711) tragen Text- UND
+     * Klassifikationsvorschlag nebeneinander, die sonst beim keyBy kollidieren.
      *
      * @param Collection<int, covariant Model> $items
      * @return Collection<int, AiTextSuggestion>
      */
-    public function openSuggestionsFor(string $subjectType, Collection $items): Collection {
+    public function openSuggestionsFor(string $subjectType, Collection $items, ?string $capability = null): Collection {
         if ($items->isEmpty()) {
             return collect();
         }
@@ -68,6 +70,7 @@ class SuggestionViewData {
             ->where('subject_type', $subjectType)
             ->whereIn('subject_id', $items->map(static fn (Model $m) => $m->getKey()))
             ->where('status', AiTextSuggestion::STATUS_PROPOSED)
+            ->when($capability !== null, static fn ($q) => $q->where('capability', $capability))
             ->get()
             ->keyBy('subject_id');
     }

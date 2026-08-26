@@ -52,7 +52,7 @@
 
             @if ($customers->isEmpty())
                 <x-empty-state framed
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' />
+                    icon="groups" />
             @else
                 <x-table>…</x-table>
             @endif

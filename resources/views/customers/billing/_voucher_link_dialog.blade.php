@@ -28,7 +28,7 @@
     <x-form-group :legend="__('customer-billing.lexoffice_voucher')" icon="receipt_long" tone="primary" cols="1"
                   :description="__('customer-billing.link_voucher_hint')">
         @if ($vouchers->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('customer-billing.no_linkable_vouchers') }}</p>
+            <p class="text-sm text-muted">{{ __('customer-billing.no_linkable_vouchers') }}</p>
         @else
             <x-select-field name="voucher" :label="__('customer-billing.lexoffice_voucher')" required>
                 @foreach ($vouchers as $voucher)

@@ -23,14 +23,11 @@
         : __('Erben (aktuell: :value)', ['value' => ($project->parent?->effectiveBillable() ?? $project->customer?->billable ?? true) ? __('Ja') : __('Nein')]);
 @endphp
 <x-form-group :legend="__('Abrechenbarkeit')" icon="payments" tone="warning">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Abrechenbar') }}</label>
-        <select name="billable" class="select select-bordered w-full">
-            <option value="" @selected($billableValue === '')>{{ $billableInheritLabel }}</option>
-            <option value="1" @selected($billableValue === '1')>{{ __('Ja') }}</option>
-            <option value="0" @selected($billableValue === '0')>{{ __('Nein') }}</option>
-        </select>
-        <p class="text-xs text-base-content/60">{{ __('Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden.') }}</p>
-        @error('billable')<p class="text-error text-sm">{{ $message }}</p>@enderror
-    </div>
+    <x-select-field name="billable"
+                    :label="__('Abrechenbar')"
+                    :hint="__('Gilt als Vorgabe für neue Zeiteinträge dieses Projekts; nicht abrechenbare Projekte erzeugen keinen Umsatz. Erben nutzt die Einstellung des übergeordneten Projekts bzw. des Kunden.')">
+        <option value="" @selected($billableValue === '')>{{ $billableInheritLabel }}</option>
+        <option value="1" @selected($billableValue === '1')>{{ __('Ja') }}</option>
+        <option value="0" @selected($billableValue === '0')>{{ __('Nein') }}</option>
+    </x-select-field>
 </x-form-group>

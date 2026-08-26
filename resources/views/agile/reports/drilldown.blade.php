@@ -50,12 +50,12 @@
                 @foreach ($rows as $row)
                     <tr>
                         <td>{{ $row['title'] ?? '—' }}</td>
-                        <td class="text-sm text-base-content/60">{{ $row['at'] }}</td>
+                        <td class="text-sm text-muted">{{ $row['at'] }}</td>
                         <td class="text-sm">{{ $row['detail'] ?? '—' }}</td>
                     </tr>
                 @endforeach
             </x-table>
-            <p class="mt-2 text-xs text-base-content/60">{{ __(':count Datensätze — entspricht dem Kennzahlwert.', ['count' => count($rows)]) }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __(':count Datensätze — entspricht dem Kennzahlwert.', ['count' => count($rows)]) }}</p>
         @endif
     </x-card>
 </x-page-shell>

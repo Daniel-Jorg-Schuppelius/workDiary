@@ -23,7 +23,7 @@
             <span>{{ __('backup_targets.cleanup_page.error', ['message' => $error]) }}</span>
         </div>
     @elseif (count($objects) === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">folder_off</span>'
+        <x-empty-state framed icon="folder_off"
                        :title="__('backup_targets.cleanup_page.empty')" />
     @else
         <div class="card bg-base-100 shadow-sm">
@@ -33,7 +33,7 @@
                     @foreach ($objects as $object)
                         <li class="flex flex-wrap items-center gap-2 py-2 text-sm">
                             <span class="font-mono">{{ $object->name }}</span>
-                            <span class="text-base-content/60">{{ \Illuminate\Support\Number::fileSize($object->size) }}</span>
+                            <span class="text-muted">{{ \Illuminate\Support\Number::fileSize($object->size) }}</span>
                             @if (collect($knownPrefixes)->keys()->first(fn ($prefix) => str_ends_with((string) $prefix, '/' . $object->name)) !== null)
                                 <span class="badge badge-ghost badge-sm">{{ __('backup_targets.cleanup_page.known') }}</span>
                             @else

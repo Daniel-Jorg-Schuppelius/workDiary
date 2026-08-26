@@ -106,7 +106,7 @@
                     @endif
                 </a>
             @endforeach
-            <text x="{{ $width - $padR + 48 }}" y="{{ $height - 4 }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ __('Max.') }} {{ $maxY }}</text>
+            <text x="{{ $width - $padR + 48 }}" y="{{ $height - 4 }}" text-anchor="end" class="fill-muted text-[10px]">{{ __('Max.') }} {{ $maxY }}</text>
         </svg>
         @if ($hasSecond)
             <p class="mt-1 flex flex-wrap gap-3 text-xs">

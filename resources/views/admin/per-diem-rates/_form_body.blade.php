@@ -16,12 +16,12 @@
         <x-currency-options :selected="old('currency', $rate->currency?->value ?? 'EUR')" />
     </x-select-field>
     <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Region / Stadt') }}</label>
-        <input type="text" name="region_label" maxlength="100"
+        <label for="region_label" class="fieldset-label">{{ __('Region / Stadt') }}</label>
+        <input id="region_label" type="text" name="region_label" maxlength="100"
                value="{{ old('region_label', $rate->region_label) }}"
                class="input input-bordered w-full"
                placeholder="{{ __('z. B. New York, Paris, London – leer = Standardtarif des Landes') }}">
-        <p class="fieldset-label text-base-content/60">{{ __('Sondertarif für eine Stadt/Region nach BMF-Auslandstabelle. Leer lassen für den Standardtarif des Landes.') }}</p>
+        <p class="fieldset-label text-muted">{{ __('Sondertarif für eine Stadt/Region nach BMF-Auslandstabelle. Leer lassen für den Standardtarif des Landes.') }}</p>
     </div>
     <x-date-range class="md:col-span-2" layout="split" form-control size="md"
                   from-name="valid_from" to-name="valid_to" from-required

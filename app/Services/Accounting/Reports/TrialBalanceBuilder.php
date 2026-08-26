@@ -25,9 +25,9 @@ class TrialBalanceBuilder extends AbstractAccountingReportBuilder {
     /**
      * @return array{rows: list<array<string, mixed>>, totals: array<string, string>}
      */
-    public function build(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
-        $opening = $this->sumsByAccount($organization, null, $from->subDay());
-        $period = $this->sumsByAccount($organization, $from, $to);
+    public function build(Organization $organization, CarbonImmutable $from, CarbonImmutable $to, ?int $costCenterId = null): array {
+        $opening = $this->sumsByAccount($organization, null, $from->subDay(), null, $costCenterId);
+        $period = $this->sumsByAccount($organization, $from, $to, null, $costCenterId);
 
         $accountIds = array_unique([...array_keys($opening), ...array_keys($period)]);
         $accounts = AccountingAccount::query()

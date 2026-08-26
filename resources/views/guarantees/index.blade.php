@@ -82,7 +82,7 @@
                     <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($guarantee->amount->toFloat(), 2, withThousandsSeparator: true) }}</td>
                     <td class="whitespace-nowrap">
                         @if ($guarantee->expires_on === null)
-                            <span class="text-base-content/50">{{ __('guarantee.unlimited') }}</span>
+                            <span class="text-muted">{{ __('guarantee.unlimited') }}</span>
                         @else
                             <x-status-badge :tone="$guarantee->isExpiredUnnoticed() ? 'error' : 'neutral'" outline>{{ $guarantee->expires_on->fdate() }}</x-status-badge>
                         @endif

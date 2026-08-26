@@ -42,19 +42,19 @@
                     @endif
                 </div>
             </div>
-            <p class="mb-3 text-sm text-base-content/60">{{ __('jtl_wawi.intro') }}</p>
+            <p class="mb-3 text-sm text-muted">{{ __('jtl_wawi.intro') }}</p>
             <p class="mb-3 text-xs text-warning">{{ __('jtl_wawi.beta_notice') }}</p>
 
             @if ($connection)
                 <dl class="mb-3 grid gap-x-6 gap-y-1 text-sm md:grid-cols-2">
                     @if ($connection->detected_version)
-                        <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('jtl_wawi.field.detected_version') }}</dt><dd>{{ $connection->detected_version }}</dd></div>
+                        <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('jtl_wawi.field.detected_version') }}</dt><dd>{{ $connection->detected_version }}</dd></div>
                     @endif
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('jtl_wawi.field.api_version') }}</dt><dd>{{ $connection->api_version }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('jtl_wawi.field.last_sync') }}</dt><dd>{{ $connection->last_sync_at?->diffForHumans() ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('jtl_wawi.stats.linked_articles') }}</dt><dd>{{ $linkedArticles }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('jtl_wawi.field.api_version') }}</dt><dd>{{ $connection->api_version }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('jtl_wawi.field.last_sync') }}</dt><dd>{{ $connection->last_sync_at?->diffForHumans() ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('jtl_wawi.stats.linked_articles') }}</dt><dd>{{ $linkedArticles }}</dd></div>
                     <div class="flex justify-between gap-4">
-                        <dt class="text-base-content/60">{{ __('jtl_wawi.stats.open_inbox') }}</dt>
+                        <dt class="text-muted">{{ __('jtl_wawi.stats.open_inbox') }}</dt>
                         <dd>
                             @if ($openInbox > 0)
                                 <a href="{{ route('admin.integration.inbox', ['plugin' => \App\Plugins\JtlWawi\JtlWawiPlugin::ID]) }}" class="link">{{ $openInbox }}</a>
@@ -64,7 +64,7 @@
                         </dd>
                     </div>
                     @if ($connection->last_error)
-                        <div class="flex justify-between gap-4 md:col-span-2"><dt class="text-base-content/60">{{ __('jtl_wawi.field.last_error') }}</dt><dd class="text-error">{{ $connection->last_error }}</dd></div>
+                        <div class="flex justify-between gap-4 md:col-span-2"><dt class="text-muted">{{ __('jtl_wawi.field.last_error') }}</dt><dd class="text-error">{{ $connection->last_error }}</dd></div>
                     @endif
                 </dl>
 
@@ -74,7 +74,7 @@
                     </div>
                 @endif
                 @if ($scopeCheck && ($scopeCheck['missing_write'] ?? []) !== [] && ! $scopeCheck['unknown'])
-                    <p class="text-xs text-base-content/60">{{ __('jtl_wawi.scopes.missing_write', ['scopes' => implode(', ', $scopeCheck['missing_write'])]) }}</p>
+                    <p class="text-xs text-muted">{{ __('jtl_wawi.scopes.missing_write', ['scopes' => implode(', ', $scopeCheck['missing_write'])]) }}</p>
                 @endif
 
                 <div class="mt-3 flex flex-wrap gap-2">
@@ -125,7 +125,7 @@
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('jtl_wawi.action.check_registration') }}</button>
                     </form>
                 @else
-                    <p class="text-sm text-base-content/60">{{ __('jtl_wawi.registration.explain') }}</p>
+                    <p class="text-sm text-muted">{{ __('jtl_wawi.registration.explain') }}</p>
                     <form method="POST" action="{{ route('admin.jtl.connection.register') }}">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('jtl_wawi.action.start_registration') }}</button>
@@ -158,7 +158,7 @@
                         <span class="label-text">{{ __('jtl_wawi.field.base_url') }}</span>
                         <input type="url" name="base_url" value="{{ old('base_url', $connection->base_url ?? '') }}"
                                placeholder="https://wawi.example.local:5883/api/eazybusiness" class="input input-bordered input-sm">
-                        <span class="label-text-alt text-base-content/50">{{ __('jtl_wawi.field.base_url_help') }}</span>
+                        <span class="label-text-alt text-muted">{{ __('jtl_wawi.field.base_url_help') }}</span>
                     </label>
                 </template>
 
@@ -175,7 +175,7 @@
                     <span class="label-text">{{ __('jtl_wawi.field.company_id') }}</span>
                     <input type="text" name="company_id" value="{{ old('company_id', $connection->company_id ?? '') }}"
                            class="input input-bordered input-sm" autocomplete="off">
-                    <span class="label-text-alt text-base-content/50">{{ __('jtl_wawi.field.company_id_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('jtl_wawi.field.company_id_help') }}</span>
                 </label>
 
                 <template x-if="mode === 'on_premise'">
@@ -213,7 +213,7 @@
             </div>
 
             <template x-if="mode === 'on_premise'">
-                <p class="text-xs text-base-content/50">{{ __('jtl_wawi.field.allow_private_network_help') }}</p>
+                <p class="text-xs text-muted">{{ __('jtl_wawi.field.allow_private_network_help') }}</p>
             </template>
 
             <div class="flex justify-end">
@@ -225,7 +225,7 @@
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('jtl_wawi.warehouses.heading') }}</h2>
             @if ($warehouseMappings->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('jtl_wawi.warehouses.empty') }}</p>
+                <p class="text-sm text-muted">{{ __('jtl_wawi.warehouses.empty') }}</p>
             @else
                 <div class="overflow-x-auto">
                     <table class="table table-sm">
@@ -243,9 +243,9 @@
                                 <tr>
                                     <td>
                                         {{ $mapping->name }}
-                                        @if ($mapping->code)<span class="text-base-content/50">({{ $mapping->code }})</span>@endif
+                                        @if ($mapping->code)<span class="text-muted">({{ $mapping->code }})</span>@endif
                                     </td>
-                                    <td class="text-sm text-base-content/60">{{ $mapping->warehouse_type ?? '—' }}</td>
+                                    <td class="text-sm text-muted">{{ $mapping->warehouse_type ?? '—' }}</td>
                                     <td>
                                         @unless ($mapping->jtl_is_active)<span class="badge badge-ghost badge-xs">{{ __('jtl_wawi.warehouses.inactive') }}</span>@endunless
                                         @if ($mapping->lock_for_shipment)<span class="badge badge-warning badge-xs">{{ __('jtl_wawi.warehouses.lock_shipment') }}</span>@endif
@@ -279,7 +279,7 @@
                   class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 @csrf
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('jtl_wawi.inventory.heading') }}</h2>
-                <p class="text-sm text-base-content/60">{{ __('jtl_wawi.inventory.explain') }}</p>
+                <p class="text-sm text-muted">{{ __('jtl_wawi.inventory.explain') }}</p>
 
                 <div class="flex flex-col gap-2">
                     @foreach (\App\Enums\Inventory\InventoryMode::cases() as $mode)

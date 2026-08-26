@@ -11,9 +11,18 @@
 namespace App\Http\Requests;
 
 class SaveInvoiceItemRequest extends BaseFormRequest {
-    /** @return array<string, array<int, string>> */
+    use \App\Http\Requests\Concerns\DecodesSqidInputs;
+
+    /** @var array<string, class-string> */
+    protected array $sqidFields = [
+        'article_id' => \App\Models\Article::class,
+    ];
+
+    /** @return array<string, array<int, string|\Illuminate\Contracts\Validation\ValidationRule>> */
     public function rules(): array {
         return [
+            // Optionaler Artikelbezug (Feature 140, Umsatz je Produkt).
+            'article_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('articles')],
             'description' => ['required', 'string', 'max:1000'],
             'service_date' => ['nullable', 'date'],
             'quantity' => ['required', 'numeric', 'min:0'],

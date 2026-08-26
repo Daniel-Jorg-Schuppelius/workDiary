@@ -39,7 +39,7 @@
                                 <x-icon-btn type="button" tone="ghost" size="xs" icon="keyboard_arrow_up" :label="__('Nach oben')" class="widget-move-up" />
                                 <x-icon-btn type="button" tone="ghost" size="xs" icon="keyboard_arrow_down" :label="__('Nach unten')" class="widget-move-down" />
                             </div>
-                            <span class="material-symbols-outlined text-base-content/70" aria-hidden="true">{{ $item['icon'] }}</span>
+                            <x-icon name="{{ $item['icon'] }}" class="text-base-content/70" />
                             <span class="flex-1 font-semibold">{{ $item['label'] }}</span>
                             <label class="label cursor-pointer gap-2">
                                 <span class="label-text text-xs">{{ __('Sichtbar') }}</span>

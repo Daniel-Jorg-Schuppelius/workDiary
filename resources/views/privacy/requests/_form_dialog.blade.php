@@ -28,7 +28,7 @@
         <x-input-field name="channel" :label="__('Eingangskanal (optional)')" :value="old('channel')" placeholder="email, post, telefon …" />
         <x-input-field name="subject" :label="__('Betroffene Person (Identität)')" span="2">
             <textarea id="subject" name="subject" rows="2" class="textarea textarea-bordered w-full" required>{{ old('subject') }}</textarea>
-            <p class="text-xs text-base-content/60 mt-1">{{ __('Wird verschlüsselt gespeichert (Crypto-Shredding nach Aufbewahrung).') }}</p>
+            <p class="text-xs text-muted mt-1">{{ __('Wird verschlüsselt gespeichert (Crypto-Shredding nach Aufbewahrung).') }}</p>
         </x-input-field>
         <x-input-field name="content" :label="__('Anliegen / Sachverhalt')" span="2">
             <textarea id="content" name="content" rows="5" class="textarea textarea-bordered w-full" required>{{ old('content') }}</textarea>

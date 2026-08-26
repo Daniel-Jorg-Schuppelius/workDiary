@@ -22,7 +22,7 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('allocation.action.save')"
 >
-    <p class="mb-2 text-sm text-base-content/60">
+    <p class="mb-2 text-sm text-muted">
         {{ __('allocation.entry_duration') }}: <strong>{{ $entry->hoursFormatted() }}</strong> ·
         {{ __('allocation.hint') }}
     </p>

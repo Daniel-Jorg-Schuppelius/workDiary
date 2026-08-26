@@ -57,7 +57,7 @@
                 <tr>
                     <td>
                         <div class="flex items-start gap-2">
-                            <x-icon :name="$task->type->icon()" class="mt-0.5 text-base-content/60" />
+                            <x-icon :name="$task->type->icon()" class="mt-0.5 text-muted" />
                             <div>
                                 <div class="font-medium">{{ $task->title() }}</div>
                                 <div class="mt-1 flex flex-wrap gap-1">
@@ -79,10 +79,10 @@
                     <td>
                         <x-status-badge size="xs" :tone="$task->status->tone()">{{ $task->status->label() }}</x-status-badge>
                         @if ($task->status === \App\Enums\Operations\OperationsTaskStatus::Snoozed && $task->snoozed_until)
-                            <div class="text-xs text-base-content/50">{{ __('operations.field.snooze_until') }} {{ $task->snoozed_until->format('d.m.Y') }}</div>
+                            <div class="text-xs text-muted">{{ __('operations.field.snooze_until') }} {{ $task->snoozed_until->format('d.m.Y') }}</div>
                         @endif
                         @if ($task->note)
-                            <div class="text-xs text-base-content/50" title="{{ $task->note }}">{{ \Illuminate\Support\Str::limit($task->note, 40) }}</div>
+                            <div class="text-xs text-muted" title="{{ $task->note }}">{{ \Illuminate\Support\Str::limit($task->note, 40) }}</div>
                         @endif
                     </td>
                     <td class="text-sm">{{ $task->last_seen_at->format('d.m.Y H:i') }}</td>

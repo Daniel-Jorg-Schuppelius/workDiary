@@ -58,6 +58,14 @@
                 <x-currency-options :selected="old('currency', $customer?->currency?->value ?? 'EUR')" />
             </x-select-field>
             <x-input-field name="timezone" :label="__('Zeitzone')" maxlength="64" placeholder="Europe/Berlin" :value="old('timezone', $customer?->timezone)" />
+            {{-- Belegsprache (Feature 034, MVP-721): Rechnung/Angebot/AB/Mahnung/Lieferschein
+                 und Belegversand rendern in dieser Sprache; leer = Sprache der Organisation. --}}
+            <x-select-field name="document_locale" :label="__('Belegsprache')" :hint="__('Sprache von Rechnung, Angebot, Mahnung, Lieferschein und Belegversand für diesen Kunden.')">
+                <option value="">{{ __('Wie Organisation') }}</option>
+                @foreach (\App\Support\Locales::enabled() as $code => $meta)
+                    <option value="{{ $code }}" @selected(old('document_locale', $customer?->document_locale) === $code)>{{ $meta['native'] }}</option>
+                @endforeach
+            </x-select-field>
             <x-input-field name="hourly_rate" type="number" step="0.01" min="0" :label="__('Stundensatz')" :value="old('hourly_rate', $customer?->hourly_rate)" />
             <x-input-field name="internal_rate" type="number" step="0.01" min="0" :label="__('Interner Satz')" :value="old('internal_rate', $customer?->internal_rate)" />
 

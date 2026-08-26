@@ -36,7 +36,7 @@
                     @foreach ($due as $part)
                         <li class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">{{ $part->displayName() }}</span>
-                            @if ($part->position !== null)<span class="text-base-content/60">{{ $part->position }}</span>@endif
+                            @if ($part->position !== null)<span class="text-muted">{{ $part->position }}</span>@endif
                             <x-status-badge tone="warning" outline>{{ optional($part->dueOn())->fdate() ?? '—' }}</x-status-badge>
                         </li>
                     @endforeach
@@ -95,7 +95,7 @@
                     <td class="whitespace-nowrap">
                         @php($due = $part->dueOn())
                         @if ($due === null)
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @else
                             <x-status-badge :tone="$part->isDue() ? 'warning' : 'neutral'" outline>{{ $due->fdate() }}</x-status-badge>
                         @endif

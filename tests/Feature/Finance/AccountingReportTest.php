@@ -186,6 +186,7 @@ class AccountingReportTest extends TestCase {
             'reports.accounting.euer',
             'reports.accounting.profit-and-loss',
             'reports.accounting.liquidity',
+            'reports.accounting.liquidity-forecast',
             'reports.accounting.quality',
         ] as $route) {
             $this->actingAs($this->admin)->get(route($route))->assertOk();
@@ -218,6 +219,7 @@ class AccountingReportTest extends TestCase {
             'reports.accounting.euer',
             'reports.accounting.profit-and-loss',
             'reports.accounting.liquidity',
+            'reports.accounting.liquidity-forecast',
             'reports.accounting.quality',
         ] as $route) {
             $response = $this->actingAs($this->admin)->get(route($route, ['export' => 'pdf']));

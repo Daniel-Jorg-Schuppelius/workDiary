@@ -74,7 +74,7 @@
                     <x-slot:foot>
                         @foreach ($aggregate['co2e_by_scope'] as $scope => $value)
                             <tr>
-                                <td colspan="2" class="text-right text-xs uppercase tracking-wide text-base-content/60">{{ __('Scope :scope', ['scope' => $scope]) }}</td>
+                                <td colspan="2" class="text-right text-xs uppercase tracking-wide text-muted">{{ __('Scope :scope', ['scope' => $scope]) }}</td>
                                 <td class="text-right tabular-nums font-medium">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($value, 1, withThousandsSeparator: true) }}</td>
                                 <td></td>
                             </tr>
@@ -85,7 +85,7 @@
                             <td>{{ __("values.$code") }}</td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($activity['amount'], 1, withThousandsSeparator: true) }} {{ $activity['unit'] }}</td>
                             <td class="text-right tabular-nums">{{ $activity['co2e_kg'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($activity['co2e_kg'], 1, withThousandsSeparator: true) : '—' }}</td>
-                            <td class="text-xs text-base-content/60">{{ $activity['factor_source'] ?? __('Faktor fehlt') }}</td>
+                            <td class="text-xs text-muted">{{ $activity['factor_source'] ?? __('Faktor fehlt') }}</td>
                         </tr>
                     @endforeach
                 </x-table>
@@ -111,7 +111,7 @@
                     </x-slot:head>
                     @foreach ($targets as $row)
                         <tr @class(['text-error' => $row['actual'] !== null && $row['actual'] > $row['expected']])>
-                            <td>{{ $row['target']->label }} <span class="text-xs text-base-content/60">({{ $row['target']->baseline_year }} → {{ $row['target']->target_year }})</span></td>
+                            <td>{{ $row['target']->label }} <span class="text-xs text-muted">({{ $row['target']->baseline_year }} → {{ $row['target']->target_year }})</span></td>
                             <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['expected'], 1, withThousandsSeparator: true) }} {{ $row['target']->unit }}</td>
                             <td class="text-right tabular-nums">{{ $row['actual'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['actual'], 1, withThousandsSeparator: true) . ' ' . $row['target']->unit : '—' }}</td>
                         </tr>
@@ -139,7 +139,7 @@
                 <ul class="space-y-1.5 text-sm">
                     @foreach ($assessments as $assessment)
                         <li class="flex flex-wrap items-center gap-2">
-                            <a class="link link-hover font-medium" href="{{ route('sustainability.assessments.show', $assessment) }}">{{ $assessment->subject_label }} <span class="text-xs text-base-content/50">V{{ $assessment->version }}</span></a>
+                            <a class="link link-hover font-medium" href="{{ route('sustainability.assessments.show', $assessment) }}">{{ $assessment->subject_label }} <span class="text-xs text-muted">V{{ $assessment->version }}</span></a>
                             <x-status-badge size="xs" outline>{{ __("values.{$assessment->status}") }}</x-status-badge>
                             @if ($assessment->rating)
                                 <x-status-badge size="xs" :tone="$assessment->rating === 'green' ? 'success' : ($assessment->rating === 'yellow' ? 'warning' : 'error')">{{ $assessment->total_score }}</x-status-badge>
@@ -181,8 +181,8 @@
                         <li class="flex flex-wrap items-center gap-2">
                             <x-status-badge size="xs" outline>{{ __("values.{$measure->status}") }}</x-status-badge>
                             <span class="min-w-0 flex-1">{{ $measure->title }}</span>
-                            @if ($measure->responsible)<span class="text-xs text-base-content/60">{{ $measure->responsible->name }}</span>@endif
-                            @if ($measure->due_on)<span class="text-xs text-base-content/60">{{ $measure->due_on->fdate() }}</span>@endif
+                            @if ($measure->responsible)<span class="text-xs text-muted">{{ $measure->responsible->name }}</span>@endif
+                            @if ($measure->due_on)<span class="text-xs text-muted">{{ $measure->due_on->fdate() }}</span>@endif
                             @if ($measure->effectiveness)
                                 <x-status-badge size="xs" :tone="$measure->effectiveness === 'effective' ? 'success' : 'warning'">{{ __("values.{$measure->effectiveness}") }}</x-status-badge>
                             @endif
@@ -224,7 +224,7 @@
                 <div class="mb-3 last:mb-0">
                     <div class="flex flex-wrap items-baseline gap-2">
                         <span class="font-medium">{{ $set->name }} {{ $set->year }}</span>
-                        <span class="text-xs text-base-content/60">{{ $set->source ?? '—' }}</span>
+                        <span class="text-xs text-muted">{{ $set->source ?? '—' }}</span>
                         @if ($set->organization_id !== null)
                             <span class="badge badge-info badge-xs">{{ __('Org-Override') }}</span>
                         @endif
@@ -255,7 +255,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <p class="border-t border-base-300 px-4 py-3 text-xs text-base-content/60">{{ __('esrs-2.0 / iso14001-2026 folgen als weitere Matrixversionen nach den Watchlist-Checks (W4/W6).') }}</p>
+            <p class="border-t border-base-300 px-4 py-3 text-xs text-muted">{{ __('esrs-2.0 / iso14001-2026 folgen als weitere Matrixversionen nach den Watchlist-Checks (W4/W6).') }}</p>
         </x-card>
     </div>
 
@@ -347,7 +347,7 @@
                 <span class="mb-1 block text-xs font-medium text-base-content/70">{{ __('Gerät/Prozess/Dienstleistung/Lieferant …') }}</span>
                 <input name="subject_label" required maxlength="200" class="input input-bordered input-sm w-full">
             </label>
-            <p class="mt-2 text-xs text-base-content/60">{{ __(':count aktive Kriterien im Katalog.', ['count' => $criteria->where('active', true)->count()]) }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __(':count aktive Kriterien im Katalog.', ['count' => $criteria->where('active', true)->count()]) }}</p>
         </x-modal>
 
         <x-modal id="criterion-create" :embedded="false" tone="primary" icon="checklist"

@@ -36,7 +36,7 @@
     <header class="bg-base-100 border-b border-base-300">
         <div class="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between gap-4">
             <a href="{{ route('customer.dashboard') }}" class="flex items-center gap-2 font-semibold">
-                <span class="material-symbols-outlined" aria-hidden="true">support_agent</span>
+                <x-icon name="support_agent" />
                 <span>{{ __('Customer-Portal') }}</span>
             </a>
             @if ($portalUser)
@@ -74,9 +74,13 @@
                     @if ($portalAllows(PortalCapability::Rentals))
                         <a href="{{ route('customer.rentals.index') }}" class="hover:underline">{{ __('Verleih') }}</a>
                     @endif
+                    @if ($portalAllows(PortalCapability::RentalRequests))
+                        <a href="{{ route('customer.rentals.requests.index') }}" class="hover:underline">{{ __('Verleih-Anfrage') }}</a>
+                    @endif
                     @if ($portalAllows(PortalCapability::Queries))
                         <a href="{{ route('customer.queries.index') }}" class="hover:underline">{{ __('Rückfragen') }}</a>
                     @endif
+                    <a href="{{ route('customer.profile.show') }}" class="hover:underline">{{ __('Profil') }}</a>
                     <a href="{{ route('customer.2fa.show') }}" class="hover:underline" title="{{ __('Zwei-Faktor-Authentifizierung') }}">{{ __('Sicherheit') }}</a>
                     <form method="POST" action="{{ route('customer.logout') }}">
                         @csrf

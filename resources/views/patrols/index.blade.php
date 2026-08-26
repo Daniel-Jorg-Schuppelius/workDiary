@@ -25,7 +25,7 @@
 
     @if ($openRuns->isNotEmpty())
         <div class="alert alert-info text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">directions_walk</span>
+            <x-icon name="directions_walk" />
             <div>
                 @foreach ($openRuns as $run)
                     <a class="link" href="{{ route('patrols.runs.show', $run) }}">{{ $run->route?->name }}</a>
@@ -36,7 +36,7 @@
     @endif
 
     @if ($routes->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">route</span>'
+        <x-empty-state framed icon="route"
                        :title="__('Noch keine Rundgangs-Routen.')"
                        :message="__('Eine Route ist eine geordnete Liste von Kontrollpunkten mit Soll-Zeiten — der Scan belegt Punkt und Zeit.')" />
     @else

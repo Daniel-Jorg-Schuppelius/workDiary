@@ -30,8 +30,8 @@
                     <div class="flex flex-wrap items-center gap-2">
                         <span class="font-medium">{{ $negotiation->title }}</span>
                         <x-status-badge size="xs" outline>{{ __("values.{$negotiation->status}") }}</x-status-badge>
-                        @if ($negotiation->due_on)<span class="text-xs text-base-content/60">{{ __('Frist: :date', ['date' => $negotiation->due_on->fdate()]) }}</span>@endif
-                        @if ($negotiation->decided_at)<span class="text-xs text-base-content/60">{{ __('Entschieden: :date', ['date' => $negotiation->decided_at->fdatetime()]) }}</span>@endif
+                        @if ($negotiation->due_on)<span class="text-xs text-muted">{{ __('Frist: :date', ['date' => $negotiation->due_on->fdate()]) }}</span>@endif
+                        @if ($negotiation->decided_at)<span class="text-xs text-muted">{{ __('Entschieden: :date', ['date' => $negotiation->decided_at->fdatetime()]) }}</span>@endif
                     </div>
 
                     {{-- Versionen (append-only) --}}
@@ -40,7 +40,7 @@
                         @forelse ($negotiation->versions as $version)
                             <span class="badge badge-outline badge-sm">V{{ $version->version }} · {{ __("values.{$version->kind}") }}@if ($version->summary) · {{ \Illuminate\Support\Str::limit($version->summary, 40) }}@endif</span>
                         @empty
-                            <span class="text-base-content/60">{{ __('noch keine') }}</span>
+                            <span class="text-muted">{{ __('noch keine') }}</span>
                         @endforelse
                     </div>
 
@@ -51,7 +51,7 @@
                                 <li class="flex flex-wrap items-center gap-2">
                                     <x-status-badge size="xs" :tone="$item->severity === 'blocker' && $item->status === 'open' ? 'error' : 'outline'">{{ __("values.{$item->severity}") }}</x-status-badge>
                                     <span @class(['line-through opacity-60' => $item->status !== 'open'])>{{ $item->label }}</span>
-                                    <span class="text-xs text-base-content/60">{{ __("values.{$item->status}") }}</span>
+                                    <span class="text-xs text-muted">{{ __("values.{$item->status}") }}</span>
                                     @if ($item->status === 'open' && ! $negotiation->isDecided())
                                         @can('update', $negotiation)
                                             <form method="POST" action="{{ route('applications.negotiations.reviews.resolve', [$negotiation, $item->sqid]) }}" class="ml-auto flex items-center gap-1">

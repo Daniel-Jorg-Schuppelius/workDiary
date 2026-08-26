@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingEntryStatus;
-use App\Models\Accounting\{AccountingEntry, AccountingEntryLine};
+use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingOpenItem};
 use App\Models\Organization;
-use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
+use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
@@ -106,6 +106,10 @@ class LedgerDatevExportService {
      * das financial-formats-Paket. Voraussetzung hier:
      * {@see FinancialFormatsSupport::isAvailable()}.
      *
+     * Kanzlei-Felder (Feature 135): Fälligkeit aus dem offenen Posten der
+     * Buchung (Ledger-Wahrheit), sonst aus dem Quellbeleg; KOST1 und Skonto
+     * über {@see DatevBookingFieldResolver} aus dem Quellbeleg.
+     *
      * @return array{content: string, filename: string, rows: int, debit: string, credit: string}
      */
     public function buildExtf(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): array {
@@ -116,9 +120,18 @@ class LedgerDatevExportService {
             ->whereIn('status', [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value])
             ->whereDate('booked_on', '>=', $from->toDateString())
             ->whereDate('booked_on', '<=', $to->toDateString())
-            ->with(['lines.account', 'lines.taxCode'])
+            ->with(['lines.account', 'lines.taxCode', 'lines.costCenter', 'source'])
             ->orderBy('journal_no')
             ->get();
+
+        $dueDates = AccountingOpenItem::query()
+            ->where('organization_id', $organization->id)
+            ->whereIn('accounting_entry_id', $entries->pluck('id')->all())
+            ->whereNotNull('due_date')
+            ->orderBy('id')
+            ->get(['accounting_entry_id', 'due_date'])
+            ->keyBy('accounting_entry_id');
+        $fields = new DatevBookingFieldResolver((int) $organization->id);
 
         $rows = [];
         $currency = $entries->first()->currency ?? CurrencyCode::Euro;
@@ -127,6 +140,13 @@ class LedgerDatevExportService {
 
         foreach ($entries as $entry) {
             $counter = $entry->lines->count() === 2 ? $entry->lines : null;
+            $source = $entry->source;
+            $extra = $fields->forSource($source instanceof \Illuminate\Database\Eloquent\Model ? $source : null);
+            $openItem = $dueDates->get((int) $entry->id);
+            $dueOn = $openItem instanceof AccountingOpenItem && $openItem->due_date !== null
+                ? new \DateTimeImmutable($openItem->due_date->toDateString())
+                : $extra['due_on'];
+
             foreach ($entry->lines as $index => $line) {
                 $isDebit = $line->debit?->isPositive() ?? false;
                 $amount = ($isDebit ? $line->debit : $line->credit) ?? Money::zero($line->currency);
@@ -141,6 +161,12 @@ class LedgerDatevExportService {
                     'text' => (string) $entry->memo,
                     // Festbuchungen sind per Definition festgeschrieben; Stornos
                     // stehen als eigene Buchung im Journal, keine Generalumkehr.
+                    // Ledger-Wahrheit zuerst: die Zeile trägt ihre Kostenstelle
+                    // (Feature 142), erst ohne sie greift die Beleg-Regel.
+                    'cost_center1' => $line->costCenter->code ?? $extra['cost_center1'],
+                    'due_on' => $dueOn,
+                    'discount_amount' => $extra['discount_amount'],
+                    'discount_type' => $extra['discount_type'],
                 ];
 
                 $isDebit

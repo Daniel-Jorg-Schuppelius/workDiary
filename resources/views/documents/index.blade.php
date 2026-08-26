@@ -61,6 +61,7 @@
                     <option value="project" @selected($filters['ref'] === 'project')>{{ __('document.ref.project') }}</option>
                     <option value="diary" @selected($filters['ref'] === 'diary')>{{ __('document.ref.diary') }}</option>
                     <option value="asset" @selected($filters['ref'] === 'asset')>{{ __('document.ref.asset') }}</option>
+                    <option value="user" @selected($filters['ref'] === 'user')>{{ __('document.ref.user') }}</option>
                     <option value="none" @selected($filters['ref'] === 'none')>{{ __('document.ref.none') }}</option>
                 </select>
             </x-filter-field>
@@ -100,6 +101,7 @@
                         \App\Models\Project::class => __('document.ref.project'),
                         \App\Models\DiaryEntry::class => __('document.ref.diary'),
                         \App\Models\Asset::class => __('document.ref.asset'),
+                        \App\Models\User::class => __('document.ref.user'),
                         default => null,
                     };
                     $refName = $document->documentable?->name
@@ -109,11 +111,11 @@
                 <tr class="hover" id="document-{{ $document->id }}">
                     <td>
                         <span class="flex items-center gap-2 font-medium">
-                            <x-icon :name="$document->document_type->icon()" class="text-base-content/60" />
+                            <x-icon :name="$document->document_type->icon()" class="text-muted" />
                             <a class="link link-hover" href="{{ route('documents.show', $document) }}">{{ $document->title }}</a>
                         </span>
                         @if ($document->description)
-                            <span class="block max-w-md truncate text-xs text-base-content/60">{{ $document->description }}</span>
+                            <span class="block max-w-md truncate text-xs text-muted">{{ $document->description }}</span>
                         @endif
                     </td>
                     <td><x-status-badge tone="ghost" outline>{{ $document->document_type->label() }}</x-status-badge></td>
@@ -126,7 +128,7 @@
                     </td>
                     <td>
                         @if ($document->valid_until === null)
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @elseif ($isExpired)
                             <x-status-badge tone="error">{{ $document->valid_until->fdate() }} · {{ __('document.badge.expired') }}</x-status-badge>
                         @elseif ($expiresSoon)

@@ -20,7 +20,7 @@
     <x-slot:toolbar>
         <x-page-toolbar :title="$article->name">
             <div class="flex flex-wrap items-center gap-2 text-xs">
-                <span class="uppercase text-base-content/60">{{ $article->type->label() }}</span>
+                <span class="uppercase text-muted">{{ $article->type->label() }}</span>
                 <span class="font-mono text-base-content/70">{{ $article->number ?? __('article.sku_auto_hint') }}</span>
                 <span class="badge badge-sm {{ $article->status->value === 'active' ? 'badge-success' : ($article->status->value === 'retired' ? 'badge-ghost' : 'badge-warning') }}">
                     {{ $article->status->label() }}
@@ -47,6 +47,8 @@
     </x-slot:toolbar>
 
     <x-identifier-issues :issues="$identifierIssues ?? []" />
+
+    @include('articles._tabs', ['article' => $article])
 
     {{-- Optionen & Werte --}}
     <x-card>
@@ -109,7 +111,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="4" icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                <x-table.empty :colspan="4" icon="inventory_2"
                                :title="__('article.no_variants')" />
             @endforelse
         </x-table>
@@ -119,8 +121,8 @@
                 @csrf
                 @foreach ($article->optionDefinitions as $option)
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ $option->name }}</label>
-                        <select name="option_value_ids[]" class="select select-sm select-bordered">
+                        <label for="variant-option-{{ $option->sqid }}" class="fieldset-label">{{ $option->name }}</label>
+                        <select id="variant-option-{{ $option->sqid }}" name="option_value_ids[]" class="select select-sm select-bordered">
                             @foreach ($option->values->where('active', true) as $value)
                                 <option value="{{ $value->sqid }}">{{ $value->label }}</option>
                             @endforeach
@@ -128,8 +130,8 @@
                     </div>
                 @endforeach
                 <div class="fieldset">
-                    <label class="fieldset-label">{{ __('article.field.sale_price') }}</label>
-                    <input name="sale_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28">
+                    <label for="sale_price" class="fieldset-label">{{ __('article.field.sale_price') }}</label>
+                    <input id="sale_price" name="sale_price" type="number" step="0.0001" min="0" class="input input-sm input-bordered w-28">
                 </div>
                 <x-button type="submit" tone="primary" size="sm">{{ __('article.action.add_variant') }}</x-button>
             </form>
@@ -199,7 +201,7 @@
                     </tr>
                 @endforeach
             </x-table>
-            <p class="mt-2 text-xs text-base-content/60">
+            <p class="mt-2 text-xs text-muted">
                 {{ __('Kennwerte stammen aus fremden Katalogen und werden nicht in den Artikelpreis übernommen.') }}
             </p>
         </x-card>

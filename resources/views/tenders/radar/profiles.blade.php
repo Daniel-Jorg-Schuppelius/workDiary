@@ -29,7 +29,7 @@
     </x-slot:actions>
 
     @if ($profiles->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">tune</span>'
+        <x-empty-state framed icon="tune"
                        :title="__('Noch kein Suchprofil angelegt')"
                        :message="__('Ein Suchprofil sagt, welche Leistungen (CPV) in welcher Region (NUTS) infrage kommen. Ohne Profil sucht der Radar nichts.')" />
     @else
@@ -79,7 +79,7 @@
                             @php($share = round($profile->muted_count / $profile->matches_count * 100))
                             {{-- Gezeigt, nicht ausgewertet: Das Profil enger zu
                                  stellen bleibt eine Entscheidung. --}}
-                            <div class="text-xs @if ($share >= 60) text-warning @else text-base-content/60 @endif">
+                            <div class="text-xs @if ($share >= 60) text-warning @else text-muted @endif">
                                 {{ __(':count verworfen (:share %)', ['count' => $profile->muted_count, 'share' => $share]) }}
                             </div>
                         @endif

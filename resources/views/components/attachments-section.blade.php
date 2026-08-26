@@ -22,7 +22,7 @@
 
 <x-card :title="__('Anhänge')" icon="attach_file" :count="$attachments->count()">
     @if ($attachments->isEmpty())
-        <x-empty-state compact icon='<span class="material-symbols-outlined" aria-hidden="true">attach_file</span>'
+        <x-empty-state compact icon="attach_file"
                        :title="__('Keine Anhänge')"
                        :message="__('Keine Anhänge.')" />
     @else

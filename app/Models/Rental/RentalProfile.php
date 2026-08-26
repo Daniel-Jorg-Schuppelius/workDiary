@@ -38,7 +38,7 @@ class RentalProfile extends Model {
     use HasSqid;
 
     protected $fillable = [
-        'organization_id', 'asset_id', 'is_rentable', 'group_code',
+        'organization_id', 'asset_id', 'is_rentable', 'portal_bookable', 'group_code',
         'home_site_label', 'buffer_before_hours', 'buffer_after_hours',
         'requires_inspection', 'min_condition', 'accessories',
         'default_rate_card_id', 'notes',
@@ -47,6 +47,7 @@ class RentalProfile extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'is_rentable' => 'boolean',
+        'portal_bookable' => 'boolean',
         'requires_inspection' => 'boolean',
         'buffer_before_hours' => 'integer',
         'buffer_after_hours' => 'integer',
@@ -56,6 +57,15 @@ class RentalProfile extends Model {
     /** @param Builder<self> $query */
     public function scopeRentable(Builder $query): void {
         $query->where('is_rentable', true);
+    }
+
+    /**
+     * Fürs Portal-Sortiment freigegeben (MVP-714, Default-Deny) — und leihfähig.
+     *
+     * @param Builder<self> $query
+     */
+    public function scopePortalBookable(Builder $query): void {
+        $query->where('is_rentable', true)->where('portal_bookable', true);
     }
 
     /** @return BelongsTo<Asset, $this> */

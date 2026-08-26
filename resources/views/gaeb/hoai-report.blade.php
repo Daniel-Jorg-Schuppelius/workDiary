@@ -33,7 +33,7 @@
     </x-slot:toolbar>
 
     @if (empty($report['rows']))
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">stacked_bar_chart</span>'
+        <x-empty-state framed icon="stacked_bar_chart"
                        :title="__('Für dieses Projekt liegt keine Kostenermittlung vor.')"
                        :message="__('Kostenschätzung und -berechnung kommen als GAEB X51 herein; Kostenanschlag und -feststellung erzeugt WorkDiary aus dem Leistungsverzeichnis.')" />
     @else

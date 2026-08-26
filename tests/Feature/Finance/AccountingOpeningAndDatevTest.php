@@ -180,6 +180,74 @@ class AccountingOpeningAndDatevTest extends TestCase {
         $this->assertTrue($roundtrip['ok'], json_encode($roundtrip) ?: '');
     }
 
+    /**
+     * Kanzlei-Felder aus dem Journal (Feature 135, MVP-700): Fälligkeit aus dem
+     * offenen Posten, Skonto aus dem Quellbeleg, KOST1 aus der Org-Default-Regel.
+     */
+    public function test_extf_carries_due_date_discount_and_cost_center_from_the_journal(): void {
+        if (! \App\Services\Finance\FinancialFormatsSupport::isAvailable()) {
+            $this->markTestSkipped('php-financial-formats nicht installiert.');
+        }
+
+        $this->org->update(['settings' => array_merge((array) $this->org->settings, [
+            'datev' => ['advisor_number' => 12345, 'client_number' => 67890],
+        ])]);
+        \App\Models\CostCenterRule::query()->create(['organization_id' => $this->org->id, 'cost_center' => 'KST7', 'priority' => 0]);
+        $receivable = app(ChartOfAccountsService::class)->create($this->org, [
+            'number' => '1400', 'name' => 'Forderungen', 'type' => AccountType::Asset, 'is_open_item' => true, 'datev_account' => '1400',
+        ]);
+        $customer = \App\Models\Customer::factory()->create(['organization_id' => $this->org->id]);
+        $invoice = \App\Models\Invoice::query()->create([
+            'organization_id' => $this->org->id,
+            'customer_id' => $customer->id,
+            'number' => 'RE-J1',
+            'status' => \App\Models\Invoice::STATUS_ISSUED,
+            'issued_on' => $this->startsOn->addDays(3)->toDateString(),
+            'due_on' => $this->startsOn->addDays(17)->toDateString(),
+            'currency' => 'EUR',
+            'tax_rate' => '19.00',
+            'subtotal' => '100.00',
+            'tax_amount' => '19.00',
+            'total' => '119.00',
+            'skonto_percent' => '2.00',
+            'skonto_days' => 10,
+        ]);
+
+        app(JournalService::class)->postDirect($this->org, [
+            'booked_on' => $this->startsOn->addDays(3),
+            'memo' => 'Rechnung RE-J1',
+            'document_reference' => 'RE-J1',
+            'source_type' => \App\Models\Invoice::class,
+            'source_id' => (int) $invoice->id,
+            'source_key' => 'datev-test:kost',
+            'snapshot' => ['due_date' => $this->startsOn->addDays(17)->toDateString()],
+            'lines' => [
+                ['accounting_account_id' => $receivable->id, 'debit' => '119.00', 'credit' => '0.00'],
+                ['accounting_account_id' => $this->accounts['equity']->id, 'debit' => '0.00', 'credit' => '119.00'],
+            ],
+        ], $this->admin);
+
+        $result = app(LedgerDatevExportService::class)->buildExtf($this->org, $this->startsOn, $this->startsOn->addMonth());
+        $lines = explode("\n", $result['content']);
+        $this->assertSame(2, $result['rows']);
+
+        foreach ([2, 3] as $index) {
+            $fields = explode(';', $lines[$index]);
+            $this->assertSame('2,38', $fields[12], 'Skonto');
+            $this->assertSame('KST7', $fields[36], 'KOST1');
+            $this->assertSame('18012026', $fields[92], 'Fälligkeit aus dem offenen Posten');
+            $this->assertSame('2', $fields[93], 'Skontotyp Verkauf');
+            $this->assertSame('', $fields[19], 'Beleglink bleibt leer');
+        }
+
+        $roundtrip = app(\App\Services\Finance\Datev\DatevBookingAdapter::class)->validateRoundtrip(
+            $result['content'],
+            \App\Services\Finance\Datev\DatevBookingConfig::forOrganization($this->org),
+            2,
+        );
+        $this->assertTrue($roundtrip['ok'], json_encode($roundtrip) ?: '');
+    }
+
     public function test_export_is_reproducible(): void {
         app(JournalService::class)->postDirect($this->org, [
             'booked_on' => $this->startsOn->addDays(3),

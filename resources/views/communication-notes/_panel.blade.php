@@ -28,6 +28,12 @@
     $canCreate = \Illuminate\Support\Facades\Gate::allows('create', \App\Models\CommunicationNote::class);
     $canPublish = \Illuminate\Support\Facades\Gate::allows('publishToCustomer', \App\Models\CommunicationNote::class);
     $canManageConfidential = \Illuminate\Support\Facades\Gate::allows('manageConfidential', \App\Models\CommunicationNote::class);
+    // Notiz strukturieren (Feature 148, MVP-732): Chips je Feld, nie Auto-Apply.
+    $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+    $aiStructureUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY);
+    $aiStructure = $aiStructureUsable
+        ? $aiView->openSuggestionsFor((new \App\Models\CommunicationNote)->getMorphClass(), $notes, \App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::CAPABILITY)
+        : collect();
 @endphp
 
 <x-card as="section" id="communication-notes" :title="__('communication.title.index')" icon="forum" :count="$notes->count()">
@@ -53,7 +59,7 @@
                     <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                         <div class="min-w-0">
                             <a href="#communication-note-{{ $note->id }}" class="font-medium link-hover">{{ $note->next_action }}</a>
-                            <span class="text-base-content/60">
+                            <span class="text-muted">
                                 — {{ $note->subject }}
                                 · {{ __('communication.field.next_action_user') }}: {{ optional($note->nextActionUser)->name ?? '—' }}
                             </span>
@@ -78,7 +84,7 @@
     @endif
 
     @if ($notes->isEmpty())
-        <x-empty-state compact icon='<span class="material-symbols-outlined">forum</span>'
+        <x-empty-state compact icon="forum"
                        :title="__('communication.title.index')"
                        :message="__('communication.empty')" />
     @else
@@ -100,7 +106,7 @@
                             <div class="mb-1 flex flex-wrap items-center gap-2">
                                 <span class="flex items-center gap-1 text-sm font-medium text-base-content/80"
                                       title="{{ $note->type->label() }}">
-                                    <x-icon :name="$note->type->icon()" class="text-base-content/60" /> {{ $note->type->label() }}
+                                    <x-icon :name="$note->type->icon()" class="text-muted" /> {{ $note->type->label() }}
                                 </span>
                                 <x-status-badge :tone="$note->direction->tone()">{{ $note->direction->label() }}</x-status-badge>
                                 @if ($note->confidential)
@@ -108,7 +114,7 @@
                                 @else
                                     <x-status-badge :tone="$note->visibility->tone()">{{ $note->visibility->label() }}</x-status-badge>
                                 @endif
-                                <span class="text-xs text-base-content/60">{{ $note->occurred_at->fdatetime() }}</span>
+                                <span class="text-xs text-muted">{{ $note->occurred_at->fdatetime() }}</span>
                             </div>
                             <p class="font-semibold text-base-content">{{ $note->subject }}</p>
                             <p class="mt-1 whitespace-pre-wrap text-sm text-base-content/80">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($note->body, 400) }}</p>
@@ -132,7 +138,7 @@
                                     @endif
                                 </p>
                             @endif
-                            <p class="mt-2 text-xs text-base-content/60">
+                            <p class="mt-2 text-xs text-muted">
                                 {{ __('communication.field.creator') }}: {{ optional($note->creator)->name ?? '—' }}
                                 @if ($note->participants->isNotEmpty())
                                     · {{ __('communication.field.participants') }}:
@@ -148,6 +154,13 @@
                                                 data-entry-modal-trigger
                                                 :href="route('communication-notes.edit', $note)"
                                                 :label="__('communication.action.edit')" />
+                                @endif
+
+                                @if ($canUpdate && $aiStructureUsable && ! $note->confidential && ($aiStructure[$note->id] ?? null) === null)
+                                    <x-action-form :action="route('ai.assist.communication-note', $note)">
+                                        <x-icon-btn icon="auto_awesome" tone="info" size="xs" type="submit"
+                                                    :label="__('ai.assist.structure_note')" />
+                                    </x-action-form>
                                 @endif
 
                                 @if ($note->hasOpenFollowUp() && $canComplete)
@@ -191,6 +204,17 @@
                             </div>
                         @endif
                     </div>
+
+                    @if (($aiStructure[$note->id] ?? null) !== null)
+                        @php
+                            $aiNoteSuggestion = $aiStructure[$note->id];
+                            $aiNoteChips = array_map(
+                                static fn (array $e): array => ['field' => $e['field'], 'label' => \CommonToolkit\Helper\Data\StringHelper::truncate($e['value'], 120)],
+                                \App\Services\Ai\Suggestions\CommunicationNoteSuggestionService::structuredValues($aiNoteSuggestion),
+                            );
+                        @endphp
+                        @include('ai._field_chips', ['suggestion' => $aiNoteSuggestion, 'chips' => $aiNoteChips])
+                    @endif
                 </li>
             @endforeach
         </ul>

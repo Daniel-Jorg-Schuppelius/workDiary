@@ -40,7 +40,7 @@
 
         @if ($closures->isEmpty())
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">inbox</span>'
+                icon="inbox"
                 :title="__('Keine Monate im Filter')"
                 :message="__('Passen Sie die Filter an oder warten Sie auf eingereichte Monate.')" />
         @else
@@ -82,7 +82,7 @@
                                 @can('reject', $c)
                                     <button type="button" class="btn btn-sm btn-warning"
                                             data-open-dialog="reject-{{ $c->id }}">
-                                        <span class="material-symbols-outlined text-base">close</span>
+                                        <x-icon name="close" class="text-base" />
                                     </button>
                                     {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
                                     <x-modal :id="'reject-' . $c->id" :embedded="false" tone="warning" icon="block"
@@ -99,7 +99,7 @@
                                         <button type="button" class="btn btn-sm btn-ghost"
                                                 data-open-dialog="reopen-{{ $c->id }}"
                                                 aria-label="{{ __('Wieder öffnen') }}">
-                                            <span class="material-symbols-outlined text-base">lock_open</span>
+                                            <x-icon name="lock_open" class="text-base" />
                                         </button>
                                         {{-- Gemeinsamer Dialog-Wrapper statt rohem <dialog> (Vollaudit 2026-07, N57). --}}
                                         <x-modal :id="'reopen-' . $c->id" :embedded="false" tone="warning" icon="lock_open"

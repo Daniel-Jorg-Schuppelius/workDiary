@@ -53,7 +53,7 @@
     <div class="grid gap-3 md:grid-cols-3 xl:grid-cols-5">
         <x-card :title="__('Erstlösungsquote (FCR)')">
             <p class="text-2xl font-semibold tabular-nums">{{ $fcr['fcr_rate'] }} %</p>
-            <p class="text-xs text-base-content/60">{{ __(':fcr von :total gelösten Tickets ohne Wiedereröffnung/Weiterleitung.', ['fcr' => $fcr['fcr'], 'total' => $fcr['total']]) }}</p>
+            <p class="text-xs text-muted">{{ __(':fcr von :total gelösten Tickets ohne Wiedereröffnung/Weiterleitung.', ['fcr' => $fcr['fcr'], 'total' => $fcr['total']]) }}</p>
         </x-card>
         <x-card :title="__('Wiederöffnungsquote')">
             <p class="text-2xl font-semibold tabular-nums">{{ $fcr['reopened_rate'] }} %</p>
@@ -65,11 +65,11 @@
         </x-card>
         <x-card :title="__('Zufriedenheit (Ø)')">
             <p class="text-2xl font-semibold tabular-nums">{{ $satisfaction['average'] }}</p>
-            <p class="text-xs text-base-content/60">{{ __(':count Bewertungen (1–5).', ['count' => $satisfaction['responses']]) }}</p>
+            <p class="text-xs text-muted">{{ __(':count Bewertungen (1–5).', ['count' => $satisfaction['responses']]) }}</p>
         </x-card>
         <x-card :title="__('Rücklaufquote')">
             <p class="text-2xl font-semibold tabular-nums">{{ $satisfaction['response_rate'] }} %</p>
-            <p class="text-xs text-base-content/60">{{ __(':responses Antworten auf :closed gelöste Tickets.', ['responses' => $satisfaction['responses'], 'closed' => $satisfaction['closed_total']]) }}</p>
+            <p class="text-xs text-muted">{{ __(':responses Antworten auf :closed gelöste Tickets.', ['responses' => $satisfaction['responses'], 'closed' => $satisfaction['closed_total']]) }}</p>
         </x-card>
     </div>
 
@@ -170,7 +170,7 @@
         @if ($recurring === [])
             <x-empty-state icon="menu_book" :title="__('Keine neuen Incidents nach Artikel-Publikation im Zeitraum.')" compact />
         @else
-            <p class="mb-2 text-xs text-base-content/60">{{ __('Wiederkehrende Störungen trotz veröffentlichtem Known-Error-Artikel — meiste Vorkommen zuerst (Artikel unwirksam oder unauffindbar?).') }}</p>
+            <p class="mb-2 text-xs text-muted">{{ __('Wiederkehrende Störungen trotz veröffentlichtem Known-Error-Artikel — meiste Vorkommen zuerst (Artikel unwirksam oder unauffindbar?).') }}</p>
             <x-table bare>
                 <x-slot:head>
                     <tr>
@@ -185,8 +185,8 @@
                 @foreach ($recurring as $row)
                     <tr>
                         <td><a href="{{ route('knowledge.show', $row['article']) }}" class="link">{{ \Illuminate\Support\Str::limit($row['article']->title, 60, '…') }}</a></td>
-                        <td class="text-sm text-base-content/60">{{ \Illuminate\Support\Str::limit(implode(', ', $row['problems']), 60, '…') }}</td>
-                        <td class="text-sm text-base-content/60">{{ $row['article']->published_at?->isoFormat('L') ?? '—' }}</td>
+                        <td class="text-sm text-muted">{{ \Illuminate\Support\Str::limit(implode(', ', $row['problems']), 60, '…') }}</td>
+                        <td class="text-sm text-muted">{{ $row['article']->published_at?->isoFormat('L') ?? '—' }}</td>
                         <td class="text-right tabular-nums"><a href="{{ $row['url'] }}" class="link">{{ $row['count'] }}</a></td>
                         <td>
                             @if ($row['trend'] === 'rising')
@@ -197,7 +197,7 @@
                                 <x-status-badge tone="neutral" size="xs" icon="trending_flat">{{ __('Gleichbleibend') }}</x-status-badge>
                             @endif
                         </td>
-                        <td class="text-sm text-base-content/60">{{ $row['last_at']?->isoFormat('L LT') ?? '—' }}</td>
+                        <td class="text-sm text-muted">{{ $row['last_at']?->isoFormat('L LT') ?? '—' }}</td>
                     </tr>
                 @endforeach
             </x-table>

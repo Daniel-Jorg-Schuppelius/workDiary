@@ -32,12 +32,12 @@
                    pattern="[a-z0-9._\-]+"
                    maxlength="80"
                    required />
-            <p class="text-xs text-base-content/60 mt-1">{{ __('access.help.role_name') }}</p>
+            <p class="text-xs text-muted mt-1">{{ __('access.help.role_name') }}</p>
         </x-form-group>
     @endunless
 
     <div class="mt-3">
-        <p class="text-sm text-base-content/60 mb-2">{{ __('access.help.role_permissions') }}</p>
+        <p class="text-sm text-muted mb-2">{{ __('access.help.role_permissions') }}</p>
         @include('admin.access._permission_matrix', [
             'grouped' => $permissions,
             'assigned' => $assigned,

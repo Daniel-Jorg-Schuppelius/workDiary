@@ -22,50 +22,48 @@
 @endphp
 
 <x-form-group :legend="__('Eckdaten')" icon="access_time" tone="primary" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Datum') }} *</label>
-        <input type="date" name="date" required value="{{ old('date', $entry?->date?->toDateString() ?? $date) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Dauer (Minuten)') }} *</label>
-        <input type="number" name="minutes" min="1" max="1440" required value="{{ old('minutes', $entry?->minutes ?? 30) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Tätigkeitstyp') }} *</label>
-        <select name="activity_type" required class="select select-bordered w-full">
-            @foreach ($activityTypes as $key => $label)
-                <option value="{{ $key }}" @selected(old('activity_type', $entry?->activity_type?->value ?? 'admin') === $key)>{{ $label }}</option>
-            @endforeach
-        </select>
-    </div>
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Kategorie (optional)') }}</label>
-        <select name="activity_category_id" class="select select-bordered w-full">
-            <option value="">— {{ __('keine Kategorie') }} —</option>
-            @foreach ($categories as $c)
-                <option value="{{ $c->sqid }}" @selected((string) old('activity_category_id', \App\Support\Sqid::encode(\App\Models\ActivityCategory::class, $entry?->activity_category_id)) === $c->sqid)>
-                    {{ $c->label }} ({{ $c->activity_type->label() }})
-                </option>
-            @endforeach
-        </select>
-    </div>
+    <x-input-field name="date"
+                   :label="__('Datum')"
+                   type="date"
+                   value="{{ old('date', $entry?->date?->toDateString() ?? $date) }}"
+                   required />
+    <x-input-field name="minutes"
+                   :label="__('Dauer (Minuten)')"
+                   type="number"
+                   value="{{ old('minutes', $entry?->minutes ?? 30) }}"
+                   required
+                   min="1"
+                   max="1440" />
+    <x-select-field span="2" name="activity_type" :label="__('Tätigkeitstyp')" required>
+        @foreach ($activityTypes as $key => $label)
+            <option value="{{ $key }}" @selected(old('activity_type', $entry?->activity_type?->value ?? 'admin') === $key)>{{ $label }}</option>
+        @endforeach
+    </x-select-field>
+    <x-select-field span="2" name="activity_category_id" :label="__('Kategorie (optional)')">
+        <option value="">— {{ __('keine Kategorie') }} —</option>
+        @foreach ($categories as $c)
+            <option value="{{ $c->sqid }}" @selected((string) old('activity_category_id', \App\Support\Sqid::encode(\App\Models\ActivityCategory::class, $entry?->activity_category_id)) === $c->sqid)>
+                {{ $c->label }} ({{ $c->activity_type->label() }})
+            </option>
+        @endforeach
+    </x-select-field>
 </x-form-group>
 
 <x-form-group :legend="__('Zeitraum (optional)')" icon="schedule" tone="info" cols="2">
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Beginn (Uhrzeit)') }}</label>
-        <input type="time" name="start_time" value="{{ old('start_time', $entry?->started_at?->orgTz()->format('H:i')) }}" class="input input-bordered w-full">
-    </div>
-    <div class="fieldset">
-        <label class="fieldset-label">{{ __('Ende (Uhrzeit)') }}</label>
-        <input type="time" name="end_time" value="{{ old('end_time', $entry?->ended_at?->orgTz()->format('H:i')) }}" class="input input-bordered w-full">
-    </div>
-    <p class="text-xs text-base-content/60 md:col-span-2">
+    <x-input-field name="start_time"
+                   :label="__('Beginn (Uhrzeit)')"
+                   type="time"
+                   value="{{ old('start_time', $entry?->started_at?->orgTz()->format('H:i')) }}" />
+    <x-input-field name="end_time"
+                   :label="__('Ende (Uhrzeit)')"
+                   type="time"
+                   value="{{ old('end_time', $entry?->ended_at?->orgTz()->format('H:i')) }}" />
+    <p class="text-xs text-muted md:col-span-2">
         {{ __('Tipp: Endet die Zeit nach Mitternacht? Einfach die kleinere Uhrzeit eintragen — der Folgetag wird automatisch ergänzt.') }}
     </p>
     @if ($openAttendance)
         <input type="hidden" name="attendance_id" value="{{ $openAttendance->sqid }}">
-        <p class="text-xs text-base-content/60 md:col-span-2">
+        <p class="text-xs text-muted md:col-span-2">
             {{ __('Wird mit Stempelung verknüpft (seit :time).', ['time' => $openAttendance->started_at?->ftime()]) }}
         </p>
     @endif
@@ -76,7 +74,7 @@
         <textarea name="description" rows="3" maxlength="500" class="textarea textarea-bordered w-full">{{ old('description', $entry?->description) }}</textarea>
     </div>
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Tags') }}</label>
+        <span class="fieldset-label">{{ __('Tags') }}</span>
         <x-tag-picker :tags="$allTags ?? []" :selected="$selectedTagIds ?? []" :recent="$recentTagIds ?? []" />
     </div>
 </x-form-group>

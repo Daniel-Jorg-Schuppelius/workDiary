@@ -1,0 +1,39 @@
+{
+  "_source": "sevDesk API v1 — GET /Voucher (objects-Umschlag). creditDebit: C = Einnahme, D = Ausgabe; status 50 Entwurf, 100/750 offen, 1000 bezahlt.",
+  "objects": [
+    {
+      "id": "77001",
+      "objectName": "Voucher",
+      "creditDebit": "D",
+      "status": "1000",
+      "voucherNumber": "BELEG-77001",
+      "voucherDate": "2026-08-02 00:00:00",
+      "dueDate": "2026-08-16 00:00:00",
+      "payDate": "2026-08-11 00:00:00",
+      "sumGross": "59.50",
+      "sumNet": "50.00",
+      "currency": "EUR",
+      "create": "2026-08-02 07:00:00",
+      "update": "2026-08-11 07:30:00",
+      "supplier": { "id": "3301", "objectName": "Contact", "name": "Bueromarkt AG" },
+      "supplierName": "Bueromarkt AG"
+    },
+    {
+      "id": "77002",
+      "objectName": "Voucher",
+      "creditDebit": "C",
+      "status": "100",
+      "voucherNumber": "BELEG-77002",
+      "voucherDate": "2026-08-06 00:00:00",
+      "dueDate": null,
+      "payDate": null,
+      "sumGross": "1190.00",
+      "sumNet": "1000.00",
+      "currency": "EUR",
+      "create": "2026-08-06 09:00:00",
+      "update": "2026-08-06 09:00:00",
+      "supplier": null,
+      "supplierName": ""
+    }
+  ]
+}

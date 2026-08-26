@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Accounting\Reports;
 
-use App\Enums\Finance\AccountingEntryStatus;
-use App\Models\Accounting\{AccountingEntryLine, AccountingOpenItemSettlement};
+use App\Enums\Finance\{AccountType, AccountingEntryStatus};
+use App\Models\Accounting\{AccountingAccount, AccountingEntryLine, AccountingOpenItemSettlement};
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\RoundingMode;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -34,13 +35,33 @@ abstract class AbstractAccountingReportBuilder {
     /** Zustände, die in eine Auswertung eingehen. */
     protected const POSTED = [AccountingEntryStatus::Posted->value, AccountingEntryStatus::Reversed->value];
 
+    /** Vergleichsmodi der Ergebnisberichte (Feature 142, MVP-709). */
+    public const COMPARE_NONE = 'none';
+
+    public const COMPARE_PREVIOUS_YEAR = 'previous_year';
+
+    public const COMPARE_PREVIOUS_MONTH = 'previous_month';
+
+    public const COMPARE_MONTHS = 'months';
+
+    public const COMPARE_BUDGET = 'budget';
+
+    public const COMPARE_MODES = [
+        self::COMPARE_NONE,
+        self::COMPARE_PREVIOUS_YEAR,
+        self::COMPARE_PREVIOUS_MONTH,
+        self::COMPARE_MONTHS,
+        self::COMPARE_BUDGET,
+    ];
+
     /**
      * Soll-/Habensummen je Konto im Zeitraum — die einzige Aggregationsstelle
-     * der Berichte.
+     * der Berichte. Mit `$costCenterId` zählen nur Zeilen dieser Kostenstelle
+     * (Feature 142) — Zeilen ohne Kostenstelle bleiben dann außen vor.
      *
      * @return array<int, array{debit: numeric-string, credit: numeric-string}>
      */
-    protected function sumsByAccount(Organization $organization, ?CarbonImmutable $from, CarbonImmutable $to, ?int $accountId = null): array {
+    protected function sumsByAccount(Organization $organization, ?CarbonImmutable $from, CarbonImmutable $to, ?int $accountId = null, ?int $costCenterId = null): array {
         $query = AccountingEntryLine::query()
             ->select('accounting_account_id')
             ->selectRaw('SUM(debit) as debit_sum')
@@ -51,16 +72,20 @@ abstract class AbstractAccountingReportBuilder {
                     ->from('accounting_entries')
                     ->whereColumn('accounting_entries.id', 'accounting_entry_lines.accounting_entry_id')
                     ->whereIn('accounting_entries.status', self::POSTED)
-                    ->whereDate('accounting_entries.booked_on', '<=', $to->toDateString());
+                    ->where('accounting_entries.booked_on', '<=', DateRange::day($to));
 
                 if ($from !== null) {
-                    $sub->whereDate('accounting_entries.booked_on', '>=', $from->toDateString());
+                    $sub->where('accounting_entries.booked_on', '>=', DateRange::day($from));
                 }
             })
             ->groupBy('accounting_account_id');
 
         if ($accountId !== null) {
             $query->where('accounting_account_id', $accountId);
+        }
+
+        if ($costCenterId !== null) {
+            $query->where('accounting_entry_lines.cost_center_id', $costCenterId);
         }
 
         // SQL-Aggregate kommen je Treiber als String oder float zurück; Decimal
@@ -77,13 +102,64 @@ abstract class AbstractAccountingReportBuilder {
     }
 
     /**
+     * Vergleichszeitraum zu einem Modus: Vorjahr gleicher Zeitraum oder der
+     * Vormonat (Monatsgrenzen bleiben Monatsgrenzen — der 31. Januar wird
+     * zum 31. Dezember, der 31. März zum 28. Februar). Monatsraster und
+     * Budget haben keinen zweiten Zeitraum.
+     *
+     * @return array{0: CarbonImmutable, 1: CarbonImmutable}|null
+     */
+    protected function comparisonRange(CarbonImmutable $from, CarbonImmutable $to, string $mode): ?array {
+        return match ($mode) {
+            self::COMPARE_PREVIOUS_YEAR => [$from->subYear(), $to->subYear()],
+            self::COMPARE_PREVIOUS_MONTH => [
+                $from->subMonthNoOverflow(),
+                $to->isLastOfMonth() ? $to->subMonthNoOverflow()->endOfMonth()->startOfDay() : $to->subMonthNoOverflow(),
+            ],
+            default => null,
+        };
+    }
+
+    /**
+     * Abweichung absolut und in Prozent des Vergleichswerts; ohne
+     * Vergleichswert gibt es keinen Prozentsatz (statt Division durch null).
+     *
+     * @param  numeric-string  $actual
+     * @param  numeric-string  $compare
+     * @return array{delta: numeric-string, delta_pct: numeric-string|null}
+     */
+    protected function deltaOf(string $actual, string $compare): array {
+        $delta = NumberHelper::subtractPrecise($actual, $compare, 2);
+        $pct = NumberHelper::isZeroPrecise($compare)
+            ? null
+            : NumberHelper::dividePrecise(NumberHelper::multiplyPrecise($delta, '100', 4), NumberHelper::absPrecise($compare), 1, RoundingMode::HalfUp);
+
+        return ['delta' => $delta, 'delta_pct' => $pct];
+    }
+
+    /**
+     * Betrag in der natürlichen Richtung der Kontoart: Erträge Haben − Soll,
+     * Aufwendungen (und alles andere) Soll − Haben.
+     *
+     * @param  array{debit: numeric-string, credit: numeric-string}|null  $sums
+     * @return numeric-string
+     */
+    protected function naturalAmount(AccountingAccount $account, ?array $sums): string {
+        $debit = $sums['debit'] ?? '0.00';
+        $credit = $sums['credit'] ?? '0.00';
+
+        return $account->type === AccountType::Income
+            ? NumberHelper::subtractPrecise($credit, $debit, 2)
+            : NumberHelper::subtractPrecise($debit, $credit, 2);
+    }
+
+    /**
      * @return Collection<int, AccountingOpenItemSettlement>
      */
     protected function settlementsInPeriod(Organization $organization, CarbonImmutable $from, CarbonImmutable $to): Collection {
         return AccountingOpenItemSettlement::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('booked_on', '>=', $from->toDateString())
-            ->whereDate('booked_on', '<=', $to->toDateString())
+            ->whereBetween('booked_on', DateRange::days($from, $to))
             ->with(['openItem.entry.lines.account'])
             ->get();
     }

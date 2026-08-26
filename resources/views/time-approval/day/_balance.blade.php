@@ -24,7 +24,7 @@
 @endphp
 <x-card as="section">
     <h2 class="mb-3 flex items-center gap-2 text-base font-semibold">
-        <span class="material-symbols-outlined" aria-hidden="true">analytics</span>
+        <x-icon name="analytics" />
         {{ __('day-close.section.balance') }}
     </h2>
     {{-- Kompakt zeigt genau 5 Felder → einzeilig (md:grid-cols-5); die volle
@@ -75,7 +75,7 @@
     {{-- Pflichtpausen-Warnung (⛔), aus der ehemals eigenen Pausen-Sektion. --}}
     @if ($breakIssue)
         <div role="alert" class="alert alert-error mt-3">
-            <span class="material-symbols-outlined" aria-hidden="true">block</span>
+            <x-icon name="block" />
             <span>{{ $validator->messageFor($breakIssue) }}</span>
         </div>
     @endif

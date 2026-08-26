@@ -1,0 +1,133 @@
+# WorkDiary — Single-Host-Betrieb mit Docker Compose (MVP-720, Feature 015).
+# Betreiber-Handbuch: docs/on-premise-docker.md
+#
+#   cp .env.docker.example .env.docker      # ENV pflegen (APP_KEY, DB_*, APP_URL)
+#   docker compose build
+#   docker compose up -d
+#   docker compose exec app php artisan app:admin --platform
+#
+# Dienste: app (php-fpm), web (nginx), db (MariaDB 11), queue, scheduler.
+# Profile: redis (CACHE_STORE/QUEUE_CONNECTION=redis), reverb (WebSocket).
+# Alle App-Dienste teilen das storage-Volume; bootstrap/cache ist je Container
+# ein anonymes Volume (Caches baut der Entrypoint bei jedem Start neu).
+
+name: workdiary
+
+x-app: &app
+  image: ${WD_IMAGE:-workdiary:local}
+  build:
+    context: .
+    target: app
+    args:
+      ALPINE_CSP_BUILD: ${ALPINE_CSP_BUILD:-true}
+      WD_WITH_LIBREOFFICE: ${WD_WITH_LIBREOFFICE:-0}
+      WD_WITH_JAVA: ${WD_WITH_JAVA:-0}
+      WD_WITH_INOTIFY: ${WD_WITH_INOTIFY:-0}
+  env_file: .env.docker
+  restart: unless-stopped
+  volumes:
+    - storage:/var/www/html/storage
+  networks:
+    - internal
+  depends_on:
+    db:
+      condition: service_healthy
+
+services:
+  app:
+    <<: *app
+    environment:
+      # Nur der Web-Dienst migriert (Opt-in); Queue/Scheduler warten auf „healthy".
+      WD_AUTO_MIGRATE: ${WD_AUTO_MIGRATE:-0}
+
+  web:
+    image: ${WD_WEB_IMAGE:-workdiary-web:local}
+    build:
+      context: .
+      target: web
+      args:
+        ALPINE_CSP_BUILD: ${ALPINE_CSP_BUILD:-true}
+    restart: unless-stopped
+    ports:
+      - "${WD_HTTP_PORT:-8080}:80"
+    volumes:
+      - storage:/var/www/html/storage:ro
+    networks:
+      - internal
+    depends_on:
+      app:
+        condition: service_healthy
+
+  queue:
+    <<: *app
+    # --timeout muss unter DB_QUEUE_RETRY_AFTER (630) liegen, sonst laufen
+    # Jobs doppelt (config/queue.php). --max-time: Worker lädt Code/Caches neu.
+    command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=600", "--sleep=3", "--max-time=3600"]
+    stop_grace_period: 620s
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+
+  scheduler:
+    <<: *app
+    command: ["php", "artisan", "schedule:work"]
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+
+  db:
+    image: mariadb:11
+    restart: unless-stopped
+    # MARIADB_* kommen aus derselben .env.docker (Abschnitt Datenbank).
+    env_file: .env.docker
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --innodb-buffer-pool-size=${WD_DB_BUFFER_POOL:-512M}
+    volumes:
+      - db-data:/var/lib/mysql
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "healthcheck.sh", "--connect", "--innodb_initialized"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  redis:
+    profiles: ["redis"]
+    image: redis:7-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    networks:
+      - internal
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+
+  reverb:
+    <<: *app
+    profiles: ["reverb"]
+    command: ["php", "artisan", "reverb:start", "--host=0.0.0.0", "--port=8080"]
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+
+volumes:
+  storage:
+  db-data:
+  redis-data:
+
+networks:
+  internal:

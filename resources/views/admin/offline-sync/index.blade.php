@@ -47,7 +47,7 @@
 
     @if ($commands->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_sync</span>'
+            icon="cloud_sync"
             :title="__('Keine Offline-Befehle im gewählten Ausschnitt.')"
             :message="__('Hier erscheint jeder Befehl, den ein Gerät offline erfasst und später übertragen hat.')" />
     @else

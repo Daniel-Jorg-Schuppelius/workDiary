@@ -12,7 +12,8 @@
 
 @section('content')
 @php
-    $fmtMin = fn (int $minutes): string => \App\Support\Formats::duration($minutes, 'clock');
+    // Einheit je Regel-Art (Minuten/Tage/Anzahl) — zentral im Finding-Objekt.
+    $fmtVal = fn (string $kind, int $value): string => \App\Services\Compliance\AttendanceComplianceFinding::formatValue($kind, $value);
     $tone = fn (string $sev) => $sev === \App\Services\Compliance\AttendanceComplianceFinding::SEVERITY_ERROR ? 'error' : 'warning';
 @endphp
 
@@ -24,14 +25,24 @@
                             :href="route('reports.compliance.history')"
                             show-label>{{ __('compliance.history.nav') }}</x-icon-btn>
                 <x-icon-btn icon="download" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'csv'])))"
+                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'csv'])))"
                             show-label>CSV</x-icon-btn>
                 <x-icon-btn icon="table_view" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'xlsx'])))"
+                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'xlsx'])))"
                             show-label>Excel</x-icon-btn>
                 <x-icon-btn icon="picture_as_pdf" tone="outline" size="sm"
-                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'export' => 'pdf'])))"
+                            :href="route('reports.arbzg-compliance', array_merge($standardFilters->toQueryParams(), array_filter(['kind' => $kindFilter ?: null, 'category' => $categoryFilter ?: null, 'export' => 'pdf'])))"
                             show-label>PDF</x-icon-btn>
+                {{-- MiLoG §17: Beginn/Ende/Dauer je Arbeitstag als Zoll-Nachweis (MVP-695). --}}
+                <x-icon-btn icon="assured_workload" tone="outline" size="sm"
+                            :href="route('reports.milog-evidence', $standardFilters->toQueryParams())"
+                            show-label>{{ __('compliance.milog.button') }}</x-icon-btn>
+                @if ($drivingTimeEnabled)
+                    {{-- Feature 144: Lenk-/Ruhezeit-Nachweis je Fahrer und Zeitraum (CSV/PDF). --}}
+                    <x-icon-btn icon="local_shipping" tone="outline" size="sm"
+                                :href="route('reports.driving-time-evidence', $standardFilters->toQueryParams())"
+                                show-label>{{ __('compliance.driving.button') }}</x-icon-btn>
+                @endif
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -46,6 +57,17 @@
                 @endforeach
             </select>
         </x-filter-field>
+        @if ($drivingTimeEnabled)
+            {{-- Feature 144: Bereich ArbZG / Lenkzeiten --}}
+            <x-filter-field :label="__('compliance.report.filter.category')" for="rep-category">
+                <select id="rep-category" name="category" class="select select-sm select-bordered" data-autosubmit>
+                    <option value="">{{ __('compliance.report.filter.all_categories') }}</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category }}" @selected($categoryFilter === $category)>{{ __('compliance.history.category.' . $category) }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        @endif
     </x-filter-bar>
 
     <div class="chart-grid grid gap-3 xl:grid-cols-2">
@@ -71,18 +93,21 @@
     </div>
 
     <x-card class="mt-2">
-        <p class="text-xs text-base-content/60">
+        <p class="text-xs text-muted">
             {{ __('compliance.report.thresholds_note', [
                 'daily' => $thresholds[\App\Services\Compliance\AttendanceComplianceChecker::KIND_MAX_DAILY_HOURS] ?? '',
                 'rest' => $thresholds[\App\Services\Compliance\AttendanceComplianceChecker::KIND_REST_PERIOD] ?? '',
                 'weekly' => $thresholds[\App\Services\Compliance\AttendanceComplianceChecker::KIND_MAX_WEEKLY_HOURS] ?? '',
             ]) }}
         </p>
+        @if ($drivingTimeEnabled)
+            <p class="mt-1 text-xs text-muted">{{ __('compliance.driving.thresholds_note') }} {{ __('compliance.driving.disclaimer') }}</p>
+        @endif
     </x-card>
 
     <x-card>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">verified</span>'
+            <x-empty-state icon="verified"
                            :title="__('compliance.report.empty')" />
         @else
             @foreach ($rows as $r)
@@ -105,14 +130,14 @@
                                     {{ \Carbon\Carbon::parse($f['date'])->fdate() }}
                                     @if ($f['corrected'])
                                         <span class="badge badge-ghost badge-sm ml-1" title="{{ __('compliance.report.corrected_hint') }}">
-                                            <span class="material-symbols-outlined text-[14px] align-middle">history</span>
+                                            <x-icon name="history" class="text-[14px] align-middle" />
                                             {{ __('compliance.report.corrected') }}
                                         </span>
                                     @endif
                                 </td>
                                 <td>{{ __('compliance.report.kind.' . $f['kind']) }}</td>
-                                <td class="text-right tabular-nums font-semibold">{{ $fmtMin((int) $f['value']) }}</td>
-                                <td class="text-right tabular-nums text-base-content/60">{{ $fmtMin((int) $f['threshold']) }}</td>
+                                <td class="text-right tabular-nums font-semibold">{{ $fmtVal((string) $f['kind'], (int) $f['value']) }}</td>
+                                <td class="text-right tabular-nums text-muted">{{ $fmtVal((string) $f['kind'], (int) $f['threshold']) }}</td>
                                 <td><x-status-badge :tone="$tone($f['severity'])" size="sm">{{ __('compliance.report.severity.' . $f['severity']) }}</x-status-badge></td>
                                 <td class="text-right">
                                     <a class="link link-hover text-xs"

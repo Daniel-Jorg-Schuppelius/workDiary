@@ -114,7 +114,10 @@ class RetentionScanService {
         $subject = $proposal->subject()->first();
         if ($subject !== null) {
             if ($policy?->purge !== null) {
-                ($policy->purge)($subject);
+                // Actor als zweites Argument (Feature 130): Anonymisierungs-
+                // Policies auditieren den Bestätiger; Ein-Parameter-Closures
+                // ignorieren das Extra-Argument.
+                ($policy->purge)($subject, $actor);
             } else {
                 $subject->delete();
             }

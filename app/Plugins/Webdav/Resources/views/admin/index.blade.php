@@ -37,7 +37,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('webdav.health.inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-base-content/60">{{ __('webdav.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('webdav.intro') }}</p>
 
             @if ($connection && $connection->isActive())
                 <div class="flex flex-wrap gap-2">
@@ -69,7 +69,7 @@
                     <span class="label-text">{{ __('webdav.field.base_url') }}</span>
                     <input type="url" name="base_url" value="{{ old('base_url', $connection->base_url ?? '') }}"
                            placeholder="https://cloud.example.com/remote.php/dav/files/svc/WorkDiary" class="input input-bordered input-sm" required>
-                    <span class="label-text-alt text-base-content/50">{{ __('webdav.field.base_url_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('webdav.field.base_url_help') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('webdav.field.username') }}</span>
@@ -81,7 +81,7 @@
                     <input type="password" name="app_password" autocomplete="new-password"
                            placeholder="{{ $connection ? __('webdav.field.password_keep') : '' }}"
                            class="input input-bordered input-sm" @required(! $connection)>
-                    <span class="label-text-alt text-base-content/50">{{ __('webdav.field.password_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('webdav.field.password_help') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('webdav.field.default_folder') }}</span>
@@ -111,13 +111,13 @@
                         </label>
                     @endforeach
                 </div>
-                <span class="label-text-alt text-base-content/50">{{ __('webdav.field.sources_help') }}</span>
+                <span class="label-text-alt text-muted">{{ __('webdav.field.sources_help') }}</span>
             </div>
 
             {{-- Dokumenttyp → Ordner --}}
             <div>
                 <h3 class="mb-1 text-sm font-semibold">{{ __('webdav.folder.heading') }}</h3>
-                <p class="mb-2 text-xs text-base-content/60">{{ __('webdav.folder.help') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('webdav.folder.help') }}</p>
                 <div class="space-y-2">
                     @php $map = $connection->folder_map ?? []; @endphp
                     @foreach (array_merge(array_keys($map), array_fill(0, 3, '')) as $mapType)
@@ -128,7 +128,7 @@
                                     <option value="{{ $type->value }}" @selected($mapType === $type->value)>{{ $type->value }}</option>
                                 @endforeach
                             </select>
-                            <span class="text-base-content/50">→</span>
+                            <span class="text-muted">→</span>
                             <input type="text" name="folder_path[]" value="{{ $mapType !== '' ? ($map[$mapType] ?? '') : '' }}"
                                    placeholder="{{ __('webdav.folder.path_placeholder') }}" class="input input-bordered input-sm w-64">
                         </div>

@@ -17,6 +17,7 @@ use App\Models\Accounting\{AccountingAccount, AccountingEntry};
 use App\Models\Finance\BankTransaction;
 use App\Models\{Organization, User};
 use App\Services\Accounting\{AccountingSovereigntyResolver, InternalTransferService, JournalService};
+use App\Services\TimeExport\CostCenterResolver;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -178,6 +179,23 @@ class PostingInboxService {
                 ],
             ],
         ], $actor);
+    }
+
+    /**
+     * Kostenstelle je Zeile aus der gemeinsamen KOST-Regel (Feature 142):
+     * dieselbe Entscheidung wie im DATEV-Stapel, damit Journal und Export
+     * nicht zwei Kostenstellen für denselben Beleg behaupten.
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function withCostCenter(Organization $organization, PostingProposal $proposal): array {
+        $costCenterId = (new CostCenterResolver((int) $organization->id))->idForSource($proposal->source);
+
+        return array_map(static function (array $line) use ($costCenterId): array {
+            $line['cost_center_id'] ??= $costCenterId;
+
+            return $line;
+        }, $proposal->lineData());
     }
 
     /** Idempotenzschlüssel der Klärungsbuchung eines Bankumsatzes. */
@@ -353,7 +371,7 @@ class PostingInboxService {
             'source_key' => $proposal->sourceKey,
             'rule_version' => $proposal->ruleVersion,
             'snapshot' => $proposal->toSnapshot(),
-            'lines' => $proposal->lineData(),
+            'lines' => $this->withCostCenter($organization, $proposal),
         ], $actor);
 
         return $entry->status->isMutable() ? $this->journal->markReady($entry) : $entry;

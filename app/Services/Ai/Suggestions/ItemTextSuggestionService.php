@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Services\Ai\Suggestions;
 
 use App\Models\Ai\AiTextSuggestion;
-use App\Models\{AuditLog, Invoice, InvoiceItem, Organization, Quote, QuoteItem, TimeEntry, User};
 use App\Models\Finance\{BillingTransfer, BillingTransferPosition};
+use App\Models\{Invoice, InvoiceItem, Organization, Quote, QuoteItem, TimeEntry, User};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Contracts\AiRequestInterface;
 use App\Services\Ai\Dto\{AiInvocationResult, AiTextResult, AiTranslationResult, FormulateRequest, SummarizeRequest, TranslateRequest};
 use App\Services\Ai\Exceptions\AiException;
+use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
+use App\Services\Ai\Support\CustomerNameMasker;
 use App\Services\Invoicing\TextCorrectionService;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -32,6 +34,8 @@ use Illuminate\Support\Carbon;
  * Beispielpaare) fließt in jeden Aufruf ein (MVP-404).
  */
 class ItemTextSuggestionService {
+    use DecidesSuggestions;
+
     public const CAPABILITY_ITEM = 'invoicing.item_text';
 
     public const CAPABILITY_BLOCK = 'invoicing.block_text';
@@ -44,6 +48,7 @@ class ItemTextSuggestionService {
         private readonly AiInvocationService $invocation,
         private readonly AiMemoryService $memory,
         private readonly TextCorrectionService $corrections,
+        private readonly CustomerNameMasker $masker,
     ) {}
 
     /** Einzel- oder Blocktext für eine Rechnungsposition im Entwurf. */
@@ -106,7 +111,7 @@ class ItemTextSuggestionService {
             // MVP-403: Blocktext — die Einzelbeschreibungen der gebündelten
             // Zeiten sind die Quelle, nicht der bisherige Sammeltext.
             return [self::CAPABILITY_BLOCK, new SummarizeRequest(
-                items: array_values($entryTexts->map(fn(string $t): string => $this->maskCustomerNames($organization, $t))->all()),
+                items: array_values($entryTexts->map(fn(string $t): string => $this->masker->mask($organization, $t))->all()),
                 period: $item->service_date?->format('d.m.Y'),
                 styleRules: $this->memory->styleRulesFor($organization, self::CAPABILITY_BLOCK, $customerId),
                 glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_BLOCK, $customerId),
@@ -114,7 +119,7 @@ class ItemTextSuggestionService {
         }
 
         return [self::CAPABILITY_ITEM, new FormulateRequest(
-            text: $this->maskCustomerNames($organization, (string) ($entryTexts->first() ?? $item->description)),
+            text: $this->masker->mask($organization, (string) ($entryTexts->first() ?? $item->description)),
             styleRules: $this->memory->styleRulesFor($organization, self::CAPABILITY_ITEM, $customerId),
             glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_ITEM, $customerId),
             examples: $this->memory->examplesFor($organization, self::CAPABILITY_ITEM, $customerId),
@@ -132,7 +137,7 @@ class ItemTextSuggestionService {
         $customerId = (int) $invoice->customer_id;
 
         $request = new TranslateRequest(
-            text: $this->maskCustomerNames($organization, (string) $item->description),
+            text: $this->masker->mask($organization, (string) $item->description),
             targetLanguage: $targetLanguage,
             sourceLanguage: 'de',
             formality: 'more',
@@ -168,7 +173,7 @@ class ItemTextSuggestionService {
 
         if ($entryTexts->count() > 1) {
             $request = new SummarizeRequest(
-                items: array_values($entryTexts->map(fn(string $t): string => $this->maskCustomerNames($organization, $t))->all()),
+                items: array_values($entryTexts->map(fn(string $t): string => $this->masker->mask($organization, $t))->all()),
                 period: $period,
                 styleRules: $this->memory->styleRulesFor($organization, self::CAPABILITY_BLOCK, $customerId),
                 glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_BLOCK, $customerId),
@@ -178,7 +183,7 @@ class ItemTextSuggestionService {
         }
 
         $request = new FormulateRequest(
-            text: $this->maskCustomerNames($organization, (string) ($entryTexts->first() ?? $position->description)),
+            text: $this->masker->mask($organization, (string) ($entryTexts->first() ?? $position->description)),
             styleRules: $this->memory->styleRulesFor($organization, self::CAPABILITY_ITEM, $customerId),
             glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_ITEM, $customerId),
             examples: $this->memory->examplesFor($organization, self::CAPABILITY_ITEM, $customerId),
@@ -200,7 +205,7 @@ class ItemTextSuggestionService {
         $customerId = (int) $quote->customer_id;
 
         $request = new FormulateRequest(
-            text: $this->maskCustomerNames($organization, (string) $item->description),
+            text: $this->masker->mask($organization, (string) $item->description),
             styleRules: $this->memory->styleRulesFor($organization, self::CAPABILITY_QUOTE_ITEM, $customerId),
             glossary: $this->memory->glossaryFor($organization, self::CAPABILITY_QUOTE_ITEM, $customerId),
             examples: $this->memory->examplesFor($organization, self::CAPABILITY_QUOTE_ITEM, $customerId),
@@ -252,20 +257,6 @@ class ItemTextSuggestionService {
         return $edited;
     }
 
-    public function reject(AiTextSuggestion $suggestion, ?User $user): void {
-        if (! $suggestion->isOpen()) {
-            return; // idempotent
-        }
-
-        $suggestion->forceFill([
-            'status' => AiTextSuggestion::STATUS_REJECTED,
-            'decided_by_user_id' => $user?->getKey(),
-            'decided_at' => Carbon::now(),
-        ])->save();
-
-        $this->auditDecision($suggestion, 'rejected', $user);
-    }
-
     /**
      * Offene Vorschläge eines Belegs verfallen bei Ausstellung/Versand.
      *
@@ -282,37 +273,6 @@ class ItemTextSuggestionService {
             ->whereIn('subject_id', $subjectIds)
             ->where('status', AiTextSuggestion::STATUS_PROPOSED)
             ->update(['status' => AiTextSuggestion::STATUS_EXPIRED]);
-    }
-
-    /**
-     * Datenschutz-Vorfilter (Feature 084, Vollaudit 2026-07 M35): maskiert
-     * Namen aus dem eigenen Kundenstamm im Prompttext, BEVOR der Text einen
-     * (ggf. Cloud-)Provider erreicht — die DoD verlangt, dass Vorschläge nie
-     * den Empfängernamen enthalten. Namen unter 4 Zeichen bleiben unberührt
-     * (False-Positive-Schutz); Obergrenze 5000 Namen je Organisation.
-     */
-    private function maskCustomerNames(Organization $organization, string $text): string {
-        if (trim($text) === '') {
-            return $text;
-        }
-
-        $names = \App\Models\Customer::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->orderBy('id')
-            ->limit(5000)
-            ->pluck('name')
-            ->map(static fn($n): string => trim((string) $n))
-            ->filter(static fn(string $n): bool => mb_strlen($n) >= 4)
-            ->sortByDesc(static fn(string $n): int => mb_strlen($n))
-            ->values();
-
-        foreach ($names->chunk(200) as $chunk) {
-            $pattern = '/(?:' . $chunk->map(static fn(string $n): string => preg_quote($n, '/'))->implode('|') . ')/iu';
-            $text = preg_replace($pattern, '[Kunde]', $text) ?? $text;
-        }
-
-        return $text;
     }
 
     private function invokeAndStore(
@@ -396,22 +356,5 @@ class ItemTextSuggestionService {
         if ($transfer === null || $transfer->status !== \App\Enums\Finance\TransferStatus::Confirmed) {
             throw new AiException((string) __('ai.error.only_transfer_confirmed'));
         }
-    }
-
-    private function auditDecision(AiTextSuggestion $suggestion, string $decision, ?User $user): void {
-        AuditLog::create([
-            'organization_id' => $suggestion->organization_id,
-            'user_id' => $user?->getKey(),
-            'event' => 'ai.suggestion_decided',
-            'auditable_type' => $suggestion->getMorphClass(),
-            'auditable_id' => $suggestion->getKey(),
-            'changes' => [
-                'decision' => $decision,
-                'capability' => $suggestion->capability,
-                'provider' => $suggestion->provider,
-                'subject_type' => $suggestion->subject_type,
-                'subject_id' => $suggestion->subject_id,
-            ],
-        ]);
     }
 }

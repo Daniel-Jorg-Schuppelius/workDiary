@@ -63,6 +63,22 @@ class RetentionRegistry {
         return $value !== null ? (int) $value : null;
     }
 
+    /**
+     * Tages-Frist eines Bereichs (Feature 130): entweder direkt (`days`) oder
+     * per Verweis auf eine bestehende Config-Frist (`days_source`, z. B.
+     * location.retention_days — kein Doppeln der Quelle). Rechtsraum-neutral;
+     * null, wenn keine Tages-Frist konfiguriert oder <= 0 (unbegrenzt).
+     */
+    public function daysFor(string $area): ?int {
+        $value = config("retention.areas.{$area}.days");
+        if ($value === null) {
+            $source = config("retention.areas.{$area}.days_source");
+            $value = is_string($source) ? config($source) : null;
+        }
+
+        return is_numeric($value) && (int) $value > 0 ? (int) $value : null;
+    }
+
     /** Rechtsgrundlagen-Label für Bereich+Rechtsraum (Fallback DE). */
     public function basisFor(Organization $organization, string $area): ?string {
         $basis = (array) config("retention.areas.{$area}.basis", []);
@@ -76,10 +92,15 @@ class RetentionRegistry {
     /** Stichtag, vor dem Datensätze des Bereichs löschbar werden. */
     public function cutoffFor(Organization $organization, string $area): ?CarbonImmutable {
         $years = $this->yearsFor($organization, $area);
-        if ($years === null) {
-            return null;
+        if ($years !== null) {
+            return CarbonImmutable::now()->subYears($years);
         }
 
-        return CarbonImmutable::now()->subYears($years);
+        $days = $this->daysFor($area);
+        if ($days !== null) {
+            return CarbonImmutable::now()->subDays($days);
+        }
+
+        return null;
     }
 }

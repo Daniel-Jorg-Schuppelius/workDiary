@@ -71,7 +71,7 @@
 
     <x-card>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :title="__('Keine Daten im Zeitraum.')" />
+            <x-empty-state icon="schedule" :title="__('Keine Daten im Zeitraum.')" />
         @else
             <x-table table-sort="client" bare>
                 <x-slot:head>

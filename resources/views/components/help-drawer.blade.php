@@ -75,6 +75,13 @@
                     </x-button>
                     <span class="ml-2 text-xs text-muted hidden" data-help-feedback-thanks>{{ __('Danke für dein Feedback.') }}</span>
                 </div>
+                {{-- Tastenkürzel-Übersicht (Feature 037, MVP-721): Topic-Link, gleiche Naht wie jeder Help-Trigger. --}}
+                <button type="button"
+                        class="mt-2 link link-primary text-sm"
+                        data-help-trigger
+                        data-help-topic="account.shortcuts">
+                    {{ __('Tastenkürzel') }}
+                </button>
                 <div class="mt-3 hidden" data-help-related>
                     <p class="text-xs uppercase tracking-wider text-muted">{{ __('Verwandte Themen') }}</p>
                     <ul class="mt-1 space-y-1 text-sm" data-help-related-list></ul>

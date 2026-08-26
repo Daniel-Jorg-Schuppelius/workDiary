@@ -80,24 +80,24 @@
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Status auf einen Blick') }}</h2>
             <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                 <div class="rounded-box border border-base-300 bg-base-200 p-3">
-                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktive Nutzer') }}</p>
+                    <p class="text-xs uppercase tracking-wider text-muted">{{ __('Aktive Nutzer') }}</p>
                     <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">{{ $memberCount }}</p>
                 </div>
                 <div class="rounded-box border border-base-300 bg-base-200 p-3">
-                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Aktive Sessions') }}</p>
+                    <p class="text-xs uppercase tracking-wider text-muted">{{ __('Aktive Sessions') }}</p>
                     <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">{{ $sessions->count() }}</p>
                 </div>
                 <div class="rounded-box border border-base-300 bg-base-200 p-3">
-                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('API-Tokens') }}</p>
+                    <p class="text-xs uppercase tracking-wider text-muted">{{ __('API-Tokens') }}</p>
                     <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">{{ $tokens->count() }}</p>
                 </div>
                 <div class="rounded-box border border-base-300 bg-base-200 p-3">
-                    <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('AVV/DPA') }}</p>
+                    <p class="text-xs uppercase tracking-wider text-muted">{{ __('AVV/DPA') }}</p>
                     <p class="mt-1 text-sm">
                         @if ($dpaUrl)
                             <a href="{{ $dpaUrl }}" class="link link-primary" target="_blank" rel="noopener">{{ __('Dokument öffnen') }}</a>
                         @else
-                            <span class="italic text-base-content/60">{{ __('nicht hinterlegt') }}</span>
+                            <span class="italic text-muted">{{ __('nicht hinterlegt') }}</span>
                         @endif
                     </p>
                 </div>
@@ -109,7 +109,7 @@
     <article class="card border border-base-300 bg-base-100 shadow-sm">
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Datenkategorien und Aufbewahrung') }}</h2>
-            <p class="text-xs text-base-content/60">
+            <p class="text-xs text-muted">
                 {{ __('Vorschlag nach deutschem Recht (GoBD). Verbindliche Fristen werden im Folge-MVP über organizations.settings[privacy] gesetzt.') }}
             </p>
             <x-table bare>
@@ -147,7 +147,7 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Aktive Sessions') }}</h2>
             @if ($sessions->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">devices</span>' :title="__('Keine aktiven Sessions.')" compact />
+                <x-empty-state icon="devices" :title="__('Keine aktiven Sessions.')" compact />
             @else
                 <x-table bare>
                     <x-slot:head>
@@ -197,7 +197,7 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('API-Tokens') }}</h2>
             @if ($tokens->isEmpty())
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>' :title="__('Keine API-Tokens aktiv.')" compact />
+                <x-empty-state icon="key" :title="__('Keine API-Tokens aktiv.')" compact />
             @else
                 <x-table bare>
                     <x-slot:head>
@@ -246,7 +246,7 @@
         <article class="card border border-base-300 bg-base-100 shadow-sm" data-section="integrations">
             <div class="card-body gap-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Externe Integrationen und Datenflüsse') }}</h2>
-                <p class="text-xs text-base-content/60">
+                <p class="text-xs text-muted">
                     {{ __('Systemweite Dienste mit Datenabfluss sowie die in dieser Organisation aktivierten Plugins. Angezeigt werden nur Identität, Quelle und Status — niemals Zugangsdaten.') }}
                 </p>
                 <x-table bare>
@@ -304,11 +304,11 @@
         <article class="card border border-base-300 bg-base-100 shadow-sm" data-section="exports">
             <div class="card-body gap-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Mandantenexporte') }}</h2>
-                <p class="text-xs text-base-content/60">
+                <p class="text-xs text-muted">
                     {{ __('Letzte 20 Export-Ereignisse aus dem Audit-Protokoll dieser Organisation.') }}
                 </p>
                 @if ($exports->isEmpty())
-                    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">download</span>' :title="__('Keine Exporte verzeichnet.')" compact />
+                    <x-empty-state icon="download" :title="__('Keine Exporte verzeichnet.')" compact />
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -335,7 +335,7 @@
                                         <td class="text-xs text-base-content/70">
                                             @if ($format)<span class="badge badge-sm badge-outline">{{ $format }}</span>@endif
                                             @if ($scope)<span class="ml-1">{{ $scope }}</span>@endif
-                                            @if (is_numeric($bytes))<span class="ml-1 text-base-content/50">({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $bytes / 1024, 0, withThousandsSeparator: true) }} KB)</span>@endif
+                                            @if (is_numeric($bytes))<span class="ml-1 text-muted">({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $bytes / 1024, 0, withThousandsSeparator: true) }} KB)</span>@endif
                                         </td>
                                     </tr>
                                 @endforeach
@@ -350,11 +350,11 @@
         <article class="card border border-base-300 bg-base-100 shadow-sm" data-section="support">
             <div class="card-body gap-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Letzte Supportzugriffe') }}</h2>
-                <p class="text-xs text-base-content/60">
+                <p class="text-xs text-muted">
                     {{ __('Letzte 20 Audit-Ereignisse aus dem Support-Kontext dieser Organisation.') }}
                 </p>
                 @if ($supportAccesses->isEmpty())
-                    <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">support_agent</span>' :title="__('Keine Supportzugriffe verzeichnet.')" compact />
+                    <x-empty-state icon="support_agent" :title="__('Keine Supportzugriffe verzeichnet.')" compact />
                 @else
                     <x-table bare>
                         <x-slot:head>

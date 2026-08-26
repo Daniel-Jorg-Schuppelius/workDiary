@@ -187,10 +187,10 @@ class SalesDocumentPdfTest extends TestCase {
                 && $mail->payUntil !== null
                 && $names === ['zahlungserinnerung-R2026-0100.pdf', 'rechnung-R2026-0100.pdf'];
         });
-        $this->assertDatabaseHas('invoice_dispatches', [
+        $this->assertDatabaseHas('document_dispatches', [
             'invoice_id' => $invoice->id,
         ]);
-        $dispatch = \App\Models\InvoiceDispatch::query()->firstOrFail();
+        $dispatch = \App\Models\DocumentDispatch::query()->firstOrFail();
         $this->assertSame('dunning', $dispatch->meta['kind'] ?? null);
         $this->assertSame(12.5, (float) ($dispatch->meta['fee'] ?? 0));
     }

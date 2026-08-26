@@ -40,7 +40,7 @@
                     <option value="{{ $format->value }}">{{ $format->label() }}</option>
                 @endforeach
             </select>
-            <span class="label-text-alt text-xs text-base-content/50">{{ __('document_design.profile.page_format_hint') }}</span>
+            <span class="label-text-alt text-xs text-muted">{{ __('document_design.profile.page_format_hint') }}</span>
         </label>
 
         <label class="form-control w-full">
@@ -51,7 +51,7 @@
                     <option value="{{ $family->value }}">{{ $family->label() }}</option>
                 @endforeach
             </select>
-            <span class="label-text-alt text-xs text-base-content/50">{{ __('document_design.profile.family_hint') }}</span>
+            <span class="label-text-alt text-xs text-muted">{{ __('document_design.profile.family_hint') }}</span>
         </label>
 
         <label class="flex items-center gap-2 text-sm">

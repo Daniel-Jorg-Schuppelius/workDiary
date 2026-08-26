@@ -51,7 +51,7 @@
         <tbody>
             @foreach ($summary['workspaces'] as $w)
                 <tr>
-                    <td>{{ $w['workspace'] }}@isset($w['customer'])<span class="text-base-content/50"> → {{ $w['customer'] }}</span>@endisset</td>
+                    <td>{{ $w['workspace'] }}@isset($w['customer'])<span class="text-muted"> → {{ $w['customer'] }}</span>@endisset</td>
                     <td>{{ $w['mode'] }}</td>
                     <td class="text-right">{{ $w['customers_created'] }} / {{ $w['customers_reused'] }}</td>
                     <td class="text-right">{{ $w['foreign_customers_created'] }} / {{ $w['foreign_customers_reused'] }}</td>

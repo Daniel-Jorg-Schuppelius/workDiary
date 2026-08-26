@@ -45,7 +45,7 @@
 
     @unless ($consistent)
         <div role="alert" class="alert alert-warning mb-4 text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+            <x-icon name="warning" />
             <span>{{ __('Konsistenz-Hinweis: Der Report meldet :expected, der Drilldown summiert :actual (Datenstand kann sich geändert haben).', ['expected' => $eur($expected), 'actual' => $eur($totalCost ?? 0)]) }}</span>
         </div>
     @endunless
@@ -156,7 +156,7 @@
                         </tr>
                     </tfoot>
                 </x-table>
-                <p class="mt-2 text-xs text-base-content/60">{{ __('Davon abgerechnet (Erlös): :amount', ['amount' => $eur($totalRevenue)]) }}</p>
+                <p class="mt-2 text-xs text-muted">{{ __('Davon abgerechnet (Erlös): :amount', ['amount' => $eur($totalRevenue)]) }}</p>
             @endif
         </x-card>
         <x-pagination :paginator="$rows" standing />
@@ -214,7 +214,7 @@
                     @foreach ($rows as $expense)
                         <tr>
                             <td class="tabular-nums">{{ $expense->date?->fdate() }}</td>
-                            <td class="max-w-md truncate text-sm">{{ $expense->description }}@if(filled($expense->vendor)) <span class="text-base-content/60">({{ $expense->vendor }})</span>@endif</td>
+                            <td class="max-w-md truncate text-sm">{{ $expense->description }}@if(filled($expense->vendor)) <span class="text-muted">({{ $expense->vendor }})</span>@endif</td>
                             <td>{{ $expense->category->label ?? '—' }}</td>
                             <td>{{ $expense->billable ? __('Ja') : __('Nein') }}</td>
                             <td class="text-right tabular-nums">{{ $eur($expense->amount_net) }}</td>
@@ -231,7 +231,7 @@
                         </tr>
                     </tfoot>
                 </x-table>
-                <p class="mt-2 text-xs text-base-content/60">{{ __('Davon abrechenbar (Erlös): :amount', ['amount' => $eur($totalRevenue)]) }}</p>
+                <p class="mt-2 text-xs text-muted">{{ __('Davon abrechenbar (Erlös): :amount', ['amount' => $eur($totalRevenue)]) }}</p>
             @endif
         </x-card>
         <x-pagination :paginator="$rows" standing />

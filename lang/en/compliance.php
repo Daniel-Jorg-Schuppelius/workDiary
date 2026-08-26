@@ -21,6 +21,8 @@ return [
         'filter' => [
             'kind' => 'Violation type',
             'all' => 'All types',
+            'category' => 'Area',
+            'all_categories' => 'All areas',
         ],
         'kpi' => [
             'total' => 'Total violations',
@@ -38,6 +40,21 @@ return [
             'freeDayStamp' => 'Stamp on a day off',
             'absenceStamp' => 'Stamp during absence',
             'attendanceFrameTime' => 'Working time frame (clockings)',
+            'lateRecording' => 'Late recording (MiLoG)',
+            'sixMonthAverage' => 'Six-month average (§ 3 ArbZG)',
+            'nightWork' => 'Night work above 8 h (§ 6 ArbZG)',
+            'substituteRestDay' => 'Missing substitute rest day (§ 11 ArbZG)',
+            'freeSundays' => 'Too few free Sundays (§ 11 ArbZG)',
+            // Feature 144 (MVP-719): Lenk-/Ruhezeiten (VO (EG) 561/2006 / FPersV).
+            'dailyDriving' => 'Daily driving time (Art. 6 Reg. 561/2006)',
+            'weeklyDriving' => 'Weekly driving time (Art. 6 Reg. 561/2006)',
+            'fortnightDriving' => 'Fortnightly driving time (Art. 6 Reg. 561/2006)',
+            'drivingBreakMissing' => 'Driving break missing (Art. 7 Reg. 561/2006)',
+            'dailyRest' => 'Daily rest period (Art. 8 Reg. 561/2006)',
+            'weeklyRest' => 'Weekly rest period (Art. 8 Reg. 561/2006)',
+        ],
+        'unit' => [
+            'days' => '{1} :count day|[2,*] :count days',
         ],
         'severity' => [
             'error' => 'Violation',
@@ -86,12 +103,52 @@ return [
         'category' => [
             'arbzg' => 'ArbZG',
             'plausibility' => 'Unresolved cases',
+            'drivingTime' => 'Driving times',
         ],
         'acknowledged' => 'Violation updated.',
         'error' => [
             'invalid_status' => 'Invalid target status.',
             'not_acknowledgeable' => 'This violation can no longer be acknowledged.',
             'note_required' => 'A reason is required for “accepted”.',
+        ],
+    ],
+    'milog' => [
+        'button' => 'MiLoG evidence (customs)',
+        'csv' => [
+            'employee' => 'Employee',
+            'personnel_number' => 'Personnel number',
+            'date' => 'Date',
+            'start' => 'Start',
+            'end' => 'End',
+            'breaks' => 'Breaks (min)',
+            'duration' => 'Duration',
+        ],
+    ],
+    'driving' => [
+        'button' => 'Driving time evidence',
+        'title' => 'Driving and rest time evidence',
+        'thresholds_note' => 'Driving/rest times (Reg. (EC) 561/2006 / FPersV): max. 9 h driving/day (10 h twice a week) · 56 h/week · 90 h/fortnight · 45 min break after 4.5 h (splittable 15 + 30) · rest 11 h/day (max. 3× per week 9 h) · 45 h/week (24 h with compensation).',
+        'disclaimer' => 'Data basis are the recorded trips (logbook) with flagged vehicles; tachograph/DTCO data is not read. No legal advice.',
+        'csv' => [
+            'driver' => 'Driver',
+            'personnel_number' => 'Personnel number',
+            'date' => 'Date',
+            'vehicles' => 'Vehicles',
+            'start' => 'First departure',
+            'end' => 'Last arrival',
+            'driving' => 'Driving time',
+            'longest_stint' => 'Longest driving stint without break',
+            'breaks' => 'Breaks (min)',
+            'rest_before' => 'Rest before',
+            'findings' => 'Findings',
+        ],
+        'badge' => [
+            'label' => 'Driving time',
+            'remaining' => ':remaining left',
+            'until_break' => 'Break in :until',
+            'break_due' => 'Break due',
+            'exhausted' => 'Daily driving time exhausted',
+            'title' => 'Remaining daily driving time :daily (limit :limit) · next break in :until · weekly remaining :weekly · fortnight :fortnight',
         ],
     ],
 ];

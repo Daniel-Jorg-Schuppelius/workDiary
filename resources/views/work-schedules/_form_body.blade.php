@@ -25,7 +25,7 @@
                 <option value="{{ $val }}">{{ $lbl }}</option>
             @endforeach
         </select>
-        <p class="mt-1 text-xs text-base-content/60">
+        <p class="mt-1 text-xs text-muted">
             <template x-if="isType('flextime')"><span>{{ __('work_schedule.type_hint.flextime') }}</span></template>
             <template x-if="isType('weekly')"><span>{{ __('work_schedule.type_hint.weekly') }}</span></template>
             <template x-if="isType('per_weekday')"><span>{{ __('work_schedule.type_hint.per_weekday') }}</span></template>
@@ -38,14 +38,14 @@
 <x-form-group :legend="__('Arbeitszeit')" icon="schedule" tone="primary" cols="2"
               x-show="isTypeAny('flextime', 'weekly')" x-cloak>
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Wochenarbeitszeit') }} (<span x-text="unitLabel"></span>) *</label>
+        <label for="weekly_minutes" class="fieldset-label">{{ __('Wochenarbeitszeit') }} (<span x-text="unitLabel"></span>) *</label>
         <input type="hidden" name="weekly_minutes" :value="toMin(d.weekly)">
-        <input type="number" min="0" :step="step" x-model="d.weekly" class="input input-bordered w-full">
+        <input id="weekly_minutes" type="number" min="0" :step="step" x-model="d.weekly" class="input input-bordered w-full">
     </div>
     <div class="fieldset" x-show="isType('flextime')">
-        <label class="fieldset-label">{{ __('Tagessoll') }} (<span x-text="unitLabel"></span>) *</label>
+        <label for="daily_target_minutes" class="fieldset-label">{{ __('Tagessoll') }} (<span x-text="unitLabel"></span>) *</label>
         <input type="hidden" name="daily_target_minutes" :value="toMin(d.daily)">
-        <input type="number" min="0" :step="step" x-model="d.daily" class="input input-bordered w-full">
+        <input id="daily_target_minutes" type="number" min="0" :step="step" x-model="d.daily" class="input input-bordered w-full">
     </div>
 </x-form-group>
 
@@ -53,7 +53,7 @@
 <x-form-group :legend="__('Arbeitstage')" icon="event" tone="primary" cols="1"
               x-show="isTypeAny('flextime', 'weekly', 'trust')" x-cloak>
     <div class="fieldset">
-        <p class="text-xs text-base-content/60" x-show="isType('trust')">{{ __('Tage, an denen Anwesenheit erwartet wird.') }}</p>
+        <p class="text-xs text-muted" x-show="isType('trust')">{{ __('Tage, an denen Anwesenheit erwartet wird.') }}</p>
         <div class="mt-1 flex flex-wrap gap-3">
             @foreach ($weekdayLabels as $iso => $lbl)
                 <label class="label cursor-pointer gap-1">
@@ -99,14 +99,14 @@
                         <td>
                             <div x-show="dayModeIs({{ $iso }}, 'hours')" class="flex items-center gap-1">
                                 <input type="number" min="0" :step="step" x-model="days.d{{ $iso }}.hours" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-24">
-                                <span class="text-xs text-base-content/60" x-text="unitLabel"></span>
+                                <span class="text-xs text-muted" x-text="unitLabel"></span>
                             </div>
                             <div x-show="dayModeIs({{ $iso }}, 'times')" class="flex flex-wrap items-center gap-1">
                                 <input type="time" name="day_targets[{{ $iso }}][start]" x-model="days.d{{ $iso }}.start" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-28">
                                 <span class="text-xs">–</span>
                                 <input type="time" name="day_targets[{{ $iso }}][end]" x-model="days.d{{ $iso }}.end" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-28">
                                 <input type="number" min="0" name="day_targets[{{ $iso }}][break]" x-model="days.d{{ $iso }}.break" :disabled="dayDisabled({{ $iso }})" class="input input-bordered input-sm w-16" title="{{ __('Pause (Min.)') }}">
-                                <span class="text-xs text-base-content/60">{{ __('Pause') }}</span>
+                                <span class="text-xs text-muted">{{ __('Pause') }}</span>
                             </div>
                         </td>
                         <td class="text-right text-sm tabular-nums" x-text="dayMinutesLabel({{ $iso }})"></td>
@@ -135,14 +135,14 @@
 {{-- Pausen & Gültigkeit (für alle Typen; Pflichtpause ist gesetzlich) --}}
 <x-form-group :legend="__('Pausen & Gültigkeit')" icon="restaurant" tone="success" cols="2">
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Pause ab') }} (<span x-text="unitLabel"></span>) *</label>
+        <label for="break_after_minutes" class="fieldset-label">{{ __('Pause ab') }} (<span x-text="unitLabel"></span>) *</label>
         <input type="hidden" name="break_after_minutes" :value="toMin(d.breakAfter)">
-        <input type="number" min="0" :step="step" x-model="d.breakAfter" class="input input-bordered w-full">
+        <input id="break_after_minutes" type="number" min="0" :step="step" x-model="d.breakAfter" class="input input-bordered w-full">
     </div>
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Pflichtpause') }} (<span x-text="unitLabel"></span>) *</label>
+        <label for="break_minutes" class="fieldset-label">{{ __('Pflichtpause') }} (<span x-text="unitLabel"></span>) *</label>
         <input type="hidden" name="break_minutes" :value="toMin(d.breakMin)">
-        <input type="number" min="0" :step="step" x-model="d.breakMin" class="input input-bordered w-full">
+        <input id="break_minutes" type="number" min="0" :step="step" x-model="d.breakMin" class="input input-bordered w-full">
     </div>
     <x-date-range class="md:col-span-2" layout="split" form-control
                   from-name="valid_from" to-name="valid_to" from-required

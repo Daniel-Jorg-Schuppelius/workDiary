@@ -28,14 +28,14 @@
         @if ($serial === null)
             <x-card>
                 <div class="alert alert-error">
-                    <span class="material-symbols-outlined" aria-hidden="true">gpp_bad</span>
+                    <x-icon name="gpp_bad" />
                     {{ __('inventory.serial.verify.not_found') }}
                 </div>
             </x-card>
         @else
             <x-card>
                 <div class="flex items-center gap-2">
-                    <span class="material-symbols-outlined text-success" aria-hidden="true">verified</span>
+                    <x-icon name="verified" class="text-success" />
                     <span class="font-mono">{{ $serial->serial_no }}</span>
                     <span class="badge badge-sm badge-ghost">{{ $serial->status->label() }}</span>
                 </div>

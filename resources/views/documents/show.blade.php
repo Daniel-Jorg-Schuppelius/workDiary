@@ -40,7 +40,26 @@
     @if (session('status'))
         <div class="alert alert-success text-sm">{{ session('status') }}</div>
     @endif
+    @php
+        // Dokumenttyp/Fristen erkennen (Feature 148, MVP-732): OCR-/Textanalyse
+        // über das php-pdf-toolkit; Chips werden einzeln übernommen.
+        $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+        $aiDmsUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\DocumentMetadataSuggestionService::CAPABILITY)
+            && \Illuminate\Support\Facades\Gate::allows('update', $document)
+            && $document->currentVersion !== null;
+        $aiDms = $aiDmsUsable
+            ? $aiView->openSuggestionsFor($document->getMorphClass(), collect([$document]), \App\Services\Ai\Suggestions\DocumentMetadataSuggestionService::CAPABILITY)->get($document->id)
+            : null;
+    @endphp
     <x-card :title="__('Stammdaten')" icon="badge">
+        @if ($aiDmsUsable && $aiDms === null)
+            <x-slot:actions>
+                <x-action-form :action="route('ai.assist.document', $document)">
+                    <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
+                                :title="__('ai.assist.analyze_document')">{{ __('ai.assist.analyze_document') }}</x-icon-btn>
+                </x-action-form>
+            </x-slot:actions>
+        @endif
         <x-detail-grid>
             <x-detail-grid.row :label="__('Typ')" :value="$document->document_type->label()" />
             <x-detail-grid.row :label="__('Status')" :value="$document->effectiveStatus()->label()" />
@@ -51,11 +70,17 @@
                 <x-detail-grid.row :label="__('Beschreibung')" :value="$document->description" />
             @endif
         </x-detail-grid>
+        @if ($aiDms !== null)
+            @include('ai._field_chips', [
+                'suggestion' => $aiDms,
+                'chips' => \App\Services\Ai\Suggestions\DocumentMetadataSuggestionService::extractedValues($aiDms),
+            ])
+        @endif
     </x-card>
 
     <x-card :title="__('Versionen')" icon="history" :count="$document->versions->count()">
         @if ($document->versions->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :title="__('Noch keine Version hochgeladen.')" compact />
+            <x-empty-state icon="history" :title="__('Noch keine Version hochgeladen.')" compact />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -96,7 +121,7 @@
             <div class="flex flex-col gap-1">
                 @if ($document->customer_visible)
                     <x-status-badge size="sm" tone="success">{{ __('document.customer.released') }}</x-status-badge>
-                    <span class="text-xs text-base-content/60">
+                    <span class="text-xs text-muted">
                         {{ __('document.customer.released_at') }}: {{ $document->customer_released_at?->fdatetime() ?? '—' }}
                         @if ($document->customerReleaser)
                             · {{ __('document.customer.released_by') }}: {{ $document->customerReleaser->name }}
@@ -105,7 +130,7 @@
                 @else
                     <x-status-badge size="sm" tone="ghost" outline>{{ __('document.customer.not_released') }}</x-status-badge>
                     @unless ($isReleasable)
-                        <span class="text-xs text-base-content/60">{{ __('document.customer.not_linked_hint') }}</span>
+                        <span class="text-xs text-muted">{{ __('document.customer.not_linked_hint') }}</span>
                     @endunless
                 @endif
             </div>

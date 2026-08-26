@@ -50,6 +50,12 @@ final class DeadlineScanRegistry {
         GuaranteeDeadlineScan::class,
         WarrantyPeriodScan::class,
         SupplierCredentialScan::class,
+        // Neue Scans hängen hinten an (stabile Log-Reihenfolge) — Arbeitsschutz (Feature 132).
+        SafetyDeadlineScans::class,
+        // Wetterwarnungen für disponierte Einsätze (Feature 062, MVP-716).
+        WeatherWarningScan::class,
+        // Pflichtschulungen (Feature 145, MVP-727).
+        TrainingDeadlineScan::class,
     ];
 
     /** @return list<DeadlineScan> */

@@ -96,8 +96,8 @@
             </defs>
             <line x1="{{ $pad }}" y1="{{ round($sy(0), 1) }}" x2="{{ $width - $pad }}" y2="{{ round($sy(0), 1) }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $padB }}" class="stroke-base-300" stroke-width="1" />
-            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ rtrim(rtrim(number_format($hi, 2, '.', ''), '0'), '.') }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ round($sy(0), 1) }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
+            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ rtrim(rtrim(number_format($hi, 2, '.', ''), '0'), '.') }}</text>
+            <text x="{{ $pad - 6 }}" y="{{ round($sy(0), 1) }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
             @foreach ($cols as $i => $col)
                 @php
                     $cx = $pad + ($i + 0.5) * $slot_;
@@ -109,7 +109,7 @@
                 <a @if (!empty($col['url'])) href="{{ $col['url'] }}" @endif tabindex="0"
                    aria-label="@if ($col['type'] === 'total'){{ $col['x'] }}: {{ rtrim(rtrim(number_format($col['to'], 2, '.', ''), '0'), '.') }} {{ $unit }}@else{{ $col['x'] }}: {{ $fmt((float) $col['delta']) }} {{ $unit }}, {{ __('Stand:') }} {{ rtrim(rtrim(number_format($col['to'], 2, '.', ''), '0'), '.') }}@endif">
                     @if ($col['type'] === 'total')
-                        <rect x="{{ $x0 }}" y="{{ $yTop }}" width="{{ round($barW, 1) }}" height="{{ $h }}" class="fill-base-content/40" />
+                        <rect x="{{ $x0 }}" y="{{ $yTop }}" width="{{ round($barW, 1) }}" height="{{ $h }}" class="fill-muted" />
                     @elseif ($isDown)
                         <rect x="{{ $x0 }}" y="{{ $yTop }}" width="{{ round($barW, 1) }}" height="{{ $h }}" fill="url(#{{ $uid }})" class="stroke-secondary" stroke-width="1" />
                     @else
@@ -125,9 +125,9 @@
                 @if ($rotateLabels)
                     <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="end"
                           transform="rotate(-40 {{ round($cx, 1) }} {{ $height - $padB + 12 }})"
-                          class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $col['x'], 18, '…') }}</text>
+                          class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $col['x'], 18, '…') }}</text>
                 @else
-                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="middle" class="fill-base-content/60 text-[10px]">{{ \Illuminate\Support\Str::limit((string) $col['x'], 10, '…') }}</text>
+                    <text x="{{ round($cx, 1) }}" y="{{ $height - $padB + 12 }}" text-anchor="middle" class="fill-muted text-[10px]">{{ \Illuminate\Support\Str::limit((string) $col['x'], 10, '…') }}</text>
                 @endif
             @endforeach
         </svg>
@@ -149,7 +149,7 @@
                 {{ __('Abnahme') }}
             </span>
             <span class="inline-flex items-center gap-1">
-                <svg width="14" height="10" aria-hidden="true"><rect width="14" height="10" class="fill-base-content/40" /></svg>
+                <svg width="14" height="10" aria-hidden="true"><rect width="14" height="10" class="fill-muted" /></svg>
                 {{ __('Bestand') }}
             </span>
         </p>

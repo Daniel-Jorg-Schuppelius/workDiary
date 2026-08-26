@@ -29,7 +29,7 @@
 
     @if ($members->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
+            icon="group"
             :title="__('Noch keine Mitarbeiter')"
             :message="__('Lege das erste Teammitglied an.')"
         />
@@ -62,6 +62,11 @@
                             @foreach ($member->roles as $role)
                                 <x-status-badge size="sm" outline>{{ $role->name }}</x-status-badge>
                             @endforeach
+                            @if ($member->isDeactivated())
+                                <x-status-badge size="sm" tone="error" outline>{{ __('ausgeschieden') }}</x-status-badge>
+                            @elseif ($member->left_at !== null)
+                                <x-status-badge size="sm" tone="warning" outline>{{ __('Austritt :date', ['date' => $member->left_at->format('d.m.Y')]) }}</x-status-badge>
+                            @endif
                         </td>
                         <td class="text-right">
                             <div class="flex justify-end gap-1">
@@ -69,6 +74,12 @@
                                     <x-icon-btn icon="schedule"
                                                 :href="route('users.flex-eligibility.index', $member)"
                                                 :label="__('flex.eligibility.nav_title')" />
+                                @endcan
+                                @can('viewPersonnelFile', [\App\Models\Document::class, $member])
+                                    {{-- Digitale Personalakte (Feature 141): nur hrFile-Kreis, kein Admin-Bypass. --}}
+                                    <x-icon-btn icon="folder_shared"
+                                                :href="route('org.members.personnel-file.index', $member)"
+                                                :label="__('hr.personnel_file.title')" />
                                 @endcan
                                 <x-icon-btn icon="edit"
                                             data-entry-modal-trigger
@@ -83,9 +94,18 @@
                                         <x-icon-btn icon="switch_account" tone="warning" type="submit" :label="__('Als Nutzer anmelden (Support)')" />
                                     </x-action-form>
                                 @endif
+                                @if (($canManageMembers ?? true) && ! $member->isDeactivated() && $member->id !== auth()->id())
+                                    {{-- Feature 126 (H1/E4): Regelweg Austritt — deaktiviert, Nachweise bleiben. --}}
+                                    <x-action-form :action="route('org.members.offboard', $member)" method="POST"
+                                          :confirm="__('Austritt von :name zum heutigen Tag vollziehen? Das Konto wird deaktiviert, Nachweise bleiben erhalten.', ['name' => $member->name])"
+                                          :confirm-label="__('Austritt')">
+                                        <input type="hidden" name="left_at" value="{{ now()->toDateString() }}">
+                                        <x-icon-btn icon="logout" tone="warning" type="submit" :label="__('Austritt')" />
+                                    </x-action-form>
+                                @endif
                                 @if ($canManageMembers ?? true)
                                     <x-action-form :action="route('org.members.destroy', $member)" method="DELETE"
-                                          :confirm="__('Mitarbeiter wirklich entfernen?')"
+                                          :confirm="__('Mitarbeiter wirklich entfernen? Nur ohne aufbewahrungspflichtige Nachweise möglich — sonst den Austritt nutzen.')"
                                           :confirm-label="__('Entfernen')">
                                         <x-icon-btn icon="person_remove" tone="error" type="submit" :label="__('Entfernen')" />
                                     </x-action-form>

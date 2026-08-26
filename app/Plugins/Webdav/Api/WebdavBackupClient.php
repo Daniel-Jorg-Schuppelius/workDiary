@@ -14,7 +14,7 @@ namespace App\Plugins\Webdav\Api;
 
 use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\PluginHealthService;
-use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
+use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject, ChunkedFileReader};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Plugins\Webdav\WebdavPlugin;
 use App\Support\UrlSafety;
@@ -29,9 +29,15 @@ use Throwable;
  * Generisches WebDAV-Backupziel (Feature 123, MVP-612).
  *
  * Bewusst anbieterneutral: Nextcloud, ownCloud, Synology, HiDrive, jeder
- * Apache mit `mod_dav`. Keine Chunk-Sonderwege — genau deshalb bleibt das
+ * Apache mit `mod_dav`. Keine Anbieter-Sonderwege — genau deshalb bleibt das
  * Nextcloud-Ziel daneben bestehen: Es nutzt Chunked Upload v2, den ein
  * generischer Server nicht kennt.
+ *
+ * Fortsetzbarer Upload (MVP-721, Vollscan G13): große Teile gehen in
+ * Chunks per `PUT` + `Content-Range` (RFC 9110 §14.4; Apache `mod_dav`,
+ * IIS, Synology). Nach einem Abbruch liest `HEAD` die schon vorhandenen
+ * Bytes, es geht ab dort weiter. Server, die Teil-PUTs ablehnen (SabreDAV/
+ * Nextcloud antworten 400), bekommen wie bisher einen einzelnen PUT.
  *
  * Hochgeladen wird ausschließlich CIPHERTEXT; die clientseitige
  * Verschlüsselung der Backup-Pipeline bleibt unverändert. Der Zielserver
@@ -48,11 +54,16 @@ class WebdavBackupClient {
 
     private PluginApiClient $http;
 
+    /** Chunk-Größe fortsetzbarer Uploads in Bytes; 0 = immer ein einzelner PUT. */
+    private readonly int $chunkBytes;
+
     public function __construct(
         BackupTargetConnection $connection,
         ?PluginApiClient $http = null,
         private readonly bool $allowPrivateTargets = false,
+        ?int $chunkBytes = null,
     ) {
+        $this->chunkBytes = max(0, $chunkBytes ?? (int) config('plugins.webdav.backup_chunk_bytes', 0));
         $this->base = rtrim(trim((string) $connection->server_url), '/') . '/';
         $this->username = (string) $connection->username;
         $this->password = (string) $connection->access_token;
@@ -225,9 +236,10 @@ class WebdavBackupClient {
     }
 
     /**
-     * Upload einer bereits verschlüsselten Datei als ein PUT und Verifikation
-     * über die Remote-Größe. Kein Chunking: Das ist serverabhängig und über
-     * WebDAV nicht einheitlich zu haben.
+     * Upload einer bereits verschlüsselten Datei mit Verifikation über die
+     * Remote-Größe. Teile über der Chunk-Größe gehen fortsetzbar in
+     * Content-Range-PUTs; lehnt der Server Teil-PUTs ab oder ist die Datei
+     * klein, bleibt es beim einzelnen PUT.
      */
     public function upload(string $localPath, string $remoteName): string {
         $remoteName = trim($remoteName, '/');
@@ -236,6 +248,29 @@ class WebdavBackupClient {
             $this->ensureFolder($parent);
         }
 
+        $localSize = ChunkedFileReader::size($localPath);
+        $chunked = false;
+        if ($this->chunkBytes > 0 && $localSize > $this->chunkBytes) {
+            try {
+                $this->uploadResumable($localPath, $remoteName, $localSize);
+                $chunked = true;
+            } catch (PartialUploadUnsupportedException) {
+                // Server ohne Teil-PUT (SabreDAV/Nextcloud): bisheriger Weg.
+            }
+        }
+        if (! $chunked) {
+            $this->putWhole($localPath, $remoteName);
+        }
+
+        $remoteSize = $this->contentLength($remoteName);
+        if ($remoteSize !== $localSize) {
+            throw new RuntimeException("WebDAV-Upload unvollständig: remote {$remoteSize} B, lokal {$localSize} B.");
+        }
+
+        return $remoteName;
+    }
+
+    private function putWhole(string $localPath, string $remoteName): void {
         $handle = fopen($localPath, 'rb');
         if ($handle === false) {
             throw new RuntimeException("WebDAV upload: local file '{$localPath}' is not readable.");
@@ -255,14 +290,52 @@ class WebdavBackupClient {
         if (! $response->successful()) {
             throw new RuntimeException('WebDAV PUT failed (HTTP ' . $response->status() . ').');
         }
+    }
 
-        $localSize = (int) filesize($localPath);
-        $remoteSize = $this->contentLength($remoteName);
-        if ($remoteSize !== $localSize) {
-            throw new RuntimeException("WebDAV-Upload unvollständig: remote {$remoteSize} B, lokal {$localSize} B.");
+    /**
+     * Fortsetzbarer Upload: `HEAD` liefert die bereits vorhandenen Bytes
+     * (Abbruch beim letzten Lauf), alle vollständig vorhandenen Chunks werden
+     * übersprungen, der Rest geht als `PUT` mit `Content-Range`. Der erste
+     * Chunk einer neuen Datei ist ein normaler PUT (legt die Ressource an).
+     *
+     * @throws PartialUploadUnsupportedException wenn der Server Teil-PUTs ablehnt
+     */
+    private function uploadResumable(string $localPath, string $remoteName, int $size): void {
+        $present = $this->contentLength($remoteName);
+        if ($present > $size) {
+            // Fremde/ältere Datei gleichen Namens: neu beginnen statt anhängen.
+            $this->delete($remoteName);
+            $present = -1;
         }
+        if ($present === $size) {
+            return; // Letzter Lauf brach erst nach dem letzten Chunk ab.
+        }
+        $resumeFrom = max(0, $present);
+        $url = $this->fileUrl($remoteName);
 
-        return $remoteName;
+        ChunkedFileReader::each($localPath, $this->chunkBytes, function (string $chunk, int $offset) use ($url, $size, $resumeFrom): void {
+            $end = $offset + strlen($chunk);
+            if ($end <= $resumeFrom) {
+                return; // Chunk liegt bereits vollständig auf dem Server.
+            }
+            if ($offset < $resumeFrom) {
+                $chunk = substr($chunk, $resumeFrom - $offset);
+                $offset = $resumeFrom;
+            }
+
+            $headers = ['Content-Type' => 'application/octet-stream'];
+            if ($offset > 0) {
+                $headers['Content-Range'] = sprintf('bytes %d-%d/%d', $offset, $end - 1, $size);
+            }
+            $put = $this->send('PUT', $url, ['headers' => $headers, 'body' => $chunk]);
+
+            if ($offset > 0 && in_array($put->status(), [400, 405, 411, 415, 416, 501], true)) {
+                throw new PartialUploadUnsupportedException('WebDAV server rejects PUT with Content-Range (HTTP ' . $put->status() . ').');
+            }
+            if (! $put->successful()) {
+                throw new RuntimeException('WebDAV chunk PUT failed (HTTP ' . $put->status() . ').');
+            }
+        });
     }
 
     public function download(string $remoteRef): StreamInterface {

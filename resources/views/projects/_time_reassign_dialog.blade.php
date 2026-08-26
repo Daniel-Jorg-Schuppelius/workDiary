@@ -86,7 +86,7 @@
                     <option value="{{ $target->sqid }}" @selected(old('target_user_id') === $target->sqid)>{{ $target->name }}</option>
                 @endforeach
             </select>
-            <p class="mt-1 text-xs text-base-content/60">{{ __('Zur Auswahl stehen nur aktive interne Benutzer dieser Organisation. Sätze und interne Kosten werden für den neuen Benutzer neu berechnet; Fremdsystem-Referenzen bleiben unverändert.') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Zur Auswahl stehen nur aktive interne Benutzer dieser Organisation. Sätze und interne Kosten werden für den neuen Benutzer neu berechnet; Fremdsystem-Referenzen bleiben unverändert.') }}</p>
             @error('target_user_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
             @error('ids')<p class="text-error text-sm">{{ $message }}</p>@enderror
         </div>

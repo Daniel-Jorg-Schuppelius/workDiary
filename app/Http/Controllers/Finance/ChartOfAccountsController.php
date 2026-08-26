@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Finance\{AccountType, BalanceSide, EuerCategory};
+use App\Enums\Finance\{AccountType, BalanceSide, BwaGroup, EuerCategory};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
@@ -108,6 +108,7 @@ class ChartOfAccountsController extends Controller {
             'types' => AccountType::cases(),
             'sides' => BalanceSide::cases(),
             'euerCategories' => EuerCategory::cases(),
+            'bwaGroups' => BwaGroup::cases(),
         ]);
     }
 
@@ -215,6 +216,7 @@ class ChartOfAccountsController extends Controller {
             'is_cash' => ['nullable', 'boolean'],
             'is_clearing' => ['nullable', 'boolean'],
             'euer_category' => ['nullable', 'string', 'in:' . implode(',', array_column(EuerCategory::cases(), 'value'))],
+            'bwa_group' => ['nullable', 'string', 'in:' . implode(',', array_column(BwaGroup::cases(), 'value'))],
             'deductible_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
             'datev_account' => ['nullable', 'string', 'max:16'],
             'description' => ['nullable', 'string', 'max:500'],

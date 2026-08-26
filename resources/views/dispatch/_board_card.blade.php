@@ -37,22 +37,24 @@
 
     @if ($entry->customer)
         <div class="mt-1 flex items-center gap-1 text-xs text-base-content/70">
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">badge</span>
+            <x-icon name="badge" class="text-sm" />
             <span class="truncate">{{ $entry->customer->name }}</span>
         </div>
     @endif
 
     @if ($window)
         <div class="mt-0.5 flex items-center gap-1 text-xs text-base-content/70">
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">schedule</span>
+            <x-icon name="schedule" class="text-sm" />
             <span>{{ $window }}</span>
         </div>
     @endif
 
     @if ($assignee)
         <div class="mt-0.5 flex items-center gap-1 text-xs text-base-content/70">
-            <span class="material-symbols-outlined text-sm" aria-hidden="true">person</span>
+            <x-icon name="person" class="text-sm" />
             <span class="truncate">{{ $assignee->name }}</span>
+            {{-- Feature 144: Lenkzeit-Budget des Fahrers (nur mit aktiven Lenkzeitregeln) --}}
+            <x-driving-time-badge :budget="($drivingBudgets ?? [])[(int) $assignee->id] ?? null" />
         </div>
     @endif
 
@@ -60,14 +62,14 @@
         <div class="mt-1.5 flex flex-wrap items-center gap-1">
             @if ($item['hasHardConflict'])
                 <span class="badge badge-xs badge-error gap-1" title="{{ __('Harter Dispositionskonflikt') }}">
-                    <span class="material-symbols-outlined text-xs" aria-hidden="true">warning</span>
+                    <x-icon name="warning" class="text-xs" />
                     {{ __('Konflikt') }}
                 </span>
             @endif
             @if ($isSlaRisk)
                 <span class="badge badge-xs {{ $sla->value === 'breached' ? 'badge-error' : 'badge-warning' }} gap-1"
                       title="{{ __('SLA') }}: {{ $sla->label() }}">
-                    <span class="material-symbols-outlined text-xs" aria-hidden="true">timer</span>
+                    <x-icon name="timer" class="text-xs" />
                     {{ $sla->label() }}
                 </span>
             @endif

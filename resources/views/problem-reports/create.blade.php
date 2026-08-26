@@ -51,10 +51,10 @@
         <div class="w-full max-w-2xl overflow-hidden rounded-3xl border border-base-300 bg-base-100 shadow-lg">
             <header class="flex items-start gap-3 border-b border-base-300 bg-linear-to-br from-warning/15 via-warning/5 to-transparent px-6 py-5">
                 <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-box bg-warning/15 text-warning">
-                    <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1, 'wght' 500;">flag</span>
+                    <x-icon name="flag" filled weight="500" />
                 </div>
                 <div class="min-w-0 flex-1">
-                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-base-content/60">{{ __('problemreport.title.eyebrow') }}</p>
+                    <p class="text-[0.65rem] font-semibold uppercase tracking-[0.2em] text-muted">{{ __('problemreport.title.eyebrow') }}</p>
                     <h1 class="mt-1 text-xl font-bold text-base-content" style="font-family: 'Space Grotesk', sans-serif;">
                         {{ __('problemreport.title.create') }}
                     </h1>

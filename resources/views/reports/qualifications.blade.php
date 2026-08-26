@@ -17,7 +17,7 @@
         'expired'  => 'bg-error/20 text-error font-bold',
         'expiring' => 'bg-warning/20 text-warning-content font-semibold',
         'valid'    => 'bg-success/15 text-success-content',
-        default    => 'bg-base-200 text-base-content/40',
+        default    => 'bg-base-200 text-muted',
     };
     $cellText = function (?array $c): string {
         if ($c === null) {
@@ -68,7 +68,7 @@
 
     <x-card>
         @if ($users->isEmpty() || $qualifications->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">workspace_premium</span>' :title="__('Keine Qualifikations-Zuweisungen vorhanden.')" />
+            <x-empty-state icon="workspace_premium" :title="__('Keine Qualifikations-Zuweisungen vorhanden.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

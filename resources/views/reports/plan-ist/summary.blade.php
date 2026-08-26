@@ -54,7 +54,7 @@
 
     <x-card :title="$scope === 'team' ? ($team?->name ?? '') : __('Alle Mitarbeitenden')" icon="groups">
         @if ($summary['rows'] === [])
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>' :title="__('Keine Mitarbeitenden im gewählten Bereich.')" />
+            <x-empty-state icon="groups" :title="__('Keine Mitarbeitenden im gewählten Bereich.')" />
         @else
             <x-table table-sort="client">
                 <x-slot:head>

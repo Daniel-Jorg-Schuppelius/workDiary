@@ -26,6 +26,7 @@
       rejectAction  → Route für „verwerfen" (POST)
       fieldName     → Name des Textfelds im Übernehmen-Formular
       editable      → true = Vorschlag vor Übernahme editierbar
+      hint          → Fußnote für Vorschläge ohne Übernahme (Einsichten)
 --}}
 @props([
     'original' => null,
@@ -37,6 +38,7 @@
     'rejectAction' => null,
     'fieldName' => 'suggestion',
     'editable' => true,
+    'hint' => null,
 ])
 
 @php $suggestionId = 'ai-suggestion-' . \Illuminate\Support\Str::random(6); @endphp
@@ -75,7 +77,9 @@
         </div>
     </div>
 
-    @if ($acceptAction !== null)
+    {{-- MVP-732: Einsichten (Welle 2/3) haben kein Schreibziel — sie zeigen nur
+         „verwerfen". Der Fuß erscheint daher schon bei rejectAction allein. --}}
+    @if ($acceptAction !== null || $rejectAction !== null)
         <footer class="flex flex-wrap items-center justify-end gap-2">
             @if ($rejectAction !== null)
                 <form method="POST" action="{{ $rejectAction }}" class="inline">
@@ -83,14 +87,20 @@
                     <x-button type="submit" tone="ghost" size="xs">{{ __('ai.suggestion.reject') }}</x-button>
                 </form>
             @endif
-            <form method="POST" action="{{ $acceptAction }}" class="inline" id="{{ $suggestionId }}-accept">
-                @csrf
-                @unless ($editable)
-                    <input type="hidden" name="{{ $fieldName }}" value="{{ $suggestion }}">
-                @endunless
-                <x-button type="submit" tone="primary" size="xs" icon="check">{{ __('ai.suggestion.accept') }}</x-button>
-            </form>
+            @if ($acceptAction !== null)
+                <form method="POST" action="{{ $acceptAction }}" class="inline" id="{{ $suggestionId }}-accept">
+                    @csrf
+                    @unless ($editable)
+                        <input type="hidden" name="{{ $fieldName }}" value="{{ $suggestion }}">
+                    @endunless
+                    <x-button type="submit" tone="primary" size="xs" icon="check">{{ __('ai.suggestion.accept') }}</x-button>
+                </form>
+            @endif
         </footer>
-        <p class="text-right text-xs text-muted">{{ __('ai.suggestion.edit_hint') }}</p>
+        @if ($acceptAction !== null)
+            <p class="text-right text-xs text-muted">{{ __('ai.suggestion.edit_hint') }}</p>
+        @elseif ($hint !== null)
+            <p class="text-right text-xs text-muted">{{ $hint }}</p>
+        @endif
     @endif
 </section>

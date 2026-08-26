@@ -53,7 +53,7 @@
 
     <x-card>
         @if ($forecast['rows'] === [])
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">query_stats</span>'
+            <x-empty-state icon="query_stats"
                            :title="__('reporting.surcharge_forecast.empty')" />
         @else
             <x-table bare>
@@ -88,7 +88,7 @@
                 @endforeach
             </x-table>
         @endif
-        <p class="mt-2 text-xs text-base-content/50">{{ __('reporting.surcharge_forecast.note') }}</p>
+        <p class="mt-2 text-xs text-muted">{{ __('reporting.surcharge_forecast.note') }}</p>
     </x-card>
 </x-page-shell>
 @endsection

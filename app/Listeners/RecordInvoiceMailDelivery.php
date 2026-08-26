@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Listeners;
 
-use App\Models\InvoiceDispatch;
+use App\Models\DocumentDispatch;
 use Illuminate\Mail\Events\MessageSent;
 
 /**
@@ -31,7 +31,7 @@ class RecordInvoiceMailDelivery {
             return;
         }
 
-        $dispatch = InvoiceDispatch::query()
+        $dispatch = DocumentDispatch::query()
             ->withoutGlobalScopes()
             ->find((int) $header->getBodyAsString());
         if ($dispatch === null) {

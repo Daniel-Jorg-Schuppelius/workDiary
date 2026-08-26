@@ -14,12 +14,12 @@
     tone="info"
 >
     @if ($logs->isEmpty())
-        <p class="text-sm text-base-content/60">{{ __('settingsregistry.empty.history') }}</p>
+        <p class="text-sm text-muted">{{ __('settingsregistry.empty.history') }}</p>
     @else
         <ul class="space-y-2 text-sm">
             @foreach ($logs as $log)
                 <li class="rounded-lg border border-base-300/60 p-2">
-                    <div class="flex items-center justify-between text-xs text-base-content/60">
+                    <div class="flex items-center justify-between text-xs text-muted">
                         <span>{{ $log->created_at?->format('d.m.Y H:i') }}</span>
                         <span>{{ $log->event }}</span>
                     </div>

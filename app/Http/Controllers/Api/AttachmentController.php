@@ -16,6 +16,7 @@ use App\Models\{Asset, Attachment, Comment, DiaryEntry, EmergencyAssignment, OnC
 use App\Services\Attachments\FileAttacher;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
+use OpenApi\Attributes as OA;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class AttachmentController extends Controller {
@@ -43,6 +44,26 @@ class AttachmentController extends Controller {
         'asset' => Asset::class,
     ];
 
+    #[OA\Post(
+        path: '/attachments/{type}/{id}',
+        summary: 'Anhang hochladen',
+        tags: ['Attachments'],
+        security: [['bearerAuth' => ['attachments:write']]],
+        parameters: [
+            new OA\Parameter(name: 'type', in: 'path', required: true, description: 'Trägerobjekt', schema: new OA\Schema(type: 'string', enum: ['diary', 'comment', 'shift', 'assignment', 'asset'])),
+            new OA\Parameter(name: 'id', in: 'path', required: true, description: 'Numerische ID des Trägerobjekts', schema: new OA\Schema(type: 'integer')),
+        ],
+        requestBody: new OA\RequestBody(required: true, content: new OA\MediaType(mediaType: 'multipart/form-data', schema: new OA\Schema(required: ['file'], properties: [
+            new OA\Property(property: 'file', type: 'string', format: 'binary'),
+        ]))),
+        responses: [
+            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function store(Request $request, string $type, int $id): JsonResponse {
         Gate::authorize('create', Attachment::class);
         $class = self::TYPE_MAP[$type] ?? abort(404);
@@ -69,6 +90,19 @@ class AttachmentController extends Controller {
         return (new AttachmentResource($att->load('uploader:id,name')))->response()->setStatusCode(201);
     }
 
+    #[OA\Get(
+        path: '/attachments/{attachment}/download',
+        summary: 'Anhang herunterladen',
+        tags: ['Attachments'],
+        security: [['bearerAuth' => ['attachments:read']]],
+        parameters: [new OA\Parameter(name: 'attachment', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab'))],
+        responses: [
+            new OA\Response(response: 200, description: 'Dateiinhalt (binary)'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+        ],
+    )]
     public function download(Attachment $attachment): BinaryFileResponse {
         Gate::authorize('view', $attachment);
         $disk = Storage::disk($attachment->disk);
@@ -77,6 +111,19 @@ class AttachmentController extends Controller {
         return response()->download($disk->path($attachment->path), $attachment->original_name);
     }
 
+    #[OA\Delete(
+        path: '/attachments/{attachment}',
+        summary: 'Anhang löschen',
+        tags: ['Attachments'],
+        security: [['bearerAuth' => ['attachments:write']]],
+        parameters: [new OA\Parameter(name: 'attachment', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab'))],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+        ],
+    )]
     public function destroy(Attachment $attachment): JsonResponse {
         Gate::authorize('delete', $attachment);
         Storage::disk($attachment->disk)->delete($attachment->path);

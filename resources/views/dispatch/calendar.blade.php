@@ -62,10 +62,10 @@
                                                ])
                                                title="{{ $entry->title }} — {{ $item['dispatch']->label() }}">
                                                 @if (in_array($item['sla']->value, ['atRisk', 'breached'], true))
-                                                    <span class="material-symbols-outlined text-xs" aria-label="{{ __('SLA-Risiko') }}">warning</span>
+                                                    <x-icon name="warning" class="text-xs" aria-label="{{ __('SLA-Risiko') }}" />
                                                 @endif
                                                 @if ($item['hasHardConflict'])
-                                                    <span class="material-symbols-outlined text-xs" aria-label="{{ __('Konflikt') }}">block</span>
+                                                    <x-icon name="block" class="text-xs" aria-label="{{ __('Konflikt') }}" />
                                                 @endif
                                                 <span class="truncate">{{ $entry->title }}</span>
                                             </a>
@@ -75,7 +75,7 @@
                             @endforeach
                         </tr>
                     @empty
-                        <x-table.empty :colspan="count($days) + 1" icon='<span class="material-symbols-outlined" aria-hidden="true">event_busy</span>' :title="__('Keine terminierten Aufträge im Zeitraum.')" compact />
+                        <x-table.empty :colspan="count($days) + 1" icon="event_busy" :title="__('Keine terminierten Aufträge im Zeitraum.')" compact />
                     @endforelse
         </x-table>
     </x-card>

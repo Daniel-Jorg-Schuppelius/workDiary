@@ -49,7 +49,7 @@
             <x-card>
                 <h3 class="font-semibold mb-2">{{ __('Unterschiede zwischen Stand A und Stand B') }}</h3>
                 @if (empty($diff))
-                    <p class="text-base-content/50">{{ __('Keine Feldänderungen zwischen den gewählten Ständen.') }}</p>
+                    <p class="text-muted">{{ __('Keine Feldänderungen zwischen den gewählten Ständen.') }}</p>
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -74,7 +74,7 @@
         <x-card>
             <h3 class="font-semibold mb-2">{{ __('Änderungs-Timeline') }} — {{ $record->name }}</h3>
             @if ($logs->isEmpty())
-                <p class="text-base-content/50">{{ __('Keine Audit-Einträge zu diesem Datensatz.') }}</p>
+                <p class="text-muted">{{ __('Keine Audit-Einträge zu diesem Datensatz.') }}</p>
             @else
                 <form method="GET" action="{{ route('admin.audit-diff.index') }}">
                     <input type="hidden" name="type" value="{{ $typeKey }}">

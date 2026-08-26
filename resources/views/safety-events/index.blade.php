@@ -67,7 +67,7 @@
                 <td class="font-mono text-sm">{{ $event->displayNo() }}</td>
                 <td>
                     <span class="inline-flex items-center gap-1">
-                        <x-icon :name="$event->kind->icon()" class="text-base-content/60" />
+                        <x-icon :name="$event->kind->icon()" class="text-muted" />
                         {{ $event->kind->label() }}
                     </span>
                 </td>
@@ -81,7 +81,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">health_and_safety</span>' :colspan="8" :title="__('safety.empty')" compact />
+            <x-table.empty icon="health_and_safety" :colspan="8" :title="__('safety.empty')" compact />
         @endforelse
     </x-table>
     <x-pagination :paginator="$events" standing />

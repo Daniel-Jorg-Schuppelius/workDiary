@@ -283,24 +283,63 @@ class AssetComplianceService {
                 $sent += $this->notifier->escalateIfDue(NotificationEvent::AssetInspectionDue, $assignment, $payload);
             }
 
-            $shouldBlock = match ($profile->blocking_mode) {
-                \App\Enums\AssetCompliance\AssetComplianceBlockMode::BlockImmediately => $assignment->isOverdue(),
-                \App\Enums\AssetCompliance\AssetComplianceBlockMode::BlockAfterGrace => $assignment->isPastGrace(),
-                default => false,
-            };
-
-            if ($shouldBlock && ! $this->hasActiveBlockFor($assignment)) {
-                $this->blocks->block(
-                    $asset,
-                    AssetBlockReason::InspectionOverdue,
-                    null,
-                    (string) __('Prüfung ":profile" überfällig seit :date.', ['profile' => $profile->name, 'date' => $assignment->next_due_on?->format('d.m.Y') ?? '—']),
-                    $assignment,
-                );
-            }
+            $this->blockIfOverdue($assignment, $asset, $profile);
         }
 
         return $sent;
+    }
+
+    /**
+     * Überfälligkeits-Sperren eines Assets synchron nachziehen (Feature 138):
+     * dieselbe Entscheidung wie der Fälligkeits-Scan (blocking_mode des
+     * Profils), idempotent — Einsatzprüfungen (Fahrzeugreservierung) müssen
+     * nicht auf den nächtlichen Lauf warten. Liefert die Zahl neuer Sperren.
+     */
+    public function syncOverdueBlocks(Asset $asset): int {
+        $created = 0;
+
+        $assignments = AssetComplianceAssignment::query()
+            ->withoutGlobalScopes()
+            ->where('asset_id', $asset->id)
+            ->active()
+            ->with('profile')
+            ->get();
+
+        foreach ($assignments as $assignment) {
+            $profile = $assignment->profile;
+            if ($profile === null) {
+                continue;
+            }
+            if ($this->blockIfOverdue($assignment, $asset, $profile) !== null) {
+                $created++;
+            }
+        }
+
+        return $created;
+    }
+
+    /**
+     * Sperre gemäß blocking_mode anlegen, wenn fällig und noch keine
+     * Überfälligkeits-Sperre dieser Pflicht aktiv ist (idempotent).
+     */
+    private function blockIfOverdue(AssetComplianceAssignment $assignment, Asset $asset, AssetComplianceProfile $profile): ?AssetBlock {
+        $shouldBlock = match ($profile->blocking_mode) {
+            \App\Enums\AssetCompliance\AssetComplianceBlockMode::BlockImmediately => $assignment->isOverdue(),
+            \App\Enums\AssetCompliance\AssetComplianceBlockMode::BlockAfterGrace => $assignment->isPastGrace(),
+            default => false,
+        };
+
+        if (! $shouldBlock || $this->hasActiveBlockFor($assignment)) {
+            return null;
+        }
+
+        return $this->blocks->block(
+            $asset,
+            AssetBlockReason::InspectionOverdue,
+            null,
+            (string) __('Prüfung ":profile" überfällig seit :date.', ['profile' => $profile->name, 'date' => $assignment->next_due_on?->format('d.m.Y') ?? '—']),
+            $assignment,
+        );
     }
 
     /**

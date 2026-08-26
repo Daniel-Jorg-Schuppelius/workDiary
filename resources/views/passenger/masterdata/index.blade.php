@@ -67,7 +67,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">price_change</span>' :colspan="9" :title="__('passenger.masterdata.tariffs_empty')" compact />
+                <x-table.empty icon="price_change" :colspan="9" :title="__('passenger.masterdata.tariffs_empty')" compact />
             @endforelse
         </x-table>
     </x-card>
@@ -103,7 +103,7 @@
                         </td>
                     </tr>
                 @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">percent</span>' :colspan="6" :title="__('passenger.masterdata.rules_empty')" compact />
+                    <x-table.empty icon="percent" :colspan="6" :title="__('passenger.masterdata.rules_empty')" compact />
                 @endforelse
             </x-table>
 
@@ -171,7 +171,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">verified</span>' :colspan="8" :title="__('passenger.masterdata.concessions_empty')" compact />
+                <x-table.empty icon="verified" :colspan="8" :title="__('passenger.masterdata.concessions_empty')" compact />
             @endforelse
         </x-table>
     </x-card>
@@ -216,7 +216,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :colspan="7" :title="__('passenger.masterdata.vehicle_profiles_empty')" compact />
+                <x-table.empty icon="directions_car" :colspan="7" :title="__('passenger.masterdata.vehicle_profiles_empty')" compact />
             @endforelse
         </x-table>
     </x-card>

@@ -87,7 +87,7 @@
                 <td class="text-right"><x-icon-btn icon="visibility" :href="route('passenger-rides.show', $ride)" :label="__('Anzeigen')" /></td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">local_taxi</span>' :colspan="9" :title="__('passenger.rides.empty')" compact />
+            <x-table.empty icon="local_taxi" :colspan="9" :title="__('passenger.rides.empty')" compact />
         @endforelse
     </x-table>
 

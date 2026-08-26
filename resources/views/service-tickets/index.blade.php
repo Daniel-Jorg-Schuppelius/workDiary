@@ -53,7 +53,7 @@
 
     @if ($tickets->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">support_agent</span>' />
+            icon="support_agent" />
     @else
         <x-table scroll="flex" :pinRows="true" table-sort="server"
                  :route="route('service-tickets.index')" :current-sort="$sort" :current-dir="$dir"
@@ -87,7 +87,7 @@
                     </td>
                     <td class="text-base-content/70 text-xs">
                         @if ($ticket->asset)
-                            <span class="material-symbols-outlined text-[14px] align-middle">inventory_2</span>
+                            <x-icon name="inventory_2" class="text-[14px] align-middle" />
                             {{ $ticket->asset->name }}
                         @endif
                         @if ($ticket->customer)

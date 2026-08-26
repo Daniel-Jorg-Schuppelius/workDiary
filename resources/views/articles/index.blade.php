@@ -95,7 +95,7 @@
     ]" />
 
     @if ($articles->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+        <x-empty-state framed icon="inventory_2"
                        :title="$search !== '' ? __('Keine Artikel für „:q“ gefunden.', ['q' => $search]) : __('article.empty')" />
     @else
         <x-table :zebra="true" table-sort="server"

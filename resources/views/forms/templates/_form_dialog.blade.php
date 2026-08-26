@@ -88,14 +88,14 @@
                 <div class="space-y-2 rounded-box border border-base-300 bg-base-200/40 p-3">
                     <div class="grid grid-cols-1 items-end gap-2 sm:grid-cols-[1fr_auto_auto_auto]">
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('form.field.field_label') }}</label>
+                            <label :for="fieldName(i, 'label')" class="fieldset-label">{{ __('form.field.field_label') }}</label>
                             <input type="text" maxlength="160"
-                                   :name="fieldName(i, 'label')" x-model="it.label"
+                                   :id="fieldName(i, 'label')" :name="fieldName(i, 'label')" x-model="it.label"
                                    class="input input-sm input-bordered w-full">
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('form.field.field_type') }}</label>
-                            <select :name="fieldName(i, 'type')" x-model="it.type"
+                            <label :for="fieldName(i, 'type')" class="fieldset-label">{{ __('form.field.field_type') }}</label>
+                            <select :id="fieldName(i, 'type')" :name="fieldName(i, 'type')" x-model="it.type"
                                     class="select select-sm select-bordered">
                                 @foreach (\App\Enums\Form\FormFieldType::cases() as $type)
                                     <option value="{{ $type->value }}">{{ $type->label() }}</option>
@@ -112,23 +112,23 @@
                     </div>
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-2">
                         <div class="fieldset" x-show="it.type === 'select'">
-                            <label class="fieldset-label">{{ __('form.field.field_options') }}</label>
+                            <label :for="fieldName(i, 'options')" class="fieldset-label">{{ __('form.field.field_options') }}</label>
                             <input type="text" maxlength="2000"
                                    placeholder="{{ __('form.hint.options') }}"
-                                   :name="fieldName(i, 'options')" x-model="it.options"
+                                   :id="fieldName(i, 'options')" :name="fieldName(i, 'options')" x-model="it.options"
                                    class="input input-sm input-bordered w-full">
                         </div>
                         <div class="fieldset" x-show="it.type === 'number'">
-                            <label class="fieldset-label">{{ __('form.field.field_unit') }}</label>
+                            <label :for="fieldName(i, 'unit')" class="fieldset-label">{{ __('form.field.field_unit') }}</label>
                             <input type="text" maxlength="20"
                                    placeholder="{{ __('form.hint.unit') }}"
-                                   :name="fieldName(i, 'unit')" x-model="it.unit"
+                                   :id="fieldName(i, 'unit')" :name="fieldName(i, 'unit')" x-model="it.unit"
                                    class="input input-sm input-bordered w-full">
                         </div>
                         <div class="fieldset">
-                            <label class="fieldset-label">{{ __('form.field.field_help') }}</label>
+                            <label :for="fieldName(i, 'help')" class="fieldset-label">{{ __('form.field.field_help') }}</label>
                             <input type="text" maxlength="500"
-                                   :name="fieldName(i, 'help')" x-model="it.help"
+                                   :id="fieldName(i, 'help')" :name="fieldName(i, 'help')" x-model="it.help"
                                    class="input input-sm input-bordered w-full">
                         </div>
                     </div>
@@ -136,8 +136,8 @@
                          Feld einen Wert/Zustand hat. Referenz über Label (Key entsteht
                          serverseitig). --}}
                     <div class="grid grid-cols-1 items-end gap-2 rounded-box bg-base-100/60 p-2 sm:grid-cols-[auto_1fr_auto_1fr]">
-                        <label class="fieldset-label text-xs">{{ __('form.condition.legend') }}</label>
-                        <select :name="fieldName(i, 'visible_if][field')" x-model="it.visible_if.field"
+                        <label :for="fieldName(i, 'visible_if][field')" class="fieldset-label text-xs">{{ __('form.condition.legend') }}</label>
+                        <select :id="fieldName(i, 'visible_if][field')" :name="fieldName(i, 'visible_if][field')" x-model="it.visible_if.field"
                                 class="select select-xs select-bordered">
                             <option value="">{{ __('form.condition.always') }}</option>
                             <template x-for="other in otherLabeledItems(it)" :key="other.label">

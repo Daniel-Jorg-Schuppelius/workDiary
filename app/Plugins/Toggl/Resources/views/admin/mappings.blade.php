@@ -26,7 +26,7 @@
             <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Gemerkte Zuordnungen') }}</h1>
             <a href="{{ route('admin.toggl.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück zum Import') }}</a>
         </div>
-        <p class="mb-4 text-sm text-base-content/60">
+        <p class="mb-4 text-sm text-muted">
             {{ __('Diese Zuordnungen entscheiden, welchem Kunden bzw. Projekt ein Toggl-Client/-Projekt bei künftigen Importen automatisch zugewiesen wird. Hier kannst du sie umbiegen oder entfernen.') }}
         </p>
 
@@ -44,7 +44,7 @@
               class="mb-4 rounded-box bg-base-200/50 p-3">
             @csrf
             <div class="text-sm font-semibold">{{ __('Benutzer-Zuordnung anlegen') }}</div>
-            <p class="mb-2 text-xs text-base-content/60">
+            <p class="mb-2 text-xs text-muted">
                 {{ __('Toggl-E-Mail einem Benutzer zuordnen — für Mitarbeiter, deren Toggl-Adresse von der workDiary-Adresse abweicht.') }}
             </p>
             <div class="flex flex-wrap items-end gap-2">
@@ -110,7 +110,7 @@
                                             <span class="text-error text-xs">{{ __('verwaist (Ziel gelöscht)') }}</span>
                                         @else
                                             {{ $target->name }}
-                                            <span class="text-base-content/50">({{ $target->email }})</span>
+                                            <span class="text-muted">({{ $target->email }})</span>
                                         @endif
                                     </td>
                                     <td>
@@ -166,7 +166,7 @@
                                             <span class="text-error text-xs">{{ __('verwaist (Ziel gelöscht)') }}</span>
                                         @elseif ($isForeign)
                                             {{ $target->name }}
-                                            <span class="text-base-content/50">({{ $customerLabel[$target->customer_id] ?? '—' }})</span>
+                                            <span class="text-muted">({{ $customerLabel[$target->customer_id] ?? '—' }})</span>
                                             <x-status-badge tone="accent" size="sm">{{ __('Endkunde') }}</x-status-badge>
                                         @else
                                             {{ $target->displayLabel() }}
@@ -236,7 +236,7 @@
                                             <span class="text-error text-xs">{{ __('verwaist (Ziel gelöscht)') }}</span>
                                         @else
                                             {{ $target->name }}
-                                            <span class="text-base-content/50">({{ $target->customer_id === null ? __('Intern') : ($customerLabel[$target->customer_id] ?? '—') }})</span>
+                                            <span class="text-muted">({{ $target->customer_id === null ? __('Intern') : ($customerLabel[$target->customer_id] ?? '—') }})</span>
                                         @endif
                                     </td>
                                     <td>
@@ -270,7 +270,7 @@
         @endif
 
         @if ($userMappings->isEmpty() && $clientMappings->isEmpty() && $projectMappings->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">link_off</span>'
+            <x-empty-state icon="link_off"
                            :title="__('Noch keine Zuordnungen gemerkt.')"
                            :message="__('Zuordnungen entstehen beim Buchen in der Zuordnungs-Inbox, beim Workspace-Import oder oben über die Benutzer-Zuordnung.')" />
         @endif

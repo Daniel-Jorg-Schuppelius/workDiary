@@ -131,12 +131,12 @@
                 @if (! empty($tile['href']))
                     <a href="{{ $tile['href'] }}"
                        class="{{ $base }} transition hover:border-primary hover:shadow-md{{ $ring }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
+                        <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ $tile['label'] }}</p>
                         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $tile['value'], 0, withThousandsSeparator: true) }}</p>
                     </a>
                 @else
                     <div class="{{ $base }}">
-                        <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
+                        <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ $tile['label'] }}</p>
                         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-base-content">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $tile['value'], 0, withThousandsSeparator: true) }}</p>
                     </div>
                 @endif
@@ -187,7 +187,7 @@
                             <td class="max-w-xs truncate text-sm text-base-content/70">{{ $v->note ?? '—' }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">beach_access</span>' :colspan="$isAdmin ? 6 : 5" :title="__('Keine Einträge')" compact />
+                        <x-table.empty icon="beach_access" :colspan="$isAdmin ? 6 : 5" :title="__('Keine Einträge')" compact />
                     @endforelse
                 </x-table>
             @elseif ($tab === 'diary')
@@ -222,7 +222,7 @@
                             <td class="text-sm">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content ?? '', 160) }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>' :colspan="6" :title="__('Keine Einträge')" compact />
+                        <x-table.empty icon="menu_book" :colspan="6" :title="__('Keine Einträge')" compact />
                     @endforelse
                 </x-table>
             @elseif ($tab === 'bereitschaft')
@@ -253,7 +253,7 @@
                             <td class="max-w-xs truncate text-sm">{{ $entry->note ?? '—' }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :colspan="5" :title="__('Keine Einträge')" compact />
+                        <x-table.empty icon="notifications_active" :colspan="5" :title="__('Keine Einträge')" compact />
                     @endforelse
                 </x-table>
             @else
@@ -284,7 +284,7 @@
                             <td class="max-w-xs truncate text-sm">{{ $entry->reason ?? '—' }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="5" :title="__('Keine Einträge')" compact />
+                        <x-table.empty icon="medical_services" :colspan="5" :title="__('Keine Einträge')" compact />
                     @endforelse
                 </x-table>
             @endif

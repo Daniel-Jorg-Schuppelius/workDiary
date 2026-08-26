@@ -10,7 +10,7 @@
 
 @section('install-content')
 <div class="text-center">
-    <span class="material-symbols-outlined text-success" style="font-size: 3rem;" aria-hidden="true">task_alt</span>
+    <x-icon name="task_alt" size="3rem" class="text-success" />
     <h2 class="card-title mt-2 justify-center">{{ __('Bereit zum Abschluss') }}</h2>
     <p class="mt-2 text-sm text-base-content/70">
         {{ __('Alle Schritte sind abgeschlossen. Mit dem Abschluss wird die Installation gesperrt und kann nicht erneut ausgeführt werden.') }}

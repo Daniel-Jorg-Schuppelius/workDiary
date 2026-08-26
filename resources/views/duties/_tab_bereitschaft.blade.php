@@ -38,7 +38,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :colspan="5" :title="__('Keine Einträge')" compact />
+                <x-table.empty icon="notifications_active" :colspan="5" :title="__('Keine Einträge')" compact />
             @endforelse
 </x-table>
 @if ($shifts->total() > 0)

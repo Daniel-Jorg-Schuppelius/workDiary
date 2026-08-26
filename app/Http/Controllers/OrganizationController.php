@@ -119,6 +119,8 @@ class OrganizationController extends Controller {
             'compliance.max_consecutive_days' => ['sometimes', 'integer', 'min:1', 'max:14'],
             // Bagatellgrenze der Stempel-Plausibilität (MVP-519).
             'compliance.frame_tolerance_minutes' => ['sometimes', 'integer', 'min:0', 'max:240'],
+            // Feature 144: Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV) anwenden.
+            'compliance.driving_time_rules' => ['sometimes', 'boolean'],
             'compliance.rules' => ['sometimes', 'array'],
             'compliance.rules.*' => ['boolean'],
             // Generic per-group overrides. Werte sind immer Strings (Form-Input);
@@ -211,6 +213,9 @@ class OrganizationController extends Controller {
                 $existingCompliance,
                 $data['compliance'],
             );
+            if (array_key_exists('driving_time_rules', $mergedSettings['compliance'])) {
+                $mergedSettings['compliance']['driving_time_rules'] = filter_var($mergedSettings['compliance']['driving_time_rules'], FILTER_VALIDATE_BOOL);
+            }
             // Boolean-Konvertierung für rules
             if (isset($mergedSettings['compliance']['rules']) && is_array($mergedSettings['compliance']['rules'])) {
                 $mergedSettings['compliance']['rules'] = array_map(

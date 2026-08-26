@@ -30,7 +30,7 @@
                     </div>
                     <div class="min-w-0">
                         <h1 class="font-['Space_Grotesk'] text-2xl font-bold tracking-tight truncate">{{ __('Hallo') }}, {{ Auth::user()->name }}</h1>
-                        <p class="text-sm text-base-content/60">{{ $now->translatedFormat('l, d.m.Y H:i') }}</p>
+                        <p class="text-sm text-muted">{{ $now->translatedFormat('l, d.m.Y H:i') }}</p>
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-2">
@@ -123,14 +123,14 @@
                             <x-icon name="today" class="text-primary" /> {{ __('Heute') }}
                         </h3>
                         @if ($user['today_shifts']->isEmpty())
-                            <x-empty-state compact icon='<span class="material-symbols-outlined">event_available</span>'
+                            <x-empty-state compact icon="event_available"
                                            :title="__('Keine Schicht heute')" :message="__('Keine Schicht heute.')" />
                         @else
                             <ul class="space-y-2">
                                 @foreach ($user['today_shifts'] as $shift)
                                     <li class="flex items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm">
                                         <span class="inline-flex items-center gap-1"><x-icon name="event" /> {{ $shift->start_at->ftime() }} – {{ $shift->end_at->ftime() }}</span>
-                                        <span class="text-base-content/60">{{ $shift->note ? \CommonToolkit\Helper\Data\StringHelper::truncate($shift->note, 40) : '' }}</span>
+                                        <span class="text-muted">{{ $shift->note ? \CommonToolkit\Helper\Data\StringHelper::truncate($shift->note, 40) : '' }}</span>
                                     </li>
                                 @endforeach
                             </ul>
@@ -142,14 +142,14 @@
                             <x-icon name="event_upcoming" class="text-primary" /> {{ __('Nächste Schichten') }}
                         </h3>
                         @if ($user['upcoming_shifts']->isEmpty())
-                            <x-empty-state compact icon='<span class="material-symbols-outlined">event_busy</span>'
+                            <x-empty-state compact icon="event_busy"
                                            :title="__('Keine geplanten Schichten')" :message="__('Keine geplanten Schichten.')" />
                         @else
                             <ul class="space-y-2 text-sm">
                                 @foreach ($user['upcoming_shifts'] as $shift)
                                     <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                         <span>{{ $shift->start_at->format('d.m. H:i') }} – {{ $shift->end_at->format('d.m. H:i') }}</span>
-                                        @if ($shift->note)<span class="text-base-content/60">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($shift->note, 50) }}</span>@endif
+                                        @if ($shift->note)<span class="text-muted">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($shift->note, 50) }}</span>@endif
                                     </li>
                                 @endforeach
                             </ul>
@@ -161,14 +161,14 @@
                             <x-icon name="emergency" class="text-primary" /> {{ __('Nächste Notdienste') }}
                         </h3>
                         @if ($user['upcoming_emergencies']->isEmpty())
-                            <x-empty-state compact icon='<span class="material-symbols-outlined">crisis_alert</span>'
+                            <x-empty-state compact icon="crisis_alert"
                                            :title="__('Keine geplanten Notdienste')" :message="__('Keine geplanten Notdienste.')" />
                         @else
                             <ul class="space-y-2 text-sm">
                                 @foreach ($user['upcoming_emergencies'] as $em)
                                     <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                         <span class="inline-flex items-center gap-1"><x-icon name="priority_high" /> {{ $em->start_at->format('d.m. H:i') }} – {{ $em->end_at->format('d.m. H:i') }}</span>
-                                        @if ($em->reason)<span class="text-base-content/60">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($em->reason, 50) }}</span>@endif
+                                        @if ($em->reason)<span class="text-muted">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($em->reason, 50) }}</span>@endif
                                     </li>
                                 @endforeach
                             </ul>
@@ -184,7 +184,7 @@
                                 <x-button href="{{ route('schedule.index') }}" tone="ghost" size="xs">{{ __('Alle →') }}</x-button>
                             </div>
                             @if ($user['upcoming_scheduled']->isEmpty())
-                                <x-empty-state compact icon='<span class="material-symbols-outlined">calendar_month</span>'
+                                <x-empty-state compact icon="calendar_month"
                                                :title="__('Nichts geplant')" :message="__('Keine geplanten Schichten in den nächsten 7 Tagen.')" />
                             @else
                                 <ul class="space-y-1.5 text-sm">
@@ -196,10 +196,10 @@
                                             </span>
                                             <span class="font-medium">{{ \Carbon\Carbon::parse($sshift->date)->translatedFormat('D d.m.') }}</span>
                                             @if ($sshift->resolvedStartTime())
-                                                <span class="text-base-content/60">{{ $sshift->resolvedStartTime() }}{{ $sshift->resolvedEndTime() ? '–'.$sshift->resolvedEndTime() : '' }}</span>
+                                                <span class="text-muted">{{ $sshift->resolvedStartTime() }}{{ $sshift->resolvedEndTime() ? '–'.$sshift->resolvedEndTime() : '' }}</span>
                                             @endif
                                             @if ($sshift->shiftType)
-                                                <span class="ml-auto text-xs text-base-content/50">{{ $sshift->shiftType->name }}</span>
+                                                <span class="ml-auto text-xs text-muted">{{ $sshift->shiftType->name }}</span>
                                             @endif
                                         </li>
                                     @endforeach
@@ -217,14 +217,14 @@
                         <div class="mb-3 flex items-center justify-between gap-2">
                             <h3 class="flex items-center gap-2 font-['Space_Grotesk'] text-base font-semibold">
                                 <x-icon name="flag" class="text-warning" /> {{ __('Meine offenen Punkte') }}
-                                <span class="font-normal text-base-content/50">({{ $user['kpi']['open_issues_assigned'] ?? 0 }})</span>
+                                <span class="font-normal text-muted">({{ $user['kpi']['open_issues_assigned'] ?? 0 }})</span>
                             </h3>
-                            <span class="text-xs text-base-content/60">
+                            <span class="text-xs text-muted">
                                 {{ __('Von mir erstellt, offen') }}: {{ $user['kpi']['open_issues_created'] ?? 0 }}
                             </span>
                         </div>
                         @if ($user['open_issues_assigned']->isEmpty())
-                            <x-empty-state compact icon='<span class="material-symbols-outlined">flag</span>'
+                            <x-empty-state compact icon="flag"
                                            :title="__('Alles erledigt')" :message="__('Keine offenen Punkte zugewiesen.')" />
                         @else
                             <ul class="space-y-2 text-sm">
@@ -264,14 +264,14 @@
                         <x-icon name="history_edu" class="text-warning" /> {{ __('Meine letzten Einträge') }}
                     </h3>
                     @if ($user['recent_entries']->isEmpty())
-                        <x-empty-state compact icon='<span class="material-symbols-outlined">edit_note</span>'
+                        <x-empty-state compact icon="edit_note"
                                        :title="__('Noch keine Einträge')" :message="__('Noch keine Einträge.')" />
                     @else
                         <ul class="space-y-2 text-sm">
                             @foreach ($user['recent_entries'] as $entry)
                                 <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                     <a href="{{ route('diary.show', $entry) }}" class="link link-primary block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($entry->content, 80) }}</a>
-                                    <span class="text-xs text-base-content/60">{{ $entry->statusLabel() }} · {{ $entry->updated_at->diffForHumans() }}</span>
+                                    <span class="text-xs text-muted">{{ $entry->statusLabel() }} · {{ $entry->updated_at->diffForHumans() }}</span>
                                 </li>
                             @endforeach
                         </ul>
@@ -286,13 +286,13 @@
                         <x-icon name="comment" class="text-info" /> {{ __('Neue Kommentare auf meinen Einträgen') }}
                     </h3>
                     @if ($user['recent_comments']->isEmpty())
-                        <x-empty-state compact icon='<span class="material-symbols-outlined">comment</span>'
+                        <x-empty-state compact icon="comment"
                                        :title="__('Keine Kommentare')" :message="__('Noch keine Kommentare.')" />
                     @else
                         <ul class="space-y-2 text-sm">
                             @foreach ($user['recent_comments'] as $comment)
                                 <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                                    <div class="text-xs text-base-content/60">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
+                                    <div class="text-xs text-muted">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
                                     <a href="{{ route('diary.show', $comment->commentable_id) }}#comments" class="link block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($comment->body, 100) }}</a>
                                 </li>
                             @endforeach
@@ -305,14 +305,14 @@
                         <x-icon name="attach_file" class="text-info" /> {{ __('Neue Anhänge auf meinen Einträgen') }}
                     </h3>
                     @if ($user['recent_attachments']->isEmpty())
-                        <x-empty-state compact icon='<span class="material-symbols-outlined">attach_file</span>'
+                        <x-empty-state compact icon="attach_file"
                                        :title="__('Keine Anhänge')" :message="__('Noch keine Anhänge.')" />
                     @else
                         <ul class="space-y-2 text-sm">
                             @foreach ($user['recent_attachments'] as $att)
                                 <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2">
                                     <a href="{{ route('diary.show', $att->attachable_id) }}#attachments" class="link link-primary break-all"><x-icon name="attachment" class="align-middle" /> {{ $att->original_name }}</a>
-                                    <span class="text-xs text-base-content/60">{{ optional($att->uploader)->name ?? '—' }} · {{ $att->created_at->diffForHumans() }}</span>
+                                    <span class="text-xs text-muted">{{ optional($att->uploader)->name ?? '—' }} · {{ $att->created_at->diffForHumans() }}</span>
                                 </li>
                             @endforeach
                         </ul>
@@ -325,13 +325,13 @@
                             <x-icon name="groups" class="text-info" /> {{ __('Letzte Team-Aktivität') }}
                         </h3>
                         @if ($team['recent_activity']->isEmpty())
-                            <x-empty-state compact icon='<span class="material-symbols-outlined">groups</span>'
+                            <x-empty-state compact icon="groups"
                                            :title="__('Keine Aktivität')" :message="__('Noch keine Aktivität.')" />
                         @else
                             <ul class="space-y-2 text-sm">
                                 @foreach ($team['recent_activity'] as $comment)
                                     <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                                        <div class="text-xs text-base-content/60">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
+                                        <div class="text-xs text-muted">{{ optional($comment->user)->name ?? '—' }} · {{ $comment->created_at->diffForHumans() }}</div>
                                         <a href="{{ route('diary.show', $comment->commentable_id) }}#comments" class="link block">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($comment->body, 120) }}</a>
                                     </li>
                                 @endforeach
@@ -343,49 +343,49 @@
 
             {{-- ── Tab: Finanzen & Reisen ───────────────────────────────────── --}}
             <div x-show="isTab('finance')" x-cloak class="space-y-4">
-                <p class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-[0.2em] text-base-content/60">
+                <p class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-[0.2em] text-muted">
                     {{ __('Monat') }} · {{ $finance['month']['label'] ?? '' }}
                 </p>
                 <div class="grid grid-cols-2 gap-3 md:grid-cols-4">
                     <x-card>
-                        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Spesen eingereicht (Brutto)') }}</p>
+                        <p class="text-xs uppercase tracking-wider text-muted">{{ __('Spesen eingereicht (Brutto)') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums">
                             {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($finance['month']['expenses_submitted_gross'] ?? 0), 2, withThousandsSeparator: true) }} €
                         </p>
                     </x-card>
                     <div class="rounded-box border border-success/40 bg-success/5 p-4">
-                        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Davon erstattet') }}</p>
+                        <p class="text-xs uppercase tracking-wider text-muted">{{ __('Davon erstattet') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums text-success">
                             {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($finance['month']['expenses_reimbursed_gross'] ?? 0), 2, withThousandsSeparator: true) }} €
                         </p>
                     </div>
                     <div class="rounded-box border border-warning/40 bg-warning/5 p-4">
-                        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Spesen ausstehend / Entwurf') }}</p>
+                        <p class="text-xs uppercase tracking-wider text-muted">{{ __('Spesen ausstehend / Entwurf') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
                             <span class="text-warning">{{ $finance['month']['expenses_pending_count'] ?? 0 }}</span>
-                            <span class="text-base-content/40 text-base font-normal">/</span>
+                            <span class="text-muted text-base font-normal">/</span>
                             <span class="opacity-70">{{ $finance['month']['expenses_draft_count'] ?? 0 }}</span>
                         </p>
                     </div>
                     <x-card>
-                        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Reisen (Monat) / Entwürfe') }}</p>
+                        <p class="text-xs uppercase tracking-wider text-muted">{{ __('Reisen (Monat) / Entwürfe') }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
                             {{ $finance['month']['trips_count'] ?? 0 }}
-                            <span class="text-base-content/40 text-base font-normal">/</span>
+                            <span class="text-muted text-base font-normal">/</span>
                             <span class="opacity-70">{{ $finance['month']['trip_drafts'] ?? 0 }}</span>
                         </p>
                     </x-card>
                     <div class="rounded-box border border-info/40 bg-info/5 p-4">
-                        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Urlaub offen / genehmigt :year', ['year' => $now->year]) }}</p>
+                        <p class="text-xs uppercase tracking-wider text-muted">{{ __('Urlaub offen / genehmigt :year', ['year' => $now->year]) }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold">
                             <span class="text-info">{{ $finance['vacation']['pending'] ?? 0 }}</span>
-                            <span class="text-base-content/40 text-base font-normal">/</span>
+                            <span class="text-muted text-base font-normal">/</span>
                             <span class="opacity-70">{{ rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) ($finance['vacation']['approved_days_this_year'] ?? 0), 1, withThousandsSeparator: true), '0'), ',') }} {{ __('Tage') }}</span>
                         </p>
                     </div>
                     @if (! empty($finance['approver_pending']))
                         <div class="rounded-box border border-error/40 bg-error/5 p-4 md:col-span-3">
-                            <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Genehmigungs-Stack (gesamt)') }}</p>
+                            <p class="text-xs uppercase tracking-wider text-muted">{{ __('Genehmigungs-Stack (gesamt)') }}</p>
                             <p class="mt-1 font-['Space_Grotesk'] text-xl font-bold flex items-center gap-4">
                                 <span class="inline-flex items-center gap-1.5">
                                     <x-icon name="receipt_long" class="text-base" />

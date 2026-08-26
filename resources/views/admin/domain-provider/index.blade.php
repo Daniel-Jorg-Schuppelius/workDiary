@@ -37,7 +37,7 @@
             <tr>
                 <td>
                     <div class="font-medium">{{ $connection->name }}</div>
-                    <div class="text-xs text-base-content/60 font-mono">{{ $connection->login }}</div>
+                    <div class="text-xs text-muted font-mono">{{ $connection->login }}</div>
                 </td>
                 <td>{{ $connection->environment->label() }}</td>
                 <td>

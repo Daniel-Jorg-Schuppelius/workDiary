@@ -26,5 +26,5 @@
         @if ($unread)<span class="badge badge-primary badge-sm tabular-nums">{{ $unread }}</span>@endif
     </a>
 @empty
-    <p class="px-2 py-4 text-sm text-base-content/50">{{ __('Noch keine Kanäle.') }}</p>
+    <p class="px-2 py-4 text-sm text-muted">{{ __('Noch keine Kanäle.') }}</p>
 @endforelse

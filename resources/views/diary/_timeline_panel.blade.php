@@ -10,7 +10,32 @@
   Erwartet: $diary, $timelineItems (list<TimelineItem>), $timelineHasMore (bool),
             $timelineType (string, ''=alle), $timelineLimit (int)
 --}}
+@php
+    // Kurznarrativ des Verlaufs (Feature 148, MVP-732): verdichtet die
+    // rechtegeprüfte Timeline; Übernahme = interner Kommentar am Auftrag.
+    $aiView = app(\App\Services\Ai\Suggestions\SuggestionViewData::class);
+    $aiNarrativeUsable = $aiView->capabilityUsable(\App\Services\Ai\Suggestions\CaseNarrativeSuggestionService::CAPABILITY);
+    $aiNarrative = $aiNarrativeUsable
+        ? $aiView->openSuggestionsFor((new \App\Models\DiaryEntry)->getMorphClass(), collect([$diary]), \App\Services\Ai\Suggestions\CaseNarrativeSuggestionService::CAPABILITY)->get($diary->id)
+        : null;
+@endphp
 <x-card as="section" id="timeline" :title="__('timeline.title.section')" icon="history">
+    @if ($aiNarrativeUsable && $aiNarrative === null && $timelineItems !== [])
+        <x-slot:actions>
+            <x-action-form :action="route('ai.assist.case-narrative', $diary)">
+                <x-icon-btn icon="auto_awesome" tone="info" size="sm" type="submit" show-label
+                            :title="__('ai.assist.narrate_case')">{{ __('ai.assist.narrate_case') }}</x-icon-btn>
+            </x-action-form>
+        </x-slot:actions>
+    @endif
+
+    @if ($aiNarrative !== null)
+        @include('ai._insight', [
+            'suggestion' => $aiNarrative,
+            'acceptAction' => route('ai.assist.accept', $aiNarrative),
+        ])
+    @endif
+
     {{-- Filter-Chips nach Ereignistyp (serverseitig per Query-Param) --}}
     <nav class="mb-4 flex flex-wrap gap-1.5" aria-label="{{ __('timeline.filter.label') }}">
         <a href="{{ route('diary.show', $diary) }}#timeline"

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
-use App\Models\{ArticleVariant, Warehouse};
+use App\Models\{ArticleVariant, Warehouse, WarehouseBin};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -45,5 +45,7 @@ final class StockPosting {
         public readonly ?string $currency = null,
         public readonly ?int $stockLotId = null,
         public readonly ?int $stockSerialId = null,
+        /** Optionaler Lagerplatz (MVP-706); muss zum Lagerort gehören. */
+        public readonly ?WarehouseBin $bin = null,
     ) {}
 }

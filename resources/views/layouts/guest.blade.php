@@ -63,7 +63,7 @@
                 </a>
                 <div class="ml-auto flex items-center gap-2 rounded-box border border-base-300 bg-base-200/70 p-1.5 shadow-xs">
                     <button type="button" data-theme-toggle aria-label="{{ __('Farbschema wechseln') }}" title="{{ __('Farbschema wechseln') }}" class="btn btn-sm btn-ghost btn-square">
-                        <span data-theme-label class="material-symbols-outlined text-base leading-none">dark_mode</span>
+                        <x-icon name="dark_mode" class="text-base leading-none" data-theme-label />
                     </button>
                     @hasSection('header-action')
                         @yield('header-action')

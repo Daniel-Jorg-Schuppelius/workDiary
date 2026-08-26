@@ -30,7 +30,7 @@
     </x-slot:actions>
 
     @if ($rules->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">auto_fix_high</span>'
+        <x-empty-state framed icon="auto_fix_high"
                        :title="__('Noch keine Regel angelegt.')"
                        :message="__('Eine Regel hält fest, welche Leistung üblicherweise auf welche Kostengruppe schlägt. Angewandt wird sie nur auf Positionen ohne Zuordnung.')" />
     @else

@@ -24,7 +24,7 @@
                     {{ $runningEntry->project?->name ?? __('Läuft…') }}
                 </p>
                 @if ($runningEntry->description)
-                    <p class="truncate text-xs text-base-content/60">{{ $runningEntry->description }}</p>
+                    <p class="truncate text-xs text-muted">{{ $runningEntry->description }}</p>
                 @endif
             </div>
             <span class="font-['Space_Grotesk'] text-2xl font-semibold tabular-nums text-primary"
@@ -155,7 +155,7 @@
                         </template>
                     </ul>
                     <p x-show="showEmpty" x-cloak
-                       class="absolute z-30 mt-1 w-full rounded-box border border-base-300 bg-base-100 px-3 py-2 text-sm text-base-content/60 shadow-lg">
+                       class="absolute z-30 mt-1 w-full rounded-box border border-base-300 bg-base-100 px-3 py-2 text-sm text-muted shadow-lg">
                         {{ __('Kein Projekt gefunden.') }}
                     </p>
                 </div>
@@ -211,7 +211,7 @@
                                   :label="false" :linked="false"
                                   size="sm" class="w-40" />
                     <div class="join">
-                        <span class="join-item flex items-center border border-base-300 bg-base-200 px-2 text-xs text-base-content/60"
+                        <span class="join-item flex items-center border border-base-300 bg-base-200 px-2 text-xs text-muted"
                               title="{{ __('Pause (Minuten)') }}">{{ __('Pause') }}</span>
                         <input type="number" name="break_minutes" min="0" max="600"
                                class="input input-bordered input-sm join-item w-14 px-1 text-right tabular-nums"
@@ -223,7 +223,7 @@
                 <button type="button" class="btn btn-sm btn-ghost btn-square" x-cloak x-show="hasProject"
                         @click="toggleMore()"
                         title="{{ __('Weitere Felder') }}" aria-label="{{ __('Weitere Felder') }}">
-                    <span class="material-symbols-outlined" aria-hidden="true" x-text="moreChevron">expand_more</span>
+                    <x-icon name="expand_more" x-text="moreChevron" />
                 </button>
 
                 <x-button type="submit" tone="primary" size="sm" class="gap-1">
@@ -238,7 +238,7 @@
 
             {{-- Sekundärfelder: projektabhängig (Fetch nach Projektwahl). --}}
             <div class="mt-2 flex flex-wrap items-center gap-2" x-cloak x-show="moreOpen">
-                <label class="w-full text-xs uppercase tracking-[0.18em] text-base-content/60 sm:w-auto" x-show="hasSecondary">{{ __('Zuordnung') }}</label>
+                <label class="w-full text-xs uppercase tracking-[0.18em] text-muted sm:w-auto" x-show="hasSecondary">{{ __('Zuordnung') }}</label>
                 <select name="task_id" x-model="taskId" x-show="hasTasks"
                         class="select select-bordered select-sm w-full sm:w-56"
                         aria-label="{{ __('Aufgabe (optional)') }}">
@@ -255,7 +255,7 @@
                         <option :value="d.id" x-text="d.label"></option>
                     </template>
                 </select>
-                <p class="text-xs text-base-content/60" x-show="noSecondary">{{ __('Für dieses Projekt gibt es keine Aufgaben oder Aufträge.') }}</p>
+                <p class="text-xs text-muted" x-show="noSecondary">{{ __('Für dieses Projekt gibt es keine Aufgaben oder Aufträge.') }}</p>
                 <x-tag-picker class="w-full sm:w-96" :tags="$allTags ?? []" :selected="[]" :recent="$recentTagIds ?? []" />
             </div>
         </form>

@@ -13,4 +13,22 @@ return [
         /** Max characters for the push notification body preview. */
         'body_truncate' => (int) env('NOTIFICATIONS_PUSH_BODY_TRUNCATE', 120),
     ],
+
+    /*
+     * SMS-Kanal (Feature 147, MVP-730). Globale Defaults; je Organisation
+     * überschreibbar über organizations.settings['notifications']['sms'].
+     */
+    'sms' => [
+        /** Zeichen je Nachricht — nie über einem GSM-7-Segment (160). */
+        'body_truncate' => (int) env('NOTIFICATIONS_SMS_BODY_TRUNCATE', 160),
+        /**
+         * Monatsdeckel in Segmenten; null = unbegrenzt. Bewusst konservativ
+         * vorbelegt: SMS ist der einzige Kanal, der je Nachricht Geld kostet,
+         * und eine Fehlkonfiguration soll eine Rechnung nicht ins Unendliche
+         * treiben. 0 = Kanal faktisch aus.
+         */
+        'monthly_limit' => env('NOTIFICATIONS_SMS_MONTHLY_LIMIT', 250),
+        /** Ab wie viel Prozent des Deckels gewarnt wird (0 = nie). */
+        'warn_percent' => (int) env('NOTIFICATIONS_SMS_WARN_PERCENT', 80),
+    ],
 ];

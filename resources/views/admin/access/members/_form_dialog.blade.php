@@ -44,7 +44,7 @@
                         @endif
                     </label>
                 @empty
-                    <p class="text-sm text-base-content/60">{{ __('access.empty.roles') }}</p>
+                    <p class="text-sm text-muted">{{ __('access.empty.roles') }}</p>
                 @endforelse
             </div>
         </section>
@@ -60,12 +60,12 @@
                         <span class="text-sm">
                             {{ $group->name }}
                             @if ($group->description)
-                                <span class="block text-xs text-base-content/50">{{ $group->description }}</span>
+                                <span class="block text-xs text-muted">{{ $group->description }}</span>
                             @endif
                         </span>
                     </label>
                 @empty
-                    <p class="text-sm text-base-content/60">{{ __('access.empty.groups') }}</p>
+                    <p class="text-sm text-muted">{{ __('access.empty.groups') }}</p>
                 @endforelse
             </div>
         </section>
@@ -78,9 +78,9 @@
                 {{ __('access.title.effective_permissions') }}
                 <x-status-badge tone="ghost" size="sm">{{ $effectivePermissions->count() }}</x-status-badge>
             </h3>
-            <p class="text-xs text-base-content/60">{{ __('access.hint.effective_permissions') }}</p>
+            <p class="text-xs text-muted">{{ __('access.hint.effective_permissions') }}</p>
             @if ($effectivePermissions->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('access.empty.effective_permissions') }}</p>
+                <p class="text-sm text-muted">{{ __('access.empty.effective_permissions') }}</p>
             @else
                 <div class="flex flex-wrap gap-1 max-h-40 overflow-y-auto">
                     @foreach ($effectivePermissions as $permission)

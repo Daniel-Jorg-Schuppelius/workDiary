@@ -39,7 +39,7 @@
         @if (($unclearCases ?? collect())->isNotEmpty())
             <x-card class="shrink-0">
                 <div class="flex items-center gap-2 mb-2">
-                    <span class="material-symbols-outlined text-warning" aria-hidden="true">live_help</span>
+                    <x-icon name="live_help" class="text-warning" />
                     <span class="font-medium">{{ __('Ungeklärte Fälle') }}</span>
                     <span class="text-sm opacity-70">{{ __('Bitte klären Sie diese Tage per Antrag.') }}</span>
                 </div>
@@ -70,7 +70,7 @@
 
         @if ($requests->isEmpty())
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">more_time</span>'
+                icon="more_time"
                 :title="__('Keine Überstunden-Anträge')"
                 :message="__('Stellen Sie einen Antrag, um Mehrarbeit genehmigen zu lassen.')" />
         @else

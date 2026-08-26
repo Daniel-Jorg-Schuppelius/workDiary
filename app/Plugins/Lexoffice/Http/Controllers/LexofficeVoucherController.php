@@ -145,15 +145,20 @@ class LexofficeVoucherController extends Controller {
         $config = LexofficeConfig::resolve($user->organization_id);
         $service = new LexofficeVoucherFileService($config['api_key'], $config['base_url']);
 
-        if (! $service->isConfigured()) {
-            abort(503, __('Lexoffice-Plugin ist nicht aktiviert oder API-Key fehlt.'));
-        }
+        // MVP-690 (G3): materialisierte Belegbilder zuerst — nach dem
+        // Buchhaltungswechsel gibt es keine Live-API mehr.
+        $file = $service->localFile($voucher);
+        if ($file === null) {
+            if (! $service->isConfigured()) {
+                abort(503, __('Lexoffice-Plugin ist nicht aktiviert oder API-Key fehlt.'));
+            }
 
-        try {
-            $file = $service->download($voucher);
-        } catch (\Throwable $e) {
-            report($e);
-            abort(404, __('Für diesen Beleg ist kein Belegbild verfügbar.'));
+            try {
+                $file = $service->download($voucher);
+            } catch (\Throwable $e) {
+                report($e);
+                abort(404, __('Für diesen Beleg ist kein Belegbild verfügbar.'));
+            }
         }
 
         $base = Str::slug((string) ($voucher->voucher_number ?: 'beleg-' . $voucher->id)) ?: ('beleg-' . $voucher->id);

@@ -45,7 +45,7 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Domäne') }}</h3>
             @if (empty($by_domain))
-                <p class="text-sm text-base-content/60">{{ __('Keine Lücken im gewählten Zeitraum.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Lücken im gewählten Zeitraum.') }}</p>
             @else
                 <x-table table-sort="client" bare>
                     <x-slot:head>
@@ -64,7 +64,7 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Nach Phase') }}</h3>
             @if (empty($by_phase))
-                <p class="text-sm text-base-content/60">{{ __('Keine Lücken im gewählten Zeitraum.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Lücken im gewählten Zeitraum.') }}</p>
             @else
                 <div class="flex flex-wrap gap-2">
                     @foreach ($by_phase as $phase => $count)
@@ -78,7 +78,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Betroffene Aufträge') }}</h3>
         @if (empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">check_circle</span>'
+            <x-empty-state icon="check_circle"
                            :title="__('Keine Aufträge mit fehlenden Pflichtklassifikationen.')" />
         @else
             <x-table table-sort="client" bare>

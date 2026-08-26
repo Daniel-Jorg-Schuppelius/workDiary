@@ -63,7 +63,7 @@
                     <td class="text-right"><x-icon-btn icon="visibility" :href="route('crisis.show', $case)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">emergency_home</span>' :colspan="6" :title="__('Keine Krisenakten — hoffentlich bleibt es so.')" compact />
+                <x-table.empty icon="emergency_home" :colspan="6" :title="__('Keine Krisenakten — hoffentlich bleibt es so.')" compact />
             @endforelse
         </x-table>
     </x-card>

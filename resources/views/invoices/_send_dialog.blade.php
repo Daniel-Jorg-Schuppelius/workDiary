@@ -71,7 +71,7 @@
                             :href="route('invoices.send.form', [$invoice, 'ki' => 1])"
                             show-label>{{ __('ai.covering.suggest_mail') }}</x-icon-btn>
                 @if (! empty($aiText))
-                    <span class="text-xs text-base-content/60">{{ __('ai.covering.draft_hint') }}</span>
+                    <span class="text-xs text-muted">{{ __('ai.covering.draft_hint') }}</span>
                 @elseif (! empty($aiError))
                     <span class="text-xs text-warning">{{ $aiError }}</span>
                 @endif
@@ -79,7 +79,7 @@
         @endif
 
         <details class="text-xs">
-            <summary class="cursor-pointer text-base-content/60">{{ __('Verfügbare Variablen') }}</summary>
+            <summary class="cursor-pointer text-muted">{{ __('Verfügbare Variablen') }}</summary>
             <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
                 @foreach ($variables as $key => $label)
                     <li><code>&#123;&#123;{{ $key }}&#125;&#125;</code> – {{ $label }}</li>

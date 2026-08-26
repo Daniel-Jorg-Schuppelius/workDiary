@@ -42,7 +42,7 @@
 
     @if (! $hasData)
         <div class="alert alert-info text-sm" role="status">
-            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+            <x-icon name="info" />
             {{ __('Keine Rechnungsdaten: weder lokale Rechnungen noch gespiegelte Lexoffice-Belege vorhanden. Bei externer Rechnungshoheit zuerst den Beleg-Sync des Lexoffice-Plugins ausführen — er lädt auch die Zahlungsdaten nach.') }}
         </div>
     @endif
@@ -79,10 +79,10 @@
 
         <x-card class="mt-4">
             <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Überfällige offene Rechnungen (Top 15)') }}</h2>
-            <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }} · {{ __('Stichtag: Zeitraumende') }}</div>
+            <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }} · {{ __('Stichtag: Zeitraumende') }}</div>
 
             @if ($overdue === [])
-                <p class="text-sm text-base-content/60">{{ __('Keine überfälligen offenen Rechnungen — gut so.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine überfälligen offenen Rechnungen — gut so.') }}</p>
             @else
                 <x-table bare table-sort="client">
                     <x-slot:head>

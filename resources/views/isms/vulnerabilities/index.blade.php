@@ -34,12 +34,12 @@
         <div class="grid gap-3 sm:grid-cols-5">
             @foreach (['critical', 'high', 'medium', 'low'] as $sev)
                 <x-card>
-                    <div class="text-xs text-base-content/60">{{ __('enums.isms.incident-severity.' . $sev) }}</div>
+                    <div class="text-xs text-muted">{{ __('enums.isms.incident-severity.' . $sev) }}</div>
                     <div class="text-2xl font-bold {{ in_array($sev, ['critical', 'high']) && ($severityCounts[$sev] ?? 0) > 0 ? 'text-error' : '' }}">{{ $severityCounts[$sev] ?? 0 }}</div>
                 </x-card>
             @endforeach
             <x-card>
-                <div class="text-xs text-base-content/60">{{ __('isms.vulnerabilities.kpi_overdue') }}</div>
+                <div class="text-xs text-muted">{{ __('isms.vulnerabilities.kpi_overdue') }}</div>
                 <div class="text-2xl font-bold {{ $overdueCount > 0 ? 'text-error' : '' }}">{{ $overdueCount }}</div>
             </x-card>
         </div>

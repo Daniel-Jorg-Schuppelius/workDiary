@@ -45,6 +45,7 @@ use Illuminate\Support\Carbon;
  * @property string|null $country
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property string|null $timezone
+ * @property string|null $document_locale Belegsprache (NULL = Organisation; Feature 034, MVP-721)
  * @property string|null $color
  * @property \CommonToolkit\ValueObjects\Money|null $hourly_rate
  * @property \CommonToolkit\ValueObjects\Money|null $internal_rate
@@ -110,6 +111,8 @@ class Customer extends Model {
         'country',
         'currency',
         'timezone',
+        // Belegsprache (Feature 034, MVP-721): NULL = wie Organisation.
+        'document_locale',
         'color',
         'hourly_rate',
         'internal_rate',

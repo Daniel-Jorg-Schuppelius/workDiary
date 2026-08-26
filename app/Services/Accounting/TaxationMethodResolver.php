@@ -15,6 +15,7 @@ namespace App\Services\Accounting;
 use App\Enums\Finance\{OpenItemDirection, TaxationMethod};
 use App\Models\Accounting\{AccountingOpenItem, AccountingTaxationPeriod};
 use App\Models\{Organization, User};
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -44,9 +45,9 @@ class TaxationMethodResolver {
 
         return AccountingTaxationPeriod::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('valid_from', '<=', $day->toDateString())
+            ->where('valid_from', '<=', DateRange::day($day))
             ->where(function ($query) use ($day): void {
-                $query->whereNull('valid_to')->orWhereDate('valid_to', '>=', $day->toDateString());
+                $query->whereNull('valid_to')->orWhere('valid_to', '>=', DateRange::day($day));
             })
             ->orderByDesc('valid_from')
             ->first();
@@ -78,7 +79,7 @@ class TaxationMethodResolver {
 
         $later = AccountingTaxationPeriod::query()
             ->where('organization_id', $organization->id)
-            ->whereDate('valid_from', '>', $from->toDateString())
+            ->where('valid_from', '>', DateRange::day($from))
             ->orderBy('valid_from')
             ->first();
 
@@ -95,13 +96,13 @@ class TaxationMethodResolver {
         return DB::transaction(function () use ($organization, $method, $from, $actor, $reason, $changeover): AccountingTaxationPeriod {
             AccountingTaxationPeriod::query()
                 ->where('organization_id', $organization->id)
-                ->whereDate('valid_from', '=', $from->toDateString())
+                ->where('valid_from', '=', DateRange::day($from))
                 ->delete();
 
             AccountingTaxationPeriod::query()
                 ->where('organization_id', $organization->id)
                 ->whereNull('valid_to')
-                ->whereDate('valid_from', '<', $from->toDateString())
+                ->where('valid_from', '<', DateRange::day($from))
                 ->update(['valid_to' => $from->subDay()->toDateString()]);
 
             $period = AccountingTaxationPeriod::query()->create([
@@ -136,7 +137,7 @@ class TaxationMethodResolver {
             ->where('organization_id', $organization->id)
             ->where('direction', OpenItemDirection::Receivable->value)
             ->stillOpen()
-            ->whereDate('document_date', '<', $from->toDateString())
+            ->where('document_date', '<', DateRange::day($from))
             ->orderBy('document_date')
             ->get();
 

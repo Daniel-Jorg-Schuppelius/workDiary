@@ -46,7 +46,7 @@
     <section class="card bg-base-200/40 mt-3">
         <div class="card-body space-y-2">
             <h3 class="card-title text-base">{{ __('access.title.assigned_roles') }}</h3>
-            <p class="text-xs text-base-content/60">{{ __('access.help.group_roles') }}</p>
+            <p class="text-xs text-muted">{{ __('access.help.group_roles') }}</p>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
                 @forelse ($roles as $role)
@@ -62,7 +62,7 @@
                         @endif
                     </label>
                 @empty
-                    <div class="col-span-full text-sm text-base-content/60">{{ __('access.empty.roles') }}</div>
+                    <div class="col-span-full text-sm text-muted">{{ __('access.empty.roles') }}</div>
                 @endforelse
             </div>
         </div>
@@ -71,7 +71,7 @@
     <section class="card bg-base-200/40 mt-3">
         <div class="card-body space-y-2">
             <h3 class="card-title text-base">{{ __('access.title.direct_permissions') }}</h3>
-            <p class="text-xs text-base-content/60">{{ __('access.help.group_permissions') }}</p>
+            <p class="text-xs text-muted">{{ __('access.help.group_permissions') }}</p>
 
             @include('admin.access._permission_matrix', [
                 'grouped' => $permissions,

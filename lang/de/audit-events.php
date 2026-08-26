@@ -322,8 +322,22 @@ return [
             'deleted' => 'Formular-Vorlage gelöscht',
         ],
     ],
+    'hrFile' => [
+        'created' => 'Personalakten-Dokument aufgenommen',
+        'updated' => 'Personalakten-Dokument bearbeitet',
+        'downloaded' => 'Personalakten-Dokument abgerufen',
+        'deleted' => 'Personalakten-Dokument vernichtet',
+    ],
     'gobd' => [
         'exported' => 'GoBD-Export erstellt',
+        'downloaded' => 'GoBD-Export heruntergeladen',
+    ],
+    // Messwerkzeug (MVP-722): Zeilen aus audit:measure-chain-contention.
+    'perf' => [
+        'measure' => 'Messlauf (Sperrkonkurrenz der Audit-Kette)',
+    ],
+    'procedure_documentation' => [
+        'published' => 'Verfahrensdokumentation veröffentlicht',
     ],
     'google_calendar' => [
         'calendar_selected' => 'Google-Kalender gewählt',
@@ -393,6 +407,8 @@ return [
         'retention_secured' => 'Sicherheitseinbehalt durch Bürgschaft abgelöst',
         'approved' => 'Rechnung freigegeben',
         'dunned' => 'Rechnung angemahnt',
+        'dunningBlocked' => 'Mahnsperre gesetzt',
+        'dunningUnblocked' => 'Mahnsperre aufgehoben',
         'document_imported' => 'Rechnungsdatei importiert',
         'einvoice_exported' => 'E-Rechnung exportiert',
         'einvoice_options_updated' => 'E-Rechnungsoptionen geändert',
@@ -595,7 +611,13 @@ return [
             'invited' => 'Portalzugang eingeladen',
             'reactivated' => 'Portalzugang reaktiviert',
         ],
+        'profile' => [
+            'email_change_requested' => 'E-Mail-Änderung im Portal angefordert',
+            'email_changed' => 'E-Mail-Adresse im Portal geändert',
+            'email_change_blocked' => 'E-Mail-Änderung im Portal nicht ausgeführt',
+        ],
         'query' => [
+            'attachments_added' => 'Anhänge an Portal-Rückfrage hochgeladen',
             'withdrawn' => 'Portal-Rückfrage zurückgezogen',
         ],
         'visibility' => [
@@ -627,6 +649,7 @@ return [
         'ropa' => [
             'exported' => 'Verarbeitungsverzeichnis exportiert',
         ],
+        'subjectExportGenerated' => 'Betroffenen-Auskunft erzeugt',
     ],
     'problem' => [
         'effectiveness_checked' => 'Wirksamkeit geprüft',
@@ -639,7 +662,17 @@ return [
         'signatureLinkOpened' => 'Signatur-Link geöffnet',
         'signatureRequested' => 'Signatur angefordert',
     ],
+    'order_confirmation' => [
+        'mailed' => 'Auftragsbestätigung per E-Mail versendet',
+    ],
+    'purchase_order' => [
+        'mailed' => 'Bestellung per E-Mail versendet',
+    ],
+    'delivery_note' => [
+        'mailed' => 'Lieferschein per E-Mail versendet',
+    ],
     'quote' => [
+        'mailed' => 'Angebot per E-Mail versendet',
         'followed_up' => 'Angebot nachgefasst',
         'accepted' => 'Angebot angenommen',
         'approved' => 'Angebot freigegeben',
@@ -671,6 +704,10 @@ return [
     ],
     'render_profile_activated' => 'Render-Profil aktiviert',
     'rental' => [
+        'requested' => 'Verleih-Anfrage aus dem Portal gestellt',
+        'requestAccepted' => 'Verleih-Anfrage angenommen',
+        'requestDeclined' => 'Verleih-Anfrage abgelehnt',
+        'requestWithdrawn' => 'Verleih-Anfrage vom Kunden zurückgenommen',
         'active' => 'Mietvorgang aktiv',
         'assetSwapped' => 'Mietgerät getauscht',
         'cancelled' => 'Mietvorgang storniert',
@@ -714,6 +751,16 @@ return [
     ],
     'rules' => [
         'recalculated' => 'Zeitregel-Ergebnisse neu berechnet',
+    ],
+    'safety' => [
+        'hazard_assessment' => [
+            'approved' => 'Gefährdungsbeurteilung freigegeben',
+            'transitioned' => 'Gefährdungsbeurteilung: Status geändert',
+            'superseded' => 'Gefährdungsbeurteilung durch Folgeversion ersetzt',
+        ],
+        'instruction_participant' => [
+            'signed' => 'Unterweisungs-Teilnahme bestätigt',
+        ],
     ],
     'scheduler' => [
         'testRun' => 'Scheduler-Testlauf',
@@ -769,6 +816,13 @@ return [
     'shipping' => [
         'connection_saved' => 'Versand-Verbindung gespeichert',
         'disconnected' => 'Versand-Verbindung getrennt',
+    ],
+    'sms' => [
+        'sent' => 'Alarm-SMS versendet',
+        'opt_in' => 'SMS-Alarmierung bestätigt',
+        'opt_out' => 'SMS-Alarmierung widerrufen',
+        'verification_started' => 'SMS-Bestätigungscode angefordert',
+        'budget_warning' => 'SMS-Kostenwarnschwelle erreicht',
     ],
     'sla_violation' => [
         'acknowledged' => 'SLA-Verletzung quittiert',
@@ -881,7 +935,14 @@ return [
         'revoked' => 'Token widerrufen',
     ],
     'updated' => 'Geändert',
+    'travelLog' => [
+        'locked' => 'Fahrt festgeschrieben',
+        'corrected' => 'Fahrt per Stornofahrt korrigiert',
+    ],
     'user' => [
+        'anonymized' => 'Mitarbeiter anonymisiert (PII entfernt, Nachweise bleiben)',
+        'offboardingScheduled' => 'Austritt vorgemerkt',
+        'offboarded' => 'Mitarbeiter ausgeschieden (Konto deaktiviert)',
         'permission' => [
             'granted' => 'Permission vergeben',
             'revoked' => 'Permission entzogen',
@@ -931,6 +992,8 @@ return [
         'taxation_method_switched' => 'Versteuerungsart gewechselt',
         'filing_interval_switched' => 'Meldezeitraum gewechselt',
         'vat_extension_recorded' => 'Dauerfristverlängerung erfasst',
+        'fixed_asset_disposed' => 'Anlagenabgang erfasst',
+        'depreciation_proposed' => 'Jahres-AfA vorgeschlagen',
     ],
     'accounting_migration' => [
         'planned' => 'Buchhaltungswechsel geplant',
@@ -942,5 +1005,8 @@ return [
         'blocked' => 'Wechsel blockiert',
         'completed' => 'Buchhaltungswechsel abgeschlossen',
         'cancelled' => 'Buchhaltungswechsel abgebrochen',
+    ],
+    'openIssue' => [
+        'followUpCreated' => 'Folgeauftrag aus offenem Punkt angelegt',
     ],
 ];

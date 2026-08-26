@@ -151,6 +151,27 @@ class JtlGateway {
         ])));
     }
 
+    /**
+     * Ausgangsrechnungen (`GET /v2/salesinvoices`, paginierter Envelope).
+     *
+     * Die Faktura-Domäne ist in der v2.0-OpenAPI **kommandolastig**
+     * (`salesinvoice`-Kommandos, Feature 078 „Weitere Ressourcen") — ob eine
+     * Instanz die Liste anbietet, hängt an ihrem API-Stand. Fehlt der
+     * Endpunkt, antwortet JTL mit 404/405 und {@see JtlApiException::isMissingEndpoint()}
+     * ist true; der Aufrufer bricht dann sichtbar ab, statt eine andere
+     * Ressource als Rechnung auszugeben. Zeitfilter heißt bei JTL
+     * `createdSince` (die Aufträge kennen kein `changedSince`).
+     *
+     * @return array<string, mixed>
+     */
+    public function salesInvoices(?CarbonInterface $createdSince = null, int $page = 1, int $pageSize = 100): array {
+        return $this->decode($this->get('/v2/salesinvoices', array_filter([
+            'createdSince' => $createdSince?->toIso8601String(),
+            'pageNumber' => $page,
+            'pageSize' => $pageSize,
+        ], static fn ($value) => $value !== null)));
+    }
+
     /** @return array<string, mixed> Einzelner Artikel (v2.0: einziger Artikel-Leseweg). */
     public function item(string $itemId): array {
         return $this->decode($this->get('/v2/items/' . rawurlencode($itemId)));

@@ -83,7 +83,7 @@
                     @forelse ($endpoint->deliveries as $delivery)
                         <div class="flex items-center gap-2 tabular-nums">
                             <x-status-badge size="xs" :tone="$delivery->status->tone()">{{ $delivery->status->label() }}</x-status-badge>
-                            <span class="text-xs text-base-content/60">
+                            <span class="text-xs text-muted">
                                 {{ $delivery->event }}@if ($delivery->http_status) · HTTP {{ $delivery->http_status }}@endif
                                 · {{ $delivery->created_at?->diffForHumans() }}
                             </span>
@@ -113,7 +113,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">webhook</span>' :colspan="6" :title="__('integration.webhook.title.empty')" compact />
+            <x-table.empty icon="webhook" :colspan="6" :title="__('integration.webhook.title.empty')" compact />
         @endforelse
     </x-table>
 </x-index-page>

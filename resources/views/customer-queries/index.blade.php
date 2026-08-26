@@ -25,7 +25,7 @@
 
     @if ($queries->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">contact_support</span>' />
+            icon="contact_support" />
     @else
         <div class="space-y-3">
             @foreach ($queries as $query)
@@ -36,7 +36,7 @@
                                 <span class="badge badge-sm {{ $query->status === \App\Enums\Customer\CustomerQueryStatus::Open ? 'badge-warning' : 'badge-ghost' }}">
                                     {{ $query->status->label() }}
                                 </span>
-                                <span class="text-xs text-base-content/60">
+                                <span class="text-xs text-muted">
                                     {{ $query->asker_name ?: __('protocol.signature.customer') }}
                                     · {{ $query->created_at?->fdatetime() }}
                                 </span>
@@ -44,7 +44,7 @@
                             {{-- Subject-Kontext direkt erreichbar (MVP-512). --}}
                             @php $subjectUrl = $query->subject !== null ? \App\Support\NotificationLinks::subjectUrl($query->subject) : null; @endphp
                             @if ($query->subject !== null)
-                                <div class="mt-1 text-xs text-base-content/60">
+                                <div class="mt-1 text-xs text-muted">
                                     @if ($subjectUrl)
                                         <a href="{{ $subjectUrl }}" class="link link-hover">{{ app(\App\Services\CustomerPortal\PortalQuerySubjects::class)->label($query->subject) }}</a>
                                     @else
@@ -56,11 +56,29 @@
                                 </div>
                             @endif
                             <p class="mt-2 whitespace-pre-line text-sm font-medium">{{ $query->question }}</p>
+                            {{-- Fremdsprachige Rückfrage verstehen (Feature 148, MVP-732):
+                                 Lesehilfe, kein Antwort-Entwurf. --}}
+                            @if (($understandSuggestions[$query->id] ?? null) !== null)
+                                @include('ai._insight', ['suggestion' => $understandSuggestions[$query->id]])
+                            @endif
+                            @if ($query->attachments->isNotEmpty())
+                                {{-- Anhänge des Kunden (MVP-712): Nachweis, kein Löschen. --}}
+                                <ul class="mt-1 flex flex-wrap gap-3 text-xs">
+                                    @foreach ($query->attachments as $attachment)
+                                        <li>
+                                            <a class="link link-hover inline-flex items-center gap-1" href="{{ URL::signedRoute('attachments.download', $attachment) }}">
+                                                <x-icon name="attach_file" class="text-sm" />{{ $attachment->original_name }}
+                                            </a>
+                                            <span class="text-muted">({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($attachment->size / 1024, 0, withThousandsSeparator: true) }} KB)</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            @endif
                             @if ($query->answer)
                                 <div class="mt-2 border-l-2 border-primary/40 pl-3 text-sm text-base-content/80">
-                                    <span class="text-xs uppercase text-base-content/50">{{ __('customer-query.answer') }}</span><br>
+                                    <span class="text-xs uppercase text-muted">{{ __('customer-query.answer') }}</span><br>
                                     {{ $query->answer }}
-                                    <div class="mt-1 text-xs text-base-content/50">
+                                    <div class="mt-1 text-xs text-muted">
                                         {{ $query->answeredBy?->name }} · {{ $query->answered_at?->fdatetime() }}
                                     </div>
                                 </div>
@@ -70,6 +88,12 @@
 
                     @if ($query->status !== \App\Enums\Customer\CustomerQueryStatus::Closed)
                         <div class="mt-3 flex flex-wrap items-end gap-2">
+                            @if (($understandUsable ?? false) && ($understandSuggestions[$query->id] ?? null) === null)
+                                <x-action-form :action="route('ai.assist.portal-query', $query)">
+                                    <x-icon-btn icon="translate" size="sm" tone="info" type="submit" show-label
+                                                :title="__('ai.assist.understand_query')">{{ __('ai.assist.understand_query') }}</x-icon-btn>
+                                </x-action-form>
+                            @endif
                             <form method="POST" action="{{ route('customer-queries.answer', $query) }}" class="flex flex-1 items-end gap-2">
                                 @csrf
                                 <div class="form-control flex-1">

@@ -96,7 +96,7 @@
             <div class="fieldset">
                 <label class="fieldset-label" for="rollback_plan">
                     {{ __('Rollback-Plan') }}
-                    <span class="text-base-content/60" x-show="isNot('standard')">({{ __('Pflicht') }})</span>
+                    <span class="text-muted" x-show="isNot('standard')">({{ __('Pflicht') }})</span>
                 </label>
                 <textarea id="rollback_plan" name="rollback_plan" rows="2" maxlength="20000"
                           class="textarea textarea-bordered w-full @error('rollback_plan') textarea-error @enderror"
@@ -116,16 +116,16 @@
                     <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
                         <div class="grid grid-cols-1 gap-2 md:grid-cols-6 items-end">
                             <div class="fieldset md:col-span-2">
-                                <label class="fieldset-label">{{ __('Schritt-Typ') }}</label>
-                                <select :name="fieldName(i, 'type')" x-model="it.type"
+                                <label :for="fieldName(i, 'type')" class="fieldset-label">{{ __('Schritt-Typ') }}</label>
+                                <select :id="fieldName(i, 'type')" :name="fieldName(i, 'type')" x-model="it.type"
                                         class="select select-sm select-bordered w-full">
                                     <option value="role">{{ __('Rolle') }}</option>
                                     <option value="user">{{ __('Benutzer') }}</option>
                                 </select>
                             </div>
                             <div class="fieldset md:col-span-3" x-show="it.type === 'user'">
-                                <label class="fieldset-label">{{ __('Genehmiger (Benutzer)') }}</label>
-                                <select :name="fieldName(i, 'user')" x-model="it.user"
+                                <label :for="fieldName(i, 'user')" class="fieldset-label">{{ __('Genehmiger (Benutzer)') }}</label>
+                                <select :id="fieldName(i, 'user')" :name="fieldName(i, 'user')" x-model="it.user"
                                         class="select select-sm select-bordered w-full">
                                     <option value="">—</option>
                                     @foreach ($orgUsers as $orgUser)
@@ -134,8 +134,8 @@
                                 </select>
                             </div>
                             <div class="fieldset md:col-span-3" x-show="it.type === 'role'">
-                                <label class="fieldset-label">{{ __('Genehmiger (Rolle)') }}</label>
-                                <select :name="fieldName(i, 'role')" x-model="it.role"
+                                <label :for="fieldName(i, 'role')" class="fieldset-label">{{ __('Genehmiger (Rolle)') }}</label>
+                                <select :id="fieldName(i, 'role')" :name="fieldName(i, 'role')" x-model="it.role"
                                         class="select select-sm select-bordered w-full">
                                     <option value="">—</option>
                                     @foreach ($roles as $role)
@@ -154,9 +154,9 @@
                 <x-icon-btn icon="add" tone="ghost" size="sm" type="button" show-label @click="add()">
                     {{ __('Genehmigungsschritt hinzufügen') }}
                 </x-icon-btn>
-                <p class="text-xs text-base-content/60">{{ __('Ohne Schritte gilt der Change sofort als genehmigt. Emergency kürzt auf EINEN Schritt; Selbstfreigabe ist immer gesperrt.') }}</p>
+                <p class="text-xs text-muted">{{ __('Ohne Schritte gilt der Change sofort als genehmigt. Emergency kürzt auf EINEN Schritt; Selbstfreigabe ist immer gesperrt.') }}</p>
             </div>
-            <p class="text-xs text-base-content/60 sm:col-span-2" x-show="is('standard')" x-cloak>
+            <p class="text-xs text-muted sm:col-span-2" x-show="is('standard')" x-cloak>
                 {{ __('Standard-Changes sind über die freigegebene Vorlage vorab genehmigt — keine Kette nötig.') }}
             </p>
         </x-form-group>

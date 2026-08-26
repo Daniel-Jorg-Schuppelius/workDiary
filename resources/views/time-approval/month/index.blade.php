@@ -24,7 +24,7 @@
 
         @if ($closures->isEmpty())
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">calendar_month</span>'
+                icon="calendar_month"
                 :title="__('Noch keine Monatsfreigaben')"
                 :message="__('Sobald Sie einen Monat öffnen, wird automatisch eine Freigabe als Entwurf angelegt.')" />
         @else

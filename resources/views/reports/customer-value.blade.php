@@ -84,7 +84,7 @@
     <x-card class="mt-4">
         <h2 class="mb-2 font-['Space_Grotesk'] text-sm font-semibold">{{ __('Gefährdete A-Kunden') }}</h2>
         @if (count($riskRows) === 0)
-            <p class="text-sm text-base-content/60">{{ __('Kein A-Kunde ist seit :days Tagen ohne Leistung — gut so.', ['days' => $riskDays]) }}</p>
+            <p class="text-sm text-muted">{{ __('Kein A-Kunde ist seit :days Tagen ohne Leistung — gut so.', ['days' => $riskDays]) }}</p>
         @else
             <x-table bare>
                 <x-slot:head>
@@ -113,7 +113,7 @@
 
     <x-card id="kundenliste" class="mt-4 scroll-mt-24">
         <div class="mb-2 flex flex-wrap items-center gap-3">
-            <div class="text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+            <div class="text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
             @if ($segment !== null)
                 <span class="badge badge-sm {{ $segmentBadge[$segment] ?? 'badge-ghost' }}">
                     {{ __('Segment') }}: {{ $segmentLabels[$segment] ?? $segment }}
@@ -140,7 +140,7 @@
         </details>
 
         @if ($tableRows->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Kundendaten im gewählten Zeitraum.')" />
+            <x-empty-state icon="analytics" :title="__('Keine Kundendaten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

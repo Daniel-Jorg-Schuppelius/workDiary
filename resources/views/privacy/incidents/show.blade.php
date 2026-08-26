@@ -84,10 +84,10 @@
                         {{-- AV-Vorfall (Art. 33 Abs. 2): Verantwortlichen/Kunden informieren --}}
                         <form method="post" action="{{ route('dataprotection.incidents.notify-controller', $incident) }}" class="space-y-1 border-t border-base-300 pt-2">
                             @csrf
-                            <label class="fieldset-label">{{ __('Verantwortlichen/Kunden informiert am') }}</label>
-                            <input type="datetime-local" name="notified_at" class="input input-sm input-bordered w-full">
+                            <label for="notified_at" class="fieldset-label">{{ __('Verantwortlichen/Kunden informiert am') }}</label>
+                            <input id="notified_at" type="datetime-local" name="notified_at" class="input input-sm input-bordered w-full">
                             <x-button tone="primary" type="submit" class="w-full">{{ __('Als informiert vermerken') }}</x-button>
-                            <p class="text-xs text-base-content/60">{{ __('Die Behördenmeldung obliegt dem Verantwortlichen (Kunden).') }}</p>
+                            <p class="text-xs text-muted">{{ __('Die Behördenmeldung obliegt dem Verantwortlichen (Kunden).') }}</p>
                         </form>
                     @else
                         <form method="post" action="{{ route('dataprotection.incidents.decide', $incident) }}" class="space-y-1 border-t border-base-300 pt-2">
@@ -114,7 +114,7 @@
             <ul class="space-y-1">
                 @forelse ($incident->measures as $m)
                     <li class="flex items-center justify-between text-sm rounded-box border border-base-300 px-3 py-2">
-                        <span>{{ $m->title }} @if ($m->due_at)<span class="{{ $m->isOverdue() ? 'text-error' : 'text-base-content/60' }}">({{ __('bis') }} {{ $m->due_at->format('d.m.Y') }})</span>@endif</span>
+                        <span>{{ $m->title }} @if ($m->due_at)<span class="{{ $m->isOverdue() ? 'text-error' : 'text-muted' }}">({{ __('bis') }} {{ $m->due_at->format('d.m.Y') }})</span>@endif</span>
                         @if ($m->status === 'done')
                             <x-status-badge tone="success" size="sm">{{ __('erledigt') }}</x-status-badge>
                         @else
@@ -124,7 +124,7 @@
                         @endif
                     </li>
                 @empty
-                    <li class="text-sm text-base-content/60">{{ __('Keine Maßnahmen.') }}</li>
+                    <li class="text-sm text-muted">{{ __('Keine Maßnahmen.') }}</li>
                 @endforelse
             </ul>
             @can('update', $incident)
@@ -148,7 +148,7 @@
             <x-card class="space-y-4">
                 <div>
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Meldeassistent Aufsichtsbehörde') }}</h2>
-                    <p class="text-xs text-base-content/60">{{ __('Die App bereitet die Meldung vor und dokumentiert den Nachweis. Sie übermittelt keine Daten automatisch an Behördenportale.') }}</p>
+                    <p class="text-xs text-muted">{{ __('Die App bereitet die Meldung vor und dokumentiert den Nachweis. Sie übermittelt keine Daten automatisch an Behördenportale.') }}</p>
                 </div>
 
                 <div class="grid gap-2 md:grid-cols-2">
@@ -159,7 +159,7 @@
                                 <x-icon name="open_in_new" class="text-primary" />
                                 {{ $portal['name'] }}
                             </span>
-                            <span class="mt-1 block text-xs text-base-content/60">{{ $portal['hint'] }}</span>
+                            <span class="mt-1 block text-xs text-muted">{{ $portal['hint'] }}</span>
                         </a>
                     @endforeach
                 </div>
@@ -205,7 +205,7 @@
         {{-- Meldungsentwürfe (nicht versendet) --}}
         <x-card class="space-y-2">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Meldungsentwürfe') }}</h2>
-            <p class="text-xs text-base-content/60">{{ __('Vorbereitete Entwürfe – werden NICHT automatisch versendet.') }}</p>
+            <p class="text-xs text-muted">{{ __('Vorbereitete Entwürfe – werden NICHT automatisch versendet.') }}</p>
             <div class="flex flex-wrap gap-2">
                 <x-button tone="outline" :href="route('dataprotection.incidents.draft', [$incident, 'authority'])">{{ __('Art. 33 TXT') }}</x-button>
                 <x-button tone="outline" :href="route('dataprotection.incidents.draft', [$incident, 'authority', 'format' => 'pdf'])">{{ __('Art. 33 PDF') }}</x-button>
@@ -226,7 +226,7 @@
                         @endcan
                     </li>
                 @empty
-                    <li class="text-base-content/60">{{ __('Keine Anhänge.') }}</li>
+                    <li class="text-muted">{{ __('Keine Anhänge.') }}</li>
                 @endforelse
             </ul>
             @can('update', $incident)
@@ -243,7 +243,7 @@
             <ul class="timeline timeline-vertical">
                 @foreach ($events as $e)
                     <li>
-                        <div class="timeline-start text-xs text-base-content/60">{{ $e->created_at?->format('d.m.Y H:i') }}</div>
+                        <div class="timeline-start text-xs text-muted">{{ $e->created_at?->format('d.m.Y H:i') }}</div>
                         <div class="timeline-middle">●</div>
                         <div class="timeline-end timeline-box text-sm">{{ $e->event }}</div>
                     </li>

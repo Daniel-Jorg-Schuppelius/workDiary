@@ -37,6 +37,8 @@ use Illuminate\Support\Carbon;
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property bool $archived
  * @property ?array<string, mixed> $payload
+ * @property ?string $file_path
+ * @property ?Carbon $file_materialized_at
  * @property ?Carbon $synced_at
  */
 class LexofficeVoucher extends Model {
@@ -80,6 +82,7 @@ class LexofficeVoucher extends Model {
         'archived' => 'boolean',
         'payload' => 'array',
         'synced_at' => 'datetime',
+        'file_materialized_at' => 'datetime',
     ];
 
     /**

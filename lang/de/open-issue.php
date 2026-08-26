@@ -28,6 +28,7 @@ return [
         'closed_by' => 'Geschlossen von',
         'reason' => 'Begründung',
         'resolution' => 'Lösung',
+        'follow_up' => 'Folgeauftrag',
     ],
 
     'action' => [
@@ -42,6 +43,7 @@ return [
         'reopen' => 'Wiedereröffnen',
         'delete' => 'Löschen',
         'publishToCustomer' => 'Für Kunden freigeben',
+        'followUp' => 'Folgeauftrag anlegen',
     ],
 
     'flash' => [
@@ -57,5 +59,9 @@ return [
             'wontDo' => 'Offener Punkt wird nicht erledigt.',
             'reopened' => 'Offener Punkt wurde wiedereröffnet.',
         ],
+    ],
+
+    'follow_up' => [
+        'content_intro' => 'Folgeauftrag zu offenem Punkt #:id „:title“',
     ],
 ];

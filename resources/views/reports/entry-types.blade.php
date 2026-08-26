@@ -53,10 +53,10 @@
     </div>
 
     <x-card>
-        <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+        <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if(empty($rows))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">analytics</span>' :title="__('Keine Auftragsdaten im gewählten Zeitraum.')" />
+            <x-empty-state icon="analytics" :title="__('Keine Auftragsdaten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>
@@ -82,7 +82,7 @@
                 @foreach($rows as $row)
                     @php
                         $ratio = $row['planActualRatio'];
-                        $ratioClass = $ratio === null ? 'text-base-content/50' : ($ratio <= 1.0 ? 'text-success' : ($ratio <= 1.2 ? 'text-warning' : 'text-error'));
+                        $ratioClass = $ratio === null ? 'text-muted' : ($ratio <= 1.0 ? 'text-success' : ($ratio <= 1.2 ? 'text-warning' : 'text-error'));
                         $drilldownHref = route('diary.index', array_filter([
                             'from' => $from->toDateString(),
                             'to' => $to->toDateString(),

@@ -50,8 +50,8 @@
                     @foreach ($critical as $period)
                         <li class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">{{ $period->project?->name ?? '—' }}</span>
-                            <span class="text-base-content/60">{{ $period->partyLabel() }}</span>
-                            @if ($period->trade !== null)<span class="text-base-content/60">{{ $period->trade }}</span>@endif
+                            <span class="text-muted">{{ $period->partyLabel() }}</span>
+                            @if ($period->trade !== null)<span class="text-muted">{{ $period->trade }}</span>@endif
                             <x-status-badge tone="error" outline>{{ $period->ends_on->fdate() }}</x-status-badge>
                         </li>
                     @endforeach

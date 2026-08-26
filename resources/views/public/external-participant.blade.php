@@ -27,7 +27,7 @@
 <body class="min-h-screen bg-base-200">
 <main class="mx-auto max-w-3xl p-4 space-y-4">
     <div class="rounded-box bg-base-100 p-4 shadow">
-        <div class="mb-1 flex items-center gap-2 text-xs text-base-content/60">
+        <div class="mb-1 flex items-center gap-2 text-xs text-muted">
             <span class="badge badge-outline badge-sm">{{ $participant->party->label() }}</span>
             <span>{{ __('external.public.hello', ['name' => $participant->name]) }}</span>
         </div>
@@ -48,7 +48,7 @@
         </div>
     @endif
 
-    <div class="rounded-box bg-base-100/60 p-3 text-xs text-base-content/60">
+    <div class="rounded-box bg-base-100/60 p-3 text-xs text-muted">
         {{ __('external.public.expires_note', ['date' => $participant->expires_at->fdatetime()]) }}
     </div>
 
@@ -71,7 +71,7 @@
             <h2 class="text-sm font-semibold">{{ __('external.public.upload_heading') }}</h2>
             <input type="file" name="file" required class="file-input file-input-bordered w-full"
                    accept=".jpg,.jpeg,.png,.gif,.webp,.pdf">
-            <p class="text-xs text-base-content/60">{{ __('external.public.upload_hint', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+            <p class="text-xs text-muted">{{ __('external.public.upload_hint', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
             <div class="flex justify-end">
                 <x-button type="submit" tone="primary" size="sm">{{ __('external.public.upload_submit') }}</x-button>
             </div>

@@ -23,6 +23,7 @@ use App\Support\UrlSafety;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\Rule;
+use OpenApi\Attributes as OA;
 
 /**
  * Öffentliche REST-Hooks-API (Feature 008 → Rang 61) für n8n/Make/Zapier.
@@ -36,6 +37,17 @@ class HookController extends Controller {
     use ResolvesCurrentOrganization;
 
     /** GET /api/hooks — die Hook-Subscriptions der Organisation. */
+    #[OA\Get(
+        path: '/hooks',
+        summary: 'REST-Hooks auflisten',
+        tags: ['Hooks'],
+        security: [['bearerAuth' => ['hooks:manage']]],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+        ],
+    )]
     public function index(Request $request): JsonResponse {
         $organizationId = $this->organizationId();
 
@@ -50,6 +62,17 @@ class HookController extends Controller {
     }
 
     /** GET /api/hooks/events — Ereignis-Katalog mit Sample-Payload je Event. */
+    #[OA\Get(
+        path: '/hooks/events',
+        summary: 'Ereignis-Katalog mit Sample-Payloads',
+        tags: ['Hooks'],
+        security: [['bearerAuth' => ['hooks:manage']]],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+        ],
+    )]
     public function events(Request $request, WebhookDispatchService $dispatch): JsonResponse {
         $organizationId = $this->organizationId();
         $now = Carbon::now();
@@ -65,6 +88,22 @@ class HookController extends Controller {
     }
 
     /** POST /api/hooks {event, target_url} — 201 + id + einmaliges Secret. */
+    #[OA\Post(
+        path: '/hooks',
+        summary: 'REST-Hook abonnieren',
+        tags: ['Hooks'],
+        security: [['bearerAuth' => ['hooks:manage']]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['event', 'target_url'], properties: [
+            new OA\Property(property: 'event', type: 'string', description: 'Ereignis aus /hooks/events', example: 'sla.breached'),
+            new OA\Property(property: 'target_url', type: 'string', format: 'uri', maxLength: 2048),
+        ])),
+        responses: [
+            new OA\Response(response: 201, description: 'Created (Secret wird genau einmal zurückgegeben)'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function store(Request $request): JsonResponse {
         $organizationId = $this->organizationId();
         $user = $request->user();
@@ -108,6 +147,19 @@ class HookController extends Controller {
     }
 
     /** POST /api/hooks/{hook}/test — Test-Event senden (Struktur-Lernen). */
+    #[OA\Post(
+        path: '/hooks/{hook}/test',
+        summary: 'Test-Ereignis senden',
+        tags: ['Hooks'],
+        security: [['bearerAuth' => ['hooks:manage']]],
+        parameters: [new OA\Parameter(name: 'hook', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab'))],
+        responses: [
+            new OA\Response(response: 202, description: 'Accepted'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+        ],
+    )]
     public function test(Request $request, WebhookEndpoint $hook, WebhookDispatchService $dispatch): JsonResponse {
         $this->assertOwned($hook);
 
@@ -117,6 +169,19 @@ class HookController extends Controller {
     }
 
     /** DELETE /api/hooks/{hook} — Unsubscribe (Soft-Delete) → 204. */
+    #[OA\Delete(
+        path: '/hooks/{hook}',
+        summary: 'REST-Hook abbestellen',
+        tags: ['Hooks'],
+        security: [['bearerAuth' => ['hooks:manage']]],
+        parameters: [new OA\Parameter(name: 'hook', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab'))],
+        responses: [
+            new OA\Response(response: 204, description: 'No Content'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+        ],
+    )]
     public function destroy(Request $request, WebhookEndpoint $hook): JsonResponse {
         $this->assertOwned($hook);
 

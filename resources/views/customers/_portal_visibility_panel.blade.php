@@ -42,7 +42,7 @@
                 <input type="checkbox" name="enabled" value="1" class="toggle toggle-primary" @checked($portalEnabled)>
                 <span class="font-medium">{{ __('Kundenportal aktiv') }}</span>
             </label>
-            <p class="text-xs text-base-content/60">
+            <p class="text-xs text-muted">
                 {{ __('Ohne aktives Portal sehen Portalzugänge dieses Kunden einen erklärten Leerzustand. Neue Bereiche starten immer „aus" und müssen ausdrücklich freigegeben werden.') }}
             </p>
 
@@ -81,7 +81,7 @@
                         <option value="published" @selected($timeScope === PortalVisibility::TIME_SCOPE_PUBLISHED)>{{ __('Nur veröffentlichte Einträge (empfohlen)') }}</option>
                         <option value="all" @selected($timeScope === PortalVisibility::TIME_SCOPE_ALL)>{{ __('Alle kundenbezogenen Zeiten (Kompatibilitätsoption)') }}</option>
                     </select>
-                    <p class="mt-1 text-xs text-base-content/60">{{ __('Einzelne Zeiten veröffentlichst du über die Massenaktion im Projekt-Zeittab; Beschreibungen erscheinen nur für veröffentlichte Einträge.') }}</p>
+                    <p class="mt-1 text-xs text-muted">{{ __('Einzelne Zeiten veröffentlichst du über die Massenaktion im Projekt-Zeittab; Beschreibungen erscheinen nur für veröffentlichte Einträge.') }}</p>
                 </div>
             </div>
 
@@ -89,11 +89,11 @@
             <div class="rounded-box bg-base-200/50 px-4 py-3 text-sm">
                 <span class="font-medium">{{ __('Dieser Kunde sieht:') }}</span>
                 @if (! $portalEnabled || $grantedCaps === [])
-                    <span class="text-base-content/60">{{ __('nichts — das Portal zeigt einen erklärten Leerzustand.') }}</span>
+                    <span class="text-muted">{{ __('nichts — das Portal zeigt einen erklärten Leerzustand.') }}</span>
                 @else
                     <span>{{ collect($grantedCaps)->map(fn (PortalCapability $c): string => $c->label())->implode(', ') }}</span>
                     @if ($timeDetail !== PortalTimeDetail::None)
-                        <span class="text-base-content/60">· {{ __('Zeiten: :detail', ['detail' => $timeDetail->label()]) }}</span>
+                        <span class="text-muted">· {{ __('Zeiten: :detail', ['detail' => $timeDetail->label()]) }}</span>
                     @endif
                 @endif
             </div>

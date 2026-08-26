@@ -28,7 +28,7 @@
             @endphp
             <li class="flex flex-wrap items-start justify-between gap-2 px-4 py-3">
                 <a href="{{ route('diary.show', $entry) }}" data-entry-modal-trigger class="min-w-0 flex-1">
-                    <div class="flex flex-wrap items-center gap-2 text-xs text-base-content/60">
+                    <div class="flex flex-wrap items-center gap-2 text-xs text-muted">
                         @if ($dateLabel)
                             <span>{{ $dateLabel }}</span>
                             <span>·</span>
@@ -52,7 +52,7 @@
         @empty
             <li class="p-4">
                 <x-empty-state compact
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+                    icon="receipt_long"
                     :title="__('Keine Aufträge auf dieses Projekt gebucht.')" />
             </li>
         @endforelse

@@ -130,6 +130,8 @@ return [
         'metering' => ['generate-invoices' => 'Genera fatture da letture contatore'],
         'maintenance' => ['scan_due' => 'Controllare i piani di manutenzione in scadenza'],
         'notifications' => ['scan_deadlines' => 'Controllare le scadenze e notificare'],
+        'org' => ['offboard_due' => 'Eseguire le uscite dei collaboratori scadute'],
+        'travel_logs' => ['lock_due' => 'Bloccare i viaggi del libretto dopo fine giornata'],
         'news-feed' => ['refresh' => 'Aggiorna il feed di notizie'],
         'openproject' => [
             'import' => 'Import OpenProject',

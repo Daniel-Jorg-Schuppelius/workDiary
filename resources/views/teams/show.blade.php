@@ -30,11 +30,11 @@
             <div class="card-body space-y-4">
                 <h3 class="card-title">{{ __('Stammdaten') }}</h3>
                 <dl class="space-y-2 text-sm">
-                    <div class="flex justify-between"><dt class="text-base-content/60">{{ __('Teamname') }}</dt>
+                    <div class="flex justify-between"><dt class="text-muted">{{ __('Teamname') }}</dt>
                         <dd>@if ($team->color)<span class="mr-2 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-base-content/60">{{ __('Teamleiter') }}</dt><dd>{{ $team->lead?->name ?? '—' }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-muted">{{ __('Teamleiter') }}</dt><dd>{{ $team->lead?->name ?? '—' }}</dd></div>
                     @if ($team->description)
-                        <div><dt class="text-base-content/60">{{ __('Beschreibung') }}</dt><dd>{{ $team->description }}</dd></div>
+                        <div><dt class="text-muted">{{ __('Beschreibung') }}</dt><dd>{{ $team->description }}</dd></div>
                     @endif
                 </dl>
             </div>
@@ -47,7 +47,7 @@
                     <a href="{{ route('projects.show', $project) }}" class="link link-hover block text-sm">{{ $project->name }}</a>
                 @empty
                     <x-empty-state compact
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">folder_open</span>'
+                        icon="folder_open"
                         :title="__('Diesem Team sind noch keine Aufträge zugewiesen.')" />
                 @endforelse
             </div>
@@ -98,7 +98,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="4"
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
+                        icon="group"
                         :title="__('Noch keine Mitglieder.')" compact />
                 @endforelse
             </x-table>

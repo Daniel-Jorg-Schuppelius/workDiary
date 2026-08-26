@@ -2,7 +2,7 @@
     "openapi": "3.0.0",
     "info": {
         "title": "workDiary REST API",
-        "description": "REST-API für workDiary. Authentifizierung via Sanctum Bearer Token.",
+        "description": "REST-API für workDiary. Authentifizierung via Sanctum Bearer Token. Kanonische Basis-URL ist /api/v1; die unversionierten Pfade unter /api bleiben als Kompatibilitäts-Alias erreichbar und tragen die Header Deprecation: true und Sunset (Abschaltdatum). IDs sind Sqids (kurze alphanumerische Kennungen), Token-Scopes stehen je Operation im security-Block.",
         "contact": {
             "name": "workDiary Support",
             "email": "support@example.org"
@@ -11,12 +11,16 @@
             "name": "AGPL-3.0-or-later",
             "url": "https://www.gnu.org/licenses/agpl-3.0.html"
         },
-        "version": "1.0.0"
+        "version": "0.1.0-dev"
     },
     "servers": [
         {
+            "url": "/api/v1",
+            "description": "Aktuelle Instanz (kanonisch, versioniert)"
+        },
+        {
             "url": "/api",
-            "description": "Aktuelle Instanz"
+            "description": "Unversionierter Kompatibilitäts-Alias (Deprecation/Sunset-Header)"
         }
     ],
     "paths": {
@@ -69,6 +73,815 @@
                         "bearerAuth": []
                     }
                 ]
+            }
+        },
+        "/articles": {
+            "get": {
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Artikel auflisten",
+                "operationId": "efe889d3f9c488b4ee1b0997c954bf25",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Name/Nummer/GTIN (Teilstring)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "active",
+                                "retired"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "stockable",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden (Ability/Policy)"
+                    },
+                    "423": {
+                        "description": "Modul nicht lizenziert"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "articles:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/articles/{article}": {
+            "get": {
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Artikel anzeigen (inkl. Varianten)",
+                "operationId": "cee8a5cf90d7c90eef3e1dd8aad624db",
+                "parameters": [
+                    {
+                        "name": "article",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "articles:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/articles/{article}/variants": {
+            "get": {
+                "tags": [
+                    "Articles"
+                ],
+                "summary": "Varianten eines Artikels auflisten",
+                "operationId": "0fab5308f637ba35a873e67c0e2c22a4",
+                "parameters": [
+                    {
+                        "name": "article",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "active",
+                                "retired"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "articles:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/assets/{asset}/status-visibility": {
+            "get": {
+                "tags": [
+                    "Assets"
+                ],
+                "summary": "Status-Sichtbarkeit eines Assets",
+                "operationId": "5ea606a399a795405d89f7325e9a8b47",
+                "parameters": [
+                    {
+                        "name": "asset",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "assets:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/assets/{asset}/timeline": {
+            "get": {
+                "tags": [
+                    "Assets"
+                ],
+                "summary": "Zeitleiste eines Assets",
+                "operationId": "ef3515af5eb393f2e9b5ee15895432e2",
+                "parameters": [
+                    {
+                        "name": "asset",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 120,
+                            "maximum": 300,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "assets:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/attachments/{type}/{id}": {
+            "post": {
+                "tags": [
+                    "Attachments"
+                ],
+                "summary": "Anhang hochladen",
+                "operationId": "4af268be7e0d917b86a7439e0a08af25",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "path",
+                        "description": "Trägerobjekt",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "diary",
+                                "comment",
+                                "shift",
+                                "assignment",
+                                "asset"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "Numerische ID des Trägerobjekts",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "multipart/form-data": {
+                            "schema": {
+                                "required": [
+                                    "file"
+                                ],
+                                "properties": {
+                                    "file": {
+                                        "type": "string",
+                                        "format": "binary"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "attachments:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/attachments/{attachment}/download": {
+            "get": {
+                "tags": [
+                    "Attachments"
+                ],
+                "summary": "Anhang herunterladen",
+                "operationId": "d4c1160abd27e2b8ee8c6140f4cbbc42",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Dateiinhalt (binary)"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "attachments:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/attachments/{attachment}": {
+            "delete": {
+                "tags": [
+                    "Attachments"
+                ],
+                "summary": "Anhang löschen",
+                "operationId": "dd1cf9e7079b3f23f356fa1ece5852dd",
+                "parameters": [
+                    {
+                        "name": "attachment",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "attachments:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/attendance/current": {
+            "get": {
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Aktuelle Anwesenheit",
+                "operationId": "38c9735c71d75ac26742c271617f5c29",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "attendance:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/attendance/clock-in": {
+            "post": {
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Einstempeln",
+                "operationId": "b9e586060b624a3880a68dc9a2f66bb4",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "lat": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "nullable": true
+                                    },
+                                    "lng": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "nullable": true
+                                    },
+                                    "device": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 64
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 1000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "409": {
+                        "description": "Bereits eingestempelt"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "attendance:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/attendance/clock-out": {
+            "post": {
+                "tags": [
+                    "Attendance"
+                ],
+                "summary": "Ausstempeln",
+                "operationId": "023cdbfeb9affb051e9b8076c941cbd3",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "lat": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "nullable": true
+                                    },
+                                    "lng": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "nullable": true
+                                    },
+                                    "device": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 64
+                                    },
+                                    "note": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 1000
+                                    },
+                                    "break_minutes": {
+                                        "type": "integer",
+                                        "nullable": true,
+                                        "maximum": 600,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Keine offene Anwesenheit"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "attendance:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/diary/{diary}/comments": {
+            "post": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Kommentar anlegen",
+                "operationId": "cf765572b156f27ab8eb252c44296587",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "body"
+                                ],
+                                "properties": {
+                                    "body": {
+                                        "type": "string",
+                                        "maxLength": 65535
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "comments:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/comments/{comment}": {
+            "put": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Kommentar aktualisieren",
+                "operationId": "6a1dda0ab813d36b9f18c0e8bc553fc0",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "body"
+                                ],
+                                "properties": {
+                                    "body": {
+                                        "type": "string",
+                                        "maxLength": 65535
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "comments:write"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Comments"
+                ],
+                "summary": "Kommentar löschen",
+                "operationId": "ab3cdf1ebaba961e4306e070da52a7ac",
+                "parameters": [
+                    {
+                        "name": "comment",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "comments:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/cti/webhook/{token}": {
+            "post": {
+                "tags": [
+                    "Ingest"
+                ],
+                "summary": "CTI-Webhook (Anruf-Ereignis)",
+                "description": "Auth über Gerätetoken im Pfad; nur Metadaten, nie Gesprächsinhalte.",
+                "operationId": "10d9350c2fa14f0803875cd6700b91fd",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Webhook-Token der CTI-Verbindung",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Providerspezifisches Anruf-Ereignis (z. B. sipgate)",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK (status: recorded/ignored)"
+                    },
+                    "404": {
+                        "description": "Unbekannter oder inaktiver Token"
+                    },
+                    "503": {
+                        "description": "Wartungsmodus (Retry-After)"
+                    }
+                }
             }
         },
         "/customers": {
@@ -220,6 +1033,579 @@
                 ]
             }
         },
+        "/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Dashboard-Zusammenfassung",
+                "operationId": "de3279eaff8aa8de9d3c8853a14412e8",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "dashboard:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/diary": {
+            "get": {
+                "tags": [
+                    "Diary"
+                ],
+                "summary": "Aufträge auflisten",
+                "operationId": "d625fec3dd2e9dc1223202f24be79ca8",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Status-Wert (Integer) oder all",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "mine",
+                        "in": "query",
+                        "description": "Nur eigene Einträge",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Archivierte einschließen",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "diary:read"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Diary"
+                ],
+                "summary": "Auftrag anlegen",
+                "operationId": "d8f988f91e5341334dcdb684bb9a5121",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "content",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "maxLength": 65535
+                                    },
+                                    "response": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 65535
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "enum": [
+                                            -1,
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5,
+                                            6,
+                                            7,
+                                            8
+                                        ]
+                                    },
+                                    "start_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "end_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "tag_ids": {
+                                        "description": "Tag-Sqids",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "k7Qx2Ab"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "diary:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/diary/{diary}": {
+            "get": {
+                "tags": [
+                    "Diary"
+                ],
+                "summary": "Auftrag anzeigen",
+                "operationId": "4ad8ae38d40e5ca3d1d3baed6ccf4511",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "diary:read"
+                        ]
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Diary"
+                ],
+                "summary": "Auftrag aktualisieren",
+                "operationId": "c4e34af1013a3c472f505a7662088d84",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "content",
+                                    "status"
+                                ],
+                                "properties": {
+                                    "content": {
+                                        "type": "string",
+                                        "maxLength": 65535
+                                    },
+                                    "response": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 65535
+                                    },
+                                    "status": {
+                                        "type": "integer",
+                                        "enum": [
+                                            -1,
+                                            1,
+                                            2,
+                                            3,
+                                            4,
+                                            5,
+                                            6,
+                                            7,
+                                            8
+                                        ]
+                                    },
+                                    "start_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "end_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "tag_ids": {
+                                        "description": "Tag-Sqids",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "k7Qx2Ab"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "diary:write"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Diary"
+                ],
+                "summary": "Auftrag löschen",
+                "operationId": "2f7e8a103c5c51440e88c6b85f7ab4bc",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "diary:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/diary/{diary}/archive": {
+            "post": {
+                "tags": [
+                    "Diary"
+                ],
+                "summary": "Auftrag archivieren",
+                "operationId": "37f37f90bcb310dc799dd09f0a4c2fd3",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "diary:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/diary/{diary}/restore": {
+            "post": {
+                "tags": [
+                    "Diary"
+                ],
+                "summary": "Auftrag aus Archiv zurückholen",
+                "operationId": "639834b67af148338c081b2aba3d32a3",
+                "parameters": [
+                    {
+                        "name": "diary",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "diary:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/assignments": {
+            "get": {
+                "tags": [
+                    "Assignments"
+                ],
+                "summary": "Notfalleinsätze auflisten",
+                "operationId": "c69113b832564286b43de4a6e35eb273",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Archivierte einschließen",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 20,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "assignments:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/assignments/{assignment}": {
+            "get": {
+                "tags": [
+                    "Assignments"
+                ],
+                "summary": "Notfalleinsatz anzeigen",
+                "operationId": "a16885d9437cae5bf3498234ed69ba46",
+                "parameters": [
+                    {
+                        "name": "assignment",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "assignments:read"
+                        ]
+                    }
+                ]
+            }
+        },
         "/expenses": {
             "get": {
                 "tags": [
@@ -308,6 +1694,373 @@
                 ]
             }
         },
+        "/flex/summary": {
+            "get": {
+                "tags": [
+                    "Flex"
+                ],
+                "summary": "Gleitzeit-Monatssaldo",
+                "operationId": "5593f2c589d47389aa24ff623adf715f",
+                "parameters": [
+                    {
+                        "name": "year",
+                        "in": "query",
+                        "description": "Standard: aktuelles Jahr",
+                        "required": false,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    {
+                        "name": "month",
+                        "in": "query",
+                        "description": "Standard: aktueller Monat",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "maximum": 12,
+                            "minimum": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "flex:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/hooks": {
+            "get": {
+                "tags": [
+                    "Hooks"
+                ],
+                "summary": "REST-Hooks auflisten",
+                "description": "GET /api/hooks — die Hook-Subscriptions der Organisation.",
+                "operationId": "884f943981323fc57155b43f3f8ff3a6",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "hooks:manage"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Hooks"
+                ],
+                "summary": "REST-Hook abonnieren",
+                "description": "POST /api/hooks {event, target_url} — 201 + id + einmaliges Secret.",
+                "operationId": "4ef7475d5ce6c8874d902cd4e7d503b7",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "event",
+                                    "target_url"
+                                ],
+                                "properties": {
+                                    "event": {
+                                        "description": "Ereignis aus /hooks/events",
+                                        "type": "string",
+                                        "example": "sla.breached"
+                                    },
+                                    "target_url": {
+                                        "type": "string",
+                                        "format": "uri",
+                                        "maxLength": 2048
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created (Secret wird genau einmal zurückgegeben)"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "hooks:manage"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/hooks/events": {
+            "get": {
+                "tags": [
+                    "Hooks"
+                ],
+                "summary": "Ereignis-Katalog mit Sample-Payloads",
+                "description": "GET /api/hooks/events — Ereignis-Katalog mit Sample-Payload je Event.",
+                "operationId": "bded330eabee0f07ba7cc2b2d17ecf01",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "hooks:manage"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/hooks/{hook}/test": {
+            "post": {
+                "tags": [
+                    "Hooks"
+                ],
+                "summary": "Test-Ereignis senden",
+                "description": "POST /api/hooks/{hook}/test — Test-Event senden (Struktur-Lernen).",
+                "operationId": "c2470e6fb8213e6019dc347da4a49e00",
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "202": {
+                        "description": "Accepted"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "hooks:manage"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/hooks/{hook}": {
+            "delete": {
+                "tags": [
+                    "Hooks"
+                ],
+                "summary": "REST-Hook abbestellen",
+                "description": "DELETE /api/hooks/{hook} — Unsubscribe (Soft-Delete) → 204.",
+                "operationId": "4a87758d5ef8fae4ee7f9c28245bbae3",
+                "parameters": [
+                    {
+                        "name": "hook",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "hooks:manage"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/inventory": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Bestände je Lager und Variante (Salden je Bestandszustand + Lagerplatz)",
+                "operationId": "7155dd599db500cecfe702bf2ff81df6",
+                "parameters": [
+                    {
+                        "name": "warehouse",
+                        "in": "query",
+                        "description": "Lager-Sqid (Default: alle aktiven Lager)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Wh3Kd9"
+                        }
+                    },
+                    {
+                        "name": "variant",
+                        "in": "query",
+                        "description": "Varianten-Sqid",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Va8Qm2"
+                        }
+                    },
+                    {
+                        "name": "article",
+                        "in": "query",
+                        "description": "Artikel-Sqid (alle Varianten)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "include_zero",
+                        "in": "query",
+                        "description": "Auch Nullsalden ausgeben",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25,
+                            "maximum": 100
+                        }
+                    },
+                    {
+                        "name": "page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK — data[]: {warehouse{id,name}, variant{id,sku,article{id,name}}, balances{physical,reserved,…}, available, bins[{id,code,name,qty}]}"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Lager/Variante nicht gefunden"
+                    },
+                    "423": {
+                        "description": "Modul nicht lizenziert"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "inventory:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/inventory/warehouses": {
+            "get": {
+                "tags": [
+                    "Inventory"
+                ],
+                "summary": "Lager (inkl. Lagerplätze) auflisten",
+                "operationId": "fc4fd6847c1b404ab8e4f940d96be7b1",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "inventory:read"
+                        ]
+                    }
+                ]
+            }
+        },
         "/invoices": {
             "get": {
                 "tags": [
@@ -315,6 +2068,415 @@
                 ],
                 "summary": "Rechnungen auflisten",
                 "operationId": "af26e0de5e41319ad60243a70799cc7f",
+                "parameters": [
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "issued_on ≥",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "issued_on ≤",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "issued",
+                                "partially_paid",
+                                "paid",
+                                "cancelled"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "customer",
+                        "in": "query",
+                        "description": "Kunden-Sqid",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Pq9zR1"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "423": {
+                        "description": "Modul nicht lizenziert"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "invoices:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/invoices/{invoice}": {
+            "get": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Rechnung anzeigen",
+                "operationId": "287b32023ead579b4dad94525f38acd2",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "invoices:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/invoices/{invoice}/pdf": {
+            "get": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Rechnungs-PDF herunterladen",
+                "description": "Liefert das PDF (application/pdf). Führt ein Plugin die Rechnung (z. B. Lexoffice), antwortet der Endpunkt mit 303 auf die Plugin-Route.",
+                "operationId": "0fadeded080ea8af90a67547e05b613c",
+                "parameters": [
+                    {
+                        "name": "invoice",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF",
+                        "content": {
+                            "application/pdf": {}
+                        }
+                    },
+                    "303": {
+                        "description": "Plugin liefert das offizielle PDF"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "invoices:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/location/ingest/{token}": {
+            "post": {
+                "tags": [
+                    "Location"
+                ],
+                "summary": "Standort-Ingest (OwnTracks/Traccar/Batch)",
+                "description": "Auth über Gerätetoken im Pfad (GET oder POST).",
+                "operationId": "d0c1bf4bcb8bb12fb51ecfaa216f04d1",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Geräte-Token",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Einzelpunkt, Liste oder Batch unter points",
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "lat": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "lng": {
+                                        "description": "Alias: lon, longitude",
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "tst": {
+                                        "description": "OwnTracks Unix-Zeitstempel",
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "timestamp": {
+                                        "description": "Traccar/OsmAnd Zeitstempel",
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "recorded_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "accuracy_m": {
+                                        "description": "Alias: acc, accuracy",
+                                        "type": "number",
+                                        "nullable": true
+                                    },
+                                    "points": {
+                                        "description": "Generischer Batch",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "object"
+                                        }
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK (leeres JSON-Array)"
+                    },
+                    "401": {
+                        "description": "Ungültiger Token"
+                    },
+                    "403": {
+                        "description": "Modul deaktiviert oder keine Einwilligung"
+                    },
+                    "503": {
+                        "description": "Wartungsmodus (Retry-After)"
+                    }
+                }
+            }
+        },
+        "/location/stamp": {
+            "post": {
+                "tags": [
+                    "Location"
+                ],
+                "summary": "Browser-Standort stempeln",
+                "description": "Punktueller Browser-Stempel: nimmt EINEN aktuellen Standort des\nangemeldeten Nutzers (navigator.geolocation) entgegen. Auth über die\nSession/Sanctum, nicht über ein Geräte-Token.",
+                "operationId": "45ad11690a75e914e89b90aac9a9740d",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "lat",
+                                    "lng"
+                                ],
+                                "properties": {
+                                    "lat": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "lng": {
+                                        "type": "number",
+                                        "format": "float"
+                                    },
+                                    "accuracy_m": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden (Modul deaktiviert oder keine Einwilligung)"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "location:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/materials": {
+            "get": {
+                "tags": [
+                    "Materials"
+                ],
+                "summary": "Materialien suchen",
+                "operationId": "fa952cf0966de3a090a9c0ad9b075b39",
+                "parameters": [
+                    {
+                        "name": "q",
+                        "in": "query",
+                        "description": "Suchbegriff",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "provider",
+                        "in": "query",
+                        "description": "Provider-Schlüssel oder * für alle",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "default": "local"
+                        }
+                    },
+                    {
+                        "name": "limit",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "materials:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/me": {
+            "get": {
+                "tags": [
+                    "Me"
+                ],
+                "summary": "Eigenes Benutzerprofil",
+                "operationId": "9cdcf772b671824ae0cf217f294c638a",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/shifts": {
+            "get": {
+                "tags": [
+                    "Shifts"
+                ],
+                "summary": "Bereitschaftsschichten auflisten",
+                "operationId": "7a0583a44a6fe4481b8e056f763d32b4",
                 "parameters": [
                     {
                         "name": "from",
@@ -335,11 +2497,13 @@
                         }
                     },
                     {
-                        "name": "status",
+                        "name": "archived",
                         "in": "query",
+                        "description": "Archivierte einschließen",
                         "required": false,
                         "schema": {
-                            "type": "string"
+                            "type": "boolean",
+                            "default": false
                         }
                     },
                     {
@@ -348,36 +2512,8 @@
                         "required": false,
                         "schema": {
                             "type": "integer",
-                            "default": 25
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    }
-                },
-                "security": [
-                    {
-                        "bearerAuth": []
-                    }
-                ]
-            }
-        },
-        "/invoices/{invoice}": {
-            "get": {
-                "tags": [
-                    "Invoices"
-                ],
-                "summary": "Rechnung anzeigen",
-                "operationId": "287b32023ead579b4dad94525f38acd2",
-                "parameters": [
-                    {
-                        "name": "invoice",
-                        "in": "path",
-                        "required": true,
-                        "schema": {
-                            "type": "integer"
+                            "default": 20,
+                            "maximum": 100
                         }
                     }
                 ],
@@ -385,15 +2521,117 @@
                     "200": {
                         "description": "OK"
                     },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "shifts:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/shifts/{shift}": {
+            "get": {
+                "tags": [
+                    "Shifts"
+                ],
+                "summary": "Bereitschaftsschicht anzeigen",
+                "operationId": "0ffb21dd000ed17f1e563617783643b7",
+                "parameters": [
+                    {
+                        "name": "shift",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
                     "404": {
                         "description": "Not Found"
                     }
                 },
                 "security": [
                     {
-                        "bearerAuth": []
+                        "bearerAuth": [
+                            "shifts:read"
+                        ]
                     }
                 ]
+            }
+        },
+        "/patrol/scan/{token}": {
+            "post": {
+                "tags": [
+                    "Ingest"
+                ],
+                "summary": "Checkpoint-Scan eines Wächterrundgangs",
+                "description": "Auth über Gerätetoken im Pfad.",
+                "operationId": "ed963fbb539f6dfa3b15f4bb67bb473f",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Standort-Geräte-Token",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "checkpoint"
+                                ],
+                                "properties": {
+                                    "checkpoint": {
+                                        "description": "Checkpoint-Token",
+                                        "type": "string",
+                                        "maxLength": 64
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Ungültiger Gerätetoken"
+                    },
+                    "404": {
+                        "description": "Unbekannter Checkpoint"
+                    },
+                    "422": {
+                        "description": "Kein laufender Rundgang oder Scan abgewiesen"
+                    }
+                }
             }
         },
         "/projects": {
@@ -545,6 +2783,414 @@
                 ]
             }
         },
+        "/protocols": {
+            "get": {
+                "tags": [
+                    "Protocols"
+                ],
+                "summary": "Protokolle auflisten",
+                "operationId": "c57318b243aa07e9b214a7805e5db803",
+                "parameters": [
+                    {
+                        "name": "type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "acceptance",
+                                "service",
+                                "maintenance",
+                                "handover",
+                                "defect",
+                                "inspection",
+                                "siteVisit",
+                                "other"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "in_review",
+                                "signed",
+                                "archived",
+                                "superseded"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "occurred_at ≥ (Datum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "occurred_at ≤ (Datum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Titel (Teilstring)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "protocols:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/protocols/{protocol}": {
+            "get": {
+                "tags": [
+                    "Protocols"
+                ],
+                "summary": "Protokoll anzeigen (inkl. Punkte und Signaturen ohne Interna)",
+                "operationId": "0ec93b55a334677055650213d04bf4da",
+                "parameters": [
+                    {
+                        "name": "protocol",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Pr5Vn3"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "protocols:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/purchase-orders": {
+            "get": {
+                "tags": [
+                    "Purchase Orders"
+                ],
+                "summary": "Bestellungen auflisten",
+                "operationId": "2b67c1ab72e861e1ca551a68cd0d7cc7",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "enum": [
+                                "draft",
+                                "ordered",
+                                "partially_received",
+                                "received",
+                                "cancelled"
+                            ]
+                        }
+                    },
+                    {
+                        "name": "supplier",
+                        "in": "query",
+                        "description": "Lieferanten-Sqid",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "Lf8Qw1"
+                        }
+                    },
+                    {
+                        "name": "from",
+                        "in": "query",
+                        "description": "ordered_at ≥ (Datum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "to",
+                        "in": "query",
+                        "description": "ordered_at ≤ (Datum)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "423": {
+                        "description": "Modul nicht lizenziert"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "purchase_orders:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/purchase-orders/{purchaseOrder}": {
+            "get": {
+                "tags": [
+                    "Purchase Orders"
+                ],
+                "summary": "Bestellung anzeigen (inkl. Positionen)",
+                "operationId": "a5837faf55c043c642a96edd8a3d5415",
+                "parameters": [
+                    {
+                        "name": "purchaseOrder",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Bo3Hf6"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "purchase_orders:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/push/vapid": {
+            "get": {
+                "tags": [
+                    "Push"
+                ],
+                "summary": "VAPID Public Key",
+                "operationId": "5217f3b48a13755703ac0ca2ec9d0306",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/push/subscribe": {
+            "post": {
+                "tags": [
+                    "Push"
+                ],
+                "summary": "Push-Subscription registrieren",
+                "operationId": "12194162d2704a222fefac4e63570218",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "endpoint",
+                                    "keys"
+                                ],
+                                "properties": {
+                                    "endpoint": {
+                                        "type": "string",
+                                        "maxLength": 500
+                                    },
+                                    "keys": {
+                                        "required": [
+                                            "p256dh",
+                                            "auth"
+                                        ],
+                                        "properties": {
+                                            "p256dh": {
+                                                "type": "string"
+                                            },
+                                            "auth": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "type": "object"
+                                    },
+                                    "contentEncoding": {
+                                        "type": "string",
+                                        "example": "aesgcm",
+                                        "nullable": true,
+                                        "maxLength": 32
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "push:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/push/unsubscribe": {
+            "delete": {
+                "tags": [
+                    "Push"
+                ],
+                "summary": "Push-Subscription entfernen",
+                "operationId": "b12df6f7dcfdf7ac909919ae091a6d2a",
+                "requestBody": {
+                    "required": false,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "endpoint": {
+                                        "type": "string",
+                                        "maxLength": 500
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "push:write"
+                        ]
+                    }
+                ]
+            }
+        },
         "/scheduled-shifts": {
             "get": {
                 "tags": [
@@ -589,6 +3235,424 @@
                 "security": [
                     {
                         "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/stopwatch": {
+            "get": {
+                "tags": [
+                    "Stopwatch"
+                ],
+                "summary": "Laufende Stoppuhr",
+                "operationId": "93b56a8af34740201dcffbdb952ed349",
+                "responses": {
+                    "200": {
+                        "description": "OK (null, wenn keine Stoppuhr läuft)"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "stopwatch:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/stopwatch/start": {
+            "post": {
+                "tags": [
+                    "Stopwatch"
+                ],
+                "summary": "Stoppuhr starten",
+                "operationId": "eb1f8c230c878e3b7d7bf6e1bf8706af",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "project_id"
+                                ],
+                                "properties": {
+                                    "project_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab"
+                                    },
+                                    "task_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "diary_entry_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "timesheet_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 500
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "stopwatch:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/stopwatch/stop": {
+            "post": {
+                "tags": [
+                    "Stopwatch"
+                ],
+                "summary": "Stoppuhr stoppen",
+                "operationId": "a3e6907394135e0855757d17b043d2f2",
+                "responses": {
+                    "200": {
+                        "description": "OK (null, wenn keine Stoppuhr lief)"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "stopwatch:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/suppliers": {
+            "get": {
+                "tags": [
+                    "Suppliers"
+                ],
+                "summary": "Lieferanten auflisten",
+                "operationId": "38fb461297c8513f22057d9d313070bc",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Name/Firma/Nummer (Teilstring)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Archivierte einschließen",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "423": {
+                        "description": "Modul nicht lizenziert"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "suppliers:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/suppliers/{supplier}": {
+            "get": {
+                "tags": [
+                    "Suppliers"
+                ],
+                "summary": "Lieferant anzeigen",
+                "operationId": "a938f72e810bb3cdada5602d354f1ca9",
+                "parameters": [
+                    {
+                        "name": "supplier",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Lf8Qw1"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "suppliers:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/tags": {
+            "get": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Tags auflisten",
+                "operationId": "566a70c4a8ca7c7dd9a6d666f64728a6",
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "tags:read"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Tag anlegen",
+                "operationId": "c2812b6e11418dc90bfd41147c2c78c9",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 64
+                                    },
+                                    "color": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 16
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "tags:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/tags/{tag}": {
+            "put": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Tag aktualisieren",
+                "operationId": "bffe1df35cd28d7b8dd0965c7719352d",
+                "parameters": [
+                    {
+                        "name": "tag",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "name"
+                                ],
+                                "properties": {
+                                    "name": {
+                                        "type": "string",
+                                        "maxLength": 64
+                                    },
+                                    "color": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 16
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "tags:write"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Tags"
+                ],
+                "summary": "Tag löschen",
+                "operationId": "aac8999cac0fe983f0bfe49491a251b9",
+                "parameters": [
+                    {
+                        "name": "tag",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "tags:write"
+                        ]
                     }
                 ]
             }
@@ -746,6 +3810,1397 @@
                     }
                 ]
             }
+        },
+        "/terminal/ingest/{token}": {
+            "post": {
+                "tags": [
+                    "Ingest"
+                ],
+                "summary": "Terminal-Ingest (Badge-Scan)",
+                "description": "Auth über Gerätetoken im Pfad.",
+                "operationId": "bd1198d2fc320e68c24b8602c0655900",
+                "parameters": [
+                    {
+                        "name": "token",
+                        "in": "path",
+                        "description": "Gerätetoken des Terminals",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "badge_uid"
+                                ],
+                                "properties": {
+                                    "badge_uid": {
+                                        "description": "Badge-Kennung (Alias: badge, credential)",
+                                        "type": "string"
+                                    },
+                                    "event": {
+                                        "type": "string",
+                                        "default": "toggle"
+                                    },
+                                    "event_type": {
+                                        "type": "string",
+                                        "default": "work",
+                                        "enum": [
+                                            "work",
+                                            "break",
+                                            "homeoffice",
+                                            "errand"
+                                        ]
+                                    },
+                                    "occurred_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "event_id": {
+                                        "description": "Idempotenz-Schlüssel",
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "queued": {
+                                        "description": "Offline-Pufferstand des Terminals",
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK (status-Feld, z. B. clocked_in/unknown_badge)"
+                    },
+                    "401": {
+                        "description": "Ungültiger Gerätetoken"
+                    },
+                    "422": {
+                        "description": "Badge-Kennung fehlt"
+                    },
+                    "503": {
+                        "description": "Wartungsmodus (Retry-After)"
+                    }
+                }
+            }
+        },
+        "/tickets": {
+            "post": {
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Ticket anlegen",
+                "operationId": "0f82fdde1437d948b90892e1b714a1cc",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "title"
+                                ],
+                                "properties": {
+                                    "title": {
+                                        "type": "string",
+                                        "maxLength": 255,
+                                        "minLength": 2
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 10000
+                                    },
+                                    "kind": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "enum": [
+                                            "incident",
+                                            "service_request",
+                                            "question"
+                                        ]
+                                    },
+                                    "priority": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 20
+                                    },
+                                    "customer_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    },
+                                    "queue_id": {
+                                        "type": "integer",
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "tickets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets": {
+            "get": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel auflisten",
+                "operationId": "97f5415184dc9433a1b1fe55178240b2",
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "query",
+                        "description": "Projekt-Sqid",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/projects/{project}/timesheets": {
+            "post": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel anlegen",
+                "operationId": "780364026ec564ac3fe4be90792fede6",
+                "parameters": [
+                    {
+                        "name": "project",
+                        "in": "path",
+                        "description": "Projekt-Sqid oder kunde/projekt-Slug",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "work_date"
+                                ],
+                                "properties": {
+                                    "work_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "customer_name": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "customer_role": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "customer_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 5000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}": {
+            "get": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel anzeigen",
+                "operationId": "f8d1b59101d24be9210ee7881cce645a",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:read"
+                        ]
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel aktualisieren",
+                "operationId": "8b816a1797dc0aba0b6d91d34b188902",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "work_date"
+                                ],
+                                "properties": {
+                                    "work_date": {
+                                        "type": "string",
+                                        "format": "date"
+                                    },
+                                    "customer_name": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "customer_role": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "customer_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "notes": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 5000
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel löschen",
+                "operationId": "e77f81f4ebd242a38e1db96f94ca4a36",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}/submit": {
+            "post": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel einreichen",
+                "operationId": "6c2cc8a261de4b22319a5e52e9c23b8f",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}/sign": {
+            "post": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel unterschreiben",
+                "operationId": "55ba481ef55e890b5101e1a181a0dca4",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "signature",
+                                    "customer_name"
+                                ],
+                                "properties": {
+                                    "signature": {
+                                        "description": "Unterschrift (Data-URL)",
+                                        "type": "string"
+                                    },
+                                    "customer_name": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "customer_role": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    },
+                                    "customer_email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "nullable": true,
+                                        "maxLength": 255
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}/pdf": {
+            "get": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Stundenzettel als PDF",
+                "operationId": "375f2e108b1765c108d3c5fe90b112e2",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "PDF (application/pdf)"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}/entries": {
+            "get": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Zeiteinträge eines Stundenzettels",
+                "operationId": "591e205a45d0814d58bfb2c116bf68fe",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:read"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Zeiteintrag anlegen",
+                "operationId": "d204ab3a2cb48296df12306ccc0fe9c1",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Entweder start_time/end_time (bzw. started_at/ended_at) oder minutes angeben",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "nullable": true
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "08:00",
+                                        "nullable": true
+                                    },
+                                    "end_time": {
+                                        "type": "string",
+                                        "example": "16:30",
+                                        "nullable": true
+                                    },
+                                    "started_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "ended_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "minutes": {
+                                        "type": "integer",
+                                        "nullable": true,
+                                        "maximum": 1440,
+                                        "minimum": 0
+                                    },
+                                    "break_minutes": {
+                                        "type": "integer",
+                                        "nullable": true,
+                                        "maximum": 480,
+                                        "minimum": 0
+                                    },
+                                    "kind": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "enum": [
+                                            "work",
+                                            "travel",
+                                            "standby"
+                                        ]
+                                    },
+                                    "task_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 500
+                                    },
+                                    "tag_ids": {
+                                        "description": "Tag-Sqids",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "k7Qx2Ab"
+                                        }
+                                    },
+                                    "new_tags": {
+                                        "description": "Neue Tags, kommagetrennt",
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 500
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}/entries/{entry}": {
+            "put": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Zeiteintrag aktualisieren",
+                "operationId": "c803771aae290b9eea0bc3067239eb9c",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "entry",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "description": "Entweder start_time/end_time (bzw. started_at/ended_at) oder minutes angeben",
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "date": {
+                                        "type": "string",
+                                        "format": "date",
+                                        "nullable": true
+                                    },
+                                    "start_time": {
+                                        "type": "string",
+                                        "example": "08:00",
+                                        "nullable": true
+                                    },
+                                    "end_time": {
+                                        "type": "string",
+                                        "example": "16:30",
+                                        "nullable": true
+                                    },
+                                    "started_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "ended_at": {
+                                        "type": "string",
+                                        "format": "date-time",
+                                        "nullable": true
+                                    },
+                                    "minutes": {
+                                        "type": "integer",
+                                        "nullable": true,
+                                        "maximum": 1440,
+                                        "minimum": 0
+                                    },
+                                    "break_minutes": {
+                                        "type": "integer",
+                                        "nullable": true,
+                                        "maximum": 480,
+                                        "minimum": 0
+                                    },
+                                    "kind": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "enum": [
+                                            "work",
+                                            "travel",
+                                            "standby"
+                                        ]
+                                    },
+                                    "task_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 500
+                                    },
+                                    "tag_ids": {
+                                        "description": "Tag-Sqids",
+                                        "type": "array",
+                                        "items": {
+                                            "type": "string",
+                                            "example": "k7Qx2Ab"
+                                        }
+                                    },
+                                    "new_tags": {
+                                        "description": "Neue Tags, kommagetrennt",
+                                        "type": "string",
+                                        "nullable": true,
+                                        "maxLength": 500
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Timesheets"
+                ],
+                "summary": "Zeiteintrag löschen",
+                "operationId": "e4165ae100392aa86aece99549c10ced",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "entry",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}/materials": {
+            "get": {
+                "tags": [
+                    "Materials"
+                ],
+                "summary": "Materialverbrauch eines Stundenzettels",
+                "operationId": "7ebb77dc72363703d35f85df7d4db6a9",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:read"
+                        ]
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Materials"
+                ],
+                "summary": "Materialverbrauch anlegen",
+                "operationId": "0c1c2ae2e07ecd59f16806e46e16569e",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "description",
+                                    "quantity",
+                                    "unit"
+                                ],
+                                "properties": {
+                                    "material_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "quantity": {
+                                        "type": "number",
+                                        "maximum": 99999.999,
+                                        "minimum": 0.001
+                                    },
+                                    "unit": {
+                                        "type": "string",
+                                        "maxLength": 20
+                                    },
+                                    "unit_price": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "tax_rate": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "maximum": 100,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/timesheets/{timesheet}/materials/{usage}": {
+            "put": {
+                "tags": [
+                    "Materials"
+                ],
+                "summary": "Materialverbrauch aktualisieren",
+                "operationId": "417f7464217c61a38aa93dbaa6780b5f",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "usage",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "description",
+                                    "quantity",
+                                    "unit"
+                                ],
+                                "properties": {
+                                    "material_id": {
+                                        "description": "Sqid",
+                                        "type": "string",
+                                        "example": "k7Qx2Ab",
+                                        "nullable": true
+                                    },
+                                    "description": {
+                                        "type": "string",
+                                        "maxLength": 255
+                                    },
+                                    "quantity": {
+                                        "type": "number",
+                                        "maximum": 99999.999,
+                                        "minimum": 0.001
+                                    },
+                                    "unit": {
+                                        "type": "string",
+                                        "maxLength": 20
+                                    },
+                                    "unit_price": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "minimum": 0
+                                    },
+                                    "tax_rate": {
+                                        "type": "number",
+                                        "nullable": true,
+                                        "maximum": 100,
+                                        "minimum": 0
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "422": {
+                        "description": "Validation error"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Materials"
+                ],
+                "summary": "Materialverbrauch löschen",
+                "operationId": "67710915b63a48ab54a85b380d75f7aa",
+                "parameters": [
+                    {
+                        "name": "timesheet",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    },
+                    {
+                        "name": "usage",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "k7Qx2Ab"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "timesheets:write"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/vehicles": {
+            "get": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Fahrzeuge auflisten",
+                "operationId": "ccb5e173c6e4994a201330e30ccf2bfd",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Kennzeichen/Bezeichnung (Teilstring)",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "vehicle_type",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "propulsion",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "ownership",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "archived",
+                        "in": "query",
+                        "description": "Archivierte einschließen",
+                        "required": false,
+                        "schema": {
+                            "type": "boolean",
+                            "default": false
+                        }
+                    },
+                    {
+                        "name": "per_page",
+                        "in": "query",
+                        "required": false,
+                        "schema": {
+                            "type": "integer",
+                            "default": 25,
+                            "maximum": 100
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "423": {
+                        "description": "Modul nicht lizenziert"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "vehicles:read"
+                        ]
+                    }
+                ]
+            }
+        },
+        "/vehicles/{vehicle}": {
+            "get": {
+                "tags": [
+                    "Vehicles"
+                ],
+                "summary": "Fahrzeug anzeigen",
+                "operationId": "1149bcba819d02fca7f7fe6cdf88b746",
+                "parameters": [
+                    {
+                        "name": "vehicle",
+                        "in": "path",
+                        "description": "Sqid",
+                        "required": true,
+                        "schema": {
+                            "type": "string",
+                            "example": "Fz6Tn2"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": [
+                            "vehicles:read"
+                        ]
+                    }
+                ]
+            }
         }
     },
     "components": {
@@ -760,6 +5215,10 @@
     },
     "tags": [
         {
+            "name": "Me",
+            "description": "Eigenes Benutzerprofil"
+        },
+        {
             "name": "Customers",
             "description": "Kundenverwaltung"
         },
@@ -772,20 +5231,112 @@
             "description": "Tasks (Activities) je Projekt"
         },
         {
-            "name": "Absences",
-            "description": "Absences"
+            "name": "Diary",
+            "description": "Aufträge/Einsätze (Diary)"
         },
         {
-            "name": "Expenses",
-            "description": "Expenses"
+            "name": "Comments",
+            "description": "Kommentare an Aufträgen"
         },
         {
-            "name": "Invoices",
-            "description": "Invoices"
+            "name": "Attachments",
+            "description": "Anhänge (Upload/Download)"
+        },
+        {
+            "name": "Tags",
+            "description": "Tags"
         },
         {
             "name": "Shifts",
-            "description": "Shifts"
+            "description": "Bereitschaften"
+        },
+        {
+            "name": "Assignments",
+            "description": "Notfall-Einsätze"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Dashboard-Kennzahlen"
+        },
+        {
+            "name": "Assets",
+            "description": "Assets (Timeline, Status-Sichtbarkeit)"
+        },
+        {
+            "name": "Push",
+            "description": "Web-Push-Abonnements"
+        },
+        {
+            "name": "Timesheets",
+            "description": "Stundenzettel und Zeiteinträge"
+        },
+        {
+            "name": "Materials",
+            "description": "Materialkatalog und Materialverbrauch"
+        },
+        {
+            "name": "Stopwatch",
+            "description": "Stoppuhr"
+        },
+        {
+            "name": "Attendance",
+            "description": "Anwesenheit (Stempeln)"
+        },
+        {
+            "name": "Flex",
+            "description": "Arbeitszeitkonto"
+        },
+        {
+            "name": "Location",
+            "description": "Standort-Stempel und -Ingest"
+        },
+        {
+            "name": "Tickets",
+            "description": "Ticketeingang"
+        },
+        {
+            "name": "Absences",
+            "description": "Abwesenheiten (Urlaub, Krankmeldung)"
+        },
+        {
+            "name": "Expenses",
+            "description": "Spesen"
+        },
+        {
+            "name": "Invoices",
+            "description": "Rechnungen (read-only, PDF)"
+        },
+        {
+            "name": "Hooks",
+            "description": "REST-Hooks für n8n/Make/Zapier"
+        },
+        {
+            "name": "Articles",
+            "description": "Artikel und Varianten (read-only, MVP-718)"
+        },
+        {
+            "name": "Inventory",
+            "description": "Bestände je Lager/Variante/Lagerplatz (read-only, MVP-718)"
+        },
+        {
+            "name": "Purchase Orders",
+            "description": "Bestellungen (read-only, MVP-718)"
+        },
+        {
+            "name": "Suppliers",
+            "description": "Lieferanten (read-only, MVP-718)"
+        },
+        {
+            "name": "Protocols",
+            "description": "Protokolle (read-only, MVP-718)"
+        },
+        {
+            "name": "Vehicles",
+            "description": "Fahrzeuge (read-only, MVP-718)"
+        },
+        {
+            "name": "Ingest",
+            "description": "Geräte-Ingest (Token im Pfad, ohne Sanctum, unversioniert)"
         }
     ]
 }

@@ -77,10 +77,10 @@
                 <tr class="hover" id="knowledge-article-{{ $article->id }}">
                     <td>
                         <a href="{{ route('knowledge.show', $article) }}" class="flex items-center gap-2 font-medium link-hover">
-                            <x-icon name="school" class="text-base-content/60" />
+                            <x-icon name="school" class="text-muted" />
                             {{ $article->title }}
                         </a>
-                        <span class="block max-w-md truncate text-xs text-base-content/60">{{ $article->problem }}</span>
+                        <span class="block max-w-md truncate text-xs text-muted">{{ $article->problem }}</span>
                         @if ($article->tags->isNotEmpty())
                             <span class="mt-1 flex flex-wrap gap-1">
                                 @foreach ($article->tags as $tag)
@@ -94,7 +94,7 @@
                     <td>
                         <span class="flex items-center gap-2 text-sm">
                             <span class="flex items-center gap-1 text-success"><x-icon name="thumb_up" /> {{ $article->helpful_count }}</span>
-                            <span class="flex items-center gap-1 text-base-content/50"><x-icon name="thumb_down" /> {{ $article->not_helpful_count }}</span>
+                            <span class="flex items-center gap-1 text-muted"><x-icon name="thumb_down" /> {{ $article->not_helpful_count }}</span>
                         </span>
                     </td>
                     <td class="text-base-content/70">{{ optional($article->creator)->name ?? '—' }}</td>

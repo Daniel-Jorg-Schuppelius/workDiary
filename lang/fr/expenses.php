@@ -18,6 +18,8 @@ return [
         'suggestions_hint' => 'Pièces du même montant dans la fenêtre de temps. L\'association confirme qu\'il s\'agit de la même opération — la note de frais ne compte alors plus deux fois.',
         'no_suggestions' => 'Aucune pièce correspondante',
         'no_suggestions_hint' => 'Sans association, la note de frais est présentée séparément comme charge interne.',
+        'no_provider' => 'Aucune comptabilité connectée',
+        'no_provider_hint' => 'Sans système comptable connecté, il n’y a ni suggestions de pièces ni transfert — la note de frais est présentée séparément comme charge interne.',
         'linked' => 'Pièce :number associée.',
         'unlinked' => 'Association supprimée.',
         'title' => 'Justificatif',

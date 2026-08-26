@@ -47,6 +47,7 @@ class CsvPreflightAnalyzer {
     public function __construct(
         private readonly EntitySpecRegistry $registry,
         private readonly ImportSourceFactory $sources,
+        private readonly DocumentZipImportService $documentZip,
     ) {}
 
     /**
@@ -87,6 +88,14 @@ class CsvPreflightAnalyzer {
         $run->save();
 
         try {
+            // MVP-707: Dokumente kommen als ZIP (manifest.csv + Dateien) — die
+            // Vorprüfung liest das Manifest aus dem Archiv, kein CSV-Pfad.
+            if ($entity->acceptsZip()) {
+                $this->documentZip->preflight($run, ToolkitFile::read($absolutePath), $organization);
+
+                return $run;
+            }
+
             // A13: XLSX vorab in die interne CSV-Struktur überführen (erstes
             // Tabellenblatt) — danach läuft EIN gemeinsamer Wizard-Pfad.
             if ($isXlsx) {

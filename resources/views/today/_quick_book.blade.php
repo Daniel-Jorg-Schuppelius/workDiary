@@ -19,7 +19,7 @@
     <x-card as="section" data-qb-panel data-qb-url="{{ route('today.quick-book') }}">
         <header class="mb-2 flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Quick-Buchung') }}</h2>
-            <span class="text-xs text-base-content/60">{{ __('Offenen Block auf ein Projekt ziehen oder unten wählen.') }}</span>
+            <span class="text-xs text-muted">{{ __('Offenen Block auf ein Projekt ziehen oder unten wählen.') }}</span>
         </header>
 
         {{-- Drag-Ziele: bewusst nur die Top 10 (zuletzt genutzte zuerst) — alle
@@ -29,14 +29,14 @@
             @foreach ($quickBookTargets as $p)
                 <span data-qb-target data-project="{{ $p->sqid }}"
                       class="qb-target inline-flex items-center gap-1 rounded-box border border-dashed border-base-300 bg-base-200/60 px-3 py-1 text-xs">
-                    <span class="material-symbols-outlined text-sm" aria-hidden="true">folder</span>{{ $p->name }}
+                    <x-icon name="folder" class="text-sm" />{{ $p->name }}
                     @if ($p->customer)
-                        <span class="text-base-content/50">· {{ $p->customer->name }}</span>
+                        <span class="text-muted">· {{ $p->customer->name }}</span>
                     @endif
                 </span>
             @endforeach
             @if ($quickBookProjects->count() > $quickBookTargets->count())
-                <span class="inline-flex items-center px-1 py-1 text-xs text-base-content/50">
+                <span class="inline-flex items-center px-1 py-1 text-xs text-muted">
                     {{ __('+ :count weitere im Dropdown', ['count' => $quickBookProjects->count() - $quickBookTargets->count()]) }}
                 </span>
             @endif
@@ -49,10 +49,10 @@
                     data-ended-at="{{ $block['ended_at']->toIso8601String() }}"
                     data-minutes="{{ $block['minutes'] }}"
                     class="flex flex-wrap items-center gap-2 rounded-box bg-base-200/70 px-3 py-2">
-                    <span class="material-symbols-outlined cursor-grab text-base-content/50" aria-hidden="true">drag_indicator</span>
+                    <x-icon name="drag_indicator" class="cursor-grab text-muted" />
                     <span class="tabular-nums text-sm font-medium">
                         {{ $block['started_at']->format('H:i') }}–{{ $block['ended_at']->format('H:i') }}
-                        <span class="text-base-content/60">({{ $fmt($block['minutes']) }})</span>
+                        <span class="text-muted">({{ $fmt($block['minutes']) }})</span>
                     </span>
                     <form method="POST" action="{{ route('today.quick-book') }}" class="qb-form ml-auto flex items-center gap-2">
                         @csrf

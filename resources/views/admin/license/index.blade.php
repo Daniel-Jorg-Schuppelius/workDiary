@@ -43,7 +43,7 @@
 >
     <x-slot:note>
         @unless ($isEnforced)
-            <span class="text-xs text-base-content/60">{{ __('Lizenzprüfung ist in dieser Umgebung deaktiviert (Dev/Test).') }}</span>
+            <span class="text-xs text-muted">{{ __('Lizenzprüfung ist in dieser Umgebung deaktiviert (Dev/Test).') }}</span>
         @endunless
     </x-slot:note>
     <x-slot:actions>
@@ -70,35 +70,35 @@
             @else
                 <dl class="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenznehmer') }}</dt>
+                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenznehmer') }}</dt>
                         <dd class="font-mono text-base-content">{{ $payload->licensee }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenz-ID') }}</dt>
+                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenz-ID') }}</dt>
                         <dd class="font-mono text-xs text-base-content/80 break-all">{{ $payload->licenseId }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Ausgestellt') }}</dt>
+                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Ausgestellt') }}</dt>
                         <dd>{{ $payload->issuedAt->translatedFormat('d.m.Y') }}</dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gültig bis') }}</dt>
+                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Gültig bis') }}</dt>
                         <dd>
                             @if ($payload->expiresAt)
                                 {{ $payload->expiresAt->translatedFormat('d.m.Y') }}
                                 @if ($expiresIn !== null)
-                                    <span class="ml-1 text-xs text-base-content/60">
+                                    <span class="ml-1 text-xs text-muted">
                                         ({{ $expiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $expiresIn]) : __(':n Tage überzogen', ['n' => abs($expiresIn)]) }})
                                     </span>
                                 @endif
                             @else
-                                <span class="italic text-base-content/60">{{ __('unbefristet') }}</span>
+                                <span class="italic text-muted">{{ __('unbefristet') }}</span>
                             @endif
                         </dd>
                     </div>
                     @if ($payload->domain)
                         <div>
-                            <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Domain-Bindung') }}</dt>
+                            <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Domain-Bindung') }}</dt>
                             <dd class="font-mono">{{ $payload->domain }}</dd>
                         </div>
                     @endif
@@ -143,7 +143,7 @@
                             {{ __('Der Mandant ist regulär aktiv.') }}
                     @endswitch
                     @unless ($tenantStatusExplicit !== null)
-                        <span class="text-xs text-base-content/50">{{ __('(aus Lizenz/Testphase abgeleitet)') }}</span>
+                        <span class="text-xs text-muted">{{ __('(aus Lizenz/Testphase abgeleitet)') }}</span>
                     @endunless
                 </p>
 
@@ -157,7 +157,7 @@
                     <form method="POST" action="{{ route('admin.license.tenantStatus') }}" class="flex flex-wrap items-end gap-2">
                         @csrf
                         <div>
-                            <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Status setzen') }}</label>
+                            <label class="text-xs uppercase tracking-wider text-muted">{{ __('Status setzen') }}</label>
                             <select name="tenant_status" class="select select-sm select-bordered">
                                 <option value="inherit" @selected($tenantStatusExplicit === null)>{{ __('Automatisch (ableiten)') }}</option>
                                 @foreach ($tenantStatusOptions as $opt)
@@ -204,34 +204,34 @@
             @else
                 <dl class="grid grid-cols-1 gap-2 text-sm md:grid-cols-2">
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Plan (Tier)') }}</dt>
+                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Plan (Tier)') }}</dt>
                         <dd><x-status-badge :tone="$orgUsable ? 'success' : 'neutral'" size="md">{{ __('values.' . $orgModules['plan']) }}</x-status-badge></dd>
                     </div>
                     <div>
-                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Zugebuchte Module') }}</dt>
+                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Zugebuchte Module') }}</dt>
                         <dd class="text-xs break-all">{{ count($orgModules['addons']) ? collect($orgModules['addons'])->map(fn ($c) => config('plans.labels')[$c] ?? $c)->implode(', ') : '—' }}</dd>
                     </div>
                     @if ($op !== null && $orgUsable)
                         <div>
-                            <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenznehmer') }}</dt>
+                            <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenznehmer') }}</dt>
                             <dd class="font-mono">{{ $op->licensee }}</dd>
                         </div>
                         <div>
-                            <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gültig bis') }}</dt>
+                            <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Gültig bis') }}</dt>
                             <dd>
                                 @if ($op->expiresAt)
                                     {{ $op->expiresAt->translatedFormat('d.m.Y') }}
                                     @if ($orgExpiresIn !== null)
-                                        <span class="ml-1 text-xs text-base-content/60">({{ $orgExpiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $orgExpiresIn]) : __(':n Tage überzogen', ['n' => abs($orgExpiresIn)]) }})</span>
+                                        <span class="ml-1 text-xs text-muted">({{ $orgExpiresIn >= 0 ? __(':n Tage verbleibend', ['n' => $orgExpiresIn]) : __(':n Tage überzogen', ['n' => abs($orgExpiresIn)]) }})</span>
                                     @endif
                                 @else
-                                    <span class="italic text-base-content/60">{{ __('unbefristet') }}</span>
+                                    <span class="italic text-muted">{{ __('unbefristet') }}</span>
                                 @endif
                             </dd>
                         </div>
                     @endif
                     <div class="md:col-span-2">
-                        <dt class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Bindungs-ID (für die Ausstellung)') }}</dt>
+                        <dt class="text-xs uppercase tracking-wider text-muted">{{ __('Bindungs-ID (für die Ausstellung)') }}</dt>
                         <dd class="font-mono text-xs text-base-content/80 break-all select-all">{{ $org->license_uid }}</dd>
                     </div>
                 </dl>
@@ -243,7 +243,7 @@
                 @if ($canInstall)
                     <form method="POST" action="{{ route('admin.license.org.install') }}" class="mt-1 space-y-2">
                         @csrf
-                        <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenzschlüssel einspielen') }}</label>
+                        <label class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenzschlüssel einspielen') }}</label>
                         <textarea name="license_key" rows="3" required
                             class="textarea textarea-bordered w-full font-mono text-xs @error('license_key') textarea-error @enderror"
                             placeholder="payload.signature">{{ old('license_key') }}</textarea>
@@ -271,12 +271,12 @@
                             @error('issue')<p class="text-xs text-error">{{ $message }}</p>@enderror
                             <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                                 <div>
-                                    <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Lizenznehmer') }}</label>
+                                    <label class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenznehmer') }}</label>
                                     <input type="text" name="licensee" required value="{{ old('licensee', $op->licensee ?? $org->name) }}"
                                         class="input input-sm input-bordered w-full @error('licensee') input-error @enderror">
                                 </div>
                                 <div>
-                                    <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Plan (Tier)') }}</label>
+                                    <label class="text-xs uppercase tracking-wider text-muted">{{ __('Plan (Tier)') }}</label>
                                     <select name="plan" class="select select-sm select-bordered w-full">
                                         @foreach (['free', 'pro', 'enterprise'] as $val)
                                             <option value="{{ $val }}" @selected(old('plan', $orgModules['plan']) === $val)>{{ __('values.' . $val) }}</option>
@@ -284,24 +284,24 @@
                                     </select>
                                 </div>
                                 <div>
-                                    <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Gültig bis (optional)') }}</label>
+                                    <label class="text-xs uppercase tracking-wider text-muted">{{ __('Gültig bis (optional)') }}</label>
                                     <input type="date" name="expires" value="{{ old('expires') }}"
                                         class="input input-sm input-bordered w-full @error('expires') input-error @enderror">
                                 </div>
                             </div>
                             <div>
-                                <label class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Einzeln gebuchte Module (Add-ons)') }}</label>
+                                <label class="text-xs uppercase tracking-wider text-muted">{{ __('Einzeln gebuchte Module (Add-ons)') }}</label>
                                 <div class="mt-1 grid grid-cols-1 gap-1 sm:grid-cols-2">
                                     @php $oldAddons = (array) old('addons', $orgModules['addons']); @endphp
                                     @foreach ($moduleCodes as $code)
                                         <label class="label cursor-pointer justify-start gap-2 py-0.5">
                                             <input type="checkbox" name="addons[]" value="{{ $code }}" class="checkbox checkbox-xs" @checked(in_array($code, $oldAddons, true))>
                                             <span class="text-sm">{{ config('plans.labels')[$code] ?? $code }}</span>
-                                            <span class="font-mono text-[0.65rem] text-base-content/40">{{ $code }}</span>
+                                            <span class="font-mono text-[0.65rem] text-muted">{{ $code }}</span>
                                         </label>
                                     @endforeach
                                 </div>
-                                <p class="mt-1 text-xs text-base-content/50">{{ __('Tier-Module sind bereits enthalten; hier nur zusätzliche Module zubuchen.') }}</p>
+                                <p class="mt-1 text-xs text-muted">{{ __('Tier-Module sind bereits enthalten; hier nur zusätzliche Module zubuchen.') }}</p>
                             </div>
                             <x-button type="submit" tone="primary" size="sm">{{ __('Ausstellen & installieren') }}</x-button>
                         </form>
@@ -324,18 +324,18 @@
                         };
                     @endphp
                     <div class="rounded-box border border-base-300 bg-base-200 p-3">
-                        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ $limit['label'] }}</p>
+                        <p class="text-xs uppercase tracking-wider text-muted">{{ $limit['label'] }}</p>
                         <p class="mt-1 font-['Space_Grotesk'] text-lg font-bold">
                             {{ $limit['used'] ?? '—' }}
                             @if ($limit['max'])
-                                <span class="text-base-content/50 text-sm font-normal">/ {{ $limit['max'] }}</span>
+                                <span class="text-muted text-sm font-normal">/ {{ $limit['max'] }}</span>
                             @else
-                                <span class="text-base-content/50 text-sm font-normal">/ {{ __('unbegrenzt') }}</span>
+                                <span class="text-muted text-sm font-normal">/ {{ __('unbegrenzt') }}</span>
                             @endif
                         </p>
                         @if ($limit['percent'] !== null)
                             <progress class="progress {{ $tone }} w-full mt-2" value="{{ min(100, $limit['percent']) }}" max="100"></progress>
-                            <p class="mt-1 text-xs text-base-content/60">{{ $limit['percent'] }} %</p>
+                            <p class="mt-1 text-xs text-muted">{{ $limit['percent'] }} %</p>
                         @endif
                     </div>
                 @endforeach
@@ -347,7 +347,7 @@
         <div class="card-body gap-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Feature-Flags') }}</h2>
             @if (count($features) === 0)
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">flag</span>' :title="__('Diese Lizenz enthält keine expliziten Feature-Flags.')" compact />
+                <x-empty-state icon="flag" :title="__('Diese Lizenz enthält keine expliziten Feature-Flags.')" compact />
             @else
                 <x-table bare>
                     <x-slot:head>
@@ -370,7 +370,7 @@
                                             <x-status-badge tone="warning" size="md" outline>{{ __('Lokal deaktiviert') }}</x-status-badge>
                                         @endif
                                     </td>
-                                    <td class="text-xs text-base-content/60">{{ $feature['source'] }}</td>
+                                    <td class="text-xs text-muted">{{ $feature['source'] }}</td>
                                     @if ($canToggleFlag)
                                         <td class="text-right">
                                             <form method="POST" action="{{ route('admin.license.flags.toggle', ['flag' => $feature['code']]) }}" class="inline">
@@ -393,7 +393,7 @@
         <article class="card border border-base-300 bg-base-100 shadow-sm">
             <div class="card-body gap-3">
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Module der Organisation') }}</h2>
-                <p class="text-sm text-base-content/60">
+                <p class="text-sm text-muted">
                     {{ __('Lizenzierte Module für diese Organisation ein- oder ausblenden. Deaktivieren löscht keine Daten und kann jederzeit rückgängig gemacht werden.') }}
                 </p>
                 <div class="grid gap-2 sm:grid-cols-2">
@@ -409,9 +409,9 @@
                                     <span class="font-medium">{{ $module['label'] }}</span>
                                     <x-status-badge :tone="$status->tone()" size="sm" outline>{{ $status->label() }}</x-status-badge>
                                 </div>
-                                <p class="mt-1 text-xs text-base-content/60">{{ $module['description'] }}</p>
+                                <p class="mt-1 text-xs text-muted">{{ $module['description'] }}</p>
                                 @if ($module['licensed'] && $module['source'])
-                                    <p class="mt-1 text-[11px] uppercase tracking-wider text-base-content/40">
+                                    <p class="mt-1 text-[11px] uppercase tracking-wider text-muted">
                                         {{ __('Quelle') }}: {{ $module['source'] === 'plan' ? __('Plan') : __('Add-on') }}
                                     </p>
                                 @endif
@@ -448,7 +448,7 @@
                                             <button type="submit" class="btn btn-sm btn-outline btn-success">{{ __('Aktivieren') }}</button>
                                         </form>
                                     @elseif ($status === \App\Enums\Licensing\ModuleStatus::NotLicensed)
-                                        <span class="text-xs text-base-content/40">{{ __('Nicht lizenziert') }}</span>
+                                        <span class="text-xs text-muted">{{ __('Nicht lizenziert') }}</span>
                                     @endif
                                 </div>
                             @endif

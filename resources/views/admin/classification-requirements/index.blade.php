@@ -101,7 +101,7 @@
 
     @if ($requirements->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">rule</span>' />
+            icon="rule" />
     @else
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>
@@ -138,21 +138,21 @@
                         @if ($requirement->max_count !== null)
                             <x-status-badge size="xs" tone="ghost" outline>{{ __('Begrenzt') }}</x-status-badge>
                         @else
-                            <span class="text-base-content/50">{{ __('Offen') }}</span>
+                            <span class="text-muted">{{ __('Offen') }}</span>
                         @endif
                     </td>
                     <td>
                         @if ($requirement->note)
                             <span>{{ $requirement->note }}</span>
                         @else
-                            <span class="text-base-content/50">{{ __('—') }}</span>
+                            <span class="text-muted">{{ __('—') }}</span>
                         @endif
                     </td>
                     <td>
                         @if ($requirement->only_if_json)
                             <pre class="text-xs whitespace-pre-wrap">{{ json_encode($requirement->only_if_json, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT) }}</pre>
                         @else
-                            <span class="text-base-content/50">{{ __('Immer') }}</span>
+                            <span class="text-muted">{{ __('Immer') }}</span>
                         @endif
                     </td>
                     <td class="text-right whitespace-nowrap">

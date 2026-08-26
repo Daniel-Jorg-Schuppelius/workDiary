@@ -40,17 +40,17 @@
 
         <x-card>
             <dl class="grid gap-3 text-sm sm:grid-cols-4">
-                <div><dt class="text-base-content/60">{{ __('sepa.column.kind') }}</dt><dd>{{ $run->kind->label() }}</dd></div>
-                <div><dt class="text-base-content/60">{{ __('sepa.column.account') }}</dt><dd>{{ $run->bankAccount?->label ?? '—' }}</dd></div>
-                <div><dt class="text-base-content/60">{{ __('sepa.column.execution_date') }}</dt><dd>{{ optional($run->execution_date)->fdate() ?? '—' }}</dd></div>
-                <div><dt class="text-base-content/60">{{ __('sepa.column.total') }}</dt><dd class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $run->total, 2, withThousandsSeparator: true) }}</dd></div>
+                <div><dt class="text-muted">{{ __('sepa.column.kind') }}</dt><dd>{{ $run->kind->label() }}</dd></div>
+                <div><dt class="text-muted">{{ __('sepa.column.account') }}</dt><dd>{{ $run->bankAccount?->label ?? '—' }}</dd></div>
+                <div><dt class="text-muted">{{ __('sepa.column.execution_date') }}</dt><dd>{{ optional($run->execution_date)->fdate() ?? '—' }}</dd></div>
+                <div><dt class="text-muted">{{ __('sepa.column.total') }}</dt><dd class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $run->total, 2, withThousandsSeparator: true) }}</dd></div>
                 @if ($run->released_at)
-                    <div><dt class="text-base-content/60">{{ __('sepa.released_by') }}</dt><dd>{{ $run->releasedBy?->name ?? '—' }} · {{ $run->released_at->fdatetime() }}</dd></div>
+                    <div><dt class="text-muted">{{ __('sepa.released_by') }}</dt><dd>{{ $run->releasedBy?->name ?? '—' }} · {{ $run->released_at->fdatetime() }}</dd></div>
                 @endif
                 @if ($run->file_sha256)
                     {{-- Der Hash ist der Beleg, dass ein zweiter Download dieselbe
                          Datei liefert und nicht eine neue Zahlung. --}}
-                    <div class="sm:col-span-3"><dt class="text-base-content/60">{{ __('sepa.file_hash') }}</dt><dd class="font-mono text-xs break-all">{{ $run->file_sha256 }}</dd></div>
+                    <div class="sm:col-span-3"><dt class="text-muted">{{ __('sepa.file_hash') }}</dt><dd class="font-mono text-xs break-all">{{ $run->file_sha256 }}</dd></div>
                 @endif
             </dl>
         </x-card>

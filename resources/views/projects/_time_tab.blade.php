@@ -90,7 +90,7 @@
                  :sort-params="['tab' => 'time']"
                  empty-icon="schedule" :empty-title="__('Noch keine Zeiteinträge erfasst.')">
                 <x-slot:head>
-                    <tr class="text-xs text-base-content/50">
+                    <tr class="text-xs text-muted">
                         @if ($canBulk)
                             <th class="w-8">
                                 <input type="checkbox" class="checkbox checkbox-sm" data-bulk-select-all

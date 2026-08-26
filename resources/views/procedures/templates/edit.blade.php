@@ -61,7 +61,7 @@
         <div class="flex flex-wrap items-center justify-between gap-2">
             <div>
                 <h1 class="text-lg font-semibold">{{ $template->name }}</h1>
-                <p class="text-sm text-base-content/60"><code>{{ $template->code }}</code></p>
+                <p class="text-sm text-muted"><code>{{ $template->code }}</code></p>
             </div>
             <div class="flex items-center gap-2">
                 <x-help-button topic="procedures.designer" :label="__('procedure.help.designer')" />
@@ -72,14 +72,14 @@
 
         {{-- Versionsübersicht --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4">
-            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">{{ __('procedure.title.versions') }}</h2>
+            <h2 class="mb-2 text-sm font-semibold uppercase tracking-wide text-muted">{{ __('procedure.title.versions') }}</h2>
             <div class="flex flex-wrap gap-2">
                 @foreach ($versions as $v)
                     <div class="flex items-center gap-2 rounded-box border border-base-300 px-3 py-1.5 text-sm">
                         <span class="font-medium">v{{ $v->version }}</span>
                         @if ($v->published_at)
                             <x-status-badge tone="success">{{ __('procedure.status.published') }}</x-status-badge>
-                            <span class="text-xs text-base-content/50">{{ optional($v->valid_from)->format('Y-m-d') }}{{ $v->valid_to ? ' – ' . $v->valid_to->format('Y-m-d') : '' }}</span>
+                            <span class="text-xs text-muted">{{ optional($v->valid_from)->format('Y-m-d') }}{{ $v->valid_to ? ' – ' . $v->valid_to->format('Y-m-d') : '' }}</span>
                         @else
                             <x-status-badge tone="warning">{{ __('procedure.status.draft') }}</x-status-badge>
                             @if ($canPublish)
@@ -130,7 +130,7 @@
 
             {{-- Anwendbarkeit (automatische Zuordnung) --}}
             <x-form-group :legend="__('procedure.title.applicability')" icon="filter_alt" tone="info" cols="2">
-                <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('procedure.hint.applicability') }}</p>
+                <p class="text-xs text-muted sm:col-span-2">{{ __('procedure.hint.applicability') }}</p>
                 <x-input-field name="applicability_entry_types" :label="__('procedure.field.applicabilityEntryTypes')" maxlength="2000" placeholder="{{ __('procedure.hint.commaList') }}" :value="$entryTypesVal" :disabled="$draft === null" />
                 <x-input-field name="applicability_tags" :label="__('procedure.field.applicabilityTags')" maxlength="2000" placeholder="{{ __('procedure.hint.commaList') }}" :value="$tagsVal" :disabled="$draft === null" />
                 <x-input-field name="change_note" :label="__('procedure.field.changeNote')" maxlength="2000" span="2" :value="old('change_note', $draft?->change_note)" :disabled="$draft === null" />
@@ -147,7 +147,7 @@
                         @foreach (($versions->firstWhere('published_at', '!=', null)?->steps ?? collect()) as $s)
                             <div class="rounded-box border border-base-300 bg-base-200/40 p-3 text-sm">
                                 <span class="font-medium">{{ $s->sort_order }}. {{ $s->label }}</span>
-                                <span class="ml-2 text-xs text-base-content/60">{{ $s->step_type->label() }}</span>
+                                <span class="ml-2 text-xs text-muted">{{ $s->step_type->label() }}</span>
                                 @if ($s->required)<x-status-badge tone="error" class="ml-1">{{ __('procedure.field.required') }}</x-status-badge>@endif
                                 @if ($s->requires_second_person)<x-status-badge tone="warning" class="ml-1">{{ __('procedure.field.secondPerson') }}</x-status-badge>@endif
                             </div>
@@ -163,20 +163,20 @@
                             <div class="space-y-2 rounded-box border border-base-300 bg-base-200/40 p-3">
                                 <div class="grid grid-cols-1 items-end gap-2 sm:grid-cols-[auto_1fr_1fr_auto]">
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.code') }}</label>
+                                        <label :for="fieldName(i, 'code')" class="fieldset-label">{{ __('procedure.field.code') }}</label>
                                         <input type="text" maxlength="60"
-                                               :name="fieldName(i, 'code')" x-model="it.code"
+                                               :id="fieldName(i, 'code')" :name="fieldName(i, 'code')" x-model="it.code"
                                                class="input input-sm input-bordered w-28 font-mono">
                                     </div>
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.stepLabel') }}</label>
+                                        <label :for="fieldName(i, 'label')" class="fieldset-label">{{ __('procedure.field.stepLabel') }}</label>
                                         <input type="text" maxlength="180"
-                                               :name="fieldName(i, 'label')" x-model="it.label"
+                                               :id="fieldName(i, 'label')" :name="fieldName(i, 'label')" x-model="it.label"
                                                class="input input-sm input-bordered w-full">
                                     </div>
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.stepType') }}</label>
-                                        <select :name="fieldName(i, 'step_type')" x-model="it.step_type"
+                                        <label :for="fieldName(i, 'step_type')" class="fieldset-label">{{ __('procedure.field.stepType') }}</label>
+                                        <select :id="fieldName(i, 'step_type')" :name="fieldName(i, 'step_type')" x-model="it.step_type"
                                                 class="select select-sm select-bordered">
                                             @foreach ($stepTypes as $type)
                                                 <option value="{{ $type->value }}">{{ $type->label() }}</option>
@@ -188,9 +188,9 @@
                                 </div>
 
                                 <div class="fieldset">
-                                    <label class="fieldset-label">{{ __('procedure.field.stepDescription') }}</label>
+                                    <label :for="fieldName(i, 'description')" class="fieldset-label">{{ __('procedure.field.stepDescription') }}</label>
                                     <input type="text" maxlength="2000"
-                                           :name="fieldName(i, 'description')" x-model="it.description"
+                                           :id="fieldName(i, 'description')" :name="fieldName(i, 'description')" x-model="it.description"
                                            class="input input-sm input-bordered w-full">
                                 </div>
 
@@ -214,8 +214,8 @@
 
                                 <div class="grid grid-cols-1 gap-2 sm:grid-cols-3">
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.proofType') }}</label>
-                                        <select :name="fieldName(i, 'requires_proof_type')" x-model="it.requires_proof_type"
+                                        <label :for="fieldName(i, 'requires_proof_type')" class="fieldset-label">{{ __('procedure.field.proofType') }}</label>
+                                        <select :id="fieldName(i, 'requires_proof_type')" :name="fieldName(i, 'requires_proof_type')" x-model="it.requires_proof_type"
                                                 class="select select-sm select-bordered">
                                             <option value="">{{ __('procedure.field.none') }}</option>
                                             @foreach ($proofTypes as $proof)
@@ -224,34 +224,34 @@
                                         </select>
                                     </div>
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.requiredRole') }}</label>
+                                        <label :for="fieldName(i, 'required_role')" class="fieldset-label">{{ __('procedure.field.requiredRole') }}</label>
                                         <input type="text" maxlength="40"
-                                               :name="fieldName(i, 'required_role')" x-model="it.required_role"
+                                               :id="fieldName(i, 'required_role')" :name="fieldName(i, 'required_role')" x-model="it.required_role"
                                                class="input input-sm input-bordered w-full">
                                     </div>
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.requiredQualification') }}</label>
+                                        <label :for="fieldName(i, 'required_qualification_code')" class="fieldset-label">{{ __('procedure.field.requiredQualification') }}</label>
                                         <input type="text" maxlength="60"
-                                               :name="fieldName(i, 'required_qualification_code')" x-model="it.required_qualification_code"
+                                               :id="fieldName(i, 'required_qualification_code')" :name="fieldName(i, 'required_qualification_code')" x-model="it.required_qualification_code"
                                                class="input input-sm input-bordered w-full">
                                     </div>
                                 </div>
 
                                 {{-- Bedingter Schritt (wenn-dann), additiv in config.depends_on --}}
                                 <div class="grid grid-cols-1 gap-2 rounded-box border border-dashed border-base-300 p-2 sm:grid-cols-2">
-                                    <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('procedure.hint.condition') }}</p>
+                                    <p class="text-xs text-muted sm:col-span-2">{{ __('procedure.hint.condition') }}</p>
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.conditionStep') }}</label>
+                                        <label :for="fieldName(i, 'condition_step')" class="fieldset-label">{{ __('procedure.field.conditionStep') }}</label>
                                         <input type="text" maxlength="60"
                                                placeholder="{{ __('procedure.hint.conditionStep') }}"
-                                               :name="fieldName(i, 'condition_step')" x-model="it.condition_step"
+                                               :id="fieldName(i, 'condition_step')" :name="fieldName(i, 'condition_step')" x-model="it.condition_step"
                                                class="input input-sm input-bordered w-full font-mono">
                                     </div>
                                     <div class="fieldset">
-                                        <label class="fieldset-label">{{ __('procedure.field.conditionEquals') }}</label>
+                                        <label :for="fieldName(i, 'condition_equals')" class="fieldset-label">{{ __('procedure.field.conditionEquals') }}</label>
                                         <input type="text" maxlength="120"
                                                placeholder="{{ __('procedure.hint.conditionEquals') }}"
-                                               :name="fieldName(i, 'condition_equals')" x-model="it.condition_equals"
+                                               :id="fieldName(i, 'condition_equals')" :name="fieldName(i, 'condition_equals')" x-model="it.condition_equals"
                                                class="input input-sm input-bordered w-full">
                                     </div>
                                 </div>

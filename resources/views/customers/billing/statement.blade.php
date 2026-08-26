@@ -38,9 +38,9 @@
 
     <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs text-base-content/60">{{ __('customer-billing.gross_value') }}</div>
+            <div class="text-xs text-muted">{{ __('customer-billing.gross_value') }}</div>
             <div class="text-lg font-semibold tabular-nums">{{ $money($statement->gross_value) }}</div>
-            <div class="text-xs text-base-content/60 tabular-nums">
+            <div class="text-xs text-muted tabular-nums">
                 {{ $hours((int) $statement->total_minutes) }}
                 @if ($travelMinutes > 0)
                     + {{ $hours($travelMinutes) }} {{ __('customer-billing.travel') }}
@@ -48,15 +48,15 @@
             </div>
         </div>
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs text-base-content/60">{{ __('customer-billing.payments_total') }}</div>
+            <div class="text-xs text-muted">{{ __('customer-billing.payments_total') }}</div>
             <div class="text-lg font-semibold tabular-nums">{{ $money($statement->payments_total) }}</div>
         </div>
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs text-base-content/60">{{ __('customer-billing.carry_in') }}</div>
+            <div class="text-xs text-muted">{{ __('customer-billing.carry_in') }}</div>
             <div class="text-lg font-semibold tabular-nums">{{ $money($statement->carry_in) }}</div>
         </div>
         <div class="rounded-box border border-primary/40 bg-primary/5 p-3">
-            <div class="text-xs text-base-content/60">{{ __('customer-billing.balance') }}</div>
+            <div class="text-xs text-muted">{{ __('customer-billing.balance') }}</div>
             <div class="text-lg font-semibold tabular-nums">{{ $money($statement->balance) }}</div>
         </div>
     </div>

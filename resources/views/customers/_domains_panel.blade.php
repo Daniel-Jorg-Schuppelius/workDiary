@@ -46,7 +46,7 @@
         </x-table>
         @if ($customerDomains->count() > 10)
             <details>
-                <summary class="cursor-pointer select-none border-t border-base-300 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-base-content/50 hover:bg-base-200">
+                <summary class="cursor-pointer select-none border-t border-base-300 px-4 py-2 text-xs font-semibold uppercase tracking-wide text-muted hover:bg-base-200">
                     {{ __('Alle anzeigen') }} <span class="font-normal">(+{{ $customerDomains->count() - 10 }})</span>
                 </summary>
                 <x-table bare>

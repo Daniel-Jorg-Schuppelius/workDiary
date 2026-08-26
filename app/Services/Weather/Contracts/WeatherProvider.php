@@ -30,4 +30,14 @@ interface WeatherProvider {
      * @return array{temp_min: float|null, temp_max: float|null, precipitation_mm: float|null, wind_gust_kmh: float|null, weather_code: int|null, raw: array<string, mixed>}|null
      */
     public function daily(float $lat, float $lng, CarbonInterface $date): ?array;
+
+    /**
+     * Tagesvorhersage ab heute für bis zu 7 Tage (MVP-716), oder `null`, wenn
+     * der Provider keine Vorhersage liefert (DWD-KL sind Beobachtungen) oder
+     * ausfällt. Schlüssel = Datum (Y-m-d). Vorhersagen sind KEINE Snapshots und
+     * werden nie als solche gespeichert.
+     *
+     * @return array<string, array{date: string, temp_min: float|null, temp_max: float|null, precipitation_mm: float|null, wind_max_kmh: float|null, wind_gust_kmh: float|null, weather_code: int|null}>|null
+     */
+    public function forecast(float $lat, float $lng, int $days): ?array;
 }

@@ -89,8 +89,8 @@
                 x-model="parentId" />
 
             <div class="fieldset" x-show="noParent" x-cloak>
-                <label class="fieldset-label">{{ __('Kunde') }}</label>
-                <select name="customer_id" class="select select-bordered w-full" x-ref="customerSelect" x-model="customerId" :disabled="hasParent">
+                <label for="customer_id" class="fieldset-label">{{ __('Kunde') }}</label>
+                <select id="customer_id" name="customer_id" class="select select-bordered w-full" x-ref="customerSelect" x-model="customerId" :disabled="hasParent">
                     <option value="">{{ __('— Kein Kunde —') }}</option>
                     @foreach ($customers as $customer)
                         <option value="{{ $customer->sqid }}" @selected((string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $project?->customer_id)) === $customer->sqid)>
@@ -102,8 +102,8 @@
             </div>
 
             <div class="fieldset" x-show="showForeignCustomer" x-cloak>
-                <label class="fieldset-label">{{ __('Fremdkunde') }}</label>
-                <select name="foreign_customer_id" class="select select-bordered w-full"
+                <label for="foreign_customer_id" class="fieldset-label">{{ __('Fremdkunde') }}</label>
+                <select id="foreign_customer_id" name="foreign_customer_id" class="select select-bordered w-full"
                         x-model="foreignCustomerId" :disabled="hasParent">
                     <option value="">{{ __('— Kein Fremdkunde —') }}</option>
                     <template x-for="fc in availableForeignCustomers" :key="fc.sqid">
@@ -112,7 +112,7 @@
                 </select>
                 @error('foreign_customer_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
             </div>
-            <p class="text-xs text-base-content/60" x-show="hasParent" x-cloak>
+            <p class="text-xs text-muted" x-show="hasParent" x-cloak>
                 {{ __('Customer wird vom Parent-Projekt übernommen.') }}
             </p>
         </x-form-group>
@@ -147,7 +147,7 @@
 
         <x-form-group :legend="__('Teams & Mitglieder')" icon="groups" tone="secondary">
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('Zuständige Teams') }}</label>
+                <span class="fieldset-label">{{ __('Zuständige Teams') }}</span>
                 @php($selectedTeams = (array) old('team_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\Team::class, $id), $assignedTeamIds)))
                 <div class="grid grid-cols-1 gap-1 sm:grid-cols-2">
                     @forelse ($teams as $team)
@@ -157,14 +157,14 @@
                             <span class="text-sm">@if ($team->color)<span class="mr-1 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</span>
                         </label>
                     @empty
-                        <p class="text-xs text-base-content/60">{{ __('Noch keine Teams angelegt.') }}</p>
+                        <p class="text-xs text-muted">{{ __('Noch keine Teams angelegt.') }}</p>
                     @endforelse
                 </div>
-                <p class="text-xs text-base-content/60">{{ __('Mitglieder der gewählten Teams können Aufgaben dieses Auftrags übernehmen.') }}</p>
+                <p class="text-xs text-muted">{{ __('Mitglieder der gewählten Teams können Aufgaben dieses Auftrags übernehmen.') }}</p>
             </div>
 
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('Zusätzliche Einzelmitglieder') }}</label>
+                <span class="fieldset-label">{{ __('Zusätzliche Einzelmitglieder') }}</span>
                 @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assignedMemberIds)))
                 <x-user-checklist
                     name="member_ids"
@@ -184,7 +184,7 @@
                                @checked(old('is_default', $project?->is_default))>
                         <span class="label-text">{{ __('Standardprojekt für diesen Kunden') }}</span>
                     </label>
-                    <p class="text-xs text-base-content/60">{{ __('Auto-Bucket für Ad-hoc-/Notfall-Stundenzettel. Pro Kunde gibt es genau ein Standardprojekt.') }}</p>
+                    <p class="text-xs text-muted">{{ __('Auto-Bucket für Ad-hoc-/Notfall-Stundenzettel. Pro Kunde gibt es genau ein Standardprojekt.') }}</p>
                 </div>
             </x-form-group>
         @endif

@@ -26,7 +26,7 @@
     <div class="divider text-xs">{{ __('Web-Push (VAPID)') }}</div>
 
     <div class="flex items-center justify-between gap-2">
-        <p class="text-xs text-base-content/60">{{ __('Schlüsselpaar für Browser-Push. Kann automatisch erzeugt werden.') }}</p>
+        <p class="text-xs text-muted">{{ __('Schlüsselpaar für Browser-Push. Kann automatisch erzeugt werden.') }}</p>
         <x-button type="button" id="vapid-generate" tone="outline" size="sm" icon="key">{{ __('Schlüssel generieren') }}</x-button>
     </div>
 

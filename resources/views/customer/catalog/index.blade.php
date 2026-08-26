@@ -17,7 +17,7 @@
     </div>
 
     @if ($items->isEmpty())
-        <div class="rounded-box border border-base-300 bg-base-100 p-6 text-center text-base-content/60">
+        <div class="rounded-box border border-base-300 bg-base-100 p-6 text-center text-muted">
             {{ __('Derzeit sind keine Leistungen bestellbar.') }}
         </div>
     @else
@@ -26,7 +26,7 @@
                 <div class="rounded-box border border-base-300 bg-base-100 p-4">
                     <div class="font-semibold">{{ $item->name }}</div>
                     @if ($item->description)
-                        <p class="mt-1 text-sm text-base-content/60">{{ $item->description }}</p>
+                        <p class="mt-1 text-sm text-muted">{{ $item->description }}</p>
                     @endif
                     <a class="btn btn-primary btn-sm mt-3" href="{{ route('customer.catalog.show', $item) }}">
                         {{ __('Bestellen') }}

@@ -89,8 +89,8 @@
                 @forelse ($agreement->subprocessors as $sub)
                     <li class="flex items-center justify-between text-sm rounded-box border border-base-300 px-3 py-2">
                         <span>
-                            {{ $sub->name }} @if ($sub->location)<span class="text-base-content/60">— {{ $sub->location }}</span>@endif {{ $sub->third_country ? '('.__('Drittland').')' : '' }}
-                            @if ($sub->safeguards)<span class="block text-xs text-base-content/60">{{ __('Garantien') }}: {{ $sub->safeguards }}</span>@endif
+                            {{ $sub->name }} @if ($sub->location)<span class="text-muted">— {{ $sub->location }}</span>@endif {{ $sub->third_country ? '('.__('Drittland').')' : '' }}
+                            @if ($sub->safeguards)<span class="block text-xs text-muted">{{ __('Garantien') }}: {{ $sub->safeguards }}</span>@endif
                         </span>
                         <span class="inline-flex items-center gap-1">
                             @if ($sub->approved)
@@ -111,7 +111,7 @@
                         </span>
                     </li>
                 @empty
-                    <li class="text-sm text-base-content/60">{{ __('Keine Unterauftragsverarbeiter.') }}</li>
+                    <li class="text-sm text-muted">{{ __('Keine Unterauftragsverarbeiter.') }}</li>
                 @endforelse
             </ul>
             @can('update', $agreement)
@@ -145,7 +145,7 @@
                 @forelse ($assignedMeasures as $m)
                     <li>• <a class="link" href="{{ route('dataprotection.tom.show', $m) }}">{{ $m->name }}</a></li>
                 @empty
-                    <li class="text-base-content/60">{{ __('Keine TOM zugeordnet.') }}</li>
+                    <li class="text-muted">{{ __('Keine TOM zugeordnet.') }}</li>
                 @endforelse
             </ul>
             @can('update', $agreement)

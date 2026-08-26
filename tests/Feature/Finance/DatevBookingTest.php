@@ -204,6 +204,56 @@ class DatevBookingTest extends TestCase {
         $this->assertNotEmpty($bad['errors']);
     }
 
+    /**
+     * Kanzlei-Felder (Feature 135, MVP-700): Fälligkeit, Skonto + Skontotyp
+     * und KOST1 landen an ihrem EXTF-Spaltenindex; Beleglink bleibt leer.
+     */
+    public function test_finalize_writes_due_date_discount_and_cost_center(): void {
+        if (! FinancialFormatsSupport::isAvailable()) {
+            $this->markTestSkipped('php-financial-formats nicht verfügbar.');
+        }
+
+        \App\Models\CostCenterRule::query()->create([
+            'organization_id' => $this->organization->id,
+            'cost_center' => 'KST100',
+            'priority' => 0,
+        ]);
+        $invoice = $this->makeInvoice('RE-KOST');
+        $invoice->update(['due_on' => '2026-06-14', 'skonto_percent' => '2.00', 'skonto_days' => 10]);
+
+        $sources = $this->service()->collectBookingReady($this->organization, $this->period());
+        $batch = $this->service()->createDraft($this->organization, $this->period(), $sources, $this->config(), $this->admin);
+        $batch = $this->service()->finalize($batch, $this->config(), $this->admin);
+
+        $csv = (string) Storage::disk(DatevBookingService::DISK)->get((string) $batch->file_path);
+        $fields = explode(';', explode("\n", $csv)[2]);
+
+        $this->assertSame('2,38', $fields[12], 'Skonto (Feld 13)');
+        $this->assertSame('', $fields[19], 'Beleglink (Feld 20) bleibt leer — kein DATEV-Beleg-GUID');
+        $this->assertSame('KST100', $fields[36], 'KOST1 (Feld 37)');
+        $this->assertSame('14062026', $fields[92], 'Zugeordnete Fälligkeit (Feld 93)');
+        $this->assertSame('2', $fields[93], 'Skontotyp (Feld 94) = Verkauf');
+    }
+
+    /** Ohne Konditionen und Regeln bleibt der Stapel wie bisher — leere Felder. */
+    public function test_finalize_leaves_optional_fields_empty_without_conditions(): void {
+        if (! FinancialFormatsSupport::isAvailable()) {
+            $this->markTestSkipped('php-financial-formats nicht verfügbar.');
+        }
+
+        $this->makeInvoice('RE-PLAIN');
+        $sources = $this->service()->collectBookingReady($this->organization, $this->period());
+        $batch = $this->service()->createDraft($this->organization, $this->period(), $sources, $this->config(), $this->admin);
+        $batch = $this->service()->finalize($batch, $this->config(), $this->admin);
+
+        $fields = explode(';', explode("\n", (string) Storage::disk(DatevBookingService::DISK)->get((string) $batch->file_path))[2]);
+
+        $this->assertSame('', $fields[12]);
+        $this->assertSame('', $fields[36]);
+        $this->assertSame('', $fields[92]);
+        $this->assertSame('', $fields[93]);
+    }
+
     public function test_finalized_batch_is_immutable(): void {
         $batch = DatevBookingBatch::factory()->exported()->create([
             'organization_id' => $this->organization->id,

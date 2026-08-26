@@ -192,7 +192,7 @@ class InvoiceController extends Controller {
 
     public function show(Invoice $invoice): View {
         Gate::authorize('view', $invoice);
-        $invoice->load(['items.timeEntries.user', 'customer', 'project']);
+        $invoice->load(['items.timeEntries.user', 'items.article', 'customer', 'project']);
 
         // Belegkette 066: anrechenbare offene Abschläge für den Schlussrechnungs-CTA.
         $openDownPaymentCount = 0;
@@ -260,10 +260,15 @@ class InvoiceController extends Controller {
     /** Mahn-Dialog (MVP-163, UI-Nacharbeit): Stufe + optionaler Mailversand. */
     public function dunForm(\Illuminate\Http\Request $request, Invoice $invoice): View {
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
-        abort_unless($invoice->isOverdue() && (int) $invoice->dunning_level < 3, 422);
+        abort_unless($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && ! $invoice->isDunningBlocked(), 422);
         $invoice->load('customer');
 
         $nextLevel = (int) $invoice->dunning_level + 1;
+        // Stufen-Defaults der Org-Konfiguration (MVP-691) als Vorbelegung —
+        // der Nutzer kann sie im Dialog übersteuern (Override bleibt).
+        $dunning = app(\App\Services\Invoicing\DunningService::class);
+        $step = $dunning->stepConfig($nextLevel);
+        $interest = $dunning->interest($invoice);
 
         // KI-Mahntext-Entwurf (Feature 084, MVP-405-Rest): ?ki=1 lädt den
         // Dialog mit vorbefülltem Zusatztext — nie Auto-Versand.
@@ -277,6 +282,9 @@ class InvoiceController extends Controller {
             'invoice' => $invoice,
             'nextLevel' => $nextLevel,
             'defaultTo' => $invoice->customer->primaryContact()['email'] ?? $invoice->customer->email ?? '',
+            'defaultFee' => $step['fee'] > 0 ? number_format($step['fee'], 2, '.', '') : null,
+            'defaultPayUntil' => now()->addDays($step['pay_days'])->toDateString(),
+            'interest' => $interest,
             'aiUsable' => $aiUsable,
             'aiText' => $aiText,
             'aiError' => $aiError,
@@ -312,12 +320,6 @@ class InvoiceController extends Controller {
         // Mahnen betrifft AUSGESTELLTE Rechnungen — die issue-Policy (nur
         // draft) passt nicht; Maßstab ist das Abrechnungsrecht.
         abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
-        if (! $invoice->isOverdue()) {
-            return back()->with('error', __('Nur überfällige Rechnungen können gemahnt werden.'));
-        }
-        if ((int) $invoice->dunning_level >= 3) {
-            return back()->with('error', __('Höchste Mahnstufe bereits erreicht.'));
-        }
 
         $data = $request->validate([
             'send_mail' => ['nullable', 'boolean'],
@@ -328,32 +330,46 @@ class InvoiceController extends Controller {
             'pay_until' => ['nullable', 'date'],
         ]);
 
-        $fee = isset($data['fee']) && is_numeric($data['fee']) && (float) $data['fee'] > 0 ? round((float) $data['fee'], 2) : null;
-        $payUntil = ! empty($data['pay_until']) ? \Carbon\CarbonImmutable::parse((string) $data['pay_until']) : null;
-
-        $newLevel = (int) $invoice->dunning_level + 1;
-        $invoice->update(['dunning_level' => $newLevel, 'dunned_at' => now()]);
-        $invoice->audit('invoice.dunned', ['level' => $newLevel, 'mailed' => ! empty($data['send_mail']), 'fee' => $fee, 'pay_until' => $payUntil?->toDateString()]);
-
-        // Mahn-Mailversand (MVP-163, Restpaket): eigener Zustellversuch —
-        // die Rechnung selbst bleibt unverändert (kein neuer Beleg).
-        if (! empty($data['send_mail'])) {
-            // Vollaudit 2026-07 (M26): Dispatch VOR dem Queuen anlegen — die
-            // Mailable trägt die ID im Header, der Listener schreibt sent/failed.
-            $dispatch = $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, 'pdf', (string) $data['email'], null, [
-                'kind' => 'dunning',
-                'level' => $newLevel,
-                'fee' => $fee,
-                'pay_until' => $payUntil?->toDateString(),
+        // Vollzug im DunningService (MVP-691): eingegebene Gebühr/Frist sind
+        // Override — die Dialog-Vorbelegung kam bereits aus der Org-Konfiguration.
+        try {
+            $result = app(\App\Services\Invoicing\DunningService::class)->dunInvoice($invoice, [
+                'fee' => isset($data['fee']) && is_numeric($data['fee']) ? (float) $data['fee'] : null,
+                'pay_until' => ! empty($data['pay_until']) ? \Carbon\CarbonImmutable::parse((string) $data['pay_until']) : null,
+                'note' => $data['note'] ?? null,
+                'send_mail' => ! empty($data['send_mail']),
+                'email' => isset($data['email']) ? (string) $data['email'] : null,
             ]);
-            $mail = new \App\Mail\DunningMail($invoice, $newLevel, $data['note'] ?? null, (int) $dispatch->id, $fee, $payUntil);
-            Mail::to((string) $data['email'])->queue($mail);
-
-            return redirect()->route('invoices.show', $invoice)
-                ->with('status', __('Mahnstufe :level vermerkt und Mahnung an :email versendet.', ['level' => $newLevel, 'email' => $data['email']]));
+        } catch (\App\Services\Invoicing\DunningException $e) {
+            return back()->with('error', $e->getMessage());
         }
 
-        return redirect()->route('invoices.show', $invoice)->with('status', __('Mahnstufe :level vermerkt.', ['level' => $newLevel]));
+        if ($result['mailed']) {
+            return redirect()->route('invoices.show', $invoice)
+                ->with('status', __('Mahnstufe :level vermerkt und Mahnung an :email versendet.', ['level' => $result['level'], 'email' => (string) ($data['email'] ?? '')]));
+        }
+
+        return redirect()->route('invoices.show', $invoice)->with('status', __('Mahnstufe :level vermerkt.', ['level' => $result['level']]));
+    }
+
+    /**
+     * Mahnsperre umschalten (Feature 127, MVP-691): gesperrte Rechnungen
+     * bleiben im Mahnlauf und im Einzeldialog außen vor.
+     */
+    public function toggleDunningBlock(Invoice $invoice): RedirectResponse {
+        abort_unless(Auth::user()?->canManageBilling() ?? false, 403);
+
+        if ($invoice->isDunningBlocked()) {
+            $invoice->update(['dunning_blocked_at' => null]);
+            $invoice->audit('invoice.dunningUnblocked', ['by' => (int) Auth::id()]);
+
+            return back()->with('status', __('finance.dunning.flash_unblocked', ['nr' => (string) $invoice->number]));
+        }
+
+        $invoice->update(['dunning_blocked_at' => now()]);
+        $invoice->audit('invoice.dunningBlocked', ['by' => (int) Auth::id()]);
+
+        return back()->with('status', __('finance.dunning.flash_blocked', ['nr' => (string) $invoice->number]));
     }
 
     /**
@@ -361,13 +377,15 @@ class InvoiceController extends Controller {
      *
      * @param  array<string, mixed>  $meta
      */
-    private function recordDispatch(Invoice $invoice, string $channel, ?string $format, ?string $recipient, ?string $sha256, array $meta = []): \App\Models\InvoiceDispatch {
-        return \App\Models\InvoiceDispatch::query()->create([
+    private function recordDispatch(Invoice $invoice, string $channel, ?string $format, ?string $recipient, ?string $sha256, array $meta = []): \App\Models\DocumentDispatch {
+        return \App\Models\DocumentDispatch::query()->create([
             'organization_id' => $invoice->organization_id,
             'invoice_id' => $invoice->id,
+            'document_kind' => \App\Enums\DocumentDesign\RenderDocumentKind::Invoice->value,
+            'document_id' => $invoice->id,
             'channel' => $channel,
             'format' => $format,
-            'status' => $channel === \App\Models\InvoiceDispatch::CHANNEL_EMAIL ? 'queued' : 'sent',
+            'status' => $channel === \App\Models\DocumentDispatch::CHANNEL_EMAIL ? 'queued' : 'sent',
             'recipient' => $recipient,
             'sha256' => $sha256,
             'meta' => $meta !== [] ? $meta : null,
@@ -494,7 +512,7 @@ class InvoiceController extends Controller {
             'filename' => $filename,
             'sha256' => CryptoHelper::hash($xml),
         ]);
-        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'xrechnung_ubl', null, CryptoHelper::hash($xml), ['filename' => $filename]);
+        $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD, 'xrechnung_ubl', null, CryptoHelper::hash($xml), ['filename' => $filename]);
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
@@ -535,7 +553,7 @@ class InvoiceController extends Controller {
         ]);
         $this->recordDispatch(
             $invoice,
-            \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD,
+            \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD,
             'gaeb_' . strtolower($phase->value),
             null,
             CryptoHelper::hash($result['content']),
@@ -592,7 +610,7 @@ class InvoiceController extends Controller {
             'filename' => $filename,
             'sha256' => CryptoHelper::hash($pdf),
         ]);
-        $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_DOWNLOAD, 'zugferd_pdf', null, CryptoHelper::hash($pdf), ['filename' => $filename]);
+        $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD, 'zugferd_pdf', null, CryptoHelper::hash($pdf), ['filename' => $filename]);
 
         return response($pdf, 200, [
             'Content-Type' => 'application/pdf',
@@ -607,6 +625,7 @@ class InvoiceController extends Controller {
         return view('invoices._item_form_dialog', [
             'invoice' => $invoice,
             'item' => $item,
+            'articles' => \App\Models\Article::query()->where('sellable', true)->orderBy('name')->limit(500)->get(['id', 'number', 'name', 'base_unit', 'default_sale_price', 'currency']),
         ]);
     }
 
@@ -616,6 +635,7 @@ class InvoiceController extends Controller {
 
         $invoice->items()->create([
             'organization_id' => $invoice->organization_id,
+            'article_id' => $data['article_id'] ?? null,
             'service_date' => $data['service_date'] ?? null,
             'description' => $data['description'],
             'quantity' => (string) $data['quantity'],
@@ -641,6 +661,7 @@ class InvoiceController extends Controller {
         $oldDescription = (string) $item->description;
 
         $item->update([
+            'article_id' => $data['article_id'] ?? null,
             'service_date' => $data['service_date'] ?? null,
             'description' => $data['description'],
             'quantity' => (string) $data['quantity'],
@@ -783,6 +804,7 @@ class InvoiceController extends Controller {
         );
 
         $templates = InvoiceMailTemplate::query()
+            ->forKind(\App\Enums\DocumentDesign\RenderDocumentKind::Invoice)
             ->where(function ($q) use ($invoice): void {
                 $q->where('organization_id', $invoice->organization_id)
                     ->orWhereNull('organization_id');
@@ -825,6 +847,13 @@ class InvoiceController extends Controller {
             } catch (InvoiceIssueException $e) {
                 return back()->with('error', $e->getMessage());
             }
+        }
+
+        // Feature 128 (MVP-692): Der Dialog postet die Vorlage als Sqid
+        // (InvoiceMailTemplate nutzt HasSqid); rohe IDs (Tests/API) bleiben gültig.
+        $rawTemplate = $request->input('template_id');
+        if (is_string($rawTemplate) && $rawTemplate !== '' && ! ctype_digit($rawTemplate)) {
+            $request->merge(['template_id' => app(\App\Services\SqidEncoder::class)->decode(InvoiceMailTemplate::class, $rawTemplate)]);
         }
 
         $data = $request->validate([
@@ -875,8 +904,12 @@ class InvoiceController extends Controller {
         if ($template->organization_id !== null && $template->organization_id !== $invoice->organization_id) {
             abort(403);
         }
+        // Feature 128 (MVP-692): Vorlagen gelten je Belegart.
+        abort_unless($template->document_kind === \App\Enums\DocumentDesign\RenderDocumentKind::Invoice->value, 422, (string) __('Vorlage passt nicht zur Belegart.'));
 
-        $rendered = $template->renderForInvoice($invoice, $data['custom_text'] ?? null);
+        // Belegsprache je Kunde (Feature 034, MVP-721): Vorlagen-Platzhalter
+        // (Belegart, Datum) in der Sprache des Kunden.
+        $rendered = \App\Support\DocumentLocale::within($invoice->customer, $invoice->organization, fn (): array => $template->renderForInvoice($invoice, $data['custom_text'] ?? null));
 
         $bcc = $data['bcc'] ?? [];
         if (! empty($data['bcc_sender'])) {
@@ -889,7 +922,7 @@ class InvoiceController extends Controller {
         // Zustellnachweis (MVP-168): jeder Versand ist ein eigener Versuch.
         // Vollaudit 2026-07 (M26): Dispatch VOR dem Queuen — Status/Message-ID/
         // Dateihash schreibt der Versandpfad (Listener + Mailable) nach.
-        $dispatch = $this->recordDispatch($invoice, \App\Models\InvoiceDispatch::CHANNEL_EMAIL, $deliveryFormat->dispatchFormat(), implode(', ', $data['to']), null, [
+        $dispatch = $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_EMAIL, $deliveryFormat->dispatchFormat(), implode(', ', $data['to']), null, [
             'cc' => $data['cc'] ?? [],
             'template_id' => $template->id,
         ]);

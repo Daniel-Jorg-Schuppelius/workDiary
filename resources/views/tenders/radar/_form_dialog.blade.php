@@ -60,7 +60,7 @@
                        :value="old('max_value', $profile->max_value)" />
     </x-form-group>
 
-    <p class="text-xs text-base-content/60">
+    <p class="text-xs text-muted">
         {{ __('Bekanntmachungen ohne Wertangabe werden von den Wertgrenzen nicht ausgeschlossen — sonst entginge, was seinen Wert nicht nennt.') }}
     </p>
 

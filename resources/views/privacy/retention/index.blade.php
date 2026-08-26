@@ -37,14 +37,28 @@
             <x-slot:head>
                 <tr>
                     <th>{{ __('Bereich') }}</th>
-                    <th class="text-right">{{ __('Frist (Jahre)') }}</th>
+                    <th class="text-right">{{ __('Frist') }}</th>
                     <th>{{ __('Rechtsgrundlage') }}</th>
                 </tr>
             </x-slot:head>
             @foreach ($areas as $area)
                 <tr>
-                    <td>{{ $area['label'] }}</td>
-                    <td class="text-right tabular-nums">{{ $area['years'] ?? '—' }}</td>
+                    <td>
+                        {{ $area['label'] }}
+                        @unless ($area['scanned'])
+                            {{-- Ausweis-Bereich (Feature 130): Frist dokumentiert, Vollzug außerhalb des Review-Scans. --}}
+                            <span class="ml-1 text-xs text-muted">{{ __('nur Ausweis, ohne Scan') }}</span>
+                        @endunless
+                    </td>
+                    <td class="text-right tabular-nums">
+                        @if ($area['years'] !== null)
+                            {{ trans_choice(':count Jahr|:count Jahre', $area['years']) }}
+                        @elseif ($area['days'] !== null)
+                            {{ trans_choice(':count Tag|:count Tage', $area['days']) }}
+                        @else
+                            —
+                        @endif
+                    </td>
                     <td class="text-sm text-base-content/70">{{ $area['basis'] ?? '—' }}</td>
                 </tr>
             @endforeach
@@ -69,7 +83,7 @@
                 @foreach ($proposals as $proposal)
                     <tr>
                         <td class="text-sm">{{ config('retention.areas.' . $proposal->area . '.label', $proposal->area) }}</td>
-                        <td class="text-xs">{{ \App\Support\EntityType::label($proposal->subject_type) }} <span class="font-mono text-base-content/60">#{{ $proposal->subject_id }}</span></td>
+                        <td class="text-xs">{{ \App\Support\EntityType::label($proposal->subject_type) }} <span class="font-mono text-muted">#{{ $proposal->subject_id }}</span></td>
                         <td class="tabular-nums text-sm">{{ $proposal->retention_until->format('d.m.Y') }}</td>
                         <td class="max-w-md truncate text-sm text-base-content/70">{{ $proposal->reason }}</td>
                         <td>

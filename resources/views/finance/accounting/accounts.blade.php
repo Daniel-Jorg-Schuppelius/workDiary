@@ -43,10 +43,10 @@
                     </x-select-field>
                     <button type="submit" class="btn btn-primary btn-sm">{{ __('accounting.template.action.apply') }}</button>
                 </form>
-                <p class="mt-2 text-xs text-base-content/60">
+                <p class="mt-2 text-xs text-muted">
                     {{ $hasAccounts ? __('accounting.template.hint_additive') : __('accounting.template.hint_first') }}
                 </p>
-                <p class="mt-1 text-xs text-base-content/60">{{ __('accounting.template.disclaimer') }}</p>
+                <p class="mt-1 text-xs text-muted">{{ __('accounting.template.disclaimer') }}</p>
             </x-card>
         @endif
 
@@ -121,10 +121,10 @@
                         @if ($account->euer_category)
                             {{ $account->euer_category->label() }}
                             @if ((float) $account->deductible_percent < 100)
-                                <span class="text-xs text-base-content/60">({{ $account->deductible_percent }} %)</span>
+                                <span class="text-xs text-muted">({{ $account->deductible_percent }} %)</span>
                             @endif
                         @else
-                            <span class="text-base-content/40">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td>

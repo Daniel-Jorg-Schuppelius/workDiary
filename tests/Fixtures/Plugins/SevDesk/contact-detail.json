@@ -1,0 +1,6 @@
+{
+  "_source": "sevDesk API v1 — Antworten von POST /ContactAddress und POST /CommunicationWay (objects-Umschlag, Einzelobjekt).",
+  "address": { "objects": { "id": "5501", "objectName": "ContactAddress", "street": "Hauptstr. 1", "zip": "12345", "city": "Musterstadt" } },
+  "email": { "objects": { "id": "6601", "objectName": "CommunicationWay", "type": "EMAIL", "value": "billing@acme.test" } },
+  "phone": { "objects": { "id": "6602", "objectName": "CommunicationWay", "type": "PHONE", "value": "+49 30 1234567" } }
+}

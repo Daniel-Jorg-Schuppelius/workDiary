@@ -42,6 +42,11 @@ class CsvFormulaGuardTest extends TestCase {
         $this->assertSame("'@cmd", CsvExport::guard('@cmd'));
         $this->assertSame('harmlos', CsvExport::guard('harmlos'));
         $this->assertSame(-12.5, CsvExport::guard(-12.5));
+        // MVP-729: negative Geldbeträge kommen als exakter Dezimalstring
+        // (float ist bei Geld verboten) und dürfen kein Apostroph bekommen —
+        // sonst ist die Provisions-Rückrechnung im Lohnimport kein Zahlwert.
+        $this->assertSame('-500.00', CsvExport::guard('-500.00'));
+        $this->assertSame('-12,50', CsvExport::guard('-12,50'));
         $this->assertSame(42, CsvExport::guard(42));
         $this->assertNull(CsvExport::guard(null));
     }

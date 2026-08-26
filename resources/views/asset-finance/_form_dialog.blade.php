@@ -80,7 +80,7 @@
         <x-textarea-field name="notes" :label="__('Notizen')" rows="2" span="2">{{ old('notes') }}</x-textarea-field>
     </x-form-group>
 
-    <p class="text-xs text-base-content/60">
+    <p class="text-xs text-muted">
         {{ __('Hinweis: WorkDiary führt die operative Leasingakte (B2B). Bilanzierung (HGB/IFRS 16), steuerliche Zurechnung und Verbraucherschutzpflichten (CCD II, ab 20.11.2026 für Verbraucherverträge mit Kaufoption) bleiben Sache des Rechnungswesens bzw. der Rechtsberatung.') }}
     </p>
 

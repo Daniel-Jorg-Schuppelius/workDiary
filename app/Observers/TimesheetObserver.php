@@ -13,6 +13,7 @@ namespace App\Observers;
 use App\Enums\Notification\NotificationEvent;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Models\Timesheet;
+use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Notification\NotificationDispatcher;
 use App\Support\CarbonFmt;
 
@@ -23,7 +24,19 @@ class TimesheetObserver {
      * Params rendert NotificationText ohne TZ-Umrechnung beim Betrachter.
      */
     public function updated(Timesheet $timesheet): void {
-        if (! $timesheet->wasChanged('status') || $timesheet->status !== TimesheetStatus::Signed) {
+        if (! $timesheet->wasChanged('status')) {
+            return;
+        }
+
+        // Lifecycle-Webhook timesheet.submitted (MVP-718): Web- und API-Controller
+        // schreiben den Status direkt — der Modell-Statuswechsel ist die gemeinsame Naht.
+        if ($timesheet->status === TimesheetStatus::Submitted) {
+            app(LifecycleWebhookPublisher::class)->timesheetSubmitted($timesheet);
+
+            return;
+        }
+
+        if ($timesheet->status !== TimesheetStatus::Signed) {
             return;
         }
 

@@ -75,7 +75,7 @@
             </div>
 
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
+                <span class="fieldset-label">{{ __('Zeitraum') }} *</span>
                 <x-date-range
                     type="date"
                     :from="old('start_date', $vacation?->start_date?->format('Y-m-d') ?? $prefillStart)"

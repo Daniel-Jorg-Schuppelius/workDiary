@@ -100,6 +100,118 @@ return [
             'memory_scopes' => ['organization', 'customer', 'capability'],
             'prompt_version' => 1,
         ],
+        // Feature 143, MVP-711: Mangel-/Zustandsfreitext eines Protokollpunkts
+        // veredeln — nur umformulieren, keine neuen Fakten; nur in
+        // bearbeitbaren Protokollen (signiert/archiviert = gesperrt).
+        'protocols.item_text' => [
+            'verb' => 'formulate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['mangel-/zustandstext', 'protokolltitel', 'punktbezeichnung'],
+            'memory_scopes' => ['organization', 'customer', 'capability'],
+            'prompt_version' => 1,
+        ],
+        // Feature 143, MVP-711: Schweregrad/Kategorie/Ergebnis eines
+        // Protokollpunkts aus dem Freitext vorschlagen — Katalog = Fehlertypen
+        // der Organisation + feste Schweregrade/Ergebnisse; nie Auto-Apply.
+        'protocols.item_classify' => [
+            'verb' => 'classify',
+            'sensitivity' => 'medium',
+            'data_classes' => ['mangel-/zustandstext', 'katalogwerte'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
+        // Feature 143, MVP-711: Tags/Katalogwerte aus Freitext vorschlagen —
+        // Ergebnis wird auf bestehende Tags/Katalogwerte gemappt, unbekannte
+        // Vorschläge verworfen (KI legt nie Tags an).
+        'classification.tag_suggest' => [
+            'verb' => 'classify',
+            'sensitivity' => 'low',
+            'data_classes' => ['freitext', 'tag-namen', 'katalogwerte'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
+        // ── Feature 148, MVP-732 — KI-Welle 2 (Zusammenfassen/Erklären/Übersetzen) ──
+        // Angebots-/AB-/Lieferschein-Positionen und Begleittexte in die
+        // BELEGSPRACHE (Feature 034, MVP-721) statt in eine frei gewählte
+        // Sprache — terminologietreu über das Gedächtnis-Glossar.
+        'documents.item_translate' => [
+            'verb' => 'translate',
+            'sensitivity' => 'medium',
+            'data_classes' => ['positionstext', 'begleittext', 'belegsprache'],
+            'memory_scopes' => ['organization', 'customer'],
+            'prompt_version' => 1,
+        ],
+        // Fremdsprachige Portal-Rückfrage für Bearbeiter verständlich machen:
+        // Übersetzung + Kurzfassung in EINEM Zusammenfassungs-Aufruf. Der
+        // Kundentext wird vorher maskiert; mittel = Cloud nur bei erlaubtem
+        // Branchenprofil (Pflege bleibt gesperrt).
+        'portal.query_understand' => [
+            'verb' => 'summarize',
+            'sensitivity' => 'medium',
+            'data_classes' => ['rückfragetext', 'vorgangsbezeichnung'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
+        // Telefonat-/Gesprächsverlauf → strukturierte Notiz (Betreff, Ergebnis,
+        // Folgeaktion). Gesprächsinhalte sind heikel → hoch = lokal-exklusiv;
+        // als vertraulich markierte Notizen sind zusätzlich ganz gesperrt.
+        'communication.note_structure' => [
+            'verb' => 'extract',
+            'sensitivity' => 'high',
+            'data_classes' => ['gesprächsnotiz'],
+            'memory_scopes' => [],
+            'prompt_version' => 1,
+        ],
+        // Auftragsverlauf (Fallakte/Timeline) → Kurznarrativ. Der Verlauf
+        // enthält interne Ereignisse quer über alle Quellen → hoch.
+        'case.timeline_narrative' => [
+            'verb' => 'summarize',
+            'sensitivity' => 'high',
+            'data_classes' => ['verlaufsereignisse'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
+        // Plan-Ist-Abweichung erklären: ausschließlich benannte Kennzahlen,
+        // keine Namen, keine Datensätze → niedrig.
+        'plan_actual.explain' => [
+            'verb' => 'explain',
+            'sensitivity' => 'low',
+            'data_classes' => ['kennzahlen'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
+        // Supportbericht/Fehlercodes erklären — Fakten kommen über eine feste
+        // Whitelist technischer Schlüssel und werden zusätzlich redigiert
+        // (keine Pfade/Adressen/IPs). Idealer Cloud-Pilot.
+        'support.diagnose_explain' => [
+            'verb' => 'explain',
+            'sensitivity' => 'low',
+            'data_classes' => ['technische-statuswerte'],
+            'memory_scopes' => [],
+            'prompt_version' => 1,
+        ],
+        // ── Feature 148, MVP-732 — KI-Welle 3 (Extraktion und Suche) ──
+        // DMS: Dokumenttyp erkennen + Metadaten/Fristen extrahieren. EIN
+        // Aufruf statt Classify+Extract — der Dokumenttyp ist ein Feld des
+        // Zielschemas mit abschließender Werteliste; das Rückmapping auf
+        // DocumentType verwirft Unbekanntes (Katalog-Garantie). Dokumente
+        // können PII enthalten → hoch (wie invoicing.document_extraction).
+        'dms.classify_extract' => [
+            'verb' => 'extract',
+            'sensitivity' => 'high',
+            'data_classes' => ['dokumenttext', 'ocr-text'],
+            'memory_scopes' => [],
+            'prompt_version' => 1,
+        ],
+        // Import-Drehscheibe: Kopfzeile → kanonische Spec-Spalte vorschlagen.
+        // Es gehen ausschließlich KOPFZELLEN in den Prompt, nie Datenzeilen.
+        'import.column_mapping' => [
+            'verb' => 'classify',
+            'sensitivity' => 'low',
+            'data_classes' => ['kopfzeilen', 'spaltenkatalog'],
+            'memory_scopes' => [],
+            'prompt_version' => 1,
+        ],
     ],
 
     /*

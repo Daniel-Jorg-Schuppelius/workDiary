@@ -21,10 +21,10 @@
         @forelse ($attachments as $attachment)
             <div class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 p-3">
                 <div class="flex min-w-0 items-center gap-3">
-                    <x-icon :name="$attachment->isImage() ? 'image' : 'attach_file'" class="text-base-content/60 text-xl" />
+                    <x-icon :name="$attachment->isImage() ? 'image' : 'attach_file'" class="text-muted text-xl" />
                     <div class="min-w-0">
                         <a href="{{ AttachmentController::downloadUrl($attachment) }}" class="link link-primary text-sm break-all">{{ $attachment->original_name }}</a>
-                        <p class="text-xs text-base-content/60">
+                        <p class="text-xs text-muted">
                             {{ $attachment->humanSize() }}
                             · {{ optional($attachment->uploader)->name ?? '—' }}
                             · {{ $attachment->created_at->diffForHumans() }}
@@ -42,7 +42,7 @@
                 @endcan
             </div>
         @empty
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">attach_file</span>'
+            <x-empty-state icon="attach_file"
                            :title="__('Noch keine Anhänge')"
                            :message="null" compact />
         @endforelse
@@ -55,6 +55,6 @@
             <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Hochladen') }}</x-icon-btn>
             @error('file')<p class="basis-full text-sm text-error">{{ $message }}</p>@enderror
         </form>
-        <p class="mt-2 text-xs text-base-content/50">{{ __('Max. :mb MB. Erlaubt: jpg, png, gif, webp, pdf, txt, csv, log, zip, docx, xlsx.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
+        <p class="mt-2 text-xs text-muted">{{ __('Max. :mb MB. Erlaubt: jpg, png, gif, webp, pdf, txt, csv, log, zip, docx, xlsx.', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
     @endcan
 </section>

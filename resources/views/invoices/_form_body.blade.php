@@ -75,8 +75,7 @@
      nur für den Leistungs-Lauf (content=service) relevant. --}}
 <div x-show="content === 'service'" class="mt-3">
     <div data-invoice-preview
-         data-url="{{ route('invoices.preview') }}"
-         data-csrf="{{ csrf_token() }}"></div>
+         data-url="{{ route('invoices.preview') }}"></div>
 </div>
 </div>
 

@@ -42,11 +42,10 @@ class LedgerEntryLinesSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        $rows = [];
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         foreach (LedgerEntriesSection::postedEntries($organization, $from, $to) as $entry) {
             foreach ($entry->lines as $line) {
-                $rows[] = [
+                yield [
                     $this->num($entry->journal_no, 0),
                     $this->num($line->line_no, 0),
                     $this->str($line->account?->number),
@@ -58,7 +57,5 @@ class LedgerEntryLinesSection extends AbstractGdpduSection {
                 ];
             }
         }
-
-        return $rows;
     }
 }

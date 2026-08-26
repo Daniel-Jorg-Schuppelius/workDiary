@@ -44,7 +44,7 @@
 
         <x-card :title="__('accounting.reports.unclear.title')" icon="help">
             @if ($unclear === [])
-                <p class="text-sm text-base-content/60">{{ __('accounting.reports.unclear.none') }}</p>
+                <p class="text-sm text-muted">{{ __('accounting.reports.unclear.none') }}</p>
             @else
                 <ul class="list-disc pl-5 text-sm">
                     @foreach ($unclear as $item)
@@ -68,7 +68,7 @@
                     <td>
                         <x-status-badge :tone="$row['category']->tone()">{{ $row['category']->label() }}</x-status-badge>
                         @if ($row['manual'])
-                            <span class="ml-2 text-xs text-base-content/60">{{ __('accounting.reports.euer_manual_hint') }}</span>
+                            <span class="ml-2 text-xs text-muted">{{ __('accounting.reports.euer_manual_hint') }}</span>
                         @endif
                     </td>
                     <td class="text-right font-mono">{{ $row['gross'] }}</td>

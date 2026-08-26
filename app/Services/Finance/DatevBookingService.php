@@ -15,7 +15,7 @@ use App\Models\{Expense, Invoice, Organization, User};
 use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource};
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Export\ExportRunner;
-use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig};
+use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use DateTimeImmutable;
@@ -100,6 +100,8 @@ class DatevBookingService {
         $query = Invoice::query()
             ->where('organization_id', $organization->id)
             ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PAID])
+            // MVP-707: Altrechnungen wurden im Vorsystem gebucht — nie erneut übergeben.
+            ->where('number_source', '!=', \App\Services\Import\Specs\InvoiceSpec::NUMBER_SOURCE)
             ->whereNotNull('issued_on')
             ->with('customer');
 
@@ -552,17 +554,31 @@ class DatevBookingService {
         // parallel angelegten Drafts vor der Draft-Reservierung).
         $this->assertSourcesNotExportedElsewhere($batch);
 
-        $rows = $batch->sources->map(fn(DatevBookingSource $s): array => [
-            'amount' => (float) $s->amount,
-            'soll_haben' => (string) $s->soll_haben,
-            'account' => (string) $s->debtor_account,
-            'contra_account' => (string) $s->revenue_account,
-            'tax_key' => $s->tax_key,
-            'date' => new DateTimeImmutable($this->sourceDate($s, $batch)),
-            'document_ref' => (string) $s->document_ref,
-            'text' => $this->sourceText($s),
-            'is_reversal' => (bool) $s->is_reversal,
-        ])->all();
+        // Quellbelege einmal laden: Buchungstext und Kanzlei-Felder
+        // (Feature 135: Fälligkeit, Skonto, KOST1) kommen aus dem Beleg.
+        $models = $this->sourceModels($batch);
+        $fields = new DatevBookingFieldResolver((int) $batch->organization_id);
+
+        $rows = $batch->sources->map(function (DatevBookingSource $s) use ($batch, $models, $fields): array {
+            $model = $models[$s->source_type . ':' . $s->source_id] ?? null;
+            $extra = $fields->forSource($model);
+
+            return [
+                'amount' => (float) $s->amount,
+                'soll_haben' => (string) $s->soll_haben,
+                'account' => (string) $s->debtor_account,
+                'contra_account' => (string) $s->revenue_account,
+                'tax_key' => $s->tax_key,
+                'date' => new DateTimeImmutable($this->sourceDate($s, $batch)),
+                'document_ref' => (string) $s->document_ref,
+                'text' => $this->sourceText($s, $model),
+                'is_reversal' => (bool) $s->is_reversal,
+                'cost_center1' => $extra['cost_center1'],
+                'due_on' => $extra['due_on'],
+                'discount_amount' => $extra['discount_amount'],
+                'discount_type' => $extra['discount_type'],
+            ];
+        })->all();
 
         $csv = $this->adapter->generate($batch, $config, array_values($rows));
 
@@ -735,13 +751,29 @@ class DatevBookingService {
         return $batch->period_from->toDateString();
     }
 
-    private function sourceText(DatevBookingSource $source): string {
-        $invoice = $source->source_type === Invoice::class
-            ? Invoice::query()->with('customer')->find($source->source_id)
-            : null;
+    /**
+     * Quellbelege des Stapels, je Typ in einer Abfrage.
+     *
+     * @return array<string, \Illuminate\Database\Eloquent\Model>
+     */
+    private function sourceModels(DatevBookingBatch $batch): array {
+        $models = [];
+        foreach ([Invoice::class => ['customer'], Expense::class => []] as $class => $with) {
+            $ids = $batch->sources->where('source_type', $class)->pluck('source_id')->map(intval(...))->all();
+            if ($ids === []) {
+                continue;
+            }
+            foreach ($class::query()->with($with)->whereIn('id', $ids)->get() as $model) {
+                $models[$class . ':' . $model->getKey()] = $model;
+            }
+        }
 
-        if ($invoice instanceof Invoice) {
-            return $this->invoiceText($invoice);
+        return $models;
+    }
+
+    private function sourceText(DatevBookingSource $source, ?\Illuminate\Database\Eloquent\Model $model): string {
+        if ($model instanceof Invoice) {
+            return $this->invoiceText($model);
         }
 
         return (string) ($source->document_ref ?: 'Buchung');

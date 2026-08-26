@@ -80,13 +80,13 @@
                     <option value="{{ $agreementOption->sqid }}" @selected((string) old('processing_agreement_id', $assessment?->processingAgreement?->sqid) === (string) $agreementOption->sqid)>{{ $agreementOption->title }}{{ $agreementOption->processor?->name ? ' — ' . $agreementOption->processor->name : '' }}</option>
                 @endforeach
         </x-select-field>
-        <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('isms.hint.dpa_loose') }}</p>
+        <p class="text-xs text-muted sm:col-span-2">{{ __('isms.hint.dpa_loose') }}</p>
     </x-form-group>
 
     <x-form-group :legend="__('isms.group.supplier_review')" icon="event_repeat" tone="info" cols="2">
         <x-input-field name="last_review_on" type="date" :label="__('isms.field.last_review_on')" :value="old('last_review_on', $assessment?->last_review_on?->toDateString())" />
         <x-input-field name="next_review_on" type="date" :label="__('isms.field.next_review_on')" :value="old('next_review_on', $assessment?->next_review_on?->toDateString())" />
         <x-textarea-field name="findings" :label="__('isms.field.findings')" rows="2" maxlength="10000" span="2" :value="old('findings', $assessment?->findings)" />
-        <p class="text-xs text-base-content/60 sm:col-span-2">{{ __('isms.hint.next_review_on') }}</p>
+        <p class="text-xs text-muted sm:col-span-2">{{ __('isms.hint.next_review_on') }}</p>
     </x-form-group>
 </x-modal>

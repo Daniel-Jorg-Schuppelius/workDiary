@@ -63,7 +63,7 @@
                     <img src="{{ $avatarPreview }}" alt="{{ __('Vorschau') }}"
                          class="w-20 h-20 rounded-full object-cover ring ring-base-300">
                 @else
-                    <div class="w-20 h-20 rounded-full bg-base-200 flex items-center justify-center text-base-content/50">
+                    <div class="w-20 h-20 rounded-full bg-base-200 flex items-center justify-center text-muted">
                         <x-icon name="person" />
                     </div>
                 @endif
@@ -93,75 +93,67 @@
     </x-form-group>
 
     <x-form-group :legend="__('Persönliche Präferenzen')" icon="tune" tone="ghost" cols="2">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('Theme') }}</label>
-            <select name="preferences[theme]" class="select select-bordered w-full">
-                <option value="">{{ __('Standard (Organisation)') }}</option>
-                <option value="auto" @selected($currentTheme === 'auto')>{{ __('Automatisch – folgt System (hell/dunkel)') }}</option>
-                <optgroup label="{{ __('Hell') }}">
-                    @foreach ($lightThemes as $t)
-                        <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }}</option>
+        <x-select-field name="preferences[theme]" :label="__('Theme')">
+            <option value="">{{ __('Standard (Organisation)') }}</option>
+            <option value="auto" @selected($currentTheme === 'auto')>{{ __('Automatisch – folgt System (hell/dunkel)') }}</option>
+            <optgroup label="{{ __('Hell') }}">
+                @foreach ($lightThemes as $t)
+                    <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }}</option>
+                @endforeach
+            </optgroup>
+            <optgroup label="{{ __('Dunkel') }}">
+                @foreach ($darkThemes as $t)
+                    <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }}</option>
+                @endforeach
+            </optgroup>
+            @if ($customThemes !== [])
+                <optgroup label="{{ __('Eigene Themes') }}">
+                    @foreach ($customThemes as $t)
+                        <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }} ({{ $t['scheme'] === 'dark' ? __('Dunkel') : __('Hell') }})</option>
                     @endforeach
                 </optgroup>
-                <optgroup label="{{ __('Dunkel') }}">
-                    @foreach ($darkThemes as $t)
-                        <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }}</option>
-                    @endforeach
-                </optgroup>
-                @if ($customThemes !== [])
-                    <optgroup label="{{ __('Eigene Themes') }}">
-                        @foreach ($customThemes as $t)
-                            <option value="{{ $t['key'] }}" @selected($currentTheme === $t['key'])>{{ $t['label'] }} ({{ $t['scheme'] === 'dark' ? __('Dunkel') : __('Hell') }})</option>
-                        @endforeach
-                    </optgroup>
-                @endif
-            </select>
-            @error('preferences.theme')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+            @endif
+        </x-select-field>
 
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Sprache') }}</label>
-            <x-locale-select name="preferences[locale]"
+            <label for="preferences-locale" class="fieldset-label">{{ __('Sprache') }}</label>
+            <x-locale-select id="preferences-locale" name="preferences[locale]"
                              :selected="old('preferences.locale', $prefs['locale'] ?? null)"
                              include-blank :blank-label="__('Organisation übernehmen')" />
             @error('preferences.locale')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Zeitzone') }}</label>
-            <x-timezone-select name="preferences[timezone]"
+            <label for="preferences-timezone" class="fieldset-label">{{ __('Zeitzone') }}</label>
+            <x-timezone-select id="preferences-timezone" name="preferences[timezone]"
                                :selected="old('preferences.timezone', $prefs['timezone'] ?? null)"
                                include-blank :blank-label="__('Organisation übernehmen')" />
-            <p class="mt-1 text-xs text-base-content/60">{{ __('Überschreibt die Zeitzone der Organisation für deine Ansichten.') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Überschreibt die Zeitzone der Organisation für deine Ansichten.') }}</p>
             @error('preferences.timezone')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Datumsformat') }}</label>
-            <x-format-select type="date" name="preferences[date_format]"
+            <label for="preferences-date_format" class="fieldset-label">{{ __('Datumsformat') }}</label>
+            <x-format-select id="preferences-date_format" type="date" name="preferences[date_format]"
                              :selected="old('preferences.date_format', data_get($user->preferences, 'date_format'))"
                              include-blank :blank-label="__('Organisation übernehmen')" />
             @error('preferences.date_format')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Uhrzeitformat') }}</label>
-            <x-format-select type="time" name="preferences[time_format]"
+            <label for="preferences-time_format" class="fieldset-label">{{ __('Uhrzeitformat') }}</label>
+            <x-format-select id="preferences-time_format" type="time" name="preferences[time_format]"
                              :selected="old('preferences.time_format', data_get($user->preferences, 'time_format'))"
                              include-blank :blank-label="__('Organisation übernehmen')" />
             @error('preferences.time_format')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <div class="fieldset md:col-span-2">
-            <label class="fieldset-label">{{ __('Startseite nach dem Login') }}</label>
-            <select name="preferences[startpage]" class="select select-bordered w-full">
-                <option value="">{{ __('Standard') }}</option>
-                @foreach ($startpages as $route)
-                    <option value="{{ $route }}" @selected(old('preferences.startpage', $prefs['startpage'] ?? '') === $route)>{{ $route }}</option>
-                @endforeach
-            </select>
-            @error('preferences.startpage')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        <x-select-field span="2" name="preferences[startpage]" :label="__('Startseite nach dem Login')">
+            <option value="">{{ __('Standard') }}</option>
+            @foreach ($startpages as $route)
+                <option value="{{ $route }}" @selected(old('preferences.startpage', $prefs['startpage'] ?? '') === $route)>{{ $route }}</option>
+            @endforeach
+        </x-select-field>
     </x-form-group>
 
     @php
@@ -179,35 +171,26 @@
             @error('preferences.notifications.mail_enabled')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('notification.field.quiet_from') }}</label>
-            <input type="time" name="preferences[notifications][quiet_from]"
-                   value="{{ old('preferences.notifications.quiet_from', $notifPrefs['quiet_from'] ?? '') }}"
-                   class="input input-bordered w-full">
-            @error('preferences.notifications.quiet_from')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="preferences[notifications][quiet_from]"
+                       :label="__('notification.field.quiet_from')"
+                       type="time"
+                       value="{{ old('preferences.notifications.quiet_from', $notifPrefs['quiet_from'] ?? '') }}" />
 
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('notification.field.quiet_to') }}</label>
-            <input type="time" name="preferences[notifications][quiet_to]"
-                   value="{{ old('preferences.notifications.quiet_to', $notifPrefs['quiet_to'] ?? '') }}"
-                   class="input input-bordered w-full">
-            @error('preferences.notifications.quiet_to')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="preferences[notifications][quiet_to]"
+                       :label="__('notification.field.quiet_to')"
+                       type="time"
+                       value="{{ old('preferences.notifications.quiet_to', $notifPrefs['quiet_to'] ?? '') }}" />
     </x-form-group>
 
     {{-- CTI-Anrufer-Pop-up (MVP-118): eigene Durchwahl als Opt-in. --}}
     <x-form-group :legend="__('cti.profile.heading')" icon="ring_volume" tone="info"
                   :description="__('cti.profile.extension_help')">
-        <div class="fieldset">
-            <label class="fieldset-label">{{ __('cti.profile.extension_label') }}</label>
-            <input type="tel" name="cti_extension"
-                   value="{{ old('cti_extension', $user->cti_extension) }}"
-                   placeholder="{{ __('cti.profile.extension_placeholder') }}"
-                   autocomplete="off"
-                   class="input input-bordered w-full">
-            @error('cti_extension')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
-        </div>
+        <x-input-field name="cti_extension"
+                       :label="__('cti.profile.extension_label')"
+                       type="tel"
+                       value="{{ old('cti_extension', $user->cti_extension) }}"
+                       placeholder="{{ __('cti.profile.extension_placeholder') }}"
+                       autocomplete="off" />
     </x-form-group>
 
     <x-slot:footerExtra>
@@ -215,5 +198,10 @@
                     data-entry-modal-trigger
                     :href="route('account.password.edit')"
                     show-label>{{ __('Passwort ändern') }}</x-icon-btn>
+        {{-- Alarm-SMS (Feature 147): eigene Seite, weil Bestätigungscode und
+             Widerruf eigene Formulare brauchen — nicht schachtelbar. --}}
+        <x-icon-btn icon="sms" size="sm"
+                    :href="route('account.sms.index')"
+                    show-label>{{ __('sms.section') }}</x-icon-btn>
     </x-slot:footerExtra>
 </x-modal>

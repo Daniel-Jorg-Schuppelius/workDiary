@@ -100,6 +100,15 @@ class DwdProvider implements WeatherProvider {
     }
 
     /**
+     * Keine Vorhersage: die CDC-Tageswerte sind Beobachtungen; DWD-Vorhersagen
+     * (MOSMIX/KML) sind ein anderes Produkt und nicht angebunden (MVP-716).
+     * `null` → der WeatherService degradiert sauber (keine Warnung, kein Fehler).
+     */
+    public function forecast(float $lat, float $lng, int $days): ?array {
+        return null;
+    }
+
+    /**
      * Nächstgelegene Station, deren Messzeitraum den Tag abdeckt, innerhalb
      * der konfigurierten Maximaldistanz (Org-Setting `weather.dwd_max_station_km`).
      *

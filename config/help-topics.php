@@ -41,6 +41,8 @@ return [
         'admin.scope.*' => 'scope.overview',
         // Arbeitsbereiche — schaltbare Fokus-Ansichten (Feature 082)
         'admin.workspaces.*' => 'workspaces.overview',
+        // Eigene Arbeitsbereiche (Feature 082 Phase 2, MVP-731)
+        'me.workspaces.*' => 'workspaces.personal',
         'me.navigation.*' => 'navigation.customize',
         'me.functions' => 'navigation.customize',
         // PDF-Dokumentdesign / Firmenbogen (Feature 076, Phase 28)
@@ -344,6 +346,11 @@ return [
 
         // Sicherheitsereignis-Register (Arbeitsschutz, Feature 013)
         'safety-events.*' => 'safety.overview',
+
+        // Trainingsmanagement (Feature 145, MVP-727): Katalog, Pflichtmatrix,
+        // Soll-Liste und Auswertung teilen sich ein Topic.
+        'training.*' => 'training.overview',
+        'reports.training' => 'training.overview',
 
         // ISMS (Feature 044/046): Anforderungen + SoA-Aussagen + Druckansicht
         // teilen sich ein Topic; isms.soa/isms.dashboard sind exakte

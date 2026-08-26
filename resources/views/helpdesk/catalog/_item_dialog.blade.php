@@ -85,16 +85,16 @@
                 <div class="rounded-box border border-base-300 bg-base-200/40 p-3">
                     <div class="grid grid-cols-1 gap-2 md:grid-cols-6 items-end">
                         <div class="fieldset md:col-span-2">
-                            <label class="fieldset-label">{{ __('Schritt-Typ') }}</label>
-                            <select :name="fieldName(i, 'type')" x-model="it.type"
+                            <label :for="fieldName(i, 'type')" class="fieldset-label">{{ __('Schritt-Typ') }}</label>
+                            <select :id="fieldName(i, 'type')" :name="fieldName(i, 'type')" x-model="it.type"
                                     class="select select-sm select-bordered w-full">
                                 <option value="role">{{ __('Rolle') }}</option>
                                 <option value="user">{{ __('Benutzer') }}</option>
                             </select>
                         </div>
                         <div class="fieldset md:col-span-3" x-show="it.type === 'user'">
-                            <label class="fieldset-label">{{ __('Genehmiger (Benutzer)') }}</label>
-                            <select :name="fieldName(i, 'user')" x-model="it.user"
+                            <label :for="fieldName(i, 'user')" class="fieldset-label">{{ __('Genehmiger (Benutzer)') }}</label>
+                            <select :id="fieldName(i, 'user')" :name="fieldName(i, 'user')" x-model="it.user"
                                     class="select select-sm select-bordered w-full">
                                 <option value="">—</option>
                                 @foreach ($orgUsers as $orgUser)
@@ -103,8 +103,8 @@
                             </select>
                         </div>
                         <div class="fieldset md:col-span-3" x-show="it.type === 'role'">
-                            <label class="fieldset-label">{{ __('Genehmiger (Rolle)') }}</label>
-                            <select :name="fieldName(i, 'role')" x-model="it.role"
+                            <label :for="fieldName(i, 'role')" class="fieldset-label">{{ __('Genehmiger (Rolle)') }}</label>
+                            <select :id="fieldName(i, 'role')" :name="fieldName(i, 'role')" x-model="it.role"
                                     class="select select-sm select-bordered w-full">
                                 <option value="">—</option>
                                 @foreach ($roles as $role)
@@ -123,7 +123,7 @@
             <x-icon-btn icon="add" tone="ghost" size="sm" type="button" show-label @click="add()">
                 {{ __('Genehmigungsschritt hinzufügen') }}
             </x-icon-btn>
-            <p class="text-xs text-base-content/60">{{ __('Ohne Schritte wird die Bestellung direkt erfüllt. Selbstfreigabe ist immer gesperrt.') }}</p>
+            <p class="text-xs text-muted">{{ __('Ohne Schritte wird die Bestellung direkt erfüllt. Selbstfreigabe ist immer gesperrt.') }}</p>
         </div>
     </x-form-group>
 
@@ -160,7 +160,7 @@
                     <option value="{{ $role->value }}" @selected(in_array($role->value, $visibilityRoles, true))>{{ $role->label() }}</option>
                 @endforeach
             </select>
-            <p class="mt-1 text-xs text-base-content/60">{{ __('Leer = alle internen Benutzer.') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Leer = alle internen Benutzer.') }}</p>
         </div>
 
         <div class="fieldset">
@@ -170,7 +170,7 @@
                     <option value="{{ $customer->sqid }}" @selected(in_array($customer->sqid, $visibilityCustomerSqids, true))>{{ $customer->name }}</option>
                 @endforeach
             </select>
-            <p class="mt-1 text-xs text-base-content/60">{{ __('Leer = alle Portal-Kunden (sofern Portal aktiv).') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Leer = alle Portal-Kunden (sofern Portal aktiv).') }}</p>
         </div>
 
         <x-checkbox-field name="visibility_portal" :label="__('Im Kundenportal bestellbar')"

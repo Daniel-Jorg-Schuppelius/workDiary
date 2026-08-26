@@ -16,14 +16,14 @@
         {{-- Kopfzeile: Login-Info / Wochennavigation --}}
         <div class="flex flex-none flex-wrap items-center gap-2">
             @if (! empty($callcenterUser))
-                <span class="text-xs text-base-content/60">
+                <span class="text-xs text-muted">
                     {{ __('Eingeloggt als') }} <strong>{{ $callcenterUser }}</strong>
                 </span>
                 <form method="POST" action="{{ route('legacy.callcenter.logout') }}" class="inline">
                     @csrf
                     <button type="submit" class="link link-primary text-xs">{{ __('Abmelden') }}</button>
                 </form>
-                <span class="text-base-content/30">|</span>
+                <span class="text-muted">|</span>
             @endif
             <x-icon-btn icon="chevron_left" size="sm"
                         :href="route('legacy.callcenter.notdienst', ['week' => $weekOffset - 1])"
@@ -39,7 +39,7 @@
                             :href="route('legacy.callcenter.notdienst')"
                             show-label>{{ __('Aktuelle Woche') }}</x-icon-btn>
             @endif
-            <span class="ml-auto text-xs text-base-content/50">
+            <span class="ml-auto text-xs text-muted">
                 {{ __('Stand') }}: {{ $today->isoFormat('dddd, DD.MM.YYYY') }}
             </span>
         </div>
@@ -63,8 +63,8 @@
                        class="group rounded-box border bg-base-100 px-4 py-3 shadow-xs transition hover:border-primary hover:shadow-md {{ $tile['border'] }}"
                        title="{{ __('Zur Arbeitsliste filtern (ab :date)', ['date' => \Carbon\Carbon::parse($tile['params']['from'])->fdate()]) }}">
                         <div class="flex items-center justify-between">
-                            <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ $tile['label'] }}</p>
-                            <span class="text-base-content/30 transition group-hover:text-primary">›</span>
+                            <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ $tile['label'] }}</p>
+                            <span class="text-muted transition group-hover:text-primary">›</span>
                         </div>
                         <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold {{ $tile['tone'] }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((int) $tile['value'], 0, withThousandsSeparator: true) }}</p>
                     </a>
@@ -73,7 +73,7 @@
 
             {{-- Status-Mix + Mini-Lage --}}
             <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs lg:col-span-5 xl:col-span-5">
-                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Status-Mix aktiv') }}</p>
+                <p class="text-xs font-semibold uppercase tracking-wider text-muted">{{ __('Status-Mix aktiv') }}</p>
                 @php
                     $sAlert = (int) $statusCounts['alert'];
                     $sOpen = (int) $statusCounts['open'];
@@ -84,7 +84,7 @@
                     $pProg = max(0, 100 - $pAlert - $pOpen);
                 @endphp
                 @if ($statusTotal === 0)
-                    <p class="mt-2 text-sm text-base-content/50">{{ __('Aktuell keine offenen Vorgänge.') }}</p>
+                    <p class="mt-2 text-sm text-muted">{{ __('Aktuell keine offenen Vorgänge.') }}</p>
                 @else
                     <div class="mt-2 flex h-2 w-full overflow-hidden rounded-full bg-base-200">
                         <div class="bg-error" style="width: {{ $pAlert }}%"></div>
@@ -108,19 +108,19 @@
                     <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $yesterday]) }}"
                        class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-error hover:bg-error/5"
                        title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($yesterday)->fdate()]) }}">
-                        <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Überfällig') }}</p>
+                        <p class="text-[0.65rem] uppercase tracking-wider text-muted">{{ __('Überfällig') }}</p>
                         <p class="font-['Space_Grotesk'] text-lg font-semibold {{ $overdueCount > 0 ? 'text-error' : 'text-base-content/70' }}">{{ $overdueCount }}</p>
                     </a>
                     <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $todayStr]) }}"
                        class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-warning hover:bg-warning/5"
                        title="{{ __('Vorgänge mit Frist bis :date', ['date' => $today->fdate()]) }}">
-                        <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Heute fällig') }}</p>
+                        <p class="text-[0.65rem] uppercase tracking-wider text-muted">{{ __('Heute fällig') }}</p>
                         <p class="font-['Space_Grotesk'] text-lg font-semibold {{ $dueTodayCount > 0 ? 'text-warning' : 'text-base-content/70' }}">{{ $dueTodayCount }}</p>
                     </a>
                     <a href="{{ route('legacy.diary.index', ['status' => '2', 'to' => $next7Str]) }}"
                        class="rounded-box border border-base-300 px-2 py-1.5 transition hover:border-primary hover:bg-primary/5"
                        title="{{ __('Vorgänge mit Frist bis :date', ['date' => \Carbon\Carbon::parse($next7Str)->fdate()]) }}">
-                        <p class="text-[0.65rem] uppercase tracking-wider text-base-content/60">{{ __('Nächste 7d') }}</p>
+                        <p class="text-[0.65rem] uppercase tracking-wider text-muted">{{ __('Nächste 7d') }}</p>
                         <p class="font-['Space_Grotesk'] text-lg font-semibold text-base-content">{{ $dueNext7Count }}</p>
                     </a>
                 </div>
@@ -134,8 +134,8 @@
                 {{-- Wochenplan --}}
                 <div class="flex-none overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
                     <div class="flex items-center justify-between border-b border-base-300 bg-base-200/60 px-3 py-2">
-                        <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Wochenplan') }}</span>
-                        <span class="text-[0.7rem] text-base-content/50">
+                        <span class="text-xs uppercase tracking-wider text-muted">{{ __('Wochenplan') }}</span>
+                        <span class="text-[0.7rem] text-muted">
                             {{ $rangeStart->isoFormat('DD.MM.') }} – {{ $rangeEnd->isoFormat('DD.MM.YYYY') }}
                         </span>
                     </div>
@@ -199,19 +199,19 @@
                     ] as $card)
                         <div class="rounded-box border bg-base-100 p-3 shadow-xs {{ $card['tone'] }}">
                             <div class="flex items-center justify-between">
-                                <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ $card['label'] }}</p>
-                                <span class="text-[0.7rem] text-base-content/50">{{ $card['sub'] }}</span>
+                                <p class="text-xs font-semibold uppercase tracking-wider text-muted">{{ $card['label'] }}</p>
+                                <span class="text-[0.7rem] text-muted">{{ $card['sub'] }}</span>
                             </div>
                             <div class="mt-2 space-y-2">
                                 <div>
-                                    <p class="text-[0.7rem] uppercase text-base-content/50">{{ __('Notdienst') }}</p>
+                                    <p class="text-[0.7rem] uppercase text-muted">{{ __('Notdienst') }}</p>
                                     <p class="text-sm font-semibold">{{ $card['nd']['user'] ?? '–' }}</p>
                                     @if (! empty($card['nd']['email']))
                                         <a href="mailto:{{ $card['nd']['email'] }}" class="link link-primary text-xs">{{ $card['nd']['email'] }}</a>
                                     @endif
                                 </div>
                                 <div>
-                                    <p class="text-[0.7rem] uppercase text-base-content/50">{{ __('Bereitschaft') }}</p>
+                                    <p class="text-[0.7rem] uppercase text-muted">{{ __('Bereitschaft') }}</p>
                                     <p class="text-sm font-semibold">{{ $card['br']['user'] ?? '–' }}</p>
                                     @if (! empty($card['br']['email']))
                                         <a href="mailto:{{ $card['br']['email'] }}" class="link link-primary text-xs">{{ $card['br']['email'] }}</a>
@@ -223,9 +223,9 @@
 
                     {{-- Wochenende / Feiertage in dieser Woche --}}
                     <div class="rounded-box border border-warning/40 bg-base-100 p-3 shadow-xs">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Wochenende & Feiertage') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-muted">{{ __('Wochenende & Feiertage') }}</p>
                         @if ($weekendNotdienst->isEmpty() && $weekendBereitschaft->isEmpty())
-                            <p class="mt-2 text-sm text-base-content/50">{{ __('Keine Wochenend-/Feiertagsbesetzung in dieser Woche.') }}</p>
+                            <p class="mt-2 text-sm text-muted">{{ __('Keine Wochenend-/Feiertagsbesetzung in dieser Woche.') }}</p>
                         @else
                             <ul class="mt-2 space-y-1 text-xs">
                                 @foreach ($weekendNotdienst as $d)
@@ -250,8 +250,8 @@
                     {{-- 14-Tage-Trend --}}
                     <div class="rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
                         <div class="flex items-center justify-between">
-                            <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Neue Einträge (14 Tage)') }}</p>
-                            <span class="text-[0.7rem] text-base-content/50">{{ __('Σ') }} {{ (int) $trend->sum('count') }}</span>
+                            <p class="text-xs font-semibold uppercase tracking-wider text-muted">{{ __('Neue Einträge (14 Tage)') }}</p>
+                            <span class="text-[0.7rem] text-muted">{{ __('Σ') }} {{ (int) $trend->sum('count') }}</span>
                         </div>
                         @php $count = $trend->count(); @endphp
                         <div class="mt-3 flex h-20 items-end gap-1">
@@ -268,7 +268,7 @@
                                 </div>
                             @endforeach
                         </div>
-                        <div class="mt-1 flex justify-between text-[0.6rem] text-base-content/50">
+                        <div class="mt-1 flex justify-between text-[0.6rem] text-muted">
                             <span>{{ $trend->first()['date']->format('d.m.') }}</span>
                             <span>{{ $trend->last()['date']->format('d.m.') }}</span>
                         </div>
@@ -276,9 +276,9 @@
 
                     {{-- Top-Autoren mit offenen Vorgängen --}}
                     <div class="rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Top Verantwortliche (offen)') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-muted">{{ __('Top Verantwortliche (offen)') }}</p>
                         @if ($topAuthors->isEmpty())
-                            <p class="mt-2 text-sm text-base-content/50">{{ __('Keine offenen Zuweisungen.') }}</p>
+                            <p class="mt-2 text-sm text-muted">{{ __('Keine offenen Zuweisungen.') }}</p>
                         @else
                             @php $maxCnt = max(1, (int) $topAuthors->max('cnt')); @endphp
                             <ul class="mt-2 space-y-1.5 text-xs">
@@ -305,7 +305,7 @@
                 {{-- Nächste Feiertage --}}
                 @if (! empty($upcomingHolidays))
                     <div class="flex-none rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
-                        <p class="text-xs font-semibold uppercase tracking-wider text-base-content/60">{{ __('Nächste Feiertage (30 Tage)') }}</p>
+                        <p class="text-xs font-semibold uppercase tracking-wider text-muted">{{ __('Nächste Feiertage (30 Tage)') }}</p>
                         <ul class="mt-2 grid gap-1 text-sm sm:grid-cols-2 xl:grid-cols-3">
                             @foreach ($upcomingHolidays as $h)
                                 <li class="flex items-center justify-between gap-2">
@@ -323,7 +323,7 @@
             <div class="flex min-h-0 flex-col overflow-hidden rounded-box border border-base-300 bg-base-100 shadow-xs">
                 <div class="flex flex-none items-center justify-between border-b border-base-300 bg-base-200/60 px-3 py-2">
                     <div class="flex items-center gap-2">
-                        <span class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Offene Meldungen') }}</span>
+                        <span class="text-xs uppercase tracking-wider text-muted">{{ __('Offene Meldungen') }}</span>
                         <x-status-badge tone="ghost" size="xs">{{ $openIssues->count() }}</x-status-badge>
                     </div>
                     <a href="{{ route('legacy.diary.index', ['status' => '2']) }}" class="link link-hover text-xs">{{ __('Alle anzeigen') }}</a>
@@ -361,7 +361,7 @@
                                     <td class="text-center"><span class="badge badge-sm {{ $badgeClass }}">{{ $issue->statusLabel() }}</span></td>
                                     <td class="max-w-md" title="{{ $issue->inhalt ?? '' }}">
                                         <a href="{{ route('legacy.diary.show', $issue) }}" data-entry-modal-trigger class="block link link-hover">
-                                            <span class="block text-[0.7rem] text-base-content/50">{{ optional($issue->author)->uname ?? '–' }}</span>
+                                            <span class="block text-[0.7rem] text-muted">{{ optional($issue->author)->uname ?? '–' }}</span>
                                             <span class="line-clamp-2">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($issue->inhalt ?? '', 100) }}</span>
                                         </a>
                                     </td>
@@ -371,17 +371,17 @@
                                             @if ($isDueToday)
                                                 <span class="text-[0.65rem] font-semibold text-warning">{{ __('heute') }}</span>
                                             @elseif ($daysLeft !== null && $daysLeft > 0 && $daysLeft <= 7)
-                                                <span class="text-[0.65rem] text-base-content/60">{{ __('in :n d', ['n' => $daysLeft]) }}</span>
+                                                <span class="text-[0.65rem] text-muted">{{ __('in :n d', ['n' => $daysLeft]) }}</span>
                                             @endif
                                         @else
-                                            <span class="text-base-content/40">–</span>
+                                            <span class="text-muted">–</span>
                                         @endif
                                     </td>
                                 </tr>
                             @endforeach
                         </x-table>
                     @else
-                        <p class="p-4 text-sm text-base-content/50">{{ __('Keine offenen Meldungen.') }}</p>
+                        <p class="p-4 text-sm text-muted">{{ __('Keine offenen Meldungen.') }}</p>
                     @endif
                 </div>
             </div>

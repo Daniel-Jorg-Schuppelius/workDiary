@@ -54,7 +54,7 @@
 
         @if (! empty($period->byActivity))
             <x-card>
-                <div class="mb-2 text-xs uppercase tracking-wider text-base-content/60">{{ __('Verteilung nach Tätigkeit') }}</div>
+                <div class="mb-2 text-xs uppercase tracking-wider text-muted">{{ __('Verteilung nach Tätigkeit') }}</div>
                 <div class="flex flex-wrap gap-2">
                     @foreach ($period->byActivity as $type => $minutes)
                         <span class="badge badge-outline gap-2 px-3 py-3">
@@ -99,7 +99,7 @@
                     <td class="font-mono" data-sort-value="{{ \Carbon\Carbon::parse($day->date)->format('Y-m-d') }}">{{ \Carbon\Carbon::parse($day->date)->format('D, d.m.Y') }}</td>
                     <td class="text-right" data-sort-value="{{ (int) $day->targetMinutes }}">{{ $fmt($day->targetMinutes) }}</td>
                     <td class="text-right" data-sort-value="{{ (int) $day->attendanceMinutes }}">{{ $fmt($day->attendanceMinutes) }}</td>
-                    <td class="text-right text-base-content/60" data-sort-value="{{ (int) $day->breakMinutes }}">{{ $fmt($day->breakMinutes) }}</td>
+                    <td class="text-right text-muted" data-sort-value="{{ (int) $day->breakMinutes }}">{{ $fmt($day->breakMinutes) }}</td>
                     <td class="text-right" data-sort-value="{{ (int) $day->trackedMinutes }}">{{ $fmt($day->trackedMinutes) }}</td>
                     <td class="text-right text-warning" data-sort-value="{{ (int) $day->untrackedMinutes }}">{{ $fmt($day->untrackedMinutes) }}</td>
                     <td class="text-right {{ $day->balanceMinutes >= 0 ? 'text-success' : 'text-error' }}" data-sort-value="{{ (int) $day->balanceMinutes }}">

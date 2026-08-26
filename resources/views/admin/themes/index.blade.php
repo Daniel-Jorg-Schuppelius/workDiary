@@ -81,7 +81,7 @@
                          Label-Zeile. KEIN Material-Symbol darin — dessen
                          fonts-loaded-Regel würde `invisible` überstimmen und das
                          Icon sichtbar machen. --}}
-                    <label class="fieldset-label invisible select-none" aria-hidden="true">&nbsp;</label>
+                    <span class="fieldset-label invisible select-none" aria-hidden="true">&nbsp;</span>
                     <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('Übernehmen') }}</x-icon-btn>
                 </div>
             </form>

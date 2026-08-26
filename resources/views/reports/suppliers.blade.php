@@ -87,10 +87,10 @@
                     :note="__('Offene Verbindlichkeiten aus nicht vollständig bezahlten Einkaufsbelegen.')" />
 
     <x-card class="mt-4">
-        <div class="mb-3 text-xs text-base-content/60">{{ __('Zeitraum') }}: {{ $label }}</div>
+        <div class="mb-3 text-xs text-muted">{{ __('Zeitraum') }}: {{ $label }}</div>
 
         @if ($rows->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>' :title="__('Keine Lieferantendaten im gewählten Zeitraum.')" />
+            <x-empty-state icon="local_shipping" :title="__('Keine Lieferantendaten im gewählten Zeitraum.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

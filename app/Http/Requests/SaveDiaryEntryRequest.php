@@ -27,6 +27,9 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         'tour_id' => \App\Models\Tour::class,
         // Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5).
         'asset_id' => \App\Models\Asset::class,
+        // Folgeauftrag aus offenem Punkt (Feature 139): Prefill-Hidden-Felder.
+        'project_id' => \App\Models\Project::class,
+        'open_issue_id' => \App\Models\OpenIssue::class,
     ];
 
     protected function prepareForValidation(): void {
@@ -46,6 +49,11 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
         }
         if ($this->input('asset_id') === '' || $this->input('asset_id') === '0') {
             $this->merge(['asset_id' => null]);
+        }
+        foreach (['project_id', 'open_issue_id'] as $key) {
+            if ($this->input($key) === '' || $this->input($key) === '0') {
+                $this->merge([$key => null]);
+            }
         }
         if ($this->input('priority') === '') {
             $this->merge(['priority' => null]);
@@ -110,6 +118,7 @@ class SaveDiaryEntryRequest extends BaseFormRequest {
             'assigned_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             // Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5).
             'asset_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
+            'open_issue_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('open_issues')],
 
             'scheduled_for' => [$requiresSchedule ? 'required' : 'nullable', 'date'],
             'time_window_start' => ['nullable', 'date_format:H:i'],

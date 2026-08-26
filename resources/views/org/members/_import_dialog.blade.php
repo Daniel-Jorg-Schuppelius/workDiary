@@ -16,7 +16,7 @@
     :form-data="['data-entry-form' => '', 'enctype' => 'multipart/form-data']"
     :submit-label="__('Importieren')"
 >
-    <p class="mb-2 text-sm text-base-content/60">
+    <p class="mb-2 text-sm text-muted">
         {{ __('CSV mit Kopfzeile name;email (optional personnel_number, role). Neue Benutzer erhalten ein Zufallspasswort, müssen es beim ersten Login ändern und starten im neuen System; vorhandene E-Mails werden mit Grund übersprungen.') }}
     </p>
     <div class="mb-3">

@@ -67,11 +67,11 @@
                 <tr class="hover" id="procedure-template-{{ $template->id }}">
                     <td>
                         <span class="flex items-center gap-2 font-medium">
-                            <x-icon name="rule" class="text-base-content/60" />
+                            <x-icon name="rule" class="text-muted" />
                             {{ $template->name }}
                         </span>
                         @if ($template->description)
-                            <span class="block max-w-md truncate text-xs text-base-content/60">{{ $template->description }}</span>
+                            <span class="block max-w-md truncate text-xs text-muted">{{ $template->description }}</span>
                         @endif
                     </td>
                     <td><code class="text-xs">{{ $template->code }}</code></td>
@@ -86,7 +86,7 @@
                         @if ($published)
                             v{{ $published->version }}
                         @else
-                            <span class="text-base-content/40">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                         @if ($draft)
                             <x-status-badge tone="warning" class="ml-1">{{ __('procedure.status.draft') }} v{{ $draft->version }}</x-status-badge>

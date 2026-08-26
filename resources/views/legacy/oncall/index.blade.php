@@ -25,7 +25,7 @@
     <x-filter-bar :action="route('legacy.oncall.index')">
             @if ($isAdmin)
                 <div class="flex flex-col min-w-48">
-                    <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-base-content/60">{{ __('Mitarbeiter') }}</span></label>
+                    <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
                     <select name="user" class="select select-bordered select-sm w-full">
                         <option value="">{{ __('Alle') }}</option>
                         @foreach ($users as $legacyUser)
@@ -103,7 +103,7 @@
                         </td>
                     </tr>
                 @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">medical_services</span>' :colspan="5" :title="__('Keine Bereitschaftseinträge gefunden')" compact />
+                    <x-table.empty icon="medical_services" :colspan="5" :title="__('Keine Bereitschaftseinträge gefunden')" compact />
                 @endforelse
     </x-table>
 

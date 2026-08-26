@@ -182,7 +182,7 @@
                             <ul class="space-y-1 py-1 text-xs text-base-content/80">
                                 @foreach ($item->treatments as $treatment)
                                     <li class="flex flex-wrap items-center gap-x-2">
-                                        <x-icon name="hard_drive" size="1em" class="text-base-content/50" />
+                                        <x-icon name="hard_drive" size="1em" class="text-muted" />
                                         <span>{{ $treatment->media_type->label() }}</span>
                                         <span>· {{ $treatment->method->label() }}</span>
                                         <span class="font-mono">· DIN 66399 {{ $treatment->dinLevel() }}</span>
@@ -273,9 +273,9 @@
                 <div class="flex flex-wrap items-start gap-4">
                     <div class="text-sm">
                         <div><strong>{{ $job->signer_name }}</strong></div>
-                        <div class="mt-1 text-base-content/60">{{ __('disposal.sign.signed_at') }}: {{ $job->signed_at?->fdatetime() }}</div>
+                        <div class="mt-1 text-muted">{{ __('disposal.sign.signed_at') }}: {{ $job->signed_at?->fdatetime() }}</div>
                         @if ($job->signature_hash !== null)
-                            <div class="text-xs break-all text-base-content/50">{{ __('disposal.sign.hash') }}: {{ \Illuminate\Support\Str::limit($job->signature_hash, 24) }}</div>
+                            <div class="text-xs break-all text-muted">{{ __('disposal.sign.hash') }}: {{ \Illuminate\Support\Str::limit($job->signature_hash, 24) }}</div>
                         @endif
                     </div>
                     @if ($job->signatureAttachment !== null)
@@ -304,7 +304,7 @@
 
                     <div class="flex flex-wrap items-center justify-between gap-2">
                         <button type="button" class="btn btn-ghost btn-xs" @click="clear()">{{ __('Leeren') }}</button>
-                        <span class="text-xs text-base-content/60" x-show="hasSignature">{{ __('disposal.sign.hint') }}</span>
+                        <span class="text-xs text-muted" x-show="hasSignature">{{ __('disposal.sign.hint') }}</span>
                     </div>
 
                     <form method="POST" action="{{ route('disposal.sign', $job) }}" @submit="prepare($event)" class="flex">
@@ -315,7 +315,7 @@
                     </form>
                 </div>
             @else
-                <p class="text-sm text-base-content/60">{{ __('disposal.sign.missing') }}</p>
+                <p class="text-sm text-muted">{{ __('disposal.sign.missing') }}</p>
             @endif
         </x-card>
 
@@ -324,11 +324,11 @@
             @if ($job->recordDocument !== null)
                 <div class="text-sm">
                     <a class="link font-medium" href="{{ route('documents.show', $job->recordDocument) }}">{{ $job->recordDocument->title }}</a>
-                    <span class="text-base-content/60">· v{{ $job->recordDocument->currentVersion?->version_no ?? '—' }}</span>
+                    <span class="text-muted">· v{{ $job->recordDocument->currentVersion?->version_no ?? '—' }}</span>
                 </div>
-                <p class="mt-2 text-xs text-base-content/60">{{ __('disposal.record.released_hint') }}</p>
+                <p class="mt-2 text-xs text-muted">{{ __('disposal.record.released_hint') }}</p>
             @else
-                <p class="text-sm text-base-content/60">{{ __('disposal.record.pending_hint') }}</p>
+                <p class="text-sm text-muted">{{ __('disposal.record.pending_hint') }}</p>
             @endif
         </x-card>
     </div>
@@ -338,16 +338,16 @@
         <ul class="divide-y divide-base-200">
             @forelse ($job->events as $event)
                 <li class="flex flex-wrap items-baseline gap-x-2 px-4 py-2 text-sm">
-                    <span class="font-mono text-xs text-base-content/60">{{ $event->created_at->fdatetime() }}</span>
+                    <span class="font-mono text-xs text-muted">{{ $event->created_at->fdatetime() }}</span>
                     <span class="font-medium">{{ $event->event->label() }}</span>
-                    <span class="text-base-content/60">{{ $event->actor->name ?? '—' }}</span>
+                    <span class="text-muted">{{ $event->actor->name ?? '—' }}</span>
                     @php($eventNote = $event->payload['note'] ?? $event->payload['reason'] ?? null)
                     @if ($eventNote !== null)
-                        <span class="w-full text-xs text-base-content/60 sm:w-auto">„{{ $eventNote }}"</span>
+                        <span class="w-full text-xs text-muted sm:w-auto">„{{ $eventNote }}"</span>
                     @endif
                 </li>
             @empty
-                <li class="px-4 py-3 text-sm text-base-content/60">{{ __('Keine Einträge vorhanden') }}</li>
+                <li class="px-4 py-3 text-sm text-muted">{{ __('Keine Einträge vorhanden') }}</li>
             @endforelse
         </ul>
     </x-card>

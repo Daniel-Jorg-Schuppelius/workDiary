@@ -40,7 +40,11 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         public string $renderedText,
         public ?int $dispatchId = null,
         public InvoiceDeliveryFormat $deliveryFormat = InvoiceDeliveryFormat::Pdf,
-    ) {}
+    ) {
+        // Belegsprache je Kunde (Feature 034, MVP-721): Mailable::send()
+        // rendert Inhalt UND Anhänge innerhalb dieser Locale.
+        $this->locale(\App\Support\DocumentLocale::for($invoice->customer, $invoice->organization));
+    }
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->renderedSubject);
@@ -59,7 +63,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         if ($this->dispatchId === null) {
             return;
         }
-        $dispatch = \App\Models\InvoiceDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
+        $dispatch = \App\Models\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
         $dispatch?->forceFill([
             'status' => 'failed',
             'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
@@ -131,7 +135,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         // Vollaudit 2026-07 (M26): Dateihash am Zustellnachweis — wie beim
         // Download-Kanal, berechnet über exakt die versendeten Payloads.
         if ($this->dispatchId !== null) {
-            \App\Models\InvoiceDispatch::query()->withoutGlobalScopes()
+            \App\Models\DocumentDispatch::query()->withoutGlobalScopes()
                 ->whereKey($this->dispatchId)
                 ->whereNull('sha256')
                 ->update(['sha256' => \CommonToolkit\Helper\Data\CryptoHelper::hash(implode('', $payloads))]);

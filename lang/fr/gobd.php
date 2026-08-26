@@ -39,8 +39,12 @@ return [
         'draft_batches' => ':count lot(s) d\'écritures non figé(s) (brouillon) dans la période — absent(s) de la preuve des lots d\'écritures.',
         'empty_invoices' => 'Aucune facture émise dans la période sélectionnée.',
     ],
-    'export' => 'Télécharger le paquet Z3',
+    'export' => 'Créer le paquet Z3',
+    'queued' => 'La création du paquet est en file d’attente — la preuve apparaît ci-dessous et sera mise à jour au prochain chargement.',
+    'download' => 'Télécharger le paquet',
     'recent' => [
+        'status' => 'Statut',
+        'actions' => 'Actions',
         'title' => 'Exports récents',
         'package_hash' => 'Empreinte du paquet (SHA-256)',
         'records' => 'Enregistrements',

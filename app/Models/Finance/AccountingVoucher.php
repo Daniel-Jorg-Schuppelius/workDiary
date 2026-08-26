@@ -41,9 +41,11 @@ class AccountingVoucher extends Model {
     protected $fillable = [
         'organization_id', 'plugin_id', 'external_id', 'contact_external_id',
         'customer_id', 'supplier_id', 'voucher_type', 'voucher_status',
+        'voucher_state', 'direction', 'document_kind', 'is_cancellation',
+        'cancels_external_id',
         'voucher_number', 'voucher_date', 'due_date', 'paid_date',
         'total_amount', 'net_amount', 'open_amount', 'currency',
-        'archived', 'payload', 'synced_at',
+        'archived', 'payload', 'synced_at', 'source_changed_at',
     ];
 
     /** @var array<string, string> */
@@ -55,6 +57,8 @@ class AccountingVoucher extends Model {
         'net_amount' => 'decimal:2',
         'open_amount' => 'decimal:2',
         'archived' => 'boolean',
+        'is_cancellation' => 'boolean',
+        'source_changed_at' => 'datetime',
         'payload' => 'array',
         'synced_at' => 'datetime',
     ];

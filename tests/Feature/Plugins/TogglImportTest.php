@@ -1568,6 +1568,43 @@ class TogglImportTest extends TestCase {
         $this->assertDatabaseMissing('external_references', ['id' => $ref->id]);
     }
 
+    /**
+     * Primäre Benutzer-Zuordnung (EXT_TYPE_USER_EMAIL): Die Mapping-Tabelle
+     * verlinkt „Umbiegen"/„Entfernen" für source=ref auf `mappings.update`
+     * bzw. `.delete`. Bis MVP-723 filterte findMapping() diesen Typ heraus —
+     * beide Aktionen liefen in ein 404, der USER_EMAIL-Zweig von
+     * updateMapping() war unerreichbar (Vollscan 2026-08-23).
+     */
+    public function test_update_and_delete_user_email_mapping(): void {
+        $other = User::factory()->create(['organization_id' => $this->organization->id]);
+
+        $ref = ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => TogglPlugin::ID,
+            'external_type' => TogglImportService::EXT_TYPE_USER_EMAIL,
+            'referenceable_type' => $this->admin->getMorphClass(),
+            'referenceable_id' => $this->admin->id,
+            'external_id' => 'toggl-adresse@example.test',
+            'synced_at' => now(),
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.update', $ref->sqid), ['target_id' => $other->sqid])
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('external_references', [
+            'id' => $ref->id,
+            'referenceable_type' => $other->getMorphClass(),
+            'referenceable_id' => $other->id,
+        ]);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.toggl.mappings.delete', $ref->sqid))
+            ->assertRedirect();
+
+        $this->assertDatabaseMissing('external_references', ['id' => $ref->id]);
+    }
+
     public function test_update_client_mapping_to_foreign_customer(): void {
         $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Firma X']);
         $foreign = ForeignCustomer::factory()->create([

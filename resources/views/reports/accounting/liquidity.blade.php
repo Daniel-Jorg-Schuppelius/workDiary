@@ -18,6 +18,8 @@
 @section('content')
     <x-index-page :subtitle="__('accounting.reports.as_of', ['date' => $to->fdate()])">
         <x-slot:actions>
+            <x-icon-btn icon="timeline" size="sm" tone="outline" show-label
+                        :href="route('reports.accounting.liquidity-forecast')" :label="__('accounting.reports.card.liquidity_forecast.title')" />
             <x-icon-btn icon="download" size="sm" tone="ghost" show-label
                         :href="route('reports.accounting.liquidity', ['export' => 'csv'])" :label="__('CSV')" />
             <x-icon-btn icon="table_view" size="sm" tone="ghost" show-label

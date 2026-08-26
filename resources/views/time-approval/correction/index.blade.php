@@ -36,7 +36,7 @@
 
         @if ($requests->isEmpty())
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">edit_note</span>'
+                icon="edit_note"
                 :title="__('Keine Korrekturanträge')"
                 :message="__('Stellen Sie einen Antrag, um einen Tag in einem gesperrten Monat anzupassen.')" />
         @else

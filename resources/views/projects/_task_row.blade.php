@@ -28,10 +28,10 @@
 
     {{-- Titel + Meta --}}
     <div class="min-w-0 flex-1">
-        <span class="text-sm {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'line-through text-base-content/40' : '' }}">
+        <span class="text-sm {{ $task->status === \App\Enums\Task\TaskStatus::Done ? 'line-through text-muted' : '' }}">
             {{ $task->title }}
         </span>
-        <div class="mt-0.5 flex flex-wrap gap-2 text-xs text-base-content/50">
+        <div class="mt-0.5 flex flex-wrap gap-2 text-xs text-muted">
             @if ($task->milestone && ! $indent)
                 {{-- already shown in group header, skip --}}
             @endif

@@ -62,7 +62,7 @@
         @if ($q !== '' || $statusFilter !== '')
             {{-- Filterbewusster Leerzustand (E8): kein irreführender Betreiber-Hinweis. --}}
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">filter_alt_off</span>'
+                icon="filter_alt_off"
                 :title="__('Keine Treffer')"
                 :message="__('Suche/Filter treffen kein Plugin.')">
                 <x-slot:action>
@@ -71,7 +71,7 @@
             </x-empty-state>
         @else
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">extension</span>'
+                icon="extension"
                 :title="__('Keine Plugins gefunden')"
                 :message="__('Plugin-Klassen werden in config/plugins.php deklariert.')">
                 {{-- Prerequisite-Audit (MVP-181): Dateikonfiguration = Betreiber-
@@ -133,7 +133,7 @@
                         @if ($compat && ! $compat->compatible)
                             <x-status-badge tone="error" size="sm" class="ml-1" title="{{ $compat->message }}">{{ __('plugins.compatibility.incompatible') }}</x-status-badge>
                         @elseif ($compat && ($compat->minAppVersion !== null || $compat->maxAppVersion !== null))
-                            <span class="block text-xs text-base-content/40" title="{{ __('plugins.compatibility.range_hint') }}">
+                            <span class="block text-xs text-muted" title="{{ __('plugins.compatibility.range_hint') }}">
                                 {{ __('plugins.compatibility.range', ['min' => $compat->minAppVersion ?? '*', 'max' => $compat->maxAppVersion ?? '*']) }}
                             </span>
                         @endif
@@ -172,7 +172,7 @@
                                class="badge badge-warning badge-outline badge-sm ml-1 tabular-nums"
                                title="{{ __('Offene Fehler dieses Plugins anzeigen') }}">{{ $openErrors }} {{ __('Fehler') }}</a>
                         @endif
-                        <span class="text-xs text-base-content/50 ml-1" data-health-time
+                        <span class="text-xs text-muted ml-1" data-health-time
                               title="{{ $state?->last_ok_at ? __('Zuletzt ok: :time', ['time' => $state->last_ok_at->diffForHumans()]) : '' }}">
                             @if ($checkedAt)
                                 {{ $checkedAt->diffForHumans() }}@if ($state?->last_health_latency_ms !== null) · {{ $state->last_health_latency_ms }} ms @endif
@@ -180,7 +180,7 @@
                             @endif
                         </span>
                         @if (($isEnabled || $isAutoDisabled) && $state?->last_health_message)
-                            <div class="text-xs text-base-content/50 truncate max-w-xs" title="{{ $state->last_health_message }}">{{ $state->last_health_message }}</div>
+                            <div class="text-xs text-muted truncate max-w-xs" title="{{ $state->last_health_message }}">{{ $state->last_health_message }}</div>
                         @endif
                     </td>
                     <td>
@@ -199,11 +199,11 @@
                         <div class="flex justify-end gap-1">
                             <a href="{{ route('admin.plugins.edit', $plugin->id()) }}" data-entry-modal-trigger
                                class="btn btn-sm btn-ghost" title="{{ __('Konfigurieren') }}">
-                                <span class="material-symbols-outlined" aria-hidden="true">settings</span>
+                                <x-icon name="settings" />
                             </a>
                             <a href="{{ route('admin.plugin-errors.index', ['plugin' => $plugin->id(), 'status' => 'all']) }}"
                                class="btn btn-sm btn-ghost" title="{{ __('Fehler dieses Plugins') }}">
-                                <span class="material-symbols-outlined" aria-hidden="true">bug_report</span>
+                                <x-icon name="bug_report" />
                             </a>
                             <x-action-form :action="route('admin.plugins.toggle', $plugin->id())">
                                 <x-icon-btn type="submit" tone="ghost" size="sm" :icon="$isEnabled ? 'toggle_on' : 'toggle_off'" :label="$isEnabled ? __('Deaktivieren') : __('Aktivieren')" />

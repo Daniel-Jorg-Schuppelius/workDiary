@@ -64,14 +64,14 @@
         <div class="mb-3 flex flex-wrap items-baseline justify-end gap-2">
             <div class="flex items-baseline gap-4">
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ Std.</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $totalMinutes > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ Std.</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $totalMinutes > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $fmt($totalMinutes) }}
                     </span>
                 </div>
                 <div class="flex items-baseline gap-2">
-                    <span class="text-xs uppercase tracking-[0.18em] text-base-content/60">Σ €</span>
-                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $totalRate > 0 ? 'text-primary' : 'text-base-content/50' }}">
+                    <span class="text-xs uppercase tracking-[0.18em] text-muted">Σ €</span>
+                    <span class="font-['Space_Grotesk'] text-xl font-semibold {{ $totalRate > 0 ? 'text-primary' : 'text-muted' }}">
                         {{ $money($totalRate) }}
                     </span>
                 </div>
@@ -79,7 +79,7 @@
         </div>
 
         @if (empty($bucket))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">business_center</span>' :title="__('Keine Zeiteinträge im gewählten Zeitraum.')" />
+            <x-empty-state icon="business_center" :title="__('Keine Zeiteinträge im gewählten Zeitraum.')" />
         @else
             <x-table bare>
                 <x-slot:head>
@@ -112,10 +112,10 @@
                                 @endif
                                 {{ $entry['project']->name }}
                                 @if ($entry['project']->number)
-                                    <span class="ml-1 text-xs text-base-content/50">#{{ $entry['project']->number }}</span>
+                                    <span class="ml-1 text-xs text-muted">#{{ $entry['project']->number }}</span>
                                 @endif
                                 @if ($entry['project']->foreignCustomer)
-                                    <span class="ml-1 text-xs text-base-content/50">· {{ $entry['project']->foreignCustomer->name }}</span>
+                                    <span class="ml-1 text-xs text-muted">· {{ $entry['project']->foreignCustomer->name }}</span>
                                 @endif
                             </td>
                             <td class="text-right tabular-nums">{{ $fmt($entry['minutes']) }}</td>

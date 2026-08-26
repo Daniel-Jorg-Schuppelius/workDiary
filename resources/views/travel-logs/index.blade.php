@@ -73,31 +73,64 @@
                     </td>
                     <td>
                         <x-status-badge tone="ghost" size="sm">{{ $log->vehicle->label() }}</x-status-badge>
+                        @if ($log->vehicleEntity)
+                            <span class="ml-1 text-xs">{{ $log->vehicleEntity->license_plate }}</span>
+                        @endif
+                        @if ($log->isLogbook())
+                            <x-status-badge tone="info" size="xs" class="ml-1">{{ $log->trip_kind->label() }}</x-status-badge>
+                        @endif
+                        @if ($log->corrections->isNotEmpty())
+                            <x-status-badge tone="error" size="xs" class="ml-1">{{ __('storniert') }}</x-status-badge>
+                        @elseif ($log->isLocked())
+                            <x-status-badge tone="success" size="xs" class="ml-1" :title="$log->locked_at?->fdatetime()">{{ __('festgeschrieben') }}</x-status-badge>
+                        @endif
+                        @if ($log->isCorrection())
+                            <x-status-badge tone="warning" size="xs" class="ml-1" :title="$log->correction_reason">{{ __('Stornofahrt') }}</x-status-badge>
+                        @endif
                     </td>
                     <td class="text-right">
                         {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $log->reimbursement_total, 2, withThousandsSeparator: true) }} €
                     </td>
                     <td class="max-w-xs truncate">{{ $log->purpose }}</td>
                     <td class="text-right">
-                        <x-icon-btn icon="edit"
-                                    data-entry-modal-trigger
-                                    :href="route('travel-logs.edit', $log)"
-                                    :label="__('Bearbeiten')" />
+                        @if ($log->isLocked())
+                            {{-- Feature 137: festgeschrieben — Änderung nur als Stornofahrt --}}
+                            @if ($log->corrections->isEmpty())
+                                <x-icon-btn icon="history"
+                                            data-entry-modal-trigger
+                                            :href="route('travel-logs.create', ['corrects' => $log->sqid])"
+                                            :label="__('Stornofahrt erfassen')" />
+                            @endif
+                        @else
+                            <x-icon-btn icon="edit"
+                                        data-entry-modal-trigger
+                                        :href="route('travel-logs.edit', $log)"
+                                        :label="__('Bearbeiten')" />
+                            @if ($log->isLogbook())
+                                <x-action-form :action="route('travel-logs.lock', $log)"
+                                      :confirm="__('Fahrt festschreiben? Danach sind Änderungen nur noch als Stornofahrt möglich.')"
+                                      :confirm-label="__('Festschreiben')">
+                                    <x-icon-btn icon="lock" tone="primary" type="submit" :label="__('Festschreiben')" />
+                                </x-action-form>
+                            @endif
+                        @endif
                         <x-action-form :action="route('travel-logs.per-diem.generate', $log)"
                               :confirm="__('Verpflegungspauschale aus dieser Fahrt erzeugen?')"
                               :confirm-label="__('Erzeugen')">
                             <x-icon-btn icon="restaurant_menu" tone="primary" type="submit"
                                         :label="__('Verpflegungspauschale erzeugen')" />
                         </x-action-form>
-                        <x-action-form :action="route('travel-logs.destroy', $log)" method="DELETE"
-                              :confirm="__('Fahrt wirklich löschen?')"
-                              :confirm-label="__('Löschen')">
-                            <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
-                        </x-action-form>
+                        @unless ($log->isLocked())
+                            <x-action-form :action="route('travel-logs.destroy', $log)" method="DELETE"
+                                  :confirm="__('Fahrt wirklich löschen?')"
+                                  :confirm-label="__('Löschen')">
+                                <x-icon-btn icon="delete" tone="error" type="submit" :label="__('Löschen')" />
+                            </x-action-form>
+                        @endunless
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">directions_car</span>' :colspan="8" :title="__('Keine Fahrten im gewählten Zeitraum')" compact />
+                <x-table.empty icon="directions_car" :colspan="8" :title="__('Keine Fahrten im gewählten Zeitraum')" compact />
             @endforelse
         </x-table>
 

@@ -1,0 +1,45 @@
+{
+  "_source": "easybill REST v1 — GET /documents (Feldnamen/Enums aus tests/Fixtures/Plugins/Easybill/openapi.json, v1.99). Betraege sind CENTS.",
+  "page": 1,
+  "pages": 2,
+  "limit": 2,
+  "total": 3,
+  "items": [
+    {
+      "id": 4711,
+      "type": "INVOICE",
+      "number": "RE-2026-0001",
+      "customer_id": 9001,
+      "document_date": "2026-08-03",
+      "due_date": "2026-08-17",
+      "paid_at": null,
+      "paid_amount": 0,
+      "amount": 119000,
+      "amount_net": 100000,
+      "currency": "EUR",
+      "is_draft": false,
+      "is_archive": false,
+      "cancel_id": null,
+      "edited_at": "2026-08-03 09:14:22",
+      "created_at": "2026-08-03 09:12:01"
+    },
+    {
+      "id": 4712,
+      "type": "INVOICE",
+      "number": "RE-2026-0002",
+      "customer_id": 9002,
+      "document_date": "2026-08-04",
+      "due_date": "2026-08-18",
+      "paid_at": "2026-08-10",
+      "paid_amount": 23800,
+      "amount": 23800,
+      "amount_net": 20000,
+      "currency": "EUR",
+      "is_draft": false,
+      "is_archive": false,
+      "cancel_id": null,
+      "edited_at": "2026-08-10 11:02:40",
+      "created_at": "2026-08-04 08:00:00"
+    }
+  ]
+}

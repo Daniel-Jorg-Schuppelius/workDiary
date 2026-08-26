@@ -87,22 +87,22 @@
 
                 <fieldset class="rounded-box border border-base-300 p-3">
                     <legend class="px-1 text-sm font-medium">{{ __('Stopps') }}</legend>
-                    <p class="mb-2 text-xs text-base-content/60">{{ __('Per Drag & Drop sortieren. „Optimieren" sortiert automatisch.') }}</p>
+                    <p class="mb-2 text-xs text-muted">{{ __('Per Drag & Drop sortieren. „Optimieren" sortiert automatisch.') }}</p>
                     <ol class="space-y-1" data-stop-list>
                         @foreach ($stops as $s)
                             <li class="flex items-center gap-2 rounded-box border border-base-200 p-2" draggable="true" data-stop-item>
-                                <span class="material-symbols-outlined cursor-grab text-base-content/40 select-none" aria-hidden="true" data-stop-handle>drag_indicator</span>
+                                <x-icon name="drag_indicator" class="cursor-grab text-muted select-none" data-stop-handle />
                                 <input type="hidden" name="order_ids[]" value="{{ $s->sqid }}">
                                 <x-status-badge tone="primary" size="sm" data-stop-pos>{{ $s->tour_position ?? '?' }}</x-status-badge>
                                 <div class="flex-1">
                                     <div class="font-medium text-sm">{{ $s->title }}</div>
-                                    <div class="text-xs text-base-content/60">{{ $s->customer?->name }} · {{ $s->address_city }}</div>
+                                    <div class="text-xs text-muted">{{ $s->customer?->name }} · {{ $s->address_city }}</div>
                                 </div>
                             </li>
                         @endforeach
                     </ol>
                     @if ($stops->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('Noch keine Stopps zugewiesen.') }}</p>
+                        <p class="text-sm text-muted">{{ __('Noch keine Stopps zugewiesen.') }}</p>
                     @endif
                 </fieldset>
 
@@ -120,7 +120,7 @@
                 <div class="rounded-box border border-base-300 bg-base-100 p-4">
                     <h2 class="mb-2 text-sm font-medium">{{ __('Verfügbare Aufträge') }}</h2>
                     @if ($available->isEmpty() && $flexBacklog->isEmpty())
-                        <p class="text-sm text-base-content/60">{{ __('Keine offenen Aufträge für dieses Datum.') }}</p>
+                        <p class="text-sm text-muted">{{ __('Keine offenen Aufträge für dieses Datum.') }}</p>
                     @else
                         <form method="POST" action="{{ route('tours.update', $tour) }}">
                             @csrf
@@ -132,14 +132,14 @@
                             @endforeach
 
                             @if ($available->isNotEmpty())
-                                <div class="mb-2 text-xs uppercase tracking-wide text-base-content/50">{{ __('Terminiert für diesen Tag') }}</div>
+                                <div class="mb-2 text-xs uppercase tracking-wide text-muted">{{ __('Terminiert für diesen Tag') }}</div>
                                 <ul class="space-y-1">
                                     @foreach ($available as $a)
                                         <li class="flex items-center gap-2 rounded-box border border-base-200 p-2">
                                             <input type="checkbox" name="order_ids[]" value="{{ $a->sqid }}" class="checkbox checkbox-sm">
                                             <div class="flex-1">
                                                 <div class="text-sm">{{ $a->title }}</div>
-                                                <div class="text-xs text-base-content/60">{{ $a->address_city }}</div>
+                                                <div class="text-xs text-muted">{{ $a->address_city }}</div>
                                             </div>
                                         </li>
                                     @endforeach
@@ -147,7 +147,7 @@
                             @endif
 
                             @if ($flexBacklog->isNotEmpty())
-                                <div class="mt-4 mb-2 text-xs uppercase tracking-wide text-base-content/50">
+                                <div class="mt-4 mb-2 text-xs uppercase tracking-wide text-muted">
                                     {{ __('Flex-Backlog (Lückenfüller-Vorschläge)') }}
                                 </div>
                                 <ul class="space-y-1">
@@ -166,7 +166,7 @@
                                                         <x-status-badge tone="ghost" size="xs">{{ __('Remote') }}</x-status-badge>
                                                     @endif
                                                 </div>
-                                                <div class="text-xs text-base-content/60">
+                                                <div class="text-xs text-muted">
                                                     {{ $svcLabel }}
                                                     @if ($a->mode === \App\Enums\Diary\Mode::Deadline && $a->due_date)
                                                         · {{ __('fällig bis') }} {{ $a->due_date->fdate() }}

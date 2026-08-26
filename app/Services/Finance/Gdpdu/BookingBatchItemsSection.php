@@ -44,29 +44,25 @@ class BookingBatchItemsSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         $batches = BookingBatchesSection::exportedBatches($organization, $from, $to)->get();
         $numberById = $batches->pluck('batch_no', 'id');
 
-        $rows = [];
-        DatevBookingSource::query()
+        foreach (DatevBookingSource::query()
             ->whereIn('datev_booking_batch_id', $batches->modelKeys())
             ->orderBy('datev_booking_batch_id')->orderBy('id')
-            ->get()
-            ->each(function (DatevBookingSource $source) use (&$rows, $numberById): void {
-                $rows[] = [
-                    $this->num($numberById[$source->datev_booking_batch_id] ?? null, 0),
-                    $this->str($source->document_ref),
-                    class_basename($source->source_type),
-                    $this->str($source->debtor_account),
-                    $this->str($source->revenue_account),
-                    $this->str($source->soll_haben),
-                    $this->num($source->amount, 2),
-                    $this->str($source->tax_key),
-                    $source->is_reversal ? 'Ja' : 'Nein',
-                ];
-            });
-
-        return $rows;
+            ->lazy() as $source) {
+            yield [
+                $this->num($numberById[$source->datev_booking_batch_id] ?? null, 0),
+                $this->str($source->document_ref),
+                class_basename($source->source_type),
+                $this->str($source->debtor_account),
+                $this->str($source->revenue_account),
+                $this->str($source->soll_haben),
+                $this->num($source->amount, 2),
+                $this->str($source->tax_key),
+                $source->is_reversal ? 'Ja' : 'Nein',
+            ];
+        }
     }
 }

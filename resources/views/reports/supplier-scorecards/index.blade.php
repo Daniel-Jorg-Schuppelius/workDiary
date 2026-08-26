@@ -38,7 +38,7 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('scorecard.overview_subtitle', ['version' => $metricVersion])">
     <x-slot:actions>
-        <span class="text-xs text-base-content/60">{{ $label }}</span>
+        <span class="text-xs text-muted">{{ $label }}</span>
     </x-slot:actions>
 
     <x-filter-bar :action="route('supplier-scorecards.index')" :reset="route('supplier-scorecards.index')">
@@ -62,7 +62,7 @@
     @endif
 
     @if ($rows->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">local_shipping</span>'
+        <x-empty-state framed icon="local_shipping"
                        :title="__('scorecard.empty_ranking')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">
@@ -80,13 +80,13 @@
             </x-slot:head>
             @foreach ($rows as $i => $row)
                 <tr class="hover">
-                    <td class="text-right tabular-nums text-base-content/60">{{ $rows->firstItem() + $i }}</td>
+                    <td class="text-right tabular-nums text-muted">{{ $rows->firstItem() + $i }}</td>
                     <td>
                         <a class="link link-hover font-medium" href="{{ route('supplier-scorecards.show', $row['supplier']) }}">{{ $row['supplier_name'] }}</a>
                     </td>
                     <td class="text-right">
                         @if ($row['overall'] === null)
-                            <span class="text-base-content/40">{{ __('scorecard.no_data') }}</span>
+                            <span class="text-muted">{{ __('scorecard.no_data') }}</span>
                         @else
                             <span class="font-semibold tabular-nums">{{ $row['overall'] }}</span>
                         @endif
@@ -94,7 +94,7 @@
                     {{-- Termintreue --}}
                     <td class="text-center">
                         @if (! $row['ontime_available'])
-                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                            <span class="text-muted text-xs">{{ __('scorecard.no_data') }}</span>
                         @else
                             <x-status-badge :tone="$rateTone($row['ontime_rate'], false)" size="sm">{{ round($row['ontime_rate'] * 100) }} %</x-status-badge>
                         @endif
@@ -102,7 +102,7 @@
                     {{-- Reklamationsquote --}}
                     <td class="text-center">
                         @if (! $row['complaint_available'])
-                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                            <span class="text-muted text-xs">{{ __('scorecard.no_data') }}</span>
                         @else
                             <x-status-badge :tone="$rateTone($row['complaint_rate'], true)" size="sm">{{ round($row['complaint_rate'] * 100) }} %</x-status-badge>
                         @endif
@@ -110,7 +110,7 @@
                     {{-- Preisentwicklung --}}
                     <td class="text-center">
                         @if (! $row['price_available'])
-                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                            <span class="text-muted text-xs">{{ __('scorecard.no_data') }}</span>
                         @else
                             @php $dir = $row['price_direction']; @endphp
                             <span class="inline-flex items-center gap-1 tabular-nums {{ $dir === 'up' ? 'text-error' : ($dir === 'down' ? 'text-success' : 'text-base-content/70') }}">
@@ -122,7 +122,7 @@
                     {{-- ISMS-Qualität --}}
                     <td class="text-center">
                         @if (! $row['quality_available'])
-                            <span class="text-base-content/40 text-xs">{{ __('scorecard.no_data') }}</span>
+                            <span class="text-muted text-xs">{{ __('scorecard.no_data') }}</span>
                         @else
                             <x-status-badge :tone="$row['quality_rating']->tone()" size="sm">{{ $row['quality_rating']->label() }}</x-status-badge>
                         @endif

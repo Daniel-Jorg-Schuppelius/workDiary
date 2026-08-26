@@ -13,7 +13,7 @@ use App\Enums\Classification\{ClassificationRequirementPhase, ClassificationRequ
 return [
     'code' => 'spedition',
     'label' => 'Spedition und Transportlogistik',
-    'version' => 1,
+    'version' => 2,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -296,5 +296,12 @@ return [
         '#schaden',
         '#retoure',
         '#subunternehmer',
+    ],
+
+    // Schulungsvorschläge (Feature 145): Pflichtschulungen im Güterverkehr.
+    'training_suggestions' => [
+        ['code' => 'ladungssicherung', 'title' => 'Ladungssicherung', 'legal_basis' => 'VDI 2700 / § 22 StVO', 'validity_months' => 24, 'duration_minutes' => 480, 'roles' => ['aussendienst']],
+        ['code' => 'bkrfqg-weiterbildung', 'title' => 'Berufskraftfahrer-Weiterbildung', 'legal_basis' => 'BKrFQG § 5', 'provider_kind' => 'external', 'validity_months' => 60, 'duration_minutes' => 2100, 'lead_days' => 90, 'roles' => ['aussendienst']],
+        ['code' => 'unterweisung-arbschg', 'title' => 'Jährliche Unterweisung Arbeitssicherheit', 'legal_basis' => '§ 12 ArbSchG / DGUV V1 § 4', 'validity_months' => 12, 'duration_minutes' => 60, 'roles' => ['aussendienst', 'teamleitung']],
     ],
 ];

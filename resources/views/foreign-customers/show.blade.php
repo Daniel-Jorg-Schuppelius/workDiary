@@ -53,19 +53,19 @@
 
         <x-card>
             <div class="grid gap-x-6 gap-y-1 text-sm sm:grid-cols-2">
-                @if ($foreignCustomer->company)<div><span class="text-base-content/50">{{ __('Firma') }}:</span> {{ $foreignCustomer->company }}</div>@endif
-                @if ($foreignCustomer->contact_name)<div><span class="text-base-content/50">{{ __('Ansprechpartner') }}:</span> {{ $foreignCustomer->contact_name }}</div>@endif
-                @if ($foreignCustomer->email)<div><span class="text-base-content/50">{{ __('E-Mail') }}:</span> {{ $foreignCustomer->email }}</div>@endif
-                @if ($foreignCustomer->phone)<div><span class="text-base-content/50">{{ __('Telefon') }}:</span> {{ $foreignCustomer->phone }}</div>@endif
-                @if ($foreignCustomer->address)<div class="sm:col-span-2"><span class="text-base-content/50">{{ __('Adresse') }}:</span> {{ $foreignCustomer->address }}</div>@endif
-                @if ($foreignCustomer->comment)<div class="sm:col-span-2"><span class="text-base-content/50">{{ __('Notiz') }}:</span> {{ $foreignCustomer->comment }}</div>@endif
+                @if ($foreignCustomer->company)<div><span class="text-muted">{{ __('Firma') }}:</span> {{ $foreignCustomer->company }}</div>@endif
+                @if ($foreignCustomer->contact_name)<div><span class="text-muted">{{ __('Ansprechpartner') }}:</span> {{ $foreignCustomer->contact_name }}</div>@endif
+                @if ($foreignCustomer->email)<div><span class="text-muted">{{ __('E-Mail') }}:</span> {{ $foreignCustomer->email }}</div>@endif
+                @if ($foreignCustomer->phone)<div><span class="text-muted">{{ __('Telefon') }}:</span> {{ $foreignCustomer->phone }}</div>@endif
+                @if ($foreignCustomer->address)<div class="sm:col-span-2"><span class="text-muted">{{ __('Adresse') }}:</span> {{ $foreignCustomer->address }}</div>@endif
+                @if ($foreignCustomer->comment)<div class="sm:col-span-2"><span class="text-muted">{{ __('Notiz') }}:</span> {{ $foreignCustomer->comment }}</div>@endif
             </div>
         </x-card>
 
         {{-- Projekte — gleiche Darstellung wie auf der Kunden-Detailseite --}}
         <x-card :title="__('Projekte')" icon="folder" :count="$projects->count()">
             @if ($projects->isEmpty())
-                <x-empty-state compact icon='<span class="material-symbols-outlined">folder_off</span>'
+                <x-empty-state compact icon="folder_off"
                                :title="__('Keine Projekte')"
                                :message="__('Diesem Fremdkunden sind noch keine Projekte zugeordnet.')" />
             @else

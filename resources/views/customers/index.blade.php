@@ -69,7 +69,7 @@
     ]" />
 
     @if ($customers->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">business</span>' :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
+        <x-empty-state framed icon="business" :title="$search !== '' ? __('Keine Kunden für „:q“ gefunden.', ['q' => $search]) : __('Noch keine Kunden in dieser Ansicht')" />
     @else
         <x-table :zebra="true" table-sort="server"
                  :route="route('customers.index')"
@@ -115,7 +115,7 @@
                         @if ($customer->hourly_rate !== null)
                             {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($customer->hourly_rate?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $customer->currency->value }}
                         @else
-                            <span class="text-base-content/40">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td class="text-right tabular-nums">{{ $customer->projects_count }}</td>

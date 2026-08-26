@@ -20,7 +20,7 @@
     </x-slot:actions>
 
     <x-slot:note>
-        <span class="material-symbols-outlined align-middle" aria-hidden="true">upload_file</span>
+        <x-icon name="upload_file" class="align-middle" />
         {{ __('AnyDesk-Sitzungen werden im zentralen Import-Wizard eingelesen.') }}
     </x-slot:note>
 
@@ -59,7 +59,7 @@
     <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
 
         @if ($groups->total() === 0)
-            <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
+            <p class="rounded-box border border-base-300 p-6 text-center text-sm text-muted">
                 {{ $q !== '' ? __('Keine Treffer für die Suche.') : __('Keine offenen Verbindungen. Alles zugeordnet.') }}
             </p>
         @else
@@ -101,9 +101,9 @@
                             @csrf
                             <input type="hidden" name="provider" value="{{ $group->provider }}">
                             <input type="hidden" name="remote_id" value="{{ $group->remote_id }}">
-                            <button type="submit" class="btn btn-ghost btn-sm btn-square text-base-content/50 hover:text-error"
+                            <button type="submit" class="btn btn-ghost btn-sm btn-square text-muted hover:text-error"
                                     title="{{ __('Verwerfen') }}" aria-label="{{ __('Verwerfen') }}">
-                                <span class="material-symbols-outlined" aria-hidden="true">delete</span>
+                                <x-icon name="delete" />
                             </button>
                         </form>
 
@@ -113,11 +113,11 @@
                                 <span class="font-mono text-base font-semibold">{{ $group->remote_id }}</span>
                                 @if ($group->alias)
                                     <span class="inline-flex items-center gap-1 text-sm font-medium text-base-content/80">
-                                        <span class="material-symbols-outlined text-[1rem] align-middle" aria-hidden="true">badge</span>{{ $group->alias }}
+                                        <x-icon name="badge" class="text-[1rem] align-middle" />{{ $group->alias }}
                                     </span>
                                 @endif
                             </div>
-                            <div class="mt-1 text-sm text-base-content/60">
+                            <div class="mt-1 text-sm text-muted">
                                 {{ trans_choice(':count Sitzung|:count Sitzungen', $group->count, ['count' => $group->count]) }},
                                 {{ $group->minutes }} {{ __('Min.') }} ·
                                 {{ \Illuminate\Support\Carbon::parse($group->first_seen)->isoFormat('L') }} – {{ \Illuminate\Support\Carbon::parse($group->last_seen)->isoFormat('L') }}
@@ -126,7 +126,7 @@
                                 <div class="mt-1.5 flex flex-wrap gap-1">
                                     @foreach ($group->notes as $note)
                                         <span class="inline-flex items-center gap-1 rounded-box bg-base-200 px-2 py-0.5 text-xs text-base-content/70">
-                                            <span class="material-symbols-outlined text-[0.9rem] align-middle" aria-hidden="true">sticky_note_2</span>{{ $note }}
+                                            <x-icon name="sticky_note_2" class="text-[0.9rem] align-middle" />{{ $note }}
                                         </span>
                                     @endforeach
                                 </div>
@@ -137,7 +137,7 @@
                         @if ($sug !== null)
                             <div class="mb-3 rounded-box border border-primary/30 bg-primary/5 p-3">
                                 <div class="flex flex-wrap items-center gap-2">
-                                    <span class="material-symbols-outlined text-[1.2rem] text-primary" aria-hidden="true">lightbulb</span>
+                                    <x-icon name="lightbulb" class="text-[1.2rem] text-primary" />
                                     <span class="text-sm font-semibold">
                                         @if ($sug->kind === 'shared')
                                             {{ __('Vorschlag: Mehrkundengerät') }}
@@ -149,7 +149,7 @@
                                         @endif
                                     </span>
                                     <button type="button" class="btn btn-xs btn-primary ml-auto" @click="apply()">
-                                        <span class="material-symbols-outlined text-[1rem]" aria-hidden="true">magic_button</span>{{ __('Übernehmen') }}
+                                        <x-icon name="magic_button" class="text-[1rem]" />{{ __('Übernehmen') }}
                                     </button>
                                 </div>
                                 <ul class="mt-1.5 list-disc pl-6 text-xs text-base-content/70">
@@ -192,10 +192,10 @@
                                         <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern im Reiter „Sitzungen zuordnen“ je Kunde gebucht.') }}">
                                             <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm checkbox-primary">
                                             <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
-                                            <span class="material-symbols-outlined text-[1rem] text-base-content/40" aria-hidden="true">help</span>
+                                            <x-icon name="help" class="text-[1rem] text-muted" />
                                         </label>
                                         <button type="submit" class="btn btn-sm btn-primary">
-                                            <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">link</span>{{ __('Zuordnen') }}
+                                            <x-icon name="link" class="text-[1.1rem]" />{{ __('Zuordnen') }}
                                         </button>
                                     </div>
                                 </form>
@@ -247,10 +247,10 @@
                                         <label class="flex cursor-pointer items-center gap-2" title="{{ __('Sitzungen werden nicht automatisch gebucht, sondern im Reiter „Sitzungen zuordnen“ je Kunde gebucht.') }}">
                                             <input type="checkbox" name="shared_remote" value="1" class="checkbox checkbox-sm checkbox-primary">
                                             <span class="text-xs font-medium">{{ __('Mehrkundengerät') }}</span>
-                                            <span class="material-symbols-outlined text-[1rem] text-base-content/40" aria-hidden="true">help</span>
+                                            <x-icon name="help" class="text-[1rem] text-muted" />
                                         </label>
                                         <button type="submit" class="btn btn-sm btn-primary">
-                                            <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">add</span>{{ __('Anlegen & zuordnen') }}
+                                            <x-icon name="add" class="text-[1.1rem]" />{{ __('Anlegen & zuordnen') }}
                                         </button>
                                     </div>
                                 </form>
@@ -267,13 +267,13 @@
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             <div class="mb-3">
                 <h2 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Mehrkundengeräte – Sitzungen zuordnen') }}</h2>
-                <p class="text-sm text-base-content/60">
+                <p class="text-sm text-muted">
                     {{ __('Diese Rechner werden für mehrere Kunden genutzt. Markiere die Sitzungen, wähle den Kunden (und optional ein Projekt) und buche sie gesammelt.') }}
                 </p>
             </div>
 
             @if ($shared->total() === 0)
-                <p class="rounded-box border border-base-300 p-6 text-center text-sm text-base-content/60">
+                <p class="rounded-box border border-base-300 p-6 text-center text-sm text-muted">
                     {{ $q !== '' ? __('Keine Treffer für die Suche.') : __('Keine offenen Sitzungen zur Einzelzuordnung.') }}
                 </p>
             @else
@@ -291,10 +291,10 @@
                         @csrf
 
                         <div class="mb-2 flex flex-wrap items-center gap-2">
-                            <span class="material-symbols-outlined align-middle text-base-content/70" aria-hidden="true">computer</span>
+                            <x-icon name="computer" class="align-middle text-base-content/70" />
                             <span class="font-semibold">{{ $assetName }}</span>
                             <x-status-badge tone="neutral" size="sm">{{ $device->asset->asset_no }}</x-status-badge>
-                            <span class="text-sm text-base-content/60">
+                            <span class="text-sm text-muted">
                                 {{ trans_choice(':count Sitzung|:count Sitzungen', $device->sessions->count(), ['count' => $device->sessions->count()]) }}
                             </span>
                             @if ($device->sessions->count() > $visibleSessions->count())
@@ -304,7 +304,7 @@
                                 </span>
                             @endif
                             @if (($device->attempts ?? 0) > 0)
-                                <span class="badge badge-sm badge-ghost text-base-content/60"
+                                <span class="badge badge-sm badge-ghost text-muted"
                                       title="{{ __('Verbindungsversuche ohne Dauer (0 Sekunden) — sie ziehen beim Buchen den Beginn der folgenden Sitzung vor.') }}">
                                     {{ trans_choice(':count Verbindungsversuch|:count Verbindungsversuche', (int) $device->attempts, ['count' => $device->attempts]) }}
                                 </span>
@@ -390,20 +390,20 @@
                                 </select>
                             </label>
                             <button type="submit" class="btn btn-sm btn-primary ml-auto">
-                                <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">schedule</span>{{ __('Markierte buchen') }}
+                                <x-icon name="schedule" class="text-[1.1rem]" />{{ __('Markierte buchen') }}
                             </button>
                             <button type="submit" formaction="{{ route('admin.remote-support.pending.assign-internal') }}"
                                     class="btn btn-sm btn-ghost"
                                     formnovalidate
                                     title="{{ __('Bucht die markierten Sitzungen ohne Kunden auf das Projekt „Interne Wartung“.') }}">
-                                <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">home_repair_service</span>{{ __('Markierte intern buchen') }}
+                                <x-icon name="home_repair_service" class="text-[1.1rem]" />{{ __('Markierte intern buchen') }}
                             </button>
                             <button type="submit" formaction="{{ route('admin.remote-support.pending.dismiss-session') }}"
                                     class="btn btn-sm btn-ghost text-error"
                                     formnovalidate
                                     data-confirm-dialog
                                     data-confirm-message="{{ __('Markierte Sitzungen verwerfen? Sie werden nicht gebucht.') }}">
-                                <span class="material-symbols-outlined text-[1.1rem]" aria-hidden="true">delete</span>{{ __('Markierte verwerfen') }}
+                                <x-icon name="delete" class="text-[1.1rem]" />{{ __('Markierte verwerfen') }}
                             </button>
                         </div>
                     </form>

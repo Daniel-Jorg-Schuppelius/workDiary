@@ -20,7 +20,7 @@
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ $menu->name }}</h1>
                 <a href="{{ route('recipe-menus.index') }}" class="btn btn-sm btn-ghost">{{ __('recipes.action.back') }}</a>
             </div>
-            <p class="text-sm text-base-content/60">
+            <p class="text-sm text-muted">
                 {{ $menu->event_date?->format('d.m.Y') ?? __('recipes.menu.no_date') }}
                 @if ($menu->guest_count) · {{ __('recipes.menu.field.guest_count') }}: {{ $menu->guest_count }} @endif
             </p>
@@ -91,7 +91,7 @@
                 @forelse ($allergens['effective'] as $code)
                     <span class="badge badge-warning badge-sm">{{ $code }}</span>
                 @empty
-                    <span class="text-sm text-base-content/60">{{ __('recipes.allergens.none') }}</span>
+                    <span class="text-sm text-muted">{{ __('recipes.allergens.none') }}</span>
                 @endforelse
             </div>
             @if ($allergens['unresolved'] !== [])

@@ -27,7 +27,7 @@
             <input id="cir-pattern" type="text" name="path_pattern" required maxlength="512"
                    value="{{ old('path_pattern', $route->path_pattern) }}"
                    class="input input-bordered w-full font-mono" placeholder="Kunden/{customer_number}/Vertraege/**">
-            <p class="text-xs text-base-content/60">{{ __('cloud_intake.route.pattern_help') }}</p>
+            <p class="text-xs text-muted">{{ __('cloud_intake.route.pattern_help') }}</p>
             @error('path_pattern')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -65,7 +65,7 @@
             <input id="cir-ext" type="text" name="allowed_extensions" maxlength="300"
                    value="{{ old('allowed_extensions', is_array($route->allowed_extensions) ? implode(', ', $route->allowed_extensions) : '') }}"
                    class="input input-bordered w-full font-mono" placeholder="pdf, xml">
-            <p class="text-xs text-base-content/60">{{ __('cloud_intake.route.extensions_help') }}</p>
+            <p class="text-xs text-muted">{{ __('cloud_intake.route.extensions_help') }}</p>
             @error('allowed_extensions')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -84,7 +84,7 @@
                        @checked(old('auto_version', $route->auto_version))>
                 {{ __('cloud_intake.route.auto_version') }}
             </label>
-            <p class="text-xs text-base-content/60">{{ __('cloud_intake.route.auto_version_help') }}</p>
+            <p class="text-xs text-muted">{{ __('cloud_intake.route.auto_version_help') }}</p>
         </div>
 
         <div class="fieldset">

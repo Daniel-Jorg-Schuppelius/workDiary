@@ -26,7 +26,7 @@
     </x-slot:toolbar>
 
     @if ($catalog === null || $from === null)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">swap_horiz</span>'
+        <x-empty-state framed icon="swap_horiz"
                        :title="__('Kein Kostengruppenkatalog mit hinterlegtem Stamm.')"
                        :message="__('Ein Ausgabenwechsel setzt voraus, dass die Ausgangsausgabe bekannt ist — sonst wäre unklar, was „310“ heute bedeutet.')" />
     @else

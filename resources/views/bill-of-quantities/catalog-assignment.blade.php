@@ -35,7 +35,7 @@
     </x-slot:actions>
 
     @if ($catalog === null)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
+        <x-empty-state framed icon="category"
                        :title="__('Kein Kostengruppenkatalog im Leistungsverzeichnis.')"
                        :message="__('Kostengruppen kommen mit der Datei der Vergabestelle. Ohne Katalog im Kopf gibt es nichts zuzuordnen — die Positionen erscheinen dann vollständig unter „ohne Zuordnung“.')" />
     @else
@@ -57,7 +57,7 @@
 
         @if (empty($options))
             <div class="alert alert-warning">
-                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                <x-icon name="warning" />
                 <span>{{ __('Zum Katalog „:type“ ist kein Stamm hinterlegt — die Nummern lassen sich nur frei eintragen.', ['type' => $catalog->type ?? $catalog->catalog_key]) }}</span>
             </div>
         @endif
@@ -114,7 +114,7 @@
                         <td>
                             {{ $item->short_text ?: '—' }}
                             @if ($item->section)
-                                <div class="text-xs text-base-content/60">{{ $item->section->label }}</div>
+                                <div class="text-xs text-muted">{{ $item->section->label }}</div>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">

@@ -97,7 +97,7 @@
                     <input type="hidden" name="source" value="{{ $claim->source->value }}">
                     <input type="hidden" name="priority" value="{{ $claim->priority }}">
                     <input type="hidden" name="severity" value="{{ $claim->severity }}">
-                    <label class="col-span-2 text-xs text-base-content/60">{{ __('Ursachencodes (Klassifikationskatalog, D3)') }}</label>
+                    <label class="col-span-2 text-xs text-muted">{{ __('Ursachencodes (Klassifikationskatalog, D3)') }}</label>
                     <select name="defect_type_classification_id" class="select select-sm select-bordered" aria-label="{{ __('Mangelart') }}">
                         <option value="">{{ __('Mangelart …') }}</option>
                         @foreach ($defectTypes as $c)
@@ -124,7 +124,7 @@
 
     <x-card :title="__('Nachweise')">
         @if ($claim->evidence->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('Noch keine Nachweise — Fotos, Protokolle, Messwerte oder Nachrichten hier dokumentieren.') }}</p>
+            <p class="text-sm text-muted">{{ __('Noch keine Nachweise — Fotos, Protokolle, Messwerte oder Nachrichten hier dokumentieren.') }}</p>
         @else
             <ul class="space-y-1 text-sm">
                 @foreach ($claim->evidence as $item)
@@ -134,7 +134,7 @@
                         @if ($item->note !== null)
                             — {{ $item->note }}
                         @endif
-                        <span class="text-base-content/50">({{ $item->recorded_at->fdatetime() }}@if ($item->recorder !== null), {{ $item->recorder->name }}@endif)</span>
+                        <span class="text-muted">({{ $item->recorded_at->fdatetime() }}@if ($item->recorder !== null), {{ $item->recorder->name }}@endif)</span>
                     </li>
                 @endforeach
             </ul>
@@ -172,7 +172,7 @@
                         @if ($assessment->status !== 'active')
                             <span class="badge badge-ghost badge-sm">{{ __('abgelöst') }}</span>
                         @endif
-                        <span class="text-base-content/50">{{ $assessment->assessed_at->fdatetime() }}, {{ $assessment->assessor->name ?? '—' }}</span>
+                        <span class="text-muted">{{ $assessment->assessed_at->fdatetime() }}, {{ $assessment->assessor->name ?? '—' }}</span>
                     </div>
                     <p class="mt-1">{{ $assessment->justification }}</p>
                     @if (($assessment->snapshot['serial_shipped_to_customer'] ?? null) === false)
@@ -205,7 +205,7 @@
             @foreach ($claim->decisions->sortByDesc('decided_at') as $decision)
                 <div class="mb-2 rounded border border-base-300 p-2 text-sm">
                     <span class="badge badge-outline">{{ __("values.{$decision->decision}") }}</span>
-                    <span class="text-base-content/50">{{ $decision->decided_at->fdatetime() }}, {{ $decision->decider->name ?? '—' }}</span>
+                    <span class="text-muted">{{ $decision->decided_at->fdatetime() }}, {{ $decision->decider->name ?? '—' }}</span>
                     <p class="mt-1">{{ $decision->justification }}</p>
                 </div>
             @endforeach
@@ -237,7 +237,7 @@
                         <span class="badge badge-outline">{{ $rma->disposition->label() }}</span>
                     @endif
                     @if ($rma->serial_no !== null)
-                        <span class="font-mono text-base-content/60">SN {{ $rma->serial_no }}</span>
+                        <span class="font-mono text-muted">SN {{ $rma->serial_no }}</span>
                     @endif
                 </div>
                 @foreach ($rma->inspections as $inspection)
@@ -310,7 +310,7 @@
                     <span class="font-medium">{{ $action->title }}</span>
                     <x-status-badge size="md" outline>{{ $action->status->label() }}</x-status-badge>
                     @if ($action->assignee !== null)
-                        <span class="text-base-content/60">{{ $action->assignee->name }}</span>
+                        <span class="text-muted">{{ $action->assignee->name }}</span>
                     @endif
                     @can('update', $claim)
                         <form method="POST" action="{{ route('claims.actions.update', $action) }}" class="flex items-center gap-1">
@@ -408,7 +408,7 @@
                     <span class="font-medium">{{ $recourse->supplier->name ?? '—' }}</span>
                     <x-status-badge size="md" outline>{{ $recourse->status->label() }}</x-status-badge>
                     @if ($recourse->response_due_at !== null)
-                        <span class="text-base-content/60">{{ __('Antwortfrist: :date', ['date' => $recourse->response_due_at->fdatetime()]) }}</span>
+                        <span class="text-muted">{{ __('Antwortfrist: :date', ['date' => $recourse->response_due_at->fdatetime()]) }}</span>
                     @endif
                     @if ($recourse->amount_claimed !== null)
                         <span class="font-mono">{{ __('gefordert') }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $recourse->amount_claimed, 2, withThousandsSeparator: true) }}</span>

@@ -47,11 +47,16 @@ class RetentionController extends Controller {
         return view('privacy.retention.index', [
             'proposals' => $proposals,
             'region' => $organization !== null ? $this->registry->regionFor($organization) : 'DE',
-            'areas' => collect($this->registry->policies())->map(fn($policy) => [
-                'area' => $policy->area,
-                'label' => (string) config("retention.areas.{$policy->area}.label", $policy->area),
-                'years' => $organization !== null ? $this->registry->yearsFor($organization, $policy->area) : null,
-                'basis' => $organization !== null ? $this->registry->basisFor($organization, $policy->area) : null,
+            // Alle Katalog-Bereiche (Feature 130): auch reine Ausweis-Bereiche
+            // ohne Scan-Policy (time_records, location_points, documents_general)
+            // erscheinen in der Fristen-Tabelle — mit Kennzeichnung.
+            'areas' => collect(array_keys((array) config('retention.areas')))->map(fn(string $area) => [
+                'area' => $area,
+                'label' => (string) config("retention.areas.{$area}.label", $area),
+                'years' => $organization !== null ? $this->registry->yearsFor($organization, $area) : null,
+                'days' => $this->registry->daysFor($area),
+                'basis' => $organization !== null ? $this->registry->basisFor($organization, $area) : null,
+                'scanned' => $this->registry->policy($area) !== null,
             ])->values(),
             'canManage' => Gate::allows('manage', ComplianceFinding::class),
         ]);

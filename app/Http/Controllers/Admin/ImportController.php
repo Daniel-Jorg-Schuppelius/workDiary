@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Jobs\ProcessCsvImportJob;
 use App\Models\{AuditLog, ImportRun, ImportRunError, User};
-use App\Services\Import\CsvPreflightAnalyzer;
+use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService};
 use App\Support\Toolkit\CsvFacade;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -107,9 +107,12 @@ class ImportController extends Controller {
 
         $csv = CsvFacade::buildCsv($columns, [array_combine($columns, $example)]);
 
+        // MVP-707: die Dokument-Vorlage ist das manifest.csv des ZIP-Archivs.
+        $filename = $entityEnum->acceptsZip() ? DocumentZipImportService::MANIFEST : 'import-vorlage-' . $entityEnum->value . '.csv';
+
         return response($csv, 200, [
             'Content-Type' => 'text/csv; charset=UTF-8',
-            'Content-Disposition' => 'attachment; filename="import-vorlage-' . $entityEnum->value . '.csv"',
+            'Content-Disposition' => 'attachment; filename="' . $filename . '"',
         ]);
     }
 
@@ -152,18 +155,23 @@ class ImportController extends Controller {
 
     public function preflight(Request $request): RedirectResponse {
         $organization = $this->currentOrganization();
-        $data = $request->validate([
+        $entity = ImportEntity::from($request->validate([
             'entity' => ['required', \Illuminate\Validation\Rule::enum(ImportEntity::class)],
+        ])['entity']);
+        $this->authorizeImport($entity);
+
+        $data = $request->validate([
             // A13: neben CSV auch Excel (.xlsx); MVP-438: zusätzlich iCal (.ics) —
-            // gleiches Größenlimit, ein Wizard-Pfad.
-            'file' => ['required', 'file', 'mimes:csv,txt,xlsx,ics', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
+            // gleiches Größenlimit, ein Wizard-Pfad. MVP-707: Dokumente als ZIP
+            // (manifest.csv + Dateien) mit eigenem Archiv-Limit.
+            'file' => $entity->acceptsZip()
+                ? ['required', 'file', 'mimes:zip', 'max:' . DocumentZipImportService::MAX_ZIP_KB]
+                : ['required', 'file', 'mimes:csv,txt,xlsx,ics', 'max:' . (CsvPreflightAnalyzer::MAX_BYTES / 1024)],
             'match_policy' => ['nullable', 'in:auto_create,inbox_first'],
             // MVP-438: optionale iCal-Kategorie-Allowlist (nur Events dieser
             // Kategorien werden als Anwesenheit gewertet).
             'ical_category_allowlist' => ['nullable', 'string', 'max:500'],
         ]);
-        $entity = ImportEntity::from($data['entity']);
-        $this->authorizeImport($entity);
 
         $options = [];
         $allowlist = $this->parseCategoryAllowlist($data['ical_category_allowlist'] ?? null);

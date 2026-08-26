@@ -40,7 +40,7 @@
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Fragen')">
                 @if ($survey->questions->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch keine Fragen — unten hinzufügen.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch keine Fragen — unten hinzufügen.') }}</p>
                 @else
                     <ol class="space-y-2 text-sm">
                         @foreach ($survey->questions as $question)
@@ -49,7 +49,7 @@
                                     <span class="badge badge-outline badge-xs mr-2 font-mono">{{ $question->type }}</span>
                                     {{ $question->label }}
                                     @if ($question->options)
-                                        <span class="block text-xs text-base-content/60">{{ implode(' · ', $question->options) }}</span>
+                                        <span class="block text-xs text-muted">{{ implode(' · ', $question->options) }}</span>
                                     @endif
                                 </div>
                                 @if ($canManage)
@@ -80,7 +80,7 @@
 
             <x-card :title="__('Letzte Freitext-Antworten')">
                 @if ($textAnswers->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch keine Freitext-Antworten.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch keine Freitext-Antworten.') }}</p>
                 @else
                     <ul class="space-y-2 text-sm">
                         @foreach ($textAnswers as $answer)
@@ -94,11 +94,11 @@
         <div class="space-y-4">
             <x-card :title="__('Auswertung')">
                 <dl class="space-y-1 text-sm">
-                    <div class="flex justify-between"><dt class="text-base-content/60">{{ __('NPS-Score') }}</dt>
+                    <div class="flex justify-between"><dt class="text-muted">{{ __('NPS-Score') }}</dt>
                         {{-- null heißt „nichts zu rechnen", nicht 0. --}}
                         <dd class="font-medium tabular-nums">{{ $nps ?? '—' }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-base-content/60">{{ __('Antworten') }}</dt><dd class="tabular-nums">{{ $responseCount }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-base-content/60">{{ __('Einladungen') }}</dt><dd class="tabular-nums">{{ $invitations->count() }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-muted">{{ __('Antworten') }}</dt><dd class="tabular-nums">{{ $responseCount }}</dd></div>
+                    <div class="flex justify-between"><dt class="text-muted">{{ __('Einladungen') }}</dt><dd class="tabular-nums">{{ $invitations->count() }}</dd></div>
                 </dl>
             </x-card>
 
@@ -111,7 +111,7 @@
                                 <option value="{{ $customer->sqid }}">{{ $customer->name }}</option>
                             @endforeach
                         </x-select-field>
-                        <p class="text-xs text-base-content/60">{{ __('Der Ermüdungsschutz lehnt Adressen ab, die kürzlich eingeladen wurden — über alle Fragebögen hinweg.') }}</p>
+                        <p class="text-xs text-muted">{{ __('Der Ermüdungsschutz lehnt Adressen ab, die kürzlich eingeladen wurden — über alle Fragebögen hinweg.') }}</p>
                         <button type="submit" class="btn btn-primary btn-sm w-full">{{ __('Einladung senden') }}</button>
                     </form>
                 </x-card>
@@ -119,13 +119,13 @@
 
             <x-card :title="__('Letzte Einladungen')">
                 @if ($invitations->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Noch keine Einladungen.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Noch keine Einladungen.') }}</p>
                 @else
                     <ul class="space-y-1 text-xs">
                         @foreach ($invitations->take(15) as $invitation)
                             <li class="flex justify-between gap-2">
                                 <span class="min-w-0 truncate">{{ $invitation->customer?->name ?? $invitation->email }}</span>
-                                <span class="shrink-0 text-base-content/60">{{ [
+                                <span class="shrink-0 text-muted">{{ [
                                     'created' => __('erstellt'),
                                     'sent' => __('versendet'),
                                     'responded' => __('beantwortet'),

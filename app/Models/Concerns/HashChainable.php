@@ -21,6 +21,13 @@ interface HashChainable {
     /** @return array<string, mixed> Nutzdaten dieser Zeile (feste Reihenfolge). */
     public function hashPayload(): array;
 
+    /**
+     * Name der Kette, zu der diese Zeile gehoert (`tabelle:organisation`).
+     * Verifikation und Umkettung muessen dieselbe Aufteilung sehen wie der
+     * Schreibpfad — deshalb Teil des Vertrags (MVP-722).
+     */
+    public function chainName(): string;
+
     /** @param array<string, mixed> $data */
     public static function chainHash(?string $prevHash, array $data): string;
 

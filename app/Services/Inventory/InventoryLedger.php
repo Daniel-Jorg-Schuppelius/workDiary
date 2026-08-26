@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Inventory;
 
 use App\Enums\Inventory\{OwnershipType, StockMovementType, StockState};
-use App\Models\{ArticleVariant, StockMovement, Warehouse};
+use App\Models\{ArticleVariant, StockMovement, Warehouse, WarehouseBin};
 use App\Support\DecimalQty;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\QueryException;
@@ -44,6 +44,7 @@ class InventoryLedger {
         // Der external-Modus bleibt hier bewusst offen: dessen Spiegel-Syncs
         // buchen über genau diesen Ledger.
         $this->assertNotReadOnly($orgId);
+        $this->assertPlaceUsable($posting);
 
         return DB::transaction(function () use ($posting, $orgId): StockMovement {
             // Idempotenzprüfung in derselben Transaktion wie der Insert; parallele Aufrufe
@@ -60,6 +61,7 @@ class InventoryLedger {
                     'organization_id' => $orgId,
                     'article_variant_id' => $posting->variant->id,
                     'warehouse_id' => $posting->warehouse->id,
+                    'bin_id' => $posting->bin?->id,
                     'stock_lot_id' => $posting->stockLotId,
                     'stock_serial_id' => $posting->stockSerialId,
                     'stock_state' => $posting->state->value,
@@ -120,6 +122,32 @@ class InventoryLedger {
         }
     }
 
+    /**
+     * Lagerort-/Lagerplatz-Guard (MVP-706): ein gesperrter oder inaktiver Ort
+     * nimmt keine Zu-/Abgänge und Reservierungen an; Korrekturen (Inventur)
+     * und Reservierungsfreigaben bleiben möglich, damit ein gesperrter Platz
+     * bereinigt werden kann. Ein Platz muss zum gebuchten Lagerort gehören —
+     * sonst wäre der Bucket (Lager, Platz) widersprüchlich.
+     */
+    private function assertPlaceUsable(StockPosting $posting): void {
+        $bin = $posting->bin;
+        if ($bin !== null && $bin->warehouse_id !== $posting->warehouse->id) {
+            throw new RuntimeException((string) __('inventory.error.bin_foreign'));
+        }
+
+        if (in_array($posting->type, [StockMovementType::Correction, StockMovementType::ReleaseReservation], true)) {
+            return;
+        }
+
+        $warehouse = $posting->warehouse;
+        if ($warehouse->blocked || ! $warehouse->active) {
+            throw new RuntimeException((string) __('inventory.error.warehouse_unusable', ['name' => $warehouse->name]));
+        }
+        if ($bin !== null && ! $bin->isUsable()) {
+            throw new RuntimeException((string) __('inventory.error.bin_unusable', ['code' => $bin->code]));
+        }
+    }
+
     private function findByIdempotencyKey(int $orgId, string $key, bool $lock): ?StockMovement {
         $query = StockMovement::query()
             ->where('organization_id', $orgId)
@@ -137,13 +165,16 @@ class InventoryLedger {
      *
      * @return numeric-string
      */
-    public function balance(ArticleVariant $variant, Warehouse $warehouse, StockState $state, ?OwnershipType $ownership = null): string {
+    public function balance(ArticleVariant $variant, Warehouse $warehouse, StockState $state, ?OwnershipType $ownership = null, ?WarehouseBin $bin = null): string {
         $query = StockMovement::query()
             ->where('article_variant_id', $variant->id)
             ->where('warehouse_id', $warehouse->id)
             ->where('stock_state', $state->value);
         if ($ownership !== null) {
             $query->where('ownership_type', $ownership->value);
+        }
+        if ($bin !== null) {
+            $query->where('bin_id', $bin->id);
         }
 
         $sum = '0';
@@ -180,6 +211,70 @@ class InventoryLedger {
         }
 
         return $sums;
+    }
+
+    /**
+     * Saldo je Lagerplatz (MVP-706) für einen Bestandszustand; Schlüssel 0 =
+     * Bewegungen ohne Platz. Eine Query, bc-Summe in PHP (wie balancesByVariant).
+     *
+     * @return array<int, numeric-string> bin_id|0 → Saldo
+     */
+    public function balancesByBin(ArticleVariant $variant, Warehouse $warehouse, StockState $state = StockState::Physical): array {
+        $sums = [];
+        $rows = StockMovement::query()
+            ->where('article_variant_id', $variant->id)
+            ->where('warehouse_id', $warehouse->id)
+            ->where('stock_state', $state->value)
+            ->toBase()
+            ->get(['bin_id', 'qty_base']);
+        foreach ($rows as $row) {
+            $binId = (int) ($row->bin_id ?? 0);
+            $sums[$binId] = bcadd($sums[$binId] ?? '0', NumberHelper::normalizeDecimalString((string) $row->qty_base), self::SCALE);
+        }
+        ksort($sums);
+
+        return $sums;
+    }
+
+    /**
+     * Physische Salden ALLER Varianten eines Lagers je Lagerplatz in einem
+     * Durchlauf (Bestandsübersicht, MVP-706). Schlüssel 0 = ohne Platz.
+     *
+     * @return array<int, array<int, numeric-string>> variant_id → [bin_id|0 => Saldo]
+     */
+    public function binBalancesByVariant(Warehouse $warehouse): array {
+        $sums = [];
+        $rows = StockMovement::query()
+            ->where('warehouse_id', $warehouse->id)
+            ->where('stock_state', StockState::Physical->value)
+            ->toBase()
+            ->get(['article_variant_id', 'bin_id', 'qty_base']);
+        foreach ($rows as $row) {
+            $variantId = (int) $row->article_variant_id;
+            $binId = (int) ($row->bin_id ?? 0);
+            $sums[$variantId][$binId] = bcadd(
+                $sums[$variantId][$binId] ?? '0',
+                NumberHelper::normalizeDecimalString((string) $row->qty_base),
+                self::SCALE,
+            );
+        }
+
+        return $sums;
+    }
+
+    /**
+     * Verfügbar auf einem Lagerplatz = physisch − reserviert − gesperrt − QS,
+     * jeweils nur Bewegungen dieses Platzes (MVP-706).
+     *
+     * @return numeric-string
+     */
+    public function availableInBin(ArticleVariant $variant, Warehouse $warehouse, WarehouseBin $bin): string {
+        $result = $this->balance($variant, $warehouse, StockState::Physical, bin: $bin);
+        foreach ([StockState::Reserved, StockState::Blocked, StockState::Quality] as $state) {
+            $result = bcsub($result, $this->balance($variant, $warehouse, $state, bin: $bin), self::SCALE);
+        }
+
+        return $result;
     }
 
     /**
@@ -220,10 +315,11 @@ class InventoryLedger {
      *
      * @return numeric-string
      */
-    public function availableForUpdate(ArticleVariant $variant, Warehouse $warehouse): string {
+    public function availableForUpdate(ArticleVariant $variant, Warehouse $warehouse, ?WarehouseBin $bin = null): string {
         $rows = StockMovement::query()
             ->where('article_variant_id', $variant->id)
             ->where('warehouse_id', $warehouse->id)
+            ->when($bin !== null, fn ($q) => $q->where('bin_id', $bin?->id))
             ->whereIn('stock_state', [
                 StockState::Physical->value,
                 StockState::Reserved->value,
@@ -245,46 +341,48 @@ class InventoryLedger {
     }
 
     // ── Semantische Buchungen ───────────────────────────────────────────
+    // `$bin` (MVP-706) ist optionales letztes Argument — bestehende Aufrufer bleiben unverändert.
 
-    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+    public function receipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::Receipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }
 
-    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
+    public function issue(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, bool $allowNegative = false, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
         // Prüfung + Buchung in einer Transaktion: availableForUpdate() sperrt den Bestand gegen parallele Abgänge.
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId): StockMovement {
-            $this->guardSufficient($variant, $warehouse, $qty, $allowNegative);
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $allowNegative, $idempotencyKey, $actorUserId, $bin): StockMovement {
+            $this->guardSufficient($variant, $warehouse, $qty, $allowNegative, $bin);
 
-            return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::negative($qty), StockMovementType::Issue, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+            return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::negative($qty), StockMovementType::Issue, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
         });
     }
 
-    public function reserve(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $idempotencyKey, $actorUserId): StockMovement {
-            $this->guardSufficient($variant, $warehouse, $qty, false);
+    public function reserve(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
+        return DB::transaction(function () use ($variant, $warehouse, $qty, $ownership, $idempotencyKey, $actorUserId, $bin): StockMovement {
+            $this->guardSufficient($variant, $warehouse, $qty, false, $bin);
 
-            return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+            return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::positive($qty), StockMovementType::Reserve, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
         });
     }
 
-    public function releaseReservation(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::negative($qty), StockMovementType::ReleaseReservation, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+    public function releaseReservation(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Reserved, DecimalQty::negative($qty), StockMovementType::ReleaseReservation, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }
 
-    public function finishedGoodReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::FinishedGoodReceipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+    public function finishedGoodReceipt(ArticleVariant $variant, Warehouse $warehouse, string $qty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
+        return $this->post(new StockPosting($variant, $warehouse, StockState::Physical, DecimalQty::positive($qty), StockMovementType::FinishedGoodReceipt, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }
 
     /** Inventurdifferenz/Gegenbuchung: signierte Menge auf einen Zustand. */
-    public function correction(ArticleVariant $variant, Warehouse $warehouse, StockState $state, string $signedQty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null): StockMovement {
-        return $this->post(new StockPosting($variant, $warehouse, $state, NumberHelper::normalizeDecimalString($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId));
+    public function correction(ArticleVariant $variant, Warehouse $warehouse, StockState $state, string $signedQty, OwnershipType $ownership = OwnershipType::Own, ?string $idempotencyKey = null, ?int $actorUserId = null, ?WarehouseBin $bin = null): StockMovement {
+        return $this->post(new StockPosting($variant, $warehouse, $state, NumberHelper::normalizeDecimalString($signedQty), StockMovementType::Correction, $ownership, idempotencyKey: $idempotencyKey, actorUserId: $actorUserId, bin: $bin));
     }
 
-    private function guardSufficient(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative): void {
+    private function guardSufficient(ArticleVariant $variant, Warehouse $warehouse, string $qty, bool $allowNegative, ?WarehouseBin $bin = null): void {
         if ($allowNegative) {
             return;
         }
-        if (bccomp($this->availableForUpdate($variant, $warehouse), DecimalQty::positive($qty), self::SCALE) < 0) {
+        // Mit Platz zählt nur der Bestand dieses Platzes (kein Abgang „aus dem Nachbarregal").
+        if (bccomp($this->availableForUpdate($variant, $warehouse, $bin), DecimalQty::positive($qty), self::SCALE) < 0) {
             throw new RuntimeException('Nicht genügend verfügbarer Bestand (negativer Bestand nicht freigegeben).');
         }
     }

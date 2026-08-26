@@ -79,7 +79,7 @@
                 <td class="text-right"><x-icon-btn icon="visibility" :href="route('claims.show', $case)" :label="__('Anzeigen')" /></td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">assignment_return</span>' :colspan="8" :title="__('Keine Reklamationen — neue Fälle entstehen über den Dialog oder das Kundenportal.')" compact />
+            <x-table.empty icon="assignment_return" :colspan="8" :title="__('Keine Reklamationen — neue Fälle entstehen über den Dialog oder das Kundenportal.')" compact />
         @endforelse
     </x-table>
 

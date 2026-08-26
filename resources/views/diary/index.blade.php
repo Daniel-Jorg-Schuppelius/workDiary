@@ -51,7 +51,7 @@
             @include('diary._entry_card', ['entry' => $entry, 'filters' => $filters])
         @empty
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">menu_book</span>'
+                icon="menu_book"
                 :title="__('Keine Einträge gefunden')"
                 :message="array_filter($filters) ? __('Versuche, die Filter zu erweitern.') : null">
                 @if (array_filter($filters))

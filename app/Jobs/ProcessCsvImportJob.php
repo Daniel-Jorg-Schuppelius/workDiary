@@ -13,9 +13,9 @@ declare(strict_types=1);
 namespace App\Jobs;
 
 use App\Enums\Import\{ImportErrorCode, ImportRunState};
-use App\Models\{AuditLog, ImportRun, ImportRunError};
+use App\Models\{AuditLog, ImportRun, ImportRunError, User};
 use App\Plugins\Support\TimeWritebackObserver;
-use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, ImportOutcome};
+use App\Services\Import\{CsvPreflightAnalyzer, DocumentZipImportService, EntitySpecRegistry, ImportOutcome};
 use App\Services\Import\Source\ImportSourceFactory;
 use Carbon\CarbonImmutable;
 use Illuminate\Bus\Queueable;
@@ -74,7 +74,7 @@ class ProcessCsvImportJob implements ShouldQueue {
         $run->save();
     }
 
-    public function handle(EntitySpecRegistry $registry, ImportSourceFactory $sources): void {
+    public function handle(EntitySpecRegistry $registry, ImportSourceFactory $sources, DocumentZipImportService $documentZip): void {
         $run = ImportRun::query()->find($this->importRunId);
         if ($run === null) {
             return;
@@ -124,46 +124,60 @@ class ProcessCsvImportJob implements ShouldQueue {
         $failed = 0;
 
         try {
-            // MVP-438: gemeinsame Format-Schicht (CSV/XLSX/iCal). iCal-Hinweise
-            // (Ganztags/OOF/Serie) werden als übersprungen gezählt und im Bericht
-            // sichtbar gemacht; Datenzeilen laufen chunkweise durch den Upsert.
-            $source = $sources->make($path, $run->entity, $organization, $run->delimiter ?: null, (array) ($run->source_options ?? []));
-
-            $chunk = [];
-            foreach ($source->rows($spec) as $sourceRow) {
-                $warning = $sourceRow->warning;
-                if ($warning !== null) {
-                    ImportRunError::create([
-                        'import_run_id' => $run->id,
-                        'row_number' => $sourceRow->number,
-                        'field' => $warning->field,
-                        'code' => $warning->code,
-                        'message' => $warning->message,
-                        'row_data' => null,
-                    ]);
-                    $skipped++;
-
-                    continue;
+            // MVP-707: Dokument-ZIP — Manifest + Dateien aus dem Archiv, kein CSV-Stream.
+            if ($run->entity->acceptsZip()) {
+                $actor = User::query()->find($run->created_by_user_id);
+                if (! $actor instanceof User) {
+                    throw new \RuntimeException((string) __('import.error.document.noActor'));
                 }
+                [$created, $updated, $skipped, $failed] = $documentZip->import(
+                    $run,
+                    \CommonToolkit\Helper\FileSystem\File::read($path),
+                    $organization,
+                    $actor,
+                );
+            } else {
+                // MVP-438: gemeinsame Format-Schicht (CSV/XLSX/iCal). iCal-Hinweise
+                // (Ganztags/OOF/Serie) werden als übersprungen gezählt und im Bericht
+                // sichtbar gemacht; Datenzeilen laufen chunkweise durch den Upsert.
+                $source = $sources->make($path, $run->entity, $organization, $run->delimiter ?: null, (array) ($run->source_options ?? []));
 
-                $mapped = $sourceRow->data;
-                $chunk[] = ['row' => $sourceRow->number, 'raw' => $mapped, 'norm' => $spec->normalize($mapped)];
+                $chunk = [];
+                foreach ($source->rows($spec) as $sourceRow) {
+                    $warning = $sourceRow->warning;
+                    if ($warning !== null) {
+                        ImportRunError::create([
+                            'import_run_id' => $run->id,
+                            'row_number' => $sourceRow->number,
+                            'field' => $warning->field,
+                            'code' => $warning->code,
+                            'message' => $warning->message,
+                            'row_data' => null,
+                        ]);
+                        $skipped++;
 
-                if (count($chunk) >= self::CHUNK) {
+                        continue;
+                    }
+
+                    $mapped = $sourceRow->data;
+                    $chunk[] = ['row' => $sourceRow->number, 'raw' => $mapped, 'norm' => $spec->normalize($mapped)];
+
+                    if (count($chunk) >= self::CHUNK) {
+                        [$c, $u, $s, $f] = $this->processChunk($run, $spec, $chunk, $organization);
+                        $created += $c;
+                        $updated += $u;
+                        $skipped += $s;
+                        $failed += $f;
+                        $chunk = [];
+                    }
+                }
+                if ($chunk !== []) {
                     [$c, $u, $s, $f] = $this->processChunk($run, $spec, $chunk, $organization);
                     $created += $c;
                     $updated += $u;
                     $skipped += $s;
                     $failed += $f;
-                    $chunk = [];
                 }
-            }
-            if ($chunk !== []) {
-                [$c, $u, $s, $f] = $this->processChunk($run, $spec, $chunk, $organization);
-                $created += $c;
-                $updated += $u;
-                $skipped += $s;
-                $failed += $f;
             }
         } catch (Throwable $e) {
             ImportRunError::create([

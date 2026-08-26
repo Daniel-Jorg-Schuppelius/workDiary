@@ -32,7 +32,7 @@
     @endif
 
     @if ($bills->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">request_quote</span>'
+        <x-empty-state framed icon="request_quote"
                        :title="__('gaeb.empty')" />
     @else
         <x-table scroll="flex" :pinRows="true">

@@ -26,8 +26,8 @@
         <form method="POST" action="{{ route('pricing-margin-rules.approval-mode') }}" class="flex flex-wrap items-end gap-3">
             @csrf
             <div class="fieldset">
-                <label class="fieldset-label">{{ __('procurement.approval.mode.label') }}</label>
-                <select name="mode" class="select select-sm select-bordered">
+                <label for="mode" class="fieldset-label">{{ __('procurement.approval.mode.label') }}</label>
+                <select id="mode" name="mode" class="select select-sm select-bordered">
                     <option value="direct" @selected($approvalMode === 'direct')>{{ __('procurement.approval.mode.direct') }}</option>
                     <option value="four_eyes" @selected($approvalMode === 'four_eyes')>{{ __('procurement.approval.mode.four_eyes') }}</option>
                 </select>
@@ -38,7 +38,7 @@
     </x-card>
 
     @if ($rules->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">percent</span>'
+        <x-empty-state framed icon="percent"
                        :title="__('procurement.margin.empty')" />
     @else
         <x-table scroll="flex" :pinRows="true">

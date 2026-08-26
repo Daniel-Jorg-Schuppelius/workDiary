@@ -96,12 +96,12 @@
                 @php $dayShifts = $shiftsByDate->get($dateStr, collect()); @endphp
                 <tr class="{{ \Carbon\Carbon::parse($dateStr)->isWeekend() ? 'bg-base-200/50' : '' }}">
                     <td class="whitespace-nowrap font-medium w-32" data-sort-value="{{ $dateStr }}">
-                        <span class="text-base-content/60 text-xs">{{ \Carbon\Carbon::parse($dateStr)->isoFormat('dd') }}</span>
+                        <span class="text-muted text-xs">{{ \Carbon\Carbon::parse($dateStr)->isoFormat('dd') }}</span>
                         {{ \Carbon\Carbon::parse($dateStr)->format('d.m.') }}
                     </td>
                     <td>
                         @if ($dayShifts->isEmpty())
-                            <span class="text-base-content/30 text-sm">–</span>
+                            <span class="text-muted text-sm">–</span>
                         @else
                             <div class="flex flex-wrap gap-1">
                                 @foreach ($dayShifts as $shift)

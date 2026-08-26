@@ -398,6 +398,7 @@ return [
             ],
             'rental' => [
                 'returnOverdue' => 'Verleih-Rückgabe überfällig',
+                'requested' => 'Verleih-Anfrage aus dem Portal eingegangen',
             ],
             'assetFinance' => [
                 'deadline' => 'Leasingfrist fällig',
@@ -414,6 +415,9 @@ return [
             ],
             'fleet' => [
                 'licenseCheckDue' => 'Führerscheinkontrolle fällig',
+            ],
+            'drivingTime' => [
+                'violation' => 'Lenk-/Ruhezeit-Befund',
             ],
             'recruiting' => [
                 'applicationReceived' => 'Öffentliche Bewerbung eingegangen',
@@ -484,6 +488,12 @@ return [
             ],
             'safety' => [
                 'criticalEvent' => 'Kritisches Sicherheitsereignis',
+                'assessmentReviewDue' => 'Gefährdungsbeurteilung: Wiedervorlage fällig',
+                'instructionDue' => 'Wiederholungsunterweisung fällig',
+                'checkupDue' => 'Arbeitsmedizinische Vorsorge fällig',
+            ],
+            'training' => [
+                'due' => 'Pflichtschulung fällig',
             ],
             'qualification' => [
                 'expiring' => 'Qualifikation läuft bald ab',
@@ -551,6 +561,9 @@ return [
                 'followUpDue' => 'Angebot: Nachfassen fällig',
                 'expiringWithoutReaction' => 'Angebot läuft ohne Reaktion ab',
             ],
+            'weather' => [
+                'warning' => 'Wetterwarnung für Einsatz',
+            ],
             'warranty' => [
                 'expiring' => 'Gewährleistung läuft ab',
                 'subcontractorEndsFirst' => 'Sub-Frist endet vor der eigenen',
@@ -582,6 +595,13 @@ return [
             'teams' => 'Microsoft Teams',
             'mattermost' => 'Mattermost',
             'calendar' => 'Kalender',
+            'sms' => 'SMS',
+        ],
+        'sms_status' => [
+            'sent' => 'Versendet',
+            'delivered' => 'Zugestellt',
+            'failed' => 'Fehlgeschlagen',
+            'blocked' => 'Nicht versendet',
         ],
     ],
 
@@ -632,7 +652,39 @@ return [
         ],
     ],
 
+    'training' => [
+        'provider-kind' => [
+            'internal' => 'Intern',
+            'external' => 'Extern',
+        ],
+        'requirement-subject' => [
+            'role' => 'Rolle',
+            'team' => 'Tätigkeitsbereich (Team)',
+        ],
+        'assignment-state' => [
+            'fulfilled' => 'Erfüllt',
+            'planned' => 'Geplant',
+            'due' => 'Fällig',
+            'overdue' => 'Überfällig',
+        ],
+    ],
+
     'safety' => [
+        'assessment-status' => [
+            'draft' => 'Entwurf',
+            'inReview' => 'In Prüfung',
+            'approved' => 'Freigegeben',
+            'archived' => 'Archiviert',
+        ],
+        'checkup-kind' => [
+            'mandatory' => 'Pflichtvorsorge',
+            'offered' => 'Angebotsvorsorge',
+            'requested' => 'Wunschvorsorge',
+        ],
+        'signature-method' => [
+            'confirmed' => 'Bestätigungs-Klick',
+            'drawn' => 'Unterschrift (Bild)',
+        ],
         'kind' => [
             'accident' => 'Unfall',
             'nearMiss' => 'Beinaheunfall',
@@ -736,6 +788,17 @@ return [
             'file' => 'Datei',
             'signature' => 'Unterschrift',
         ],
+    ],
+    // Digitale Personalakte (Feature 141, MVP-708) — bewusst ohne Gesundheitskategorie.
+    'hr_document_category' => [
+        'contract' => 'Arbeitsvertrag',
+        'amendment' => 'Vertragsänderung / Zusatzvereinbarung',
+        'certificate' => 'Zeugnis / Bescheinigung',
+        'training' => 'Schulung / Qualifikation',
+        'warning' => 'Abmahnung',
+        'idDocument' => 'Ausweis- / Nachweisdokument',
+        'payrollReference' => 'Lohnbezug (Verweisdokument)',
+        'other' => 'Sonstiges',
     ],
     'document' => [
         'type' => [
@@ -1132,6 +1195,9 @@ return [
             'lexoffice' => 'Lexoffice',
             'orgamax' => 'orgaMAX',
             'sevdesk' => 'sevDesk',
+            'easybill' => 'easybill',
+            'invoiceplane' => 'InvoicePlane',
+            'jtl_wawi' => 'JTL-Wawi',
         ],
         'agreement-mode' => [
             'account' => 'Kundenkonto (rechnungslos)',
@@ -1235,6 +1301,8 @@ return [
             'incoming_invoice' => 'Eingangsrechnung',
             'expense' => 'Auslage',
             'cash_entry' => 'Kassenbuch',
+            'payment' => 'Zahlung',
+            'depreciation' => 'Abschreibung (AfA)',
         ],
         'posting-account-role' => [
             'receivable' => 'Forderung',
@@ -1245,6 +1313,10 @@ return [
             'tax_input' => 'Vorsteuer',
             'cash' => 'Kasse',
             'employee_payable' => 'Verbindlichkeit Mitarbeitende',
+            'bank' => 'Bank',
+            'discount' => 'Skonto',
+            'fixed_asset' => 'Anlagenkonto',
+            'depreciation' => 'AfA-Aufwand',
         ],
         // Buchungskern (Feature 125, MVP-672).
         'balance-side' => [
@@ -1257,6 +1329,27 @@ return [
             'equity' => 'Eigenkapital',
             'income' => 'Erträge',
             'expense' => 'Aufwendungen',
+        ],
+        'bwa-group' => [
+            'revenue' => 'Umsatzerlöse',
+            'inventory_change' => 'Bestandsveränderung / aktivierte Eigenleistung',
+            'material' => 'Materialaufwand',
+            'other_operating_income' => 'Sonstige betriebliche Erlöse',
+            'personnel' => 'Personalkosten',
+            'premises' => 'Raumkosten',
+            'operating_taxes' => 'Betriebliche Steuern',
+            'insurance_fees' => 'Versicherungen / Beiträge',
+            'vehicle' => 'Kfz-Kosten',
+            'marketing_travel' => 'Werbe- / Reisekosten',
+            'goods_dispatch' => 'Kosten der Warenabgabe',
+            'depreciation' => 'Abschreibungen',
+            'repairs' => 'Reparatur / Instandhaltung',
+            'other_costs' => 'Sonstige Kosten',
+            'interest_expense' => 'Zinsaufwand',
+            'neutral_expense' => 'Sonstiger neutraler Aufwand',
+            'interest_income' => 'Zinserträge',
+            'neutral_income' => 'Sonstiger neutraler Ertrag',
+            'income_taxes' => 'Steuern vom Einkommen und Ertrag',
         ],
         'accounting-entry-status' => [
             'draft' => 'Entwurf',
@@ -1278,6 +1371,14 @@ return [
         'profit-determination' => [
             'euer' => 'Einnahmenüberschussrechnung',
             'double_entry' => 'Doppelte Buchführung',
+        ],
+        // Anlagenregister (Feature 133, MVP-698).
+        'fixed-asset-status' => [
+            'active' => 'Aktiv',
+            'disposed' => 'Abgegangen',
+        ],
+        'depreciation-method' => [
+            'linear' => 'Linear',
         ],
         'accounting-period-status' => [
             'open' => 'Offen',
@@ -1317,6 +1418,13 @@ return [
             'skr03' => 'SKR03',
             'skr04' => 'SKR04',
         ],
+        // GoBD-Z3-Lauf (Feature 063, MVP-722).
+        'gobd-export-status' => [
+            'queued' => 'In Warteschlange',
+            'running' => 'Läuft',
+            'ready' => 'Fertig',
+            'failed' => 'Fehlgeschlagen',
+        ],
         'datev-batch-status' => [
             'draft' => 'Entwurf',
             'exported' => 'Exportiert',
@@ -1355,6 +1463,11 @@ return [
             'reimbursement' => 'Erstattung',
             'chargeback' => 'Rücklastschrift',
             'skonto' => 'Skonto (Erlösschmälerung)',
+        ],
+        // Verfahrensdokumentation (Feature 134, MVP-699)
+        'procedure-documentation-status' => [
+            'draft' => 'Entwurf',
+            'published' => 'Veröffentlicht',
         ],
     ],
 

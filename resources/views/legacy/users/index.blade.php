@@ -15,7 +15,7 @@
     <x-page-shell overflow="clip">
         <x-slot:toolbar>
             <x-page-toolbar :subtitle="__('Legacy-Mitarbeiterliste aus dem Altsystem.')">
-                <span class="text-sm text-base-content/60">{{ trans_choice(':n Mitarbeiter|:n Mitarbeiter', $legacyUsers->count(), ['n' => $legacyUsers->count()]) }}</span>
+                <span class="text-sm text-muted">{{ trans_choice(':n Mitarbeiter|:n Mitarbeiter', $legacyUsers->count(), ['n' => $legacyUsers->count()]) }}</span>
                 <x-slot:actions>
                     <x-icon-btn icon="add" tone="primary" size="sm"
                                 data-entry-modal-trigger
@@ -53,7 +53,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>' :colspan="3" :title="__('Keine Mitarbeiter gefunden')" compact />
+                <x-table.empty icon="group" :colspan="3" :title="__('Keine Mitarbeiter gefunden')" compact />
             @endforelse
         </x-table>
         </div>

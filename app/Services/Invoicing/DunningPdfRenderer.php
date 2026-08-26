@@ -30,21 +30,29 @@ use Carbon\CarbonInterface;
 class DunningPdfRenderer {
     public function __construct(private readonly DocumentDesignRenderer $design) {}
 
-    /** PDF-Bytes des Mahnschreibens (A4). */
-    public function output(Invoice $invoice, int $level, ?string $note = null, ?float $fee = null, ?CarbonInterface $payUntil = null): string {
+    /**
+     * PDF-Bytes des Mahnschreibens (A4).
+     *
+     * @param array{rate: float, days: int, amount: float}|null $interest Verzugszins-Ausweis (MVP-691)
+     */
+    public function output(Invoice $invoice, int $level, ?string $note = null, ?float $fee = null, ?CarbonInterface $payUntil = null, ?array $interest = null): string {
         $invoice->loadMissing(['customer', 'organization']);
 
-        return $this->design->renderPdf(
+        // Belegsprache je Kunde (Feature 034, MVP-721): nur Darstellung.
+        return \App\Support\DocumentLocale::within($invoice->customer, $invoice->organization, fn (): string => $this->design->renderPdf(
             RenderDocumentKind::Dunning,
             'invoices.dunning-pdf',
-            $this->viewData($invoice, $level, $note, $fee, $payUntil),
+            $this->viewData($invoice, $level, $note, $fee, $payUntil, $interest),
             $invoice->organization,
             payload: $this->designPayload($invoice),
-        );
+        ));
     }
 
-    /** @return array<string, mixed> */
-    public function viewData(Invoice $invoice, int $level, ?string $note = null, ?float $fee = null, ?CarbonInterface $payUntil = null): array {
+    /**
+     * @param array{rate: float, days: int, amount: float}|null $interest
+     * @return array<string, mixed>
+     */
+    public function viewData(Invoice $invoice, int $level, ?string $note = null, ?float $fee = null, ?CarbonInterface $payUntil = null, ?array $interest = null): array {
         $invoice->loadMissing(['customer', 'organization']);
         $organization = $invoice->organization;
 
@@ -54,6 +62,7 @@ class DunningPdfRenderer {
             'note' => $note !== null && trim($note) !== '' ? trim($note) : null,
             'fee' => $fee !== null && $fee > 0 ? round($fee, 2) : null,
             'payUntil' => $payUntil,
+            'interest' => $interest,
             'orgLegal' => app(BrandingService::class)->legalFor($organization),
             'design' => $this->design->context($this->designPayload($invoice)),
         ];

@@ -91,7 +91,7 @@
         </span>
 
         @if ($modelContext)
-            <span class="text-xs text-base-content/60">{{ $modelContext }}</span>
+            <span class="text-xs text-muted">{{ $modelContext }}</span>
         @endif
 
         @if ($modelChanged)
@@ -133,7 +133,7 @@
             {{-- Vorausberechnung (MVP-521): projizierter Saldo je Zukunftsmonat. --}}
             <x-card>
                 <h3 class="font-semibold mb-2">{{ __('Vorausberechnung') }}</h3>
-                <p class="text-sm text-base-content/60 mb-2">
+                <p class="text-sm text-muted mb-2">
                     {{ __('Projektion des Gleitzeitsaldos auf Basis geplanter Dienste; Monate ohne Dienstplanung unterstellen Solltreue.') }}
                     {{ __('Ausgangssaldo') }}: <span class="font-medium tabular-nums">{{ $fmt((int) $forecast['start_balance']) }}</span>
                 </p>

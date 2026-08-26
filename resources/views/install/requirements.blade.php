@@ -30,13 +30,13 @@
                 <tr>
                     <td class="w-8">
                         @if ($check['ok'])
-                            <span class="material-symbols-outlined text-success" aria-hidden="true">check_circle</span>
+                            <x-icon name="check_circle" class="text-success" />
                         @else
-                            <span class="material-symbols-outlined text-error" aria-hidden="true">cancel</span>
+                            <x-icon name="cancel" class="text-error" />
                         @endif
                     </td>
                     <td>{{ $check['label'] }}</td>
-                    <td class="text-xs text-base-content/60">{{ $check['ok'] ? '' : $check['hint'] }}</td>
+                    <td class="text-xs text-muted">{{ $check['ok'] ? '' : $check['hint'] }}</td>
                 </tr>
             @endforeach
         </tbody>

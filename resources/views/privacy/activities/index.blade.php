@@ -47,7 +47,7 @@
                         @endforeach
                     </select>
                     <x-icon-btn icon="library_add" tone="outline" size="sm" type="submit" show-label>{{ __('Als Entwurf anlegen') }}</x-icon-btn>
-                    <span class="text-xs text-base-content/60">{{ __('Inhalte sind Startpunkte — organisationsspezifisch prüfen.') }}</span>
+                    <span class="text-xs text-muted">{{ __('Inhalte sind Startpunkte — organisationsspezifisch prüfen.') }}</span>
                 </form>
             </x-card>
         @endif

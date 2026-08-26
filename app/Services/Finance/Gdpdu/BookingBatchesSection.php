@@ -64,10 +64,9 @@ class BookingBatchesSection extends AbstractGdpduSection {
             ->orderBy('batch_no')->orderBy('id');
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
-        $rows = [];
-        foreach (self::exportedBatches($organization, $from, $to)->get() as $batch) {
-            $rows[] = [
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
+        foreach (self::exportedBatches($organization, $from, $to)->lazy() as $batch) {
+            yield [
                 $this->num($batch->batch_no, 0),
                 $this->date($batch->period_from),
                 $this->date($batch->period_to),
@@ -79,7 +78,5 @@ class BookingBatchesSection extends AbstractGdpduSection {
                 $this->str($batch->file_hash),
             ];
         }
-
-        return $rows;
     }
 }

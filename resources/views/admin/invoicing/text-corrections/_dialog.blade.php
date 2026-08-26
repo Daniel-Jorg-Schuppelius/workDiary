@@ -23,7 +23,7 @@
             <input id="txc-wrong" type="text" name="wrong" required maxlength="190"
                    value="{{ old('wrong', $correction?->wrong) }}" class="input input-bordered w-full font-mono"
                    placeholder="{{ __('textcorrections.wrong_placeholder') }}">
-            <p class="text-xs text-base-content/60">{{ __('textcorrections.wrong_help') }}</p>
+            <p class="text-xs text-muted">{{ __('textcorrections.wrong_help') }}</p>
             @error('wrong')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -32,7 +32,7 @@
             <input id="txc-correct" type="text" name="correct" required maxlength="190"
                    value="{{ old('correct', $correction?->correct) }}" class="input input-bordered w-full font-mono"
                    placeholder="{{ __('textcorrections.correct_placeholder') }}">
-            <p class="text-xs text-base-content/60">{{ __('textcorrections.correct_help') }}</p>
+            <p class="text-xs text-muted">{{ __('textcorrections.correct_help') }}</p>
             @error('correct')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>

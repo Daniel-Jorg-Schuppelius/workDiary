@@ -45,7 +45,7 @@
                                         {{ $fmtMin((int) $entry->minutes) }}
                                     @endif
                                 </span>
-                                <span class="text-xs text-base-content/60">
+                                <span class="text-xs text-muted">
                                     {{ $fmtMin((int) $entry->minutes) }} h
                                     @if ((int) $entry->break_minutes > 0)
                                         · {{ __('Pause') }} {{ (int) $entry->break_minutes }} {{ __('Min.') }}
@@ -59,7 +59,7 @@
                                 {{ $entry->description ?: __('Ohne Beschreibung') }}
                             </span>
                             @if ($entry->task)
-                                <span class="block truncate text-xs text-base-content/50">{{ $entry->task->title }}</span>
+                                <span class="block truncate text-xs text-muted">{{ $entry->task->title }}</span>
                             @endif
                         </span>
                     </label>

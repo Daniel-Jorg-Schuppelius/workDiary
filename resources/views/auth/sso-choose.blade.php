@@ -23,7 +23,7 @@
                        class="flex items-center gap-3 rounded-2xl border border-base-content/15 bg-base-200/60 px-4 py-3 text-base-content transition hover:border-primary/60 hover:bg-base-200">
                         <x-icon name="login" class="text-primary" />
                         <span class="font-medium">{{ $connection->label }}</span>
-                        <span class="ms-auto text-xs text-base-content/60">{{ $connection->provider_type->label() }}</span>
+                        <span class="ms-auto text-xs text-muted">{{ $connection->provider_type->label() }}</span>
                     </a>
                 </li>
             @endforeach

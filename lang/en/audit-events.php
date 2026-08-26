@@ -322,8 +322,22 @@ return [
             'deleted' => 'Form template deleted',
         ],
     ],
+    'hrFile' => [
+        'created' => 'Personnel file document added',
+        'updated' => 'Personnel file document updated',
+        'downloaded' => 'Personnel file document downloaded',
+        'deleted' => 'Personnel file document destroyed',
+    ],
     'gobd' => [
         'exported' => 'GoBD export created',
+        'downloaded' => 'GoBD export downloaded',
+    ],
+    // Measurement tool (MVP-722): rows from audit:measure-chain-contention.
+    'perf' => [
+        'measure' => 'Measurement run (audit chain lock contention)',
+    ],
+    'procedure_documentation' => [
+        'published' => 'Procedure documentation published',
     ],
     'google_calendar' => [
         'calendar_selected' => 'Google calendar selected',
@@ -393,6 +407,8 @@ return [
         'retention_secured' => 'Retention replaced by a guarantee',
         'approved' => 'Invoice approved',
         'dunned' => 'Invoice dunned',
+        'dunningBlocked' => 'Dunning block set',
+        'dunningUnblocked' => 'Dunning block removed',
         'document_imported' => 'Invoice file imported',
         'einvoice_exported' => 'E-invoice exported',
         'einvoice_options_updated' => 'E-invoice options updated',
@@ -595,7 +611,13 @@ return [
             'invited' => 'Portal access invited',
             'reactivated' => 'Portal access reactivated',
         ],
+        'profile' => [
+            'email_change_requested' => 'Email change requested in portal',
+            'email_changed' => 'Email address changed in portal',
+            'email_change_blocked' => 'Email change in portal not executed',
+        ],
         'query' => [
+            'attachments_added' => 'Attachments uploaded to portal query',
             'withdrawn' => 'Portal query withdrawn',
         ],
         'visibility' => [
@@ -627,6 +649,7 @@ return [
         'ropa' => [
             'exported' => 'Records of processing exported',
         ],
+        'subjectExportGenerated' => 'Data subject disclosure generated',
     ],
     'problem' => [
         'effectiveness_checked' => 'Effectiveness checked',
@@ -639,7 +662,17 @@ return [
         'signatureLinkOpened' => 'Signature link opened',
         'signatureRequested' => 'Signature requested',
     ],
+    'order_confirmation' => [
+        'mailed' => 'Order confirmation sent by email',
+    ],
+    'purchase_order' => [
+        'mailed' => 'Purchase order sent by email',
+    ],
+    'delivery_note' => [
+        'mailed' => 'Delivery note sent by email',
+    ],
     'quote' => [
+        'mailed' => 'Quote sent by email',
         'followed_up' => 'Quote followed up',
         'accepted' => 'Quote accepted',
         'approved' => 'Quote approved',
@@ -671,6 +704,10 @@ return [
     ],
     'render_profile_activated' => 'Render profile activated',
     'rental' => [
+        'requested' => 'Rental request submitted via portal',
+        'requestAccepted' => 'Rental request accepted',
+        'requestDeclined' => 'Rental request declined',
+        'requestWithdrawn' => 'Rental request withdrawn by customer',
         'active' => 'Rental active',
         'assetSwapped' => 'Rental asset swapped',
         'cancelled' => 'Rental cancelled',
@@ -714,6 +751,16 @@ return [
     ],
     'rules' => [
         'recalculated' => 'Time rule results recalculated',
+    ],
+    'safety' => [
+        'hazard_assessment' => [
+            'approved' => 'Risk assessment approved',
+            'transitioned' => 'Risk assessment: status changed',
+            'superseded' => 'Risk assessment superseded by follow-up version',
+        ],
+        'instruction_participant' => [
+            'signed' => 'Safety instruction participation confirmed',
+        ],
     ],
     'scheduler' => [
         'testRun' => 'Scheduler test run',
@@ -769,6 +816,13 @@ return [
     'shipping' => [
         'connection_saved' => 'Shipping connection saved',
         'disconnected' => 'Shipping connection disconnected',
+    ],
+    'sms' => [
+        'sent' => 'Alert SMS sent',
+        'opt_in' => 'SMS alerting confirmed',
+        'opt_out' => 'SMS alerting withdrawn',
+        'verification_started' => 'SMS confirmation code requested',
+        'budget_warning' => 'SMS cost warning threshold reached',
     ],
     'sla_violation' => [
         'acknowledged' => 'SLA violation acknowledged',
@@ -881,7 +935,14 @@ return [
         'revoked' => 'Token revoked',
     ],
     'updated' => 'Updated',
+    'travelLog' => [
+        'locked' => 'Trip locked',
+        'corrected' => 'Trip corrected by cancellation trip',
+    ],
     'user' => [
+        'anonymized' => 'Employee anonymized (PII removed, evidence retained)',
+        'offboardingScheduled' => 'Offboarding scheduled',
+        'offboarded' => 'Employee offboarded (account deactivated)',
         'permission' => [
             'granted' => 'Permission granted',
             'revoked' => 'Permission revoked',
@@ -931,6 +992,8 @@ return [
         'taxation_method_switched' => 'Taxation method switched',
         'filing_interval_switched' => 'VAT return period switched',
         'vat_extension_recorded' => 'Deadline extension recorded',
+        'fixed_asset_disposed' => 'Fixed asset disposal recorded',
+        'depreciation_proposed' => 'Annual depreciation proposed',
     ],
     'accounting_migration' => [
         'planned' => 'Accounting migration planned',
@@ -942,5 +1005,8 @@ return [
         'blocked' => 'Migration blocked',
         'completed' => 'Accounting migration completed',
         'cancelled' => 'Accounting migration cancelled',
+    ],
+    'openIssue' => [
+        'followUpCreated' => 'Follow-up job created from open issue',
     ],
 ];

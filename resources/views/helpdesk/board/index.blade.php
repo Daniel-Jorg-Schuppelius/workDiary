@@ -126,7 +126,7 @@
                                                 <x-status-badge tone="ghost" size="xs">{{ $ticket->queue->name }}</x-status-badge>
                                             @endif
                                         </div>
-                                        <div class="mt-1 flex flex-wrap items-center justify-between gap-1 text-xs text-base-content/60">
+                                        <div class="mt-1 flex flex-wrap items-center justify-between gap-1 text-xs text-muted">
                                             <span class="truncate">{{ $ticket->assignedTo?->name ?: __('Unzugewiesen') }}</span>
                                             @if ($remaining !== null && $slaStatus->value !== 'met' && $slaStatus->value !== 'none')
                                                 <span class="{{ $slaStatus->textClass() }} whitespace-nowrap">
@@ -138,7 +138,7 @@
                                 </div>
                             </article>
                         @empty
-                            <p class="px-2 py-4 text-center text-xs text-base-content/50">{{ __('Keine Tickets') }}</p>
+                            <p class="px-2 py-4 text-center text-xs text-muted">{{ __('Keine Tickets') }}</p>
                         @endforelse
                     </div>
                 </section>

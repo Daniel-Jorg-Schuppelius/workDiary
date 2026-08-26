@@ -50,7 +50,7 @@
         @foreach ($columns as $statusCode => $col)
             @php $items = $byStatus->get($statusCode, collect()); @endphp
             <section class="flex min-h-0 flex-col rounded-box border border-base-300 bg-base-100 shadow-xs"
-                     data-kanban-column data-status="{{ $statusCode }}">
+                     data-kanban-column data-status="{{ $statusCode }}" data-label="{{ __($col['label']) }}">
                 <header class="flex items-center justify-between border-b border-base-300 px-3 py-2">
                     <div class="flex items-center gap-2">
                         <span class="wd-week-legend wd-week-entry--{{ $col['tone'] }}"></span>
@@ -62,7 +62,7 @@
                     @foreach ($items as $entry)
                         @include('kanban._card', ['entry' => $entry])
                     @endforeach
-                    <p class="px-2 py-4 text-center text-xs text-base-content/50 {{ $items->isEmpty() ? '' : 'hidden' }}" data-kanban-empty>{{ __('Keine Einträge') }}</p>
+                    <p class="px-2 py-4 text-center text-xs text-muted {{ $items->isEmpty() ? '' : 'hidden' }}" data-kanban-empty>{{ __('Keine Einträge') }}</p>
                 </div>
             </section>
         @endforeach

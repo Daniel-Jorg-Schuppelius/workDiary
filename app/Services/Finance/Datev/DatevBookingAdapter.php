@@ -37,12 +37,32 @@ use Throwable;
  * Steueraufteilung. Belegfeld 1 = Rechnungsnummer, Buchungstext = Kunde/Leistung
  * (gekürzt), Belegdatum = Belegdatum der Quelle. Das Festschreibekennzeichen
  * (GoBD) wird je Buchung gemäß Batch-Stand gesetzt.
+ *
+ * Optionale Kanzlei-Felder (Feature 135, MVP-700): KOST1/KOST2, Zugeordnete
+ * Fälligkeit, Skonto + Skontotyp und Beleglink — leer bleibt leer, damit
+ * bestehende Stapel byte-identisch bleiben. `document_link` ist im Vertrag
+ * vorgesehen, wird aber von keinem Lieferanten befüllt: DATEV erwartet dort
+ * die Belegbild-GUID eines DATEV-Belegs (Format `BEDI "<guid>"`), und ein
+ * solcher GUID ist an Rechnung/Auslage nicht hinterlegt. App-URLs gehören
+ * nicht in das Feld — DATEV würde sie als ungültigen Link verwerfen.
+ *
+ * @phpstan-type BookingLine array{
+ *   amount: float|numeric-string, soll_haben: string, account: string, contra_account: string,
+ *   tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool,
+ *   cost_center1?: ?string, cost_center2?: ?string, document_link?: ?string,
+ *   due_on?: ?DateTimeImmutable, discount_amount?: float|numeric-string|null, discount_type?: ?int
+ * }
  */
 final class DatevBookingAdapter {
+    /** Skontotyp (EXTF-Feld 94): 1 = Einkauf (Kreditor), 2 = Verkauf (Debitor). */
+    public const DISCOUNT_TYPE_PURCHASE = 1;
+
+    public const DISCOUNT_TYPE_SALES = 2;
+
     /**
      * Erzeugt die DATEV-V700-CSV als String.
      *
-     * @param  list<array{amount: float|numeric-string, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}>  $rows
+     * @param  list<BookingLine>  $rows
      */
     public function generate(DatevBookingBatch $batch, DatevBookingConfig $config, array $rows): string {
         return $this->generateBookings(
@@ -60,7 +80,7 @@ final class DatevBookingAdapter {
      * DATEV-Übergabe aus den lokalen Festbuchungen (MVP-677) erzeugt damit
      * einen importierbaren EXTF-V700-Stapel statt einer Haus-CSV.
      *
-     * @param  list<array{amount: float|numeric-string, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}>  $rows
+     * @param  list<BookingLine>  $rows
      */
     public function generateBookings(DateTimeImmutable $from, DateTimeImmutable $to, bool $locked, string $description, DatevBookingConfig $config, array $rows): string {
         FinancialFormatsSupport::ensureAvailable();
@@ -156,7 +176,7 @@ final class DatevBookingAdapter {
      * MVP-334: Storno-Übergaben tragen das Generalumkehr-Kennzeichen
      * (EXTF-Feld 118 „Generalumkehr (GU)" = 1) — DATEV kehrt die Buchung um.
      *
-     * @param  array{amount: float|numeric-string, soll_haben: string, account: string, contra_account: string, tax_key: ?string, date: DateTimeImmutable, document_ref: string, text: string, is_reversal?: bool}  $row
+     * @param  BookingLine  $row
      */
     private function buildLine(
         BookingBatchHeaderLine $header,
@@ -192,7 +212,55 @@ final class DatevBookingAdapter {
             $set(F::Generalumkehr, '1');
         }
 
+        // Kanzlei-Felder (Feature 135): nur setzen, wenn ein Wert vorliegt.
+        // Die DataLine schreibt ungequotet — Trennzeichen/Anführungszeichen
+        // im Wert würden die Zeile zerreißen, deshalb werden sie entfernt.
+        $costCenter1 = $this->plain($row['cost_center1'] ?? null, 8);
+        if ($costCenter1 !== '') {
+            $set(F::KOST1, $costCenter1);
+        }
+        $costCenter2 = $this->plain($row['cost_center2'] ?? null, 8);
+        if ($costCenter2 !== '') {
+            $set(F::KOST2, $costCenter2);
+        }
+        $documentLink = $this->plain($row['document_link'] ?? null, 210);
+        if ($documentLink !== '') {
+            $set(F::Beleglink, $documentLink);
+        }
+        if (($row['due_on'] ?? null) instanceof DateTimeImmutable) {
+            $set(F::ZugeordneteFaelligkeit, $row['due_on']->format('dmY'));
+        }
+        $discount = $this->discountAmount($row['discount_amount'] ?? null);
+        if ($discount !== null) {
+            $set(F::Skonto, $discount);
+            $set(F::SkontoTyp, (string) ($row['discount_type'] ?? self::DISCOUNT_TYPE_SALES));
+        }
+
         return new DataLine($values, ';', '"');
+    }
+
+    /**
+     * Skonto-Betrag im DATEV-Format (Feld 13, Muster `[1-9]\d{0,7},\d{2}`) —
+     * null bei 0 oder ohne Kondition, damit das Feld leer bleibt.
+     *
+     * @param  float|numeric-string|null  $amount
+     */
+    private function discountAmount(float|string|null $amount): ?string {
+        if ($amount === null) {
+            return null;
+        }
+        $formatted = is_string($amount)
+            ? NumberHelper::toGermanFormat(NumberHelper::absPrecise($amount), 2)
+            : number_format(abs($amount), 2, ',', '');
+
+        return preg_match('/^[1-9]\d{0,7},\d{2}$/', $formatted) === 1 ? $formatted : null;
+    }
+
+    /** Freitextfeld ohne CSV-Sonderzeichen, auf die DATEV-Feldlänge gekürzt. */
+    private function plain(?string $value, int $max): string {
+        $clean = str_replace([';', '"', "\r", "\n"], ' ', (string) $value);
+
+        return $this->clip(preg_replace('/\s+/', ' ', $clean) ?? '', $max);
     }
 
     /**

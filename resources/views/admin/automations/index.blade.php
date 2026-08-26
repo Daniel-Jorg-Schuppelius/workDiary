@@ -69,7 +69,7 @@
             </tr>
         @empty
             <x-table.empty :colspan="6"
-                icon='<span class="material-symbols-outlined" aria-hidden="true">smart_toy</span>'
+                icon="smart_toy"
                 :title="__('Keine Regeln definiert.')" compact />
         @endforelse
     </x-table>

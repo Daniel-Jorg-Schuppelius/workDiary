@@ -20,7 +20,7 @@
         {{-- Endpunkt für die IdP-Konfiguration --}}
         <x-card>
             <div class="text-sm">
-                <span class="text-base-content/60">{{ __('sso.base_url') }}:</span>
+                <span class="text-muted">{{ __('sso.base_url') }}:</span>
                 <code class="rounded bg-base-200 px-2 py-0.5">{{ $scimBaseUrl }}</code>
             </div>
         </x-card>
@@ -53,15 +53,15 @@
                         @endif
                     </div>
                 </div>
-                <p class="mb-3 text-xs text-base-content/60">{{ $isOidc ? __('sso.oidc_hint') : __('sso.saml_hint') }}</p>
+                <p class="mb-3 text-xs text-muted">{{ $isOidc ? __('sso.oidc_hint') : __('sso.saml_hint') }}</p>
 
                 <div class="mb-3 space-y-1 text-xs">
-                    <div><span class="text-base-content/60">{{ __('sso.field.start_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $ssoStartUrl }}</code></div>
+                    <div><span class="text-muted">{{ __('sso.field.start_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $ssoStartUrl }}</code></div>
                     @if ($isOidc)
-                        <div><span class="text-base-content/60">{{ __('sso.field.callback_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $oidcCallbackUrl }}</code></div>
+                        <div><span class="text-muted">{{ __('sso.field.callback_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $oidcCallbackUrl }}</code></div>
                     @else
-                        <div><span class="text-base-content/60">{{ __('sso.field.acs_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $samlAcsUrl }}</code></div>
-                        <div><span class="text-base-content/60">{{ __('sso.field.metadata_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $samlMetadataUrl }}</code></div>
+                        <div><span class="text-muted">{{ __('sso.field.acs_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $samlAcsUrl }}</code></div>
+                        <div><span class="text-muted">{{ __('sso.field.metadata_url') }}:</span> <code class="rounded bg-base-200 px-1.5 py-0.5">{{ $samlMetadataUrl }}</code></div>
                     @endif
                 </div>
 
@@ -81,7 +81,7 @@
                                 <label class="form-control">
                                     <span class="label-text">{{ __('sso.field.tenant') }}</span>
                                     <input type="text" name="tenant" value="{{ old('tenant') }}" placeholder="{{ __('sso.field.tenant_placeholder') }}" class="input input-bordered input-sm" autocomplete="off">
-                                    <span class="label-text-alt text-base-content/60">{{ $conn?->issuer ? __('sso.field.tenant_keep') : __('sso.field.tenant_hint') }}</span>
+                                    <span class="label-text-alt text-muted">{{ $conn?->issuer ? __('sso.field.tenant_keep') : __('sso.field.tenant_hint') }}</span>
                                 </label>
                             @elseif ($providerType === \App\Enums\Auth\SsoProviderType::Google)
                                 <div class="form-control">
@@ -183,10 +183,10 @@
              passende Organisation ab. Domains sind global eindeutig. --}}
         <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.domains_heading') }}</h2>
-            <p class="mb-2 text-xs text-base-content/60">{{ __('sso.domains_hint') }}</p>
+            <p class="mb-2 text-xs text-muted">{{ __('sso.domains_hint') }}</p>
 
             @if ($ssoDomains->isEmpty())
-                <p class="mb-2 text-sm text-base-content/60">{{ __('sso.no_domains') }}</p>
+                <p class="mb-2 text-sm text-muted">{{ __('sso.no_domains') }}</p>
             @else
                 <ul class="mb-2 space-y-1">
                     @foreach ($ssoDomains as $ssoDomain)
@@ -216,15 +216,15 @@
              lokal anmelden dürfen (DoD MVP-120). Änderung wird auditiert. --}}
         <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.break_glass_heading') }}</h2>
-            <p class="mb-2 text-xs text-base-content/60">{{ __('sso.break_glass_hint') }}</p>
+            <p class="mb-2 text-xs text-muted">{{ __('sso.break_glass_hint') }}</p>
 
             @if ($breakGlassUsers->isEmpty())
-                <p class="mb-2 text-sm text-base-content/60">{{ __('sso.no_break_glass') }}</p>
+                <p class="mb-2 text-sm text-muted">{{ __('sso.no_break_glass') }}</p>
             @else
                 <ul class="mb-2 space-y-1">
                     @foreach ($breakGlassUsers as $bgUser)
                         <li class="flex items-center justify-between gap-2 text-sm">
-                            <span>{{ $bgUser->name }} <span class="text-base-content/60">({{ $bgUser->email }})</span></span>
+                            <span>{{ $bgUser->name }} <span class="text-muted">({{ $bgUser->email }})</span></span>
                             <form method="POST" action="{{ route('admin.sso.break-glass.toggle') }}">
                                 @csrf
                                 <input type="hidden" name="user" value="{{ $bgUser->sqid }}">
@@ -256,7 +256,7 @@
         @if ($issuedToken)
             <div class="rounded-box border border-warning/40 bg-warning/10 p-4">
                 <div class="mb-1 text-sm font-semibold">{{ __('sso.new_token_heading') }}</div>
-                <p class="mb-2 text-xs text-base-content/60">{{ __('sso.new_token_hint') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('sso.new_token_hint') }}</p>
                 <code class="block break-all rounded bg-base-100 px-3 py-2 text-sm">{{ $issuedToken }}</code>
             </div>
         @endif
@@ -280,7 +280,7 @@
         <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.tokens_heading') }}</h2>
             @if ($tokens->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('sso.no_tokens') }}</p>
+                <p class="text-sm text-muted">{{ __('sso.no_tokens') }}</p>
             @else
                 <x-table>
                     <x-slot:head>
@@ -301,7 +301,7 @@
                                             <span class="badge badge-ghost badge-sm">{{ __('sso.status.revoked') }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-base-content/60">{{ $token->last_used_at?->diffForHumans() ?? '—' }}</td>
+                                    <td class="text-muted">{{ $token->last_used_at?->diffForHumans() ?? '—' }}</td>
                                     <td class="text-right">
                                         @if ($token->isActive())
                                             <form method="POST" action="{{ route('admin.sso.tokens.revoke', $token->sqid) }}">
@@ -320,9 +320,9 @@
              passiert NUR bei bewusster Zuordnung; SCIM selbst vergibt nie ein Team. --}}
         <x-card>
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('sso.groups_heading') }}</h2>
-            <p class="mb-2 text-xs text-base-content/60">{{ __('sso.groups_hint') }}</p>
+            <p class="mb-2 text-xs text-muted">{{ __('sso.groups_hint') }}</p>
             @if ($groups->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('sso.no_groups') }}</p>
+                <p class="text-sm text-muted">{{ __('sso.no_groups') }}</p>
             @else
                 <x-table>
                     <x-slot:head>
@@ -335,7 +335,7 @@
                             @foreach ($groups as $group)
                                 <tr>
                                     <td>{{ $group->display_name }}</td>
-                                    <td class="text-base-content/60">{{ count($group->members ?? []) }}</td>
+                                    <td class="text-muted">{{ count($group->members ?? []) }}</td>
                                     <td>
                                         <form method="POST" action="{{ route('admin.sso.groups.map', $group->sqid) }}"
                                               class="flex items-center gap-2">

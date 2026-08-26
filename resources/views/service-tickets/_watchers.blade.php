@@ -12,12 +12,12 @@
 
 <x-card :title="__('Beobachter')" icon="visibility">
     @if ($ticket->watchers->isEmpty())
-        <p class="text-sm text-base-content/60">{{ __('Noch keine Beobachter.') }}</p>
+        <p class="text-sm text-muted">{{ __('Noch keine Beobachter.') }}</p>
     @else
         <ul class="space-y-1 text-sm">
             @foreach ($ticket->watchers as $watcher)
                 <li class="flex items-center gap-2">
-                    <x-icon name="person" class="text-base-content/60" />
+                    <x-icon name="person" class="text-muted" />
                     <span class="flex-1">{{ $watcher->user?->name ?? '—' }}</span>
                     @if ($canUpdate && $watcher->user)
                         <x-action-form :action="route('helpdesk.tickets.watchers.destroy', [$ticket, $watcher->user])"

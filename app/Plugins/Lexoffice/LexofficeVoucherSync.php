@@ -52,6 +52,18 @@ class LexofficeVoucherSync {
      * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int}
      */
     public function sync(Organization $organization): array {
+        // G3 (MVP-690): Nach abgeschlossenem Buchhaltungswechsel mit Quelle
+        // Lexoffice ist der Spiegel eingefroren — der Sync würde den GoBD-
+        // Bestand gegen ein auslaufendes Konto abgleichen.
+        $completedMigration = \App\Models\Migration\AccountingMigrationRun::query()
+            ->where('organization_id', $organization->id)
+            ->where('source_plugin', 'lexoffice')
+            ->where('status', \App\Enums\Migration\AccountingMigrationStatus::Completed->value)
+            ->exists();
+        if ($completedMigration) {
+            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'frozen' => true];
+        }
+
         if ($this->apiKey === null || $this->apiKey === '') {
             throw new RuntimeException('Lexoffice API key is not configured (LEXOFFICE_API_KEY).');
         }
@@ -77,12 +89,7 @@ class LexofficeVoucherSync {
             }
         }
 
-        // In Lexoffice nicht mehr sichtbare Belege als archiviert markieren.
-        $archived = LexofficeVoucher::query()
-            ->where('organization_id', $organization->id)
-            ->where('archived', false)
-            ->when($seen !== [], fn($q) => $q->whereNotIn('external_id', $seen))
-            ->update(['archived' => true]);
+        $archived = $this->archiveMissing($organization, $seen);
 
         return [
             'contacts' => count($contactMap),
@@ -102,6 +109,31 @@ class LexofficeVoucherSync {
      * Rest folgt beim nächsten Sync. Fehler je Beleg (z. B. 404 für
      * Belegarten ohne Zahlung) werden toleriert.
      */
+    /**
+     * In Lexoffice nicht mehr sichtbare Belege archivieren. G3-Guard
+     * (MVP-690): Eine LEERE Antwort archiviert NICHTS — nach Kündigung/
+     * API-Ausfall wäre sonst der komplette GoBD-Spiegel „archiviert".
+     *
+     * @param  array<int, string>  $seen
+     */
+    public function archiveMissing(Organization $organization, array $seen): int {
+        if ($seen === []) {
+            if (LexofficeVoucher::query()->where('organization_id', $organization->id)->exists()) {
+                \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: leere Belegliste — Archivierung übersprungen (Kündigung/API-Problem?).', [
+                    'organization_id' => $organization->id,
+                ]);
+            }
+
+            return 0;
+        }
+
+        return LexofficeVoucher::query()
+            ->where('organization_id', $organization->id)
+            ->where('archived', false)
+            ->whereNotIn('external_id', $seen)
+            ->update(['archived' => true]);
+    }
+
     public function enrichPaidDates(int $organizationId, int $limit = 100): int {
         $candidates = LexofficeVoucher::query()
             ->where('organization_id', $organizationId)

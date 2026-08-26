@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Models\Accounting;
 
-use App\Enums\Finance\{AccountType, BalanceSide, EuerCategory};
+use App\Enums\Finance\{AccountType, BalanceSide, BwaGroup, EuerCategory};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property AccountType $type
  * @property BalanceSide $normal_balance
  * @property ?EuerCategory $euer_category
+ * @property ?BwaGroup $bwa_group
  */
 class AccountingAccount extends Model {
     use Auditable;
@@ -44,6 +45,7 @@ class AccountingAccount extends Model {
         'is_cash',
         'is_clearing',
         'euer_category',
+        'bwa_group',
         'deductible_percent',
         'default_tax_code_id',
         'datev_account',
@@ -60,6 +62,7 @@ class AccountingAccount extends Model {
         'is_cash' => 'boolean',
         'is_clearing' => 'boolean',
         'euer_category' => EuerCategory::class,
+        'bwa_group' => BwaGroup::class,
         'deductible_percent' => 'decimal:2',
         'is_active' => 'boolean',
     ];

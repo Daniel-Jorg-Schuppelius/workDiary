@@ -37,7 +37,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('msgraph.health.badge_inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-base-content/60">{{ __('msgraph.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('msgraph.intro') }}</p>
 
             @unless ($configured)
                 <div class="alert alert-warning text-sm">{{ __('msgraph.not_configured_hint') }}</div>
@@ -72,7 +72,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('msgraph_mail.badge_inactive') }}</span>
                 @endif
             </div>
-            <p class="text-sm text-base-content/60">{{ __('msgraph_mail.intro') }}</p>
+            <p class="text-sm text-muted">{{ __('msgraph_mail.intro') }}</p>
 
             @unless ($mailerActive)
                 <div class="alert alert-info text-sm">{{ __('msgraph_mail.mailer_hint') }}</div>
@@ -84,7 +84,7 @@
                 @endif
                 @if ($mailConnection->last_error)
                     <div role="alert" class="alert alert-warning text-sm">
-                        <span>{{ $mailConnection->last_error }} <span class="text-base-content/60">({{ $mailConnection->last_error_at?->ftime() }})</span></span>
+                        <span>{{ $mailConnection->last_error }} <span class="text-muted">({{ $mailConnection->last_error_at?->ftime() }})</span></span>
                     </div>
                 @endif
 
@@ -95,7 +95,7 @@
                         <input type="email" name="from_address" maxlength="190"
                                value="{{ old('from_address', $mailConnection->from_address) }}"
                                class="input input-sm input-bordered" placeholder="{{ __('msgraph_mail.from_placeholder') }}">
-                        <span class="label-text-alt text-base-content/60">{{ __('msgraph_mail.from_hint') }}</span>
+                        <span class="label-text-alt text-muted">{{ __('msgraph_mail.from_hint') }}</span>
                     </label>
                     <label class="flex items-center gap-2 text-sm">
                         <input type="checkbox" name="save_to_sent_items" value="1" class="checkbox checkbox-sm"
@@ -125,7 +125,7 @@
                             <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_mail.disconnect') }}</button>
                         </form>
                     </div>
-                    <p class="text-xs text-base-content/60">{{ __('msgraph_mail.test.hint') }}</p>
+                    <p class="text-xs text-muted">{{ __('msgraph_mail.test.hint') }}</p>
                 </div>
             @elseif ($configured)
                 <form method="POST" action="{{ route('admin.msgraph.mail.oauth.start') }}" data-oauth-popup>
@@ -145,7 +145,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('msgraph_contacts.badge_inactive') }}</span>
                 @endif
             </div>
-            <p class="text-sm text-base-content/60">{{ __('msgraph_contacts.intro') }}</p>
+            <p class="text-sm text-muted">{{ __('msgraph_contacts.intro') }}</p>
 
             @if ($contactConnection && $contactConnection->isActive())
                 @if ($contactConnection->account_label)
@@ -153,7 +153,7 @@
                 @endif
                 @if ($contactConnection->last_error)
                     <div role="alert" class="alert alert-warning text-sm">
-                        <span>{{ $contactConnection->last_error }} <span class="text-base-content/60">({{ $contactConnection->last_error_at?->ftime() }})</span></span>
+                        <span>{{ $contactConnection->last_error }} <span class="text-muted">({{ $contactConnection->last_error_at?->ftime() }})</span></span>
                     </div>
                 @endif
                 <form method="POST" action="{{ route('admin.msgraph.contacts.disconnect') }}">
@@ -178,7 +178,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('msgraph_tasks.badge_inactive') }}</span>
                 @endif
             </div>
-            <p class="text-sm text-base-content/60">{{ __('msgraph_tasks.intro') }}</p>
+            <p class="text-sm text-muted">{{ __('msgraph_tasks.intro') }}</p>
 
             @if ($taskConnection && $taskConnection->isActive())
                 @if ($taskConnection->account_label)
@@ -269,7 +269,7 @@
                   class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
                 @csrf
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('msgraph.calendar.heading') }}</h2>
-                <p class="text-sm text-base-content/60">{{ __('msgraph.calendar.help') }}</p>
+                <p class="text-sm text-muted">{{ __('msgraph.calendar.help') }}</p>
 
                 <label class="form-control max-w-md">
                     <span class="label-text">{{ __('msgraph.calendar.target') }}</span>
@@ -304,19 +304,19 @@
         {{-- Entra-App & tenantweite Freigabe (Admin-Consent) --}}
         <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('msgraph.entra.heading') }}</h2>
-            <p class="text-sm text-base-content/60">{{ __('msgraph.entra.intro') }}</p>
+            <p class="text-sm text-muted">{{ __('msgraph.entra.intro') }}</p>
 
             @if ($configured)
                 <form method="POST" action="{{ route('admin.msgraph.adminconsent.start') }}">
                     @csrf
                     <button type="submit" class="btn btn-sm btn-outline">{{ __('msgraph.entra.consent') }}</button>
                 </form>
-                <p class="text-xs text-base-content/60">{{ __('msgraph.entra.consent_hint') }}</p>
+                <p class="text-xs text-muted">{{ __('msgraph.entra.consent_hint') }}</p>
             @endif
 
             <details class="text-sm">
                 <summary class="cursor-pointer font-medium">{{ __('msgraph.entra.redirects') }}</summary>
-                <p class="mt-2 text-base-content/60">{{ __('msgraph.entra.redirects_hint') }}</p>
+                <p class="mt-2 text-muted">{{ __('msgraph.entra.redirects_hint') }}</p>
                 <ul class="mt-2 space-y-1">
                     <li>{{ __('msgraph.entra.redirect_calendar') }}: <code class="select-all break-all">{{ route('admin.msgraph.oauth.callback') }}</code></li>
                     <li>{{ __('msgraph.entra.redirect_mail') }}: <code class="select-all break-all">{{ route('admin.msgraph.mail.oauth.callback') }}</code></li>

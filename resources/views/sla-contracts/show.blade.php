@@ -67,7 +67,7 @@
         <x-card>
             <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Geschäftszeiten') }}</h3>
             @if (empty($contract->business_hours))
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>' :title="__('Keine Geschäftszeiten hinterlegt')" :message="__('Fristen laufen in Kalenderzeit.')" compact />
+                <x-empty-state icon="schedule" :title="__('Keine Geschäftszeiten hinterlegt')" :message="__('Fristen laufen in Kalenderzeit.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($contract->business_hours as $key => $window)
@@ -82,7 +82,7 @@
 
             <h3 class="mb-3 mt-4 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Eskalation') }}</h3>
             @if (empty($contract->escalation_chain))
-                <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">notifications_active</span>' :title="__('Keine Eskalationsstufen hinterlegt.')" compact />
+                <x-empty-state icon="notifications_active" :title="__('Keine Eskalationsstufen hinterlegt.')" compact />
             @else
                 <ul class="space-y-1 text-sm">
                     @foreach ($contract->escalation_chain as $stage)
@@ -97,7 +97,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Inklusivzeit-Kontingente') }}</h3>
         @if (empty($quotaUsage))
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">data_usage</span>' :title="__('Keine Kontingente hinterlegt.')" compact />
+            <x-empty-state icon="data_usage" :title="__('Keine Kontingente hinterlegt.')" compact />
         @else
             <div class="space-y-3">
                 @foreach ($quotaUsage as $item)
@@ -105,11 +105,11 @@
                     <div>
                         <div class="mb-1 flex items-center justify-between gap-2 text-sm">
                             <span class="font-medium">{{ $item['quota']->period_kind->label() }} · {{ $u['period_key'] }}</span>
-                            <span class="text-xs tabular-nums text-base-content/60">{{ $u['percentage'] }} %</span>
+                            <span class="text-xs tabular-nums text-muted">{{ $u['percentage'] }} %</span>
                         </div>
                         <progress class="progress w-full {{ $u['threshold_reached'] ? 'progress-warning' : 'progress-success' }}"
                                   value="{{ min(100, $u['percentage']) }}" max="100"></progress>
-                        <div class="mt-0.5 text-xs tabular-nums text-base-content/60">
+                        <div class="mt-0.5 text-xs tabular-nums text-muted">
                             {{ number_format($u['consumed_minutes'] / 60, 1) }} / {{ number_format($u['included_minutes'] / 60, 1) }} {{ __('Std.') }}
                             @if ($u['over_minutes'] > 0)
                                 <span class="text-error"> · {{ __(':min Min. über Kontingent', ['min' => $u['over_minutes']]) }}</span>
@@ -125,7 +125,7 @@
     <x-card>
         <h3 class="mb-3 text-sm font-semibold uppercase tracking-[0.18em] text-base-content/70">{{ __('Vertragspflichtige Wartungen') }}</h3>
         @if ($maintenancePlans->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">handyman</span>' :title="__('Keine Wartungspläne mit diesem Vertrag verknüpft.')" compact />
+            <x-empty-state icon="handyman" :title="__('Keine Wartungspläne mit diesem Vertrag verknüpft.')" compact />
         @else
             <x-table bare>
                 <x-slot:head>

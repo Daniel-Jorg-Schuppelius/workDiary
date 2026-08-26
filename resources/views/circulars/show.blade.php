@@ -66,7 +66,7 @@
                     @foreach ($audience as $customer)
                         <li class="flex flex-wrap items-center gap-2">
                             <span class="font-medium">{{ $customer->name }}</span>
-                            <span class="text-base-content/60">{{ $customer->email ?: __('circular.no_email') }}</span>
+                            <span class="text-muted">{{ $customer->email ?: __('circular.no_email') }}</span>
                         </li>
                     @endforeach
                 </ul>
@@ -90,7 +90,7 @@
                                 {{ __('circular.recipient_status.' . $recipient->status) }}
                             </x-status-badge>
                             @if ($recipient->reason)
-                                <span class="text-xs text-base-content/60">{{ \App\Support\Trans::or('circular.reason.' . $recipient->reason, $recipient->reason) }}</span>
+                                <span class="text-xs text-muted">{{ \App\Support\Trans::or('circular.reason.' . $recipient->reason, $recipient->reason) }}</span>
                             @endif
                         </td>
                         <td class="whitespace-nowrap">{{ optional($recipient->sent_at)->fdatetime() ?? '—' }}</td>

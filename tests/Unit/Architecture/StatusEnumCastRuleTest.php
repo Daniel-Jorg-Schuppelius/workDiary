@@ -71,7 +71,7 @@ class StatusEnumCastRuleTest extends TestCase {
         'App\Models\Investments\InvestmentCase',
         'App\Models\Investments\InvestmentDeviation',
         'App\Models\Invoice',
-        'App\Models\InvoiceDispatch',
+        'App\Models\DocumentDispatch',
         'App\Models\InvoiceSchedule',
         'App\Models\Isms\IsmsAuditProgram',
         'App\Models\JtlConnection',

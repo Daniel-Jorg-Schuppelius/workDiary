@@ -61,7 +61,7 @@
             <div class="fieldset" data-recurrence-show="once yearly">
                 <label class="fieldset-label" for="holiday-date">
                     {{ __('Datum') }}
-                    <span class="ml-auto text-xs text-base-content/50" data-recurrence-show="yearly">{{ __('Nur Tag & Monat werden verwendet') }}</span>
+                    <span class="ml-auto text-xs text-muted" data-recurrence-show="yearly">{{ __('Nur Tag & Monat werden verwendet') }}</span>
                 </label>
                 <input id="holiday-date" type="date" name="date"
                        value="{{ old('date', optional($holiday?->date)->format('Y-m-d')) }}"

@@ -40,6 +40,8 @@ class VehicleFactory extends Factory {
             'battery_capacity_kwh' => null,
             'wltp_consumption' => 6.5,
             'odometer_km' => fake()->numberBetween(10000, 200000),
+            'logbook_mode' => false,
+            'subject_to_driving_time_rules' => false,
             'notes' => null,
             'archived_at' => null,
         ];
@@ -52,6 +54,11 @@ class VehicleFactory extends Factory {
             'battery_capacity_kwh' => 75,
             'wltp_consumption' => 17.5,
         ]);
+    }
+
+    /** Lenk-/Ruhezeitregeln gelten für dieses Fahrzeug (Feature 144). */
+    public function subjectToDrivingTimeRules(): self {
+        return $this->state(fn() => ['subject_to_driving_time_rules' => true]);
     }
 
     public function archived(): self {

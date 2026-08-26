@@ -25,11 +25,11 @@
 
 <x-card :title="__('SLA-Uhr')" icon="timer">
     @if ($ticket->reaction_due_at === null && $ticket->resolution_due_at === null)
-        <p class="text-sm text-base-content/60">{{ __('Keine SLA-Frist hinterlegt.') }}</p>
+        <p class="text-sm text-muted">{{ __('Keine SLA-Frist hinterlegt.') }}</p>
     @else
         <dl class="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-2 text-sm">
             <div>
-                <dt class="text-base-content/60">{{ __('Reaktionsfrist') }}</dt>
+                <dt class="text-muted">{{ __('Reaktionsfrist') }}</dt>
                 <dd class="flex items-center gap-2">
                     {{ $ticket->reaction_due_at?->translatedFormat('d.m.Y H:i') ?: '—' }}
                     @if ($ticket->reaction_due_at)
@@ -38,7 +38,7 @@
                 </dd>
             </div>
             <div>
-                <dt class="text-base-content/60">{{ __('Lösungsfrist') }}</dt>
+                <dt class="text-muted">{{ __('Lösungsfrist') }}</dt>
                 <dd class="flex items-center gap-2">
                     {{ $ticket->resolution_due_at?->translatedFormat('d.m.Y H:i') ?: '—' }}
                     @if ($ticket->resolution_due_at)
@@ -53,11 +53,11 @@
             </div>
             @if ($snapshot !== [])
                 <div class="md:col-span-2">
-                    <dt class="text-base-content/60">{{ __('Eingefrorener Vertragsstand') }}</dt>
+                    <dt class="text-muted">{{ __('Eingefrorener Vertragsstand') }}</dt>
                     <dd>
                         {{ $snapshot['contract_name'] ?? $ticket->slaContract?->label ?? '—' }}
                         @if (! empty($snapshot['frozen_at']))
-                            <span class="text-xs text-base-content/60">
+                            <span class="text-xs text-muted">
                                 · {{ __('eingefroren am :date', ['date' => \Illuminate\Support\Carbon::parse($snapshot['frozen_at'])->translatedFormat('d.m.Y H:i')]) }}
                             </span>
                         @endif
@@ -70,9 +70,9 @@
     @if ($ticket->status->isWaiting())
         <div class="divider my-2"></div>
         <dl class="grid grid-cols-1 md:grid-cols-3 gap-x-6 gap-y-2 text-sm">
-            <div><dt class="text-base-content/60">{{ __('Wartegrund') }}</dt><dd>{{ $ticket->wait_reason ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Wiedervorlage') }}</dt><dd>{{ $ticket->wait_until?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
-            <div><dt class="text-base-content/60">{{ __('Verantwortlich') }}</dt><dd>{{ $ticket->waitOwner?->name ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Wartegrund') }}</dt><dd>{{ $ticket->wait_reason ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Wiedervorlage') }}</dt><dd>{{ $ticket->wait_until?->translatedFormat('d.m.Y H:i') ?: '—' }}</dd></div>
+            <div><dt class="text-muted">{{ __('Verantwortlich') }}</dt><dd>{{ $ticket->waitOwner?->name ?: '—' }}</dd></div>
         </dl>
     @endif
 

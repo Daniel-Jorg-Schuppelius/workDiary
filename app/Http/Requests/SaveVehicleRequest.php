@@ -20,6 +20,7 @@ class SaveVehicleRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'default_user_id' => \App\Models\User::class,
+        'asset_id' => \App\Models\Asset::class,
     ];
 
     protected function prepareForValidation(): void {
@@ -48,7 +49,24 @@ class SaveVehicleRequest extends BaseFormRequest {
             'battery_capacity_kwh' => ['nullable', 'numeric', 'min:0', 'max:9999'],
             'wltp_consumption' => ['nullable', 'numeric', 'min:0', 'max:999'],
             'odometer_km' => ['nullable', 'integer', 'min:0'],
+            // Feature 137/138: Fahrtenbuch-Modus + Asset-Zuordnung (Prüffristen).
+            'logbook_mode' => ['sometimes', 'boolean'],
+            // Feature 144: Geltung der Lenk-/Ruhezeitregeln (VO (EG) 561/2006 / FPersV).
+            'subject_to_driving_time_rules' => ['sometimes', 'boolean'],
+            'asset_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('assets')],
             'notes' => ['nullable', 'string', 'max:2000'],
         ];
+    }
+
+    /** @return array<string, mixed> */
+    public function validated($key = null, $default = null): array {
+        $data = parent::validated();
+        foreach (['logbook_mode', 'subject_to_driving_time_rules'] as $flag) {
+            if (array_key_exists($flag, $data)) {
+                $data[$flag] = (bool) $data[$flag];
+            }
+        }
+
+        return $data;
     }
 }

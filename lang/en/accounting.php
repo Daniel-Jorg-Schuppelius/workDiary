@@ -66,6 +66,8 @@ return [
             'datev_account' => 'DATEV account',
             'euer_category' => 'Cash-basis line',
             'euer_category_none' => '— unassigned —',
+            'bwa_group' => 'BWA line',
+            'bwa_group_none' => '— derive from number range —',
             'deductible_percent' => 'Deductible share (%)',
             'description' => 'Description',
             'post_now' => 'Post immediately',
@@ -83,6 +85,7 @@ return [
             'external_provider' => 'External authority only: name of the leading system (e.g. lexoffice).',
             'datev_account' => 'Export only; local posting does not depend on it.',
             'euer_category' => 'Determines which line of the cash-basis form the account appears in. Without an assignment it shows up among the unresolved cases.',
+            'bwa_group' => 'Line of the management report (BWA). Without an assignment the report derives the line from the SKR03/SKR04 number range; if that stays open too, the account appears under "not assigned".',
             'deductible_percent' => 'Applies to the cash-basis report only — the journal always carries the full amount (e.g. 70 % for business meals).',
             'normal_balance' => 'Prefilled from the account type, overridable per account.',
             'post_now' => 'Once posted, the entry can only be corrected through a counter-entry.',
@@ -158,6 +161,7 @@ return [
             'entry_frozen' => 'The entry is posted — correction only through a counter-entry.',
             'needs_two_lines' => 'An entry needs at least two lines.',
             'unknown_account' => 'A line refers to an unknown account.',
+            'unknown_cost_center' => 'The cost center does not belong to this organization.',
             'inactive_account' => 'Account :account is deactivated.',
             'foreign_currency_line' => 'All lines must be in :currency.',
             'negative_amount' => 'Amounts are positive; the direction comes from debit or credit.',
@@ -292,6 +296,8 @@ return [
             'sovereignty' => 'For this period the organization does not keep a local ledger.',
             'foreign_currency' => 'The document is in :currency, accounting is kept in :base — there is no verifiable conversion yet.',
             'unsupported_target' => 'There is no posting path for this payment target yet.',
+            'year_closed' => 'Fiscal year :year is closed.',
+            'period_closed' => 'The period covering :date is closed.',
         ],
         'memo' => [
             'sales_invoice' => 'Invoice :number · :customer',
@@ -299,9 +305,85 @@ return [
             'expense' => 'Expense :description · :user',
             'cash_entry' => 'Cash :register · :purpose',
             'payment' => 'Payment (:kind) · :target',
+            'depreciation' => 'Depreciation :year · :no :name',
         ],
         'reversal_reason' => [
             'unmatched' => 'Payment allocation removed — counter-entry.',
+        ],
+    ],
+    // Anlagenregister und Jahres-AfA (Feature 133, MVP-698).
+    'fixed_assets' => [
+        'title' => 'Fixed asset register',
+        'menu' => 'Fixed assets',
+        'subtitle' => 'Assets with cost, useful life and depreciation schedule — annual depreciation is posted as a proposal through the posting inbox.',
+        'empty' => 'No fixed assets in the register yet.',
+        'months' => ':count months',
+        'account_from_rule' => 'from posting rule',
+        'kpi' => [
+            'active' => 'Active assets',
+            'total' => 'Assets in total',
+            'book_value_year' => 'Book value end of :year',
+        ],
+        'filter' => [
+            'all' => 'All assets',
+        ],
+        'column' => [
+            'no' => 'No.',
+            'name' => 'Name',
+            'acquired_on' => 'Acquired',
+            'cost' => 'Cost',
+            'useful_life' => 'Useful life',
+            'book_value' => 'Book value :year',
+        ],
+        'field' => [
+            'device' => 'Device (asset)',
+            'residual_value' => 'Residual value',
+            'method' => 'Depreciation method',
+            'asset_account' => 'Asset account',
+            'depreciation_account' => 'Depreciation expense account',
+            'disposed_on' => 'Disposed on',
+            'created_by' => 'Created by',
+        ],
+        'section' => [
+            'master' => 'Master data',
+            'accounts' => 'Accounts',
+            'schedule' => 'Depreciation schedule',
+            'posting' => 'Posting',
+        ],
+        'schedule' => [
+            'year' => 'Fiscal year',
+            'months' => 'Months',
+            'amount' => 'Depreciation',
+            'book_value_end' => 'Book value',
+            'empty' => 'No schedule — depreciable base or useful life is missing.',
+        ],
+        'hint' => [
+            'device' => 'Optional link to the device register; not every fixed asset is a device.',
+            'residual_value' => 'Remains at the end of the useful life; default 0.',
+            'useful_life' => 'Ordinary useful life according to the depreciation table, in months.',
+            'accounts' => 'Leave empty to use the posting rule of the role (asset account / depreciation expense).',
+            'frozen' => 'A depreciation entry is posted — acquisition date, cost, residual value and useful life are frozen.',
+            'schedule' => 'Straight-line, pro rata by month in the year of acquisition and disposal; the last year takes the remainder.',
+            'posting' => 'Annual depreciation is proposed per fiscal year in the closing and posted in the inbox — never directly.',
+            'dispose' => 'Disposal ends the schedule in the month of disposal. The remaining book value is not written off automatically.',
+        ],
+        'action' => [
+            'add' => 'Add fixed asset',
+            'edit' => 'Edit fixed asset',
+            'dispose' => 'Record disposal',
+            'dispose_submit' => 'Record disposal',
+        ],
+        'flash' => [
+            'created' => 'Fixed asset :no created.',
+            'updated' => 'Fixed asset saved.',
+            'disposed' => 'Disposal recorded.',
+        ],
+        'error' => [
+            'disposed_frozen' => 'A disposed fixed asset can no longer be changed.',
+            'values_frozen' => 'Value-determining fields are locked once a depreciation entry is posted.',
+            'disposed_before_acquired' => 'The disposal cannot precede the acquisition.',
+            'residual_exceeds_cost' => 'The residual value must be lower than the cost.',
+            'useful_life_required' => 'The useful life must be at least one month.',
         ],
     ],
     'rules' => [
@@ -511,6 +593,45 @@ return [
                 'open_expectations' => 'Open expectations',
             ],
         ],
+        // 13-Wochen-Liquiditätsvorschau (Feature 136, MVP-701).
+        'forecast' => [
+            'subtitle' => 'Opening balance of bank & cash and expected payments per calendar week from :date — :weeks weeks.',
+            'hint' => 'An expectation, not a balance: open items by payment behaviour and discount deadlines, document expectations, invoice schedules, released payment runs, financing instalments and quantifiable tax deadlines. Overdue items count in the current week.',
+            'horizon' => ':weeks weeks',
+            'column' => [
+                'week' => 'Week',
+                'period' => 'Period',
+                'inflow' => 'Inflows',
+                'outflow' => 'Outflows',
+                'net' => 'Net',
+                'closing' => 'Balance',
+            ],
+            'kpi' => [
+                'opening' => 'Opening balance',
+                'inflow' => 'Inflows',
+                'outflow' => 'Outflows',
+                'min_closing' => 'Lowest balance',
+                'min_week' => 'in :week',
+            ],
+            'chart' => [
+                'closing' => 'Cumulative balance per week',
+                'flows' => 'Inflows and outflows per week',
+            ],
+            'source' => [
+                'receivables' => 'Receivables',
+                'payables' => 'Payables',
+                'recurring' => 'Document expectations',
+                'invoice_schedules' => 'Invoice schedules',
+                'payment_runs' => 'Payment runs',
+                'finance_rates' => 'Instalments',
+                'filings' => 'Taxes',
+            ],
+            'note' => [
+                'overdue' => 'overdue — current week',
+                'delay' => 'avg. delay :days days',
+                'discount' => 'discount :percent % by discount deadline',
+            ],
+        ],
         'card' => [
             'trial_balance' => [
                 'title' => 'Trial balance',
@@ -540,9 +661,21 @@ return [
                 'title' => 'Liquidity',
                 'text' => 'Actual balances, open items and forecast — shown separately.',
             ],
+            'liquidity_forecast' => [
+                'title' => 'Liquidity forecast',
+                'text' => '13 weeks of inflows and outflows with payment behaviour and cumulative balance.',
+            ],
             'quality' => [
                 'title' => 'Posting quality',
                 'text' => 'Drafts, blocked runs and open expectations.',
+            ],
+            'bwa' => [
+                'title' => 'Management report (BWA)',
+                'text' => 'Short-term income statement with previous year, previous month, monthly grid and budget.',
+            ],
+            'budget' => [
+                'title' => 'Budget',
+                'text' => 'Planned values per account and fiscal year — as an annual value or monthly values.',
             ],
             'journal' => [
                 'title' => 'Journal',
@@ -577,9 +710,11 @@ return [
             'reopen' => 'Reopen',
             'reopen_submit' => 'Open period',
             'close_year' => 'Close fiscal year',
+            'propose_depreciation' => 'Propose depreciation entries',
         ],
         'confirm' => [
             'year' => 'Close the fiscal year? All periods must be closed.',
+            'depreciation' => 'Put the :year depreciation of all fixed assets into the posting inbox as drafts? They are posted there.',
         ],
         'check' => [
             'no_drafts' => 'No open drafts in the period.',
@@ -588,10 +723,13 @@ return [
             'unbalanced' => ':count entries are unbalanced.',
             'sequence_ok' => 'No earlier periods left open.',
             'earlier_open' => ':count earlier periods are still open.',
+            'depreciation_ok' => 'The annual depreciation of all fixed assets is posted.',
+            'depreciation_open' => 'Annual depreciation is not posted yet for :count fixed assets.',
             'key' => [
                 'drafts' => 'Drafts',
                 'balanced' => 'Balance',
                 'sequence' => 'Sequence',
+                'depreciation' => 'Depreciation',
             ],
         ],
         'flash' => [
@@ -599,6 +737,7 @@ return [
             'closed' => 'Period closed.',
             'reopened' => 'Period reopened.',
             'year_closed' => 'Fiscal year closed.',
+            'depreciation_proposed' => 'Depreciation :year: :prepared drafts prepared, :skipped already present, :failed blocked.',
         ],
         'error' => [
             'reason_required' => 'Reopening requires a reason.',
@@ -868,6 +1007,95 @@ return [
         'unclear' => [
             'missing_vat_id' => 'Entry :entry (:customer) without the recipient’s VAT ID.',
             'unknown_customer' => 'no customer',
+        ],
+    ],
+
+    // Betriebswirtschaftliche Auswertung und Budget (Feature 142, MVP-709).
+    'bwa' => [
+        'title' => 'Management report (BWA)',
+        'menu' => 'BWA & budget',
+        'hint' => 'Short-term income statement by account groups — assignment via the account\'s BWA line or the SKR number range, not an audited report.',
+        'compare_range' => 'Comparison period :from – :to',
+        'scheme' => [
+            'skr03' => 'Chart of accounts SKR03 detected.',
+            'skr04' => 'Chart of accounts SKR04 detected.',
+            'none' => 'No standard chart of accounts detected — only explicit BWA lines on the accounts apply.',
+        ],
+        'column' => [
+            'row' => 'Line',
+            'actual' => 'Actual',
+            'budget' => 'Plan',
+            'total' => 'Total',
+            'delta' => 'Variance',
+            'delta_pct' => 'Var. %',
+        ],
+        'compare' => [
+            'none' => 'No comparison',
+            'previous_year' => 'Previous year',
+            'previous_month' => 'Previous month',
+            'months' => 'Monthly grid',
+            'budget' => 'Budget',
+        ],
+        'filter' => [
+            'compare' => 'Comparison',
+            'cost_center' => 'Cost center',
+            'all_cost_centers' => 'All cost centers',
+        ],
+        'subtotal' => [
+            'total_output' => 'Total output',
+            'gross_profit' => 'Gross profit',
+            'operating_gross_profit' => 'Operating gross profit',
+            'total_costs' => 'Total costs',
+            'operating_result' => 'Operating result',
+            'result_before_tax' => 'Result before taxes',
+            'result' => 'Preliminary result',
+            'result_total' => 'Result incl. unassigned accounts',
+        ],
+        'unmapped' => [
+            'title' => 'Not assigned',
+            'hint' => ':count accounts with movements have no BWA line — assign them on the account; they feed no group but the closing line.',
+        ],
+        'chart' => [
+            'groups' => 'Actual per BWA line',
+            'months' => 'Revenue and total costs per month',
+        ],
+    ],
+
+    'budget' => [
+        'title' => 'Budget',
+        'subtitle' => 'Planned values per account for fiscal year :year',
+        'empty' => 'No income statement accounts in the chart of accounts.',
+        'total' => 'Planned result',
+        'column' => [
+            'year_value' => 'Annual value',
+            'mode' => 'Kind',
+            'note' => 'Note',
+        ],
+        'filter' => [
+            'year' => 'Fiscal year',
+        ],
+        'action' => [
+            'edit' => 'Edit budget',
+            'copy_previous' => 'Previous year actuals as budget',
+            'save' => 'Save',
+        ],
+        'confirm' => [
+            'copy_previous' => 'Take over the actuals of fiscal year :year as budget? Existing budgets of the selected year will be replaced.',
+        ],
+        'mode' => [
+            'year' => 'Annual value',
+            'months' => 'Monthly values',
+        ],
+        'hint' => [
+            'mode' => 'An annual value is spread evenly over twelve months for monthly comparisons; monthly values apply per month.',
+            'sign' => 'Positive values: expected income or expected expense.',
+        ],
+        'flash' => [
+            'saved' => 'Budget for :account saved.',
+            'copied' => ':count accounts with actuals from :year taken over as budget.',
+        ],
+        'note' => [
+            'copied_from' => 'Taken over from actuals :year',
         ],
     ],
 

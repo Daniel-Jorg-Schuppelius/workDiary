@@ -71,8 +71,8 @@
             </div>
 
             <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-base-300 pt-4">
-                <p class="flex items-start gap-1.5 text-xs text-base-content/60">
-                    <x-icon name="info" class="mt-px text-base-content/40" size="1em" />
+                <p class="flex items-start gap-1.5 text-xs text-muted">
+                    <x-icon name="info" class="mt-px text-muted" size="1em" />
                     <span>{{ __('Nicht zutreffende Filter werden je Entität ignoriert. Zeitraum-Filter wirken auf Schichtpläne und Touren.') }}</span>
                 </p>
                 <x-button type="submit" tone="primary" size="sm" icon="download">{{ __('Export erstellen') }}</x-button>
@@ -81,16 +81,16 @@
     </form>
 
     <h3 class="mb-2 mt-6 flex items-center gap-2 text-sm font-semibold text-base-content/70">
-        <x-icon name="history" class="text-base-content/50" size="1em" />
+        <x-icon name="history" class="text-muted" size="1em" />
         {{ __('Letzte Exporte') }}
         @if ($runs->isNotEmpty())
-            <span class="font-normal text-base-content/40">({{ $runs->count() }})</span>
+            <span class="font-normal text-muted">({{ $runs->count() }})</span>
         @endif
     </h3>
 
     @if ($runs->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">download</span>'
+            icon="download"
             :title="__('Noch keine Exporte vorhanden')"
             :message="__('Erstelle oben einen Export, um ihn hier wiederzufinden.')" />
     @else

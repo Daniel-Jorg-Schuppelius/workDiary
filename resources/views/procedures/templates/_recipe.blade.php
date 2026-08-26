@@ -25,16 +25,16 @@
         <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
             <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.materials') }}</h2>
             @if ($recipeVersion !== null)
-                <span class="text-xs text-base-content/60">
+                <span class="text-xs text-muted">
                     {{ __('recipes.hint.version', ['version' => $recipeVersion->version]) }}
                     @unless ($recipeEditable) · {{ __('recipes.hint.readonly') }} @endunless
                 </span>
             @endif
         </div>
-        <p class="mb-3 text-xs text-base-content/60">{{ __('recipes.hint.materials') }}</p>
+        <p class="mb-3 text-xs text-muted">{{ __('recipes.hint.materials') }}</p>
 
         @if ($recipeVersion === null)
-            <p class="text-sm text-base-content/60">{{ __('recipes.empty.no_version') }}</p>
+            <p class="text-sm text-muted">{{ __('recipes.empty.no_version') }}</p>
         @else
             <x-table :bare="true" :empty-title="__('recipes.empty.no_materials')">
                 <x-slot:head>
@@ -114,7 +114,7 @@
                         </label>
                         <button type="submit" class="btn btn-sm btn-primary">{{ __('recipes.action.add') }}</button>
                     </div>
-                    <p class="text-xs text-base-content/50 md:col-span-7">{{ __('recipes.hint.ratio_input') }}</p>
+                    <p class="text-xs text-muted md:col-span-7">{{ __('recipes.hint.ratio_input') }}</p>
                 </form>
             @endif
         @endif
@@ -127,7 +127,7 @@
                 <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('recipes.title.party') }}</h2>
                 <a href="{{ route('recipe-menus.index') }}" class="btn btn-xs btn-ghost">{{ __('recipes.menu.title') }} →</a>
             </div>
-            <p class="mb-3 text-xs text-base-content/60">{{ __('recipes.hint.party') }}</p>
+            <p class="mb-3 text-xs text-muted">{{ __('recipes.hint.party') }}</p>
 
             <form method="POST" action="{{ route('procedures.recipe-profile.save', [$template, $recipeVersion]) }}" class="grid gap-2 md:grid-cols-5 items-end">
                 @csrf
@@ -149,7 +149,7 @@
 
                 {{-- Allergen-Abweichungen (mit Begründung, auditiert) --}}
                 <fieldset class="md:col-span-5 grid gap-2 md:grid-cols-3 rounded-box border border-base-300 p-3">
-                    <legend class="px-1 text-xs text-base-content/60">{{ __('recipes.title.allergen_overrides') }}</legend>
+                    <legend class="px-1 text-xs text-muted">{{ __('recipes.title.allergen_overrides') }}</legend>
                     <label class="form-control">
                         <span class="label-text">{{ __('recipes.field.allergen_added') }}</span>
                         <select name="allergen_added[]" multiple size="4" class="select select-bordered select-sm">
@@ -185,7 +185,7 @@
                     @forelse ($recipeAllergens['effective'] as $code)
                         <span class="badge badge-warning badge-sm">{{ $recipeAllergenOptions->firstWhere('code', $code)?->label ?? $code }}</span>
                     @empty
-                        <span class="text-sm text-base-content/60">{{ __('recipes.allergens.none') }}</span>
+                        <span class="text-sm text-muted">{{ __('recipes.allergens.none') }}</span>
                     @endforelse
                 </div>
                 @if ($recipeAllergens['unresolved'] !== [])

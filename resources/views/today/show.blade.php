@@ -76,7 +76,7 @@
         <x-validation-errors first tone="warning" />
         @if ($monthLocked)
             <div role="alert" class="alert alert-info">
-                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                <x-icon name="lock" />
                 <span>{{ __('day-close.hint.month_locked') }}</span>
             </div>
         @endif
@@ -91,7 +91,7 @@
 
             {{-- Anwesenheit-Tile: tickert live mit dem Header-Stempel-Timer mit. --}}
             <div class="rounded-box border border-success/40 bg-base-100 px-4 py-3 shadow-xs">
-                <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Anwesenheit') }}</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Anwesenheit') }}</p>
                 <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold text-success"
                    x-text="attendanceFmt">{{ $fmt($attendanceMinutes) }}</p>
             </div>
@@ -101,7 +101,7 @@
             {{-- Unverteilt-Tile: leitet sich aus Anwesenheit ab, also auch live. --}}
             <div class="rounded-box border bg-base-100 px-4 py-3 shadow-xs"
                  :class="untrackedBorderClass">
-                <p class="text-xs uppercase tracking-[0.18em] text-base-content/60">{{ __('Unverteilt') }}</p>
+                <p class="text-xs uppercase tracking-[0.18em] text-muted">{{ __('Unverteilt') }}</p>
                 <p class="mt-2 font-['Space_Grotesk'] text-3xl font-semibold"
                    :class="untrackedTextClass"
                    x-text="untrackedFmt">{{ $fmt($untrackedMinutes) }}</p>
@@ -115,8 +115,8 @@
 
         <x-card as="section">
             <div class="flex flex-wrap items-center justify-between gap-2">
-                <h2 class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-widest text-base-content/60">{{ __('Tagesfortschritt') }}</h2>
-                <span class="text-xs text-base-content/60">
+                <h2 class="font-['Space_Grotesk'] text-sm font-semibold uppercase tracking-widest text-muted">{{ __('Tagesfortschritt') }}</h2>
+                <span class="text-xs text-muted">
                     <span x-text="attendanceFmt">{{ $fmt($attendanceMinutes) }}</span>
                     / {{ $fmt($targetMinutes) }}
                     (<span x-text="progress">{{ $progress }}</span>%)
@@ -147,7 +147,7 @@
                     @foreach ($byActivity as $key => $info)
                         <li class="flex items-center justify-between gap-2 rounded-box bg-base-200/70 px-3 py-2">
                             <span>{{ \App\Enums\TimeEntry\TimeEntryActivityType::tryFrom((string) $key)?->label() ?? (string) $key }}</span>
-                            <span class="tabular-nums text-base-content/70">{{ $fmt($info['minutes']) }} <span class="text-xs text-base-content/50">({{ $info['count'] }})</span></span>
+                            <span class="tabular-nums text-base-content/70">{{ $fmt($info['minutes']) }} <span class="text-xs text-muted">({{ $info['count'] }})</span></span>
                         </li>
                     @endforeach
                 </ul>
@@ -161,7 +161,7 @@
         <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Stempelungen') }}</h2>
-                <span class="text-xs text-base-content/60">{{ $attendances->count() }}</span>
+                <span class="text-xs text-muted">{{ $attendances->count() }}</span>
             </header>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -183,7 +183,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="5"
-                                   icon='<span class="material-symbols-outlined" aria-hidden="true">schedule</span>'
+                                   icon="schedule"
                                    :title="__('Noch keine Stempelung')"
                                    :message="__('Für diesen Tag ist noch keine Stempelung erfasst.')" />
                 @endforelse
@@ -193,7 +193,7 @@
         <x-card as="section" padding="p-0" class="shrink-0 overflow-hidden">
             <header class="flex items-center justify-between gap-2 border-b border-base-300 p-3">
                 <h2 class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Zeiteinträge') }}</h2>
-                <span class="text-xs text-base-content/60">{{ $entries->count() }}</span>
+                <span class="text-xs text-muted">{{ $entries->count() }}</span>
             </header>
             <x-table table-sort="client" bare>
                 <x-slot:head>
@@ -223,7 +223,7 @@
                                 <span class="text-base-content/70">{{ $e->activityCategory->label }}</span>
                             @endif
                             @if ($e->description)
-                                <span class="block text-xs text-base-content/60">{{ \Illuminate\Support\Str::limit($e->description, 80) }}</span>
+                                <span class="block text-xs text-muted">{{ \Illuminate\Support\Str::limit($e->description, 80) }}</span>
                             @endif
                             @if ($e->tags->isNotEmpty())
                                 <span class="mt-0.5 flex flex-wrap gap-1">
@@ -237,7 +237,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="4"
-                                   icon='<span class="material-symbols-outlined" aria-hidden="true">edit_note</span>'
+                                   icon="edit_note"
                                    :title="__('Noch keine Einträge')"
                                    :message="__('Für diesen Tag wurden noch keine Zeiteinträge erfasst.')" />
                 @endforelse

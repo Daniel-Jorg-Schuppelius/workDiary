@@ -36,7 +36,7 @@
             <span class="label-text">{{ __('isms.field.applicable') }}</span>
         </label>
         <label class="form-control">
-            <span class="label-text">{{ __('isms.field.justification') }} <span class="text-base-content/60">({{ __('isms.hint.justification') }})</span></span>
+            <span class="label-text">{{ __('isms.field.justification') }} <span class="text-muted">({{ __('isms.hint.justification') }})</span></span>
             <textarea name="justification" rows="2" maxlength="5000"
                       class="textarea textarea-bordered w-full">{{ old('justification', $statement->justification) }}</textarea>
         </label>

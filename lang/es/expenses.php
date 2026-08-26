@@ -18,6 +18,8 @@ return [
         'suggestions_hint' => 'Comprobantes con el mismo importe dentro de la ventana temporal. Vincular confirma que es la misma operación — el gasto deja entonces de contar dos veces.',
         'no_suggestions' => 'No se encontró un comprobante coincidente',
         'no_suggestions_hint' => 'Sin vínculo, el gasto se muestra por separado como gasto interno.',
+        'no_provider' => 'Sin contabilidad conectada',
+        'no_provider_hint' => 'Sin un sistema contable conectado no hay ni sugerencias de comprobantes ni transferencia: el gasto se muestra por separado como gasto interno.',
         'linked' => 'Comprobante :number vinculado.',
         'unlinked' => 'Vínculo eliminado.',
         'title' => 'Archivo del recibo',

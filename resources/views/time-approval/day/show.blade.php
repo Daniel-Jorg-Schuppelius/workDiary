@@ -77,7 +77,7 @@
 
         @if ($monthLocked)
             <div role="alert" class="alert alert-info">
-                <span class="material-symbols-outlined" aria-hidden="true">lock</span>
+                <x-icon name="lock" />
                 <span>{{ __('day-close.hint.month_locked') }}</span>
             </div>
         @endif
@@ -86,7 +86,7 @@
         <x-card as="section">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 text-base font-semibold">
-                    <span class="material-symbols-outlined" aria-hidden="true">schedule</span>
+                    <x-icon name="schedule" />
                     {{ __('day-close.section.attendance') }}
                 </h2>
                 {{-- „Jetzt stempeln" (§2.1): reicht an die bestehende Stempeluhr
@@ -139,7 +139,7 @@
             @endif
             @if ($closure->attendance_locked)
                 <div role="alert" class="alert alert-info mt-3">
-                    <span class="material-symbols-outlined" aria-hidden="true">lock_clock</span>
+                    <x-icon name="lock_clock" />
                     <span>{{ __('day-close.hint.attendance_locked') }}</span>
                 </div>
             @endif
@@ -153,7 +153,7 @@
         <x-card as="section">
             <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
                 <h2 class="flex items-center gap-2 text-base font-semibold">
-                    <span class="material-symbols-outlined" aria-hidden="true">assignment</span>
+                    <x-icon name="assignment" />
                     {{ __('day-close.section.entries') }}
                 </h2>
                 {{-- „Zeit buchen" (§2.3): öffnet das bestehende Buchungs-Modal
@@ -212,7 +212,7 @@
                                     </td>
                                     <td class="text-center">
                                         @if ($entry->billable)
-                                            <span class="material-symbols-outlined text-success text-base" aria-hidden="true">check</span>
+                                            <x-icon name="check" class="text-success text-base" />
                                             <span class="sr-only">{{ __('day-close.status.billable') }}</span>
                                         @else
                                             <span class="opacity-50">—</span>

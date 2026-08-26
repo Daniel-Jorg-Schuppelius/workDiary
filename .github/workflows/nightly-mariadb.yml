@@ -105,11 +105,20 @@ jobs:
 
       # Sequenziell (eine Service-DB); die Teilmenge ist auf Nightly-Laufzeit
       # zugeschnitten. --recreate über RefreshDatabase + mysql-schema.sql-Dump.
+      #
+      # Der Plugin-Schema-Lifecycle (MVP-725) fährt echtes DDL und lief bis
+      # dahin nur auf SQLite: MySQL/MariaDB committet DDL implizit und würde
+      # eine RefreshDatabase-Transaktion sprengen. Er läuft daher ohne
+      # Transaktion (Tests\Support\MigratedWithoutTransaction) und räumt selbst
+      # auf — genau hier muss er nächtlich gegen eine echte MariaDB laufen.
       - name: Run risk-based subset on MariaDB
         run: |
           XDEBUG_MODE=off php artisan test \
             tests/Unit/Architecture \
             tests/Feature/Finance \
+            tests/Feature/Console \
+            tests/Feature/Plugins/PluginSchemaLifecycleTest.php \
+            tests/Feature/Plugins/PluginSchemaCommandsTest.php \
             tests/Feature/AuditChainRepairMigrationTest.php \
             --log-junit "${{ runner.temp }}/junit-nightly.xml"
 

@@ -24,7 +24,7 @@
                 <option value="read_only" @selected(old('scope', 'read_only') === 'read_only')>{{ __('Nur lesend') }}</option>
                 <option value="full" @selected(old('scope') === 'full')>{{ __('Vollzugriff (schreibend)') }}</option>
             </select>
-            <p class="text-xs text-base-content/60">{{ __('Passwort-/2FA-Änderungen, API-Tokens und Exporte bleiben in jedem Fall gesperrt.') }}</p>
+            <p class="text-xs text-muted">{{ __('Passwort-/2FA-Änderungen, API-Tokens und Exporte bleiben in jedem Fall gesperrt.') }}</p>
             @error('scope')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 

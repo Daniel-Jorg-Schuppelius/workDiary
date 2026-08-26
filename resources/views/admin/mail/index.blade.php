@@ -32,14 +32,14 @@
                     </form>
                 </div>
             </div>
-            <p class="text-sm text-base-content/60">{{ __('mail.intro') }}</p>
+            <p class="text-sm text-muted">{{ __('mail.intro') }}</p>
         </x-card>
 
         {{-- Vorhandene Postfächer --}}
         <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('mail.mailboxes_heading') }}</h2>
             @if ($connections->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('mail.no_connections') }}</p>
+                <p class="text-sm text-muted">{{ __('mail.no_connections') }}</p>
             @else
                 <x-table>
                     <x-slot:head>
@@ -54,7 +54,7 @@
                             @foreach ($connections as $connection)
                                 <tr>
                                     <td>{{ $connection->name }}</td>
-                                    <td class="text-base-content/60">{{ $connection->username . '@' . $connection->host }}</td>
+                                    <td class="text-muted">{{ $connection->username . '@' . $connection->host }}</td>
                                     <td>
                                         @if ($connection->isActive())
                                             <span class="badge badge-success badge-sm">{{ __('mail.status.active') }}</span>
@@ -62,7 +62,7 @@
                                             <span class="badge badge-ghost badge-sm">{{ __('mail.status.inactive') }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-base-content/60">{{ $connection->last_polled_at?->diffForHumans() ?? '—' }}</td>
+                                    <td class="text-muted">{{ $connection->last_polled_at?->diffForHumans() ?? '—' }}</td>
                                     <td class="text-right">
                                         @if ($connection->isActive())
                                             <form method="POST" action="{{ route('admin.mail.disconnect') }}">
@@ -94,7 +94,7 @@
                         <option value="imap" @selected(old('transport', 'imap') === 'imap')>IMAP</option>
                         <option value="msgraph" @selected(old('transport') === 'msgraph')>{{ __('mail.transport.msgraph') }}</option>
                     </select>
-                    <span class="label-text-alt text-base-content/60">{{ __('mail.transport.msgraph_hint') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('mail.transport.msgraph_hint') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('mail.field.host') }}</span>

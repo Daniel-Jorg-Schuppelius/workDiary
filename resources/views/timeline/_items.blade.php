@@ -9,7 +9,7 @@
   Timeline-Liste (MVP-010). Erwartet: $items (list<\App\Services\Timeline\TimelineItem>)
 --}}
 @if (empty($items))
-    <x-empty-state compact icon='<span class="material-symbols-outlined">history</span>'
+    <x-empty-state compact icon="history"
                    :title="__('timeline.empty')"
                    :message="__('timeline.empty_hint')" />
 @else
@@ -39,7 +39,7 @@
                         </p>
                         <span class="text-xs text-base-content/55 whitespace-nowrap">{{ $item->occurredAt?->fdatetime() ?? '—' }}</span>
                     </div>
-                    <p class="text-xs text-base-content/60">
+                    <p class="text-xs text-muted">
                         {{ $item->actor ?? __('timeline.actor_system') }}
                     </p>
                     @if ($item->summary)

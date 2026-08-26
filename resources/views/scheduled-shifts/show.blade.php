@@ -33,14 +33,14 @@
 
         <div class="card border border-base-300 bg-base-100 shadow-xs max-w-2xl">
             <div class="card-body grid gap-3 sm:grid-cols-2">
-                <div><span class="text-xs uppercase text-base-content/60">{{ __('Mitarbeiter') }}</span><div>{{ $shift->user?->name ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-base-content/60">{{ __('Datum') }}</span><div>{{ $shift->date->fdate() }}</div></div>
-                <div><span class="text-xs uppercase text-base-content/60">{{ __('Beginn') }}</span><div>{{ $shift->start_time ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-base-content/60">{{ __('Ende') }}</span><div>{{ $shift->end_time ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-base-content/60">{{ __('Schichttyp') }}</span><div>{{ $shift->shiftType?->name ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-base-content/60">{{ __('Status') }}</span><div>{{ $shift->statusLabel() }}</div></div>
+                <div><span class="text-xs uppercase text-muted">{{ __('Mitarbeiter') }}</span><div>{{ $shift->user?->name ?? '—' }}</div></div>
+                <div><span class="text-xs uppercase text-muted">{{ __('Datum') }}</span><div>{{ $shift->date->fdate() }}</div></div>
+                <div><span class="text-xs uppercase text-muted">{{ __('Beginn') }}</span><div>{{ $shift->start_time ?? '—' }}</div></div>
+                <div><span class="text-xs uppercase text-muted">{{ __('Ende') }}</span><div>{{ $shift->end_time ?? '—' }}</div></div>
+                <div><span class="text-xs uppercase text-muted">{{ __('Schichttyp') }}</span><div>{{ $shift->shiftType?->name ?? '—' }}</div></div>
+                <div><span class="text-xs uppercase text-muted">{{ __('Status') }}</span><div>{{ $shift->statusLabel() }}</div></div>
                 @if ($shift->note)
-                    <div class="sm:col-span-2"><span class="text-xs uppercase text-base-content/60">{{ __('Notiz') }}</span><div>{{ $shift->note }}</div></div>
+                    <div class="sm:col-span-2"><span class="text-xs uppercase text-muted">{{ __('Notiz') }}</span><div>{{ $shift->note }}</div></div>
                 @endif
             </div>
         </div>

@@ -32,14 +32,14 @@
                accept=".xml,.x81,.x82,.x83,.x84,.x85,.x86,.X81,.X83,.X86,.d81,.d83,.d86,text/xml,application/xml,text/plain"
                required
                class="file-input file-input-bordered w-full @error('file') file-input-error @enderror">
-        <p class="text-sm text-base-content/60 mt-1">{{ __('gaeb.import.file_hint') }}</p>
+        <p class="text-sm text-muted mt-1">{{ __('gaeb.import.file_hint') }}</p>
         @error('file')
             <p class="text-error text-sm mt-1">{{ $message }}</p>
         @enderror
     </div>
 
     <x-input-field name="name" :label="__('gaeb.import.name')" maxlength="255" :value="old('name')" />
-    <p class="text-sm text-base-content/60 -mt-2">{{ __('gaeb.import.name_hint') }}</p>
+    <p class="text-sm text-muted -mt-2">{{ __('gaeb.import.name_hint') }}</p>
 
     @if ($projects->isNotEmpty())
         <x-project-select name="project" :label="__('gaeb.import.project')" :placeholder="__('gaeb.import.project_none')"

@@ -14,8 +14,8 @@
 @if ($procedureRuns->isNotEmpty() || $suggestedProcedures->isNotEmpty())
     <x-card>
         <div class="mb-3 flex items-center justify-between">
-            <h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-base-content/60">
-                <x-icon name="rule" class="text-base-content/50" />
+            <h2 class="flex items-center gap-2 text-sm font-semibold uppercase tracking-wide text-muted">
+                <x-icon name="rule" class="text-muted" />
                 <x-term glossary="prozedur">{{ __('procedure.title.panel') }}</x-term>
             </h2>
             <x-help-button topic="procedures.run" :label="__('Hilfe zu Prozedur')" />
@@ -27,7 +27,7 @@
                     <li class="flex items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200/40 px-3 py-2">
                         <div>
                             <span class="font-medium">{{ $run->templateVersion?->template?->name ?? '—' }}</span>
-                            <span class="ml-1 text-xs text-base-content/50">v{{ $run->templateVersion?->version }}</span>
+                            <span class="ml-1 text-xs text-muted">v{{ $run->templateVersion?->version }}</span>
                             <x-status-badge :tone="$run->status->value === 'completed' ? 'success' : ($run->status->value === 'aborted' ? 'neutral' : 'warning')" class="ml-2">{{ $run->status->label() }}</x-status-badge>
                         </div>
                         <div class="flex items-center gap-1">
@@ -50,7 +50,7 @@
         @endif
 
         @if ($suggestedProcedures->isNotEmpty())
-            <p class="mb-2 text-xs text-base-content/60">{{ __('procedure.panel.suggested') }}</p>
+            <p class="mb-2 text-xs text-muted">{{ __('procedure.panel.suggested') }}</p>
             <div class="flex flex-wrap gap-2">
                 @foreach ($suggestedProcedures as $tpl)
                     <form method="POST" action="{{ route('procedure-runs.start', [$diary, $tpl]) }}">

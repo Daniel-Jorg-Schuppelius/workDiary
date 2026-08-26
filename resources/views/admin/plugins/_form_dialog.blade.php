@@ -28,7 +28,7 @@
     :submit-label="__('Speichern')">
 
     <x-slot:header>
-        <p class="text-xs text-base-content/60 mt-1">
+        <p class="text-xs text-muted mt-1">
             <code>{{ $plugin->id() }}</code>
             <span class="mx-1">·</span>
             {{ __('Version :ver', ['ver' => $plugin->version()]) }}
@@ -44,7 +44,7 @@
 
     @if ($state && $state->isAutoDisabled())
         <div role="alert" class="alert alert-error">
-            <span class="material-symbols-outlined" aria-hidden="true">error</span>
+            <x-icon name="error" />
             <div>
                 <div class="font-semibold">{{ __('Plugin ist auto-deaktiviert') }}</div>
                 <div class="text-sm opacity-80">{{ $state->disabled_reason }}</div>
@@ -59,7 +59,7 @@
                 <span class="text-base-content/70 ml-1">{{ $state->last_health_message }}</span>
             @endif
             @if ($state->last_health_check_at)
-                <span class="text-xs text-base-content/50 ml-2">{{ __('zuletzt :time geprüft', ['time' => $state->last_health_check_at->diffForHumans()]) }}</span>
+                <span class="text-xs text-muted ml-2">{{ __('zuletzt :time geprüft', ['time' => $state->last_health_check_at->diffForHumans()]) }}</span>
             @endif
         </div>
     @endif
@@ -106,14 +106,14 @@
             $configLinks = collect($configLinks)->unique('url')->all();
         @endphp
         <div class="alert alert-info text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+            <x-icon name="info" />
             <span>{{ $configLinks === [] ? __('Dieses Plugin hat keine dialogbasierten Einstellungen.') : __('Dieses Plugin wird auf eigenen Seiten konfiguriert:') }}</span>
         </div>
         @if ($configLinks !== [])
             <div class="flex flex-wrap gap-2">
                 @foreach ($configLinks as $link)
                     <a href="{{ $link['url'] }}" class="btn btn-sm btn-outline">
-                        <span class="material-symbols-outlined" aria-hidden="true">{{ $link['icon'] }}</span>
+                        <x-icon name="{{ $link['icon'] }}" />
                         {{ $link['label'] }}
                     </a>
                 @endforeach

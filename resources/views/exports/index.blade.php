@@ -58,7 +58,7 @@
     @endif
     @if ($exports->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>'
+            icon="receipt_long"
             :title="__('Noch keine Exporte vorhanden')"
             :message="__('Erstellen Sie aus genehmigten Monaten einen Export für die Lohnabrechnung.')" />
     @else

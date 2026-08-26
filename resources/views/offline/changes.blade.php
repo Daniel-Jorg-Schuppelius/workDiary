@@ -33,7 +33,7 @@
          data-label-type-form-submission="{{ __('offline.type.form') }}"
          data-label-type-attendance-correct="{{ __('offline.type.attendance_correct') }}"
          class="space-y-6">
-        <p data-offline-empty class="text-sm text-base-content/60" hidden>{{ __('offline.empty') }}</p>
+        <p data-offline-empty class="text-sm text-muted" hidden>{{ __('offline.empty') }}</p>
         <section data-offline-section="outbox" class="space-y-2" hidden>
             <h2 class="text-base font-semibold" data-section-heading></h2>
             <ul class="space-y-2" data-section-list></ul>
@@ -53,7 +53,7 @@
         <li class="flex flex-wrap items-center gap-3 rounded-box border border-base-300 bg-base-100 p-3 shadow-xs">
             <div class="min-w-0 flex-1">
                 <p class="font-medium" data-item-type></p>
-                <p class="text-xs text-base-content/60 tabular-nums" data-item-time></p>
+                <p class="text-xs text-muted tabular-nums" data-item-time></p>
                 <p class="text-sm text-error" data-item-errors hidden></p>
                 <p class="text-sm text-warning" data-item-server hidden></p>
             </div>

@@ -26,7 +26,7 @@
     </x-slot:note>
 
     @if ($board->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">precision_manufacturing</span>'
+        <x-empty-state framed icon="precision_manufacturing"
                        :title="__('manufacturing.capacity.empty')" />
     @else
         <x-table :zebra="true" scroll="flex" :pinRows="true">

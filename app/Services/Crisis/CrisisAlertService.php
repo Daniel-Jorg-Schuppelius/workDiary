@@ -17,6 +17,7 @@ use App\Models\Crisis\{CrisisCase, CrisisTeamAssignment};
 use App\Models\Notification\NotificationDispatchLog;
 use App\Models\User;
 use App\Notifications\GenericEventNotification;
+use App\Services\Notification\Sms\SmsChannelService;
 
 /**
  * Alarmierung des Krisenstabs (Feature 070, MVP-213 / D7): direkte
@@ -101,6 +102,16 @@ class CrisisAlertService {
             'message' => (string) __('Schweregrad :severity — bitte Alarm in der Krisenakte quittieren.', ['severity' => $case->severity]),
             'url' => route('crisis.show', $case),
         ], ['database', 'mail'], $stage));
+
+        // SMS-Kanal (Feature 147): der Krisenalarm ist sein Anlass — er ist
+        // der einzige Weg, der ohne Datenverbindung ankommt. Greift nur, wenn
+        // die Org-Regel den Kanal wählt UND die Person ein bestätigtes Opt-in
+        // hat; der Dienst entscheidet das selbst und wirft nie in die
+        // Alarmierung zurück.
+        app(SmsChannelService::class)->send($user, NotificationEvent::CrisisAlert, $assignment, [
+            'title' => (string) __('KRISENALARM: :title', ['title' => $case->title]),
+            'message' => (string) __('Schweregrad :severity — bitte Alarm in der Krisenakte quittieren.', ['severity' => $case->severity]),
+        ], $stage);
 
         // Nachweis: unique je (Event, Assignment, Stufe) — wiederholte
         // Zustellungen derselben Stufe zählen den Empfängerzähler hoch.

@@ -80,7 +80,7 @@
                     <tr>
                         <td>
                             <div>{{ \App\Services\Ai\Dto\AiCapability::labelFor((string) $capability) }}</div>
-                            <div class="font-mono text-xs text-base-content/60">{{ $capability }}</div>
+                            <div class="font-mono text-xs text-muted">{{ $capability }}</div>
                         </td>
                         <td class="text-right tabular-nums">{{ $stats['total'] }}</td>
                         <td class="text-right tabular-nums">{{ ($stats['byStatus']['accepted'] ?? 0) + ($stats['byStatus']['edited'] ?? 0) }}</td>

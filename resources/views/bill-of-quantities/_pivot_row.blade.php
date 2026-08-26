@@ -11,8 +11,7 @@
                         x-on:click="toggle('{{ $node['code'] }}')"
                         x-bind:aria-expanded="isOpen('{{ $node['code'] }}')"
                         aria-label="{{ __('Ebene auf-/zuklappen') }}">
-                    <span class="material-symbols-outlined text-base" aria-hidden="true"
-                          x-text="caret('{{ $node['code'] }}')">chevron_right</span>
+                    <x-icon name="chevron_right" class="text-base" x-text="caret('{{ $node['code'] }}')" />
                 </button>
             @else
                 <span class="inline-block w-6" aria-hidden="true"></span>

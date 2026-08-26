@@ -34,7 +34,7 @@
     </x-slot:toolbar>
 
     @if (empty($report['byCostType']))
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">calculate</span>'
+        <x-empty-state framed icon="calculate"
                        :title="__('Keine Kalkulationsdaten im Leistungsverzeichnis.')"
                        :message="__('Kalkulationsdaten kommen mit einer GAEB-X52-Datei. Ohne Kostenarten im Kopf und Kostenansätze an den Positionen gibt es nichts zu rechnen.')" />
     @else
@@ -42,7 +42,7 @@
              Zuschlag rechnet auf andere Positionen, das Geld zählte sonst zweimal. --}}
         @if (! empty($markupWithApproaches))
             <div class="alert alert-warning">
-                <span class="material-symbols-outlined" aria-hidden="true">warning</span>
+                <x-icon name="warning" />
                 <span>{{ __('Zuschlagspositionen mit eigenen Kostenansätzen: :refs. Der Zuschlag rechnet prozentual auf andere Positionen — eigene Ansätze zählen dasselbe Geld ein zweites Mal.', ['refs' => implode(', ', $markupWithApproaches)]) }}</span>
             </div>
         @endif

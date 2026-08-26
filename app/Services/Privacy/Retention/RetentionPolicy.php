@@ -26,7 +26,8 @@ final class RetentionPolicy {
      * @param class-string<Model> $modelClass
      * @param Closure $overdueQuery fn(Organization, CarbonImmutable): Builder — überfällige Datensätze
      * @param Closure|null $exempt fn(Model): ?string — Ausnahme-Begründung oder null (= löschbar)
-     * @param Closure|null $purge fn(Model): void — eigene Löschlogik (Default: $model->delete())
+     * @param Closure|null $purge fn(Model, User): void — eigene Löschlogik (Default: $model->delete());
+     *                     zweites Argument ist der bestätigende Actor (Feature 130), optional entgegennehmbar
      */
     public function __construct(
         public readonly string $area,

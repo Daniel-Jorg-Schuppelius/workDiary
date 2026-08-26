@@ -65,17 +65,16 @@ class InvoicesSection extends AbstractGdpduSection {
             ->orderBy('id');
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         $invoices = self::invoicesInPeriod($organization, $from, $to)
             ->with('customer:id,number,name,company,vat_id,tax_number,address_street,address_zip,address_city,country,email')
             ->with('dispatches')
-            ->get();
+            ->lazy();
 
-        $rows = [];
         foreach ($invoices as $inv) {
             // Vollaudit 2026-07 (H11): Formatmetadaten des letzten Versands.
             $dispatch = $inv->dispatches->sortByDesc('id')->first();
-            $rows[] = [
+            yield [
                 $this->str($inv->number),
                 $this->str($inv->type),
                 $this->str($inv->status),
@@ -95,7 +94,5 @@ class InvoicesSection extends AbstractGdpduSection {
                 $this->str($dispatch?->sha256),
             ];
         }
-
-        return $rows;
     }
 }

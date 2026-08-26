@@ -30,8 +30,14 @@ use InvalidArgumentException;
  * in einer Transaktion. Zwei gleichzeitige Inserts können so nicht denselben
  * prev_hash erhalten (kein „Fork" der Kette).
  *
+ * Eine Kette je ORGANISATION (`tabelle:organisation`, {@see chainName()}):
+ * Mit einer Kette je Tabelle sperrten alle Mandanten denselben Kopf —
+ * gemessen mit `audit:measure-chain-contention` verklemmten dabei 445 von 900
+ * gleichzeitigen Einfügungen (MVP-722, Vollscan 2026-08-23 A5).
+ *
  * Nutzende Modelle implementieren {@see hashPayload()} (welche Felder in den
- * Hash eingehen) und {@see chainName()} (Name der Kette = i. d. R. Tabellenname).
+ * Hash eingehen); {@see chainScopeColumn()} nur, wenn die Kette NICHT je
+ * Organisation geführt werden soll.
  *
  * @phpstan-consistent-constructor
  *
@@ -46,10 +52,35 @@ trait HashChained {
     abstract public function hashPayload(): array;
 
     /**
-     * Name der Hash-Kette (eine Zeile in audit_chain_heads).
+     * Name der Hash-Kette (eine Zeile in audit_chain_heads):
+     * `tabelle:organisation`.
+     *
+     * Eine Kette je TABELLE hätte den Kettenkopf zum globalen Nadelöhr
+     * gemacht — gemessen mit `audit:measure-chain-contention` (3 Organisationen
+     * × 300 Zeilen): 2,40 ms/Zeile allein gegen 6,04 ms/Zeile parallel, dabei
+     * 445 von 900 Einfügungen als Verklemmung abgebrochen. Je Organisation
+     * eine Kette trennt die Sperren; die Beweiskraft bleibt unverändert, weil
+     * `organization_id` ohnehin in jedem hashPayload() steckt.
+     *
+     * Modelle ohne Organisationsbezug behalten die Tabellenkette
+     * ({@see chainScopeColumn()}); ein leeres Feld ergibt `tabelle:0`
+     * (plattformweite Ereignisse bilden damit ihre eigene Kette).
      */
     public function chainName(): string {
-        return $this->getTable();
+        $column = $this->chainScopeColumn();
+        if ($column === null) {
+            return $this->getTable();
+        }
+
+        return $this->getTable() . ':' . (int) ($this->getAttribute($column) ?? 0);
+    }
+
+    /**
+     * Spalte, die die Kette aufteilt — `null` = eine Kette je Tabelle.
+     * Standard ist `organization_id`, sofern das Modell sie führt.
+     */
+    protected function chainScopeColumn(): ?string {
+        return in_array('organization_id', $this->getFillable(), true) ? 'organization_id' : null;
     }
 
     /**

@@ -105,7 +105,7 @@
                     <td>
                         <div class="font-medium">{{ $expense->user?->name ?? '—' }}</div>
                         @if ($expense->project)
-                            <div class="text-xs text-base-content/60">{{ $expense->project->name }}</div>
+                            <div class="text-xs text-muted">{{ $expense->project->name }}</div>
                         @endif
                     </td>
                     <td>
@@ -116,13 +116,13 @@
                                 {{ $expense->category->label }}
                             </span>
                         @else
-                            <span class="text-base-content/50">—</span>
+                            <span class="text-muted">—</span>
                         @endif
                     </td>
                     <td class="max-w-xs truncate">
                         {{ $expense->description }}
                         @if ($expense->vendor)
-                            <div class="text-xs text-base-content/60">{{ $expense->vendor }}</div>
+                            <div class="text-xs text-muted">{{ $expense->vendor }}</div>
                         @endif
                     </td>
                     <td class="text-right whitespace-nowrap">
@@ -162,7 +162,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">inbox</span>'
+                <x-table.empty icon="inbox"
                                :colspan="$bulkEnabled ? 8 : 7"
                                :title="__('Keine Spesen in diesem Status')"
                                compact />

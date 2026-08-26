@@ -18,7 +18,7 @@
             <x-status-badge tone="error" size="md">{{ __('Major Incident aktiv') }}</x-status-badge>
             <span>{{ __('Leitung') }}: <strong>{{ $ticket->incidentLead?->name ?: '—' }}</strong></span>
             @if ($ticket->comm_rhythm)
-                <span class="text-base-content/60">· {{ __('Kommunikationsrhythmus') }}: {{ $ticket->comm_rhythm }}</span>
+                <span class="text-muted">· {{ __('Kommunikationsrhythmus') }}: {{ $ticket->comm_rhythm }}</span>
             @endif
         </div>
         @if (! empty($ticket->stakeholders))
@@ -57,6 +57,6 @@
             <x-icon-btn icon="emergency_home" tone="error" size="sm" type="submit" show-label>{{ __('Major Incident ausrufen') }}</x-icon-btn>
         </form>
     @else
-        <p class="text-sm text-base-content/60">{{ __('Kein Major Incident.') }}</p>
+        <p class="text-sm text-muted">{{ __('Kein Major Incident.') }}</p>
     @endif
 </x-card>

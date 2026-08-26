@@ -74,12 +74,12 @@
         <svg viewBox="0 0 {{ $width }} {{ $height }}" role="img" aria-label="{{ $title }}" class="wd-chart-svg mt-2 w-full">
             <line x1="{{ $pad }}" y1="{{ $height - $pad }}" x2="{{ $width - $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
             <line x1="{{ $pad }}" y1="{{ $pad }}" x2="{{ $pad }}" y2="{{ $height - $pad }}" class="stroke-base-300" stroke-width="1" />
-            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">{{ $maxY }}</text>
-            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-base-content/60 text-[10px]">0</text>
+            <text x="{{ $pad - 6 }}" y="{{ $pad }}" text-anchor="end" class="fill-muted text-[10px]">{{ $maxY }}</text>
+            <text x="{{ $pad - 6 }}" y="{{ $height - $pad }}" text-anchor="end" class="fill-muted text-[10px]">0</text>
             @foreach ($percentiles as $label => $value)
                 <line x1="{{ $pad }}" y1="{{ $sy((float) $value) }}" x2="{{ $width - $pad }}" y2="{{ $sy((float) $value) }}"
                       class="stroke-base-content/40" stroke-width="1" stroke-dasharray="{{ $dashes[$loop->index % 3] }}" />
-                <text x="{{ $width - $pad + 2 }}" y="{{ $sy((float) $value) + 3 }}" class="fill-base-content/60 text-[10px]">{{ $label }}</text>
+                <text x="{{ $width - $pad + 2 }}" y="{{ $sy((float) $value) + 3 }}" class="fill-muted text-[10px]">{{ $label }}</text>
             @endforeach
             @foreach ($points as $i => $point)
                 <a @if (!empty($point['url'])) href="{{ $point['url'] }}" @endif tabindex="0"

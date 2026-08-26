@@ -56,12 +56,12 @@
                     <td class="font-medium">
                         {{ $org->name }}
                         @if (! $org->is_active && $deactivatedAt)
-                            <div class="text-xs text-base-content/50">
+                            <div class="text-xs text-muted">
                                 {{ __('Deaktiviert am :date', ['date' => $deactivatedAt->fdatetime()]) }}
                             </div>
                         @endif
                     </td>
-                    <td class="font-mono text-sm text-base-content/60">{{ $org->slug }}</td>
+                    <td class="font-mono text-sm text-muted">{{ $org->slug }}</td>
                     <td>
                         <x-status-badge size="sm" :tone="$org->plan === 'enterprise' ? 'primary' : ($org->plan === 'pro' ? 'secondary' : 'ghost')">
                             {{ \App\Models\Organization::planLabel($org->plan) }}
@@ -75,7 +75,7 @@
                             <x-status-badge tone="error" size="sm">{{ __('Nein') }}</x-status-badge>
                         @endif
                     </td>
-                    <td class="text-sm text-base-content/60">{{ $org->created_at?->toDateString() }}</td>
+                    <td class="text-sm text-muted">{{ $org->created_at?->toDateString() }}</td>
                     <td class="text-right">
                         <div class="flex justify-end gap-1">
                             <x-icon-btn icon="edit"
@@ -138,9 +138,9 @@
                                                placeholder="{{ $org->slug }}">
                                     </x-modal>
                                 @else
-                                    <span class="text-xs text-base-content/50 self-center"
+                                    <span class="text-xs text-muted self-center"
                                           title="{{ __('Endgültiges Löschen erst :h Stunden nach Deaktivierung möglich.', ['h' => $cooldownHours]) }}">
-                                        <x-icon name="hourglass_top" class="text-base-content/40" />
+                                        <x-icon name="hourglass_top" class="text-muted" />
                                     </span>
                                 @endif
                             @endif
@@ -148,7 +148,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">apartment</span>' :colspan="7" :title="__('Keine Organisationen vorhanden')" compact />
+                <x-table.empty icon="apartment" :colspan="7" :title="__('Keine Organisationen vorhanden')" compact />
             @endforelse
     </x-table>
 

@@ -100,7 +100,7 @@
             </tr>
         @empty
             <x-table.empty :colspan="4"
-                icon='<span class="material-symbols-outlined" aria-hidden="true">rule</span>'
+                icon="rule"
                 :title="__('flex.eligibility.empty', ['name' => $member->name])" compact />
         @endforelse
     </x-table>

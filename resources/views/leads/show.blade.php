@@ -38,15 +38,15 @@
         <div class="space-y-4 lg:col-span-2">
             <x-card :title="__('Stammdaten')">
                 <dl class="grid gap-x-8 gap-y-1 text-sm sm:grid-cols-2">
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Firma') }}</dt><dd>{{ $lead->company ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Ansprechpartner') }}</dt><dd>{{ $lead->contact_name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('E-Mail') }}</dt><dd>{{ $lead->email ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Telefon') }}</dt><dd>{{ $lead->phone ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Quelle') }}</dt><dd>{{ $lead->source->label() }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Verantwortlich') }}</dt><dd>{{ $lead->responsible?->name ?? '—' }}</dd></div>
-                    <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Letzter Kontakt') }}</dt><dd>{{ $lead->last_contact_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Firma') }}</dt><dd>{{ $lead->company ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Ansprechpartner') }}</dt><dd>{{ $lead->contact_name ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('E-Mail') }}</dt><dd>{{ $lead->email ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Telefon') }}</dt><dd>{{ $lead->phone ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Quelle') }}</dt><dd>{{ $lead->source->label() }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Verantwortlich') }}</dt><dd>{{ $lead->responsible?->name ?? '—' }}</dd></div>
+                    <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Letzter Kontakt') }}</dt><dd>{{ $lead->last_contact_at?->format('d.m.Y H:i') ?? '—' }}</dd></div>
                     @if ($lead->customer)
-                        <div class="flex justify-between gap-4"><dt class="text-base-content/60">{{ __('Kunde') }}</dt>
+                        <div class="flex justify-between gap-4"><dt class="text-muted">{{ __('Kunde') }}</dt>
                             <dd><a class="link" href="{{ route('customers.show', $lead->customer) }}">{{ $lead->customer->name }}</a></dd></div>
                     @endif
                 </dl>

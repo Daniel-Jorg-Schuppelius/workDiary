@@ -46,16 +46,16 @@
                 @if (($queue['available'] ?? false) === true)
                     <dl class="grid grid-cols-1 gap-1 text-sm">
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-base-content/60">{{ __('metrics.field.queue_pending') }}</dt>
+                            <dt class="text-muted">{{ __('metrics.field.queue_pending') }}</dt>
                             <dd class="font-mono text-xs">{{ $queue['pending'] ?? '—' }}</dd>
                         </div>
                         <div class="flex items-baseline justify-between gap-2">
-                            <dt class="text-base-content/60">{{ __('metrics.field.queue_failed') }}</dt>
+                            <dt class="text-muted">{{ __('metrics.field.queue_failed') }}</dt>
                             <dd class="font-mono text-xs">{{ $queue['failed'] ?? '—' }}</dd>
                         </div>
                     </dl>
                 @else
-                    <p class="text-sm italic text-base-content/50">{{ __('metrics.empty.queue') }}</p>
+                    <p class="text-sm italic text-muted">{{ __('metrics.empty.queue') }}</p>
                 @endif
             </div>
         </article>
@@ -72,7 +72,7 @@
                         @foreach ($backups as $hb)
                             <li class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
                                 <span class="text-base-content/70">{{ $hb['occurred_at']?->translatedFormat('d.m.Y H:i') ?? '—' }}</span>
-                                <span class="font-mono text-xs text-base-content/60">
+                                <span class="font-mono text-xs text-muted">
                                     {{ $hb['size_bytes'] !== null ? $fmtBytes((int) $hb['size_bytes']) : '—' }}
                                     @if (!empty($hb['source'])) · {{ $hb['source'] }} @endif
                                 </span>
@@ -80,7 +80,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-sm italic text-base-content/50">{{ __('metrics.empty.backups') }}</p>
+                    <p class="text-sm italic text-muted">{{ __('metrics.empty.backups') }}</p>
                 @endif
             </div>
         </article>
@@ -105,7 +105,7 @@
                         @endforeach
                     </ul>
                 @else
-                    <p class="text-sm italic text-base-content/50">{{ __('metrics.empty.plugin_errors') }}</p>
+                    <p class="text-sm italic text-muted">{{ __('metrics.empty.plugin_errors') }}</p>
                 @endif
             </div>
         </article>
@@ -120,14 +120,14 @@
                 <dl class="grid grid-cols-1 gap-1 text-sm">
                     @foreach (['attachments' => __('metrics.field.attachments'), 'document_versions' => __('metrics.field.document_versions')] as $key => $label)
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                            <dt class="text-base-content/60">{{ $label }}</dt>
+                            <dt class="text-muted">{{ $label }}</dt>
                             <dd class="font-mono text-xs">
                                 {{ $storage[$key]['count'] ?? 0 }} · {{ $fmtBytes((int) ($storage[$key]['bytes'] ?? 0)) }}
                             </dd>
                         </div>
                     @endforeach
                 </dl>
-                <p class="text-xs text-base-content/50">{{ __('metrics.hint.storage_db_metadata') }}</p>
+                <p class="text-xs text-muted">{{ __('metrics.hint.storage_db_metadata') }}</p>
             </div>
         </article>
 
@@ -140,9 +140,9 @@
                 </header>
                 @if (($metrics['active_users'] ?? null) !== null)
                     <p class="text-3xl font-semibold">{{ $metrics['active_users'] }}</p>
-                    <p class="text-xs text-base-content/50">{{ __('metrics.hint.active_users') }}</p>
+                    <p class="text-xs text-muted">{{ __('metrics.hint.active_users') }}</p>
                 @else
-                    <p class="text-sm italic text-base-content/50">{{ __('metrics.empty.active_users') }}</p>
+                    <p class="text-sm italic text-muted">{{ __('metrics.empty.active_users') }}</p>
                 @endif
             </div>
         </article>
@@ -157,7 +157,7 @@
                 <dl class="grid grid-cols-1 gap-1 text-sm">
                     @foreach ($moduleCounts as $module => $count)
                         <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                            <dt class="text-base-content/60">{{ __('metrics.module.' . $module) }}</dt>
+                            <dt class="text-muted">{{ __('metrics.module.' . $module) }}</dt>
                             <dd class="font-mono text-xs">{{ $count }}</dd>
                         </div>
                     @endforeach
@@ -187,10 +187,10 @@
             </x-table>
         @else
             <x-empty-state
-                icon='<span class="material-symbols-outlined" aria-hidden="true">monitoring</span>'
+                icon="monitoring"
                 :title="__('metrics.empty.feature_usage')" />
         @endif
-        <p class="mt-2 text-xs text-base-content/50">{{ __('metrics.hint.feature_usage_window') }}</p>
+        <p class="mt-2 text-xs text-muted">{{ __('metrics.hint.feature_usage_window') }}</p>
     </x-card>
 
     {{-- Metrik-Transparenz (MVP-337): welche Zähler erhoben werden, wo sie
@@ -221,11 +221,11 @@
                         </tr>
                     @endforeach
         </x-table>
-        <p class="mt-2 text-xs text-base-content/50">{{ __('metrics.transparency.storage') }}</p>
-        <p class="text-xs text-base-content/50">{{ __('metrics.transparency.retention') }}</p>
+        <p class="mt-2 text-xs text-muted">{{ __('metrics.transparency.storage') }}</p>
+        <p class="text-xs text-muted">{{ __('metrics.transparency.retention') }}</p>
     </x-card>
 
-    <p class="text-xs text-base-content/40">
+    <p class="text-xs text-muted">
         {{ __('metrics.generated_at', ['at' => ($metrics['generated_at'] ?? now())->translatedFormat('d.m.Y H:i:s')]) }}
         · {{ __('metrics.field.version') }}: {{ $metrics['version'] ?? '—' }}
     </p>

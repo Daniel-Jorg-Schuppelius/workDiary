@@ -44,7 +44,7 @@
                 @foreach ($rows as $row)
                     <tr>
                         <td>{{ $row['project']->name }}</td>
-                        <td class="text-sm text-base-content/60">{{ $row['board']->method === 'scrum' ? 'Scrum' : 'Kanban' }}</td>
+                        <td class="text-sm text-muted">{{ $row['board']->method === 'scrum' ? 'Scrum' : 'Kanban' }}</td>
                         <td>{{ $row['active_sprint']?->name ?? '—' }}</td>
                         <td class="text-right tabular-nums">{{ $row['velocity_median'] }}</td>
                         <td class="text-right tabular-nums">{{ $row['scope_added'] }}</td>
@@ -63,7 +63,7 @@
                                     'p95' => $row['forecast']['p95'],
                                 ]) }}
                             @else
-                                <span class="text-base-content/50" title="{{ $row['forecast']['reason'] }}">{{ __('Zu wenig Historie') }}</span>
+                                <span class="text-muted" title="{{ $row['forecast']['reason'] }}">{{ __('Zu wenig Historie') }}</span>
                             @endif
                         </td>
                         <td class="text-right">

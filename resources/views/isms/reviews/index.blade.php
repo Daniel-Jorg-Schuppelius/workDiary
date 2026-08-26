@@ -59,7 +59,7 @@
                     <td class="text-base-content/70">
                         @if ($review->isApproved())
                             {{ optional($review->approvedBy)->name ?? '—' }}
-                            <span class="block text-xs text-base-content/50">{{ $review->approved_at?->format('d.m.Y H:i') }}</span>
+                            <span class="block text-xs text-muted">{{ $review->approved_at?->format('d.m.Y H:i') }}</span>
                         @else
                             —
                         @endif

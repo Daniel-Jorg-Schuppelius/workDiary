@@ -122,7 +122,7 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
         });
     }
 
-    /** Bestätigte Auslagen-Zuordnung (MVP-551, {@see \App\Services\Billing\DocumentLinks}). */
+    /** Bestätigte Auslagen-Zuordnung (MVP-551, {@see \App\Plugins\Lexoffice\LexofficeExpenseLinkProvider}). */
     public function expenseLinkCriteria(): array {
         return [
             'plugin_id' => LexofficePlugin::ID,

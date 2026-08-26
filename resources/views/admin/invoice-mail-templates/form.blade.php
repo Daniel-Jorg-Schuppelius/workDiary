@@ -32,10 +32,17 @@
         <x-input-field name="name" :label="__('Name')" required maxlength="120"
                        :value="old('name', $template->name)" />
 
+        {{-- Feature 128 (MVP-692): Vorlagen gelten je Belegart. --}}
+        <x-select-field name="document_kind" :label="__('Belegart')" required>
+            @foreach ($kinds as $kind)
+                <option value="{{ $kind->value }}" @selected(old('document_kind', $template->document_kind) === $kind->value)>{{ $kind->label() }}</option>
+            @endforeach
+        </x-select-field>
+
         <label class="label cursor-pointer justify-start gap-2">
             <input type="checkbox" name="is_default" value="1" @checked(old('is_default', $template->is_default))
                    class="checkbox">
-            <span class="label-text">{{ __('Als Standard-Template verwenden') }}</span>
+            <span class="label-text">{{ __('Als Standard-Template der Belegart verwenden') }}</span>
         </label>
 
         <x-input-field name="subject" :label="__('Betreff')" required maxlength="255"
@@ -49,14 +56,17 @@
                           class="font-mono text-xs"
                           :value="old('body_text', $template->body_text)" />
 
-        <details class="text-sm">
-            <summary class="cursor-pointer text-base-content/70">{{ __('Verfügbare Variablen') }}</summary>
-            <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
-                @foreach ($variables as $key => $label)
-                    <li><code>&#123;&#123;{{ $key }}&#125;&#125;</code> – {{ $label }}</li>
-                @endforeach
-            </ul>
-        </details>
+        {{-- Platzhalter-Doku je Belegart (Feature 128). --}}
+        @foreach ($variablesByKind as $kindValue => $kindDoc)
+            <details class="text-sm" @if (old('document_kind', $template->document_kind) === $kindValue) open @endif>
+                <summary class="cursor-pointer text-base-content/70">{{ __('Verfügbare Variablen') }}: {{ $kindDoc['label'] }}</summary>
+                <ul class="mt-2 grid grid-cols-2 gap-x-4 gap-y-1">
+                    @foreach ($kindDoc['variables'] as $key => $label)
+                        <li><code>&#123;&#123;{{ $key }}&#125;&#125;</code> – {{ $label }}</li>
+                    @endforeach
+                </ul>
+            </details>
+        @endforeach
 
         <div class="flex justify-end gap-2 pt-2">
             <x-button :href="route('admin.invoice-mail-templates.index')" tone="ghost" size="md">{{ __('Abbrechen') }}</x-button>

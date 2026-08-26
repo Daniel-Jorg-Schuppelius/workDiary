@@ -59,7 +59,7 @@
                     <p class="text-sm text-base-content/70">
                         {{ __('Der Betreiber dieser Installation hat diesen Rechtstext noch nicht hinterlegt.') }}
                     </p>
-                    <p class="mt-3 text-sm text-base-content/50">
+                    <p class="mt-3 text-sm text-muted">
                         {{ __('Hinterlegt wird der Inhalt in den Systemeinstellungen (Administration → Einstellungen, Schlüssel :key).', ['key' => $settingKey]) }}
                     </p>
                 @endif

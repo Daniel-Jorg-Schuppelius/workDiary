@@ -62,7 +62,7 @@
                 <td class="text-right"><x-icon-btn icon="visibility" tone="ghost" size="xs" :href="route('recruiting.requisitions.show', $requisition)" :label="__('Anzeigen')" /></td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">work</span>' :colspan="6" :title="__('Keine Stellen — „Stelle anlegen“ startet den ersten Bedarf.')" compact />
+            <x-table.empty icon="work" :colspan="6" :title="__('Keine Stellen — „Stelle anlegen“ startet den ersten Bedarf.')" compact />
         @endforelse
     </x-table>
 

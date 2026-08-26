@@ -56,6 +56,7 @@ return [
         'project' => 'Projet',
         'diary' => 'Intervention',
         'asset' => 'Équipement',
+        'user' => 'Collaborateur',
         'none' => 'Sans référence',
     ],
 

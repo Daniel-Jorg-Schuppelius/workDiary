@@ -17,6 +17,7 @@ use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Location\LocationIngestService;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
+use OpenApi\Attributes as OA;
 
 /**
  * Nimmt Standort-Pushes von Geräte-Apps (OwnTracks, Traccar/OsmAnd) und
@@ -34,6 +35,28 @@ class LocationController extends Controller {
         private readonly FeatureFlagResolver $features,
     ) {}
 
+    #[OA\Post(
+        path: '/location/ingest/{token}',
+        summary: 'Standort-Ingest (OwnTracks/Traccar/Batch)',
+        description: 'Auth über Gerätetoken im Pfad (GET oder POST).',
+        tags: ['Location'],
+        parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Geräte-Token', schema: new OA\Schema(type: 'string'))],
+        requestBody: new OA\RequestBody(required: false, description: 'Einzelpunkt, Liste oder Batch unter points', content: new OA\JsonContent(properties: [
+            new OA\Property(property: 'lat', type: 'number', format: 'float'),
+            new OA\Property(property: 'lng', type: 'number', format: 'float', description: 'Alias: lon, longitude'),
+            new OA\Property(property: 'tst', type: 'integer', description: 'OwnTracks Unix-Zeitstempel', nullable: true),
+            new OA\Property(property: 'timestamp', type: 'string', description: 'Traccar/OsmAnd Zeitstempel', nullable: true),
+            new OA\Property(property: 'recorded_at', type: 'string', format: 'date-time', nullable: true),
+            new OA\Property(property: 'accuracy_m', type: 'number', description: 'Alias: acc, accuracy', nullable: true),
+            new OA\Property(property: 'points', type: 'array', description: 'Generischer Batch', items: new OA\Items(type: 'object')),
+        ])),
+        responses: [
+            new OA\Response(response: 200, description: 'OK (leeres JSON-Array)'),
+            new OA\Response(response: 401, description: 'Ungültiger Token'),
+            new OA\Response(response: 403, description: 'Modul deaktiviert oder keine Einwilligung'),
+            new OA\Response(response: 503, description: 'Wartungsmodus (Retry-After)'),
+        ],
+    )]
     public function ingest(Request $request, string $token): JsonResponse {
         $device = LocationDeviceToken::query()
             ->where('token_hash', LocationDeviceToken::hashToken($token))
@@ -83,6 +106,23 @@ class LocationController extends Controller {
      * angemeldeten Nutzers (navigator.geolocation) entgegen. Auth über die
      * Session/Sanctum, nicht über ein Geräte-Token.
      */
+    #[OA\Post(
+        path: '/location/stamp',
+        summary: 'Browser-Standort stempeln',
+        tags: ['Location'],
+        security: [['bearerAuth' => ['location:write']]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['lat', 'lng'], properties: [
+            new OA\Property(property: 'lat', type: 'number', format: 'float'),
+            new OA\Property(property: 'lng', type: 'number', format: 'float'),
+            new OA\Property(property: 'accuracy_m', type: 'number', minimum: 0, nullable: true),
+        ])),
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden (Modul deaktiviert oder keine Einwilligung)'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function stamp(Request $request): JsonResponse {
         $user = $this->authUser();
 

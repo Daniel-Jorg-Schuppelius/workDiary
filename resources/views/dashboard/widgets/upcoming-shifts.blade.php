@@ -8,7 +8,7 @@
 --}}
 <x-card :title="__('Anstehende Schichten')">
     @if ($today->isNotEmpty())
-        <p class="text-xs uppercase tracking-wider text-base-content/60">{{ __('Heute') }}</p>
+        <p class="text-xs uppercase tracking-wider text-muted">{{ __('Heute') }}</p>
         <ul class="mt-1 space-y-1 text-sm">
             @foreach ($today as $shift)
                 <li class="flex items-center gap-2">
@@ -20,7 +20,7 @@
     @endif
 
     @if ($shifts->isNotEmpty())
-        <p class="mt-3 text-xs uppercase tracking-wider text-base-content/60">{{ __('Kommende Tage') }}</p>
+        <p class="mt-3 text-xs uppercase tracking-wider text-muted">{{ __('Kommende Tage') }}</p>
         <ul class="mt-1 space-y-1 text-sm">
             @foreach ($shifts as $shift)
                 <li class="flex items-center gap-2">
@@ -32,6 +32,6 @@
     @endif
 
     @if ($today->isEmpty() && $shifts->isEmpty())
-        <p class="text-sm text-base-content/60">{{ __('Keine anstehenden Schichten.') }}</p>
+        <p class="text-sm text-muted">{{ __('Keine anstehenden Schichten.') }}</p>
     @endif
 </x-card>

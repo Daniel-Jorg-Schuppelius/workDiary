@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\VehicleReservationConflictException;
+use App\Exceptions\{AssetNotUsableException, DriverLicenseCheckOverdueException, VehicleReservationConflictException};
 use App\Http\Requests\StoreVehicleReservationRequest;
 use App\Models\{DiaryEntry, User, Vehicle, VehicleReservation};
 use App\Services\Dispatch\VehicleReservationService;
@@ -78,6 +78,11 @@ class VehicleReservationController extends Controller {
         } catch (VehicleReservationConflictException $e) {
             return back()->withInput()->withErrors([
                 'reserved_from' => $e->getMessage(),
+            ]);
+        } catch (AssetNotUsableException|DriverLicenseCheckOverdueException $e) {
+            // Feature 138 (Prüffristen-Sperre, inkl. VehicleInspectionOverdueException) und MVP-417 (Führerschein).
+            return back()->withInput()->withErrors([
+                'vehicle_id' => $e->getMessage(),
             ]);
         }
 

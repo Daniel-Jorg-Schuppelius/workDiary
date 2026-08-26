@@ -57,8 +57,8 @@
             <form method="POST" action="{{ route('agile.items.store', $project) }}" class="flex flex-wrap items-end gap-2">
                 @csrf
                 <div class="fieldset grow">
-                    <label class="fieldset-label">{{ __('Titel') }}</label>
-                    <input name="title" required minlength="2" maxlength="255" class="input input-sm input-bordered w-full">
+                    <label for="title" class="fieldset-label">{{ __('Titel') }}</label>
+                    <input id="title" name="title" required minlength="2" maxlength="255" class="input input-sm input-bordered w-full">
                 </div>
                 <select name="item_type" class="select select-sm select-bordered">
                     @foreach (\App\Enums\Agile\AgileItemType::cases() as $type)
@@ -108,7 +108,7 @@
                         data-can-prioritize="{{ $canPrioritize ? '1' : '0' }}"
                         @if ($canPrioritize) draggable="true" @endif
                         @if ($item->isBlocked()) class="bg-error/5" @endif>
-                        <td class="tabular-nums text-sm text-base-content/60">{{ $index + 1 }}</td>
+                        <td class="tabular-nums text-sm text-muted">{{ $index + 1 }}</td>
                         <td>
                             {{ $item->task?->title ?? '—' }}
                             @if ($item->isBlocked())
@@ -120,7 +120,7 @@
                             {{-- Epic-Zuordnung über task.parent_task_id (Vollaudit M25). --}}
                             @php $parentEpic = $item->task?->parent_task_id !== null ? $epicByTaskId->get($item->task->parent_task_id) : null; @endphp
                             @if ($item->item_type === \App\Enums\Agile\AgileItemType::Epic)
-                                <span class="text-base-content/40">—</span>
+                                <span class="text-muted">—</span>
                             @elseif ($canPrioritize && $epics->isNotEmpty())
                                 <form method="POST" action="{{ route('agile.items.epic', [$project, $item]) }}">
                                     @csrf @method('PATCH')
@@ -133,11 +133,11 @@
                                     </select>
                                 </form>
                             @else
-                                <span class="text-sm text-base-content/60">{{ $parentEpic?->task?->title ?? '—' }}</span>
+                                <span class="text-sm text-muted">{{ $parentEpic?->task?->title ?? '—' }}</span>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $item->story_points ?? '—' }}</td>
-                        <td class="text-sm text-base-content/60">{{ $item->column?->name ?? __('Produkt-Backlog') }}</td>
+                        <td class="text-sm text-muted">{{ $item->column?->name ?? __('Produkt-Backlog') }}</td>
                         <td class="text-right">
                             @if ($canPrioritize)
                                 <div class="flex justify-end gap-1">

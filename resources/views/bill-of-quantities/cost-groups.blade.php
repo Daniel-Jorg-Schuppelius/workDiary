@@ -58,11 +58,11 @@
     </x-filter-bar>
 
     @if ($report['catalog'] === null)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
+        <x-empty-state framed icon="category"
                        :title="__('Kein Kostengruppenkatalog im Leistungsverzeichnis.')"
                        :message="__('Kostengruppen kommen mit der Datei der Vergabestelle. Ohne Katalog im Kopf gibt es nichts zuzuordnen — die Positionen erscheinen dann vollständig unter „ohne Zuordnung“.')" />
     @elseif (empty($report['rows']) && $report['unassigned'] <= 0.0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
+        <x-empty-state framed icon="category"
                        :title="__('Keine bepreisten Positionen.')"
                        :message="__('Die Auswertung rechnet Menge × Einheitspreis; ohne Preise gibt es nichts zu summieren.')" />
     @else

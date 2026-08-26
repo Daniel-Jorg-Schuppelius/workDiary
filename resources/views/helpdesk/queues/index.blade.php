@@ -44,7 +44,7 @@
                                 <x-status-badge tone="info" size="xs">{{ __('Standard') }}</x-status-badge>
                             @endif
                         </td>
-                        <td class="text-sm text-base-content/60">{{ $queue->team?->name ?? '—' }}</td>
+                        <td class="text-sm text-muted">{{ $queue->team?->name ?? '—' }}</td>
                         <td class="text-sm">{{ $queue->visibility === 'portal' ? __('Kundenportal') : __('Intern') }}</td>
                         <td class="text-right tabular-nums">{{ $queue->tickets_count }}</td>
                         <td class="text-right whitespace-nowrap">

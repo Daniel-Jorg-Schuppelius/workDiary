@@ -10,6 +10,7 @@
 
 namespace Tests\Unit\Architecture;
 
+use App\Support\Gobd\GobdLockRegistry;
 use PHPUnit\Framework\TestCase;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -35,54 +36,11 @@ use RecursiveIteratorIterator;
  * Rechnungen) gehören mit Begründung in die Allow-List.
  *
  * Neue festschreibungspflichtige Modelle (Freeze-Status oder Ereigniskette)
- * werden in GUARDED_MODELS ergänzt — Tabellenname beachten (Default-Naming).
+ * werden in {@see GobdLockRegistry::MODELS} ergänzt (app-seitig seit MVP-699,
+ * weil die Verfahrensdokumentation die Liste zur Laufzeit ausweist) —
+ * Tabellenname beachten (Default-Naming).
  */
 class GobdLockGuardRuleTest extends TestCase {
-    /**
-     * Festschreibungspflichtige Modelle: Kurzname → [Modell-Datei, Tabelle].
-     * Freeze-Guards (booted), AppendOnly-Trait bzw. HashChained (Ketten).
-     *
-     * @var array<string, array{file: string, table: string}>
-     */
-    private const GUARDED_MODELS = [
-        // Freeze nach Ausstellung/Finalisierung/Übergabe
-        'Invoice' => ['file' => 'app/Models/Invoice.php', 'table' => 'invoices'],
-        'DatevBookingBatch' => ['file' => 'app/Models/Finance/DatevBookingBatch.php', 'table' => 'datev_booking_batches'],
-        // MVP-672: Festbuchung ist unveränderlich; nur der Storno-Vermerk darf noch entstehen.
-        'AccountingEntry' => ['file' => 'app/Models/Accounting/AccountingEntry.php', 'table' => 'accounting_entries'],
-        'AccountingEntryLine' => ['file' => 'app/Models/Accounting/AccountingEntryLine.php', 'table' => 'accounting_entry_lines'],
-        // MVP-674: Ausgleiche sind unveränderlich — ein Rückläufer erzeugt eine Gegenbewegung.
-        'AccountingOpenItemSettlement' => ['file' => 'app/Models/Accounting/AccountingOpenItemSettlement.php', 'table' => 'accounting_open_item_settlements'],
-        'BillingTransfer' => ['file' => 'app/Models/Finance/BillingTransfer.php', 'table' => 'billing_transfers'],
-        // Append-only Nachweise (AppendOnly-Trait)
-        'StockMovement' => ['file' => 'app/Models/StockMovement.php', 'table' => 'stock_movements'],
-        'DiaryEntryEvent' => ['file' => 'app/Models/DiaryEntryEvent.php', 'table' => 'diary_entry_events'],
-        'WeatherSnapshot' => ['file' => 'app/Models/WeatherSnapshot.php', 'table' => 'weather_snapshots'],
-        'DocumentRenderSnapshot' => ['file' => 'app/Models/DocumentDesign/DocumentRenderSnapshot.php', 'table' => 'document_render_snapshots'],
-        'AgileEvent' => ['file' => 'app/Models/Agile/AgileEvent.php', 'table' => 'agile_events'],
-        'AssetInspectionEvent' => ['file' => 'app/Models/AssetCompliance/AssetInspectionEvent.php', 'table' => 'asset_inspection_events'],
-        'AssetCalibrationCertificate' => ['file' => 'app/Models/AssetCompliance/AssetCalibrationCertificate.php', 'table' => 'asset_calibration_certificates'],
-        'CashDailyClosing' => ['file' => 'app/Models/CashDailyClosing.php', 'table' => 'cash_daily_closings'], // Vollaudit 2026-07, H14: verankert die Buchungssperre
-        // Vollaudit 2026-07 (M56): ISMS-Freeze-Guards (046 — finalisiert/genehmigt = eingefroren)
-        'IsmsAuditPackage' => ['file' => 'app/Models/Isms/IsmsAuditPackage.php', 'table' => 'isms_audit_packages'],
-        'IsmsRiskAssessment' => ['file' => 'app/Models/Isms/IsmsRiskAssessment.php', 'table' => 'isms_risk_assessments'],
-        // Vollaudit 2026-07 (M52): GoBD-nahe Nachweis-Events, jetzt mit AppendOnly-Trait
-        'MonthClosureEvent' => ['file' => 'app/Models/MonthClosureEvent.php', 'table' => 'month_closure_events'],
-        'TimeExportEvent' => ['file' => 'app/Models/TimeExportEvent.php', 'table' => 'time_export_events'],
-
-        // HashChained-Ereignisketten (append-only, Hash-Kette)
-        'CashEntry' => ['file' => 'app/Models/CashEntry.php', 'table' => 'cash_entries'], // MVP-414 Kassenbuch
-        'AuditLog' => ['file' => 'app/Models/AuditLog.php', 'table' => 'audit_logs'],
-        'OrganizationAuditLog' => ['file' => 'app/Models/OrganizationAuditLog.php', 'table' => 'organization_audit_logs'],
-        'BillingTransferEvent' => ['file' => 'app/Models/Finance/BillingTransferEvent.php', 'table' => 'billing_transfer_events'],
-        'DatevBookingEvent' => ['file' => 'app/Models/Finance/DatevBookingEvent.php', 'table' => 'datev_booking_events'],
-        'AccountingEvent' => ['file' => 'app/Models/Accounting/AccountingEvent.php', 'table' => 'accounting_events'], // MVP-672
-        'PaymentReconciliationEvent' => ['file' => 'app/Models/Finance/PaymentReconciliationEvent.php', 'table' => 'payment_reconciliation_events'],
-        'CaseEvent' => ['file' => 'app/Models/Whistleblowing/CaseEvent.php', 'table' => 'case_events'],
-        'RequestEvent' => ['file' => 'app/Models/Privacy/RequestEvent.php', 'table' => 'request_events'],
-        'IncidentEvent' => ['file' => 'app/Models/Privacy/IncidentEvent.php', 'table' => 'incident_events'],
-    ];
-
     /**
      * Quiet-Write-Empfänger, die auf ein geschütztes Modell hindeuten
      * (Variablen-Heuristik; Treffer erfordern Umbau oder Allow-List-Eintrag).
@@ -101,6 +59,8 @@ class GobdLockGuardRuleTest extends TestCase {
         'cashEntry',
         'package',
         'assessment',
+        // MVP-702: Fahrtenbuch-Festschreibung.
+        'travelLog',
     ];
 
     /**
@@ -140,13 +100,21 @@ class GobdLockGuardRuleTest extends TestCase {
         // Dienst und weist am Ende darauf hin, dass die erzeugten Buchungen
         // ohne Nachweis-Snapshot und ohne Ereignisse entstehen.
         'app/Console/Commands/Finance/SeedAccountingLoadCommand.php' => 'Messdatensatz des Lastprofils, nur außerhalb der Produktivumgebung (MVP-683).',
+        // Messdatensatz der Listen-/Index-Lastprofile (MVP-722): schreibt
+        // travel_logs und audit_logs per Sammel-Insert, weil 100.000 Zeilen
+        // über die Modelle die Messung selbst zum Engpass machen würden — bei
+        // audit_logs käme zusätzlich der Kettenkopf-Lock dazwischen. Dasselbe
+        // Muster wie beim Buchhaltungs-Lastprofil: das Kommando verweigert in
+        // der Produktivumgebung den Dienst und weist darauf hin, dass die
+        // erzeugten Audit-Zeilen bewusst keine Hash-Kette tragen.
+        'app/Console/Commands/Support/SeedQueryLoadCommand.php' => 'Messdatensatz der Listen-Lastprofile, nur außerhalb der Produktivumgebung (MVP-722).',
     ];
 
     public function test_guarded_models_register_lock_guards(): void {
         $root = (string) realpath(__DIR__ . '/../../..');
         $missing = [];
 
-        foreach (self::GUARDED_MODELS as $name => $model) {
+        foreach (GobdLockRegistry::MODELS as $name => $model) {
             $source = (string) file_get_contents($root . '/' . $model['file']);
 
             $appendOnly = str_contains($source, 'use AppendOnly;') || str_contains($source, 'use HashChained;');
@@ -197,7 +165,7 @@ class GobdLockGuardRuleTest extends TestCase {
     private function bypassFindings(string $source): array {
         $findings = [];
 
-        foreach (self::GUARDED_MODELS as $name => $model) {
+        foreach (GobdLockRegistry::MODELS as $name => $model) {
             // Model::withoutEvents(…) auf geschütztem Modell.
             $this->collectOccurrences($source, $name . '::withoutEvents(', $findings);
 

@@ -31,7 +31,12 @@ class DataSubjectRequestService {
         private readonly NumberSequenceService $numbers,
     ) {}
 
-    /** Neue Anfrage anlegen: verschluesselt Identitaet/Anliegen, setzt die Frist (Art. 12). */
+    /**
+     * Neue Anfrage anlegen: verschluesselt Identitaet/Anliegen, setzt die Frist (Art. 12).
+     *
+     * `$contactEmail` (Selbstmeldeportal, G11) wird mit demselben Fall-DEK
+     * abgelegt und nimmt damit am Crypto-Shredding teil.
+     */
     public function open(
         Organization $organization,
         DataSubjectRequestType $type,
@@ -39,8 +44,9 @@ class DataSubjectRequestService {
         string $content,
         ?string $channel = null,
         ?User $actor = null,
+        ?string $contactEmail = null,
     ): DataSubjectRequest {
-        return DB::transaction(function () use ($organization, $type, $subject, $content, $channel, $actor): DataSubjectRequest {
+        return DB::transaction(function () use ($organization, $type, $subject, $content, $channel, $actor, $contactEmail): DataSubjectRequest {
             $now = Carbon::now();
             $days = (int) config('dataprotection.dsr_deadline_days', 30);
 
@@ -56,6 +62,9 @@ class DataSubjectRequestService {
             $dsr->initializeDek();
             $dsr->subject_ciphertext = $subject;
             $dsr->content_ciphertext = $content;
+            if ($contactEmail !== null && $contactEmail !== '') {
+                $dsr->contact_email_ciphertext = $contactEmail;
+            }
             $dsr->save();
 
             $this->events->record($dsr, 'opened', $actor, ['type' => $type->value, 'channel' => $channel]);

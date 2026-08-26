@@ -61,7 +61,7 @@
                 @endforeach
             </select>
         </div>
-        <p class="mt-1 text-[0.7rem] text-base-content/60">
+        <p class="mt-1 text-[0.7rem] text-muted">
             {{ __('Bestimmt die Akzentfarbe für Icon, Badge und Hervorhebungen in Listen.') }}
         </p>
     </x-filter-field>

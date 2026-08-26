@@ -26,59 +26,47 @@
                 @csrf @method('PUT')
                 <x-form-group :legend="__('Sozialversicherung')" icon="health_and_safety" tone="primary" cols="2">
                     @php($country = old('country', $payroll['country'] ?? 'DE'))
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Land') }}</label>
-                        <select name="country" class="select select-bordered w-full">
-                            @foreach (['DE' => __('Deutschland'), 'AT' => __('Österreich'), 'CH' => __('Schweiz')] as $code => $label)
-                                <option value="{{ $code }}" @selected($country === $code)>{{ $label }}</option>
-                            @endforeach
-                        </select>
-                        <p class="mt-1 text-xs text-base-content/60">{{ __('Bestimmt u. a. die gesetzliche Mindestlohn-Historie.') }}</p>
-                    </div>
+                    <x-select-field name="country"
+                                    :label="__('Land')"
+                                    :hint="__('Bestimmt u. a. die gesetzliche Mindestlohn-Historie.')">
+                        @foreach (['DE' => __('Deutschland'), 'AT' => __('Österreich'), 'CH' => __('Schweiz')] as $code => $label)
+                            <option value="{{ $code }}" @selected($country === $code)>{{ $label }}</option>
+                        @endforeach
+                    </x-select-field>
 
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Betriebsnummer (Knappschaft)') }}</label>
-                        <input type="text" name="company_number" maxlength="32"
-                               class="input input-bordered w-full @error('company_number') input-error @enderror"
-                               value="{{ old('company_number', $payroll['company_number'] ?? '') }}">
-                        @error('company_number')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                    </div>
+                    <x-input-field name="company_number"
+                                   :label="__('Betriebsnummer (Knappschaft)')"
+                                   type="text"
+                                   value="{{ old('company_number', $payroll['company_number'] ?? '') }}"
+                                   maxlength="32" />
 
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Zuständiges Finanzamt') }}</label>
-                        <input type="text" name="tax_office" maxlength="191"
-                               class="input input-bordered w-full @error('tax_office') input-error @enderror"
-                               value="{{ old('tax_office', $payroll['tax_office'] ?? '') }}">
-                        @error('tax_office')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                    </div>
+                    <x-input-field name="tax_office"
+                                   :label="__('Zuständiges Finanzamt')"
+                                   type="text"
+                                   value="{{ old('tax_office', $payroll['tax_office'] ?? '') }}"
+                                   maxlength="191" />
                 </x-form-group>
 
                 <x-form-group :legend="__('Steuerliche Identifikatoren')" icon="receipt_long" tone="ghost" cols="2"
                               :description="__('Wird auch für Rechnungen/Branding verwendet.')">
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Steuernummer') }}</label>
-                        <input type="text" name="tax_number" maxlength="60"
-                               class="input input-bordered w-full @error('tax_number') input-error @enderror"
-                               value="{{ old('tax_number', $legal['tax_number'] ?? '') }}">
-                        @error('tax_number')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                    </div>
+                    <x-input-field name="tax_number"
+                                   :label="__('Steuernummer')"
+                                   type="text"
+                                   value="{{ old('tax_number', $legal['tax_number'] ?? '') }}"
+                                   maxlength="60" />
 
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('USt-IdNr.') }}</label>
-                        <input type="text" name="vat_id" maxlength="60"
-                               class="input input-bordered w-full @error('vat_id') input-error @enderror"
-                               value="{{ old('vat_id', $legal['vat_id'] ?? '') }}">
-                        @error('vat_id')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                    </div>
+                    <x-input-field name="vat_id"
+                                   :label="__('USt-IdNr.')"
+                                   type="text"
+                                   value="{{ old('vat_id', $legal['vat_id'] ?? '') }}"
+                                   maxlength="60" />
 
-                    <div class="fieldset md:col-span-2">
-                        <label class="fieldset-label">{{ __('Handelsregister (HR-Nr.)') }}</label>
-                        <input type="text" name="register" maxlength="200"
-                               class="input input-bordered w-full @error('register') input-error @enderror"
-                               value="{{ old('register', $legal['register'] ?? '') }}"
-                               placeholder="{{ __('z. B. HRB 12345, Amtsgericht Musterstadt') }}">
-                        @error('register')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                    </div>
+                    <x-input-field span="2" name="register"
+                                   :label="__('Handelsregister (HR-Nr.)')"
+                                   type="text"
+                                   value="{{ old('register', $legal['register'] ?? '') }}"
+                                   maxlength="200"
+                                   placeholder="{{ __('z. B. HRB 12345, Amtsgericht Musterstadt') }}" />
                 </x-form-group>
 
                 <div class="mt-3 flex justify-end">
@@ -99,7 +87,7 @@
                     <x-button type="submit" tone="ghost" icon="history">{{ __('Historie laden') }}</x-button>
                 </form>
             </div>
-            <p class="text-sm text-base-content/60">
+            <p class="text-sm text-muted">
                 @if ($currentMinimum !== null)
                     {{ __('Aktuell: :amount € / Std.', ['amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($currentMinimum, 2, withThousandsSeparator: true)]) }}
                     @if ($minijobLimit !== null) · {{ __('Minijob-Grenze: :limit € / Monat', ['limit' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minijobLimit, 0, withThousandsSeparator: true)]) }}@endif
@@ -111,24 +99,22 @@
             <form method="POST" action="{{ route('payroll.minimum-wages.store') }}" class="mt-2">
                 @csrf
                 <div class="grid grid-cols-1 gap-3 sm:grid-cols-4">
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Gültig ab') }}</label>
-                        <input type="date" name="valid_from" required
-                               class="input input-bordered w-full @error('valid_from') input-error @enderror"
-                               value="{{ old('valid_from') }}">
-                        @error('valid_from')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                    </div>
-                    <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Stundensatz (€)') }}</label>
-                        <input type="number" step="0.01" min="0" name="hourly_amount" required
-                               class="input input-bordered w-full @error('hourly_amount') input-error @enderror"
-                               value="{{ old('hourly_amount') }}">
-                        @error('hourly_amount')<p class="text-error text-sm">{{ $message }}</p>@enderror
-                    </div>
+                    <x-input-field name="valid_from"
+                                   :label="__('Gültig ab')"
+                                   type="date"
+                                   value="{{ old('valid_from') }}"
+                                   required />
+                    <x-input-field name="hourly_amount"
+                                   :label="__('Stundensatz (€)')"
+                                   type="number"
+                                   value="{{ old('hourly_amount') }}"
+                                   required
+                                   step="0.01"
+                                   min="0" />
                     <div class="fieldset sm:col-span-2">
-                        <label class="fieldset-label">{{ __('Notiz') }}</label>
+                        <label class="fieldset-label" for="payroll-rate-note">{{ __('Notiz') }}</label>
                         <div class="flex gap-2">
-                            <input type="text" name="note" maxlength="191"
+                            <input type="text" id="payroll-rate-note" name="note" maxlength="191"
                                    class="input input-bordered w-full" value="{{ old('note') }}">
                             <x-button type="submit" tone="primary" class="shrink-0">{{ __('Hinzufügen') }}</x-button>
                         </div>
@@ -159,7 +145,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="4"
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">payments</span>'
+                        icon="payments"
                         :title="__('Noch keine Mindestlohn-Sätze hinterlegt.')" compact />
                 @endforelse
             </x-table>
@@ -186,9 +172,9 @@
                         'date' => $reference->valid_from->fdate(),
                     ]) }}
                 </p>
-                <p class="text-xs text-base-content/50">{{ __('Monatlicher gesetzlicher Mindestlohn laut Eurostat – informativ, getrennt vom oben gepflegten Stundensatz.') }}</p>
+                <p class="text-xs text-muted">{{ __('Monatlicher gesetzlicher Mindestlohn laut Eurostat – informativ, getrennt vom oben gepflegten Stundensatz.') }}</p>
             @else
-                <p class="text-sm text-base-content/60">{{ __('Noch keine Eurostat-Daten für das Land der Organisation. Über „Eurostat-Import" laden.') }}</p>
+                <p class="text-sm text-muted">{{ __('Noch keine Eurostat-Daten für das Land der Organisation. Über „Eurostat-Import" laden.') }}</p>
             @endif
         </div>
     </div>
@@ -209,7 +195,7 @@
 
             @if ($belowMinimum->isEmpty())
                 <x-empty-state compact
-                    icon='<span class="material-symbols-outlined" aria-hidden="true">verified</span>'
+                    icon="verified"
                     :title="__('Kein Mitarbeiter liegt unter dem Mindestlohn.')" />
             @else
                 <x-table table-sort="client" class="mt-1">

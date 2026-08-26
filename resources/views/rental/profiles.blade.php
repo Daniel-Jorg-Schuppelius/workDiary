@@ -34,6 +34,7 @@
                     <th>{{ __('Asset') }}</th>
                     <th>{{ __('Gruppe') }}</th>
                     <th>{{ __('Leihfähig') }}</th>
+                    <th>{{ __('Portal') }}</th>
                     <th>{{ __('Puffer (vor/nach)') }}</th>
                     <th>{{ __('Prüfpflicht') }}</th>
                     <th>{{ __('Sperren') }}</th>
@@ -51,6 +52,13 @@
                             <x-status-badge size="md" outline>{{ __('gesperrt für Verleih') }}</x-status-badge>
                         @endif
                     </td>
+                    <td>
+                        @if ($profile->portal_bookable)
+                            <x-status-badge size="md" outline tone="info">{{ __('anfragbar') }}</x-status-badge>
+                        @else
+                            <span class="text-muted">—</span>
+                        @endif
+                    </td>
                     <td>{{ $profile->buffer_before_hours }} h / {{ $profile->buffer_after_hours }} h</td>
                     <td>{{ $profile->requires_inspection ? __('ja (blockt bei Überfälligkeit)') : __('nein') }}</td>
                     <td>
@@ -63,7 +71,7 @@
                     <td>{{ $profile->defaultRateCard !== null ? $profile->defaultRateCard->name . ' (v' . $profile->defaultRateCard->version . ')' : '—' }}</td>
                 </tr>
             @empty
-                <x-table.empty :colspan="7" :title="__('Noch keine Verleihprofile — unten ein Asset leihfähig machen.')" compact />
+                <x-table.empty :colspan="8" :title="__('Noch keine Verleihprofile — unten ein Asset leihfähig machen.')" compact />
             @endforelse
         </x-table>
     </x-card>
@@ -93,6 +101,12 @@
                         <input type="hidden" name="is_rentable" value="0">
                         <input type="checkbox" name="is_rentable" value="1" class="checkbox checkbox-sm" checked>
                         <span class="label-text text-sm">{{ __('leihfähig') }}</span>
+                    </label>
+                    <label class="label cursor-pointer justify-start gap-2">
+                        {{-- Portal-Sortiment (MVP-714): Default-Deny, nur ausdrücklich freigegebene Geräte sind anfragbar. --}}
+                        <input type="hidden" name="portal_bookable" value="0">
+                        <input type="checkbox" name="portal_bookable" value="1" class="checkbox checkbox-sm">
+                        <span class="label-text text-sm">{{ __('im Kundenportal anfragbar') }}</span>
                     </label>
                     <label class="label cursor-pointer justify-start gap-2">
                         <input type="hidden" name="requires_inspection" value="0">

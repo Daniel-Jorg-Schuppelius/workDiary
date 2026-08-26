@@ -37,7 +37,10 @@ use Illuminate\Validation\ValidationException;
  * offene Entwürfe und unausgeglichene Buchungen.
  */
 class PeriodClosingService {
-    public function __construct(private readonly AccountingEventRecorder $events) {}
+    public function __construct(
+        private readonly AccountingEventRecorder $events,
+        private readonly FixedAssetService $fixedAssets,
+    ) {}
 
     /**
      * Prüfstand vor dem Abschluss. Blockierend ist, was nach dem Schließen
@@ -77,6 +80,19 @@ class PeriodClosingService {
         $checks[] = $earlierOpen === 0
             ? AccountingPreflightCheck::passed('sequence', (string) __('accounting.closing.check.sequence_ok'))
             : AccountingPreflightCheck::warning('sequence', (string) __('accounting.closing.check.earlier_open', ['count' => $earlierOpen]));
+
+        // Letzte Periode des Jahres: Die Jahres-AfA gehört hinein (Feature 133).
+        // Warnung statt Blocker — eine Organisation ohne Anlagen soll nicht
+        // an einem leeren Register scheitern.
+        $year = $period->fiscalYear;
+        $organization = $period->organization;
+        if ($year instanceof AccountingFiscalYear && $organization instanceof Organization
+            && $period->ends_on->toDateString() === $year->ends_on->toDateString()) {
+            $unposted = count($this->fixedAssets->unpostedForYear($organization, $year));
+            $checks[] = $unposted === 0
+                ? AccountingPreflightCheck::passed('depreciation', (string) __('accounting.closing.check.depreciation_ok'))
+                : AccountingPreflightCheck::warning('depreciation', (string) __('accounting.closing.check.depreciation_open', ['count' => $unposted]));
+        }
 
         return new AccountingPreflightReport($checks);
     }

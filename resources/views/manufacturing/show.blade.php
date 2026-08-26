@@ -41,6 +41,8 @@
                         <form method="POST" action="{{ route('manufacturing-orders.reserve', $order) }}">@csrf
                             <x-icon-btn icon="inventory" size="sm" type="submit" show-label>{{ __('manufacturing.order.action.reserve') }}</x-icon-btn>
                         </form>
+                        {{-- Kommissionierliste aus den aktiven Reservierungen (Feature 048, MVP-706). --}}
+                        <x-icon-btn icon="checklist" size="sm" :href="route('inventory.pick-lists.show', ['source' => 'manufacturing-order', 'sqid' => $order->sqid])" show-label>{{ __('inventory.action.pick_list') }}</x-icon-btn>
                     @endif
                     @if ($order->customer_id && $status === 'draft')
                         <form method="POST" action="{{ route('manufacturing-orders.quotation.lexoffice', $order) }}">@csrf
@@ -121,22 +123,22 @@
         <x-card :title="__('Ersatzmaterial')" icon="swap_horiz" :count="$substitutes->count()">
             <form method="POST" action="{{ route('manufacturing-orders.substitutes.request', $order) }}" class="mb-3 flex flex-wrap items-end gap-2">
                 @csrf
-                <div class="fieldset"><label class="fieldset-label">{{ __('Materialposition') }}</label>
-                    <select name="material" class="select select-sm select-bordered" required>
+                <div class="fieldset"><label for="material" class="fieldset-label">{{ __('Materialposition') }}</label>
+                    <select id="material" name="material" class="select select-sm select-bordered" required>
                         @foreach ($order->materials->where('is_tool', false) as $material)
                             <option value="{{ $material->sqid }}">{{ $material->name_snapshot }}</option>
                         @endforeach
                     </select></div>
-                <div class="fieldset grow"><label class="fieldset-label">{{ __('Ersatzartikel') }}</label>
-                    <select name="substitute_article" class="select select-sm select-bordered w-full" required>
+                <div class="fieldset grow"><label for="substitute_article" class="fieldset-label">{{ __('Ersatzartikel') }}</label>
+                    <select id="substitute_article" name="substitute_article" class="select select-sm select-bordered w-full" required>
                         @foreach ($substituteArticles as $subArticle)
                             <option value="{{ $subArticle->sqid }}">{{ $subArticle->name }}</option>
                         @endforeach
                     </select></div>
-                <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.quantity') }}</label>
-                    <input name="quantity" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-24"></div>
-                <div class="fieldset grow"><label class="fieldset-label">{{ __('Begründung') }}</label>
-                    <input name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered w-full"></div>
+                <div class="fieldset"><label for="quantity" class="fieldset-label">{{ __('manufacturing.order.field.quantity') }}</label>
+                    <input id="quantity" name="quantity" type="number" step="0.0001" min="0.0001" required class="input input-sm input-bordered w-24"></div>
+                <div class="fieldset grow"><label for="reason" class="fieldset-label">{{ __('Begründung') }}</label>
+                    <input id="reason" name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered w-full"></div>
                 <button type="submit" class="btn btn-sm">{{ __('Ersatz beantragen') }}</button>
             </form>
 
@@ -175,8 +177,8 @@
             <h2 class="font-semibold mb-3">{{ __('manufacturing.order.action.subcontract') }}</h2>
             <form method="POST" action="{{ route('manufacturing-orders.subcontract', $order) }}" class="flex flex-wrap items-end gap-2">
                 @csrf
-                <div class="fieldset grow"><label class="fieldset-label">{{ __('procurement.field.supplier') }}</label>
-                    <select name="supplier" class="select select-sm select-bordered w-full" required>
+                <div class="fieldset grow"><label for="supplier" class="fieldset-label">{{ __('procurement.field.supplier') }}</label>
+                    <select id="supplier" name="supplier" class="select select-sm select-bordered w-full" required>
                         @foreach ($suppliers as $supplier)
                             <option value="{{ $supplier->sqid }}">{{ $supplier->name }}</option>
                         @endforeach
@@ -192,16 +194,16 @@
             <h2 class="font-semibold mb-3">{{ __('manufacturing.capacity.assign') }}</h2>
             <form method="POST" action="{{ route('manufacturing-orders.work-center', $order) }}" class="flex flex-wrap items-end gap-2">
                 @csrf
-                <div class="fieldset grow"><label class="fieldset-label">{{ __('manufacturing.capacity.work_center') }}</label>
-                    <select name="work_center" class="select select-sm select-bordered w-full" required>
+                <div class="fieldset grow"><label for="work_center" class="fieldset-label">{{ __('manufacturing.capacity.work_center') }}</label>
+                    <select id="work_center" name="work_center" class="select select-sm select-bordered w-full" required>
                         @foreach ($workCenters as $wc)
                             <option value="{{ $wc->sqid }}" @selected($order->work_center_id === $wc->id)>{{ $wc->name }}</option>
                         @endforeach
                     </select></div>
-                <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.capacity.minutes') }}</label>
-                    <input name="minutes" type="number" min="0" value="{{ $order->planned_minutes ?? 0 }}" class="input input-sm input-bordered w-24"></div>
-                <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.capacity.day') }}</label>
-                    <input name="day" type="date" value="{{ $order->planned_start?->toDateString() }}" class="input input-sm input-bordered"></div>
+                <div class="fieldset"><label for="minutes" class="fieldset-label">{{ __('manufacturing.capacity.minutes') }}</label>
+                    <input id="minutes" name="minutes" type="number" min="0" value="{{ $order->planned_minutes ?? 0 }}" class="input input-sm input-bordered w-24"></div>
+                <div class="fieldset"><label for="day" class="fieldset-label">{{ __('manufacturing.capacity.day') }}</label>
+                    <input id="day" name="day" type="date" value="{{ $order->planned_start?->toDateString() }}" class="input input-sm input-bordered"></div>
                 <button type="submit" class="btn btn-sm">{{ __('manufacturing.capacity.assign') }}</button>
             </form>
         </x-card>
@@ -214,14 +216,14 @@
                 <h2 class="font-semibold mb-3">{{ __('manufacturing.order.action.report') }}</h2>
                 <form method="POST" action="{{ route('manufacturing-orders.report', $order) }}" class="flex flex-wrap items-end gap-2">
                     @csrf
-                    <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.produced') }}</label>
-                        <input name="produced_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
-                    <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.good') }}</label>
-                        <input name="good_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
-                    <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.scrap') }}</label>
-                        <input name="scrap_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
-                    <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.rework') }}</label>
-                        <input name="rework_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
+                    <div class="fieldset"><label for="produced_qty" class="fieldset-label">{{ __('manufacturing.order.field.produced') }}</label>
+                        <input id="produced_qty" name="produced_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
+                    <div class="fieldset"><label for="good_qty" class="fieldset-label">{{ __('manufacturing.order.field.good') }}</label>
+                        <input id="good_qty" name="good_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
+                    <div class="fieldset"><label for="scrap_qty" class="fieldset-label">{{ __('manufacturing.order.field.scrap') }}</label>
+                        <input id="scrap_qty" name="scrap_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
+                    <div class="fieldset"><label for="rework_qty" class="fieldset-label">{{ __('manufacturing.order.field.rework') }}</label>
+                        <input id="rework_qty" name="rework_qty" type="number" step="0.0001" min="0" value="0" class="input input-sm input-bordered w-24"></div>
                     <x-button type="submit" tone="primary" size="sm">{{ __('manufacturing.order.action.report') }}</x-button>
                 </form>
             </x-card>
@@ -229,8 +231,8 @@
                 <h2 class="font-semibold mb-3">{{ __('manufacturing.order.action.deliver') }}</h2>
                 <form method="POST" action="{{ route('manufacturing-orders.deliver', $order) }}" class="flex flex-wrap items-end gap-2">
                     @csrf
-                    <div class="fieldset"><label class="fieldset-label">{{ __('manufacturing.order.field.quantity') }}</label>
-                        <input name="quantity" type="number" step="0.0001" min="0.0001" class="input input-sm input-bordered w-28"></div>
+                    <div class="fieldset"><label for="quantity-2" class="fieldset-label">{{ __('manufacturing.order.field.quantity') }}</label>
+                        <input id="quantity-2" name="quantity" type="number" step="0.0001" min="0.0001" class="input input-sm input-bordered w-28"></div>
                     <button type="submit" class="btn btn-sm">{{ __('manufacturing.order.action.deliver') }}</button>
                 </form>
             </x-card>
@@ -293,19 +295,23 @@
                             <div class="flex items-center justify-end gap-2">
                                 <a href="{{ route('manufacturing-orders.deliveries.pdf', [$order, $delivery]) }}" target="_blank"
                                    class="btn btn-xs btn-ghost">{{ __('manufacturing.delivery_note.title') }}</a>
+                                {{-- Feature 128 (MVP-692): Lieferschein per E-Mail an den Kunden. --}}
+                                <a href="{{ route('manufacturing-orders.deliveries.mail.form', [$order, $delivery]) }}"
+                                   data-entry-modal-trigger
+                                   class="btn btn-xs btn-ghost">{{ __('Per E-Mail senden') }}</a>
                                 @if ($canManage && $delivery->facturation_target === 'lexoffice' && in_array($delivery->facturation_status->value, ['pending', 'failed'], true))
                                     <form method="POST" action="{{ route('manufacturing-orders.deliveries.lexoffice', [$order, $delivery]) }}">@csrf
                                         <button type="submit" class="btn btn-xs">{{ __('manufacturing.order.action.push_lexoffice') }}</button>
                                     </form>
                                 @elseif ($delivery->facturation_status->value === 'handed_over' && $delivery->external_id)
-                                    <span class="text-xs text-base-content/60">Lexoffice: {{ $delivery->external_id }}</span>
+                                    <span class="text-xs text-muted">Lexoffice: {{ $delivery->external_id }}</span>
                                 @endif
 
                                 {{-- Versandauftrag (Feature 059, Rang 20) --}}
                                 @if ($delivery->shipment)
                                     <span class="badge badge-sm">{{ __('shipping.label_short') }}: {{ $delivery->shipment->status->label() }}</span>
                                     @if ($delivery->shipment->tracking_number)
-                                        <span class="text-xs text-base-content/60">{{ strtoupper($delivery->shipment->carrier) }}: {{ $delivery->shipment->tracking_number }}</span>
+                                        <span class="text-xs text-muted">{{ strtoupper($delivery->shipment->carrier) }}: {{ $delivery->shipment->tracking_number }}</span>
                                     @endif
                                 @elseif ($canManage && $delivery->customer_id && $carriers->isNotEmpty())
                                     <form method="POST" action="{{ route('manufacturing-orders.deliveries.shipment', [$order, $delivery]) }}" class="join">@csrf

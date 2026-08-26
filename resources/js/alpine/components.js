@@ -7,6 +7,7 @@
  */
 import { clearHtml, setHtml, trustedServerHtml } from "../lib/html.js";
 import { patchJson, postJson, request } from "../lib/http.js";
+import { __ } from "../i18n.js";
 
 export function registerAlpineComponents(Alpine) {
     // Zwei-Faktor-Login: Umschalten zwischen TOTP-Code und Recovery-Code.
@@ -368,6 +369,31 @@ export function registerAlpineComponents(Alpine) {
         },
         get allowTour() {
             return !!this.flags.allow_tour;
+        },
+    }));
+
+    // Artikel-Picker in Belegpositionen (Feature 140): Auswahl belegt
+    // Beschreibung/Einheit/Einzelpreis des umgebenden Formulars vor — die
+    // Werte bleiben Positionswerte und frei editierbar. Läuft direkt auf dem
+    // <select>; die Karte kommt als data-articles (Sqid → Vorbelegung).
+    Alpine.data("articleItemPicker", () => ({
+        map: {},
+        init() {
+            this.map = JSON.parse(this.$root.dataset.articles || "{}");
+        },
+        applyArticle() {
+            const entry = this.map[String(this.$root.value || "")];
+            const form = this.$root.form;
+            if (!entry || !form) return;
+            const fill = (name, value) => {
+                const field = form.elements.namedItem(name);
+                if (!field || value === null || value === undefined || value === "") return;
+                field.value = value;
+                field.dispatchEvent(new Event("input", { bubbles: true }));
+            };
+            fill("description", entry.description);
+            fill("unit", entry.unit);
+            fill("unit_price", entry.unit_price);
         },
     }));
 
@@ -1063,8 +1089,18 @@ export function registerAlpineComponents(Alpine) {
             query: "",
             open: false,
             highlight: 0,
+            // KI-Tagvorschläge (Feature 143, MVP-711): nur bei suggestUrl.
+            suggestUrl: null,
+            textSelector: null,
+            customerSelector: null,
+            suggestions: [],
+            suggesting: false,
+            suggestNotice: "",
             init() {
                 const cfg = JSON.parse(this.$el.dataset.config || "{}");
+                this.suggestUrl = cfg.suggestUrl || null;
+                this.textSelector = cfg.textSelector || null;
+                this.customerSelector = cfg.customerSelector || null;
                 this.all = (cfg.all ?? []).map((t) => ({
                     id: String(t.id ?? ""),
                     name: String(t.name ?? ""),
@@ -1198,6 +1234,82 @@ export function registerAlpineComponents(Alpine) {
                 }
                 this.selected.push({ ...tag, isNew: false, key: "e" + tag.id });
                 this.resetInput();
+            },
+            // --- KI-Tagvorschläge (Feature 143): Katalog = bestehende Tags,
+            // Antwort wird auf `all` gemappt, Unbekanntes verworfen; Übernahme
+            // ist derselbe Weg wie die Schnellauswahl (nie Auto-Apply).
+            get canSuggest() {
+                return this.suggestUrl !== null;
+            },
+            get hasSuggestions() {
+                return this.suggestions.length > 0;
+            },
+            get hasSuggestNotice() {
+                return this.suggestNotice !== "";
+            },
+            formField(selector) {
+                if (!selector) {
+                    return null;
+                }
+                const form = this.$root.closest("form");
+                const el = form ? form.querySelector(selector) : null;
+                return el instanceof HTMLInputElement ||
+                    el instanceof HTMLTextAreaElement ||
+                    el instanceof HTMLSelectElement
+                    ? el
+                    : null;
+            },
+            async suggest() {
+                if (!this.suggestUrl || this.suggesting) {
+                    return;
+                }
+                const textField = this.formField(this.textSelector);
+                const text = textField ? String(textField.value || "").trim() : "";
+                if (text === "") {
+                    this.suggestNotice = __("js.ai.tags_no_text");
+                    return;
+                }
+                this.suggesting = true;
+                this.suggestions = [];
+                this.suggestNotice = __("js.ai.tags_loading");
+                try {
+                    /** @type {{text: string, customer_id?: string}} */
+                    const body = { text };
+                    const customerField = this.formField(this.customerSelector);
+                    const customer = customerField ? String(customerField.value || "").trim() : "";
+                    if (customer !== "") {
+                        body.customer_id = customer;
+                    }
+                    const res = await postJson(this.suggestUrl, body);
+                    if (!res.ok) {
+                        const message =
+                            res.data && res.data.message
+                                ? String(res.data.message)
+                                : String(res.status);
+                        this.suggestNotice = __("js.ai.tags_failed", { message });
+                        return;
+                    }
+                    const ids = this.selectedKeyset.ids;
+                    const rows =
+                        res.data && Array.isArray(res.data.tags) ? res.data.tags : [];
+                    this.suggestions = rows
+                        .map((t) => byId.get(String(t && t.id ? t.id : "")))
+                        .filter(Boolean)
+                        .filter((t) => !ids.has(t.id));
+                    this.suggestNotice = this.suggestions.length
+                        ? ""
+                        : __("js.ai.tags_none");
+                } catch (e) {
+                    this.suggestNotice = __("js.ai.tags_failed", {
+                        message: e instanceof Error ? e.message : String(e),
+                    });
+                } finally {
+                    this.suggesting = false;
+                }
+            },
+            acceptSuggestion(tag) {
+                this.addExisting(tag);
+                this.suggestions = this.suggestions.filter((t) => t.id !== tag.id);
             },
             createNew() {
                 const name = this.query.trim();

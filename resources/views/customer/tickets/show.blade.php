@@ -15,7 +15,7 @@
 
 @section('content')
     <h1 class="text-2xl font-semibold mb-1">{{ $ticket->title }}</h1>
-    <p class="mb-4 text-sm text-base-content/60">
+    <p class="mb-4 text-sm text-muted">
         {{ $ticket->ticket_no }} · {{ $ticket->status->label() }}
         @if ($ticket->resolution_due_at)
             · {{ __('Lösung zugesagt bis :date', ['date' => $ticket->resolution_due_at->isoFormat('L LT')]) }}
@@ -25,7 +25,7 @@
     <div class="space-y-2">
         @forelse ($timeline['items'] as $item)
             <div class="rounded border border-base-300 bg-base-100 px-3 py-2">
-                <p class="mb-1 text-xs text-base-content/60">
+                <p class="mb-1 text-xs text-muted">
                     {{ $item->occurredAt?->isoFormat('L LT') ?? '—' }} · {{ $item->title }}
                     @if ($item->actor)
                         · {{ $item->actor }}
@@ -34,7 +34,7 @@
                 @if ($item->type === 'attachment' && $item->url)
                     {{-- Anhang als Download-Link (W5.1, kunden-gescopter Endpunkt). --}}
                     <a href="{{ $item->url }}" class="link link-hover inline-flex items-center gap-1 text-sm">
-                        <span class="material-symbols-outlined text-sm" aria-hidden="true">download</span>
+                        <x-icon name="download" class="text-sm" />
                         {{ $item->summary }}
                     </a>
                 @elseif ($item->summary)
@@ -42,7 +42,7 @@
                 @endif
             </div>
         @empty
-            <p class="text-sm text-base-content/50">{{ __('Noch keine Nachrichten.') }}</p>
+            <p class="text-sm text-muted">{{ __('Noch keine Nachrichten.') }}</p>
         @endforelse
     </div>
 

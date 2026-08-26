@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integration;
 
-use App\Models\{AuditLog, ExternalReference, IntegrationInboxItem, Organization};
+use App\Models\{AuditLog, Customer, ExternalReference, IntegrationInboxItem, Organization, Supplier};
+use App\Services\Stammdaten\ContactDetailsWriter;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{Auth, Request};
 use RuntimeException;
@@ -23,7 +24,10 @@ use RuntimeException;
  * dauerhafte {@see ExternalReference}-Bindung.
  */
 class InboxActionService {
-    public function __construct(private readonly MatchProfileRegistry $registry) {}
+    public function __construct(
+        private readonly MatchProfileRegistry $registry,
+        private readonly ContactDetailsWriter $contactDetails,
+    ) {}
 
     /** Ordnet den Eintrag einem bestehenden lokalen Datensatz zu. */
     public function assignTo(IntegrationInboxItem $item, Model $target): void {
@@ -65,8 +69,19 @@ class InboxActionService {
             $item->mapped_snapshot ?? [],
             array_flip($item->diff_fields ?? []),
         );
+        // Kontakt-Inline-Felder gehen über den Writer nach contact_* (F8/E6);
+        // die Inline-Spalten füllt danach die Projektion.
+        $contactFields = $model instanceof Customer || $model instanceof Supplier
+            ? ContactDetailsWriter::pullInline($changes)
+            : [];
+
         if ($changes !== []) {
             $model->fill($changes)->save();
+        }
+
+        if ($contactFields !== []) {
+            /** @var Customer|Supplier $model */
+            $this->contactDetails->writeInline($model, $contactFields);
         }
 
         $this->close($item, IntegrationInboxItem::STATUS_RESOLVED_REMOTE, $model);

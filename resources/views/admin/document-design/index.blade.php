@@ -96,7 +96,7 @@
                                     <td>
                                         <span class="badge badge-sm badge-{{ $asset->status->tone() === 'success' ? 'success' : ($asset->status->tone() === 'warning' ? 'warning' : 'ghost') }}">{{ $asset->status->label() }}</span>
                                         @if ($asset->review_notes)
-                                            <div class="text-xs text-base-content/60">{{ implode(' ', $asset->review_notes) }}</div>
+                                            <div class="text-xs text-muted">{{ implode(' ', $asset->review_notes) }}</div>
                                         @endif
                                     </td>
                                     <td class="text-sm text-base-content/70">{{ $asset->created_at->fdate() }}</td>

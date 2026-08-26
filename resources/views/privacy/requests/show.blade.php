@@ -37,7 +37,21 @@
                             </span>
                         @endif
                     </div>
-                    <p><span class="font-semibold">{{ __('Betroffene Person') }}:</span> {{ $request->subject_ciphertext ?? '—' }}</p>
+                    @if ($request->isFromPortal())
+                        <div class="alert alert-info text-sm">
+                            <span>{{ __('dsar.internal.portal_banner') }}</span>
+                        </div>
+                        <p class="text-sm">
+                            <span class="font-semibold">{{ __('dsar.internal.contact_email') }}:</span>
+                            {{ $request->contact_email_ciphertext ?? '—' }}
+                            @if ($request->contact_email_confirmed_at)
+                                <x-status-badge tone="success" size="sm">{{ __('dsar.internal.email_confirmed', ['date' => $request->contact_email_confirmed_at->format('d.m.Y')]) }}</x-status-badge>
+                            @else
+                                <x-status-badge tone="ghost" size="sm">{{ __('dsar.internal.email_unconfirmed') }}</x-status-badge>
+                            @endif
+                        </p>
+                    @endif
+                    <p class="whitespace-pre-line"><span class="font-semibold">{{ __('Betroffene Person') }}:</span> {{ $request->subject_ciphertext ?? '—' }}</p>
                     <p class="whitespace-pre-line"><span class="font-semibold">{{ __('Anliegen') }}:</span><br>{{ $request->content_ciphertext ?? '—' }}</p>
                     @if ($request->decision)
                         <p><span class="font-semibold">{{ __('Entscheidung') }}:</span> {{ $request->decision }} — {{ $request->decision_note_ciphertext }}</p>
@@ -77,6 +91,42 @@
                     </x-card>
                 @endcan
 
+                @can('export', $request)
+                    <x-card>
+                        <h3 class="text-sm font-semibold mb-1">{{ __('Auskunft erzeugen (Art. 15/20)') }}</h3>
+                        <p class="text-xs text-muted mb-2">{{ __('Erstellt JSON, PDF und Art.-20-CSV mit den echten Betroffenendaten und legt sie verschlüsselt am Fall ab.') }}</p>
+                        @if ($request->isFromPortal() && ! $request->identity_verified_at)
+                            <p class="text-xs text-error mb-2">{{ __('dsar.internal.identity_required') }}</p>
+                        @endif
+                        {{-- Betroffenenart-Umschaltung via Alpine.data("reveal") (components.js) — CSP-Build-konform. --}}
+                        <form method="post" action="{{ route('dataprotection.requests.subject-export', $request) }}" class="space-y-1"
+                              x-data="reveal(@js(\App\Enums\Privacy\DataSubjectKind::User->value))">
+                            @csrf
+                            <x-input-field name="subject_type" :label="__('Betroffenenart')">
+                                <select id="subject_type" name="subject_type" class="select select-bordered w-full" x-model="value">
+                                    @foreach (\App\Enums\Privacy\DataSubjectKind::cases() as $kind)
+                                        <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
+                                    @endforeach
+                                </select>
+                            </x-input-field>
+                            @foreach (\App\Enums\Privacy\DataSubjectKind::cases() as $kind)
+                                <template x-if="is('{{ $kind->value }}')">
+                                    <x-input-field name="subject_id" :label="__('Datensatz')">
+                                        <select id="subject_id_{{ $kind->value }}" name="subject_id" class="select select-bordered w-full" required>
+                                            @forelse ($subjectPickers[$kind->value] ?? [] as $opt)
+                                                <option value="{{ $opt['sqid'] }}">{{ $opt['label'] }}</option>
+                                            @empty
+                                                <option value="" disabled>{{ __('Keine Datensätze vorhanden.') }}</option>
+                                            @endforelse
+                                        </select>
+                                    </x-input-field>
+                                </template>
+                            @endforeach
+                            <x-icon-btn icon="description" tone="primary" size="sm" type="submit" show-label class="w-full">{{ __('Auskunft erzeugen') }}</x-icon-btn>
+                        </form>
+                    </x-card>
+                @endcan
+
                 @can('update', $request)
                     @if ($request->status->isOpen())
                         <x-card>
@@ -111,7 +161,7 @@
                         @endcan
                     </li>
                 @empty
-                    <li class="text-base-content/60">{{ __('Keine Anhänge.') }}</li>
+                    <li class="text-muted">{{ __('Keine Anhänge.') }}</li>
                 @endforelse
             </ul>
             @can('update', $request)
@@ -128,7 +178,7 @@
             <ul class="timeline timeline-vertical">
                 @foreach ($events as $e)
                     <li>
-                        <div class="timeline-start text-xs text-base-content/60">{{ $e->created_at?->format('d.m.Y H:i') }}</div>
+                        <div class="timeline-start text-xs text-muted">{{ $e->created_at?->format('d.m.Y H:i') }}</div>
                         <div class="timeline-middle">●</div>
                         <div class="timeline-end timeline-box text-sm">{{ $e->event }}</div>
                     </li>

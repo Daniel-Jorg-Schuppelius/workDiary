@@ -30,7 +30,7 @@
                    value="{{ old('code', $rule->code) }}"
                    class="input input-bordered w-full font-mono"
                    placeholder="night">
-            <p class="text-xs text-base-content/60">{{ __('surcharge.field.code_help') }}</p>
+            <p class="text-xs text-muted">{{ __('surcharge.field.code_help') }}</p>
             @error('code')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -45,7 +45,7 @@
                     <option value="{{ $value }}" @selected($kindValue === $value)>{{ $label }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-base-content/60">{{ __('surcharge.field.kind_help') }}</p>
+            <p class="text-xs text-muted">{{ __('surcharge.field.kind_help') }}</p>
             @error('kind')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -79,7 +79,7 @@
                    value="{{ old('wage_type_code', $rule->wage_type_code) }}"
                    class="input input-bordered w-full font-mono"
                    placeholder="2010">
-            <p class="text-xs text-base-content/60">{{ __('surcharge.field.wage_type_code_help') }}</p>
+            <p class="text-xs text-muted">{{ __('surcharge.field.wage_type_code_help') }}</p>
             @error('wage_type_code')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -88,7 +88,7 @@
             <input id="surcharge-priority" type="number" name="priority" required min="0" max="1000"
                    value="{{ old('priority', $rule->priority ?? 0) }}"
                    class="input input-bordered w-full tabular-nums">
-            <p class="text-xs text-base-content/60">{{ __('surcharge.field.priority_help') }}</p>
+            <p class="text-xs text-muted">{{ __('surcharge.field.priority_help') }}</p>
             @error('priority')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -98,7 +98,7 @@
                    value="{{ old('tax_free_limit_pct', $rule->tax_free_limit_pct) }}"
                    class="input input-bordered w-full tabular-nums"
                    placeholder="25">
-            <p class="text-xs text-base-content/60">{{ __('surcharge.field.tax_free_limit_pct_help') }}</p>
+            <p class="text-xs text-muted">{{ __('surcharge.field.tax_free_limit_pct_help') }}</p>
             @error('tax_free_limit_pct')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 
@@ -108,7 +108,7 @@
                    value="{{ old('taxable_wage_type_code', $rule->taxable_wage_type_code) }}"
                    class="input input-bordered w-full font-mono"
                    placeholder="2011">
-            <p class="text-xs text-base-content/60">{{ __('surcharge.field.taxable_wage_type_code_help') }}</p>
+            <p class="text-xs text-muted">{{ __('surcharge.field.taxable_wage_type_code_help') }}</p>
             @error('taxable_wage_type_code')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
     </x-form-group>
@@ -176,7 +176,7 @@
                 @endforeach
             </select>
         </div>
-        <p class="text-xs text-base-content/60 sm:col-span-3">{{ __('surcharge.field.conditions_help') }}</p>
+        <p class="text-xs text-muted sm:col-span-3">{{ __('surcharge.field.conditions_help') }}</p>
     </x-form-group>
 
     @if ($isEdit)

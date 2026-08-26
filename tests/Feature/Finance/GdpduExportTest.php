@@ -11,13 +11,15 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Expense\ExpenseStatus;
-use App\Enums\Finance\{AllocationKind, TransactionDirection};
+use App\Enums\Finance\{AllocationKind, GobdExportStatus, TransactionDirection};
 use App\Enums\User\Permission;
+use App\Jobs\Finance\GobdExportJob;
 use App\Models\{Customer, Expense, ExpenseCategory, GobdExport, Invoice, InvoiceItem, Organization, Project, TimeEntry, User};
 use App\Models\Finance\{BankStatement, BankTransaction, DatevBookingBatch, PaymentAllocation};
 use App\Services\Finance\GdpduExportService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Queue;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -99,19 +101,22 @@ final class GdpduExportTest extends TestCase {
         ]);
     }
 
-    /** @return array<string, string> */
-    private function unzip(string $binary): array {
-        $tmp = tempnam(sys_get_temp_dir(), 'gobdtest') . '.zip';
-        file_put_contents($tmp, $binary);
+    /**
+     * Paket liegt seit MVP-722 als Datei im privaten Speicher (A16) — der Test
+     * liest sie, statt ein ZIP aus dem Speicher entgegenzunehmen.
+     *
+     * @return array<string, string>
+     */
+    private function unzipPackage(string $path): array {
+        $this->assertFileExists($path);
         $zip = new \ZipArchive();
-        $this->assertTrue($zip->open($tmp) === true);
+        $this->assertTrue($zip->open($path) === true);
         $out = [];
         for ($i = 0; $i < $zip->numFiles; $i++) {
             $name = (string) $zip->getNameIndex($i);
             $out[$name] = (string) $zip->getFromIndex($i);
         }
         $zip->close();
-        @unlink($tmp);
 
         return $out;
     }
@@ -128,7 +133,7 @@ final class GdpduExportTest extends TestCase {
         );
 
         $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $result['package_sha256']);
-        $files = $this->unzip($result['content']);
+        $files = $this->unzipPackage($result['path']);
         $this->assertArrayHasKey('index.xml', $files);
         $this->assertArrayHasKey('rechnungen.csv', $files);
         $this->assertStringContainsString('RE-2025-001', $files['rechnungen.csv']);
@@ -174,7 +179,7 @@ final class GdpduExportTest extends TestCase {
             ['invoices'],
             $this->accountant,
         );
-        $files = $this->unzip($result['content']);
+        $files = $this->unzipPackage($result['path']);
 
         $this->assertStringContainsString('RE-OWN', $files['rechnungen.csv']);
         $this->assertStringNotContainsString('RE-FOREIGN', $files['rechnungen.csv']);
@@ -198,14 +203,14 @@ final class GdpduExportTest extends TestCase {
     public function test_export_encodings_convert_data_and_declare_charset(): void {
         $this->invoice($this->organization, 'RE-2025-050', customerName: 'Müller & Söhne GmbH');
 
-        $build = fn (string $encoding): array => $this->unzip($this->service->build(
+        $build = fn (string $encoding): array => $this->unzipPackage($this->service->build(
             $this->organization,
             Carbon::parse('2025-06-01'),
             Carbon::parse('2025-06-30'),
             ['rechnungen'],
             $this->accountant,
             $encoding,
-        )['content']);
+        )['path']);
 
         // UTF-8: „ü" als 2-Byte-Sequenz; index.xml deklariert UTF8.
         $utf8 = $build(GdpduExportService::ENCODING_UTF8);
@@ -239,7 +244,7 @@ final class GdpduExportTest extends TestCase {
             $this->accountant,
         );
 
-        $files = $this->unzip($result['content']);
+        $files = $this->unzipPackage($result['path']);
         $this->assertArrayHasKey('zeitnachweise.csv', $files);
         $csv = $files['zeitnachweise.csv'];
         $this->assertStringContainsString('P-4711', $csv);
@@ -259,13 +264,73 @@ final class GdpduExportTest extends TestCase {
         $this->assertStringContainsString('zeitnachweise.csv', $files['index.xml']);
     }
 
-    public function test_permitted_user_downloads_zip(): void {
+    /**
+     * MVP-722 (A16): Der Export wird eingereiht, der Job baut das Paket, der
+     * Download holt es ab. Einen synchronen Pfad gibt es bewusst nicht mehr.
+     */
+    public function test_export_is_queued_and_package_downloaded_afterwards(): void {
         $this->invoice($this->organization, 'RE-2025-009');
+
+        Queue::fake();
 
         $this->actingAs($this->accountant)
             ->post(route('finance.gobd.export'), ['from' => '2025-01-01', 'to' => '2025-12-31', 'sections' => ['invoices']])
+            ->assertRedirect(route('finance.gobd.index', ['from' => '2025-01-01', 'to' => '2025-12-31']));
+
+        $export = GobdExport::query()->latest('id')->firstOrFail();
+        $this->assertSame(GobdExportStatus::Queued, $export->status);
+        Queue::assertPushed(GobdExportJob::class, fn (GobdExportJob $job): bool => $job->exportId === $export->id);
+
+        app()->call([new GobdExportJob($export->id), 'handle']);
+
+        $export->refresh();
+        $this->assertSame(GobdExportStatus::Ready, $export->status);
+        $this->assertNotNull($export->file_path);
+        $this->assertMatchesRegularExpression('/^[0-9a-f]{64}$/', $export->package_sha256);
+
+        $this->actingAs($this->accountant)
+            ->get(route('finance.gobd.download', $export))
             ->assertOk()
             ->assertHeader('Content-Type', 'application/zip');
+
+        $this->assertDatabaseHas('audit_logs', ['event' => 'gobd.downloaded']);
+    }
+
+    public function test_failed_run_keeps_the_proof_with_an_error(): void {
+        $export = GobdExport::query()->create([
+            'organization_id' => $this->organization->id,
+            'period_from' => '2025-01-01',
+            'period_to' => '2025-12-31',
+            'sections' => ['invoices'],
+            'encoding' => GdpduExportService::ENCODING_CP1252,
+            'file_hashes' => [],
+            'package_sha256' => '',
+            'record_count' => 0,
+            'status' => GobdExportStatus::Queued,
+        ]);
+
+        (new GobdExportJob($export->id))->failed(new \RuntimeException('Platte voll'));
+
+        $export->refresh();
+        $this->assertSame(GobdExportStatus::Failed, $export->status);
+        $this->assertSame('Platte voll', $export->error);
+    }
+
+    public function test_download_of_a_foreign_export_is_not_found(): void {
+        $foreign = Organization::factory()->create();
+        $export = GobdExport::query()->create([
+            'organization_id' => $foreign->id,
+            'period_from' => '2025-01-01',
+            'period_to' => '2025-12-31',
+            'sections' => ['invoices'],
+            'encoding' => GdpduExportService::ENCODING_CP1252,
+            'file_hashes' => [],
+            'package_sha256' => 'x',
+            'record_count' => 0,
+            'status' => GobdExportStatus::Ready,
+        ]);
+
+        $this->actingAs($this->accountant)->get(route('finance.gobd.download', $export))->assertNotFound();
     }
 
     /** Exportierter (festgeschriebener) Stapel samt Quellposten-Snapshots. */
@@ -357,7 +422,7 @@ final class GdpduExportTest extends TestCase {
             ['booking_batches', 'booking_batch_items'],
             $this->accountant,
         );
-        $files = $this->unzip($result['content']);
+        $files = $this->unzipPackage($result['path']);
 
         // Stapel-Kopf: Nummer, Zeitraum, Export-Zeitpunkt, Nachweis-Hash, Teilauswahl (A15).
         $head = $files['buchungsstapel.csv'];
@@ -457,7 +522,7 @@ final class GdpduExportTest extends TestCase {
             ['payment_allocations'],
             $this->accountant,
         );
-        $files = $this->unzip($result['content']);
+        $files = $this->unzipPackage($result['path']);
 
         $csv = $files['zahlungszuordnungen.csv'];
         $this->assertStringContainsString('2025-06-10', $csv);
@@ -496,7 +561,7 @@ final class GdpduExportTest extends TestCase {
             ['expenses'],
             $this->accountant,
         );
-        $files = $this->unzip($result['content']);
+        $files = $this->unzipPackage($result['path']);
 
         $csv = $files['spesen.csv'];
         $this->assertStringContainsString('E-' . $approved->id, $csv); // Beleg-Nr. wie im DATEV-Export

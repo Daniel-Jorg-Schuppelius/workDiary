@@ -21,6 +21,8 @@ return [
         'filter' => [
             'kind' => 'Tipo di violazione',
             'all' => 'Tutti i tipi',
+            'category' => 'Ambito',
+            'all_categories' => 'Tutti gli ambiti',
         ],
         'kpi' => [
             'total' => 'Violazioni totali',
@@ -38,6 +40,21 @@ return [
             'freeDayStamp' => 'Timbratura in giorno libero',
             'absenceStamp' => 'Timbratura durante assenza',
             'attendanceFrameTime' => 'Fascia oraria (timbrature)',
+            'lateRecording' => 'Registrazione tardiva (MiLoG)',
+            'sixMonthAverage' => 'Media semestrale (§ 3 ArbZG)',
+            'nightWork' => 'Lavoro notturno oltre 8 h (§ 6 ArbZG)',
+            'substituteRestDay' => 'Giorno di riposo sostitutivo mancante (§ 11 ArbZG)',
+            'freeSundays' => 'Domeniche libere insufficienti (§ 11 ArbZG)',
+            // Feature 144 (MVP-719): Lenk-/Ruhezeiten (VO (EG) 561/2006 / FPersV).
+            'dailyDriving' => 'Tempo di guida giornaliero (art. 6 reg. 561/2006)',
+            'weeklyDriving' => 'Tempo di guida settimanale (art. 6 reg. 561/2006)',
+            'fortnightDriving' => 'Tempo di guida bisettimanale (art. 6 reg. 561/2006)',
+            'drivingBreakMissing' => 'Interruzione di guida mancante (art. 7 reg. 561/2006)',
+            'dailyRest' => 'Riposo giornaliero (art. 8 reg. 561/2006)',
+            'weeklyRest' => 'Riposo settimanale (art. 8 reg. 561/2006)',
+        ],
+        'unit' => [
+            'days' => '{1} :count giorno|[2,*] :count giorni',
         ],
         'severity' => [
             'error' => 'Violazione',
@@ -86,12 +103,52 @@ return [
         'category' => [
             'arbzg' => 'ArbZG',
             'plausibility' => 'Casi da chiarire',
+            'drivingTime' => 'Tempi di guida',
         ],
         'acknowledged' => 'Violazione aggiornata.',
         'error' => [
             'invalid_status' => 'Stato di destinazione non valido.',
             'not_acknowledgeable' => 'Questa violazione non può più essere confermata.',
             'note_required' => 'Per «accettato» è richiesta una motivazione.',
+        ],
+    ],
+    'milog' => [
+        'button' => 'Prova MiLoG (dogana)',
+        'csv' => [
+            'employee' => 'Dipendente',
+            'personnel_number' => 'Numero personale',
+            'date' => 'Data',
+            'start' => 'Inizio',
+            'end' => 'Fine',
+            'breaks' => 'Pause (min)',
+            'duration' => 'Durata',
+        ],
+    ],
+    'driving' => [
+        'button' => 'Prova tempi di guida',
+        'title' => 'Prova dei tempi di guida e di riposo',
+        'thresholds_note' => 'Tempi di guida/riposo (reg. (CE) 561/2006 / FPersV): max. 9 h di guida/giorno (10 h due volte a settimana) · 56 h/settimana · 90 h/due settimane · interruzione di 45 min dopo 4,5 h (frazionabile 15 + 30) · riposo 11 h/giorno (max. 3×/settimana 9 h) · 45 h/settimana (24 h con compensazione).',
+        'disclaimer' => 'La base dati sono i viaggi registrati (libro di bordo) con veicoli contrassegnati; i dati del tachigrafo/DTCO non vengono letti. Nessuna consulenza legale.',
+        'csv' => [
+            'driver' => 'Conducente',
+            'personnel_number' => 'Matricola',
+            'date' => 'Data',
+            'vehicles' => 'Veicoli',
+            'start' => 'Prima partenza',
+            'end' => 'Ultimo arrivo',
+            'driving' => 'Tempo di guida',
+            'longest_stint' => 'Periodo di guida più lungo senza interruzione',
+            'breaks' => 'Interruzioni (min)',
+            'rest_before' => 'Riposo precedente',
+            'findings' => 'Rilievi',
+        ],
+        'badge' => [
+            'label' => 'Tempo di guida',
+            'remaining' => ':remaining rimanenti',
+            'until_break' => 'Pausa tra :until',
+            'break_due' => 'Pausa dovuta',
+            'exhausted' => 'Tempo di guida giornaliero esaurito',
+            'title' => 'Tempo di guida giornaliero residuo :daily (limite :limit) · prossima interruzione tra :until · residuo settimanale :weekly · due settimane :fortnight',
         ],
     ],
 ];

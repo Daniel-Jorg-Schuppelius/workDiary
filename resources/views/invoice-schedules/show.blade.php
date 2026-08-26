@@ -66,16 +66,16 @@
     <x-card :title="__('Plan')">
         <div class="grid grid-cols-2 gap-3 text-sm md:grid-cols-4">
             <div>
-                <div class="text-xs text-base-content/60">{{ __('Status') }}</div>
+                <div class="text-xs text-muted">{{ __('Status') }}</div>
                 <x-status-badge size="sm" :tone="$schedule->statusTone()">{{ $schedule->statusLabel() }}</x-status-badge>
             </div>
             <div>
-                <div class="text-xs text-base-content/60">{{ __('Intervall') }}</div>
+                <div class="text-xs text-muted">{{ __('Intervall') }}</div>
                 {{ __('alle :count :unit', ['count' => $schedule->interval_count, 'unit' => $schedule->unitLabel()]) }}
                 · {{ $schedule->billing_period_mode === \App\Models\InvoiceSchedule::MODE_CURRENT ? __('laufender Zeitraum') : __('abgelaufener Zeitraum') }}
             </div>
             <div>
-                <div class="text-xs text-base-content/60">{{ __('Nächste Läufe') }}</div>
+                <div class="text-xs text-muted">{{ __('Nächste Läufe') }}</div>
                 @forelse ($schedule->upcomingRuns() as $run)
                     <span class="badge badge-ghost badge-sm">{{ $run->fdate() }}</span>
                 @empty
@@ -83,7 +83,7 @@
                 @endforelse
             </div>
             <div>
-                <div class="text-xs text-base-content/60">{{ __('Vertrag') }}</div>
+                <div class="text-xs text-muted">{{ __('Vertrag') }}</div>
                 {{ $schedule->contract?->title ?? '—' }}
                 @if ($schedule->end_on !== null)
                     · {{ __('Ende') }}: {{ $schedule->end_on->fdate() }}
@@ -93,7 +93,7 @@
     </x-card>
 
     <x-card :title="__('Positionsvorlage')">
-        <p class="text-xs text-base-content/60">{{ __('Platzhalter :von und :bis werden je Lauf durch den Abrechnungszeitraum ersetzt.', ['von' => '{zeitraum_von}', 'bis' => '{zeitraum_bis}']) }}</p>
+        <p class="text-xs text-muted">{{ __('Platzhalter :von und :bis werden je Lauf durch den Abrechnungszeitraum ersetzt.', ['von' => '{zeitraum_von}', 'bis' => '{zeitraum_bis}']) }}</p>
         <x-table size="sm" :zebra="true">
             <x-slot:head>
                 <tr>
@@ -139,7 +139,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="7" :title="__('Noch keine Positionen — ohne Positionen erzeugt der Plan leere Entwürfe.')" compact />
+                <x-table.empty icon="receipt_long" :colspan="7" :title="__('Noch keine Positionen — ohne Positionen erzeugt der Plan leere Entwürfe.')" compact />
             @endforelse
         </x-table>
     </x-card>
@@ -168,7 +168,7 @@
                     <td>{{ $run->invoice?->status ?? '—' }}</td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">event_repeat</span>' :colspan="4" :title="__('Noch keine Läufe')" compact />
+                <x-table.empty icon="event_repeat" :colspan="4" :title="__('Noch keine Läufe')" compact />
             @endforelse
         </x-table>
     </x-card>

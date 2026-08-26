@@ -47,19 +47,19 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-4 gap-3 mb-4">
             <x-card>
-                <div class="text-sm text-base-content/60">{{ __('finance.datev.field.status') }}</div>
+                <div class="text-sm text-muted">{{ __('finance.datev.field.status') }}</div>
                 <div><x-status-badge :tone="$batch->status->tone()" :label="$batch->status->label()" /></div>
             </x-card>
             <x-card>
-                <div class="text-sm text-base-content/60">{{ __('finance.datev.field.booking_count') }}</div>
+                <div class="text-sm text-muted">{{ __('finance.datev.field.booking_count') }}</div>
                 <div class="text-xl font-semibold">{{ $preflight['count'] }}</div>
             </x-card>
             <x-card>
-                <div class="text-sm text-base-content/60">{{ __('finance.datev.field.total') }}</div>
+                <div class="text-sm text-muted">{{ __('finance.datev.field.total') }}</div>
                 <div class="text-xl font-semibold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($preflight['total'], 2, withThousandsSeparator: true) }}</div>
             </x-card>
             <x-card>
-                <div class="text-sm text-base-content/60">{{ __('finance.datev.field.lock_flag') }}</div>
+                <div class="text-sm text-muted">{{ __('finance.datev.field.lock_flag') }}</div>
                 <div>{{ $batch->finalized_locked ? __('finance.datev.lock.on') : __('finance.datev.lock.off') }}</div>
             </x-card>
         </div>
@@ -79,7 +79,7 @@
         </div>
 
         @if ($batch->file_hash)
-            <div class="text-xs text-base-content/60 mb-4 font-mono break-all">
+            <div class="text-xs text-muted mb-4 font-mono break-all">
                 {{ __('finance.datev.field.hash') }}: {{ $batch->file_hash }}
             </div>
         @endif

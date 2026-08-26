@@ -15,7 +15,7 @@ return [
     'label' => 'Elektro',
     // v2 (Feature 100): Entsorgungs-Modul empfohlen + AVV-Presets für
     // Kabel/Batterien (Altgeräte-Mitnahme von der Baustelle/beim Kunden).
-    'version' => 2,
+    'version' => 3,
     // Feature 081 (MVP-373): empfohlener Funktionsumfang — als vorausgewählte
     // Checkliste auf der Seite „Funktionsumfang“, nie still angewendet.
     'modules_recommended' => [
@@ -281,5 +281,12 @@ return [
         ['name' => 'DGUV Vorschrift 3 — Unterweisung', 'abbreviation' => 'DGUV V3', 'description' => 'Jährliche Unterweisung zum sicheren Arbeiten an elektrischen Anlagen.'],
         ['name' => 'Schaltberechtigung bis 30 kV', 'abbreviation' => 'SchaltB', 'description' => 'Benannte Schaltberechtigung für Mittelspannungsanlagen (befristet, auffrischungspflichtig).'],
         ['name' => 'Arbeiten unter Spannung (AuS)', 'abbreviation' => 'AuS', 'description' => 'Qualifikation für Arbeiten unter Spannung nach DIN VDE 0105-100.'],
+    ],
+
+    // Schulungsvorschläge (Feature 145): Elektro-Pflichtunterweisungen.
+    'training_suggestions' => [
+        ['code' => 'dguv-v3-unterweisung', 'title' => 'DGUV Vorschrift 3 — Unterweisung Elektrotechnik', 'legal_basis' => 'DGUV V3 § 3', 'validity_months' => 12, 'duration_minutes' => 120, 'roles' => ['aussendienst', 'teamleitung']],
+        ['code' => 'schaltberechtigung', 'title' => 'Schaltberechtigung Mittelspannung (Auffrischung)', 'legal_basis' => 'DIN VDE 0105-100', 'provider_kind' => 'external', 'validity_months' => 36, 'duration_minutes' => 480, 'lead_days' => 60, 'roles' => ['aussendienst']],
+        ['code' => 'unterweisung-arbschg', 'title' => 'Jährliche Unterweisung Arbeitssicherheit', 'legal_basis' => '§ 12 ArbSchG / DGUV V1 § 4', 'validity_months' => 12, 'duration_minutes' => 60, 'roles' => ['aussendienst', 'teamleitung']],
     ],
 ];

@@ -65,7 +65,7 @@ class QuoteController extends Controller {
 
     public function show(Quote $quote): View {
         Gate::authorize('view', $quote);
-        $quote->load(['items', 'customer']);
+        $quote->load(['items.article', 'customer']);
 
         return view('quotes.show', [
             'quote' => $quote,
@@ -117,7 +117,11 @@ class QuoteController extends Controller {
         Gate::authorize('update', $quote);
         $item ??= new QuoteItem();
 
-        return view('quotes._item_form_dialog', ['quote' => $quote, 'item' => $item]);
+        return view('quotes._item_form_dialog', [
+            'quote' => $quote,
+            'item' => $item,
+            'articles' => \App\Models\Article::query()->where('sellable', true)->orderBy('name')->limit(500)->get(['id', 'number', 'name', 'base_unit', 'default_sale_price', 'currency']),
+        ]);
     }
 
     public function addItem(Request $request, Quote $quote): RedirectResponse {
@@ -297,7 +301,12 @@ class QuoteController extends Controller {
 
     /** @return array<string, mixed> */
     private function validateItem(Request $request): array {
+        // Artikel-Picker sendet Sqids (Feature 140); leer/ungültig → null.
+        $rawArticle = $request->input('article_id');
+        $request->merge(['article_id' => is_string($rawArticle) ? \App\Support\Sqid::decode(\App\Models\Article::class, $rawArticle) : null]);
+
         return $request->validate([
+            'article_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('articles')],
             'description' => ['required', 'string', 'max:1000'],
             'quantity' => ['required', 'numeric', 'min:0.001', 'max:9999999'],
             'unit' => ['nullable', 'string', 'max:20'],

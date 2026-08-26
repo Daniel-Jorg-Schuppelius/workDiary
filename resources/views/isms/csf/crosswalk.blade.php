@@ -39,7 +39,7 @@
 
         @if ($scope === null || $crosswalk === null)
             <x-empty-state framed
-                           icon='<span class="material-symbols-outlined" aria-hidden="true">compare_arrows</span>'
+                           icon="compare_arrows"
                            :title="__('isms.csf.no_crosswalk_notice')"
                            :message="__('isms.csf.crosswalk_empty')" />
         @else
@@ -73,7 +73,7 @@
                                 @endphp
                                 <tr>
                                     <td class="align-top">
-                                        <span class="font-mono text-xs text-base-content/60">{{ $row['source_ref'] }}</span>
+                                        <span class="font-mono text-xs text-muted">{{ $row['source_ref'] }}</span>
                                         <span class="font-medium">{{ $row['source_title'] }}</span>
                                     </td>
                                     <td class="align-top">
@@ -85,7 +85,7 @@
                                     </td>
                                     <td class="align-top">
                                         @if ($cov['applicable'] === 0)
-                                            <span class="text-xs text-base-content/50">{{ __('isms.csf.source_none') }}</span>
+                                            <span class="text-xs text-muted">{{ __('isms.csf.source_none') }}</span>
                                         @else
                                             <div class="flex items-center gap-2">
                                                 <progress class="progress {{ $tone === 'success' ? 'progress-success' : ($tone === 'warning' ? 'progress-warning' : 'progress-error') }} w-24"

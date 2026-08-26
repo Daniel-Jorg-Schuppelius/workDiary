@@ -77,7 +77,7 @@
                     <td class="text-right"><x-icon-btn icon="visibility" :href="route('asset-finance.show', $contract)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">request_quote</span>' :colspan="7" :title="__('Keine Leasingakten — Verträge über den Dialog anlegen.')" compact />
+                <x-table.empty icon="request_quote" :colspan="7" :title="__('Keine Leasingakten — Verträge über den Dialog anlegen.')" compact />
             @endforelse
         </x-table>
     </x-card>

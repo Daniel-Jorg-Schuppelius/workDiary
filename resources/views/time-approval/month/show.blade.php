@@ -109,7 +109,7 @@
                             <li>
                                 <div class="timeline-start text-xs tabular-nums">{{ $event->created_at?->fdatetime() }}</div>
                                 <div class="timeline-middle">
-                                    <span class="material-symbols-outlined text-base">history</span>
+                                    <x-icon name="history" class="text-base" />
                                 </div>
                                 <div class="timeline-end timeline-box">
                                     <div class="font-medium text-sm">{{ $event->event }}</div>

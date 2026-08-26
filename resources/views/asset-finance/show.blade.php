@@ -71,7 +71,7 @@
             @if ($contract->notes !== null)
                 <p class="mt-2 whitespace-pre-line text-sm">{{ $contract->notes }}</p>
             @endif
-            <p class="mt-3 text-xs text-base-content/60">
+            <p class="mt-3 text-xs text-muted">
                 {{ __('B2B-Akte: keine Bilanzierung, keine steuerliche Zurechnung, keine Verbraucherkredit-Prüfung (CCD II) — führend bleibt das Rechnungswesen.') }}
             </p>
         </x-card>
@@ -98,7 +98,7 @@
                 @endif
 
                 @if ($contract->terms_snapshot !== null)
-                    <p class="mt-2 text-xs text-base-content/60">{{ __('Eingefroren am :date (P2) — Änderungen sind auditpflichtig.', ['date' => \Illuminate\Support\Carbon::parse(data_get($contract->terms_snapshot, 'frozen_at'))->format('d.m.Y H:i')]) }}</p>
+                    <p class="mt-2 text-xs text-muted">{{ __('Eingefroren am :date (P2) — Änderungen sind auditpflichtig.', ['date' => \Illuminate\Support\Carbon::parse(data_get($contract->terms_snapshot, 'frozen_at'))->format('d.m.Y H:i')]) }}</p>
                 @endif
 
                 @if ($contract->status->isOpen())

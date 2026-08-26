@@ -95,6 +95,7 @@ class NavGate {
         'finance.bank-accounts.*' => \App\Models\Finance\BankAccount::class,
         'finance.datev.*' => \App\Models\Finance\DatevBookingBatch::class,
         'finance.gobd.*' => \App\Models\GobdExport::class,
+        'finance.procedure-documentation.*' => \App\Models\Finance\ProcedureDocumentation::class,
         'finance.*' => \App\Models\Finance\BillingTransfer::class,
         'isms.controls.*' => \App\Models\Isms\IsmsControl::class,
         'isms.requirements.*' => \App\Models\Isms\IsmsRequirement::class,

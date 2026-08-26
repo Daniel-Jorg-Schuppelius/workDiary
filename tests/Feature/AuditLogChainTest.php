@@ -10,7 +10,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\{AuditLog, OrganizationAuditLog};
+use App\Models\{AuditLog, Organization, OrganizationAuditLog};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, DB};
 use RuntimeException;
@@ -123,10 +123,83 @@ class AuditLogChainTest extends TestCase {
         $first = $this->makeEntry('created', 1);
         $second = $this->makeEntry('updated', 1);
 
-        $head = DB::table('audit_chain_heads')->where('chain', 'audit_logs')->first();
+        // Kette je Organisation (MVP-722); ohne Organisation ist es `:0`.
+        $head = DB::table('audit_chain_heads')->where('chain', 'audit_logs:0')->first();
         $this->assertSame($second->hash, $head->head_hash, 'Kopf zeigt auf die letzte Zeile.');
         $this->assertSame(2, (int) $head->height);
         $this->assertNotSame($first->hash, $head->head_hash);
+    }
+
+    /**
+     * MVP-722 (Vollscan A5): Zwei Organisationen schreiben verschränkt. Jede
+     * führt ihre eigene Kette — sonst sperrten sie denselben Kettenkopf und
+     * verklemmten sich (gemessen: 445 von 900 Einfügungen abgebrochen).
+     */
+    public function test_two_organizations_keep_separate_chains(): void {
+        $one = Organization::factory()->create();
+        $two = Organization::factory()->create();
+        // Das Anlegen der Organisation schreibt selbst schon Audit-Zeilen.
+        $headOne = $this->chainHead($one);
+        $headTwo = $this->chainHead($two);
+
+        $a1 = $this->makeOrgEntry($one, 'created', 1);
+        $b1 = $this->makeOrgEntry($two, 'created', 2);
+        $a2 = $this->makeOrgEntry($one, 'updated', 1);
+        $b2 = $this->makeOrgEntry($two, 'updated', 2);
+
+        // Jede Zeile hängt am Kopf IHRER Organisation, nicht an der Vorzeile der Tabelle.
+        $this->assertSame($headOne, $a1->prev_hash);
+        $this->assertSame($headTwo, $b1->prev_hash, 'Die zweite Organisation führt eine eigene Kette.');
+        $this->assertSame($a1->hash, $a2->prev_hash);
+        $this->assertSame($b1->hash, $b2->prev_hash);
+        $this->assertNotSame($a1->hash, $b1->prev_hash);
+
+        foreach ([[$one, $a2], [$two, $b2]] as [$organization, $last]) {
+            $head = DB::table('audit_chain_heads')->where('chain', 'audit_logs:' . $organization->id)->first();
+            $this->assertNotNull($head, 'Jede Organisation hat einen eigenen Kettenkopf.');
+            $this->assertSame($last->hash, $head->head_hash);
+            $this->assertSame(
+                AuditLog::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->count(),
+                (int) $head->height,
+            );
+        }
+
+        $this->assertSame(0, $this->runVerify(), 'Beide Ketten müssen einzeln verifizieren.');
+    }
+
+    /** Ein Bruch in Kette A darf Kette B nicht mitreißen — und muss auffallen. */
+    public function test_tampering_is_detected_within_the_owning_chain(): void {
+        $one = Organization::factory()->create();
+        $two = Organization::factory()->create();
+
+        $this->makeOrgEntry($one, 'created', 1);
+        $victim = $this->makeOrgEntry($two, 'created', 2);
+        $this->makeOrgEntry($one, 'updated', 1);
+
+        $this->assertSame(0, $this->runVerify());
+
+        DB::table('audit_logs')->where('id', $victim->id)->update(['event' => 'tampered']);
+
+        $this->assertSame(1, $this->runVerify(), 'Manipulation in der zweiten Kette muss erkannt werden.');
+    }
+
+    private function chainHead(Organization $organization): ?string {
+        $value = DB::table('audit_chain_heads')->where('chain', 'audit_logs:' . $organization->id)->value('head_hash');
+
+        return $value === null ? null : (string) $value;
+    }
+
+    private function makeOrgEntry(Organization $organization, string $event, int $auditableId): AuditLog {
+        return AuditLog::create([
+            'organization_id' => $organization->id,
+            'user_id' => null,
+            'event' => $event,
+            'auditable_type' => 'TestModel',
+            'auditable_id' => $auditableId,
+            'changes' => ['before' => ['x' => 1], 'after' => ['x' => 2]],
+            'ip' => '127.0.0.1',
+            'user_agent' => 'phpunit',
+        ]);
     }
 
     /**

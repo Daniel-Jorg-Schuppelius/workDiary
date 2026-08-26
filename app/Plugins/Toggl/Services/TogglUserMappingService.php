@@ -230,11 +230,22 @@ class TogglUserMappingService {
             ->firstOrFail();
     }
 
-    /** Lädt eine Toggl-Mapping-Reference der Organisation oder bricht mit 404 ab. */
+    /**
+     * Lädt eine Toggl-Mapping-Reference der Organisation oder bricht mit 404 ab.
+     * EXT_TYPE_USER_EMAIL gehört dazu: die Benutzer-Tabelle der Mapping-Seite
+     * verlinkt Primär-Referenzen (source=ref) auf `mappings.update`/`.delete`
+     * (Vollscan 2026-08-23, MVP-723) — ohne sie liefen „Umbiegen"/„Entfernen"
+     * dort in ein 404 und der USER_EMAIL-Zweig von {@see updateMapping} war
+     * unerreichbar.
+     */
     private function findMapping(Organization $organization, int $id): ExternalReference {
         return ExternalReference::query()
             ->forPlugin($organization->id, TogglPlugin::ID)
-            ->whereIn('external_type', [TogglImportService::EXT_TYPE_CLIENT, TogglImportService::EXT_TYPE_PROJECT])
+            ->whereIn('external_type', [
+                TogglImportService::EXT_TYPE_CLIENT,
+                TogglImportService::EXT_TYPE_PROJECT,
+                TogglImportService::EXT_TYPE_USER_EMAIL,
+            ])
             ->whereKey($id)
             ->firstOrFail();
     }

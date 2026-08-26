@@ -47,14 +47,14 @@
                         <tbody>
                             @for ($likelihood = 5; $likelihood >= 1; $likelihood--)
                                 <tr>
-                                    <th class="pr-2 text-right text-xs font-normal text-base-content/60">{{ $likelihood }}</th>
+                                    <th class="pr-2 text-right text-xs font-normal text-muted">{{ $likelihood }}</th>
                                     @for ($impact = 1; $impact <= 5; $impact++)
                                         @php
                                             $count = $matrix[$likelihood][$impact] ?? 0;
                                             $tone = \App\Models\Isms\IsmsRisk::scoreTone($likelihood * $impact);
                                             $bg = ['success' => 'bg-success/20 text-success-content', 'warning' => 'bg-warning/30', 'error' => 'bg-error/30'][$tone];
                                         @endphp
-                                        <td class="h-10 w-10 rounded text-center align-middle text-sm {{ $bg }} {{ $count > 0 ? 'font-bold' : 'text-base-content/40' }}"
+                                        <td class="h-10 w-10 rounded text-center align-middle text-sm {{ $bg }} {{ $count > 0 ? 'font-bold' : 'text-muted' }}"
                                             title="{{ __('isms.matrix.cell', ['likelihood' => $likelihood, 'impact' => $impact, 'count' => $count]) }}">
                                             {{ $count > 0 ? $count : '·' }}
                                         </td>
@@ -64,12 +64,12 @@
                             <tr>
                                 <th></th>
                                 @for ($impact = 1; $impact <= 5; $impact++)
-                                    <th class="pt-1 text-center text-xs font-normal text-base-content/60">{{ $impact }}</th>
+                                    <th class="pt-1 text-center text-xs font-normal text-muted">{{ $impact }}</th>
                                 @endfor
                             </tr>
                         </tbody>
                     </table>
-                    <p class="mt-1 text-xs text-base-content/60">
+                    <p class="mt-1 text-xs text-muted">
                         {{ __('isms.matrix.axes') }}
                     </p>
                 </div>
@@ -254,7 +254,7 @@
                     <td><x-status-badge :tone="$risk->category->tone()" outline>{{ $risk->category->label() }}</x-status-badge></td>
                     <td class="text-center">
                         <x-status-badge :tone="\App\Models\Isms\IsmsRisk::scoreTone($risk->score)">{{ $risk->score }}</x-status-badge>
-                        <span class="block text-xs text-base-content/50">{{ $risk->likelihood }}×{{ $risk->impact }}</span>
+                        <span class="block text-xs text-muted">{{ $risk->likelihood }}×{{ $risk->impact }}</span>
                     </td>
                     <td><x-status-badge :tone="$risk->treatment->tone()" outline>{{ $risk->treatment->label() }}</x-status-badge></td>
                     <td><x-status-badge :tone="$risk->status->tone()">{{ $risk->status->label() }}</x-status-badge></td>

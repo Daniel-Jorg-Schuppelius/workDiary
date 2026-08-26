@@ -29,7 +29,7 @@
 
         @if ($requests->isEmpty())
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">more_time</span>'
+                icon="more_time"
                 :title="__('Keine Überstunden-Anträge')" />
         @else
             <x-table scroll="flex" :pinRows="true">
@@ -54,7 +54,7 @@
                         <td>
                             <x-status-badge :tone="$r->status->tone()" size="sm">{{ $r->status->label() }}</x-status-badge>
                             @if ($r->decided_at)
-                                <div class="text-xs text-base-content/60 mt-0.5">
+                                <div class="text-xs text-muted mt-0.5">
                                     {{ $r->decidedBy?->name ?? '—' }} · {{ $r->decided_at->fdate() }}
                                 </div>
                             @endif

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Invoicing;
 
 use App\Mail\DunningMail;
-use App\Models\{Customer, Invoice, InvoiceDispatch, Organization, Quote, User};
+use App\Models\{Customer, DocumentDispatch, Invoice, Organization, Quote, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
@@ -77,8 +77,8 @@ final class InvoicingRestpaketTest extends TestCase {
             return $mail->level === 1 && $mail->hasTo('debitor@kunde.example');
         });
 
-        $dispatch = InvoiceDispatch::query()->firstOrFail();
-        $this->assertSame(InvoiceDispatch::CHANNEL_EMAIL, $dispatch->channel);
+        $dispatch = DocumentDispatch::query()->firstOrFail();
+        $this->assertSame(DocumentDispatch::CHANNEL_EMAIL, $dispatch->channel);
         $this->assertSame('debitor@kunde.example', $dispatch->recipient);
         $this->assertSame('dunning', (string) data_get($dispatch->meta, 'kind'));
 

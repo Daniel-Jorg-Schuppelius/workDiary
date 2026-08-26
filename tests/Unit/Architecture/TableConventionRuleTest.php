@@ -33,8 +33,8 @@ use SplFileInfo;
  *      sichtbarer Inhalt mehr — er läge unter dem Fold (flex-1 nimmt die
  *      Resthöhe) und bliebe unentdeckt. Erlaubt danach: <x-pagination
  *      standing>, versteckte Zeilen-Formulare (class="hidden"), <x-modal>
- *      (Dialog, unsichtbar) und schließende Tags. Bestand steht auf der
- *      Allow-List FLEX_TAIL_EXEMPT und wird beim nächsten Anfassen bereinigt.
+ *      (Dialog, unsichtbar) und schließende Tags. Die Allow-List
+ *      FLEX_TAIL_EXEMPT ist seit MVP-724 leer und bleibt es.
  */
 class TableConventionRuleTest extends TestCase {
     private const MARKER = 'raw-table-ok';
@@ -70,17 +70,16 @@ class TableConventionRuleTest extends TestCase {
     ];
 
     /**
-     * R5-Bestand (Vollscan 2026-08-23, I10): scroll=flex mit sichtbarem
-     * Folge-Inhalt — außerhalb Welle 4 Batch C; beim nächsten Anfassen der
-     * Seite auf „Inhalt vor die Tabelle" oder normale Tabelle umstellen.
+     * R5-Allow-List. Seit MVP-724 (Welle 8, Paket 3) leer: die fünf
+     * Bestandsseiten (wage-type-mappings, plugin-errors,
+     * invoice-mail-templates, number-formats, cash-registers/show) tragen
+     * ihren Nachlauf-Inhalt jetzt VOR der Voll-Höhe-Tabelle (`flex-none`).
+     * Neue Einträge sind nicht vorgesehen — entweder Inhalt vor die Tabelle
+     * ziehen oder auf eine normale Tabelle wechseln.
+     *
+     * @var list<string>
      */
-    private const FLEX_TAIL_EXEMPT = [
-        'admin/wage-type-mappings/index.blade.php',    // Liefer-Karte unter der Tabelle
-        'admin/plugin-errors/index.blade.php',         // Bulk-Aktionsleiste unter der Tabelle
-        'admin/invoice-mail-templates/index.blade.php', // Variablen-Legende unter der Tabelle
-        'admin/number-formats/index.blade.php',        // Hinweistext unter der Tabelle
-        'cash-registers/show.blade.php',               // Tagesabschluss-Karte unter der Tabelle
-    ];
+    private const FLEX_TAIL_EXEMPT = [];
 
     public function test_tables_follow_app_standard(): void {
         $root = dirname(__DIR__, 3);

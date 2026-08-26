@@ -11,7 +11,7 @@
     <header class="flex items-center justify-between border-b border-base-300 px-4 py-3">
         <div>
             <span class="font-['Space_Grotesk'] text-sm font-semibold">{{ __('Wiederkehr-Regeln') }}</span>
-            <p class="mt-0.5 text-xs text-base-content/60">
+            <p class="mt-0.5 text-xs text-muted">
                 {{ __('Erzeugen automatisch Aufträge im Voraus. Generator läuft per Cron oder via Button „Jetzt erzeugen".') }}
             </p>
         </div>
@@ -25,7 +25,7 @@
     @if ($recurrenceRules->isEmpty())
         <div class="p-4">
             <x-empty-state compact
-                icon='<span class="material-symbols-outlined" aria-hidden="true">repeat</span>'
+                icon="repeat"
                 :title="__('Noch keine Wiederkehr-Regeln angelegt.')" />
         </div>
     @else
@@ -46,7 +46,7 @@
                                 <x-status-badge tone="warning" size="xs">{{ __('Inaktiv') }}</x-status-badge>
                             @endif
                         </div>
-                        <div class="mt-1 text-xs text-base-content/60">
+                        <div class="mt-1 text-xs text-muted">
                             {{ __('Ab') }} {{ $rule->starts_on?->fdate() }}
                             @if ($rule->ends_on)
                                 · {{ __('bis') }} {{ $rule->ends_on->fdate() }}
@@ -56,7 +56,7 @@
                             @endif
                         </div>
                         @if ($rule->title_template)
-                            <div class="mt-1 line-clamp-1 text-xs text-base-content/50">
+                            <div class="mt-1 line-clamp-1 text-xs text-muted">
                                 {{ $rule->title_template }}
                             </div>
                         @endif

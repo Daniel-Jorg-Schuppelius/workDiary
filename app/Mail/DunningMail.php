@@ -31,6 +31,7 @@ use Illuminate\Queue\SerializesModels;
 class DunningMail extends Mailable implements ShouldQueue {
     use Queueable, SerializesModels;
 
+    /** @param array{rate: float, days: int, amount: float}|null $interest Verzugszins-Ausweis (MVP-691) */
     public function __construct(
         public Invoice $invoice,
         public int $level,
@@ -38,7 +39,12 @@ class DunningMail extends Mailable implements ShouldQueue {
         public ?int $dispatchId = null,
         public ?float $fee = null,
         public ?\Carbon\CarbonImmutable $payUntil = null,
-    ) {}
+        public ?array $interest = null,
+    ) {
+        // Belegsprache je Kunde (Feature 034, MVP-721): Betreff, Text und
+        // Mahnschreiben entstehen in Mailable::send() innerhalb dieser Locale.
+        $this->locale(\App\Support\DocumentLocale::for($invoice->customer, $invoice->organization));
+    }
 
     public function envelope(): Envelope {
         return new Envelope(subject: $this->subjectLine());
@@ -56,7 +62,7 @@ class DunningMail extends Mailable implements ShouldQueue {
         if ($this->dispatchId === null) {
             return;
         }
-        $dispatch = \App\Models\InvoiceDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
+        $dispatch = \App\Models\DocumentDispatch::query()->withoutGlobalScopes()->find($this->dispatchId);
         $dispatch?->forceFill([
             'status' => 'failed',
             'meta' => [...(array) $dispatch->meta, 'error' => mb_substr($exception->getMessage(), 0, 500)],
@@ -91,6 +97,16 @@ class DunningMail extends Mailable implements ShouldQueue {
             '',
             (string) __('Fällig war die Rechnung am :date.', ['date' => optional($this->invoice->due_on)->isoFormat('L') ?? '—']),
         ];
+        // Verzugszins-Ausweis (MVP-691): nur Text — gebucht wird nichts.
+        if ($this->interest !== null) {
+            $lines[] = '';
+            $lines[] = (string) __('finance.dunning.mail_interest', [
+                'amount' => NumberHelper::toGermanFormat($this->interest['amount'], 2, withThousandsSeparator: true),
+                'currency' => $this->invoice->currency->value,
+                'rate' => NumberHelper::toGermanFormat($this->interest['rate'], 2),
+                'days' => $this->interest['days'],
+            ]);
+        }
         if ($this->note !== null && trim($this->note) !== '') {
             $lines[] = '';
             $lines[] = trim($this->note);
@@ -115,7 +131,7 @@ class DunningMail extends Mailable implements ShouldQueue {
         $this->invoice->loadMissing(['items', 'customer', 'project', 'parent']);
         // MVP-650: das Mahnschreiben ist der Hauptanhang, die Original-Rechnung
         // liegt als Nachweis bei.
-        $letter = app(DunningPdfRenderer::class)->output($this->invoice, $this->level, $this->note, $this->fee, $this->payUntil);
+        $letter = app(DunningPdfRenderer::class)->output($this->invoice, $this->level, $this->note, $this->fee, $this->payUntil, $this->interest);
         $invoicePdf = app(InvoicePdfRenderer::class)->output($this->invoice);
         $letterName = $this->level <= 1
             ? sprintf('zahlungserinnerung-%s.pdf', $this->invoice->number)

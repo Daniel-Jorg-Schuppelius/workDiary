@@ -12,12 +12,14 @@
     // Secret-Felder werden unabhängig vom Typ maskiert und nie zurückgerendert (W1d).
     $isSecret = (bool) ($field['secret'] ?? (($field['type'] ?? '') === 'password'));
     $current = $isSecret ? null : old('settings.' . $key, data_get($setting->settings, $key, $field['default'] ?? null));
+    // Eine id je Feld — das Label verweist darauf, egal welcher Zweig rendert.
+    $fieldId = 'plugin-setting-' . preg_replace('/[^A-Za-z0-9_-]+/', '-', (string) $key);
 @endphp
 <div class="fieldset">
-    <label class="fieldset-label">{{ $field['label'] }}@if (! empty($field['required'])) *@endif</label>
+    <label class="fieldset-label" for="{{ $fieldId }}">{{ $field['label'] }}@if (! empty($field['required'])) *@endif</label>
 
     @if ($isSecret)
-        <input type="password" name="settings[{{ $key }}]"
+        <input type="password" id="{{ $fieldId }}" name="settings[{{ $key }}]"
                class="input input-sm input-bordered w-full"
                placeholder="@if (! empty(data_get($setting->settings, $key))){{ __('(unverändert — leer lassen)') }}@endif"
                autocomplete="new-password">
@@ -25,7 +27,7 @@
             {{-- Nur bei gesetztem Wert: erlaubt das Entfernen des gespeicherten
                  Secrets (Rückfall auf Config/ENV) — überschreiben geht über das
                  Feld selbst. Greift nur bei leerem Eingabefeld. --}}
-            <label class="mt-1 flex items-center gap-2 text-xs text-base-content/60">
+            <label class="mt-1 flex items-center gap-2 text-xs text-muted">
                 <input type="checkbox" name="settings_reset[{{ $key }}]" value="1" class="checkbox checkbox-xs">
                 {{ __('Gespeicherten Wert löschen (auf Standard/ENV zurücksetzen)') }}
             </label>
@@ -33,35 +35,35 @@
     @elseif ($field['type'] === 'boolean')
         <label class="cursor-pointer gap-3 justify-start label">
             <input type="hidden" name="settings[{{ $key }}]" value="0">
-            <input type="checkbox" name="settings[{{ $key }}]" value="1" class="toggle"
+            <input type="checkbox" id="{{ $fieldId }}" name="settings[{{ $key }}]" value="1" class="toggle"
                    @checked((bool) $current)>
             <span class="label-text">{{ __('Aktiv') }}</span>
         </label>
     @elseif ($field['type'] === 'select')
-        <select name="settings[{{ $key }}]" class="select select-sm select-bordered w-full">
+        <select id="{{ $fieldId }}" name="settings[{{ $key }}]" class="select select-sm select-bordered w-full">
             @foreach (($field['options'] ?? []) as $value => $label)
                 <option value="{{ $value }}" @selected((string) $current === (string) $value)>{{ $label }}</option>
             @endforeach
         </select>
     @elseif ($field['type'] === 'number')
-        <input type="number" name="settings[{{ $key }}]"
+        <input type="number" id="{{ $fieldId }}" name="settings[{{ $key }}]"
                class="input input-sm input-bordered w-full"
                value="{{ $current }}" step="any">
     @elseif ($field['type'] === 'url')
-        <input type="url" name="settings[{{ $key }}]"
+        <input type="url" id="{{ $fieldId }}" name="settings[{{ $key }}]"
                class="input input-sm input-bordered w-full"
                value="{{ $current }}" placeholder="https://">
     @elseif ($field['type'] === 'textarea')
-        <textarea name="settings[{{ $key }}]" rows="4"
+        <textarea id="{{ $fieldId }}" name="settings[{{ $key }}]" rows="4"
                   class="textarea textarea-sm textarea-bordered w-full">{{ $current }}</textarea>
     @else
-        <input type="text" name="settings[{{ $key }}]"
+        <input type="text" id="{{ $fieldId }}" name="settings[{{ $key }}]"
                class="input input-sm input-bordered w-full"
                value="{{ $current }}">
     @endif
 
     @if (! empty($field['help']))
-        <p class="text-xs text-base-content/60 mt-1">{{ $field['help'] }}</p>
+        <p class="text-xs text-muted mt-1">{{ $field['help'] }}</p>
     @endif
     @error('settings.' . $key)<p class="text-error text-sm">{{ $message }}</p>@enderror
 </div>

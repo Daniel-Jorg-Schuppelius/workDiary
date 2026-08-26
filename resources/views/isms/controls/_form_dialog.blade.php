@@ -70,7 +70,7 @@
             </select>
         </label>
         @if ($requirements->isEmpty())
-            <p class="text-xs text-base-content/60">{{ __('isms.hint.no_requirements_yet') }}</p>
+            <p class="text-xs text-muted">{{ __('isms.hint.no_requirements_yet') }}</p>
         @endif
     </x-form-group>
 </x-modal>

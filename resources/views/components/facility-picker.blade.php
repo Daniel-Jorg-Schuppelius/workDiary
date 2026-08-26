@@ -109,8 +109,8 @@
 >
     @if ($withCustomer)
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Kunde') }}</label>
-            <select name="{{ $customerName }}" x-ref="customerSelect" x-model.number="customer_id" @change="onCustomerChange()"
+            <label for="{{ $customerName }}" class="fieldset-label">{{ __('Kunde') }}</label>
+            <select id="{{ $customerName }}" name="{{ $customerName }}" x-ref="customerSelect" x-model.number="customer_id" @change="onCustomerChange()"
                     class="select select-bordered w-full @error($customerName) select-error @enderror">
                 <option value="">{{ __('— ohne Kunde —') }}</option>
                 <template x-for="c in data.customers" :key="c.id">
@@ -122,8 +122,8 @@
 
         @if ($withForeignCustomer)
             <div class="fieldset" x-show="hasForeignCustomers" x-cloak>
-                <label class="fieldset-label">{{ __('Fremdkunde') }}</label>
-                <select name="{{ $foreignCustomerName }}" x-ref="foreignSelect" x-model.number="foreign_customer_id"
+                <label for="{{ $foreignCustomerName }}" class="fieldset-label">{{ __('Fremdkunde') }}</label>
+                <select id="{{ $foreignCustomerName }}" name="{{ $foreignCustomerName }}" x-ref="foreignSelect" x-model.number="foreign_customer_id"
                         class="select select-bordered w-full @error($foreignCustomerName) select-error @enderror">
                     <option value="">{{ __('— ohne Fremdkunde —') }}</option>
                     <template x-for="fc in filteredForeignCustomers" :key="fc.id">
@@ -136,8 +136,8 @@
     @endif
 
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Standort') }}</label>
-        <select name="_picker_site_id" x-ref="siteSelect" x-model.number="site_id" @change="onSiteChange()"
+        <label for="_picker_site_id" class="fieldset-label">{{ __('Standort') }}</label>
+        <select id="_picker_site_id" name="_picker_site_id" x-ref="siteSelect" x-model.number="site_id" @change="onSiteChange()"
                 class="select select-bordered w-full">
             <option value="">{{ __('— bitte wählen —') }}</option>
             <template x-for="s in filteredSites" :key="s.id">
@@ -147,8 +147,8 @@
     </div>
 
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Gebäude') }}</label>
-        <select name="_picker_building_id" x-ref="buildingSelect" x-model.number="building_id" @change="onBuildingChange()"
+        <label for="_picker_building_id" class="fieldset-label">{{ __('Gebäude') }}</label>
+        <select id="_picker_building_id" name="_picker_building_id" x-ref="buildingSelect" x-model.number="building_id" @change="onBuildingChange()"
                 class="select select-bordered w-full">
             <option value="">{{ __('— bitte wählen —') }}</option>
             <template x-for="b in filteredBuildings" :key="b.id">
@@ -159,8 +159,8 @@
 
     @if ($withFloor)
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Geschoss') }}@if ($requireFloor) *@endif</label>
-            <select name="{{ $floorName }}" x-ref="floorSelect" x-model.number="floor_id" @change="onFloorChange()" @if ($requireFloor) required @endif
+            <label for="{{ $floorName }}" class="fieldset-label">{{ __('Geschoss') }}@if ($requireFloor) *@endif</label>
+            <select id="{{ $floorName }}" name="{{ $floorName }}" x-ref="floorSelect" x-model.number="floor_id" @change="onFloorChange()" @if ($requireFloor) required @endif
                     class="select select-bordered w-full @error($floorName) select-error @enderror">
                 <option value="">{{ __('— bitte wählen —') }}</option>
                 <template x-for="f in filteredFloors" :key="f.id">
@@ -173,8 +173,8 @@
 
     @if ($withRoom)
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Raum') }}@if ($requireRoom) *@endif</label>
-            <select name="{{ $roomName }}" x-ref="roomSelect" x-model.number="room_id" @if ($requireRoom) required @endif
+            <label for="{{ $roomName }}" class="fieldset-label">{{ __('Raum') }}@if ($requireRoom) *@endif</label>
+            <select id="{{ $roomName }}" name="{{ $roomName }}" x-ref="roomSelect" x-model.number="room_id" @if ($requireRoom) required @endif
                     class="select select-bordered w-full @error($roomName) select-error @enderror">
                 <option value="">{{ __('— ohne Raum —') }}</option>
                 <template x-for="r in filteredRooms" :key="r.id">

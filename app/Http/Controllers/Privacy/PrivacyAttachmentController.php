@@ -14,10 +14,11 @@ namespace App\Http\Controllers\Privacy;
 
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{DataSubjectRequest, Incident, PrivacyAttachment, TechnicalMeasure};
+use App\Services\Privacy\{DataProtectionCryptoService, SubjectDataExporter};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\Response;
 
 /**
  * Anhaenge an Datenschutz-Fallakten. Upload setzt das `update`-Recht der Akte
@@ -54,11 +55,28 @@ class PrivacyAttachmentController extends Controller {
         return back()->with('status', __('Nachweis hinzugefügt.'));
     }
 
-    public function download(PrivacyAttachment $attachment): BinaryFileResponse {
+    public function download(PrivacyAttachment $attachment): Response {
         $parent = $attachment->attachable;
         abort_unless($parent instanceof Model, 404);
         Gate::authorize('view', $parent);
         abort_unless(Storage::disk('local')->exists($attachment->path), 404);
+
+        // Generierte Auskunftspakete (Feature 129) liegen mit dem Fall-DEK
+        // verschlüsselt — hier entschlüsseln; nach Crypto-Shredding: 410.
+        if (str_starts_with($attachment->path, SubjectDataExporter::STORAGE_PREFIX)) {
+            abort_unless($parent instanceof DataSubjectRequest, 404);
+            $dek = $parent->recordDek();
+            abort_if($dek === null, 410, __('Der Fall wurde kryptografisch geschreddert.'));
+
+            $cipher = Storage::disk('local')->get($attachment->path);
+            abort_unless(is_string($cipher), 404);
+            $plain = app(DataProtectionCryptoService::class)->decryptWithDek($cipher, $dek);
+
+            return response($plain, 200, [
+                'Content-Type' => (string) ($attachment->mime ?: 'application/octet-stream'),
+                'Content-Disposition' => 'attachment; filename="' . $attachment->filename . '"',
+            ]);
+        }
 
         return response()->download(Storage::disk('local')->path($attachment->path), $attachment->filename);
     }

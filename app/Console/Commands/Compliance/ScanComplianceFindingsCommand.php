@@ -12,7 +12,7 @@ namespace App\Console\Commands\Compliance;
 
 use App\Console\Concerns\IteratesOrganizations;
 use App\Models\Organization;
-use App\Services\Compliance\{AttendancePlausibilityScanService, ComplianceFindingRecorder, ComplianceScanService, CoreTimeScanService};
+use App\Services\Compliance\{AttendancePlausibilityScanService, ComplianceFindingRecorder, ComplianceScanService, CoreTimeScanService, DrivingTimeComplianceChecker};
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -73,6 +73,19 @@ class ScanComplianceFindingsCommand extends Command {
                     AttendancePlausibilityScanService::CATEGORY,
                 );
                 foreach ($plausibilityStats as $k => $v) {
+                    $totals[$k] += $v;
+                }
+
+                // Feature 144 (MVP-719): Lenk-/Ruhezeit-Befunde als eigene Kategorie —
+                // leer, wenn die Org die Regeln nicht anwendet (dann Auto-„behoben").
+                $drivingStats = $recorder->record(
+                    $organization,
+                    $from,
+                    $to,
+                    $scanner->drivingTimeFindingsForRange($organization, $from, $to),
+                    DrivingTimeComplianceChecker::CATEGORY,
+                );
+                foreach ($drivingStats as $k => $v) {
                     $totals[$k] += $v;
                 }
             });

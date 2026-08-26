@@ -21,7 +21,7 @@
         @if ($issuedUrl)
             <div class="rounded-box border border-warning/40 bg-warning/10 p-4">
                 <div class="mb-1 text-sm font-semibold">{{ __('cti.new_heading') }}</div>
-                <p class="mb-2 text-xs text-base-content/60">{{ __('cti.new_hint') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('cti.new_hint') }}</p>
                 <code class="block break-all rounded bg-base-100 px-3 py-2 text-sm">{{ $issuedUrl }}</code>
             </div>
         @endif
@@ -52,7 +52,7 @@
         <x-card>
             <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('cti.connections_heading') }}</h2>
             @if ($connections->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('cti.no_connections') }}</p>
+                <p class="text-sm text-muted">{{ __('cti.no_connections') }}</p>
             @else
                 <x-table :bare="true">
                     <x-slot:head>
@@ -67,7 +67,7 @@
                             @foreach ($connections as $connection)
                                 <tr class="hover">
                                     <td>{{ $connection->name }}</td>
-                                    <td class="text-base-content/60">{{ ucfirst($connection->provider) }}</td>
+                                    <td class="text-muted">{{ ucfirst($connection->provider) }}</td>
                                     <td>
                                         @if ($connection->isActive())
                                             <span class="badge badge-success badge-sm">{{ __('cti.status.active') }}</span>
@@ -75,7 +75,7 @@
                                             <span class="badge badge-ghost badge-sm">{{ __('cti.status.inactive') }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-base-content/60">{{ $connection->last_event_at?->diffForHumans() ?? '—' }}</td>
+                                    <td class="text-muted">{{ $connection->last_event_at?->diffForHumans() ?? '—' }}</td>
                                     <td class="text-right">
                                         @if ($connection->isActive())
                                             <form method="POST" action="{{ route('admin.cti.disconnect') }}">
@@ -100,7 +100,7 @@
                                   class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
                                 @csrf
                                 <input type="hidden" name="connection" value="{{ $connection->sqid }}">
-                                <p class="mb-3 text-sm font-medium">{{ $connection->name }} <span class="text-base-content/50">({{ $connection->provider }})</span></p>
+                                <p class="mb-3 text-sm font-medium">{{ $connection->name }} <span class="text-muted">({{ $connection->provider }})</span></p>
 
                                 <label class="label cursor-pointer justify-start gap-3">
                                     <input type="checkbox" name="dial_enabled" value="1" class="checkbox checkbox-sm"
@@ -114,7 +114,7 @@
                                         <input type="text" name="dial_extension" maxlength="64"
                                                value="{{ old('dial_extension', $connection->dial_extension) }}"
                                                class="input input-sm input-bordered">
-                                        <span class="mt-1 text-xs text-base-content/60">{{ __('cti.dial.extension_help') }}</span>
+                                        <span class="mt-1 text-xs text-muted">{{ __('cti.dial.extension_help') }}</span>
                                     </label>
                                     <label class="form-control">
                                         <span class="label-text text-xs">{{ __('cti.dial.api_base_url') }}</span>
@@ -126,7 +126,7 @@
                                         <span class="label-text text-xs">{{ __('cti.dial.api_token') }}</span>
                                         <input type="password" name="api_token" maxlength="500" autocomplete="new-password"
                                                class="input input-sm input-bordered font-mono" placeholder="••••••••">
-                                        <span class="mt-1 text-xs text-base-content/60">{{ __('cti.dial.api_token_help') }}</span>
+                                        <span class="mt-1 text-xs text-muted">{{ __('cti.dial.api_token_help') }}</span>
                                     </label>
                                 </div>
 

@@ -25,7 +25,7 @@
             <p class="mt-1 text-sm text-base-content/70">{{ $survey->purpose }}</p>
         @endif
         @if ($survey->anonymous)
-            <p class="mt-2 text-xs text-base-content/60">{{ __('Ihre Antworten werden anonym gespeichert und sind nicht auf Sie rückführbar.') }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __('Ihre Antworten werden anonym gespeichert und sind nicht auf Sie rückführbar.') }}</p>
         @endif
 
         @if (session('error'))

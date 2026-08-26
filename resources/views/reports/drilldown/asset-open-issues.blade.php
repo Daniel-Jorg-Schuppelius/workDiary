@@ -40,7 +40,7 @@
 
     <x-card>
         @if ($issues->isEmpty())
-            <x-empty-state icon='<span class="material-symbols-outlined" aria-hidden="true">error_outline</span>' :title="__('Keine offenen Punkte für diesen Drilldown gefunden.')" />
+            <x-empty-state icon="error_outline" :title="__('Keine offenen Punkte für diesen Drilldown gefunden.')" />
         @else
             <x-table bare table-sort="client">
                 <x-slot:head>

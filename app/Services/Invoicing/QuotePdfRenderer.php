@@ -31,13 +31,14 @@ class QuotePdfRenderer {
     public function output(Quote $quote): string {
         $quote->loadMissing(['items', 'customer', 'organization']);
 
-        return $this->design->renderPdf(
+        // Belegsprache je Kunde (Feature 034, MVP-721): nur Darstellung.
+        return \App\Support\DocumentLocale::within($quote->customer, $quote->organization, fn (): string => $this->design->renderPdf(
             RenderDocumentKind::Quote,
             'quotes.pdf',
             $this->viewData($quote),
             $quote->organization,
             payload: $this->designPayload($quote),
-        );
+        ));
     }
 
     /**

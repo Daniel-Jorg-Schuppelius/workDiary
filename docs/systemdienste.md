@@ -12,6 +12,11 @@ sudo scripts/install-system.sh
 Der Installer ermittelt alles selbst (Installationsverzeichnis aus dem
 Skriptpfad, PHP-Binary, Betriebs-User aus dem `storage/`-Owner) und richtet ein:
 
+> **Container-Betrieb?** Für Docker/Compose gilt dieses Handbuch nicht — dort
+> übernehmen `compose.yml` (Dienste `queue`, `scheduler`, optional `reverb`)
+> und der Entrypoint die Rolle von Cron und systemd:
+> [on-premise-docker.md](on-premise-docker.md).
+
 | Komponente                          | Zweck                                                                                                                                              | immer?                   |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------ |
 | `/etc/cron.d/workdiary`             | `schedule:run` minütlich (Herzschlag ALLER wiederkehrenden Jobs) + tägliches Backup (`scripts/backup.sh`)                                          | ja                       |

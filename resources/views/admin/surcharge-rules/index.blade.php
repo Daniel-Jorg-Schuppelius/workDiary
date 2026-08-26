@@ -100,7 +100,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">percent</span>' :colspan="10" :title="__('surcharge.title.empty')" compact />
+            <x-table.empty icon="percent" :colspan="10" :title="__('surcharge.title.empty')" compact />
         @endforelse
     </x-table>
 </x-index-page>

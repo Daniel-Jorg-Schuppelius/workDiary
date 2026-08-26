@@ -88,7 +88,7 @@
                                 <td class="text-right font-mono text-xs">
                                     {{ $src['size_bytes'] !== null ? $fmtBytes((int) $src['size_bytes']) : '—' }}
                                 </td>
-                                <td class="font-mono text-xs text-base-content/60">
+                                <td class="font-mono text-xs text-muted">
                                     {{ $src['manifest_hash'] !== null ? \Illuminate\Support\Str::substr((string) $src['manifest_hash'], 0, 12) . '…' : '—' }}
                                 </td>
                                 <td>
@@ -103,11 +103,11 @@
             </x-table>
         @else
             <x-empty-state
-                icon='<span class="material-symbols-outlined" aria-hidden="true">cloud_off</span>'
+                icon="cloud_off"
                 :title="__('backup.empty.no_heartbeat')"
                 :description="__('backup.empty.no_heartbeat_hint')" />
         @endif
-        <p class="mt-2 text-xs text-base-content/50">{{ __('backup.hint.freshness', ['hours' => $freshnessHours]) }}</p>
+        <p class="mt-2 text-xs text-muted">{{ __('backup.hint.freshness', ['hours' => $freshnessHours]) }}</p>
     </x-card>
 
     {{-- Restore-Test-Register --}}
@@ -168,7 +168,7 @@
             </div>
         @else
             <x-empty-state
-                icon='<span class="material-symbols-outlined" aria-hidden="true">restore</span>'
+                icon="restore"
                 :title="__('backup.empty.no_restore_tests')" />
         @endif
     </x-card>
@@ -176,7 +176,7 @@
     {{-- Retention-Hinweis (Verweis auf docs/backup-restore.md, kein Duplikat) --}}
     <x-card :title="__('backup.section.retention')" icon="schedule">
         <p class="text-sm text-base-content/70">{{ __('backup.hint.retention') }}</p>
-        <p class="mt-1 text-xs text-base-content/50">{{ __('backup.hint.see_docs') }}</p>
+        <p class="mt-1 text-xs text-muted">{{ __('backup.hint.see_docs') }}</p>
         <p class="mt-2">
             {{-- Öffnet den Hilfe-Drawer; route('help.topics.show') ist ein JSON-Endpunkt, kein Link-Ziel. --}}
             <button type="button" class="link link-primary text-sm"
@@ -186,7 +186,7 @@
         </p>
     </x-card>
 
-    <p class="text-xs text-base-content/40">
+    <p class="text-xs text-muted">
         {{ __('backup.generated_at', ['at' => ($status['generated_at'] ?? now())->translatedFormat('d.m.Y H:i:s')]) }}
     </p>
 </x-index-page>

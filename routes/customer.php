@@ -44,6 +44,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
     // die Fallakte — bewusst außerhalb des auth-Guards, Inhalt strikt kundensichtbar.
     Route::get('/billing/statement/{statement}/pdf', [BillingController::class, 'pdf'])->name('billing.pdf');
 
+    // E-Mail-Änderung bestätigen (MVP-712): signierter 24-h-Link an die NEUE
+    // Adresse — ohne Session wie die Einladungsannahme, ungültig → neutral 404.
+    Route::get('/profile/email/confirm/{user}', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'confirmEmailChange'])
+        ->middleware(['signed', 'throttle:30,1'])->name('profile.email.confirm');
+
     Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
         Route::get('/', DashboardController::class)->name('dashboard');
 
@@ -120,6 +125,16 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::post('/rentals/{rental}/uebergabe/{report}/bestaetigen', [\App\Http\Controllers\CustomerPortal\RentalPortalController::class, 'confirm'])->name('rentals.confirm');
         });
 
+        // Verleih-Anfrage (Feature 073, MVP-714): eigene Capability (Default-
+        // Deny), zweiphasig — der Kunde fragt an, die Leitung entscheidet.
+        // Eigener Pfad, damit /rentals/{rental} (Sqid-Binding) nicht greift.
+        Route::middleware('portal.capability:rental_requests')->group(function (): void {
+            Route::get('/rental-requests', [\App\Http\Controllers\CustomerPortal\RentalRequestController::class, 'index'])->name('rentals.requests.index');
+            Route::post('/rental-requests', [\App\Http\Controllers\CustomerPortal\RentalRequestController::class, 'store'])
+                ->middleware('throttle:12,1')->name('rentals.requests.store');
+            Route::post('/rental-requests/{rentalRequest}/withdraw', [\App\Http\Controllers\CustomerPortal\RentalRequestController::class, 'withdraw'])->name('rentals.requests.withdraw');
+        });
+
         Route::middleware('portal.capability:assets')->group(function (): void {
             // Objektakte read-only (Rang 50): eigene Objekte des Kunden.
             Route::get('/assets', [AssetController::class, 'index'])->name('assets.index');
@@ -134,6 +149,9 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::post('/queries', [\App\Http\Controllers\CustomerPortal\QueryController::class, 'store'])
                 ->middleware('throttle:portal-query')->name('queries.store');
             Route::post('/queries/{query}/withdraw', [\App\Http\Controllers\CustomerPortal\QueryController::class, 'withdraw'])->name('queries.withdraw');
+            // Anhang-Download (MVP-712): gleiche Scope-Grenze wie die Liste,
+            // Pfade nur aus der DB — Sicherheitsmuster wie customer.tickets.attachments.download.
+            Route::get('/queries/{query}/attachments/{attachment}/download', [\App\Http\Controllers\CustomerPortal\QueryController::class, 'downloadAttachment'])->name('queries.attachments.download');
         });
 
         Route::middleware('portal.capability:documents')->group(function (): void {
@@ -143,6 +161,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::get('/documents', [DocumentController::class, 'index'])->name('documents.index');
             Route::get('/documents/{document}/download/{version?}', [DocumentController::class, 'download'])->name('documents.download');
         });
+
+        // Profil + E-Mail-Selbständerung (MVP-712).
+        Route::get('/profile', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'show'])->name('profile.show');
+        Route::post('/profile/email', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'requestEmailChange'])
+            ->middleware('throttle:6,1')->name('profile.email.request');
 
         // 2FA-Selbstverwaltung.
         Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('2fa.show');

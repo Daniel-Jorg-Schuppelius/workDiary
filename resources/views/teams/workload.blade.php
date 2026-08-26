@@ -21,7 +21,7 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <div class="mb-3 text-xs text-base-content/60">
+    <div class="mb-3 text-xs text-muted">
         {{ $range['from']->isoFormat('DD.MM.YYYY') }} – {{ $range['to']->isoFormat('DD.MM.YYYY') }}
     </div>
 
@@ -37,12 +37,12 @@
                                 <x-status-badge tone="primary" size="xs">{{ __('Teamleiter') }}</x-status-badge>
                             @endif
                         </h3>
-                        <span class="text-xs text-base-content/60">{{ trans_choice(':count Aufgabe|:count Aufgaben', $tasks->count(), ['count' => $tasks->count()]) }}</span>
+                        <span class="text-xs text-muted">{{ trans_choice(':count Aufgabe|:count Aufgaben', $tasks->count(), ['count' => $tasks->count()]) }}</span>
                     </div>
 
                     @if ($tasks->isEmpty())
                         <x-empty-state compact
-                            icon='<span class="material-symbols-outlined" aria-hidden="true">event_available</span>'
+                            icon="event_available"
                             :title="__('Keine Aufgaben im Zeitraum.')" />
                     @else
                         <x-table table-sort="client">
@@ -71,7 +71,7 @@
             </div>
         @empty
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">group</span>'
+                icon="group"
                 :title="__('Dieses Team hat noch keine Mitglieder.')" />
         @endforelse
     </div>

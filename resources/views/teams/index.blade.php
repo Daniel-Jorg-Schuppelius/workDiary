@@ -65,7 +65,7 @@
             </tr>
         @empty
             <x-table.empty :colspan="4"
-                icon='<span class="material-symbols-outlined" aria-hidden="true">groups</span>'
+                icon="groups"
                 :title="__('Noch keine Teams angelegt.')" compact />
         @endforelse
     </x-table>

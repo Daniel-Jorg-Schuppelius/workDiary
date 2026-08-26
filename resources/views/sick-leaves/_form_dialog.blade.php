@@ -77,7 +77,7 @@
         </div>
 
         <div class="fieldset">
-            <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
+            <span class="fieldset-label">{{ __('Zeitraum') }} *</span>
             <x-date-range
                 type="date"
                 :from="old('start_date', $sickLeave?->start_date?->format('Y-m-d') ?? $prefillStart)"
@@ -92,7 +92,7 @@
                 x-model:from="start"
                 x-model:to="end"
             />
-            <p class="text-xs text-base-content/60 mt-1">
+            <p class="text-xs text-muted mt-1">
                 <span x-text="days"></span> {{ __('Kalendertage') }}
             </p>
             @error('start_date')<p class="text-error text-sm">{{ $message }}</p>@enderror
@@ -122,7 +122,7 @@
             </label>
             <input id="sick-au-file" type="file" name="au_file" accept="{{ $acceptHint }}"
                    class="file-input file-input-bordered file-input-sm w-full">
-            <p class="text-xs text-base-content/60 mt-1">
+            <p class="text-xs text-muted mt-1">
                 {{ __('Erlaubt: :mimes — max. :mb MB', ['mimes' => strtoupper(implode(', ', $mimes)), 'mb' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($maxKb / 1024, 1, withThousandsSeparator: true)]) }}
             </p>
             <p class="text-xs text-warning mt-1" x-show="requiresAu" x-cloak>
@@ -134,7 +134,7 @@
                         <li class="flex items-center gap-2">
                             <x-icon name="description" class="h-3 w-3" />
                             <a class="link link-hover" href="{{ \App\Http\Controllers\SickLeaveController::attachmentDownloadUrl($sickLeave, $att) }}">{{ $att->original_name }}</a>
-                            <span class="text-base-content/50">({{ $att->humanSize() }})</span>
+                            <span class="text-muted">({{ $att->humanSize() }})</span>
                         </li>
                     @endforeach
                 </ul>

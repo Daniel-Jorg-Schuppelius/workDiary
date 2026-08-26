@@ -10,12 +10,14 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\InvoiceMailTemplate;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Validation\Rule;
 
 class InvoiceMailTemplateController extends Controller {
     use ResolvesCurrentOrganization;
@@ -25,13 +27,14 @@ class InvoiceMailTemplateController extends Controller {
         $search = $request->string('q')->toString();
         $templates = InvoiceMailTemplate::query()
             ->when($search !== '', fn($q) => $q->search($search))
+            ->orderBy('document_kind')
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->get();
 
         return view('admin.invoice-mail-templates.index', [
             'templates' => $templates,
-            'variables' => InvoiceMailTemplate::availableVariables(),
+            'variablesByKind' => $this->variablesByKind(),
             'search' => $search,
         ]);
     }
@@ -41,7 +44,8 @@ class InvoiceMailTemplateController extends Controller {
 
         return view('admin.invoice-mail-templates.form', [
             'template' => new InvoiceMailTemplate(['is_default' => false]),
-            'variables' => InvoiceMailTemplate::availableVariables(),
+            'kinds' => InvoiceMailTemplate::supportedKinds(),
+            'variablesByKind' => $this->variablesByKind(),
         ]);
     }
 
@@ -69,7 +73,8 @@ class InvoiceMailTemplateController extends Controller {
 
         return view('admin.invoice-mail-templates.form', [
             'template' => $invoiceMailTemplate,
-            'variables' => InvoiceMailTemplate::availableVariables(),
+            'kinds' => InvoiceMailTemplate::supportedKinds(),
+            'variablesByKind' => $this->variablesByKind(),
         ]);
     }
 
@@ -98,6 +103,11 @@ class InvoiceMailTemplateController extends Controller {
     private function validateInput(Request $request): array {
         return $request->validate([
             'name' => ['required', 'string', 'max:120'],
+            // Feature 128 (MVP-692): Vorlagen gelten je Belegart.
+            'document_kind' => ['required', Rule::in(array_map(
+                static fn (RenderDocumentKind $kind): string => $kind->value,
+                InvoiceMailTemplate::supportedKinds(),
+            ))],
             'is_default' => ['nullable', 'boolean'],
             'subject' => ['required', 'string', 'max:255'],
             'body_html' => ['required', 'string', 'max:65535'],
@@ -106,8 +116,9 @@ class InvoiceMailTemplateController extends Controller {
     }
 
     /**
-     * Setzt is_default für alle anderen Templates der gleichen Org-Scope auf false,
-     * wenn $tpl is_default = true ist.
+     * Setzt is_default für alle anderen Templates der gleichen Org-Scope UND
+     * Belegart auf false, wenn $tpl is_default = true ist (Feature 128:
+     * Default gilt je (Organisation, Belegart)).
      */
     private function ensureSingleDefault(InvoiceMailTemplate $tpl): void {
         if (! $tpl->is_default) {
@@ -115,6 +126,7 @@ class InvoiceMailTemplateController extends Controller {
         }
         InvoiceMailTemplate::query()
             ->where('id', '!=', $tpl->id)
+            ->where('document_kind', $tpl->document_kind)
             ->where(function ($q) use ($tpl): void {
                 if ($tpl->organization_id === null) {
                     $q->whereNull('organization_id');
@@ -123,6 +135,23 @@ class InvoiceMailTemplateController extends Controller {
                 }
             })
             ->update(['is_default' => false]);
+    }
+
+    /**
+     * Platzhalter-Doku je Belegart für die Admin-UI.
+     *
+     * @return array<string, array{label: string, variables: array<string, string>}>
+     */
+    private function variablesByKind(): array {
+        $result = [];
+        foreach (InvoiceMailTemplate::supportedKinds() as $kind) {
+            $result[$kind->value] = [
+                'label' => $kind->label(),
+                'variables' => InvoiceMailTemplate::availableVariables($kind),
+            ];
+        }
+
+        return $result;
     }
 
     private function authorizeBilling(): void {

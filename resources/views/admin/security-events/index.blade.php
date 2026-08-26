@@ -18,32 +18,32 @@
 <x-index-page overflow="clip" :subtitle="__('Sicherheitsereignisse der letzten 24 Stunden, Schwellwert-Alarme und Verlauf.')">
     <div class="grid gap-3 lg:grid-cols-3 mb-3 shrink-0">
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs uppercase tracking-wide text-base-content/60 mb-1">{{ __('Ereignisse (24 h)') }}</div>
+            <div class="text-xs uppercase tracking-wide text-muted mb-1">{{ __('Ereignisse (24 h)') }}</div>
             @forelse ($counts as $row)
                 <div class="flex justify-between text-xs py-0.5">
                     <code>{{ $row['event'] }}</code>
                     <span class="font-medium">{{ $row['count'] }}</span>
                 </div>
             @empty
-                <div class="text-sm text-base-content/60">{{ __('Keine Ereignisse') }}</div>
+                <div class="text-sm text-muted">{{ __('Keine Ereignisse') }}</div>
             @endforelse
         </div>
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs uppercase tracking-wide text-base-content/60 mb-1">{{ __('Auffällige IPs (24 h)') }}</div>
+            <div class="text-xs uppercase tracking-wide text-muted mb-1">{{ __('Auffällige IPs (24 h)') }}</div>
             @forelse ($topIps as $row)
                 <div class="flex justify-between text-xs py-0.5">
                     <code>{{ $row['ip'] }}</code>
                     <span class="font-medium">{{ $row['count'] }}</span>
                 </div>
             @empty
-                <div class="text-sm text-base-content/60">{{ __('Keine Ereignisse') }}</div>
+                <div class="text-sm text-muted">{{ __('Keine Ereignisse') }}</div>
             @endforelse
         </div>
         <div class="rounded-box border border-base-300 bg-base-100 p-3">
-            <div class="text-xs uppercase tracking-wide text-base-content/60 mb-1">{{ __('Schwellwert-Regeln') }}</div>
+            <div class="text-xs uppercase tracking-wide text-muted mb-1">{{ __('Schwellwert-Regeln') }}</div>
             @foreach ($alarms as $rule)
                 <div class="flex justify-between items-center text-xs py-0.5">
-                    <span><code>{{ $rule['event'] }}</code> <span class="text-base-content/60">({{ $rule['scope'] }}, {{ $rule['limit'] }}/{{ $rule['window_minutes'] }} min)</span></span>
+                    <span><code>{{ $rule['event'] }}</code> <span class="text-muted">({{ $rule['scope'] }}, {{ $rule['limit'] }}/{{ $rule['window_minutes'] }} min)</span></span>
                     <x-status-badge :tone="$rule['active'] ? 'error' : 'success'" size="sm">
                         {{ $rule['active'] ? __('Alarm') : __('ruhig') }}
                     </x-status-badge>
@@ -54,7 +54,7 @@
 
     @if ($events->count() === 0)
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">gpp_good</span>'
+            icon="gpp_good"
             :title="__('Keine Sicherheitsereignisse')"
             :message="__('Aktuell sind keine sicherheitsrelevanten Fehlversuche verzeichnet.')" />
     @else

@@ -14,7 +14,7 @@ namespace App\Services\Accounting;
 
 use App\Enums\Finance\AccountingEntryStatus;
 use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingPeriod, AccountingProfile};
-use App\Models\{Organization, User};
+use App\Models\{CostCenter, Organization, User};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -217,6 +217,7 @@ class JournalService {
                 'counterparty_id' => $line->counterparty_id,
                 'project_id' => $line->project_id,
                 'asset_id' => $line->asset_id,
+                'cost_center_id' => $line->cost_center_id,
                 'cost_group' => $line->cost_group,
                 'memo' => $line->memo,
             ])->all();
@@ -346,6 +347,50 @@ class JournalService {
         return $candidate;
     }
 
+    /**
+     * Kostenstelle einer Zeile nachtragen (Feature 142, MVP-709).
+     *
+     * Nur an Entwürfen: Eine festgeschriebene Buchung bleibt unveränderlich —
+     * auch in ihren Analysebezügen. Wer die Kostenstelle einer Festbuchung
+     * ändern will, storniert und bucht neu.
+     */
+    public function assignCostCenter(AccountingEntryLine $line, ?int $costCenterId): AccountingEntryLine {
+        $entry = $line->entry;
+        if (! $entry instanceof AccountingEntry) {
+            throw ValidationException::withMessages([
+                'lines' => (string) __('accounting.ledger.error.entry_without_organization'),
+            ]);
+        }
+        $this->assertMutable($entry);
+
+        $line->update(['cost_center_id' => $this->ownCostCenterId((int) $entry->organization_id, $costCenterId)]);
+
+        return $line->refresh();
+    }
+
+    /**
+     * Kostenstelle gehört zur Organisation der Buchung — sonst wäre die
+     * Dimension ein Weg, fremde Stammdaten in ein Journal zu ziehen.
+     */
+    private function ownCostCenterId(int $organizationId, mixed $raw): ?int {
+        if ($raw === null || $raw === '' || (int) $raw === 0) {
+            return null;
+        }
+
+        $exists = CostCenter::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $organizationId)
+            ->whereKey((int) $raw)
+            ->exists();
+        if (! $exists) {
+            throw ValidationException::withMessages([
+                'lines' => (string) __('accounting.ledger.error.unknown_cost_center'),
+            ]);
+        }
+
+        return (int) $raw;
+    }
+
     /** @param array<int, array<string, mixed>> $lines */
     private function replaceLines(AccountingEntry $entry, array $lines): void {
         $no = 1;
@@ -364,6 +409,7 @@ class JournalService {
                 'counterparty_id' => $line['counterparty_id'] ?? null,
                 'project_id' => $line['project_id'] ?? null,
                 'asset_id' => $line['asset_id'] ?? null,
+                'cost_center_id' => $this->ownCostCenterId((int) $entry->organization_id, $line['cost_center_id'] ?? null),
                 'cost_group' => $line['cost_group'] ?? null,
                 'memo' => $line['memo'] ?? null,
             ]);

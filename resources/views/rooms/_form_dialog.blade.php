@@ -155,7 +155,7 @@
              daher hier nur Anzeige + Inline-Add (eigene Formulare ausserhalb der
              Modal-Form, damit kein verschachteltes <form> entsteht). --}}
         <x-form-group :legend="__('Raumanforderungen')" icon="rule" tone="warning">
-            <p class="text-sm text-base-content/60">{{ __('Fachliche Anforderungen je Gewerk – ergänzend zum Reinigungsprofil.') }}</p>
+            <p class="text-sm text-muted">{{ __('Fachliche Anforderungen je Gewerk – ergänzend zum Reinigungsprofil.') }}</p>
             @if ($room->requirements->isNotEmpty())
                 <ul class="mt-2 space-y-1">
                     @foreach ($room->requirements as $req)
@@ -164,7 +164,7 @@
                             <span class="font-medium">{{ $req->kind->label() }}</span>
                             @if ($req->level)<span class="badge badge-sm badge-outline">{{ $req->level }}</span>@endif
                             @unless ($req->is_active)<span class="badge badge-sm badge-ghost">{{ __('inaktiv') }}</span>@endunless
-                            @if ($req->note)<span class="text-base-content/60">— {{ $req->note }}</span>@endif
+                            @if ($req->note)<span class="text-muted">— {{ $req->note }}</span>@endif
                             <x-button tone="ghost" size="xs" class="ml-auto text-error"
                                href="#"
                                data-submit-form="req-del-{{ $req->id }}">{{ __('Entfernen') }}</x-button>
@@ -172,7 +172,7 @@
                     @endforeach
                 </ul>
             @else
-                <p class="mt-2 text-sm text-base-content/50">{{ __('Noch keine Anforderungen hinterlegt.') }}</p>
+                <p class="mt-2 text-sm text-muted">{{ __('Noch keine Anforderungen hinterlegt.') }}</p>
             @endif
         </x-form-group>
     @endif

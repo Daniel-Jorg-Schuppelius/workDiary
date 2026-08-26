@@ -20,11 +20,15 @@ use Throwable;
 /**
  * Open-Meteo-Wetterprovider (Feature 062, MVP-131): frei, ohne Schlüssel.
  * Nutzt die Forecast-API mit `start_date`/`end_date` für einen Tag (deckt
- * heutige und jüngst vergangene Arbeitstage ab). Der HTTP-Client ist
+ * heutige und jüngst vergangene Arbeitstage ab) sowie `forecast_days` für die
+ * Tagesvorhersage der Disposition (MVP-716). Der HTTP-Client ist
  * injizierbar (Guzzle) — im Test über `MockHandler` ersetzt.
  */
 class OpenMeteoProvider implements WeatherProvider {
     private const ENDPOINT = 'https://api.open-meteo.com/v1/forecast';
+
+    /** Open-Meteo liefert bis zu 16 Tage; für die Disposition reicht eine Woche (MVP-716). */
+    public const MAX_FORECAST_DAYS = 7;
 
     public function __construct(private readonly PluginApiClient $http) {}
 
@@ -66,6 +70,54 @@ class OpenMeteoProvider implements WeatherProvider {
             'weather_code' => is_array($daily['weather_code'] ?? null) && isset($daily['weather_code'][0]) ? (int) $daily['weather_code'][0] : null,
             'raw' => $json,
         ];
+    }
+
+    public function forecast(float $lat, float $lng, int $days): ?array {
+        $days = max(1, min(self::MAX_FORECAST_DAYS, $days));
+        try {
+            $response = $this->http->getResponse(self::ENDPOINT, [
+                'latitude' => $lat,
+                'longitude' => $lng,
+                'forecast_days' => $days,
+                'daily' => 'temperature_2m_max,temperature_2m_min,precipitation_sum,wind_speed_10m_max,wind_gusts_10m_max,weather_code',
+                'timezone' => 'auto',
+            ], ['timeout' => 8]);
+            if (! $response->successful()) {
+                return null;
+            }
+            /** @var array<string, mixed> $json */
+            $json = json_decode($response->body(), true, 512, JSON_THROW_ON_ERROR);
+        } catch (Throwable) {
+            return null;
+        }
+
+        $daily = $json['daily'] ?? null;
+        if (! is_array($daily) || ! is_array($daily['time'] ?? null)) {
+            return null;
+        }
+
+        $result = [];
+        foreach ($daily['time'] as $i => $date) {
+            if (! is_string($date)) {
+                continue;
+            }
+            $code = $daily['weather_code'][$i] ?? null;
+            $result[$date] = [
+                'date' => $date,
+                'temp_min' => $this->floatAt($daily['temperature_2m_min'] ?? null, $i),
+                'temp_max' => $this->floatAt($daily['temperature_2m_max'] ?? null, $i),
+                'precipitation_mm' => $this->floatAt($daily['precipitation_sum'] ?? null, $i),
+                'wind_max_kmh' => $this->floatAt($daily['wind_speed_10m_max'] ?? null, $i),
+                'wind_gust_kmh' => $this->floatAt($daily['wind_gusts_10m_max'] ?? null, $i),
+                'weather_code' => is_numeric($code) ? (int) $code : null,
+            ];
+        }
+
+        return $result === [] ? null : $result;
+    }
+
+    private function floatAt(mixed $values, int|string $index): ?float {
+        return is_array($values) && isset($values[$index]) && is_numeric($values[$index]) ? (float) $values[$index] : null;
     }
 
     private function firstFloat(mixed $values): ?float {

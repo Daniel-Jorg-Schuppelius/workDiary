@@ -37,7 +37,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('zammad.health.inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-base-content/60">{{ __('zammad.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('zammad.intro') }}</p>
 
             @if ($connection && $connection->isActive())
                 <div class="flex flex-wrap gap-2">
@@ -75,14 +75,14 @@
                     <input type="password" name="api_token" autocomplete="new-password"
                            placeholder="{{ $connection ? __('zammad.field.token_keep') : '' }}"
                            class="input input-bordered input-sm" @required(! $connection)>
-                    <span class="label-text-alt text-base-content/50">{{ __('zammad.field.token_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('zammad.field.token_help') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('zammad.field.webhook_secret') }}</span>
                     <input type="password" name="webhook_secret" autocomplete="new-password"
                            placeholder="{{ $connection && $connection->webhook_secret ? __('zammad.field.token_keep') : '' }}"
                            class="input input-bordered input-sm">
-                    <span class="label-text-alt text-base-content/50">{{ __('zammad.field.webhook_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('zammad.field.webhook_help') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('zammad.field.default_project') }}</span>
@@ -97,7 +97,7 @@
                     <span class="label-text">{{ __('zammad.field.resolved_state') }}</span>
                     <input type="text" name="resolved_state" value="{{ old('resolved_state', $connection->resolved_state ?? '') }}"
                            placeholder="closed" class="input input-bordered input-sm">
-                    <span class="label-text-alt text-base-content/50">{{ __('zammad.field.resolved_state_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('zammad.field.resolved_state_help') }}</span>
                 </label>
                 <label class="form-control justify-end">
                     <span class="label cursor-pointer justify-start gap-2">
@@ -112,14 +112,14 @@
             {{-- Queue → Projekt --}}
             <div>
                 <h3 class="mb-1 text-sm font-semibold">{{ __('zammad.queue.heading') }}</h3>
-                <p class="mb-2 text-xs text-base-content/60">{{ __('zammad.queue.help') }}</p>
+                <p class="mb-2 text-xs text-muted">{{ __('zammad.queue.help') }}</p>
                 <div class="space-y-2">
                     @php $rows = array_merge($queueRows, array_fill(0, 3, ['group_id' => '', 'project_sqid' => ''])); @endphp
                     @foreach ($rows as $row)
                         <div class="flex flex-wrap items-center gap-2">
                             <input type="number" name="queue_group[]" min="1" value="{{ $row['group_id'] }}"
                                    placeholder="{{ __('zammad.queue.group_id') }}" class="input input-bordered input-sm w-40">
-                            <span class="text-base-content/50">→</span>
+                            <span class="text-muted">→</span>
                             <select name="queue_project[]" class="select select-bordered select-sm">
                                 <option value="">{{ __('zammad.field.no_project') }}</option>
                                 @foreach ($projects as $project)

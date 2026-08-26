@@ -50,17 +50,17 @@
         </x-slot:head>
         @forelse ($categories as $cat)
             <tr>
-                <td class="text-base-content/60">{{ $cat->sort }}</td>
+                <td class="text-muted">{{ $cat->sort }}</td>
                 <td class="font-medium">
                     <span class="inline-flex items-center gap-2">
                         <x-icon :name="$cat->icon ?: 'receipt_long'" class="text-{{ $cat->color ?: 'primary' }}" />
                         {{ $cat->label }}
                     </span>
                     @if ($cat->description)
-                        <div class="text-xs text-base-content/60">{{ $cat->description }}</div>
+                        <div class="text-xs text-muted">{{ $cat->description }}</div>
                     @endif
                 </td>
-                <td class="font-mono text-sm text-base-content/60">{{ $cat->slug }}</td>
+                <td class="font-mono text-sm text-muted">{{ $cat->slug }}</td>
                 <td class="text-right tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(((float) ($cat->default_tax_rate?->getNumericValue() ?? '0')), 2, withThousandsSeparator: true) }} %</td>
                 <td>
                     <div class="flex flex-wrap gap-1">
@@ -91,7 +91,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="8" :title="__('Keine Spesenkategorien vorhanden')" compact />
+            <x-table.empty icon="receipt_long" :colspan="8" :title="__('Keine Spesenkategorien vorhanden')" compact />
         @endforelse
     </x-table>
 

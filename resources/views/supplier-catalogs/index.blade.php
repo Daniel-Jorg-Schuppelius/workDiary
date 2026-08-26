@@ -23,7 +23,7 @@
     </x-slot:actions>
 
     @if ($sources->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">import_export</span>'
+        <x-empty-state framed icon="import_export"
                        :title="__('procurement.catalog.empty')" />
     @else
         <x-table scroll="flex" :pinRows="true">

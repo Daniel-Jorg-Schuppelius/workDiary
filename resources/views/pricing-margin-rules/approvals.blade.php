@@ -17,7 +17,7 @@
     </x-slot:actions>
 
     @if ($requests->total() === 0)
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">fact_check</span>'
+        <x-empty-state framed icon="fact_check"
                        :title="__('procurement.approval.empty')" />
     @else
         <x-card padding="p-0">

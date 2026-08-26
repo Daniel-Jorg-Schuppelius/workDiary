@@ -18,14 +18,56 @@ use App\Models\{TimeEntry, Timesheet};
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\{Auth, Gate};
+use OpenApi\Attributes as OA;
 
 class TimesheetEntryController extends Controller {
+    #[OA\Get(
+        path: '/timesheets/{timesheet}/entries',
+        summary: 'Zeiteinträge eines Stundenzettels',
+        tags: ['Timesheets'],
+        security: [['bearerAuth' => ['timesheets:read']]],
+        parameters: [new OA\Parameter(name: 'timesheet', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab'))],
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+        ],
+    )]
     public function index(Timesheet $timesheet): AnonymousResourceCollection {
         Gate::authorize('view', $timesheet);
 
         return TimeEntryResource::collection($timesheet->entries()->get());
     }
 
+    #[OA\Post(
+        path: '/timesheets/{timesheet}/entries',
+        summary: 'Zeiteintrag anlegen',
+        tags: ['Timesheets'],
+        security: [['bearerAuth' => ['timesheets:write']]],
+        parameters: [new OA\Parameter(name: 'timesheet', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab'))],
+        requestBody: new OA\RequestBody(required: true, description: 'Entweder start_time/end_time (bzw. started_at/ended_at) oder minutes angeben', content: new OA\JsonContent(properties: [
+            new OA\Property(property: 'date', type: 'string', format: 'date', nullable: true),
+            new OA\Property(property: 'start_time', type: 'string', example: '08:00', nullable: true),
+            new OA\Property(property: 'end_time', type: 'string', example: '16:30', nullable: true),
+            new OA\Property(property: 'started_at', type: 'string', format: 'date-time', nullable: true),
+            new OA\Property(property: 'ended_at', type: 'string', format: 'date-time', nullable: true),
+            new OA\Property(property: 'minutes', type: 'integer', minimum: 0, maximum: 1440, nullable: true),
+            new OA\Property(property: 'break_minutes', type: 'integer', minimum: 0, maximum: 480, nullable: true),
+            new OA\Property(property: 'kind', type: 'string', enum: ['work', 'travel', 'standby'], nullable: true),
+            new OA\Property(property: 'task_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab', nullable: true),
+            new OA\Property(property: 'description', type: 'string', maxLength: 500, nullable: true),
+            new OA\Property(property: 'tag_ids', type: 'array', description: 'Tag-Sqids', items: new OA\Items(type: 'string', example: 'k7Qx2Ab')),
+            new OA\Property(property: 'new_tags', type: 'string', maxLength: 500, nullable: true, description: 'Neue Tags, kommagetrennt'),
+        ])),
+        responses: [
+            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function store(Timesheet $timesheet, SaveTimesheetEntryRequest $request): TimeEntryResource {
         Gate::authorize('update', $timesheet);
         $data = $request->validated();
@@ -40,6 +82,37 @@ class TimesheetEntryController extends Controller {
         return new TimeEntryResource($entry);
     }
 
+    #[OA\Put(
+        path: '/timesheets/{timesheet}/entries/{entry}',
+        summary: 'Zeiteintrag aktualisieren',
+        tags: ['Timesheets'],
+        security: [['bearerAuth' => ['timesheets:write']]],
+        parameters: [
+            new OA\Parameter(name: 'timesheet', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab')),
+            new OA\Parameter(name: 'entry', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab')),
+        ],
+        requestBody: new OA\RequestBody(required: true, description: 'Entweder start_time/end_time (bzw. started_at/ended_at) oder minutes angeben', content: new OA\JsonContent(properties: [
+            new OA\Property(property: 'date', type: 'string', format: 'date', nullable: true),
+            new OA\Property(property: 'start_time', type: 'string', example: '08:00', nullable: true),
+            new OA\Property(property: 'end_time', type: 'string', example: '16:30', nullable: true),
+            new OA\Property(property: 'started_at', type: 'string', format: 'date-time', nullable: true),
+            new OA\Property(property: 'ended_at', type: 'string', format: 'date-time', nullable: true),
+            new OA\Property(property: 'minutes', type: 'integer', minimum: 0, maximum: 1440, nullable: true),
+            new OA\Property(property: 'break_minutes', type: 'integer', minimum: 0, maximum: 480, nullable: true),
+            new OA\Property(property: 'kind', type: 'string', enum: ['work', 'travel', 'standby'], nullable: true),
+            new OA\Property(property: 'task_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab', nullable: true),
+            new OA\Property(property: 'description', type: 'string', maxLength: 500, nullable: true),
+            new OA\Property(property: 'tag_ids', type: 'array', description: 'Tag-Sqids', items: new OA\Items(type: 'string', example: 'k7Qx2Ab')),
+            new OA\Property(property: 'new_tags', type: 'string', maxLength: 500, nullable: true, description: 'Neue Tags, kommagetrennt'),
+        ])),
+        responses: [
+            new OA\Response(response: 200, description: 'OK'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function update(Timesheet $timesheet, TimeEntry $entry, SaveTimesheetEntryRequest $request): TimeEntryResource {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $entry->timesheet_id === (int) $timesheet->id, 404);
@@ -48,6 +121,22 @@ class TimesheetEntryController extends Controller {
         return new TimeEntryResource($entry);
     }
 
+    #[OA\Delete(
+        path: '/timesheets/{timesheet}/entries/{entry}',
+        summary: 'Zeiteintrag löschen',
+        tags: ['Timesheets'],
+        security: [['bearerAuth' => ['timesheets:write']]],
+        parameters: [
+            new OA\Parameter(name: 'timesheet', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab')),
+            new OA\Parameter(name: 'entry', in: 'path', required: true, description: 'Sqid', schema: new OA\Schema(type: 'string', example: 'k7Qx2Ab')),
+        ],
+        responses: [
+            new OA\Response(response: 204, description: 'No Content'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 404, description: 'Not Found'),
+        ],
+    )]
     public function destroy(Timesheet $timesheet, TimeEntry $entry): Response {
         Gate::authorize('update', $timesheet);
         abort_unless((int) $entry->timesheet_id === (int) $timesheet->id, 404);

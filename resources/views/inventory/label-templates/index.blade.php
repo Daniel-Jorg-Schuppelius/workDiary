@@ -48,7 +48,7 @@
                 </tr>
             @empty
                 <x-table.empty :colspan="$canManage ? 4 : 3"
-                               icon='<span class="material-symbols-outlined" aria-hidden="true">inventory_2</span>'
+                               icon="inventory_2"
                                :title="__('inventory.label_template.empty')" compact />
             @endforelse
         </x-table>

@@ -27,7 +27,7 @@
                     <option value="{{ $type->value }}" @selected(old('entry_type', 'glossary') === $type->value)>{{ $type->label() }}</option>
                 @endforeach
             </select>
-            <p class="text-xs text-base-content/60">{{ __('ai.memory.type_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.memory.type_help') }}</p>
         </div>
 
         <div class="fieldset">
@@ -37,7 +37,7 @@
                 <option value="customer" @selected(old('scope') === 'customer')>{{ __('ai.field.scope_customer') }}</option>
                 <option value="capability" @selected(old('scope') === 'capability')>{{ __('ai.field.scope_capability') }}</option>
             </select>
-            <p class="text-xs text-base-content/60">{{ __('ai.memory.scope_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.memory.scope_help') }}</p>
         </div>
 
         <div class="fieldset">
@@ -85,7 +85,7 @@
 
         <div class="fieldset">
             <span class="fieldset-label">{{ __('ai.field.translations') }}</span>
-            <p class="text-xs text-base-content/60">{{ __('ai.memory.translations_help') }}</p>
+            <p class="text-xs text-muted">{{ __('ai.memory.translations_help') }}</p>
             <div class="grid grid-cols-2 gap-2">
                 @foreach (['en', 'es', 'fr', 'it'] as $lang)
                     <input type="text" name="translation_{{ $lang }}" maxlength="300"

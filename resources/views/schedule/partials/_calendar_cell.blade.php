@@ -35,7 +35,7 @@
     // (Reihenfolge: Feiertag > anderer Monat > Samstag > sonst).
     $cellBgClass = match (true) {
         $isHoliday  => 'bg-warning/5',
-        $isOther    => 'bg-base-200/40 text-base-content/50',
+        $isOther    => 'bg-base-200/40 text-muted',
         $isSaturday => 'bg-base-200/40',
         default     => '',
     };
@@ -135,7 +135,7 @@
     @endforeach
 
     @if ($overflow > 0)
-        <span class="text-[0.6rem] text-base-content/50">+{{ $overflow }} {{ __('mehr') }}</span>
+        <span class="text-[0.6rem] text-muted">+{{ $overflow }} {{ __('mehr') }}</span>
     @endif
 
     {{-- Offene Schichten (Soll-Lücken) --}}

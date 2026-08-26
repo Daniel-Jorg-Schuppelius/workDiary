@@ -17,6 +17,7 @@ use App\Models\{AttendanceTerminal, FlexBalance, Organization, User};
 use App\Services\Absence\VacationBalanceService;
 use App\Services\Attendance\TerminalStampService;
 use Illuminate\Http\{JsonResponse, Request};
+use OpenApi\Attributes as OA;
 
 /**
  * Ingest-Endpunkt für Hardware-Stempelterminals (Feature 061, MVP-130).
@@ -25,6 +26,27 @@ use Illuminate\Http\{JsonResponse, Request};
  * fremdes Token und unbekannter Badge werden abgewiesen und auditiert (DoD).
  */
 class TerminalIngestController extends Controller {
+    #[OA\Post(
+        path: '/terminal/ingest/{token}',
+        summary: 'Terminal-Ingest (Badge-Scan)',
+        description: 'Auth über Gerätetoken im Pfad.',
+        tags: ['Ingest'],
+        parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Gerätetoken des Terminals', schema: new OA\Schema(type: 'string'))],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['badge_uid'], properties: [
+            new OA\Property(property: 'badge_uid', type: 'string', description: 'Badge-Kennung (Alias: badge, credential)'),
+            new OA\Property(property: 'event', type: 'string', default: 'toggle'),
+            new OA\Property(property: 'event_type', type: 'string', enum: ['work', 'break', 'homeoffice', 'errand'], default: 'work'),
+            new OA\Property(property: 'occurred_at', type: 'string', format: 'date-time', nullable: true),
+            new OA\Property(property: 'event_id', type: 'string', nullable: true, description: 'Idempotenz-Schlüssel'),
+            new OA\Property(property: 'queued', type: 'integer', nullable: true, description: 'Offline-Pufferstand des Terminals'),
+        ])),
+        responses: [
+            new OA\Response(response: 200, description: 'OK (status-Feld, z. B. clocked_in/unknown_badge)'),
+            new OA\Response(response: 401, description: 'Ungültiger Gerätetoken'),
+            new OA\Response(response: 422, description: 'Badge-Kennung fehlt'),
+            new OA\Response(response: 503, description: 'Wartungsmodus (Retry-After)'),
+        ],
+    )]
     public function __invoke(Request $request, string $token, TerminalStampService $service): JsonResponse {
         $terminal = AttendanceTerminal::query()->withoutGlobalScopes()
             ->where('token_hash', AttendanceTerminal::hashToken($token))

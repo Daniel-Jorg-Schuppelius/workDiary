@@ -25,7 +25,7 @@
     <h3 class="mt-4 mb-2 text-sm font-semibold text-base-content/70">{{ __('Importe') }}</h3>
     @if ($imports->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">upload_file</span>'
+            icon="upload_file"
             :title="__('Noch keine Importe vorhanden')" />
     @else
         <x-table table-sort="client">
@@ -57,7 +57,7 @@
     <h3 class="mt-6 mb-2 text-sm font-semibold text-base-content/70">{{ __('Exporte') }}</h3>
     @if ($exports->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">download</span>'
+            icon="download"
             :title="__('Noch keine Exporte vorhanden')" />
     @else
         <x-table table-sort="client">

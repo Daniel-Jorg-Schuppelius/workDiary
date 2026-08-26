@@ -29,7 +29,7 @@
 
         @if ($requests->isEmpty())
             <x-empty-state framed
-                icon='<span class="material-symbols-outlined" aria-hidden="true">inbox</span>'
+                icon="inbox"
                 :title="__('Keine Korrekturanträge im Filter')"
                 :message="__('Setzen Sie den Statusfilter auf „Alle Status“, um auch entschiedene Anträge zu sehen.')" />
         @else

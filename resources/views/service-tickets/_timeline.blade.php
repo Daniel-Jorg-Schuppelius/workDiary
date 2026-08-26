@@ -36,7 +36,7 @@
     </nav>
 
     @if (empty($timelineItems))
-        <x-empty-state compact icon='<span class="material-symbols-outlined">history</span>'
+        <x-empty-state compact icon="history"
                        :title="__('timeline.empty')"
                        :message="__('Sobald am Ticket gearbeitet wird, erscheinen die Ereignisse hier.')" />
     @else
@@ -70,14 +70,14 @@
                             </p>
                             <span class="text-xs text-base-content/55 whitespace-nowrap">{{ $item->occurredAt?->fdatetime() ?? '—' }}</span>
                         </div>
-                        <p class="text-xs text-base-content/60">
+                        <p class="text-xs text-muted">
                             {{ $item->actor ?? __('timeline.actor_system') }}
                         </p>
                         @if ($item->summary)
                             @if ($item->type === 'attachment' && $item->url)
                                 <p class="mt-0.5 text-sm">
                                     <a href="{{ $item->url }}" class="link link-hover inline-flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-[16px]" aria-hidden="true">download</span>
+                                        <x-icon name="download" class="text-[16px]" />
                                         <span class="wrap-break-word">{{ $item->summary }}</span>
                                     </a>
                                 </p>

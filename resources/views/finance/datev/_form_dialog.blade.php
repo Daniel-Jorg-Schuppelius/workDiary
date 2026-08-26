@@ -25,7 +25,7 @@
                       from-name="from" to-name="to"
                       :from="old('from', $defaultFrom)" :to="old('to', $defaultTo)"
                       required />
-        <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.hint.period_sources') }}</p>
+        <p class="mt-1 text-xs text-muted">{{ __('finance.datev.hint.period_sources') }}</p>
     </div>
 
     <div class="fieldset">
@@ -35,7 +35,7 @@
                    @checked(old('include_expenses')) class="checkbox checkbox-sm">
             <span class="label-text">{{ __('finance.datev.field.include_expenses') }}</span>
         </label>
-        <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.hint.include_expenses') }}</p>
+        <p class="mt-1 text-xs text-muted">{{ __('finance.datev.hint.include_expenses') }}</p>
     </div>
 
     {{-- Storno-Übergabe (MVP-334): Generalumkehr für bereits übergebene, stornierte Belege. --}}
@@ -46,7 +46,7 @@
                    @checked(old('include_reversals')) class="checkbox checkbox-sm">
             <span class="label-text">{{ __('finance.datev.field.include_reversals') }}</span>
         </label>
-        <p class="mt-1 text-xs text-base-content/60">{{ __('finance.datev.hint.include_reversals') }}</p>
+        <p class="mt-1 text-xs text-muted">{{ __('finance.datev.hint.include_reversals') }}</p>
     </div>
 
     <x-validation-errors />

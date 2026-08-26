@@ -19,13 +19,11 @@
 @endphp
 
 <x-form-group :legend="__('Stammdaten')" icon="description" tone="primary" cols="2">
-    <div class="fieldset md:col-span-2">
-        <label class="fieldset-label">{{ __('Datum') }} *</label>
-        <input type="date" name="work_date" required
-               value="{{ old('work_date', optional($timesheet->work_date)->format('Y-m-d')) }}"
-               class="input input-bordered w-full">
-        @error('work_date')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-    </div>
+    <x-input-field span="2" name="work_date"
+                   :label="__('Datum')"
+                   type="date"
+                   value="{{ old('work_date', optional($timesheet->work_date)->format('Y-m-d')) }}"
+                   required />
     <x-input-field name="customer_name" :label="__('Kunde – Name')" maxlength="255" :value="old('customer_name', $defaultCustomerName)" :span="2" />
     <x-input-field name="customer_role" :label="__('Rolle / Funktion')" maxlength="255" :value="old('customer_role', $defaultCustomerRole)" />
     <x-input-field name="customer_email" type="email" :label="__('E-Mail')" maxlength="255" :value="old('customer_email', $defaultCustomerEmail)" />

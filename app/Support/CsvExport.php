@@ -23,7 +23,9 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * common-toolkit ({@see CsvStringHelper::neutralizeFormulaInjection()});
  * app-seitig bleiben die beiden Geschäftsregeln, die dort NICHT hingehören:
  * die engere Präfixliste (ohne Tab/CR, Bestandsverhalten) und der
- * Typ-Filter — echte Zahlen und Bools werden nie entschärft.
+ * Typ-Filter — echte Zahlen und Bools werden nie entschärft, und seit MVP-729
+ * auch der reine negative Dezimalstring nicht (Geldbeträge kommen als String,
+ * weil float bei Geld verboten ist; siehe {@see guard()}).
  * Die Header-Zeile bleibt ungeguarded (entwicklerkontrolliert).
  */
 final class CsvExport {
@@ -112,6 +114,17 @@ final class CsvExport {
         // Nicht-Strings passieren: eine echte Zahl -12,5 ist kein Formelrisiko,
         // ein Apostroph davor macht sie in Excel aber zu Text.
         if (! is_string($value)) {
+            return $value;
+        }
+
+        // Negative Geldbeträge kommen als exakter Dezimalstring (Money::getAmount()
+        // — float ist bei Geld verboten). Ohne diese Ausnahme würde jeder
+        // Minusbetrag als „'-500.00" exportiert und wäre für die
+        // Lohn-/Buchhaltungsimporte kein Zahlwert mehr. Das Muster ist bewusst
+        // eng: NUR führendes Minus plus reine Ziffern (optional eine
+        // Nachkommastelle). „-2+3" bleibt entschärft, ebenso „+49 123"
+        // (Telefonnummern behalten ihren Guard, sonst frisst Excel die Vorwahl).
+        if (preg_match('/^-\d+(?:[.,]\d+)?$/', $value) === 1) {
             return $value;
         }
 

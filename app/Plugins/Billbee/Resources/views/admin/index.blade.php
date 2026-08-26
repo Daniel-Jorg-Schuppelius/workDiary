@@ -37,7 +37,7 @@
                     </form>
                 </div>
             </div>
-            <p class="mb-1 text-sm text-base-content/60">{{ __('billbee.intro') }}</p>
+            <p class="mb-1 text-sm text-muted">{{ __('billbee.intro') }}</p>
         </div>
 
         {{-- Filter --}}

@@ -22,7 +22,7 @@
               class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs">
             @csrf
             <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('shipping.form_heading') }}</h2>
-            <p class="mb-3 text-xs text-base-content/60">{{ __('shipping.form_hint') }}</p>
+            <p class="mb-3 text-xs text-muted">{{ __('shipping.form_hint') }}</p>
 
             <div class="grid gap-3 sm:grid-cols-2">
                 <label class="form-control">
@@ -66,7 +66,7 @@
                 </label>
                 <button type="submit" class="btn btn-sm btn-primary ml-auto">{{ __('shipping.action.save') }}</button>
             </div>
-            <p class="mt-2 text-xs text-base-content/50">{{ __('shipping.secret_hint') }}</p>
+            <p class="mt-2 text-xs text-muted">{{ __('shipping.secret_hint') }}</p>
         </form>
 
         {{-- Bestehende Anbindungen --}}

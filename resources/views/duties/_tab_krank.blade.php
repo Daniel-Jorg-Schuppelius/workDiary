@@ -22,7 +22,7 @@
                         {{ __('Lohnfortzahlung :name', ['name' => $sicknessStatusUser->name]) }}
                         <x-status-badge tone="ghost" size="sm" class="ml-1">§ 3 EntgFG</x-status-badge>
                     </h3>
-                    <span class="text-xs text-base-content/60">
+                    <span class="text-xs text-muted">
                         {{ __(':weeks Wochen Anspruch', ['weeks' => $entWeeks]) }}
                     </span>
                 </div>
@@ -104,10 +104,10 @@
                             </a>
                         @endforeach
                     @else
-                        <span class="text-base-content/40">—</span>
+                        <span class="text-muted">—</span>
                     @endif
                     @if ($s->au_number)
-                        <span class="block text-xs text-base-content/60 mt-0.5">#{{ $s->au_number }}</span>
+                        <span class="block text-xs text-muted mt-0.5">#{{ $s->au_number }}</span>
                     @endif
                 </td>
                 <td>
@@ -122,7 +122,7 @@
                         </span>
                     @endif
                 </td>
-                <td class="max-w-xs truncate text-base-content/60 text-xs">{{ $s->note }}</td>
+                <td class="max-w-xs truncate text-muted text-xs">{{ $s->note }}</td>
                 <td class="text-right">
                     <div class="flex items-center justify-end gap-1">
                         @can('update', $s)
@@ -151,7 +151,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">sick</span>' :colspan="$isAdmin ? 8 : 7" :title="__('Keine Krankmeldungen im Zeitraum')" compact />
+            <x-table.empty icon="sick" :colspan="$isAdmin ? 8 : 7" :title="__('Keine Krankmeldungen im Zeitraum')" compact />
         @endforelse
 </x-table>
 @if ($sickLeaves->hasPages())

@@ -21,6 +21,7 @@
                         show-label>{{ __('Neue Verleihakte') }}</x-icon-btn>
         @endcan
         <x-icon-btn icon="calendar_month" size="sm" :href="route('rental.calendar')" show-label>{{ __('Kalender') }}</x-icon-btn>
+        <x-icon-btn icon="mark_email_unread" size="sm" :href="route('rental.requests.index')" show-label>{{ __('Verleih-Anfragen') }}</x-icon-btn>
         <x-icon-btn icon="query_stats" size="sm" :href="route('rental.reports.index')" show-label>{{ __('Verleihbericht') }}</x-icon-btn>
     </x-slot:actions>
 
@@ -82,7 +83,7 @@
                     <td class="text-right"><x-icon-btn icon="visibility" :href="route('rental.show', $case)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">forklift</span>' :colspan="7" :title="__('Keine Verleihakten — leihfähige Geräte im Gerätepool pflegen und die erste Akte anlegen.')" compact />
+                <x-table.empty icon="forklift" :colspan="7" :title="__('Keine Verleihakten — leihfähige Geräte im Gerätepool pflegen und die erste Akte anlegen.')" compact />
             @endforelse
         </x-table>
     </x-card>

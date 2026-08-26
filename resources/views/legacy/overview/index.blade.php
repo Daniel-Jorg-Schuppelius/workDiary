@@ -46,7 +46,7 @@
                     <x-button href="{{ route('legacy.oncall.index') }}" tone="ghost" size="xs">{{ __('Alle') }} →</x-button>
                 </div>
                 @if ($oncallToday->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Niemand im Bereitschaftsdienst.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Niemand im Bereitschaftsdienst.') }}</p>
                 @else
                     <ul class="space-y-2">
                         @foreach ($oncallToday as $shift)
@@ -69,7 +69,7 @@
                     <x-button href="{{ route('legacy.notdienst.index') }}" tone="ghost" size="xs">{{ __('Alle') }} →</x-button>
                 </div>
                 @if ($notdienstToday->isEmpty())
-                    <p class="text-sm text-base-content/60">{{ __('Niemand im Notdienst.') }}</p>
+                    <p class="text-sm text-muted">{{ __('Niemand im Notdienst.') }}</p>
                 @else
                     <ul class="space-y-2">
                         @foreach ($notdienstToday as $shift)
@@ -99,12 +99,12 @@
                 </div>
             @endif
             @if ($upcomingHolidays->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine bevorstehenden Feiertage.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine bevorstehenden Feiertage.') }}</p>
             @else
                 <ul class="grid gap-2 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($upcomingHolidays as $holiday)
                         <li class="rounded-box border border-base-200 bg-base-200/40 px-3 py-2 text-sm">
-                            <div class="font-mono text-xs text-base-content/60">
+                            <div class="font-mono text-xs text-muted">
                                 {{ $holiday['date']->format('D, d.m.Y') }}
                             </div>
                             <div class="truncate font-semibold" title="{{ $holiday['name'] }}">

@@ -11,6 +11,7 @@
 namespace App\Services\Invoicing;
 
 use App\Models\Invoice;
+use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\Invoicing\EInvoice\EInvoiceValidationService;
 
 /**
@@ -26,6 +27,7 @@ final class InvoiceIssueService {
     public function __construct(
         private readonly TaxResolver $taxResolver,
         private readonly EInvoiceValidationService $eInvoiceValidation,
+        private readonly LifecycleWebhookPublisher $lifecycleWebhooks,
     ) {}
 
     /** Würde dieser Beleg beim Ausstellen den Rechnungsstatus bekommen? */
@@ -98,6 +100,9 @@ final class InvoiceIssueService {
                 'item_categories' => $invoice->items->pluck('tax_category', 'id')->all(),
             ],
         ]);
+
+        // Lifecycle-Webhook (MVP-718): invoice.issued an der Service-Schreibstelle.
+        $this->lifecycleWebhooks->invoiceIssued($invoice);
 
         return $invoice;
     }

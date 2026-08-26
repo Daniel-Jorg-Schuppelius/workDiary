@@ -152,7 +152,7 @@
                         <td>
                             <a class="link link-hover" href="{{ route('protocols.show', $protocol) }}">{{ $protocol->title }}</a>
                             @if ($protocol->tags->isNotEmpty())
-                                <div class="text-xs text-base-content/60">{{ $protocol->tags->pluck('name')->map(fn ($n) => '#' . $n)->implode(' ') }}</div>
+                                <div class="text-xs text-muted">{{ $protocol->tags->pluck('name')->map(fn ($n) => '#' . $n)->implode(' ') }}</div>
                             @endif
                         </td>
                         <td><span class="badge">{{ $protocol->status->label() }}</span></td>
@@ -170,7 +170,7 @@
                             @if ($ws)
                                 <div class="text-xs">
                                     <div>{{ $ws->temp_min }}–{{ $ws->temp_max }} °C · {{ $ws->precipitation_mm }} mm · {{ $ws->wind_gust_kmh }} km/h</div>
-                                    <div class="text-base-content/50">{{ __('weather.source') }}: {{ \App\Support\Trans::or('weather.providers.' . $ws->provider, $ws->provider) }} · {{ $ws->fetched_at?->fdatetime() }}</div>
+                                    <div class="text-muted">{{ __('weather.source') }}: {{ \App\Support\Trans::or('weather.providers.' . $ws->provider, $ws->provider) }} · {{ $ws->fetched_at?->fdatetime() }}</div>
                                 </div>
                             @elseif (auth()->user()?->can('update', $protocol))
                                 <form method="POST" action="{{ route('protocols.weather', $protocol) }}">
@@ -178,7 +178,7 @@
                                     <button type="submit" class="btn btn-ghost btn-xs">{{ __('weather.attach.button') }}</button>
                                 </form>
                             @else
-                                <span class="text-base-content/40">—</span>
+                                <span class="text-muted">—</span>
                             @endif
                         </td>
                     </tr>

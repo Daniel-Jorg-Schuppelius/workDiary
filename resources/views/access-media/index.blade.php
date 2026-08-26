@@ -49,7 +49,7 @@
     </x-filter-bar>
 
     @if ($media->isEmpty())
-        <x-empty-state framed icon='<span class="material-symbols-outlined" aria-hidden="true">key</span>'
+        <x-empty-state framed icon="key"
                        :title="__('Keine Zutrittsmedien im gewählten Ausschnitt.')"
                        :message="__('Der Bestand ergänzt die physische Schlüsselübergabe um Transponder, Karten und Codes — inklusive Verlust- und Sperr-Nachweis.')" />
     @else
@@ -68,7 +68,7 @@
                 <tr class="hover">
                     <td>
                         <a class="link link-hover font-medium" href="{{ route('access-media.show', $medium) }}">
-                            {{ $medium->label ?: __('Medium') }} <span class="font-mono text-xs text-base-content/60">…{{ $medium->number_suffix }}</span>
+                            {{ $medium->label ?: __('Medium') }} <span class="font-mono text-xs text-muted">…{{ $medium->number_suffix }}</span>
                         </a>
                     </td>
                     <td class="text-sm">{{ $medium->type->label() }}</td>

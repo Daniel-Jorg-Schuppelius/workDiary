@@ -69,13 +69,13 @@
             <label class="fieldset-label" for="delegate">{{ __('Delegieren an') }}</label>
             <x-user-select name="delegate" :users="$orgUsers" value-key="sqid"
                            :placeholder="__('Benutzer auswählen…')" />
-            <p class="mt-1 text-xs text-base-content/60">{{ __('Der Delegat übernimmt den Schritt; die Selbstfreigabe-Sperre gilt auch für ihn.') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('Der Delegat übernimmt den Schritt; die Selbstfreigabe-Sperre gilt auch für ihn.') }}</p>
         </div>
 
         <div class="fieldset">
             <label class="fieldset-label" for="reason">
                 {{ __('Begründung') }}
-                <span class="text-base-content/60" x-show="isAny('rejected', 'delegated')">({{ __('Pflicht') }})</span>
+                <span class="text-muted" x-show="isAny('rejected', 'delegated')">({{ __('Pflicht') }})</span>
             </label>
             <textarea id="reason" name="reason" rows="3" maxlength="500"
                       class="textarea textarea-bordered w-full @error('reason') textarea-error @enderror"

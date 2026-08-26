@@ -37,7 +37,7 @@
                                    :value="$domain->renewal_price !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $domain->renewal_price, 2, withThousandsSeparator: true) . ' ' . ($domain->renewal_currency?->value ?? '') : '—'" />
                 <x-detail-grid.row :label="__('domain.field.sync')">
                     <x-status-badge :tone="$domain->sync_status->badge()">{{ $domain->sync_status->label() }}</x-status-badge>
-                    <span class="text-xs text-base-content/50">{{ $domain->synced_at?->diffForHumans() }}</span>
+                    <span class="text-xs text-muted">{{ $domain->synced_at?->diffForHumans() }}</span>
                 </x-detail-grid.row>
             </x-detail-grid>
         </x-card>
@@ -50,7 +50,7 @@
                 <p class="text-sm">
                     {{ $domain->customer?->name ?? __('domain.mapping.none') }}
                     @if ($domain->foreignCustomer !== null)
-                        <span class="text-base-content/60">· {{ __('domain.mapping.foreign_customer') }}: {{ $domain->foreignCustomer->name }}</span>
+                        <span class="text-muted">· {{ __('domain.mapping.foreign_customer') }}: {{ $domain->foreignCustomer->name }}</span>
                     @endif
                 </p>
             @endif
@@ -63,7 +63,7 @@
                                 <input type="hidden" name="customer" value="{{ $suggestion['customer']->sqid }}">
                                 <button type="submit" class="btn btn-xs btn-outline">
                                     {{ $suggestion['customer']->name }}
-                                    <span class="text-base-content/50">({{ __('domain.mapping.reason_' . $suggestion['reason']) }})</span>
+                                    <span class="text-muted">({{ __('domain.mapping.reason_' . $suggestion['reason']) }})</span>
                                 </button>
                             </x-action-form>
                         @endforeach
@@ -133,7 +133,7 @@
                 @endforeach
             </x-table>
         @empty
-            <p class="text-sm text-base-content/60">{{ __('domain.dns.empty') }}</p>
+            <p class="text-sm text-muted">{{ __('domain.dns.empty') }}</p>
         @endforelse
     </x-card>
 
@@ -142,7 +142,7 @@
         @unless ($invoicesAvailable)
             <div role="note" class="alert bg-info/10 border-info/30 text-sm text-base-content"><span>{{ $invoiceBlockedReason }}</span></div>
         @else
-            <p class="text-sm text-base-content/60">{{ __('domain.invoices.available') }}</p>
+            <p class="text-sm text-muted">{{ __('domain.invoices.available') }}</p>
         @endunless
     </x-card>
 
@@ -161,7 +161,7 @@
                 <tr>
                     <td class="font-mono text-xs">{{ $command->command }}</td>
                     <td><x-status-badge :tone="$command->status->badge()">{{ $command->status->label() }}</x-status-badge></td>
-                    <td class="text-xs text-base-content/60">{{ $command->created_at?->diffForHumans() }}</td>
+                    <td class="text-xs text-muted">{{ $command->created_at?->diffForHumans() }}</td>
                     <td class="text-right">
                         @if ($can['dangerous'] && $command->status === \App\Enums\Domain\DomainProviderCommandStatus::Draft)
                             <x-action-form :action="route('domains.commands.approve', $command)">
@@ -215,7 +215,7 @@
                     <input type="text" name="target_user" class="input input-sm input-bordered w-40" placeholder="{{ __('domain.dangerous.target_user') }}" aria-label="{{ __('domain.dangerous.target_user') }}">
                     <input type="text" name="confirmation" class="input input-sm input-bordered w-56" placeholder="{{ __('domain.dangerous.retype', ['domain' => $domain->external_domain]) }}" aria-label="{{ __('domain.dangerous.retype', ['domain' => $domain->external_domain]) }}" required>
                     <x-icon-btn icon="warning" tone="error" size="sm" type="submit" show-label>{{ __('domain.action.request_dangerous') }}</x-icon-btn>
-                    <p class="w-full text-xs text-base-content/60">{{ __('domain.dangerous.hint') }}</p>
+                    <p class="w-full text-xs text-muted">{{ __('domain.dangerous.hint') }}</p>
                 </x-action-form>
             @endif
         </x-card>

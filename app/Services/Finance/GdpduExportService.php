@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Finance;
 
-use App\Enums\Finance\DatevBatchStatus;
+use App\Enums\Finance\{DatevBatchStatus, GobdExportStatus};
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\{GobdExport, Invoice, Organization, User};
 use App\Services\Finance\Gdpdu\{
@@ -42,6 +42,9 @@ use CommonToolkit\Generators\CSV\CSVGenerator;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
+use Generator;
+use RuntimeException;
+use Throwable;
 
 /**
  * GoBD-Datenträgerüberlassung Z3 (Feature 063, MVP-132): erzeugt ein
@@ -143,7 +146,12 @@ class GdpduExportService {
     public function preflight(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
         $counts = [];
         foreach ($this->sections() as $key => $section) {
-            $counts[$key] = count($section->rows($organization, $from, $to));
+            // rows() ist ein Generator (A16) — zählen statt materialisieren.
+            $rows = 0;
+            foreach ($section->rows($organization, $from, $to) as $_) {
+                $rows++;
+            }
+            $counts[$key] = $rows;
         }
 
         $warnings = [];
@@ -175,12 +183,23 @@ class GdpduExportService {
     }
 
     /**
-     * Erzeugt das Z3-Paket und legt den revisionssicheren Nachweis an.
+     * Erzeugt das Z3-Paket auf der Platte und schreibt den revisionssicheren
+     * Nachweis fort.
+     *
+     * Seit MVP-722 (Vollscan 2026-08-23, A16) läuft der Aufbau streamend: die
+     * Bereiche liefern Generatoren, jede CSV wird zeilenweise geschrieben, das
+     * ZIP landet als Datei im privaten Speicher. Vorher lagen sämtliche Zeilen
+     * ALLER Bereiche gleichzeitig im Speicher und danach noch einmal das ZIP —
+     * bei einem Jahrespaket der sichere Weg in das Speicherlimit.
+     *
+     * Der Paket-Hash bleibt unverändert: er geht über die DATEIINHALTE
+     * (index.xml + CSVs), nicht über das ZIP-Binär.
      *
      * @param  list<string>  $sections  gewählte Bereiche (Teilmenge von availableSections)
-     * @return array{filename: string, content: string, package_sha256: string, file_hashes: array<string, string>, record_count: int, export: GobdExport}
+     * @param  GobdExport|null  $export  vorhandener Nachweis (Queue-Lauf); sonst wird einer angelegt
+     * @return array{filename: string, path: string, package_sha256: string, file_hashes: array<string, string>, record_count: int, export: GobdExport}
      */
-    public function build(Organization $organization, CarbonInterface $from, CarbonInterface $to, array $sections, ?User $actor = null, string $encoding = self::ENCODING_CP1252): array {
+    public function build(Organization $organization, CarbonInterface $from, CarbonInterface $to, array $sections, ?User $actor = null, string $encoding = self::ENCODING_CP1252, ?GobdExport $export = null): array {
         $map = $this->sections();
         $selected = array_values(array_filter($sections, static fn (string $s): bool => isset($map[$s])));
         if ($selected === []) {
@@ -190,41 +209,70 @@ class GdpduExportService {
         $encoding = isset(self::ENCODINGS[$encoding]) ? $encoding : self::ENCODING_CP1252;
         [$mbTarget, $dtdLabel] = self::ENCODINGS[$encoding];
 
-        // Dateien im Speicher aufbauen: index.xml + je Bereich eine CSV.
-        $files = ['index.xml' => $this->buildIndexXml($organization, $from, $to, $selected, $dtdLabel)];
-        $recordCount = 0;
-        foreach ($selected as $key) {
-            $data = $map[$key]->rows($organization, $from, $to);
-            $recordCount += count($data);
-            $files[$map[$key]->definition()['file']] = $this->buildCsv($data, $mbTarget);
+        $export ??= $this->register($organization, $from, $to, $selected, $encoding, $actor);
+        $filename = 'gobd-z3-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.zip';
+        $relative = 'gobd/' . $organization->id . '/' . $export->id . '-' . $filename;
+
+        $work = storage_path('app/gobd-tmp/' . bin2hex(random_bytes(8)));
+        Folder::create($work, 0700, true);
+
+        try {
+            // index.xml zuerst: die Tabellenbeschreibung ist hash-relevant und
+            // hängt nur an der Auswahl, nicht an den Daten.
+            $paths = ['index.xml' => $work . '/index.xml'];
+            File::write($paths['index.xml'], $this->buildIndexXml($organization, $from, $to, $selected, $dtdLabel));
+
+            $recordCount = 0;
+            foreach ($selected as $key) {
+                $name = $map[$key]->definition()['file'];
+                $paths[$name] = $work . '/' . $name;
+                $recordCount += $this->writeCsv($map[$key]->rows($organization, $from, $to), $mbTarget, $paths[$name]);
+            }
+
+            // Reproduzierbare Hashes über die DATEIINHALTE (nicht das ZIP-Binär).
+            $fileHashes = [];
+            foreach ($paths as $name => $path) {
+                $fileHashes[$name] = File::hash($path);
+            }
+            ksort($fileHashes);
+            $packageHash = CryptoHelper::hash(implode("\n", array_map(
+                static fn (string $name, string $hash): string => $name . ':' . $hash,
+                array_keys($fileHashes),
+                array_values($fileHashes),
+            )));
+
+            $zipPath = $work . '/package.zip';
+            ZipFile::create(array_values($paths), $zipPath);
+
+            $target = storage_path('app/private/' . $relative);
+            Folder::create(dirname($target), 0700, true);
+            File::move($zipPath, dirname($target), basename($target), true);
+            $size = (int) File::size($target);
+        } catch (Throwable $exception) {
+            $export->forceFill([
+                'status' => GobdExportStatus::Failed,
+                'error' => mb_substr($exception->getMessage(), 0, 500),
+                'finished_at' => now(),
+            ])->save();
+
+            throw $exception;
+        } finally {
+            Folder::delete($work, true);
         }
 
-        // Reproduzierbare Hashes über die DATEIINHALTE (nicht das ZIP-Binär).
-        $fileHashes = [];
-        foreach ($files as $name => $content) {
-            $fileHashes[$name] = CryptoHelper::hash($content);
-        }
-        ksort($fileHashes);
-        $packageHash = CryptoHelper::hash(implode("\n", array_map(
-            static fn (string $name, string $hash): string => $name . ':' . $hash,
-            array_keys($fileHashes),
-            array_values($fileHashes),
-        )));
-
-        $zip = $this->zip($files);
-
-        $export = new GobdExport();
         $export->forceFill([
-            'organization_id' => $organization->id,
-            'period_from' => $from->toDateString(),
-            'period_to' => $to->toDateString(),
             'sections' => $selected,
+            'encoding' => $encoding,
             'file_hashes' => $fileHashes,
             'package_sha256' => $packageHash,
             'record_count' => $recordCount,
-            'created_by' => $actor?->id,
-        ]);
-        $export->save();
+            'file_path' => $relative,
+            'file_size' => $size,
+            'status' => GobdExportStatus::Ready,
+            'error' => null,
+            'finished_at' => now(),
+        ])->save();
+
         $export->audit('gobd.exported', [
             'period' => $from->toDateString() . '..' . $to->toDateString(),
             'package_sha256' => $packageHash,
@@ -232,13 +280,39 @@ class GdpduExportService {
         ]);
 
         return [
-            'filename' => 'gobd-z3-' . $from->format('Ymd') . '-' . $to->format('Ymd') . '.zip',
-            'content' => $zip,
+            'filename' => $filename,
+            'path' => storage_path('app/private/' . $relative),
             'package_sha256' => $packageHash,
             'file_hashes' => $fileHashes,
             'record_count' => $recordCount,
             'export' => $export,
         ];
+    }
+
+    /**
+     * Legt den Nachweis an, bevor gebaut wird — der Lauf ist damit von der
+     * ersten Sekunde an sichtbar (und nicht erst, wenn er fertig ist).
+     *
+     * @param  list<string>  $sections
+     */
+    public function register(Organization $organization, CarbonInterface $from, CarbonInterface $to, array $sections, string $encoding, ?User $actor = null, GobdExportStatus $status = GobdExportStatus::Running): GobdExport {
+        $export = new GobdExport();
+        $export->forceFill([
+            'organization_id' => $organization->id,
+            'period_from' => $from->toDateString(),
+            'period_to' => $to->toDateString(),
+            'sections' => $sections,
+            'encoding' => $encoding,
+            'file_hashes' => [],
+            'package_sha256' => '',
+            'record_count' => 0,
+            'status' => $status,
+            'created_by' => $actor?->id,
+            'started_at' => $status === GobdExportStatus::Running ? now() : null,
+        ]);
+        $export->save();
+
+        return $export;
     }
 
     /**
@@ -335,46 +409,37 @@ class GdpduExportService {
     }
 
     /**
-     * @param  list<list<string>>  $rows
-     */
-    private function buildCsv(array $rows, string $mbTarget): string {
-        $builder = new CSVDocumentBuilder(self::CSV_DELIMITER, self::CSV_ENCLOSURE);
-        foreach ($rows as $row) {
-            $builder->addRow(new DataLine($row, self::CSV_DELIMITER, self::CSV_ENCLOSURE));
-        }
-
-        $csv = (new CSVGenerator())->generate($builder->build(), includeHeader: false);
-
-        // Der Generator liefert UTF-8; in die gewählte Datendatei-Codierung wandeln.
-        return $mbTarget === 'UTF-8' ? $csv : (string) mb_convert_encoding($csv, $mbTarget, 'UTF-8');
-    }
-
-    /**
-     * Bündelt die In-Memory-Dateien als ZIP (Toolkit-`ZipFile` über temporäre
-     * Dateien; danach aufgeräumt).
+     * Schreibt die Zeilen eines Bereichs streamend als CSV und liefert ihre
+     * Anzahl. Zeile für Zeile durch den Generator und über
+     * `File::writeStream()` (Toolkit) auf die Platte: das Ergebnis ist
+     * byte-identisch zur früheren Gesamt-Erzeugung (der `CSVGenerator` fügt
+     * Zeilen mit "\n" zusammen und wandelt je Aufruf die Codierung).
      *
-     * @param  array<string, string>  $files
+     * @param  iterable<int, list<string>>  $rows
      */
-    private function zip(array $files): string {
-        $dir = storage_path('app/gobd-tmp/' . bin2hex(random_bytes(8)));
-        Folder::create($dir, 0700, true);
-        $paths = [];
-        try {
-            foreach ($files as $name => $content) {
-                $path = $dir . '/' . $name;
-                File::write($path, $content);
-                $paths[] = $path;
+    private function writeCsv(iterable $rows, string $mbTarget, string $path): int {
+        $count = 0;
+
+        $chunks = function () use ($rows, $mbTarget, &$count): Generator {
+            $generator = new CSVGenerator();
+            foreach ($rows as $row) {
+                $builder = new CSVDocumentBuilder(self::CSV_DELIMITER, self::CSV_ENCLOSURE);
+                $builder->addRow(new DataLine($row, self::CSV_DELIMITER, self::CSV_ENCLOSURE));
+                $line = $generator->generate($builder->build(), includeHeader: false);
+                if ($mbTarget !== 'UTF-8') {
+                    $line = (string) mb_convert_encoding($line, $mbTarget, 'UTF-8');
+                }
+
+                yield ($count > 0 ? "\n" : '') . $line;
+                $count++;
             }
-            $zipPath = $dir . '/package.zip';
-            ZipFile::create($paths, $zipPath);
-            $binary = File::read($zipPath);
-        } finally {
-            foreach (glob($dir . '/*') ?: [] as $f) {
-                @unlink($f);
-            }
-            @rmdir($dir);
+        };
+
+        if (File::writeStream($path, $chunks()) === false) {
+            throw new RuntimeException('CSV-Datei konnte nicht geschrieben werden: ' . $path);
         }
 
-        return $binary;
+        return $count;
     }
+
 }

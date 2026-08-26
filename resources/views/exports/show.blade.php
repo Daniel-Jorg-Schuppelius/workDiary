@@ -71,13 +71,13 @@
                                 @if (isset($autoDelivery['mail']))
                                     <li>
                                         {{ __('wage_types.delivery.evidence_mail', ['to' => implode(', ', (array) ($autoDelivery['mail']['to'] ?? []))]) }}
-                                        <span class="text-xs text-base-content/60 tabular-nums">· {{ \Carbon\CarbonImmutable::parse((string) $autoDelivery['mail']['at'])->fdatetime() }}</span>
+                                        <span class="text-xs text-muted tabular-nums">· {{ \Carbon\CarbonImmutable::parse((string) $autoDelivery['mail']['at'])->fdatetime() }}</span>
                                     </li>
                                 @endif
                                 @if (isset($autoDelivery['sftp']))
                                     <li>
                                         {{ __('wage_types.delivery.evidence_sftp', ['target' => (string) ($autoDelivery['sftp']['target'] ?? '')]) }}
-                                        <span class="text-xs text-base-content/60 tabular-nums">· {{ \Carbon\CarbonImmutable::parse((string) $autoDelivery['sftp']['at'])->fdatetime() }}</span>
+                                        <span class="text-xs text-muted tabular-nums">· {{ \Carbon\CarbonImmutable::parse((string) $autoDelivery['sftp']['at'])->fdatetime() }}</span>
                                     </li>
                                 @endif
                             </ul>
@@ -129,7 +129,7 @@
 
                 @cannot('deliver', $export)
                     @cannot('reject', $export)
-                        <p class="text-sm text-base-content/60">{{ __('Keine weiteren Aktionen verfügbar.') }}</p>
+                        <p class="text-sm text-muted">{{ __('Keine weiteren Aktionen verfügbar.') }}</p>
                     @endcannot
                 @endcannot
             </div>
@@ -141,7 +141,7 @@
             <h3 class="card-title text-base">{{ __('Summen pro Lohnart') }}</h3>
             @php $totals = $export->totals ?? []; @endphp
             @if (empty($totals))
-                <p class="text-sm text-base-content/60">{{ __('Keine Summen verfügbar.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Summen verfügbar.') }}</p>
             @else
                 <x-table table-sort="client">
                     <x-slot:head>
@@ -182,7 +182,7 @@
         <div class="card-body">
             <h3 class="card-title text-base">{{ __('surcharge.title.export_summary') }}</h3>
             @if ($userWageSummary->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine Summen verfügbar.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Summen verfügbar.') }}</p>
             @else
                 <x-table table-sort="client">
                     <x-slot:head>
@@ -200,7 +200,7 @@
                             <td>
                                 <span class="font-mono text-sm">{{ $row['wage_type'] }}</span>
                                 @if ($row['rule_label'])
-                                    <div class="text-xs text-base-content/60">{{ $row['rule_label'] }}</div>
+                                    <div class="text-xs text-muted">{{ $row['rule_label'] }}</div>
                                 @endif
                             </td>
                             <td class="font-mono text-sm">{{ $row['wage_type_code'] ?? '—' }}</td>
@@ -271,13 +271,13 @@
         <div class="card-body">
             <h3 class="card-title text-base">{{ __('Audit-Verlauf') }}</h3>
             @if ($export->events->isEmpty())
-                <p class="text-sm text-base-content/60">{{ __('Keine Ereignisse vorhanden.') }}</p>
+                <p class="text-sm text-muted">{{ __('Keine Ereignisse vorhanden.') }}</p>
             @else
                 <ul class="timeline timeline-vertical timeline-compact">
                     @foreach ($export->events as $ev)
                         <li>
                             <div class="timeline-middle">
-                                <span class="material-symbols-outlined text-base">history</span>
+                                <x-icon name="history" class="text-base" />
                             </div>
                             <div class="timeline-end timeline-box">
                                 <div class="flex items-center gap-2 text-xs text-base-content/70">

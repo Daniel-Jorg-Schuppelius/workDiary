@@ -12,11 +12,12 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Privacy;
 
-use App\Enums\Privacy\DataSubjectRequestType;
+use App\Enums\Privacy\{DataSubjectKind, DataSubjectRequestType};
 use App\Http\Controllers\Controller;
-use App\Models\{AuditLog, User};
+use App\Models\Applications\JobApplication;
+use App\Models\{AuditLog, Customer, Lead, Supplier, User};
 use App\Models\Privacy\DataSubjectRequest;
-use App\Services\Privacy\{DataSubjectRequestService, PrivacyExportService};
+use App\Services\Privacy\{DataSubjectRequestService, PrivacyExportService, SubjectDataExporter};
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -31,6 +32,7 @@ class DataSubjectRequestController extends Controller {
     public function __construct(
         private readonly DataSubjectRequestService $service,
         private readonly PrivacyExportService $exporter,
+        private readonly SubjectDataExporter $subjectExporter,
     ) {}
 
     public function index(): View {
@@ -74,17 +76,91 @@ class DataSubjectRequestController extends Controller {
             ->with('status', __('Betroffenenanfrage angelegt.'));
     }
 
-    public function show(DataSubjectRequest $request): View {
-        Gate::authorize('view', $request);
+    // Der Routenparameter heisst durchgaengig {dsr}: Laravels implizites
+    // Model-Binding greift NUR bei gleichnamigem Methodenparameter — mit
+    // {request} injizierte der Container in verifyIdentity/assign/decide/export
+    // ein LEERES Modell (Vollscan-Welle 8, aufgefallen bei MVP-728).
+    public function show(DataSubjectRequest $dsr): View {
+        Gate::authorize('view', $dsr);
 
         return view('privacy.requests.show', [
-            'request' => $request->load('assignedUser'),
-            'events' => $request->events()->get(),
+            'request' => $dsr->load('assignedUser'),
+            'events' => $dsr->events()->get(),
             'members' => User::query()
-                ->where('organization_id', $request->organization_id)
+                ->where('organization_id', $dsr->organization_id)
                 ->orderBy('name')
                 ->get(['id', 'name']),
+            'subjectPickers' => Gate::allows('export', $dsr) ? $this->subjectPickers($dsr) : [],
         ]);
+    }
+
+    /**
+     * Org-gescopte Auswahllisten je Betroffenenart für „Auskunft erzeugen"
+     * (Feature 129). Bewusst nur Sqid + Anzeigename — keine weiteren PII.
+     *
+     * @return array<string, list<array{sqid: string, label: string}>>
+     */
+    private function subjectPickers(DataSubjectRequest $dsr): array {
+        $orgId = (int) $dsr->organization_id;
+        $users = User::query()->where('organization_id', $orgId)->orderBy('name')->get(['id', 'name', 'customer_id']);
+
+        $option = static fn(string $sqid, ?string $label): array => ['sqid' => $sqid, 'label' => trim((string) $label) !== '' ? (string) $label : '—'];
+
+        return [
+            DataSubjectKind::User->value => array_values($users->whereNull('customer_id')
+                ->map(fn(User $u): array => $option($u->sqid, $u->name))->all()),
+            DataSubjectKind::PortalUser->value => array_values($users->whereNotNull('customer_id')
+                ->map(fn(User $u): array => $option($u->sqid, $u->name))->all()),
+            DataSubjectKind::Customer->value => array_values(Customer::query()->withoutGlobalScopes()
+                ->where('organization_id', $orgId)->orderBy('name')->get(['id', 'name', 'company'])
+                ->map(fn(Customer $c): array => $option($c->sqid, $c->name ?: $c->company))->all()),
+            DataSubjectKind::Supplier->value => array_values(Supplier::query()->withoutGlobalScopes()
+                ->where('organization_id', $orgId)->orderBy('name')->get(['id', 'name', 'company'])
+                ->map(fn(Supplier $s): array => $option($s->sqid, $s->name ?: $s->company))->all()),
+            DataSubjectKind::Lead->value => array_values(Lead::query()->withoutGlobalScopes()
+                ->where('organization_id', $orgId)->orderBy('id')->get()
+                ->map(fn(Lead $l): array => $option($l->sqid, $l->displayName()))->all()),
+            DataSubjectKind::JobApplication->value => array_values(JobApplication::query()->withoutGlobalScopes()
+                ->where('organization_id', $orgId)->orderBy('id')->get()
+                ->map(fn(JobApplication $a): array => $option($a->sqid, $a->candidate_name))->all()),
+        ];
+    }
+
+    /**
+     * „Auskunft erzeugen" (Art. 15/20, Feature 129): baut das Auskunftspaket
+     * für den gewählten Betroffenen und legt es DEK-verschlüsselt am Fall ab.
+     */
+    public function generateSubjectExport(Request $request, DataSubjectRequest $dsr): RedirectResponse {
+        Gate::authorize('export', $dsr);
+
+        // Pflichtschritt vor der Auskunft bei Portal-Eingaengen (G11, MVP-728):
+        // dort steht hinter der Anfrage ein ungeprueftes Gegenueber, das sich
+        // selbst benannt hat. Art. 12 Abs. 6 DSGVO erlaubt genau dafuer die
+        // Nachforderung von Identitaetsnachweisen — ohne dokumentierte Pruefung
+        // gibt es kein Auskunftspaket. Intern erfasste Faelle (Telefon, Post,
+        // Schalter) hat eine Person bereits gesehen und bleiben unberuehrt.
+        if ($dsr->isFromPortal() && $dsr->identity_verified_at === null) {
+            return back()->withErrors([
+                'identity' => __('dsar.internal.identity_required'),
+            ]);
+        }
+
+        $data = $request->validate([
+            'subject_type' => ['required', \Illuminate\Validation\Rule::enum(DataSubjectKind::class)],
+            'subject_id' => ['required', 'string', 'max:64'],
+        ]);
+
+        $kind = DataSubjectKind::from($data['subject_type']);
+        $id = Sqid::decodeOrNumeric($kind->modelClass(), $data['subject_id']);
+        abort_unless($id !== null, 404);
+
+        $subject = $this->subjectExporter->resolve($kind, (int) $dsr->organization_id, (int) $id);
+        $payload = $this->subjectExporter->build($dsr, $kind, $subject);
+        $this->subjectExporter->attachFiles($dsr, $kind, $payload, $request->user(), $subject);
+
+        $this->audit($request, 'privacy.subjectExportGenerated', DataSubjectRequest::class, (int) $dsr->id);
+
+        return back()->with('status', __('Auskunftspaket erzeugt und am Fall abgelegt.'));
     }
 
     public function verifyIdentity(DataSubjectRequest $dsr): RedirectResponse {

@@ -23,7 +23,7 @@
 <body class="min-h-screen bg-base-200">
 <main class="mx-auto max-w-3xl p-4 space-y-4">
     <div class="rounded-box bg-base-100 p-4 shadow">
-        <div class="mb-1 flex items-center gap-2 text-xs text-base-content/60">
+        <div class="mb-1 flex items-center gap-2 text-xs text-muted">
             <span class="badge badge-outline badge-sm">{{ __('Angebot') }}</span>
             <span>{{ $quote->number }} · V{{ $quote->version }}</span>
         </div>
@@ -86,7 +86,7 @@
                 @foreach ($quote->items as $item)
                     <label class="label cursor-pointer justify-start gap-2">
                         <input type="checkbox" name="item_ids[]" value="{{ $item->sqid }}" class="checkbox checkbox-sm" @checked(! $item->optional)>
-                        <span class="label-text">{{ $item->position }}. {{ $item->description }} @if ($item->optional)<span class="text-xs text-base-content/60">({{ __('Option') }})</span>@endif</span>
+                        <span class="label-text">{{ $item->position }}. {{ $item->description }} @if ($item->optional)<span class="text-xs text-muted">({{ __('Option') }})</span>@endif</span>
                     </label>
                 @endforeach
             </div>
@@ -94,7 +94,7 @@
                 <button type="submit" name="decision" value="accept" class="btn btn-primary btn-sm">{{ __('Angebot annehmen') }}</button>
                 <button type="submit" name="decision" value="reject" class="btn btn-outline btn-sm">{{ __('Angebot ablehnen') }}</button>
             </div>
-            <p class="text-xs text-base-content/60">{{ __('Ihre Auswahl wird mit Zeitstempel dokumentiert. Abgewählte Positionen gelten als nicht beauftragt.') }}</p>
+            <p class="text-xs text-muted">{{ __('Ihre Auswahl wird mit Zeitstempel dokumentiert. Abgewählte Positionen gelten als nicht beauftragt.') }}</p>
         </form>
     @elseif ($quote->isExpired())
         <div class="alert alert-warning">{{ __('Die Bindefrist dieses Angebots ist abgelaufen — bitte kontaktieren Sie uns für eine neue Version.') }}</div>

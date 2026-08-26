@@ -18,7 +18,7 @@
                 <h1 class="font-['Space_Grotesk'] text-lg font-semibold">{{ __('Zeiten nach OpenProject zurückbuchen') }}</h1>
                 <a href="{{ route('admin.openproject.index') }}" class="btn btn-ghost btn-sm">{{ __('Zurück') }}</a>
             </div>
-            <p class="mb-4 text-sm text-base-content/60">
+            <p class="mb-4 text-sm text-muted">
                 {{ __('Nicht-exportierte Projekt-Zeiten, deren Projekt einem OpenProject-Projekt zugeordnet ist, werden als Zeiteinträge zurückgebucht. Aufgaben werden — sofern zugeordnet — als Work Package gebucht. Bereits gebuchte Einträge werden übersprungen.') }}
             </p>
 
@@ -34,7 +34,7 @@
                 <x-date-range fromName="date_from" toName="date_to"
                               :from="old('date_from')" :to="old('date_to')"
                               :label="__('Zeitraum (optional)')" />
-                <p class="text-xs text-base-content/60">{{ __('Leer lassen, um alle offenen Einträge zu buchen.') }}</p>
+                <p class="text-xs text-muted">{{ __('Leer lassen, um alle offenen Einträge zu buchen.') }}</p>
                 <div class="flex justify-end">
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Jetzt zurückbuchen') }}</button>
                 </div>

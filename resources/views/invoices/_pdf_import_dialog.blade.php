@@ -18,7 +18,7 @@
 >
     <div class="space-y-4">
         <div class="alert alert-info text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">auto_fix_high</span>
+            <x-icon name="auto_fix_high" />
             <span>{{ __('invoice-import.intro') }}</span>
         </div>
 
@@ -46,7 +46,7 @@
             </x-select-field>
         </x-form-group>
 
-        <p class="text-xs text-base-content/60">{{ __('invoice-import.review_hint') }}</p>
+        <p class="text-xs text-muted">{{ __('invoice-import.review_hint') }}</p>
         <x-validation-errors />
     </div>
 </x-modal>

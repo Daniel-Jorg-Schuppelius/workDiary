@@ -39,6 +39,9 @@ class SalesInvoiceAdapter extends AbstractPostingAdapter {
         $invoices = Invoice::query()
             ->where('organization_id', $organization->id)
             ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
+            // MVP-707: Altrechnungen sind Eröffnungs-OP ohne Journalbuchung —
+            // ihr Erlös wurde im Vorsystem gebucht.
+            ->where('number_source', '!=', \App\Services\Import\Specs\InvoiceSpec::NUMBER_SOURCE)
             ->whereNotNull('issued_on')
             ->whereDate('issued_on', '>=', $from->toDateString())
             ->whereDate('issued_on', '<=', $to->toDateString())

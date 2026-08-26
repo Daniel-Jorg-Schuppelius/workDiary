@@ -67,7 +67,7 @@
                         </td>
                     </tr>
                 @empty
-                    <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">label</span>' :colspan="5" :title="__('Noch keine Tags angelegt')" compact />
+                    <x-table.empty icon="label" :colspan="5" :title="__('Noch keine Tags angelegt')" compact />
                 @endforelse
     </x-table>
 

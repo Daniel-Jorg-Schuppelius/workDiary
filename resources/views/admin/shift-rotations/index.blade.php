@@ -39,7 +39,7 @@
 
     @if ($rotations->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">event_repeat</span>'
+            icon="event_repeat"
             :title="__('Keine Rollpläne')"
             :message="__('Legen Sie einen Rhythmus an, um die Dienst-Vorplanung zu automatisieren.')" />
     @else
@@ -56,7 +56,7 @@
                     <x-status-badge :tone="$rotation->is_active ? 'success' : 'ghost'" size="sm">
                         {{ $rotation->is_active ? __('aktiv') : __('inaktiv') }}
                     </x-status-badge>
-                    <span class="text-sm text-base-content/60">{{ __(':weeks Wochen-Rhythmus', ['weeks' => $rotation->weeks_count]) }}</span>
+                    <span class="text-sm text-muted">{{ __(':weeks Wochen-Rhythmus', ['weeks' => $rotation->weeks_count]) }}</span>
                     <form method="POST" action="{{ route('admin.shift-rotations.toggle', $rotation) }}" class="ml-auto">
                         @csrf
                         <button type="submit" class="btn btn-xs btn-ghost">
@@ -124,7 +124,7 @@
                             <tr>
                                 <td>{{ $assignment->user?->name }}</td>
                                 <td class="tabular-nums">{{ $assignment->anchor_date->fdate() }}</td>
-                                <td class="text-sm text-base-content/60">
+                                <td class="text-sm text-muted">
                                     {{ $assignment->valid_from?->fdate() ?? '—' }} – {{ $assignment->valid_until?->fdate() ?? '—' }}
                                 </td>
                                 <td class="text-right">
@@ -143,16 +143,16 @@
                       class="mt-2 flex flex-wrap items-end gap-2">
                     @csrf
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Mitarbeiter:in') }}</label>
-                        <select name="user_id" class="select select-sm select-bordered w-52" required>
+                        <label for="rot-{{ $rotation->sqid }}-user_id" class="fieldset-label">{{ __('Mitarbeiter:in') }}</label>
+                        <select id="rot-{{ $rotation->sqid }}-user_id" name="user_id" class="select select-sm select-bordered w-52" required>
                             @foreach ($members as $member)
                                 <option value="{{ $member->sqid }}">{{ $member->name }}</option>
                             @endforeach
                         </select>
                     </div>
                     <div class="fieldset">
-                        <label class="fieldset-label">{{ __('Anker-Woche (Montag)') }}</label>
-                        <input type="date" name="anchor_date" class="input input-sm input-bordered" required>
+                        <label for="rot-{{ $rotation->sqid }}-anchor_date" class="fieldset-label">{{ __('Anker-Woche (Montag)') }}</label>
+                        <input id="rot-{{ $rotation->sqid }}-anchor_date" type="date" name="anchor_date" class="input input-sm input-bordered" required>
                     </div>
                     <x-date-range layout="split" form-control grid-class="contents"
                                   from-name="valid_from" to-name="valid_until" type="date"

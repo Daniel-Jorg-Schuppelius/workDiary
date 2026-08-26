@@ -16,7 +16,7 @@
 
 @if ($hasAppKey)
     <div class="alert alert-info mb-4">
-        <span class="material-symbols-outlined" aria-hidden="true">key</span>
+        <x-icon name="key" />
         <span>{{ __('Ein Anwendungsschlüssel ist bereits vorhanden und wird nicht überschrieben.') }}</span>
     </div>
 @endif

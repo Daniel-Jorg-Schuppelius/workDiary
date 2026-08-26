@@ -39,28 +39,24 @@ class InvoiceItemsSection extends AbstractGdpduSection {
         ];
     }
 
-    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): array {
+    public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         $invoices = InvoicesSection::invoicesInPeriod($organization, $from, $to)->get(['id', 'number']);
         $numberById = $invoices->pluck('number', 'id');
 
-        $rows = [];
-        InvoiceItem::query()
+        foreach (InvoiceItem::query()
             ->whereIn('invoice_id', $invoices->modelKeys())
-            ->orderBy('invoice_id')->orderBy('position')
-            ->get()
-            ->each(function (InvoiceItem $item) use (&$rows, $numberById): void {
-                $rows[] = [
-                    $this->str($numberById[$item->invoice_id] ?? null),
-                    $this->num($item->position, 0),
-                    $this->date($item->service_date),
-                    $this->str($item->description),
-                    $this->num($item->quantity, 2),
-                    $this->str($item->unit),
-                    $this->num($item->unit_price?->toFloat(), 2),
-                    $this->num($item->amount?->toFloat(), 2),
-                ];
-            });
-
-        return $rows;
+            ->orderBy('invoice_id')->orderBy('position')->orderBy('id')
+            ->lazy() as $item) {
+            yield [
+                $this->str($numberById[$item->invoice_id] ?? null),
+                $this->num($item->position, 0),
+                $this->date($item->service_date),
+                $this->str($item->description),
+                $this->num($item->quantity, 2),
+                $this->str($item->unit),
+                $this->num($item->unit_price?->toFloat(), 2),
+                $this->num($item->amount?->toFloat(), 2),
+            ];
+        }
     }
 }

@@ -22,7 +22,7 @@
                     <a href="{{ route('admin.openproject.mappings.index') }}" class="btn btn-ghost btn-sm">{{ __('Zuordnungen verwalten') }}</a>
                 </div>
             </div>
-            <p class="mb-4 text-sm text-base-content/60">
+            <p class="mb-4 text-sm text-muted">
                 {{ __('Projekte und Work Packages werden mit workDiary abgeglichen, anschließend die Zeiteinträge importiert. Zuordenbare Einträge werden direkt im Projekt gebucht, der Rest landet in der zentralen Zuordnungs-Inbox.') }}
             </p>
 
@@ -39,7 +39,7 @@
                     @csrf
                     <div>
                         <div class="text-sm font-semibold">{{ __('Struktur + Zeiten synchronisieren') }}</div>
-                        <div class="text-xs text-base-content/60">{{ __('Nutzt die hinterlegten Zugangsdaten und das Zeitfenster.') }}</div>
+                        <div class="text-xs text-muted">{{ __('Nutzt die hinterlegten Zugangsdaten und das Zeitfenster.') }}</div>
                     </div>
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Jetzt synchronisieren') }}</button>
                 </form>
@@ -49,7 +49,7 @@
                     @csrf
                     <div>
                         <div class="text-sm font-semibold">{{ __('Nur Struktur abgleichen') }}</div>
-                        <div class="text-xs text-base-content/60">{{ __('Projekte, Work Packages und Benutzer neu zuordnen.') }}</div>
+                        <div class="text-xs text-muted">{{ __('Projekte, Work Packages und Benutzer neu zuordnen.') }}</div>
                     </div>
                     <button type="submit" class="btn btn-sm">{{ __('Struktur abgleichen') }}</button>
                 </form>
@@ -61,7 +61,7 @@
             <div class="flex flex-wrap items-center justify-between gap-2">
                 <div>
                     <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Unzugeordnete Zeiteinträge') }}</h2>
-                    <p class="text-sm text-base-content/60">
+                    <p class="text-sm text-muted">
                         {{ __('Nicht automatisch zuordenbare OpenProject-Einträge werden jetzt in der zentralen Zuordnungs-Inbox bearbeitet (Gruppe → Projekt zuordnen und buchen).') }}
                     </p>
                 </div>

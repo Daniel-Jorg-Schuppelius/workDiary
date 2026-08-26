@@ -72,7 +72,7 @@
                     <td class="text-right"><x-icon-btn icon="visibility" :href="route('contracts.show', $contract)" :label="__('Anzeigen')" /></td>
                 </tr>
             @empty
-                <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">contract</span>' :colspan="8" :title="__('Keine Verträge — über den Dialog anlegen.')" compact />
+                <x-table.empty icon="contract" :colspan="8" :title="__('Keine Verträge — über den Dialog anlegen.')" compact />
             @endforelse
         </x-table>
     </x-card>

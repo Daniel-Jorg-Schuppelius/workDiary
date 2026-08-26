@@ -53,7 +53,7 @@
     <section class="card bg-base-200/40 mt-3">
         <div class="card-body space-y-2">
             <h3 class="card-title text-base">{{ __('Mitglieder') }}</h3>
-            <p class="text-xs text-base-content/60">{{ __('Der Teamleiter wird automatisch als Mitglied geführt.') }}</p>
+            <p class="text-xs text-muted">{{ __('Der Teamleiter wird automatisch als Mitglied geführt.') }}</p>
 
             @php($selectedMembers = (array) old('member_ids', array_map(fn($id) => \App\Support\Sqid::encode(\App\Models\User::class, $id), $assignedMemberIds)))
             <x-user-checklist

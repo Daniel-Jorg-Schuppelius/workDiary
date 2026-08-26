@@ -85,14 +85,10 @@
                 'email'       => __('E-Mail'),
                 'web'         => __('Web'),
             ] as $field => $label)
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ $label }}</label>
-                    <input type="{{ $field === 'email' ? 'email' : ($field === 'web' ? 'url' : 'text') }}"
-                           name="branding[contact][{{ $field }}]"
-                           class="input input-bordered w-full @error('branding.contact.'.$field) input-error @enderror"
-                           value="{{ old('branding.contact.'.$field, data_get($organization->settings, 'branding.contact.'.$field, '')) }}">
-                    @error('branding.contact.'.$field)<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-                </div>
+                <x-input-field name="branding[contact][{{ $field }}]"
+                               :label="$label"
+                               type="{{ $field === 'email' ? 'email' : ($field === 'web' ? 'url' : 'text') }}"
+                               value="{{ old('branding.contact.'.$field, data_get($organization->settings, 'branding.contact.'.$field, '')) }}" />
             @endforeach
         </x-form-group>
 
@@ -106,34 +102,26 @@
                 'bic'            => __('BIC'),
                 'register'       => __('Handelsregister'),
             ] as $field => $label)
-                <div class="fieldset">
-                    <label class="fieldset-label">{{ $label }}</label>
-                    <input type="text" name="branding[legal][{{ $field }}]"
-                           class="input input-bordered w-full"
-                           value="{{ old('branding.legal.'.$field, data_get($organization->settings, 'branding.legal.'.$field, '')) }}">
-                </div>
+                <x-input-field name="branding[legal][{{ $field }}]"
+                               :label="$label"
+                               type="text"
+                               value="{{ old('branding.legal.'.$field, data_get($organization->settings, 'branding.legal.'.$field, '')) }}" />
             @endforeach
             <x-textarea-field name="branding[legal][footer_text]" :label="__('Fußzeilentext (für PDF-Dokumente)')" rows="3"
                               span="2" :value="old('branding.legal.footer_text', data_get($organization->settings, 'branding.legal.footer_text', ''))" />
         </x-form-group>
 
         <x-form-group :legend="__('Farben')" icon="palette" tone="ghost" cols="2">
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Primärfarbe') }}</label>
-                <input type="color"
-                       name="branding[colors][primary]"
-                       class="input input-bordered w-full h-12 p-1"
-                       value="{{ old('branding.colors.primary', data_get($organization->settings, 'branding.colors.primary') ?: ($colors['primary'] ?? '#0ea5e9')) }}">
-                @error('branding.colors.primary')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-            </div>
-            <div class="fieldset">
-                <label class="fieldset-label">{{ __('Akzentfarbe') }}</label>
-                <input type="color"
-                       name="branding[colors][accent]"
-                       class="input input-bordered w-full h-12 p-1"
-                       value="{{ old('branding.colors.accent', data_get($organization->settings, 'branding.colors.accent') ?: ($colors['accent'] ?? '#22d3ee')) }}">
-                @error('branding.colors.accent')<p class="text-error text-xs mt-1">{{ $message }}</p>@enderror
-            </div>
+            <x-input-field name="branding[colors][primary]"
+                           :label="__('Primärfarbe')"
+                           type="color"
+                           value="{{ old('branding.colors.primary', data_get($organization->settings, 'branding.colors.primary') ?: ($colors['primary'] ?? '#0ea5e9')) }}"
+                           class="h-12 p-1" />
+            <x-input-field name="branding[colors][accent]"
+                           :label="__('Akzentfarbe')"
+                           type="color"
+                           value="{{ old('branding.colors.accent', data_get($organization->settings, 'branding.colors.accent') ?: ($colors['accent'] ?? '#22d3ee')) }}"
+                           class="h-12 p-1" />
         </x-form-group>
 
         <x-form-group :legend="__('PDF-Konfiguration je Dokumenttyp')" icon="picture_as_pdf" tone="ghost" cols="1">

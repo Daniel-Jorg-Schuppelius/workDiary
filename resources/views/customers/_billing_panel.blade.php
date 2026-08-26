@@ -30,7 +30,7 @@
 
 @if ($canAssignDesign)
     <x-card :title="__('document_design.customer.panel_title')" icon="design_services" id="customer-design-profile">
-        <p class="mb-2 text-xs text-base-content/60">{{ __('document_design.customer.panel_hint') }}</p>
+        <p class="mb-2 text-xs text-muted">{{ __('document_design.customer.panel_hint') }}</p>
         <form method="POST" action="{{ route('customers.design-profile', $customer) }}" class="flex flex-wrap items-end gap-2">
             @csrf
             <label class="form-control min-w-64">
@@ -69,7 +69,7 @@
     </x-slot:actions>
 
     @if ($billingAgreement === null)
-        <p class="px-4 py-6 text-sm text-base-content/60">
+        <p class="px-4 py-6 text-sm text-muted">
             {{ __('customer-billing.no_agreement_hint') }}
         </p>
     @else
@@ -149,7 +149,7 @@
                         <td class="text-right tabular-nums">
                             {{ $hours($statement->total_minutes) }}
                             @if ($statement->travel_minutes > 0)
-                                <span class="text-xs text-base-content/60">+{{ $hours($statement->travel_minutes) }}</span>
+                                <span class="text-xs text-muted">+{{ $hours($statement->travel_minutes) }}</span>
                             @endif
                         </td>
                         <td class="text-right tabular-nums">{{ $money($statement->gross_value) }}</td>
@@ -170,7 +170,7 @@
                                         {{ $money($statement->lexofficeVoucher->net_amount ?? $statement->lexofficeVoucher->total_amount) }}
                                     </x-status-badge>
                                 @else
-                                    <span class="text-base-content/40">—</span>
+                                    <span class="text-muted">—</span>
                                 @endif
                             </td>
                         @endif
@@ -253,7 +253,7 @@
                 </x-action-form>
             </div>
         @else
-            <p class="px-4 py-4 text-sm text-base-content/60">
+            <p class="px-4 py-4 text-sm text-muted">
                 {{ __('customer-billing.invoice_mode_hint') }}
             </p>
         @endif

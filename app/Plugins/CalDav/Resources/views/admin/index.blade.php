@@ -37,7 +37,7 @@
                     <span class="badge badge-ghost badge-sm">{{ __('caldav.health.inactive') }}</span>
                 @endif
             </div>
-            <p class="mb-4 text-sm text-base-content/60">{{ __('caldav.intro') }}</p>
+            <p class="mb-4 text-sm text-muted">{{ __('caldav.intro') }}</p>
 
             @if ($connection && $connection->isActive())
                 <div class="flex flex-wrap gap-2">
@@ -69,7 +69,7 @@
                     <span class="label-text">{{ __('caldav.field.base_url') }}</span>
                     <input type="url" name="base_url" value="{{ old('base_url', $connection->base_url ?? '') }}"
                            placeholder="https://cloud.example.com/remote.php/dav" class="input input-bordered input-sm" required>
-                    <span class="label-text-alt text-base-content/50">{{ __('caldav.field.base_url_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('caldav.field.base_url_help') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('caldav.field.username') }}</span>
@@ -81,13 +81,13 @@
                     <input type="password" name="app_password" autocomplete="new-password"
                            placeholder="{{ $connection ? __('caldav.field.password_keep') : '' }}"
                            class="input input-bordered input-sm" @required(! $connection)>
-                    <span class="label-text-alt text-base-content/50">{{ __('caldav.field.password_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('caldav.field.password_help') }}</span>
                 </label>
                 <label class="form-control">
                     <span class="label-text">{{ __('caldav.field.calendar_path') }}</span>
                     <input type="text" name="calendar_path" value="{{ old('calendar_path', $connection->calendar_path ?? '') }}"
                            placeholder="calendars/team/dienstplan" class="input input-bordered input-sm" required>
-                    <span class="label-text-alt text-base-content/50">{{ __('caldav.field.calendar_path_help') }}</span>
+                    <span class="label-text-alt text-muted">{{ __('caldav.field.calendar_path_help') }}</span>
                 </label>
                 <label class="form-control justify-end">
                     <span class="label cursor-pointer justify-start gap-2">
@@ -125,7 +125,7 @@
                         <span class="label-text">{{ __('caldav.field.scope_schedule') }}</span>
                     </label>
                 </div>
-                <span class="label-text-alt text-base-content/50">{{ __('caldav.field.scopes_help') }}</span>
+                <span class="label-text-alt text-muted">{{ __('caldav.field.scopes_help') }}</span>
             </div>
 
             <div class="flex justify-end">

@@ -37,7 +37,7 @@
             <label class="fieldset-label" for="pir_notes">
                 {{ __('PIR-Notizen') }}
                 @if ($pirRequired)
-                    <span class="text-base-content/60">({{ __('Pflicht') }})</span>
+                    <span class="text-muted">({{ __('Pflicht') }})</span>
                 @endif
             </label>
             <textarea id="pir_notes" name="pir_notes" rows="4" maxlength="20000"

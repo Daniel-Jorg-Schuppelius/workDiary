@@ -16,6 +16,7 @@ use App\Enums\Diary\Status;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{DiaryEntry, User};
 use App\Services\UI\DateRangeContext;
+use App\Support\Query\DateRange;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -72,8 +73,9 @@ class KanbanController extends Controller {
             $query->where('user_id', $auth->id);
         }
 
-        $query->whereDate('start_at', '>=', $range['from']->toDateString());
-        $query->whereDate('start_at', '<=', $range['to']->toDateString());
+        // start_at ist eine DATETIME-Spalte: halboffenes Intervall statt
+        // DATE(start_at), sonst bleibt diary_org_start_idx ungenutzt (A8).
+        DateRange::whereTimestampBetween($query, 'start_at', $range['from'], $range['to']);
 
         $entries = $query->limit(self::MAX_ENTRIES)->get();
         $byStatus = $entries->groupBy(fn(DiaryEntry $e) => $e->status->value);

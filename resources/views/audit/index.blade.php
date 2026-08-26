@@ -76,15 +76,15 @@
                             <td class="max-w-md">
                                 @if ($log->changes)
                                     <details>
-                                        <summary class="cursor-pointer text-xs text-base-content/60">{{ __('Anzeigen') }}</summary>
+                                        <summary class="cursor-pointer text-xs text-muted">{{ __('Anzeigen') }}</summary>
                                         <pre class="mt-1 max-h-40 overflow-auto whitespace-pre-wrap break-all rounded bg-base-200 p-2 text-xs">{{ json_encode($log->changes, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                                     </details>
                                 @endif
                             </td>
-                            <td class="text-xs text-base-content/60">{{ $log->ip?->getValue() }}</td>
+                            <td class="text-xs text-muted">{{ $log->ip?->getValue() }}</td>
                         </tr>
                     @empty
-                        <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">history</span>' :colspan="7" :title="__('Keine Einträge')" compact />
+                        <x-table.empty icon="history" :colspan="7" :title="__('Keine Einträge')" compact />
                     @endforelse
         </x-table>
 

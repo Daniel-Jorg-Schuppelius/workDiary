@@ -95,7 +95,7 @@
                     </tr>
                 @empty
                     <x-table.empty :colspan="7"
-                        icon='<span class="material-symbols-outlined" aria-hidden="true">category</span>'
+                        icon="category"
                         :title="__('Noch keine Kategorien angelegt')" compact />
                 @endforelse
         </x-table>

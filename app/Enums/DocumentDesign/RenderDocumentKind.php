@@ -48,6 +48,11 @@ enum RenderDocumentKind: string implements HasLabel {
     // … sowie bislang unregistrierte Nachweis- und Spezialarten.
     case CaseFile = 'case_file';
     case Label = 'label';
+    // VOB/B-Schreiben (Feature 062, MVP-728): foermliche Anzeigen an den
+    // Auftraggeber — eigene Arten, weil Empfaengeranschrift und Rechtsverweis
+    // Pflicht sind und der Zugangsnachweis am Beleg haengt.
+    case ConstructionObstructionNotice = 'construction_obstruction_notice';
+    case ConstructionConcernNotice = 'construction_concern_notice';
 
     public function label(): string {
         return match ($this) {
@@ -66,6 +71,8 @@ enum RenderDocumentKind: string implements HasLabel {
             self::Dunning => __('Mahnung'),
             self::CaseFile => __('Fallakte'),
             self::Label => __('Etikett'),
+            self::ConstructionObstructionNotice => __('construction.kind.obstruction'),
+            self::ConstructionConcernNotice => __('construction.kind.concern'),
         };
     }
 
@@ -76,7 +83,8 @@ enum RenderDocumentKind: string implements HasLabel {
             self::CreditNote, self::ProformaInvoice, self::Dunning => RenderDocumentFamily::Sales,
             self::PurchaseOrder, self::DeliveryNote => RenderDocumentFamily::Procurement,
             self::Protocol, self::ManufacturingRecord, self::Timesheet,
-            self::Form, self::Report, self::CaseFile => RenderDocumentFamily::Evidence,
+            self::Form, self::Report, self::CaseFile,
+            self::ConstructionObstructionNotice, self::ConstructionConcernNotice => RenderDocumentFamily::Evidence,
             self::Label => RenderDocumentFamily::Special,
         };
     }
@@ -130,7 +138,8 @@ enum RenderDocumentKind: string implements HasLabel {
         return match ($this) {
             self::Quote, self::OrderConfirmation, self::CreditNote,
             self::ProformaInvoice, self::Dunning => self::Invoice,
-            self::CaseFile => self::Report,
+            self::CaseFile, self::ConstructionObstructionNotice,
+            self::ConstructionConcernNotice => self::Report,
             default => null,
         };
     }
@@ -201,6 +210,13 @@ enum RenderDocumentKind: string implements HasLabel {
             ],
             self::Timesheet, self::Form, self::Report, self::CaseFile => [
                 InformationBlock::DocumentMeta,
+            ],
+            // Foermliche Schreiben an den Auftraggeber: ohne Anschrift und
+            // Absenderidentitaet ist der Zugangsnachweis wertlos.
+            self::ConstructionObstructionNotice, self::ConstructionConcernNotice => [
+                InformationBlock::RecipientAddress,
+                InformationBlock::DocumentMeta,
+                InformationBlock::CompanyIdentity,
             ],
             self::Label => [],
         };

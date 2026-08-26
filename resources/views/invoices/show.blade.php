@@ -19,7 +19,7 @@
 
     @if ($invoice->isCancelled())
         <div class="alert alert-error">
-            <span class="material-symbols-outlined" aria-hidden="true">block</span>
+            <x-icon name="block" />
             <div>
                 <div class="font-bold">{{ __('Storniert') }}@if ($invoice->cancelled_at) – {{ $invoice->cancelled_at->fdatetime() }}@endif</div>
                 @if ($invoice->cancel_reason)
@@ -31,7 +31,7 @@
 
     @if ($invoice->isProforma())
         <div class="alert alert-warning">
-            <span class="material-symbols-outlined" aria-hidden="true">info</span>
+            <x-icon name="info" />
             <div>
                 <div class="font-bold">{{ __('Pro-forma-Rechnung — keine Rechnung im umsatzsteuerlichen Sinn.') }}</div>
                 <div class="text-sm">{{ __('Kein Umsatz, keine Forderung, keine E-Rechnung. Für die Abrechnung in eine echte Rechnung umwandeln.') }}</div>
@@ -41,7 +41,7 @@
 
     @if ((int) $invoice->dunning_level > 0)
         <div class="alert alert-warning text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">notification_important</span>
+            <x-icon name="notification_important" />
             {{ __('Mahnstufe :level — zuletzt gemahnt am :date.', [
                 'level' => (int) $invoice->dunning_level,
                 'date' => optional($invoice->dunned_at)->fdatetime() ?? '—',
@@ -51,7 +51,7 @@
 
     @if ($invoice->isCreditNote() && $invoice->parent)
         <div class="alert alert-info">
-            <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+            <x-icon name="undo" />
             <div>
                 {{ __('Korrekturrechnung (Gutschrift) zu') }}
                 <a class="link" href="{{ route('invoices.show', $invoice->parent) }}">{{ $invoice->parent->number }}</a>
@@ -63,7 +63,7 @@
     @if ($invoice->isCreditNote())
         @if ($invoice->objection_at !== null)
             <div class="alert alert-warning">
-                <span class="material-symbols-outlined" aria-hidden="true">gavel</span>
+                <x-icon name="gavel" />
                 <div>
                     {{ __('Widerspruch dokumentiert am :date', ['date' => $invoice->objection_at->fdatetime()]) }}
                     @if ($invoice->objection_note)<br><span class="text-sm">{{ $invoice->objection_note }}</span>@endif
@@ -85,7 +85,7 @@
 
     @if ($invoice->isDownPayment() && ($settledByInvoice ?? null) !== null)
         <div class="alert alert-info">
-            <span class="material-symbols-outlined" aria-hidden="true">functions</span>
+            <x-icon name="functions" />
             <div>
                 {{ __('Angerechnet in Schlussrechnung') }}
                 <a class="link" href="{{ route('invoices.show', $settledByInvoice) }}">{{ $settledByInvoice->number }}</a>
@@ -98,7 +98,7 @@
     @php $childCredits = $invoice->isCreditNote() ? collect() : $invoice->creditNotes()->get(); @endphp
     @if ($childCredits->isNotEmpty())
         <div class="alert alert-warning">
-            <span class="material-symbols-outlined" aria-hidden="true">undo</span>
+            <x-icon name="undo" />
             <div>
                 {{ __('Es existieren Korrekturrechnungen:') }}
                 @foreach ($childCredits as $cn)
@@ -110,7 +110,7 @@
 
     @if ($invoice->sent_at)
         <div class="alert alert-success/40 text-sm">
-            <span class="material-symbols-outlined" aria-hidden="true">mark_email_read</span>
+            <x-icon name="mark_email_read" />
             {{ __('Zuletzt versendet: :date (:count Versand(e))', [
                 'date' => $invoice->sent_at->fdatetime(),
                 'count' => $invoice->sent_count,
@@ -124,7 +124,7 @@
             $importValidation = is_array($importExtraction['validation'] ?? null) ? $importExtraction['validation'] : null;
         @endphp
         <div class="alert alert-info">
-            <span class="material-symbols-outlined" aria-hidden="true">document_scanner</span>
+            <x-icon name="document_scanner" />
             <div class="grow">
                 <div class="font-bold">{{ __('invoice-import.imported_notice') }}</div>
                 @if (($importExtraction['structured'] ?? false) === true)
@@ -136,7 +136,7 @@
                             @elseif (($importValidation['kosit_valid'] ?? null) === false)
                                 <span class="text-error">{{ __('invoice-import.validation.failed', ['count' => count($importValidation['kosit_errors'] ?? [])]) }}</span>
                             @else
-                                <span class="text-base-content/60">{{ __('invoice-import.validation.unavailable') }}</span>
+                                <span class="text-muted">{{ __('invoice-import.validation.unavailable') }}</span>
                             @endif
                         </div>
                     @endif
@@ -257,11 +257,31 @@
                         </x-action-form>
                     @endcan
                 @endif
-                @if ($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && (auth()->user()?->canManageBilling() ?? false))
+                @if ($invoice->isOverdue() && (int) $invoice->dunning_level < 3 && ! $invoice->isDunningBlocked() && (auth()->user()?->canManageBilling() ?? false))
                     <x-icon-btn icon="notification_important" tone="warning" size="sm"
                                 data-entry-modal-trigger
                                 :href="route('invoices.dun.form', $invoice)"
                                 show-label>{{ __('Mahnen') }}</x-icon-btn>
+                @endif
+                {{-- Mahnsperre (Feature 127, MVP-691): nimmt die Rechnung aus
+                     Einzeldialog UND Mahnlauf; Umschalten wird auditiert. --}}
+                @if (in_array($invoice->status, [\App\Models\Invoice::STATUS_ISSUED, \App\Models\Invoice::STATUS_PARTIALLY_PAID], true) && (auth()->user()?->canManageBilling() ?? false))
+                    @if ($invoice->isDunningBlocked())
+                        <x-status-badge tone="warning" outline>{{ __('finance.dunning.badge_blocked') }}</x-status-badge>
+                        <x-action-form :action="route('invoices.dunning-block', $invoice)">
+                            <x-icon-btn icon="notifications_active" tone="outline" size="sm" type="submit"
+                                        show-label>{{ __('finance.dunning.action_unblock') }}</x-icon-btn>
+                        </x-action-form>
+                    @else
+                        <x-action-form :action="route('invoices.dunning-block', $invoice)"
+                              :confirm="__('finance.dunning.confirm_block', ['nr' => $invoice->number])"
+                              confirm-icon="notifications_off"
+                              confirm-tone="warning"
+                              :confirm-label="__('finance.dunning.action_block')">
+                            <x-icon-btn icon="notifications_off" tone="outline" size="sm" type="submit"
+                                        show-label>{{ __('finance.dunning.action_block') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
                 @endif
                 @can('pay', $invoice)
                     <x-action-form :action="route('invoices.pay', $invoice)">
@@ -313,9 +333,9 @@
     @php $showServiceDates = $invoice->hasServicePeriod(); $footColspan = $showServiceDates ? 5 : 4; @endphp
 
     <div class="flex flex-wrap items-center gap-2 text-sm">
-        <span class="text-base-content/60">{{ __('invoice-import.preferred_format') }}</span>
+        <span class="text-muted">{{ __('invoice-import.preferred_format') }}</span>
         <x-status-badge :label="$invoice->delivery_format->label()" tone="info" size="xs" />
-        <span class="text-xs text-base-content/50">{{ __('invoice-import.flexibility_hint') }}</span>
+        <span class="text-xs text-muted">{{ __('invoice-import.flexibility_hint') }}</span>
     </div>
 
     {{-- KI-Leistungstexte (Feature 084): Vorschläge nur im Entwurf, nie stille Änderungen. --}}
@@ -367,7 +387,7 @@
             @endif
             <tr><td colspan="{{ $footColspan }}" class="text-right">{{ __('USt.') }} {{ rtrim(rtrim($invoice->tax_rate?->getNumericValue() ?? '0', '0'), '.') }}%</td><td class="text-right">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
             @if ($invoice->is_reverse_charge)
-                <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-base-content/60">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
+                <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-muted">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
             @endif
             <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('Gesamt') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
             @php
@@ -393,7 +413,7 @@
                 <tr><td colspan="{{ $footColspan }}" class="text-right font-bold">{{ __('invoicing.retention.payable') }}</td><td class="text-right font-bold">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(app(\App\Services\Invoicing\RetentionService::class)->payableAmountOf($invoice), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
             @endif
             @if ($invoice->hasSkonto())
-                <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-base-content/60">
+                <tr><td colspan="{{ $footColspan + 1 }}" class="text-right text-xs text-muted">
                     {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => rtrim(rtrim($invoice->skonto_percent?->getNumericValue() ?? '0', '0'), '.'), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) ({{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }} = {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }})@endif
                 </td></tr>
             @endif
@@ -401,9 +421,9 @@
         @forelse ($invoice->items as $item)
             <tr>
                 <td>{{ $item->position }}</td>
-                <td>{{ $item->description }}</td>
+                <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif</td>
                 @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
-                <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-base-content/60">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
+                <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-muted">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
                 <td class="text-right" data-sort-value="{{ ($item->unit_price?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                 <td class="text-right" data-sort-value="{{ ($item->amount?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
                 @can('update', $invoice)
@@ -440,7 +460,7 @@
                 <tr>
                     <td colspan="{{ $footColspan + 2 }}" class="py-1">
                         <details>
-                            <summary class="cursor-pointer text-xs text-base-content/60">
+                            <summary class="cursor-pointer text-xs text-muted">
                                 {{ trans_choice('invoicing.source_times', $item->timeEntries->count(), ['count' => $item->timeEntries->count()]) }}
                             </summary>
                             <ul class="mt-1 space-y-0.5 pl-4">
@@ -474,7 +494,7 @@
                 </tr>
             @endif
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">receipt_long</span>' :colspan="5" :title="__('Keine Positionen.')" compact />
+            <x-table.empty icon="receipt_long" :colspan="5" :title="__('Keine Positionen.')" compact />
         @endforelse
     </x-table>
 

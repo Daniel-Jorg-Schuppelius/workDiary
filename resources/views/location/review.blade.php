@@ -18,7 +18,7 @@
 <x-index-page overflow="clip" :subtitle="__('Aus deinen Standortdaten abgeleitete Zeitvorschläge prüfen und buchen.')">
     @if ($entries->isEmpty())
         <x-empty-state framed
-            icon='<span class="material-symbols-outlined" aria-hidden="true">where_to_vote</span>' />
+            icon="where_to_vote" />
     @else
         <x-table scroll="flex" :pinRows="true">
             <x-slot:head>

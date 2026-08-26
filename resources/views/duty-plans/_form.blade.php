@@ -22,7 +22,7 @@
 
 <x-form-group :legend="__('Zeitraum & Besetzung')" icon="event" tone="info">
     <div class="fieldset">
-        <label class="fieldset-label">{{ __('Zeitraum') }} *</label>
+        <span class="fieldset-label">{{ __('Zeitraum') }} *</span>
         <x-date-range
             type="date"
             fromName="from_date"

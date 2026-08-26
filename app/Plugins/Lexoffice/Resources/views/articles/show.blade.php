@@ -37,19 +37,19 @@
 
         <dl class="grid grid-cols-1 gap-x-8 gap-y-3 sm:grid-cols-2">
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Artikelnummer') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Artikelnummer') }}</dt>
                 <dd class="tabular-nums">{{ $article->article_number ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('GTIN / Barcode') }}</dt>
+                <dt class="text-xs text-muted">{{ __('GTIN / Barcode') }}</dt>
                 <dd class="tabular-nums">{{ $article->gtin ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Einheit') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Einheit') }}</dt>
                 <dd>{{ $article->unit_name ?: '—' }}</dd>
             </div>
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Führende Preisangabe') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Führende Preisangabe') }}</dt>
                 <dd>
                     @if ($article->leading_price === 'GROSS')
                         {{ __('Brutto') }}
@@ -61,7 +61,7 @@
                 </dd>
             </div>
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Netto-Preis') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Netto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->net_unit_price !== null)
                         {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
@@ -71,7 +71,7 @@
                 </dd>
             </div>
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Brutto-Preis') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Brutto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->gross_unit_price !== null)
                         {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->gross_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
@@ -81,7 +81,7 @@
                 </dd>
             </div>
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Umsatzsteuersatz') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Umsatzsteuersatz') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->vat_rate !== null)
                         {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->vat_rate !== null ? (float) $article->vat_rate->getNumericValue() : 0.0, 0, withThousandsSeparator: true) }} %
@@ -92,22 +92,22 @@
             </div>
             @if ($article->description)
                 <div class="sm:col-span-2">
-                    <dt class="text-xs text-base-content/60">{{ __('Beschreibung') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('Beschreibung') }}</dt>
                     <dd class="whitespace-pre-wrap">{{ $article->description }}</dd>
                 </div>
             @endif
             @if ($article->note)
                 <div class="sm:col-span-2">
-                    <dt class="text-xs text-base-content/60">{{ __('Notiz') }}</dt>
+                    <dt class="text-xs text-muted">{{ __('Notiz') }}</dt>
                     <dd class="whitespace-pre-wrap">{{ $article->note }}</dd>
                 </div>
             @endif
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Lexoffice-ID') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Lexoffice-ID') }}</dt>
                 <dd class="font-mono text-xs">{{ $article->external_id }}</dd>
             </div>
             <div>
-                <dt class="text-xs text-base-content/60">{{ __('Zuletzt synchronisiert') }}</dt>
+                <dt class="text-xs text-muted">{{ __('Zuletzt synchronisiert') }}</dt>
                 <dd>{{ optional($article->synced_at)->format('d.m.Y H:i') ?: '—' }}</dd>
             </div>
         </dl>

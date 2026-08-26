@@ -25,7 +25,7 @@
     <div class="mb-4">
         <h3 class="mb-2 text-sm font-semibold text-base-content">{{ __('document.title.version_history') }}</h3>
         @if ($document->versions->isEmpty())
-            <p class="text-sm text-base-content/60">{{ __('document.empty_versions') }}</p>
+            <p class="text-sm text-muted">{{ __('document.empty_versions') }}</p>
         @else
             <ul class="divide-y divide-base-300 rounded-box border border-base-300">
                 @foreach ($document->versions as $version)
@@ -37,10 +37,10 @@
                             @endif
                             <span class="text-base-content/70">{{ $version->original_name }}</span>
                             @if ($version->note)
-                                <span class="block text-xs italic text-base-content/60">{{ $version->note }}</span>
+                                <span class="block text-xs italic text-muted">{{ $version->note }}</span>
                             @endif
                         </div>
-                        <div class="flex items-center gap-2 text-xs text-base-content/60">
+                        <div class="flex items-center gap-2 text-xs text-muted">
                             <span>{{ $version->humanSize() }}</span>
                             <span>{{ optional($version->uploader)->name ?? '—' }}</span>
                             <span>{{ $version->created_at?->fdatetime() }}</span>
@@ -60,7 +60,7 @@
                 <span class="label-text">{{ __('document.field.file') }} *</span>
                 <input type="file" name="file" required class="file-input file-input-bordered w-full"
                        accept=".jpg,.jpeg,.png,.gif,.webp,.pdf,.txt,.csv,.log,.zip,.docx,.xlsx">
-                <span class="label-text-alt mt-1 text-base-content/60">{{ __('document.hint.upload', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</span>
+                <span class="label-text-alt mt-1 text-muted">{{ __('document.hint.upload', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</span>
             </label>
             <label class="form-control sm:col-span-2">
                 <span class="label-text">{{ __('document.field.version_note') }}</span>

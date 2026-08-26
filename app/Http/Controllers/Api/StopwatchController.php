@@ -19,16 +19,47 @@ use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
+use OpenApi\Attributes as OA;
 
 class StopwatchController extends Controller {
     public function __construct(protected Stopwatch $stopwatch) {}
 
+    #[OA\Get(
+        path: '/stopwatch',
+        summary: 'Laufende Stoppuhr',
+        tags: ['Stopwatch'],
+        security: [['bearerAuth' => ['stopwatch:read']]],
+        responses: [
+            new OA\Response(response: 200, description: 'OK (null, wenn keine Stoppuhr läuft)'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+        ],
+    )]
     public function current(): JsonResponse|TimeEntryResource {
         $entry = $this->stopwatch->current($this->authUser());
 
         return $entry ? new TimeEntryResource($entry) : response()->json(null);
     }
 
+    #[OA\Post(
+        path: '/stopwatch/start',
+        summary: 'Stoppuhr starten',
+        tags: ['Stopwatch'],
+        security: [['bearerAuth' => ['stopwatch:write']]],
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['project_id'], properties: [
+            new OA\Property(property: 'project_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab'),
+            new OA\Property(property: 'task_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab', nullable: true),
+            new OA\Property(property: 'diary_entry_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab', nullable: true),
+            new OA\Property(property: 'timesheet_id', type: 'string', description: 'Sqid', example: 'k7Qx2Ab', nullable: true),
+            new OA\Property(property: 'description', type: 'string', maxLength: 500, nullable: true),
+        ])),
+        responses: [
+            new OA\Response(response: 201, description: 'Created'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+            new OA\Response(response: 422, description: 'Validation error'),
+        ],
+    )]
     public function start(Request $request): TimeEntryResource {
         $request->merge([
             'project_id' => Sqid::decode(Project::class, $request->input('project_id')),
@@ -68,6 +99,17 @@ class StopwatchController extends Controller {
         return new TimeEntryResource($this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null, $data['diary_entry_id'] ?? null));
     }
 
+    #[OA\Post(
+        path: '/stopwatch/stop',
+        summary: 'Stoppuhr stoppen',
+        tags: ['Stopwatch'],
+        security: [['bearerAuth' => ['stopwatch:write']]],
+        responses: [
+            new OA\Response(response: 200, description: 'OK (null, wenn keine Stoppuhr lief)'),
+            new OA\Response(response: 401, description: 'Unauthenticated'),
+            new OA\Response(response: 403, description: 'Forbidden'),
+        ],
+    )]
     public function stop(): JsonResponse|TimeEntryResource {
         $entry = $this->stopwatch->stop($this->authUser());
 

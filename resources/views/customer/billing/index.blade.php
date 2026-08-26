@@ -16,7 +16,7 @@
 
 @section('content')
     <h1 class="text-2xl font-semibold mb-1">{{ __('customer-billing.portal_title') }}</h1>
-    <p class="text-sm text-base-content/60 mb-4">{{ __('customer-billing.portal_intro') }}</p>
+    <p class="text-sm text-muted mb-4">{{ __('customer-billing.portal_intro') }}</p>
 
     <x-table>
         <x-slot:head>

@@ -12,13 +12,14 @@ namespace App\Http\Controllers;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveWarehouseRequest;
-use App\Models\Warehouse;
+use App\Models\{Site, Team, Vehicle, Warehouse};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 /**
- * Verwaltung lokaler Lagerorte (Feature 048, MVP-067) als Modal-Dialoge.
+ * Verwaltung lokaler Lagerorte (Feature 048, MVP-067) als Modal-Dialoge;
+ * seit MVP-706 mit Art und Bezug (Standort/Fahrzeug/Team).
  * Modul-Gating über `warehouses.*` → module.lager.
  */
 class WarehouseController extends Controller {
@@ -28,7 +29,8 @@ class WarehouseController extends Controller {
         Gate::authorize('viewAny', Warehouse::class);
 
         $warehouses = Warehouse::query()
-            ->withCount('movements')
+            ->withCount(['movements', 'bins'])
+            ->with(['site', 'vehicle', 'team'])
             ->orderByDesc('is_default')
             ->orderBy('name')
             ->paginate(25);
@@ -39,13 +41,13 @@ class WarehouseController extends Controller {
     public function create(): View {
         Gate::authorize('create', Warehouse::class);
 
-        return view('warehouses._form_dialog', ['warehouse' => null, 'isDialog' => true]);
+        return view('warehouses._form_dialog', ['warehouse' => null, 'isDialog' => true] + $this->referenceOptions());
     }
 
     public function store(SaveWarehouseRequest $request): RedirectResponse {
         Gate::authorize('create', Warehouse::class);
 
-        $data = $request->validated();
+        $data = $request->warehouseData();
         $data['organization_id'] = $this->currentOrganization()->id;
         $data['created_by'] = Auth::id();
         Warehouse::create($data);
@@ -56,13 +58,13 @@ class WarehouseController extends Controller {
     public function edit(Warehouse $warehouse): View {
         Gate::authorize('update', $warehouse);
 
-        return view('warehouses._form_dialog', ['warehouse' => $warehouse, 'isDialog' => true]);
+        return view('warehouses._form_dialog', ['warehouse' => $warehouse, 'isDialog' => true] + $this->referenceOptions());
     }
 
     public function update(SaveWarehouseRequest $request, Warehouse $warehouse): RedirectResponse {
         Gate::authorize('update', $warehouse);
 
-        $warehouse->update($request->validated());
+        $warehouse->update($request->warehouseData());
 
         return redirect()->route('warehouses.index')->with('success', __('inventory.flash.warehouse_updated'));
     }
@@ -78,5 +80,21 @@ class WarehouseController extends Controller {
         $warehouse->delete();
 
         return redirect()->route('warehouses.index')->with('success', __('inventory.flash.warehouse_deleted'));
+    }
+
+    /**
+     * Auswahllisten für den Bezug (Sqid → Label), org-gescopt über die Model-Scopes.
+     *
+     * @return array{sites: array<string, string>, vehicles: array<string, string>, teams: array<string, string>}
+     */
+    private function referenceOptions(): array {
+        return [
+            'sites' => Site::query()->orderBy('name')->get(['id', 'name'])
+                ->mapWithKeys(fn (Site $site): array => [$site->sqid => (string) $site->name])->all(),
+            'vehicles' => Vehicle::query()->whereNull('archived_at')->orderBy('label')->orderBy('license_plate')->get()
+                ->mapWithKeys(fn (Vehicle $vehicle): array => [$vehicle->sqid => $vehicle->displayName()])->all(),
+            'teams' => Team::query()->orderBy('name')->get(['id', 'name'])
+                ->mapWithKeys(fn (Team $team): array => [$team->sqid => (string) $team->name])->all(),
+        ];
     }
 }

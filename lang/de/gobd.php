@@ -39,8 +39,12 @@ return [
         'draft_batches' => ':count nicht festgeschriebene(r) Buchungsstapel (Entwurf) im Zeitraum — fehlt im Buchungsstapel-Nachweis.',
         'empty_invoices' => 'Keine Ausgangsrechnungen im gewählten Zeitraum.',
     ],
-    'export' => 'Z3-Paket herunterladen',
+    'export' => 'Z3-Paket erzeugen',
+    'queued' => 'Der Paketbau wurde eingereiht — der Nachweis erscheint unten und wird beim nächsten Aufruf fortgeschrieben.',
+    'download' => 'Paket herunterladen',
     'recent' => [
+        'status' => 'Status',
+        'actions' => 'Aktionen',
         'title' => 'Letzte Exporte',
         'package_hash' => 'Paket-Hash (SHA-256)',
         'records' => 'Datensätze',

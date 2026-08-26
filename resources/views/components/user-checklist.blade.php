@@ -40,6 +40,7 @@
         <label class="input input-bordered input-sm flex w-full items-center gap-2">
             <span class="material-symbols-outlined text-[1.05rem] opacity-50" aria-hidden="true">search</span>
             <input type="text" x-model="q" autocomplete="off" class="grow"
+                   aria-label="{{ $placeholder ?? __('Suchen…') }}"
                    placeholder="{{ $placeholder ?? __('Suchen…') }}">
         </label>
 

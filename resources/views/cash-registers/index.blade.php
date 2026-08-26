@@ -59,7 +59,7 @@
                 </td>
             </tr>
         @empty
-            <x-table.empty icon='<span class="material-symbols-outlined" aria-hidden="true">point_of_sale</span>' :colspan="5" :title="__('Noch keine Kasse angelegt')" compact />
+            <x-table.empty icon="point_of_sale" :colspan="5" :title="__('Noch keine Kasse angelegt')" compact />
         @endforelse
     </x-table>
 </x-page-shell>
