@@ -110,6 +110,12 @@ TAR_STAGING_FILE=""
 TAR_STAGING_DIR=""
 cleanup() {
   local rc=$?
+  # Aufräumen darf nie an `set -e` scheitern: bricht der Trap mittendrin ab,
+  # verschluckt er die Fehlermeldung UND setzt den Exit-Code auf 1 — ein
+  # erfolgreicher Lauf sieht für den Aufrufer (deploy.sh) dann wie ein Fehler
+  # aus. Genau das tat das rmdir, dessen Verzeichnis der Normalpfad bereits
+  # entfernt hat.
+  set +e
   rm -f "$MYCNF" ${TMP_SQLITE:+"$TMP_SQLITE"} ${TAR_STAGING_FILE:+"$TAR_STAGING_FILE"}
   [[ -n "$TAR_STAGING_DIR" ]] && rmdir "$TAR_STAGING_DIR" 2>/dev/null
   if [[ $rc -ne 0 ]]; then

@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Deploy-Skript für work.schuppelius.org
+# Deploy-Skript für WorkDiary
 # ---------------------------------------
 # Richtet das Repo auf origin/main aus (robust auch nach History-Rewrites),
 # sichert den Lizenz-Signierschlüssel, migriert und re-sealt die lizenz-
@@ -21,22 +21,37 @@ cd "$(dirname "$0")"
 # harter Exit-Check, Wartungsmodus erst danach beenden. Abschaltbar für
 # Sonderfälle: DEPLOY_SKIP_BACKUP=1 (z. B. direkt nach einem frischen Backup),
 # DEPLOY_SKIP_MAINTENANCE=1 (z. B. Erstinstallation ohne Nutzer).
-PRE_BACKUP_DIR="${DEPLOY_BACKUP_DIR:-$PWD/storage/app/private/predeploy-backups}"
 MAINTENANCE_ON=0
+# Der ERR-Trap meldet IMMER, an welchem Schritt es klemmte: früher schwieg er,
+# solange der Wartungsmodus noch nicht an war — ein Abbruch in den ersten
+# Schritten (Backup, artisan down) sah damit aus, als hätte der Deploy einfach
+# nur ein Backup gemacht und sich dann kommentarlos beendet.
 finish_maintenance() {
+    local rc=$? line="${1:-?}" cmd="${2:-?}"
+    echo "✗ Deploy ABGEBROCHEN in Zeile $line (Exit-Code $rc): $cmd" >&2
     if [ "$MAINTENANCE_ON" = "1" ]; then
-        echo "⚠ Deploy abgebrochen — die Anwendung bleibt im WARTUNGSMODUS (halb migrierter Stand darf nicht online)." >&2
+        echo "⚠ Die Anwendung bleibt im WARTUNGSMODUS (halb migrierter Stand darf nicht online)." >&2
         echo "  Nach Klärung manuell: php artisan up" >&2
     fi
 }
-trap finish_maintenance ERR
+trap 'finish_maintenance "$LINENO" "$BASH_COMMAND"' ERR
 
-echo "→ Backup vor dem Update (DB + Dateien) → $PRE_BACKUP_DIR"
+# Wohin gesichert wird, entscheidet backup.sh (Env → /etc/workdiary-backup.conf
+# → Default /var/backups/workdiary) und meldet es in seiner Abschlusszeile.
+# deploy.sh gibt hier bewusst KEIN Ziel mehr vor und kündigt auch keines an:
+# die conf wird nach der Env gelesen und überstimmt sie — eine Ankündigung von
+# hier aus wich damit still vom tatsächlichen Ablageort ab.
+echo "→ Backup vor dem Update (DB + Dateien)"
 if [ "${DEPLOY_SKIP_BACKUP:-0}" = "1" ]; then
     echo "  ⚠ DEPLOY_SKIP_BACKUP=1 — Backup übersprungen."
+elif [ -n "${DEPLOY_BACKUP_DIR:-}" ]; then
+    mkdir -p "$DEPLOY_BACKUP_DIR"
+    if [ -r "${BACKUP_CONF:-/etc/workdiary-backup.conf}" ]; then
+        echo "  ⚠ ${BACKUP_CONF:-/etc/workdiary-backup.conf} kann DEPLOY_BACKUP_DIR überstimmen — maßgeblich ist das Ziel in der Abschlusszeile."
+    fi
+    BACKUP_DIR="$DEPLOY_BACKUP_DIR" bash scripts/backup.sh
 else
-    mkdir -p "$PRE_BACKUP_DIR"
-    BACKUP_DIR="$PRE_BACKUP_DIR" bash scripts/backup.sh
+    bash scripts/backup.sh
 fi
 
 if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
