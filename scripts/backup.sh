@@ -84,7 +84,28 @@ BACKUP_DIR="${BACKUP_DIR:-/var/backups/workdiary}"
 BACKUP_KEEP_DAYS="${BACKUP_KEEP_DAYS:-14}"
 TS=$(date +%Y%m%d_%H%M%S)
 mkdir -p "$BACKUP_DIR"
-chmod 700 "$BACKUP_DIR"
+# 700 ist erwünscht (verhindert das Auflisten fremder Backups), aber nicht
+# überall durchsetzbar: gehört das Verzeichnis einem anderen Nutzer (mehrere
+# Instanzen teilen sich den Default /var/backups/workdiary), liegt es auf einem
+# Mount ohne Rechteverwaltung (CIFS/NFS) oder trägt es ein immutable-Flag,
+# scheitert chmod mit EPERM — als root ebenso. Das darf den Lauf NICHT abbrechen:
+# die Backup-Dateien selbst entstehen durch `umask 077` als 600, die .env-Kopie
+# zusätzlich explizit. Offene Verzeichnisrechte werden nur gemeldet.
+if ! chmod 700 "$BACKUP_DIR" 2>/dev/null; then
+  DIR_PERM="$(stat -c '%a' "$BACKUP_DIR" 2>/dev/null || echo '???')"
+  DIR_OWNER="$(stat -c '%U' "$BACKUP_DIR" 2>/dev/null || echo '?')"
+  if [[ "${DIR_PERM: -2}" != "00" ]]; then
+    echo "WARNUNG: $BACKUP_DIR (Eigentümer $DIR_OWNER, Rechte $DIR_PERM) lässt sich nicht auf 700 setzen und ist für Gruppe/Andere sichtbar." >&2
+    echo "         Die Backup-Dateien selbst sind 600, das Verzeichnis sollte dennoch geschlossen werden: chmod 700 $BACKUP_DIR" >&2
+  fi
+fi
+# Schreibrecht früh und klar prüfen — sonst scheitert erst der Dump mit einer
+# Fehlermeldung, die nicht auf die Ursache zeigt.
+if [[ ! -w "$BACKUP_DIR" ]]; then
+  echo "FEHLER: $BACKUP_DIR ist für $(id -un) nicht beschreibbar (Eigentümer $(stat -c '%U' "$BACKUP_DIR" 2>/dev/null || echo '?'), Rechte $(stat -c '%a' "$BACKUP_DIR" 2>/dev/null || echo '?'))." >&2
+  echo "       Entweder das Verzeichnis dem ausführenden Nutzer übereignen oder in der Konfiguration in ${BACKUP_CONF:-/etc/workdiary-backup.conf} ein eigenes BACKUP_DIR für diese Instanz setzen." >&2
+  exit 1
+fi
 
 # SQLite-Backups sind gzippte DB-Dateien (.sqlite.gz), MySQL/MariaDB SQL-Dumps.
 if [[ "$DB_CONNECTION" == "sqlite" ]]; then
