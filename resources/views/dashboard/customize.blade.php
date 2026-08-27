@@ -53,12 +53,13 @@
             </div>
         @endif
 
-        <form method="POST" action="{{ route('dashboard.customize.save') }}" id="dashboard-customize-form" data-dashboard-customize>
+        <form method="POST" action="{{ route('dashboard.customize.save') }}" id="dashboard-customize-form"
+              class="flex flex-col gap-4" data-dashboard-customize>
             @csrf
 
             {{-- ── Fertige Anordnungen ─────────────────────────────────── --}}
             @if ($presets !== [])
-                <x-card :title="__('Fertige Anordnungen')" icon="auto_awesome_mosaic" class="mb-4">
+                <x-card :title="__('Fertige Anordnungen')" icon="auto_awesome_mosaic">
                     <div class="flex flex-wrap items-center gap-3">
                         @foreach ($presets as $preset)
                             <div class="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2">
@@ -78,7 +79,7 @@
             @endif
 
             {{-- ── Bereiche ────────────────────────────────────────────── --}}
-            <x-card :title="__('Bereiche')" icon="tab" class="mb-4">
+            <x-card :title="__('Bereiche')" icon="tab">
                 <x-slot:actions>
                     <x-button type="button" tone="ghost" size="xs" icon="add" data-tab-add>{{ __('Bereich hinzufügen') }}</x-button>
                 </x-slot:actions>
@@ -151,7 +152,7 @@
             <x-card padding="p-0">
                 <ul id="dashboard-widget-list" class="divide-y divide-base-300" data-widget-list>
                     @foreach ($items as $idx => $item)
-                        <li class="flex flex-wrap items-center gap-3 p-3 sm:flex-nowrap"
+                        <li class="flex flex-wrap items-center gap-3 px-3 py-2 sm:flex-nowrap"
                             draggable="true"
                             data-widget-row
                             data-widget-key="{{ $item['key'] }}">
@@ -220,15 +221,6 @@
                 </ul>
             </x-card>
 
-            <div class="mt-4 flex flex-wrap items-center justify-end gap-3">
-                @if ($canManageOrgDefault)
-                    <label class="label cursor-pointer gap-2">
-                        <input type="checkbox" name="scope" value="organization" class="checkbox checkbox-sm">
-                        <span class="label-text text-xs">{{ __('Zusätzlich als Standard für die Organisation speichern') }}</span>
-                    </label>
-                @endif
-                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
-            </div>
         </form>
 
         {{-- Preset-Formulare stehen bewusst außerhalb des Speichern-Formulars:
@@ -240,4 +232,26 @@
             </form>
         @endforeach
     </x-page-shell>
+
+    {{-- Speichern-Balken als STEHENDER Footer (gleiches Muster wie die
+         Menü-Anpassung und die Pagination): bei knapp 40 Kacheln wäre ein
+         Button am Listenende sonst nur nach vollem Durchscrollen erreichbar.
+         Felder und Button liegen außerhalb des <form> und sind über das
+         HTML-Attribut form="…" damit verbunden. --}}
+    @push('page-footer')
+        <div class="shrink-0 mt-(--sidebar-gap) max-md:px-1">
+            <div class="flex flex-wrap items-center justify-between gap-3 rounded-(--panel-radius) border border-base-300 bg-base-100 px-4 py-2.5 shadow-xs">
+                <span class="text-xs text-muted">{{ __('Die Auswahl gilt für dein Konto, auf allen Geräten.') }}</span>
+                <div class="flex flex-wrap items-center gap-3">
+                    @if ($canManageOrgDefault)
+                        <label class="label cursor-pointer gap-2">
+                            <input type="checkbox" name="scope" value="organization" form="dashboard-customize-form" class="checkbox checkbox-sm">
+                            <span class="label-text text-xs">{{ __('Zusätzlich als Standard für die Organisation speichern') }}</span>
+                        </label>
+                    @endif
+                    <x-button type="submit" form="dashboard-customize-form" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
+                </div>
+            </div>
+        </div>
+    @endpush
 @endsection

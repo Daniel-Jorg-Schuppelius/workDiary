@@ -1988,6 +1988,7 @@
     "DHL-API nicht erreichbar oder Zugangsdaten ungültig.": "DHL API unreachable or credentials invalid.",
     "DHL-API-Fehler (:class).": "DHL API error (:class).",
     "DHL-Anbindung ist deaktiviert.": "DHL connection is deactivated.",
+    "Die Auswahl gilt für dein Konto, auf allen Geräten.": "The selection applies to your account, on all devices.",
     "Diesem Bereich ist noch keine Kachel zugeordnet.": "No tile is assigned to this section yet.",
     "Dir ist derzeit kein offenes Ticket zugewiesen.": "No open ticket is assigned to you.",
     "Dir sind derzeit keine offenen Aufträge zugewiesen.": "No open jobs are assigned to you.",
