@@ -11,7 +11,8 @@
 # Die Dateinamen tragen den Instanznamen (<name>_db_<Stempel>.sql.gz …), damit
 # Backups mehrerer Installationen im selben BACKUP_DIR unterscheidbar bleiben.
 #
-# Optional überschreibbar per Env oder /etc/workdiary-backup.conf
+# Optional überschreibbar per Env oder /etc/workdiary-backup.conf (eine
+# ausdrücklich gesetzte Env-Variable schlägt dabei den Wert aus der conf)
 # (chmod 600; legt scripts/install-system.sh mit Defaults an):
 #   APP_DIR                – Default: Elternverzeichnis dieses Skripts
 #   BACKUP_DIR             – Default: /var/backups/workdiary
@@ -29,8 +30,37 @@ umask 077
 # Konfigurationsdatei per BACKUP_CONF wählbar (Cron mehrerer Instanzen zeigt je
 # auf ihre eigene /etc/workdiary-<instanz>-backup.conf); Default systemweit.
 # shellcheck disable=SC1091
+BACKUP_CONF_EXPLICIT="${BACKUP_CONF:+1}"
 BACKUP_CONF="${BACKUP_CONF:-/etc/workdiary-backup.conf}"
-[[ -r "$BACKUP_CONF" ]] && source "$BACKUP_CONF"
+
+# Ausdrückliche Vorgaben aus der Umgebung gewinnen gegen die conf: die conf ist
+# der systemweite Default, der Aufrufer meint es ernst. `source` würde sie sonst
+# still überschreiben — deploy.sh kündigte dann ein Ziel an, in das gar nicht
+# gesichert wird. Darum vorher sichern, nach dem source zurückholen.
+_ENV_APP_DIR="${APP_DIR:-}"
+_ENV_BACKUP_DIR="${BACKUP_DIR:-}"
+_ENV_BACKUP_NAME="${BACKUP_NAME:-}"
+_ENV_BACKUP_KEEP_DAYS="${BACKUP_KEEP_DAYS:-}"
+_ENV_BACKUP_HEARTBEAT_URL="${BACKUP_HEARTBEAT_URL:-}"
+_ENV_BACKUP_HEARTBEAT_TOKEN="${BACKUP_HEARTBEAT_TOKEN:-}"
+
+if [[ -r "$BACKUP_CONF" ]]; then
+  source "$BACKUP_CONF"
+elif [[ -n "$BACKUP_CONF_EXPLICIT" ]]; then
+  # Ausdrücklich gesetzte conf, die nicht lesbar ist (häufig: root-eigene 600er
+  # conf, während der Deploy als Web-User läuft), darf NICHT still übergangen
+  # werden — sonst sichert der Lauf mit den Defaults ins falsche Verzeichnis.
+  echo "FEHLER: BACKUP_CONF=$BACKUP_CONF ist für $(id -un) nicht lesbar." >&2
+  echo "       Lesbar machen (z. B. chown $(id -un) $BACKUP_CONF) oder BACKUP_CONF weglassen." >&2
+  exit 1
+fi
+
+if [[ -n "$_ENV_APP_DIR" ]];                then APP_DIR="$_ENV_APP_DIR"; fi
+if [[ -n "$_ENV_BACKUP_DIR" ]];             then BACKUP_DIR="$_ENV_BACKUP_DIR"; fi
+if [[ -n "$_ENV_BACKUP_NAME" ]];            then BACKUP_NAME="$_ENV_BACKUP_NAME"; fi
+if [[ -n "$_ENV_BACKUP_KEEP_DAYS" ]];       then BACKUP_KEEP_DAYS="$_ENV_BACKUP_KEEP_DAYS"; fi
+if [[ -n "$_ENV_BACKUP_HEARTBEAT_URL" ]];   then BACKUP_HEARTBEAT_URL="$_ENV_BACKUP_HEARTBEAT_URL"; fi
+if [[ -n "$_ENV_BACKUP_HEARTBEAT_TOKEN" ]]; then BACKUP_HEARTBEAT_TOKEN="$_ENV_BACKUP_HEARTBEAT_TOKEN"; fi
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 APP_DIR="${APP_DIR:-$(dirname "$SCRIPT_DIR")}"

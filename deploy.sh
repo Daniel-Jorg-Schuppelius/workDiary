@@ -20,7 +20,10 @@ cd "$(dirname "$0")"
 # Backup VOR der Migration, Wartungsmodus während des Umbaus, system:health als
 # harter Exit-Check, Wartungsmodus erst danach beenden. Abschaltbar für
 # Sonderfälle: DEPLOY_SKIP_BACKUP=1 (z. B. direkt nach einem frischen Backup),
-# DEPLOY_SKIP_MAINTENANCE=1 (z. B. Erstinstallation ohne Nutzer).
+# DEPLOY_SKIP_MAINTENANCE=1 (z. B. Erstinstallation ohne Nutzer),
+# DEPLOY_BACKUP_DIR=<pfad> (anderes Ziel), DEPLOY_BACKUP_KEEP_DAYS=<n>
+# (Aufbewahrung der Pre-Deploy-Stände; Default 7 Tage — kürzer als beim
+# Cron-Backup, weil diese Sicherungen im Webspace liegen und je Deploy anfallen).
 MAINTENANCE_ON=0
 # Der ERR-Trap meldet IMMER, an welchem Schritt es klemmte: früher schwieg er,
 # solange der Wartungsmodus noch nicht an war — ein Abbruch in den ersten
@@ -36,22 +39,19 @@ finish_maintenance() {
 }
 trap 'finish_maintenance "$LINENO" "$BASH_COMMAND"' ERR
 
-# Wohin gesichert wird, entscheidet backup.sh (Env → /etc/workdiary-backup.conf
-# → Default /var/backups/workdiary) und meldet es in seiner Abschlusszeile.
-# deploy.sh gibt hier bewusst KEIN Ziel mehr vor und kündigt auch keines an:
-# die conf wird nach der Env gelesen und überstimmt sie — eine Ankündigung von
-# hier aus wich damit still vom tatsächlichen Ablageort ab.
-echo "→ Backup vor dem Update (DB + Dateien)"
+# Das Pre-Deploy-Backup bleibt IM Webverzeichnis: der Deploy läuft als Web-User
+# (ISPConfig: web141/web143 …), das systemweite /var/backups/workdiary aus der
+# conf gehört dagegen root und ist für ihn nicht beschreibbar. Hier gilt
+# deshalb das eigene Ziel — backup.sh gibt einer ausdrücklich gesetzten
+# Umgebungsvariablen Vorrang vor der conf. Getrennt vom Cron-Backup ist das
+# ohnehin sauber: dies ist die Rollback-Sicherung dieses einen Deploys.
+PRE_BACKUP_DIR="${DEPLOY_BACKUP_DIR:-$PWD/storage/app/private/predeploy-backups}"
+echo "→ Backup vor dem Update (DB + Dateien) → $PRE_BACKUP_DIR"
 if [ "${DEPLOY_SKIP_BACKUP:-0}" = "1" ]; then
     echo "  ⚠ DEPLOY_SKIP_BACKUP=1 — Backup übersprungen."
-elif [ -n "${DEPLOY_BACKUP_DIR:-}" ]; then
-    mkdir -p "$DEPLOY_BACKUP_DIR"
-    if [ -r "${BACKUP_CONF:-/etc/workdiary-backup.conf}" ]; then
-        echo "  ⚠ ${BACKUP_CONF:-/etc/workdiary-backup.conf} kann DEPLOY_BACKUP_DIR überstimmen — maßgeblich ist das Ziel in der Abschlusszeile."
-    fi
-    BACKUP_DIR="$DEPLOY_BACKUP_DIR" bash scripts/backup.sh
 else
-    bash scripts/backup.sh
+    mkdir -p "$PRE_BACKUP_DIR"
+    BACKUP_DIR="$PRE_BACKUP_DIR" BACKUP_KEEP_DAYS="${DEPLOY_BACKUP_KEEP_DAYS:-7}" bash scripts/backup.sh
 fi
 
 if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
