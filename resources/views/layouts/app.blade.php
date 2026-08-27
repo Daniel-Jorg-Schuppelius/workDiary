@@ -750,10 +750,10 @@
                                         @if ($_notifUnread > 0)
                                             <form method="POST" action="{{ route('notifications.readAll') }}">
                                                 @csrf
-                                                <x-button type="submit" tone="ghost" size="xs" title="{{ __('notification.action.mark_all_read') }}">
-                                                    <x-icon name="done_all" class="text-sm" />
-                                                    <span>{{ __('notification.action.mark_all_read') }}</span>
-                                                </x-button>
+                                                {{-- Icon-only: der volle Text sprengt den schmalen Dropdown-Kopf (DE bricht um). --}}
+                                                <x-icon-btn icon="done_all"
+                                                            type="submit"
+                                                            :label="__('notification.action.mark_all_read')" />
                                             </form>
                                         @endif
                                     </div>

@@ -1,32 +1,16 @@
 {{--
-  Created on   : Mon May 25 2026
+  Created on   : Thu Aug 27 2026
   Author       : Daniel Jörg Schuppelius
   Author Uri   : https://schuppelius.org
   Filename     : team-kpis.blade.php
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+
+  Kachel „Team-Kennzahlen" (nur Admins) — Daten: TeamKpisWidget.
 --}}
-<x-card :title="__('Team-Kennzahlen')">
-    @if ($team)
-        <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-            <div class="rounded-box border border-base-300 p-3">
-                <p class="text-xs text-muted">{{ __('Offen (Team)') }}</p>
-                <p class="text-2xl font-semibold">{{ $team['kpi']['open_entries'] ?? 0 }}</p>
-            </div>
-            <div class="rounded-box border border-base-300 p-3">
-                <p class="text-xs text-muted">{{ __('In Bearbeitung') }}</p>
-                <p class="text-2xl font-semibold">{{ $team['kpi']['progress_entries'] ?? 0 }}</p>
-            </div>
-            <div class="rounded-box border border-base-300 p-3">
-                <p class="text-xs text-muted">{{ __('Heute archiviert') }}</p>
-                <p class="text-2xl font-semibold">{{ $team['kpi']['archived_today'] ?? 0 }}</p>
-            </div>
-            <div class="rounded-box border border-base-300 p-3">
-                <p class="text-xs text-muted">{{ __('User') }}</p>
-                <p class="text-2xl font-semibold">{{ $team['kpi']['user_count'] ?? 0 }}</p>
-            </div>
-        </div>
-    @else
-        <p class="text-sm text-muted">{{ __('Keine Team-Daten verfügbar.') }}</p>
-    @endif
-</x-card>
+<div class="grid grid-cols-2 gap-3 md:grid-cols-4">
+    <x-kpi-tile :label="__('Offen (Team)')" :value="$kpi['open_entries'] ?? 0" tone="info" />
+    <x-kpi-tile :label="__('In Bearbeitung (Team)')" :value="$kpi['progress_entries'] ?? 0" tone="info" />
+    <x-kpi-tile :label="__('Heute archiviert')" :value="$kpi['archived_today'] ?? 0" tone="info" />
+    <x-kpi-tile :label="__('Mitarbeitende')" :value="$kpi['user_count'] ?? 0" tone="info" />
+</div>

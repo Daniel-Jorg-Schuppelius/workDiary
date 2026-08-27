@@ -237,6 +237,11 @@ class AppServiceProvider extends ServiceProvider {
         // anwenden (Cross-Tenant-Leck). scoped wird pro Job verworfen.
         $this->app->scoped(\App\Services\Licensing\FeatureFlagResolver::class);
 
+        // Dashboard-Datenquelle: scoped, damit die Kacheln eines Requests sich
+        // Abfragen teilen (interner $memo) — als Singleton würde ein Worker die
+        // Daten des ersten Nutzers an den nächsten Job weiterreichen.
+        $this->app->scoped(\App\Services\Dashboard\DashboardService::class);
+
         // Widget-Dashboard (Phase G): Registry als Singleton; Default-Widgets
         // werden in boot() registriert.
         $this->app->singleton(\App\Dashboard\WidgetRegistry::class);
@@ -882,19 +887,71 @@ class AppServiceProvider extends ServiceProvider {
         });
     }
 
-    /** Registriert die Standard-Dashboard-Widgets in der Registry (Phase G). */
+    /**
+     * Registriert die Dashboard-Kacheln.
+     *
+     * Seit dem Umbau des Dashboards (2026-08) sind auch die vormals fest
+     * verdrahteten Blöcke (KPI-Zeile, Tabs Überblick/Aufgaben/Aktivität/
+     * Finanzen) Kacheln — dadurch kann jeder Nutzer sie unter „Dashboard
+     * anpassen" ausblenden und umsortieren, und Organisationen können eine
+     * Vorgabe setzen. Reihenfolge hier ist unerheblich; die Vorgabe-Position
+     * liefert Widget::defaultOrder().
+     */
     private function registerDashboardWidgets(): void {
         /** @var \App\Dashboard\WidgetRegistry $registry */
         $registry = $this->app->make(\App\Dashboard\WidgetRegistry::class);
 
-        // Personal-/Team-KPIs, Finance, Urlaub/Flex, Schichten, Notdienste und
-        // Onboarding rendert das Tab-Dashboard fest → hier NICHT als Widget
-        // registriert (sonst doppelt); Klassen bleiben für spätere Reaktivierung
-        // (Entscheidung bestätigt: Vollreview 2026-07-29, W2.4 — reaktivieren
-        // oder löschen entscheidet ein künftiges Dashboard-Feature).
-        $registry->register($this->app->make(\App\Dashboard\Widgets\BookmarksWidget::class));
-        $registry->register($this->app->make(\App\Dashboard\Widgets\DataProtectionWidget::class));
-        // Aufgabencenter-Kachel (Feature 041/MVP-058, nachgezogen als B3/MVP-344).
-        $registry->register($this->app->make(\App\Dashboard\Widgets\OperationsTasksWidget::class));
+        foreach ([
+            // Überblick
+            \App\Dashboard\Widgets\OnboardingWidget::class,
+            \App\Dashboard\Widgets\PersonalKpisWidget::class,
+            \App\Dashboard\Widgets\TeamKpisWidget::class,
+            \App\Dashboard\Widgets\TodayShiftsWidget::class,
+            \App\Dashboard\Widgets\UpcomingShiftsWidget::class,
+            \App\Dashboard\Widgets\ScheduledShiftsWidget::class,
+            \App\Dashboard\Widgets\RecentEmergenciesWidget::class,
+            \App\Dashboard\Widgets\BookmarksWidget::class,
+
+            // Zeit
+            \App\Dashboard\Widgets\AttendanceClockWidget::class,
+            \App\Dashboard\Widgets\StopwatchWidget::class,
+            \App\Dashboard\Widgets\FlexBalanceWidget::class,
+            \App\Dashboard\Widgets\TimeAccountsWidget::class,
+            \App\Dashboard\Widgets\TimeCorrectionsWidget::class,
+
+            // Aufgaben & Aktivität
+            \App\Dashboard\Widgets\RemindersWidget::class,
+            \App\Dashboard\Widgets\OpenIssuesWidget::class,
+            \App\Dashboard\Widgets\RecentEntriesWidget::class,
+            \App\Dashboard\Widgets\RecentCommentsWidget::class,
+            \App\Dashboard\Widgets\RecentAttachmentsWidget::class,
+            \App\Dashboard\Widgets\TeamActivityWidget::class,
+            \App\Dashboard\Widgets\KanbanStatusWidget::class,
+            \App\Dashboard\Widgets\ServiceTicketsWidget::class,
+            \App\Dashboard\Widgets\ChatUnreadWidget::class,
+            \App\Dashboard\Widgets\ApprovalsWidget::class,
+
+            // Finanzen
+            \App\Dashboard\Widgets\FinanceWidget::class,
+            \App\Dashboard\Widgets\VacationFlexWidget::class,
+            \App\Dashboard\Widgets\OpenTimesWidget::class,
+            \App\Dashboard\Widgets\OpenItemsWidget::class,
+            \App\Dashboard\Widgets\TaxFilingsWidget::class,
+
+            // Fristen & Betrieb
+            \App\Dashboard\Widgets\AssetComplianceWidget::class,
+            \App\Dashboard\Widgets\AssetBlocksWidget::class,
+            \App\Dashboard\Widgets\ContractDeadlinesWidget::class,
+            \App\Dashboard\Widgets\LeasingDeadlinesWidget::class,
+            \App\Dashboard\Widgets\SafetyDueWidget::class,
+            \App\Dashboard\Widgets\TrainingDueWidget::class,
+            \App\Dashboard\Widgets\DataProtectionWidget::class,
+            \App\Dashboard\Widgets\OperationsTasksWidget::class,
+            \App\Dashboard\Widgets\IntegrationInboxWidget::class,
+            \App\Dashboard\Widgets\BackupStatusWidget::class,
+            \App\Dashboard\Widgets\PluginHealthWidget::class,
+        ] as $widget) {
+            $registry->register($this->app->make($widget));
+        }
     }
 }

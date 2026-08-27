@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature;
 
-use App\Models\User;
+use App\Models\{User, UserDashboardWidget};
 use App\Services\Attendance\AttendanceClockService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -37,6 +37,33 @@ class AttendanceWidgetTest extends TestCase {
 
         $html = $response->getContent() ?: '';
         $this->assertStringNotContainsString(route('attendance.clock-out'), $html);
+    }
+
+    public function test_dashboard_shows_attendance_clock_tile(): void {
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->getContent() ?: '';
+
+        // Die Stempeluhr-Kachel rendert attendances._panel (Marker
+        // data-attendance-panel) — der Header-Chip tut das nicht.
+        $this->assertStringContainsString('data-attendance-panel', $html);
+    }
+
+    public function test_attendance_clock_tile_can_be_hidden(): void {
+        UserDashboardWidget::create([
+            'user_id' => $this->user->id,
+            'widget_key' => 'attendance-clock',
+            'sort_order' => 0,
+            'hidden' => true,
+        ]);
+
+        $html = $this->actingAs($this->user)
+            ->get(route('dashboard'))
+            ->assertOk()
+            ->getContent() ?: '';
+
+        $this->assertStringNotContainsString('data-attendance-panel', $html);
     }
 
     public function test_dashboard_shows_clock_out_form_when_punched_in(): void {

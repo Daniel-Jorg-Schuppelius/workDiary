@@ -10,6 +10,7 @@
 
 namespace App\Models;
 
+use App\Enums\Dashboard\WidgetWidth;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -18,11 +19,14 @@ class UserDashboardWidget extends Model {
         'user_id',
         'widget_key',
         'sort_order',
+        'width',
+        'tab_key',
         'hidden',
     ];
 
     protected $casts = [
         'sort_order' => 'integer',
+        'width' => WidgetWidth::class,
         'hidden' => 'boolean',
     ];
 

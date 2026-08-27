@@ -10,44 +10,66 @@
 
 namespace App\Http\Controllers\Me;
 
-use App\Dashboard\WidgetRegistry;
+use App\Enums\Dashboard\WidgetWidth;
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{User, UserDashboardWidget};
+use App\Models\User;
+use App\Services\Dashboard\{DashboardLayoutService, DashboardPresets};
+use App\Support\Dashboard\DashboardLayoutItem;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Support\Facades\{Auth, Gate};
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
+/**
+ * „Dashboard anpassen": Reihenfolge, Sichtbarkeit, Breite und Bereich der
+ * Kacheln.
+ *
+ * Gespeichert wird immer die vollständige Liste — auch die ausgeblendeten
+ * Kacheln, sonst ginge ihre Position verloren. Wer die Organisation
+ * verwalten darf (organization.update), kann dieselbe Liste zusätzlich als
+ * Vorgabe für alle hinterlegen; sie greift bei jedem Nutzer, der noch keine
+ * eigene Wahl getroffen (oder sie zurückgesetzt) hat.
+ */
 class DashboardCustomizationController extends Controller {
-    public function index(WidgetRegistry $registry): View {
+    public function __construct(
+        private readonly DashboardLayoutService $layout,
+        private readonly DashboardPresets $presets,
+    ) {}
+
+    public function index(): View {
         /** @var User $user */
         $user = Auth::user();
 
-        $available = $registry->availableFor($user);
-        $config = $user->dashboardWidgets()->get()->keyBy('widget_key');
-
-        // Merge stored preferences with available widgets and sort.
-        $items = $available->map(function ($widget) use ($config) {
-            /** @var UserDashboardWidget|null $stored */
-            $stored = $config->get($widget->key());
-
-            return [
-                'key' => $widget->key(),
-                'label' => $widget->label(),
-                'icon' => $widget->icon(),
-                'sort_order' => $stored !== null ? $stored->sort_order : 999,
-                'hidden' => $stored !== null ? $stored->hidden : false,
-            ];
-        })
-            ->sortBy(fn(array $i) => [$i['sort_order'], $i['label']])
-            ->values()
+        $items = $this->layout->resolveFor($user)
+            ->map(fn (DashboardLayoutItem $item): array => [
+                'key' => $item->key(),
+                'label' => $item->widget->label(),
+                'icon' => $item->widget->icon(),
+                'description' => $item->widget->description(),
+                'group' => $item->widget->group(),
+                'hidden' => $item->hidden,
+                'width' => $item->width,
+                'tab' => $item->tabKey,
+                'source' => $item->source,
+            ])
             ->all();
 
         return view('dashboard.customize', [
             'items' => $items,
+            'tabs' => $this->layout->tabsFor($user),
+            'presets' => array_map(fn (string $key): array => [
+                'key' => $key,
+                'label' => $this->presets->label($key),
+                'description' => $this->presets->description($key),
+            ], $this->presets->keys()),
+            'canManageOrgDefault' => Gate::allows(Permission::OrganizationUpdate->value),
+            'hasOrgDefault' => $this->layout->hasOrgDefault($user->organization),
+            'hasOwnLayout' => $user->dashboardWidgets()->exists() || $this->layout->hasOwnTabs($user),
         ]);
     }
 
-    public function save(Request $request, WidgetRegistry $registry): RedirectResponse {
+    public function save(Request $request): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
 
@@ -55,27 +77,70 @@ class DashboardCustomizationController extends Controller {
             'widgets' => ['required', 'array'],
             'widgets.*.key' => ['required', 'string', 'max:80'],
             'widgets.*.hidden' => ['nullable', 'boolean'],
+            'widgets.*.width' => ['nullable', Rule::enum(WidgetWidth::class)],
+            'widgets.*.tab' => ['nullable', 'string', 'max:40'],
+            // Bereiche: Schlüssel landen in Alpine-Attributen, deshalb streng
+            // auf [a-z0-9-] begrenzt; die Beschriftung ist frei.
+            'tabs' => ['nullable', 'array', 'max:' . DashboardLayoutService::MAX_TABS],
+            'tabs.*.key' => ['required', 'string', 'regex:/^[a-z0-9-]{1,40}$/'],
+            'tabs.*.label' => ['required', 'string', 'max:40'],
+            // Symbol ist ein Material-Symbol-Name; eng gefasst, weil er auch
+            // in der Org-Vorgabe landet und dort ungeprüft gerendert wird.
+            'tabs.*.icon' => ['nullable', 'string', 'regex:/^[a-z0-9_]{1,40}$/'],
+            'scope' => ['nullable', Rule::in(['user', 'organization'])],
         ]);
 
-        $availableKeys = $registry->availableFor($user)->keys()->all();
+        /** @var list<array{key:string,hidden?:mixed,width?:?string,tab?:?string}> $rows */
+        $rows = $payload['widgets'];
+        /** @var list<array{key:string,label:string}> $tabs */
+        $tabs = $payload['tabs'] ?? [];
 
-        DB::transaction(function () use ($user, $payload, $availableKeys): void {
-            $user->dashboardWidgets()->delete();
-            $sort = 0;
-            foreach ($payload['widgets'] as $row) {
-                if (! in_array($row['key'], $availableKeys, true)) {
-                    continue;
-                }
-                UserDashboardWidget::create([
-                    'user_id' => $user->id,
-                    'widget_key' => $row['key'],
-                    'sort_order' => $sort++,
-                    'hidden' => (bool) ($row['hidden'] ?? false),
-                ]);
-            }
-        });
+        $asOrgDefault = ($payload['scope'] ?? 'user') === 'organization';
+        if ($asOrgDefault) {
+            Gate::authorize(Permission::OrganizationUpdate->value);
+            $organization = $user->organization;
+            abort_if($organization === null, 404);
+
+            $this->layout->saveOrgDefault($organization, $rows, $tabs);
+        }
+
+        $this->layout->saveForUser($user, $rows, $tabs);
 
         return redirect()->route('dashboard.customize')
-            ->with('status', __('Dashboard-Konfiguration gespeichert.'));
+            ->with('status', $asOrgDefault
+                ? __('Dashboard-Konfiguration gespeichert und als Standard der Organisation hinterlegt.')
+                : __('Dashboard-Konfiguration gespeichert.'));
+    }
+
+    /**
+     * Übernimmt eine fertige Anordnung. Gespeichert wird über denselben Weg
+     * wie eine Handeingabe — inklusive Rechte- und Modul-Filter; danach steht
+     * das Ergebnis normal zum Nachbearbeiten in der Liste.
+     */
+    public function preset(Request $request): RedirectResponse {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $key = (string) $request->input('preset', '');
+        abort_unless($this->presets->exists($key), 404);
+
+        $this->layout->saveForUser($user, $this->presets->widgets($key), $this->presets->tabs($key));
+
+        return redirect()->route('dashboard.customize')
+            ->with('status', __('Anordnung „:preset" übernommen.', ['preset' => $this->presets->label($key)]));
+    }
+
+    /**
+     * Verwirft die eigene Anordnung; danach gilt wieder die Vorgabe der
+     * Organisation bzw. die der Kacheln selbst.
+     */
+    public function reset(): RedirectResponse {
+        /** @var User $user */
+        $user = Auth::user();
+
+        $this->layout->resetUser($user);
+
+        return redirect()->route('dashboard.customize')
+            ->with('status', __('Eigene Anordnung verworfen — es gilt wieder die Vorgabe.'));
     }
 }

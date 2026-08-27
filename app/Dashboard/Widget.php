@@ -10,6 +10,7 @@
 
 namespace App\Dashboard;
 
+use App\Enums\Dashboard\{WidgetGroup, WidgetWidth};
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 
@@ -29,6 +30,46 @@ abstract class Widget {
      */
     public function icon(): string {
         return 'widgets';
+    }
+
+    /**
+     * Vorgabebreite im Kachel-Raster. Der Nutzer kann sie je Kachel
+     * überschreiben (user_dashboard_widgets.width).
+     */
+    public function defaultWidth(): WidgetWidth {
+        return WidgetWidth::Half;
+    }
+
+    /**
+     * Position, solange der Nutzer (und die Organisation) nichts anderes
+     * festgelegt haben. Kleinere Werte stehen weiter oben; gespeicherte
+     * Nutzer-Layouts zählen ab 0 und stehen damit immer davor.
+     */
+    public function defaultOrder(): int {
+        return 500;
+    }
+
+    /**
+     * Kachel ist ohne Zutun des Nutzers ausgeblendet. Für Kacheln, die nur
+     * einen Teil der Nutzer interessieren: sie stehen unter „Dashboard
+     * anpassen" bereit, überfrachten aber nicht das Standard-Dashboard.
+     */
+    public function defaultHidden(): bool {
+        return false;
+    }
+
+    /**
+     * Thematische Gruppe für die Anpassungsseite.
+     */
+    public function group(): WidgetGroup {
+        return WidgetGroup::Overview;
+    }
+
+    /**
+     * Kurzbeschreibung für die Anpassungsseite (was die Kachel zeigt).
+     */
+    public function description(): ?string {
+        return null;
     }
 
     /**

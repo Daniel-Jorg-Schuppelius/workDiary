@@ -11,6 +11,7 @@
 namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
+use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\Privacy\DataSubjectRequestStatus;
 use App\Models\Privacy\{DataSubjectRequest, ProcessingActivity};
 use App\Models\User;
@@ -33,6 +34,18 @@ class DataProtectionWidget extends Widget {
 
     public function icon(): string {
         return 'privacy_tip';
+    }
+
+    public function defaultOrder(): int {
+        return 170;
+    }
+
+    public function group(): WidgetGroup {
+        return WidgetGroup::Deadlines;
+    }
+
+    public function description(): ?string {
+        return (string) __('dashboard.widget.data_protection.description');
     }
 
     public function requiredModule(): ?string {

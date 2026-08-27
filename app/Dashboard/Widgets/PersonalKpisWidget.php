@@ -1,6 +1,6 @@
 <?php
 /*
- * Created on   : Sun May 17 2026
+ * Created on   : Thu Aug 27 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
  * Filename     : PersonalKpisWidget.php
@@ -8,13 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
+use App\Enums\Dashboard\{WidgetGroup, WidgetWidth};
 use App\Models\User;
 use App\Services\Dashboard\DashboardService;
 use Illuminate\Contracts\View\View;
 
+/** KPI-Zeile des Nutzers (vormals fest über den Tabs). */
 class PersonalKpisWidget extends Widget {
     public function __construct(private readonly DashboardService $service) {}
 
@@ -30,12 +34,25 @@ class PersonalKpisWidget extends Widget {
         return 'person';
     }
 
-    public function render(User $user): View|string {
-        $data = $this->service->summarize($user);
+    public function defaultOrder(): int {
+        return 10;
+    }
 
+    public function description(): ?string {
+        return (string) __('dashboard.widget.personal_kpis.description');
+    }
+
+    public function defaultWidth(): WidgetWidth {
+        return WidgetWidth::Full;
+    }
+
+    public function group(): WidgetGroup {
+        return WidgetGroup::Overview;
+    }
+
+    public function render(User $user): View|string {
         return view('dashboard.widgets.personal-kpis', [
-            'user' => $user,
-            'personal' => $data['user'] ?? [],
+            'kpi' => $this->service->personalKpis($user),
         ]);
     }
 }

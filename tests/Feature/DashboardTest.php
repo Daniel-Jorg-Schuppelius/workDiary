@@ -13,6 +13,7 @@ namespace Tests\Feature;
 use App\Enums\OpenIssue\{OpenIssueSeverity, OpenIssueSource, OpenIssueStatus, OpenIssueVisibility};
 use App\Models\{Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, PerDiemTrip, User, Vacation};
 use App\Models\OpenIssue;
+use App\Services\Dashboard\DashboardService;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -70,10 +71,12 @@ class DashboardTest extends TestCase {
             ->assertSee(__('In Bearbeitung (Team)'))
             ->assertSee(__('Mitarbeitende'));
 
-        $team = $response->viewData('team');
-        $this->assertSame(2, (int) $team['kpi']['open_entries']);
-        $this->assertSame(1, (int) $team['kpi']['progress_entries']);
-        $this->assertSame(1, (int) $team['kpi']['user_count']);
+        // Die Zahlen liegen seit dem Kachel-Umbau nicht mehr als View-Daten
+        // vor — sie kommen aus derselben Quelle, aus der die Kachel sie holt.
+        $kpi = app(DashboardService::class)->teamKpis();
+        $this->assertSame(2, (int) $kpi['open_entries']);
+        $this->assertSame(1, (int) $kpi['progress_entries']);
+        $this->assertSame(1, (int) $kpi['user_count']);
     }
 
     public function test_dashboard_lists_recent_comments_on_own_entries(): void {
@@ -229,15 +232,13 @@ class DashboardTest extends TestCase {
         $response = $this->actingAs($user)->get(route('dashboard'));
         $response->assertOk();
 
-        /** @var \Illuminate\Support\Collection<int, OpenIssue> $issues */
-        $issues = $response->viewData('user')['open_issues_assigned'];
+        // Reihenfolge in der gerenderten Kachel prüfen (Fällige zuerst,
+        // fristlose zuletzt) statt über View-Daten, die es nicht mehr gibt.
+        $response->assertSeeInOrder(['Fällig zuerst', 'Fällig später', 'Ohne Frist']);
 
-        $this->assertSame(
-            ['Fällig zuerst', 'Fällig später', 'Ohne Frist'],
-            $issues->pluck('title')->values()->all()
-        );
-        $this->assertSame(3, (int) $response->viewData('user')['kpi']['open_issues_assigned']);
-        $this->assertSame(4, (int) $response->viewData('user')['kpi']['open_issues_created']);
+        $kpi = app(DashboardService::class)->personalKpis($user);
+        $this->assertSame(3, (int) $kpi['open_issues_assigned']);
+        $this->assertSame(4, (int) $kpi['open_issues_created']);
     }
 
     public function test_dashboard_marks_critical_open_issues_with_error_badge(): void {

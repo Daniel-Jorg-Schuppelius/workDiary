@@ -32,6 +32,7 @@ import "./help-drawer.js";
 import "./shortcuts.js";
 import "./quick-book.js";
 import "./agile-backlog.js";
+import "./dashboard-customize.js";
 import "./workspace-editor.js";
 import "./kanban.js";
 import "./layout.js";

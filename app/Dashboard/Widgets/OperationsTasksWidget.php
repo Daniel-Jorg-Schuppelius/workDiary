@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
+use App\Enums\Dashboard\WidgetGroup;
 use App\Enums\User\Permission;
 use App\Models\{OperationsTask, User};
 use Illuminate\Contracts\View\View;
@@ -37,6 +38,18 @@ class OperationsTasksWidget extends Widget {
 
     public function icon(): string {
         return 'task_alt';
+    }
+
+    public function defaultOrder(): int {
+        return 160;
+    }
+
+    public function group(): WidgetGroup {
+        return WidgetGroup::Operations;
+    }
+
+    public function description(): ?string {
+        return (string) __('dashboard.widget.operations_tasks.description');
     }
 
     public function availableFor(User $user): bool {

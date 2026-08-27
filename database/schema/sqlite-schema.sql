@@ -2152,6 +2152,8 @@ CREATE TABLE IF NOT EXISTS "user_dashboard_widgets"(
   "hidden" tinyint(1) not null default '0',
   "created_at" datetime,
   "updated_at" datetime,
+  "width" varchar,
+  "tab_key" varchar,
   foreign key("user_id") references "users"("id") on delete cascade
 );
 CREATE UNIQUE INDEX "user_dashboard_widgets_user_id_widget_key_unique" on "user_dashboard_widgets"(
@@ -18639,3 +18641,5 @@ INSERT INTO migrations VALUES(755,'2027_02_19_103800_add_sms_channel_to_notifica
 INSERT INTO migrations VALUES(756,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',151);
 INSERT INTO migrations VALUES(757,'2027_02_19_104000_create_user_workspaces_table',151);
 INSERT INTO migrations VALUES(758,'2027_02_19_104100_add_peppol_participant_and_lookups',152);
+INSERT INTO migrations VALUES(759,'2027_02_19_104200_add_width_to_user_dashboard_widgets',153);
+INSERT INTO migrations VALUES(760,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',153);

@@ -44,11 +44,46 @@ class DashboardWidgetsSmokeTest extends TestCase {
             $rendered[] = $widget->key();
         }
 
-        // KPIs, Finance, Schichten, Notdienste, Team & Onboarding sind fest ins
-        // Tab-Dashboard gewandert und nicht mehr als konfigurierbare Widgets registriert.
-        // Der Widget-Loop bedient nur noch nicht-überlappende Widgets (Lesezeichen).
+        // Seit dem Kachel-Umbau (2026-08) gibt es keine fest verdrahteten
+        // Dashboard-Blöcke mehr: KPIs, Schichten, Finanzen und Team-Aktivität
+        // sind Kacheln und damit abwählbar.
         $this->assertContains('bookmarks', $rendered);
-        $this->assertNotContains('personal-kpis', $rendered);
-        $this->assertNotContains('finance', $rendered);
+        $this->assertContains('personal-kpis', $rendered);
+        $this->assertContains('finance', $rendered);
+        $this->assertContains('attendance-clock', $rendered);
+        $this->assertContains('team-kpis', $rendered);
+    }
+
+    /**
+     * Jede registrierte Kachel muss rendern — auch die, die für den
+     * Testnutzer gar nicht sichtbar wären (Modul aus, Recht fehlt). Der Test
+     * geht deshalb bewusst über die vollständige Registry und ruft render()
+     * direkt: er prüft Abfragen und Views, nicht die Sichtbarkeit.
+     */
+    #[Test]
+    public function every_widget_in_the_registry_renders_without_data(): void {
+        $user = User::factory()->admin()->create([
+            'organization_id' => $this->organization->id,
+        ]);
+
+        /** @var WidgetRegistry $registry */
+        $registry = app(WidgetRegistry::class);
+        $this->assertGreaterThan(20, $registry->all()->count(), 'Registry unerwartet klein');
+
+        foreach ($registry->all() as $widget) {
+            $result = $widget->render($user);
+            $html = $result instanceof View ? $result->render() : (string) $result;
+            $this->assertNotSame('', trim($html), 'Widget ' . $widget->key() . ' rendered empty');
+        }
+    }
+
+    /** Kachel-Schlüssel müssen eindeutig sein — sonst überschreibt die Registry still. */
+    #[Test]
+    public function widget_keys_are_unique(): void {
+        /** @var WidgetRegistry $registry */
+        $registry = app(WidgetRegistry::class);
+
+        $keys = $registry->all()->map(fn ($w) => $w->key())->all();
+        $this->assertSame(array_values(array_unique($keys)), array_values($keys));
     }
 }

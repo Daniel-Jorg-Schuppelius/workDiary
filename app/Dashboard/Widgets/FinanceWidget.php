@@ -1,6 +1,6 @@
 <?php
 /*
- * Created on   : Sun May 25 2026
+ * Created on   : Thu Aug 27 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
  * Filename     : FinanceWidget.php
@@ -8,13 +8,17 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
+declare(strict_types=1);
+
 namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
+use App\Enums\Dashboard\{WidgetGroup, WidgetWidth};
 use App\Models\User;
 use App\Services\Dashboard\DashboardService;
 use Illuminate\Contracts\View\View;
 
+/** Spesen-/Reise-Monatszahlen und (für Admins) der Genehmigungs-Stack. */
 class FinanceWidget extends Widget {
     public function __construct(private readonly DashboardService $service) {}
 
@@ -30,11 +34,26 @@ class FinanceWidget extends Widget {
         return 'payments';
     }
 
-    public function render(User $user): View|string {
-        $data = $this->service->summarize($user);
+    public function defaultOrder(): int {
+        return 130;
+    }
 
+    public function description(): ?string {
+        return (string) __('dashboard.widget.finance.description');
+    }
+
+    public function defaultWidth(): WidgetWidth {
+        return WidgetWidth::Full;
+    }
+
+    public function group(): WidgetGroup {
+        return WidgetGroup::Finance;
+    }
+
+    public function render(User $user): View|string {
         return view('dashboard.widgets.finance', [
-            'finance' => $data['finance'] ?? [],
+            'finance' => $this->service->finance($user),
+            'now' => $this->service->now(),
         ]);
     }
 }

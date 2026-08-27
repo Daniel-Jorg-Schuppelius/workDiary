@@ -11,10 +11,15 @@
 namespace App\Dashboard\Widgets;
 
 use App\Dashboard\Widget;
+use App\Enums\Dashboard\WidgetGroup;
 use App\Models\User;
 use Illuminate\Contracts\View\View;
 
 class BookmarksWidget extends Widget {
+    /** Dashboard-Kachel zeigt nur die ersten Lesezeichen (nach sort_order); die
+     *  vollständige Liste hat die Verwaltungsseite (bookmarks.index). */
+    private const PREVIEW_LIMIT = 10;
+
     public function key(): string {
         return 'bookmarks';
     }
@@ -27,9 +32,17 @@ class BookmarksWidget extends Widget {
         return 'bookmarks';
     }
 
-    /** Dashboard-Kachel zeigt nur die ersten Lesezeichen (nach sort_order); die
-     *  vollständige Liste hat die Verwaltungsseite (bookmarks.index). */
-    private const PREVIEW_LIMIT = 10;
+    public function defaultOrder(): int {
+        return 150;
+    }
+
+    public function group(): WidgetGroup {
+        return WidgetGroup::Overview;
+    }
+
+    public function description(): ?string {
+        return (string) __('dashboard.widget.bookmarks.description');
+    }
 
     public function render(User $user): View|string {
         return view('dashboard.widgets.bookmarks', [

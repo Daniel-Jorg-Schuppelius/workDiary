@@ -264,6 +264,10 @@ Route::middleware('auth')->group(function () {
         ->name('dashboard.customize');
     Route::post('me/dashboard/customize', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'save'])
         ->name('dashboard.customize.save');
+    Route::post('me/dashboard/customize/reset', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'reset'])
+        ->name('dashboard.customize.reset');
+    Route::post('me/dashboard/customize/preset', [\App\Http\Controllers\Me\DashboardCustomizationController::class, 'preset'])
+        ->name('dashboard.customize.preset');
 
     // Per-User-Menüanpassung + Funktionskatalog (Feature 081, MVP-374/375).
     Route::get('me/navigation/customize', [\App\Http\Controllers\Me\NavigationCustomizationController::class, 'index'])

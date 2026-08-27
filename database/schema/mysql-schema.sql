@@ -18351,6 +18351,8 @@ CREATE TABLE `user_dashboard_widgets` (
   `user_id` bigint(20) unsigned NOT NULL,
   `widget_key` varchar(80) NOT NULL,
   `sort_order` int(10) unsigned NOT NULL DEFAULT 0,
+  `width` varchar(8) DEFAULT NULL,
+  `tab_key` varchar(40) DEFAULT NULL,
   `hidden` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -20010,3 +20012,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (748,'2027_02_19_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (749,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',25);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (750,'2027_02_19_104000_create_user_workspaces_table',25);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (751,'2027_02_19_104100_add_peppol_participant_and_lookups',26);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (752,'2027_02_19_104200_add_width_to_user_dashboard_widgets',27);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (753,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',27);
