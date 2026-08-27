@@ -18,6 +18,17 @@
 @section('nav-title', __('Dashboard anpassen'))
 
 @php
+    /**
+     * Auswahl gängiger Material-Symbole für Bereiche. Zum Anklicken — eine
+     * <datalist> zeigt nur Namen und filtert bei exaktem Treffer alles weg,
+     * das Feld wirkt dann leer. Freie Eingabe bleibt über das Textfeld möglich.
+     */
+    $iconChoices = [
+        'dashboard', 'checklist', 'forum', 'payments', 'schedule', 'event_upcoming',
+        'today', 'calendar_month', 'group', 'person', 'insights', 'monitoring',
+        'inventory_2', 'build', 'handyman', 'health_and_safety', 'shield', 'gavel',
+        'folder', 'description', 'star', 'flag', 'bolt', 'home_work',
+    ];
     /** @var array<int, array{key:string,label:string,icon:string,description:?string,group:\App\Enums\Dashboard\WidgetGroup,hidden:bool,width:\App\Enums\Dashboard\WidgetWidth,tab:?string,source:string}> $items */
     /** @var list<array{key:string,label:string,icon:?string}> $tabs */
     /** @var list<array{key:string,label:string,description:string}> $presets */
@@ -62,10 +73,15 @@
                 <x-card :title="__('Fertige Anordnungen')" icon="auto_awesome_mosaic">
                     <div class="flex flex-wrap items-center gap-3">
                         @foreach ($presets as $preset)
-                            <div class="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2">
-                                <div class="min-w-0">
-                                    <p class="font-semibold">{{ $preset['label'] }}</p>
-                                    <p class="text-xs text-muted">{{ $preset['description'] }}</p>
+                            <div class="flex min-w-0 flex-1 flex-wrap items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-4 py-3">
+                                <div class="flex min-w-0 items-start gap-3">
+                                    <span class="mt-0.5 flex size-8 shrink-0 items-center justify-center rounded-box border border-base-300 bg-base-100 text-base-content/70">
+                                        <x-icon name="dashboard_customize" />
+                                    </span>
+                                    <div class="min-w-0">
+                                        <p class="font-semibold">{{ $preset['label'] }}</p>
+                                        <p class="text-xs text-muted">{{ $preset['description'] }}</p>
+                                    </div>
                                 </div>
                                 {{-- Eigenes Formular: das Übernehmen ersetzt die Anordnung
                                      sofort und darf nicht mit dem Speichern-Formular
@@ -90,27 +106,55 @@
 
                 <ul class="space-y-2" data-tab-list>
                     @foreach ($tabs as $idx => $tab)
-                        <li class="flex flex-wrap items-center gap-2 sm:flex-nowrap" data-tab-row data-tab-key="{{ $tab['key'] }}">
-                            <x-icon :name="$tab['icon'] ?: 'tab'" class="text-muted" data-tab-icon-preview />
-                            <input type="text"
-                                   name="tabs[{{ $idx }}][label]"
-                                   value="{{ $tab['label'] }}"
-                                   maxlength="40"
-                                   class="input input-bordered input-sm min-w-40 flex-1"
-                                   aria-label="{{ __('Bezeichnung des Bereichs') }}"
-                                   data-default-label="{{ __('Bereich') }}"
-                                   data-tab-label>
-                            <input type="text"
-                                   name="tabs[{{ $idx }}][icon]"
-                                   value="{{ $tab['icon'] }}"
-                                   maxlength="40"
-                                   class="input input-bordered input-sm w-40 font-mono"
-                                   list="dashboard-tab-icons"
-                                   placeholder="tab"
-                                   aria-label="{{ __('Symbol des Bereichs') }}"
-                                   data-tab-icon>
-                            <input type="hidden" name="tabs[{{ $idx }}][key]" value="{{ $tab['key'] }}" data-tab-key-input>
-                            <x-icon-btn type="button" tone="ghost" size="xs" icon="delete" :label="__('Bereich entfernen')" class="text-error" data-tab-remove />
+                        <li class="rounded-box border border-base-300 bg-base-100 px-3 py-2" data-tab-row data-tab-key="{{ $tab['key'] }}">
+                            <div class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                                <span class="flex size-8 shrink-0 items-center justify-center rounded-box border border-base-300 bg-base-200 text-base-content/70">
+                                    <x-icon :name="$tab['icon'] ?: 'tab'" data-tab-icon-preview />
+                                </span>
+                                <input type="text"
+                                       name="tabs[{{ $idx }}][label]"
+                                       value="{{ $tab['label'] }}"
+                                       maxlength="40"
+                                       class="input input-bordered input-sm min-w-40 flex-1"
+                                       placeholder="{{ __('Bezeichnung des Bereichs') }}"
+                                       aria-label="{{ __('Bezeichnung des Bereichs') }}"
+                                       data-default-label="{{ __('Bereich') }}"
+                                       data-tab-label>
+                                <input type="text"
+                                       name="tabs[{{ $idx }}][icon]"
+                                       value="{{ $tab['icon'] }}"
+                                       maxlength="40"
+                                       class="input input-bordered input-sm w-32 font-mono"
+                                       placeholder="tab"
+                                       aria-label="{{ __('Symbol des Bereichs') }}"
+                                       data-tab-icon>
+                                <input type="hidden" name="tabs[{{ $idx }}][key]" value="{{ $tab['key'] }}" data-tab-key-input>
+
+                                {{-- Raster fließt im Dokument (kein absolutes Dropdown): so kann es
+                                     weder aus dem Scrollcontainer ausbrechen noch am Panelrand
+                                     abgeschnitten werden. --}}
+                                <x-icon-btn type="button" tone="ghost" size="xs" icon="delete" :label="__('Bereich entfernen')" class="text-error" data-tab-remove />
+                            </div>
+
+                            {{-- Raster als eigener Block unter der Feldzeile: als
+                                 Element IN der Zeile würde es sie sprengen, als
+                                 absolutes Dropdown aus dem Scrollcontainer ausbrechen. --}}
+                            <details class="mt-1">
+                                <summary class="btn btn-xs btn-ghost gap-1 [&::-webkit-details-marker]:hidden">
+                                    <x-icon name="palette" /> {{ __('Symbol') }}
+                                </summary>
+                                <div class="mt-2 flex flex-wrap gap-1 rounded-box border border-base-300 bg-base-200 p-2" data-icon-grid>
+                                    @foreach ($iconChoices as $choice)
+                                        <button type="button"
+                                                class="btn btn-xs btn-ghost btn-square"
+                                                data-icon-pick="{{ $choice }}"
+                                                title="{{ $choice }}"
+                                                aria-label="{{ $choice }}">
+                                            <x-icon :name="$choice" />
+                                        </button>
+                                    @endforeach
+                                </div>
+                            </details>
                         </li>
                     @endforeach
                 </ul>
@@ -119,40 +163,78 @@
                     {{ __('Keine Bereiche angelegt — alle Kacheln liegen auf einer Fläche.') }}
                 </p>
 
-                {{-- Vorschläge, keine Beschränkung: jedes Material-Symbol ist erlaubt. --}}
-                <datalist id="dashboard-tab-icons">
-                    @foreach (['dashboard', 'checklist', 'forum', 'payments', 'schedule', 'event_upcoming', 'group', 'insights', 'inventory_2', 'build', 'health_and_safety', 'folder', 'star', 'flag', 'today'] as $suggestion)
-                        <option value="{{ $suggestion }}"></option>
-                    @endforeach
-                </datalist>
-
                 {{-- Vorlage für neue Bereichszeilen; das Skript klont sie. --}}
                 <template data-tab-template>
-                    <li class="flex flex-wrap items-center gap-2 sm:flex-nowrap" data-tab-row data-tab-key="">
-                        <x-icon name="tab" class="text-muted" data-tab-icon-preview />
-                        <input type="text" value="" maxlength="40"
-                               class="input input-bordered input-sm min-w-40 flex-1"
-                               aria-label="{{ __('Bezeichnung des Bereichs') }}"
-                               data-default-label="{{ __('Bereich') }}"
-                               data-tab-label>
-                        <input type="text" value="" maxlength="40"
-                               class="input input-bordered input-sm w-40 font-mono"
-                               list="dashboard-tab-icons"
-                               placeholder="tab"
-                               aria-label="{{ __('Symbol des Bereichs') }}"
-                               data-tab-icon>
-                        <input type="hidden" value="" data-tab-key-input>
-                        <x-icon-btn type="button" tone="ghost" size="xs" icon="delete"
-                                    :label="__('Bereich entfernen')" class="text-error" data-tab-remove />
+                    <li class="rounded-box border border-base-300 bg-base-100 px-3 py-2" data-tab-row data-tab-key="">
+                        <div class="flex flex-wrap items-center gap-2 sm:flex-nowrap">
+                            <span class="flex size-8 shrink-0 items-center justify-center rounded-box border border-base-300 bg-base-200 text-base-content/70">
+                                <x-icon name="tab" data-tab-icon-preview />
+                            </span>
+                            <input type="text" value="" maxlength="40"
+                                   class="input input-bordered input-sm min-w-40 flex-1"
+                                   placeholder="{{ __('Bezeichnung des Bereichs') }}"
+                                   aria-label="{{ __('Bezeichnung des Bereichs') }}"
+                                   data-default-label="{{ __('Bereich') }}"
+                                   data-tab-label>
+                            <input type="text" value="" maxlength="40"
+                                   class="input input-bordered input-sm w-32 font-mono"
+                                   placeholder="tab"
+                                   aria-label="{{ __('Symbol des Bereichs') }}"
+                                   data-tab-icon>
+                            <input type="hidden" value="" data-tab-key-input>
+
+                            <x-icon-btn type="button" tone="ghost" size="xs" icon="delete"
+                                        :label="__('Bereich entfernen')" class="text-error" data-tab-remove />
+                        </div>
+
+                        <details class="mt-1">
+                            <summary class="btn btn-xs btn-ghost gap-1 [&::-webkit-details-marker]:hidden">
+                                <x-icon name="palette" /> {{ __('Symbol') }}
+                            </summary>
+                            <div class="mt-2 flex flex-wrap gap-1 rounded-box border border-base-300 bg-base-200 p-2" data-icon-grid>
+                                @foreach ($iconChoices as $choice)
+                                    <button type="button"
+                                            class="btn btn-xs btn-ghost btn-square"
+                                            data-icon-pick="{{ $choice }}"
+                                            title="{{ $choice }}"
+                                            aria-label="{{ $choice }}">
+                                        <x-icon :name="$choice" />
+                                    </button>
+                                @endforeach
+                            </div>
+                        </details>
                     </li>
                 </template>
             </x-card>
 
             {{-- ── Kacheln ─────────────────────────────────────────────── --}}
             <x-card padding="p-0">
+                @php $visibleCount = count(array_filter($items, fn (array $i): bool => ! $i['hidden'])); @endphp
+                <div class="flex flex-wrap items-center justify-between gap-3 border-b border-base-300 px-3 py-3">
+                    <div class="flex min-w-0 items-center gap-2">
+                        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Kacheln') }}</h2>
+                        <span class="badge badge-ghost badge-sm tabular-nums">
+                            {{ __(':visible von :total sichtbar', ['visible' => $visibleCount, 'total' => count($items)]) }}
+                        </span>
+                    </div>
+                    {{-- Spaltenköpfe: dieselben Breiten wie in den Zeilen, damit sie
+                         darüber stehen. Erst ab lg — darunter bricht die Zeile um. --}}
+                    <div class="hidden items-center gap-3 text-xs uppercase tracking-wider text-muted lg:flex">
+                        @if ($tabs !== [])
+                            <span class="w-36">{{ __('Bereich') }}</span>
+                        @endif
+                        <span class="w-28">{{ __('Breite') }}</span>
+                        <span class="w-24 text-right">{{ __('Sichtbar') }}</span>
+                    </div>
+                </div>
                 <ul id="dashboard-widget-list" class="divide-y divide-base-300" data-widget-list>
                     @foreach ($items as $idx => $item)
-                        <li class="flex flex-wrap items-center gap-3 px-3 py-2 sm:flex-nowrap"
+                        <li @class([
+                                'group flex flex-wrap items-center gap-3 px-3 py-2 transition-colors hover:bg-base-200 sm:flex-nowrap',
+                                // Ausgeblendete Kacheln bleiben lesbar, sind aber am
+                                // getönten Grund und am Randstreifen sofort erkennbar.
+                                'border-l-2 border-l-base-300 bg-base-200/60' => $item['hidden'],
+                            ])
                             draggable="true"
                             data-widget-row
                             data-widget-key="{{ $item['key'] }}">
@@ -181,8 +263,11 @@
                                 @endif
                             </div>
 
+                            {{-- Kein <span class="sr-only"> als Beschriftung: das Feld trägt
+                                 ein aria-label, und sr-only ist position:absolute — in einer
+                                 langen Liste brechen solche Elemente aus dem scrollenden
+                                 Container aus und erzeugen einen leeren Fenster-Scrollbalken. --}}
                             <label class="flex items-center gap-2" data-widget-tab-wrap @if ($tabs === []) hidden @endif>
-                                <span class="sr-only">{{ __('Bereich') }}</span>
                                 <select class="select select-bordered select-xs w-36" data-widget-tab
                                         name="widgets[{{ $idx }}][tab]"
                                         data-always-label="{{ __('Immer sichtbar') }}"
@@ -197,7 +282,6 @@
                             </label>
 
                             <label class="flex items-center gap-2">
-                                <span class="sr-only">{{ __('Breite') }}</span>
                                 <select class="select select-bordered select-xs w-28" data-widget-width
                                         name="widgets[{{ $idx }}][width]"
                                         aria-label="{{ __('Breite') }} — {{ $item['label'] }}">
@@ -207,8 +291,8 @@
                                 </select>
                             </label>
 
-                            <label class="label cursor-pointer gap-2">
-                                <span class="label-text text-xs">{{ __('Sichtbar') }}</span>
+                            <label class="label w-24 cursor-pointer justify-end gap-2">
+                                <span class="label-text text-xs lg:hidden">{{ __('Sichtbar') }}</span>
                                 <input type="checkbox" class="toggle toggle-primary toggle-sm widget-visible-toggle"
                                        aria-label="{{ __('Sichtbar') }} — {{ $item['label'] }}"
                                        @if (! $item['hidden']) checked @endif>

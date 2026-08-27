@@ -171,6 +171,22 @@ function initTabs(root) {
     tabList.addEventListener("click", (event) => {
         const target = event.target;
         if (!(target instanceof Element)) return;
+
+        // Symbol aus dem Raster übernehmen: Feld füllen, Vorschau nachziehen,
+        // Raster wieder zuklappen.
+        const pick = target.closest("[data-icon-pick]");
+        if (pick instanceof HTMLElement) {
+            const row = pick.closest("[data-tab-row]");
+            const input = row?.querySelector("[data-tab-icon]");
+            if (row instanceof HTMLElement && input instanceof HTMLInputElement) {
+                input.value = pick.dataset.iconPick || "";
+                syncIconPreview(row);
+                const details = pick.closest("details");
+                if (details instanceof HTMLDetailsElement) details.open = false;
+            }
+            return;
+        }
+
         if (!target.closest("[data-tab-remove]")) return;
 
         const row = target.closest("[data-tab-row]");
@@ -237,6 +253,13 @@ function initSorting(root, list) {
         const hidden = row?.querySelector(".widget-hidden-input");
         if (hidden instanceof HTMLInputElement) {
             hidden.value = target.checked ? "0" : "1";
+        }
+        // Zustand sofort sichtbar machen — sonst sieht man erst nach dem
+        // Speichern, welche Kacheln aus sind.
+        if (row instanceof HTMLElement) {
+            row.classList.toggle("bg-base-200/60", !target.checked);
+            row.classList.toggle("border-l-2", !target.checked);
+            row.classList.toggle("border-l-base-300", !target.checked);
         }
     });
 
