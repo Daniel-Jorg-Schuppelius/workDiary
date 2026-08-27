@@ -39,14 +39,51 @@ finish_maintenance() {
 }
 trap 'finish_maintenance "$LINENO" "$BASH_COMMAND"' ERR
 
-# Das Pre-Deploy-Backup bleibt IM Webverzeichnis: der Deploy läuft als Web-User
+# Das Pre-Deploy-Backup bleibt beim Webspace: der Deploy läuft als Web-User
 # (ISPConfig: web141/web143 …), das systemweite /var/backups/workdiary aus der
-# conf gehört dagegen root und ist für ihn nicht beschreibbar. Hier gilt
-# deshalb das eigene Ziel — backup.sh gibt einer ausdrücklich gesetzten
-# Umgebungsvariablen Vorrang vor der conf. Getrennt vom Cron-Backup ist das
-# ohnehin sauber: dies ist die Rollback-Sicherung dieses einen Deploys.
-PRE_BACKUP_DIR="${DEPLOY_BACKUP_DIR:-$PWD/storage/app/private/predeploy-backups}"
+# conf gehört dagegen root und ist für ihn nicht beschreibbar. Backup.sh gibt
+# einer ausdrücklich gesetzten Umgebungsvariablen Vorrang vor der conf, deshalb
+# setzt sich das hier gewählte Ziel durch.
+#
+# Bevorzugt wird das private/ neben dem Docroot: bei einem ISPConfig-verwalteten
+# Web gehört es dem Web-User und ist per HTTP grundsätzlich nicht erreichbar.
+# storage/app/private ist demgegenüber nur durch die .htaccess geschützt (die
+# mit AllowOverride/mod_rewrite/Apache steht und fällt) und liegt in genau dem
+# Baum, den tar gerade sichert. Erkannt wird die Site-STRUKTUR, nicht der
+# Servername — und jede Bedingung muss passen, sonst bleibt es beim Webspace.
+ispconfig_private_dir() {
+    local here parent marker m
+    here="$(pwd -P)"
+    parent="$(dirname "$here")"
+    # Docroot heißt web/, daneben ein private/ …
+    [ "$(basename "$here")" = "web" ] || return 1
+    [ -d "$parent/private" ] || return 1
+    # … zusammen mit mindestens einem weiteren Marker der Site-Struktur …
+    marker=0
+    for m in log ssl tmp cgi-bin; do
+        if [ -d "$parent/$m" ]; then marker=1; break; fi
+    done
+    [ "$marker" = "1" ] || return 1
+    # … und wir dürfen dort schreiben. Sonst ist der bessere Ort knapp verfehlt —
+    # das darf nicht als "kein ISPConfig-Web" durchgehen.
+    if [ ! -w "$parent/private" ]; then
+        echo "  ⚠ $parent/private gefunden, aber für $(id -un) nicht beschreibbar — weiche in den Webspace aus." >&2
+        return 1
+    fi
+    printf '%s' "$parent/private/predeploy-backups"
+}
+
+if [ -n "${DEPLOY_BACKUP_DIR:-}" ]; then
+    PRE_BACKUP_DIR="$DEPLOY_BACKUP_DIR"
+    PRE_BACKUP_NOTE="Vorgabe aus DEPLOY_BACKUP_DIR"
+elif PRE_BACKUP_DIR="$(ispconfig_private_dir)"; then
+    PRE_BACKUP_NOTE="ISPConfig-Site erkannt — außerhalb des Docroots, per HTTP nicht erreichbar"
+else
+    PRE_BACKUP_DIR="$PWD/storage/app/private/predeploy-backups"
+    PRE_BACKUP_NOTE="Rückfallebene: im Webspace, gesperrt nur über die .htaccess"
+fi
 echo "→ Backup vor dem Update (DB + Dateien) → $PRE_BACKUP_DIR"
+echo "  ($PRE_BACKUP_NOTE)"
 if [ "${DEPLOY_SKIP_BACKUP:-0}" = "1" ]; then
     echo "  ⚠ DEPLOY_SKIP_BACKUP=1 — Backup übersprungen."
 else
