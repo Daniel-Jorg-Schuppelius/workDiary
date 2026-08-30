@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Models\{MaintenanceWindow, Organization};
 use App\Services\Operations\MaintenanceWindowService;
@@ -29,15 +30,28 @@ use Illuminate\View\View;
  * Jede Aktion ist auditiert (Auditable am Model).
  */
 class MaintenanceWindowController extends Controller {
+    use RequiresPlatformOperator;
+
     public function __construct(private readonly MaintenanceWindowService $service) {}
 
     public function index(): View {
         Gate::authorize(Permission::PlatformOperationsManage->value);
 
+        // MaintenanceWindow trägt keinen OrganizationScope: ohne Filter listete
+        // die Seite die Fenster **aller** Mandanten (S-02). Der Betreiber
+        // braucht diese Sicht, ein Org-Admin nur seine eigene.
+        $query = MaintenanceWindow::query()->orderByDesc('starts_at');
+
+        if (! $this->isPlatformOperator()) {
+            $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+            abort_unless($organization instanceof Organization, 403);
+
+            $query->where('scope', MaintenanceWindow::SCOPE_ORGANIZATION)
+                ->where('organization_id', $organization->id);
+        }
+
         return view('admin.maintenance-windows.index', [
-            'windows' => MaintenanceWindow::query()
-                ->orderByDesc('starts_at')
-                ->paginate((int) Setting::get('pagination.notifications', 25)),
+            'windows' => $query->paginate((int) Setting::get('pagination.notifications', 25)),
         ]);
     }
 
@@ -60,6 +74,11 @@ class MaintenanceWindowController extends Controller {
             'block_ingest' => ['nullable', 'boolean'],
         ]);
 
+        // Ein System-Fenster sperrt ALLE Mandanten (read_only/block_ingest) —
+        // das ist eine Betreiber-Entscheidung, keine Mandanten-Einstellung
+        // (Sicherheitsscan 2026-08-23, S-02).
+        $this->assertMayUseSystemScope($validated['scope']);
+
         $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
         $this->service->plan([
             'scope' => $validated['scope'],
@@ -81,6 +100,11 @@ class MaintenanceWindowController extends Controller {
     public function transition(Request $request, MaintenanceWindow $maintenanceWindow, string $action): RedirectResponse {
         Gate::authorize(Permission::PlatformOperationsManage->value);
 
+        // MaintenanceWindow trägt keinen OrganizationScope: ohne diese Prüfung
+        // ließe sich jedes fremde Fenster über seine Sqid starten oder
+        // abbrechen (S-02).
+        $this->assertMayTouch($maintenanceWindow);
+
         try {
             match ($action) {
                 'announce' => $this->service->announce($maintenanceWindow),
@@ -101,4 +125,30 @@ class MaintenanceWindowController extends Controller {
         return redirect()->route('admin.maintenance-windows.index')
             ->with('status', __('maintenance.window.flash.' . $action));
     }
+
+    /** System-Fenster darf nur der Plattform-Betreiber planen. */
+    private function assertMayUseSystemScope(string $scope): void {
+        if ($scope !== MaintenanceWindow::SCOPE_SYSTEM) {
+            return;
+        }
+
+        $this->assertPlatformOperator();
+    }
+
+    /** Fremde Fenster (und System-Fenster) bleiben dem Betreiber vorbehalten. */
+    private function assertMayTouch(MaintenanceWindow $window): void {
+        if ($this->isPlatformOperator()) {
+            return;
+        }
+
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+        abort_unless(
+            $window->scope === MaintenanceWindow::SCOPE_ORGANIZATION
+            && $organization instanceof Organization
+            && (int) $window->organization_id === (int) $organization->id,
+            403
+        );
+    }
+
 }

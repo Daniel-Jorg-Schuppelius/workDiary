@@ -117,7 +117,7 @@
                     @php $rows = array_merge($queueRows, array_fill(0, 3, ['group_id' => '', 'project_sqid' => ''])); @endphp
                     @foreach ($rows as $row)
                         <div class="flex flex-wrap items-center gap-2">
-                            <input type="number" name="queue_group[]" min="1" value="{{ $row['group_id'] }}"
+                            <input aria-label="{{ __('zammad.queue.group_id') }}" type="number" name="queue_group[]" min="1" value="{{ $row['group_id'] }}"
                                    placeholder="{{ __('zammad.queue.group_id') }}" class="input input-bordered input-sm w-40">
                             <span class="text-muted">→</span>
                             <select name="queue_project[]" class="select select-bordered select-sm">

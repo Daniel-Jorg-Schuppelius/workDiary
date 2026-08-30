@@ -114,6 +114,14 @@ return Application::configure(basePath: dirname(__DIR__))
             // Auth-User und bleiben hier unberührt — sie prüfen block_ingest
             // selbst nach der Token-Auflösung.
             EnforceMaintenanceMode::class,
+            // Lizenz und Mandantenstatus galten bisher nur im Web-Stack
+            // (Sicherheitsscan 2026-08-23, S-12). Ein gesperrter Mandant, dem
+            // die Oberfläche jede schreibende Aktion mit 423 verweigert,
+            // schrieb über einen bestehenden API-Token unverändert weiter.
+            // Beide Middlewares antworten bei JSON-Aufrufern mit JSON und
+            // lassen tokenbasierte Ingest-Routen ohne Auth-User durch.
+            EnsureValidLicense::class,
+            EnforceTenantStatus::class,
         ]);
 
         // Schlanker Stack fuer das oeffentliche Hinweisgeber-Meldeportal:

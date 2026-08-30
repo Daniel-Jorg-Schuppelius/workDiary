@@ -62,7 +62,7 @@ class TenantStatusTest extends TestCase {
     }
 
     public function test_admin_can_toggle_tenant_status(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $org = $admin->organization;
 
         $this->actingAs($admin)
@@ -118,7 +118,7 @@ class TenantStatusTest extends TestCase {
     }
 
     public function test_suspended_tenant_allows_read_and_status_change(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $org = $admin->organization;
         $org->update(['tenant_status' => TenantStatus::Suspended]);
 

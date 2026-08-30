@@ -14,6 +14,7 @@ use App\Enums\Attendance\AttendanceStatus;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Models\{Attendance, User};
 use App\Services\Attendance\AttendanceClockService;
+use App\Services\TimeApproval\DayCloseService;
 use App\Support\{Setting, SortableQuery, Tz};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Arr;
@@ -190,6 +191,29 @@ class AttendanceController extends Controller {
         $attendance->ended_at = filled($data['ended_at'] ?? null)
             ? \Illuminate\Support\Carbon::instance(Tz::parse($data['ended_at']))
             : null;
+
+        // Sicherheitsscan 2026-08-23, S-09: `date` wurde nur abgeleitet, wenn
+        // es leer war. Eine Stempelung im offenen Monat konnte deshalb Start
+        // und Ende in einen **gesperrten** Monat verschieben — die
+        // Sperrprüfung der Policy sah nur das alte Datum. Deshalb Datum neu
+        // ableiten, den neuen Tag prüfen und die Dauer deckeln.
+        $newDay = \Carbon\CarbonImmutable::instance($attendance->started_at)->startOfDay();
+        $owner = $attendance->user;
+
+        if ($owner instanceof User && app(DayCloseService::class)->dayLockedFor($owner, $newDay)) {
+            return back()->with('error', __('attendance.error.target_day_locked'));
+        }
+
+        if ($attendance->ended_at !== null) {
+            $minutes = $attendance->started_at->diffInMinutes($attendance->ended_at);
+            $max = (int) Setting::get('validation.attendance.max_duration_minutes', 16 * 60);
+
+            if ($minutes > $max) {
+                return back()->with('error', __('attendance.error.duration_too_long', ['hours' => intdiv($max, 60)]));
+            }
+        }
+
+        $attendance->date = $attendance->started_at->copy()->startOfDay();
         $attendance->updated_by = (int) Auth::id();
         $attendance->save();
 

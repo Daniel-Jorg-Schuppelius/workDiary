@@ -116,7 +116,7 @@
                             <option value="lost">{{ __('Verloren') }}</option>
                             <option value="withdrawn">{{ __('Zurückgezogen') }}</option>
                         </select>
-                        <input name="reason" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Grund (bei Verlust/Rückzug Pflicht)') }}">
+                        <input aria-label="{{ __('Grund (bei Verlust/Rückzug Pflicht)') }}" name="reason" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Grund (bei Verlust/Rückzug Pflicht)') }}">
                         <x-icon-btn icon="gavel" tone="primary" size="sm" type="submit" show-label>{{ __('Entscheiden') }}</x-icon-btn>
                     </form>
                 @endif
@@ -127,7 +127,7 @@
             @can('update', $opportunity)
                 <form method="POST" action="{{ route('tenders.requirements.store', $opportunity) }}" class="mb-3 flex flex-wrap items-end gap-2">
                     @csrf
-                    <input name="label" required maxlength="300" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anforderung (z. B. Referenzliste)') }}">
+                    <input aria-label="{{ __('Anforderung (z. B. Referenzliste)') }}" name="label" required maxlength="300" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anforderung (z. B. Referenzliste)') }}">
                     <select name="kind" class="select select-sm select-bordered">
                         <option value="document">{{ __('Dokument') }}</option>
                         <option value="proof">{{ __('Nachweis') }}</option>
@@ -209,11 +209,11 @@
         @can('update', $opportunity)
             <form method="POST" action="{{ route('tenders.bids.store', $opportunity) }}" class="mb-3 flex flex-wrap items-end gap-2">
                 @csrf
-                <input name="bidder_name" required maxlength="300" class="input input-sm input-bordered flex-1 min-w-48"
+                <input aria-label="{{ __('Bieter') }}" name="bidder_name" required maxlength="300" class="input input-sm input-bordered flex-1 min-w-48"
                        placeholder="{{ __('Bieter') }}">
-                <input name="amount" type="number" step="0.01" min="0" class="input input-sm input-bordered w-40"
+                <input aria-label="{{ __('Endsumme') }}" name="amount" type="number" step="0.01" min="0" class="input input-sm input-bordered w-40"
                        placeholder="{{ __('Endsumme') }}">
-                <input name="rank" type="number" min="1" max="999" class="input input-sm input-bordered w-20"
+                <input aria-label="{{ __('Rang') }}" name="rank" type="number" min="1" max="999" class="input input-sm input-bordered w-20"
                        placeholder="{{ __('Rang') }}">
                 <select name="source" class="select select-sm select-bordered w-48">
                     <option value="opening">{{ __('Eröffnungstermin') }}</option>

@@ -274,7 +274,7 @@
                             </label>
                         @endforeach
                     </div>
-                    <input name="reason" maxlength="1000" class="input input-sm input-bordered w-full" placeholder="{{ __('Grund (bei Ablehnung)') }}">
+                    <input aria-label="{{ __('Grund (bei Ablehnung)') }}" name="reason" maxlength="1000" class="input input-sm input-bordered w-full" placeholder="{{ __('Grund (bei Ablehnung)') }}">
                     <div class="flex gap-2">
                         <button type="submit" name="decision" value="accept" class="btn btn-primary btn-sm">{{ __('Annahme dokumentieren') }}</button>
                         <button type="submit" name="decision" value="reject" class="btn btn-outline btn-sm">{{ __('Ablehnung dokumentieren') }}</button>

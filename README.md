@@ -246,6 +246,18 @@ Installationen alternativ ein regelmaessiger Cronjob genutzt werden:
 * * * * * cd /pfad/zum/workdiary && php artisan queue:work --stop-when-empty --tries=3 >> /dev/null 2>&1
 ```
 
+Videoverarbeitung (Feature 150) laeuft in einer **eigenen Warteschlange**:
+ffmpeg rechnet minutenlang und wuerde in der Standard-Warteschlange Mails
+und Exporte hinter sich blockieren. Sie braucht deshalb einen eigenen
+Worker — ohne ihn bleiben hochgeladene Videos in „wird verarbeitet" stehen:
+
+```bash
+php artisan queue:work media --queue=media --tries=1 --timeout=3600
+```
+
+`scripts/cron.sh` erledigt beides in einem Cron-Eintrag (abschaltbar ueber
+`RUN_MEDIA_QUEUE=0`).
+
 ### Chat-Echtzeit (Reverb) — optional
 
 Der Chat aktualisiert sich **immer ohne Reload**, auch ganz ohne Zusatzdienste:
@@ -403,6 +415,14 @@ autostart=true
 autorestart=true
 user=www-data
 stopwaitsecs=10
+
+; Medien-Warteschlange (Feature 150): eigener Prozess, langer Timeout.
+[program:workdiary-media]
+command=php /pfad/zum/workdiary/artisan queue:work media --queue=media --tries=1 --timeout=3600 --max-time=7200
+autostart=true
+autorestart=true
+user=www-data
+stopwaitsecs=3620
 ```
 
 #### Reverse-Proxy

@@ -57,6 +57,10 @@ class SchedulerRegistrationTest extends TestCase {
         'integration:purge-inbox' => ['0 4 * * *', true, true],
         'chat:send-reminders' => ['* * * * *', false, true],
         'chat:send-scheduled' => ['* * * * *', false, true],
+        // Feature 149 (MVP-749): liegengebliebene Lernsitzungen beenden —
+        // ohne diesen Kehraus liefe eine Sitzung nach geschlossenem Browser
+        // weiter und würde als riesige Spanne in die Zeitkonten gebucht.
+        'learning:close-stale-sessions' => ['*/15 * * * *', true, true],
         'attendance:close-open' => ['*/15 * * * *', true, true],
         'recurrence:generate' => ['30 4 * * *', true, true],
         'events:dispatch-reminders' => ['*/5 * * * *', true, true],

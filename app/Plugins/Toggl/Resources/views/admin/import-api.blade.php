@@ -82,7 +82,7 @@
                                         <option value="{{ $c['sqid'] }}">{{ $c['label'] }}</option>
                                     @endforeach
                                 </select>
-                                <input type="text" name="customer_names[{{ $i }}]" value="{{ $ws['name'] }}"
+                                <input aria-label="{{ __('Kundenname') }}" type="text" name="customer_names[{{ $i }}]" value="{{ $ws['name'] }}"
                                        x-show="cmode === 'new'" placeholder="{{ __('Kundenname') }}"
                                        class="input input-sm input-bordered w-full">
                             </div>

@@ -15,6 +15,25 @@ use Illuminate\Validation\Rule;
 
 class SaveWorkScheduleRequest extends BaseFormRequest {
     /**
+     * Der Mitarbeiter muss zur eigenen Organisation gehören.
+     *
+     * Hier und nicht erst im Controller: `authorize()` läuft **vor** der
+     * Validierung. Sonst beantwortete die Anwendung eine Anfrage für einen
+     * fremden Mitarbeiter erst einmal mit Feldfehlern — und verriete damit,
+     * dass es das Konto gibt (Sicherheitsscan 2026-08-23, S-06).
+     */
+    public function authorize(): bool {
+        $member = $this->route('user');
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+        if (! $member instanceof \App\Models\User || ! $organization instanceof \App\Models\Organization) {
+            return false;
+        }
+
+        return (int) $member->organization_id === (int) $organization->id;
+    }
+
+    /**
      * Normalisiert die Eingaben je nach Arbeitszeit-Typ. Insbesondere werden
      * die Pro-Wochentag-Vorgaben (`day_targets`) serverseitig in Minuten
      * umgerechnet — dem Client-Wert wird nicht vertraut.

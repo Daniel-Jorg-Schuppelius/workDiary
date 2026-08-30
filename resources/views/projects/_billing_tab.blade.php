@@ -43,7 +43,7 @@
                         @endforeach
                         <option value="custom" @selected(!$isPreset)>{{ __('Eigener Wert…') }}</option>
                     </select>
-                    <input type="number" name="billing_increment_minutes_custom" min="1" max="1440" step="1"
+                    <input aria-label="{{ __('Minuten') }}" type="number" name="billing_increment_minutes_custom" min="1" max="1440" step="1"
                            value="{{ $isPreset ? '' : (int) $increment }}"
                            x-show="is('custom')" x-cloak
                            placeholder="{{ __('Minuten') }}"

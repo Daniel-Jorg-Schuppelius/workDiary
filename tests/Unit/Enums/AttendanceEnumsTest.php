@@ -30,10 +30,13 @@ final class AttendanceEnumsTest extends TestCase {
 
     public function test_attendance_source_values(): void {
         $this->assertSame(
-            ['clock', 'manual', 'import', 'auto_close', 'terminal', 'phone'],
+            // `learning` kam mit der Lernplattform dazu (Feature 149, MVP-749):
+            // Lernzeit außerhalb der Arbeitszeit wird als Anwesenheit
+            // nachgewiesen, damit die ArbZG-Prüfungen greifen.
+            ['clock', 'manual', 'import', 'auto_close', 'terminal', 'phone', 'learning'],
             AttendanceSource::values()
         );
         $this->assertNotEmpty(AttendanceSource::Clock->label());
-        $this->assertCount(6, AttendanceSource::options());
+        $this->assertCount(7, AttendanceSource::options());
     }
 }

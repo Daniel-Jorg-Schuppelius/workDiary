@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Organization\TenantStatus;
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseResult, LicenseService, LicenseStatus, ModuleCatalog, ModuleStatusResolver};
@@ -24,6 +24,8 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class LicenseAdminController extends Controller {
+    use RequiresPlatformOperator;
+
     use ResolvesCurrentOrganization;
 
     public function __construct(
@@ -184,6 +186,7 @@ class LicenseAdminController extends Controller {
      */
     public function setTenantStatus(Request $request): RedirectResponse {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();
@@ -236,6 +239,7 @@ class LicenseAdminController extends Controller {
 
     public function issuer(): View {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
+        $this->assertPlatformOperator();
         abort_unless($this->service->canIssue(), Response::HTTP_FORBIDDEN);
 
         return view('admin.license.issuer', [
@@ -245,6 +249,7 @@ class LicenseAdminController extends Controller {
 
     public function issueKey(Request $request): RedirectResponse {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
+        $this->assertPlatformOperator();
         abort_unless($this->service->canIssue(), Response::HTTP_FORBIDDEN);
 
         $data = $request->validate([
@@ -306,6 +311,7 @@ class LicenseAdminController extends Controller {
 
     public function issueOrg(Request $request): RedirectResponse {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();
@@ -367,6 +373,7 @@ class LicenseAdminController extends Controller {
 
     public function installOrg(Request $request): RedirectResponse {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();
@@ -399,6 +406,7 @@ class LicenseAdminController extends Controller {
 
     public function removeOrg(Request $request): RedirectResponse {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();
@@ -421,6 +429,13 @@ class LicenseAdminController extends Controller {
         return back()->with('success', __('Org-Lizenz entfernt.'));
     }
 
+    /**
+     * Einzelnes Lizenz-Flag der **eigenen** Organisation abschalten.
+     *
+     * Org-gescopt wie {@see disableModule()} — trotz des Rechts
+     * `platform.license.install`, das hier historisch gewählt wurde. Deshalb
+     * keine Betreiber-Schranke (Sicherheitsscan 2026-08-23, S-02).
+     */
     public function toggleFlag(Request $request, string $flag): RedirectResponse {
         Gate::authorize(Permission::PlatformLicenseInstall->value);
 

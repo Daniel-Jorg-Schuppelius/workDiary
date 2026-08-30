@@ -293,4 +293,75 @@ class SyncCommandsTest extends TestCase {
         $this->assertNotEmpty($response->json('results.0.errors.body'));
         $this->assertSame(0, $diary->comments()->count());
     }
+
+    // ── Lernen offline (Feature 149, MVP-748) ───────────────────────────
+
+    /** @return array{0: \App\Models\Learning\LearningEnrollment, 1: \App\Models\Learning\LearningUnit, 2: \App\Models\Learning\LearningUnit} */
+    private function learningScenario(): array {
+        $courses = app(\App\Services\Learning\LearningCourseService::class);
+        $course = $courses->createCourse($this->organization, null, ['title' => 'Brandschutz']);
+        $courses->addUnit($course, ['title' => 'Grundlagen']);
+        $courses->addUnit($course, [
+            'title' => 'Abschlussprüfung',
+            'kind' => \App\Enums\Learning\LearningUnitKind::Quiz->value,
+        ]);
+        $courses->release($course->refresh(), null);
+
+        $units = $course->refresh()->units()->orderBy('position')->get();
+        $enrollment = app(\App\Services\Learning\LearningEnrollmentService::class)
+            ->enroll($course->refresh(), $this->user);
+
+        return [$enrollment, $units[0], $units[1]];
+    }
+
+    public function test_lerneinheit_wird_offline_abgehakt(): void {
+        [$enrollment, $content] = $this->learningScenario();
+
+        $response = $this->postCommands([[
+            'client_uuid' => (string) Str::uuid(),
+            'type' => 'learning.unit-complete',
+            'payload' => ['enrollment' => $enrollment->sqid, 'unit' => $content->sqid],
+        ]]);
+
+        $response->assertOk()->assertJsonPath('results.0.status', 'applied');
+
+        $this->assertSame(
+            \App\Enums\Learning\LearningProgressStatus::Completed,
+            $enrollment->refresh()->progress()->where('learning_unit_id', $content->id)->first()?->status
+        );
+    }
+
+    public function test_pruefung_laesst_sich_nicht_offline_abschliessen(): void {
+        [$enrollment, , $quizUnit] = $this->learningScenario();
+
+        // Eine offline erzeugte Prüfungsakte wäre nicht manipulationssicher —
+        // und der Nachweis hinge an ihr. Die Regel wird SERVERSEITIG
+        // durchgesetzt, nicht nur im Browser.
+        $response = $this->postCommands([[
+            'client_uuid' => (string) Str::uuid(),
+            'type' => 'learning.unit-complete',
+            'payload' => ['enrollment' => $enrollment->sqid, 'unit' => $quizUnit->sqid],
+        ]]);
+
+        $response->assertOk()->assertJsonPath('results.0.status', 'rejected');
+
+        $this->assertSame(0, $enrollment->refresh()->progress()->count());
+    }
+
+    public function test_fremde_einschreibung_wird_abgelehnt(): void {
+        [$enrollment, $content] = $this->learningScenario();
+
+        // Die Outbox eines Geräts darf niemanden sonst betreffen.
+        $other = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        $response = $this->actingAs($other)->postJson(route('api.internal.sync.commands'), [
+            'commands' => [[
+                'client_uuid' => (string) Str::uuid(),
+                'type' => 'learning.unit-complete',
+                'payload' => ['enrollment' => $enrollment->sqid, 'unit' => $content->sqid],
+            ]],
+        ]);
+
+        $response->assertOk()->assertJsonPath('results.0.status', 'rejected');
+    }
 }

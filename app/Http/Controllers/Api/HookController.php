@@ -22,6 +22,7 @@ use App\Services\Integration\WebhookDispatchService;
 use App\Support\UrlSafety;
 use Illuminate\Http\{JsonResponse, Request};
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use OpenApi\Attributes as OA;
 
@@ -32,6 +33,14 @@ use OpenApi\Attributes as OA;
  * 410-Auto-Unsubscribe); Zustellung/Signatur/Auto-Disable übernimmt die
  * bestehende Webhook-Infrastruktur. Das Secret erzeugt der Server und gibt es
  * genau einmal in der 201-Antwort zurück.
+ *
+ * **Token-Ability ist keine Berechtigung** (Sicherheitsscan 2026-08-23, S-27).
+ * Jeder Nutzer kann sich selbst ein Sanctum-Token ausstellen; `hooks:manage`
+ * sagt nur, was das TOKEN darf, nicht was der NUTZER darf. Deshalb laufen die
+ * Aktionen zusätzlich über dieselbe Policy wie die Weboberfläche
+ * ({@see \App\Policies\WebhookEndpointPolicy}) — sonst legte ein regulärer
+ * Mitarbeiter eigene Empfänger für Org-Ereignisse an und löschte die des
+ * Administrators.
  */
 class HookController extends Controller {
     use ResolvesCurrentOrganization;
@@ -49,6 +58,7 @@ class HookController extends Controller {
         ],
     )]
     public function index(Request $request): JsonResponse {
+        Gate::authorize('viewAny', WebhookEndpoint::class);
         $organizationId = $this->organizationId();
 
         $hooks = WebhookEndpoint::query()
@@ -74,6 +84,7 @@ class HookController extends Controller {
         ],
     )]
     public function events(Request $request, WebhookDispatchService $dispatch): JsonResponse {
+        Gate::authorize('viewAny', WebhookEndpoint::class);
         $organizationId = $this->organizationId();
         $now = Carbon::now();
 
@@ -105,6 +116,7 @@ class HookController extends Controller {
         ],
     )]
     public function store(Request $request): JsonResponse {
+        Gate::authorize('create', WebhookEndpoint::class);
         $organizationId = $this->organizationId();
         $user = $request->user();
 
@@ -161,6 +173,7 @@ class HookController extends Controller {
         ],
     )]
     public function test(Request $request, WebhookEndpoint $hook, WebhookDispatchService $dispatch): JsonResponse {
+        Gate::authorize('update', $hook);
         $this->assertOwned($hook);
 
         $delivery = $dispatch->sendTest($hook);
@@ -183,6 +196,7 @@ class HookController extends Controller {
         ],
     )]
     public function destroy(Request $request, WebhookEndpoint $hook): JsonResponse {
+        Gate::authorize('delete', $hook);
         $this->assertOwned($hook);
 
         $hook->delete();

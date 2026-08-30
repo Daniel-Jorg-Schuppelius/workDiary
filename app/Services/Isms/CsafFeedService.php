@@ -55,7 +55,7 @@ class CsafFeedService {
         $skipped = 0;
         $errors = 0;
         foreach ($documentUrls as $url) {
-            $response = $this->http->coreClient('csaf', $url)->getResponse($url, [], ['timeout' => 30]);
+            $response = $this->feedClient($url)->getResponse($url, [], ['timeout' => 30]);
             if ($response->failed()) {
                 $errors++;
 
@@ -119,7 +119,7 @@ class CsafFeedService {
             // Weg 2: verzeichnisbasiert (directory_url + changes.csv).
             $directoryUrl = rtrim((string) ($distribution['directory_url'] ?? ''), '/');
             if ($directoryUrl !== '') {
-                $changes = $this->http->coreClient('csaf', $directoryUrl)
+                $changes = $this->feedClient($directoryUrl)
                     ->getResponse($directoryUrl . '/changes.csv', [], ['timeout' => 30]);
                 if ($changes->successful()) {
                     // Format: "pfad/dokument.json","2026-07-01T00:00:00Z" — neueste
@@ -141,7 +141,7 @@ class CsafFeedService {
 
     /** @return array<string, mixed>|null */
     private function fetchJson(string $url): ?array {
-        $response = $this->http->coreClient('csaf', $url)->getResponse($url, [], ['timeout' => 30]);
+        $response = $this->feedClient($url)->getResponse($url, [], ['timeout' => 30]);
         if ($response->failed()) {
             return null;
         }
@@ -150,4 +150,21 @@ class CsafFeedService {
 
         return is_array($decoded) ? $decoded : null;
     }
+
+    /**
+     * Feed-Client mit abgeschalteten Weiterleitungen.
+     *
+     * Die SSRF-Schranke der Factory prüft das **Ziel**; folgte der Client
+     * danach bis zu fünf Weiterleitungen, führte der Weg doch wieder nach
+     * innen (Sicherheitsscan 2026-08-23, S-10). Ein CSAF-Anbieter, der
+     * umleitet, ist kein Anwendungsfall — die Adressen stehen im Metadaten-
+     * Dokument.
+     */
+    private function feedClient(string $url): \App\Plugins\Support\PluginApiClient {
+        $client = $this->http->coreClient('csaf', $url);
+        $client->setFollowRedirects(false);
+
+        return $client;
+    }
+
 }

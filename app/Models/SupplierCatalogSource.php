@@ -41,6 +41,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $remote_path
  * @property string|null $remote_username
  * @property string|null $remote_password
+ * @property string|null $remote_host_fingerprint
  * @property array<string, string>|null $mapping
  * @property int|null $fetch_interval_minutes
  * @property \Illuminate\Support\Carbon|null $next_fetch_at
@@ -71,6 +72,7 @@ class SupplierCatalogSource extends Model {
         'remote_path',
         'remote_username',
         'remote_password',
+        'remote_host_fingerprint',
         'punchout_url',
         'punchout_username',
         'punchout_password',

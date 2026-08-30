@@ -97,6 +97,11 @@ class EventParticipant extends Pivot {
         return $this->belongsTo(Event::class);
     }
 
+    /** @return BelongsTo<User, $this> */
+    public function user(): BelongsTo {
+        return $this->belongsTo(User::class);
+    }
+
     public function hasValidCertificate(?Carbon $on = null): bool {
         if ($this->certificate_issued_at === null) {
             return false;

@@ -89,7 +89,7 @@
                                         :title="__('Monat ablehnen')"
                                         :action="route('admin.month-approval.reject', $c)"
                                         :submit-label="__('Ablehnen')" submit-class="btn-warning">
-                                        <textarea name="note" required minlength="20" maxlength="2000" rows="4"
+                                        <textarea aria-label="{{ __('Begründung (mind. 20 Zeichen)') }}" name="note" required minlength="20" maxlength="2000" rows="4"
                                                   class="textarea textarea-bordered w-full"
                                                   placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
                                     </x-modal>
@@ -106,7 +106,7 @@
                                             :title="__('Monat wieder öffnen')"
                                             :action="route('admin.month-approval.reopen', $c)"
                                             :submit-label="__('Wieder öffnen')" submit-class="btn-warning">
-                                            <textarea name="note" required minlength="20" maxlength="2000" rows="4"
+                                            <textarea aria-label="{{ __('Begründung (mind. 20 Zeichen)') }}" name="note" required minlength="20" maxlength="2000" rows="4"
                                                       class="textarea textarea-bordered w-full"
                                                       placeholder="{{ __('Begründung (mind. 20 Zeichen)') }}"></textarea>
                                         </x-modal>

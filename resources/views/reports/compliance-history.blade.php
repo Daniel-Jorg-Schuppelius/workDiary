@@ -121,7 +121,7 @@
                                         <form method="POST" action="{{ route('reports.compliance.acknowledge', $f) }}"
                                               class="flex items-center gap-1 justify-end flex-wrap">
                                             @csrf
-                                            <input type="text" name="note" maxlength="5000"
+                                            <input aria-label="{{ __('compliance.history.note_placeholder') }}" type="text" name="note" maxlength="5000"
                                                    class="input input-xs input-bordered w-40"
                                                    placeholder="{{ __('compliance.history.note_placeholder') }}">
                                             <button class="btn btn-xs" type="submit" name="status" value="{{ $ackStatus }}">

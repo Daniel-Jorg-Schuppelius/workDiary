@@ -77,9 +77,47 @@ class OrganizationLifecycleService {
             'deactivated_at' => Carbon::now(),
         ])->save();
 
+        $this->revokeAccess($org);
+
         $this->log($org, OrganizationAuditLog::ACTION_DEACTIVATE, $actor);
 
         return $org;
+    }
+
+    /**
+     * Bestehende Zugänge der Organisation entwerten.
+     *
+     * Ein Schalter, der nur künftige Anmeldungen verhindert, sperrt niemanden
+     * aus: die offenen Sitzungen und API-Tokens laufen weiter (Sicherheitsscan
+     * 2026-08-23, S-04). Deshalb wird beim Abschalten beides gekappt —
+     * Sanctum-Tokens hart, Sitzungen über `remember_token` und den
+     * Datenbank-Sitzungsspeicher, sofern er verwendet wird.
+     */
+    private function revokeAccess(Organization $org): void {
+        $userIds = User::query()
+            ->withoutGlobalScopes()
+            ->where('organization_id', $org->id)
+            ->pluck('id')
+            ->all();
+
+        if ($userIds === []) {
+            return;
+        }
+
+        DB::table('personal_access_tokens')
+            ->where('tokenable_type', User::class)
+            ->whereIn('tokenable_id', $userIds)
+            ->delete();
+
+        // Neues remember_token: ein „Angemeldet bleiben"-Cookie gilt danach nicht mehr.
+        User::query()->withoutGlobalScopes()->whereIn('id', $userIds)
+            ->update(['remember_token' => null]);
+
+        if (config('session.driver') === 'database') {
+            DB::table((string) config('session.table', 'sessions'))
+                ->whereIn('user_id', $userIds)
+                ->delete();
+        }
     }
 
     public function reactivate(Organization $org, ?User $actor): Organization {

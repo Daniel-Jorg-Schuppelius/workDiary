@@ -39,6 +39,7 @@ return [
         'sftp' => "Subida SFTP",
         'sftp_toggle' => "Subir el archivo de exportación por SFTP al finalizar",
         'sftp_host' => "Host",
+        'sftp_host_fingerprint' => 'Huella de la clave del host',
         'sftp_port' => "Puerto",
         'sftp_username' => "Usuario",
         'sftp_password' => "Contraseña",
@@ -73,6 +74,7 @@ return [
     ],
 
     'error' => [
+        'sftp_fingerprint_missing' => 'Falta la huella de la clave del host para el envío SFTP. Sin ella el archivo no se transfiere.',
         'missing_mappings' => "Exportación cancelada: los siguientes conceptos salariales no tienen concepto de destino en el programa de nóminas: :types. Cree una asignación en «Conceptos salariales & entrega de exportaciones» o defina el concepto en la regla de recargo.",
     ],
 
@@ -90,5 +92,8 @@ return [
         'heading' => "Exportación de tiempos para nóminas",
         'body' => "Adjunto encontrará la exportación de tiempos del perfil :profile para el período :period.",
         'meta' => ":rows líneas · SHA-256 :hash",
+    ],
+    'help' => [
+        'sftp_host_fingerprint' => 'Obligatorio: vincula la conexión al servidor correcto. Obténgala con `ssh-keyscan -t rsa <host> | ssh-keygen -lf -`.',
     ],
 ];

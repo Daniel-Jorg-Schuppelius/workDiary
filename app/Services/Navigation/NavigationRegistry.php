@@ -738,6 +738,54 @@ class NavigationRegistry {
                 ]),
             ];
         }
+
+        // Lernplattform (Feature 149, MVP-735): eigene Sektion, damit sie
+        // nicht mit dem Arbeitsschutz-Register verwechselt wird — 145 führt
+        // das Pflicht-Soll, 149 die Durchführung. Plan-Modul module.lms.
+        $showLearning = Gate::allows('viewAny', \App\Models\Learning\LearningCourse::class)
+            || ($user?->can(\App\Enums\User\Permission::LearningGrade->value) ?? false);
+        // „Meine Schulungen" erscheint, sobald eine eigene Einschreibung
+        // besteht — unabhängig von Recht und Lizenzstufe (Pflichtweg).
+        $hasOwnLearning = $user !== null && \App\Models\Learning\LearningEnrollment::query()
+            ->where('user_id', $user->id)
+            ->exists();
+        if ($showLearning || $hasOwnLearning) {
+            $sidebarSections[] = [
+                'key' => 'learning',
+                'label' => __('learning.section'),
+                'collapsible' => true,
+                'items' => $this->compactItems([
+                    $hasOwnLearning
+                        ? ['route' => 'learning.my.index', 'label' => __('learning.nav.my'), 'icon' => 'school', 'modal' => false, 'matches' => ['learning.my.*']]
+                        : null,
+                    $showLearning
+                        ? ['route' => 'learning.courses.index', 'label' => __('learning.nav.courses'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['learning.courses.*']]
+                        : null,
+                    // Betreuer-Cockpit (MVP-739): eigenes Recht, damit
+                    // Bewertende keinen Autorenzugang brauchen.
+                    $user?->can(\App\Enums\User\Permission::LearningGrade->value)
+                        ? ['route' => 'learning.grading.index', 'label' => __('learning.nav.grading'), 'icon' => 'grading', 'modal' => false, 'matches' => ['learning.grading.*']]
+                        : null,
+                    $user?->can(\App\Enums\User\Permission::LearningManage->value)
+                        ? ['route' => 'learning.bookings.index', 'label' => __('learning.nav.bookings'), 'icon' => 'event_note', 'modal' => false, 'matches' => ['learning.bookings.*']]
+                        : null,
+                    // Nachweismappe (MVP-750): Auskunft nach außen, deshalb
+                    // am Verwaltungsrecht und nicht am Autorenrecht.
+                    $user?->can(\App\Enums\User\Permission::LearningManage->value)
+                        ? ['route' => 'learning.dossier.index', 'label' => __('learning.nav.dossier'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['learning.dossier.*']]
+                        : null,
+                    // Lernzeit-Freigaben (MVP-749): erst die Zusage macht
+                    // daraus Arbeitszeit.
+                    $user?->can(\App\Enums\User\Permission::LearningManage->value)
+                        ? ['route' => 'learning.time-approvals.index', 'label' => __('learning.nav.time_approvals'), 'icon' => 'more_time', 'modal' => false, 'matches' => ['learning.time-approvals.*']]
+                        : null,
+                    // Lernpfade (MVP-745): Einarbeitung als Reihenfolge.
+                    $user?->can(\App\Enums\User\Permission::LearningManage->value)
+                        ? ['route' => 'learning.paths.index', 'label' => __('learning.nav.paths'), 'icon' => 'route', 'modal' => false, 'matches' => ['learning.paths.*']]
+                        : null,
+                ]),
+            ];
+        }
         if (Gate::allows('viewAny', \App\Models\Sustainability\SustainabilityAssessment::class)) {
             $sidebarSections[] = [
                 'key' => 'sustainability',
@@ -1034,6 +1082,10 @@ class NavigationRegistry {
                         // Schulungs-Auswertung (Feature 145, MVP-727).
                         ($user?->can(Permission::TrainingViewAny->value) || $user?->can(Permission::TrainingManage->value))
                             ? ['route' => 'reports.training', 'label' => __('training.report.nav'), 'icon' => 'school', 'modal' => false, 'matches' => ['reports.training']]
+                            : null,
+                        // Kursanalyse der Lernplattform (Feature 149, MVP-747).
+                        $user?->can(Permission::LearningViewAny->value)
+                            ? ['route' => 'reports.learning', 'label' => __('learning.nav.report'), 'icon' => 'insights', 'modal' => false, 'matches' => ['reports.learning']]
                             : null,
                     ]),
                 ],
@@ -1745,7 +1797,12 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.license.index', 'label' => __('Lizenz'), 'icon' => 'key', 'modal' => false];
                 }
                 if (Gate::allows(Permission::MetricsView->value)) {
-                    $adminNavItems[] = ['route' => 'admin.metrics.index', 'label' => __('metrics.title.index'), 'icon' => 'monitoring', 'modal' => false];
+                    // Betriebsmetriken sind eine plattformweite Sicht ohne
+                    // Mandanten-Kontext (Sicherheitsscan 2026-08-23, S-02) —
+                    // die beiden Nachbarseiten dagegen sind org-gescopt.
+                    if (Auth::user()?->isGlobalAdmin() === true) {
+                        $adminNavItems[] = ['route' => 'admin.metrics.index', 'label' => __('metrics.title.index'), 'icon' => 'monitoring', 'modal' => false];
+                    }
                     // Feature-004-Restpunkt: Offline entstandene Daten sichtbar machen.
                     $adminNavItems[] = ['route' => 'admin.offline-sync.index', 'label' => __('Offline-Synchronisierung'), 'icon' => 'cloud_sync', 'modal' => false];
                     $adminNavItems[] = ['route' => 'admin.components.index', 'label' => __('isms.components.title'), 'icon' => 'receipt_long', 'modal' => false];
@@ -1762,7 +1819,8 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.integrity.index', 'label' => __('Quelltext-Integrität'), 'icon' => 'verified_user', 'modal' => false];
                     $adminNavItems[] = ['route' => 'admin.security-events.index', 'label' => __('Angriffserkennung'), 'icon' => 'gpp_bad', 'modal' => false];
                 }
-                if (Gate::allows(Permission::BackupView->value)) {
+                // Der Sicherungsstand gilt der Installation, nicht dem Mandanten.
+                if (Auth::user()?->isGlobalAdmin() === true && Gate::allows(Permission::BackupView->value)) {
                     $adminNavItems[] = ['route' => 'admin.backup.status', 'label' => __('backup.title.status'), 'icon' => 'backup', 'modal' => false];
                 }
                 if (Gate::allows(Permission::PlatformSchedulerManage->value)) {

@@ -18,6 +18,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class MetricsPageTest extends TestCase {
+    // Betriebsmetriken sind eine plattformweite Sicht ohne Mandanten-Kontext
+    // (Sicherheitsscan 2026-08-23, S-02).
+
     use RefreshDatabase;
 
     protected function setUp(): void {
@@ -35,7 +38,7 @@ class MetricsPageTest extends TestCase {
     }
 
     public function test_index_renders_for_admin_with_privacy_notice_and_version(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.metrics.index'))
@@ -49,7 +52,7 @@ class MetricsPageTest extends TestCase {
     }
 
     public function test_transparency_section_lists_counter_catalogue_with_descriptions(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $response = $this->actingAs($admin)
             ->get(route('admin.metrics.index'))
@@ -70,7 +73,7 @@ class MetricsPageTest extends TestCase {
     }
 
     public function test_transparency_section_shows_disabled_state_and_settings_link(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         Setting::set('telemetry.enabled', false, SettingScope::System);
 
         $this->actingAs($admin)

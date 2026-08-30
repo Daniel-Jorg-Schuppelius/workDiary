@@ -17,6 +17,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class RestoreTestRegisterTest extends TestCase {
+    // Restore-Tests protokollieren den Sicherungsstand der Installation —
+    // Betreiber-Handlung (Sicherheitsscan 2026-08-23, S-02).
+
     use RefreshDatabase;
 
     protected function setUp(): void {
@@ -32,7 +35,7 @@ class RestoreTestRegisterTest extends TestCase {
     }
 
     public function test_create_modal_renders_for_admin(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.backup.restore-tests.create'))
@@ -55,7 +58,7 @@ class RestoreTestRegisterTest extends TestCase {
     }
 
     public function test_admin_can_log_restore_test_with_result_and_due_date(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $testedOn = CarbonImmutable::now()->subDay()->toDateString();
         $nextDue = CarbonImmutable::now()->addDays(180)->toDateString();
 

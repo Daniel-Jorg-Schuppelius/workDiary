@@ -55,6 +55,10 @@ class FakeObjectStore {
         return new FakeRequest()._resolve(key);
     }
 
+    get(key) {
+        return new FakeRequest()._resolve(this.table.get(key));
+    }
+
     delete(key) {
         this.table.delete(key);
         return new FakeRequest()._resolve(undefined);
@@ -244,6 +248,7 @@ const { __testables } = await import(
 const {
     buildPayload, flush, updateBadge, uploadPhotos,
     outboxAll, outboxPut, outboxDelete, storeAll, storePut, clearAll,
+    courseStore, courseGet, courseDelete,
 } = __testables;
 
 /** Frische Umgebung: leere DB, Standard-Dokument, online. */
@@ -292,6 +297,15 @@ test("buildPayload: attendance.clock-out ohne Pausenwert lässt break_minutes we
     };
     const payload = buildPayload("attendance.clock-out", form);
     assert.equal("break_minutes" in payload, false);
+});
+
+test("buildPayload: learning.unit-complete nimmt Einschreibung + Einheit mit", () => {
+    const form = {
+        dataset: { syncPayloadEnrollment: "enr1", syncPayloadUnit: "unit1" },
+        querySelector: () => null,
+    };
+    const payload = buildPayload("learning.unit-complete", form);
+    assert.deepEqual(payload, { enrollment: "enr1", unit: "unit1" });
 });
 
 test("buildPayload: comment.diary nimmt Diary-Sqid + Body mit", () => {
@@ -657,3 +671,45 @@ test("updateBadge: leer und online → versteckt", async () => {
 
     assert.equal(badge.hidden, true);
 });
+
+/* ------------------------------------------------------------------ */
+/* Kurse offline lesen (Feature 149, MVP-748)                          */
+/* ------------------------------------------------------------------ */
+
+test("courseStore legt das Bündel ab und courseGet liest es zurück", async () => {
+    globalThis.fetch = async () =>
+        jsonResponse(200, { course: { title: "Brandschutz" }, units: [] });
+
+    await courseStore("enr1", "/meine-schulungen/enr1/offline");
+    const stored = await courseGet("enr1");
+
+    assert.equal(stored.enrollment, "enr1");
+    assert.equal(stored.course.title, "Brandschutz");
+});
+
+test("courseDelete entfernt den Kurs wieder", async () => {
+    globalThis.fetch = async () => jsonResponse(200, { units: [] });
+
+    await courseStore("enr1", "/x");
+    await courseDelete("enr1");
+
+    assert.equal(await courseGet("enr1"), undefined);
+});
+
+test("Abmelden löscht auch die offline gespeicherten Kurse", async () => {
+    globalThis.fetch = async () => jsonResponse(200, { units: [] });
+
+    await courseStore("enr1", "/x");
+    await clearAll();
+
+    // Der Stoff darf auf einem geteilten Gerät nicht zurückbleiben.
+    assert.equal(await courseGet("enr1"), undefined);
+});
+
+test("courseStore wirft bei Fehlerantwort und legt nichts ab", async () => {
+    globalThis.fetch = async () => jsonResponse(500, {});
+
+    await assert.rejects(() => courseStore("enr1", "/x"));
+    assert.equal(await courseGet("enr1"), undefined);
+});
+

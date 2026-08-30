@@ -47,6 +47,13 @@ class EnforceSupportImpersonation {
         'purge',
         'support.grants',
         'support.impersonate.start',
+        // Sicherheitsscan 2026-08-23, S-13: Das Profil trägt die E-Mail-
+        // Adresse. Passwort- und 2FA-Routen waren gesperrt, das Profil nicht
+        // — über eine geänderte E-Mail ließ sich nach der Sitzung ein
+        // regulärer Passwort-Reset anstoßen und das Konto dauerhaft
+        // übernehmen. Die Sperrliste half nur gegen den direkten Weg.
+        'account.profile',
+        'account.contact',
     ];
 
     public function handle(Request $request, Closure $next): Response {

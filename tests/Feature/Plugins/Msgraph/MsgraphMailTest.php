@@ -180,7 +180,24 @@ final class MsgraphMailTest extends TestCase {
         $fake->assertSent(fn ($request): bool => $request->getHeaderLine('Authorization') === 'Bearer secret-token-2');
     }
 
-    public function test_transport_fails_when_organization_is_ambiguous(): void {
+    public function test_transport_fails_without_any_organization(): void {
+        // Sicherheitsscan 2026-08-23, S-28: früher genügte **eine** aktive
+        // Verbindung — unabhängig davon, welcher Organisation sie gehört.
+        // Damit gingen Systemmails aller Mandanten über deren Postfach
+        // (Absenderidentität; bei save_to_sent_items landet eine Kopie mit
+        // OTP-Code im fremden Gesendet-Ordner). Ohne zuordenbare Organisation
+        // wird jetzt gar nicht gesendet — die failover-Kette übernimmt.
+        $this->connection();
+        app()->forgetInstance('currentOrganization');
+        FakePluginHttp::fake();
+
+        $this->expectException(TransportExceptionInterface::class);
+        Mail::mailer('msgraph')->to('kunde@example.test')->send(new MsgraphMailTestMail());
+    }
+
+    public function test_transport_uses_the_bound_organization(): void {
+        // Gegenprobe: wer im Kontext einer Organisation ausdrücklich über
+        // Graph versendet, meint deren Postfach — auch ohne Header.
         $this->connection();
         $otherOrg = Organization::factory()->create();
         MsgraphMailConnection::query()->create([
@@ -188,10 +205,17 @@ final class MsgraphMailTest extends TestCase {
             'access_token' => 'secret-token-2',
             'status' => MsgraphMailConnection::STATUS_ACTIVE,
         ]);
-        FakePluginHttp::fake();
 
-        $this->expectException(TransportExceptionInterface::class);
+        $fake = FakePluginHttp::fake([
+            'https://graph.microsoft.com/v1.0/me/sendMail' => FakePluginHttp::response(null, 202),
+        ]);
+
         Mail::mailer('msgraph')->to('kunde@example.test')->send(new MsgraphMailTestMail());
+
+        $fake->assertSent(fn ($request): bool => str_contains(
+            (string) ($request->getHeaderLine('Authorization')),
+            'secret-token-1',
+        ));
     }
 
     public function test_listener_stamps_organization_from_mailable_model(): void {

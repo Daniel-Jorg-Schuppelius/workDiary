@@ -115,7 +115,7 @@
                                             <summary class="cursor-pointer text-xs text-muted">{{ __('Blockieren…') }}</summary>
                                             <form method="POST" action="{{ route('agile.items.block', [$project, $item]) }}" class="mt-1 flex items-center gap-1">
                                                 @csrf
-                                                <input name="reason" required minlength="3" maxlength="300" placeholder="{{ __('Grund (Pflicht)') }}" class="input input-xs input-bordered flex-1">
+                                                <input aria-label="{{ __('Grund (Pflicht)') }}" name="reason" required minlength="3" maxlength="300" placeholder="{{ __('Grund (Pflicht)') }}" class="input input-xs input-bordered flex-1">
                                                 <x-icon-btn icon="block" tone="ghost" size="xs" type="submit" :label="__('Blockieren')" />
                                             </form>
                                         </details>
@@ -214,7 +214,7 @@
                             <option value="{{ $category->value }}" @selected($category === \App\Enums\Agile\AgileColumnCategory::InProgress)>{{ $category->label() }}</option>
                         @endforeach
                     </select>
-                    <input name="wip_limit" type="number" min="1" max="99" placeholder="WIP" class="input input-sm input-bordered w-20">
+                    <input aria-label="{{ __('WIP-Limit') }}" name="wip_limit" type="number" min="1" max="99" placeholder="WIP" class="input input-sm input-bordered w-20">
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Hinzufügen') }}</x-icon-btn>
                 </form>
             </x-card>

@@ -352,6 +352,33 @@ return [
         'training.*' => 'training.overview',
         'reports.training' => 'training.overview',
 
+        // Anlagenregister und AfA (Feature 133, MVP-698).
+        'finance.accounting.fixed-assets.*' => 'accounting.fixed-assets',
+        // Mahnwesen (Feature 127, MVP-691).
+        'finance.dunning.*' => 'finance.dunning',
+        // Provisionen (Feature 146, MVP-729): Regeln, offene Zeilen, Läufe.
+        'commissions.*' => 'commissions',
+        'commission-rules.*' => 'commissions',
+        'commission-runs.*' => 'commissions',
+        // VOB/B-Schreiben (H23, MVP-728).
+        'construction-notices.*' => 'construction-notices',
+        // Verfahrensdokumentation ist eine GoBD-Pflicht — gehört zu deren Topic.
+        'finance.procedure-documentation.*' => 'finance.gobd',
+        // Kommissionierliste ist Teil des Bestandsablaufs.
+        'inventory.pick-lists.*' => 'inventory.stock',
+        // SMS-Einwilligung ist ein Benachrichtigungskanal.
+        'account.sms.*' => 'account.notifications',
+
+        // Lernplattform (Feature 149): Katalog, Autorenwerkzeug, „Meine
+        // Schulungen", Bewertungen, Buchungen und Auswertung teilen sich ein
+        // Topic — es beschreibt den Weg vom Kurs bis zum Nachweis.
+        'learning.*' => 'learning.overview',
+        'reports.learning' => 'learning.overview',
+
+        // Arbeitsschutz-Register (Feature 132): Gefährdungsbeurteilungen,
+        // Vorsorge und Unterweisungen hängen am Sicherheits-Topic.
+        'safety.*' => 'safety.overview',
+
         // ISMS (Feature 044/046): Anforderungen + SoA-Aussagen + Druckansicht
         // teilen sich ein Topic; isms.soa/isms.dashboard sind exakte
         // Route-Namen (kein isms.*-Catch-all vorhanden — Mapping nötig).

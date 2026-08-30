@@ -62,7 +62,7 @@
                                     </form>
                                     <form method="POST" action="{{ route('pricing-margin-rules.approvals.reject', $request) }}" class="flex items-center gap-1">
                                         @csrf
-                                        <input name="note" type="text" maxlength="500" class="input input-xs input-bordered w-32"
+                                        <input aria-label="{{ __('procurement.approval.note_placeholder') }}" name="note" type="text" maxlength="500" class="input input-xs input-bordered w-32"
                                                placeholder="{{ __('procurement.approval.note_placeholder') }}">
                                         <x-icon-btn icon="close" size="xs" tone="error" type="submit" :title="__('procurement.approval.action.reject')" />
                                     </form>

@@ -30,11 +30,11 @@
      data-email="{{ $timesheet->customer_email }}"
      class="flex w-full flex-col gap-3">
     <div class="grid grid-cols-1 gap-2">
-        <input type="text" x-model="customerName" placeholder="{{ __('Name') }}"
+        <input aria-label="{{ __('Name') }}" type="text" x-model="customerName" placeholder="{{ __('Name') }}"
                class="input input-bordered input-sm w-full" required value="{{ $timesheet->customer_name }}">
-        <input type="text" x-model="customerRole" placeholder="{{ __('Rolle / Funktion') }}"
+        <input aria-label="{{ __('Rolle / Funktion') }}" type="text" x-model="customerRole" placeholder="{{ __('Rolle / Funktion') }}"
                class="input input-bordered input-sm w-full" value="{{ $timesheet->customer_role }}">
-        <input type="email" x-model="customerEmail" placeholder="{{ __('E-Mail (optional)') }}"
+        <input aria-label="{{ __('E-Mail (optional)') }}" type="email" x-model="customerEmail" placeholder="{{ __('E-Mail (optional)') }}"
                class="input input-bordered input-sm w-full" value="{{ $timesheet->customer_email }}">
     </div>
 

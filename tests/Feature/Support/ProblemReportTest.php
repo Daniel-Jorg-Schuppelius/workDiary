@@ -36,7 +36,9 @@ class ProblemReportTest extends TestCase {
             'severity' => 'high',
             'contact_ok' => '1',
             'context_route' => 'schedule.index',
-            'context_url' => 'https://example.test/schedule',
+            // Eigener Ursprung: eine fremde Adresse führt seit dem
+            // Sicherheitsscan 2026-08-23 (S-19) zurück zur Meldungsliste.
+            'context_url' => '/schedule',
             'context_topic' => 'duties.overview',
         ], $overrides);
     }
@@ -71,7 +73,7 @@ class ProblemReportTest extends TestCase {
 
         $response = $this->actingAs($user)->post(route('problem-reports.store'), $this->payload());
 
-        $response->assertRedirect('https://example.test/schedule');
+        $response->assertRedirect('/schedule');
         $report = ProblemReport::query()->firstOrFail();
         $this->assertMatchesRegularExpression('/^PR-\d{4}-\d{4}$/', $report->reference_no);
         $this->assertSame('schedule.index', $report->page_context['route']);
@@ -81,6 +83,16 @@ class ProblemReportTest extends TestCase {
         // Default saas_inbox: sofort als zugestellt markiert.
         $this->assertSame(ProblemReportDeliveryTarget::SaasInbox, $report->delivery_target);
         $this->assertNotNull($report->delivered_at);
+    }
+
+    public function test_fremde_ruecksprungadresse_wird_verworfen(): void {
+        // Das Feld ist ein verstecktes Formularfeld und damit frei setzbar —
+        // ohne Prüfung war der Melde-Dialog eine offene Weiterleitung.
+        $user = User::factory()->user()->create();
+
+        $this->actingAs($user)
+            ->post(route('problem-reports.store'), $this->payload(['context_url' => 'https://angreifer.example/phish']))
+            ->assertRedirect(route('problem-reports.index'));
     }
 
     public function test_guest_cannot_file_report(): void {

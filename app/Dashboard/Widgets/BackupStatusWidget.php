@@ -53,7 +53,10 @@ class BackupStatusWidget extends Widget {
     }
 
     public function availableFor(User $user): bool {
-        return Gate::forUser($user)->allows(Permission::BackupView->value);
+        // Der Sicherungsstand gilt der ganzen Installation, nicht dem
+        // Mandanten — wie die zugehörige Seite bleibt die Kachel dem
+        // Betreiber vorbehalten (Sicherheitsscan 2026-08-23, S-02).
+        return $user->isGlobalAdmin() && Gate::forUser($user)->allows(Permission::BackupView->value);
     }
 
     public function render(User $user): View|string {

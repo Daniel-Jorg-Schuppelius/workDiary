@@ -77,7 +77,7 @@
                             <option value="medium">{{ __('Mittleres Risiko') }}</option>
                             <option value="high">{{ __('Hohes Risiko') }}</option>
                         </select>
-                        <textarea name="measures" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Sofortmaßnahmen') }}"></textarea>
+                        <textarea aria-label="{{ __('Sofortmaßnahmen') }}" name="measures" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Sofortmaßnahmen') }}"></textarea>
                         <button class="btn btn-sm w-full">{{ __('Bewertung speichern') }}</button>
                     </form>
                     @if ($isProcessor)
@@ -100,7 +100,7 @@
                     @if ($incident->status->isOpen())
                         <form method="post" action="{{ route('dataprotection.incidents.close', $incident) }}" class="space-y-1 border-t border-base-300 pt-2">
                             @csrf
-                            <textarea name="lessons" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Lessons Learned') }}"></textarea>
+                            <textarea aria-label="{{ __('Lessons Learned') }}" name="lessons" rows="2" class="textarea textarea-sm textarea-bordered w-full" placeholder="{{ __('Lessons Learned') }}"></textarea>
                             <x-button tone="primary" type="submit" class="w-full">{{ __('Abschließen') }}</x-button>
                         </form>
                     @endif

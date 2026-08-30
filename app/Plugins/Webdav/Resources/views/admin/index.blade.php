@@ -129,7 +129,7 @@
                                 @endforeach
                             </select>
                             <span class="text-muted">→</span>
-                            <input type="text" name="folder_path[]" value="{{ $mapType !== '' ? ($map[$mapType] ?? '') : '' }}"
+                            <input aria-label="{{ __('webdav.folder.path_placeholder') }}" type="text" name="folder_path[]" value="{{ $mapType !== '' ? ($map[$mapType] ?? '') : '' }}"
                                    placeholder="{{ __('webdav.folder.path_placeholder') }}" class="input input-bordered input-sm w-64">
                         </div>
                     @endforeach

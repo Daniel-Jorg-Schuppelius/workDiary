@@ -207,7 +207,7 @@
                                                                                             <input type="hidden" name="status" value="{{ $target->value }}">
                                                                                             @if (in_array($target, [\App\Enums\Isms\CorrectiveActionStatus::Effective, \App\Enums\Isms\CorrectiveActionStatus::Ineffective], true))
                                                                                                 {{-- Wirksamkeitsprüfung: Pflicht-Notiz (serverseitig erzwungen). --}}
-                                                                                                <textarea name="effectiveness_note" rows="2" required maxlength="5000"
+                                                                                                <textarea aria-label="{{ __('isms.field.effectiveness_note') }}" name="effectiveness_note" rows="2" required maxlength="5000"
                                                                                                           class="textarea textarea-bordered textarea-xs w-full"
                                                                                                           placeholder="{{ __('isms.field.effectiveness_note') }} *"></textarea>
                                                                                             @endif

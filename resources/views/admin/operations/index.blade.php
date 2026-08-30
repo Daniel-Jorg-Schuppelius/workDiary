@@ -116,7 +116,7 @@
                                             <form method="POST" action="{{ route('admin.operations.ignore', $task) }}" class="space-y-2">
                                                 @csrf
                                                 <span class="text-xs font-medium">{{ __('operations.action.ignore') }}</span>
-                                                <input type="text" name="note" required maxlength="500" class="input input-bordered input-sm w-full"
+                                                <input aria-label="{{ __('operations.field.note') }}" type="text" name="note" required maxlength="500" class="input input-bordered input-sm w-full"
                                                        placeholder="{{ __('operations.field.note') }}">
                                                 <x-button type="submit" tone="ghost" size="sm" class="w-full">{{ __('operations.action.ignore') }}</x-button>
                                             </form>

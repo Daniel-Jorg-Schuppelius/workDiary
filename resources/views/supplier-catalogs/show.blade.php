@@ -182,7 +182,7 @@
         {{-- MVP-601: Suche über Artikelnummer/Name/Matchcode/GTIN/Hersteller-Nr. --}}
         <form method="GET" action="{{ route('supplier-catalogs.show', $source) }}" class="flex items-center gap-2">
             @if ($status !== 'all')<input type="hidden" name="status" value="{{ $status }}">@endif
-            <input type="search" name="q" value="{{ request('q') }}" class="input input-sm input-bordered w-56"
+            <input aria-label="{{ __('procurement.catalog.search_placeholder') }}" type="search" name="q" value="{{ request('q') }}" class="input input-sm input-bordered w-56"
                    placeholder="{{ __('procurement.catalog.search_placeholder') }}">
             <button type="submit" class="btn btn-sm">{{ __('Suchen') }}</button>
         </form>

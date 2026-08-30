@@ -39,8 +39,12 @@ class WebhookDispatchService {
      * @return int  Anzahl ausgelöster Zustellungen
      */
     public function publish(WebhookEvent $event, int $organizationId, array $data): int {
+        // `withoutGlobalScopes()` nimmt neben dem OrganizationScope auch den
+        // SoftDeletingScope weg — gelöschte Endpunkte wurden deshalb weiter
+        // beliefert (Sicherheitsscan 2026-08-23, S-27). Nur der Org-Scope
+        // gehört hier abgeschaltet; die Organisation kommt als Parameter.
         $endpoints = WebhookEndpoint::query()
-            ->withoutGlobalScopes()
+            ->withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
             ->where('organization_id', $organizationId)
             ->where('active', true)
             ->whereNull('disabled_at')

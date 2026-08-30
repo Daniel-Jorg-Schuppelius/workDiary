@@ -111,12 +111,12 @@
                             <option value="{{ $user->sqid }}">{{ $user->name }}</option>
                         @endforeach
                     </select>
-                    <input name="contact_note" maxlength="300" class="input input-sm input-bordered w-40" placeholder="{{ __('Erreichbarkeit') }}">
+                    <input aria-label="{{ __('Erreichbarkeit') }}" name="contact_note" maxlength="300" class="input input-sm input-bordered w-40" placeholder="{{ __('Erreichbarkeit') }}">
                     <x-icon-btn icon="person_add" tone="primary" size="sm" type="submit" show-label>{{ __('Benennen') }}</x-icon-btn>
                 </form>
                 <form method="POST" action="{{ route('crisis.roles.store') }}" class="mb-3 flex flex-wrap items-end gap-1 text-xs">
                     @csrf
-                    <input name="name" required maxlength="120" class="input input-xs input-bordered w-48" placeholder="{{ __('Neue Stabsrolle (z. B. Kommunikation)') }}">
+                    <input aria-label="{{ __('Neue Stabsrolle (z. B. Kommunikation)') }}" name="name" required maxlength="120" class="input input-xs input-bordered w-48" placeholder="{{ __('Neue Stabsrolle (z. B. Kommunikation)') }}">
                     <button type="submit" class="btn btn-xs">{{ __('Rolle anlegen') }}</button>
                 </form>
             @endif
@@ -158,11 +158,11 @@
             @if ($canManage && ! in_array($case->status, ['closed', 'discarded'], true))
                 <form method="POST" action="{{ route('crisis.sitrep.store', $case) }}" class="mb-3 grid gap-2">
                     @csrf
-                    <textarea name="content" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Aktuelle Lage/Bewertung') }}"></textarea>
+                    <textarea aria-label="{{ __('Aktuelle Lage/Bewertung') }}" name="content" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Aktuelle Lage/Bewertung') }}"></textarea>
                     <div class="grid gap-2 sm:grid-cols-3">
-                        <input name="risks" maxlength="5000" class="input input-sm input-bordered" placeholder="{{ __('Offene Risiken') }}">
-                        <input name="communication_status" maxlength="5000" class="input input-sm input-bordered" placeholder="{{ __('Kommunikationsstand') }}">
-                        <input name="recovery_status" maxlength="5000" class="input input-sm input-bordered" placeholder="{{ __('Wiederanlaufstatus') }}">
+                        <input aria-label="{{ __('Offene Risiken') }}" name="risks" maxlength="5000" class="input input-sm input-bordered" placeholder="{{ __('Offene Risiken') }}">
+                        <input aria-label="{{ __('Kommunikationsstand') }}" name="communication_status" maxlength="5000" class="input input-sm input-bordered" placeholder="{{ __('Kommunikationsstand') }}">
+                        <input aria-label="{{ __('Wiederanlaufstatus') }}" name="recovery_status" maxlength="5000" class="input input-sm input-bordered" placeholder="{{ __('Wiederanlaufstatus') }}">
                     </div>
                     <div><x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Lagebericht dokumentieren') }}</x-icon-btn></div>
                 </form>
@@ -188,8 +188,8 @@
             @if ($canManage && ! in_array($case->status, ['closed', 'discarded'], true))
                 <form method="POST" action="{{ route('crisis.decisions.store', $case) }}" class="my-1 flex flex-wrap items-end gap-2">
                     @csrf
-                    <input name="decision" required maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Entscheidung') }}">
-                    <input name="rationale" maxlength="1000" class="input input-sm input-bordered w-48" placeholder="{{ __('Begründung') }}">
+                    <input aria-label="{{ __('Entscheidung') }}" name="decision" required maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Entscheidung') }}">
+                    <input aria-label="{{ __('Begründung') }}" name="rationale" maxlength="1000" class="input input-sm input-bordered w-48" placeholder="{{ __('Begründung') }}">
                     <x-icon-btn icon="gavel" size="sm" type="submit" show-label>{{ __('Protokollieren') }}</x-icon-btn>
                 </form>
             @endif
@@ -211,7 +211,7 @@
             @if ($canManage)
                 <form method="POST" action="{{ route('crisis.actions.store', $case) }}" class="mb-3 flex flex-wrap items-end gap-2">
                     @csrf
-                    <input name="title" required maxlength="300" class="input input-sm input-bordered flex-1" placeholder="{{ __('Maßnahme') }}">
+                    <input aria-label="{{ __('Maßnahme') }}" name="title" required maxlength="300" class="input input-sm input-bordered flex-1" placeholder="{{ __('Maßnahme') }}">
                     <select name="assignee_id" class="select select-sm select-bordered" aria-label="{{ __('Verantwortlich') }}">
                         <option value="">{{ __('Verantwortlich …') }}</option>
                         @foreach ($users as $user)
@@ -266,9 +266,9 @@
                                 <option value="{{ $audience }}">{{ __("values.$audience") }}</option>
                             @endforeach
                         </select>
-                        <input name="subject" required maxlength="300" class="input input-sm input-bordered flex-1" placeholder="{{ __('Betreff') }}">
+                        <input aria-label="{{ __('Betreff') }}" name="subject" required maxlength="300" class="input input-sm input-bordered flex-1" placeholder="{{ __('Betreff') }}">
                     </div>
-                    <textarea name="body" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Inhalt (Entwurf)') }}"></textarea>
+                    <textarea aria-label="{{ __('Inhalt (Entwurf)') }}" name="body" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Inhalt (Entwurf)') }}"></textarea>
                     <div><x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Entwurf anlegen') }}</x-icon-btn></div>
                 </form>
             @endif
@@ -293,7 +293,7 @@
                             @elseif ($communication->status === 'approved' && $canManage)
                                 <form method="POST" action="{{ route('crisis.communications.sent', [$case, $communication]) }}" class="mt-1 flex items-center gap-1">
                                     @csrf
-                                    <input name="channel" required maxlength="100" class="input input-xs input-bordered w-40" placeholder="{{ __('Kanal (Mail/Telefon/Presse)') }}">
+                                    <input aria-label="{{ __('Kanal (Mail/Telefon/Presse)') }}" name="channel" required maxlength="100" class="input input-xs input-bordered w-40" placeholder="{{ __('Kanal (Mail/Telefon/Presse)') }}">
                                     <button type="submit" class="btn btn-xs">{{ __('Aussendung dokumentieren') }}</button>
                                 </form>
                             @endif
@@ -310,10 +310,10 @@
             @if ($canManage)
                 <form method="POST" action="{{ route('crisis.bcm.store', $case) }}" class="mb-3 flex flex-wrap items-end gap-2">
                     @csrf
-                    <input name="process_name" required maxlength="200" class="input input-sm input-bordered flex-1" placeholder="{{ __('Kritischer Prozess/Service') }}">
-                    <input name="rto_hours" type="number" min="0" class="input input-sm input-bordered w-24" placeholder="RTO h">
-                    <input name="rpo_hours" type="number" min="0" class="input input-sm input-bordered w-24" placeholder="RPO h">
-                    <input name="workaround" maxlength="1000" class="input input-sm input-bordered w-48" placeholder="{{ __('Workaround') }}">
+                    <input aria-label="{{ __('Kritischer Prozess/Service') }}" name="process_name" required maxlength="200" class="input input-sm input-bordered flex-1" placeholder="{{ __('Kritischer Prozess/Service') }}">
+                    <input aria-label="{{ __('Wiederanlaufzeit (RTO) in Stunden') }}" name="rto_hours" type="number" min="0" class="input input-sm input-bordered w-24" placeholder="RTO h">
+                    <input aria-label="{{ __('Maximaler Datenverlust (RPO) in Stunden') }}" name="rpo_hours" type="number" min="0" class="input input-sm input-bordered w-24" placeholder="RPO h">
+                    <input aria-label="{{ __('Workaround') }}" name="workaround" maxlength="1000" class="input input-sm input-bordered w-48" placeholder="{{ __('Workaround') }}">
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Erfassen') }}</x-icon-btn>
                 </form>
             @endif
@@ -357,7 +357,7 @@
                         <option value="procedure_run">{{ __('Playbook-/Prozedurlauf') }}</option>
                         <option value="document">{{ __('Dokument') }}</option>
                     </select>
-                    <input name="linkable_sqid" required maxlength="64" class="input input-sm input-bordered w-40" placeholder="{{ __('Sqid/ID des Vorgangs') }}">
+                    <input aria-label="{{ __('Sqid/ID des Vorgangs') }}" name="linkable_sqid" required maxlength="64" class="input input-sm input-bordered w-40" placeholder="{{ __('Sqid/ID des Vorgangs') }}">
                     <x-icon-btn icon="link" tone="primary" size="sm" type="submit" show-label>{{ __('Verknüpfen') }}</x-icon-btn>
                 </form>
             @endif
@@ -389,9 +389,9 @@
             @if ($canManage)
                 <form method="POST" action="{{ route('crisis.review.store', $case) }}" class="grid gap-2">
                     @csrf
-                    <textarea name="summary" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Zusammenfassung (Pflicht)') }}"></textarea>
-                    <textarea name="lessons" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Lessons Learned') }}"></textarea>
-                    <textarea name="follow_up" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Folgemaßnahmen') }}"></textarea>
+                    <textarea aria-label="{{ __('Zusammenfassung (Pflicht)') }}" name="summary" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Zusammenfassung (Pflicht)') }}"></textarea>
+                    <textarea aria-label="{{ __('Lessons Learned') }}" name="lessons" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Lessons Learned') }}"></textarea>
+                    <textarea aria-label="{{ __('Folgemaßnahmen') }}" name="follow_up" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Folgemaßnahmen') }}"></textarea>
                     <div><x-icon-btn icon="fact_check" tone="primary" size="sm" type="submit" show-label>{{ __('Nachbereitung speichern') }}</x-icon-btn></div>
                 </form>
             @endif

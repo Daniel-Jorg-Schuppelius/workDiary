@@ -54,6 +54,27 @@ return [
             'after_commit' => false,
         ],
 
+        /*
+         * Medien-Verbindung (Feature 150).
+         *
+         * `retry_after` gilt **pro Verbindung**, nicht pro Warteschlange.
+         * Ein Transcoding darf bis zu einer Stunde rechnen; auf der
+         * Standard-Verbindung (630 s) würde der Treiber den laufenden Job
+         * längst erneut zustellen — zwei ffmpeg-Läufe schrieben dann
+         * gleichzeitig in dieselbe Ausgabedatei.
+         *
+         * Verbraucher: `php artisan queue:work media --queue=media`
+         * (compose.yml-Dienst `media`, scripts/cron.sh mit RUN_MEDIA_QUEUE).
+         */
+        'media' => [
+            'driver' => 'database',
+            'connection' => env('DB_QUEUE_CONNECTION'),
+            'table' => env('DB_QUEUE_TABLE', 'jobs'),
+            'queue' => 'media',
+            'retry_after' => (int) env('MEDIA_QUEUE_RETRY_AFTER', 7200),
+            'after_commit' => false,
+        ],
+
         'beanstalkd' => [
             'driver' => 'beanstalkd',
             'host' => env('BEANSTALKD_QUEUE_HOST', 'localhost'),

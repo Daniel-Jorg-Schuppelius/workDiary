@@ -136,6 +136,16 @@ class LegacyUserProvider extends EloquentUserProvider {
         if ($user->customer_id !== null) {
             return false;
         }
+        // Abgeschaltete Organisation: kein Login (Sicherheitsscan 2026-08-23,
+        // S-04). Vorher konnte sich ein Mitarbeiter einer wegen Zahlungsverzug
+        // deaktivierten Organisation weiter anmelden — und lief mangels
+        // gebundener Organisation ungescopt durch alle Mandanten.
+        if ($user->organization_id !== null && ! $user->isGlobalAdmin()) {
+            $org = $user->organization;
+            if (! $org instanceof \App\Models\Organization || ! $org->is_active) {
+                return false;
+            }
+        }
         // Neu-System-Accounts (inkl. ehemals Legacy-verkn\u00fcpfter mit neuem
         // Passwort): bcrypt gegen users.password, unabh\u00e4ngig von Legacy.
         if ($user->is_new_system) {

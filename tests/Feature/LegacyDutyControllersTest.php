@@ -28,6 +28,8 @@ class LegacyDutyControllersTest extends TestCase {
 
     public function test_oncall_store_requires_existing_legacy_user(): void {
         $admin = User::factory()->admin()->create([
+            // Legacy-Verwaltung verlangt eine verknüpfte Legacy-ID (S-01).
+            'legacy_user_id' => 1,
             'name' => 'admin',
             'email' => 'admin-duty@example.test',
         ]);
@@ -45,6 +47,8 @@ class LegacyDutyControllersTest extends TestCase {
 
     public function test_notdienst_store_persists_valid_record(): void {
         $admin = User::factory()->admin()->create([
+            // Legacy-Verwaltung verlangt eine verknüpfte Legacy-ID (S-01).
+            'legacy_user_id' => 1,
             'name' => 'admin',
             'email' => 'admin-notdienst@example.test',
         ]);

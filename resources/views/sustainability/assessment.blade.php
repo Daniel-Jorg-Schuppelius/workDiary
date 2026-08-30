@@ -107,8 +107,8 @@
                                             <option value="calculated" @selected($item->data_quality === 'calculated')>{{ __('values.calculated') }}</option>
                                             <option value="estimated" @selected($item->data_quality === 'estimated')>{{ __('values.estimated') }}</option>
                                         </select>
-                                        <input name="source_note" maxlength="300" class="input input-xs input-bordered w-40" placeholder="{{ __('Quelle') }}" value="{{ $item->source_note }}">
-                                        <input name="justification" maxlength="1000" class="input input-xs input-bordered w-52" placeholder="{{ __('Begründung') }}" value="{{ $item->justification }}">
+                                        <input aria-label="{{ __('Quelle') }}" name="source_note" maxlength="300" class="input input-xs input-bordered w-40" placeholder="{{ __('Quelle') }}" value="{{ $item->source_note }}">
+                                        <input aria-label="{{ __('Begründung') }}" name="justification" maxlength="1000" class="input input-xs input-bordered w-52" placeholder="{{ __('Begründung') }}" value="{{ $item->justification }}">
                                         <button type="submit" class="btn btn-xs">{{ __('OK') }}</button>
                                     </form>
                                 </td>

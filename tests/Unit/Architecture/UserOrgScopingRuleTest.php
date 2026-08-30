@@ -185,6 +185,23 @@ class UserOrgScopingRuleTest extends TestCase {
      *
      * @return list<array{0: int, 1: string}>
      */
+    /**
+     * Bindet die Anweisung die Menge wirklich über IDs ein?
+     *
+     * **Nur außerhalb von `->when()`.** Ein `whereIn('id', …)` in einem
+     * `when()`-Zweig greift erst, wenn der Filter gesetzt ist — ohne Filter
+     * bleibt die Abfrage ungebunden. Genau daran ist der Auslastungsreport
+     * durch dieses Gate gerutscht (Sicherheitsscan 2026-08-23, S-26): er
+     * trug `whereIn('id', $filters->teamUserIds())` in einem `when()` und
+     * galt deshalb als id-gebunden.
+     */
+    private function isIdBound(string $statement): bool {
+        $whenAt = strpos($statement, '->when(');
+        $head = $whenAt === false ? $statement : substr($statement, 0, $whenAt);
+
+        return $this->containsAny($head, self::ID_BOUND_MARKERS);
+    }
+
     private function unscopedUserQueries(string $source): array {
         $hits = [];
 
@@ -204,7 +221,7 @@ class UserOrgScopingRuleTest extends TestCase {
                 $statement = $end !== false ? substr($source, $pos, $end - $pos) : substr($source, $pos, 240);
 
                 if ($this->containsAny($statement, self::SAFE_MARKERS)
-                    || $this->containsAny($statement, self::ID_BOUND_MARKERS)) {
+                    || $this->isIdBound($statement)) {
                     continue;
                 }
 

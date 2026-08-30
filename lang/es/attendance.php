@@ -32,6 +32,7 @@ return [
         'auto_close' => 'Cierre automático',
         'terminal' => 'Terminal',
         'phone' => 'Teléfono',
+        'learning' => 'Tiempo de aprendizaje',
     ],
     'correction' => [
         'action' => [
@@ -39,5 +40,9 @@ return [
             'update' => 'Modificar',
             'delete' => 'Eliminar',
         ],
+    ],
+    'error' => [
+        'target_day_locked' => 'El día de destino está cerrado o el mes aprobado: solicite una corrección de tiempo.',
+        'duration_too_long' => 'Un fichaje no puede superar las :hours horas.',
     ],
 ];

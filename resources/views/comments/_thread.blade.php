@@ -78,7 +78,7 @@
         <form method="POST" action="{{ $storeRoute }}" class="space-y-2"
             @if (($parent ?? null) instanceof \App\Models\DiaryEntry) data-offline-sync="comment.diary" data-sync-payload-diary="{{ $parent->sqid }}" @endif>
             @csrf
-            <textarea name="body" rows="3" required maxlength="5000"
+            <textarea aria-label="{{ __('Kommentar schreiben...') }}" name="body" rows="3" required maxlength="5000"
                 class="textarea textarea-bordered textarea-sm w-full @error('body') ring-2 ring-error/30 @enderror"
                 placeholder="{{ __('Kommentar schreiben...') }}">{{ old('body') }}</textarea>
             @error('body')<p class="text-sm text-error">{{ $message }}</p>@enderror

@@ -28,7 +28,7 @@
         </select>
     </x-form-group>
     <x-form-group :label="__('terminal.badge.uid')" name="badge_uid">
-        <input type="text" name="badge_uid" value="{{ old('badge_uid') }}" placeholder="{{ __('terminal.badge.uid_placeholder') }}" class="input input-bordered w-full" required>
+        <input aria-label="{{ __('terminal.badge.uid_placeholder') }}" type="text" name="badge_uid" value="{{ old('badge_uid') }}" placeholder="{{ __('terminal.badge.uid_placeholder') }}" class="input input-bordered w-full" required>
         <span class="label-text-alt text-muted">{{ __('terminal.badge.uid_help') }}</span>
     </x-form-group>
     <x-form-group :label="__('terminal.badge.label')" name="label">

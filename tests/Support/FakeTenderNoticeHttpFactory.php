@@ -29,7 +29,10 @@ final class FakeTenderNoticeHttpFactory extends PluginHttpFactory {
     /** @param list<Response> $responses */
     public function __construct(private readonly array $responses) {}
 
-    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0): PluginApiClient {
+    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
+        // Auch hier gilt die SSRF-Schranke (Sicherheitsscan 2026-08-23, S-10).
+        $this->assertTargetAllowed($pluginId, $baseUrl, $allowPrivateNetwork);
+
         $stack = HandlerStack::create(new MockHandler($this->responses));
 
         return new PluginApiClient($pluginId, $baseUrl, new Client(['handler' => $stack]));

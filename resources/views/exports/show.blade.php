@@ -97,7 +97,7 @@
                 @can('deliver', $export)
                     <form method="POST" action="{{ route('exports.deliver', $export) }}" class="space-y-2">
                         @csrf
-                        <textarea name="note" maxlength="2000" rows="2"
+                        <textarea aria-label="{{ __('Vermerk (optional)') }}" name="note" maxlength="2000" rows="2"
                                   class="textarea textarea-bordered w-full text-sm"
                                   placeholder="{{ __('Vermerk (optional)') }}"></textarea>
                         <x-button type="submit" tone="success" class="w-full" icon="send">{{ __('Als übermittelt markieren') }}</x-button>
@@ -107,7 +107,7 @@
                 @can('reject', $export)
                     <form method="POST" action="{{ route('exports.reject', $export) }}" class="space-y-2">
                         @csrf
-                        <textarea name="note" required minlength="5" maxlength="2000" rows="2"
+                        <textarea aria-label="{{ __('Ablehnungsgrund (Pflicht)') }}" name="note" required minlength="5" maxlength="2000" rows="2"
                                   class="textarea textarea-bordered w-full text-sm"
                                   placeholder="{{ __('Ablehnungsgrund (Pflicht)') }}"></textarea>
                         <x-button type="submit" tone="warning" class="w-full" icon="block">{{ __('Export ablehnen') }}</x-button>
@@ -120,7 +120,7 @@
                           data-confirm="{{ __('Export endgültig löschen? Die Begründung wird auditiert.') }}">
                         @csrf
                         @method('DELETE')
-                        <textarea name="note" required minlength="5" maxlength="2000" rows="2"
+                        <textarea aria-label="{{ __('Löschbegründung (Pflicht)') }}" name="note" required minlength="5" maxlength="2000" rows="2"
                                   class="textarea textarea-bordered w-full text-sm"
                                   placeholder="{{ __('Löschbegründung (Pflicht)') }}"></textarea>
                         <x-button type="submit" tone="error" class="w-full" icon="delete">{{ __('Export löschen') }}</x-button>

@@ -32,6 +32,7 @@ return [
         'auto_close' => 'Chiusura automatica',
         'terminal' => 'Terminal',
         'phone' => 'Telefono',
+        'learning' => 'Tempo di apprendimento',
     ],
     'correction' => [
         'action' => [
@@ -39,5 +40,9 @@ return [
             'update' => 'Modifica',
             'delete' => 'Elimina',
         ],
+    ],
+    'error' => [
+        'target_day_locked' => 'Il giorno di destinazione è chiuso o il mese approvato: richieda una correzione dei tempi.',
+        'duration_too_long' => 'Una timbratura non può superare le :hours ore.',
     ],
 ];

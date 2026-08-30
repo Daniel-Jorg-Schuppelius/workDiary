@@ -180,4 +180,15 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::delete('/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->name('2fa.credential.destroy');
         Route::delete('/two-factor', [TwoFactorController::class, 'disable'])->name('2fa.disable');
     });
+
+    // Kundenschulungen (Feature 149, MVP-742): Default-Deny — sichtbar sind
+    // nur freigegebene Kurse mit ausdrücklicher Zielgruppe `customer`.
+    Route::middleware(['auth:customer', 'two-factor.setup:customer'])->group(function (): void {
+        Route::get('/schulungen', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'index'])->name('learning.index');
+        Route::post('/schulungen/{course}/einschreiben', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'enroll'])->name('learning.enroll');
+        Route::post('/schulungen/{course}/buchen', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'requestBooking'])->name('learning.book');
+        Route::get('/schulungen/{enrollment}', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'show'])->name('learning.show');
+        Route::post('/schulungen/{enrollment}/einheiten/{unit}/erledigt', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'completeUnit'])->name('learning.units.complete');
+    });
+
 });

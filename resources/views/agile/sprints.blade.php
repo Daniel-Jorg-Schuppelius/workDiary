@@ -119,7 +119,7 @@
                                 <input name="capacity_adjustment_hours" type="number" step="0.5" min="-999" max="999"
                                        placeholder="±h" class="input input-sm input-bordered w-20"
                                        aria-label="{{ __('Kapazitätskorrektur (Stunden)') }}">
-                                <input name="capacity_adjustment_reason" maxlength="300"
+                                <input aria-label="{{ __('Korrektur-Begründung') }}" name="capacity_adjustment_reason" maxlength="300"
                                        placeholder="{{ __('Korrektur-Begründung') }}" class="input input-sm input-bordered w-40">
                                 <x-icon-btn icon="play_arrow" tone="primary" size="sm" type="submit" show-label>{{ __('Starten') }}</x-icon-btn>
                             </form>
@@ -129,7 +129,7 @@
                             <summary class="cursor-pointer text-xs text-muted">{{ __('Abbrechen…') }}</summary>
                             <form method="POST" action="{{ route('agile.sprints.cancel', [$project, $sprint]) }}" class="mt-1 flex items-center gap-1">
                                 @csrf
-                                <input name="reason" required minlength="3" maxlength="300" placeholder="{{ __('Grund (Pflicht)') }}" class="input input-xs input-bordered">
+                                <input aria-label="{{ __('Grund (Pflicht)') }}" name="reason" required minlength="3" maxlength="300" placeholder="{{ __('Grund (Pflicht)') }}" class="input input-xs input-bordered">
                                 <x-icon-btn icon="cancel" tone="error" size="xs" type="submit" :label="__('Sprint abbrechen')" />
                             </form>
                         </details>

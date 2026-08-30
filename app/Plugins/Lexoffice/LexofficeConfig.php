@@ -37,7 +37,11 @@ class LexofficeConfig {
             'match_policy' => $r->string('match_policy') ?? 'manual_review',
             'create_missing_local' => $r->bool('create_missing_local', false),
             'number_authority' => $r->bool('number_authority', false),
-            'webhook_secret' => $r->string('webhook_secret'),
+            // settingString(): **kein** Config-/ENV-Fallback. Ein per ENV
+            // gesetztes Secret gälte sonst für ALLE Organisationen — jede
+            // könnte die Callbacks jeder anderen auslösen (Sicherheitsscan
+            // 2026-08-23, S-27). Etsy/GitHub/GitLab machen es schon so.
+            'webhook_secret' => $r->settingString('webhook_secret'),
             'webhook_public_key' => $r->string('webhook_public_key'),
             'enabled' => $r->enabled(),
         ];

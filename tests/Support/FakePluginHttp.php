@@ -81,7 +81,11 @@ class FakePluginHttp extends PluginHttpFactory {
         return new Psr7Response($status, $headers, $body ?? '');
     }
 
-    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0): PluginApiClient {
+    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
+        // Die SSRF-Schranke gilt auch im Test — sie ist Teil des Verhaltens,
+        // nicht des Transports (Sicherheitsscan 2026-08-23, S-10).
+        $this->assertTargetAllowed($pluginId, $baseUrl, $allowPrivateNetwork);
+
         $client = new PluginApiClient($pluginId, $baseUrl, $this->mockedGuzzle($baseUrl));
 
         // Tests sollen bei Retry-Pfaden (429/503) und Tarif-Drosseln

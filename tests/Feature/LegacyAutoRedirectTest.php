@@ -25,8 +25,10 @@ class LegacyAutoRedirectTest extends TestCase {
     }
 
     private function actAsLegacyAdmin(): User {
-        // Username "admin" wird via LEGACY_FALLBACK_ADMINS als Admin erkannt.
-        $admin = User::factory()->admin()->create(['name' => 'admin']);
+        // Legacy-Adminstatus kommt aus der verknüpften Legacy-ID (≤ 3). Der
+        // frühere Namens-Fallback („admin" genügt) ist entfallen — er machte
+        // jeden zum Admin, der sich so nannte (Sicherheitsscan S-01).
+        $admin = User::factory()->admin()->create(['name' => 'admin', 'legacy_user_id' => 1]);
         $this->actingAs($admin);
 
         return $admin;

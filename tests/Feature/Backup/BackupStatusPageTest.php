@@ -17,6 +17,9 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class BackupStatusPageTest extends TestCase {
+    // Der Sicherungsstand gilt der Installation, nicht dem Mandanten —
+    // Betreiber-Sicht (Sicherheitsscan 2026-08-23, S-02).
+
     use RefreshDatabase;
 
     protected function setUp(): void {
@@ -36,7 +39,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_status_renders_for_admin(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.backup.status'))
@@ -45,7 +48,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_no_heartbeat_shows_no_backup_warning(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.backup.status'))
@@ -54,7 +57,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_fresh_heartbeat_shows_fresh_badge_not_overdue(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         BackupHeartbeat::create([
             'occurred_at' => CarbonImmutable::now()->subHours(2),
             'size_bytes' => 12_345_678,
@@ -71,7 +74,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_stale_heartbeat_shows_overdue_warning(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         BackupHeartbeat::create([
             'occurred_at' => CarbonImmutable::now()->subHours(48),
             'size_bytes' => 100,
@@ -86,7 +89,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_no_passed_restore_test_is_overdue(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.backup.status'))
@@ -95,7 +98,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_recent_passed_restore_test_not_overdue(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         RestoreTest::factory()->create([
             'result' => RestoreTestResult::Passed,
             'tested_on' => CarbonImmutable::now()->subDays(10),
@@ -108,7 +111,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_old_passed_restore_test_is_overdue(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         RestoreTest::factory()->create([
             'result' => RestoreTestResult::Passed,
             'tested_on' => CarbonImmutable::now()->subDays(365),
@@ -121,7 +124,7 @@ class BackupStatusPageTest extends TestCase {
     }
 
     public function test_failed_restore_test_does_not_count_as_passed(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         // Ein junger, aber FEHLGESCHLAGENER Test darf die Überfälligkeit nicht aufheben.
         RestoreTest::factory()->failed()->create([
             'tested_on' => CarbonImmutable::now()->subDays(1),

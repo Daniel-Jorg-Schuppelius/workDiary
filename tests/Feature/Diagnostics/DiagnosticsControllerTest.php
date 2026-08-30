@@ -16,6 +16,9 @@ use Illuminate\Support\Facades\Mail;
 use Tests\TestCase;
 
 class DiagnosticsControllerTest extends TestCase {
+    // Diagnose betrifft die Installation (Mail, Speicher, Queue, Zertifikate) —
+    // Betreiber-Sicht (Sicherheitsscan 2026-08-23, S-02).
+
     use RefreshDatabase;
 
     protected function setUp(): void {
@@ -33,7 +36,7 @@ class DiagnosticsControllerTest extends TestCase {
     }
 
     public function test_index_renders_for_org_admin_and_writes_audit(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.diagnostics.index'))
@@ -48,7 +51,7 @@ class DiagnosticsControllerTest extends TestCase {
     }
 
     public function test_json_endpoint_returns_machine_readable_report(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $response = $this->actingAs($admin)->getJson(route('admin.diagnostics.json'));
 
@@ -71,7 +74,7 @@ class DiagnosticsControllerTest extends TestCase {
 
     public function test_test_mail_for_admin_dispatches_and_audits(): void {
         Mail::fake();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->postJson(route('admin.diagnostics.test-mail'))

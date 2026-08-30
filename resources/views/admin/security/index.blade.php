@@ -328,7 +328,7 @@
                                     <form method="POST" action="{{ route('admin.security.advisories.statement', $advisory) }}" class="flex items-center gap-1">
                                         @csrf
                                         @method('PUT')
-                                        <input type="text" name="statement" maxlength="1000"
+                                        <input aria-label="{{ __('security.field.statement_placeholder') }}" type="text" name="statement" maxlength="1000"
                                                class="input input-bordered input-xs w-56"
                                                placeholder="{{ __('security.field.statement_placeholder') }}"
                                                value="{{ $advisory->statement }}">

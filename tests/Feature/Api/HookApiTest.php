@@ -33,7 +33,10 @@ class HookApiTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->organization = Organization::factory()->create();
-        $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        // Seit dem Sicherheitsscan 2026-08-23 (S-27) prüft die Hook-API
+        // dieselbe Policy wie die Weboberfläche: die Token-Ability sagt, was
+        // das TOKEN darf, nicht was der NUTZER darf.
+        $this->user = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
     public function test_subscribe_returns_201_with_id_and_one_time_secret(): void {
@@ -120,4 +123,22 @@ class HookApiTest extends TestCase {
             'target_url' => 'http://127.0.0.1/hook',
         ])->assertStatus(422);
     }
+
+    public function test_regulaerer_nutzer_darf_keine_hooks_verwalten(): void {
+        // Jeder kann sich selbst ein Sanctum-Token ausstellen — ohne
+        // Policy-Prüfung legte damit jeder Mitarbeiter eigene Empfänger für
+        // Org-Ereignisse an und löschte die des Administrators.
+        $ohneRecht = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $hook = WebhookEndpoint::factory()->create(['organization_id' => $this->organization->id]);
+
+        Sanctum::actingAs($ohneRecht, ['hooks:manage']);
+
+        $this->getJson('/api/hooks')->assertForbidden();
+        $this->postJson('/api/hooks', [
+            'event' => 'invoice.created',
+            'target_url' => 'https://hooks.example.com/in',
+        ])->assertForbidden();
+        $this->deleteJson('/api/hooks/' . $hook->sqid)->assertForbidden();
+    }
+
 }

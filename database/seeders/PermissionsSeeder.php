@@ -38,6 +38,11 @@ class PermissionsSeeder extends Seeder {
         // Der Plattform-Admin überspringt zusätzlich alle Policies via
         // HasAdminBypass-Trait; die Permission-Zuordnung dient hier nur der
         // Transparenz in der Admin-UI.
+        //
+        // Beim Nachziehen von S-02 wichtig zu wissen: diese Rolle gilt in
+        // JEDEM Team, und Admin-UI wie Factory hängen sie zusammen mit der
+        // org-lokalen Rolle an jeden Admin. Ein Rechteentzug allein in der
+        // Org-Matrix bliebe also wirkungslos.
         $globalAdmin = Role::query()
             ->whereNull(config('permission.column_names.team_foreign_key', 'team_id'))
             ->where('name', UserRole::Admin->value)
@@ -163,6 +168,32 @@ class PermissionsSeeder extends Seeder {
      */
     private static function defaultRoleMatrix(): array {
         $all = PermissionEnum::cases();
+
+        /*
+         * **Warum hier NICHT nach Präfix gefiltert wird** (Sicherheitsscan
+         * 2026-08-23, S-02, geprüft am 2026-08-30):
+         *
+         * Der erste Anlauf entzog der org-lokalen admin-Rolle pauschal alle
+         * `platform.*`-Rechte. Das ist falsch — das Präfix beschreibt in
+         * diesem Code **nicht** den Geltungsbereich:
+         *  - `platform.problemReports.manage` gehört zur org-gescopten
+         *    Fehlermelde-Inbox („Selbst-Hosting: Betreiber = Org-Admin"),
+         *  - `platform.operations.*` trägt das org-gescopte Aufgabencenter,
+         *  - `platform.support.export` deckt auch den Supportbericht der
+         *    **eigenen** Organisation ab,
+         *  - `platform.settings.manage` öffnet die Einstellungsseite, die
+         *    org- UND systemweite Schlüssel führt.
+         *
+         * Der Entzug riss deshalb 66 Tests auf — zu Recht: er hätte
+         * org-eigene Funktionen abgeschaltet. Die Mandantengrenze wird dort
+         * gezogen, wo sie tatsächlich verläuft: an der **Aktion**. Jede
+         * installationsweite Operation prüft zusätzlich `isGlobalAdmin()`
+         * (System-Scope der Einstellungen, System-Wartungsfenster und fremde
+         * Fenster, Scheduler-Overrides mit `organization_id = null`,
+         * Supportbericht, Diagnose, Demo-Mandanten, Instanz-Lizenz,
+         * Betriebsmetriken, Sicherungsstand). Das wirkt sofort und hängt
+         * nicht am nächsten Seeder-Lauf.
+         */
 
         // Geschäftsführung: read-only über alle Bereiche, Reports + Audit.
         $geschaeftsfuehrung = array_values(array_filter(
@@ -420,6 +451,12 @@ class PermissionsSeeder extends Seeder {
             // Pflichtmatrix und Soll-Einträge ihres Bereichs.
             PermissionEnum::TrainingViewAny,
             PermissionEnum::TrainingManage,
+            // Lernplattform (Feature 149): Teamleitung sieht den Fortschritt
+            // ihres Bereichs, bewertet Aufgaben und weist Kurse zu —
+            // Autorenschaft und Freigabe bleiben bei der Personalverwaltung.
+            PermissionEnum::LearningViewAny,
+            PermissionEnum::LearningGrade,
+            PermissionEnum::LearningManage,
             // Benachrichtigungsregeln (MVP-018): Teamleitung lesend,
             // Bearbeitung bleibt Admin.
             PermissionEnum::NotificationRuleViewAny,
@@ -580,6 +617,12 @@ class PermissionsSeeder extends Seeder {
             // Trainingsmanagement (Feature 145): Schulungsplanung ist HR-Arbeit.
             PermissionEnum::TrainingViewAny,
             PermissionEnum::TrainingManage,
+            // Lernplattform (Feature 149): Kurse bauen, freigeben, zuweisen.
+            PermissionEnum::LearningViewAny,
+            PermissionEnum::LearningAuthor,
+            PermissionEnum::LearningRelease,
+            PermissionEnum::LearningGrade,
+            PermissionEnum::LearningManage,
         ];
 
         $buchhaltung = [

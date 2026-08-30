@@ -12,6 +12,7 @@ namespace App\Services\TimeExport;
 
 use App\Models\TimeExportDeliveryConfig;
 use Illuminate\Support\Facades\Storage;
+use RuntimeException;
 
 /**
  * SFTP-Upload der automatischen Export-Lieferung (A21 · MVP-019).
@@ -30,6 +31,17 @@ class TimeExportSftpUploader {
     public function upload(TimeExportDeliveryConfig $config, string $contents, string $filename): string {
         $root = trim((string) ($config->sftp_root ?? ''));
         $port = $config->sftp_port > 0 ? $config->sftp_port : 22;
+        $fingerprint = trim((string) ($config->sftp_host_fingerprint ?? ''));
+
+        // **Ohne Host-Key keine Verbindung** (Sicherheitsscan 2026-08-23,
+        // S-22). `SftpConnectionProvider` überspringt die Prüfung, wenn kein
+        // Fingerprint gesetzt ist — die Anwendung meldete sich damit bei
+        // jedem Server an, der die Ziel-IP beantwortet, und übergab Zugangs-
+        // daten samt Lohnexport. Ein sichtbarer Abbruch ist besser als eine
+        // stille Übergabe an den Falschen; die Meldung sagt, was fehlt.
+        if ($fingerprint === '') {
+            throw new RuntimeException((string) __('wage_types.error.sftp_fingerprint_missing'));
+        }
 
         $disk = Storage::build([
             'driver' => 'sftp',
@@ -37,6 +49,7 @@ class TimeExportSftpUploader {
             'port' => $port,
             'username' => (string) $config->sftp_username,
             'password' => (string) ($config->sftp_password ?? ''),
+            'hostFingerprint' => $fingerprint,
             // Leeres Zielverzeichnis = Home-Verzeichnis des SFTP-Benutzers.
             'root' => $root === '' ? './' : $root,
             'timeout' => 15,

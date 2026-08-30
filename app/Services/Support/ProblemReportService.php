@@ -147,17 +147,25 @@ class ProblemReportService {
      *
      * @return array<string, mixed>
      */
-    public function buildDiagnosticExcerpt(?string $requestId = null): array {
+    public function buildDiagnosticExcerpt(?string $requestId = null, bool $includeHealth = true): array {
+        // Die Health-Abschnitte beschreiben die **Installation** (APP_DEBUG,
+        // Cookie-Flags, Backup-/Queue-Zustand) — Betreiber-Wissen, keine
+        // Auskunft für jeden angemeldeten Nutzer (Sicherheitsscan
+        // 2026-08-23, S-19). Der Log-Auszug bleibt in beiden Fällen: er zeigt
+        // nur die Zeilen des eigenen fehlgeschlagenen Requests.
         $sections = [];
-        try {
-            foreach ($this->diagnostics->collect()->sections as $section) {
-                $sections[$section->code] = [
-                    'status' => $section->status->value,
-                    'messages' => array_map($this->logFilter->filter(...), $section->messages),
-                ];
+
+        if ($includeHealth) {
+            try {
+                foreach ($this->diagnostics->collect()->sections as $section) {
+                    $sections[$section->code] = [
+                        'status' => $section->status->value,
+                        'messages' => array_map($this->logFilter->filter(...), $section->messages),
+                    ];
+                }
+            } catch (\Throwable $e) {
+                $sections['error'] = ['status' => 'unknown', 'messages' => [$e->getMessage()]];
             }
-        } catch (\Throwable $e) {
-            $sections['error'] = ['status' => 'unknown', 'messages' => [$e->getMessage()]];
         }
 
         return [
@@ -179,10 +187,29 @@ class ProblemReportService {
         }
 
         try {
+            // **Nur der Kontext-Marker zählt** (Sicherheitsscan 2026-08-23,
+            // S-19). `str_contains($line, $requestId)` traf mit `rid=2026-08-23`
+            // oder `rid=production.ERROR` praktisch jede Zeile — und der Log
+            // ist mandantenübergreifend. Beide Werte passen zum
+            // Request-ID-Format, sind aber keine. Gesucht wird deshalb der
+            // Schlüssel, den `AssignRequestId` in den Log-Kontext schreibt.
+            $needles = [
+                '"request_id":"' . $requestId . '"',
+                '"request_id": "' . $requestId . '"',
+            ];
+
             $lines = array_slice(explode("\n", File::get($path)), -2000);
             $matching = array_values(array_filter(
                 $lines,
-                static fn(string $line): bool => str_contains($line, $requestId),
+                static function (string $line) use ($needles): bool {
+                    foreach ($needles as $needle) {
+                        if (str_contains($line, $needle)) {
+                            return true;
+                        }
+                    }
+
+                    return false;
+                },
             ));
 
             return $this->logFilter->filterMany(array_slice($matching, -self::LOG_EXCERPT_LINES));

@@ -64,8 +64,8 @@
                 @if ($canManage)
                     <form method="POST" action="{{ route('articles.options.values.store', [$article, $option]) }}" class="flex flex-wrap items-end gap-2 mt-3">
                         @csrf
-                        <input name="code" required maxlength="40" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered">
-                        <input name="label" required maxlength="255" placeholder="{{ __('article.field.label') }}" class="input input-sm input-bordered">
+                        <input aria-label="{{ __('article.field.code') }}" name="code" required maxlength="40" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered">
+                        <input aria-label="{{ __('article.field.label') }}" name="label" required maxlength="255" placeholder="{{ __('article.field.label') }}" class="input input-sm input-bordered">
                         <button type="submit" class="btn btn-sm">{{ __('article.action.add_value') }}</button>
                     </form>
                 @endif
@@ -77,8 +77,8 @@
         @if ($canManage)
             <form method="POST" action="{{ route('articles.options.store', $article) }}" class="flex flex-wrap items-end gap-2 mt-2">
                 @csrf
-                <input name="code" required maxlength="40" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered">
-                <input name="name" required maxlength="255" placeholder="{{ __('article.field.option_name') }}" class="input input-sm input-bordered">
+                <input aria-label="{{ __('article.field.code') }}" name="code" required maxlength="40" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered">
+                <input aria-label="{{ __('article.field.option_name') }}" name="name" required maxlength="255" placeholder="{{ __('article.field.option_name') }}" class="input input-sm input-bordered">
                 <x-button type="submit" tone="primary" size="sm">{{ __('article.action.add_option') }}</x-button>
             </form>
         @endif
@@ -157,13 +157,13 @@
         @if ($canManage)
             <form method="POST" action="{{ route('articles.units.store', $article) }}" class="flex flex-wrap items-end gap-2 mt-2">
                 @csrf
-                <input name="code" required maxlength="20" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered w-28">
+                <input aria-label="{{ __('article.field.code') }}" name="code" required maxlength="20" placeholder="{{ __('article.field.code') }}" class="input input-sm input-bordered w-28">
                 <select name="kind" class="select select-sm select-bordered">
                     @foreach ($unitKinds as $kind)
                         <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
                     @endforeach
                 </select>
-                <input name="factor_to_base" type="number" step="0.00000001" min="0" required placeholder="{{ __('article.field.factor_to_base') }}" class="input input-sm input-bordered w-32">
+                <input aria-label="{{ __('article.field.factor_to_base') }}" name="factor_to_base" type="number" step="0.00000001" min="0" required placeholder="{{ __('article.field.factor_to_base') }}" class="input input-sm input-bordered w-32">
                 <button type="submit" class="btn btn-sm">{{ __('article.action.add_unit') }}</button>
             </form>
         @endif
@@ -239,8 +239,8 @@
         @if ($canManage)
             <form method="POST" action="{{ route('articles.tiers.store', $article) }}" class="flex flex-wrap items-end gap-2 mt-2">
                 @csrf
-                <input name="min_qty" type="number" step="0.01" min="0.01" required placeholder="{{ __('article.tiers.min_qty') }}" class="input input-sm input-bordered w-32">
-                <input name="unit_price" type="number" step="0.0001" min="0" required placeholder="{{ __('article.tiers.unit_price') }}" class="input input-sm input-bordered w-32">
+                <input aria-label="{{ __('article.tiers.min_qty') }}" name="min_qty" type="number" step="0.01" min="0.01" required placeholder="{{ __('article.tiers.min_qty') }}" class="input input-sm input-bordered w-32">
+                <input aria-label="{{ __('article.tiers.unit_price') }}" name="unit_price" type="number" step="0.0001" min="0" required placeholder="{{ __('article.tiers.unit_price') }}" class="input input-sm input-bordered w-32">
                 <button type="submit" class="btn btn-sm">{{ __('article.tiers.action.add') }}</button>
             </form>
         @endif

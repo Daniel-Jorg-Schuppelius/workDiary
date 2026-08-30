@@ -44,7 +44,14 @@ abstract class AbstractHttpAiProvider {
 
     protected function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('ai-' . $this->providerName(), $this->baseUrl());
+            // `is_local` ist das Opt-in für Ziele im eigenen Netz (Ollama &
+            // Co. hören auf localhost) — ohne das Kennzeichen gilt die
+            // SSRF-Schranke der Factory (Sicherheitsscan 2026-08-23, S-10).
+            $this->api = app(PluginHttpFactory::class)->client(
+                'ai-' . $this->providerName(),
+                $this->baseUrl(),
+                allowPrivateNetwork: (bool) $this->connection->is_local,
+            );
             $this->api->setDefaultHeaders($this->headers());
         }
 

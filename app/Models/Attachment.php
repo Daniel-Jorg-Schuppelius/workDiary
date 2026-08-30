@@ -28,6 +28,11 @@ use Illuminate\Support\Carbon;
  * @property string $original_name
  * @property string|null $mime
  * @property int $size
+ * @property \App\Enums\Media\MediaState|null $media_state
+ * @property int|null $media_duration_seconds
+ * @property int|null $media_width
+ * @property int|null $media_height
+ * @property string|null $media_error
  * @property string|null $meta_type
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
@@ -60,6 +65,12 @@ class Attachment extends Model {
         'size',
         'meta_type',
         'customer_visible',
+        'media_state',
+        'media_duration_seconds',
+        'media_width',
+        'media_height',
+        'media_error',
+        'media_processed_at',
     ];
 
     /** @return \Illuminate\Database\Eloquent\Relations\HasMany<AttachmentConfirmation, $this> */
@@ -71,6 +82,8 @@ class Attachment extends Model {
     protected $casts = [
         'customer_visible' => 'boolean',
         'size' => 'integer',
+        'media_state' => \App\Enums\Media\MediaState::class,
+        'media_processed_at' => 'datetime',
     ];
 
     protected static function booted(): void {
@@ -108,6 +121,16 @@ class Attachment extends Model {
     /** @return MorphTo<Model, $this> */
     public function attachable(): MorphTo {
         return $this->morphTo();
+    }
+
+    /**
+     * Abgeleitete Fassungen (Feature 150): Auflösungen, Vorschaubild,
+     * Untertitel. Leer, solange nichts gerechnet wurde.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<\App\Models\Media\MediaRendition, $this>
+     */
+    public function renditions(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(\App\Models\Media\MediaRendition::class);
     }
 
     /** @return BelongsTo<User, $this> */

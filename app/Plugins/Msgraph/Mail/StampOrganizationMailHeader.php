@@ -49,5 +49,44 @@ class StampOrganizationMailHeader {
                 return;
             }
         }
+
+        // Mailables ohne Modell (2FA-Code, Passwort-Reset, jede
+        // MailMessage-Benachrichtigung) blieben ungestempelt — der Transport
+        // fiel dann auf „die eine aktive Verbindung" zurück, gleich welcher
+        // Organisation sie gehört (Sicherheitsscan 2026-08-23, S-28). Zwei
+        // weitere Quellen schließen die Lücke, beide ohne Raten:
+        $fallbackOrgId = $this->organizationFromRecipient($event) ?? $this->organizationFromContext();
+
+        if ($fallbackOrgId !== null) {
+            $headers->addTextHeader(MsgraphMailTransport::HEADER_ORGANIZATION, (string) $fallbackOrgId);
+        }
+    }
+
+    /** Empfänger-Konto: die Adresse gehört genau einem Nutzer. */
+    private function organizationFromRecipient(MessageSending $event): ?int {
+        foreach ($event->message->getTo() as $address) {
+            $user = \App\Models\User::query()
+                ->withoutGlobalScopes()
+                ->where('email', $address->getAddress())
+                ->first(['organization_id']);
+
+            $orgId = $user?->organization_id;
+            if (is_numeric($orgId) && (int) $orgId > 0) {
+                return (int) $orgId;
+            }
+        }
+
+        return null;
+    }
+
+    /** Gebundener Request-Kontext (Weboberfläche). */
+    private function organizationFromContext(): ?int {
+        if (! app()->bound('currentOrganization')) {
+            return null;
+        }
+
+        $organization = app('currentOrganization');
+
+        return $organization instanceof \App\Models\Organization ? (int) $organization->id : null;
     }
 }

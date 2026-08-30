@@ -82,7 +82,7 @@
                 @if ($canManage)
                     <form method="POST" action="{{ route('patrols.checkpoints.add', $route) }}" class="mt-4 grid gap-2 sm:grid-cols-4">
                         @csrf
-                        <input type="text" name="label" required maxlength="160" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Kontrollpunkt (Ort)') }}">
+                        <input aria-label="{{ __('Kontrollpunkt (Ort)') }}" type="text" name="label" required maxlength="160" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Kontrollpunkt (Ort)') }}">
                         <input type="number" name="expected_offset_minutes" required min="0" max="1440" value="0" class="input input-sm input-bordered" placeholder="{{ __('Soll ab Start (min)') }}" aria-label="{{ __('Soll ab Start (min)') }}">
                         <input type="number" name="tolerance_minutes" required min="0" max="240" value="10" class="input input-sm input-bordered" placeholder="{{ __('Toleranz (min)') }}" aria-label="{{ __('Toleranz (min)') }}">
                         <button type="submit" class="btn btn-primary btn-sm sm:col-span-4">{{ __('Kontrollpunkt hinzufügen') }}</button>

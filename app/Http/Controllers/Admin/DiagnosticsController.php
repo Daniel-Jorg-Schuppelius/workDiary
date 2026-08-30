@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Diagnostics\DiagnosticsService;
@@ -20,10 +20,13 @@ use Illuminate\Support\Facades\{Gate, Mail};
 use Illuminate\View\View;
 
 class DiagnosticsController extends Controller {
+    use RequiresPlatformOperator;
+
     use ResolvesCurrentOrganization;
 
     public function index(Request $request, DiagnosticsService $diagnostics): View {
         Gate::authorize(Permission::PlatformDiagnosticsView->value);
+        $this->assertPlatformOperator();
 
         $report = $diagnostics->collect();
 
@@ -36,6 +39,7 @@ class DiagnosticsController extends Controller {
 
     public function json(Request $request, DiagnosticsService $diagnostics): JsonResponse {
         Gate::authorize(Permission::PlatformDiagnosticsView->value);
+        $this->assertPlatformOperator();
 
         $report = $diagnostics->collect();
 
@@ -46,6 +50,7 @@ class DiagnosticsController extends Controller {
 
     public function testMail(Request $request): JsonResponse {
         Gate::authorize(Permission::PlatformDiagnosticsRunCheck->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();

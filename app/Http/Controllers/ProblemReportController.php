@@ -13,10 +13,12 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Enums\Support\ProblemReportSeverity;
+use App\Enums\User\Permission;
 use App\Models\ProblemReport;
 use App\Services\Support\ProblemReportService;
-use App\Support\Setting;
+use App\Support\{Setting, UrlSafety};
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -64,7 +66,10 @@ class ProblemReportController extends Controller {
             'diagnosticsMode' => $mode,
             'diagnosticsPreview' => $mode === ProblemReportService::DIAG_MODE_NEVER
                 ? null
-                : $this->service->buildDiagnosticExcerpt($errorRequestId),
+                : $this->service->buildDiagnosticExcerpt(
+                    $errorRequestId,
+                    includeHealth: Gate::allows(Permission::PlatformDiagnosticsView->value),
+                ),
         ]);
     }
 
@@ -104,7 +109,14 @@ class ProblemReportController extends Controller {
 
         // context_url kann leer sein (z. B. Meldung von einer Fehlerseite ohne
         // Ursprungs-URL) — dann zurück zur eigenen Meldungsliste statt auf "".
-        $back = filled($validated['context_url'] ?? null) ? $validated['context_url'] : route('problem-reports.index');
+        //
+        // Das Feld kommt aus einem versteckten Formularfeld, ist also frei
+        // setzbar: ohne Prüfung war der Melde-Dialog eine offene Weiterleitung
+        // auf beliebige Domains (Sicherheitsscan 2026-08-23, S-19).
+        $candidate = (string) ($validated['context_url'] ?? '');
+        $back = filled($candidate) && UrlSafety::isSameOriginOrRelative($candidate, $request->getHost())
+            ? $candidate
+            : route('problem-reports.index');
 
         return redirect()
             ->to($back)

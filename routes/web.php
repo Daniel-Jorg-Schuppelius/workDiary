@@ -181,6 +181,47 @@ Route::post('extern/{token}/bestaetigen', [PublicExternalParticipantController::
     ->middleware('throttle:12,1')
     ->name('external.confirm');
 
+// Lernzugang ohne Benutzerkonto (Feature 149, MVP-742): der Einstiegslink
+// löst den Token ein, danach trägt die Session den Zustand — so landet der
+// Token nicht im Verlauf jeder Folgeseite. Ratenbegrenzt, neutrale Fehler.
+Route::get('lernen/zugang/{token}', [\App\Http\Controllers\Learning\ExternalLearningController::class, 'enter'])
+    ->middleware('throttle:20,1')
+    ->where('token', '[A-Za-z0-9]{48}')
+    ->name('learning.external.enter');
+Route::get('lernen/extern', [\App\Http\Controllers\Learning\ExternalLearningController::class, 'show'])
+    ->middleware('throttle:120,1')
+    ->name('learning.external.show');
+Route::post('lernen/extern/einheiten/{unit}/erledigt', [\App\Http\Controllers\Learning\ExternalLearningController::class, 'completeUnit'])
+    ->middleware('throttle:60,1')
+    ->name('learning.external.units.complete');
+Route::get('lernen/zugang-ungueltig', [\App\Http\Controllers\Learning\ExternalLearningController::class, 'denied'])
+    ->middleware('throttle:60,1')
+    ->name('learning.external.denied');
+
+// Öffentliche Zertifikatsprüfung (Feature 149, MVP-740): wer den Code hat,
+// soll prüfen können, ob ein vorgelegtes Zertifikat echt ist. Datensparsam
+// und ratenbegrenzt — der Code ist zufällig, also nicht aufzählbar.
+Route::get('zertifikat/{code}', [\App\Http\Controllers\Learning\CertificateVerificationController::class, 'show'])
+    ->middleware('throttle:30,1')
+    ->where('code', '[a-z0-9]{32}')
+    ->name('learning.certificates.verify');
+// Maschinenlesbarer Nachweis (Open Badges 3.0) und der öffentliche
+// Signaturschlüssel — damit ein Auftraggeber selbst prüfen kann.
+Route::get('zertifikat/{code}/credential.json', [\App\Http\Controllers\Learning\CertificateVerificationController::class, 'credential'])
+    ->middleware('throttle:30,1')
+    ->where('code', '[a-z0-9]{32}')
+    ->name('learning.certificates.credential');
+Route::get('lernen/aussteller/{keyId}.json', [\App\Http\Controllers\Learning\CertificateVerificationController::class, 'issuerKey'])
+    ->middleware('throttle:60,1')
+    ->where('keyId', '[a-z0-9]{24}')
+    ->name('learning.certificates.issuer-key');
+
+// Dasselbe Zertifikat als VC-JWT (Open Badges 3.0, JWT-Weg). Die
+// eingebettete Data-Integrity-Form braucht RDF-Kanonisierung, für die es in
+// PHP keine Implementierung gibt — deshalb der zweite Standardweg.
+Route::get('zertifikat/{code}/jwt', [\App\Http\Controllers\Learning\CertificateVerificationController::class, 'credentialJwt'])
+    ->name('learning.certificates.credential-jwt');
+
 // Kundenportal-Annahme eines Angebots (Feature 066, MVP-170): token-basiert
 // ohne Login (nur der SHA-256-Hash ist gespeichert); ungültig/fehlend ⇒ 404.
 // Bewusst außerhalb von auth/EnforcePlanModules; Throttle gegen Brute-Force.
@@ -211,15 +252,19 @@ Route::middleware('auth')->group(function () {
     // Zwei-Faktor-Authentifizierung (Selbstverwaltung).
     Route::get('account/two-factor', [TwoFactorController::class, 'show'])->name('account.2fa.show');
     Route::post('account/two-factor', [TwoFactorController::class, 'enable'])->name('account.2fa.enable');
-    Route::post('account/two-factor/confirm', [TwoFactorController::class, 'confirm'])->name('account.2fa.confirm');
-    Route::post('account/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->name('account.2fa.recovery');
+    // throttle: die Code-prüfenden Routen liefen ohne Limit — ~330k Versuche
+    // treffen im Mittel einen gültigen TOTP-Code, und die
+    // Wiederherstellungscodes kommen im Klartext zurück (Sicherheitsscan
+    // 2026-08-23, S-17).
+    Route::post('account/two-factor/confirm', [TwoFactorController::class, 'confirm'])->middleware('throttle:6,1')->name('account.2fa.confirm');
+    Route::post('account/two-factor/recovery-codes', [TwoFactorController::class, 'regenerateRecoveryCodes'])->middleware('throttle:6,1')->name('account.2fa.recovery');
     Route::post('account/two-factor/email', [TwoFactorController::class, 'enableEmail'])->name('account.2fa.email.enable');
     Route::post('account/two-factor/email/resend', [TwoFactorController::class, 'resendEmailCode'])->name('account.2fa.email.resend');
     Route::post('account/two-factor/email/confirm', [TwoFactorController::class, 'confirmEmail'])->name('account.2fa.email.confirm');
     Route::post('account/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->name('account.2fa.webauthn.options');
     Route::post('account/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->name('account.2fa.webauthn.register');
-    Route::delete('account/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->name('account.2fa.credential.destroy');
-    Route::delete('account/two-factor', [TwoFactorController::class, 'disable'])->name('account.2fa.disable');
+    Route::delete('account/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->middleware('throttle:6,1')->name('account.2fa.credential.destroy');
+    Route::delete('account/two-factor', [TwoFactorController::class, 'disable'])->middleware('throttle:6,1')->name('account.2fa.disable');
 
     Route::get('account/profile', [ProfileController::class, 'edit'])->name('account.profile.edit');
     Route::put('account/profile', [ProfileController::class, 'update'])->name('account.profile.update');
@@ -2843,6 +2888,180 @@ Route::middleware('auth')->group(function () {
             Route::delete('soll/{assignment}', [\App\Http\Controllers\Training\TrainingAssignmentController::class, 'destroy'])->name('assignments.destroy');
         });
 
+        // ── Lernplattform (Feature 149, MVP-735): Kurskatalog und Kursakte ──
+        // Die Freigabe friert den Inhalt ein und spiegelt die Kursversion in
+        // den Schulungskatalog (145) — einzige Schreibrichtung. Rechte
+        // learning.viewAny/author/release/manage, Plan-Modul module.lms.
+        Route::prefix('lernen')->name('learning.')->group(function (): void {
+            Route::get('kurse', [\App\Http\Controllers\Learning\LearningCourseController::class, 'index'])->name('courses.index');
+            Route::get('kurse/create', [\App\Http\Controllers\Learning\LearningCourseController::class, 'create'])->name('courses.create');
+            Route::post('kurse', [\App\Http\Controllers\Learning\LearningCourseController::class, 'store'])->name('courses.store');
+            Route::get('kurse/{course}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'show'])->name('courses.show');
+            Route::get('kurse/{course}/edit', [\App\Http\Controllers\Learning\LearningCourseController::class, 'edit'])->name('courses.edit');
+            Route::put('kurse/{course}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'update'])->name('courses.update');
+            Route::delete('kurse/{course}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'destroy'])->name('courses.destroy');
+            // Datenhoheit (MVP-748): ein Kurs muss das Haus verlassen können.
+            Route::get('kurse/{course}/export', [\App\Http\Controllers\Learning\LearningCourseController::class, 'exportCourse'])->name('courses.export');
+            Route::post('kurse/import', [\App\Http\Controllers\Learning\LearningCourseController::class, 'importCourse'])->name('courses.import');
+
+            Route::get('kurse/{course}/abschnitte/create', [\App\Http\Controllers\Learning\LearningCourseController::class, 'createSection'])->name('courses.sections.create');
+            Route::post('kurse/{course}/abschnitte', [\App\Http\Controllers\Learning\LearningCourseController::class, 'storeSection'])->name('courses.sections.store');
+            Route::get('kurse/{course}/einheiten/create', [\App\Http\Controllers\Learning\LearningCourseController::class, 'createUnit'])->name('courses.units.create');
+            Route::post('kurse/{course}/einheiten', [\App\Http\Controllers\Learning\LearningCourseController::class, 'storeUnit'])->name('courses.units.store');
+
+            // Autorenwerkzeug (MVP-736): Inhaltsblöcke einer Lerneinheit.
+            Route::get('kurse/{course}/einheiten/{unit}/bearbeiten', [\App\Http\Controllers\Learning\LearningCourseController::class, 'editUnit'])->name('courses.units.edit');
+            Route::put('kurse/{course}/einheiten/{unit}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'updateUnit'])->name('courses.units.update');
+            Route::post('kurse/{course}/einheiten/{unit}/bloecke', [\App\Http\Controllers\Learning\LearningCourseController::class, 'storeBlock'])->name('courses.units.blocks.store');
+            Route::delete('kurse/{course}/einheiten/{unit}/bloecke/{index}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'destroyBlock'])->whereNumber('index')->name('courses.units.blocks.destroy');
+            Route::post('kurse/{course}/einheiten/{unit}/bloecke/{index}/verschieben', [\App\Http\Controllers\Learning\LearningCourseController::class, 'moveBlock'])->whereNumber('index')->name('courses.units.blocks.move');
+
+            // Prüfungs-Editor (MVP-738).
+            Route::get('kurse/{course}/einheiten/{unit}/pruefung', [\App\Http\Controllers\Learning\LearningCourseController::class, 'editQuiz'])->name('courses.units.quiz.edit');
+            Route::put('kurse/{course}/einheiten/{unit}/pruefung', [\App\Http\Controllers\Learning\LearningCourseController::class, 'updateQuiz'])->name('courses.units.quiz.update');
+            Route::post('kurse/{course}/einheiten/{unit}/pruefung/fragen', [\App\Http\Controllers\Learning\LearningCourseController::class, 'storeQuestion'])->name('courses.units.quiz.questions.store');
+            Route::delete('kurse/{course}/einheiten/{unit}/pruefung/fragen/{question}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'destroyQuestion'])->name('courses.units.quiz.questions.destroy');
+
+            // Teilnehmerliste eines Präsenztermins (MVP-741): QR für den
+            // Selbst-Check-in plus Unterschriftenspalte als Papier-Rückfall.
+            Route::get('kurse/{course}/einheiten/{unit}/teilnehmerliste', [\App\Http\Controllers\Learning\LearningCourseController::class, 'attendanceList'])->name('courses.units.attendance-list');
+
+            // Medien eines Inhaltsblocks für die Autoren-Vorschau (MVP-736).
+            Route::get('kurse/{course}/einheiten/{unit}/medien/{attachment}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'unitMedia'])->name('courses.units.media');
+
+            // Untertitelspur zu einem Video (Feature 150): WebVTT von Hand.
+            Route::post('kurse/{course}/einheiten/{unit}/medien/{attachment}/untertitel', [\App\Http\Controllers\Learning\LearningCourseController::class, 'storeSubtitle'])->name('courses.units.subtitles.store');
+            // Maschinelle Spur (Feature 150): Whisper lokal, Ergebnis ist ein
+            // Entwurf — die Freigabe ist eine eigene, bewusste Handlung.
+            Route::post('kurse/{course}/einheiten/{unit}/medien/{attachment}/untertitel/erzeugen', [\App\Http\Controllers\Learning\LearningCourseController::class, 'transcribeSubtitle'])->name('courses.units.subtitles.transcribe');
+            Route::post('kurse/{course}/einheiten/{unit}/untertitel/{rendition}/durchgesehen', [\App\Http\Controllers\Learning\LearningCourseController::class, 'reviewSubtitle'])->name('courses.units.subtitles.review');
+            Route::delete('kurse/{course}/einheiten/{unit}/untertitel/{rendition}', [\App\Http\Controllers\Learning\LearningCourseController::class, 'destroySubtitle'])->name('courses.units.subtitles.destroy');
+
+            // Kursübersetzung (MVP-748): eine Lesehilfe an derselben
+            // Kursversion — maßgeblich bleibt die Ausgangssprache, und
+            // angezeigt wird erst nach Freigabe durch einen Menschen.
+            Route::post('kurse/{course}/uebersetzen', [\App\Http\Controllers\Learning\LearningCourseController::class, 'translate'])->name('courses.translate');
+            Route::post('kurse/{course}/uebersetzungen/{translation}/freigeben', [\App\Http\Controllers\Learning\LearningCourseController::class, 'approveTranslation'])->name('courses.translations.approve');
+
+            // SCORM-Import (MVP-743): Paket an eine Einheit der Art „SCORM" hängen.
+            Route::post('kurse/{course}/einheiten/{unit}/scorm', [\App\Http\Controllers\Learning\LearningScormController::class, 'import'])->name('courses.units.scorm.import');
+
+            // Aufgaben-Editor (MVP-739).
+            Route::get('kurse/{course}/einheiten/{unit}/aufgabe', [\App\Http\Controllers\Learning\LearningCourseController::class, 'editAssignment'])->name('courses.units.assignment.edit');
+            Route::put('kurse/{course}/einheiten/{unit}/aufgabe', [\App\Http\Controllers\Learning\LearningCourseController::class, 'updateAssignment'])->name('courses.units.assignment.update');
+
+            // Betreuer-Cockpit (MVP-739): offene Bewertungen an einer Stelle.
+            Route::get('bewertungen', [\App\Http\Controllers\Learning\LearningGradingController::class, 'index'])->name('grading.index');
+            Route::get('bewertungen/abgaben/{submission}', [\App\Http\Controllers\Learning\LearningGradingController::class, 'showSubmission'])->name('grading.submission');
+            Route::get('bewertungen/abgaben/{submission}/dateien/{attachment}', [\App\Http\Controllers\Learning\LearningGradingController::class, 'submissionFile'])->name('grading.submission.file');
+            Route::post('bewertungen/abgaben/{submission}/bewerten', [\App\Http\Controllers\Learning\LearningGradingController::class, 'gradeSubmission'])->name('grading.submission.grade');
+            Route::post('bewertungen/abgaben/{submission}/zurueckgeben', [\App\Http\Controllers\Learning\LearningGradingController::class, 'returnSubmission'])->name('grading.submission.return');
+            Route::post('bewertungen/abgaben/{submission}/bestaetigen', [\App\Http\Controllers\Learning\LearningGradingController::class, 'confirmSubmission'])->name('grading.submission.confirm');
+            Route::post('bewertungen/aufsaetze/{answer}', [\App\Http\Controllers\Learning\LearningGradingController::class, 'gradeEssay'])->name('grading.essay');
+
+            // Lernpfade (MVP-745): Reihenfolge mit Fristen für die
+            // Einarbeitung — kein zweiter Pflichtkatalog, das Soll bleibt
+            // bei Feature 145.
+            Route::get('lernpfade', [\App\Http\Controllers\Learning\LearningPathController::class, 'index'])->name('paths.index');
+            Route::post('lernpfade', [\App\Http\Controllers\Learning\LearningPathController::class, 'store'])->name('paths.store');
+            Route::post('lernpfade/zuweisen', [\App\Http\Controllers\Learning\LearningPathController::class, 'assignByRole'])->name('paths.assign-by-role');
+            Route::get('lernpfade/{path}', [\App\Http\Controllers\Learning\LearningPathController::class, 'show'])->name('paths.show');
+            Route::post('lernpfade/{path}/stationen', [\App\Http\Controllers\Learning\LearningPathController::class, 'storeItem'])->name('paths.items.store');
+            Route::delete('lernpfade/{path}/stationen/{item}', [\App\Http\Controllers\Learning\LearningPathController::class, 'destroyItem'])->name('paths.items.destroy');
+            Route::post('lernpfade/{path}/zuweisen', [\App\Http\Controllers\Learning\LearningPathController::class, 'assign'])->name('paths.assign');
+
+            // Nachweismappe (MVP-750): stichtagsfähige Auskunft. Aggregiert
+            // ist die Vorgabe; namentlich braucht einen Anlass und wird
+            // protokolliert (learning.dossierDisclosed).
+            Route::get('nachweismappe', [\App\Http\Controllers\Learning\LearningDossierController::class, 'index'])->name('dossier.index');
+            Route::get('nachweismappe/pdf', [\App\Http\Controllers\Learning\LearningDossierController::class, 'pdf'])->name('dossier.pdf');
+            Route::get('nachweismappe/json', [\App\Http\Controllers\Learning\LearningDossierController::class, 'json'])->name('dossier.json');
+
+            // Lernzeit-Freigaben (MVP-749): erst die Zusage macht daraus
+            // Arbeitszeit.
+            Route::get('lernzeit-freigaben', [\App\Http\Controllers\Learning\LearningGradingController::class, 'timeApprovals'])->name('time-approvals.index');
+            Route::post('lernzeit-freigaben/{session}/zusagen', [\App\Http\Controllers\Learning\LearningGradingController::class, 'approveTime'])->name('time-approvals.approve');
+            Route::post('lernzeit-freigaben/{session}/ablehnen', [\App\Http\Controllers\Learning\LearningGradingController::class, 'rejectTime'])->name('time-approvals.reject');
+
+            // Kursbuchungen (MVP-744): Arbeitsliste der Anfragen.
+            Route::get('buchungen', [\App\Http\Controllers\Learning\LearningBookingController::class, 'index'])->name('bookings.index');
+            Route::post('buchungen/{booking}/zusagen', [\App\Http\Controllers\Learning\LearningBookingController::class, 'confirm'])->name('bookings.confirm');
+            Route::post('buchungen/{booking}/absagen', [\App\Http\Controllers\Learning\LearningBookingController::class, 'reject'])->name('bookings.reject');
+            Route::post('buchungen/{booking}/abgerechnet', [\App\Http\Controllers\Learning\LearningBookingController::class, 'markBilled'])->name('bookings.billed');
+
+            Route::post('kurse/{course}/pruefung', [\App\Http\Controllers\Learning\LearningCourseController::class, 'submitReview'])->name('courses.submit-review');
+            Route::post('kurse/{course}/freigabe', [\App\Http\Controllers\Learning\LearningCourseController::class, 'release'])->name('courses.release');
+            Route::post('kurse/{course}/wieder-oeffnen', [\App\Http\Controllers\Learning\LearningCourseController::class, 'reopen'])->name('courses.reopen');
+            Route::post('kurse/{course}/archivieren', [\App\Http\Controllers\Learning\LearningCourseController::class, 'archive'])->name('courses.archive');
+        });
+
+        // „Meine Schulungen" + Lern-Player (Feature 149, MVP-737). Bewusst
+        // OHNE Plan-Gate und ohne eigenes Recht: der Zugriff hängt an der
+        // eigenen Einschreibung, damit eine Pflichtunterweisung nie an der
+        // Lizenzstufe scheitert.
+        Route::prefix('meine-schulungen')->name('learning.my.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Learning\MyLearningController::class, 'index'])->name('index');
+            Route::get('{enrollment}', [\App\Http\Controllers\Learning\MyLearningController::class, 'show'])->name('show');
+            Route::post('{enrollment}/einheiten/{unit}/erledigt', [\App\Http\Controllers\Learning\MyLearningController::class, 'completeUnit'])->name('units.complete');
+            // Lernzeit (MVP-749): Start prüft die Zeitpolitik des Kurses,
+            // Stopp ordnet die Sitzung ein und legt außerhalb der Arbeitszeit
+            // eine Anwesenheitsspanne an.
+            Route::post('{enrollment}/lernzeit/start', [\App\Http\Controllers\Learning\MyLearningController::class, 'startTime'])->name('time.start');
+            // Lebenszeichen (MVP-749): begrenzt die gebuchte Zeit auf das,
+            // was nachweislich benutzt wurde.
+            Route::post('{enrollment}/lernzeit/puls', [\App\Http\Controllers\Learning\MyLearningController::class, 'heartbeat'])->name('time.heartbeat');
+            Route::post('{enrollment}/lernzeit/stop', [\App\Http\Controllers\Learning\MyLearningController::class, 'stopTime'])->name('time.stop');
+            // Prüfungen (MVP-738): online-pflichtig, ein offener Versuch je Prüfung.
+            Route::post('{enrollment}/pruefungen/{quiz}/start', [\App\Http\Controllers\Learning\MyLearningController::class, 'startQuiz'])->name('quiz.start');
+            Route::get('{enrollment}/versuche/{attempt}', [\App\Http\Controllers\Learning\MyLearningController::class, 'showQuiz'])->name('quiz.show');
+            Route::post('{enrollment}/versuche/{attempt}/abgeben', [\App\Http\Controllers\Learning\MyLearningController::class, 'submitQuiz'])->name('quiz.submit');
+            Route::post('{enrollment}/aufgaben/{assignment}/abgeben', [\App\Http\Controllers\Learning\MyLearningController::class, 'submitAssignment'])->name('assignments.submit');
+            // Zertifikat als PDF (MVP-740): der Ausdruck ist eine Kopie,
+            // maßgeblich bleibt der Datensatz mit seinem Prüfcode.
+            Route::get('{enrollment}/zertifikat', [\App\Http\Controllers\Learning\MyLearningController::class, 'certificate'])->name('certificate');
+
+            // SCORM-Player + xAPI (MVP-743). Die Inhaltsdateien laufen
+            // gleichursprünglich (der Inhalt braucht window.parent.API) und
+            // bekommen deshalb eine eigene, enge CSP ohne Netzwerkziele.
+            Route::get('{enrollment}/einheiten/{unit}/scorm', [\App\Http\Controllers\Learning\LearningScormController::class, 'play'])->name('scorm.play');
+            Route::get('{enrollment}/einheiten/{unit}/scorm/inhalt/{path?}', [\App\Http\Controllers\Learning\LearningScormController::class, 'asset'])->where('path', '.*')->name('scorm.asset');
+            Route::post('{enrollment}/einheiten/{unit}/scorm/commit', [\App\Http\Controllers\Learning\LearningScormController::class, 'commit'])->name('scorm.commit');
+            Route::post('{enrollment}/xapi', [\App\Http\Controllers\Learning\LearningScormController::class, 'xapi'])->name('xapi.store');
+
+            // Bild einer Bildmarkierungsfrage (MVP-738): geprüft gegen den
+            // Versuch, damit die Route kein Leseschlüssel wird.
+            Route::get('{enrollment}/versuche/{attempt}/fragen/{question}/bild', [\App\Http\Controllers\Learning\MyLearningController::class, 'questionImage'])->name('questions.image');
+
+            // Abgeleitete Videofassung, Vorschaubild oder Untertitel
+            // (Feature 150) — gleiche Prüfung wie beim Original.
+            Route::get('{enrollment}/einheiten/{unit}/medien/fassung/{rendition}', [\App\Http\Controllers\Learning\MyLearningController::class, 'renditionMedia'])->name('units.rendition');
+
+            // Kursinhalt zum Offline-Lesen (MVP-748). Liefert nur Texte —
+            // Prüfungen und Medien bleiben online.
+            Route::get('{enrollment}/offline', [\App\Http\Controllers\Learning\MyLearningController::class, 'offlineBundle'])->name('offline');
+
+            // Medien eines Inhaltsblocks (MVP-736): geprüft gegen Einheit
+            // und eigene Einschreibung.
+            Route::get('{enrollment}/einheiten/{unit}/medien/{attachment}', [\App\Http\Controllers\Learning\MyLearningController::class, 'unitMedia'])->name('units.media');
+
+            // Abgabedateien (MVP-739): eigener Download-Weg, der den Anhang
+            // gegen die Abgabe prüft — sonst wäre die Route ein Leseschlüssel
+            // auf jede Datei der Anwendung.
+            Route::get('{enrollment}/abgaben/{submission}/dateien/{attachment}', [\App\Http\Controllers\Learning\MyLearningController::class, 'submissionFile'])->name('submissions.file');
+
+            // Präsenztermine (MVP-741): Anmeldung, Warteliste, Absage.
+            Route::post('{enrollment}/termine/{unit}/anmelden', [\App\Http\Controllers\Learning\MyLearningController::class, 'registerEvent'])->name('events.register');
+            Route::post('{enrollment}/termine/{unit}/absagen', [\App\Http\Controllers\Learning\MyLearningController::class, 'cancelEvent'])->name('events.cancel');
+        });
+
+        // QR-Check-in am Präsenztermin (Feature 149, MVP-741). Der Link ist
+        // befristet signiert und öffnet nur ein Zeitfenster um den Termin —
+        // bestätigt wird per POST, nie beim bloßen Aufruf.
+        Route::get('lernen/checkin/{unit}', [\App\Http\Controllers\Learning\LearningCheckInController::class, 'show'])
+            ->middleware('signed')->name('learning.checkin.show');
+        Route::post('lernen/checkin/{unit}', [\App\Http\Controllers\Learning\LearningCheckInController::class, 'store'])
+            ->name('learning.checkin.store');
+
         // ── Kommunikationsnotizen (MVP-012) ────────────────────────────────
         Route::get('communication-notes/create', [CommunicationNoteController::class, 'create'])->name('communication-notes.create');
         Route::post('communication-notes', [CommunicationNoteController::class, 'store'])->name('communication-notes.store');
@@ -3593,6 +3812,9 @@ Route::middleware('auth')->group(function () {
         Route::get('reports/safety', [\App\Http\Controllers\Reporting\SafetyReportController::class, 'index'])->name('reports.safety');
         // Schulungs-Auswertung (Feature 145): Erfüllungsgrad je Team/Rolle/Kurs.
         Route::get('reports/schulungen', [\App\Http\Controllers\Reporting\TrainingReportController::class, 'index'])->name('reports.training');
+        // Kursanalyse (Feature 149, MVP-747): Quoten und Auffälligkeiten,
+        // keine Personenprofile.
+        Route::get('reports/lernen', [\App\Http\Controllers\Reporting\LearningReportController::class, 'index'])->name('reports.learning');
         // Prozedur-Abweichungen (Feature 026, MVP-713): Recht procedure.deviation.view im Controller.
         Route::get('reports/prozeduren/abweichungen', [\App\Http\Controllers\Reporting\ProcedureDeviationReportController::class, 'index'])
             ->name('reports.procedure-deviations');

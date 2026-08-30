@@ -196,6 +196,34 @@ return [
         // Zielschemas mit abschließender Werteliste; das Rückmapping auf
         // DocumentType verwirft Unbekanntes (Katalog-Garantie). Dokumente
         // können PII enthalten → hoch (wie invoicing.document_extraction).
+        // Lernplattform (Feature 149, MVP-746). Alle drei Fähigkeiten
+        // erzeugen ausschließlich ENTWÜRFE und Erklärungen: die KI bewertet
+        // keine Prüfungen und trifft keine Zugangsentscheidungen — das wäre
+        // Anhang III Nr. 3 der KI-VO (Hochrisiko).
+        'learning.course_outline' => [
+            'verb' => 'formulate',
+            'sensitivity' => 'low',
+            'data_classes' => ['kursinhalt'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
+        'learning.question_draft' => [
+            'verb' => 'formulate',
+            'sensitivity' => 'low',
+            'data_classes' => ['kursinhalt'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
+        // Lerntutor: antwortet NUR aus dem freigegebenen Kursinhalt. Die
+        // Frage der lernenden Person ist personenbezogen, der Kursinhalt
+        // nicht — deshalb mittlere Empfindlichkeit.
+        'learning.tutor' => [
+            'verb' => 'explain',
+            'sensitivity' => 'medium',
+            'data_classes' => ['kursinhalt', 'lernerfrage'],
+            'memory_scopes' => [],
+            'prompt_version' => 1,
+        ],
         'dms.classify_extract' => [
             'verb' => 'extract',
             'sensitivity' => 'high',

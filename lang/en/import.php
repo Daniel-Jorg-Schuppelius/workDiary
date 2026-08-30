@@ -63,6 +63,7 @@ return [
     ],
 
     'error' => [
+        'email_taken' => 'This email address is already taken.',
         'required' => 'Required field :field is missing.',
         'tooLong' => 'Field :field exceeds maximum length of :max characters.',
         'header' => [

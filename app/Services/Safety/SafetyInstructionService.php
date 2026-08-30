@@ -51,6 +51,9 @@ class SafetyInstructionService {
                 'hazard_assessment_id' => $attributes['hazard_assessment_id'] ?? null,
                 'training_course_id' => $attributes['training_course_id'] ?? null,
                 'training_course_version_id' => $attributes['training_course_version_id'] ?? null,
+                // Geräteeinweisung (Feature 149): ohne den Zeiger wäre nur
+                // dokumentiert, DASS unterwiesen wurde, nicht WORAN.
+                'asset_id' => $attributes['asset_id'] ?? null,
                 'held_on' => $attributes['held_on'],
                 'instructor_user_id' => $attributes['instructor_user_id'] ?? $creator->id,
                 'repeat_interval_months' => $attributes['repeat_interval_months'] ?? null,

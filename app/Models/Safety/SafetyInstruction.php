@@ -32,6 +32,7 @@ use Illuminate\Support\Carbon;
  * @property int|null $hazard_assessment_id
  * @property int|null $training_course_id
  * @property int|null $training_course_version_id
+ * @property int|null $asset_id
  * @property Carbon $held_on
  * @property int|null $instructor_user_id
  * @property int|null $repeat_interval_months
@@ -55,6 +56,7 @@ class SafetyInstruction extends Model {
         'hazard_assessment_id',
         'training_course_id',
         'training_course_version_id',
+        'asset_id',
         'held_on',
         'instructor_user_id',
         'repeat_interval_months',

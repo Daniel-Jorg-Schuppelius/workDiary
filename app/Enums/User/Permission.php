@@ -437,6 +437,16 @@ enum Permission: string implements HasLabel {
     case TrainingViewAny = 'training.viewAny';
     case TrainingManage = 'training.manage';
 
+        // ── Lernplattform (Feature 149) ────────────────────────────────────
+        // Der Zugriff auf die EIGENEN Kurse folgt der Einschreibung und
+        // braucht kein Recht (wie „Meine Schulungen"); diese Rechte regeln
+        // ausschließlich fremde Fortschritte, Autorenschaft und Freigabe.
+    case LearningViewAny = 'learning.viewAny';
+    case LearningAuthor = 'learning.author';
+    case LearningRelease = 'learning.release';
+    case LearningGrade = 'learning.grade';
+    case LearningManage = 'learning.manage';
+
         // ── Benachrichtigungsregeln (MVP-018) ──────────────────────────────
     case NotificationRuleViewAny = 'notificationRule.viewAny';
     case NotificationRuleUpdate = 'notificationRule.update';

@@ -374,14 +374,27 @@ class DayCloseService {
         if (! $owner instanceof User || $attendance->date === null) {
             return false;
         }
-        $day = CarbonImmutable::instance($attendance->date);
 
-        $closure = $this->find($owner, $day);
+        return $this->dayLockedFor($owner, CarbonImmutable::instance($attendance->date));
+    }
+
+    /**
+     * Ist der Tag für Stempelungen dieses Mitarbeiters gesperrt?
+     *
+     * Wie {@see attendanceEditLocked()}, aber auf einem **Datum** statt auf
+     * einer vorhandenen Stempelung — damit auch das **Anlegen** geprüft werden
+     * kann. Genau das fehlte im Offline-Sync: dort entstanden neue
+     * Stempelungen in längst freigegebenen Monaten (Sicherheitsscan
+     * 2026-08-23, S-09).
+     */
+    public function dayLockedFor(User $user, CarbonImmutable $day): bool {
+        $closure = $this->find($user, $day);
+
         if ($closure instanceof DayClosure && (! $closure->isOpen() || $closure->attendance_locked)) {
             return true;
         }
 
-        return $this->isMonthLocked($owner, $day);
+        return $this->isMonthLocked($user, $day);
     }
 
     // ── intern ─────────────────────────────────────────────────────────

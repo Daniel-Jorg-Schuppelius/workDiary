@@ -49,4 +49,48 @@ final class SsrfGuardTest extends TestCase {
         $this->expectException(RuntimeException::class);
         ZammadClientGateway::forConnection($connection);
     }
+
+    // ── Zentrale Schranke der Plugin-Factory (S-10, 2026-08-30) ─────────
+    //
+    // Vorher hatte jedes Gateway seinen eigenen Guard — acht Plugins hatten
+    // gar keinen. Jetzt kommt keiner mehr an der Factory vorbei.
+
+    /** @return array<string, array{0: string}> */
+    public static function internalTargetProvider(): array {
+        return [
+            'Loopback' => ['http://127.0.0.1:8080/api'],
+            'privates Netz' => ['http://10.0.0.5/api'],
+            'Metadatendienst' => ['http://169.254.169.254/latest/meta-data/'],
+            'Hex-Schreibweise' => ['http://0xa9fea9fe/latest/meta-data/'],
+        ];
+    }
+
+    #[\PHPUnit\Framework\Attributes\DataProvider('internalTargetProvider')]
+    public function test_plugin_factory_weist_interne_ziele_ab(string $baseUrl): void {
+        $this->expectException(RuntimeException::class);
+
+        app(\App\Plugins\Support\PluginHttpFactory::class)->client('kimai', $baseUrl);
+    }
+
+    public function test_plugin_factory_laesst_oeffentliche_ziele_durch(): void {
+        // Gegenprobe — sonst wäre die Schranke nur ein Ausschalter.
+        $client = app(\App\Plugins\Support\PluginHttpFactory::class)->client('kimai', 'https://kimai.example.com');
+
+        $this->assertInstanceOf(PluginApiClient::class, $client);
+    }
+
+    public function test_selbst_gehostetes_ziel_braucht_das_opt_in(): void {
+        // Wer eine eigene Instanz betreibt, sagt es ausdrücklich.
+        $client = app(\App\Plugins\Support\PluginHttpFactory::class)
+            ->client('kimai', 'http://10.0.0.5/api', allowPrivateNetwork: true);
+
+        $this->assertInstanceOf(PluginApiClient::class, $client);
+    }
+
+    public function test_kern_dienste_laufen_durch_dieselbe_schranke(): void {
+        $this->expectException(RuntimeException::class);
+
+        app(\App\Plugins\Support\PluginHttpFactory::class)->coreClient('csaf', 'http://127.0.0.1/provider-metadata.json');
+    }
+
 }

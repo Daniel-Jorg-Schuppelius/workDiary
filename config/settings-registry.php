@@ -222,9 +222,16 @@ return [
     'routing.nominatim.email' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'email|max:255'],
     'routing.nominatim.rate_limit_per_sec' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:50'],
     'routing.osrm.base_url' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'url|max:255'],
+    // Auditiertes SSRF-Opt-in: Nominatim/OSRM laufen häufig selbst gehostet im
+    // eigenen Netz. Ohne diesen Schalter weist die zentrale Schranke der
+    // PluginHttpFactory private Ziele ab (Sicherheitsscan 2026-08-23, S-10).
+    'routing.allow_private_network' => ['type' => 'boolean', 'scopes' => ['organization']],
     'routing.osrm.profile' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:32'],
     'routing.osrm.timeout' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:120'],
-    'routing.tiles.url' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:255'],
+    // 'url' wie bei nominatim/osrm: der Wert landet als Origin in der
+    // CSP jeder Antwort der Organisation (Sicherheitsscan 2026-08-23, S-05).
+    // Die Platzhalter {z}/{x}/{y} im Pfad stören die Regel nicht.
+    'routing.tiles.url' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'url|max:255'],
     'routing.tiles.max_zoom' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:1|max:22'],
 
     // --- Zeiterfassung/Feiertage/Anwesenheit ---

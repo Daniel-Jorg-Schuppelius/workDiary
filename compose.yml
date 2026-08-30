@@ -6,7 +6,7 @@
 #   docker compose up -d
 #   docker compose exec app php artisan app:admin --platform
 #
-# Dienste: app (php-fpm), web (nginx), db (MariaDB 11), queue, scheduler.
+# Dienste: app (php-fpm), web (nginx), db (MariaDB 11), queue, media, scheduler.
 # Profile: redis (CACHE_STORE/QUEUE_CONNECTION=redis), reverb (WebSocket).
 # Alle App-Dienste teilen das storage-Volume; bootstrap/cache ist je Container
 # ein anonymes Volume (Caches baut der Entrypoint bei jedem Start neu).
@@ -23,6 +23,7 @@ x-app: &app
       WD_WITH_LIBREOFFICE: ${WD_WITH_LIBREOFFICE:-0}
       WD_WITH_JAVA: ${WD_WITH_JAVA:-0}
       WD_WITH_INOTIFY: ${WD_WITH_INOTIFY:-0}
+      WD_WITH_FFMPEG: ${WD_WITH_FFMPEG:-0}
   env_file: .env.docker
   restart: unless-stopped
   volumes:
@@ -64,6 +65,22 @@ services:
     # Jobs doppelt (config/queue.php). --max-time: Worker lädt Code/Caches neu.
     command: ["php", "artisan", "queue:work", "--tries=3", "--timeout=600", "--sleep=3", "--max-time=3600"]
     stop_grace_period: 620s
+    depends_on:
+      db:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+
+  # Medien-Warteschlange (Feature 150). Eigener Dienst, weil ffmpeg minuten-
+  # lang rechnet: in der Standard-Warteschlange blockierte ein 20-Minuten-Video
+  # Mails, Benachrichtigungen und Exporte hinter sich. Eigene *Verbindung*
+  # (queue:work media), weil retry_after pro Verbindung gilt — sonst stellt der
+  # Treiber das laufende Transcoding nach 630 s ein zweites Mal zu.
+  # Braucht ffmpeg im Bild: WD_WITH_FFMPEG=1 beim Build.
+  media:
+    <<: *app
+    command: ["php", "artisan", "queue:work", "media", "--queue=media", "--tries=1", "--timeout=3600", "--sleep=5", "--max-time=7200"]
+    stop_grace_period: 3620s
     depends_on:
       db:
         condition: service_healthy

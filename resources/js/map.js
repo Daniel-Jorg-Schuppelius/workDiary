@@ -73,9 +73,27 @@ function makeMarker(m) {
         marker.bindPopup(String(m.popup));
     }
     if (m.label) {
-        marker.bindTooltip(String(m.label));
+        marker.bindTooltip(textNode(m.label));
     }
     return marker;
+}
+
+/**
+ * Beschriftung als Textknoten statt als String.
+ *
+ * Leaflet rendert String-Inhalte in `DivOverlay._updateContent()` über
+ * `node.innerHTML` — ungefiltert. Die Beschriftungen kommen aus Kunden-,
+ * Standort-, Auftrags- und Tournamen, also aus Feldern, die jedes Mitglied
+ * mit Schreibrecht setzt (Sicherheitsscan 2026-08-23, S-18). Ein
+ * HTMLElement nimmt Leaflet unverändert entgegen; `textContent` kann per
+ * Definition kein Markup erzeugen. Die Popups waren serverseitig escaped,
+ * die Tooltips nicht.
+ */
+function textNode(value) {
+    const span = document.createElement("span");
+    span.textContent = String(value);
+
+    return span;
 }
 
 export function initMap(el, overrides = {}) {
@@ -139,7 +157,7 @@ export function initMap(el, overrides = {}) {
                 },
             });
             if (r.label) {
-                line.bindTooltip(String(r.label), { sticky: true });
+                line.bindTooltip(textNode(r.label), { sticky: true });
             }
             line.addTo(ensureGroup(r.layer || "tours"));
             layers.routes.push(line);
@@ -193,7 +211,7 @@ export function initMap(el, overrides = {}) {
 export function addMarker(handle, lat, lng, label) {
     if (!handle || !handle.map) return null;
     const marker = L.marker([lat, lng]).addTo(handle.map);
-    if (label) marker.bindTooltip(String(label));
+    if (label) marker.bindTooltip(textNode(label));
     handle.layers.markers.push(marker);
     fitToContent(handle.map, handle.layers);
     return marker;

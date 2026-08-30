@@ -61,7 +61,7 @@
                 <form method="POST" action="{{ route('recruiting.applications.documents.store', $application) }}" enctype="multipart/form-data" class="my-2 flex flex-wrap items-end gap-2">
                     @csrf
                     <input type="file" name="file" required class="file-input file-input-sm file-input-bordered">
-                    <input name="label" maxlength="200" class="input input-sm input-bordered" placeholder="{{ __('Bezeichnung') }}">
+                    <input aria-label="{{ __('Bezeichnung') }}" name="label" maxlength="200" class="input input-sm input-bordered" placeholder="{{ __('Bezeichnung') }}">
                     <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Ablegen') }}</x-icon-btn>
                 </form>
             @endcan
@@ -149,7 +149,7 @@
                                 <option value="{{ $rating }}">{{ str_repeat('★', $rating) }}</option>
                             @endforeach
                         </select>
-                        <input name="comment" maxlength="2000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Kommentar (intern, verschlüsselt)') }}">
+                        <input aria-label="{{ __('Kommentar (intern, verschlüsselt)') }}" name="comment" maxlength="2000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Kommentar (intern, verschlüsselt)') }}">
                         <x-icon-btn icon="grade" tone="primary" size="sm" type="submit" show-label>{{ __('Bewerten') }}</x-icon-btn>
                     </form>
                 @endunless
@@ -183,7 +183,7 @@
                         <option value="withdrawn">{{ __('Rückzug (Kandidat)') }}</option>
                         <option value="talent_pool">{{ __('Talentpool') }}</option>
                     </select>
-                    <input name="note" maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung') }}">
+                    <input aria-label="{{ __('Anmerkung') }}" name="note" maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung') }}">
                     <label class="label cursor-pointer gap-2">
                         <input type="checkbox" name="talent_pool_consent" value="1" class="checkbox checkbox-sm">
                         <span class="label-text text-xs">{{ __('Ausdrückliche Talentpool-Einwilligung liegt vor') }}</span>
@@ -202,7 +202,7 @@
                 @can('decide', $application)
                     <form method="POST" action="{{ route('recruiting.applications.draft.store', $application) }}" class="flex flex-wrap items-end gap-2">
                         @csrf
-                        <textarea name="qualifications" rows="2" class="textarea textarea-bordered textarea-sm flex-1" placeholder="{{ __('Qualifikationen (eine je Zeile)') }}"></textarea>
+                        <textarea aria-label="{{ __('Qualifikationen (eine je Zeile)') }}" name="qualifications" rows="2" class="textarea textarea-bordered textarea-sm flex-1" placeholder="{{ __('Qualifikationen (eine je Zeile)') }}"></textarea>
                         <x-icon-btn icon="badge" tone="primary" size="sm" type="submit" show-label>{{ __('Entwurf anlegen') }}</x-icon-btn>
                     </form>
                     <p class="mt-2 text-xs text-muted">{{ __('Der Entwurf ist KEIN Live-Konto — erst die bewusste Einladung erzeugt einen Nutzer.') }}</p>

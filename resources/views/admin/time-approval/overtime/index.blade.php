@@ -65,7 +65,7 @@
                                       class="flex items-center gap-1 justify-end flex-wrap"
                                       data-reject-action="{{ route('admin.overtime.reject', $r) }}">
                                     @csrf
-                                    <input type="text" name="note" maxlength="2000"
+                                    <input aria-label="{{ __('Anmerkung (optional)') }}" type="text" name="note" maxlength="2000"
                                            class="input input-xs input-bordered w-40"
                                            placeholder="{{ __('Anmerkung (optional)') }}">
                                     <button class="btn btn-xs btn-success" type="submit">

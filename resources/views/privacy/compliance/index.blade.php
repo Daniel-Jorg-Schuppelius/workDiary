@@ -87,7 +87,7 @@
                                 <select name="status" class="select select-xs select-bordered">
                                     @foreach ($statusOptions as $v => $l)<option value="{{ $v }}" @selected($f->status === $v)>{{ $l }}</option>@endforeach
                                 </select>
-                                <input name="justification" class="input input-xs input-bordered" placeholder="{{ __('Begründung') }}" value="{{ $f->justification }}">
+                                <input aria-label="{{ __('Begründung') }}" name="justification" class="input input-xs input-bordered" placeholder="{{ __('Begründung') }}" value="{{ $f->justification }}">
                                 <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('OK') }}</x-icon-btn>
                             </form>
                         </td>

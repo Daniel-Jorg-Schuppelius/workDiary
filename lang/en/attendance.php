@@ -32,6 +32,7 @@ return [
         'auto_close' => 'Auto close',
         'terminal' => 'Terminal',
         'phone' => 'Phone',
+        'learning' => 'Learning time',
     ],
     'correction' => [
         'action' => [
@@ -39,5 +40,9 @@ return [
             'update' => 'Update',
             'delete' => 'Delete',
         ],
+    ],
+    'error' => [
+        'target_day_locked' => 'The target day is closed or the month released — please request a time correction.',
+        'duration_too_long' => 'A clocking must not exceed :hours hours.',
     ],
 ];

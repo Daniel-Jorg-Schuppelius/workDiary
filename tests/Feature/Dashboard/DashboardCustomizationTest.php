@@ -275,7 +275,10 @@ class DashboardCustomizationTest extends TestCase {
 
         // Alles, was das Preset nicht nennt, bleibt aus.
         $this->assertTrue($resolved['open-times']->hidden);
-        $this->assertTrue($resolved['backup-status']->hidden);
+
+        // Der Sicherungsstand gilt der Installation: für einen Org-Admin steht
+        // die Kachel gar nicht erst zur Wahl (Sicherheitsscan 2026-08-23, S-02).
+        $this->assertArrayNotHasKey('backup-status', $resolved->all());
 
         $this->actingAs($user)->get(route('dashboard'))->assertOk()
             ->assertSee(__('Meine offenen Einträge'))

@@ -1077,4 +1077,94 @@ class DemoShowcaseSeeder {
         }
     }
 
+    /**
+     * Lernplattform-Demo (Feature 149, MVP-748): ein freigegebener Kurs mit
+     * Inhalt, Prüfung und einer laufenden Einschreibung.
+     *
+     * **Bewusst mit Zertifikat und Unterweisungsnachweis**, denn genau der
+     * Rückfluss ist der Produktwert gegenüber einem reinen Kurs-Werkzeug:
+     * der Abschluss landet im Arbeitsschutz-Register, nicht nur im LMS.
+     */
+    public function seedLearning(Organization $organization, ?User $actor): int {
+        if ($actor === null) {
+            return 0;
+        }
+
+        try {
+            $courses = app(\App\Services\Learning\LearningCourseService::class);
+
+            $course = $courses->createCourse($organization, $actor, [
+                'title' => 'Brandschutzunterweisung',
+                'subtitle' => 'Jährliche Pflichtunterweisung nach DGUV Vorschrift 1',
+                'objectives' => "Fluchtwege kennen\nFeuerlöscher richtig einsetzen\nVerhalten im Brandfall",
+                'time_policy' => \App\Enums\Learning\LearningTimePolicy::WorkTimeRequired->value,
+                'instruction_suitability' => \App\Enums\Learning\LearningInstructionSuitability::Supplementary->value,
+                'validity_months' => 12,
+                'certificate_enabled' => true,
+                'creates_instruction_proof' => true,
+                'duration_minutes' => 25,
+            ]);
+
+            $content = app(\App\Services\Learning\LearningContentService::class);
+
+            $intro = $courses->addUnit($course, ['title' => 'Grundlagen', 'duration_minutes' => 10]);
+            $content->appendBlock($intro, \App\Enums\Learning\LearningBlockKind::Heading, ['text' => 'Warum Brandschutz']);
+            $content->appendBlock($intro, \App\Enums\Learning\LearningBlockKind::Text, [
+                'text' => 'Die meisten Brände entstehen durch Elektrogeräte und Nachlässigkeit. '
+                    . 'Wer die Fluchtwege kennt, gewinnt im Ernstfall die entscheidenden Sekunden.',
+            ]);
+            $content->appendBlock($intro, \App\Enums\Learning\LearningBlockKind::Callout, [
+                'text' => 'Fluchtwege sind immer freizuhalten — auch „nur kurz" abgestellte Kisten sind ein Verstoß.',
+                'tone' => 'warning',
+            ]);
+            $content->appendBlock($intro, \App\Enums\Learning\LearningBlockKind::Checklist, [
+                'items' => "Fluchtwegplan am Standort gelesen\nSammelplatz bekannt\nNächsten Feuerlöscher gefunden",
+            ]);
+
+            $examUnit = $courses->addUnit($course, [
+                'title' => 'Abschlussprüfung',
+                'kind' => \App\Enums\Learning\LearningUnitKind::Quiz->value,
+                'duration_minutes' => 10,
+            ]);
+
+            $quiz = \App\Models\Learning\LearningQuiz::query()->create([
+                'organization_id' => $organization->id,
+                'learning_unit_id' => $examUnit->id,
+                'title' => 'Abschlussprüfung',
+                'pass_percent' => 70,
+                'max_attempts' => 3,
+            ]);
+
+            $question = \App\Models\Learning\LearningQuestion::query()->create([
+                'organization_id' => $organization->id,
+                'learning_quiz_id' => $quiz->id,
+                'kind' => \App\Enums\Learning\LearningQuestionKind::Single->value,
+                'prompt' => 'Was tun Sie zuerst, wenn Sie einen Entstehungsbrand entdecken?',
+                'explanation' => 'Menschenrettung geht immer vor Sachwerten.',
+                'points' => 5,
+                'position' => 1,
+            ]);
+
+            foreach ([['Personen warnen und in Sicherheit bringen', true], ['Erst den Laptop retten', false], ['Fenster öffnen', false]] as $index => [$label, $correct]) {
+                $question->options()->create([
+                    'organization_id' => $organization->id,
+                    'label' => $label,
+                    'is_correct' => $correct,
+                    'position' => $index + 1,
+                ]);
+            }
+
+            $courses->release($course->refresh(), $actor);
+
+            // Eine laufende Einschreibung, damit „Meine Schulungen" nicht
+            // leer wirkt.
+            app(\App\Services\Learning\LearningEnrollmentService::class)->enroll($course->refresh(), $actor);
+
+            return 1;
+        } catch (\Throwable $e) {
+            report($e);
+
+            return 0;
+        }
+    }
 }

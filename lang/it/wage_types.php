@@ -39,6 +39,7 @@ return [
         'sftp' => "Caricamento SFTP",
         'sftp_toggle' => "Caricare il file di export via SFTP al completamento",
         'sftp_host' => "Host",
+        'sftp_host_fingerprint' => 'Impronta della chiave host',
         'sftp_port' => "Porta",
         'sftp_username' => "Nome utente",
         'sftp_password' => "Password",
@@ -73,6 +74,7 @@ return [
     ],
 
     'error' => [
+        'sftp_fingerprint_missing' => 'Per l’invio SFTP manca l’impronta della chiave host. Senza di essa il file non viene trasferito.',
         'missing_mappings' => "Export interrotto: le seguenti voci retributive non hanno una voce di destinazione nel programma paghe: :types. Creare una mappatura in «Voci retributive & consegna export» o impostare la voce sulla regola di maggiorazione.",
     ],
 
@@ -90,5 +92,8 @@ return [
         'heading' => "Export tempi per le paghe",
         'body' => "In allegato trovate l'export dei tempi del profilo :profile per il periodo :period.",
         'meta' => ":rows righe · SHA-256 :hash",
+    ],
+    'help' => [
+        'sftp_host_fingerprint' => 'Obbligatoria: lega la connessione al server giusto. Da ricavare con `ssh-keyscan -t rsa <host> | ssh-keygen -lf -`.',
     ],
 ];

@@ -125,6 +125,11 @@ class WageTypeMappingController extends Controller {
             'sftp_username' => ['nullable', 'string', 'max:190', 'required_if:sftp_enabled,1'],
             'sftp_password' => ['nullable', 'string', 'max:255'],
             'sftp_root' => ['nullable', 'string', 'max:190'],
+            // Pflicht, sobald SFTP aktiv ist: ohne Host-Key meldet sich die
+            // Anwendung bei jedem Server an, der antwortet (Sicherheitsscan
+            // 2026-08-23, S-22). Zu ermitteln mit
+            // `ssh-keyscan -t rsa <host>` bzw. `ssh-keygen -lf`.
+            'sftp_host_fingerprint' => ['nullable', 'string', 'max:190', 'required_if:sftp_enabled,1'],
         ], [
             'mail_recipients.required_if' => (string) __('wage_types.validation.recipients_required'),
         ]);
@@ -138,6 +143,7 @@ class WageTypeMappingController extends Controller {
             'mail_recipients' => $recipients === [] ? null : $recipients,
             'sftp_enabled' => (bool) $data['sftp_enabled'],
             'sftp_host' => trim((string) ($data['sftp_host'] ?? '')) ?: null,
+            'sftp_host_fingerprint' => trim((string) ($data['sftp_host_fingerprint'] ?? '')) ?: null,
             'sftp_port' => (int) ($data['sftp_port'] ?? 22) ?: 22,
             'sftp_username' => trim((string) ($data['sftp_username'] ?? '')) ?: null,
             'sftp_root' => trim((string) ($data['sftp_root'] ?? '')) ?: null,

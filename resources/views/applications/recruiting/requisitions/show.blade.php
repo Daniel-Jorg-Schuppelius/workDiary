@@ -58,7 +58,7 @@
                             <option value="{{ $channel }}">{{ __("values.$channel") }}</option>
                         @endforeach
                     </select>
-                    <input name="reference" maxlength="200" class="input input-sm input-bordered" placeholder="{{ __('Referenz/Anzeigen-Nr.') }}">
+                    <input aria-label="{{ __('Referenz/Anzeigen-Nr.') }}" name="reference" maxlength="200" class="input input-sm input-bordered" placeholder="{{ __('Referenz/Anzeigen-Nr.') }}">
                     <input name="expires_at" type="date" class="input input-sm input-bordered" aria-label="{{ __('Läuft ab') }}">
                     <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
                 </form>

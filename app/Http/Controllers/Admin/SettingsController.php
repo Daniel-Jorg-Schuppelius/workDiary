@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, SystemSetting};
 use App\Settings\{SettingDefinition, SettingScope, SettingType, SettingsRegistry};
@@ -30,6 +30,8 @@ use Illuminate\View\View;
  * Registry-Schreibweg; sensible Werte werden maskiert.
  */
 class SettingsController extends Controller {
+    use RequiresPlatformOperator;
+
     use ResolvesCurrentOrganization;
 
     public function __construct(private readonly SettingsRegistry $registry) {}
@@ -37,9 +39,10 @@ class SettingsController extends Controller {
     public function index(Request $request): View {
         Gate::authorize(Permission::PlatformSettingsManage->value);
 
-        $scope = $request->query('scope') === SettingScope::Organization->value
-            ? SettingScope::Organization
-            : SettingScope::System;
+        // Dieselbe Auflösung wie beim Schreiben — die Seite hatte eine eigene
+        // Kopie und zeigte einem Org-Admin damit die System-Einstellungen der
+        // ganzen Installation (Sicherheitsscan 2026-08-23, S-02).
+        $scope = $this->requestedScope($request);
         $organization = $this->currentOrganizationOrNull();
         $search = trim((string) $request->query('q', ''));
 
@@ -169,10 +172,33 @@ class SettingsController extends Controller {
         return $this->registry->definition($key);
     }
 
+    /**
+     * Gewünschter Geltungsbereich — mit Betreiber-Vorbehalt für „System".
+     *
+     * Der System-Scope schreibt in `system_settings` und gilt damit für die
+     * **gesamte Installation** (u. a. `updates.feed_url` und die Webhook-Ziele
+     * der Problemberichte, die serverseitig abgerufen werden). Das ist keine
+     * Mandanten-Einstellung (Sicherheitsscan 2026-08-23, S-02). Zweite
+     * Schranke neben dem entzogenen `platform.*`-Recht: hier hängt eine
+     * Rechteänderung nicht an der Seeder-Ausführung.
+     */
     private function requestedScope(Request $request): SettingScope {
-        return $request->input('scope') === SettingScope::Organization->value
-            ? SettingScope::Organization
-            : SettingScope::System;
+        if ($request->input('scope') === SettingScope::Organization->value) {
+            return SettingScope::Organization;
+        }
+
+        $isOperator = $this->isPlatformOperator();
+
+        // Ohne Betreiber-Kennung bleibt der Blick auf der eigenen
+        // Organisation. Wer den System-Scope ausdrücklich anfordert, bekommt
+        // 403 — wer ihn nur als Vorgabe erbt, seine eigenen Einstellungen.
+        if (! $isOperator) {
+            abort_if($request->input('scope') === SettingScope::System->value, 403);
+
+            return SettingScope::Organization;
+        }
+
+        return SettingScope::System;
     }
 
     private function organizationFor(SettingScope $scope): ?Organization {

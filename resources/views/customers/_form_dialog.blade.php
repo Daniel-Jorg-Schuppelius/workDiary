@@ -157,13 +157,13 @@
             <div class="space-y-2" data-contact-rows>
                 @foreach ($contactPersons as $i => $cp)
                     <div class="grid grid-cols-1 gap-2 sm:grid-cols-12 items-center" data-contact-row>
-                        <input type="text" name="contact_persons[{{ $i }}][name]" value="{{ $cp['name'] ?? '' }}"
+                        <input aria-label="{{ __('Name') }}" type="text" name="contact_persons[{{ $i }}][name]" value="{{ $cp['name'] ?? '' }}"
                                placeholder="{{ __('Name') }}" maxlength="200"
                                class="input input-bordered sm:col-span-3">
-                        <input type="email" name="contact_persons[{{ $i }}][email]" value="{{ $cp['email'] ?? '' }}"
+                        <input aria-label="{{ __('E-Mail') }}" type="email" name="contact_persons[{{ $i }}][email]" value="{{ $cp['email'] ?? '' }}"
                                placeholder="{{ __('E-Mail') }}" maxlength="255"
                                class="input input-bordered sm:col-span-4">
-                        <input type="text" name="contact_persons[{{ $i }}][phone]" value="{{ $cp['phone'] ?? '' }}"
+                        <input aria-label="{{ __('Telefon') }}" type="text" name="contact_persons[{{ $i }}][phone]" value="{{ $cp['phone'] ?? '' }}"
                                placeholder="{{ __('Telefon') }}" maxlength="64"
                                class="input input-bordered sm:col-span-3">
                         <label class="label cursor-pointer gap-1 text-xs sm:col-span-1">

@@ -109,7 +109,7 @@ class OrgLicensingTest extends TestCase {
     }
 
     public function test_admin_ui_installs_and_removes_org_license(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $org = $admin->organization;
         $org->update(['plan' => 'free']);
 
@@ -147,7 +147,7 @@ class OrgLicensingTest extends TestCase {
 
     public function test_admin_ui_issues_license(): void {
         config()->set('license.private_key', base64_encode($this->secretKey));
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $org = $admin->organization;
         $org->update(['plan' => 'free']);
 
@@ -179,7 +179,7 @@ class OrgLicensingTest extends TestCase {
 
     public function test_issuer_console_route_flashes_key(): void {
         config()->set('license.private_key', base64_encode($this->secretKey));
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->post(route('admin.license.issuer.create'), ['licensee' => 'Kunde GmbH', 'plan' => 'pro'])

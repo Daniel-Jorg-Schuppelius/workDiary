@@ -58,6 +58,7 @@ return [
         'blocked' => 'Bloccato',
     ],
     'error' => [
+        'email_taken' => 'Questo indirizzo e-mail è già in uso.',
         'required' => 'Il campo obbligatorio :field è mancante.',
         'tooLong' => 'Il campo :field supera la lunghezza massima di :max caratteri.',
         'header' => [

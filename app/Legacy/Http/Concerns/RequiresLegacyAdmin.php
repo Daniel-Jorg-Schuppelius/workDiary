@@ -16,8 +16,24 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Auth;
 
 trait RequiresLegacyAdmin {
+    /**
+     * Zutritt zur Altsystem-Verwaltung.
+     *
+     * Zwei Quellen, beide nicht selbst setzbar: die verknüpfte Legacy-ID (≤ 3)
+     * oder der Plattform-Betreiber. Letzteres verhindert die Aussperrung, seit
+     * der Namens-Fallback entfallen ist (Sicherheitsscan 2026-08-23, S-01) —
+     * ein Betreiber ohne Altsystem-Konto käme sonst an diese Masken nicht mehr
+     * heran. Die **org-lokale** admin-Rolle reicht bewusst nicht: sie sagt
+     * nichts über Rechte im Altsystem aus.
+     */
     private function ensureAdmin(): void {
-        abort_if(! LegacyRoleResolver::isAdmin(Auth::user()), 403);
+        $user = Auth::user();
+
+        abort_if(
+            ! LegacyRoleResolver::isAdmin($user)
+            && ! ($user instanceof \App\Models\User && $user->isGlobalAdmin()),
+            403
+        );
     }
 
     /** Liefert alle regulären Legacy-User (id > 3) sortiert nach uname.

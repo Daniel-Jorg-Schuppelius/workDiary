@@ -22,7 +22,7 @@
     :submit-label="__('terminal.action.register')">
 
     <x-form-group :label="__('terminal.field.name')" name="name">
-        <input type="text" name="name" value="{{ old('name') }}" placeholder="{{ __('terminal.field.name_placeholder') }}" class="input input-bordered w-full" required>
+        <input aria-label="{{ __('terminal.field.name_placeholder') }}" type="text" name="name" value="{{ old('name') }}" placeholder="{{ __('terminal.field.name_placeholder') }}" class="input input-bordered w-full" required>
     </x-form-group>
     <x-form-group :label="__('terminal.field.site')" name="site">
         <select name="site" class="select select-bordered w-full">

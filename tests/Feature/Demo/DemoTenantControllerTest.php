@@ -32,7 +32,7 @@ class DemoTenantControllerTest extends TestCase {
     }
 
     public function test_index_renders_for_org_admin(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.demo.index'))
@@ -42,7 +42,7 @@ class DemoTenantControllerTest extends TestCase {
     }
 
     public function test_seed_creates_demo_data_writes_audit_and_marks_org(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->from(route('admin.demo.index'))
@@ -60,7 +60,7 @@ class DemoTenantControllerTest extends TestCase {
     }
 
     public function test_reset_refuses_when_org_is_not_demo(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->from(route('admin.demo.index'))
@@ -69,7 +69,7 @@ class DemoTenantControllerTest extends TestCase {
     }
 
     public function test_reset_runs_when_org_is_demo_and_writes_audit(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $org = Organization::query()->findOrFail($admin->organization_id);
         $org->is_demo = true;
         $org->demo_seeded_at = now();
@@ -97,7 +97,7 @@ class DemoTenantControllerTest extends TestCase {
     }
 
     public function test_banner_visible_on_dashboard_when_organization_is_demo(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $org = Organization::query()->findOrFail($admin->organization_id);
         $org->is_demo = true;
         $org->demo_seeded_at = now();

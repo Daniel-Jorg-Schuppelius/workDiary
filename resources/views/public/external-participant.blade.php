@@ -56,7 +56,7 @@
         <form method="POST" action="{{ route('external.comment', ['token' => $token]) }}" class="rounded-box bg-base-100 p-4 shadow space-y-3">
             @csrf
             <h2 class="text-sm font-semibold">{{ __('external.public.comment_heading') }}</h2>
-            <textarea name="body" class="textarea textarea-bordered w-full" rows="3" required minlength="2" maxlength="2000"
+            <textarea aria-label="{{ __('external.public.comment_placeholder') }}" name="body" class="textarea textarea-bordered w-full" rows="3" required minlength="2" maxlength="2000"
                       placeholder="{{ __('external.public.comment_placeholder') }}">{{ old('body') }}</textarea>
             <div class="flex justify-end">
                 <x-button type="submit" tone="primary" size="sm">{{ __('external.public.comment_submit') }}</x-button>
@@ -82,7 +82,7 @@
         <form method="POST" action="{{ route('external.confirm', ['token' => $token]) }}" class="rounded-box bg-base-100 p-4 shadow space-y-3">
             @csrf
             <h2 class="text-sm font-semibold">{{ __('external.public.confirm_heading') }}</h2>
-            <textarea name="note" class="textarea textarea-bordered w-full" rows="2" maxlength="500"
+            <textarea aria-label="{{ __('external.public.confirm_note_placeholder') }}" name="note" class="textarea textarea-bordered w-full" rows="2" maxlength="500"
                       placeholder="{{ __('external.public.confirm_note_placeholder') }}">{{ old('note') }}</textarea>
             <label class="label cursor-pointer justify-start gap-3">
                 <input type="checkbox" name="accept" value="1" class="checkbox" required>

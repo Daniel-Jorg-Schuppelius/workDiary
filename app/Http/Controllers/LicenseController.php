@@ -35,6 +35,19 @@ class LicenseController extends Controller {
             'license_key' => ['required', 'string', 'max:8192'],
         ]);
 
+        // **Nur die Erstaktivierung ist offen** (Sicherheitsscan 2026-08-23,
+        // S-15). Die Route liegt bewusst ohne `auth` im Web-Stack: ohne
+        // nutzbare Lizenz sperrt `EnsureValidLicense` die ganze Anwendung —
+        // ein Anmelde-Zwang wäre eine Aussperrfalle. Sobald aber eine
+        // nutzbare Lizenz installiert ist, darf sie nur der Betreiber
+        // ersetzen. Vorher genügte ein beliebiger vom Hersteller signierter
+        // Schlüssel (auch ein abgelaufener) plus passender Host-Header, um
+        // alle Mandanten ohne eigene Org-Lizenz auf `free` herabzustufen.
+        if ($this->service->current($request->getHost())->isUsable()) {
+            $user = $request->user();
+            abort_unless($user instanceof User && $user->isGlobalAdmin(), 403);
+        }
+
         $result = $this->service->install($data['license_key']);
 
         if (! $result->isUsable()) {

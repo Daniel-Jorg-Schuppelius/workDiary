@@ -58,7 +58,7 @@
             </select>
             {{-- Grenzt die „Zuordnen"-Auswahllisten serverseitig ein (Enter lädt
                  neu) — nötig, sobald ein Ziel-Typ die Options-Obergrenze reißt. --}}
-            <input type="search" name="target_search" maxlength="190"
+            <input aria-label="{{ __('Zuordnungs-Auswahl suchen …') }}" type="search" name="target_search" maxlength="190"
                    value="{{ $filters['target_search'] }}"
                    placeholder="{{ __('Zuordnungs-Auswahl suchen …') }}"
                    class="input input-sm input-bordered w-44">

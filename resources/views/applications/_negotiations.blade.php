@@ -15,7 +15,7 @@
     @if ($canOpen)
         <form method="POST" action="{{ $storeRoute }}" class="mb-3 flex flex-wrap items-end gap-2">
             @csrf
-            <input name="title" required maxlength="200" class="input input-sm input-bordered flex-1" placeholder="{{ __('Titel (z. B. Rahmenvertrag 2027)') }}">
+            <input aria-label="{{ __('Titel (z. B. Rahmenvertrag 2027)') }}" name="title" required maxlength="200" class="input input-sm input-bordered flex-1" placeholder="{{ __('Titel (z. B. Rahmenvertrag 2027)') }}">
             <input name="due_on" type="date" class="input input-sm input-bordered" aria-label="{{ __('Frist') }}">
             <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Verhandlung eröffnen') }}</x-icon-btn>
         </form>
@@ -89,12 +89,12 @@
                                         <option value="counter">{{ __('Gegenentwurf') }}</option>
                                         <option value="final">{{ __('Endstand') }}</option>
                                     </select>
-                                    <input name="summary" maxlength="500" class="input input-xs input-bordered w-52" placeholder="{{ __('Zusammenfassung/Änderung') }}">
+                                    <input aria-label="{{ __('Zusammenfassung/Änderung') }}" name="summary" maxlength="500" class="input input-xs input-bordered w-52" placeholder="{{ __('Zusammenfassung/Änderung') }}">
                                     <button type="submit" class="btn btn-xs">{{ __('Version ablegen') }}</button>
                                 </form>
                                 <form method="POST" action="{{ route('applications.negotiations.reviews.store', $negotiation) }}" class="flex flex-wrap items-end gap-1">
                                     @csrf
-                                    <input name="label" required maxlength="500" class="input input-xs input-bordered w-52" placeholder="{{ __('Review-Punkt') }}">
+                                    <input aria-label="{{ __('Review-Punkt') }}" name="label" required maxlength="500" class="input input-xs input-bordered w-52" placeholder="{{ __('Review-Punkt') }}">
                                     <select name="severity" class="select select-xs select-bordered">
                                         <option value="info">{{ __('Info') }}</option>
                                         <option value="important">{{ __('Wichtig') }}</option>

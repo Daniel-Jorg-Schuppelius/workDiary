@@ -86,7 +86,7 @@
                                     @csrf
                                     <input type="hidden" name="user_id" value="{{ $selected->sqid }}">
                                     <input type="hidden" name="date" value="{{ $date->toDateString() }}">
-                                    <input name="reason" maxlength="500" class="input input-xs input-bordered w-48" placeholder="{{ __('Grund (optional)') }}">
+                                    <input aria-label="{{ __('Grund (optional)') }}" name="reason" maxlength="500" class="input input-xs input-bordered w-48" placeholder="{{ __('Grund (optional)') }}">
                                     <button type="submit" class="btn btn-xs btn-outline">{{ __('Ablehnen') }}</button>
                                 </form>
                             </div>

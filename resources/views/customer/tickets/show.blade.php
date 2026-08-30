@@ -48,7 +48,7 @@
 
     <form method="POST" action="{{ route('customer.tickets.reply', $ticket) }}" enctype="multipart/form-data" class="mt-4">
         @csrf
-        <textarea name="body" rows="3" required minlength="2" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Ihre Antwort…') }}"></textarea>
+        <textarea aria-label="{{ __('Ihre Antwort…') }}" name="body" rows="3" required minlength="2" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Ihre Antwort…') }}"></textarea>
         <div class="mt-1 flex flex-wrap items-center gap-2">
             <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
                    aria-label="{{ __('Anhänge (optional)') }}">
@@ -66,7 +66,7 @@
             </form>
             <form method="POST" action="{{ route('customer.tickets.reopen', $ticket) }}" class="flex items-center gap-2">
                 @csrf
-                <input name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Grund der Wiedereröffnung') }}">
+                <input aria-label="{{ __('Grund der Wiedereröffnung') }}" name="reason" required minlength="5" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Grund der Wiedereröffnung') }}">
                 <button type="submit" class="btn btn-outline btn-sm">{{ __('Wiedereröffnen') }}</button>
             </form>
         </div>
@@ -82,7 +82,7 @@
                         <option value="{{ $value }}">{{ $label }}</option>
                     @endforeach
                 </select>
-                <input name="comment" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung (optional)') }}">
+                <input aria-label="{{ __('Anmerkung (optional)') }}" name="comment" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung (optional)') }}">
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Bewerten') }}</button>
             </div>
         </form>

@@ -245,6 +245,9 @@ class TimeExportAutoDeliveryTest extends TestCase {
                 'sftp_enabled' => '1',
                 'sftp_host' => 'sftp.example.org',
                 'sftp_username' => 'lohn',
+                // Pflicht seit dem Sicherheitsscan 2026-08-23 (S-22): ohne
+                // Host-Key meldet sich die Anwendung bei jedem Server an.
+                'sftp_host_fingerprint' => 'SHA256:AAAAB3NzaC1yc2EAAAADAQABAAABgQ',
             ])
             ->assertSessionHas('error');
         $this->assertDatabaseCount('time_export_delivery_configs', 0);
@@ -256,6 +259,9 @@ class TimeExportAutoDeliveryTest extends TestCase {
                 'sftp_host' => 'sftp.example.org',
                 'sftp_port' => '2222',
                 'sftp_username' => 'lohn',
+                // Pflicht seit dem Sicherheitsscan 2026-08-23 (S-22): ohne
+                // Host-Key meldet sich die Anwendung bei jedem Server an.
+                'sftp_host_fingerprint' => 'SHA256:AAAAB3NzaC1yc2EAAAADAQABAAABgQ',
                 'sftp_password' => 'geheim-123',
                 'sftp_root' => '/upload',
             ])
@@ -277,6 +283,9 @@ class TimeExportAutoDeliveryTest extends TestCase {
                 'sftp_host' => 'sftp.example.org',
                 'sftp_port' => '2222',
                 'sftp_username' => 'lohn',
+                // Pflicht seit dem Sicherheitsscan 2026-08-23 (S-22): ohne
+                // Host-Key meldet sich die Anwendung bei jedem Server an.
+                'sftp_host_fingerprint' => 'SHA256:AAAAB3NzaC1yc2EAAAADAQABAAABgQ',
                 'sftp_password' => '',
                 'sftp_root' => '/upload',
             ])

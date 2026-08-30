@@ -1011,4 +1011,7 @@ return [
     'openIssue' => [
         'followUpCreated' => 'Mission de suivi créée à partir du point ouvert',
     ],
+    'learning' => [
+        'dossierDisclosed' => 'Dossier de qualification communiqué nominativement',
+    ],
 ];

@@ -143,7 +143,7 @@
                                                 <summary class="cursor-pointer text-muted">{{ __('procedure.run.overrideWait') }}</summary>
                                                 <form method="POST" action="{{ route('procedure-runs.steps.wait.continue', [$run, $sr]) }}" class="mt-2 space-y-2">
                                                     @csrf
-                                                    <textarea name="reason" rows="2" minlength="5" required
+                                                    <textarea aria-label="{{ __('procedure.run.overrideReason') }}" name="reason" rows="2" minlength="5" required
                                                               class="textarea textarea-bordered textarea-sm w-full"
                                                               placeholder="{{ __('procedure.run.overrideReason') }}"></textarea>
                                                     <button type="submit" class="btn btn-xs btn-warning">{{ __('procedure.run.overrideWaitConfirm') }}</button>
@@ -163,14 +163,14 @@
                                           enctype="multipart/form-data" class="mt-3 space-y-2">
                                         @csrf
                                         @if (in_array($def?->step_type?->value, ['text', 'number', 'choice', 'messreihe'], true))
-                                            <input type="{{ $def?->step_type?->value === 'number' ? 'number' : 'text' }}" name="value" step="any"
+                                            <input aria-label="{{ __('procedure.run.value') }}" type="{{ $def?->step_type?->value === 'number' ? 'number' : 'text' }}" name="value" step="any"
                                                    class="input input-bordered input-sm w-full"
                                                    placeholder="{{ __('procedure.run.value') }}">
                                         @endif
                                         @if (in_array($def?->step_type?->value, ['photo', 'file', 'signature'], true) || $def?->requires_proof_type)
                                             <input type="file" name="proof" class="file-input file-input-bordered file-input-sm w-full">
                                         @endif
-                                        <textarea name="note" rows="2" class="textarea textarea-bordered textarea-sm w-full"
+                                        <textarea aria-label="{{ __('procedure.run.notePlaceholder') }}" name="note" rows="2" class="textarea textarea-bordered textarea-sm w-full"
                                                   placeholder="{{ __('procedure.run.notePlaceholder') }}"></textarea>
                                         <div class="flex flex-wrap gap-2">
                                             <button type="submit" name="status" value="done" class="btn btn-sm btn-primary">
@@ -209,7 +209,7 @@
                                 <form method="POST" action="{{ route('procedure-runs.abort', $run) }}"
                                       class="dropdown-content z-10 w-72 space-y-2 rounded-box border border-base-300 bg-base-100 p-3 shadow">
                                     @csrf
-                                    <textarea name="reason" rows="2" class="textarea textarea-bordered textarea-sm w-full"
+                                    <textarea aria-label="{{ __('procedure.print.abortReason') }}" name="reason" rows="2" class="textarea textarea-bordered textarea-sm w-full"
                                               placeholder="{{ __('procedure.print.abortReason') }}"></textarea>
                                     <button type="submit" class="btn btn-xs btn-error">{{ __('procedure.run.abortConfirm') }}</button>
                                 </form>

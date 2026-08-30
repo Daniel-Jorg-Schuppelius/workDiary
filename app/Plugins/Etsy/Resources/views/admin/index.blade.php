@@ -132,8 +132,8 @@
                                         <summary class="btn btn-ghost btn-xs">{{ __('etsy.action.ship') }}</summary>
                                         <form method="POST" action="{{ route('admin.etsy.receipts.ship', $receipt) }}" class="mt-1 flex flex-wrap items-end gap-1">
                                             @csrf
-                                            <input type="text" name="tracking_code" placeholder="{{ __('etsy.field.tracking_code') }}" class="input input-xs input-bordered w-32" maxlength="100" />
-                                            <input type="text" name="carrier_name" placeholder="{{ __('etsy.field.carrier') }}" class="input input-xs input-bordered w-24" maxlength="100" />
+                                            <input aria-label="{{ __('etsy.field.tracking_code') }}" type="text" name="tracking_code" placeholder="{{ __('etsy.field.tracking_code') }}" class="input input-xs input-bordered w-32" maxlength="100" />
+                                            <input aria-label="{{ __('etsy.field.carrier') }}" type="text" name="carrier_name" placeholder="{{ __('etsy.field.carrier') }}" class="input input-xs input-bordered w-24" maxlength="100" />
                                             <button type="submit" class="btn btn-primary btn-xs">{{ __('etsy.action.ship_submit') }}</button>
                                         </form>
                                     </details>

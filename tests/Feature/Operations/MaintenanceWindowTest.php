@@ -25,7 +25,9 @@ class MaintenanceWindowTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->admin = User::factory()->admin()->create();
+        // Plattform-Betreiber: ein System-Wartungsfenster sperrt ALLE
+        // Mandanten (S-02). Der Negativfall steht unten.
+        $this->admin = User::factory()->platformAdmin()->create();
     }
 
     private function freshWindow(MaintenanceWindow $window): MaintenanceWindow {

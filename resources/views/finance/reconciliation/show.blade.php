@@ -308,7 +308,7 @@
                                                 @endforeach
                                             </div>
                                             <div class="flex flex-wrap items-center justify-end gap-2 mt-1">
-                                                <input type="text" name="reason" maxlength="255"
+                                                <input aria-label="{{ __('bank.return.reason_placeholder') }}" type="text" name="reason" maxlength="255"
                                                        value="{{ $detail['return_reason'] ?? $transaction->return_reason }}"
                                                        placeholder="{{ __('bank.return.reason_placeholder') }}"
                                                        class="input input-bordered input-xs w-48">
@@ -343,7 +343,7 @@
                                             @endforeach
                                         </div>
                                         <div class="flex flex-wrap items-center justify-end gap-2 mt-1">
-                                            <input type="text" name="reason" maxlength="255"
+                                            <input aria-label="{{ __('bank.return.reason_placeholder') }}" type="text" name="reason" maxlength="255"
                                                    value="{{ $transaction->return_reason }}"
                                                    placeholder="{{ __('bank.return.reason_placeholder') }}"
                                                    class="input input-bordered input-xs w-48">

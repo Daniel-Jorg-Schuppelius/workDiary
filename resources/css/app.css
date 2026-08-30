@@ -1605,7 +1605,14 @@
         color: var(--color-error-content, white);
         box-shadow: 0 4px 12px -4px
             color-mix(in srgb, var(--color-error) 70%, transparent);
-        outline: none;
+    }
+
+    /* Der Fokus darf nicht nur an der Farbe hängen: im Kontrastmodus
+       ersetzt das System Hintergrund und Schatten, und ohne Umriss
+       wüsste niemand mehr, wo der Fokus steht (WCAG 2.4.7). */
+    .wd-dialog__close:focus-visible {
+        outline: 2px solid var(--color-error-content, white);
+        outline-offset: -2px;
     }
 
     .wd-dialog__close:active {
@@ -1885,4 +1892,42 @@
 }
 .wd-kanban-dragging [data-kanban-card] a {
     cursor: grabbing;
+}
+
+/* ------------------------------------------------------------------ */
+/* Erzwungene Farben (Windows-Kontrastmodus) — BFSG/EN 301 549         */
+/*   Der Modus ersetzt alle Farben durch Systemfarben und unterdrückt  */
+/*   box-shadow und Hintergrundbilder. Alles, was seine Bedeutung nur  */
+/*   aus Füllfarbe oder Schatten zieht, verschwindet dort spurlos:     */
+/*   Umrisse (outline) und Rahmen (border) überleben, Schatten nicht.  */
+/*   Deshalb hier nachziehen, was sonst unsichtbar würde.              */
+/* ------------------------------------------------------------------ */
+@media (forced-colors: active) {
+    /* Fokus: sichtbar unabhängig von Farbe und Schatten. */
+    :focus-visible {
+        outline: 2px solid CanvasText;
+        outline-offset: 2px;
+    }
+
+    /* Flächen, deren Abgrenzung sonst allein die Füllfarbe leistet. */
+    .btn,
+    .badge,
+    .wd-badge,
+    .card,
+    .alert,
+    .modal-box,
+    .wd-dialog,
+    .input,
+    .select,
+    .textarea,
+    .file-input,
+    .tab {
+        border: 1px solid CanvasText;
+    }
+
+    /* Der aktive Navigationseintrag ist sonst nur farblich markiert. */
+    #app-sidebar .menu :where(li) > .menu-active {
+        outline: 1px solid Highlight;
+        outline-offset: -1px;
+    }
 }

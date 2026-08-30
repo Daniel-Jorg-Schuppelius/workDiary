@@ -88,7 +88,7 @@
             <p class="text-xs text-muted">{{ __('ai.memory.translations_help') }}</p>
             <div class="grid grid-cols-2 gap-2">
                 @foreach (['en', 'es', 'fr', 'it'] as $lang)
-                    <input type="text" name="translation_{{ $lang }}" maxlength="300"
+                    <input aria-label="{{ __('Sprache') }}" type="text" name="translation_{{ $lang }}" maxlength="300"
                            value="{{ old('translation_' . $lang) }}"
                            class="input input-bordered input-sm w-full" placeholder="{{ strtoupper($lang) }}">
                 @endforeach

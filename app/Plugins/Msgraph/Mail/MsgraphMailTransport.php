@@ -116,19 +116,29 @@ class MsgraphMailTransport extends AbstractTransport {
             return $connection;
         }
 
-        /** @var list<MsgraphMailConnection> $active */
-        $active = $query->where('status', MsgraphMailConnection::STATUS_ACTIVE)->get()
-            ->filter(fn (MsgraphMailConnection $c): bool => $c->isActive())
-            ->values()
-            ->all();
-        if (count($active) === 1) {
-            return $active[0];
+        // **Kein Rückfall auf „die eine aktive Verbindung"** (Sicherheitsscan
+        // 2026-08-23, S-28). Genau eine angebundene Organisation zu haben
+        // heißt nicht, dass ihr Postfach die Systemmails aller anderen
+        // versenden darf — Absenderidentität, und bei `save_to_sent_items`
+        // landet eine Kopie mit OTP-Code oder Reset-Link in deren
+        // Gesendet-Ordner.
+        //
+        // Zulässig bleibt der gebundene Organisationskontext: wer im Request
+        // einer Organisation sitzt und ausdrücklich über Graph versendet,
+        // meint deren Postfach.
+        $contextOrg = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+        if ($contextOrg instanceof \App\Models\Organization) {
+            $connection = (clone $query)->where('organization_id', $contextOrg->id)->first();
+
+            if ($connection instanceof MsgraphMailConnection && $connection->isActive()) {
+                return $connection;
+            }
         }
 
+        // Sonst: nichts raten. Die failover-Kette (SMTP) übernimmt.
         throw new TransportException(
-            $active === []
-                ? 'Keine aktive Microsoft-Graph-Mail-Verbindung vorhanden.'
-                : 'Mehrere Microsoft-Graph-Mail-Verbindungen aktiv — Organisation der Mail nicht bestimmbar.',
+            'Die Mail trägt keine Organisation — ohne sie ist keine Microsoft-Graph-Verbindung zuordenbar.',
         );
     }
 

@@ -362,6 +362,16 @@ return [
             'on_one_server' => false, // Bestandsverhalten (kein onOneServer)
             'expected_runtime_minutes' => 1,
         ],
+        // Lernsitzungen ohne Lebenszeichen beenden (Feature 149, MVP-749).
+        // Ohne diesen Kehraus liefe eine Sitzung nach geschlossenem Browser
+        // weiter und würde als riesige Spanne in die Zeitkonten gebucht.
+        'learning.close_stale_sessions' => [
+            'command' => 'learning:close-stale-sessions',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFifteenMinutes', 'everyThirtyMinutes', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
         'attendance.close_open' => [
             'command' => 'attendance:close-open',
             'cadence' => ['type' => 'everyFifteenMinutes'],

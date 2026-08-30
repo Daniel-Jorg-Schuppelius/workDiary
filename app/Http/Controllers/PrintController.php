@@ -30,6 +30,8 @@ use Illuminate\View\View;
  * Anonymisation: append `?anonymous=1` to any route to display only initials.
  */
 class PrintController extends Controller {
+    use \App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+
     public function __construct(private readonly HolidayService $holidays) {}
 
     /**
@@ -155,6 +157,12 @@ class PrintController extends Controller {
         /** @var ?User $actor */
         $actor = Auth::user();
         abort_unless($actor !== null && ($actor->id === $user->id || $actor->isAdmin()), 403);
+        // Der Name des Mitarbeiters steht im Titel: ohne Org-Vergleich wäre
+        // der Zettel eine Namensauskunft über fremde Mandanten
+        // (Sicherheitsscan 2026-08-23, S-06). Verglichen wird gegen die
+        // AKTIVE Organisation, nicht gegen die Heimat-Org des Aufrufers —
+        // sonst spränge der Zettel für einen Betreiber im Org-Wechsel auf 403.
+        abort_unless((int) $user->organization_id === (int) $this->currentOrganization()->id, 403);
 
         $month = $this->parseDate($request->query('month'), CarbonImmutable::now())->startOfMonth();
         $end = $month->endOfMonth();

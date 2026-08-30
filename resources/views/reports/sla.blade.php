@@ -217,7 +217,7 @@
                                 @if (! $v->isAcknowledged())
                                     <form method="POST" action="{{ route('reports.sla.acknowledge', $v) }}" class="flex items-center gap-1 justify-end">
                                         @csrf
-                                        <input type="text" name="cause" maxlength="191"
+                                        <input aria-label="{{ __('sla.report.cause') }}" type="text" name="cause" maxlength="191"
                                                class="input input-xs input-bordered w-32"
                                                placeholder="{{ __('sla.report.cause') }}">
                                         <button class="btn btn-xs" type="submit">{{ __('sla.report.acknowledge_btn') }}</button>

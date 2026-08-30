@@ -19,7 +19,7 @@
         "daniel-jorg-schuppelius/php-erechnung-toolkit": "^0.13",
         "daniel-jorg-schuppelius/php-pdf-toolkit": "^0.16",
         "darkaonline/l5-swagger": "^11.0",
-        "dschuppelius/php-common-toolkit": "^1.28",
+        "dschuppelius/php-common-toolkit": "^1.30.1",
         "dschuppelius/php-translation-toolkit": "^0.5",
         "laravel/framework": "^13.0",
         "laravel/reverb": "^1.10",
@@ -85,7 +85,7 @@
         ],
         "test": [
             "@php artisan config:clear --ansi",
-            "XDEBUG_MODE=off php artisan test --parallel --processes=16"
+            "XDEBUG_MODE=off php artisan test --parallel --processes=8"
         ],
         "lint": "phpstan analyse --memory-limit=1G",
         "lint:support": "phpstan analyse --configuration=phpstan-support.neon --memory-limit=1G",

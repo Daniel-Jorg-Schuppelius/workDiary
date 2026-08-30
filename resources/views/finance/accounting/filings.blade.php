@@ -93,7 +93,7 @@
                                 <form method="POST" action="{{ route('finance.accounting.filings.mark', $obligation) }}" class="flex items-center gap-1">
                                     @csrf
                                     <input type="hidden" name="status" value="{{ \App\Enums\Finance\FilingObligationStatus::Submitted->value }}">
-                                    <input type="text" name="note" maxlength="500" class="input input-xs input-bordered w-40"
+                                    <input aria-label="{{ __('accounting.ledger.field.note') }}" type="text" name="note" maxlength="500" class="input input-xs input-bordered w-40"
                                            placeholder="{{ __('accounting.ledger.field.note') }}">
                                     <x-icon-btn icon="task_alt" size="xs" tone="primary" type="submit"
                                                 :label="__('accounting.filing.calendar.action.submitted')" />

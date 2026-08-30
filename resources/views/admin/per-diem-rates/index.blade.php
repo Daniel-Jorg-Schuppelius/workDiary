@@ -17,7 +17,7 @@
 <x-index-page overflow="clip" :subtitle="__('Pauschalensätze für Verpflegungs- und Übernachtungskosten verwalten.')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.per-diem-rates.index') }}" class="inline-flex items-center gap-2">
-            <input type="text" name="country" maxlength="2" placeholder="DE"
+            <input aria-label="{{ __('Ländercode') }}" type="text" name="country" maxlength="2" placeholder="DE"
                    value="{{ $country ?? '' }}"
                    class="input input-bordered input-sm w-20 uppercase">
             <x-button type="submit" tone="ghost" size="sm">{{ __('Filtern') }}</x-button>

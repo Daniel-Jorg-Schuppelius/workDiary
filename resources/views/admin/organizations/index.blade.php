@@ -130,7 +130,7 @@
                                                 <code class="bg-base-200 px-1.5 py-0.5 rounded text-xs">{{ $org->slug }}</code>
                                             </p>
                                         </div>
-                                        <input type="text"
+                                        <input aria-label="{{ __('Kennung zur Bestätigung eingeben') }}" type="text"
                                                name="confirm_slug"
                                                class="input input-bordered mt-3 w-full font-mono"
                                                autocomplete="off"

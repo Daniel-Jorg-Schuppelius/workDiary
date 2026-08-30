@@ -23,7 +23,11 @@ class SettingsAdminUiTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
-        $this->admin = User::factory()->admin()->create();
+        // Plattform-Betreiber: die Einstellungs-Registry schreibt im
+        // System-Scope installationsweit. Ein org-lokaler Admin darf das seit
+        // dem Sicherheitsscan 2026-08-23 (S-02) nicht mehr — dafür der
+        // Negativtest unten.
+        $this->admin = User::factory()->platformAdmin()->create();
     }
 
     public function test_index_requires_permission_and_lists_registry_keys(): void {

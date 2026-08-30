@@ -41,7 +41,7 @@
                       :to-error="$errors->first('ends_at') ?: null" />
         <div class="fieldset md:col-span-2">
             <span class="fieldset-label">{{ __('maintenance.window.field.message') }}</span>
-            <input type="text" name="message" maxlength="300" class="input input-bordered w-full" value="{{ old('message') }}"
+            <input aria-label="{{ __('maintenance.window.hint.message') }}" type="text" name="message" maxlength="300" class="input input-bordered w-full" value="{{ old('message') }}"
                    placeholder="{{ __('maintenance.window.hint.message') }}">
         </div>
         <label class="label cursor-pointer justify-start gap-3">

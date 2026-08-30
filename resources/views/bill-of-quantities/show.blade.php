@@ -95,7 +95,7 @@
                     @if ($canManage)
                         <td>
                             <form method="POST" action="{{ route('bill-of-quantities.items.progress', $item) }}" class="flex items-center justify-end gap-1">@csrf
-                                <input type="number" step="0.001" name="quantity" class="input input-bordered input-xs w-24" placeholder="0" required>
+                                <input aria-label="{{ __('Menge') }}" type="number" step="0.001" name="quantity" class="input input-bordered input-xs w-24" placeholder="0" required>
                                 <button type="submit" class="btn btn-xs btn-primary">+</button>
                             </form>
                         </td>
@@ -110,11 +110,11 @@
         <x-card class="mt-4">
             <h2 class="text-sm font-semibold mb-2">{{ __('gaeb.workflow.add_addendum') }}</h2>
             <form method="POST" action="{{ route('bill-of-quantities.addenda.add', $bill) }}" class="flex flex-wrap items-end gap-2">@csrf
-                <input type="text" name="reference_no" class="input input-bordered input-sm w-28" placeholder="{{ __('gaeb.columns.reference_no') }}" required>
-                <input type="text" name="short_text" class="input input-bordered input-sm flex-1 min-w-48" placeholder="{{ __('gaeb.columns.short_text') }}">
-                <input type="number" step="0.001" name="quantity" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.quantity') }}">
-                <input type="text" name="unit" class="input input-bordered input-sm w-20" placeholder="{{ __('gaeb.columns.unit') }}">
-                <input type="number" step="0.01" name="unit_price" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.unit_price') }}">
+                <input aria-label="{{ __('gaeb.columns.reference_no') }}" type="text" name="reference_no" class="input input-bordered input-sm w-28" placeholder="{{ __('gaeb.columns.reference_no') }}" required>
+                <input aria-label="{{ __('gaeb.columns.short_text') }}" type="text" name="short_text" class="input input-bordered input-sm flex-1 min-w-48" placeholder="{{ __('gaeb.columns.short_text') }}">
+                <input aria-label="{{ __('gaeb.columns.quantity') }}" type="number" step="0.001" name="quantity" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.quantity') }}">
+                <input aria-label="{{ __('gaeb.columns.unit') }}" type="text" name="unit" class="input input-bordered input-sm w-20" placeholder="{{ __('gaeb.columns.unit') }}">
+                <input aria-label="{{ __('gaeb.columns.unit_price') }}" type="number" step="0.01" name="unit_price" class="input input-bordered input-sm w-24" placeholder="{{ __('gaeb.columns.unit_price') }}">
                 <button type="submit" class="btn btn-sm">{{ __('gaeb.workflow.add_addendum') }}</button>
             </form>
         </x-card>

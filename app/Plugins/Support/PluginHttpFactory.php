@@ -12,6 +12,7 @@ namespace App\Plugins\Support;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
 use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
+use App\Support\UrlSafety;
 use GuzzleHttp\Client as GuzzleClient;
 
 /**
@@ -27,7 +28,9 @@ class PluginHttpFactory {
      * (z. B. easybill 10/min, Billbee 2/s). Der Test-Fake ignoriert das
      * Intervall, damit Tests nicht real schlafen.
      */
-    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0): PluginApiClient {
+    public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
+        $this->assertTargetAllowed($pluginId, $baseUrl, $allowPrivateNetwork);
+
         $client = new PluginApiClient($pluginId, $baseUrl);
         if ($requestInterval > 0) {
             $client->setRequestInterval($requestInterval);
@@ -43,8 +46,8 @@ class PluginHttpFactory {
      * `workDiary/<service>` statt `workDiary-plugin/<id>`. Zentralisierung
      * 2026-08 (Phase 65): Laravel-`Http::`-Direktnutzung abbauen.
      */
-    public function coreClient(string $serviceId, string $baseUrl, float $requestInterval = 0.0): PluginApiClient {
-        $client = $this->client($serviceId, $baseUrl, $requestInterval);
+    public function coreClient(string $serviceId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
+        $client = $this->client($serviceId, $baseUrl, $requestInterval, $allowPrivateNetwork);
         $client->setUserAgent('workDiary/' . $serviceId);
 
         return $client;
@@ -63,6 +66,8 @@ class PluginHttpFactory {
      * @return TClient
      */
     public function sdkClient(string $pluginId, string $baseUrl, callable $make): ClientAbstract {
+        $this->assertTargetAllowed($pluginId, $baseUrl);
+
         return $this->configureSdkClient($make($this->sdkTransport($baseUrl)), $pluginId);
     }
 
@@ -99,6 +104,8 @@ class PluginHttpFactory {
      * Tests den Guzzle-Transport über {@see \Tests\Support\FakePluginHttp}.
      */
     public function clientCredentialsGrant(string $pluginId, string $clientId, string $clientSecret, string $tokenUrl): OAuth2ClientCredentialsGrant {
+        $this->assertTargetAllowed($pluginId, $tokenUrl);
+
         return $this->configureGrant(new OAuth2ClientCredentialsGrant($clientId, $clientSecret, $tokenUrl), $pluginId);
     }
 
@@ -111,4 +118,60 @@ class PluginHttpFactory {
 
         return $grant;
     }
+
+    /**
+     * SSRF-Schranke für **jedes** über diese Factory gebaute Ziel
+     * (Sicherheitsscan 2026-08-23, S-10).
+     *
+     * Die Basis-URLs von Kimai, OpenProject, Clockify, Toggl, SevDesk,
+     * Easybill, Lexoffice, RemoteSupport und CTI sind org-seitig frei
+     * setzbar. Ein Health-Check auf `http://127.0.0.1:<port>` war damit ein
+     * Portscan-Orakel, und beim Lexoffice-Dateidownload wurde der
+     * Antwort-Body unverändert an den Browser durchgereicht — also keine
+     * blinde SSRF, sondern eine mit Antwort. Der Juli-Fix hatte nur
+     * WebDAV/CalDAV/Zammad/JTL/CardDAV einzeln nachgerüstet; hier sitzt die
+     * Prüfung an der **einen** Stelle, durch die alle gehen.
+     *
+     * **Selbst gehostete Ziele sind erlaubt — aber ausdrücklich.** Wer eine
+     * eigene Kimai-, OpenProject- oder Ollama-Instanz im Netz betreibt,
+     * setzt am Plugin `allow_private_network`. Das ist dasselbe auditierte
+     * Opt-in wie bei JTL/CardDAV.
+     */
+    protected function assertTargetAllowed(string $pluginId, string $baseUrl, ?bool $allowPrivateNetwork = null): void {
+        if (trim($baseUrl) === '') {
+            return;
+        }
+
+        UrlSafety::assertAcceptableExternalBaseUrl(
+            $baseUrl,
+            $allowPrivateNetwork ?? $this->allowsPrivateNetwork($pluginId),
+            'Plugin ' . $pluginId,
+            'Ziel-URL',
+            'Für selbst gehostete Instanzen die Einstellung „Private Netzwerke erlauben" aktivieren.',
+        );
+    }
+
+    /**
+     * Auditiertes Opt-in für Ziele im privaten Netz.
+     *
+     * Zwei Quellen: die Plugin-Einstellung `allow_private_network` (Org-Ebene)
+     * und die Betreiber-Liste `plugins.private_network_targets` — letztere für
+     * Kern-Dienste ohne Plugin-Einstellungen, etwa ein selbst gehostetes
+     * Nominatim/OSRM. Rufer mit eigener Kennung (KI-Verbindungen:
+     * `is_local`) geben den Wert direkt mit.
+     */
+    protected function allowsPrivateNetwork(string $pluginId): bool {
+        if (in_array($pluginId, (array) config('plugins.private_network_targets', []), true)) {
+            return true;
+        }
+
+        try {
+            return PluginSettingsResolver::for($pluginId)->bool('allow_private_network', false);
+        } catch (\Throwable) {
+            // Kein Plugin-Kontext (Kern-Services, Installationslauf): dann
+            // bleibt es bei der strengen Prüfung.
+            return false;
+        }
+    }
+
 }

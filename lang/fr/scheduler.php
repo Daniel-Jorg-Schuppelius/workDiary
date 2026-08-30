@@ -73,6 +73,7 @@ return [
         'calendly' => ['backfill' => 'Synchronisation des rendez-vous Calendly'],
         'ai' => ['maintenance' => 'Maintenance IA (santé des fournisseurs, nettoyage des suggestions)'],
         'archive' => ['run' => 'Exécution de l\'archivage'],
+        'learning' => ['close_stale_sessions' => 'Clôturer les sessions d’apprentissage abandonnées'],
         'attendance' => ['close_open' => 'Clôturer les pointages oubliés'],
         'audit' => ['verify' => 'Vérifier la chaîne d\'audit'],
         'backup' => [

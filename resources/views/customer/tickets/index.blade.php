@@ -19,8 +19,8 @@
         <summary class="cursor-pointer text-sm font-semibold">{{ __('Neues Ticket melden') }}</summary>
         <form method="POST" action="{{ route('customer.tickets.store') }}" enctype="multipart/form-data" class="mt-2 space-y-2">
             @csrf
-            <input name="title" required minlength="3" maxlength="255" class="input input-bordered w-full" placeholder="{{ __('Kurzbeschreibung') }}">
-            <textarea name="description" rows="3" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Was ist passiert?') }}"></textarea>
+            <input aria-label="{{ __('Kurzbeschreibung') }}" name="title" required minlength="3" maxlength="255" class="input input-bordered w-full" placeholder="{{ __('Kurzbeschreibung') }}">
+            <textarea aria-label="{{ __('Was ist passiert?') }}" name="description" rows="3" maxlength="10000" class="textarea textarea-bordered w-full" placeholder="{{ __('Was ist passiert?') }}"></textarea>
             <div class="flex flex-wrap items-center gap-2">
                 <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
                        aria-label="{{ __('Anhänge (optional)') }}">

@@ -39,6 +39,7 @@ return [
         'sftp' => "SFTP-Upload",
         'sftp_toggle' => "Export-Datei nach Abschluss per SFTP hochladen",
         'sftp_host' => "Host",
+        'sftp_host_fingerprint' => 'Host-Key-Fingerabdruck',
         'sftp_port' => "Port",
         'sftp_username' => "Benutzername",
         'sftp_password' => "Passwort",
@@ -73,6 +74,7 @@ return [
     ],
 
     'error' => [
+        'sftp_fingerprint_missing' => 'Für den SFTP-Versand fehlt der Host-Key-Fingerabdruck. Ohne ihn wird die Datei nicht übertragen.',
         'missing_mappings' => "Export abgebrochen: Für folgende Lohnarten fehlt die Ziel-Lohnart im Ziel-Lohnprogramm: :types. Bitte unter „Lohnarten & Export-Lieferung“ eine Zuordnung pflegen oder die Lohnart an der Zuschlagsregel hinterlegen.",
     ],
 
@@ -90,5 +92,8 @@ return [
         'heading' => "Zeit-Export für die Lohnabrechnung",
         'body' => "Im Anhang finden Sie den Zeit-Export des Profils :profile für den Zeitraum :period.",
         'meta' => ":rows Zeilen · SHA-256 :hash",
+    ],
+    'help' => [
+        'sftp_host_fingerprint' => 'Pflicht: bindet die Verbindung an den richtigen Server. Ermitteln mit `ssh-keyscan -t rsa <host> | ssh-keygen -lf -`.',
     ],
 ];

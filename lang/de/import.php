@@ -63,6 +63,7 @@ return [
     ],
 
     'error' => [
+        'email_taken' => 'Diese E-Mail-Adresse ist bereits vergeben.',
         'required' => 'Pflichtfeld :field fehlt.',
         'tooLong' => 'Feld :field überschreitet die maximale Länge von :max Zeichen.',
         'header' => [

@@ -35,6 +35,17 @@ class LexofficeSyncContactsCommand extends Command {
 
         foreach ($organizations as $org) {
             $config = LexofficeConfig::resolve($org->id);
+
+            // **`enabled` je Organisation prüfen** (Sicherheitsscan
+            // 2026-08-23, S-28). Ohne diese Zeile lief der stündliche Sync
+            // über ALLE Organisationen — und wenn der Betreiber einen
+            // LEXOFFICE_API_KEY in der .env hat, greift der ENV-Fallback:
+            // Kontakte, Artikel und Belege des Betreiberkontos landeten in
+            // jedem Mandanten.
+            if ($config['enabled'] !== true) {
+                continue;
+            }
+
             if (! is_string($config['api_key']) || $config['api_key'] === '') {
                 $this->warn("Organisation #{$org->id} ({$org->name}): Lexoffice nicht konfiguriert — übersprungen.");
 

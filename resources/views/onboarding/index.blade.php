@@ -95,7 +95,7 @@
                             @if (! $step['done'] && $step['skippable'])
                                 <form method="POST" action="{{ route('onboarding.steps.skip', ['step' => $step['code']]) }}" class="flex items-center gap-2">
                                     @csrf
-                                    <input type="text"
+                                    <input aria-label="{{ __('onboarding.action.skip_placeholder') }}" type="text"
                                            name="reason"
                                            maxlength="1000"
                                            required

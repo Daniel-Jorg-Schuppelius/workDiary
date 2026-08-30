@@ -32,6 +32,7 @@ return [
         'auto_close' => 'Auto-Abschluss',
         'terminal' => 'Terminal',
         'phone' => 'Telefon',
+        'learning' => 'Lernzeit',
     ],
     'correction' => [
         'action' => [
@@ -39,5 +40,9 @@ return [
             'update' => 'Ändern',
             'delete' => 'Löschen',
         ],
+    ],
+    'error' => [
+        'target_day_locked' => 'Der Zieltag ist abgeschlossen oder der Monat freigegeben — bitte eine Zeitkorrektur beantragen.',
+        'duration_too_long' => 'Eine Stempelung darf nicht länger als :hours Stunden dauern.',
     ],
 ];

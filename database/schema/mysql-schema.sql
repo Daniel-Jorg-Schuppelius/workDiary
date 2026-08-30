@@ -2481,6 +2481,12 @@ CREATE TABLE `attachments` (
   `original_name` varchar(255) NOT NULL,
   `mime` varchar(128) DEFAULT NULL,
   `size` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `media_state` varchar(12) DEFAULT NULL,
+  `media_duration_seconds` int(10) unsigned DEFAULT NULL,
+  `media_width` smallint(5) unsigned DEFAULT NULL,
+  `media_height` smallint(5) unsigned DEFAULT NULL,
+  `media_error` varchar(255) DEFAULT NULL,
+  `media_processed_at` timestamp NULL DEFAULT NULL,
   `meta_type` varchar(32) DEFAULT NULL,
   `customer_visible` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -2490,6 +2496,7 @@ CREATE TABLE `attachments` (
   KEY `attachments_user_id_foreign` (`user_id`),
   KEY `attachments_attachable_meta_idx` (`attachable_type`,`attachable_id`,`meta_type`),
   KEY `idx_attachments_org` (`organization_id`),
+  KEY `attach_media_state_idx` (`media_state`),
   CONSTRAINT `attachments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `attachments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -4894,6 +4901,45 @@ CREATE TABLE `communication_notes` (
   CONSTRAINT `communication_notes_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `competencies`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `competencies` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `code` varchar(60) NOT NULL,
+  `name` varchar(180) NOT NULL,
+  `description` text DEFAULT NULL,
+  `max_level` tinyint(3) unsigned NOT NULL DEFAULT 4,
+  `category` varchar(60) DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `competency_org_code_uq` (`organization_id`,`code`),
+  CONSTRAINT `competencies_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `competency_requirements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `competency_requirements` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `competency_id` bigint(20) unsigned NOT NULL,
+  `subject_kind` varchar(10) NOT NULL,
+  `subject_key` varchar(60) NOT NULL,
+  `required_level` tinyint(3) unsigned NOT NULL DEFAULT 1,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `competency_req_uq` (`organization_id`,`competency_id`,`subject_kind`,`subject_key`),
+  KEY `competency_requirements_competency_id_foreign` (`competency_id`),
+  CONSTRAINT `competency_requirements_competency_id_foreign` FOREIGN KEY (`competency_id`) REFERENCES `competencies` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `competency_requirements_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `compliance_findings`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -6283,7 +6329,7 @@ CREATE TABLE `diary_entries` (
   CONSTRAINT `diary_entries_recurrence_rule_id_foreign` FOREIGN KEY (`recurrence_rule_id`) REFERENCES `recurrence_rules` (`id`) ON DELETE SET NULL,
   CONSTRAINT `diary_entries_signature_attachment_id_foreign` FOREIGN KEY (`signature_attachment_id`) REFERENCES `attachments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `diary_entries_tour_id_foreign` FOREIGN KEY (`tour_id`) REFERENCES `tours` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `diary_entries_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `diary_entries_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `diary_entry_events`;
@@ -6348,7 +6394,7 @@ CREATE TABLE `disposal_handovers` (
   KEY `disposal_handovers_document_id_foreign` (`document_id`),
   KEY `disposal_handovers_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `disposal_handovers_job_idx` (`disposal_job_id`,`handed_over_on`),
-  CONSTRAINT `disposal_handovers_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `disposal_handovers_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `disposal_handovers_disposal_job_id_foreign` FOREIGN KEY (`disposal_job_id`) REFERENCES `disposal_jobs` (`id`) ON DELETE CASCADE,
   CONSTRAINT `disposal_handovers_document_id_foreign` FOREIGN KEY (`document_id`) REFERENCES `documents` (`id`) ON DELETE SET NULL,
   CONSTRAINT `disposal_handovers_external_contact_id_foreign` FOREIGN KEY (`external_contact_id`) REFERENCES `external_contacts` (`id`) ON DELETE CASCADE
@@ -6438,7 +6484,7 @@ CREATE TABLE `disposal_jobs` (
   KEY `disposal_jobs_org_status_idx` (`organization_id`,`status`),
   KEY `disposal_jobs_customer_idx` (`customer_id`,`picked_up_on`),
   CONSTRAINT `disposal_jobs_completed_by_foreign` FOREIGN KEY (`completed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `disposal_jobs_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `disposal_jobs_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `disposal_jobs_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE CASCADE,
   CONSTRAINT `disposal_jobs_diary_entry_id_foreign` FOREIGN KEY (`diary_entry_id`) REFERENCES `diary_entries` (`id`) ON DELETE SET NULL,
   CONSTRAINT `disposal_jobs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
@@ -6627,7 +6673,7 @@ CREATE TABLE `documents` (
   KEY `documents_customer_released_by_foreign` (`customer_released_by`),
   KEY `documents_org_custvis_idx` (`organization_id`,`customer_visible`),
   KEY `documents_hr_idx` (`documentable_type`,`documentable_id`,`hr_category`),
-  CONSTRAINT `documents_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `documents_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `documents_customer_released_by_foreign` FOREIGN KEY (`customer_released_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `documents_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -7928,7 +7974,7 @@ CREATE TABLE `form_submissions` (
   KEY `form_sub_org_at_idx` (`organization_id`,`submitted_at`),
   CONSTRAINT `form_submissions_form_template_id_foreign` FOREIGN KEY (`form_template_id`) REFERENCES `form_templates` (`id`) ON DELETE CASCADE,
   CONSTRAINT `form_submissions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `form_submissions_submitted_by_user_id_foreign` FOREIGN KEY (`submitted_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `form_submissions_submitted_by_user_id_foreign` FOREIGN KEY (`submitted_by_user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `form_templates`;
@@ -10296,6 +10342,717 @@ CREATE TABLE `leads` (
   CONSTRAINT `leads_responsible_user_id_foreign` FOREIGN KEY (`responsible_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_access_tokens`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_access_tokens` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `token_hash` varchar(64) NOT NULL,
+  `expires_at` timestamp NOT NULL,
+  `first_used_at` timestamp NULL DEFAULT NULL,
+  `last_used_at` timestamp NULL DEFAULT NULL,
+  `use_count` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `revoked_at` timestamp NULL DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_access_token_uq` (`token_hash`),
+  KEY `learning_access_tokens_learning_enrollment_id_foreign` (`learning_enrollment_id`),
+  KEY `learning_access_tokens_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `lrn_access_org_exp_idx` (`organization_id`,`expires_at`),
+  CONSTRAINT `learning_access_tokens_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_access_tokens_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_access_tokens_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_answers`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_answers` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_quiz_attempt_id` bigint(20) unsigned NOT NULL,
+  `learning_question_id` bigint(20) unsigned NOT NULL,
+  `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
+  `is_correct` tinyint(1) DEFAULT NULL,
+  `points_awarded` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `corrected_points` smallint(5) unsigned DEFAULT NULL,
+  `correction_note` varchar(500) DEFAULT NULL,
+  `graded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `graded_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_answer_attempt_q_uq` (`learning_quiz_attempt_id`,`learning_question_id`),
+  KEY `learning_answers_organization_id_foreign` (`organization_id`),
+  KEY `learning_answers_learning_question_id_foreign` (`learning_question_id`),
+  KEY `learning_answers_graded_by_user_id_foreign` (`graded_by_user_id`),
+  CONSTRAINT `learning_answers_graded_by_user_id_foreign` FOREIGN KEY (`graded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_answers_learning_question_id_foreign` FOREIGN KEY (`learning_question_id`) REFERENCES `learning_questions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_answers_learning_quiz_attempt_id_foreign` FOREIGN KEY (`learning_quiz_attempt_id`) REFERENCES `learning_quiz_attempts` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_answers_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_assignments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_assignments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_unit_id` bigint(20) unsigned NOT NULL,
+  `title` varchar(180) NOT NULL,
+  `instructions` text DEFAULT NULL,
+  `submission_kind` varchar(10) NOT NULL DEFAULT 'both',
+  `due_days` smallint(5) unsigned DEFAULT NULL,
+  `points` smallint(5) unsigned NOT NULL DEFAULT 10,
+  `pass_percent` tinyint(3) unsigned NOT NULL DEFAULT 50,
+  `rubric` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rubric`)),
+  `requires_second_opinion` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_assignment_unit_uq` (`learning_unit_id`),
+  KEY `lrn_assignment_org_idx` (`organization_id`),
+  CONSTRAINT `learning_assignments_learning_unit_id_foreign` FOREIGN KEY (`learning_unit_id`) REFERENCES `learning_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_assignments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_bookings`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_bookings` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_course_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `external_participant_id` bigint(20) unsigned DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `status` varchar(10) NOT NULL DEFAULT 'requested',
+  `seats` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `article_id` bigint(20) unsigned DEFAULT NULL,
+  `unit_price` decimal(12,2) DEFAULT NULL,
+  `currency` varchar(3) DEFAULT NULL,
+  `requested_at` timestamp NOT NULL,
+  `decided_at` timestamp NULL DEFAULT NULL,
+  `decided_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `decision_note` varchar(500) DEFAULT NULL,
+  `learning_enrollment_id` bigint(20) unsigned DEFAULT NULL,
+  `is_billable` tinyint(1) NOT NULL DEFAULT 0,
+  `billed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `learning_bookings_user_id_foreign` (`user_id`),
+  KEY `learning_bookings_external_participant_id_foreign` (`external_participant_id`),
+  KEY `learning_bookings_customer_id_foreign` (`customer_id`),
+  KEY `learning_bookings_article_id_foreign` (`article_id`),
+  KEY `learning_bookings_decided_by_user_id_foreign` (`decided_by_user_id`),
+  KEY `learning_bookings_learning_enrollment_id_foreign` (`learning_enrollment_id`),
+  KEY `lrn_booking_org_status_idx` (`organization_id`,`status`),
+  KEY `lrn_booking_course_status_idx` (`learning_course_id`,`status`),
+  CONSTRAINT `learning_bookings_article_id_foreign` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_bookings_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_bookings_decided_by_user_id_foreign` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_bookings_external_participant_id_foreign` FOREIGN KEY (`external_participant_id`) REFERENCES `external_participants` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_bookings_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_bookings_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_bookings_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_bookings_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_certificates`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_certificates` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `learning_course_id` bigint(20) unsigned NOT NULL,
+  `learning_course_version_id` bigint(20) unsigned DEFAULT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `external_participant_id` bigint(20) unsigned DEFAULT NULL,
+  `number` varchar(40) NOT NULL,
+  `verification_code` varchar(32) NOT NULL,
+  `holder_name` varchar(180) NOT NULL,
+  `issued_on` date NOT NULL,
+  `valid_until` date DEFAULT NULL,
+  `score_percent` tinyint(3) unsigned DEFAULT NULL,
+  `pdf_path` varchar(500) DEFAULT NULL,
+  `revoked_at` timestamp NULL DEFAULT NULL,
+  `revoked_reason` varchar(255) DEFAULT NULL,
+  `revoked_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_cert_org_no_uq` (`organization_id`,`number`),
+  UNIQUE KEY `lrn_cert_code_uq` (`verification_code`),
+  KEY `learning_certificates_learning_enrollment_id_foreign` (`learning_enrollment_id`),
+  KEY `learning_certificates_learning_course_id_foreign` (`learning_course_id`),
+  KEY `learning_certificates_learning_course_version_id_foreign` (`learning_course_version_id`),
+  KEY `learning_certificates_user_id_foreign` (`user_id`),
+  KEY `learning_certificates_external_participant_id_foreign` (`external_participant_id`),
+  KEY `learning_certificates_revoked_by_user_id_foreign` (`revoked_by_user_id`),
+  KEY `lrn_cert_org_valid_idx` (`organization_id`,`valid_until`),
+  CONSTRAINT `learning_certificates_external_participant_id_foreign` FOREIGN KEY (`external_participant_id`) REFERENCES `external_participants` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_certificates_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_certificates_learning_course_version_id_foreign` FOREIGN KEY (`learning_course_version_id`) REFERENCES `learning_course_versions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_certificates_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_certificates_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_certificates_revoked_by_user_id_foreign` FOREIGN KEY (`revoked_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_certificates_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_content_translations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_content_translations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `translatable_type` varchar(120) NOT NULL,
+  `translatable_id` bigint(20) unsigned NOT NULL,
+  `locale` varchar(8) NOT NULL,
+  `payload` longtext NOT NULL,
+  `source_hash` varchar(64) NOT NULL,
+  `status` varchar(10) NOT NULL DEFAULT 'draft',
+  `provider` varchar(60) DEFAULT NULL,
+  `approved_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_trans_uq` (`translatable_type`,`translatable_id`,`locale`),
+  KEY `learning_content_translations_approved_by_user_id_foreign` (`approved_by_user_id`),
+  KEY `lrn_trans_org_locale_idx` (`organization_id`,`locale`),
+  CONSTRAINT `learning_content_translations_approved_by_user_id_foreign` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_content_translations_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_course_versions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_course_versions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_course_id` bigint(20) unsigned NOT NULL,
+  `version` smallint(5) unsigned NOT NULL,
+  `label` varchar(60) DEFAULT NULL,
+  `content_snapshot` longtext DEFAULT NULL,
+  `released_at` timestamp NULL DEFAULT NULL,
+  `released_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `is_current` tinyint(1) NOT NULL DEFAULT 0,
+  `training_course_version_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_course_ver_uq` (`learning_course_id`,`version`),
+  KEY `learning_course_versions_released_by_user_id_foreign` (`released_by_user_id`),
+  KEY `learning_course_versions_training_course_version_id_foreign` (`training_course_version_id`),
+  KEY `lrn_course_ver_org_idx` (`organization_id`,`learning_course_id`),
+  CONSTRAINT `learning_course_versions_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_course_versions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_course_versions_released_by_user_id_foreign` FOREIGN KEY (`released_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_course_versions_training_course_version_id_foreign` FOREIGN KEY (`training_course_version_id`) REFERENCES `training_course_versions` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_courses`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_courses` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `code` varchar(60) NOT NULL,
+  `title` varchar(180) NOT NULL,
+  `subtitle` varchar(255) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `objectives` text DEFAULT NULL,
+  `language` varchar(5) NOT NULL DEFAULT 'de',
+  `status` varchar(12) NOT NULL DEFAULT 'draft',
+  `audiences` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`audiences`)),
+  `access_kind` varchar(12) NOT NULL DEFAULT 'enrolled',
+  `training_course_id` bigint(20) unsigned DEFAULT NULL,
+  `qualification_id` bigint(20) unsigned DEFAULT NULL,
+  `asset_id` bigint(20) unsigned DEFAULT NULL,
+  `competency_id` bigint(20) unsigned DEFAULT NULL,
+  `competency_level` tinyint(3) unsigned DEFAULT NULL,
+  `article_id` bigint(20) unsigned DEFAULT NULL,
+  `owner_user_id` bigint(20) unsigned DEFAULT NULL,
+  `duration_minutes` smallint(5) unsigned DEFAULT NULL,
+  `validity_months` smallint(5) unsigned DEFAULT NULL,
+  `points` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `time_policy` varchar(20) NOT NULL DEFAULT 'work_time_required',
+  `instruction_suitability` varchar(20) NOT NULL DEFAULT 'supplementary',
+  `certificate_enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `creates_instruction_proof` tinyint(1) NOT NULL DEFAULT 0,
+  `access_days` smallint(5) unsigned DEFAULT NULL,
+  `sequential` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_course_org_code_uq` (`organization_id`,`code`),
+  UNIQUE KEY `lrn_course_org_training_uq` (`organization_id`,`training_course_id`),
+  KEY `learning_courses_training_course_id_foreign` (`training_course_id`),
+  KEY `learning_courses_article_id_foreign` (`article_id`),
+  KEY `learning_courses_owner_user_id_foreign` (`owner_user_id`),
+  KEY `lrn_course_org_status_idx` (`organization_id`,`status`),
+  KEY `learning_courses_qualification_id_foreign` (`qualification_id`),
+  KEY `learning_courses_competency_id_foreign` (`competency_id`),
+  KEY `learning_courses_asset_id_foreign` (`asset_id`),
+  CONSTRAINT `learning_courses_article_id_foreign` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_courses_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_courses_competency_id_foreign` FOREIGN KEY (`competency_id`) REFERENCES `competencies` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_courses_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_courses_owner_user_id_foreign` FOREIGN KEY (`owner_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_courses_qualification_id_foreign` FOREIGN KEY (`qualification_id`) REFERENCES `qualifications` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_courses_training_course_id_foreign` FOREIGN KEY (`training_course_id`) REFERENCES `training_courses` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_enrollment_events`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_enrollment_events` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `from_status` varchar(12) DEFAULT NULL,
+  `to_status` varchar(12) NOT NULL,
+  `actor_user_id` bigint(20) unsigned DEFAULT NULL,
+  `reason` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `learning_enrollment_events_organization_id_foreign` (`organization_id`),
+  KEY `learning_enrollment_events_actor_user_id_foreign` (`actor_user_id`),
+  KEY `lrn_enr_event_idx` (`learning_enrollment_id`,`created_at`),
+  CONSTRAINT `learning_enrollment_events_actor_user_id_foreign` FOREIGN KEY (`actor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_enrollment_events_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_enrollment_events_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_enrollments`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_enrollments` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_course_id` bigint(20) unsigned NOT NULL,
+  `learning_course_version_id` bigint(20) unsigned DEFAULT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `external_participant_id` bigint(20) unsigned DEFAULT NULL,
+  `status` varchar(12) NOT NULL DEFAULT 'assigned',
+  `source` varchar(12) NOT NULL DEFAULT 'manual',
+  `assigned_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `due_at` date DEFAULT NULL,
+  `access_until` date DEFAULT NULL,
+  `started_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `score_percent` tinyint(3) unsigned DEFAULT NULL,
+  `points_earned` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_enr_course_user_uq` (`learning_course_id`,`user_id`),
+  UNIQUE KEY `lrn_enr_course_ext_uq` (`learning_course_id`,`external_participant_id`),
+  KEY `learning_enrollments_learning_course_version_id_foreign` (`learning_course_version_id`),
+  KEY `learning_enrollments_user_id_foreign` (`user_id`),
+  KEY `learning_enrollments_external_participant_id_foreign` (`external_participant_id`),
+  KEY `learning_enrollments_assigned_by_user_id_foreign` (`assigned_by_user_id`),
+  KEY `lrn_enr_org_status_idx` (`organization_id`,`status`),
+  KEY `lrn_enr_org_due_idx` (`organization_id`,`due_at`),
+  CONSTRAINT `learning_enrollments_assigned_by_user_id_foreign` FOREIGN KEY (`assigned_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_enrollments_external_participant_id_foreign` FOREIGN KEY (`external_participant_id`) REFERENCES `external_participants` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_enrollments_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_enrollments_learning_course_version_id_foreign` FOREIGN KEY (`learning_course_version_id`) REFERENCES `learning_course_versions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_enrollments_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_enrollments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_issuer_keys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_issuer_keys` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `algorithm` varchar(20) NOT NULL DEFAULT 'ed25519',
+  `public_key` text NOT NULL,
+  `private_key` text NOT NULL,
+  `key_id` varchar(64) NOT NULL,
+  `revoked_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_issuer_key_uq` (`organization_id`,`key_id`),
+  KEY `lrn_issuer_key_active_idx` (`organization_id`,`revoked_at`),
+  CONSTRAINT `learning_issuer_keys_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_path_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_path_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_path_id` bigint(20) unsigned NOT NULL,
+  `learning_course_id` bigint(20) unsigned NOT NULL,
+  `position` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `is_mandatory` tinyint(1) NOT NULL DEFAULT 1,
+  `due_days` smallint(5) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_path_item_uq` (`learning_path_id`,`learning_course_id`),
+  KEY `learning_path_items_organization_id_foreign` (`organization_id`),
+  KEY `learning_path_items_learning_course_id_foreign` (`learning_course_id`),
+  KEY `lrn_path_item_pos_idx` (`learning_path_id`,`position`),
+  CONSTRAINT `learning_path_items_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_path_items_learning_path_id_foreign` FOREIGN KEY (`learning_path_id`) REFERENCES `learning_paths` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_path_items_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_paths`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_paths` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `code` varchar(60) NOT NULL,
+  `title` varchar(180) NOT NULL,
+  `description` text DEFAULT NULL,
+  `target_role` varchar(60) DEFAULT NULL,
+  `duration_days` smallint(5) unsigned DEFAULT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_path_org_code_uq` (`organization_id`,`code`),
+  CONSTRAINT `learning_paths_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_question_options`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_question_options` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_question_id` bigint(20) unsigned NOT NULL,
+  `label` varchar(500) NOT NULL,
+  `is_correct` tinyint(1) NOT NULL DEFAULT 0,
+  `position` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `match_key` varchar(60) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `learning_question_options_organization_id_foreign` (`organization_id`),
+  KEY `lrn_option_question_pos_idx` (`learning_question_id`,`position`),
+  CONSTRAINT `learning_question_options_learning_question_id_foreign` FOREIGN KEY (`learning_question_id`) REFERENCES `learning_questions` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_question_options_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_questions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_questions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_quiz_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(12) NOT NULL,
+  `prompt` text NOT NULL,
+  `explanation` text DEFAULT NULL,
+  `points` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `position` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `settings` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`settings`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `learning_questions_organization_id_foreign` (`organization_id`),
+  KEY `lrn_question_quiz_pos_idx` (`learning_quiz_id`,`position`),
+  CONSTRAINT `learning_questions_learning_quiz_id_foreign` FOREIGN KEY (`learning_quiz_id`) REFERENCES `learning_quizzes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_questions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_quiz_attempts`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_quiz_attempts` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_quiz_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `attempt_no` smallint(5) unsigned NOT NULL,
+  `started_at` timestamp NOT NULL,
+  `submitted_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NULL DEFAULT NULL,
+  `questions_snapshot` longtext NOT NULL,
+  `score_points` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `max_points` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `score_percent` tinyint(3) unsigned DEFAULT NULL,
+  `passed` tinyint(1) DEFAULT NULL,
+  `client_ip` varchar(45) DEFAULT NULL,
+  `user_agent` varchar(255) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_attempt_no_uq` (`learning_enrollment_id`,`learning_quiz_id`,`attempt_no`),
+  KEY `learning_quiz_attempts_learning_quiz_id_foreign` (`learning_quiz_id`),
+  KEY `lrn_attempt_org_sub_idx` (`organization_id`,`submitted_at`),
+  CONSTRAINT `learning_quiz_attempts_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_quiz_attempts_learning_quiz_id_foreign` FOREIGN KEY (`learning_quiz_id`) REFERENCES `learning_quizzes` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_quiz_attempts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_quizzes`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_quizzes` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_unit_id` bigint(20) unsigned DEFAULT NULL,
+  `title` varchar(180) NOT NULL,
+  `description` text DEFAULT NULL,
+  `pass_percent` tinyint(3) unsigned NOT NULL DEFAULT 80,
+  `time_limit_minutes` smallint(5) unsigned DEFAULT NULL,
+  `max_attempts` tinyint(3) unsigned NOT NULL DEFAULT 3,
+  `retry_wait_hours` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `questions_per_attempt` smallint(5) unsigned DEFAULT NULL,
+  `shuffle_questions` tinyint(1) NOT NULL DEFAULT 1,
+  `shuffle_answers` tinyint(1) NOT NULL DEFAULT 1,
+  `feedback_mode` varchar(10) NOT NULL DEFAULT 'end',
+  `show_solutions` tinyint(1) NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_quiz_unit_uq` (`learning_unit_id`),
+  KEY `lrn_quiz_org_idx` (`organization_id`),
+  CONSTRAINT `learning_quizzes_learning_unit_id_foreign` FOREIGN KEY (`learning_unit_id`) REFERENCES `learning_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_quizzes_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_scorm_packages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_scorm_packages` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_unit_id` bigint(20) unsigned NOT NULL,
+  `title` varchar(180) NOT NULL,
+  `version` varchar(12) NOT NULL,
+  `storage_path` varchar(500) NOT NULL,
+  `launch_href` varchar(500) DEFAULT NULL,
+  `manifest_hash` varchar(64) NOT NULL,
+  `file_count` int(10) unsigned NOT NULL DEFAULT 0,
+  `size_bytes` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `uploaded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_scorm_unit_uq` (`learning_unit_id`),
+  KEY `learning_scorm_packages_uploaded_by_user_id_foreign` (`uploaded_by_user_id`),
+  KEY `lrn_scorm_org_idx` (`organization_id`),
+  CONSTRAINT `learning_scorm_packages_learning_unit_id_foreign` FOREIGN KEY (`learning_unit_id`) REFERENCES `learning_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_scorm_packages_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_scorm_packages_uploaded_by_user_id_foreign` FOREIGN KEY (`uploaded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_scorm_states`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_scorm_states` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_scorm_package_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `lesson_status` varchar(20) DEFAULT NULL,
+  `success_status` varchar(20) DEFAULT NULL,
+  `score_scaled` decimal(5,4) DEFAULT NULL,
+  `suspend_data` longtext DEFAULT NULL,
+  `location` varchar(500) DEFAULT NULL,
+  `session_seconds` int(10) unsigned NOT NULL DEFAULT 0,
+  `last_commit_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_scorm_state_uq` (`learning_scorm_package_id`,`learning_enrollment_id`),
+  KEY `learning_scorm_states_organization_id_foreign` (`organization_id`),
+  KEY `learning_scorm_states_learning_enrollment_id_foreign` (`learning_enrollment_id`),
+  CONSTRAINT `learning_scorm_states_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_scorm_states_learning_scorm_package_id_foreign` FOREIGN KEY (`learning_scorm_package_id`) REFERENCES `learning_scorm_packages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_scorm_states_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_sections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_sections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_course_id` bigint(20) unsigned NOT NULL,
+  `title` varchar(180) NOT NULL,
+  `description` text DEFAULT NULL,
+  `position` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `learning_sections_organization_id_foreign` (`organization_id`),
+  KEY `lrn_section_course_pos_idx` (`learning_course_id`,`position`),
+  CONSTRAINT `learning_sections_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_sections_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_submissions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_submissions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_assignment_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(10) NOT NULL DEFAULT 'draft',
+  `body` text DEFAULT NULL,
+  `submitted_at` timestamp NULL DEFAULT NULL,
+  `graded_at` timestamp NULL DEFAULT NULL,
+  `graded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `points_awarded` smallint(5) unsigned DEFAULT NULL,
+  `score_percent` tinyint(3) unsigned DEFAULT NULL,
+  `passed` tinyint(1) DEFAULT NULL,
+  `feedback` text DEFAULT NULL,
+  `rubric_scores` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rubric_scores`)),
+  `rubric_snapshot` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`rubric_snapshot`)),
+  `second_opinion_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `second_opinion_at` timestamp NULL DEFAULT NULL,
+  `attempt_no` smallint(5) unsigned NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_submission_uq` (`learning_assignment_id`,`learning_enrollment_id`),
+  KEY `learning_submissions_learning_enrollment_id_foreign` (`learning_enrollment_id`),
+  KEY `learning_submissions_graded_by_user_id_foreign` (`graded_by_user_id`),
+  KEY `learning_submissions_second_opinion_by_user_id_foreign` (`second_opinion_by_user_id`),
+  KEY `lrn_submission_org_status_idx` (`organization_id`,`status`),
+  CONSTRAINT `learning_submissions_graded_by_user_id_foreign` FOREIGN KEY (`graded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_submissions_learning_assignment_id_foreign` FOREIGN KEY (`learning_assignment_id`) REFERENCES `learning_assignments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_submissions_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_submissions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_submissions_second_opinion_by_user_id_foreign` FOREIGN KEY (`second_opinion_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_time_sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_time_sessions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `learning_unit_id` bigint(20) unsigned DEFAULT NULL,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `started_at` timestamp NOT NULL,
+  `ended_at` timestamp NULL DEFAULT NULL,
+  `last_heartbeat_at` timestamp NULL DEFAULT NULL,
+  `active_seconds` int(10) unsigned NOT NULL DEFAULT 0,
+  `source` varchar(10) NOT NULL DEFAULT 'web',
+  `classification` varchar(10) DEFAULT NULL,
+  `approval_status` varchar(10) DEFAULT NULL,
+  `approved_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `approved_at` timestamp NULL DEFAULT NULL,
+  `approval_note` varchar(255) DEFAULT NULL,
+  `attendance_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `learning_time_sessions_learning_unit_id_foreign` (`learning_unit_id`),
+  KEY `learning_time_sessions_user_id_foreign` (`user_id`),
+  KEY `learning_time_sessions_attendance_id_foreign` (`attendance_id`),
+  KEY `lrn_time_org_user_idx` (`organization_id`,`user_id`,`started_at`),
+  KEY `lrn_time_enr_open_idx` (`learning_enrollment_id`,`ended_at`),
+  KEY `learning_time_sessions_approved_by_user_id_foreign` (`approved_by_user_id`),
+  KEY `lrn_time_approval_idx` (`organization_id`,`approval_status`),
+  CONSTRAINT `learning_time_sessions_approved_by_user_id_foreign` FOREIGN KEY (`approved_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_time_sessions_attendance_id_foreign` FOREIGN KEY (`attendance_id`) REFERENCES `attendances` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_time_sessions_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_time_sessions_learning_unit_id_foreign` FOREIGN KEY (`learning_unit_id`) REFERENCES `learning_units` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_time_sessions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_time_sessions_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_unit_progress`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_unit_progress` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `learning_unit_id` bigint(20) unsigned NOT NULL,
+  `status` varchar(10) NOT NULL DEFAULT 'open',
+  `started_at` timestamp NULL DEFAULT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `progress_percent` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_progress_enr_unit_uq` (`learning_enrollment_id`,`learning_unit_id`),
+  KEY `learning_unit_progress_learning_unit_id_foreign` (`learning_unit_id`),
+  KEY `lrn_progress_org_status_idx` (`organization_id`,`status`),
+  CONSTRAINT `learning_unit_progress_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_unit_progress_learning_unit_id_foreign` FOREIGN KEY (`learning_unit_id`) REFERENCES `learning_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_unit_progress_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_units`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_units` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_course_id` bigint(20) unsigned NOT NULL,
+  `learning_section_id` bigint(20) unsigned DEFAULT NULL,
+  `event_id` bigint(20) unsigned DEFAULT NULL,
+  `registration_lead_hours` smallint(5) unsigned DEFAULT NULL,
+  `cancellation_lead_hours` smallint(5) unsigned DEFAULT NULL,
+  `title` varchar(180) NOT NULL,
+  `kind` varchar(12) NOT NULL DEFAULT 'content',
+  `position` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `is_mandatory` tinyint(1) NOT NULL DEFAULT 1,
+  `points` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `duration_minutes` smallint(5) unsigned DEFAULT NULL,
+  `content` longtext DEFAULT NULL,
+  `completion_rule` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`completion_rule`)),
+  `release_rule` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`release_rule`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `learning_units_learning_section_id_foreign` (`learning_section_id`),
+  KEY `lrn_unit_course_pos_idx` (`learning_course_id`,`position`),
+  KEY `lrn_unit_org_kind_idx` (`organization_id`,`kind`),
+  KEY `learning_units_event_id_foreign` (`event_id`),
+  CONSTRAINT `learning_units_event_id_foreign` FOREIGN KEY (`event_id`) REFERENCES `events` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_units_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_units_learning_section_id_foreign` FOREIGN KEY (`learning_section_id`) REFERENCES `learning_sections` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_units_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_xapi_statements`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_xapi_statements` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned DEFAULT NULL,
+  `statement_id` char(36) DEFAULT NULL,
+  `verb` varchar(255) DEFAULT NULL,
+  `object_id` varchar(500) DEFAULT NULL,
+  `payload` longtext NOT NULL,
+  `stored_at` timestamp NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_xapi_stmt_uq` (`organization_id`,`statement_id`),
+  KEY `lrn_xapi_enr_idx` (`learning_enrollment_id`,`stored_at`),
+  CONSTRAINT `learning_xapi_statements_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_xapi_statements_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `letterhead_assets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -10874,6 +11631,36 @@ CREATE TABLE `materials` (
   KEY `materials_external_provider_external_id_index` (`external_provider`,`external_id`),
   KEY `materials_name_index` (`name`),
   CONSTRAINT `materials_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `media_renditions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `media_renditions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `attachment_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(12) NOT NULL,
+  `variant` varchar(20) DEFAULT NULL,
+  `disk` varchar(40) NOT NULL,
+  `path` varchar(500) NOT NULL,
+  `mime` varchar(120) NOT NULL,
+  `size_bytes` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `width` smallint(5) unsigned DEFAULT NULL,
+  `height` smallint(5) unsigned DEFAULT NULL,
+  `locale` varchar(8) DEFAULT NULL,
+  `source` varchar(8) NOT NULL DEFAULT 'manual',
+  `reviewed_at` timestamp NULL DEFAULT NULL,
+  `reviewed_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `media_rend_uq` (`attachment_id`,`kind`,`variant`,`locale`),
+  KEY `media_rend_org_idx` (`organization_id`),
+  KEY `media_rend_reviewer_fk` (`reviewed_by`),
+  CONSTRAINT `media_rend_reviewer_fk` FOREIGN KEY (`reviewed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `media_renditions_attachment_id_foreign` FOREIGN KEY (`attachment_id`) REFERENCES `attachments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `media_renditions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `medical_checkups`;
@@ -13988,7 +14775,7 @@ CREATE TABLE `protocols` (
   KEY `protocols_org_type_status_idx` (`organization_id`,`type`,`status`),
   KEY `protocol_weather_fk` (`weather_snapshot_id`),
   CONSTRAINT `protocol_weather_fk` FOREIGN KEY (`weather_snapshot_id`) REFERENCES `weather_snapshots` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `protocols_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `protocols_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `protocols_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `protocols_supersedes_id_foreign` FOREIGN KEY (`supersedes_id`) REFERENCES `protocols` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -15021,7 +15808,7 @@ CREATE TABLE `safety_events` (
   KEY `safety_events_subject_idx` (`subject_type`,`subject_id`),
   CONSTRAINT `safety_events_closed_by_user_id_foreign` FOREIGN KEY (`closed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `safety_events_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `safety_events_reported_by_user_id_foreign` FOREIGN KEY (`reported_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+  CONSTRAINT `safety_events_reported_by_user_id_foreign` FOREIGN KEY (`reported_by_user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `safety_instruction_participants`;
@@ -15061,6 +15848,7 @@ CREATE TABLE `safety_instructions` (
   `hazard_assessment_id` bigint(20) unsigned DEFAULT NULL,
   `training_course_id` bigint(20) unsigned DEFAULT NULL,
   `training_course_version_id` bigint(20) unsigned DEFAULT NULL,
+  `asset_id` bigint(20) unsigned DEFAULT NULL,
   `held_on` date NOT NULL,
   `instructor_user_id` bigint(20) unsigned DEFAULT NULL,
   `repeat_interval_months` smallint(5) unsigned DEFAULT NULL,
@@ -15077,6 +15865,8 @@ CREATE TABLE `safety_instructions` (
   KEY `safety_instr_org_held_idx` (`organization_id`,`held_on`),
   KEY `safety_instructions_training_course_id_foreign` (`training_course_id`),
   KEY `safety_instructions_training_course_version_id_foreign` (`training_course_version_id`),
+  KEY `safety_instructions_asset_id_foreign` (`asset_id`),
+  CONSTRAINT `safety_instructions_asset_id_foreign` FOREIGN KEY (`asset_id`) REFERENCES `assets` (`id`) ON DELETE SET NULL,
   CONSTRAINT `safety_instructions_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `safety_instructions_hazard_assessment_id_foreign` FOREIGN KEY (`hazard_assessment_id`) REFERENCES `hazard_assessments` (`id`) ON DELETE SET NULL,
   CONSTRAINT `safety_instructions_instructor_user_id_foreign` FOREIGN KEY (`instructor_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -16548,6 +17338,7 @@ CREATE TABLE `supplier_catalog_sources` (
   `remote_path` varchar(1024) DEFAULT NULL,
   `remote_username` varchar(191) DEFAULT NULL,
   `remote_password` text DEFAULT NULL,
+  `remote_host_fingerprint` varchar(190) DEFAULT NULL,
   `punchout_url` varchar(1024) DEFAULT NULL,
   `punchout_username` varchar(191) DEFAULT NULL,
   `punchout_password` text DEFAULT NULL,
@@ -16850,6 +17641,7 @@ CREATE TABLE `surveys` (
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `anonymous` tinyint(1) NOT NULL DEFAULT 0,
   `trigger_on_ticket_close` tinyint(1) NOT NULL DEFAULT 0,
+  `trigger_on_course_completion` tinyint(1) NOT NULL DEFAULT 0,
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -17776,6 +18568,7 @@ CREATE TABLE `time_export_delivery_configs` (
   `sftp_username` varchar(190) DEFAULT NULL,
   `sftp_password` text DEFAULT NULL,
   `sftp_root` varchar(190) DEFAULT NULL,
+  `sftp_host_fingerprint` varchar(190) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -18101,7 +18894,7 @@ CREATE TABLE `tours` (
   CONSTRAINT `tours_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tours_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
   CONSTRAINT `tours_updated_by_foreign` FOREIGN KEY (`updated_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `tours_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `tours_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`),
   CONSTRAINT `tours_vehicle_id_foreign` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -18341,6 +19134,36 @@ CREATE TABLE `user_bookmarks` (
   PRIMARY KEY (`id`),
   KEY `user_bookmarks_user_id_sort_order_index` (`user_id`,`sort_order`),
   CONSTRAINT `user_bookmarks_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `user_competencies`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_competencies` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `competency_id` bigint(20) unsigned NOT NULL,
+  `level` tinyint(3) unsigned NOT NULL DEFAULT 1,
+  `source` varchar(12) NOT NULL DEFAULT 'assessment',
+  `learning_enrollment_id` bigint(20) unsigned DEFAULT NULL,
+  `assessed_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `assessed_on` date NOT NULL,
+  `valid_until` date DEFAULT NULL,
+  `note` varchar(500) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `user_competency_uq` (`user_id`,`competency_id`),
+  KEY `user_competencies_competency_id_foreign` (`competency_id`),
+  KEY `user_competencies_learning_enrollment_id_foreign` (`learning_enrollment_id`),
+  KEY `user_competencies_assessed_by_user_id_foreign` (`assessed_by_user_id`),
+  KEY `user_competency_level_idx` (`organization_id`,`competency_id`,`level`),
+  CONSTRAINT `user_competencies_assessed_by_user_id_foreign` FOREIGN KEY (`assessed_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `user_competencies_competency_id_foreign` FOREIGN KEY (`competency_id`) REFERENCES `competencies` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `user_competencies_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `user_competencies_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `user_competencies_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_dashboard_widgets`;
@@ -20014,3 +20837,24 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (750,'2027_02_19_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (751,'2027_02_19_104100_add_peppol_participant_and_lookups',26);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (752,'2027_02_19_104200_add_width_to_user_dashboard_widgets',27);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (753,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',27);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (754,'2027_02_19_104400_create_learning_platform_tables',28);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (755,'2027_02_19_104500_create_learning_enrollment_tables',29);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (756,'2027_02_19_104600_create_learning_time_sessions_table',30);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (757,'2027_02_19_104700_create_learning_quiz_tables',31);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (758,'2027_02_19_104800_create_learning_assignment_tables',32);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (759,'2027_02_19_104900_create_learning_certificates_table',33);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (760,'2027_02_19_105000_link_learning_units_to_events',34);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (761,'2027_02_19_105100_create_learning_access_tokens_table',35);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (762,'2027_02_19_105200_create_learning_bookings_table',36);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (763,'2027_02_19_105300_create_learning_paths_and_competencies',36);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (764,'2027_02_19_105400_add_course_completion_trigger_to_surveys',37);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (765,'2027_02_19_105500_create_learning_issuer_keys_table',38);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (766,'2027_02_19_105600_create_learning_scorm_tables',39);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (767,'2027_02_19_105700_add_heartbeat_to_learning_time_sessions',40);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (768,'2027_02_19_105800_add_asset_to_learning_courses',41);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (769,'2027_02_19_105900_create_learning_content_translations',42);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (770,'2027_02_19_110000_create_media_renditions_table',43);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (771,'2027_02_19_110100_widen_issuer_key_for_rsa',44);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (772,'2027_02_19_110200_add_subtitle_review_to_media_renditions',45);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (773,'2027_02_19_110300_restrict_evidence_authorship_user_fks',46);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (774,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',47);

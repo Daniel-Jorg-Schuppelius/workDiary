@@ -18,7 +18,7 @@
 
     <x-card>
         <form method="GET" action="{{ route('serials.verify') }}" class="flex items-end gap-2">
-            <input name="serial" value="{{ $query }}" autofocus placeholder="{{ __('inventory.serial.verify.placeholder') }}"
+            <input aria-label="{{ __('inventory.serial.verify.placeholder') }}" name="serial" value="{{ $query }}" autofocus placeholder="{{ __('inventory.serial.verify.placeholder') }}"
                    class="input input-bordered w-full font-mono">
             <x-button type="submit" tone="primary" size="md">{{ __('inventory.serial.action.search') }}</x-button>
         </form>

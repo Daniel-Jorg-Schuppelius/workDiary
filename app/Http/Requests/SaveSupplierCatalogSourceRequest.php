@@ -58,6 +58,10 @@ class SaveSupplierCatalogSourceRequest extends BaseFormRequest {
             'remote_path' => ['nullable', 'string', 'max:1024'],
             'remote_username' => ['nullable', 'string', 'max:191'],
             'remote_password' => ['nullable', 'string', 'max:512'],
+            // Pflicht beim SFTP-Abruf: ohne Host-Key meldet sich die
+            // Anwendung bei jedem Server an, der antwortet (Sicherheitsscan
+            // 2026-08-23, S-22).
+            'remote_host_fingerprint' => ['nullable', 'string', 'max:190'],
             'fetch_interval_minutes' => ['nullable', 'integer', 'min:0', 'max:100000'],
             // OCI-Punchout-Absprung (MVP-096): Browser-Redirect, aber derselbe
             // Guard gegen interne Ziele wie beim Remote-Abruf.

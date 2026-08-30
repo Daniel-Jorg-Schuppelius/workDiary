@@ -327,7 +327,7 @@
                         <div class="mt-3 space-y-2">
                             <template x-for="(area, index) in layout.blocked_areas" :key="'row' + index">
                                 <div class="flex flex-wrap items-end gap-2 text-xs">
-                                    <input type="text" class="input input-bordered input-xs w-28" x-model="area.label" @change="markDirty()" :disabled="!editable" placeholder="{{ __('Bezeichnung') }}">
+                                    <input aria-label="{{ __('Bezeichnung') }}" type="text" class="input input-bordered input-xs w-28" x-model="area.label" @change="markDirty()" :disabled="!editable" placeholder="{{ __('Bezeichnung') }}">
                                     <select class="select select-bordered select-xs" x-model="area.page" @change="markDirty()" :disabled="!editable">
                                         <option value="all">{{ __('Alle Seiten') }}</option>
                                         <option value="first">{{ __('Erste Seite') }}</option>

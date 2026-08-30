@@ -39,6 +39,7 @@ return [
         'sftp' => "Téléversement SFTP",
         'sftp_toggle' => "Téléverser le fichier d'export via SFTP après finalisation",
         'sftp_host' => "Hôte",
+        'sftp_host_fingerprint' => 'Empreinte de la clé d’hôte',
         'sftp_port' => "Port",
         'sftp_username' => "Nom d'utilisateur",
         'sftp_password' => "Mot de passe",
@@ -73,6 +74,7 @@ return [
     ],
 
     'error' => [
+        'sftp_fingerprint_missing' => 'L’empreinte de la clé d’hôte manque pour l’envoi SFTP. Sans elle, le fichier n’est pas transmis.',
         'missing_mappings' => "Export interrompu : les rubriques suivantes n'ont pas de rubrique cible dans le programme de paie : :types. Veuillez créer une correspondance sous « Rubriques de paie & transmission des exports » ou définir la rubrique sur la règle de majoration.",
     ],
 
@@ -90,5 +92,8 @@ return [
         'heading' => "Export des temps pour la paie",
         'body' => "Vous trouverez en pièce jointe l'export des temps du profil :profile pour la période :period.",
         'meta' => ":rows lignes · SHA-256 :hash",
+    ],
+    'help' => [
+        'sftp_host_fingerprint' => 'Obligatoire : lie la connexion au bon serveur. À obtenir avec `ssh-keyscan -t rsa <host> | ssh-keygen -lf -`.',
     ],
 ];

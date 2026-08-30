@@ -164,6 +164,7 @@ class DemoSeederService {
             'communication_notes' => 0,
             'attachments' => 0,
             'procedure_runs' => 0,
+            'learning' => 0,
         ];
 
         DB::transaction(function () use ($organization, $faker, $actor, $industry, $blueprint, &$counts): void {
@@ -271,6 +272,10 @@ class DemoSeederService {
             // Lokale Buchhaltung (Feature 125, MVP-678): Durchstich vom Konto
             // bis zum offenen Posten.
             $counts['local_accounting'] = $showcase->seedLocalAccounting($organization, $users->first());
+
+            // Lernplattform-Demo (Feature 149, MVP-748): freigegebener Kurs
+            // mit Inhalt, Prüfung und laufender Einschreibung.
+            $counts['learning'] = $showcase->seedLearning($organization, $users->first());
         });
 
         return $counts;

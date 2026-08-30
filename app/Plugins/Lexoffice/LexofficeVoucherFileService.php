@@ -231,6 +231,11 @@ class LexofficeVoucherFileService {
         if ($this->api === null) {
             $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
             $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
+            // Der Antwort-Body geht unverändert an den Browser. Die
+            // SSRF-Schranke prüft die Basis-URL — eine Weiterleitung führte
+            // danach an jedes beliebige Ziel, und der Inhalt käme beim
+            // Aufrufer an (Sicherheitsscan 2026-08-23, S-10).
+            $this->api->setFollowRedirects(false);
         }
 
         return $this->api;

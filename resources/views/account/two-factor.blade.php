@@ -88,7 +88,7 @@
                     </div>
                     <form method="POST" action="{{ route('account.2fa.confirm') }}" class="flex items-end gap-2">
                         @csrf
-                        <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required autofocus
+                        <input aria-label="{{ __('Bestätigungscode') }}" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required autofocus
                                class="input input-sm input-bordered w-full text-center tracking-[0.3em] font-mono" placeholder="000000">
                         <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
                     </form>
@@ -110,7 +110,7 @@
                     <p class="text-sm text-base-content/70">{{ __('Wir haben einen Code an Ihre E-Mail gesendet.') }}</p>
                     <form method="POST" action="{{ route('account.2fa.email.confirm') }}" class="flex items-end gap-2">
                         @csrf
-                        <input name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" required
+                        <input aria-label="{{ __('Code aus der E-Mail') }}" name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" required
                                class="input input-sm input-bordered w-full text-center tracking-[0.3em] font-mono" placeholder="000000">
                         <x-icon-btn icon="check" tone="primary" size="sm" type="submit" show-label>{{ __('Bestätigen') }}</x-icon-btn>
                     </form>
@@ -149,7 +149,7 @@
                     <form method="POST" action="{{ route('account.2fa.recovery') }}" class="space-y-2 rounded-box border border-base-300 bg-base-200/40 p-3">
                         @csrf
                         <label class="text-xs uppercase tracking-wider text-muted">{{ __('Recovery-Codes neu erzeugen') }}</label>
-                        <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-sm input-bordered w-full" placeholder="{{ __('Aktueller App-Code') }}">
+                        <input aria-label="{{ __('Aktueller App-Code') }}" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-sm input-bordered w-full" placeholder="{{ __('Aktueller App-Code') }}">
                         <x-icon-btn icon="autorenew" tone="primary" size="sm" type="submit" show-label>{{ __('Neu erzeugen') }}</x-icon-btn>
                     </form>
                 @endif
@@ -157,7 +157,7 @@
                     <form method="POST" action="{{ route('account.2fa.disable') }}" class="space-y-2 rounded-box border border-error/30 bg-error/5 p-3">
                         @csrf @method('DELETE')
                         <label class="text-xs uppercase tracking-wider text-muted">{{ __('Alles deaktivieren') }}</label>
-                        <input name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-sm input-bordered w-full" placeholder="{{ __('App- oder Recovery-Code') }}">
+                        <input aria-label="{{ __('App- oder Recovery-Code') }}" name="code" type="text" inputmode="numeric" autocomplete="one-time-code" required class="input input-sm input-bordered w-full" placeholder="{{ __('App- oder Recovery-Code') }}">
                         <x-icon-btn icon="gpp_bad" tone="error" size="sm" type="submit" show-label>{{ __('Deaktivieren') }}</x-icon-btn>
                     </form>
                 @else

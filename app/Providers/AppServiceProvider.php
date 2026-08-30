@@ -507,6 +507,7 @@ class AppServiceProvider extends ServiceProvider {
 
         // Trainingsmanagement (Feature 145).
         Gate::policy(\App\Models\Training\TrainingCourse::class, \App\Policies\Training\TrainingCoursePolicy::class);
+        Gate::policy(\App\Models\Learning\LearningCourse::class, \App\Policies\Learning\LearningCoursePolicy::class);
         Gate::policy(\App\Models\Training\TrainingRequirement::class, \App\Policies\Training\TrainingRequirementPolicy::class);
         Gate::policy(\App\Models\Training\TrainingAssignment::class, \App\Policies\Training\TrainingAssignmentPolicy::class);
         Gate::policy(\App\Models\ExternalParticipant::class, \App\Policies\ExternalParticipantPolicy::class);
@@ -607,6 +608,16 @@ class AppServiceProvider extends ServiceProvider {
         Gate::before(static function (User $user, string $ability): ?bool {
             if (! str_contains($ability, '.')) {
                 return null;
+            }
+
+            // `platform.*` gehört dem Betreiber — und nur ihm (Sicherheitsscan
+            // 2026-08-23, S-02). Seit die org-lokale admin-Rolle diese Rechte
+            // nicht mehr trägt, ist das Kennzeichen `is_platform_admin` die
+            // Quelle: sonst verlöre ein Betreiber, der nur die admin-Rolle
+            // seiner eigenen Organisation hat, den Zugang zu seinen eigenen
+            // Betriebsseiten.
+            if (str_starts_with($ability, 'platform.') && $user->isGlobalAdmin()) {
+                return true;
             }
 
             return $user->hasEffectivePermission($ability) ? true : null;

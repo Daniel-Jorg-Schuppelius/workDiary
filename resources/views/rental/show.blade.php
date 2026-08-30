@@ -245,7 +245,7 @@
                             @elseif ($charge->status === \App\Enums\Rental\RentalChargeStatus::Transferred)
                                 <form method="POST" action="{{ route('rental.charges.reference', $charge) }}" class="flex items-center gap-1">
                                     @csrf
-                                    <input type="text" name="external_reference" class="input input-xs input-bordered w-32" placeholder="{{ __('Belegnr.') }}" required>
+                                    <input aria-label="{{ __('Belegnr.') }}" type="text" name="external_reference" class="input input-xs input-bordered w-32" placeholder="{{ __('Belegnr.') }}" required>
                                     <button type="submit" class="btn btn-xs">{{ __('OK') }}</button>
                                 </form>
                             @else

@@ -32,6 +32,7 @@ return [
         'auto_close' => 'Fermeture auto',
         'terminal' => 'Terminal',
         'phone' => 'Téléphone',
+        'learning' => 'Temps d\'apprentissage',
     ],
     'correction' => [
         'action' => [
@@ -39,5 +40,9 @@ return [
             'update' => 'Modifier',
             'delete' => 'Supprimer',
         ],
+    ],
+    'error' => [
+        'target_day_locked' => 'Le jour visé est clôturé ou le mois validé — veuillez demander une correction de temps.',
+        'duration_too_long' => 'Un pointage ne peut pas dépasser :hours heures.',
     ],
 ];

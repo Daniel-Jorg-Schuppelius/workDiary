@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LogRestoreTestRequest;
 use App\Models\RestoreTest;
@@ -30,8 +31,14 @@ use Illuminate\View\View;
  * backup.restoreTest.log (Protokollieren).
  */
 class BackupStatusController extends Controller {
+    use RequiresPlatformOperator;
+
     public function status(Request $request, BackupStatusService $service): View {
         Gate::authorize(Permission::BackupView->value);
+        // Plattformweite Sicht ohne Mandanten-Kontext (siehe Klassenkommentar):
+        // Ein Org-Admin hätte hier den Betriebszustand der ganzen Installation
+        // vor sich (Sicherheitsscan 2026-08-23, S-02).
+        $this->assertPlatformOperator();
 
         $restoreTests = RestoreTest::query()
             ->with('performedBy:id,name')
@@ -48,6 +55,10 @@ class BackupStatusController extends Controller {
 
     public function createRestoreTest(): View {
         Gate::authorize(Permission::BackupRestoreTestLog->value);
+        // Plattformweite Sicht ohne Mandanten-Kontext (siehe Klassenkommentar):
+        // Ein Org-Admin hätte hier den Betriebszustand der ganzen Installation
+        // vor sich (Sicherheitsscan 2026-08-23, S-02).
+        $this->assertPlatformOperator();
 
         return view('admin.backup._restore_test_dialog', [
             'restoreTest' => new RestoreTest(),
@@ -56,6 +67,10 @@ class BackupStatusController extends Controller {
 
     public function storeRestoreTest(LogRestoreTestRequest $request): RedirectResponse {
         Gate::authorize(Permission::BackupRestoreTestLog->value);
+        // Plattformweite Sicht ohne Mandanten-Kontext (siehe Klassenkommentar):
+        // Ein Org-Admin hätte hier den Betriebszustand der ganzen Installation
+        // vor sich (Sicherheitsscan 2026-08-23, S-02).
+        $this->assertPlatformOperator();
 
         $data = $request->validated();
         $data['performed_by_user_id'] = Auth::id();
@@ -66,4 +81,5 @@ class BackupStatusController extends Controller {
             ->route('admin.backup.status')
             ->with('status', __('backup.flash.restore_test_logged'));
     }
+
 }

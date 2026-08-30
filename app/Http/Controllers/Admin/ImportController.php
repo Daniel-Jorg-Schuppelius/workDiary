@@ -37,6 +37,12 @@ class ImportController extends Controller {
     public function __construct(private readonly CsvPreflightAnalyzer $analyzer) {}
 
     public function index(Request $request): View {
+        // Die Liste nennt Dateinamen, Zustände und Sqid-Links aller Importe
+        // der Organisation — darunter Läufe mit personenbezogenen Rohzeilen.
+        // Die Schreibpfade verlangten seit je das Entitätsrecht, die
+        // Lesepfade gar nichts (Sicherheitsscan 2026-08-23, S-23).
+        $this->authorizeAnyImport();
+
         $organization = $this->currentOrganization();
 
         $filters = [
@@ -206,6 +212,7 @@ class ImportController extends Controller {
 
     public function show(Request $request, ImportRun $import): View {
         $this->ensureOwned($import);
+        $this->authorizeImport($import->entity);
 
         $errors = $import->errors()
             ->orderBy('row_number')
@@ -386,6 +393,7 @@ class ImportController extends Controller {
 
     public function destroy(Request $request, ImportRun $import): RedirectResponse {
         $this->ensureOwned($import);
+        $this->authorizeImport($import->entity);
         abort_unless($import->state === ImportRunState::AwaitingApproval || $import->state === ImportRunState::Failed, 409);
 
         if ($import->storage_path !== '' && Storage::disk(CsvPreflightAnalyzer::DISK)->exists($import->storage_path)) {
@@ -399,6 +407,7 @@ class ImportController extends Controller {
 
     public function downloadErrors(Request $request, ImportRun $import): Response {
         $this->ensureOwned($import);
+        $this->authorizeImport($import->entity);
 
         $rows = [];
         foreach ($import->errors()->orderBy('row_number')->orderBy('id')->cursor() as $err) {
@@ -445,6 +454,23 @@ class ImportController extends Controller {
 
     private function ensureOwned(ImportRun $run): void {
         abort_unless($run->organization_id === $this->currentOrganization()->id, 403);
+    }
+
+    /** Zutritt zur Import-Übersicht: irgendein Import-Recht (oder Admin). */
+    private function authorizeAnyImport(): void {
+        $user = Auth::user();
+
+        if ($user instanceof User && $user->isAdmin()) {
+            return;
+        }
+
+        foreach (ImportEntity::cases() as $entity) {
+            if ($user instanceof User && $user->hasEffectivePermission($entity->permission())) {
+                return;
+            }
+        }
+
+        abort(403);
     }
 
     private function authorizeImport(ImportEntity $entity): void {

@@ -250,6 +250,7 @@ class OrgMemberController extends Controller {
         $auth = Auth::user();
         $this->authorizeMemberDirectoryAccess($auth);
         $this->ensureSameOrg($member);
+        $this->ensureMayManagePlatformAdmin($member);
         $member->loadMissing(['addresses', 'bankAccounts']);
 
         $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
@@ -267,6 +268,7 @@ class OrgMemberController extends Controller {
 
     public function update(Request $request, User $member): RedirectResponse {
         $this->ensureSameOrg($member);
+        $this->ensureMayManagePlatformAdmin($member);
 
         /** @var User $auth */
         $auth = Auth::user();
@@ -353,6 +355,7 @@ class OrgMemberController extends Controller {
     public function offboard(\Illuminate\Http\Request $request, User $member): RedirectResponse {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
+        $this->ensureMayManagePlatformAdmin($member);
 
         /** @var User $auth */
         $auth = Auth::user();
@@ -383,6 +386,7 @@ class OrgMemberController extends Controller {
     public function destroy(User $member): RedirectResponse {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
+        $this->ensureMayManagePlatformAdmin($member);
 
         /** @var User $auth */
         $auth = Auth::user();
@@ -415,6 +419,27 @@ class OrgMemberController extends Controller {
 
         return redirect()->route('org.members.index')
             ->with('success', __('Mitglied wurde entfernt.'));
+    }
+
+    /**
+     * Ein Plattform-Betreiber ist kein gewöhnliches Mitglied.
+     *
+     * In einer On-Prem-Installation sitzt der Betreiber meist in derselben
+     * (einzigen) Organisation. Ohne diese Schranke konnte ein org-lokaler
+     * Admin ihm ein neues Passwort setzen, seine E-Mail ändern, ihm die Rolle
+     * entziehen oder das Konto löschen — und damit Org-Admin gegen
+     * Cross-Tenant-Betreiber tauschen bzw. den Betreiber aussperren
+     * (Sicherheitsscan 2026-08-23, S-14). Nur ein Betreiber verwaltet einen
+     * Betreiber.
+     */
+    private function ensureMayManagePlatformAdmin(User $member): void {
+        if (! $member->isGlobalAdmin()) {
+            return;
+        }
+
+        $auth = Auth::user();
+
+        abort_unless($auth instanceof User && $auth->isGlobalAdmin(), 403);
     }
 
     private function ensureSameOrg(User $member): void {

@@ -24,7 +24,11 @@ class SupportReportLogFilter {
     private array $surrogateCounters = [];
 
     public function filter(string $line): string {
+        // Reihenfolge: erst der spezifische JWT-Marker, dann die allgemeine
+        // Zugangsdaten-Regel — sonst verlöre ein Bearer-JWT seine genauere
+        // Kennzeichnung.
         $line = $this->redactJwt($line);
+        $line = $this->redactCredentials($line);
         $line = $this->redactIban($line);
         $line = $this->redactEmail($line);
         $line = $this->redactIpv4($line);
@@ -46,6 +50,31 @@ class SupportReportLogFilter {
         }
 
         return $out;
+    }
+
+    /**
+     * Zugangsdaten in Parametern und Kopfzeilen.
+     *
+     * Der Filter schwärzte JWTs, IBANs, Mail-Adressen, IPs und Rufnummern —
+     * aber weder `Authorization: Bearer …` noch `api_key=…`, `token=…`,
+     * `password=…` oder `secret=…` (Sicherheitsscan 2026-08-23, S-19).
+     * Genau die stehen aber in Integrations-Fehlermeldungen, die im
+     * Problem-Melde-Dialog landen.
+     */
+    private function redactCredentials(string $line): string {
+        // Authorization-Header (Bearer/Basic/Token).
+        $line = (string) preg_replace(
+            '/\b(Bearer|Basic|Token)\s+[A-Za-z0-9._~+\/=-]{8,}/i',
+            '$1 <redacted:credential>',
+            $line
+        );
+
+        // Schlüssel=Wert in Query-Strings, JSON und Array-Ausgaben.
+        return (string) preg_replace(
+            '/("?\b(?:api[_-]?key|apikey|access[_-]?token|refresh[_-]?token|token|secret|client[_-]?secret|password|passwd|pwd)"?\s*[:=]>?\s*"?)([^"\s,&)}\]]{4,})/i',
+            '$1<redacted:credential>',
+            $line
+        );
     }
 
     private function redactJwt(string $line): string {

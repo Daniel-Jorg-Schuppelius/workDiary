@@ -32,7 +32,7 @@
     <x-card :title="__('Org-Regel anlegen (Override des Katalogs)')">
         <form method="POST" action="{{ route('finance.tax-rules.store') }}" class="grid gap-2 sm:grid-cols-4">
             @csrf
-            <input name="country" required maxlength="2" class="input input-sm input-bordered uppercase" placeholder="DE" value="DE">
+            <input aria-label="{{ __('Ländercode') }}" name="country" required maxlength="2" class="input input-sm input-bordered uppercase" placeholder="DE" value="DE">
             <select name="category" class="select select-sm select-bordered">
                 @foreach (\App\Models\TaxRule::CATEGORIES as $category)
                     <option value="{{ $category }}">{{ __("values.$category") }}</option>
@@ -43,12 +43,12 @@
                     <option value="{{ $type }}">{{ __("values.$type") }}</option>
                 @endforeach
             </select>
-            <input name="rate" type="number" step="0.01" min="0" max="99.99" required class="input input-sm input-bordered" placeholder="%">
+            <input aria-label="{{ __('Steuersatz in Prozent') }}" name="rate" type="number" step="0.01" min="0" max="99.99" required class="input input-sm input-bordered" placeholder="%">
             <x-date-range :label="false"
                           from-name="valid_from" to-name="valid_to" from-required
                           :from-label="__('gültig ab')" :to-label="__('gültig bis')" />
-            <input name="source" maxlength="300" class="input input-sm input-bordered" placeholder="{{ __('Quelle/Fundstelle') }}">
-            <input name="note" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Beleg-Hinweistext') }}">
+            <input aria-label="{{ __('Quelle/Fundstelle') }}" name="source" maxlength="300" class="input input-sm input-bordered" placeholder="{{ __('Quelle/Fundstelle') }}">
+            <input aria-label="{{ __('Beleg-Hinweistext') }}" name="note" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Beleg-Hinweistext') }}">
             <div class="sm:col-span-4"><x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Regel anlegen (mit Überschneidungsprüfung)') }}</x-icon-btn></div>
         </form>
 

@@ -90,12 +90,12 @@
                     <div class="grid grid-cols-1 gap-3 md:grid-cols-2">
                         <div>
                             <label class="text-xs text-muted">{{ __('Org-Bindungs-ID des Kunden (license_uid)') }}</label>
-                            <input type="text" name="organization_uid" value="{{ old('organization_uid') }}"
+                            <input aria-label="{{ __('Kennung der Organisation') }}" type="text" name="organization_uid" value="{{ old('organization_uid') }}"
                                 class="input input-sm input-bordered w-full font-mono text-xs" placeholder="z. B. 0fa75312-…">
                         </div>
                         <div>
                             <label class="text-xs text-muted">{{ __('Domain-Bindung') }}</label>
-                            <input type="text" name="domain" value="{{ old('domain') }}"
+                            <input aria-label="{{ __('Erlaubte Domain') }}" type="text" name="domain" value="{{ old('domain') }}"
                                 class="input input-sm input-bordered w-full font-mono text-xs" placeholder="app.kunde.de oder *.kunde.de">
                         </div>
                     </div>

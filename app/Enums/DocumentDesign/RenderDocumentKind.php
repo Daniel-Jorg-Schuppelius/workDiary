@@ -53,6 +53,10 @@ enum RenderDocumentKind: string implements HasLabel {
     // Pflicht sind und der Zugangsnachweis am Beleg haengt.
     case ConstructionObstructionNotice = 'construction_obstruction_notice';
     case ConstructionConcernNotice = 'construction_concern_notice';
+    // Teilnahme-/Qualifikationsnachweis aus der Lernplattform (Feature 149,
+    // MVP-740): eigene Art, weil der Aussteller identifizierbar sein MUSS —
+    // ein Nachweis ohne erkennbaren Aussteller ist wertlos.
+    case Certificate = 'certificate';
 
     public function label(): string {
         return match ($this) {
@@ -73,6 +77,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::Label => __('Etikett'),
             self::ConstructionObstructionNotice => __('construction.kind.obstruction'),
             self::ConstructionConcernNotice => __('construction.kind.concern'),
+            self::Certificate => __('learning.pdf.certificate_kind'),
         };
     }
 
@@ -84,7 +89,8 @@ enum RenderDocumentKind: string implements HasLabel {
             self::PurchaseOrder, self::DeliveryNote => RenderDocumentFamily::Procurement,
             self::Protocol, self::ManufacturingRecord, self::Timesheet,
             self::Form, self::Report, self::CaseFile,
-            self::ConstructionObstructionNotice, self::ConstructionConcernNotice => RenderDocumentFamily::Evidence,
+            self::ConstructionObstructionNotice, self::ConstructionConcernNotice,
+            self::Certificate => RenderDocumentFamily::Evidence,
             self::Label => RenderDocumentFamily::Special,
         };
     }
@@ -139,7 +145,7 @@ enum RenderDocumentKind: string implements HasLabel {
             self::Quote, self::OrderConfirmation, self::CreditNote,
             self::ProformaInvoice, self::Dunning => self::Invoice,
             self::CaseFile, self::ConstructionObstructionNotice,
-            self::ConstructionConcernNotice => self::Report,
+            self::ConstructionConcernNotice, self::Certificate => self::Report,
             default => null,
         };
     }
@@ -204,7 +210,9 @@ enum RenderDocumentKind: string implements HasLabel {
                 InformationBlock::CompanyIdentity,
                 InformationBlock::ItemsTable,
             ],
-            self::Protocol, self::ManufacturingRecord => [
+            // Der Aussteller gehört auf den Nachweis — sonst kann ihn
+            // niemand zuordnen und die Prüfseite läuft ins Leere.
+            self::Protocol, self::ManufacturingRecord, self::Certificate => [
                 InformationBlock::DocumentMeta,
                 InformationBlock::CompanyIdentity,
             ],

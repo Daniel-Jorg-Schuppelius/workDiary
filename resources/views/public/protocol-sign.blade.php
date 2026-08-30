@@ -91,7 +91,7 @@
         </div>
         <div class="form-control mb-3">
             <label class="label"><span class="label-text">{{ __('protocol.signature.rejectIssues') }}</span></label>
-            <textarea name="issues[]" class="textarea textarea-bordered" rows="2" maxlength="200" placeholder="{{ __('protocol.signature.rejectIssuesPlaceholder') }}"></textarea>
+            <textarea aria-label="{{ __('protocol.signature.rejectIssuesPlaceholder') }}" name="issues[]" class="textarea textarea-bordered" rows="2" maxlength="200" placeholder="{{ __('protocol.signature.rejectIssuesPlaceholder') }}"></textarea>
             <textarea name="issues[]" class="textarea textarea-bordered mt-2" rows="2" maxlength="200"></textarea>
         </div>
         <div class="mt-4 flex justify-end">

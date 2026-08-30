@@ -19,7 +19,7 @@
                 <option value="system" @selected($scope->value === 'system')>{{ __('settingsregistry.scopes.system') }}</option>
                 <option value="organization" @selected($scope->value === 'organization')>{{ __('settingsregistry.scopes.organization') }}</option>
             </select>
-            <input type="search" name="q" value="{{ $search }}" placeholder="{{ __('settingsregistry.field.search') }}"
+            <input aria-label="{{ __('settingsregistry.field.search') }}" type="search" name="q" value="{{ $search }}" placeholder="{{ __('settingsregistry.field.search') }}"
                    class="input input-bordered input-sm w-56">
         </form>
         {{-- Konfigurationsstand-Export (Feature 067 P5; Vollaudit 2026-07, N20). --}}
@@ -84,14 +84,14 @@
                                     <input type="time" name="value" class="input input-bordered input-sm"
                                            value="{{ is_string($displayValue) ? $displayValue : '' }}">
                                 @elseif (in_array($definition->type, [\App\Settings\SettingType::Integer, \App\Settings\SettingType::Duration, \App\Settings\SettingType::Decimal], true))
-                                    <input type="number" name="value" class="input input-bordered input-sm w-28"
+                                    <input aria-label="{{ $definition->key }}" type="number" name="value" class="input input-bordered input-sm w-28"
                                            step="{{ $definition->type === \App\Settings\SettingType::Decimal ? '0.01' : '1' }}"
                                            value="{{ $displayValue !== null && is_scalar($displayValue) ? $displayValue : '' }}">
                                 @elseif ($definition->type === \App\Settings\SettingType::Text)
-                                    <textarea name="value" rows="6" class="textarea textarea-bordered textarea-sm w-96 font-mono text-xs"
+                                    <textarea aria-label="{{ $definition->key }}" name="value" rows="6" class="textarea textarea-bordered textarea-sm w-96 font-mono text-xs"
                                               placeholder="{{ $definition->sensitive ? __('settingsregistry.field.sensitive_placeholder') : '' }}">{{ $definition->sensitive ? '' : (is_string($displayValue) ? $displayValue : '') }}</textarea>
                                 @else
-                                    <input type="{{ $definition->sensitive ? 'password' : 'text' }}" name="value" class="input input-bordered input-sm w-64"
+                                    <input aria-label="{{ $definition->key }}" type="{{ $definition->sensitive ? 'password' : 'text' }}" name="value" class="input input-bordered input-sm w-64"
                                            placeholder="{{ $definition->sensitive ? __('settingsregistry.field.sensitive_placeholder') : '' }}"
                                            value="{{ $definition->sensitive ? '' : (is_scalar($displayValue) ? $displayValue : json_encode($displayValue)) }}">
                                 @endif

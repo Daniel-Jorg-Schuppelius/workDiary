@@ -52,6 +52,10 @@ final class UrlSafety {
             return IPHelper::isPublicIP($literal);
         }
 
+        if (self::isNumericHostForm($literal)) {
+            return false;
+        }
+
         return true; // Hostname: finale Prüfung (DNS) erfolgt zur Laufzeit.
     }
 
@@ -99,6 +103,15 @@ final class UrlSafety {
             return false;
         }
 
+        // Reihenfolge: ein gültiges IP-Literal ist auch „numerisch", muss aber
+        // durch die reguläre Prüfung — sonst wäre jeder Webhook auf eine bloße
+        // öffentliche IP abgewiesen. Verworfen werden nur Schreibweisen, die
+        // FILTER_VALIDATE_IP NICHT als Adresse anerkennt, libcurl aber schon.
+        $literal = trim($host, '[]');
+        if (filter_var($literal, FILTER_VALIDATE_IP) === false && self::isNumericHostForm($literal)) {
+            return false;
+        }
+
         // Blockiert wird ausschließlich, was zu einem internen/privaten Ziel
         // auflöst. Ein nicht auflösbarer Host ist KEIN SSRF-Ziel (es gibt nichts
         // Internes zu erreichen) – die Verbindung scheitert dann ohnehin harmlos.
@@ -126,6 +139,10 @@ final class UrlSafety {
         $literal = trim($host, '[]');
         if (filter_var($literal, FILTER_VALIDATE_IP) !== false) {
             return IPHelper::isPublicIP($literal);
+        }
+
+        if (self::isNumericHostForm($literal)) {
+            return false;
         }
 
         return true;
@@ -173,6 +190,45 @@ final class UrlSafety {
         }
 
         return strcasecmp($host, $appHost) === 0;
+    }
+
+    /**
+     * Sieht der Host aus wie eine Zahl — ist aber kein gültiges IP-Literal?
+     *
+     * **Der Kern des Befunds S-03 (Sicherheitsscan 2026-08-23).** `inet_aton`
+     * und damit libcurl nehmen eine IPv4-Adresse auch in Hex-, Oktal- oder
+     * Kurzform entgegen: `0xa9fea9fe`, `0251.0376.0251.0376` und `127.1` sind
+     * für die Bibliothek 169.254.169.254 bzw. 127.0.0.1. `FILTER_VALIDATE_IP`
+     * lehnt diese Schreibweisen ab, `gethostbynamel()` löst sie nicht auf — die
+     * Prüfschleife lief also über eine **leere** Adressliste und endete
+     * fail-open. Der Cloud-Metadatendienst war damit über jede
+     * UrlSafety-geschützte Senke erreichbar.
+     *
+     * Solche Hosts werden deshalb abgewiesen statt geraten: ein echter
+     * Rechnername sieht nie so aus, und eine gültige Adresse ist vorher schon
+     * über `FILTER_VALIDATE_IP` erkannt worden.
+     */
+    private static function isNumericHostForm(string $host): bool {
+        $host = rtrim(trim($host), '.');
+
+        if ($host === '') {
+            return false;
+        }
+
+        $parts = explode('.', $host);
+
+        // Mehr als vier Teile kann keine IPv4-Schreibweise sein.
+        if (count($parts) > 4) {
+            return false;
+        }
+
+        foreach ($parts as $part) {
+            if (preg_match('/^(?:0[xX][0-9a-fA-F]+|[0-9]+)$/', $part) !== 1) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

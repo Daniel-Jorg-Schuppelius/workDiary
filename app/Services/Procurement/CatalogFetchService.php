@@ -91,11 +91,21 @@ class CatalogFetchService {
         $this->requireHostPath($source);
 
         $password = (string) $source->remote_password;
+        $fingerprint = trim((string) ($source->remote_host_fingerprint ?? ''));
+
+        // Ohne Host-Key keine Verbindung (Sicherheitsscan 2026-08-23, S-22):
+        // sonst authentifiziert sich die Anwendung bei jedem Server, der die
+        // Ziel-IP beantwortet — mit Benutzername und Passwort im Gepäck.
+        if ($fingerprint === '') {
+            throw new RuntimeException((string) __('procurement.catalog.error.fingerprint_missing'));
+        }
+
         $provider = new SftpConnectionProvider(
             host: (string) $source->remote_host,
             username: (string) $source->remote_username,
             password: $password !== '' ? $password : null,
             port: $source->remote_port ?: 22,
+            hostFingerprint: $fingerprint,
             timeout: 30,
         );
 

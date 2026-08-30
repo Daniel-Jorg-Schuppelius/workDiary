@@ -90,7 +90,7 @@
                         <option value="{{ $phase->value }}">{{ $phase->label() }}</option>
                     @endforeach
                 </select>
-                <input name="caption" maxlength="180" placeholder="{{ __('Caption (optional)') }}"
+                <input aria-label="{{ __('Caption (optional)') }}" name="caption" maxlength="180" placeholder="{{ __('Caption (optional)') }}"
                        class="input input-bordered input-sm w-44" />
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Hochladen') }}</button>
             </form>

@@ -128,7 +128,7 @@
                     @csrf
                     <input type="hidden" name="project_id" value="{{ $project->sqid }}">
                     <input type="hidden" name="timesheet_id" value="{{ $timesheet->sqid }}">
-                    <input type="text" name="description" maxlength="500"
+                    <input aria-label="{{ __('Woran arbeitest du?') }}" type="text" name="description" maxlength="500"
                            class="input input-bordered input-sm min-w-40 flex-1"
                            placeholder="{{ __('Woran arbeitest du?') }}">
                     @if ($tasks->isNotEmpty())

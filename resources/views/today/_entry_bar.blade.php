@@ -77,7 +77,7 @@
                      Quick-Pick (MVP): Tippen schlägt die letzten Buchungstexte vor —
                      Übernahme vervollständigt den Text und wählt Projekt + Kunde. --}}
                 <div class="relative min-w-40 basis-40 flex-1" @click.outside="closeDescMenu()">
-                    <input type="text" name="description" maxlength="500"
+                    <input aria-label="{{ __('Woran arbeitest du?') }}" type="text" name="description" maxlength="500"
                            x-model="description"
                            @focus="descFocus()"
                            @input="descInput()"
@@ -107,7 +107,7 @@
 
                 {{-- Projekt-Combobox: tippen filtert (zuletzt genutzte zuerst). --}}
                 <div class="relative w-full sm:w-78" @click.outside="closeMenu()">
-                    <input type="text"
+                    <input aria-label="{{ __('Projekt suchen…') }}" type="text"
                            x-model="query"
                            @focus="openMenu()"
                            @input="onInput()"

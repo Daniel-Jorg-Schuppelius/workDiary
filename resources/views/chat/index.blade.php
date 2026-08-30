@@ -153,7 +153,7 @@
                 {{-- Anhang-Vorschau (Einfügen/Drag&Drop) --}}
                 <div id="chat-file-preview" class="mb-1 hidden flex-wrap gap-2"></div>
                 <div class="flex items-end gap-2">
-                    <textarea name="body" rows="1" class="textarea textarea-bordered max-h-32 min-h-10 flex-1"
+                    <textarea aria-label="{{ __('Nachricht schreiben …') }}" name="body" rows="1" class="textarea textarea-bordered max-h-32 min-h-10 flex-1"
                               placeholder="{{ __('Nachricht schreiben …') }}"
                               data-submit-on-enter></textarea>
                     <label class="btn btn-ghost btn-square" title="{{ __('Datei anhängen') }}">
@@ -183,7 +183,7 @@
         <form id="chat-thread-form" class="border-t border-base-300 p-3" enctype="multipart/form-data">
             @csrf
             <div class="flex items-end gap-2">
-                <textarea name="body" rows="1" class="textarea textarea-bordered min-h-10 flex-1" placeholder="{{ __('Antworten …') }}"></textarea>
+                <textarea aria-label="{{ __('Antworten …') }}" name="body" rows="1" class="textarea textarea-bordered min-h-10 flex-1" placeholder="{{ __('Antworten …') }}"></textarea>
                 <button type="submit" class="btn btn-primary btn-square" aria-label="{{ __('Senden') }}" title="{{ __('Senden') }}"><x-icon name="send" /></button>
             </div>
         </form>
@@ -318,7 +318,7 @@
             <div id="chat-poll-options" class="space-y-1" data-opt-placeholder="{{ __('Option') }}">
                 @for ($i = 0; $i < 2; $i++)
                     <div class="flex items-center gap-1">
-                        <input type="text" name="options[]" maxlength="200" class="input input-bordered input-sm w-full" placeholder="{{ __('Option') }} {{ $i + 1 }}">
+                        <input aria-label="{{ __('Option') }} {{ $i + 1 }}" type="text" name="options[]" maxlength="200" class="input input-bordered input-sm w-full" placeholder="{{ __('Option') }} {{ $i + 1 }}">
                         <button type="button" class="chat-poll-remove btn btn-ghost btn-sm btn-square" tabindex="-1" title="{{ __('Entfernen') }}"><x-icon name="close" size="1rem" /></button>
                     </div>
                 @endfor

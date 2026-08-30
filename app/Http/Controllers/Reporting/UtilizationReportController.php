@@ -51,7 +51,13 @@ class UtilizationReportController extends Controller {
         $filterFields = ['user', 'team'];
         $filters = $this->standardFilters($request, $filterFields, $from, $to);
 
+        // inCurrentOrganization(): ohne den Filter listete der Report die
+        // Namen **aller** aktiven Nutzer der Installation — jeder fremde
+        // Mitarbeiter erschien mit 0 % Auslastung, weil der
+        // WorkScheduleResolver auch ohne Modell ein Soll liefert
+        // (Sicherheitsscan 2026-08-23, S-26).
         $users = User::query()
+            ->inCurrentOrganization()
             ->whereNull('deactivated_at')
             ->when($filters->userId !== null, fn($q) => $q->where('id', $filters->userId))
             ->when($filters->userId === null && $filters->teamId !== null, fn($q) => $q->whereIn('id', $filters->teamUserIds()))

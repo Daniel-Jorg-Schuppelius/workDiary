@@ -16,7 +16,7 @@ use App\Models\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Hash};
 
 /**
  * Selbstverwaltung der Zwei-Faktor-Authentifizierung mit mehreren Methoden:
@@ -85,10 +85,25 @@ class TwoFactorController extends Controller {
         ]);
     }
 
-    /** TOTP-Aktivierung starten: Secret (noch unbestätigt). */
+    /**
+     * TOTP-Aktivierung starten: Secret (noch unbestätigt).
+     *
+     * **Ein bestätigter Faktor wird nicht überschrieben** (Sicherheitsscan
+     * 2026-08-23, S-17). Vorher setzte dieser Aufruf bedingungslos ein neues
+     * Secret und `two_factor_confirmed_at = null`: war TOTP der einzige
+     * Faktor, war die Zwei-Faktor-Pflicht danach ohne einen einzigen Code
+     * aufgehoben. Die Oberfläche blendete den Knopf nur aus — der Server
+     * prüfte nichts. Wer wechseln will, deaktiviert zuerst (das verlangt
+     * einen Code).
+     */
     public function enable(): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
+
+        if ($user->two_factor_confirmed_at !== null) {
+            return back()->withErrors(['code' => __('twofactor.error.already_active')]);
+        }
+
         $user->forceFill([
             'two_factor_secret' => $this->twoFactor->generateSecret(),
             'two_factor_confirmed_at' => null,
@@ -175,6 +190,14 @@ class TwoFactorController extends Controller {
         $user = Auth::user();
         abort_unless((int) $credential->user_id === (int) $user->getKey(), 404);
 
+        // Einen **bestätigten** Faktor entfernt nur, wer sich noch einmal
+        // ausweist (Sicherheitsscan 2026-08-23, S-17). Mit einer gekaperten
+        // Sitzung war das Entfernen sonst der erste Schritt zur dauerhaften
+        // Übernahme.
+        if ($credential->confirmed_at !== null && ! $this->confirmsIdentity($request, $user)) {
+            return back()->withErrors(['credential' => __('twofactor.error.reauth_required')]);
+        }
+
         $remainingFactors = $user->twoFactorCredentials()->whereNotNull('confirmed_at')->where('id', '!=', $credential->id)->count()
             + ($user->two_factor_confirmed_at !== null && filled($user->two_factor_secret) ? 1 : 0);
         if ($remainingFactors === 0 && $user->organization?->two_factor_required) {
@@ -226,4 +249,34 @@ class TwoFactorController extends Controller {
 
         return redirect()->route('account.2fa.show')->with('success', __('Zwei-Faktor-Authentifizierung deaktiviert.'));
     }
+
+    /**
+     * Weist sich der Aufrufer erneut aus?
+     *
+     * Drei Wege, weil nicht jedes Konto dieselben Mittel hat: das Passwort
+     * (Konten des neuen Systems), ein gültiger TOTP-Code oder ein
+     * Wiederherstellungscode. Ein reines Legacy-Konto ohne TOTP hat keines
+     * davon — dort bleibt es beim bisherigen Verhalten, damit die
+     * Faktor-Verwaltung nicht unbenutzbar wird.
+     */
+    private function confirmsIdentity(Request $request, User $user): bool {
+        $password = (string) $request->input('current_password', '');
+        $code = (string) $request->input('code', '');
+
+        if ($user->is_new_system && $password !== '' && Hash::check($password, (string) $user->getAuthPassword())) {
+            return true;
+        }
+
+        if (filled($user->two_factor_secret) && $code !== '' && $this->twoFactor->verify((string) $user->two_factor_secret, $code)) {
+            return true;
+        }
+
+        if ($code !== '' && $this->twoFactor->matchesRecoveryCode($user, $code)) {
+            return true;
+        }
+
+        // Weder Passwort noch TOTP verfügbar: kein Nachweis möglich.
+        return ! $user->is_new_system && blank($user->two_factor_secret);
+    }
+
 }

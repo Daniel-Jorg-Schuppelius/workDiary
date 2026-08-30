@@ -22,7 +22,7 @@
             <h1 class="card-title">{{ __('inventory.serial.verify.title') }}</h1>
             <p class="text-sm opacity-70">{{ $orgName }}</p>
             <form method="GET" action="{{ route('serials.public-passport', $token) }}" class="flex items-end gap-2 mt-2">
-                <input name="serial" value="{{ $query }}" autofocus
+                <input aria-label="{{ __('inventory.serial.verify.placeholder') }}" name="serial" value="{{ $query }}" autofocus
                        placeholder="{{ __('inventory.serial.verify.placeholder') }}"
                        class="input input-bordered w-full font-mono">
                 <x-button type="submit" tone="primary">{{ __('inventory.serial.action.search') }}</x-button>

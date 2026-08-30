@@ -17,7 +17,7 @@
 <x-index-page overflow="clip" :subtitle="__('Mitgliedschaften und Rollen-Zuweisungen pro Organisation verwalten.')">
     <x-slot:actions>
         <form method="GET" action="{{ route('admin.access.members.index') }}" class="join">
-            <input type="text" name="q" value="{{ $search ?? '' }}"
+            <input aria-label="{{ __('access.placeholder.search_members') }}" type="text" name="q" value="{{ $search ?? '' }}"
                    placeholder="{{ __('access.placeholder.search_members') }}"
                    class="input input-sm input-bordered join-item" />
             <button class="btn btn-sm join-item">{{ __('access.action.search') }}</button>

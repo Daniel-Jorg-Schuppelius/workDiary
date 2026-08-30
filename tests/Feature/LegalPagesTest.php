@@ -50,7 +50,9 @@ class LegalPagesTest extends TestCase {
     public function test_configured_content_is_shown_with_line_breaks_and_escaped(): void {
         // Schreibweg über die Admin-UI: deckt den neuen Text-Typ inkl.
         // Registry-Validierung und System-Override-Ablage mit ab.
-        $admin = User::factory()->admin()->create();
+        // Impressum/Datenschutz sind System-Scope — also Betreiber-Sache
+        // (Sicherheitsscan 2026-08-23, S-02).
+        $admin = User::factory()->platformAdmin()->create();
         $this->actingAs($admin)->put(route('admin.settings.update', ['key' => 'legal.imprint']), [
             'scope' => 'system',
             'value' => "Muster GmbH\nMusterstraße 1, 12345 Musterstadt\n<script>alert(1)</script>",
@@ -67,7 +69,7 @@ class LegalPagesTest extends TestCase {
     }
 
     public function test_privacy_page_uses_its_own_setting(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $this->actingAs($admin)->put(route('admin.settings.update', ['key' => 'legal.privacy']), [
             'scope' => 'system',
             'value' => 'Datenschutzerklärung der Muster GmbH',
@@ -81,7 +83,7 @@ class LegalPagesTest extends TestCase {
     }
 
     public function test_legal_keys_reject_organization_scope(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $this->actingAs($admin)->put(route('admin.settings.update', ['key' => 'legal.imprint']), [
             'scope' => 'organization',
             'value' => 'Org-Impressum',
@@ -107,7 +109,7 @@ class LegalPagesTest extends TestCase {
 
     /** H18: Betreiber-Text (legal.accessibility) ersetzt das Gerüst. */
     public function test_accessibility_statement_prefers_operator_text(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
         $this->actingAs($admin)->put(route('admin.settings.update', ['key' => 'legal.accessibility']), [
             'scope' => 'system',
             'value' => 'Individuelle Erklärung des Betreibers.',

@@ -39,6 +39,7 @@ return [
         'sftp' => "SFTP upload",
         'sftp_toggle' => "Upload export file via SFTP after completion",
         'sftp_host' => "Host",
+        'sftp_host_fingerprint' => 'Host key fingerprint',
         'sftp_port' => "Port",
         'sftp_username' => "Username",
         'sftp_password' => "Password",
@@ -73,6 +74,7 @@ return [
     ],
 
     'error' => [
+        'sftp_fingerprint_missing' => 'The SFTP delivery is missing the host key fingerprint. Without it the file is not transferred.',
         'missing_mappings' => "Export aborted: the following wage types have no target wage type in the payroll program: :types. Please maintain a mapping under “Wage types & export delivery” or set the wage type on the surcharge rule.",
     ],
 
@@ -90,5 +92,8 @@ return [
         'heading' => "Time export for payroll",
         'body' => "Attached you will find the time export of profile :profile for period :period.",
         'meta' => ":rows lines · SHA-256 :hash",
+    ],
+    'help' => [
+        'sftp_host_fingerprint' => 'Required: binds the connection to the right server. Obtain with `ssh-keyscan -t rsa <host> | ssh-keygen -lf -`.',
     ],
 ];

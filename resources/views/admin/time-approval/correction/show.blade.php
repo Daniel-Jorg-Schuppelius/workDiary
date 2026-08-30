@@ -76,7 +76,7 @@
             @can('approve', $request)
                 <form method="POST" action="{{ route('admin.corrections.approve', $request) }}" class="flex gap-2 items-end">
                     @csrf
-                    <input type="text" name="note" class="input input-sm input-bordered"
+                    <input aria-label="{{ __('Optionaler Vermerk') }}" type="text" name="note" class="input input-sm input-bordered"
                            placeholder="{{ __('Optionaler Vermerk') }}" maxlength="500" />
                     <x-button tone="success" size="sm" type="submit" icon="check">{{ __('Genehmigen') }}</x-button>
                 </form>
@@ -84,7 +84,7 @@
             @can('reject', $request)
                 <form method="POST" action="{{ route('admin.corrections.reject', $request) }}" class="flex gap-2 items-end">
                     @csrf
-                    <input type="text" name="note" class="input input-sm input-bordered w-72"
+                    <input aria-label="{{ __('Begründung ≥ 20 Zeichen') }}" type="text" name="note" class="input input-sm input-bordered w-72"
                            placeholder="{{ __('Begründung ≥ 20 Zeichen') }}" minlength="20" maxlength="2000" required />
                     <x-button tone="error" size="sm" type="submit" icon="close">{{ __('Ablehnen') }}</x-button>
                 </form>

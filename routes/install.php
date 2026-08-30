@@ -19,7 +19,10 @@ use Illuminate\Support\Facades\Route;
  * datei-basierte Session/Cache sicher.
  */
 
-Route::middleware(RedirectIfInstalled::class)
+// throttle: der Wizard ist unauthentifiziert erreichbar, solange die
+// Installation läuft — ein Scanner soll ihn nicht durchprobieren können
+// (Sicherheitsscan 2026-08-23, S-16).
+Route::middleware([RedirectIfInstalled::class, 'throttle:20,1'])
     ->prefix('install')
     ->name('install.')
     ->group(function (): void {

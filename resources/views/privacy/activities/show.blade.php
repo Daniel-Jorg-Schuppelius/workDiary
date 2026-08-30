@@ -138,7 +138,7 @@
                             @if ($isActionable)
                                 <form method="post" action="{{ route('dataprotection.activities.dpia.step', [$activity, $stepCode]) }}" class="mt-2 space-y-2">
                                     @csrf
-                                    <textarea name="content" rows="2" class="textarea textarea-bordered w-full"
+                                    <textarea aria-label="{{ __('Ergebnis dieses Schritts …') }}" name="content" rows="2" class="textarea textarea-bordered w-full"
                                               placeholder="{{ __('Ergebnis dieses Schritts …') }}">{{ old('content') }}</textarea>
                                     @if ($stepCode === 'approval')
                                         <div class="flex flex-wrap gap-2">

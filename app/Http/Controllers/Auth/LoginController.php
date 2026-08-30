@@ -169,22 +169,17 @@ class LoginController extends Controller {
 
         try {
             // attempt(): kein Connect-Versuch bei als down markierter legacy-DB; Mapping ist Best-Effort.
-            $legacy = LegacyBridge::attempt(function () use ($submittedUsername, $authUser): ?object {
-                $found = DB::connection('legacy')
+            $legacy = LegacyBridge::attempt(function () use ($submittedUsername): ?object {
+                // Nur der eingegebene Anmeldename — seine Kenntnis setzt das
+                // Passwort voraus. Der frühere Rückfall auf $authUser->name
+                // hing die Verknüpfung an ein frei wählbares Profilfeld:
+                // wer sich wie ein Legacy-Admin nannte, erbte dessen ID
+                // (Sicherheitsscan 2026-08-23, S-01).
+                return DB::connection('legacy')
                     ->table('user')
                     ->select(['id', 'uname'])
                     ->where('uname', $submittedUsername)
                     ->first();
-
-                if (! $found && filled($authUser->name)) {
-                    $found = DB::connection('legacy')
-                        ->table('user')
-                        ->select(['id', 'uname'])
-                        ->where('uname', (string) $authUser->name)
-                        ->first();
-                }
-
-                return $found;
             }, null);
 
             if ($legacy && (int) $legacy->id > 0) {

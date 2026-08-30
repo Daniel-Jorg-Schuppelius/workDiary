@@ -1011,4 +1011,7 @@ return [
     'openIssue' => [
         'followUpCreated' => 'Follow-up job created from open issue',
     ],
+    'learning' => [
+        'dossierDisclosed' => 'Qualification dossier disclosed by name',
+    ],
 ];

@@ -151,7 +151,7 @@
                             <option value="in">{{ __('form.condition.op.in') }}</option>
                             <option value="filled">{{ __('form.condition.op.filled') }}</option>
                         </select>
-                        <input type="text" maxlength="500"
+                        <input aria-label="{{ __('form.condition.value_placeholder') }}" type="text" maxlength="500"
                                :name="fieldName(i, 'visible_if][value')" x-model="it.visible_if.value"
                                x-show="it.visible_if.field && it.visible_if.op !== 'filled'"
                                :placeholder="'{{ __('form.condition.value_placeholder') }}'"

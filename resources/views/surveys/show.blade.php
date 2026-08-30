@@ -71,8 +71,8 @@
                             <option value="choice">{{ __('Auswahl') }}</option>
                             <option value="text">{{ __('Freitext') }}</option>
                         </select>
-                        <input type="text" name="label" required maxlength="500" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Fragetext') }}">
-                        <input type="text" name="options" class="input input-sm input-bordered" placeholder="{{ __('Auswahl: A, B, C') }}">
+                        <input aria-label="{{ __('Fragetext') }}" type="text" name="label" required maxlength="500" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Fragetext') }}">
+                        <input aria-label="{{ __('Auswahl: A, B, C') }}" type="text" name="options" class="input input-sm input-bordered" placeholder="{{ __('Auswahl: A, B, C') }}">
                         <button type="submit" class="btn btn-primary btn-sm sm:col-span-4">{{ __('Frage hinzufügen') }}</button>
                     </form>
                 @endif

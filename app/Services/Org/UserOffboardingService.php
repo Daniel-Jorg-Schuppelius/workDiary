@@ -65,6 +65,18 @@ class UserOffboardingService {
         'expenses' => 'user_id',
         'vacations' => 'user_id',
         'sick_leaves' => 'user_id',
+        // Nachweise mit Personenbezug in der Urheberschaft (Sicherheitsscan
+        // 2026-08-23, S-08): sie hingen bis dahin per CASCADE am Konto und
+        // verschwanden beim Entfernen des Mitglieds — Protokolle samt
+        // Kundenunterschrift, Vernichtungsnachweise, Formularrückläufe.
+        'protocols' => 'created_by_user_id',
+        'documents' => 'created_by_user_id',
+        'disposal_jobs' => 'created_by_user_id',
+        'disposal_handovers' => 'created_by_user_id',
+        'diary_entries' => 'user_id',
+        'form_submissions' => 'submitted_by_user_id',
+        'safety_events' => 'reported_by_user_id',
+        'tours' => 'user_id',
     ];
 
     /**

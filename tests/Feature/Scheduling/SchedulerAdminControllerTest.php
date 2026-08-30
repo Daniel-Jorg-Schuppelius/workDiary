@@ -16,6 +16,10 @@ use Illuminate\Support\Facades\Queue;
 use Tests\TestCase;
 
 class SchedulerAdminControllerTest extends TestCase {
+    // Der Scheduler steuert die Jobs der ganzen Installation (Overrides mit
+    // organization_id = null) — seit dem Sicherheitsscan 2026-08-23 (S-02)
+    // ausschließlich für Plattform-Betreiber.
+
     use RefreshDatabase;
 
     protected function setUp(): void {
@@ -30,7 +34,7 @@ class SchedulerAdminControllerTest extends TestCase {
     }
 
     public function test_index_lists_registry_jobs_for_admin(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.scheduler.index'))
@@ -41,7 +45,7 @@ class SchedulerAdminControllerTest extends TestCase {
     }
 
     public function test_pause_resume_and_reset_roundtrip(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->post(route('admin.scheduler.pause', ['job' => 'toggl.import']))
@@ -60,7 +64,7 @@ class SchedulerAdminControllerTest extends TestCase {
     }
 
     public function test_update_within_allowed_cadence(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->put(route('admin.scheduler.update', ['job' => 'toggl.import']), [
@@ -76,7 +80,7 @@ class SchedulerAdminControllerTest extends TestCase {
     }
 
     public function test_update_rejects_disallowed_cadence(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->from(route('admin.scheduler.index'))
@@ -89,7 +93,7 @@ class SchedulerAdminControllerTest extends TestCase {
     }
 
     public function test_update_rejects_unknown_job(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->put(route('admin.scheduler.update', ['job' => 'nicht.registriert']), [
@@ -99,7 +103,7 @@ class SchedulerAdminControllerTest extends TestCase {
     }
 
     public function test_edit_returns_404_for_unknown_job(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.scheduler.edit', ['job' => 'nicht.registriert']))
@@ -108,7 +112,7 @@ class SchedulerAdminControllerTest extends TestCase {
 
     public function test_test_run_queues_command_and_writes_audit(): void {
         Queue::fake();
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->post(route('admin.scheduler.test-run', ['job' => 'plugin.healthcheck']))
@@ -128,7 +132,7 @@ class SchedulerAdminControllerTest extends TestCase {
     }
 
     public function test_edit_dialog_shows_allowed_cadences_only(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $response = $this->actingAs($admin)
             ->get(route('admin.scheduler.edit', ['job' => 'toggl.import']))

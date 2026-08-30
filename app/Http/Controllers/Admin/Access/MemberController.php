@@ -64,6 +64,7 @@ class MemberController extends Controller {
     public function edit(User $member): View {
         Gate::authorize('manage-access');
         $this->ensureSameOrg($member);
+        $this->ensureMayManagePlatformAdmin($member);
 
         $member->load(['roles', 'userGroups']);
 
@@ -80,6 +81,7 @@ class MemberController extends Controller {
     public function update(Request $request, User $member): RedirectResponse {
         Gate::authorize('manage-access');
         $this->ensureSameOrg($member);
+        $this->ensureMayManagePlatformAdmin($member);
 
         $data = $request->validate([
             'roles' => ['array'],
@@ -176,6 +178,27 @@ class MemberController extends Controller {
         }
 
         return $roles;
+    }
+
+    /**
+     * Ein Plattform-Betreiber ist kein gewöhnliches Mitglied.
+     *
+     * In einer On-Prem-Installation sitzt der Betreiber meist in derselben
+     * (einzigen) Organisation. Ohne diese Schranke konnte ein org-lokaler
+     * Admin ihm ein neues Passwort setzen, seine E-Mail ändern, ihm die Rolle
+     * entziehen oder das Konto löschen — und damit Org-Admin gegen
+     * Cross-Tenant-Betreiber tauschen bzw. den Betreiber aussperren
+     * (Sicherheitsscan 2026-08-23, S-14). Nur ein Betreiber verwaltet einen
+     * Betreiber.
+     */
+    private function ensureMayManagePlatformAdmin(User $member): void {
+        if (! $member->isGlobalAdmin()) {
+            return;
+        }
+
+        $auth = Auth::user();
+
+        abort_unless($auth instanceof User && $auth->isGlobalAdmin(), 403);
     }
 
     private function ensureSameOrg(User $member): void {

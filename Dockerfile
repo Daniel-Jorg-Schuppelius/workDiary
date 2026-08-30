@@ -28,9 +28,11 @@ FROM php:${PHP_VERSION}-fpm-bookworm AS base
 #   WD_WITH_LIBREOFFICE  Office→PDF-Konvertierung (office_executables.json)
 #   WD_WITH_JAVA         KoSIT-Validator/PDFBox/pdftk (java-*, pdftk-java)
 #   WD_WITH_INOTIFY      ext-inotify für integrity:watch (composer.json suggest)
+#   WD_WITH_FFMPEG       Video-Transcoding (Feature 150; media_executables.json)
 ARG WD_WITH_LIBREOFFICE=0
 ARG WD_WITH_JAVA=0
 ARG WD_WITH_INOTIFY=0
+ARG WD_WITH_FFMPEG=0
 
 # System-Binaries — Quelle je Zeile: die CommandBuilder-Konfiguration der
 # Toolkits (vendor/dschuppelius/php-common-toolkit/config/*_executables.json,
@@ -73,6 +75,13 @@ RUN set -eux; \
     if [ "$WD_WITH_LIBREOFFICE" = "1" ]; then \
         # office_executables.json libreoffice --headless --convert-to
         apt-get install -y --no-install-recommends libreoffice-writer libreoffice-calc libreoffice-impress; \
+    fi; \
+    if [ "$WD_WITH_FFMPEG" = "1" ]; then \
+        # media_executables.json ffmpeg/ffmpeg-info — ohne dieses Paket bleibt
+        # der media-Dienst arbeitslos und Videos hängen in „pending".
+        # Whisper (maschinelle Untertitel) ist bewusst NICHT im Bild: ein
+        # Python-Stack mit Modellgewichten vervielfacht die Bildgröße.
+        apt-get install -y --no-install-recommends ffmpeg; \
     fi; \
     rm -rf /var/lib/apt/lists/*
 

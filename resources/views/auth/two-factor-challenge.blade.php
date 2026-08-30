@@ -76,7 +76,7 @@
                 </form>
                 <form method="POST" action="{{ route('two-factor.login.attempt') }}" class="space-y-3">
                     @csrf
-                    <input name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="{{ __('E-Mail-Code') }}"
+                    <input aria-label="{{ __('E-Mail-Code') }}" name="email_code" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="{{ __('E-Mail-Code') }}"
                            class="w-full rounded-2xl border border-base-content/20 bg-base-200/80 px-4 py-3 text-center text-xl tracking-[0.4em] text-base-content transition focus:border-primary/60 focus:outline-none focus:ring-2 focus:ring-primary/25">
                     <x-button type="submit" tone="primary" size="sm" class="w-full rounded-2xl">{{ __('Mit E-Mail-Code bestätigen') }}</x-button>
                 </form>

@@ -84,7 +84,29 @@ class UserSpec extends AbstractEntitySpec {
 
     public function upsert(array $row, Organization $organization): array {
         try {
-            $existing = User::query()->where('email', $row['email'])->first();
+            // **Nur in der eigenen Organisation suchen** (Sicherheitsscan
+            // 2026-08-23, S-07). `users.email` ist installationsweit eindeutig
+            // und `User` trägt bewusst keinen OrganizationScope: die Suche
+            // allein über die E-Mail traf deshalb auch Konten fremder
+            // Mandanten — und überschrieb dort Name, Personalnummer und
+            // beide Stundensätze.
+            $existing = User::query()
+                ->where('email', $row['email'])
+                ->where('organization_id', $organization->id)
+                ->first();
+
+            if ($existing === null && $this->emailTakenElsewhere((string) $row['email'], $organization)) {
+                // Bewusst dieselbe neutrale Meldung wie bei einer Kollision in
+                // der eigenen Organisation: „Created" gegen „Updated" gegen
+                // „Failed" wäre sonst ein Orakel dafür, welche E-Mail-Adressen
+                // in dieser Installation ein Konto haben.
+                return [ImportOutcome::Failed, new ValidationIssue(
+                    ImportErrorCode::Unique,
+                    'email',
+                    (string) __('import.error.email_taken'),
+                )];
+            }
+
             if ($existing !== null) {
                 $update = array_filter([
                     'name' => $row['name'] ?? null,
@@ -125,4 +147,16 @@ class UserSpec extends AbstractEntitySpec {
             ];
         }
     }
+
+    /** Existiert die E-Mail bereits — außerhalb dieser Organisation? */
+    private function emailTakenElsewhere(string $email, Organization $organization): bool {
+        return User::query()
+            ->where('email', $email)
+            ->where(function ($query) use ($organization): void {
+                $query->whereNull('organization_id')
+                    ->orWhere('organization_id', '!=', $organization->id);
+            })
+            ->exists();
+    }
+
 }

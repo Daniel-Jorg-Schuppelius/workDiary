@@ -68,6 +68,15 @@
             </div>
 
             <div class="fieldset" x-show="value" x-cloak>
+                <label class="fieldset-label" for="tedc-fingerprint">{{ __('wage_types.field.sftp_host_fingerprint') }}</label>
+                <input id="tedc-fingerprint" type="text" name="sftp_host_fingerprint" maxlength="190"
+                       value="{{ old('sftp_host_fingerprint', $config->sftp_host_fingerprint) }}"
+                       class="input input-bordered w-full font-mono">
+                <p class="mt-1 text-xs text-muted">{{ __('wage_types.help.sftp_host_fingerprint') }}</p>
+                @error('sftp_host_fingerprint')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+            </div>
+
+            <div class="fieldset" x-show="value" x-cloak>
                 <label class="fieldset-label" for="tedc-port">{{ __('wage_types.field.sftp_port') }}</label>
                 <input id="tedc-port" type="number" name="sftp_port" min="1" max="65535"
                        value="{{ old('sftp_port', $config->sftp_port ?? 22) }}"

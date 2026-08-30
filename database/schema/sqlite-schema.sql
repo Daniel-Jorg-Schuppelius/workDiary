@@ -1454,6 +1454,12 @@ CREATE TABLE IF NOT EXISTS "attachments"(
   "meta_type" varchar,
   "organization_id" integer,
   "customer_visible" tinyint(1) not null default '0',
+  "media_state" varchar,
+  "media_duration_seconds" integer,
+  "media_width" integer,
+  "media_height" integer,
+  "media_error" varchar,
+  "media_processed_at" datetime,
   foreign key("user_id") references users("id") on delete set null on update no action,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
@@ -6616,6 +6622,7 @@ CREATE TABLE IF NOT EXISTS "supplier_catalog_sources"(
   "remote_path" varchar,
   "remote_username" varchar,
   "remote_password" text,
+  "remote_host_fingerprint" varchar,
   "mapping" text,
   "fetch_interval_minutes" integer,
   "next_fetch_at" datetime,
@@ -11217,6 +11224,7 @@ CREATE TABLE IF NOT EXISTS "time_export_delivery_configs"(
   "sftp_username" varchar,
   "sftp_password" text,
   "sftp_root" varchar,
+  "sftp_host_fingerprint" varchar,
   "created_at" datetime,
   "updated_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade
@@ -15234,6 +15242,7 @@ CREATE TABLE IF NOT EXISTS "surveys"(
   "created_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "trigger_on_course_completion" tinyint(1) not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
@@ -17534,37 +17543,6 @@ CREATE INDEX "training_assign_due_idx" on "training_assignments"(
   "organization_id",
   "due_at"
 );
-CREATE TABLE IF NOT EXISTS "safety_instructions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "instruction_no" integer not null,
-  "topic" varchar not null,
-  "hazard_assessment_id" integer,
-  "held_on" date not null,
-  "instructor_user_id" integer,
-  "repeat_interval_months" integer,
-  "notes" text,
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  "training_course_id" integer,
-  "training_course_version_id" integer,
-  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("instructor_user_id") references users("id") on delete set null on update no action,
-  foreign key("hazard_assessment_id") references hazard_assessments("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("training_course_id") references "training_courses"("id") on delete set null,
-  foreign key("training_course_version_id") references "training_course_versions"("id") on delete set null
-);
-CREATE INDEX "safety_instr_org_held_idx" on "safety_instructions"(
-  "organization_id",
-  "held_on"
-);
-CREATE UNIQUE INDEX "safety_instr_org_no_uq" on "safety_instructions"(
-  "organization_id",
-  "instruction_no"
-);
 CREATE TABLE IF NOT EXISTS "privacy_dsar_portals"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -17887,6 +17865,806 @@ CREATE TABLE IF NOT EXISTS "peppol_participant_lookups"(
 CREATE UNIQUE INDEX "peppol_lookup_uq" on "peppol_participant_lookups"(
   "organization_id",
   "participant"
+);
+CREATE TABLE IF NOT EXISTS "learning_course_versions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_course_id" integer not null,
+  "version" integer not null,
+  "label" varchar,
+  "content_snapshot" text,
+  "released_at" datetime,
+  "released_by_user_id" integer,
+  "is_current" tinyint(1) not null default '0',
+  "training_course_version_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_course_id") references "learning_courses"("id") on delete cascade,
+  foreign key("released_by_user_id") references "users"("id") on delete set null,
+  foreign key("training_course_version_id") references "training_course_versions"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_course_ver_uq" on "learning_course_versions"(
+  "learning_course_id",
+  "version"
+);
+CREATE INDEX "lrn_course_ver_org_idx" on "learning_course_versions"(
+  "organization_id",
+  "learning_course_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_sections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_course_id" integer not null,
+  "title" varchar not null,
+  "description" text,
+  "position" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_course_id") references "learning_courses"("id") on delete cascade
+);
+CREATE INDEX "lrn_section_course_pos_idx" on "learning_sections"(
+  "learning_course_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "learning_enrollments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_course_id" integer not null,
+  "learning_course_version_id" integer,
+  "user_id" integer,
+  "external_participant_id" integer,
+  "status" varchar not null default 'assigned',
+  "source" varchar not null default 'manual',
+  "assigned_by_user_id" integer,
+  "due_at" date,
+  "access_until" date,
+  "started_at" datetime,
+  "completed_at" datetime,
+  "score_percent" integer,
+  "points_earned" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_course_id") references "learning_courses"("id") on delete cascade,
+  foreign key("learning_course_version_id") references "learning_course_versions"("id") on delete set null,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("external_participant_id") references "external_participants"("id") on delete cascade,
+  foreign key("assigned_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_enr_course_user_uq" on "learning_enrollments"(
+  "learning_course_id",
+  "user_id"
+);
+CREATE UNIQUE INDEX "lrn_enr_course_ext_uq" on "learning_enrollments"(
+  "learning_course_id",
+  "external_participant_id"
+);
+CREATE INDEX "lrn_enr_org_status_idx" on "learning_enrollments"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "lrn_enr_org_due_idx" on "learning_enrollments"(
+  "organization_id",
+  "due_at"
+);
+CREATE TABLE IF NOT EXISTS "learning_enrollment_events"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "from_status" varchar,
+  "to_status" varchar not null,
+  "actor_user_id" integer,
+  "reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "lrn_enr_event_idx" on "learning_enrollment_events"(
+  "learning_enrollment_id",
+  "created_at"
+);
+CREATE TABLE IF NOT EXISTS "learning_unit_progress"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "learning_unit_id" integer not null,
+  "status" varchar not null default 'open',
+  "started_at" datetime,
+  "completed_at" datetime,
+  "attempts" integer not null default '0',
+  "progress_percent" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade,
+  foreign key("learning_unit_id") references "learning_units"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_progress_enr_unit_uq" on "learning_unit_progress"(
+  "learning_enrollment_id",
+  "learning_unit_id"
+);
+CREATE INDEX "lrn_progress_org_status_idx" on "learning_unit_progress"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "learning_quizzes"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_unit_id" integer,
+  "title" varchar not null,
+  "description" text,
+  "pass_percent" integer not null default '80',
+  "time_limit_minutes" integer,
+  "max_attempts" integer not null default '3',
+  "retry_wait_hours" integer not null default '0',
+  "questions_per_attempt" integer,
+  "shuffle_questions" tinyint(1) not null default '1',
+  "shuffle_answers" tinyint(1) not null default '1',
+  "feedback_mode" varchar not null default 'end',
+  "show_solutions" tinyint(1) not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_unit_id") references "learning_units"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_quiz_unit_uq" on "learning_quizzes"(
+  "learning_unit_id"
+);
+CREATE INDEX "lrn_quiz_org_idx" on "learning_quizzes"("organization_id");
+CREATE TABLE IF NOT EXISTS "learning_questions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_quiz_id" integer not null,
+  "kind" varchar not null,
+  "prompt" text not null,
+  "explanation" text,
+  "points" integer not null default '1',
+  "position" integer not null default '0',
+  "settings" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_quiz_id") references "learning_quizzes"("id") on delete cascade
+);
+CREATE INDEX "lrn_question_quiz_pos_idx" on "learning_questions"(
+  "learning_quiz_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "learning_question_options"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_question_id" integer not null,
+  "label" varchar not null,
+  "is_correct" tinyint(1) not null default '0',
+  "position" integer not null default '0',
+  "match_key" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_question_id") references "learning_questions"("id") on delete cascade
+);
+CREATE INDEX "lrn_option_question_pos_idx" on "learning_question_options"(
+  "learning_question_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "learning_quiz_attempts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_quiz_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "attempt_no" integer not null,
+  "started_at" datetime not null,
+  "submitted_at" datetime,
+  "expires_at" datetime,
+  "questions_snapshot" text not null,
+  "score_points" integer not null default '0',
+  "max_points" integer not null default '0',
+  "score_percent" integer,
+  "passed" tinyint(1),
+  "client_ip" varchar,
+  "user_agent" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_quiz_id") references "learning_quizzes"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_attempt_no_uq" on "learning_quiz_attempts"(
+  "learning_enrollment_id",
+  "learning_quiz_id",
+  "attempt_no"
+);
+CREATE INDEX "lrn_attempt_org_sub_idx" on "learning_quiz_attempts"(
+  "organization_id",
+  "submitted_at"
+);
+CREATE TABLE IF NOT EXISTS "learning_answers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_quiz_attempt_id" integer not null,
+  "learning_question_id" integer not null,
+  "payload" text,
+  "is_correct" tinyint(1),
+  "points_awarded" integer not null default '0',
+  "corrected_points" integer,
+  "correction_note" varchar,
+  "graded_by_user_id" integer,
+  "graded_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_quiz_attempt_id") references "learning_quiz_attempts"("id") on delete cascade,
+  foreign key("learning_question_id") references "learning_questions"("id") on delete cascade,
+  foreign key("graded_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_answer_attempt_q_uq" on "learning_answers"(
+  "learning_quiz_attempt_id",
+  "learning_question_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_assignments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_unit_id" integer not null,
+  "title" varchar not null,
+  "instructions" text,
+  "submission_kind" varchar not null default 'both',
+  "due_days" integer,
+  "points" integer not null default '10',
+  "pass_percent" integer not null default '50',
+  "rubric" text,
+  "requires_second_opinion" tinyint(1) not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_unit_id") references "learning_units"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_assignment_unit_uq" on "learning_assignments"(
+  "learning_unit_id"
+);
+CREATE INDEX "lrn_assignment_org_idx" on "learning_assignments"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_submissions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_assignment_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "status" varchar not null default 'draft',
+  "body" text,
+  "submitted_at" datetime,
+  "graded_at" datetime,
+  "graded_by_user_id" integer,
+  "points_awarded" integer,
+  "score_percent" integer,
+  "passed" tinyint(1),
+  "feedback" text,
+  "rubric_scores" text,
+  "rubric_snapshot" text,
+  "second_opinion_by_user_id" integer,
+  "second_opinion_at" datetime,
+  "attempt_no" integer not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_assignment_id") references "learning_assignments"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade,
+  foreign key("graded_by_user_id") references "users"("id") on delete set null,
+  foreign key("second_opinion_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_submission_uq" on "learning_submissions"(
+  "learning_assignment_id",
+  "learning_enrollment_id"
+);
+CREATE INDEX "lrn_submission_org_status_idx" on "learning_submissions"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "learning_certificates"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "learning_course_id" integer not null,
+  "learning_course_version_id" integer,
+  "user_id" integer,
+  "external_participant_id" integer,
+  "number" varchar not null,
+  "verification_code" varchar not null,
+  "holder_name" varchar not null,
+  "issued_on" date not null,
+  "valid_until" date,
+  "score_percent" integer,
+  "pdf_path" varchar,
+  "revoked_at" datetime,
+  "revoked_reason" varchar,
+  "revoked_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade,
+  foreign key("learning_course_id") references "learning_courses"("id") on delete cascade,
+  foreign key("learning_course_version_id") references "learning_course_versions"("id") on delete set null,
+  foreign key("user_id") references "users"("id") on delete set null,
+  foreign key("external_participant_id") references "external_participants"("id") on delete set null,
+  foreign key("revoked_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_cert_org_no_uq" on "learning_certificates"(
+  "organization_id",
+  "number"
+);
+CREATE UNIQUE INDEX "lrn_cert_code_uq" on "learning_certificates"(
+  "verification_code"
+);
+CREATE INDEX "lrn_cert_org_valid_idx" on "learning_certificates"(
+  "organization_id",
+  "valid_until"
+);
+CREATE TABLE IF NOT EXISTS "learning_units"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_course_id" integer not null,
+  "learning_section_id" integer,
+  "title" varchar not null,
+  "kind" varchar not null default('content'),
+  "position" integer not null default('0'),
+  "is_mandatory" tinyint(1) not null default('1'),
+  "points" integer not null default('0'),
+  "duration_minutes" integer,
+  "content" text,
+  "completion_rule" text,
+  "release_rule" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "event_id" integer,
+  "registration_lead_hours" integer,
+  "cancellation_lead_hours" integer,
+  foreign key("learning_section_id") references learning_sections("id") on delete cascade on update no action,
+  foreign key("learning_course_id") references learning_courses("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("event_id") references "events"("id") on delete set null
+);
+CREATE INDEX "lrn_unit_course_pos_idx" on "learning_units"(
+  "learning_course_id",
+  "position"
+);
+CREATE INDEX "lrn_unit_org_kind_idx" on "learning_units"(
+  "organization_id",
+  "kind"
+);
+CREATE TABLE IF NOT EXISTS "learning_access_tokens"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "token_hash" varchar not null,
+  "expires_at" datetime not null,
+  "first_used_at" datetime,
+  "last_used_at" datetime,
+  "use_count" integer not null default '0',
+  "revoked_at" datetime,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_access_token_uq" on "learning_access_tokens"(
+  "token_hash"
+);
+CREATE INDEX "lrn_access_org_exp_idx" on "learning_access_tokens"(
+  "organization_id",
+  "expires_at"
+);
+CREATE TABLE IF NOT EXISTS "learning_bookings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_course_id" integer not null,
+  "user_id" integer,
+  "external_participant_id" integer,
+  "customer_id" integer,
+  "status" varchar not null default 'requested',
+  "seats" integer not null default '1',
+  "article_id" integer,
+  "unit_price" numeric,
+  "currency" varchar,
+  "requested_at" datetime not null,
+  "decided_at" datetime,
+  "decided_by_user_id" integer,
+  "decision_note" varchar,
+  "learning_enrollment_id" integer,
+  "is_billable" tinyint(1) not null default '0',
+  "billed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_course_id") references "learning_courses"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete set null,
+  foreign key("external_participant_id") references "external_participants"("id") on delete set null,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("article_id") references "articles"("id") on delete set null,
+  foreign key("decided_by_user_id") references "users"("id") on delete set null,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete set null
+);
+CREATE INDEX "lrn_booking_org_status_idx" on "learning_bookings"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "lrn_booking_course_status_idx" on "learning_bookings"(
+  "learning_course_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "learning_paths"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "code" varchar not null,
+  "title" varchar not null,
+  "description" text,
+  "target_role" varchar,
+  "duration_days" integer,
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_path_org_code_uq" on "learning_paths"(
+  "organization_id",
+  "code"
+);
+CREATE TABLE IF NOT EXISTS "learning_path_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_path_id" integer not null,
+  "learning_course_id" integer not null,
+  "position" integer not null default '0',
+  "is_mandatory" tinyint(1) not null default '1',
+  "due_days" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_path_id") references "learning_paths"("id") on delete cascade,
+  foreign key("learning_course_id") references "learning_courses"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_path_item_uq" on "learning_path_items"(
+  "learning_path_id",
+  "learning_course_id"
+);
+CREATE INDEX "lrn_path_item_pos_idx" on "learning_path_items"(
+  "learning_path_id",
+  "position"
+);
+CREATE TABLE IF NOT EXISTS "competencies"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "code" varchar not null,
+  "name" varchar not null,
+  "description" text,
+  "max_level" integer not null default '4',
+  "category" varchar,
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "competency_org_code_uq" on "competencies"(
+  "organization_id",
+  "code"
+);
+CREATE TABLE IF NOT EXISTS "user_competencies"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "competency_id" integer not null,
+  "level" integer not null default '1',
+  "source" varchar not null default 'assessment',
+  "learning_enrollment_id" integer,
+  "assessed_by_user_id" integer,
+  "assessed_on" date not null,
+  "valid_until" date,
+  "note" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("competency_id") references "competencies"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete set null,
+  foreign key("assessed_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "user_competency_uq" on "user_competencies"(
+  "user_id",
+  "competency_id"
+);
+CREATE INDEX "user_competency_level_idx" on "user_competencies"(
+  "organization_id",
+  "competency_id",
+  "level"
+);
+CREATE TABLE IF NOT EXISTS "competency_requirements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "competency_id" integer not null,
+  "subject_kind" varchar not null,
+  "subject_key" varchar not null,
+  "required_level" integer not null default '1',
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("competency_id") references "competencies"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "competency_req_uq" on "competency_requirements"(
+  "organization_id",
+  "competency_id",
+  "subject_kind",
+  "subject_key"
+);
+CREATE TABLE IF NOT EXISTS "learning_scorm_packages"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_unit_id" integer not null,
+  "title" varchar not null,
+  "version" varchar not null,
+  "storage_path" varchar not null,
+  "launch_href" varchar,
+  "manifest_hash" varchar not null,
+  "file_count" integer not null default '0',
+  "size_bytes" integer not null default '0',
+  "uploaded_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_unit_id") references "learning_units"("id") on delete cascade,
+  foreign key("uploaded_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_scorm_unit_uq" on "learning_scorm_packages"(
+  "learning_unit_id"
+);
+CREATE INDEX "lrn_scorm_org_idx" on "learning_scorm_packages"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_scorm_states"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_scorm_package_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "lesson_status" varchar,
+  "success_status" varchar,
+  "score_scaled" numeric,
+  "suspend_data" text,
+  "location" varchar,
+  "session_seconds" integer not null default '0',
+  "last_commit_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_scorm_package_id") references "learning_scorm_packages"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_scorm_state_uq" on "learning_scorm_states"(
+  "learning_scorm_package_id",
+  "learning_enrollment_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_xapi_statements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_enrollment_id" integer,
+  "statement_id" varchar,
+  "verb" varchar,
+  "object_id" varchar,
+  "payload" text not null,
+  "stored_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_xapi_stmt_uq" on "learning_xapi_statements"(
+  "organization_id",
+  "statement_id"
+);
+CREATE INDEX "lrn_xapi_enr_idx" on "learning_xapi_statements"(
+  "learning_enrollment_id",
+  "stored_at"
+);
+CREATE TABLE IF NOT EXISTS "learning_time_sessions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "learning_unit_id" integer,
+  "user_id" integer,
+  "started_at" datetime not null,
+  "ended_at" datetime,
+  "active_seconds" integer not null default('0'),
+  "source" varchar not null default('web'),
+  "classification" varchar,
+  "attendance_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "last_heartbeat_at" datetime,
+  "approval_status" varchar,
+  "approved_by_user_id" integer,
+  "approved_at" datetime,
+  "approval_note" varchar,
+  foreign key("attendance_id") references attendances("id") on delete set null on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("learning_unit_id") references learning_units("id") on delete set null on update no action,
+  foreign key("learning_enrollment_id") references learning_enrollments("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("approved_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "lrn_time_enr_open_idx" on "learning_time_sessions"(
+  "learning_enrollment_id",
+  "ended_at"
+);
+CREATE INDEX "lrn_time_org_user_idx" on "learning_time_sessions"(
+  "organization_id",
+  "user_id",
+  "started_at"
+);
+CREATE INDEX "lrn_time_approval_idx" on "learning_time_sessions"(
+  "organization_id",
+  "approval_status"
+);
+CREATE TABLE IF NOT EXISTS "learning_courses"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "code" varchar not null,
+  "title" varchar not null,
+  "subtitle" varchar,
+  "description" text,
+  "objectives" text,
+  "language" varchar not null default('de'),
+  "status" varchar not null default('draft'),
+  "audiences" text,
+  "access_kind" varchar not null default('enrolled'),
+  "training_course_id" integer,
+  "article_id" integer,
+  "owner_user_id" integer,
+  "duration_minutes" integer,
+  "validity_months" integer,
+  "points" integer not null default('0'),
+  "time_policy" varchar not null default('work_time_required'),
+  "instruction_suitability" varchar not null default('supplementary'),
+  "certificate_enabled" tinyint(1) not null default('0'),
+  "access_days" integer,
+  "sequential" tinyint(1) not null default('0'),
+  "created_at" datetime,
+  "updated_at" datetime,
+  "qualification_id" integer,
+  "creates_instruction_proof" tinyint(1) not null default('0'),
+  "competency_id" integer,
+  "competency_level" integer,
+  "asset_id" integer,
+  foreign key("competency_id") references competencies("id") on delete set null on update no action,
+  foreign key("owner_user_id") references users("id") on delete set null on update no action,
+  foreign key("article_id") references articles("id") on delete set null on update no action,
+  foreign key("training_course_id") references training_courses("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("qualification_id") references qualifications("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_course_org_code_uq" on "learning_courses"(
+  "organization_id",
+  "code"
+);
+CREATE INDEX "lrn_course_org_status_idx" on "learning_courses"(
+  "organization_id",
+  "status"
+);
+CREATE UNIQUE INDEX "lrn_course_org_training_uq" on "learning_courses"(
+  "organization_id",
+  "training_course_id"
+);
+CREATE TABLE IF NOT EXISTS "safety_instructions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "instruction_no" integer not null,
+  "topic" varchar not null,
+  "hazard_assessment_id" integer,
+  "held_on" date not null,
+  "instructor_user_id" integer,
+  "repeat_interval_months" integer,
+  "notes" text,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "training_course_id" integer,
+  "training_course_version_id" integer,
+  "asset_id" integer,
+  foreign key("training_course_version_id") references training_course_versions("id") on delete set null on update no action,
+  foreign key("training_course_id") references training_courses("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("hazard_assessment_id") references hazard_assessments("id") on delete set null on update no action,
+  foreign key("instructor_user_id") references users("id") on delete set null on update no action,
+  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null
+);
+CREATE INDEX "safety_instr_org_held_idx" on "safety_instructions"(
+  "organization_id",
+  "held_on"
+);
+CREATE UNIQUE INDEX "safety_instr_org_no_uq" on "safety_instructions"(
+  "organization_id",
+  "instruction_no"
+);
+CREATE TABLE IF NOT EXISTS "learning_content_translations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "translatable_type" varchar not null,
+  "translatable_id" integer not null,
+  "locale" varchar not null,
+  "payload" text not null,
+  "source_hash" varchar not null,
+  "status" varchar not null default 'draft',
+  "provider" varchar,
+  "approved_by_user_id" integer,
+  "approved_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("approved_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_trans_uq" on "learning_content_translations"(
+  "translatable_type",
+  "translatable_id",
+  "locale"
+);
+CREATE INDEX "lrn_trans_org_locale_idx" on "learning_content_translations"(
+  "organization_id",
+  "locale"
+);
+CREATE INDEX "attach_media_state_idx" on "attachments"("media_state");
+CREATE TABLE IF NOT EXISTS "media_renditions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "attachment_id" integer not null,
+  "kind" varchar not null,
+  "variant" varchar,
+  "disk" varchar not null,
+  "path" varchar not null,
+  "mime" varchar not null,
+  "size_bytes" integer not null default '0',
+  "width" integer,
+  "height" integer,
+  "locale" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "source" varchar not null default 'manual',
+  "reviewed_at" datetime,
+  "reviewed_by" integer,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("attachment_id") references "attachments"("id") on delete cascade,
+  foreign key("reviewed_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "media_rend_uq" on "media_renditions"(
+  "attachment_id",
+  "kind",
+  "variant",
+  "locale"
+);
+CREATE INDEX "media_rend_org_idx" on "media_renditions"("organization_id");
+CREATE TABLE IF NOT EXISTS "learning_issuer_keys"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "algorithm" varchar not null default('ed25519'),
+  "public_key" text not null,
+  "private_key" text not null,
+  "key_id" varchar not null,
+  "revoked_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+);
+CREATE INDEX "lrn_issuer_key_active_idx" on "learning_issuer_keys"(
+  "organization_id",
+  "revoked_at"
+);
+CREATE UNIQUE INDEX "lrn_issuer_key_uq" on "learning_issuer_keys"(
+  "organization_id",
+  "key_id"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -18643,3 +19421,24 @@ INSERT INTO migrations VALUES(757,'2027_02_19_104000_create_user_workspaces_tabl
 INSERT INTO migrations VALUES(758,'2027_02_19_104100_add_peppol_participant_and_lookups',152);
 INSERT INTO migrations VALUES(759,'2027_02_19_104200_add_width_to_user_dashboard_widgets',153);
 INSERT INTO migrations VALUES(760,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',153);
+INSERT INTO migrations VALUES(761,'2027_02_19_104400_create_learning_platform_tables',154);
+INSERT INTO migrations VALUES(762,'2027_02_19_104500_create_learning_enrollment_tables',155);
+INSERT INTO migrations VALUES(763,'2027_02_19_104600_create_learning_time_sessions_table',156);
+INSERT INTO migrations VALUES(764,'2027_02_19_104700_create_learning_quiz_tables',157);
+INSERT INTO migrations VALUES(765,'2027_02_19_104800_create_learning_assignment_tables',158);
+INSERT INTO migrations VALUES(766,'2027_02_19_104900_create_learning_certificates_table',159);
+INSERT INTO migrations VALUES(767,'2027_02_19_105000_link_learning_units_to_events',160);
+INSERT INTO migrations VALUES(768,'2027_02_19_105100_create_learning_access_tokens_table',161);
+INSERT INTO migrations VALUES(769,'2027_02_19_105200_create_learning_bookings_table',162);
+INSERT INTO migrations VALUES(770,'2027_02_19_105300_create_learning_paths_and_competencies',162);
+INSERT INTO migrations VALUES(771,'2027_02_19_105400_add_course_completion_trigger_to_surveys',163);
+INSERT INTO migrations VALUES(772,'2027_02_19_105500_create_learning_issuer_keys_table',164);
+INSERT INTO migrations VALUES(773,'2027_02_19_105600_create_learning_scorm_tables',165);
+INSERT INTO migrations VALUES(774,'2027_02_19_105700_add_heartbeat_to_learning_time_sessions',166);
+INSERT INTO migrations VALUES(775,'2027_02_19_105800_add_asset_to_learning_courses',167);
+INSERT INTO migrations VALUES(776,'2027_02_19_105900_create_learning_content_translations',168);
+INSERT INTO migrations VALUES(777,'2027_02_19_110000_create_media_renditions_table',169);
+INSERT INTO migrations VALUES(778,'2027_02_19_110100_widen_issuer_key_for_rsa',170);
+INSERT INTO migrations VALUES(779,'2027_02_19_110200_add_subtitle_review_to_media_renditions',171);
+INSERT INTO migrations VALUES(780,'2027_02_19_110300_restrict_evidence_authorship_user_fks',172);
+INSERT INTO migrations VALUES(781,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',173);

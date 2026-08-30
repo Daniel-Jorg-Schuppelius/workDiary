@@ -13,9 +13,11 @@ namespace App\Services\Sync;
 use App\Enums\Sync\SyncCommandStatus;
 use App\Http\Controllers\FormSubmissionController;
 use App\Models\{Attendance, AuditLog, Comment, DiaryEntry, FormSubmission, FormTemplate, SyncCommand, TimeCorrectionRequest, User};
+use App\Models\Learning\{LearningEnrollment, LearningUnit};
 use App\Services\Attendance\AttendanceClockService;
 use App\Services\Form\FormService;
-use App\Services\TimeApproval\TimeCorrectionService;
+use App\Services\Learning\LearningEnrollmentService;
+use App\Services\TimeApproval\{DayCloseService, TimeCorrectionService};
 use App\Support\{Setting, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +42,19 @@ use RuntimeException;
  *    zeigt die Meldung; ein blindes Endlos-Retry ist damit ausgeschlossen.
  */
 class SyncCommandService {
+    /**
+     * Wie weit darf eine offline entstandene Stempelung zurückliegen?
+     *
+     * Ein Gerät kann tagelang ohne Netz sein — beliebig lange aber nicht.
+     * Ohne Grenze war der Sync-Weg eine Hintertür an der Serverzeit vorbei
+     * (Sicherheitsscan 2026-08-23, S-09): der Online-Weg stempelt mit
+     * Serverzeit, der Offline-Weg übernahm den Zeitstempel des Clients 1:1.
+     */
+    private const MAX_OFFLINE_BACKDATE_DAYS = 14;
+
+    /** Zulässiger Vorlauf gegen Uhrenversatz auf dem Gerät. */
+    private const MAX_CLOCK_SKEW_MINUTES = 10;
+
     /** Unterstützte Befehlstypen (MVP-Scope: append-artige Daten, §3.1). */
     public const TYPES = [
         'attendance.clock-in',
@@ -51,6 +66,10 @@ class SyncCommandService {
         // Genehmigungsweg vorbei — er erzeugt einen TimeCorrectionRequest und
         // wendet ihn nur an, wenn die Organisation Selbstkorrektur erlaubt.
         'attendance.correct',
+        // Lerneinheit offline abhaken (Feature 149, MVP-748). NUR Einheiten
+        // ohne Online-Pflicht: Prüfungen und Aufgaben bleiben online, weil
+        // eine offline erzeugte Prüfungsakte nicht manipulationssicher wäre.
+        'learning.unit-complete',
     ];
 
     public function __construct(
@@ -121,6 +140,43 @@ class SyncCommandService {
     }
 
     /**
+     * Lerneinheit offline abhaken (Feature 149, MVP-748).
+     *
+     * **Die Online-Pflicht wird hier durchgesetzt**, nicht nur im Browser:
+     * Prüfungen und Aufgaben dürfen nicht offline abgeschlossen werden. Eine
+     * offline erzeugte Prüfungsakte wäre nicht manipulationssicher, und der
+     * Nachweis hinge an ihr.
+     *
+     * Die Einschreibung muss der Person selbst gehören — die Outbox eines
+     * Geräts darf niemanden sonst betreffen.
+     *
+     * @param  array<string, mixed>  $payload
+     */
+    private function learningUnitComplete(User $user, array $payload): string {
+        $enrollmentId = Sqid::decodeOrNumeric(LearningEnrollment::class, $payload['enrollment'] ?? null);
+        $unitId = Sqid::decodeOrNumeric(LearningUnit::class, $payload['unit'] ?? null);
+
+        $enrollment = $enrollmentId !== null ? LearningEnrollment::query()->find($enrollmentId) : null;
+        $unit = $unitId !== null ? LearningUnit::query()->find($unitId) : null;
+
+        if ($enrollment === null || $unit === null) {
+            throw new RuntimeException((string) __('learning.errors.sync_unknown_target'));
+        }
+
+        if ($enrollment->user_id !== $user->id) {
+            throw new RuntimeException((string) __('learning.errors.sync_foreign_enrollment'));
+        }
+
+        if ($unit->kind->requiresOnline()) {
+            throw new RuntimeException((string) __('learning.errors.sync_requires_online'));
+        }
+
+        $progress = app(LearningEnrollmentService::class)->completeUnit($enrollment, $unit);
+
+        return 'learning_unit_progress:' . $progress->id;
+    }
+
+    /**
      * Führt den fachlichen Teil aus und liefert die Ergebnis-Referenz
      * (`<tabelle>:<id>`). Wirft ValidationException/RuntimeException zur
      * Ablehnung.
@@ -134,6 +190,7 @@ class SyncCommandService {
             'comment.diary' => $this->commentDiary($user, $payload),
             'form.submission' => $this->formSubmission($user, $payload),
             'attendance.correct' => $this->attendanceCorrect($user, $payload),
+            'learning.unit-complete' => $this->learningUnitComplete($user, $payload),
             default => throw new RuntimeException('Unbekannter Sync-Befehlstyp: ' . $type),
         };
     }
@@ -150,6 +207,9 @@ class SyncCommandService {
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'note' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.note_max', 1000)],
         ]);
+
+        $startedAt = $this->assertPlausibleStamp($user, (string) $data['started_at'], 'started_at');
+        $this->assertNoOverlap($user, $startedAt);
 
         $attendance = $this->clock->clockIn($user, [
             'started_at' => $data['started_at'],
@@ -175,6 +235,8 @@ class SyncCommandService {
             'lng' => ['nullable', 'numeric', 'between:-180,180'],
             'note' => ['nullable', 'string', 'max:' . (int) Setting::get('validation.attendance.note_max', 1000)],
         ]);
+
+        $this->assertPlausibleStamp($user, (string) $data['ended_at'], 'ended_at');
 
         $context = [
             'ended_at' => $data['ended_at'],
@@ -502,4 +564,63 @@ class SyncCommandService {
             || str_contains($e->getMessage(), '1062')
             || str_contains($e->getMessage(), '23505');
     }
+
+    /**
+     * Ist der vom Gerät gelieferte Zeitstempel glaubwürdig — und der Tag offen?
+     *
+     * Drei Schranken, die der Online-Weg schon durch die Serverzeit hat:
+     * keine Zukunft (bis auf Uhrenversatz), nicht älter als das
+     * Offline-Fenster, und der Zieltag darf nicht abgeschlossen oder der
+     * Monat freigegeben sein. Für Änderungen an gesperrten Tagen gibt es den
+     * Weg über `attendance.correct` — eine Zeitkorrektur mit Begründung und
+     * Genehmigung.
+     */
+    private function assertPlausibleStamp(User $user, string $raw, string $field): CarbonImmutable {
+        $stamp = CarbonImmutable::parse($raw);
+        $now = CarbonImmutable::now();
+
+        if ($stamp->greaterThan($now->addMinutes(self::MAX_CLOCK_SKEW_MINUTES))) {
+            throw ValidationException::withMessages([
+                $field => (string) __('sync.error.stamp_in_future'),
+            ]);
+        }
+
+        if ($stamp->lessThan($now->subDays(self::MAX_OFFLINE_BACKDATE_DAYS))) {
+            throw ValidationException::withMessages([
+                $field => (string) __('sync.error.stamp_too_old', ['days' => self::MAX_OFFLINE_BACKDATE_DAYS]),
+            ]);
+        }
+
+        if (app(DayCloseService::class)->dayLockedFor($user, $stamp->startOfDay())) {
+            throw ValidationException::withMessages([
+                $field => (string) __('sync.error.day_locked'),
+            ]);
+        }
+
+        return $stamp;
+    }
+
+    /**
+     * Keine zweite Stempelung über eine bestehende legen.
+     *
+     * Beim Online-Stempeln kann das nicht passieren (es gibt genau eine
+     * offene). Rückdatiert schon: zwei Kommen-Stempel auf denselben Tag
+     * verdoppeln Arbeitszeit, Zuschläge und Gleitzeitkonto.
+     */
+    private function assertNoOverlap(User $user, CarbonImmutable $startedAt): void {
+        $exists = Attendance::query()
+            ->where('user_id', $user->id)
+            ->where('started_at', '<=', $startedAt)
+            ->where(function ($query) use ($startedAt): void {
+                $query->whereNull('ended_at')->orWhere('ended_at', '>', $startedAt);
+            })
+            ->exists();
+
+        if ($exists) {
+            throw ValidationException::withMessages([
+                'started_at' => (string) __('sync.error.stamp_overlaps'),
+            ]);
+        }
+    }
+
 }

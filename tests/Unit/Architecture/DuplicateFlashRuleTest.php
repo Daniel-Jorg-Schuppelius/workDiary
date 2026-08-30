@@ -34,6 +34,7 @@ class DuplicateFlashRuleTest extends TestCase {
         'resources/views/auth/two-factor-challenge.blade.php' => 'layouts.guest ohne zentralen Flash (role="status" lokal)',
         // Standalone-/öffentliche Seiten ohne App-Layout.
         'resources/views/public/' => 'öffentliche Seiten ohne App-Layout (role="status" lokal)',
+        'resources/views/learning/external/' => 'Lernzugang ohne Konto auf layouts.guest — kein zentraler Flash (role="status" lokal)',
         'resources/views/whistleblowing/public/' => 'eigenes öffentliches Layout (wb-card, role="status" lokal)',
     ];
 

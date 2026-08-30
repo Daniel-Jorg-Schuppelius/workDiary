@@ -73,6 +73,7 @@ return [
         'calendly' => ['backfill' => 'Calendly-Terminabgleich'],
         'ai' => ['maintenance' => 'KI-Wartungslauf (Provider-Health, Vorschlags-Bereinigung)'],
         'archive' => ['run' => 'Archivierungslauf'],
+        'learning' => ['close_stale_sessions' => 'Liegengebliebene Lernsitzungen schließen'],
         'attendance' => ['close_open' => 'Offene Stempelungen schließen'],
         'audit' => ['verify' => 'Audit-Kette prüfen'],
         'backup' => [

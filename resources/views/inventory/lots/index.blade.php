@@ -56,8 +56,8 @@
                             <form method="POST" action="{{ route('inventory.lots.split') }}" class="flex items-end gap-1">
                                 @csrf
                                 <input type="hidden" name="lot" value="{{ $lot->sqid }}">
-                                <input name="qty" type="number" step="0.0001" min="0.0001" placeholder="{{ __('inventory.lot.qty') }}" class="input input-xs input-bordered w-20">
-                                <input name="new_lot_no" type="text" maxlength="80" placeholder="{{ __('inventory.lot.new_lot_no') }}" class="input input-xs input-bordered w-28">
+                                <input aria-label="{{ __('inventory.lot.qty') }}" name="qty" type="number" step="0.0001" min="0.0001" placeholder="{{ __('inventory.lot.qty') }}" class="input input-xs input-bordered w-20">
+                                <input aria-label="{{ __('inventory.lot.new_lot_no') }}" name="new_lot_no" type="text" maxlength="80" placeholder="{{ __('inventory.lot.new_lot_no') }}" class="input input-xs input-bordered w-28">
                                 <button type="submit" class="btn btn-xs">{{ __('inventory.lot.split') }}</button>
                             </form>
                         </td>

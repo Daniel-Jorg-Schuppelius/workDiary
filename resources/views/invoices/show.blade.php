@@ -74,7 +74,7 @@
                 <summary class="cursor-pointer text-sm font-medium">{{ __('Widerspruch dokumentieren (§ 14 Abs. 2 UStG)') }}</summary>
                 <form method="POST" action="{{ route('invoices.objection', $invoice) }}" class="mt-2 space-y-2">
                     @csrf
-                    <textarea name="objection_note" required minlength="10" maxlength="1000" rows="2"
+                    <textarea aria-label="{{ __('Begründung des Empfänger-Widerspruchs (Pflicht)') }}" name="objection_note" required minlength="10" maxlength="1000" rows="2"
                               class="textarea textarea-bordered w-full text-sm"
                               placeholder="{{ __('Begründung des Empfänger-Widerspruchs (Pflicht)') }}"></textarea>
                     <x-button type="submit" tone="warning" icon="gavel">{{ __('Widerspruch dokumentieren') }}</x-button>

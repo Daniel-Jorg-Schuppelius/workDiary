@@ -65,7 +65,7 @@
                         <option value="{{ $type->value }}" @selected($type === \App\Enums\Agile\AgileItemType::Story)>{{ $type->label() }}</option>
                     @endforeach
                 </select>
-                <input name="story_points" type="number" min="1" max="999" placeholder="SP" class="input input-sm input-bordered w-20">
+                <input aria-label="{{ __('Story Points') }}" name="story_points" type="number" min="1" max="999" placeholder="SP" class="input input-sm input-bordered w-20">
                 <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('Anlegen') }}</x-icon-btn>
             </form>
             @if ($adoptableTasks->isNotEmpty())

@@ -76,6 +76,8 @@
         <x-input-field name="remote_username" :label="__('procurement.catalog.remote.username')" :value="$val('remote_username')" autocomplete="off" />
         <x-input-field name="remote_password" type="password" :label="__('procurement.catalog.remote.password')"
                        :placeholder="$editing ? __('procurement.catalog.remote.password_keep') : null" autocomplete="new-password" />
+        <x-input-field name="remote_host_fingerprint" :label="__('procurement.catalog.remote.fingerprint')"
+                       :value="$val('remote_host_fingerprint')" :hint="__('procurement.catalog.remote.fingerprint_hint')" />
         <x-input-field name="fetch_interval_minutes" type="number" min="0" :label="__('procurement.catalog.remote.interval')"
                        :value="$val('fetch_interval_minutes')" :placeholder="__('procurement.catalog.remote.interval_off')" />
     </x-form-group>

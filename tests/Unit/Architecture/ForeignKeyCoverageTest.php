@@ -32,9 +32,17 @@ class ForeignKeyCoverageTest extends TestCase {
 
     /** @var list<string> table.column ohne FK — Stand 2026-08-23 (Welle 3, F12: appointment_requests/procedure_deviations zuerst) */
     private const BASELINE = [
+        // Feature 149 (MVP-743): `statement_id` ist die UUID, die der Inhalt
+        // dem xAPI-Statement selbst gibt — eine Fremdkennung, kein Verweis
+        // auf eine eigene Tabelle. Sie dient der Dublettenerkennung.
+        'learning_xapi_statements.statement_id',
         // F7 (2027_02_19_100600): audit_logs ist eine Hash-Kette — FKs mit
         // SET NULL hätten beim Org-Purge die Kette gebrochen; Werte bleiben.
         'audit_logs.organization_id',
+        // Feature 149 (MVP-751): `key_id` ist KEIN Fremdschlüssel, sondern die
+        // öffentliche Kennung des Signaturschlüssels — sie steht in der
+        // Verifikations-URL eines Zertifikats und darf sich nie ändern.
+        'learning_issuer_keys.key_id',
         'audit_logs.user_id',
         // Feature 066 (MVP-734): Peppol-Teilnehmerkennung des Kunden ist eine
         // EXTERNE Netzkennung (`<ICD>:<Wert>`), keine Zeilenreferenz — die

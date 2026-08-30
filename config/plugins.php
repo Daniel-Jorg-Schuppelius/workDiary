@@ -88,6 +88,23 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Ziele im privaten Netz (SSRF-Opt-in für Kern-Dienste)
+    |--------------------------------------------------------------------------
+    |
+    | `PluginHttpFactory` weist Ziele in privaten/reservierten Netzen ab
+    | (Sicherheitsscan 2026-08-23, S-10). Plugins haben dafür die
+    | Org-Einstellung `allow_private_network`; Kern-Dienste ohne
+    | Plugin-Einstellungen — etwa ein selbst gehostetes Nominatim oder OSRM —
+    | werden hier vom Betreiber freigegeben. Komma-getrennte Dienst-IDs,
+    | z. B. `nominatim,osrm`. Leer lassen, wenn alle Ziele öffentlich sind.
+    */
+    'private_network_targets' => array_values(array_filter(array_map(
+        'trim',
+        explode(',', (string) env('PLUGINS_PRIVATE_NETWORK_TARGETS', ''))
+    ))),
+
+    /*
+    |--------------------------------------------------------------------------
     | Per-plugin configuration
     |--------------------------------------------------------------------------
     |

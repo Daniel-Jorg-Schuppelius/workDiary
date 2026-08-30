@@ -7,7 +7,7 @@
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
 
-import { postForm, postJson } from "./lib/http.js";
+import { getJson, postForm, postJson } from "./lib/http.js";
 
 /**
  * Offline-Sync-Outbox (Feature 035, Phase 2 — offline-sync-architektur.md
@@ -28,11 +28,15 @@ import { postForm, postJson } from "./lib/http.js";
 
 const DB_NAME = "workdiary-sync";
 // v2 (Audit 2026-08, W4.1): eigener Konflikt-Store + Foto-Warteschlange.
-const DB_VERSION = 2;
+const DB_VERSION = 3;
 const OUTBOX = "outbox";
 const REJECTED = "rejected";
 const CONFLICTS = "conflicts";
 const PHOTOS = "photos";
+/* Kursinhalte zum Offline-Lesen (Feature 149, MVP-748). Bewusst ein eigener
+   Store: er wird beim Abmelden mitgeleert, und der Seiten-Cache bleibt
+   unberuehrt (der Service Worker cacht keine angemeldeten Seiten). */
+const COURSES = "courses";
 
 function openDb() {
     return new Promise((resolve, reject) => {
@@ -50,6 +54,9 @@ function openDb() {
             // nicht anbieten, ohne dass der Nutzer den fremden Stand gesehen hat.
             if (!db.objectStoreNames.contains(CONFLICTS)) {
                 db.createObjectStore(CONFLICTS, { keyPath: "client_uuid" });
+            }
+            if (!db.objectStoreNames.contains(COURSES)) {
+                db.createObjectStore(COURSES, { keyPath: "enrollment" });
             }
             if (!db.objectStoreNames.contains(PHOTOS)) {
                 const store = db.createObjectStore(PHOTOS, {
@@ -154,7 +161,7 @@ async function photosFor(clientUuid) {
 /** §3.4: Logout leert die Outbox (Gerätewechsel/Abmeldung). */
 async function clearAll() {
     const db = await openDb();
-    for (const name of [OUTBOX, REJECTED, CONFLICTS, PHOTOS]) {
+    for (const name of [OUTBOX, REJECTED, CONFLICTS, PHOTOS, COURSES]) {
         await tx(db, name, "readwrite", (store) => store.clear());
     }
 }
@@ -332,6 +339,16 @@ function buildPayload(type, form) {
             payload.break_minutes = Number(breakMinutes.value);
         }
         return payload;
+    }
+
+    if (type === "learning.unit-complete") {
+        // Prüfungen und Aufgaben tragen dieses Attribut gar nicht erst — und
+        // der Server lehnt sie zusätzlich ab. Eine offline erzeugte
+        // Prüfungsakte wäre nicht manipulationssicher.
+        return {
+            enrollment: form.dataset.syncPayloadEnrollment || "",
+            unit: form.dataset.syncPayloadUnit || "",
+        };
     }
 
     if (type === "comment.diary") {
@@ -619,10 +636,97 @@ async function renderChangesPage(root) {
     if (empty) empty.hidden = total > 0;
 }
 
+/* ── Kurse offline lesen (Feature 149, MVP-748) ───────────────────────── */
+
+/**
+ * Kursinhalt fuer das Offline-Lesen ablegen.
+ *
+ * Nur auf ausdrueckliche Anforderung: der Stoff landet im Geraetespeicher,
+ * und das soll niemand unbemerkt tun. Geloescht wird er beim Abmelden
+ * (clearAll) — deshalb liegt er in einem eigenen Store und nicht im
+ * Seiten-Cache.
+ */
+async function courseStore(enrollment, url) {
+    // Ueber die HTTP-Naht, nicht ueber rohes fetch: dort haengen CSRF-Token,
+    // credentials und die 419-Behandlung. Ein abgelaufenes Login endete sonst
+    // als stiller Fehler, und der Kurs waere „gespeichert" ohne Inhalt.
+    const result = await getJson(url);
+
+    if (!result.ok || !result.data) throw new Error("offline-bundle");
+
+    const bundle = result.data;
+    const db = await openDb();
+
+    await tx(db, COURSES, "readwrite", (store) =>
+        store.put({ ...bundle, enrollment }),
+    );
+
+    return bundle;
+}
+
+async function courseGet(enrollment) {
+    const db = await openDb();
+
+    // Bewusst NICHT ueber tx(): dessen `result?.result ?? result` liefert bei
+    // einem Treffer-losen get() das Request-Objekt statt undefined — genau
+    // der Fall „Kurs nicht gespeichert".
+    return new Promise((resolve, reject) => {
+        const request = db
+            .transaction(COURSES, "readonly")
+            .objectStore(COURSES)
+            .get(enrollment);
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function courseDelete(enrollment) {
+    const db = await openDb();
+    await tx(db, COURSES, "readwrite", (store) => store.delete(enrollment));
+}
+
+/** Knopf „Fuer offline speichern" an der Kursseite. */
+function bindOfflineCourses() {
+    for (const node of document.querySelectorAll("[data-offline-course]")) {
+        if (!(node instanceof HTMLElement)) continue;
+
+        const button = node;
+        const enrollment = button.dataset.offlineCourse;
+        const url = button.dataset.offlineCourseUrl;
+
+        if (!enrollment || !url) continue;
+
+        courseGet(enrollment)
+            .then((stored) => {
+                if (stored) button.dataset.offlineStored = "1";
+            })
+            .catch(() => {});
+
+        button.addEventListener("click", async (event) => {
+            event.preventDefault();
+
+            try {
+                if (button.dataset.offlineStored === "1") {
+                    await courseDelete(enrollment);
+                    delete button.dataset.offlineStored;
+                } else {
+                    await courseStore(enrollment, url);
+                    button.dataset.offlineStored = "1";
+                }
+            } catch {
+                // Ohne Netz laesst sich nichts herunterladen; der Zustand
+                // bleibt, wie er war.
+                button.dataset.offlineFailed = "1";
+            }
+        });
+    }
+}
+
 export function initOfflineSync() {
     if (typeof indexedDB === "undefined") return;
 
     bindForms();
+    bindOfflineCourses();
     window.addEventListener("online", flush);
     window.addEventListener("offline", updateBadge);
     document.addEventListener("visibilitychange", () => {
@@ -640,6 +744,9 @@ export function initOfflineSync() {
 // importiert dieses Objekt.
 export const __testables = {
     buildPayload,
+    courseStore,
+    courseGet,
+    courseDelete,
     flush,
     updateBadge,
     uploadPhotos,

@@ -154,8 +154,8 @@
                         <option value="{{ $kind }}">{{ __("values.$kind") }}</option>
                     @endforeach
                 </select>
-                <input name="title" class="input input-sm input-bordered w-56" placeholder="{{ __('Titel') }}" required>
-                <input name="note" class="input input-sm input-bordered w-64" placeholder="{{ __('Notiz (optional)') }}">
+                <input aria-label="{{ __('Titel') }}" name="title" class="input input-sm input-bordered w-56" placeholder="{{ __('Titel') }}" required>
+                <input aria-label="{{ __('Notiz (optional)') }}" name="note" class="input input-sm input-bordered w-64" placeholder="{{ __('Notiz (optional)') }}">
                 <input type="file" name="file" class="file-input file-input-sm file-input-bordered">
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Nachweis erfassen') }}</button>
             </form>
@@ -195,7 +195,7 @@
                             @endforeach
                         </select>
                     </div>
-                    <textarea name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
+                    <textarea aria-label="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Bewertung festhalten') }}</button>
                 </form>
             @endcan
@@ -217,7 +217,7 @@
                             <option value="{{ $d }}">{{ __("values.$d") }}</option>
                         @endforeach
                     </select>
-                    <textarea name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
+                    <textarea aria-label="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Entscheiden') }}</button>
                 </form>
             @endcan
@@ -263,7 +263,7 @@
                                         <option value="{{ $state }}">{{ $state }}</option>
                                     @endforeach
                                 </select>
-                                <input name="condition_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Zustand (optional)') }}">
+                                <input aria-label="{{ __('Zustand (optional)') }}" name="condition_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Zustand (optional)') }}">
                                 <button type="submit" class="btn btn-xs btn-primary">{{ __('Wareneingang buchen') }}</button>
                             </form>
                         @endif
@@ -275,7 +275,7 @@
                                         <option value="{{ $result }}">{{ __("values.$result") }}</option>
                                     @endforeach
                                 </select>
-                                <input name="findings" class="input input-xs input-bordered w-48" placeholder="{{ __('Befund') }}">
+                                <input aria-label="{{ __('Befund') }}" name="findings" class="input input-xs input-bordered w-48" placeholder="{{ __('Befund') }}">
                                 <button type="submit" class="btn btn-xs">{{ __('Prüfen') }}</button>
                             </form>
                             <form method="POST" action="{{ route('claims.rma.disposition', $rma) }}" class="flex flex-wrap items-center gap-1">
@@ -295,7 +295,7 @@
         @can('warehouse', $claim)
             <form method="POST" action="{{ route('claims.rma.store', $claim) }}" class="mt-2 flex flex-wrap items-end gap-2 text-sm">
                 @csrf
-                <input name="serial_no" class="input input-sm input-bordered w-48" placeholder="{{ __('Seriennummer (optional)') }}" value="{{ $claim->serial_no }}">
+                <input aria-label="{{ __('Seriennummer (optional)') }}" name="serial_no" class="input input-sm input-bordered w-48" placeholder="{{ __('Seriennummer (optional)') }}" value="{{ $claim->serial_no }}">
                 <input name="expected_at" type="date" class="input input-sm input-bordered" aria-label="{{ __('Erwartet am') }}">
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Rücksendung ankündigen') }}</button>
             </form>
@@ -334,7 +334,7 @@
                             <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
                         @endforeach
                     </select>
-                    <input name="title" class="input input-sm input-bordered w-56" placeholder="{{ __('Titel') }}" required>
+                    <input aria-label="{{ __('Titel') }}" name="title" class="input input-sm input-bordered w-56" placeholder="{{ __('Titel') }}" required>
                     <input name="due_at" type="date" class="input input-sm input-bordered" aria-label="{{ __('Frist') }}">
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Maßnahme anlegen') }}</button>
                 </form>
@@ -375,7 +375,7 @@
                             @if ($outcome->status === \App\Enums\Claims\ClaimFinancialStatus::Executed && $outcome->result_invoice_id === null && $outcome->external_reference === null && $outcome->kind->producesInvoice())
                                 <form method="POST" action="{{ route('claims.financial.reference', $outcome) }}" class="flex items-center gap-1">
                                     @csrf
-                                    <input name="external_reference" class="input input-xs input-bordered w-44" placeholder="{{ __('Belegnummer (extern)') }}" required maxlength="100">
+                                    <input aria-label="{{ __('Belegnummer (extern)') }}" name="external_reference" class="input input-xs input-bordered w-44" placeholder="{{ __('Belegnummer (extern)') }}" required maxlength="100">
                                     <button type="submit" class="btn btn-xs">{{ __('Nachtragen') }}</button>
                                 </form>
                             @endif
@@ -392,9 +392,9 @@
                                 <option value="{{ $kind->value }}">{{ $kind->label() }}</option>
                             @endforeach
                         </select>
-                        <input name="amount" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Betrag') }}">
+                        <input aria-label="{{ __('Betrag') }}" name="amount" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Betrag') }}">
                     </div>
-                    <textarea name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
+                    <textarea aria-label="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" name="justification" rows="2" class="textarea textarea-bordered textarea-sm w-full" placeholder="{{ __('Pflichtbegründung (min. 10 Zeichen)') }}" required></textarea>
                     <button type="submit" class="btn btn-sm btn-primary">{{ __('Folge vorschlagen') }}</button>
                 </form>
             @endcan
@@ -426,8 +426,8 @@
                                 <option value="{{ $status->value }}" @selected($recourse->status === $status)>{{ $status->label() }}</option>
                             @endforeach
                         </select>
-                        <input name="amount_recovered" type="number" step="0.01" min="0" class="input input-xs input-bordered w-28" placeholder="{{ __('Erstattet') }}">
-                        <input name="outcome_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Ergebnis (optional)') }}">
+                        <input aria-label="{{ __('Erstattet') }}" name="amount_recovered" type="number" step="0.01" min="0" class="input input-xs input-bordered w-28" placeholder="{{ __('Erstattet') }}">
+                        <input aria-label="{{ __('Ergebnis (optional)') }}" name="outcome_note" class="input input-xs input-bordered w-48" placeholder="{{ __('Ergebnis (optional)') }}">
                         <button type="submit" class="btn btn-xs">{{ __('Aktualisieren') }}</button>
                     </form>
                 @endcan
@@ -436,9 +436,9 @@
         @can('recourse', $claim)
             <form method="POST" action="{{ route('claims.recourses.store', $claim) }}" class="mt-2 flex flex-wrap items-end gap-2 text-sm">
                 @csrf
-                <input name="supplier_id" class="input input-sm input-bordered w-40" placeholder="{{ __('Lieferant (Sqid)') }}" value="{{ $claim->supplier?->sqid }}" required>
-                <input name="external_reference" class="input input-sm input-bordered w-40" placeholder="{{ __('Externe RMA-Nr.') }}">
-                <input name="amount_claimed" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Forderung') }}">
+                <input aria-label="{{ __('Lieferant (Sqid)') }}" name="supplier_id" class="input input-sm input-bordered w-40" placeholder="{{ __('Lieferant (Sqid)') }}" value="{{ $claim->supplier?->sqid }}" required>
+                <input aria-label="{{ __('Externe RMA-Nr.') }}" name="external_reference" class="input input-sm input-bordered w-40" placeholder="{{ __('Externe RMA-Nr.') }}">
+                <input aria-label="{{ __('Forderung') }}" name="amount_claimed" type="number" step="0.01" min="0" class="input input-sm input-bordered w-32" placeholder="{{ __('Forderung') }}">
                 <button type="submit" class="btn btn-sm btn-primary">{{ __('Regress anlegen') }}</button>
             </form>
         @endcan

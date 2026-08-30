@@ -142,9 +142,31 @@ class SecurityHeaders {
             return '';
         }
 
-        $origin = $scheme . '://' . $parts['host'];
+        // **Der Host geht ungeprüft in einen HTTP-Header** — das war der
+        // Befund S-05 (Sicherheitsscan 2026-08-23). `parse_url()` akzeptiert
+        // im Host-Teil Semikolons, Leerzeichen und Anführungszeichen; ein
+        // Semikolon beendet die img-src-Direktive und startet eine neue.
+        // Mit `https://x;script-src-attr 'unsafe-inline';y` als Kachel-URL
+        // erlaubte die CSP jeder Seite der Organisation wieder
+        // Inline-Event-Handler — der Kern des Nonce-Schutzes war ausgehebelt.
+        $host = (string) $parts['host'];
+        $literal = trim($host, '[]');
+
+        $isHostname = filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false;
+        $isIpLiteral = $literal !== $host && filter_var($literal, FILTER_VALIDATE_IP) !== false;
+
+        if (! $isHostname && ! $isIpLiteral) {
+            return '';
+        }
+
+        $origin = $scheme . '://' . $host;
+
         if (! empty($parts['port'])) {
-            $origin .= ':' . $parts['port'];
+            $port = (string) $parts['port'];
+            if (! ctype_digit($port) || (int) $port < 1 || (int) $port > 65535) {
+                return '';
+            }
+            $origin .= ':' . $port;
         }
 
         return $origin;

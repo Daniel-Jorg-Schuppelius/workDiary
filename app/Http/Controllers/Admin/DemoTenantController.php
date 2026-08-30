@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\Demo\DemoIndustry;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, User};
 use App\Services\Demo\DemoSeederService;
@@ -22,10 +23,13 @@ use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class DemoTenantController extends Controller {
+    use RequiresPlatformOperator;
+
     public function __construct(private readonly DemoSeederService $seeder) {}
 
     public function index(Request $request): View {
         Gate::authorize(Permission::OrgDemoSeed->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();
@@ -45,6 +49,7 @@ class DemoTenantController extends Controller {
 
     public function seed(Request $request): RedirectResponse {
         Gate::authorize(Permission::OrgDemoSeed->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();
@@ -62,6 +67,7 @@ class DemoTenantController extends Controller {
 
     public function reset(Request $request): RedirectResponse {
         Gate::authorize(Permission::PlatformDemoReset->value);
+        $this->assertPlatformOperator();
 
         /** @var User $user */
         $user = $request->user();

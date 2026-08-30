@@ -79,16 +79,16 @@
                 @if (in_array($case->status, \App\Models\Investments\InvestmentCase::PLANNING_STATUSES, true))
                     <form method="POST" action="{{ route('investments.options.store', $case) }}" class="mb-3 grid gap-2 sm:grid-cols-2">
                         @csrf
-                        <input name="title" required maxlength="200" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Variante (z. B. Angebot Lieferant A)') }}">
+                        <input aria-label="{{ __('Variante (z. B. Angebot Lieferant A)') }}" name="title" required maxlength="200" class="input input-sm input-bordered sm:col-span-2" placeholder="{{ __('Variante (z. B. Angebot Lieferant A)') }}">
                         <select name="supplier_id" class="select select-sm select-bordered">
                             <option value="">{{ __('— Lieferant —') }}</option>
                             @foreach ($suppliers as $supplier)
                                 <option value="{{ $supplier->sqid }}">{{ $supplier->displayLabel() }}</option>
                             @endforeach
                         </select>
-                        <input name="one_time_cost" type="number" step="0.01" min="0" required class="input input-sm input-bordered" placeholder="{{ __('Einmalkosten €') }}">
-                        <input name="recurring_cost_yearly" type="number" step="0.01" min="0" class="input input-sm input-bordered" placeholder="{{ __('Folgekosten €/Jahr') }}">
-                        <input name="delivery_weeks" type="number" min="0" class="input input-sm input-bordered" placeholder="{{ __('Lieferzeit (Wochen)') }}">
+                        <input aria-label="{{ __('Einmalkosten €') }}" name="one_time_cost" type="number" step="0.01" min="0" required class="input input-sm input-bordered" placeholder="{{ __('Einmalkosten €') }}">
+                        <input aria-label="{{ __('Folgekosten €/Jahr') }}" name="recurring_cost_yearly" type="number" step="0.01" min="0" class="input input-sm input-bordered" placeholder="{{ __('Folgekosten €/Jahr') }}">
+                        <input aria-label="{{ __('Lieferzeit (Wochen)') }}" name="delivery_weeks" type="number" min="0" class="input input-sm input-bordered" placeholder="{{ __('Lieferzeit (Wochen)') }}">
                         <div class="flex gap-2 sm:col-span-2">
                             <select name="quality_score" class="select select-sm select-bordered" aria-label="{{ __('Qualität') }}">
                                 <option value="">{{ __('Qualität') }}</option>
@@ -152,8 +152,8 @@
                             {{ __('Noch keine Kostenstellen angelegt — für saubere Budgetauswertung zuerst eine anlegen:') }}
                             <form method="POST" action="{{ route('investments.cost-centers.store') }}" class="flex flex-wrap items-center gap-1">
                                 @csrf
-                                <input name="code" required maxlength="30" class="input input-xs input-bordered w-24" placeholder="{{ __('Code') }}">
-                                <input name="label" required maxlength="200" class="input input-xs input-bordered w-48" placeholder="{{ __('Bezeichnung') }}">
+                                <input aria-label="{{ __('Code') }}" name="code" required maxlength="30" class="input input-xs input-bordered w-24" placeholder="{{ __('Code') }}">
+                                <input aria-label="{{ __('Bezeichnung') }}" name="label" required maxlength="200" class="input input-xs input-bordered w-48" placeholder="{{ __('Bezeichnung') }}">
                                 <button type="submit" class="btn btn-xs btn-primary">{{ __('Anlegen') }}</button>
                             </form>
                         </div>
@@ -161,7 +161,7 @@
                 @endunless
                 <form method="POST" action="{{ route('investments.budget.submit', $case) }}" class="mb-3 grid gap-2 sm:grid-cols-4">
                     @csrf
-                    <input name="amount" type="number" step="0.01" min="0.01" required class="input input-sm input-bordered" placeholder="{{ __('Betrag €') }}">
+                    <input aria-label="{{ __('Betrag €') }}" name="amount" type="number" step="0.01" min="0.01" required class="input input-sm input-bordered" placeholder="{{ __('Betrag €') }}">
                     <select name="cost_kind" class="select select-sm select-bordered">
                         <option value="purchase">{{ __('Kauf') }}</option>
                         <option value="leasing">{{ __('Leasing') }}</option>
@@ -176,7 +176,7 @@
                         <option value="mixed">{{ __('Gemischt') }}</option>
                     </select>
                     <x-icon-btn icon="request_quote" tone="primary" size="sm" type="submit" show-label>{{ __('Budget beantragen') }}</x-icon-btn>
-                    <input name="payment_plan" maxlength="5000" class="input input-sm input-bordered sm:col-span-4" placeholder="{{ __('Zahlungs-/Lieferplan (optional)') }}">
+                    <input aria-label="{{ __('Zahlungs-/Lieferplan (optional)') }}" name="payment_plan" maxlength="5000" class="input input-sm input-bordered sm:col-span-4" placeholder="{{ __('Zahlungs-/Lieferplan (optional)') }}">
                 </form>
             @endif
         @endcan
@@ -207,7 +207,7 @@
                                     </x-action-form>
                                     <form method="POST" action="{{ route('investments.budget.reject', [$case, $request]) }}" class="flex items-center gap-1">
                                         @csrf
-                                        <input name="reason" required maxlength="1000" class="input input-xs input-bordered w-56" placeholder="{{ __('Ablehnungsgrund (Pflicht)') }}">
+                                        <input aria-label="{{ __('Ablehnungsgrund (Pflicht)') }}" name="reason" required maxlength="1000" class="input input-xs input-bordered w-56" placeholder="{{ __('Ablehnungsgrund (Pflicht)') }}">
                                         <button type="submit" class="btn btn-xs btn-outline">{{ __('Ablehnen') }}</button>
                                     </form>
                                 </div>
@@ -232,7 +232,7 @@
                         <option value="incoming_einvoice">{{ __('Eingangsrechnung') }}</option>
                         <option value="document">{{ __('Dokument') }}</option>
                     </select>
-                    <input name="linkable_sqid" required maxlength="64" class="input input-sm input-bordered w-40" placeholder="{{ __('Sqid/ID des Ziels') }}">
+                    <input aria-label="{{ __('Sqid/ID des Ziels') }}" name="linkable_sqid" required maxlength="64" class="input input-sm input-bordered w-40" placeholder="{{ __('Sqid/ID des Ziels') }}">
                     <x-icon-btn icon="link" tone="primary" size="sm" type="submit" show-label>{{ __('Verknüpfen') }}</x-icon-btn>
                 </form>
             @endcan
@@ -254,9 +254,9 @@
                 <h4 class="mt-4 text-sm font-semibold">{{ __('Ist-Wert manuell erfassen') }}</h4>
                 <form method="POST" action="{{ route('investments.actuals.store', $case) }}" class="mt-1 flex flex-wrap items-end gap-2">
                     @csrf
-                    <input name="amount" type="number" step="0.01" required class="input input-sm input-bordered w-32" placeholder="{{ __('Betrag €') }}">
+                    <input aria-label="{{ __('Betrag €') }}" name="amount" type="number" step="0.01" required class="input input-sm input-bordered w-32" placeholder="{{ __('Betrag €') }}">
                     <input name="occurred_on" type="date" required class="input input-sm input-bordered" value="{{ now()->toDateString() }}">
-                    <input name="note" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung') }}">
+                    <input aria-label="{{ __('Anmerkung') }}" name="note" maxlength="500" class="input input-sm input-bordered flex-1" placeholder="{{ __('Anmerkung') }}">
                     <x-icon-btn icon="add" size="sm" type="submit" show-label>{{ __('Erfassen') }}</x-icon-btn>
                 </form>
             @endcan
@@ -273,8 +273,8 @@
                         <option value="scope">{{ __('Umfang') }}</option>
                         <option value="cancellation">{{ __('Abbruch') }}</option>
                     </select>
-                    <input name="description" required maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Beschreibung/Begründung') }}">
-                    <input name="amount_delta" type="number" step="0.01" class="input input-sm input-bordered w-32" placeholder="{{ __('Δ Betrag €') }}">
+                    <input aria-label="{{ __('Beschreibung/Begründung') }}" name="description" required maxlength="1000" class="input input-sm input-bordered flex-1" placeholder="{{ __('Beschreibung/Begründung') }}">
+                    <input aria-label="{{ __('Δ Betrag €') }}" name="amount_delta" type="number" step="0.01" class="input input-sm input-bordered w-32" placeholder="{{ __('Δ Betrag €') }}">
                     <x-icon-btn icon="report" tone="warning" size="sm" type="submit" show-label>{{ __('Melden') }}</x-icon-btn>
                 </form>
             @endcan
@@ -298,7 +298,7 @@
                                             <option value="approved">{{ __('Genehmigen') }}</option>
                                             <option value="rejected">{{ __('Ablehnen') }}</option>
                                         </select>
-                                        <input name="note" maxlength="1000" class="input input-xs input-bordered w-48" placeholder="{{ __('Begründung') }}">
+                                        <input aria-label="{{ __('Begründung') }}" name="note" maxlength="1000" class="input input-xs input-bordered w-48" placeholder="{{ __('Begründung') }}">
                                         <button type="submit" class="btn btn-xs">{{ __('Entscheiden') }}</button>
                                     </form>
                                 @endcan
@@ -306,7 +306,7 @@
                                 @can('update', $case)
                                     <form method="POST" action="{{ route('investments.budget.supplement', [$case, $deviation]) }}" class="mt-1 flex flex-wrap items-center gap-1">
                                         @csrf
-                                        <input name="amount" type="number" step="0.01" min="0.01" required class="input input-xs input-bordered w-32" placeholder="{{ __('Neues Budget €') }}">
+                                        <input aria-label="{{ __('Neues Budget €') }}" name="amount" type="number" step="0.01" min="0.01" required class="input input-xs input-bordered w-32" placeholder="{{ __('Neues Budget €') }}">
                                         <button type="submit" class="btn btn-xs btn-primary">{{ __('Nachtrag beantragen') }}</button>
                                     </form>
                                 @endcan
@@ -332,10 +332,10 @@
             @can('update', $case)
                 <form method="POST" action="{{ route('investments.review.store', $case) }}" class="grid gap-2">
                     @csrf
-                    <textarea name="benefit_result" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Tatsächlicher Nutzen (Pflicht)') }}"></textarea>
-                    <textarea name="economics_result" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Wirtschaftlichkeit') }}"></textarea>
-                    <textarea name="lessons" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Lessons Learned') }}"></textarea>
-                    <textarea name="follow_up" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Folgeinvestitionen/-aufgaben') }}"></textarea>
+                    <textarea aria-label="{{ __('Tatsächlicher Nutzen (Pflicht)') }}" name="benefit_result" required rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Tatsächlicher Nutzen (Pflicht)') }}"></textarea>
+                    <textarea aria-label="{{ __('Wirtschaftlichkeit') }}" name="economics_result" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Wirtschaftlichkeit') }}"></textarea>
+                    <textarea aria-label="{{ __('Lessons Learned') }}" name="lessons" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Lessons Learned') }}"></textarea>
+                    <textarea aria-label="{{ __('Folgeinvestitionen/-aufgaben') }}" name="follow_up" rows="2" class="textarea textarea-bordered textarea-sm" placeholder="{{ __('Folgeinvestitionen/-aufgaben') }}"></textarea>
                     <div><x-icon-btn icon="fact_check" tone="primary" size="sm" type="submit" show-label>{{ __('Nachbewertung speichern') }}</x-icon-btn></div>
                 </form>
             @endcan

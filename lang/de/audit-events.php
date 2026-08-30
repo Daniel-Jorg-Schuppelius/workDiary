@@ -1011,4 +1011,7 @@ return [
     'openIssue' => [
         'followUpCreated' => 'Folgeauftrag aus offenem Punkt angelegt',
     ],
+    'learning' => [
+        'dossierDisclosed' => 'Nachweismappe namentlich herausgegeben',
+    ],
 ];

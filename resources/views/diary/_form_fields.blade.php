@@ -371,7 +371,7 @@
 
         {{-- Such-/Eingabefeld mit Dropdown --}}
         <div class="relative mt-2">
-            <input type="text"
+            <input aria-label="{{ __('Tag suchen oder neuen Tag eingeben…') }}" type="text"
                    x-model="query"
                    @focus="openMenu()"
                    @input="onInput()"

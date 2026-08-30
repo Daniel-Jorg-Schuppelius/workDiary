@@ -1011,4 +1011,7 @@ return [
     'openIssue' => [
         'followUpCreated' => 'Incarico di follow-up creato dal punto aperto',
     ],
+    'learning' => [
+        'dossierDisclosed' => 'Fascicolo delle qualifiche rilasciato con i nomi',
+    ],
 ];

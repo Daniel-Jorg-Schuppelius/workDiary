@@ -32,6 +32,12 @@ class InstallController extends Controller {
     // ── Schritt 1: Voraussetzungen ───────────────────────────────────────
 
     public function index(Request $request): View {
+        // Kennzeichnet den laufenden Wizard-Durchgang: nach der Anlage des
+        // Betreibers bleiben die Folgeschritte für DIESE Sitzung erreichbar,
+        // für alle anderen ist der Wizard dann zu
+        // ({@see \App\Http\Middleware\RedirectIfInstalled}, S-16).
+        $request->session()->put(\App\Http\Middleware\RedirectIfInstalled::WIZARD_SESSION_KEY, true);
+
         $driver = (string) $request->query('driver', 'sqlite');
         if (! in_array($driver, InstallationManager::DRIVERS, true)) {
             $driver = 'sqlite';

@@ -122,11 +122,11 @@
                                 @php($lineArticle = $line->variant?->article)
                                 {{-- Vollaudit 2026-07 (M19): Pflichterfassung Charge/Serie/MHD (E2). --}}
                                 @if ($lineArticle?->batch_required)
-                                    <input name="lot_no" required placeholder="{{ __('inventory.lot.lot_no') }}" class="input input-xs input-bordered w-24">
+                                    <input aria-label="{{ __('inventory.lot.lot_no') }}" name="lot_no" required placeholder="{{ __('inventory.lot.lot_no') }}" class="input input-xs input-bordered w-24">
                                     <input name="best_before" type="date" title="{{ __('inventory.lot.best_before') }}" class="input input-xs input-bordered w-32">
                                 @endif
                                 @if ($lineArticle?->serial_required)
-                                    <input name="serial_no" required placeholder="{{ __('inventory.serial.field.serial_no') }}" class="input input-xs input-bordered w-24">
+                                    <input aria-label="{{ __('inventory.serial.field.serial_no') }}" name="serial_no" required placeholder="{{ __('inventory.serial.field.serial_no') }}" class="input input-xs input-bordered w-24">
                                 @endif
                                 <input name="qty" type="number" step="0.0001" min="0.0001" value="{{ $lineArticle?->serial_required ? 1 : $line->openQty() }}" class="input input-xs input-bordered w-20">
                                 <button type="submit" class="btn btn-xs">{{ __('procurement.action.receive') }}</button>

@@ -244,7 +244,7 @@
                     <form method="POST" action="{{ route('admin.license.org.install') }}" class="mt-1 space-y-2">
                         @csrf
                         <label class="text-xs uppercase tracking-wider text-muted">{{ __('Lizenzschlüssel einspielen') }}</label>
-                        <textarea name="license_key" rows="3" required
+                        <textarea aria-label="{{ __('Lizenzschlüssel') }}" name="license_key" rows="3" required
                             class="textarea textarea-bordered w-full font-mono text-xs @error('license_key') textarea-error @enderror"
                             placeholder="payload.signature">{{ old('license_key') }}</textarea>
                         @error('license_key')
@@ -438,7 +438,7 @@
                                                 {{ __('Es werden keine Daten gelöscht. Eine Reaktivierung stellt den Zugriff sofort wieder her.') }}
                                             </p>
                                             <input type="hidden" name="module" value="{{ $module['code'] }}">
-                                            <textarea name="reason" rows="2" class="textarea textarea-bordered textarea-sm mt-3 w-full"
+                                            <textarea aria-label="{{ __('Interne Begründung (optional)') }}" name="reason" rows="2" class="textarea textarea-bordered textarea-sm mt-3 w-full"
                                                       placeholder="{{ __('Interne Begründung (optional)') }}"></textarea>
                                         </x-modal>
                                     @elseif ($status === \App\Enums\Licensing\ModuleStatus::InactiveByCustomer)

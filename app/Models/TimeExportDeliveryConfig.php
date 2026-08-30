@@ -33,6 +33,7 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $sftp_username
  * @property string|null $sftp_password
  * @property string|null $sftp_root
+ * @property string|null $sftp_host_fingerprint
  */
 class TimeExportDeliveryConfig extends Model {
     use Auditable;
@@ -49,6 +50,7 @@ class TimeExportDeliveryConfig extends Model {
         'sftp_username',
         'sftp_password',
         'sftp_root',
+        'sftp_host_fingerprint',
     ];
 
     /** @var list<string> */

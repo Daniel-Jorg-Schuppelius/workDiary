@@ -1011,4 +1011,7 @@ return [
     'openIssue' => [
         'followUpCreated' => 'Encargo de seguimiento creado desde el punto abierto',
     ],
+    'learning' => [
+        'dossierDisclosed' => 'Expediente de cualificaciones entregado con nombres',
+    ],
 ];

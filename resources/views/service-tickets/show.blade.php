@@ -122,7 +122,7 @@
                 <label class="fieldset-label" for="reply-body">{{ __('Antwort (kundensichtbar)') }}</label>
                 <textarea id="reply-body" name="body" rows="3" required minlength="2" class="textarea textarea-bordered w-full"></textarea>
                 <div class="mt-1 flex flex-wrap items-center gap-2">
-                    <input name="to[]" type="email" placeholder="{{ __('Empfänger (optional, versendet per Mail)') }}" class="input input-sm input-bordered flex-1">
+                    <input aria-label="{{ __('Empfänger (optional, versendet per Mail)') }}" name="to[]" type="email" placeholder="{{ __('Empfänger (optional, versendet per Mail)') }}" class="input input-sm input-bordered flex-1">
                     <input name="files[]" type="file" multiple class="file-input file-input-sm file-input-bordered"
                            aria-label="{{ __('Anhänge (optional)') }}">
                     <x-icon-btn icon="send" tone="primary" size="sm" type="submit" show-label>{{ __('Antworten') }}</x-icon-btn>

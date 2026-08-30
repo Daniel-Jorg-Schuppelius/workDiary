@@ -198,4 +198,29 @@ class DemoSeederServiceTest extends TestCase {
         $this->assertSame($first['projects'], $second['projects']);
         $this->assertSame($first['background_diary_entries'], $second['background_diary_entries']);
     }
+
+    public function test_demo_enthaelt_einen_freigegebenen_lernkurs(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+
+        $counts = app(DemoSeederService::class)->seed($this->organization->fresh(), $admin);
+
+        $this->assertSame(1, $counts['learning']);
+
+        $course = \App\Models\Learning\LearningCourse::query()
+            ->where('organization_id', $this->organization->id)
+            ->firstOrFail();
+
+        // Freigegeben, sonst ließe sich in der Vorführung niemand einschreiben.
+        $this->assertSame(\App\Enums\Learning\LearningCourseStatus::Released, $course->status);
+        $this->assertSame(2, $course->units()->count());
+
+        // Der Rückfluss ist der Produktwert: Abschluss erzeugt Zertifikat
+        // UND Unterweisungsnachweis.
+        $this->assertTrue((bool) $course->certificate_enabled);
+        $this->assertTrue((bool) $course->creates_instruction_proof);
+
+        // „Meine Schulungen" ist in der Vorführung nicht leer.
+        $this->assertSame(1, \App\Models\Learning\LearningEnrollment::query()
+            ->where('learning_course_id', $course->id)->count());
+    }
 }

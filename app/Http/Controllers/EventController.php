@@ -303,6 +303,18 @@ class EventController extends Controller {
     /** @return array<int, array{user_id: int, role?: string, status?: string}> */
     private function extractParticipants(Request $request): array {
         $rows = (array) $request->input('participants', []);
+
+        // **Nur Mitglieder der eigenen Organisation** (Sicherheitsscan
+        // 2026-08-23, S-24). Die Sqid ist Verschleierung, keine Grenze — und
+        // `decodeOrNumeric` nimmt zusätzlich rohe IDs an. Ohne diese Prüfung
+        // landete ein fremder Nutzer im Teilnehmer-Pivot: sein Name erschien
+        // in der Veranstaltung, er bekam die Erinnerungen (Mail/Push), und
+        // Anwesenheits-/Zertifikatsaktionen liefen auf ihn.
+        $allowed = User::query()
+            ->inCurrentOrganization()
+            ->pluck('id')
+            ->all();
+
         $out = [];
         foreach ($rows as $row) {
             if (empty($row['user_id'])) {
@@ -310,7 +322,7 @@ class EventController extends Controller {
             }
 
             $participantUserId = Sqid::decodeOrNumeric(User::class, $row['user_id']);
-            if ($participantUserId === null) {
+            if ($participantUserId === null || ! in_array($participantUserId, $allowed, true)) {
                 continue;
             }
 

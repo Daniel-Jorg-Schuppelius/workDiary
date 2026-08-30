@@ -48,6 +48,7 @@ return [
             'module.datenschutz',
             'module.documents',
             'module.knowledge',
+            'module.lms',
             'module.forms',
             'module.theming',
             'module.dokumentdesign',
@@ -79,6 +80,7 @@ return [
             'module.datenschutz',
             'module.documents',
             'module.knowledge',
+            'module.lms',
             'module.forms',
             'module.theming',
             'module.dokumentdesign',
@@ -140,6 +142,7 @@ return [
         'module.datenschutz' => 'Datenschutz',
         'module.documents' => 'Dokumente',
         'module.knowledge' => 'Wissensbasis',
+        'module.lms' => 'Lernplattform',
         'module.forms' => 'Formulare',
         'module.theming' => 'Eigene Themes',
         'module.lohn' => 'Lohn & SV',
@@ -185,6 +188,7 @@ return [
         'module.datenschutz' => 'Datenschutzmanagement (VVT, AVV, Betroffenenrechte).',
         'module.documents' => 'Dokumentenverwaltung mit Verträgen und Nachweisen.',
         'module.knowledge' => 'Wissensbasis und Problemhistorie.',
+        'module.lms' => 'Kurse, Prüfungen, Zertifikate und Kompetenzen; die Pflichtunterweisung bleibt im Kern.',
         'module.forms' => 'Formular- und Vorlagensystem.',
         'module.theming' => 'Eigene Themes und Branding gestalten.',
         'module.dokumentdesign' => 'Firmenbogen, Druckbereiche, Informationsblöcke und Tabellenstil-Presets für erzeugte PDF-Dokumente.',
@@ -256,6 +260,10 @@ return [
         'admin.document-design.*' => 'module.dokumentdesign', // Feature 076 PDF-Dokumentdesign/Firmenbogen
         'admin.orgamax.*' => 'module.finance', // Feature 077 orgaMAX-Buchhaltung-Plugin
         'kanban.*' => 'module.kanban',
+        // Lernplattform (Feature 149): der Katalog hängt am Modul; die
+        // Pflichtsicht „Meine Schulungen“ bleibt bewusst ungemappt (Core),
+        // damit eine Unterweisung nie an der Lizenzstufe scheitert.
+        'learning.courses.*' => 'module.lms',
         'agile.*' => 'module.agile_projects', // Feature 064 — eigenes Präfix (projects.* ist auf module.vertrieb gemappt!)
         // Feature 065: Tickets waren Core — module.helpdesk ist in pro UND
         // enterprise enthalten, damit das Gating keine Bestandsdaten sperrt.

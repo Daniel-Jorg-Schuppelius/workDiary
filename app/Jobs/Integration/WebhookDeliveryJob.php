@@ -60,7 +60,9 @@ class WebhookDeliveryJob implements ShouldQueue {
             return;
         }
 
-        $endpoint = WebhookEndpoint::query()->withoutGlobalScopes()->find($delivery->webhook_endpoint_id);
+        $endpoint = WebhookEndpoint::query()
+            ->withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+            ->find($delivery->webhook_endpoint_id);
         if ($endpoint === null || ! $endpoint->isDeliverable()) {
             // Endpunkt entfernt oder zwischenzeitlich deaktiviert → nicht zustellen.
             $delivery->status = WebhookDeliveryStatus::Failed;
@@ -134,7 +136,9 @@ class WebhookDeliveryJob implements ShouldQueue {
             return;
         }
 
-        $endpoint = WebhookEndpoint::query()->withoutGlobalScopes()->find($delivery->webhook_endpoint_id);
+        $endpoint = WebhookEndpoint::query()
+            ->withoutGlobalScope(\App\Models\Scopes\OrganizationScope::class)
+            ->find($delivery->webhook_endpoint_id);
         if ($delivery->status !== WebhookDeliveryStatus::Failed) {
             $delivery->status = WebhookDeliveryStatus::Failed;
             $delivery->completed_at = Carbon::now();

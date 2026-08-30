@@ -31,6 +31,8 @@ use Illuminate\Validation\Rule;
  * Konformitätszusage.
  */
 class AssetComplianceProfileController extends Controller {
+    use \App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+
     public function __construct(private readonly AssetComplianceService $service) {}
 
     public function index(Request $request): View {
@@ -100,6 +102,8 @@ class AssetComplianceProfileController extends Controller {
             return back()->withErrors(['profile' => __('Globale Vorlagen sind unveränderlich — Org-Profil mit gleichem Code anlegen.')]);
         }
 
+        $this->ensureOwnProfile($profile);
+
         $data = $request->validate([
             'label' => ['required', 'string', 'max:255'],
             'code' => ['nullable', 'string', 'max:60'],
@@ -119,6 +123,7 @@ class AssetComplianceProfileController extends Controller {
     /** Prüfpflicht zuweisen (MVP-284). */
     public function assign(Request $request, AssetComplianceProfile $profile): RedirectResponse {
         Gate::authorize('create', AssetComplianceProfile::class);
+        $this->ensureOwnProfile($profile);
 
         foreach (['asset_id' => Asset::class, 'responsible_user_id' => User::class, 'external_contact_id' => \App\Models\ExternalContact::class] as $field => $model) {
             if ($request->filled($field)) {
@@ -147,4 +152,27 @@ class AssetComplianceProfileController extends Controller {
 
         return back()->with('status', __('Prüfpflicht zugewiesen.'));
     }
+
+    /**
+     * Fremde Org-Profile bleiben tabu.
+     *
+     * `AssetComplianceProfile` steht bewusst ohne OrganizationScope auf der
+     * Allow-List, weil `organization_id === null` eine **globale Vorlage**
+     * bezeichnet. Die Route bindet das Modell deshalb org-übergreifend, und
+     * die Policy prüft nur das Recht, nicht die Organisation: eine neue
+     * Pflicht-Anforderung landete mit `organization_id` des Fremdprofils
+     * direkt in dessen Organisation und beeinflusste dort Prüfergebnisse und
+     * Sperrlogik (Sicherheitsscan 2026-08-23, S-25).
+     *
+     * Globale Vorlagen (organization_id === null) sind ausgenommen — sie
+     * gehören allen und werden an anderer Stelle vor Änderungen geschützt.
+     */
+    private function ensureOwnProfile(AssetComplianceProfile $profile): void {
+        if ($profile->organization_id === null) {
+            return;
+        }
+
+        abort_unless((int) $profile->organization_id === (int) $this->currentOrganization()->id, 403);
+    }
+
 }

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveWorkScheduleRequest;
 use App\Models\{User, WorkSchedule};
 use App\Services\Flextime\WorkScheduleResolver;
@@ -18,8 +19,11 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class WorkScheduleController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function edit(User $user, WorkScheduleResolver $resolver): View {
         Gate::authorize('create', WorkSchedule::class); // Admin via before-Hook
+        $this->ensureSameOrg($user);
 
         $schedule = $user->workSchedule() ?? new WorkSchedule(WorkScheduleResolver::defaultsFor($user) + [
             'user_id' => $user->id,
@@ -31,6 +35,7 @@ class WorkScheduleController extends Controller {
 
     public function update(User $user, SaveWorkScheduleRequest $request): RedirectResponse {
         Gate::authorize('create', WorkSchedule::class);
+        $this->ensureSameOrg($user);
 
         $data = $request->validated();
         $existing = WorkSchedule::query()
@@ -65,4 +70,21 @@ class WorkScheduleController extends Controller {
             'defaults' => $defaults,
         ]);
     }
+
+    /**
+     * Gehört der Mitarbeiter zur eigenen Organisation?
+     *
+     * `User` trägt bewusst keinen OrganizationScope, und die Route bindet ihn
+     * über die Sqid — die ist Verschleierung, kein Zugriffsschutz. Ohne diese
+     * Prüfung konnte jeder mit `work-schedule.manage` das Arbeitszeit-Modell
+     * eines fremden Mitarbeiters lesen und **setzen**: `update()` legte den
+     * Datensatz mit dessen `organization_id` an, also direkt in der fremden
+     * Organisation, wo er Gleitzeit-, Überstunden- und Lohnrechnung steuert
+     * (Sicherheitsscan 2026-08-23, S-06). Muster wie
+     * {@see FlexEligibilityController::ensureSameOrg()}.
+     */
+    private function ensureSameOrg(User $member): void {
+        abort_unless((int) $member->organization_id === (int) $this->currentOrganization()->id, 403);
+    }
+
 }

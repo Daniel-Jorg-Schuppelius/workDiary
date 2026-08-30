@@ -45,7 +45,7 @@
             <p class="text-sm text-muted">{{ __('Ergänzende Informationen zu Ihrer Reklamation übermitteln.') }}</p>
             <form method="POST" action="{{ route('customer.claims.note', $claim) }}" class="space-y-2">
                 @csrf
-                <textarea name="note" rows="3" class="textarea textarea-bordered w-full" required minlength="3" maxlength="2000" placeholder="{{ __('Ihre Nachricht …') }}"></textarea>
+                <textarea aria-label="{{ __('Ihre Nachricht …') }}" name="note" rows="3" class="textarea textarea-bordered w-full" required minlength="3" maxlength="2000" placeholder="{{ __('Ihre Nachricht …') }}"></textarea>
                 @error('note')<p class="text-sm text-error">{{ $message }}</p>@enderror
                 <button type="submit" class="btn btn-primary btn-sm">{{ __('Absenden') }}</button>
             </form>

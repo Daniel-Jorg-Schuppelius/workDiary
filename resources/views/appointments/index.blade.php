@@ -46,7 +46,7 @@
                                 @if ($canManage)
                                     <form method="POST" action="{{ route('appointments.decline', $request) }}" class="mt-2 flex gap-2">
                                         @csrf
-                                        <input type="text" name="reason" required maxlength="500"
+                                        <input aria-label="{{ __('Ablehnungsgrund (geht an den Kunden)') }}" type="text" name="reason" required maxlength="500"
                                                class="input input-xs input-bordered w-full"
                                                placeholder="{{ __('Ablehnungsgrund (geht an den Kunden)') }}">
                                         <button type="submit" class="btn btn-ghost btn-xs shrink-0 text-error">{{ __('Ablehnen') }}</button>
@@ -101,8 +101,8 @@
                 @if ($canManage)
                     <form method="POST" action="{{ route('appointments.services.store') }}" class="mt-4 grid gap-2">
                         @csrf
-                        <input type="text" name="title" required maxlength="160" class="input input-sm input-bordered" placeholder="{{ __('Leistungsart (z. B. Wartungstermin)') }}">
-                        <input type="text" name="description" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Beschreibung (im Portal sichtbar)') }}">
+                        <input aria-label="{{ __('Leistungsart (z. B. Wartungstermin)') }}" type="text" name="title" required maxlength="160" class="input input-sm input-bordered" placeholder="{{ __('Leistungsart (z. B. Wartungstermin)') }}">
+                        <input aria-label="{{ __('Beschreibung (im Portal sichtbar)') }}" type="text" name="description" maxlength="500" class="input input-sm input-bordered" placeholder="{{ __('Beschreibung (im Portal sichtbar)') }}">
                         <div class="grid grid-cols-2 gap-2">
                             <input type="number" name="duration_minutes" required min="15" max="480" value="60" class="input input-sm input-bordered" aria-label="{{ __('Dauer (min)') }}" placeholder="{{ __('Dauer (min)') }}">
                             <input type="number" name="buffer_minutes" required min="0" max="120" value="15" class="input input-sm input-bordered" aria-label="{{ __('Puffer (min)') }}" placeholder="{{ __('Puffer (min)') }}">

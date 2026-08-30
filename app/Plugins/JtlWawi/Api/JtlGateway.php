@@ -47,7 +47,16 @@ class JtlGateway {
         private readonly JtlCloudTokenService $tokens,
     ) {
         $this->baseUrl = JtlUrlGuard::baseUrlFor($connection);
-        $this->client = $http->client(JtlWawiPlugin::ID, $this->baseUrl);
+        // `JtlUrlGuard` hat das Ziel bereits gegen das auditierte Opt-in der
+        // Verbindung geprüft; die zentrale Schranke der Factory bekommt
+        // dieselbe Entscheidung mitgegeben, sonst prüfte sie ein zweites Mal
+        // gegen die Plugin-Einstellung statt gegen die Verbindung
+        // (Sicherheitsscan 2026-08-23, S-10).
+        $this->client = $http->client(
+            JtlWawiPlugin::ID,
+            $this->baseUrl,
+            allowPrivateNetwork: (bool) $connection->allow_private_network,
+        );
     }
 
     /** @return array{version?: string, timestamp?: string, tenant?: string, type?: string} */

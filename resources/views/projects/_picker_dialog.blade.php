@@ -36,7 +36,7 @@
             <p class="mb-3 text-sm text-base-content/70">{{ $description }}</p>
 
             <div class="mb-3 flex flex-wrap gap-2">
-                <input type="search"
+                <input aria-label="{{ __('Projekt suchen…') }}" type="search"
                        data-filter-search
                        placeholder="{{ __('Projekt suchen…') }}"
                        class="input input-bordered input-sm flex-1 min-w-40"

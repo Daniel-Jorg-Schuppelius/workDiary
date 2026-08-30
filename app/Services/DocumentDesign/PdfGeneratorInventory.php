@@ -51,6 +51,10 @@ final class PdfGeneratorInventory {
         // VOB/B-Schreiben (Feature 062, MVP-728): der Renderer bedient beide
         // Arten, die Belegart kommt aus dem Schreiben selbst.
         'app/Services/Construction/ConstructionNoticePdfRenderer.php' => ['construction_obstruction_notice', 'construction_concern_notice'],
+        // Lernplattform (Feature 149): Teilnahmenachweis und Nachweismappe.
+        'app/Services/Learning/LearningCertificatePdfRenderer.php' => ['certificate'],
+        'app/Services/Learning/LearningDossierPdfRenderer.php' => ['report'],
+        'app/Services/Learning/LearningAttendanceListPdfRenderer.php' => ['report'],
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],
         'app/Services/Form/FormSubmissionPdfRenderer.php' => ['form'],
         'app/Http/Controllers/Reporting/Concerns/RendersReportPdf.php' => ['report'],

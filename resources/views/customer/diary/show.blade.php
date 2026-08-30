@@ -49,7 +49,7 @@
                                         <summary class="btn btn-ghost btn-sm">{{ __('Beanstanden') }}</summary>
                                         <form method="POST" action="{{ route('customer.diary.photos.complain', [$diary, $photo]) }}" class="mt-2 flex gap-2">
                                             @csrf
-                                            <input type="text" name="note" required minlength="3" maxlength="2000"
+                                            <input aria-label="{{ __('Was stimmt nicht?') }}" type="text" name="note" required minlength="3" maxlength="2000"
                                                    class="input input-sm input-bordered w-64"
                                                    placeholder="{{ __('Was stimmt nicht?') }}">
                                             <x-button type="submit" tone="warning" size="sm">{{ __('Senden') }}</x-button>

@@ -52,7 +52,7 @@
         @if ($definition->allowsCadence(\App\Scheduling\CadenceType::Cron))
             <div class="fieldset">
                 <span class="fieldset-label">{{ __('scheduler.field.expression') }}</span>
-                <input type="text" name="expression" class="input input-bordered w-full font-mono"
+                <input aria-label="{{ __('Cron-Ausdruck') }}" type="text" name="expression" class="input input-bordered w-full font-mono"
                        placeholder="0 4 15 1,7 *"
                        value="{{ old('expression', $cadence->expression) }}">
                 <p class="mt-1 text-xs text-muted">{{ __('scheduler.hint.expression') }}</p>

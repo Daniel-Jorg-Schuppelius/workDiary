@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, ScheduledJobOverride, ScheduledJobState, User};
 use App\Scheduling\{Cadence, CadenceType, JobDefinition, JobRegistry, SchedulerOverrideService, SchedulerRegistrar};
@@ -31,6 +31,8 @@ use Illuminate\View\View;
  * Testlauf — ausschließlich für allowlistete Registry-Jobs.
  */
 class SchedulerController extends Controller {
+    use RequiresPlatformOperator;
+
     use ResolvesCurrentOrganization;
 
     private const TEST_RUN_COOLDOWN_MINUTES = 5;
@@ -43,6 +45,7 @@ class SchedulerController extends Controller {
 
     public function index(Request $request): View {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $this->assertPlatformOperator();
 
         $overrideMap = ScheduledJobOverride::systemMap();
         $states = ScheduledJobState::query()->get()->keyBy('job_key');
@@ -82,6 +85,7 @@ class SchedulerController extends Controller {
 
     public function edit(string $job): View {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $this->assertPlatformOperator();
         $definition = $this->definitionOr404($job);
 
         return view('admin.scheduler._form_dialog', [
@@ -92,6 +96,7 @@ class SchedulerController extends Controller {
 
     public function update(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $this->assertPlatformOperator();
         $definition = $this->definitionOr404($job);
 
         $allowed = array_map(static fn(CadenceType $t): string => $t->value, $definition->allowedCadences);
@@ -120,6 +125,7 @@ class SchedulerController extends Controller {
 
     public function pause(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $this->assertPlatformOperator();
         $definition = $this->definitionOr404($job);
         $this->overrides->pause($job, $request->user()?->id);
 
@@ -129,6 +135,7 @@ class SchedulerController extends Controller {
 
     public function resume(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $this->assertPlatformOperator();
         $definition = $this->definitionOr404($job);
         $this->overrides->resume($job, $request->user()?->id);
 
@@ -138,6 +145,7 @@ class SchedulerController extends Controller {
 
     public function reset(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $this->assertPlatformOperator();
         $definition = $this->definitionOr404($job);
         $this->overrides->reset($job);
 
@@ -147,6 +155,7 @@ class SchedulerController extends Controller {
 
     public function testRun(Request $request, string $job): RedirectResponse {
         Gate::authorize(Permission::PlatformSchedulerManage->value);
+        $this->assertPlatformOperator();
         $definition = $this->definitionOr404($job);
 
         $cooldownKey = 'scheduler.testrun.' . $definition->key;

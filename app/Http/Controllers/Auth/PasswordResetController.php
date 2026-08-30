@@ -46,7 +46,7 @@ class PasswordResetController extends Controller {
                 ['email' => $user->email],
                 ['token' => Hash::make($token), 'created_at' => now()],
             );
-            $url = route('password.reset', ['token' => $token]) . '?email=' . urlencode($user->email);
+            $url = $this->resetUrl($token, $user->email);
             $user->notify(new PasswordResetLink($url, $this->expireMinutes()));
         }
 
@@ -98,4 +98,32 @@ class PasswordResetController extends Controller {
 
         return redirect()->route('login')->with('status', __('Passwort geändert. Bitte melden Sie sich an.'));
     }
+
+    /**
+     * Reset-Link aus der **konfigurierten** Adresse bauen, nicht aus dem
+     * Host-Header.
+     *
+     * `route()` bildet die Wurzel aus `Request::root()` — und die kommt vom
+     * Host-Header bzw. bei `TRUSTED_PROXIES=*` sogar aus `X-Forwarded-Host`.
+     * Der Aufruf ist unauthentifiziert: ein Angreifer mit der E-Mail-Adresse
+     * des Opfers konnte damit eine **echte** Reset-Mail auslösen, deren Link
+     * auf seinen eigenen Server zeigt (Sicherheitsscan 2026-08-23, S-11).
+     * Klickt das Opfer, hat er Token und Adresse.
+     *
+     * Dieselbe Härtung, die {@see \App\Services\Auth\WebAuthnService} schon
+     * hat: `app.url` gewinnt, solange sie gesetzt und nicht die lokale
+     * Entwicklungsadresse ist.
+     */
+    private function resetUrl(string $token, string $email): string {
+        $path = route('password.reset', ['token' => $token], absolute: false);
+        $configured = rtrim((string) config('app.url', ''), '/');
+        $host = parse_url($configured, PHP_URL_HOST);
+
+        $base = is_string($host) && $host !== '' && ! in_array($host, ['localhost', '127.0.0.1'], true)
+            ? $configured
+            : rtrim(url('/'), '/');
+
+        return $base . $path . '?email=' . urlencode($email);
+    }
+
 }

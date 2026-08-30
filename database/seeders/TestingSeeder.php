@@ -59,6 +59,9 @@ class TestingSeeder extends Seeder {
         // über seed(PermissionsSeeder) in setUp()) je Testmethode. Die
         // org-spezifischen Rollen-Matrizen entstehen über den
         // OrganizationObserver bei jeder Org-Anlage automatisch.
+        //
+        // **Muss dem PermissionsSeeder folgen** — sonst prüfen die Tests eine
+        // andere Rechtelage als die Produktion.
         /** @var Role $globalAdmin */
         $globalAdmin = Role::findOrCreate(UserRole::Admin->value, 'web');
         $enumNames = array_map(static fn(PermissionEnum $p): string => $p->value, PermissionEnum::cases());

@@ -15,6 +15,7 @@ use App\Support\DatabaseHealth;
 use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use PDOException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
@@ -49,6 +50,18 @@ class HandleDatabaseUnavailable {
             }
 
             $this->markFromException($e, $defaultConnection);
+
+            // Ohne diese Zeile verschwindet die Ursache: der Nutzer sieht 503,
+            // das Log schweigt, und im Betrieb ist nicht zu unterscheiden, ob
+            // die Datenbank weg war oder eine einzelne Abfrage scheiterte.
+            Log::error('database.unavailable', [
+                'connection' => $e instanceof QueryException && $e->connectionName !== ''
+                    ? $e->connectionName
+                    : $defaultConnection,
+                'path' => $request->path(),
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
 
             return $this->renderUnavailable($request, $e);
         }

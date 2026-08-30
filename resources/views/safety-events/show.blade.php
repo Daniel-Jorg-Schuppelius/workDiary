@@ -217,10 +217,10 @@
                     <div class="divider my-3"></div>
                     <form method="POST" action="{{ route('safety-events.follow-up', $event) }}" class="space-y-2">
                         @csrf
-                        <input type="text" name="title" maxlength="180" required
+                        <input aria-label="{{ __('safety.field.followup_title') }}" type="text" name="title" maxlength="180" required
                                class="input input-bordered input-sm w-full"
                                placeholder="{{ __('safety.field.followup_title') }}">
-                        <textarea name="description" rows="2" class="textarea textarea-bordered textarea-sm w-full"
+                        <textarea aria-label="{{ __('safety.field.followup_description') }}" name="description" rows="2" class="textarea textarea-bordered textarea-sm w-full"
                                   placeholder="{{ __('safety.field.followup_description') }}"></textarea>
                         <x-icon-btn type="submit" size="sm" tone="primary" icon="add_task" show-label>{{ __('safety.action.create_followup') }}</x-icon-btn>
                     </form>

@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{RequiresPlatformOperator, ResolvesCurrentOrganization};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Support\{SupportReportBuilder, SupportReportPackager};
@@ -23,6 +23,8 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class SupportReportController extends Controller {
+    use RequiresPlatformOperator;
+
     use ResolvesCurrentOrganization;
 
     public function index(Request $request, SupportReportBuilder $builder, SupportReportPackager $packager): View {
@@ -34,7 +36,8 @@ class SupportReportController extends Controller {
 
         return view('admin.support.report', [
             'preview' => $preview,
-            'canExportWithSamples' => $request->user()?->can(Permission::PlatformSupportExportWithSamples->value) ?? false,
+            'canExportWithSamples' => $this->isPlatformOperator()
+                && ($request->user()?->can(Permission::PlatformSupportExportWithSamples->value) ?? false),
         ]);
     }
 
@@ -48,7 +51,10 @@ class SupportReportController extends Controller {
         $includeSchema = (bool) $request->boolean('include_schema');
         $password = $request->string('password')->toString() ?: null;
 
-        if ($includeSamples && ! $user->can(Permission::PlatformSupportExportWithSamples->value)) {
+        // Proben sind laut supportbericht.md §6 dem Plattform-Betreiber
+        // vorbehalten. Die Permission allein trägt das nicht: die org-lokale
+        // admin-Rolle hält sie ebenfalls (Sicherheitsscan 2026-08-23, S-02).
+        if ($includeSamples && ! ($this->isPlatformOperator() && $user->can(Permission::PlatformSupportExportWithSamples->value))) {
             return back()->withErrors([
                 'include_samples' => __('Sample-Daten erfordern die Plattform-Admin-Berechtigung.'),
             ]);
