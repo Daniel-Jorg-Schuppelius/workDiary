@@ -31,6 +31,12 @@ class EncryptExistingPii extends Command {
         'users' => ['tax_identification_number', 'social_security_number'],
         'contact_bank_accounts' => ['account_holder', 'iban', 'bic'],
         'contact_addresses' => ['street', 'supplement', 'zip', 'city'],
+        // Projektion des primären Bankkontos — wurde entschlüsselt flach
+        // zurückgeschrieben und hob die Verschlüsselung auf (S-21).
+        'customers' => ['bank_account_holder', 'bank_iban', 'bank_bic'],
+        'suppliers' => ['bank_account_holder', 'bank_iban', 'bank_bic'],
+        // Art.-9-Daten (S-21).
+        'sick_leaves' => ['au_number', 'doctor_name', 'note'],
     ];
 
     public function handle(): int {

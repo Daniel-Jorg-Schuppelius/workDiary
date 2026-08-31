@@ -13,6 +13,7 @@ namespace App\Services\Privacy;
 use App\Enums\User\Permission;
 use App\Models\{AuditLog, Organization, PluginSetting, User};
 use App\Plugins\PluginManager;
+use App\Services\Security\SessionManagementService;
 use Illuminate\Support\Facades\{DB, Schema};
 
 /**
@@ -49,6 +50,14 @@ class PrivacyOverviewService {
             ->orderByDesc('last_activity')
             ->limit(50)
             ->get(['id', 'user_id', 'ip_address', 'user_agent', 'last_activity'])
+            // Die rohe Session-ID verlässt den Dienst nicht (S-54) — die
+            // Ansicht braucht nur ein Handle zum Widerrufen.
+            ->map(function (object $row): object {
+                $row->handle = SessionManagementService::handleFor((string) $row->id);
+                unset($row->id);
+
+                return $row;
+            })
             : collect();
 
         $tokens = $user->can(Permission::PrivacyTokensView->value) && Schema::hasTable('personal_access_tokens')

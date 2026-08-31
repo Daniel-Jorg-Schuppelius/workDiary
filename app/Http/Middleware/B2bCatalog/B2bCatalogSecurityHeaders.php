@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\B2bCatalog;
 
+use App\Http\Middleware\Concerns\SetsTransportSecurity;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Vite;
@@ -30,6 +31,8 @@ use Symfony\Component\HttpFoundation\Response;
  *   der Transfer-Seite (@cspNonce).
  */
 class B2bCatalogSecurityHeaders {
+    use SetsTransportSecurity;
+
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);
         $h = $response->headers;
@@ -65,6 +68,10 @@ class B2bCatalogSecurityHeaders {
         $h->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=()');
         $h->set('Cross-Origin-Opener-Policy', 'same-origin');
         $h->set('Cross-Origin-Resource-Policy', 'same-origin');
+
+        // HSTS wie im web-Stack (S-62).
+
+        $this->applyTransportSecurity($request, $response);
 
         return $response;
     }

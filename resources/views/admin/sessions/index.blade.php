@@ -140,7 +140,7 @@
                                                     @if ($s['is_current'])
                                                         <span class="text-xs italic text-muted">{{ __('sessions.badge.this_device') }}</span>
                                                     @else
-                                                        <x-action-form :action="route('admin.sessions.destroy', ['id' => $s['id']])"
+                                                        <x-action-form :action="route('admin.sessions.destroy', ['id' => $s['handle']])"
                                                               method="DELETE"
                                                               :confirm="__('sessions.confirm.revoke_session')"
                                                               confirm-icon="logout"

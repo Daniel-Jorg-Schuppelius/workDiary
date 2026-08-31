@@ -10,7 +10,8 @@
 
 namespace App\Services\Timekeeping;
 
-use App\Models\TimeEntry;
+use App\Models\{TimeEntry, User};
+use App\Services\TimeApproval\MonthClosureService;
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
@@ -34,6 +35,9 @@ class TimeEntryEditPolicy {
     public const REASON_TIMESHEET_SIGNED = 'timesheet_signed';
 
     public const REASON_EXPORTED = 'exported';
+
+    /** Der Monat des Eintrags ist für diesen Mitarbeiter freigegeben/gesperrt. */
+    public const REASON_MONTH_CLOSED = 'month_closed';
 
     public function windowDays(): int {
         $setting = Setting::get('timesheet.edit_window_days');
@@ -62,6 +66,20 @@ class TimeEntryEditPolicy {
     public function isHardLocked(TimeEntry $entry): array {
         if ($entry->exported) {
             return ['locked' => true, 'reason' => self::REASON_EXPORTED];
+        }
+
+        // **Der freigegebene Monat sperrt auch Projektzeiten** (Sicherheitsscan
+        // 2026-08-23, S-32). Die harte Sperre kannte nur `exported` und den
+        // Stundenzettel; der Monatsabschluss wurde bis dahin allein von
+        // Importen, Korrekturanträgen und Plugins beachtet. Ein Mitarbeiter
+        // konnte deshalb nach der Freigabe seines Juni noch Zeiten mit
+        // `date=2026-06-15` anlegen oder ändern — Gleitzeitsaldo und die
+        // Lohnzeilen (Reisezeit, Bereitschaft, Überstundenzuschlag) werden zur
+        // Exportzeit gerechnet und stiegen mit.
+        $owner = $entry->user;
+        if ($owner instanceof User && $entry->date !== null
+            && app(MonthClosureService::class)->isPeriodLockedForUser($owner, CarbonImmutable::instance($entry->date))) {
+            return ['locked' => true, 'reason' => self::REASON_MONTH_CLOSED];
         }
 
         $timesheet = $entry->timesheet;
@@ -110,6 +128,7 @@ class TimeEntryEditPolicy {
             self::REASON_TIMESHEET_LOCKED => __('Stundenzettel gesperrt'),
             self::REASON_TIMESHEET_SIGNED => __('Stundenzettel signiert'),
             self::REASON_EXPORTED => __('Eintrag bereits exportiert'),
+            self::REASON_MONTH_CLOSED => __('Monat bereits freigegeben'),
             default => null,
         };
 

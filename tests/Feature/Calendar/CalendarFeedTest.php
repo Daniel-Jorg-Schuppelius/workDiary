@@ -29,23 +29,38 @@ class CalendarFeedTest extends TestCase {
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_rotate_creates_token_and_settings_page_shows_url(): void {
-        $this->actingAs($this->user)
+    /**
+     * Gespeichert wird nur der Hash (Sicherheitsscan 2026-08-23, S-44) — der
+     * Klartext ist genau einmal sichtbar, direkt nach dem Rotieren.
+     */
+    public function test_rotate_creates_token_and_shows_url_once(): void {
+        $response = $this->actingAs($this->user)
             ->post(route('account.calendar.rotate'))
             ->assertRedirect(route('account.calendar.show'));
 
         $this->user->refresh();
-        $this->assertNotEmpty($this->user->calendar_feed_token);
-        $this->assertGreaterThanOrEqual(32, strlen((string) $this->user->calendar_feed_token));
+        $this->assertNotEmpty($this->user->calendar_feed_token_hash);
 
+        $plain = (string) $response->getSession()->get('calendar_feed_token');
+        $this->assertGreaterThanOrEqual(32, strlen($plain));
+        $this->assertSame(User::hashCalendarFeedToken($plain), $this->user->calendar_feed_token_hash);
+
+        // Einmalige Anzeige …
         $this->actingAs($this->user)
             ->get(route('account.calendar.show'))
             ->assertOk()
-            ->assertSee($this->user->calendar_feed_token);
+            ->assertSee($plain);
+
+        // … danach nicht mehr.
+        $this->actingAs($this->user)
+            ->get(route('account.calendar.show'))
+            ->assertOk()
+            ->assertDontSee($plain);
     }
 
     public function test_feed_returns_ics_with_approved_vacation(): void {
-        $this->user->calendar_feed_token = Str::random(48);
+        $token = Str::random(48);
+        $this->user->calendar_feed_token_hash = User::hashCalendarFeedToken($token);
         $this->user->save();
 
         Vacation::query()->create([
@@ -57,7 +72,7 @@ class CalendarFeedTest extends TestCase {
             'status' => VacationStatus::Approved->value,
         ]);
 
-        $response = $this->get(route('calendar.feed.personal', ['token' => $this->user->calendar_feed_token]));
+        $response = $this->get(route('calendar.feed.personal', ['token' => $token]));
 
         $response->assertOk();
         $this->assertStringStartsWith('text/calendar', (string) $response->headers->get('Content-Type'));
@@ -80,13 +95,13 @@ class CalendarFeedTest extends TestCase {
     }
 
     public function test_revoke_clears_token(): void {
-        $this->user->calendar_feed_token = Str::random(48);
+        $this->user->calendar_feed_token_hash = User::hashCalendarFeedToken(Str::random(48));
         $this->user->save();
 
         $this->actingAs($this->user)
             ->delete(route('account.calendar.revoke'))
             ->assertRedirect(route('account.calendar.show'));
 
-        $this->assertNull($this->user->fresh()?->calendar_feed_token);
+        $this->assertNull($this->user->fresh()?->calendar_feed_token_hash);
     }
 }

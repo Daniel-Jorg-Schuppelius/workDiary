@@ -19,6 +19,10 @@ use Illuminate\Console\Command;
  * nachgerechnet werden. Gemeldet werden:
  *   - ein nicht passender Zeilen-Hash  → Zeile wurde nachträglich verändert
  *   - ein gebrochener prev_hash-Verweis → Zeile gelöscht/eingeschoben
+ *   - ein Kettenkopf, der nicht zur letzten Zeile passt, oder eine Höhe, die
+ *     nicht zur Zeilenzahl passt → am Ende abgeschnitten (S-36). Ohne diesen
+ *     Abgleich bleibt genau das unentdeckt: eine verkürzte Kette rechnet sich
+ *     zeilenweise fehlerfrei nach.
  * Exit-Code 1, sobald eine Kette an einer Stelle bricht (CI-/Cron-tauglich).
  *
  * Die Rechnung selbst liegt im {@see AuditChainVerifier} (MVP-699: die
@@ -51,9 +55,12 @@ class VerifyAuditLogChain extends Command {
                 continue;
             }
 
-            $this->error($result['reason'] === AuditChainVerifier::REASON_PREV_HASH
-                ? "[{$result['failed_chain']}] Integritätsverletzung bei id={$result['failed_id']}: prev_hash verweist nicht auf die Vorgängerzeile derselben Kette (Eintrag gelöscht oder eingeschoben)."
-                : "[{$result['failed_chain']}] Integritätsverletzung bei id={$result['failed_id']}: Zeilen-Hash stimmt nicht (Eintrag wurde nachträglich verändert).");
+            $this->error(match ($result['reason']) {
+                AuditChainVerifier::REASON_PREV_HASH => "[{$result['failed_chain']}] Integritätsverletzung bei id={$result['failed_id']}: prev_hash verweist nicht auf die Vorgängerzeile derselben Kette (Eintrag gelöscht oder eingeschoben).",
+                AuditChainVerifier::REASON_HEAD_HASH => "[{$result['failed_chain']}] Integritätsverletzung: der Kettenkopf passt nicht zur letzten Zeile (Zeilen am Ende entfernt oder Kopf verändert).",
+                AuditChainVerifier::REASON_HEIGHT => "[{$result['failed_chain']}] Integritätsverletzung: die festgehaltene Kettenhöhe passt nicht zur Zeilenzahl (Einträge fehlen).",
+                default => "[{$result['failed_chain']}] Integritätsverletzung bei id={$result['failed_id']}: Zeilen-Hash stimmt nicht (Eintrag wurde nachträglich verändert).",
+            });
             $this->line("  Geprüft bis zum Bruch: {$result['checked']} Einträge.");
             $exit = self::FAILURE;
         }

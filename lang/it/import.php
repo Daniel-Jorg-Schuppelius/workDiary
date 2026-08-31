@@ -78,6 +78,7 @@ return [
             'time' => 'Ora non valida (atteso HH:MM).',
             'status' => 'Il valore non è uno stato valido.',
             'amount' => 'Importo non valido.',
+            'url' => 'Indirizzo non valido (atteso http:// o https://).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Limite di righe (:max) superato — resto ignorato.',

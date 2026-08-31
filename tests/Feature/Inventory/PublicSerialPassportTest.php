@@ -12,7 +12,7 @@ namespace Tests\Feature\Inventory;
 
 use App\Enums\Inventory\{SerialSource, SerialStatus};
 use App\Models\{Article, ArticleVariant, Customer, Warehouse};
-use App\Services\Inventory\SerialService;
+use App\Services\Inventory\{SerialPassportService, SerialService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -51,9 +51,58 @@ final class PublicSerialPassportTest extends TestCase {
     }
 
     public function test_disabled_passport_returns_404(): void {
-        $this->organization->update(['settings' => ['serial_passport_token' => 'TOK-9', 'serial_passport_enabled' => false]]);
+        $this->organization->update(['settings' => [
+            SerialPassportService::HASH_KEY => SerialPassportService::fingerprint('TOK-9'),
+            SerialPassportService::ENABLED_KEY => false,
+        ]]);
 
         $this->get('/serial-passport/TOK-9?serial=PASS-1')->assertNotFound();
+    }
+
+    /** Der Klartext-Token steht nicht mehr in der Datenbank (S-44). */
+    public function test_token_is_stored_only_as_fingerprint(): void {
+        $this->enablePassport('TOK-123');
+
+        $settings = (array) $this->organization->refresh()->settings;
+
+        $this->assertArrayNotHasKey('serial_passport_token', $settings);
+        $this->assertNotContains('TOK-123', $settings, 'Der Klartext darf nirgends in den Einstellungen stehen.');
+        $this->assertSame(SerialPassportService::fingerprint('TOK-123'), $settings[SerialPassportService::HASH_KEY]);
+    }
+
+    /** Ausstellen liefert den Klartext genau einmal und entwertet den alten Link. */
+    public function test_issuing_rotates_the_link(): void {
+        $service = app(SerialPassportService::class);
+        $first = $service->issue($this->organization);
+        $service->setEnabled($this->organization, true);
+
+        $this->get('/serial-passport/' . $first . '?serial=PASS-1')->assertOk();
+
+        $second = $service->issue($this->organization->refresh());
+        $this->assertNotSame($first, $second);
+
+        $this->get('/serial-passport/' . $first . '?serial=PASS-1')->assertNotFound();
+        $this->get('/serial-passport/' . $second . '?serial=PASS-1')->assertOk();
+    }
+
+    /** Entzug schaltet zugleich ab — ein halber Zustand wäre eine Falle. */
+    public function test_revoking_closes_the_public_page(): void {
+        $service = app(SerialPassportService::class);
+        $token = $service->issue($this->organization);
+        $service->setEnabled($this->organization, true);
+
+        $service->revoke($this->organization->refresh());
+
+        $this->get('/serial-passport/' . $token . '?serial=PASS-1')->assertNotFound();
+        $this->assertFalse($service->status($this->organization->refresh())['enabled']);
+    }
+
+    /** Ohne ausgestellten Token lässt sich die Seite nicht freischalten. */
+    public function test_cannot_enable_without_a_token(): void {
+        $service = app(SerialPassportService::class);
+        $service->setEnabled($this->organization, true);
+
+        $this->assertFalse($service->status($this->organization->refresh())['enabled']);
     }
 
     public function test_unknown_token_returns_404(): void {
@@ -62,7 +111,36 @@ final class PublicSerialPassportTest extends TestCase {
         $this->get('/serial-passport/NOPE?serial=PASS-1')->assertNotFound();
     }
 
+    /** Die Verwaltung ist Org-Admin-Sache — Lagerrechte allein genügen nicht. */
+    public function test_passport_settings_require_organization_update(): void {
+        $this->actingAs($this->orgUser())->get(route('serials.passport.edit'))->assertForbidden();
+        $this->actingAs($this->orgUser())->post(route('serials.passport.rotate'))->assertForbidden();
+        $this->actingAs($this->orgAdmin())->get(route('serials.passport.edit'))->assertOk();
+    }
+
+    /** Über die Oberfläche: ausstellen, freischalten, entziehen. */
+    public function test_passport_can_be_issued_and_revoked_over_http(): void {
+        $admin = $this->orgAdmin();
+
+        $this->actingAs($admin)->post(route('serials.passport.rotate'))
+            ->assertRedirect(route('serials.passport.edit'))
+            ->assertSessionHas('serial_passport_token');
+
+        $token = session('serial_passport_token');
+        $this->assertIsString($token);
+
+        $this->actingAs($admin)->patch(route('serials.passport.toggle'), ['enabled' => 1])->assertRedirect();
+        $this->get('/serial-passport/' . $token . '?serial=PASS-1')->assertOk();
+
+        $this->actingAs($admin)->delete(route('serials.passport.revoke'))->assertRedirect();
+        $this->get('/serial-passport/' . $token . '?serial=PASS-1')->assertNotFound();
+    }
+
     private function enablePassport(string $token): void {
-        $this->organization->update(['settings' => ['serial_passport_token' => $token, 'serial_passport_enabled' => true]]);
+        $this->organization->update(['settings' => [
+            SerialPassportService::HASH_KEY => SerialPassportService::fingerprint($token),
+            SerialPassportService::HINT_KEY => mb_substr($token, 0, 6),
+            SerialPassportService::ENABLED_KEY => true,
+        ]]);
     }
 }

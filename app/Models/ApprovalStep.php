@@ -11,7 +11,7 @@
 namespace App\Models;
 
 use App\Enums\Approval\ApprovalDecision;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{AppendOnly, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
@@ -33,6 +33,11 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property \Illuminate\Support\Carbon|null $updated_at
  */
 class ApprovalStep extends Model {
+    // Append-only (Sicherheitsscan 2026-08-23, S-59): der Docblock sagte das
+    // seit MVP-531, durchgesetzt wurde es nicht. Eine Freigabestufe ist ein
+    // Nachweis, wer wann entschieden hat — sie nachträglich zu ändern hieße,
+    // die Entscheidung umzuschreiben.
+    use AppendOnly;
     use BelongsToOrganization;
     use HasSqid;
 
@@ -44,6 +49,12 @@ class ApprovalStep extends Model {
         'decision',
         'decided_by',
         'comment',
+        // Nur für den Nachtrag einer Altentscheidung
+        // ({@see ApprovalFlowService::backfillStage()}): der Zeitpunkt muss
+        // beim Anlegen gesetzt werden, weil nachträgliches Ändern seit S-59
+        // am AppendOnly-Guard scheitert.
+        'created_at',
+        'updated_at',
     ];
 
     /** @var array<string, string> */

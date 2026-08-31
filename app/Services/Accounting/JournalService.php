@@ -15,6 +15,7 @@ namespace App\Services\Accounting;
 use App\Enums\Finance\AccountingEntryStatus;
 use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingPeriod, AccountingProfile};
 use App\Models\{CostCenter, Organization, User};
+use App\Services\Accounting\Posting\PostingInboxService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -126,6 +127,7 @@ class JournalService {
      */
     public function post(AccountingEntry $entry, User $actor): AccountingEntry {
         $this->assertMutable($entry);
+        $this->assertFourEyes($entry, $actor);
 
         $organization = $this->organizationOf($entry);
         $bookedOn = CarbonImmutable::parse($entry->booked_on)->startOfDay();
@@ -147,6 +149,15 @@ class JournalService {
         $this->assertPostable($entry, $organization);
 
         return DB::transaction(function () use ($entry, $actor, $organization, $period): AccountingEntry {
+            // **Erneut lesen, gesperrt** (Sicherheitsscan 2026-08-23, S-31).
+            // Die Prüfungen oben liefen auf dem übergebenen — womöglich
+            // veralteten — Modell. Zwei gleichzeitige Festschreibungen kamen
+            // beide durch; die Nummernsperre serialisiert nur die Vergabe, und
+            // der zweite Lauf überschrieb die Zeile mit N+1. Ergebnis: eine
+            // **Lücke in der lückenlosen Journalnummerierung** — für einen
+            // GoBD-Prüfer ein Befund.
+            $this->lockAndAssertMutable($entry);
+
             $entry->forceFill([
                 'accounting_period_id' => $period->id,
                 'accounting_fiscal_year_id' => $period->accounting_fiscal_year_id,
@@ -206,6 +217,11 @@ class JournalService {
         $entry->load('lines');
 
         return DB::transaction(function () use ($entry, $reason, $actor, $organization, $bookedOn): AccountingEntry {
+            // Zwei gleichzeitige Stornos erzeugten zwei Gegenbuchungen — das
+            // Konto war um den Betrag doppelt entlastet, und
+            // `reversed_by_entry_id` zeigte nur auf eine davon (S-31).
+            $this->lockAndAssertPosted($entry);
+
             $lines = $entry->lines->map(fn (AccountingEntryLine $line): array => [
                 // Gespiegelt: aus Soll wird Haben.
                 'accounting_account_id' => $line->accounting_account_id,
@@ -412,6 +428,76 @@ class JournalService {
                 'cost_center_id' => $this->ownCostCenterId((int) $entry->organization_id, $line['cost_center_id'] ?? null),
                 'cost_group' => $line['cost_group'] ?? null,
                 'memo' => $line['memo'] ?? null,
+            ]);
+        }
+    }
+
+    /**
+     * Buchung in der laufenden Transaktion sperren und Zustand erneut prüfen.
+     *
+     * `lockForUpdate()` hält die Zeile bis zum Commit; der zweite Request
+     * wartet und sieht dann den echten Zustand statt seines veralteten
+     * Modells. Der Model-Guard allein half nicht: er vergleicht gegen
+     * `getOriginal('status')`, also gegen den Stand, den das stale Modell beim
+     * Laden hatte.
+     */
+    private function lockAndAssertMutable(AccountingEntry $entry): void {
+        $fresh = AccountingEntry::query()
+            ->withoutGlobalScopes()
+            ->whereKey($entry->getKey())
+            ->lockForUpdate()
+            ->first();
+
+        if (! $fresh instanceof AccountingEntry || ! $fresh->status->isMutable()) {
+            throw ValidationException::withMessages([
+                'status' => (string) __('accounting.ledger.error.entry_frozen'),
+            ]);
+        }
+    }
+
+    /** Wie {@see lockAndAssertMutable()}, aber für den Storno: muss festgeschrieben sein. */
+    private function lockAndAssertPosted(AccountingEntry $entry): void {
+        $fresh = AccountingEntry::query()
+            ->withoutGlobalScopes()
+            ->whereKey($entry->getKey())
+            ->lockForUpdate()
+            ->first();
+
+        if (! $fresh instanceof AccountingEntry || $fresh->status !== AccountingEntryStatus::Posted) {
+            throw ValidationException::withMessages([
+                'status' => (string) __('accounting.ledger.error.reverse_not_posted'),
+            ]);
+        }
+
+        if ($fresh->reversed_by_entry_id !== null) {
+            throw ValidationException::withMessages([
+                'status' => (string) __('accounting.ledger.error.reverse_not_posted'),
+            ]);
+        }
+    }
+
+    /**
+     * Vier-Augen-Prinzip: wer vorbereitet hat, schreibt nicht selbst fest.
+     *
+     * **Hier statt nur in der Buchungs-Inbox** (Sicherheitsscan 2026-08-23,
+     * S-30). Die Prüfung saß allein in `PostingInboxService::post()` — die
+     * Journal-Routen (`journal.post`, `journal.store` mit `post=1`) rufen
+     * diesen Dienst aber direkt auf. Eine in der Inbox vorbereitete Buchung
+     * ist eine gewöhnliche Journalzeile: dieselbe Person öffnete sie im
+     * Journal und schrieb sie dort fest. Die Kontrolle war damit eine
+     * Empfehlung. `post()` ist die einzige Stelle, durch die jede
+     * Festschreibung läuft — hier gehört sie hin.
+     */
+    private function assertFourEyes(AccountingEntry $entry, User $actor): void {
+        // Direkt über die Einstellung, nicht über den Inbox-Dienst: der
+        // hängt selbst von diesem hier ab.
+        if (! (bool) \App\Support\Setting::get(PostingInboxService::FOUR_EYES_KEY, false)) {
+            return;
+        }
+
+        if ($entry->created_by !== null && (int) $entry->created_by === (int) $actor->id) {
+            throw ValidationException::withMessages([
+                'four_eyes' => (string) __('accounting.inbox.error.four_eyes'),
             ]);
         }
     }

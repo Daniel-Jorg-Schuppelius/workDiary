@@ -29,6 +29,14 @@ class AuditLog extends Model implements HashChainable {
     use BelongsToOrganization;
     use HashChained;
 
+    /**
+     * Platzhalter für einen geschwärzten Wert (Sicherheitsscan S-21) — gesetzt
+     * beim Schreiben ({@see \App\Models\Concerns\Auditable::getAuditAttributes()})
+     * und nachträglich beim Löschverlangen
+     * ({@see \App\Services\Audit\AuditRedactionService}).
+     */
+    public const REDACTED = "\u{2022}\u{2022}\u{2022}";
+
     protected $fillable = [
         'organization_id',
         'user_id',

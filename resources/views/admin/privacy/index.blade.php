@@ -175,7 +175,7 @@
                                     <td class="text-xs">{{ $lastActivity?->diffForHumans() ?? '—' }}</td>
                                     @if ($canRevokeSessions)
                                         <td class="text-right">
-                                            <x-action-form :action="route('admin.privacy.sessions.destroy', ['id' => $session->id])"
+                                            <x-action-form :action="route('admin.privacy.sessions.destroy', ['id' => $session->handle])"
                                                   method="DELETE"
                                                   :confirm="__('Session wirklich widerrufen?')"
                                                   confirm-icon="logout"

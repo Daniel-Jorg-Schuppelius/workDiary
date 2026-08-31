@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization};
+use App\Models\Concerns\HasPrivateNetworkOptIn;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -53,9 +54,11 @@ use Illuminate\Support\Carbon;
  */
 class JtlConnection extends Model {
     use Auditable;
+
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasPrivateNetworkOptIn;
 
     public const MODE_ON_PREMISE = 'on_premise';
 

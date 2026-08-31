@@ -67,6 +67,11 @@ class SickLeave extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        // Art.-9-Daten: AU-Nummer, Arztname und die Notiz, in der
+        // erfahrungsgemäß auch Diagnosen landen (Sicherheitsscan S-21).
+        'au_number' => 'encrypted',
+        'doctor_name' => 'encrypted',
+        'note' => 'encrypted',
         'start_date' => 'date',
         'end_date' => 'date',
         'kind' => SickLeaveKind::class,

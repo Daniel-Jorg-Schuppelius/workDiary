@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Auth\{SsoProtocol, SsoProviderType};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\HasPrivateNetworkOptIn;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -46,9 +47,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class SsoConnection extends Model {
     use Auditable;
+
     use BelongsToOrganization;
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
+    use HasPrivateNetworkOptIn;
     use HasSqid;
 
     public const DEFAULT_OIDC_SCOPES = 'openid profile email';

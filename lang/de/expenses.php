@@ -9,6 +9,10 @@
  */
 
 return [
+    'error' => [
+        'self_approval' => 'Der eigene Beleg kann nicht selbst freigegeben werden.',
+        'invalid_transition' => 'Die Aktion :action ist im Status :status nicht möglich.',
+    ],
     'receipt' => [
         'no_vendor' => 'Ohne Anbieter',
         'link_title' => 'Buchungsbeleg',

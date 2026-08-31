@@ -764,11 +764,28 @@ class InvoiceController extends Controller {
      * Direktes Storno (nur draft/issued). Bezahlte Rechnungen müssen über
      * eine Korrekturrechnung storniert werden — siehe {@see creditNote()}.
      */
-    public function cancel(Request $request, Invoice $invoice): RedirectResponse {
+    /**
+     * Storniert eine Rechnung.
+     *
+     * **Entwurf**: schlichter Statuswechsel — der Beleg hat das Haus nie
+     * verlassen. **Ausgestellt**: es entsteht ein Stornobeleg mit eigener
+     * Nummer (Sicherheitsscan 2026-08-23, S-37). Vorher setzte auch dort nur
+     * der Status um; die ausgestellte Rechnung blieb beim Kunden im Umlauf,
+     * ohne Gegenbeleg. Nach § 14c UStG und GoBD wird ein ausgestellter Beleg
+     * nur durch einen zweiten storniert, nicht durch ein geändertes Etikett.
+     */
+    public function cancel(Request $request, Invoice $invoice, InvoiceGenerator $gen): RedirectResponse {
         Gate::authorize('cancel', $invoice);
         $data = $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
         ]);
+
+        if ($invoice->status === Invoice::STATUS_ISSUED && ! $invoice->isCreditNote()) {
+            $cancellation = $gen->cancellationFor($invoice, $data['reason'] ?? null, (int) Auth::id());
+
+            return redirect()->route('invoices.show', $cancellation)
+                ->with('status', __('Stornobeleg :nr erstellt.', ['nr' => $cancellation->number]));
+        }
 
         $invoice->cancel($data['reason'] ?? null, (int) Auth::id());
 

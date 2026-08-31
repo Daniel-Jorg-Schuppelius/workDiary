@@ -333,6 +333,7 @@ return [
         'downloaded' => 'Export GoBD téléchargé',
     ],
     // Outil de mesure (MVP-722) : lignes de audit:measure-chain-contention.
+    'merged' => 'Fusionné',
     'perf' => [
         'measure' => 'Mesure (contention de verrou de la chaîne d’audit)',
     ],

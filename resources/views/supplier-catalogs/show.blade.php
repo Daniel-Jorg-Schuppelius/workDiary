@@ -233,8 +233,8 @@
                             @if ($item->classification_code || $item->image_url || $item->datasheet_url)
                                 <div class="flex items-center gap-2 text-xs mt-0.5">
                                     @if ($item->classification_code)<span class="opacity-60">{{ $item->classification_system }} {{ $item->classification_code }}</span>@endif
-                                    @if ($item->image_url)<a href="{{ $item->image_url }}" target="_blank" rel="noopener" class="link">{{ __('procurement.catalog.media.image') }}</a>@endif
-                                    @if ($item->datasheet_url)<a href="{{ $item->datasheet_url }}" target="_blank" rel="noopener" class="link">{{ __('procurement.catalog.media.datasheet') }}</a>@endif
+                                    <x-external-link :url="$item->image_url" :label="__('procurement.catalog.media.image')" />
+                                    <x-external-link :url="$item->datasheet_url" :label="__('procurement.catalog.media.datasheet')" />
                                 </div>
                             @endif
                         </td>

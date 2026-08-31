@@ -27,6 +27,38 @@ use Illuminate\Support\Str;
  * ein kompromittiertes Legacy-Passwort keinen Zugriff auf das neue System gibt.
  */
 class LegacyUserProvider extends EloquentUserProvider {
+    /**
+     * Setzt die SSO-Sperre für **einen** Aufruf aus.
+     *
+     * Nur der Login-Controller nutzt das, und nur um zu entscheiden, ob er
+     * freundlich zum SSO-Start umleiten darf (Sicherheitsscan 2026-08-23,
+     * S-41). Vorher fragte er das VOR der Passwortprüfung — und die Antwort
+     * unterschied sich damit für existierende Konten SSO-pflichtiger Mandanten
+     * von der für unbekannte: gültige Benutzernamen ließen sich ohne Passwort
+     * aufzählen. Jetzt entscheidet er es NACH der Prüfung, und dafür muss er
+     * das Passwort überhaupt prüfen dürfen.
+     *
+     * Die Sperre selbst bleibt: einloggen tut der Controller in diesem Fall
+     * nicht, und jeder andere Einstiegspunkt sieht sie unverändert.
+     */
+    private static bool $ignoreSsoEnforcement = false;
+
+    /**
+     * @template T
+     *
+     * @param  callable():T  $work
+     * @return T
+     */
+    public static function ignoringSsoEnforcement(callable $work): mixed {
+        self::$ignoreSsoEnforcement = true;
+
+        try {
+            return $work();
+        } finally {
+            self::$ignoreSsoEnforcement = false;
+        }
+    }
+
     public function __construct(Hasher $hasher) {
         parent::__construct($hasher, User::class);
     }
@@ -129,7 +161,9 @@ class LegacyUserProvider extends EloquentUserProvider {
         }
         // SSO-Pflicht (Feature 057, MVP-120): erzwingt eine Org SSO, ist der
         // Passwort-Login gesperrt — Ausnahme nur Break-Glass (users.sso_exempt).
-        if (! $user->sso_exempt && \App\Models\SsoConnection::enforcementActiveFor($user->organization_id)) {
+        if (! self::$ignoreSsoEnforcement
+            && ! $user->sso_exempt
+            && \App\Models\SsoConnection::enforcementActiveFor($user->organization_id)) {
             return false;
         }
         // Portal-Accounts duerfen den internen Guard nicht passieren.
@@ -170,11 +204,28 @@ class LegacyUserProvider extends EloquentUserProvider {
             // attempt() überspringt den Connect, wenn die legacy-DB als down
             // markiert ist — sonst kostet ein toter Host jeden Login einen Timeout.
             return LegacyConnectivity::attempt(
-                fn (): ?object => DB::connection('legacy')
-                    ->table('user')
-                    ->where('uname', $username)
-                    ->where('userpw', $password) // Klartext-Vergleich (Legacy-System)
-                    ->first(),
+                function () use ($username, $password): ?object {
+                    // Das Passwort NICHT als WHERE-Bedingung vergleichen
+                    // (Sicherheitsscan 2026-08-23, S-50): die Legacy-Collation
+                    // latin1_german2_ci ist case-insensitiv und PAD SPACE —
+                    // „Geheim1", „GEHEIM1" und „geheim1  " gälten der Datenbank
+                    // als dasselbe Passwort. Das schrumpft den Suchraum für
+                    // Credential-Stuffing erheblich. Der Benutzername darf
+                    // unscharf treffen, das Passwort nicht: byte-genau
+                    // vergleicht deshalb erst PHP.
+                    $rows = DB::connection('legacy')
+                        ->table('user')
+                        ->where('uname', $username)
+                        ->get();
+
+                    foreach ($rows as $row) {
+                        if (hash_equals((string) ($row->userpw ?? ''), $password)) {
+                            return $row;
+                        }
+                    }
+
+                    return null;
+                },
                 null,
             );
         } catch (\Exception) {

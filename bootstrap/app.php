@@ -40,7 +40,13 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('dsar')->group(__DIR__ . '/../routes/dsar.php');
             // SCIM-2.0-Provisioning (Feature 057): sessionlos, Bearer-Token-Auth
             // je Organisation über AuthenticateScim (kein web/api-Gruppen-Stack).
-            Route::middleware(AuthenticateScim::class)->prefix('scim/v2')->group(__DIR__ . '/../routes/scim.php');
+            // Schlanke Sicherheits-Header auch hier (S-62): der SCIM-Stack
+            // läuft ohne SecurityHeaders und hatte weder HSTS noch nosniff
+            // noch eine Cache-Vorgabe — über die Schnittstelle gehen
+            // Verzeichnisdaten.
+            Route::middleware([\App\Http\Middleware\ScimSecurityHeaders::class, AuthenticateScim::class])
+                ->prefix('scim/v2')
+                ->group(__DIR__ . '/../routes/scim.php');
             // Oeffentlicher OCI-Punchout-Katalog (Feature 099, MVP-457):
             // sessionloser Public-Stack ohne Cookies/CSRF (Token-basiert).
             Route::middleware('b2b-catalog')->group(__DIR__ . '/../routes/b2b-catalog.php');
@@ -106,6 +112,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Auch der API-Stack (Sanctum-Tokens) MUSS die Organisation an den
         // Container binden, sonst läuft OrganizationScope als No-Op und die
         // API leakt Mandantengrenzen (siehe tests/Feature/Tenant/ApiTenantTest).
+        // Der Sanctum-Stack hatte keinen Limiter (Sicherheitsscan 2026-08-23,
+        // S-58): ein gültiger Token konnte die API beliebig schnell abfragen.
+        // `throttleApi()` hängt den benannten Limiter `api` davor
+        // ({@see AppServiceProvider::configureRateLimiters()}).
+        $middleware->throttleApi();
+
         $middleware->api(append: [
             SecurityHeaders::class,
             SetOrganizationContext::class,
@@ -212,10 +224,15 @@ return Application::configure(basePath: dirname(__DIR__))
         // Token-Endpunkte ohne Session/CSRF: Backup-Heartbeat (MVP-046 §5).
         $middleware->validateCsrfTokens(except: [
             'admin/backup/heartbeat',
-            // OCI-/IDS-Punchout-Hook: der externe Shop POSTet den Warenkorb
-            // cross-site ohne CSRF-Token (Feature 050, MVP-096). Der Zugriff ist
-            // weiterhin auth- und berechtigungsgeschützt (inventory.post).
-            'oci-carts/import',
+            // 'oci-carts/import' stand hier bis 2026-08-31 (Sicherheitsscan
+            // S-43) und ist bewusst ENTFERNT: die Ausnahme half nur, wenn ein
+            // Betreiber SESSION_SAME_SITE=none setzte — und genau dann war der
+            // Endpunkt klassisch CSRF-anfällig, weil jede fremde Seite im
+            // Browser eines angemeldeten Einkäufers Bestellentwürfe anlegen
+            // konnte. Mit dem Standard `lax` trägt der Cross-Site-POST ohnehin
+            // kein Session-Cookie, die Ausnahme war also wirkungslos, solange
+            // sie ungefährlich war. Externe Shops binden über den signierten
+            // Rücksprung 'oci-carts/return' an.
             // Aktiver Punchout-Rücksprung (MVP-096): sessionloser Cross-Site-POST,
             // Autorisierung über die signierte HOOK_URL ('signed'-Middleware).
             'oci-carts/return',

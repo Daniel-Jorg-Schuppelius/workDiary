@@ -57,6 +57,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property Carbon|null $email_verified_at
  * @property string $password
  * @property string|null $remember_token
+ * @property string|null $calendar_feed_token_hash
  * @property int|null $legacy_user_id
  * @property bool $is_new_system
  * @property bool $is_platform_admin
@@ -269,7 +270,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         'home_lat',
         'home_lng',
         'preferences',
-        'calendar_feed_token',
+        'calendar_feed_token_hash',
         'cti_extension',
         'cti_extension_hash',
         // Portal-Einladung (MVP-510): nur der Token-HASH, nie der Klartext.
@@ -281,6 +282,11 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         // Stellvertretung für Genehmigungen bei Abwesenheit (MVP-523).
         'deputy_user_id',
     ];
+
+    /** Kalender-Feed-Token wird nur als Hash gespeichert (Sicherheitsscan S-44). */
+    public static function hashCalendarFeedToken(string $plain): string {
+        return \CommonToolkit\Helper\Data\CryptoHelper::hash($plain);
+    }
 
     /** @var array<string, string> */
     protected $casts = [

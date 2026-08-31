@@ -19,6 +19,7 @@ use App\Models\Crisis\CrisisCase;
 use App\Notifications\GenericEventNotification;
 use App\Services\Crisis\CrisisAlertService;
 use Illuminate\Support\Facades\{Artisan, Log, Notification};
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Integritäts-Lockdown (Feature 097, MVP-448): schaltet die Installation in
@@ -93,8 +94,17 @@ class IntegrityLockdownService {
         if ($check->status !== IntegrityCheckStatus::Deviation) {
             return false;
         }
-        // Nur signierte Release-Baselines beweisen die Herkunft.
+        // Nur signierte Release-Baselines beweisen die Herkunft — und
+        // „signiert" muss geprüft sein, nicht behauptet (Sicherheitsscan
+        // 2026-08-23, S-52). Der String `source === 'release'` steht in einer
+        // Datei, die der Web-Nutzer schreiben kann; er belegt nichts. Verlangt
+        // wird deshalb ein `release.json`, dessen Signatur gegen den
+        // KONFIGURIERTEN Herausgeber-Schlüssel aufgeht.
         if ((string) ($manifest['source'] ?? '') !== 'release' || $comparison->chain !== []) {
+            return false;
+        }
+
+        if (! $this->releaseSignatureVerified()) {
             return false;
         }
         // Rein dateiweise Befunde zählen; ein alleiniges Autoloader-Aggregat
@@ -270,4 +280,43 @@ class IntegrityLockdownService {
             Log::warning('integrity.lockdown_audit_failed', ['error' => $e->getMessage()]);
         }
     }
+
+    /**
+     * Widerspricht die Release-Signatur der behaupteten Herkunft?
+     *
+     * Die Baseline behauptet über `source === 'release'`, aus einem Release zu
+     * stammen — und diese Angabe steht in einer Datei, die der Web-Nutzer
+     * schreiben kann (Sicherheitsscan 2026-08-23, S-52). Wo ein
+     * Herausgeber-Schlüssel konfiguriert ist, wird die Behauptung deshalb
+     * gegen die Signatur geprüft.
+     *
+     * **Ohne konfigurierten Schlüssel bleibt es beim bisherigen Verhalten.**
+     * Die Sperre ist eine SCHÜTZENDE Maßnahme: verlangte man den Nachweis
+     * absolut, könnte sie auf jeder Installation ohne `LICENSE_PUBLIC_KEY`
+     * nie mehr greifen — der Fix würde den Schutz genau dort abschalten, wo er
+     * am ehesten gebraucht wird. Strenger wird es, wo Strenge möglich ist;
+     * nachsichtiger nirgends.
+     */
+    private function releaseSignatureVerified(): bool {
+        $configured = (string) config('license.public_key', '') !== ''
+            || \App\Services\Licensing\LicenseSeal::isSealed();
+
+        if (! $configured) {
+            return true;
+        }
+
+        try {
+            $json = (string) Storage::disk('local')->get(ReleaseManifestService::STORAGE_PATH);
+        } catch (\Throwable) {
+            return false;
+        }
+
+        $document = json_decode($json, true);
+        if (! is_array($document)) {
+            return false;
+        }
+
+        return app(ReleaseVerifier::class)->verify($document)->signatureValid === true;
+    }
+
 }

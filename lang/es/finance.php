@@ -183,6 +183,7 @@ return [
 
     'error' => [
         'local_invoicing_locked' => 'La facturación la dirige :program; la creación local de facturas está bloqueada.',
+        'sources_already_reserved' => ':count fuente(s) de este comprobante ya forman parte de otro comprobante confirmado; cree el comprobante de nuevo.',
         'no_sources' => 'No se han encontrado fuentes traspasables en el período seleccionado.',
         'illegal_transition' => 'El cambio de estado de «:from» a «:to» no está permitido.',
         'void_after_transfer' => 'Un traspaso ya entregado no puede anularse — utilice un traspaso de anulación/diferencia.',

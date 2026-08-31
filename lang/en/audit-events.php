@@ -333,6 +333,7 @@ return [
         'downloaded' => 'GoBD export downloaded',
     ],
     // Measurement tool (MVP-722): rows from audit:measure-chain-contention.
+    'merged' => 'Merged',
     'perf' => [
         'measure' => 'Measurement run (audit chain lock contention)',
     ],

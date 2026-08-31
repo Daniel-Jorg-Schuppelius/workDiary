@@ -35,6 +35,8 @@ return [
     'domains_heading' => 'E-Mail-Domains',
     'domains_hint' => 'Aus der E-Mail-Domain der Anmeldung leitet WorkDiary die passende Organisation ab. Domains sind global eindeutig.',
     'no_domains' => 'Noch keine E-Mail-Domain zugeordnet.',
+    'domain_unverified' => 'nicht nachgewiesen',
+    'domain_dns_hint' => 'TXT-Eintrag :name mit dem Wert :value anlegen, dann „Prüfen" wählen.',
 
     'provider' => [
         'custom' => 'Eigener OIDC-Anbieter',
@@ -110,6 +112,7 @@ return [
         'break_glass_remove' => 'Entziehen',
         'domain_add' => 'Domain hinzufügen',
         'domain_remove' => 'Entfernen',
+        'domain_verify' => 'Prüfen',
     ],
 
     'col' => [
@@ -137,6 +140,8 @@ return [
         'break_glass_added' => 'Break-Glass-Konto festgelegt.',
         'break_glass_removed' => 'Break-Glass-Status entzogen.',
         'domain_added' => 'E-Mail-Domain hinzugefügt.',
+        'domain_added_unverified' => 'Domain eingetragen — noch nicht wirksam. Zum Nachweis einen TXT-Eintrag :name mit dem Wert :value anlegen und danach „Prüfen" wählen.',
+        'domain_verified' => 'Domain nachgewiesen.',
         'domain_removed' => 'E-Mail-Domain entfernt.',
     ],
 
@@ -154,6 +159,7 @@ return [
         'google_issuer_invalid' => 'Für Google Workspace ist nur der offizielle Issuer https://accounts.google.com zulässig.',
         'domain_invalid' => 'Bitte eine gültige E-Mail-Domain angeben.',
         'domain_taken' => 'Diese E-Mail-Domain ist bereits einer anderen Organisation zugeordnet.',
+        'domain_not_verified' => 'Kein passender TXT-Eintrag gefunden. Erwartet: :name mit dem Wert :value (DNS-Änderungen brauchen mitunter einige Minuten).',
         'flow_expired' => 'Die SSO-Anmeldung ist abgelaufen. Bitte erneut versuchen.',
         'module_disabled' => 'Single-Sign-on ist für diese Organisation nicht verfügbar.',
         'url_not_public' => 'Die URL ist nicht öffentlich erreichbar. Für interne Identitätsanbieter die Option „IdP im privaten Netz erlauben" setzen.',

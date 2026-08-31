@@ -83,6 +83,7 @@ return [
             'time' => 'Keine gültige Uhrzeit (erwartet HH:MM).',
             'status' => 'Wert ist kein gültiger Status.',
             'amount' => 'Kein gültiger Betrag.',
+            'url' => 'Keine gültige Adresse (erwartet http:// oder https://).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Maximale Zeilenanzahl (:max) überschritten — Rest wurde ignoriert.',

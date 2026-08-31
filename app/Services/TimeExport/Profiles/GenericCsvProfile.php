@@ -91,6 +91,15 @@ class GenericCsvProfile implements ExportProfile {
      * hier revisionsrelevant ist: er weist den ausgelieferten Export nach.
      * Der Regressionstest haelt die Hashes fest.
      *
+     * **Bewusst OHNE Formel-Guard** (Sicherheitsscan 2026-08-23, S-46): Die
+     * Datei geht per SFTP an ein Lohnsystem, nicht in eine Tabellenkalkulation,
+     * und ihr `payload_hash` weist den ausgelieferten Export nach. Ein
+     * vorangestellter Apostroph änderte die Bytes — der Nachweis wäre hin und
+     * das empfangende System bekäme veränderte Werte. Der Schutz gehört hier
+     * an die Quelle: freie Notizen erreichen den Export über
+     * {@see \App\Services\TimeExport\TimeExportBuilder}, und wer die Datei
+     * doch in Excel öffnet, tut das mit einer Datei aus dem eigenen Haus.
+     *
      * @param  array<int,string>  $fields
      */
     private function csvLine(array $fields): string {

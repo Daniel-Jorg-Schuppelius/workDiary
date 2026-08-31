@@ -32,7 +32,7 @@ use Throwable;
  */
 class LibCardDavGateway implements CardDavGateway {
     public function __construct(private readonly CardDavConnection $connection) {
-        CardDavUrlGuard::assertAcceptable((string) $connection->base_url, (bool) $connection->allow_private_network);
+        CardDavUrlGuard::assertAcceptable((string) $connection->base_url, $connection->allowsPrivateNetwork());
 
         // Lib-Logger einmalig initialisieren (NullLogger) — Fehler laufen über
         // die Exceptions der Lib in die Verbindungs-Gesundheit (HasConnectionHealth).

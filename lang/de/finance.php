@@ -186,6 +186,7 @@ return [
 
     'error' => [
         'local_invoicing_locked' => 'Fakturierung führt :program; lokale Rechnungserstellung ist gesperrt.',
+        'sources_already_reserved' => ':count Quelle(n) dieses Nachweises sind bereits in einem anderen bestätigten Nachweis enthalten — bitte den Nachweis neu erstellen.',
         'no_sources' => 'Keine übergabefähigen Quellen im gewählten Zeitraum gefunden.',
         'illegal_transition' => 'Statuswechsel von „:from" nach „:to" ist nicht erlaubt.',
         'void_after_transfer' => 'Eine bereits übergebene Übergabe kann nicht verworfen werden — bitte Storno-/Differenzübergabe verwenden.',

@@ -14,6 +14,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Privacy\PrivacyOverviewService;
+use App\Services\Security\SessionManagementService;
 use App\Support\Sqid;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response as HttpResponse};
@@ -196,7 +197,18 @@ class PrivacyController extends Controller {
         $organization = $actor->organization;
         abort_if($organization === null, Response::HTTP_NOT_FOUND);
 
-        $row = DB::table('sessions')->where('id', $id)->first(['id', 'user_id']);
+        // `$id` ist das HMAC-Handle, nicht die Session-ID (S-54). Aufgelöst
+        // wird nur innerhalb der eigenen Organisation.
+        /** @var list<int> $memberIds */
+        $memberIds = array_values(array_map('intval', User::query()
+            ->where('organization_id', $organization->id)
+            ->pluck('id')->all()));
+
+        $sessionId = SessionManagementService::resolveHandle($id, $memberIds);
+        $row = $sessionId !== null
+            ? DB::table('sessions')->where('id', $sessionId)->first(['id', 'user_id'])
+            : null;
+
         if ($row === null) {
             return back()->withErrors(['session' => __('Session existiert nicht (mehr).')]);
         }
@@ -207,7 +219,7 @@ class PrivacyController extends Controller {
             ->exists();
         abort_unless($belongsToOrg, Response::HTTP_NOT_FOUND);
 
-        DB::table('sessions')->where('id', $id)->delete();
+        DB::table('sessions')->where('id', $sessionId)->delete();
 
         AuditLog::query()->create([
             'organization_id' => $organization->id,

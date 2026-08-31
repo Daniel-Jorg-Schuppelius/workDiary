@@ -37,7 +37,10 @@ class ResolveB2bCatalogOrganization {
             ->where('slug', $slug)
             ->first();
 
-        if (! $organization instanceof Organization) {
+        // Gesperrter oder abgelaufener Mandant ist nach außen nicht sichtbar
+        // (Sicherheitsscan 2026-08-23, S-42) — sonst nimmt ein suspendierter
+        // Mandant weiter OCI-Bestellungen entgegen.
+        if (! $organization instanceof Organization || ! $organization->publicSurfacesAvailable()) {
             abort(404);
         }
 

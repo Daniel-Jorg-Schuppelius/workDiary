@@ -651,6 +651,7 @@ return [
             'unsigned' => 'non signé',
             'signature_valid' => 'Signature valide',
             'signature_invalid' => 'Signature invalide',
+            'signature_unverifiable' => 'non vérifiable (pas de clé d’éditeur)',
             'integrity' => 'Intégrité',
             'integrity_ok' => 'Sommes de contrôle correctes',
             'integrity_broken' => 'Sommes de contrôle altérées',

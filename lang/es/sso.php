@@ -35,6 +35,8 @@ return [
     'domains_heading' => 'Dominios de correo',
     'domains_hint' => 'WorkDiary deduce la organización a partir del dominio de correo del inicio de sesión. Los dominios son únicos a nivel global.',
     'no_domains' => 'Aún no se ha asignado ningún dominio de correo.',
+    'domain_unverified' => 'sin verificar',
+    'domain_dns_hint' => 'Cree un registro TXT :name con el valor :value y luego elija «Comprobar».',
 
     'provider' => [
         'custom' => 'Proveedor OIDC personalizado',
@@ -110,6 +112,7 @@ return [
         'break_glass_remove' => 'Quitar',
         'domain_add' => 'Añadir dominio',
         'domain_remove' => 'Eliminar',
+        'domain_verify' => 'Comprobar',
     ],
 
     'col' => [
@@ -137,6 +140,8 @@ return [
         'break_glass_added' => 'Cuenta de emergencia definida.',
         'break_glass_removed' => 'Estado de emergencia retirado.',
         'domain_added' => 'Dominio de correo añadido.',
+        'domain_added_unverified' => 'Dominio añadido — todavía no activo. Para acreditarlo, cree un registro TXT :name con el valor :value y luego elija «Comprobar».',
+        'domain_verified' => 'Dominio verificado.',
         'domain_removed' => 'Dominio de correo eliminado.',
     ],
 
@@ -154,6 +159,7 @@ return [
         'google_issuer_invalid' => 'Para Google Workspace solo se permite el emisor oficial https://accounts.google.com.',
         'domain_invalid' => 'Introduzca un dominio de correo válido.',
         'domain_taken' => 'Este dominio de correo ya está asignado a otra organización.',
+        'domain_not_verified' => 'No se encontró un registro TXT coincidente. Esperado: :name con el valor :value (los cambios de DNS pueden tardar unos minutos).',
         'flow_expired' => 'El inicio de sesión SSO ha caducado. Inténtelo de nuevo.',
         'module_disabled' => 'El inicio de sesión único no está disponible para esta organización.',
         'url_not_public' => 'La URL no es accesible públicamente. Para proveedores internos active «Permitir IdP en red privada».',

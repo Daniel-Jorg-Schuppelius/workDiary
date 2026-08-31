@@ -65,6 +65,18 @@ class ApprovalFlowService {
             ]);
         }
 
+        // Keine Selbstfreigabe (Sicherheitsscan 2026-08-23, S-35). Geprüft
+        // wurde bisher nur „nicht zweimal dieselbe Person" — bei der
+        // Standard-Einstufigkeit genehmigte damit jeder mit dem passenden
+        // Recht seinen eigenen Antrag, und die Zeitkorrektur wurde
+        // anschließend auf die Anwesenheiten angewandt. Vier Augen heißt zwei
+        // Personen; ein Auge heißt mindestens: nicht die eigene.
+        if ($this->isRequester($approvable, $decider)) {
+            throw ValidationException::withMessages([
+                'decided_by' => __('Der eigene Antrag kann nicht selbst freigegeben werden.'),
+            ]);
+        }
+
         ApprovalStep::query()->create([
             'organization_id' => $approvable->getAttribute('organization_id'),
             'approvable_type' => $approvable::class,
@@ -76,6 +88,26 @@ class ApprovalFlowService {
         ]);
 
         return new ApprovalProgress($done + 1, $required);
+    }
+
+    /**
+     * Stammt der Antrag von der entscheidenden Person?
+     *
+     * Die Antragstellerin steht je nach Modell in `user_id` (Urlaub, Spesen)
+     * oder `requested_by_user_id` (Zeitkorrektur, Überstunden) — beide Felder
+     * werden geprüft, damit die Regel nicht an einer Namenswahl scheitert.
+     */
+    private function isRequester(Model $approvable, User $decider): bool {
+        $deciderId = (int) $decider->getKey();
+
+        foreach (['user_id', 'requested_by_user_id', 'created_by'] as $column) {
+            $value = $approvable->getAttribute($column);
+            if ($value !== null && (int) $value === $deciderId) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -104,17 +136,25 @@ class ApprovalFlowService {
         if ($this->approvedSteps($approvable) > 0) {
             return;
         }
-        $step = ApprovalStep::query()->create([
+        // `created_at` direkt beim Anlegen setzen, nicht nachträglich
+        // (Sicherheitsscan 2026-08-23, S-59): ein `save()` nach dem `create()`
+        // wäre eine Änderung an einer append-only-Zeile — und genau das
+        // verbietet der Guard, den das Modell seit heute trägt.
+        $attributes = [
             'organization_id' => $approvable->getAttribute('organization_id'),
             'approvable_type' => $approvable::class,
             'approvable_id' => (int) $approvable->getKey(),
             'stage' => 1,
             'decision' => ApprovalDecision::Approved->value,
             'decided_by' => $deciderId,
-        ]);
+        ];
+
         if ($decidedAt !== null) {
-            $step->forceFill(['created_at' => $decidedAt])->save();
+            $attributes['created_at'] = $decidedAt;
+            $attributes['updated_at'] = $decidedAt;
         }
+
+        ApprovalStep::query()->create($attributes);
     }
 
     public function progressFor(Model $approvable, string $type): ApprovalProgress {

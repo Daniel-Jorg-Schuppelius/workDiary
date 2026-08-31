@@ -135,9 +135,30 @@ class CertificateVerificationController extends Controller {
             return '';
         }
 
-        $last = array_pop($parts);
-        $parts[] = mb_substr($last, 0, 1) . '.';
+        // Gekürzt wird der NACHNAME, nicht das letzte Wort: „Anna Müller Jr."
+        // endet auf den Zusatz, und wer nur das letzte Wort kürzt, stellt den
+        // Nachnamen vollständig auf eine öffentlich abrufbare Seite. Zusätze
+        // sind ein geschlossener Satz (Generation + akademisch); alles, was
+        // nicht darin steht, gilt als Namensbestandteil — im Zweifel wird also
+        // gekürzt statt veröffentlicht.
+        $index = count($parts) - 1;
+        while ($index > 0 && $this->isNameSuffix($parts[$index])) {
+            $index--;
+        }
+
+        $parts[$index] = mb_substr($parts[$index], 0, 1) . '.';
 
         return implode(' ', $parts);
+    }
+
+    /** Namenszusatz (Jr., III, PhD) — kein Namensbestandteil zum Kürzen. */
+    private function isNameSuffix(string $part): bool {
+        $normalized = mb_strtolower(trim($part, ".,"));
+
+        return in_array($normalized, [
+            'jr', 'jun', 'junior', 'sr', 'sen', 'senior',
+            'i', 'ii', 'iii', 'iv', 'v', 'vi', 'vii', 'viii', 'ix', 'x',
+            'phd', 'md', 'msc', 'bsc', 'mba', 'ba', 'ma', 'llm', 'esq',
+        ], true);
     }
 }

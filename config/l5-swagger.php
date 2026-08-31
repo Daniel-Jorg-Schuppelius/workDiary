@@ -73,10 +73,23 @@ return [
             /*
              * Middleware allows to prevent unexpected access to API documentation
              */
+            /*
+             * Anmeldung für die API-Doku (Sicherheitsscan 2026-08-23, S-61).
+             *
+             * `storage/api-docs/api-docs.json` beschreibt die vollständige
+             * REST-Oberfläche samt Parametern und benötigten Abilities und war
+             * für jeden abrufbar. Bei AGPL-Quellcode ist der Erkenntnisgewinn
+             * begrenzt — die Zusammenstellung erleichtert aber gezielte
+             * Versuche gegen die Sanctum-API, und sie kostet nichts,
+             * abzuschalten.
+             *
+             * `oauth2_callback` bleibt offen: der Rücksprung kommt vom
+             * Autorisierungsserver, nicht aus einer Sitzung.
+             */
             'middleware' => [
-                'api' => [],
-                'asset' => [],
-                'docs' => [],
+                'api' => ['web', 'auth'],
+                'asset' => ['web', 'auth'],
+                'docs' => ['web', 'auth'],
                 'oauth2_callback' => [],
             ],
 

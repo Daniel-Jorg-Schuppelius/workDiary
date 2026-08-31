@@ -9,6 +9,10 @@
  */
 
 return [
+    'error' => [
+        'self_approval' => 'Non è possibile approvare la propria nota spese.',
+        'invalid_transition' => 'L’azione :action non è possibile nello stato :status.',
+    ],
     'receipt' => [
         'no_vendor' => 'Senza fornitore',
         'link_title' => 'Documento contabile',

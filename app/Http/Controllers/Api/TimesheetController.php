@@ -48,7 +48,7 @@ class TimesheetController extends Controller {
             $query->where('project_id', $projectId);
         }
 
-        return TimesheetResource::collection($query->latest('work_date')->paginate((int) $request->input('per_page', 25)));
+        return TimesheetResource::collection($query->latest('work_date')->paginate($this->perPage($request)));
     }
 
     #[OA\Post(
@@ -221,4 +221,14 @@ class TimesheetController extends Controller {
 
         return response($r->render($timesheet), 200, ['Content-Type' => 'application/pdf']);
     }
+
+    /**
+     * Seitengröße klemmen (Sicherheitsscan 2026-08-23, S-58): `per_page` ging
+     * ungeprüft an paginate() — ein Token konnte damit den gesamten Bestand in
+     * einer Antwort anfordern.
+     */
+    private function perPage(Request $request): int {
+        return max(1, min(100, (int) $request->input('per_page', 25)));
+    }
+
 }

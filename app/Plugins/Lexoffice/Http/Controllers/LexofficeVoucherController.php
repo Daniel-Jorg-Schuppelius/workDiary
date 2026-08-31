@@ -163,10 +163,21 @@ class LexofficeVoucherController extends Controller {
 
         $base = Str::slug((string) ($voucher->voucher_number ?: 'beleg-' . $voucher->id)) ?: ('beleg-' . $voucher->id);
         $filename = $base . '.' . $file['extension'];
-        $disposition = $request->boolean('download') ? 'attachment' : 'inline';
+
+        // Content-Type gegen eine Positivliste (Sicherheitsscan 2026-08-23,
+        // S-64): übernommen wurde er ungeprüft aus der Lexoffice-Antwort.
+        // Meldet die Quelle `text/html` oder `image/svg+xml`, rendert der
+        // Browser den Inhalt INLINE im eigenen Origin — eine im Lexoffice-Konto
+        // als „Beleg" abgelegte HTML-Datei wäre damit gespeichertes XSS.
+        // `X-Content-Type-Options: nosniff` hilft dagegen nicht: es verhindert
+        // das Raten des Typs, nicht das Befolgen eines erklärten.
+        $contentType = $this->safeContentType((string) $file['content_type']);
+        $disposition = $request->boolean('download') || $contentType === self::FALLBACK_CONTENT_TYPE
+            ? 'attachment'
+            : 'inline';
 
         return response($file['body'], 200, [
-            'Content-Type' => $file['content_type'],
+            'Content-Type' => $contentType,
             'Content-Disposition' => $disposition . '; filename="' . $filename . '"',
         ]);
     }
@@ -177,4 +188,28 @@ class LexofficeVoucherController extends Controller {
 
         return $user;
     }
+
+    /**
+     * Belegtypen, die inline angezeigt werden dürfen. Alles andere wird zum
+     * Download — auch `image/svg+xml`: SVG ist ein Dokument mit Skriptfähigkeit,
+     * kein Bild im harmlosen Sinn.
+     */
+    private const INLINE_CONTENT_TYPES = [
+        'application/pdf',
+        'image/jpeg',
+        'image/png',
+        'image/gif',
+        'image/tiff',
+        'image/webp',
+    ];
+
+    private const FALLBACK_CONTENT_TYPE = 'application/octet-stream';
+
+    private function safeContentType(string $reported): string {
+        // Parameter abschneiden (`; charset=…`) und normalisieren.
+        $type = mb_strtolower(trim(explode(';', $reported, 2)[0]));
+
+        return in_array($type, self::INLINE_CONTENT_TYPES, true) ? $type : self::FALLBACK_CONTENT_TYPE;
+    }
+
 }

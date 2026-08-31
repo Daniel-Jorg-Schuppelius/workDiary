@@ -47,6 +47,36 @@ class PluginSetting extends Model {
         'settings' => 'encrypted:array',
     ];
 
+    protected static function booted(): void {
+        // Suchspalte beim Schreiben pflegen (Sicherheitsscan 2026-08-23,
+        // S-57). Bewusst hier und nicht an den Schreibstellen: eine abgeleitete
+        // Spalte, die jeder Aufrufer selbst setzen muss, veraltet an der
+        // ersten, die man übersieht.
+        static::saving(static function (self $model): void {
+            $model->workspace_lookup = self::workspaceLookup(
+                (string) $model->plugin_id,
+                (string) ($model->settings['workspace_id'] ?? ''),
+            );
+        });
+    }
+
+    /**
+     * Indizierbarer Suchwert für eine Workspace-ID.
+     *
+     * HMAC statt Klartext: die Spalte steht unverschlüsselt in der Tabelle und
+     * soll die Zuordnung ermöglichen, ohne die Kennung preiszugeben. Ohne
+     * Workspace-ID bleibt sie `null` — dann gibt es nichts zu finden.
+     */
+    public static function workspaceLookup(string $pluginId, string $workspaceId): ?string {
+        $workspaceId = trim($workspaceId);
+
+        if ($pluginId === '' || $workspaceId === '') {
+            return null;
+        }
+
+        return hash_hmac('sha256', $pluginId . '|' . $workspaceId, (string) config('app.key'));
+    }
+
     /**
      * Liest einen einzelnen Setting-Wert mit Default-Fallback.
      */

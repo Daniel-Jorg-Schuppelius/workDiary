@@ -138,6 +138,8 @@ class BillingTransferService {
      * genau das, was die Vorschau zeigt — und der Text ist prüfbar.
      */
     public function confirm(BillingTransfer $transfer, ?User $actor = null): BillingTransfer {
+        $this->assertSourcesFree($transfer);
+
         $confirmed = $this->transition($transfer, TransferStatus::Confirmed, $actor);
         $positions = app(BillingPositionBuilder::class)->freeze($confirmed);
 
@@ -618,6 +620,43 @@ class BillingTransferService {
         }
 
         return $held;
+    }
+
+    /**
+     * Halten die Quellen dieses Nachweises schon andere?
+     *
+     * **Die Reservierungsprüfung lief nur beim Anlegen** (Sicherheitsscan
+     * 2026-08-23, S-29). Zwei Entwürfe für denselben Kunden und Zeitraum —
+     * zwei Tabs, zwei Personen, Toggl-Outbox plus manuell — enthielten
+     * dieselben Zeiten; beide ließen sich bestätigen und übertragen. Der
+     * Kunde bekam die Stunden doppelt berechnet, und die GoBD-Nachweise
+     * widersprachen sich. Das Schwestermodul (DATEV-Stapel) hat den Guard
+     * seit MVP-334; hier fehlte er.
+     *
+     * @throws BillingTransferException
+     */
+    private function assertSourcesFree(BillingTransfer $transfer): void {
+        // Eine Korrektur-Übergabe (MVP-490) greift **absichtlich** auf die
+        // Quellen des Nachweises zu, den sie korrigiert — sie ersetzt ihn ja.
+        if ($transfer->corrects_transfer_id !== null) {
+            return;
+        }
+
+        $items = $transfer->items()->get();
+        $held = $this->sourcesHeldElsewhere($transfer, $items);
+
+        $count = 0;
+        foreach ($held as $ids) {
+            $count += count($ids);
+        }
+
+        if ($count > 0) {
+            throw new BillingTransferException(
+                'sourcesAlreadyReserved',
+                (string) __('finance.error.sources_already_reserved', ['count' => $count]),
+                ['transfer_id' => $transfer->id, 'held' => $held],
+            );
+        }
     }
 
     /** Validierter Statuswechsel + Persistenz + Hash-Ketten-Event. */

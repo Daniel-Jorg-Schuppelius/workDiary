@@ -37,6 +37,34 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
  * @property int $position
  */
 class InvoiceItem extends Model {
+    /**
+     * Positionen einer ausgestellten Rechnung sind unveränderlich
+     * (Sicherheitsscan 2026-08-23, S-59).
+     *
+     * Die Rechnung selbst trägt den Freeze seit MVP-162 — ihre Positionen
+     * nicht. Der Schutz lag allein in `InvoicePolicy::update`, also in den
+     * Controllern: ein Bulk-Update oder ein Schreibpfad, der die Policy nicht
+     * fragt, konnte den Betrag einer bereits gestellten Rechnung ändern, ohne
+     * dass die Rechnung selbst angefasst wurde. Der Anker ist derselbe wie
+     * dort: der eingefrorene Partei-Snapshot.
+     */
+    protected static function booted(): void {
+        $assertMutable = static function (self $item): void {
+            $invoice = $item->invoice;
+
+            if (! $invoice instanceof Invoice || $invoice->getRawOriginal('party_snapshot') === null) {
+                return; // Entwurf oder Alt-/Testdaten
+            }
+
+            throw new \RuntimeException(
+                'Positionen ausgestellter Rechnungen sind unveränderlich (Rechnung ' . (string) $invoice->number . ').',
+            );
+        };
+
+        static::updating($assertMutable);
+        static::deleting($assertMutable);
+    }
+
     use BelongsToOrganization;
 
     /** @use HasFactory<Factory<static>> */

@@ -64,7 +64,7 @@ class SignatureService {
             'signature_attachment_id' => $attachment->id,
             'signature_hash' => $hash,
             'status' => TimesheetStatus::Signed->value,
-            'magic_token' => null,
+            'magic_token_hash' => null,
             'magic_expires_at' => null,
         ])->save();
 
@@ -108,19 +108,29 @@ class SignatureService {
         return $timesheet;
     }
 
-    public function generateMagicToken(Timesheet $timesheet, int $minutes = 1440): Timesheet {
+    /**
+     * Erzeugt den Signaturlink und gibt den **Klartext-Token** zurück.
+     *
+     * Gespeichert wird nur der Hash (Sicherheitsscan 2026-08-23, S-44): wer
+     * einen Datenbank-Dump liest, konnte sonst fremde Stundenzettel
+     * unterschreiben — und das ist revisionsrelevant. Der Klartext existiert
+     * ab hier nur noch im verschickten Link.
+     */
+    public function generateMagicToken(Timesheet $timesheet, int $minutes = 1440): string {
+        $plain = Str::random(64);
+
         $timesheet->forceFill([
-            'magic_token' => Str::random(64),
+            'magic_token_hash' => Timesheet::hashMagicToken($plain),
             'magic_expires_at' => now()->addMinutes($minutes),
         ])->save();
 
-        return $timesheet;
+        return $plain;
     }
 
     /** Magic-Link explizit ungültig machen (Feature 012 MVP; Vollaudit 2026-07, M6). */
     public function revokeMagicToken(Timesheet $timesheet): Timesheet {
         $timesheet->forceFill([
-            'magic_token' => null,
+            'magic_token_hash' => null,
             'magic_expires_at' => null,
         ])->save();
 

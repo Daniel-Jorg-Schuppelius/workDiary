@@ -38,7 +38,11 @@ class ResolveCareerPortal {
             ->where('slug', $slug)
             ->first();
 
-        if (! $organization instanceof Organization) {
+        // Gesperrter oder abgelaufener Mandant ist nach außen nicht sichtbar
+        // (Sicherheitsscan 2026-08-23, S-42) — sonst nimmt ein suspendierter
+        // Mandant weiter Bewerbungen entgegen. 404 statt 423: die Existenz des
+        // Portals geht einen anonymen Besucher nichts an.
+        if (! $organization instanceof Organization || ! $organization->publicSurfacesAvailable()) {
             abort(404);
         }
 

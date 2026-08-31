@@ -63,7 +63,7 @@ class PrivacyExportService {
                 'title' => $agreement->title,
                 'processor' => $agreement->processor?->name,
                 'valid_until' => $agreement->valid_until?->toDateString(),
-                'subprocessors' => $agreement->subprocessors->map(fn($sub): array => [
+                'subprocessors' => $agreement->subprocessors->map(fn(\App\Models\Privacy\Subprocessor $sub): array => [
                     'name' => $sub->name,
                     'purpose' => $sub->purpose,
                     'location' => $sub->location,

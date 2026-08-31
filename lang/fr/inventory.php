@@ -211,6 +211,34 @@ return [
             'unblocked' => 'Numéro de série débloqué.',
             'scrapped' => 'Numéro de série mis au rebut.',
         ],
+        'passport' => [
+            'title' => 'Passeport appareil (public)',
+            'intro' => 'Le passeport appareil permet de vérifier l\'authenticité et l\'état par numéro de série sans connexion. L\'accès repose uniquement sur un lien secret ; aucune donnée client n\'est affichée.',
+            'token_once' => 'Ce lien n\'est affiché que maintenant — il n\'est enregistré nulle part.',
+            'state' => 'État',
+            'state_none' => 'Non configuré',
+            'state_active' => 'Accessible publiquement',
+            'state_paused' => 'En pause',
+            'hint' => 'Identifiant',
+            'issued_at' => 'Émis le',
+            'action' => [
+                'issue' => 'Émettre le lien',
+                'rotate' => 'Renouveler le lien',
+                'revoke' => 'Révoquer l\'accès',
+                'pause' => 'Mettre en pause',
+                'resume' => 'Activer',
+            ],
+            'confirm' => [
+                'rotate' => 'Émettre un nouveau lien ? L\'ancien lien cessera de fonctionner.',
+                'revoke' => 'Révoquer l\'accès ? Le passeport appareil ne sera plus accessible publiquement.',
+            ],
+            'flash' => [
+                'issued' => 'Nouveau lien émis.',
+                'revoked' => 'Accès révoqué.',
+                'saved' => 'Enregistré.',
+            ],
+        ],
+
         'verify' => [
             'title' => 'Passeport appareil / vérification d’authenticité',
             'subtitle' => 'Saisissez un numéro de série pour vérifier son statut et son origine.',

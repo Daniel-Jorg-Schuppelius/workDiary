@@ -14,6 +14,7 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Models\{Expense, ExpenseCategory, User};
 use App\Notifications\Expense\{ExpenseDecidedNotification, ExpenseSubmittedNotification};
 use Illuminate\Support\Facades\{DB, Notification};
+use Illuminate\Validation\ValidationException;
 
 /**
  * Kapselt Persistenz und Statuswechsel von {@see Expense}.
@@ -114,6 +115,9 @@ class ExpenseService {
     }
 
     public function approve(Expense $expense, User $approver): Expense {
+        $this->assertNotOwnExpense($expense, $approver);
+        $this->assertStatus($expense, [ExpenseStatus::Pending], 'approve');
+
         $expense = DB::transaction(function () use ($expense, $approver): Expense {
             $expense->status = ExpenseStatus::Approved;
             $expense->decided_by = $approver->id;
@@ -130,6 +134,9 @@ class ExpenseService {
     }
 
     public function reject(Expense $expense, User $approver, ?string $reason = null): Expense {
+        $this->assertNotOwnExpense($expense, $approver);
+        $this->assertStatus($expense, [ExpenseStatus::Pending], 'reject');
+
         $expense = DB::transaction(function () use ($expense, $approver, $reason): Expense {
             $expense->status = ExpenseStatus::Rejected;
             $expense->decided_by = $approver->id;
@@ -146,6 +153,8 @@ class ExpenseService {
     }
 
     public function markReimbursed(Expense $expense, ?string $reference = null): Expense {
+        $this->assertStatus($expense, [ExpenseStatus::Approved], 'reimburse');
+
         $expense = DB::transaction(function () use ($expense, $reference): Expense {
             $expense->status = ExpenseStatus::Reimbursed;
             $expense->reimbursed_at = now();
@@ -200,4 +209,41 @@ class ExpenseService {
 
         return $attributes;
     }
+
+    /**
+     * Keine Selbstfreigabe (Sicherheitsscan 2026-08-23, S-35).
+     *
+     * Wer eine Auslage einreicht, entscheidet nicht über sie — auch dann
+     * nicht, wenn er das Recht dazu hätte. Das ist der Kern jeder
+     * Vier-Augen-Regel und bei Geld, das an die eigene Person fließt, keine
+     * Formalie.
+     */
+    private function assertNotOwnExpense(Expense $expense, User $approver): void {
+        if ((int) $expense->user_id === (int) $approver->id) {
+            throw ValidationException::withMessages([
+                'expense' => (string) __('expenses.error.self_approval'),
+            ]);
+        }
+    }
+
+    /**
+     * Zustandsübergänge erzwingen (S-35).
+     *
+     * Ohne Vorbedingung ließ sich eine abgelehnte oder bereits erstattete
+     * Auslage erneut genehmigen und ein zweites Mal auszahlen — der Status war
+     * ein Etikett, keine Bedingung.
+     *
+     * @param  list<ExpenseStatus>  $allowed
+     */
+    private function assertStatus(Expense $expense, array $allowed, string $action): void {
+        if (! in_array($expense->status, $allowed, true)) {
+            throw ValidationException::withMessages([
+                'status' => (string) __('expenses.error.invalid_transition', [
+                    'action' => $action,
+                    'status' => $expense->status->value,
+                ]),
+            ]);
+        }
+    }
+
 }

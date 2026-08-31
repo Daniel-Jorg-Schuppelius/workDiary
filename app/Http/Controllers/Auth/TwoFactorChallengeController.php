@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Enums\Auth\TwoFactorType;
-use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
+use App\Http\Controllers\Auth\Concerns\{CompletesLogin, ResolvesWorkMode};
 use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Services\Auth\{EmailOtpService, TwoFactorService, WebAuthnService};
@@ -24,6 +24,8 @@ use Illuminate\View\View;
  * Identität liegt in der Session (auth.2fa.id) und wird erst hier eingeloggt.
  */
 class TwoFactorChallengeController extends Controller {
+    use CompletesLogin;
+
     use ResolvesWorkMode;
 
     private const MAX_ATTEMPTS = 5;
@@ -84,9 +86,15 @@ class TwoFactorChallengeController extends Controller {
         }
 
         $remember = (bool) $request->session()->pull('auth.2fa.remember', false);
+        $username = (string) $request->session()->pull('auth.2fa.username', '');
         $request->session()->forget('auth.2fa.id');
         Auth::login($user, $remember);
         $request->session()->regenerate();
+
+        // Erst jetzt ist der Login abgeschlossen — vorher liefen diese
+        // Schritte für Versuche, die nie ankamen (S-51).
+        $this->auditBreakGlassIfApplicable($user);
+        $this->syncLegacyUserIdIfMissing($user, $username);
 
         return response()->json(['redirect' => $this->applyWorkModeAndRedirect($request, $user)->getTargetUrl()]);
     }
@@ -174,10 +182,14 @@ class TwoFactorChallengeController extends Controller {
 
         RateLimiter::clear($throttleKey);
         $remember = (bool) $request->session()->pull('auth.2fa.remember', false);
+        $username = (string) $request->session()->pull('auth.2fa.username', '');
         $request->session()->forget('auth.2fa.id');
 
         Auth::login($user, $remember);
         $request->session()->regenerate();
+
+        $this->auditBreakGlassIfApplicable($user);
+        $this->syncLegacyUserIdIfMissing($user, $username);
 
         return $this->applyWorkModeAndRedirect($request, $user);
     }

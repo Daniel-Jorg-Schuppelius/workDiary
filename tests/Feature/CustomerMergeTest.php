@@ -10,7 +10,10 @@
 
 namespace Tests\Feature;
 
-use App\Models\{Customer, CustomerMergeDismissal, ExternalReference, Project, User};
+use App\Models\Billing\CustomerBillingAgreement;
+use App\Models\{Customer, CustomerMergeDismissal, ExternalReference, Project, Quote, User};
+use App\Models\Disposal\DisposalJob;
+use App\Models\Finance\SepaMandate;
 use App\Plugins\Toggl\{TogglImportService, TogglPlugin};
 use App\Services\{CustomerDuplicateFinder, CustomerMergeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -196,4 +199,93 @@ class CustomerMergeTest extends TestCase {
 
         $this->assertNull(Customer::query()->find($source->id));
     }
+
+    /**
+     * Regressionstest zu S-33 (Sicherheitsscan 2026-08-23).
+     *
+     * Der Merge löscht die Quelle hart — `Customer` kennt kein SoftDeletes.
+     * Jede abhängige Tabelle, die vorher nicht umgehängt wurde, riss
+     * `ON DELETE CASCADE` ersatzlos mit: SEPA-Mandate, Vernichtungsnachweise,
+     * Abrechnungsvereinbarungen und Angebote verschwanden beim Zusammenführen
+     * zweier Kundendubletten, ohne dass irgendwo etwas protokolliert wurde.
+     *
+     * Deshalb prüft dieser Test das Verhalten, nicht die Tabellenliste: die
+     * Liste kommt inzwischen aus dem Schema und würde sich selbst bestätigen.
+     */
+    public function test_merge_erhaelt_abhaengige_daten_mit_cascade(): void {
+        $source = $this->customer(['name' => 'Muster GmbH']);
+        $target = $this->customer(['name' => 'Muster G.m.b.H.']);
+
+        $mandate = SepaMandate::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $source->id,
+        ]);
+        $disposal = DisposalJob::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $source->id,
+            'created_by_user_id' => $this->admin->id,
+        ]);
+        $agreement = CustomerBillingAgreement::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $source->id,
+        ]);
+        $quote = Quote::factory()->create([
+            'organization_id' => $this->organization->id,
+            'customer_id' => $source->id,
+        ]);
+
+        app(CustomerMergeService::class)->merge($source, $target);
+
+        $this->assertDatabaseMissing('customers', ['id' => $source->id]);
+
+        foreach ([
+            'sepa_mandates' => $mandate->id,
+            'disposal_jobs' => $disposal->id,
+            'customer_billing_agreements' => $agreement->id,
+            'quotes' => $quote->id,
+        ] as $table => $id) {
+            $row = \Illuminate\Support\Facades\DB::table($table)->where('id', $id)->first();
+
+            $this->assertNotNull($row, "{$table} wurde beim Merge gelöscht statt umgehängt.");
+            $this->assertSame($target->id, (int) $row->customer_id, "{$table} zeigt nach dem Merge nicht auf den Ziel-Kunden.");
+        }
+    }
+
+    /**
+     * Kollidiert das Umhängen mit einem zusammengesetzten Unique-Index, muss
+     * der Merge mit einer verständlichen Meldung abbrechen — nicht mit einem
+     * rohen SQL-Fehler 1062 und nicht durch stilles Löschen einer der beiden
+     * Zeilen: welche gilt, ist eine fachliche Frage.
+     */
+    public function test_merge_bricht_bei_unaufloesbarer_kollision_verstaendlich_ab(): void {
+        $source = $this->customer(['name' => 'Alpha']);
+        $target = $this->customer(['name' => 'Alpha AG']);
+
+        $groupId = \Illuminate\Support\Facades\DB::table('sales_discount_groups')->insertGetId([
+            'organization_id' => $this->organization->id,
+            'code' => 'A10',
+            'kind' => 'discount',
+            'value' => 10,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+
+        foreach ([$source, $target] as $customer) {
+            \Illuminate\Support\Facades\DB::table('sales_discount_group_overrides')->insert([
+                'organization_id' => $this->organization->id,
+                'sales_discount_group_id' => $groupId,
+                'customer_id' => $customer->id,
+                'kind' => 'percent',
+                'value' => 5,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+
+        $this->expectException(\InvalidArgumentException::class);
+        $this->expectExceptionMessageMatches('/sales_discount_group_overrides/');
+
+        app(CustomerMergeService::class)->merge($source, $target);
+    }
+
 }

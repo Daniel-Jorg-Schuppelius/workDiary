@@ -674,7 +674,6 @@ CREATE TABLE IF NOT EXISTS "timesheets"(
   "notes" text,
   "totals_minutes" integer not null default('0'),
   "totals_material_net" numeric not null default('0'),
-  "magic_token" varchar,
   "magic_expires_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
@@ -682,14 +681,12 @@ CREATE TABLE IF NOT EXISTS "timesheets"(
   "attendance_total_minutes" integer not null default '0',
   "entries_total_minutes" integer not null default '0',
   "untracked_minutes" integer not null default '0',
+  "magic_token_hash" varchar,
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("user_id") references users("id") on delete cascade on update no action,
   foreign key("signature_attachment_id") references attachments("id") on delete set null on update no action,
   foreign key("locked_by") references users("id") on delete set null on update no action,
   foreign key("project_id") references "projects"("id") on delete set null
-);
-CREATE UNIQUE INDEX "timesheets_magic_token_unique" on "timesheets"(
-  "magic_token"
 );
 CREATE INDEX "timesheets_project_id_work_date_index" on "timesheets"(
   "project_id",
@@ -833,41 +830,6 @@ CREATE INDEX "entry_types_organization_id_is_active_sort_index" on "entry_types"
   "organization_id",
   "is_active",
   "sort"
-);
-CREATE TABLE IF NOT EXISTS "sick_leaves"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "user_id" integer not null,
-  "start_date" date not null,
-  "end_date" date not null,
-  "kind" varchar not null default 'initial',
-  "follow_up_for_id" integer,
-  "au_number" varchar,
-  "doctor_name" varchar,
-  "note" text,
-  "kasse_notified_at" datetime,
-  "reported_at" datetime,
-  "recorded_by" integer,
-  "cancelled_at" datetime,
-  "cancel_reason" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete set null,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("follow_up_for_id") references "sick_leaves"("id") on delete set null,
-  foreign key("recorded_by") references "users"("id") on delete set null
-);
-CREATE INDEX "sick_leaves_user_id_start_date_end_date_index" on "sick_leaves"(
-  "user_id",
-  "start_date",
-  "end_date"
-);
-CREATE INDEX "sick_leaves_start_date_end_date_index" on "sick_leaves"(
-  "start_date",
-  "end_date"
-);
-CREATE INDEX "sick_leaves_follow_up_for_id_index" on "sick_leaves"(
-  "follow_up_for_id"
 );
 CREATE TABLE IF NOT EXISTS "recurrence_rules"(
   "id" integer primary key autoincrement not null,
@@ -2404,6 +2366,7 @@ CREATE TABLE IF NOT EXISTS "plugin_settings"(
   "settings" text,
   "created_at" datetime,
   "updated_at" datetime,
+  "workspace_lookup" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade
 );
 CREATE UNIQUE INDEX "plugin_settings_organization_id_plugin_id_unique" on "plugin_settings"(
@@ -2704,62 +2667,6 @@ CREATE INDEX "rps_asset_idx" on "remote_pending_sessions"(
   "organization_id",
   "status",
   "asset_id"
-);
-CREATE TABLE IF NOT EXISTS "suppliers"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "name" varchar not null,
-  "slug" varchar,
-  "number" varchar,
-  "vendor_number" varchar,
-  "company" varchar,
-  "vat_id" varchar,
-  "contact_name" varchar,
-  "contact_persons" text,
-  "email" varchar,
-  "phone" varchar,
-  "mobile" varchar,
-  "fax" varchar,
-  "homepage" varchar,
-  "address" text,
-  "address_street" varchar,
-  "address_zip" varchar,
-  "address_city" varchar,
-  "address_lat" numeric,
-  "address_lng" numeric,
-  "country" varchar,
-  "currency" varchar not null default 'EUR',
-  "timezone" varchar,
-  "color" varchar,
-  "comment" text,
-  "bank_account_holder" varchar,
-  "bank_iban" varchar,
-  "bank_bic" varchar,
-  "bank_name" varchar,
-  "active" tinyint(1) not null default '1',
-  "archived_at" datetime,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "tax_number" varchar,
-  "number_source" varchar not null default 'local',
-  "phone_e164" varchar,
-  "mobile_e164" varchar,
-  foreign key("organization_id") references "organizations"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "suppliers_organization_id_index" on "suppliers"(
-  "organization_id"
-);
-CREATE INDEX "suppliers_archived_at_index" on "suppliers"("archived_at");
-CREATE INDEX "suppliers_name_idx" on "suppliers"("name");
-CREATE UNIQUE INDEX "suppliers_organization_id_number_unique" on "suppliers"(
-  "organization_id",
-  "number"
-);
-CREATE UNIQUE INDEX "suppliers_org_slug_unique" on "suppliers"(
-  "organization_id",
-  "slug"
 );
 CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
   "id" integer primary key autoincrement not null,
@@ -6541,11 +6448,6 @@ CREATE INDEX "tasks_org_status_idx" on "tasks"("organization_id", "status");
 CREATE INDEX "timesheets_org_status_idx" on "timesheets"(
   "organization_id",
   "status"
-);
-CREATE INDEX "sick_leaves_org_dates_idx" on "sick_leaves"(
-  "organization_id",
-  "start_date",
-  "end_date"
 );
 CREATE INDEX "diary_org_start_idx" on "diary_entries"(
   "organization_id",
@@ -13887,6 +13789,9 @@ CREATE TABLE IF NOT EXISTS "organization_sso_domains"(
   "created_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "verification_token" varchar,
+  "verified_at" datetime,
+  "verification_checked_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
@@ -14208,7 +14113,6 @@ CREATE TABLE IF NOT EXISTS "users"(
   "home_lng" numeric,
   "preferences" text,
   "is_new_system" tinyint(1) not null default('0'),
-  "calendar_feed_token" varchar,
   "customer_id" integer,
   "first_name" varchar,
   "middle_names" varchar,
@@ -14248,14 +14152,12 @@ CREATE TABLE IF NOT EXISTS "users"(
   "anonymized_at" datetime,
   "portal_pending_email" varchar,
   "portal_pending_email_requested_at" datetime,
+  "calendar_feed_token_hash" varchar,
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("customer_id") references customers("id") on delete set null on update no action,
   foreign key("deputy_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "idx_users_org" on "users"("organization_id");
-CREATE UNIQUE INDEX "users_calendar_feed_token_unique" on "users"(
-  "calendar_feed_token"
-);
 CREATE INDEX "users_cti_ext_hash_idx" on "users"("cti_extension_hash");
 CREATE INDEX "users_customer_id_index" on "users"("customer_id");
 CREATE INDEX "users_deactivated_at_idx" on "users"("deactivated_at");
@@ -15095,84 +14997,6 @@ CREATE INDEX "leads_org_status_idx" on "leads"("organization_id", "status");
 CREATE INDEX "leads_org_contact_idx" on "leads"(
   "organization_id",
   "last_contact_at"
-);
-CREATE TABLE IF NOT EXISTS "customers"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "name" varchar not null,
-  "number" varchar,
-  "company" varchar,
-  "vat_id" varchar,
-  "contact_name" varchar,
-  "email" varchar,
-  "phone" varchar,
-  "mobile" varchar,
-  "fax" varchar,
-  "homepage" varchar,
-  "address" text,
-  "country" varchar,
-  "currency" varchar not null default('EUR'),
-  "timezone" varchar,
-  "color" varchar,
-  "hourly_rate" numeric,
-  "internal_rate" numeric,
-  "comment" text,
-  "invoice_text" text,
-  "billable" tinyint(1) not null default('1'),
-  "archived_at" datetime,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "address_street" varchar,
-  "address_zip" varchar,
-  "address_city" varchar,
-  "contact_persons" text,
-  "address_lat" numeric,
-  "address_lng" numeric,
-  "slug" varchar,
-  "bank_account_holder" varchar,
-  "bank_iban" varchar,
-  "bank_bic" varchar,
-  "bank_name" varchar,
-  "tax_number" varchar,
-  "lexoffice_contact_number" varchar,
-  "number_source" varchar not null default('local'),
-  "billing_increment_minutes" integer,
-  "billing_grouping_gap_minutes" integer,
-  "travel_settings" text,
-  "billing_mode" varchar,
-  "buyer_reference" varchar,
-  "debtor_no" varchar,
-  "matchcode" varchar,
-  "exclude_from_reports" tinyint(1) not null default('0'),
-  "portal_settings" text,
-  "delivery_format" varchar,
-  "document_render_profile_id" integer,
-  "survey_opt_out" tinyint(1) not null default '0',
-  "billing_cutover_on" date,
-  "billing_cutover_from" varchar,
-  "no_bulk_mail" tinyint(1) not null default '0',
-  "phone_e164" varchar,
-  "mobile_e164" varchar,
-  "document_locale" varchar,
-  "peppol_participant_id" varchar,
-  "peppol_scheme" varchar,
-  foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action
-);
-CREATE INDEX "customers_archived_at_index" on "customers"("archived_at");
-CREATE INDEX "customers_name_idx" on "customers"("name");
-CREATE UNIQUE INDEX "customers_org_slug_unique" on "customers"(
-  "organization_id",
-  "slug"
-);
-CREATE INDEX "customers_organization_id_index" on "customers"(
-  "organization_id"
-);
-CREATE UNIQUE INDEX "customers_organization_id_number_unique" on "customers"(
-  "organization_id",
-  "number"
 );
 CREATE TABLE IF NOT EXISTS "access_media"(
   "id" integer primary key autoincrement not null,
@@ -16048,27 +15872,11 @@ CREATE INDEX "ttwdel_plugin_received_idx" on "time_tracking_webhook_deliveries"(
   "plugin_id",
   "received_at"
 );
-CREATE INDEX "cust_org_phone_e164_idx" on "customers"(
-  "organization_id",
-  "phone_e164"
-);
-CREATE INDEX "cust_org_mobile_e164_idx" on "customers"(
-  "organization_id",
-  "mobile_e164"
-);
 CREATE INDEX "fcust_org_phone_e164_idx" on "foreign_customers"(
   "organization_id",
   "phone_e164"
 );
 CREATE INDEX "fcust_org_mobile_e164_idx" on "foreign_customers"(
-  "organization_id",
-  "mobile_e164"
-);
-CREATE INDEX "supp_org_phone_e164_idx" on "suppliers"(
-  "organization_id",
-  "phone_e164"
-);
-CREATE INDEX "supp_org_mobile_e164_idx" on "suppliers"(
   "organization_id",
   "mobile_e164"
 );
@@ -18666,6 +18474,232 @@ CREATE UNIQUE INDEX "lrn_issuer_key_uq" on "learning_issuer_keys"(
   "organization_id",
   "key_id"
 );
+CREATE TABLE IF NOT EXISTS "customers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "name" varchar not null,
+  "number" varchar,
+  "company" varchar,
+  "vat_id" varchar,
+  "contact_name" varchar,
+  "email" varchar,
+  "phone" varchar,
+  "mobile" varchar,
+  "fax" varchar,
+  "homepage" varchar,
+  "address" text,
+  "country" varchar,
+  "currency" varchar not null default('EUR'),
+  "timezone" varchar,
+  "color" varchar,
+  "hourly_rate" numeric,
+  "internal_rate" numeric,
+  "comment" text,
+  "invoice_text" text,
+  "billable" tinyint(1) not null default('1'),
+  "archived_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "address_street" varchar,
+  "address_zip" varchar,
+  "address_city" varchar,
+  "contact_persons" text,
+  "address_lat" numeric,
+  "address_lng" numeric,
+  "slug" varchar,
+  "bank_account_holder" text,
+  "bank_iban" text,
+  "bank_bic" text,
+  "bank_name" varchar,
+  "tax_number" varchar,
+  "lexoffice_contact_number" varchar,
+  "number_source" varchar not null default('local'),
+  "billing_increment_minutes" integer,
+  "billing_grouping_gap_minutes" integer,
+  "travel_settings" text,
+  "billing_mode" varchar,
+  "buyer_reference" varchar,
+  "debtor_no" varchar,
+  "matchcode" varchar,
+  "exclude_from_reports" tinyint(1) not null default('0'),
+  "portal_settings" text,
+  "delivery_format" varchar,
+  "document_render_profile_id" integer,
+  "survey_opt_out" tinyint(1) not null default('0'),
+  "billing_cutover_on" date,
+  "billing_cutover_from" varchar,
+  "no_bulk_mail" tinyint(1) not null default('0'),
+  "phone_e164" varchar,
+  "mobile_e164" varchar,
+  "document_locale" varchar,
+  "peppol_participant_id" varchar,
+  "peppol_scheme" varchar,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("document_render_profile_id") references document_render_profiles("id") on delete set null on update no action
+);
+CREATE INDEX "cust_org_mobile_e164_idx" on "customers"(
+  "organization_id",
+  "mobile_e164"
+);
+CREATE INDEX "cust_org_phone_e164_idx" on "customers"(
+  "organization_id",
+  "phone_e164"
+);
+CREATE INDEX "customers_archived_at_index" on "customers"("archived_at");
+CREATE INDEX "customers_name_idx" on "customers"("name");
+CREATE UNIQUE INDEX "customers_org_slug_unique" on "customers"(
+  "organization_id",
+  "slug"
+);
+CREATE INDEX "customers_organization_id_index" on "customers"(
+  "organization_id"
+);
+CREATE UNIQUE INDEX "customers_organization_id_number_unique" on "customers"(
+  "organization_id",
+  "number"
+);
+CREATE TABLE IF NOT EXISTS "suppliers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "name" varchar not null,
+  "slug" varchar,
+  "number" varchar,
+  "vendor_number" varchar,
+  "company" varchar,
+  "vat_id" varchar,
+  "contact_name" varchar,
+  "contact_persons" text,
+  "email" varchar,
+  "phone" varchar,
+  "mobile" varchar,
+  "fax" varchar,
+  "homepage" varchar,
+  "address" text,
+  "address_street" varchar,
+  "address_zip" varchar,
+  "address_city" varchar,
+  "address_lat" numeric,
+  "address_lng" numeric,
+  "country" varchar,
+  "currency" varchar not null default('EUR'),
+  "timezone" varchar,
+  "color" varchar,
+  "comment" text,
+  "bank_account_holder" text,
+  "bank_iban" text,
+  "bank_bic" text,
+  "bank_name" varchar,
+  "active" tinyint(1) not null default('1'),
+  "archived_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "tax_number" varchar,
+  "number_source" varchar not null default('local'),
+  "phone_e164" varchar,
+  "mobile_e164" varchar,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action
+);
+CREATE INDEX "supp_org_mobile_e164_idx" on "suppliers"(
+  "organization_id",
+  "mobile_e164"
+);
+CREATE INDEX "supp_org_phone_e164_idx" on "suppliers"(
+  "organization_id",
+  "phone_e164"
+);
+CREATE INDEX "suppliers_archived_at_index" on "suppliers"("archived_at");
+CREATE INDEX "suppliers_name_idx" on "suppliers"("name");
+CREATE UNIQUE INDEX "suppliers_org_slug_unique" on "suppliers"(
+  "organization_id",
+  "slug"
+);
+CREATE INDEX "suppliers_organization_id_index" on "suppliers"(
+  "organization_id"
+);
+CREATE UNIQUE INDEX "suppliers_organization_id_number_unique" on "suppliers"(
+  "organization_id",
+  "number"
+);
+CREATE TABLE IF NOT EXISTS "sick_leaves"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "user_id" integer not null,
+  "start_date" date not null,
+  "end_date" date not null,
+  "kind" varchar not null default('initial'),
+  "follow_up_for_id" integer,
+  "au_number" text,
+  "doctor_name" text,
+  "note" text,
+  "kasse_notified_at" datetime,
+  "reported_at" datetime,
+  "recorded_by" integer,
+  "cancelled_at" datetime,
+  "cancel_reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("recorded_by") references users("id") on delete set null on update no action,
+  foreign key("follow_up_for_id") references sick_leaves("id") on delete set null on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action
+);
+CREATE INDEX "sick_leaves_follow_up_for_id_index" on "sick_leaves"(
+  "follow_up_for_id"
+);
+CREATE INDEX "sick_leaves_org_dates_idx" on "sick_leaves"(
+  "organization_id",
+  "start_date",
+  "end_date"
+);
+CREATE INDEX "sick_leaves_start_date_end_date_index" on "sick_leaves"(
+  "start_date",
+  "end_date"
+);
+CREATE INDEX "sick_leaves_user_id_start_date_end_date_index" on "sick_leaves"(
+  "user_id",
+  "start_date",
+  "end_date"
+);
+CREATE TABLE IF NOT EXISTS "audit_redactions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "chain" varchar not null,
+  "auditable_type" varchar not null,
+  "auditable_id" integer not null,
+  "fields" text not null,
+  "rows_affected" integer not null,
+  "first_audit_log_id" integer not null,
+  "last_audit_log_id" integer not null,
+  "reason" text not null,
+  "request_reference" varchar,
+  "performed_by" integer,
+  "head_before" varchar,
+  "head_after" varchar,
+  "prev_hash" varchar,
+  "hash" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null,
+  foreign key("performed_by") references "users"("id") on delete set null
+);
+CREATE INDEX "audit_redactions_subject_idx" on "audit_redactions"(
+  "auditable_type",
+  "auditable_id"
+);
+CREATE INDEX "audit_redactions_chain_idx" on "audit_redactions"("chain");
+CREATE UNIQUE INDEX "timesheets_magic_token_unique_h" on "timesheets"(
+  "magic_token_hash"
+);
+CREATE UNIQUE INDEX "users_calendar_feed_token_unique_h" on "users"(
+  "calendar_feed_token_hash"
+);
+CREATE INDEX "plugin_settings_workspace_lookup_idx" on "plugin_settings"(
+  "workspace_lookup"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -19442,3 +19476,9 @@ INSERT INTO migrations VALUES(778,'2027_02_19_110100_widen_issuer_key_for_rsa',1
 INSERT INTO migrations VALUES(779,'2027_02_19_110200_add_subtitle_review_to_media_renditions',171);
 INSERT INTO migrations VALUES(780,'2027_02_19_110300_restrict_evidence_authorship_user_fks',172);
 INSERT INTO migrations VALUES(781,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',173);
+INSERT INTO migrations VALUES(782,'2027_02_19_110500_encrypt_bank_and_health_columns',174);
+INSERT INTO migrations VALUES(783,'2027_02_19_110600_create_audit_redactions_table',174);
+INSERT INTO migrations VALUES(784,'2027_02_19_110700_hash_public_link_tokens',175);
+INSERT INTO migrations VALUES(785,'2027_02_19_110800_add_verification_to_sso_domains',175);
+INSERT INTO migrations VALUES(786,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',175);
+INSERT INTO migrations VALUES(787,'2027_02_19_111000_hash_serial_passport_token',176);

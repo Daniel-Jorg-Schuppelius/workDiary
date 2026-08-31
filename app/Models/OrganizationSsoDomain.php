@@ -36,7 +36,34 @@ class OrganizationSsoDomain extends Model {
         'organization_id',
         'domain',
         'created_by',
+        'verification_token',
+        'verified_at',
+        'verification_checked_at',
     ];
+
+    /** @var array<string, string> */
+    protected $casts = [
+        'verified_at' => 'datetime',
+        'verification_checked_at' => 'datetime',
+    ];
+
+    /** Name des DNS-TXT-Eintrags, mit dem eine Domain nachgewiesen wird. */
+    public const DNS_PREFIX = '_workdiary-sso';
+
+    /**
+     * Nur eine nachgewiesene Domain lenkt Anmeldungen (Sicherheitsscan
+     * 2026-08-23, S-49). Ohne Nachweis konnte ein Mandant die Mail-Domain
+     * eines anderen beanspruchen und dessen Nutzer auf den eigenen IdP
+     * leiten — bei aktivem JIT-Provisioning samt Kontoanlage dort.
+     */
+    public function isVerified(): bool {
+        return $this->verified_at !== null;
+    }
+
+    /** Vollständiger DNS-Name, unter dem der Nachweis erwartet wird. */
+    public function dnsRecordName(): string {
+        return self::DNS_PREFIX . '.' . $this->domain;
+    }
 
     /** Normalisiert eine Domain/E-Mail auf die kleingeschriebene Domain (ohne führendes @). */
     public static function normalize(string $value): string {

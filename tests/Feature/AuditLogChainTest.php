@@ -239,6 +239,53 @@ class AuditLogChainTest extends TestCase {
         $this->assertSame(0, Artisan::call('audit:verify'), 'Auto-befüllte organization_id muss im Hash stecken.');
     }
 
+    /**
+     * S-36 (Sicherheitsscan 2026-08-23): Wer die letzten Zeilen einer Kette
+     * löscht und `head_hash`/`height` mitzieht, hinterlässt eine Kette, die
+     * sich zeilenweise fehlerfrei nachrechnen lässt — sie ist nur kürzer.
+     * Ohne Abgleich gegen den Kettenkopf bliebe das unentdeckt, und ein
+     * grünes `audit:verify` würde eine Zusage geben, die es nicht hält.
+     */
+    public function test_abschneiden_am_ende_wird_erkannt(): void {
+        $this->makeEntry('created', 1);
+        $last = $this->makeEntry('updated', 1);
+
+        $this->assertSame(0, $this->runVerify(), 'Vorbedingung: die Kette ist intakt.');
+
+        // Nur die Zeile entfernen — der Kopf zeigt noch auf sie.
+        DB::table('audit_logs')->where('id', $last->id)->delete();
+
+        $this->assertSame(1, $this->runVerify(), 'Fehlende Endzeile muss auffallen.');
+    }
+
+    /**
+     * Der Kettenkopf liegt in einer eigenen Tabelle, die die DB-Härtung
+     * bewusst beschreibbar lässt — wer beides konsistent fälscht, fällt über
+     * die Höhe.
+     */
+    public function test_mitgezogener_kettenkopf_faellt_ueber_die_hoehe_auf(): void {
+        $first = $this->makeEntry('created', 1);
+        $last = $this->makeEntry('updated', 1);
+
+        $chain = $last->chainName();
+        DB::table('audit_logs')->where('id', $last->id)->delete();
+        DB::table('audit_chain_heads')->where('chain', $chain)->update([
+            'head_hash' => $first->hash,
+            // Höhe absichtlich NICHT mitgezogen: genau daran hängt der Nachweis.
+        ]);
+
+        $this->assertSame(1, $this->runVerify(), 'Die Kettenhöhe muss den Verlust zeigen.');
+    }
+
+    /** Ein entfernter Kettenkopf ist selbst schon der Befund. */
+    public function test_fehlender_kettenkopf_wird_erkannt(): void {
+        $entry = $this->makeEntry('created', 1);
+
+        DB::table('audit_chain_heads')->where('chain', $entry->chainName())->delete();
+
+        $this->assertSame(1, $this->runVerify(), 'Ohne Kettenkopf fehlt der Anker.');
+    }
+
     public function test_payload_object_value_is_rejected(): void {
         $this->expectException(\InvalidArgumentException::class);
         AuditLog::chainHash(null, ['ip' => new \stdClass]);

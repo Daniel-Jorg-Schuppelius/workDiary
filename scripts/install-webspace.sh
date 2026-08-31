@@ -150,6 +150,12 @@ if [[ ! -f .env ]]; then
     cp .env.example .env
 fi
 
+# Nur der Eigentümer darf lesen (Sicherheitsscan 2026-08-23, S-53): `cp`
+# übernimmt den Modus der Vorlage, und .env.example liegt im Repository mit
+# rw-r--r--. Auf Shared-Hosts — der Zielgruppe dieses Skripts — wäre APP_KEY
+# damit für jedes andere Konto lesbar, und der entschlüsselt alles.
+chmod 600 .env
+
 log "Setze Production-Defaults"
 env_set APP_ENV production
 env_set APP_DEBUG false

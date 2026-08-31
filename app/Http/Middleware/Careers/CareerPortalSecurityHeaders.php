@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Careers;
 
+use App\Http\Middleware\Concerns\SetsTransportSecurity;
 use App\Support\Setting;
 use Closure;
 use Illuminate\Http\Request;
@@ -28,6 +29,8 @@ use Symfony\Component\HttpFoundation\Response;
  * fremd-einbettbar). Weder pauschales `*` noch fremde Skripte/Tracker.
  */
 class CareerPortalSecurityHeaders {
+    use SetsTransportSecurity;
+
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);
         $h = $response->headers;
@@ -60,6 +63,10 @@ class CareerPortalSecurityHeaders {
         } else {
             $h->set('X-Frame-Options', 'SAMEORIGIN');
         }
+
+        // HSTS wie im web-Stack (S-62).
+
+        $this->applyTransportSecurity($request, $response);
 
         return $response;
     }

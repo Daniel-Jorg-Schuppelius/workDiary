@@ -13,6 +13,7 @@ namespace App\Models;
 use App\Enums\Timesheet\{TimesheetKind, TimesheetStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Carbon\CarbonInterface;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -41,7 +42,7 @@ use Illuminate\Support\Carbon;
  * @property int $entries_total_minutes
  * @property int $untracked_minutes
  * @property string $totals_material_net
- * @property string|null $magic_token
+ * @property string|null $magic_token_hash
  * @property Carbon|null $magic_expires_at
  */
 class Timesheet extends Model {
@@ -81,7 +82,7 @@ class Timesheet extends Model {
         'entries_total_minutes',
         'untracked_minutes',
         'totals_material_net',
-        'magic_token',
+        'magic_token_hash',
         'magic_expires_at',
     ];
 
@@ -99,6 +100,14 @@ class Timesheet extends Model {
         'kind' => TimesheetKind::class,
         'status' => TimesheetStatus::class,
     ];
+
+    /**
+     * Signatur-Token wird nur als Hash gespeichert (Sicherheitsscan S-44) —
+     * derselbe Weg wie bei Umfrage-Einladung, Angebotsannahme und Terminal.
+     */
+    public static function hashMagicToken(string $plain): string {
+        return CryptoHelper::hash($plain);
+    }
 
     /** @return BelongsTo<Project, $this> */
     public function project(): BelongsTo {

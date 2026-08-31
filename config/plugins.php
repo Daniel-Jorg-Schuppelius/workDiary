@@ -10,6 +10,32 @@
 
 return [
     /*
+     * Darf ein Org-Admin die SSRF-Leitplanke je Anbindung abschalten
+     * (`allow_private_network`)? Im Einzelplatzbetrieb ja — dort steht der
+     * CardDAV-/JTL-Server tatsächlich im eigenen Netz. Im SaaS-Betrieb auf
+     * `false` setzen: dort erlaubte es einem Mandanten, den Server auf interne
+     * Adressen zeigen zu lassen (Sicherheitsscan 2026-08-23, S-65).
+     *
+     * Der gespeicherte Wert bleibt unberührt; er wirkt nur nicht.
+     */
+    'allow_private_network_opt_in' => (bool) env('PLUGINS_ALLOW_PRIVATE_NETWORK_OPT_IN', true),
+
+    /*
+     * Dürfen Plugin-Geheimnisse (API-Keys, Tokens, Passwörter) auf die
+     * Config/ENV zurückfallen, wenn eine Organisation keinen eigenen Wert
+     * gesetzt hat (Sicherheitsscan 2026-08-23, S-28)?
+     *
+     * Im Einzelplatzbetrieb ja — dort steht in der .env der eigene Schlüssel,
+     * und der Rückfall erspart die Pflege an zwei Stellen. Im SaaS-Betrieb auf
+     * `false` setzen: sonst arbeitet ein Mandant ohne eigene Zugangsdaten still
+     * über den Schlüssel des Betreibers und sieht dessen Daten.
+     *
+     * Nicht betroffen sind Werte ohne Geheimnischarakter (Basis-URLs,
+     * Workspace-IDs, Pfade) — die fallen weiterhin zurück.
+     */
+    'allow_env_secret_fallback' => (bool) env('PLUGINS_ALLOW_ENV_SECRET_FALLBACK', true),
+
+    /*
     |--------------------------------------------------------------------------
     | Registered plugin classes
     |--------------------------------------------------------------------------

@@ -11,6 +11,11 @@
 declare(strict_types=1);
 
 return [
+    'opos' => [
+        'error' => [
+            'amount_exceeds_open' => 'Como máximo se pueden liquidar :open — no hay más pendiente.',
+        ],
+    ],
     'action' => [
         'push' => 'Transferir a contabilidad',
     ],

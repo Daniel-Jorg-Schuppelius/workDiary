@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningQuestionKind, LearningUnitKind};
-use App\Models\Learning\{LearningCourse, LearningQuestion, LearningQuiz, LearningSection, LearningUnit};
+use App\Models\Learning\{LearningCourse, LearningQuestion, LearningQuestionOption, LearningQuiz, LearningSection, LearningUnit};
 use App\Models\{Organization, User};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -189,7 +189,7 @@ class LearningCoursePortabilityService {
                 'points' => $q->points,
                 'position' => $q->position,
                 'settings' => $q->settings,
-                'options' => array_values($q->options->map(static fn ($o): array => [
+                'options' => array_values($q->options->map(static fn (LearningQuestionOption $o): array => [
                     'label' => $o->label,
                     'is_correct' => $o->is_correct,
                     'position' => $o->position,

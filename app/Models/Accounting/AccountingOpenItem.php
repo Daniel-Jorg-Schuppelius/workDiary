@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphTo};
  * @property OpenItemDirection $direction
  * @property OpenItemStatus $status
  * @property CurrencyCode $currency
+ * @property string|null $source_type nullableMorphs — Belegbezug fehlt bei Posten aus Buchungen von Hand
+ * @property int|null $source_id
  */
 class AccountingOpenItem extends Model {
     use Auditable;

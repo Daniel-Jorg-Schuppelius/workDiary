@@ -14,6 +14,7 @@ use App\Http\Controllers\Controller;
 use App\Models\User;
 use App\Notifications\PasswordResetLink;
 use App\Services\Auth\UserSessionInvalidator;
+use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Hash};
@@ -35,12 +36,15 @@ class PasswordResetController extends Controller {
         return view('auth.forgot-password');
     }
 
+    /** Mindestabstand zwischen zwei Reset-Mails an dieselbe Adresse. */
+    private const RESEND_COOLDOWN_MINUTES = 2;
+
     public function email(Request $request): RedirectResponse {
         $data = $request->validate(['email' => ['required', 'email', 'max:255']]);
         $email = mb_strtolower(trim($data['email']));
 
         $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->whereNull('customer_id')->first();
-        if ($user instanceof User && $user->email) {
+        if ($user instanceof User && $user->email && ! $this->sentRecently($user->email)) {
             $token = Str::random(64);
             DB::table('password_reset_tokens')->updateOrInsert(
                 ['email' => $user->email],
@@ -50,8 +54,29 @@ class PasswordResetController extends Controller {
             $user->notify(new PasswordResetLink($url, $this->expireMinutes()));
         }
 
-        // Immer generisch antworten (kein Account-Enumeration).
+        // Immer generisch antworten (kein Account-Enumeration) — auch dann,
+        // wenn wegen der Sperrfrist gar keine Mail rausging: sonst verriete
+        // schon die Antwort, dass es das Konto gibt.
         return back()->with('status', __('Falls ein Konto mit dieser E-Mail existiert, wurde ein Link zum Zurücksetzen versendet.'));
+    }
+
+    /**
+     * Mindestabstand zwischen zwei Reset-Mails an dieselbe Adresse
+     * (Sicherheitsscan 2026-08-23, S-45).
+     *
+     * Der Limiter an der Route deckelt die Zahl der Anfragen; diese Sperre
+     * deckelt die Zahl der **Mails** und wirkt damit auch, wenn Anfragen aus
+     * verteilten Quellen kommen. Sie ersetzt den Limiter nicht, sie ergänzt
+     * ihn an der Stelle, an der die Belästigung entsteht.
+     */
+    private function sentRecently(string $email): bool {
+        $last = DB::table('password_reset_tokens')->where('email', $email)->value('created_at');
+
+        if ($last === null) {
+            return false;
+        }
+
+        return CarbonImmutable::parse($last)->greaterThan(CarbonImmutable::now()->subMinutes(self::RESEND_COOLDOWN_MINUTES));
     }
 
     public function reset(Request $request, string $token): View {

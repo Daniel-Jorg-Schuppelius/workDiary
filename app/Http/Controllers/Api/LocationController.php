@@ -81,6 +81,11 @@ class LocationController extends Controller {
             if ($org->maintenanceBlocksIngest()) {
                 return response()->json(['status' => 'maintenance'], 503, ['Retry-After' => '3600']);
             }
+            // Mandantensperre (Sicherheitsscan 2026-08-23, S-42): greift sonst
+            // nur bei angemeldeten Zugriffen — dieser Weg hat keine Sitzung.
+            if (! $org->publicSurfacesAvailable()) {
+                return response()->json(['status' => 'tenant_blocked'], 423, ['Retry-After' => '3600']);
+            }
         }
 
         if (! $this->features->isEnabled(self::MODULE)) {

@@ -76,10 +76,14 @@ class ReleaseVerifier {
             $signatureValid = $this->verifySignature($manifest, (string) $signatureBlock['value'], $signatureBlock['public_key'] ?? null);
             if ($signatureValid === false) {
                 $issues[] = 'Signatur ist ungültig (Manifest wurde verändert oder mit fremdem Schlüssel signiert).';
-            } elseif ($signatureValid === null) {
-                $issues[] = 'Signatur vorhanden, aber kein gültiger Public Key zur Prüfung verfügbar.';
-                $signatureValid = false;
             }
+            // `null` bleibt `null`: ohne konfigurierten Herausgeber-Schlüssel
+            // ist die Signatur **nicht prüfbar** (Sicherheitsscan 2026-08-23,
+            // S-52). Das ist weder „gültig" — so las es sich vorher, weil der
+            // im Manifest eingebettete Schlüssel akzeptiert wurde — noch
+            // „ungültig": am Manifest muss nichts falsch sein. Es zählt
+            // deshalb auch nicht als Befund; eine Installation ohne
+            // LICENSE_PUBLIC_KEY ist der Normalfall und kein Mangel.
         }
 
         return new ReleaseVerificationResult(
@@ -115,10 +119,17 @@ class ReleaseVerifier {
     }
 
     /**
-     * Public Key (raw 32 Byte) — bevorzugt der versiegelte/konfigurierte Key
-     * der Instanz; nur ersatzweise der im Manifest eingebettete Key (dieser
-     * belegt allein keine Vertrauenswürdigkeit, dient aber der Anzeige/
-     * Selbstprüfung auf der Herausgeber-Seite).
+     * Public Key (raw 32 Byte) — ausschließlich der versiegelte oder
+     * konfigurierte Key der Instanz.
+     *
+     * **Der im Manifest eingebettete Key wird NICHT mehr benutzt**
+     * (Sicherheitsscan 2026-08-23, S-52). Er beweist nichts: wer das Manifest
+     * schreiben kann, schreibt auch den Key hinein — und `release.json` liegt
+     * in einem Verzeichnis, das der Web-Nutzer beschreiben kann. Ein mit einem
+     * beliebigen Schlüssel signiertes Manifest galt damit als „signiert und
+     * gültig", während die Feature-Doku „Neu-Signieren ohne Herausgeber-Key
+     * unmöglich" versprach. Ohne konfigurierten Key ist die Signatur **nicht
+     * prüfbar** — und das ist etwas anderes als gültig.
      *
      * @return non-empty-string|null
      */
@@ -126,9 +137,6 @@ class ReleaseVerifier {
         $b64 = (string) config('license.public_key', '');
         if (\App\Services\Licensing\LicenseSeal::isSealed()) {
             $b64 = \App\Services\Licensing\LicenseSeal::publicKey();
-        }
-        if ($b64 === '' && $embeddedB64 !== null) {
-            $b64 = $embeddedB64;
         }
         if ($b64 === '') {
             return null;

@@ -9,6 +9,10 @@
  */
 
 return [
+    'error' => [
+        'self_approval' => 'No puede aprobar su propio gasto.',
+        'invalid_transition' => 'La acción :action no es posible en el estado :status.',
+    ],
     'receipt' => [
         'no_vendor' => 'Sin proveedor',
         'link_title' => 'Comprobante contable',

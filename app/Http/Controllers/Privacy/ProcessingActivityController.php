@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\AuditLog;
 use App\Models\Privacy\{ProcessingActivity, ProcessingActivityVersion};
 use App\Services\Privacy\{PrivacyExportService, ProcessingActivityService};
+use App\Support\CsvExport;
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -169,7 +170,11 @@ class ProcessingActivityController extends Controller {
         // (Paritätstest im Toolkit; Export-Konsumenten erwarten diese Bytes).
         $csv = StringHelper::encodeLine(['name', 'purpose', 'controller_role', 'area', 'status', 'review_due_at', 'dsfa_required', 'version_no'], ',', '"', QuotingStyle::FPUTCSV) . "\n";
         foreach ($rows as $row) {
-            $csv .= StringHelper::encodeLine(array_map(static fn ($v): string => (string) $v, $row), ',', '"', QuotingStyle::FPUTCSV) . "\n";
+            // Formel-Guard (S-46): `name` und `purpose` sind frei erfasste
+            // Texte und landen ungeprüft in einer Datei, die jemand in Excel
+            // öffnet.
+            $cells = CsvExport::guardRow(array_values(array_map(static fn ($v): string => (string) $v, $row)));
+            $csv .= StringHelper::encodeLine($cells, ',', '"', QuotingStyle::FPUTCSV) . "\n";
         }
 
         return $csv;

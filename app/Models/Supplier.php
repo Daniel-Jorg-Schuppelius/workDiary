@@ -113,6 +113,12 @@ class Supplier extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        // Bankdaten sind eine Projektion des primären Bankkontos, das seit je
+        // verschlüsselt liegt — flach zurückgeschrieben hob das die
+        // Verschlüsselung auf (Sicherheitsscan S-21). Spalten als text.
+        'bank_iban' => 'encrypted',
+        'bank_bic' => 'encrypted',
+        'bank_account_holder' => 'encrypted',
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'active' => 'boolean',
         'archived_at' => 'datetime',

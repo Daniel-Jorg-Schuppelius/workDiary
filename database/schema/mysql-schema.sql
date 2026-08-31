@@ -2612,6 +2612,37 @@ CREATE TABLE `audit_logs` (
   KEY `audit_logs_org_created_idx` (`organization_id`,`created_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `audit_redactions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `audit_redactions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned DEFAULT NULL,
+  `chain` varchar(64) NOT NULL COMMENT 'Geschwärzte Kette, z. B. audit_logs:7',
+  `auditable_type` varchar(255) NOT NULL,
+  `auditable_id` bigint(20) unsigned NOT NULL,
+  `fields` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'Geschwärzte Feldnamen' CHECK (json_valid(`fields`)),
+  `rows_affected` int(10) unsigned NOT NULL,
+  `first_audit_log_id` bigint(20) unsigned NOT NULL,
+  `last_audit_log_id` bigint(20) unsigned NOT NULL,
+  `reason` text NOT NULL,
+  `request_reference` varchar(255) DEFAULT NULL COMMENT 'Aktenzeichen des Betroffenenverlangens',
+  `performed_by` bigint(20) unsigned DEFAULT NULL,
+  `head_before` varchar(64) DEFAULT NULL,
+  `head_after` varchar(64) DEFAULT NULL,
+  `prev_hash` varchar(64) DEFAULT NULL,
+  `hash` varchar(64) DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `audit_redactions_organization_id_foreign` (`organization_id`),
+  KEY `audit_redactions_performed_by_foreign` (`performed_by`),
+  KEY `audit_redactions_subject_idx` (`auditable_type`,`auditable_id`),
+  KEY `audit_redactions_chain_idx` (`chain`),
+  CONSTRAINT `audit_redactions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `audit_redactions_performed_by_foreign` FOREIGN KEY (`performed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `automation_rule_runs`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -5995,9 +6026,9 @@ CREATE TABLE `customers` (
   `portal_settings` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`portal_settings`)),
   `comment` text DEFAULT NULL,
   `invoice_text` text DEFAULT NULL,
-  `bank_account_holder` varchar(200) DEFAULT NULL,
-  `bank_iban` varchar(64) DEFAULT NULL,
-  `bank_bic` varchar(32) DEFAULT NULL,
+  `bank_account_holder` text DEFAULT NULL,
+  `bank_iban` text DEFAULT NULL,
+  `bank_bic` text DEFAULT NULL,
   `bank_name` varchar(200) DEFAULT NULL,
   `document_render_profile_id` bigint(20) unsigned DEFAULT NULL,
   `billable` tinyint(1) NOT NULL DEFAULT 1,
@@ -12470,6 +12501,9 @@ CREATE TABLE `organization_sso_domains` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `organization_id` bigint(20) unsigned NOT NULL,
   `domain` varchar(191) NOT NULL,
+  `verification_token` varchar(64) DEFAULT NULL,
+  `verified_at` timestamp NULL DEFAULT NULL,
+  `verification_checked_at` timestamp NULL DEFAULT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -13270,11 +13304,13 @@ CREATE TABLE `plugin_settings` (
   `organization_id` bigint(20) unsigned NOT NULL,
   `plugin_id` varchar(64) NOT NULL,
   `enabled` tinyint(1) NOT NULL DEFAULT 0,
+  `workspace_lookup` varchar(64) DEFAULT NULL,
   `settings` text DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `plugin_settings_organization_id_plugin_id_unique` (`organization_id`,`plugin_id`),
+  KEY `plugin_settings_workspace_lookup_idx` (`workspace_lookup`),
   CONSTRAINT `plugin_settings_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -16580,8 +16616,8 @@ CREATE TABLE `sick_leaves` (
   `end_date` date NOT NULL,
   `kind` varchar(20) NOT NULL DEFAULT 'initial',
   `follow_up_for_id` bigint(20) unsigned DEFAULT NULL,
-  `au_number` varchar(100) DEFAULT NULL,
-  `doctor_name` varchar(255) DEFAULT NULL,
+  `au_number` text DEFAULT NULL,
+  `doctor_name` text DEFAULT NULL,
   `note` text DEFAULT NULL,
   `kasse_notified_at` timestamp NULL DEFAULT NULL,
   `reported_at` timestamp NULL DEFAULT NULL,
@@ -17466,9 +17502,9 @@ CREATE TABLE `suppliers` (
   `timezone` varchar(64) DEFAULT NULL,
   `color` varchar(16) DEFAULT NULL,
   `comment` text DEFAULT NULL,
-  `bank_account_holder` varchar(200) DEFAULT NULL,
-  `bank_iban` varchar(64) DEFAULT NULL,
-  `bank_bic` varchar(32) DEFAULT NULL,
+  `bank_account_holder` text DEFAULT NULL,
+  `bank_iban` text DEFAULT NULL,
+  `bank_bic` text DEFAULT NULL,
   `bank_name` varchar(200) DEFAULT NULL,
   `active` tinyint(1) NOT NULL DEFAULT 1,
   `archived_at` timestamp NULL DEFAULT NULL,
@@ -18720,6 +18756,7 @@ DROP TABLE IF EXISTS `timesheets`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `timesheets` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `magic_token_hash` varchar(64) DEFAULT NULL,
   `organization_id` bigint(20) unsigned NOT NULL,
   `project_id` bigint(20) unsigned DEFAULT NULL,
   `user_id` bigint(20) unsigned NOT NULL,
@@ -18741,14 +18778,13 @@ CREATE TABLE `timesheets` (
   `entries_total_minutes` int(10) unsigned NOT NULL DEFAULT 0,
   `untracked_minutes` int(11) NOT NULL DEFAULT 0,
   `totals_material_net` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `magic_token` varchar(80) DEFAULT NULL,
   `magic_expires_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `open_work_date` date GENERATED ALWAYS AS (case when `status` in ('draft','submitted') then `work_date` end) VIRTUAL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `timesheets_magic_token_unique` (`magic_token`),
   UNIQUE KEY `timesheets_open_day_unique` (`project_id`,`user_id`,`open_work_date`),
+  UNIQUE KEY `timesheets_magic_token_unique_h` (`magic_token_hash`),
   KEY `timesheets_signature_attachment_id_foreign` (`signature_attachment_id`),
   KEY `timesheets_locked_by_foreign` (`locked_by`),
   KEY `timesheets_project_id_work_date_index` (`project_id`,`work_date`),
@@ -19301,6 +19337,7 @@ DROP TABLE IF EXISTS `users`;
 /*!40101 SET character_set_client = utf8mb4 */;
 CREATE TABLE `users` (
   `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `calendar_feed_token_hash` varchar(64) DEFAULT NULL,
   `organization_id` bigint(20) unsigned DEFAULT NULL,
   `customer_id` bigint(20) unsigned DEFAULT NULL,
   `legacy_user_id` int(10) unsigned DEFAULT NULL,
@@ -19356,12 +19393,11 @@ CREATE TABLE `users` (
   `remember_token` varchar(100) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
-  `calendar_feed_token` varchar(64) DEFAULT NULL,
   `deputy_user_id` bigint(20) unsigned DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `users_email_unique` (`email`),
-  UNIQUE KEY `users_calendar_feed_token_unique` (`calendar_feed_token`),
   UNIQUE KEY `users_org_personnel_number_unique` (`organization_id`,`personnel_number`),
+  UNIQUE KEY `users_calendar_feed_token_unique_h` (`calendar_feed_token_hash`),
   KEY `idx_users_org` (`organization_id`),
   KEY `users_is_new_system_index` (`is_new_system`),
   KEY `users_customer_id_index` (`customer_id`),
@@ -20858,3 +20894,9 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (771,'2027_02_19_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (772,'2027_02_19_110200_add_subtitle_review_to_media_renditions',45);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (773,'2027_02_19_110300_restrict_evidence_authorship_user_fks',46);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (774,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',47);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (775,'2027_02_19_110500_encrypt_bank_and_health_columns',48);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (776,'2027_02_19_110600_create_audit_redactions_table',48);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (777,'2027_02_19_110700_hash_public_link_tokens',49);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (778,'2027_02_19_110800_add_verification_to_sso_domains',49);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (779,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',49);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (780,'2027_02_19_111000_hash_serial_passport_token',50);

@@ -651,6 +651,7 @@ return [
             'unsigned' => 'unsigned',
             'signature_valid' => 'Signature valid',
             'signature_invalid' => 'Signature invalid',
+            'signature_unverifiable' => 'not verifiable (no publisher key)',
             'integrity' => 'Integrity',
             'integrity_ok' => 'Checksums match',
             'integrity_broken' => 'Checksums broken',

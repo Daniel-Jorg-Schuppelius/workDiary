@@ -92,8 +92,11 @@ final class HelpdeskCatalogTest extends TestCase {
         $request = $service->decide($steps[0], $this->approver, 'approved');
         $this->assertSame(ServiceRequest::STATUS_PENDING, $request->status);
 
-        // Schritt 2 genehmigt → approved + Fulfillment (Task).
-        $request = $service->decide($steps[1]->fresh(), $this->approver, 'approved');
+        // Schritt 2 genehmigt → approved + Fulfillment (Task). Zweite
+        // Person: wer Schritt 1 entschieden hat, ist für Schritt 2 gesperrt
+        // (Sicherheitsscan 2026-08-23, S-34).
+        $zweiterGenehmiger = User::factory()->teamleitung()->create(['organization_id' => $this->org->id]);
+        $request = $service->decide($steps[1]->fresh(), $zweiterGenehmiger, 'approved');
         $this->assertSame(ServiceRequest::STATUS_DONE, $request->status);
         $this->assertNotNull($request->fulfilled_id);
     }

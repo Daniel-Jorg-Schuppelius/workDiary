@@ -55,7 +55,7 @@ class PublicRouteTenantTest extends TestCase {
             'work_date' => now()->toDateString(),
             'kind' => TimesheetKind::Project,
             'status' => TimesheetStatus::Submitted,
-            'magic_token' => $token,
+            'magic_token_hash' => \App\Models\Timesheet::hashMagicToken($token),
             'magic_expires_at' => now()->addHour(),
         ]));
 
@@ -86,7 +86,7 @@ class PublicRouteTenantTest extends TestCase {
             'work_date' => now()->toDateString(),
             'kind' => TimesheetKind::Project,
             'status' => TimesheetStatus::Submitted,
-            'magic_token' => $token,
+            'magic_token_hash' => \App\Models\Timesheet::hashMagicToken($token),
             'magic_expires_at' => now()->subMinute(),
         ]));
 
@@ -103,7 +103,7 @@ class PublicRouteTenantTest extends TestCase {
             'work_date' => now()->toDateString(),
             'kind' => TimesheetKind::Project,
             'status' => TimesheetStatus::Submitted,
-            'magic_token' => Str::random(48),
+            'magic_token_hash' => \App\Models\Timesheet::hashMagicToken(Str::random(48)),
             'magic_expires_at' => now()->addHour(),
         ]));
 
@@ -130,7 +130,7 @@ class PublicRouteTenantTest extends TestCase {
 
     public function test_personal_schedule_token_resolves_only_owning_user(): void {
         $tokenB = Str::random(48);
-        $this->userB->forceFill(['calendar_feed_token' => $tokenB])->save();
+        $this->userB->forceFill(['calendar_feed_token_hash' => \App\Models\User::hashCalendarFeedToken($tokenB)])->save();
 
         app()->forgetInstance('currentOrganization');
         $response = $this->get('/calendar/feed/' . $tokenB . '.ics');

@@ -35,6 +35,8 @@ return [
     'domains_heading' => 'Domini e-mail',
     'domains_hint' => 'WorkDiary determina l’organizzazione dal dominio e-mail di accesso. I domini sono univoci a livello globale.',
     'no_domains' => 'Nessun dominio e-mail ancora associato.',
+    'domain_unverified' => 'non verificato',
+    'domain_dns_hint' => 'Creare un record TXT :name con il valore :value, poi scegliere «Verifica».',
 
     'provider' => [
         'custom' => 'Provider OIDC personalizzato',
@@ -110,6 +112,7 @@ return [
         'break_glass_remove' => 'Rimuovi',
         'domain_add' => 'Aggiungi dominio',
         'domain_remove' => 'Rimuovi',
+        'domain_verify' => 'Verifica',
     ],
 
     'col' => [
@@ -137,6 +140,8 @@ return [
         'break_glass_added' => 'Account break-glass impostato.',
         'break_glass_removed' => 'Stato break-glass rimosso.',
         'domain_added' => 'Dominio e-mail aggiunto.',
+        'domain_added_unverified' => 'Dominio aggiunto — non ancora attivo. Per la verifica creare un record TXT :name con il valore :value, poi scegliere «Verifica».',
+        'domain_verified' => 'Dominio verificato.',
         'domain_removed' => 'Dominio e-mail rimosso.',
     ],
 
@@ -154,6 +159,7 @@ return [
         'google_issuer_invalid' => 'Per Google Workspace è consentito solo l’issuer ufficiale https://accounts.google.com.',
         'domain_invalid' => 'Inserire un dominio e-mail valido.',
         'domain_taken' => 'Questo dominio e-mail è già associato a un’altra organizzazione.',
+        'domain_not_verified' => 'Nessun record TXT corrispondente. Atteso: :name con il valore :value (le modifiche DNS possono richiedere alcuni minuti).',
         'flow_expired' => 'L’accesso SSO è scaduto. Riprovare.',
         'module_disabled' => 'Il single sign-on non è disponibile per questa organizzazione.',
         'url_not_public' => 'L’URL non è raggiungibile pubblicamente. Per provider interni attivare «Consenti IdP su rete privata».',

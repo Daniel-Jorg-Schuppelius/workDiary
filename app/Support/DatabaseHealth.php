@@ -26,6 +26,9 @@ final class DatabaseHealth {
     /** @var array<string, bool> Per-Request-Cache pro Connection. */
     private static array $requestUnavailable = [];
 
+    /** @var array<string, string> Grund je Connection — für die Meldung, wenn kein Marker auf Platte liegt. */
+    private static array $requestReason = [];
+
     public static function isAvailable(string $connection): bool {
         if (self::$requestUnavailable[$connection] ?? false) {
             return false;
@@ -51,8 +54,20 @@ final class DatabaseHealth {
         return true;
     }
 
-    public static function markUnavailable(string $connection): void {
+    /**
+     * @param  string|null  $reason  Woher der Marker stammt — landet im Marker
+     *                               und später in der Fast-Path-Meldung.
+     *
+     * Ohne den Grund ist ein 503 aus dem Fast-Path nicht aufzuklären: er
+     * entsteht *später* und an *anderer Stelle* als der Fehler, der ihn
+     * ausgelöst hat. Genau das machte die wandernden 503 in der Testsuite so
+     * zäh (Vollscan 2026-08-23).
+     */
+    public static function markUnavailable(string $connection, ?string $reason = null): void {
         self::$requestUnavailable[$connection] = true;
+        if ($reason !== null) {
+            self::$requestReason[$connection] = $reason;
+        }
 
         $path = self::markerPath($connection);
         $dir = dirname($path);
@@ -61,18 +76,45 @@ final class DatabaseHealth {
         }
 
         try {
-            ToolkitFile::write($path, (string) time());
+            ToolkitFile::write($path, time() . ($reason !== null ? '|' . str_replace(["\n", "\r"], ' ', $reason) : ''));
         } catch (Throwable) {
             // Best-effort Marker: DB-Ausfallpfade dürfen nicht durch Dateifehler kippen.
         }
     }
 
+    /**
+     * Grund und Alter des gesetzten Markers — für die Meldung im Fast-Path.
+     *
+     * @return array{age: int|null, reason: string|null}
+     */
+    public static function markerInfo(string $connection): array {
+        $path = self::markerPath($connection);
+
+        if (! is_file($path)) {
+            // Der Fast-Path kann auch aus dem Prozess-Speicher feuern (gleicher
+            // Request, Marker noch nicht oder nicht mehr auf Platte) — dann
+            // steht der Grund nur hier.
+            return ['age' => null, 'reason' => self::$requestReason[$connection] ?? null];
+        }
+
+        $content = (string) @file_get_contents($path);
+        [$stamp, $reason] = array_pad(explode('|', $content, 2), 2, null);
+
+        return [
+            'age' => is_numeric($stamp) ? time() - (int) $stamp : null,
+            'reason' => $reason !== null && $reason !== '' ? $reason : null,
+        ];
+    }
+
     public static function reset(?string $connection = null): void {
         if ($connection === null) {
             self::$requestUnavailable = [];
-            // Hinweis: markerPath('*') w\u00fcrde das Wildcard via preg_replace zu '_'
-            // sanitisieren. Daher das Glob-Pattern hier direkt bauen.
-            $pattern = storage_path('framework/cache/db-down-*.flag');
+            self::$requestReason = [];
+            // Hinweis: markerPath('*') würde das Wildcard via preg_replace zu '_'
+            // sanitisieren. Daher das Glob-Pattern hier direkt bauen — MIT dem
+            // Worker-Suffix: ohne ihn räumte `TestCase::setUp()` eines Workers
+            // die Marker aller anderen mit weg, mitten in deren Test.
+            $pattern = storage_path('framework/cache/db-down-*' . self::workerSuffix() . '.flag');
             foreach ((array) glob($pattern) as $file) {
                 @unlink((string) $file);
             }
@@ -80,7 +122,7 @@ final class DatabaseHealth {
             return;
         }
 
-        unset(self::$requestUnavailable[$connection]);
+        unset(self::$requestUnavailable[$connection], self::$requestReason[$connection]);
         @unlink(self::markerPath($connection));
     }
 
@@ -112,12 +154,19 @@ final class DatabaseHealth {
     private static function markerPath(string $connection): string {
         $safe = preg_replace('/[^a-zA-Z0-9_-]/', '_', $connection) ?? 'default';
 
-        // Unter ParaTest je Worker isolieren (TEST_TOKEN): ein im Test gesetzter Marker darf nie in parallele
-        // Test-Prozesse leaken. Bewusst ohne env()/Facade, damit der Pfad auch im Fail-Safe ohne Container bestimmbar bleibt.
-        $token = (string) ($_SERVER['TEST_TOKEN'] ?? $_ENV['TEST_TOKEN'] ?? '');
-        $suffix = $token === '' ? '' : '-' . (preg_replace('/[^a-zA-Z0-9_-]/', '_', $token) ?? '');
+        return storage_path('framework/cache/db-down-' . $safe . self::workerSuffix() . '.flag');
+    }
 
-        return storage_path('framework/cache/db-down-' . $safe . $suffix . '.flag');
+    /**
+     * Unter ParaTest je Worker isolieren (TEST_TOKEN): ein im Test gesetzter
+     * Marker darf weder in parallele Test-Prozesse leaken noch von ihnen
+     * gelöscht werden. Bewusst ohne env()/Facade, damit der Pfad auch im
+     * Fail-Safe ohne Container bestimmbar bleibt.
+     */
+    private static function workerSuffix(): string {
+        $token = (string) ($_SERVER['TEST_TOKEN'] ?? $_ENV['TEST_TOKEN'] ?? '');
+
+        return $token === '' ? '' : '-' . (preg_replace('/[^a-zA-Z0-9_-]/', '_', $token) ?? '');
     }
 
     public static function defaultConnection(): string {
@@ -128,9 +177,9 @@ final class DatabaseHealth {
      * Best-effort-Aufräumen, das sich auch im fail-safe-Pfad benutzen lässt
      * — vermeidet Exceptions im Render-Handler.
      */
-    public static function safeMarkUnavailable(string $connection): void {
+    public static function safeMarkUnavailable(string $connection, ?string $reason = null): void {
         try {
-            self::markUnavailable($connection);
+            self::markUnavailable($connection, $reason);
         } catch (Throwable) {
             // ignore
         }

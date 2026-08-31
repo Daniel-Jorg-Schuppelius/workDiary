@@ -680,6 +680,26 @@ class DiagnosticsService {
             );
         }
 
+        // Rechte der .env (Sicherheitsscan 2026-08-23, S-53): `cp .env.example
+        // .env` übernimmt rw-r--r--. Auf einem Server mit mehreren Konten liest
+        // damit jedes andere Konto den APP_KEY — und der entschlüsselt jeden
+        // encrypted-Cast. Neu geschriebene .env-Dateien bekommen 0600; für
+        // bestehende Installationen ist dieser Hinweis der einzige Weg.
+        $envMode = null;
+        $envWorldReadable = false;
+        $envPath = base_path('.env');
+        if (is_file($envPath)) {
+            $perms = @fileperms($envPath);
+            if (is_int($perms)) {
+                $envMode = substr(sprintf('%o', $perms), -4);
+                $envWorldReadable = ($perms & 0o077) !== 0;
+            }
+        }
+        if ($envWorldReadable) {
+            $status = DiagnosticStatus::worst($status, $isProduction ? DiagnosticStatus::Critical : DiagnosticStatus::Warn);
+            $messages[] = sprintf('.env ist für andere Konten lesbar (Modus %s) — `chmod 600 .env`.', (string) $envMode);
+        }
+
         return new DiagnosticSection(
             code: 'security',
             status: $status,
@@ -688,6 +708,8 @@ class DiagnosticsService {
                 'app_debug' => $debug,
                 'session_secure_cookie' => $sessionSecure,
                 'https_app_url' => $https,
+                'env_file_mode' => $envMode,
+                'env_world_readable' => $envWorldReadable,
                 'sbom_components' => $sbomComponents,
                 'sbom_generated_at' => $sbomGeneratedAt?->toIso8601String(),
                 'advisories_open' => $openAdvisories,

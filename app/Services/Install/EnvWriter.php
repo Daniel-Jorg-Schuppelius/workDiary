@@ -88,6 +88,20 @@ final class EnvWriter {
                 throw new RuntimeException('Konnte .env nicht aus .env.example erzeugen: ' . $this->path);
             }
 
+            $this->restrictPermissions();
+
+            // Sichere Vorgabe für eine ABGEBROCHENE Installation
+            // (Sicherheitsscan 2026-08-23, S-66): `.env.example` ist eine
+            // Vorlage für die Entwicklung und startet mit `local`/`debug=true`.
+            // Wer den Installer vor dem Schritt „Anwendung" verlässt, liefe
+            // sonst mit Debug-Ausgaben und Entwicklungs-CSP weiter. Der
+            // Installer setzt beide Werte ohnehin, sobald die Umgebung gewählt
+            // ist — bis dahin gilt das Vorsichtige.
+            $this->setMany([
+                'APP_ENV' => 'production',
+                'APP_DEBUG' => 'false',
+            ]);
+
             return;
         }
 
@@ -111,6 +125,24 @@ final class EnvWriter {
         if (@file_put_contents($this->path, $contents, LOCK_EX) === false) {
             throw new RuntimeException('Konnte .env nicht schreiben: ' . $this->path);
         }
+
+        $this->restrictPermissions();
+    }
+
+    /**
+     * Nur der Eigentümer darf die .env lesen (Sicherheitsscan 2026-08-23, S-53).
+     *
+     * `copy()` übernimmt den Modus der Vorlage — und `.env.example` liegt im
+     * Repository mit rw-r--r--. Auf einem Shared-Host oder einem Server mit
+     * mehreren Konten war die Datei damit für jeden lesbar, und in ihr stehen
+     * APP_KEY (entschlüsselt jeden encrypted-Cast), das DB-Passwort, der
+     * Backup-Hauptschlüssel und die OAuth-Geheimnisse.
+     *
+     * Best-effort: auf Dateisystemen ohne POSIX-Rechte scheitert chmod, ohne
+     * dass deshalb die Installation abbrechen sollte.
+     */
+    private function restrictPermissions(): void {
+        @chmod($this->path, 0600);
     }
 
     private function stringify(string|int|bool|null $value): string {

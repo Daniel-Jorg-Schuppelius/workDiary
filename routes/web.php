@@ -87,7 +87,10 @@ Route::post('/register', [TenantRegistrationController::class, 'register'])->mid
 // Passwort vergessen (self-contained Reset-Flow, Gast).
 Route::middleware('guest')->group(function (): void {
     Route::get('/password/forgot', [PasswordResetController::class, 'request'])->name('password.request');
-    Route::post('/password/forgot', [PasswordResetController::class, 'email'])->middleware('throttle:6,1')->name('password.email');
+    // Limiter je Ziel-Adresse UND je IP (Sicherheitsscan 2026-08-23, S-45):
+    // ein reines IP-Limit hält niemanden davon ab, eine einzelne Adresse über
+    // wechselnde Adressen mit Reset-Mails zu überschütten.
+    Route::post('/password/forgot', [PasswordResetController::class, 'email'])->middleware('throttle:password-forgot')->name('password.email');
     Route::get('/password/reset/{token}', [PasswordResetController::class, 'reset'])->name('password.reset');
     Route::post('/password/reset', [PasswordResetController::class, 'update'])->middleware('throttle:6,1')->name('password.update');
 });
@@ -1422,6 +1425,11 @@ Route::middleware('auth')->group(function () {
         // ── Seriennummern (Feature 047/048, E2) ─ Gate serials.* → module.lager
         Route::get('serials', [\App\Http\Controllers\SerialController::class, 'index'])->name('serials.index');
         Route::get('serials/verify', [\App\Http\Controllers\SerialController::class, 'verify'])->name('serials.verify');
+        // Vor `serials/{serial}` — sonst schluckt der Platzhalter den Pfad.
+        Route::get('serials/geraete-pass', [\App\Http\Controllers\SerialPassportSettingsController::class, 'edit'])->name('serials.passport.edit');
+        Route::post('serials/geraete-pass/token', [\App\Http\Controllers\SerialPassportSettingsController::class, 'rotate'])->name('serials.passport.rotate');
+        Route::delete('serials/geraete-pass/token', [\App\Http\Controllers\SerialPassportSettingsController::class, 'revoke'])->name('serials.passport.revoke');
+        Route::patch('serials/geraete-pass', [\App\Http\Controllers\SerialPassportSettingsController::class, 'toggle'])->name('serials.passport.toggle');
         Route::get('serials/{serial}', [\App\Http\Controllers\SerialController::class, 'show'])->name('serials.show');
         Route::post('serials/{serial}/block', [\App\Http\Controllers\SerialController::class, 'block'])->name('serials.block');
         Route::post('serials/{serial}/unblock', [\App\Http\Controllers\SerialController::class, 'unblock'])->name('serials.unblock');
@@ -1584,6 +1592,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('admin/sso/connections/{connection}', [\App\Http\Controllers\Admin\SsoAdminController::class, 'destroyConnection'])->name('admin.sso.connections.destroy');
         Route::post('admin/sso/domains', [\App\Http\Controllers\Admin\SsoAdminController::class, 'addDomain'])->name('admin.sso.domains.add');
         Route::delete('admin/sso/domains/{domain}', [\App\Http\Controllers\Admin\SsoAdminController::class, 'removeDomain'])->name('admin.sso.domains.remove');
+        // DNS-TXT-Nachweis prüfen (Sicherheitsscan 2026-08-23, S-49).
+        Route::post('admin/sso/domains/{domain}/verify', [\App\Http\Controllers\Admin\SsoAdminController::class, 'verifyDomain'])->name('admin.sso.domains.verify');
         Route::post('admin/sso/break-glass', [\App\Http\Controllers\Admin\SsoAdminController::class, 'toggleBreakGlass'])->name('admin.sso.break-glass.toggle');
 
         // ── B2B-Katalogzugang (Admin, Feature 099, module.b2b_katalog) ──

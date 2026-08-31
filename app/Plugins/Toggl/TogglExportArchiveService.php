@@ -22,6 +22,17 @@ use Illuminate\Support\Str;
  */
 class TogglExportArchiveService {
     /**
+     * Obergrenzen fürs Entpacken (S-56) — großzügig, aber endlich. Durchgereicht
+     * an `ZipFile::extract()`, das seit common-toolkit v1.31.5 gegen die
+     * deklarierte UND die tatsächliche Größe prüft.
+     */
+    private const MAX_ENTRIES = 20000;
+
+    private const MAX_TOTAL_BYTES = 2 * 1024 * 1024 * 1024;
+
+    private const MAX_RATIO = 200;
+
+    /**
      * Beschränkt einen vom Admin angegebenen Import-Pfad auf erlaubte
      * Basisverzeichnisse (konfigurierter Toggl-Export-Pfad + storage/app/toggl-imports)
      * via realpath-Prefix. Verhindert das Auslesen beliebiger Server-Verzeichnisse.
@@ -34,9 +45,11 @@ class TogglExportArchiveService {
         if ($real === false || ! is_dir($real)) {
             return null;
         }
+        // Nur der EIGENE Import-Ordner (S-56) — plus der global konfigurierte
+        // Export-Pfad, der bewusst geteilt ist (Betreiber legt ihn fest).
         $bases = array_filter([
             (string) config('plugins.toggl.export_path', ''),
-            storage_path('app/toggl-imports'),
+            storage_path('app/toggl-imports/' . $this->organizationFolder()),
         ]);
         foreach ($bases as $base) {
             $realBase = realpath((string) $base);
@@ -61,7 +74,11 @@ class TogglExportArchiveService {
      * @throws TogglArchiveException  bei ungültiger bzw. nicht entpackbarer ZIP
      */
     public function extractUpload(string $archivePath): string {
-        $base = storage_path('app/toggl-imports');
+        // Import-Ordner je Organisation (Sicherheitsscan 2026-08-23, S-56):
+        // vorher lagen die Entpackordner aller Mandanten nebeneinander, und
+        // `safeImportPath()` ließ jeden davon als Quelle zu — ein Org-Admin
+        // konnte den Export eines anderen Mandanten einlesen.
+        $base = storage_path('app/toggl-imports/' . $this->organizationFolder());
         if (! is_dir($base)) {
             @mkdir($base, 0775, true);
         }
@@ -77,7 +94,14 @@ class TogglExportArchiveService {
         }
 
         try {
-            ZipFile::extract($archivePath, $target, deleteSourceFile: false);
+            ZipFile::extract(
+                $archivePath,
+                $target,
+                deleteSourceFile: false,
+                maxEntries: self::MAX_ENTRIES,
+                maxBytes: self::MAX_TOTAL_BYTES,
+                maxRatio: self::MAX_RATIO,
+            );
         } catch (\Throwable $e) {
             $this->rrmdir($target);
 
@@ -148,5 +172,13 @@ class TogglExportArchiveService {
             is_dir($path) ? $this->rrmdir($path) : @unlink($path);
         }
         @rmdir($dir);
+    }
+
+    /** Unterordner je Organisation — ohne gebundene Org ein neutraler Platz. */
+    private function organizationFolder(): string {
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        $id = $organization instanceof \App\Models\Organization ? (int) $organization->id : 0;
+
+        return 'org-' . $id;
     }
 }

@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Accounting;
 
 use App\Enums\Finance\{AccountType, OpenItemDirection, OpenItemStatus, SettlementKind};
-use App\Models\Accounting\{AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingOpenItemSettlement};
-use App\Models\Organization;
+use App\Models\Accounting\{AccountingAccount, AccountingEntry, AccountingEntryLine, AccountingOpenItem, AccountingOpenItemSettlement};
+use App\Models\{Organization, User};
+use App\Services\Finance\Datev\DatevBookingConfig;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\{Decimal, Money};
@@ -22,6 +23,7 @@ use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, DB};
+use Illuminate\Validation\ValidationException;
 
 /**
  * Offene Posten (Feature 125, MVP-674) — EINZIGE Schreibstelle für
@@ -129,7 +131,118 @@ class OpenItemService {
         ?AccountingEntry $entry = null,
         ?string $note = null,
     ): AccountingOpenItemSettlement {
+        // Skonto und Ausbuchung brauchen eine Gegenbuchung im Journal
+        // (Sicherheitsscan 2026-08-23, S-38): ohne sie war der Posten
+        // ausgeglichen und das Journal unberuehrt — die Forderung verschwand,
+        // das Erloes- bzw. Aufwandskonto blieb stehen. Offene Posten sind eine
+        // Projektion der Buchhaltung, keine zweite Wahrheit daneben.
+        $entry ??= $this->counterEntryFor($item, $kind, $amount, $note);
+
+        if ($entry instanceof AccountingEntry) {
+            // Die Festbuchung laeuft durch applyEntry() und legt den Ausgleich
+            // dort an, wo alle anderen auch entstehen. Nur wenn sie den Posten
+            // nicht getroffen hat (kein Belegbezug, keine Gegenpartei), wird er
+            // hier nachgetragen — sonst gaebe es ihn zweimal.
+            $fromEntry = AccountingOpenItemSettlement::query()
+                ->where('accounting_open_item_id', $item->getKey())
+                ->where('accounting_entry_id', $entry->getKey())
+                ->latest('id')
+                ->first();
+
+            if ($fromEntry instanceof AccountingOpenItemSettlement) {
+                return $fromEntry;
+            }
+        }
+
         return $this->recordSettlement($item, $kind, $amount, $entry, null, null, false, $note);
+    }
+
+    /**
+     * Erzeugt die Gegenbuchung zu einem Ausgleich von Hand.
+     *
+     * Nur fuer Skonto und Ausbuchung: Zahlung, Einbehalt und Rueckbuchung haben
+     * ihre Buchung anderswo (Bankabgleich, Zahlungslauf) und bekaemen sie hier
+     * ein zweites Mal.
+     *
+     * Fehlt das Gegenkonto im Kontenplan der Organisation, wird **nicht
+     * geraten**: der Ausgleich laeuft dann wie bisher ohne Journalzeile weiter,
+     * damit unvollstaendige Kontenpflege ihn nicht blockiert.
+     */
+    private function counterEntryFor(
+        AccountingOpenItem $item,
+        SettlementKind $kind,
+        string $amount,
+        ?string $note,
+    ): ?AccountingEntry {
+        if (! in_array($kind, [SettlementKind::Discount, SettlementKind::WriteOff], true)) {
+            return null;
+        }
+
+        $organization = $item->organization;
+        $actor = Auth::user();
+
+        if (! $organization instanceof Organization || ! $actor instanceof User) {
+            return null;
+        }
+
+        $config = DatevBookingConfig::forOrganization($organization);
+        $number = $kind === SettlementKind::Discount ? $config->discountAccount : $config->writeOffAccount;
+
+        $counterAccount = AccountingAccount::query()
+            ->where('organization_id', $organization->id)
+            ->where('number', $number)
+            ->first();
+
+        if (! $counterAccount instanceof AccountingAccount) {
+            return null;
+        }
+
+        // Der Posten wird entlastet: bei einer Forderung steht das Gegenkonto im
+        // Soll und der Debitor im Haben, bei einer Verbindlichkeit umgekehrt.
+        $receivable = $item->direction === OpenItemDirection::Receivable;
+        $itemLine = [
+            'accounting_account_id' => $item->accounting_account_id,
+            $receivable ? 'credit' : 'debit' => $amount,
+            'counterparty_type' => $item->counterparty_type,
+            'counterparty_id' => $item->counterparty_id,
+        ];
+        $counterLine = [
+            'accounting_account_id' => $counterAccount->id,
+            $receivable ? 'debit' : 'credit' => $amount,
+        ];
+
+        // Der Snapshot lenkt settleFromEntry() auf genau diesen Posten und
+        // haelt die Ausgleichsart fest — sonst waere jede Gegenbuchung eine
+        // Zahlung auf den aeltesten offenen Posten der Gegenpartei.
+        $snapshot = ['settlement_kind' => $kind->value];
+        if (is_string($item->source_type) && $item->source_id !== null) {
+            $snapshot['settles_source_type'] = $item->source_type;
+            $snapshot['settles_source_id'] = (int) $item->source_id;
+        }
+
+        return $this->journal()->postDirect($organization, [
+            'booked_on' => CarbonImmutable::now(Tz::current()),
+            'memo' => trim(sprintf(
+                '%s zu %s%s',
+                $kind === SettlementKind::Discount ? 'Skonto' : 'Ausbuchung',
+                (string) ($item->document_reference ?? ('Posten ' . $item->getKey())),
+                $note !== null && $note !== '' ? ' — ' . $note : '',
+            )),
+            'document_reference' => $item->document_reference,
+            'source_type' => AccountingOpenItem::class,
+            'source_id' => (int) $item->getKey(),
+            'source_key' => 'opos-settle:' . $item->getKey() . ':' . $kind->value . ':' . $amount,
+            'snapshot' => $snapshot,
+            'lines' => $receivable ? [$counterLine, $itemLine] : [$itemLine, $counterLine],
+        ], $actor);
+    }
+
+    /**
+     * JournalService haengt selbst an diesem Dienst (er ruft applyEntry auf) —
+     * eine Konstruktor-Abhaengigkeit waere ein Ring. Deshalb erst beim Aufruf.
+     */
+    private function journal(): JournalService {
+        return app(JournalService::class);
     }
 
     /**
@@ -299,6 +412,30 @@ class OpenItemService {
         ?string $note = null,
     ): AccountingOpenItemSettlement {
         return DB::transaction(function () use ($item, $kind, $amount, $entry, $paymentAllocationId, $reversesSettlementId, $writeOffRemainder, $note): AccountingOpenItemSettlement {
+            // Posten INNERHALB der Transaktion gesperrt neu laden
+            // (Sicherheitsscan 2026-08-23, S-38): gerechnet wurde bisher gegen
+            // das übergebene, ungesperrte Modell. Zwei gleichzeitige
+            // Ausgleiche lasen damit beide denselben Restbetrag und
+            // überschrieben sich — die Summe der Ausgleiche konnte den Posten
+            // übersteigen.
+            /** @var AccountingOpenItem $item */
+            $item = AccountingOpenItem::query()->lockForUpdate()->findOrFail($item->getKey());
+
+            // Und nie mehr ausgleichen als offen ist. Vorher war der Betrag nur
+            // `gt:0`: der Überbetrag wurde still auf 0 geklemmt, der
+            // Ausgleichssatz behielt ihn aber — Posten und Sätze gingen
+            // auseinander.
+            if (! $kind->reopens() && ! $writeOffRemainder) {
+                $openNow = $item->open_amount ?? Money::zero($item->currency);
+                if (Money::of($amount, $item->currency)->greaterThan($openNow)) {
+                    throw ValidationException::withMessages([
+                        'amount' => (string) __('accounting.opos.error.amount_exceeds_open', [
+                            'open' => (string) $openNow->getAmount(),
+                        ]),
+                    ]);
+                }
+            }
+
             $settlement = AccountingOpenItemSettlement::query()->create([
                 'organization_id' => $item->organization_id,
                 'accounting_open_item_id' => $item->id,

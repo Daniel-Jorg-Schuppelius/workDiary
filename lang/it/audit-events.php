@@ -333,6 +333,7 @@ return [
         'downloaded' => 'Esportazione GoBD scaricata',
     ],
     // Strumento di misura (MVP-722): righe da audit:measure-chain-contention.
+    'merged' => 'Unito',
     'perf' => [
         'measure' => 'Misurazione (contesa del lock della catena di audit)',
     ],

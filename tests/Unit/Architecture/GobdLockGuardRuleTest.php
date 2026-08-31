@@ -132,6 +132,39 @@ class GobdLockGuardRuleTest extends TestCase {
         ));
     }
 
+    /**
+     * Jede hash-verkettete Tabelle gehört ins Gate (Sicherheitsscan
+     * 2026-08-23, S-59).
+     *
+     * `config('audit.chains')` und die Registry beschreiben dasselbe
+     * Versprechen aus zwei Richtungen: „diese Zeilen sind unveränderlich".
+     * Wer eine neue Kette einträgt und die Registry vergisst, bekommt eine
+     * Kette ohne Schreibschutz-Prüfung — und merkt es nie.
+     */
+    public function test_jede_audit_kette_steht_in_der_registry(): void {
+        // Die Konfiguration direkt lesen, nicht über `config()`: dieser Test
+        // läuft ohne gebootete Anwendung, wie seine Geschwister im selben
+        // Verzeichnis.
+        $config = require (string) realpath(__DIR__ . '/../../..') . '/config/audit.php';
+        $chains = is_array($config['chains'] ?? null) ? $config['chains'] : [];
+
+        $tables = array_column(GobdLockRegistry::MODELS, 'table');
+        $missing = [];
+
+        foreach (array_keys($chains) as $table) {
+            if (! in_array((string) $table, $tables, true)) {
+                $missing[] = (string) $table;
+            }
+        }
+
+        sort($missing);
+
+        $this->assertSame([], $missing, sprintf(
+            "Hash-verkettete Tabellen ohne Eintrag in GobdLockRegistry::MODELS:\n  %s",
+            implode("\n  ", $missing),
+        ));
+    }
+
     public function test_no_guard_bypassing_writes_on_locked_models(): void {
         $root = (string) realpath(__DIR__ . '/../../..');
         $violations = [];

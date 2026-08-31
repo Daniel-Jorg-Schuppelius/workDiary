@@ -38,6 +38,26 @@ use Illuminate\Support\Carbon;
  * @property string|null $percentage
  */
 class TimeExportLine extends Model {
+    /**
+     * Zeilen einer ausgelieferten Ausleitung sind unveränderlich
+     * (Sicherheitsscan 2026-08-23, S-59) — sie sind der Inhalt, den der
+     * `payload_hash` des Exports nachweist.
+     */
+    protected static function booted(): void {
+        $assertMutable = static function (self $line): void {
+            $export = $line->export;
+
+            if (! $export instanceof TimeExport || $export->getRawOriginal('delivered_at') === null) {
+                return;
+            }
+
+            throw new \RuntimeException('Zeilen ausgelieferter Zeitexporte sind unveränderlich.');
+        };
+
+        static::updating($assertMutable);
+        static::deleting($assertMutable);
+    }
+
     protected $fillable = [
         'time_export_id',
         'user_id',

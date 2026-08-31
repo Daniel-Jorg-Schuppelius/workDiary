@@ -76,7 +76,7 @@
                 <x-detail-grid.row :label="__('E-Mail')">@if ($supplier->email)<a class="link" href="mailto:{{ $supplier->email }}">{{ $supplier->email }}</a>@endif</x-detail-grid.row>
                 <x-detail-grid.row :label="__('Telefon')" :value="$supplier->phone" />
                 <x-detail-grid.row :label="__('Mobil')" :value="$supplier->mobile" />
-                <x-detail-grid.row :label="__('Homepage')">@if ($supplier->homepage)<a class="link" href="{{ $supplier->homepage }}" target="_blank" rel="noopener">{{ $supplier->homepage }}</a>@endif</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Homepage')"><x-external-link :url="$supplier->homepage" /></x-detail-grid.row>
                 @if ($supplier->address_street || $supplier->address_zip || $supplier->address_city)
                     <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{!! e($supplier->address_street) !!}@if($supplier->address_street)
 @endif{{ trim(($supplier->address_zip ?? '').' '.($supplier->address_city ?? '')) }}</x-detail-grid.row>

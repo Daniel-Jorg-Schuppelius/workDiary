@@ -228,6 +228,10 @@
                                     <x-status-badge tone="ghost" size="sm">{{ __('isms.components.manifest.unsigned') }}</x-status-badge>
                                 @elseif ($manifest['signature_valid'] === true)
                                     <x-status-badge tone="success" size="sm">{{ __('isms.components.manifest.signature_valid') }}</x-status-badge>
+                                @elseif ($manifest['signature_valid'] === null)
+                                    {{-- Dritter Zustand (S-52): ohne konfigurierten Herausgeber-Schlüssel
+                                         ist die Signatur nicht prüfbar — weder gültig noch ungültig. --}}
+                                    <x-status-badge tone="warning" size="sm">{{ __('isms.components.manifest.signature_unverifiable') }}</x-status-badge>
                                 @else
                                     <x-status-badge tone="error" size="sm">{{ __('isms.components.manifest.signature_invalid') }}</x-status-badge>
                                 @endif

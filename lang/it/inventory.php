@@ -211,6 +211,34 @@ return [
             'unblocked' => 'Numero di serie sbloccato.',
             'scrapped' => 'Numero di serie rottamato.',
         ],
+        'passport' => [
+            'title' => 'Passaporto dispositivo (pubblico)',
+            'intro' => 'Il passaporto dispositivo consente di verificare autenticità e stato tramite numero di serie senza accedere. L\'accesso dipende solo da un link segreto; non vengono mostrati dati dei clienti.',
+            'token_once' => 'Questo link viene mostrato solo ora — non è memorizzato da nessuna parte.',
+            'state' => 'Stato',
+            'state_none' => 'Non configurato',
+            'state_active' => 'Raggiungibile pubblicamente',
+            'state_paused' => 'In pausa',
+            'hint' => 'Identificativo',
+            'issued_at' => 'Emesso il',
+            'action' => [
+                'issue' => 'Emetti link',
+                'rotate' => 'Rinnova link',
+                'revoke' => 'Revoca accesso',
+                'pause' => 'Sospendi',
+                'resume' => 'Attiva',
+            ],
+            'confirm' => [
+                'rotate' => 'Emettere un nuovo link? Quello precedente smetterà di funzionare.',
+                'revoke' => 'Revocare l\'accesso? Il passaporto dispositivo non sarà più raggiungibile pubblicamente.',
+            ],
+            'flash' => [
+                'issued' => 'Nuovo link emesso.',
+                'revoked' => 'Accesso revocato.',
+                'saved' => 'Salvato.',
+            ],
+        ],
+
         'verify' => [
             'title' => 'Passaporto dispositivo / verifica di autenticità',
             'subtitle' => 'Inserisci un numero di serie per verificarne stato e origine.',

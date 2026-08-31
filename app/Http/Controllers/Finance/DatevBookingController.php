@@ -252,6 +252,10 @@ class DatevBookingController extends Controller {
             'datev.account_length' => ['nullable', 'integer', 'min:4', 'max:8'],
             'datev.revenue_account' => ['nullable', 'string', 'max:12'],
             'datev.revenue_account_tax_free' => ['nullable', 'string', 'max:12'],
+            // Gegenkonten für den OPOS-Ausgleich (Sicherheitsscan 2026-08-23,
+            // S-38): leer = Vorgabe des gewählten Kontenrahmens.
+            'datev.discount_account' => ['nullable', 'string', 'max:12'],
+            'datev.write_off_account' => ['nullable', 'string', 'max:12'],
             'datev.debtor_base' => ['nullable', 'integer', 'min:1', 'max:99999999'],
             'datev.tax_keys' => ['nullable', 'array'],
             'datev.tax_keys.*' => ['nullable', 'string', 'max:4'],

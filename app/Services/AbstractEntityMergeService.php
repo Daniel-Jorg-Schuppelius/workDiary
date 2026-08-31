@@ -24,15 +24,86 @@ use Illuminate\Support\Facades\{DB, Schema};
  * merge()-Ablauf und Spezialfälle (Kinder, Defaults, Uniquify-Spalten).
  */
 abstract class AbstractEntityMergeService {
+    /**
+     * Umgehängte Zeilen je Tabelle, gesammelt während eines Merges.
+     *
+     * @var array<string, int>
+     */
+    protected array $repointed = [];
+
     /** FK-Spaltenname der Entität in abhängigen Tabellen (z. B. customer_id). */
     abstract protected function foreignKeyColumn(): string;
 
     /**
-     * Tabellen mit direkter FK-Spalte ohne Unique-Konflikt → Bulk-UPDATE.
+     * Tabellen, die die FK-Spalte führen, aber bewusst **nicht** umgehängt
+     * werden — Tabelle => Begründung.
+     *
+     * Die Zieltabellen werden aus dem Schema abgeleitet, nicht aufgezählt
+     * (Sicherheitsscan 2026-08-23, S-33): eine handgepflegte Positivliste
+     * veraltet mit jeder Migration still, und weil die Quelle am Ende hart
+     * gelöscht wird, reißt `ON DELETE CASCADE` die vergessenen Zeilen mit.
+     * Gefunden wurden so 79 nicht erfasste Tabellen, 22 davon mit CASCADE.
+     * Eine Ausnahmeliste veraltet nicht: was neu dazukommt, wird umgehängt.
+     *
+     * @return array<string, string>
+     */
+    protected function skippedTables(): array {
+        return [];
+    }
+
+    /**
+     * Tabellen, die die Subklasse selbst behandelt (eigene Reihenfolge,
+     * Uniquify-Schritt) und die deshalb nicht zusätzlich generisch laufen.
      *
      * @return list<string>
      */
-    abstract protected function scalarTables(): array;
+    protected function separatelyHandledTables(): array {
+        return [];
+    }
+
+    /**
+     * Alle Tabellen mit direkter FK-Spalte, abzüglich Pivots (eigener
+     * Unique-Abgleich), Ausnahmen und selbst behandelter Tabellen.
+     *
+     * @return list<string>
+     */
+    protected function scalarTables(): array {
+        $skip = array_merge(
+            array_keys($this->skippedTables()),
+            array_keys($this->pivotTables()),
+            $this->separatelyHandledTables(),
+        );
+
+        return array_values(array_diff(
+            self::tablesWithColumn($this->foreignKeyColumn()),
+            $skip,
+        ));
+    }
+
+    /**
+     * Alle Tabellen des Schemas, die eine Spalte dieses Namens führen.
+     *
+     * @return list<string>
+     */
+    public static function tablesWithColumn(string $column): array {
+        $tables = [];
+        foreach (Schema::getTables() as $table) {
+            $name = is_array($table) ? ($table['name'] ?? '') : (string) $table;
+            if ($name === '') {
+                continue;
+            }
+            foreach (Schema::getColumns($name) as $col) {
+                if (($col['name'] ?? null) === $column) {
+                    $tables[] = $name;
+                    break;
+                }
+            }
+        }
+
+        sort($tables);
+
+        return $tables;
+    }
 
     /**
      * Polymorphe Tabellen (Tabelle => [type-Spalte, id-Spalte]).
@@ -62,11 +133,83 @@ abstract class AbstractEntityMergeService {
 
     protected function repointScalarTables(int $sourceId, int $targetId): void {
         $fk = $this->foreignKeyColumn();
-        foreach ($this->scalarTables() as $table) {
+        $tables = $this->scalarTables();
+
+        $this->assertNoUniqueCollisions($tables, $sourceId, $targetId);
+
+        foreach ($tables as $table) {
             if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $fk)) {
                 continue;
             }
-            DB::table($table)->where($fk, $sourceId)->update([$fk => $targetId]);
+            $moved = DB::table($table)->where($fk, $sourceId)->update([$fk => $targetId]);
+            if ($moved > 0) {
+                $this->repointed[$table] = ($this->repointed[$table] ?? 0) + $moved;
+            }
+        }
+    }
+
+    /**
+     * Bricht ab, wenn das Umhängen einen zusammengesetzten Unique-Index
+     * verletzen würde (z. B. `UNIQUE(project_id, user_id, open_work_date)`:
+     * dieselbe Person hat in beiden Projekten einen offenen Stundenzettel).
+     *
+     * Ohne diese Prüfung liefe der Bulk-UPDATE in einen SQL-Fehler 1062 —
+     * eine Meldung, mit der niemand etwas anfangen kann. Stille Auflösung wäre
+     * schlechter als der Abbruch: welche der beiden Zeilen gilt, ist eine
+     * fachliche Frage. Ausgenommen sind Pivots (reine Zuordnung, Quellzeile
+     * redundant) und Tabellen mit Uniquify-Hook — beide lösen die Kollision
+     * bewusst auf und laufen nicht über diesen Pfad.
+     *
+     * @param  list<string>  $tables
+     */
+    protected function assertNoUniqueCollisions(array $tables, int $sourceId, int $targetId): void {
+        $fk = $this->foreignKeyColumn();
+        $conflicts = [];
+
+        foreach ($tables as $table) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $fk)) {
+                continue;
+            }
+
+            foreach (Schema::getIndexes($table) as $index) {
+                if (($index['unique'] ?? false) !== true) {
+                    continue;
+                }
+
+                $columns = array_values($index['columns'] ?? []);
+                if (count($columns) < 2 || ! in_array($fk, $columns, true)) {
+                    continue;
+                }
+
+                $others = array_values(array_diff($columns, [$fk]));
+                // Self-Join statt OR-Kette: NULL == NULL ist im JOIN falsch —
+                // genau wie im Unique-Index, wo mehrere NULL erlaubt bleiben.
+                $count = DB::table("{$table} as src")
+                    ->join("{$table} as tgt", function ($join) use ($others, $fk, $targetId): void {
+                        foreach ($others as $column) {
+                            $join->on("src.{$column}", '=', "tgt.{$column}");
+                        }
+                        $join->where("tgt.{$fk}", '=', $targetId);
+                    })
+                    ->where("src.{$fk}", $sourceId)
+                    ->count();
+
+                if ($count > 0) {
+                    $conflicts[$table] = ($conflicts[$table] ?? 0) + $count;
+                }
+            }
+        }
+
+        if ($conflicts !== []) {
+            $detail = implode(', ', array_map(
+                static fn (string $table, int $n): string => "{$table} ({$n})",
+                array_keys($conflicts),
+                array_values($conflicts),
+            ));
+
+            throw new \InvalidArgumentException(
+                (string) __('merge.errors.unique_collision', ['tables' => $detail])
+            );
         }
     }
 
@@ -241,6 +384,10 @@ abstract class AbstractEntityMergeService {
     protected function uniquifyChildColumn(string $table, string $column, int $sourceId, int $targetId): void {
         $fk = $this->foreignKeyColumn();
 
+        if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $column)) {
+            return;
+        }
+
         $targetValues = DB::table($table)->where($fk, $targetId)->pluck($column)->all();
         $taken = array_flip(array_map('strval', $targetValues));
 
@@ -291,5 +438,29 @@ abstract class AbstractEntityMergeService {
         if ($target->isDirty()) {
             $target->save();
         }
+    }
+
+    /**
+     * Hält den Merge als ein Ereignis am Ziel fest.
+     *
+     * Das Umhängen läuft als Bulk-UPDATE über den Query Builder — an den
+     * Modell-Ereignissen und damit an den GoBD-Sperren vorbei. Für die
+     * Aufbewahrung ist das vertretbar (die eingefrorenen Partei-Daten einer
+     * ausgestellten Rechnung bleiben unangetastet, nur die Zuordnung wandert),
+     * aber nur, solange nachvollziehbar bleibt, **dass** Belege einem anderen
+     * Stammsatz zugeordnet wurden und wie vielen (Sicherheitsscan S-33).
+     */
+    protected function auditMerge(Model $source, Model $target): void {
+        if (! method_exists($target, 'audit')) {
+            return;
+        }
+
+        ksort($this->repointed);
+
+        $target->audit('merged', [
+            'source_id' => $source->getKey(),
+            'source_label' => (string) ($source->getAttribute('name') ?? $source->getAttribute('title') ?? ''),
+            'repointed' => $this->repointed,
+        ]);
     }
 }

@@ -126,6 +126,7 @@ return [
     ],
 
     'errors' => [
+        'month_entry_locked' => 'The month has been released — please file a time correction request for later entries.',
         'future_day' => 'A future day cannot be closed.',
         'blocking_warnings' => 'The day has blocking warnings and cannot be closed.',
         'illegal_day_status' => 'Action not allowed: day status is :status.',

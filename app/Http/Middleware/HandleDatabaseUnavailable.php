@@ -34,11 +34,15 @@ class HandleDatabaseUnavailable {
 
         // Fast-Path: kürzlich versagte Verbindung spart die erneute Wartezeit.
         if (! DatabaseHealth::isAvailable($defaultConnection)) {
+            $this->logCachedUnavailable($request, $defaultConnection);
+
             return $this->renderUnavailable($request, null);
         }
 
         // Gleicher Fast-Path für den Legacy-Bereich (hängt vollständig an der legacy-Connection).
         if ($request->is('legacy', 'legacy/*') && ! DatabaseHealth::isAvailable(LegacyBridge::CONNECTION)) {
+            $this->logCachedUnavailable($request, LegacyBridge::CONNECTION);
+
             return $this->renderUnavailable($request, null);
         }
 
@@ -80,13 +84,30 @@ class HandleDatabaseUnavailable {
         return false;
     }
 
+    /**
+     * Der Fast-Path schwieg bisher — und damit war ein 503 aus dem Marker
+     * nicht aufzuklären: er entsteht später und an anderer Stelle als der
+     * Fehler, der ihn gesetzt hat. Genau daran hingen die wandernden 503 in
+     * der Testsuite. Alter und Grund des Markers stehen jetzt in der Meldung.
+     */
+    private function logCachedUnavailable(Request $request, string $connection): void {
+        $info = DatabaseHealth::markerInfo($connection);
+
+        Log::warning('database.unavailable.cached', [
+            'connection' => $connection,
+            'path' => $request->path(),
+            'marker_age_seconds' => $info['age'],
+            'marker_reason' => $info['reason'],
+        ]);
+    }
+
     private function markFromException(Throwable $e, string $defaultConnection): void {
         // QueryException kennt den exakten Verbindungsnamen, sonst Default-Connection.
         $connection = $e instanceof QueryException && $e->connectionName !== ''
             ? $e->connectionName
             : $defaultConnection;
 
-        DatabaseHealth::safeMarkUnavailable($connection);
+        DatabaseHealth::safeMarkUnavailable($connection, $e::class . ': ' . mb_substr($e->getMessage(), 0, 200));
     }
 
     private function renderUnavailable(Request $request, ?Throwable $e): Response {

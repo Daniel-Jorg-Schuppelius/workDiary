@@ -250,13 +250,27 @@ class CustomerControllerTest extends TestCase {
         ])
             ->assertRedirect();
 
+        // Der Bankname ist kein Geheimnis und bleibt im Klartext.
         $this->assertDatabaseHas('customers', [
             'name' => 'Bankkunde',
-            'bank_account_holder' => 'Max Beispiel',
-            'bank_iban' => 'DE89370400440532013000',
-            'bank_bic' => 'COBADEFFXXX',
             'bank_name' => 'Commerzbank',
         ]);
+
+        // Kontoinhaber, IBAN und BIC liegen at-rest verschlüsselt
+        // (Sicherheitsscan S-21) — geprüft wird über das Modell, dass die
+        // Normalisierung greift, und über die Rohzeile, dass nichts im
+        // Klartext in der Spalte steht.
+        $customer = \App\Models\Customer::query()->where('name', 'Bankkunde')->firstOrFail();
+
+        $this->assertSame('Max Beispiel', $customer->bank_account_holder);
+        $this->assertSame('DE89370400440532013000', $customer->bank_iban);
+        $this->assertSame('COBADEFFXXX', $customer->bank_bic);
+
+        $raw = \Illuminate\Support\Facades\DB::table('customers')->where('id', $customer->id)->first();
+
+        $this->assertNotSame('DE89370400440532013000', (string) $raw->bank_iban);
+        $this->assertNotSame('COBADEFFXXX', (string) $raw->bank_bic);
+        $this->assertNotSame('Max Beispiel', (string) $raw->bank_account_holder);
     }
 
     public function test_store_rejects_invalid_iban(): void {

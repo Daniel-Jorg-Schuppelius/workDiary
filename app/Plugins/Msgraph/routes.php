@@ -17,7 +17,11 @@ use Illuminate\Support\Facades\Route;
  * OAuth-Callback läuft in der eingeloggten Sitzung (state ist org- UND
  * sitzungsgebunden). Kein öffentlicher Endpunkt — rein ausgehendes Publish.
  */
-Route::middleware(['web', 'auth'])->group(function (): void {
+// Plan-/Modul-Gate wie in den Kern-Routen (Sicherheitsscan 2026-08-23,
+// S-55): dieselben Namenspräfixe (customers.*, invoices.*, assets.*) sind
+// in config/plans.php einem Modul zugeordnet — die Plugin-Routen liefen
+// bisher daran vorbei, ein gesperrtes Modul blieb über sie erreichbar.
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     Route::get('admin/msgraph', [MsgraphAdminController::class, 'index'])->name('admin.msgraph.index');
 
     // OAuth-Verbindung: eine je Organisation.
@@ -39,7 +43,7 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 // ── Kontakt-Push (Feature 102, Schnitt D) ───────────────────────────────
 // Fünfter Grant (Contacts.ReadWrite); Push-Button sitzt in der Kundenakte
 // (Slot 'customer-show.actions'), die Verbindung im Msgraph-Admin-Panel.
-Route::middleware(['web', 'auth'])->group(function (): void {
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     Route::post('admin/msgraph/contacts/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphContactsController::class, 'startOAuth'])->name('admin.msgraph.contacts.oauth.start');
     Route::get('admin/msgraph/contacts/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphContactsController::class, 'oauthCallback'])->name('admin.msgraph.contacts.oauth.callback');
     Route::post('admin/msgraph/contacts/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphContactsController::class, 'disconnect'])->name('admin.msgraph.contacts.disconnect');
@@ -47,13 +51,13 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 });
 
 // ── Free/Busy im Termin-Dialog (Feature 102, C2) ────────────────────────
-Route::middleware(['web', 'auth'])
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])
     ->get('msgraph/availability', \App\Plugins\Msgraph\Http\Controllers\MsgraphAvailabilityController::class)
     ->name('msgraph.availability');
 
 // ── To-Do-Sync (Feature 102, Schnitt E) ─────────────────────────────────
 // Sechster Grant (Tasks.ReadWrite); Listen-Zuordnungen im Msgraph-Admin-Panel.
-Route::middleware(['web', 'auth'])->group(function (): void {
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     Route::post('admin/msgraph/tasks/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'startOAuth'])->name('admin.msgraph.tasks.oauth.start');
     Route::get('admin/msgraph/tasks/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'oauthCallback'])->name('admin.msgraph.tasks.oauth.callback');
     Route::post('admin/msgraph/tasks/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'disconnect'])->name('admin.msgraph.tasks.disconnect');
@@ -64,7 +68,7 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 // ── Graph-Mail-Versand (Feature 102) ────────────────────────────────────
 // Eigener Grant (Mail.Send), getrennt von Kalender/Intake/Backup; die
 // Verbindung wird im Msgraph-Admin-Panel verwaltet.
-Route::middleware(['web', 'auth'])->group(function (): void {
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     Route::post('admin/msgraph/mail/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'startOAuth'])->name('admin.msgraph.mail.oauth.start');
     Route::get('admin/msgraph/mail/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'oauthCallback'])->name('admin.msgraph.mail.oauth.callback');
     Route::post('admin/msgraph/mail/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphMailController::class, 'disconnect'])->name('admin.msgraph.mail.disconnect');
@@ -76,7 +80,7 @@ Route::middleware(['web', 'auth'])->group(function (): void {
 
 // ── Cloud-Dokumenteingang (Feature 080, MVP-354) ────────────────────────
 // Eigener LESENDER Intake-Flow, getrennt von der Kalender-Verbindung.
-Route::middleware(['web', 'auth'])->group(function (): void {
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     Route::post('admin/cloud-intake/microsoft/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphIntakeController::class, 'startOAuth'])->name('admin.cloud-intake.microsoft.oauth.start');
     Route::get('admin/cloud-intake/microsoft/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphIntakeController::class, 'oauthCallback'])->name('admin.cloud-intake.microsoft.oauth.callback');
 });
@@ -96,7 +100,7 @@ Route::middleware(['api', 'throttle:webhook-ingest'])
 // ── Cloud-Backupziel (Feature 017 Phase 32, MVP-363) ────────────────────
 // Systemweiter OAuth-Flow (Plattform-Admin, Policy im Controller);
 // eigene Verbindung + Schreib-Scopes, getrennt vom Dokumenteingang.
-Route::middleware(['web', 'auth'])->group(function (): void {
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     Route::post('admin/backup-targets/microsoft/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphBackupTargetController::class, 'startOAuth'])->name('admin.backup-targets.microsoft.oauth.start');
     Route::get('admin/backup-targets/microsoft/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphBackupTargetController::class, 'oauthCallback'])->name('admin.backup-targets.microsoft.oauth.callback');
 });

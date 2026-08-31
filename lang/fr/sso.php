@@ -35,6 +35,8 @@ return [
     'domains_heading' => 'Domaines e-mail',
     'domains_hint' => 'WorkDiary déduit l’organisation correspondante du domaine e-mail de connexion. Les domaines sont uniques au niveau global.',
     'no_domains' => 'Aucun domaine e-mail associé pour l’instant.',
+    'domain_unverified' => 'non vérifié',
+    'domain_dns_hint' => 'Créez un enregistrement TXT :name avec la valeur :value, puis choisissez « Vérifier ».',
 
     'provider' => [
         'custom' => 'Fournisseur OIDC personnalisé',
@@ -110,6 +112,7 @@ return [
         'break_glass_remove' => 'Retirer',
         'domain_add' => 'Ajouter un domaine',
         'domain_remove' => 'Supprimer',
+        'domain_verify' => 'Vérifier',
     ],
 
     'col' => [
@@ -137,6 +140,8 @@ return [
         'break_glass_added' => 'Compte de secours défini.',
         'break_glass_removed' => 'Statut de secours retiré.',
         'domain_added' => 'Domaine e-mail ajouté.',
+        'domain_added_unverified' => 'Domaine ajouté — pas encore actif. Pour le prouver, créez un enregistrement TXT :name avec la valeur :value, puis choisissez « Vérifier ».',
+        'domain_verified' => 'Domaine vérifié.',
         'domain_removed' => 'Domaine e-mail supprimé.',
     ],
 
@@ -154,6 +159,7 @@ return [
         'google_issuer_invalid' => 'Pour Google Workspace, seul l’émetteur officiel https://accounts.google.com est autorisé.',
         'domain_invalid' => 'Veuillez indiquer un domaine e-mail valide.',
         'domain_taken' => 'Ce domaine e-mail est déjà associé à une autre organisation.',
+        'domain_not_verified' => 'Aucun enregistrement TXT correspondant. Attendu : :name avec la valeur :value (les modifications DNS peuvent prendre quelques minutes).',
         'flow_expired' => 'La connexion SSO a expiré. Veuillez réessayer.',
         'module_disabled' => 'L’authentification unique n’est pas disponible pour cette organisation.',
         'url_not_public' => 'L’URL n’est pas accessible publiquement. Pour les fournisseurs internes, activez « Autoriser un IdP sur réseau privé ».',

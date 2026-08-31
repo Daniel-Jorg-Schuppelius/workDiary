@@ -659,6 +659,25 @@ class AppServiceProvider extends ServiceProvider {
 
         RateLimiter::for('register', fn(Request $request) => Limit::perMinute(3)->by($request->ip()));
 
+        // Sanctum-API (Sicherheitsscan 2026-08-23, S-58): gedrosselt wird je
+        // Token-Inhaber, nicht je IP — mehrere Nutzer hinter einer NAT-Adresse
+        // sollen sich nicht gegenseitig aussperren, und ein einzelner Token
+        // soll den Server nicht allein auslasten. Ohne Nutzer (abgelaufener
+        // Token) bleibt die IP als Schlüssel.
+        RateLimiter::for('api', fn(Request $request) => Limit::perMinute(120)->by(
+            $request->user()?->getAuthIdentifier() !== null
+                ? 'api:u' . $request->user()->getAuthIdentifier()
+                : 'api:i' . $request->ip()
+        ));
+
+        // Passwort-vergessen (S-45): das IP-Limit allein verhindert kein
+        // Mail-Bombing einer einzelnen Adresse über wechselnde Adressen. Der
+        // Schlüssel ist gehasht, damit keine Klartext-Adresse im Cache landet.
+        RateLimiter::for('password-forgot', fn(Request $request) => [
+            Limit::perHour(3)->by('pwf:' . CryptoHelper::hash(mb_strtolower((string) $request->input('email')), HashAlgorithm::SHA1)),
+            Limit::perMinute(6)->by($request->ip()),
+        ]);
+
         // Hinweisgeber-Portal (Abschnitt 19): Anzeige moderat, Absenden streng.
         // IP nur als kurzlebiger, gehashter Cache-Key (datensparsam) – nie im
         // Fachmodell gespeichert.
@@ -719,7 +738,15 @@ class AppServiceProvider extends ServiceProvider {
         RateLimiter::for('todoist-webhook', fn(Request $request) => Limit::perMinute(120)->by('twh:' . $request->ip()));
         // Zeiterfassungs-Webhooks (Feature 124, MVP-613): unauthentifizierter
         // Endpunkt, deshalb gedrosselt. Verlorene Aufrufe heilt das Polling.
-        RateLimiter::for('time-tracking-webhook', fn (Request $request) => Limit::perMinute(120)->by('ttwh:' . $request->ip()));
+        // Zusätzlich ein GLOBALES Limit (Sicherheitsscan 2026-08-23, S-57):
+        // der Endpunkt ist unauthentifiziert, und ein IP-Limit allein hält
+        // niemanden auf, der aus vielen Quellen kommt. Die Zuordnung läuft
+        // seit S-57 zwar über einen Index statt über das Entschlüsseln aller
+        // Mandanten-Einstellungen — eine Obergrenze gehört trotzdem dazu.
+        RateLimiter::for('time-tracking-webhook', fn (Request $request) => [
+            Limit::perMinute(120)->by('ttwh:' . $request->ip()),
+            Limit::perMinute(600)->by('ttwh:global'),
+        ]);
 
         // Sessionloser Lexoffice-Webhook (Audit 2026-08, Welle 1.3): gleiche
         // Abwägung — Bursts erlauben, Flooding deckeln; Verluste heilt der

@@ -333,6 +333,7 @@ return [
         'downloaded' => 'GoBD-Export heruntergeladen',
     ],
     // Messwerkzeug (MVP-722): Zeilen aus audit:measure-chain-contention.
+    'merged' => 'Zusammengeführt',
     'perf' => [
         'measure' => 'Messlauf (Sperrkonkurrenz der Audit-Kette)',
     ],

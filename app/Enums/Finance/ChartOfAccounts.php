@@ -58,4 +58,35 @@ enum ChartOfAccounts: string implements HasLabel {
             self::Skr04 => '4200',
         };
     }
+
+    /**
+     * Gewährtes Skonto auf Ausgangsrechnungen — eine Erlösschmälerung.
+     * SKR03 ⇒ 8736, SKR04 ⇒ 4736 (Default, in der Org-Konfig überschreibbar).
+     *
+     * Gebraucht für die Gegenbuchung beim OPOS-Ausgleich (Sicherheitsscan
+     * 2026-08-23, S-38): ohne sie war der Posten ausgeglichen, das Journal
+     * aber unverändert — Forderung weg, Erlös unangetastet.
+     */
+    public function defaultDiscountAccount(): string {
+        return match ($this) {
+            self::Skr03 => '8736',
+            self::Skr04 => '4736',
+        };
+    }
+
+    /**
+     * Ausbuchung einer uneinbringlichen Forderung.
+     * SKR03 ⇒ 2400, SKR04 ⇒ 6930 (Default, überschreibbar).
+     *
+     * Bewusst das Konto für den EINFACHEN Forderungsverlust: die Unterscheidung
+     * nach Steuersatz und die Frage der Umsatzsteuerberichtigung gehören in die
+     * Buchhaltung, nicht in eine Vorgabe. Wer es genauer braucht, setzt das
+     * Konto je Organisation.
+     */
+    public function defaultWriteOffAccount(): string {
+        return match ($this) {
+            self::Skr03 => '2400',
+            self::Skr04 => '6930',
+        };
+    }
 }

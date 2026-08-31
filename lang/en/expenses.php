@@ -9,6 +9,10 @@
  */
 
 return [
+    'error' => [
+        'self_approval' => 'You cannot approve your own expense.',
+        'invalid_transition' => 'The action :action is not possible in status :status.',
+    ],
     'receipt' => [
         'no_vendor' => 'No vendor',
         'link_title' => 'Accounting voucher',

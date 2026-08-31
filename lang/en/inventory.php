@@ -211,6 +211,34 @@ return [
             'unblocked' => 'Serial number unblocked.',
             'scrapped' => 'Serial number scrapped.',
         ],
+        'passport' => [
+            'title' => 'Device passport (public)',
+            'intro' => 'The device passport lets anyone check authenticity and status by serial number without signing in. Access rests on a secret link alone; no customer data is shown.',
+            'token_once' => 'This link is shown only now — it is stored nowhere.',
+            'state' => 'Status',
+            'state_none' => 'Not set up',
+            'state_active' => 'Publicly reachable',
+            'state_paused' => 'Paused',
+            'hint' => 'Identifier',
+            'issued_at' => 'Issued on',
+            'action' => [
+                'issue' => 'Issue link',
+                'rotate' => 'Renew link',
+                'revoke' => 'Revoke access',
+                'pause' => 'Pause',
+                'resume' => 'Activate',
+            ],
+            'confirm' => [
+                'rotate' => 'Issue a new link? The previous link will stop working.',
+                'revoke' => 'Revoke access? The device passport will no longer be publicly reachable.',
+            ],
+            'flash' => [
+                'issued' => 'New link issued.',
+                'revoked' => 'Access revoked.',
+                'saved' => 'Saved.',
+            ],
+        ],
+
         'verify' => [
             'title' => 'Device passport / authenticity check',
             'subtitle' => 'Enter a serial number to check its status and origin.',

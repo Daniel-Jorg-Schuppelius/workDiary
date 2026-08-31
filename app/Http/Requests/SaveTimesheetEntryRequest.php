@@ -89,7 +89,11 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
             'end_time' => ['nullable', 'date_format:H:i'],
             'started_at' => ['nullable', 'date'],
             'ended_at' => ['nullable', 'date', 'after_or_equal:started_at'],
-            'date' => ['nullable', 'date'],
+            // Wie beim Zeiteintrag: kein Nachtragen in einen freigegebenen
+            // Monat (Sicherheitsscan 2026-08-23, S-32). Der Stundenzettel
+            // führt zusätzlich `kind` (Reisezeit/Bereitschaft) — genau die
+            // Zeilen, die der Lohnexport zur Exportzeit neu rechnet.
+            'date' => ['nullable', 'date', new \App\Rules\NotInLockedMonth($this->timesheetOwner())],
             'minutes' => ['nullable', 'integer', 'min:0', 'max:1440'],
             'break_minutes' => ['nullable', 'integer', 'min:0', 'max:480'],
             'kind' => ['nullable', Rule::enum(TimeEntryKind::class)],
@@ -117,4 +121,18 @@ class SaveTimesheetEntryRequest extends BaseFormRequest {
             }
         });
     }
+
+    /** Der Stundenzettel gehört einem Mitarbeiter — für den gilt die Sperre. */
+    private function timesheetOwner(): ?\App\Models\User {
+        $timesheet = $this->route('timesheet');
+
+        if ($timesheet instanceof \App\Models\Timesheet && $timesheet->user instanceof \App\Models\User) {
+            return $timesheet->user;
+        }
+
+        $auth = \Illuminate\Support\Facades\Auth::user();
+
+        return $auth instanceof \App\Models\User ? $auth : null;
+    }
+
 }

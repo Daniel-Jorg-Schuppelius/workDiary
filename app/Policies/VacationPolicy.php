@@ -44,6 +44,9 @@ class VacationPolicy {
         // Admins via HasAdminBypass::before(); zusätzlich entscheidet die
         // benannte Stellvertretung, solange der Vertretene abwesend ist (MVP-523).
         return $this->sharesOrganization($user, $vacation)
+            // Keine Selbstfreigabe (S-35): auch eine Stellvertretung
+            // entscheidet nicht über den eigenen Urlaub.
+            && ! $this->owns($user, $vacation)
             && app(\App\Services\Users\DeputyResolver::class)->actsAsDeputyForAbsentAdmin($user);
     }
 

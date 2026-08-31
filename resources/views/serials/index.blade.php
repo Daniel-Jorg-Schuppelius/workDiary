@@ -16,6 +16,9 @@
 <x-index-page overflow="clip" :subtitle="__('inventory.serial.subtitle')">
     <x-slot:actions>
         <x-icon-btn icon="qr_code_scanner" size="sm" :href="route('serials.verify')" show-label>{{ __('inventory.serial.action.verify') }}</x-icon-btn>
+        @can(\App\Enums\User\Permission::OrganizationUpdate->value)
+            <x-icon-btn icon="badge" size="sm" data-entry-modal-trigger :href="route('serials.passport.edit')" show-label>{{ __('inventory.serial.passport.title') }}</x-icon-btn>
+        @endcan
     </x-slot:actions>
 
     <x-filter-bar :action="route('serials.index')">

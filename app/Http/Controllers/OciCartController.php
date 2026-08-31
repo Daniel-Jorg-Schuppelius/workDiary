@@ -29,6 +29,21 @@ use Illuminate\Support\Facades\{Auth, Gate};
 class OciCartController extends Controller {
     use ResolvesCurrentOrganization;
 
+    /**
+     * Passiver Warenkorb-Import aus der eigenen Oberfläche.
+     *
+     * Die CSRF-Ausnahme für diese Route ist am 2026-08-31 entfallen
+     * (Sicherheitsscan S-43). Sie half nur, wenn ein Betreiber
+     * `SESSION_SAME_SITE=none` setzte — und genau dann war der Endpunkt
+     * klassisch CSRF-anfällig: jede fremde Seite konnte im Browser eines
+     * angemeldeten Einkäufers Bestellentwürfe anlegen, denn Supplier- und
+     * Warehouse-Sqids stehen sichtbar in der Oberfläche. Beim Standard `lax`
+     * trug der Cross-Site-POST ohnehin kein Session-Cookie, die Ausnahme war
+     * also wirkungslos, solange sie ungefährlich war.
+     *
+     * Externe Shops binden über {@see hookReturn()} an: sessionlos und über
+     * die signierte HOOK_URL autorisiert.
+     */
     public function import(Request $request, OciCartImportService $service): RedirectResponse {
         Gate::authorize(P::InventoryPost->value);
 

@@ -61,11 +61,41 @@ final class PluginSettingsResolver {
         return (bool) config($this->configPrefix . '.enabled', $default);
     }
 
+    /**
+     * Schlüsselnamen, die ein Zugangsgeheimnis bezeichnen.
+     *
+     * Für sie greift der Config-/ENV-Rückfall nur, wenn der Betreiber ihn
+     * ausdrücklich zulässt ({@see secretFallbackAllowed()}).
+     */
+    private const SECRET_KEY_PATTERN = '/(^|_)(api_key|api_token|api_secret|api_password|token|secret|password|key|keystring)$/';
+
     /** Nicht-leerer String: Org-Setting vor Config, sonst `$default`. */
     public function string(string $key, ?string $default = null, bool $trim = false): ?string {
-        return $this->stringValue($this->settings[$key] ?? null, $trim)
-            ?? $this->stringValue(config($this->configPrefix . '.' . $key), $trim)
-            ?? $default;
+        $own = $this->stringValue($this->settings[$key] ?? null, $trim);
+        if ($own !== null) {
+            return $own;
+        }
+
+        // Geheimnisse fallen nur mit ausdrücklicher Erlaubnis auf die Config
+        // zurück (Sicherheitsscan 2026-08-23, S-28). Im Einzelplatzbetrieb ist
+        // der Rückfall die gewollte Bequemlichkeit — dort steht in der .env der
+        // eigene Schlüssel. Im Mehrmandantenbetrieb arbeitete ein Mandant ohne
+        // eigene Zugangsdaten damit still über den Schlüssel des Betreibers
+        // und sah fremde Daten.
+        if ($this->isSecretKey($key) && ! self::secretFallbackAllowed()) {
+            return $default;
+        }
+
+        return $this->stringValue(config($this->configPrefix . '.' . $key), $trim) ?? $default;
+    }
+
+    /** Darf ein Geheimnis auf Config/ENV zurückfallen? Vorgabe: ja. */
+    public static function secretFallbackAllowed(): bool {
+        return (bool) config('plugins.allow_env_secret_fallback', true);
+    }
+
+    private function isSecretKey(string $key): bool {
+        return preg_match(self::SECRET_KEY_PATTERN, $key) === 1;
     }
 
     /** Nur aus den Org-Settings, nie Config — z. B. Webhook-Geheimnisse. */

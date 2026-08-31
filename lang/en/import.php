@@ -83,6 +83,7 @@ return [
             'time' => 'Not a valid time (expected HH:MM).',
             'status' => 'Value is not a valid status.',
             'amount' => 'Not a valid amount.',
+            'url' => 'Not a valid address (http:// or https:// expected).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Row limit (:max) exceeded — remainder ignored.',

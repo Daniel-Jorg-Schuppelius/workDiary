@@ -163,6 +163,9 @@ return [
     'ulid' => 'Das Feld :attribute muss eine gültige ULID sein.',
     'uuid' => 'Das Feld :attribute muss eine gültige UUID sein.',
 
+    'push_endpoint_scheme' => 'Der Push-Endpunkt muss mit https:// beginnen.',
+    'push_endpoint_unreachable' => 'Der Push-Endpunkt ist keine öffentlich erreichbare Adresse.',
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',

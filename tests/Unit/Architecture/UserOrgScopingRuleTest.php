@@ -130,7 +130,7 @@ class UserOrgScopingRuleTest extends TestCase {
         // Org-bedingter Filter; Expense trägt immer organization_id (Fallback ohne Org unerreichbar).
         'app/Services/Expense/ApproverResolver.php' => 'Basis-Query wird bei vorhandener Expense-Org gefiltert (Expense ist tenant-scoped).',
         // Öffentliche, sessionlose Token-Route: Auflösung über den Feed-Token, danach Org-Bindung.
-        'app/Http/Controllers/IcsFeedController.php' => 'Persönlicher ICS-Feed: Lookup über calendar_feed_token (Public-Route, bindet danach Org).',
+        'app/Http/Controllers/IcsFeedController.php' => 'Persönlicher ICS-Feed: Lookup über calendar_feed_token_hash (Public-Route, bindet danach Org).',
         // Korrelierte Sortier-Subquery (orderBy): whereColumn bindet users.id an
         // die bereits org-gescopten time_entries des Projekts — kein Cross-Tenant-Leak,
         // löst nur den Namen des jeweils sichtbaren Zeiteintrags auf.

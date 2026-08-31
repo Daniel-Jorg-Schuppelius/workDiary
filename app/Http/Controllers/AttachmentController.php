@@ -198,6 +198,17 @@ class AttachmentController extends Controller {
                 abort(403);
             }
 
+            // `isAdmin()` gilt für jeden org-lokalen Admin — ohne Org-Vergleich
+            // konnte er Avatare an Nutzer FREMDER Mandanten hängen oder deren
+            // Avatar löschen (Sicherheitsscan 2026-08-23, S-40). 404 statt 403:
+            // die Existenz eines fremden Kontos geht ihn nichts an.
+            abort_unless(
+                $current->id === $parent->id
+                    || (int) $parent->organization_id === (int) $current->organization_id
+                    || $current->isGlobalAdmin(),
+                404,
+            );
+
             return;
         }
 

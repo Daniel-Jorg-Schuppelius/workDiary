@@ -126,6 +126,7 @@ return [
     ],
 
     'errors' => [
+        'month_entry_locked' => 'Der Monat ist freigegeben — für nachträgliche Zeiten bitte einen Zeitkorrektur-Antrag stellen.',
         'future_day' => 'Ein zukünftiger Tag kann nicht abgeschlossen werden.',
         'blocking_warnings' => 'Der Tag hat blockierende Warnungen und kann nicht abgeschlossen werden.',
         'illegal_day_status' => 'Aktion nicht erlaubt: Tagesstatus ist :status.',

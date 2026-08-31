@@ -42,7 +42,7 @@ final class JtlUrlGuard {
             throw new RuntimeException('JTL-Wawi: Für die OnPremise-Betriebsart ist keine Basis-URL hinterlegt.');
         }
 
-        self::assertAcceptable($url, $connection->allow_private_network);
+        self::assertAcceptable($url, $connection->allowsPrivateNetwork());
 
         return rtrim($url, '/');
     }

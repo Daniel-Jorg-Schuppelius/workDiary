@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\{PushSubscription, User};
+use App\Rules\SafePushEndpoint;
 use Illuminate\Http\{JsonResponse, Request};
 
 class PushSubscriptionController extends Controller {
@@ -22,7 +23,9 @@ class PushSubscriptionController extends Controller {
 
     public function store(Request $request): JsonResponse {
         $data = $request->validate([
-            'endpoint' => ['required', 'string', 'max:500'],
+            // Der Server ruft diese Adresse später selbst auf — ohne Prüfung
+            // wäre das eine blinde SSRF (Sicherheitsscan 2026-08-23, S-48).
+            'endpoint' => ['required', 'string', 'max:500', new SafePushEndpoint()],
             'keys.p256dh' => ['required', 'string', 'max:255'],
             'keys.auth' => ['required', 'string', 'max:255'],
             'contentEncoding' => ['nullable', 'string', 'max:32'],

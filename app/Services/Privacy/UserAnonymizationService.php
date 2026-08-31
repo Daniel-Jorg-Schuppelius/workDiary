@@ -98,7 +98,7 @@ class UserAnonymizationService {
             'two_factor_secret' => null,
             'two_factor_recovery_codes' => null,
             'two_factor_confirmed_at' => null,
-            'calendar_feed_token' => null,
+            'calendar_feed_token_hash' => null,
             'portal_invite_token_hash' => null,
             'portal_invite_expires_at' => null,
             'portal_invited_at' => null,

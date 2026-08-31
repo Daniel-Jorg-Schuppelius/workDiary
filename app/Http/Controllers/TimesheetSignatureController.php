@@ -62,10 +62,13 @@ class TimesheetSignatureController extends Controller {
         Gate::authorize('update', $timesheet);
 
         $minutes = (int) config('timesheet.signature.magic_minutes', 1440);
-        $this->signatures->generateMagicToken($timesheet, $minutes);
+        // Der Klartext-Token existiert nur noch hier — gespeichert ist der
+        // Hash (S-44). Nach dieser Antwort ist der Link nicht mehr
+        // rekonstruierbar, auch nicht aus der Datenbank.
+        $plainToken = $this->signatures->generateMagicToken($timesheet, $minutes);
 
         if ($timesheet->customer_email) {
-            $url = route('timesheets.public-sign', ['token' => $timesheet->refresh()->magic_token]);
+            $url = route('timesheets.public-sign', ['token' => $plainToken]);
             Mail::to($timesheet->customer_email)->send(new TimesheetSignatureRequestedMail($timesheet, $url));
         }
 

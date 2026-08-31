@@ -35,6 +35,8 @@ return [
     'domains_heading' => 'Email domains',
     'domains_hint' => 'WorkDiary derives the matching organization from the login email domain. Domains are globally unique.',
     'no_domains' => 'No email domain assigned yet.',
+    'domain_unverified' => 'unverified',
+    'domain_dns_hint' => 'Create a TXT record :name with the value :value, then choose “Check”.',
 
     'provider' => [
         'custom' => 'Custom OIDC provider',
@@ -110,6 +112,7 @@ return [
         'break_glass_remove' => 'Remove',
         'domain_add' => 'Add domain',
         'domain_remove' => 'Remove',
+        'domain_verify' => 'Check',
     ],
 
     'col' => [
@@ -137,6 +140,8 @@ return [
         'break_glass_added' => 'Break-glass account set.',
         'break_glass_removed' => 'Break-glass status removed.',
         'domain_added' => 'Email domain added.',
+        'domain_added_unverified' => 'Domain added — not active yet. To prove ownership, create a TXT record :name with the value :value, then choose “Check”.',
+        'domain_verified' => 'Domain verified.',
         'domain_removed' => 'Email domain removed.',
     ],
 
@@ -154,6 +159,7 @@ return [
         'google_issuer_invalid' => 'For Google Workspace only the official issuer https://accounts.google.com is allowed.',
         'domain_invalid' => 'Please enter a valid email domain.',
         'domain_taken' => 'This email domain is already assigned to another organization.',
+        'domain_not_verified' => 'No matching TXT record found. Expected: :name with the value :value (DNS changes can take a few minutes).',
         'flow_expired' => 'The SSO sign-in has expired. Please try again.',
         'module_disabled' => 'Single sign-on is not available for this organization.',
         'url_not_public' => 'The URL is not publicly reachable. For internal identity providers enable “Allow IdP on private network”.',

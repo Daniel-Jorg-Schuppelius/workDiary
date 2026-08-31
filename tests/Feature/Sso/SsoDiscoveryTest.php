@@ -48,6 +48,9 @@ final class SsoDiscoveryTest extends TestCase {
         OrganizationSsoDomain::query()->create([
             'organization_id' => $this->organization->id,
             'domain' => $domain,
+            // Nur NACHGEWIESENE Domains lenken Anmeldungen (Sicherheitsscan
+            // 2026-08-23, S-49).
+            'verified_at' => now(),
         ]);
     }
 
@@ -106,4 +109,25 @@ final class SsoDiscoveryTest extends TestCase {
 
         $this->assertSame(1, OrganizationSsoDomain::query()->count());
     }
+
+    /**
+     * S-49: Ohne DNS-Nachweis lenkt eine Domain nichts. Sonst genügte das
+     * bloße Eintragen, um die Mail-Domain eines fremden Mandanten zu
+     * beanspruchen und dessen Nutzer auf den eigenen IdP zu leiten.
+     */
+    public function test_unverifizierte_domain_lenkt_nicht(): void {
+        $this->setUpOrganization(['plan' => Organization::PLAN_ENTERPRISE]);
+        $this->connection(SsoProviderType::Google);
+
+        OrganizationSsoDomain::query()->create([
+            'organization_id' => $this->organization->id,
+            'domain' => 'ungeprueft.test',
+            'verified_at' => null,
+        ]);
+
+        $this->get(route('sso.discover', ['email' => 'wer@ungeprueft.test']))
+            ->assertRedirect(route('sso.discover'))
+            ->assertSessionHasErrors('email');
+    }
+
 }

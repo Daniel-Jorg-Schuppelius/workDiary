@@ -33,12 +33,15 @@ final class InvestmentLifecycleTest extends TestCase {
 
     private User $second;
 
+    private User $third;
+
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->second = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $this->third = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
     private function makeCase(): InvestmentCase {
@@ -82,7 +85,16 @@ final class InvestmentLifecycleTest extends TestCase {
         $this->assertSame(2, $request->approvals()->count(), 'Ab der Schwelle: Vier-Augen (2 Stufen).');
 
         $this->assertSame('pending', $service->approveBudget($request, $this->second));
-        $this->assertSame('approved_all', $service->approveBudget($request->fresh(), $this->second));
+
+        // Vier Augen heißt zwei Personen: wer Stufe 1 entschieden hat, darf
+        // Stufe 2 nicht auch entscheiden (Sicherheitsscan 2026-08-23, S-34).
+        try {
+            $service->approveBudget($request->fresh(), $this->second);
+            $this->fail('Dieselbe Person hat beide Stufen entschieden.');
+        } catch (\RuntimeException) {
+        }
+
+        $this->assertSame('approved_all', $service->approveBudget($request->fresh(), $this->third));
         $this->assertSame('approved', $request->fresh()->status);
     }
 

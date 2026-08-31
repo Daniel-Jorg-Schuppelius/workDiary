@@ -183,6 +183,7 @@ return [
 
     'error' => [
         'local_invoicing_locked' => 'La facturation est pilotée par :program ; la création locale de factures est verrouillée.',
+        'sources_already_reserved' => ':count source(s) de ce justificatif figurent déjà dans un autre justificatif confirmé — veuillez le recréer.',
         'no_sources' => 'Aucune source transférable trouvée dans la période sélectionnée.',
         'illegal_transition' => 'Le changement de statut de « :from » vers « :to » n\'est pas autorisé.',
         'void_after_transfer' => 'Un transfert déjà livré ne peut pas être annulé — veuillez utiliser un transfert d\'annulation/de différence.',

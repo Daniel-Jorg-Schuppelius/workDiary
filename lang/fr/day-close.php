@@ -126,6 +126,7 @@ return [
     ],
 
     'errors' => [
+        'month_entry_locked' => 'Le mois est validé — pour des temps ultérieurs, veuillez déposer une demande de correction.',
         'future_day' => 'Un jour futur ne peut pas être clôturé.',
         'blocking_warnings' => 'La journée comporte des avertissements bloquants et ne peut pas être clôturée.',
         'illegal_day_status' => 'Action non autorisée : le statut du jour est :status.',

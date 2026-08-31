@@ -10,15 +10,18 @@
 
 namespace App\Http\Controllers\Auth;
 
-use App\Http\Controllers\Auth\Concerns\ResolvesWorkMode;
+use App\Http\Controllers\Auth\Concerns\{CompletesLogin, ResolvesWorkMode};
 use App\Http\Controllers\Controller;
-use App\Legacy\LegacyBridge;
+use App\Legacy\Auth\LegacyUserProvider;
 use App\Models\{SsoConnection, User};
+use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, DB, RateLimiter};
+use Illuminate\Support\Facades\{Auth, RateLimiter};
 use Illuminate\View\View;
 
 class LoginController extends Controller {
+    use CompletesLogin;
+
     use ResolvesWorkMode;
 
     private const MAX_LOGIN_ATTEMPTS = 5;
@@ -43,33 +46,62 @@ class LoginController extends Controller {
             ])->onlyInput('username');
         }
 
-        // SSO-Pflicht (Feature 057): zum SSO-Start umleiten; harte Sperre sitzt zusätzlich im LegacyUserProvider.
-        $ssoRedirect = $this->ssoEnforcedRedirect($credentials['username']);
-        if ($ssoRedirect !== null) {
-            return $ssoRedirect;
-        }
+        // Passwort prüfen, ohne einzuloggen (Sicherheitsscan 2026-08-23, S-51).
+        // `attempt()` feuerte das Login-Ereignis schon bei richtigem Passwort:
+        // der Audit-Eintrag „auth.login" entstand, Impossible-Travel lief, und
+        // das Gerät wurde als bekannt vermerkt — auch wenn danach die
+        // Zwei-Faktor-Abfrage kam und niemand sie bestand. Wer nur das Passwort
+        // hatte, konnte damit sein Gerät als vertrauenswürdig eintragen und die
+        // spätere „Neues Gerät"-Warnung für sich abschalten.
+        // Die SSO-Sperre des Providers hier bewusst aussetzen: der Controller
+        // muss das Passwort prüfen dürfen, um überhaupt entscheiden zu können,
+        // ob er freundlich umleitet (S-41). Eingeloggt wird in dem Fall nicht.
+        $validated = LegacyUserProvider::ignoringSsoEnforcement(
+            static fn (): bool => Auth::validate(['username' => $credentials['username'], 'password' => $credentials['password']]),
+        );
 
-        if (Auth::attempt(['username' => $credentials['username'], 'password' => $credentials['password']], $request->boolean('remember'))) {
+        if ($validated) {
+            /** @var User|null $user */
+            $user = Auth::getLastAttempted();
+
+            // SSO-Pflicht (Feature 057) ERST JETZT prüfen — nach der
+            // Passwortprüfung (Sicherheitsscan 2026-08-23, S-41). Davor
+            // antwortete der Login für vorhandene Konten SSO-pflichtiger
+            // Mandanten mit einer Umleitung, für unbekannte mit der
+            // generischen Fehlermeldung: der Unterschied ließ sich zum
+            // Aufzählen gültiger Benutzernamen samt Org-Slug benutzen, ganz
+            // ohne Passwort. Wer bis hierher kommt, kennt das Passwort bereits.
+            // Die harte Sperre sitzt zusätzlich im LegacyUserProvider.
+            $ssoRedirect = $this->ssoEnforcedRedirect($credentials['username']);
+            if ($ssoRedirect !== null) {
+                // Zähler weiterzählen statt leeren: eine Umleitung ist kein
+                // Login, und der Pfad darf nicht ungebremst laufen.
+                RateLimiter::hit($throttleKey, 60);
+
+                return $ssoRedirect;
+            }
+
             RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
-            $this->auditBreakGlassIfApplicable();
 
-            $this->syncLegacyUserIdIfMissing((string) $credentials['username']);
-
-            /** @var User|null $user */
-            $user = Auth::user();
-
-            // Zwei-Faktor aktiv: noch NICHT voll einloggen, Identität bis zur Code-Eingabe in der Session parken.
+            // Zwei-Faktor aktiv: Identität bis zur Code-Eingabe in der Session
+            // parken. Eingeloggt — und damit protokolliert — wird erst im
+            // Challenge-Controller.
             if ($user instanceof User && $user->hasTwoFactorEnabled()) {
-                $remember = $request->boolean('remember');
-                Auth::logout();
                 $request->session()->put('auth.2fa.id', $user->getKey());
-                $request->session()->put('auth.2fa.remember', $remember);
+                $request->session()->put('auth.2fa.remember', $request->boolean('remember'));
+                $request->session()->put('auth.2fa.username', (string) $credentials['username']);
 
                 return redirect()->route('two-factor.login');
             }
 
             if ($user instanceof User) {
+                // Erst hier feuert das Login-Ereignis.
+                Auth::login($user, $request->boolean('remember'));
+
+                $this->auditBreakGlassIfApplicable($user);
+                $this->syncLegacyUserIdIfMissing($user, (string) $credentials['username']);
+
                 return $this->applyWorkModeAndRedirect($request, $user);
             }
 
@@ -77,6 +109,12 @@ class LoginController extends Controller {
         }
 
         RateLimiter::hit($throttleKey, 60);
+
+        // `validate()` feuert — anders als `attempt()` — kein Failed-Ereignis.
+        // Ohne diese Zeile verschwände das Sicherheitsprotokoll für
+        // Fehllogins, und mit ihm die fail2ban-Korrelation. Bewusst OHNE das
+        // Passwort im Payload: der Subscriber braucht nur den Anmeldenamen.
+        event(new Failed('web', Auth::getLastAttempted(), ['username' => $credentials['username']]));
 
         return back()->withErrors([
             'username' => 'Benutzername oder Passwort ist falsch.',
@@ -140,54 +178,4 @@ class LoginController extends Controller {
      * Break-Glass-Nachweis: erfolgreicher Passwort-Login eines sso_exempt-
      * Kontos bei aktiver SSO-Pflicht wird auditiert (DoD MVP-120).
      */
-    private function auditBreakGlassIfApplicable(): void {
-        $user = Auth::user();
-        if (! $user instanceof User || ! $user->sso_exempt) {
-            return;
-        }
-
-        $connection = SsoConnection::query()
-            ->withoutGlobalScopes()
-            ->where('organization_id', $user->organization_id)
-            ->where('active', true)
-            ->where('enforced', true)
-            ->first();
-
-        $connection?->audit('sso.break_glass_used', ['user_id' => $user->id]);
-    }
-
-    private function syncLegacyUserIdIfMissing(string $submittedUsername): void {
-        $authUser = Auth::user();
-
-        if (! $authUser instanceof User || (int) ($authUser->legacy_user_id ?? 0) > 0) {
-            return;
-        }
-
-        if (! filled(config('database.connections.legacy.database'))) {
-            return;
-        }
-
-        try {
-            // attempt(): kein Connect-Versuch bei als down markierter legacy-DB; Mapping ist Best-Effort.
-            $legacy = LegacyBridge::attempt(function () use ($submittedUsername): ?object {
-                // Nur der eingegebene Anmeldename — seine Kenntnis setzt das
-                // Passwort voraus. Der frühere Rückfall auf $authUser->name
-                // hing die Verknüpfung an ein frei wählbares Profilfeld:
-                // wer sich wie ein Legacy-Admin nannte, erbte dessen ID
-                // (Sicherheitsscan 2026-08-23, S-01).
-                return DB::connection('legacy')
-                    ->table('user')
-                    ->select(['id', 'uname'])
-                    ->where('uname', $submittedUsername)
-                    ->first();
-            }, null);
-
-            if ($legacy && (int) $legacy->id > 0) {
-                $authUser->legacy_user_id = (int) $legacy->id;
-                $authUser->save();
-            }
-        } catch (\Throwable) {
-            // Legacy-Mapping ist ein Best-Effort und darf den Login nicht blockieren.
-        }
-    }
 }

@@ -11,6 +11,7 @@
 namespace Tests\Feature\Security;
 
 use App\Models\{AttendanceTerminal, LocationDeviceToken, RemotePendingSession, User};
+use App\Services\Security\SessionManagementService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -87,9 +88,11 @@ class SessionManagementTest extends TestCase {
         $member = User::factory()->user()->create(['organization_id' => $admin->organization_id]);
         $sessionId = $this->seedSession($member->id);
 
+        // Adressiert wird über das HMAC-Handle, nicht über die Session-ID
+        // (Sicherheitsscan 2026-08-23, S-54).
         $this->actingAs($admin)
             ->from(route('admin.sessions.index'))
-            ->delete(route('admin.sessions.destroy', ['id' => $sessionId]))
+            ->delete(route('admin.sessions.destroy', ['id' => SessionManagementService::handleFor($sessionId)]))
             ->assertRedirect(route('admin.sessions.index'));
 
         $this->assertDatabaseMissing('sessions', ['id' => $sessionId]);
@@ -112,14 +115,22 @@ class SessionManagementTest extends TestCase {
         $this->assertDatabaseHas('sessions', ['id' => $sessionId]);
     }
 
+    /**
+     * Seit S-54 wird das Handle **innerhalb der eigenen Organisation**
+     * aufgelöst; eine fremde Sitzung ist damit nicht adressierbar. Die
+     * Antwort unterscheidet bewusst nicht mehr zwischen „gibt es nicht" und
+     * „gehört jemand anderem" — die frühere 404 war ein Existenz-Orakel über
+     * Mandantengrenzen hinweg. Geprüft wird die Wirkung, nicht der Code.
+     */
     public function test_admin_cannot_revoke_session_of_other_organization(): void {
         $admin = User::factory()->admin()->create();
         $other = User::factory()->user()->create(); // andere Org via Factory-Default
         $sessionId = $this->seedSession($other->id);
 
         $this->actingAs($admin)
-            ->delete(route('admin.sessions.destroy', ['id' => $sessionId]))
-            ->assertNotFound();
+            ->from(route('admin.sessions.index'))
+            ->delete(route('admin.sessions.destroy', ['id' => SessionManagementService::handleFor($sessionId)]))
+            ->assertSessionHasErrors('session');
 
         $this->assertDatabaseHas('sessions', ['id' => $sessionId]);
     }

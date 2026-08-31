@@ -102,7 +102,14 @@ trait HashChained {
     protected function applyChainHash(): void {
         $this->prepareHashTimestamps();
 
-        $head = DB::table('audit_chain_heads')->where('chain', $this->chainName())->lockForUpdate()->first();
+        // Der Kettenname steht ERST HIER fest: attributmutierende Traits (die
+        // Organisation-Auto-Befüllung) laufen im selben creating-Ereignis,
+        // aber davor. Kopfzeile deshalb hier sicherstellen — vorher wäre sie
+        // für die falsche Kette angelegt worden.
+        $chain = $this->chainName();
+        DB::table('audit_chain_heads')->insertOrIgnore(['chain' => $chain, 'head_hash' => null, 'height' => 0]);
+
+        $head = DB::table('audit_chain_heads')->where('chain', $chain)->lockForUpdate()->first();
         $prevHash = $head->head_hash ?? null;
 
         $this->setAttribute('prev_hash', $prevHash);
@@ -115,16 +122,19 @@ trait HashChained {
      */
     protected function performInsert(Builder $query) {
         $connection = $this->getConnection();
-        $chain = $this->chainName();
 
-        // Kopfzeile garantiert vorhanden (idempotent, ohne den Lock zu halten).
-        DB::table('audit_chain_heads')->insertOrIgnore(['chain' => $chain, 'head_hash' => null, 'height' => 0]);
-
-        return $connection->transaction(function () use ($query, $chain) {
+        return $connection->transaction(function () use ($query) {
             $inserted = parent::performInsert($query);
 
             if ($inserted !== false) {
-                DB::table('audit_chain_heads')->where('chain', $chain)->update([
+                // Kettenname ERST NACH dem Insert lesen (S-36, Sicherheitsscan
+                // 2026-08-23): Wurde er vorher gelesen, kannte er die im
+                // creating-Ereignis nachgetragene Organisation noch nicht. Die
+                // Zeile wurde dann korrekt in `tabelle:org` gehasht, aber der
+                // Kopf von `tabelle:0` fortgeschrieben — die eine Kette blieb
+                // hinter ihren Zeilen zurück, die andere trug einen fremden
+                // Hash und hätte die nächste Zeile dort daran gehängt.
+                DB::table('audit_chain_heads')->where('chain', $this->chainName())->update([
                     'head_hash' => $this->getAttribute('hash'),
                     'height' => DB::raw('height + 1'),
                 ]);

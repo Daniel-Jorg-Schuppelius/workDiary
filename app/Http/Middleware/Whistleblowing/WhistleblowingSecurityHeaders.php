@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Whistleblowing;
 
+use App\Http\Middleware\Concerns\SetsTransportSecurity;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -23,6 +24,8 @@ use Symfony\Component\HttpFoundation\Response;
  * SecurityHeaders-Stack), damit das Portal kein App-Verhalten erbt.
  */
 class WhistleblowingSecurityHeaders {
+    use SetsTransportSecurity;
+
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);
         $h = $response->headers;
@@ -48,6 +51,10 @@ class WhistleblowingSecurityHeaders {
         $h->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()');
         $h->set('Cross-Origin-Opener-Policy', 'same-origin');
         $h->set('Cross-Origin-Resource-Policy', 'same-origin');
+
+        // HSTS wie im web-Stack (S-62).
+
+        $this->applyTransportSecurity($request, $response);
 
         return $response;
     }

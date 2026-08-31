@@ -28,8 +28,8 @@ final class LegacyConnectivity {
         return DatabaseHealth::isAvailable(self::CONNECTION);
     }
 
-    public static function markUnavailable(): void {
-        DatabaseHealth::markUnavailable(self::CONNECTION);
+    public static function markUnavailable(?string $reason = null): void {
+        DatabaseHealth::markUnavailable(self::CONNECTION, $reason ?? 'LegacyConnectivity');
     }
 
     /**

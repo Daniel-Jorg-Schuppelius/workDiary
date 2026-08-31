@@ -42,14 +42,25 @@ class ClockifyWebhookController extends Controller {
         /** @var array<string, mixed> $payload */
         $payload = (array) json_decode($raw, true);
 
-        $organization = $gate->organizationFor(ClockifyPlugin::ID, (string) ($payload['workspaceId'] ?? ''));
-        if (! $organization instanceof Organization) {
-            return response()->json(['status' => 'ignored']);
+        // Alle Kandidaten prüfen, nicht nur den ersten (S-57) — siehe
+        // TogglWebhookController.
+        $candidates = $gate->organizationsFor(ClockifyPlugin::ID, (string) ($payload['workspaceId'] ?? ''));
+
+        $organization = null;
+        foreach ($candidates as $candidate) {
+            $secret = $gate->secretFor(ClockifyPlugin::ID, (int) $candidate->id);
+            if (WebhookSignature::tokenValid($secret, (string) $request->header('Clockify-Signature', ''))) {
+                $organization = $candidate;
+                break;
+            }
         }
 
-        $secret = $gate->secretFor(ClockifyPlugin::ID, (int) $organization->id);
-        if (! WebhookSignature::tokenValid($secret, (string) $request->header('Clockify-Signature', ''))) {
-            return response()->json(['message' => 'invalid signature'], 401);
+        if (! $organization instanceof Organization) {
+            // Siehe TogglWebhookController: unbekannter Workspace → ignoriert,
+            // bekannter mit falscher Signatur → 401.
+            return $candidates->isEmpty()
+                ? response()->json(['status' => 'ignored'])
+                : response()->json(['message' => 'invalid signature'], 401);
         }
 
         $deliveryId = trim((string) ($payload['id'] ?? ''));

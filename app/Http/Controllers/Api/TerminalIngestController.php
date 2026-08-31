@@ -65,6 +65,14 @@ class TerminalIngestController extends Controller {
             if ($organization->maintenanceBlocksIngest()) {
                 return response()->json(['status' => 'maintenance'], 503, ['Retry-After' => '3600']);
             }
+
+            // Mandantensperre (Sicherheitsscan 2026-08-23, S-42):
+            // `EnforceTenantStatus` greift nur bei angemeldeten Zugriffen —
+            // ein Terminal hat keine Sitzung. Ohne diese Prüfung stempelte ein
+            // suspendierter Mandant unbegrenzt weiter.
+            if (! $organization->publicSurfacesAvailable()) {
+                return response()->json(['status' => 'tenant_blocked'], 423, ['Retry-After' => '3600']);
+            }
         }
 
         // MVP-516: `credential` als Alias (herstellerneutrale Terminals senden

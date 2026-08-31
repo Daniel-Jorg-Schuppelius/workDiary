@@ -34,31 +34,6 @@ use InvalidArgumentException;
  */
 class ArticleMergeService extends AbstractEntityMergeService {
     /**
-     * Tabellen mit direkter `article_id`-Spalte ohne artikel-bezogenen
-     * Unique-Index (Bulk-UPDATE). Inventur gegen den Schema-Dump, Stand W2.9.
-     *
-     * @var list<string>
-     */
-    private const ARTICLE_ID_TABLES = [
-        'article_sale_price_histories',
-        'article_variant_bom_overrides',
-        'billing_transfer_positions',
-        'claim_cases',
-        'claim_rma_returns',
-        'claim_supplier_recourses',
-        'cost_elements',
-        'manufacturing_order_materials',
-        'manufacturing_orders',
-        'price_change_requests',
-        'pricing_change_alerts',
-        'procedure_material_requirements',
-        'procurement_requests',
-        'purchase_order_lines',
-        'stock_serials',
-        'supplier_catalog_items',
-    ];
-
-    /**
      * Tabellen mit zusammengesetztem Unique-Index über den Artikel:
      * Tabelle => Partnerspalte. Quell-Zeilen zu bereits belegten Partnern
      * werden verworfen (Ziel-Konditionen gewinnen).
@@ -95,10 +70,6 @@ class ArticleMergeService extends AbstractEntityMergeService {
         return 'article_id';
     }
 
-    protected function scalarTables(): array {
-        return self::ARTICLE_ID_TABLES;
-    }
-
     protected function pivotTables(): array {
         return self::PIVOT_TABLES;
     }
@@ -128,6 +99,7 @@ class ArticleMergeService extends AbstractEntityMergeService {
         $targetId = (int) $target->getKey();
 
         DB::transaction(function () use ($source, $target, $sourceId, $targetId, $morph, $fieldOverrides): void {
+            $this->repointed = [];
             // Varianten als Ganzes umhängen — Bestand/Bewertung/Serien folgen
             // implizit über article_variant_id, der Ledger bleibt unberührt.
             DB::table('article_variants')->where('article_id', $sourceId)->update(['article_id' => $targetId]);
@@ -139,6 +111,8 @@ class ArticleMergeService extends AbstractEntityMergeService {
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
+
+            $this->auditMerge($source, $target);
 
             $source->delete();
         });

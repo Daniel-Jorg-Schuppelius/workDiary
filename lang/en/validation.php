@@ -186,6 +186,9 @@ return [
     |
     */
 
+    'push_endpoint_scheme' => 'The push endpoint must start with https://.',
+    'push_endpoint_unreachable' => 'The push endpoint is not a publicly reachable address.',
+
     'custom' => [
         'attribute-name' => [
             'rule-name' => 'custom-message',

@@ -11,6 +11,11 @@
 declare(strict_types=1);
 
 return [
+    'opos' => [
+        'error' => [
+            'amount_exceeds_open' => 'Au maximum :open peut être soldé — il ne reste pas plus.',
+        ],
+    ],
     'action' => [
         'push' => 'Transférer vers la comptabilité',
     ],

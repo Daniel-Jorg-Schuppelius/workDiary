@@ -126,6 +126,7 @@ return [
     ],
 
     'errors' => [
+        'month_entry_locked' => 'Il mese è approvato: per tempi successivi presenti una richiesta di correzione.',
         'future_day' => 'Un giorno futuro non può essere chiuso.',
         'blocking_warnings' => 'La giornata presenta avvisi bloccanti e non può essere chiusa.',
         'illegal_day_status' => 'Azione non consentita: lo stato del giorno è :status.',

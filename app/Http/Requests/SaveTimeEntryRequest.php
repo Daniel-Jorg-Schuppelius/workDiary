@@ -33,7 +33,9 @@ class SaveTimeEntryRequest extends BaseFormRequest {
         $isRange = $this->filled('started_at') && $this->filled('ended_at');
 
         return [
-            'date' => [$isRange ? 'nullable' : 'required', 'date'],
+            // Kein Anlegen in einem freigegebenen Monat (Sicherheitsscan
+            // 2026-08-23, S-32) — dafür gibt es den Zeitkorrektur-Antrag.
+            'date' => [$isRange ? 'nullable' : 'required', 'date', new \App\Rules\NotInLockedMonth($this->targetUser())],
             'minutes' => [$isRange ? 'nullable' : 'required', 'integer', 'min:1', 'max:1440'],
             'started_at' => ['nullable', 'date'],
             'ended_at' => ['nullable', 'date', 'after:started_at'],
@@ -104,4 +106,27 @@ class SaveTimeEntryRequest extends BaseFormRequest {
             'ended_at.after' => __('„Bis" muss nach „Von" liegen.'),
         ];
     }
+
+    /**
+     * Für wen wird gebucht?
+     *
+     * Vorgesetzte erfassen Zeiten auch für andere; die Monatssperre gilt dann
+     * für den **Mitarbeiter**, nicht für den Erfasser.
+     */
+    private function targetUser(): ?\App\Models\User {
+        $userId = $this->input('user_id');
+
+        if (filled($userId)) {
+            $user = \App\Models\User::query()->find(is_numeric($userId) ? (int) $userId : null);
+
+            if ($user instanceof \App\Models\User) {
+                return $user;
+            }
+        }
+
+        $auth = \Illuminate\Support\Facades\Auth::user();
+
+        return $auth instanceof \App\Models\User ? $auth : null;
+    }
+
 }

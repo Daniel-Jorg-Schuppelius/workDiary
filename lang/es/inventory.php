@@ -211,6 +211,34 @@ return [
             'unblocked' => 'Número de serie desbloqueado.',
             'scrapped' => 'Número de serie desechado.',
         ],
+        'passport' => [
+            'title' => 'Pasaporte del dispositivo (público)',
+            'intro' => 'El pasaporte del dispositivo permite comprobar autenticidad y estado por número de serie sin iniciar sesión. El acceso depende únicamente de un enlace secreto; no se muestran datos de clientes.',
+            'token_once' => 'Este enlace se muestra solo ahora — no se guarda en ningún sitio.',
+            'state' => 'Estado',
+            'state_none' => 'Sin configurar',
+            'state_active' => 'Accesible públicamente',
+            'state_paused' => 'En pausa',
+            'hint' => 'Identificador',
+            'issued_at' => 'Emitido el',
+            'action' => [
+                'issue' => 'Emitir enlace',
+                'rotate' => 'Renovar enlace',
+                'revoke' => 'Revocar acceso',
+                'pause' => 'Pausar',
+                'resume' => 'Activar',
+            ],
+            'confirm' => [
+                'rotate' => '¿Emitir un enlace nuevo? El anterior dejará de funcionar.',
+                'revoke' => '¿Revocar el acceso? El pasaporte del dispositivo dejará de ser accesible públicamente.',
+            ],
+            'flash' => [
+                'issued' => 'Nuevo enlace emitido.',
+                'revoked' => 'Acceso revocado.',
+                'saved' => 'Guardado.',
+            ],
+        ],
+
         'verify' => [
             'title' => 'Pasaporte del dispositivo / verificación de autenticidad',
             'subtitle' => 'Introduzca un número de serie para comprobar su estado y origen.',

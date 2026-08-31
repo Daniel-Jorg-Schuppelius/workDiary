@@ -57,6 +57,11 @@ class CtiWebhookController extends Controller {
             if ($organization->maintenanceBlocksIngest()) {
                 return response()->json(['status' => 'maintenance'], 503, ['Retry-After' => '3600']);
             }
+            // Mandantensperre (Sicherheitsscan 2026-08-23, S-42): greift sonst
+            // nur bei angemeldeten Zugriffen — dieser Weg hat keine Sitzung.
+            if (! $organization->publicSurfacesAvailable()) {
+                return response()->json(['status' => 'tenant_blocked'], 423, ['Retry-After' => '3600']);
+            }
         }
 
         /** @var array<string, mixed> $payload */

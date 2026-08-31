@@ -14,7 +14,7 @@ namespace App\Services\Export;
 
 use App\Enums\Export\{ExportFormat, ExportRunState};
 use App\Models\{ExportRun, Organization, User};
-use App\Support\XlsxExport;
+use App\Support\{CsvExport, XlsxExport};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use Illuminate\Support\Facades\Storage;
@@ -99,7 +99,11 @@ final class ExportRunner {
             foreach ($spec->query($organization, $filters) as $model) {
                 $row = $spec->toRow($model);
                 $cells = array_map(static fn(string $code): mixed => $row[$code] ?? '', $columns);
-                fwrite($handle, StringHelper::encodeLine($cells, ';') . "\r\n");
+                // Formel-Guard (Sicherheitsscan 2026-08-23, S-46): hier fließen
+                // frei editierbare Felder in die Datei — der eigene Anzeigename,
+                // Kunden-Kommentar, Rechnungstext. Reines CSV-Quoting hilft
+                // nicht: Excel wertet `=…` beim Öffnen trotzdem aus.
+                fwrite($handle, StringHelper::encodeLine(CsvExport::guardRow($cells), ';') . "\r\n");
                 $rowsTotal++;
             }
             fclose($handle);

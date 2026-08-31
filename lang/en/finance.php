@@ -183,6 +183,7 @@ return [
 
     'error' => [
         'local_invoicing_locked' => 'Invoicing is led by :program; local invoice creation is locked.',
+        'sources_already_reserved' => ':count source(s) of this record are already part of another confirmed record — please create the record anew.',
         'no_sources' => 'No transferable sources found in the selected period.',
         'illegal_transition' => 'Status transition from ":from" to ":to" is not allowed.',
         'void_after_transfer' => 'A transfer that has already been delivered cannot be voided — please use a cancellation/difference transfer.',

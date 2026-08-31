@@ -119,6 +119,14 @@ class SupplierSpec extends AbstractEntitySpec implements InboxFirstSpec {
     public function validateRow(array $row, Organization $organization): array {
         $issues = [];
 
+        // Schema-Prüfung für die Homepage (Sicherheitsscan 2026-08-23, S-47):
+        // die Formulare prüfen mit der `url`-Regel, der Import tat es nicht —
+        // ein `javascript:…` ließ sich so in den Stammdatensatz schreiben und
+        // landete anschließend im href der Detailseite.
+        if (! empty($row['homepage']) && preg_match('#^https?://#i', (string) $row['homepage']) !== 1) {
+            $issues[] = $this->formatIssue('homepage', (string) __('import.error.format.url'));
+        }
+
         if (($row['name'] ?? null) === null) {
             $issues[] = $this->requiredIssue('name');
         } elseif (mb_strlen((string) $row['name']) > 255) {

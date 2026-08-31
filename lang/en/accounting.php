@@ -11,6 +11,11 @@
 declare(strict_types=1);
 
 return [
+    'opos' => [
+        'error' => [
+            'amount_exceeds_open' => 'At most :open can be settled — no more is open.',
+        ],
+    ],
     'action' => [
         'push' => 'Transfer to accounting',
     ],

@@ -11,6 +11,7 @@
 namespace App\Services;
 
 use App\Models\{PushSubscription, User};
+use App\Support\UrlSafety;
 use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\Log;
 use Minishlink\WebPush\{Subscription, WebPush};
@@ -41,6 +42,14 @@ class WebPushService {
 
         foreach ($subscriptions as $sub) {
             /** @var PushSubscription $sub */
+
+            // Zweite Prüfung vor dem Versand (S-48): gespeichert wurde der
+            // Endpunkt womöglich, bevor die Prüfung existierte, und ein
+            // DNS-Eintrag kann seither auf eine interne Adresse zeigen.
+            if (! UrlSafety::isPubliclyRoutableHttpUrl((string) $sub->endpoint)) {
+                continue;
+            }
+
             $subscription = Subscription::create([
                 'endpoint' => $sub->endpoint,
                 'keys' => [
@@ -94,6 +103,10 @@ class WebPushService {
             return null;
         }
 
+        // Keine Weiterleitungen (Sicherheitsscan 2026-08-23, S-48): der
+        // Endpunkt kommt vom Client. Folgte der Server einer Weiterleitung,
+        // wäre die geprüfte Zieladresse wertlos — umgeleitet würde erst nach
+        // der Prüfung.
         return $this->webPush = new WebPush([
             'VAPID' => [
                 'subject' => config('webpush.subject'),
@@ -102,6 +115,6 @@ class WebPushService {
             ],
         ], [
             'TTL' => config('webpush.ttl'),
-        ]);
+        ], null, ['allow_redirects' => false]);
     }
 }

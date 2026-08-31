@@ -78,6 +78,7 @@ return [
             'time' => 'Heure invalide (attendu HH:MM).',
             'status' => 'La valeur n\'est pas un statut valide.',
             'amount' => 'Montant invalide.',
+            'url' => 'Adresse invalide (http:// ou https:// attendu).',
         ],
         'outOfRange' => [
             'rowLimit' => 'Limite de lignes (:max) dépassée — reste ignoré.',

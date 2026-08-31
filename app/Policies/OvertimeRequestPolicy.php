@@ -53,6 +53,9 @@ class OvertimeRequestPolicy {
     public function decide(User $user, OvertimeRequest $request): bool {
         return $this->sharesOrganization($user, $request)
             && $user->can(P::OvertimeDecide->value)
+            // Keine Selbstfreigabe (S-35).
+            && ! $this->owns($user, $request, 'requested_by_user_id')
+            && ! $this->owns($user, $request)
             && $request->status === OvertimeRequestStatus::Submitted;
     }
 }

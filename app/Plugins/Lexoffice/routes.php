@@ -19,7 +19,11 @@ use Illuminate\Support\Facades\Route;
  * Alle Routen leben unterhalb des bestehenden auth-Middleware-Stacks; die
  * eigentliche Berechtigung wird in den Controllern per Gate geprüft.
  */
-Route::middleware(['web', 'auth'])->group(function (): void {
+// Plan-/Modul-Gate wie in den Kern-Routen (Sicherheitsscan 2026-08-23,
+// S-55): dieselben Namenspräfixe (customers.*, invoices.*, assets.*) sind
+// in config/plans.php einem Modul zugeordnet — die Plugin-Routen liefen
+// bisher daran vorbei, ein gesperrtes Modul blieb über sie erreichbar.
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     // Kunden-bezogen
     Route::post('customers/lexoffice/push-all', [LexofficeCustomerController::class, 'bulkPush'])
         ->name('customers.lexoffice.push-all');

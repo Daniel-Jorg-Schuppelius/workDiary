@@ -183,6 +183,28 @@ class LearningCompletionTest extends TestCase {
             ->assertDontSee($user->name, false);
     }
 
+    /**
+     * Die Prüfseite kürzte bisher das **letzte Wort** statt des Nachnamens.
+     * Bei einem Namenszusatz („Jr.", „III", „PhD") ist das letzte Wort der
+     * Zusatz — der Nachname stand damit vollständig auf einer öffentlich
+     * abrufbaren Seite. Aufgefallen ist das nur, weil der Zufallsname eines
+     * Testlaufs einen Zusatz trug; deshalb steht der Fall jetzt fest.
+     */
+    public function test_pruefseite_kuerzt_den_nachnamen_auch_bei_namenszusatz(): void {
+        [$enrollment, , $user] = $this->scenario(['certificate_enabled' => true]);
+        $user->forceFill(['name' => 'Keanu Schimmel V'])->save();
+
+        $this->complete($enrollment);
+        $certificate = LearningCertificate::query()->firstOrFail();
+        $certificate->forceFill(['holder_name' => 'Keanu Schimmel V'])->save();
+
+        $response = $this->get(route('learning.certificates.verify', $certificate->verification_code))
+            ->assertOk();
+
+        $response->assertDontSee('Schimmel', false);
+        $response->assertSee('Keanu S.', false);
+    }
+
     public function test_pruefseite_zeigt_den_widerruf(): void {
         [$enrollment] = $this->scenario(['certificate_enabled' => true]);
         $this->complete($enrollment);

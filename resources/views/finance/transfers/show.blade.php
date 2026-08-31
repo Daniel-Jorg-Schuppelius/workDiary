@@ -98,7 +98,7 @@
                             <span class="font-mono text-xs">{{ $transfer->externalReference->external_id }}</span>
                             @php $extUrl = data_get($transfer->externalReference->payload, 'resourceUri'); @endphp
                             @if (is_string($extUrl) && $extUrl !== '')
-                                — <a class="link" href="{{ $extUrl }}" target="_blank" rel="noopener noreferrer">{{ __('finance.action.open_external') }}</a>
+                                — <x-external-link :url="$extUrl" :label="__('finance.action.open_external')" />
                             @endif
                         </span>
                     </div>

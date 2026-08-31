@@ -45,33 +45,6 @@ use InvalidArgumentException;
  */
 class ProjectMergeService extends AbstractEntityMergeService {
     /**
-     * Tabellen mit direkter `project_id`-Spalte ohne Unique-Konflikt auf
-     * project_id → einfacher Bulk-UPDATE bei Bedarf (Schema-Check). Die
-     * Hierarchie (projects.parent_id) und die Pivots werden gesondert behandelt.
-     *
-     * @var list<string>
-     */
-    private const PROJECT_ID_TABLES = [
-        'diary_entries',
-        'time_entries',
-        'tasks',
-        'milestones',
-        'timesheets',
-        'project_billing_rules',
-        'invoices',
-        'expenses',
-        'travel_logs',
-        'per_diem_trips',
-        'recurrence_rules',
-        'service_tickets',
-        'service_orders',
-        'manufacturing_orders',
-        'bill_of_quantities',
-        'customer_geofences',
-        'location_pending_entries',
-    ];
-
-    /**
      * Pivot-Tabellen (project_id + Partner-Spalte mit Unique-Index). Vor dem
      * Umhängen werden Zeilen entfernt, deren Partner das Ziel bereits trägt.
      *
@@ -108,10 +81,6 @@ class ProjectMergeService extends AbstractEntityMergeService {
 
     protected function foreignKeyColumn(): string {
         return 'project_id';
-    }
-
-    protected function scalarTables(): array {
-        return self::PROJECT_ID_TABLES;
     }
 
     protected function morphTables(): array {
@@ -151,6 +120,7 @@ class ProjectMergeService extends AbstractEntityMergeService {
         $targetId = (int) $target->getKey();
 
         DB::transaction(function () use ($source, $target, $sourceId, $targetId, $morph, $fieldOverrides): void {
+            $this->repointed = [];
             $this->repointChildren($sourceId, $targetId);
             $this->repointScalarTables($sourceId, $targetId);
             $this->repointPivots($sourceId, $targetId);
@@ -159,6 +129,8 @@ class ProjectMergeService extends AbstractEntityMergeService {
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
+
+            $this->auditMerge($source, $target);
 
             // Hartes Löschen (Kinder/Refs bereits umgehängt). Über das Modell, damit der Audit-Log „deleted" festhält.
             $source->delete();

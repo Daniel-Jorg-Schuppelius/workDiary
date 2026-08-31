@@ -70,8 +70,11 @@ final class ApplicationContractTest extends TestCase {
             $this->fail('Selbstfreigabe wurde akzeptiert.');
         } catch (\RuntimeException) {
         }
+        // Zweite Stufe durch eine dritte Person — wer Stufe 1 entschieden
+        // hat, ist für Stufe 2 gesperrt (Sicherheitsscan 2026-08-23, S-34).
+        $third = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $service->approve($negotiation->refresh(), $second);
-        $service->approve($negotiation->refresh(), $second);
+        $service->approve($negotiation->refresh(), $third);
         $this->assertSame('approved', $negotiation->fresh()->status);
 
         try {

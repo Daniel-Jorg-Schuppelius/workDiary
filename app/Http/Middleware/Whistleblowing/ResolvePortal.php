@@ -37,6 +37,13 @@ class ResolvePortal {
             abort(404);
         }
 
+        // BEWUSST OHNE Mandantensperre (Sicherheitsscan 2026-08-23, S-42):
+        // Karriereportal und B2B-Katalog eines suspendierten Mandanten gehen
+        // zu — das Hinweisgeberportal nicht. Es erfüllt eine gesetzliche
+        // Pflicht (HinSchG); ein Meldekanal, der wegen einer offenen Rechnung
+        // schließt, schadet der hinweisgebenden Person und dem Betreiber. Wer
+        // ihn abschalten will, deaktiviert das Portal (`is_enabled`).
+
         // Organisation an den Container binden (kein Auth-/Org-Context-Middleware).
         $org = $portal->organization;
         if ($org !== null) {

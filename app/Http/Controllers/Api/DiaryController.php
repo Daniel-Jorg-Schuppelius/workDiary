@@ -78,6 +78,12 @@ class DiaryController extends Controller {
         ],
     )]
     public function show(DiaryEntry $diary): DiaryEntryResource {
+        // Parität zur Weboberfläche (Sicherheitsscan 2026-08-23, S-39): dort
+        // verlangt `show` die Objekt-Policy, über die API fehlte sie. Der
+        // OrganizationScope allein sagt nur, dass der Eintrag zum Mandanten
+        // gehört — nicht, dass dieser Token ihn sehen darf.
+        Gate::authorize('view', $diary);
+
         $diary->load(['user:id,name', 'tags', 'comments.user:id,name', 'attachments.uploader:id,name']);
 
         return new DiaryEntryResource($diary);

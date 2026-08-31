@@ -61,6 +61,11 @@ class TimeCorrectionRequestPolicy {
     public function approve(User $user, TimeCorrectionRequest $request): bool {
         return $this->sharesOrganization($user, $request)
             && $user->can(P::CorrectionApprove->value)
+            // Keine Selbstfreigabe (Sicherheitsscan 2026-08-23, S-35) — hier,
+            // damit die Schaltfläche gar nicht erst erscheint; die harte
+            // Sperre sitzt im ApprovalFlowService.
+            && ! $this->owns($user, $request, 'requested_by_user_id')
+            && ! $this->owns($user, $request)
             && $request->status === TimeCorrectionStatus::Submitted;
     }
 

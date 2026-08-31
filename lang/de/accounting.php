@@ -11,6 +11,11 @@
 declare(strict_types=1);
 
 return [
+    'opos' => [
+        'error' => [
+            'amount_exceeds_open' => 'Es können höchstens :open ausgeglichen werden — mehr ist nicht offen.',
+        ],
+    ],
     'action' => [
         'push' => 'An Buchhaltung übertragen',
     ],

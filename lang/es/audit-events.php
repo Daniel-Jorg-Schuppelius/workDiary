@@ -333,6 +333,7 @@ return [
         'downloaded' => 'Exportación GoBD descargada',
     ],
     // Herramienta de medición (MVP-722): filas de audit:measure-chain-contention.
+    'merged' => 'Fusionado',
     'perf' => [
         'measure' => 'Medición (contención de bloqueo de la cadena de auditoría)',
     ],

@@ -45,28 +45,6 @@ use InvalidArgumentException;
  */
 class SupplierMergeService extends AbstractEntityMergeService {
     /**
-     * Tabellen mit direkter `supplier_id`-Spalte (Bulk-UPDATE, kein
-     * supplier-bezogener Unique-Index). Vollständige Inventur gegen das
-     * Schema-Dump, Stand W2.3.
-     *
-     * @var list<string>
-     */
-    private const SUPPLIER_ID_TABLES = [
-        'asset_finance_contracts',
-        'claim_cases',
-        'claim_supplier_recourses',
-        'contracts',
-        'investment_options',
-        'isms_supplier_assessments',
-        'lexoffice_vouchers',
-        'pricing_change_alerts',
-        'pricing_margin_rules',
-        'purchase_orders',
-        'supplier_catalog_items',
-        'supplier_catalog_sources',
-    ];
-
-    /**
      * Tabellen mit zusammengesetztem Unique-Index über den Lieferanten:
      * Tabelle => Partnerspalte. Quell-Zeilen zu bereits belegten Partnern
      * werden verworfen statt umgehängt.
@@ -109,10 +87,6 @@ class SupplierMergeService extends AbstractEntityMergeService {
         return 'supplier_id';
     }
 
-    protected function scalarTables(): array {
-        return self::SUPPLIER_ID_TABLES;
-    }
-
     protected function pivotTables(): array {
         return self::PIVOT_TABLES;
     }
@@ -144,6 +118,7 @@ class SupplierMergeService extends AbstractEntityMergeService {
         $targetId = (int) $target->getKey();
 
         DB::transaction(function () use ($source, $target, $sourceId, $targetId, $morph, $fieldOverrides): void {
+            $this->repointed = [];
             $this->repointPivots($sourceId, $targetId);
             $this->repointScalarTables($sourceId, $targetId);
             $this->repointExternalReferences($morph, $sourceId, $targetId);
@@ -151,6 +126,8 @@ class SupplierMergeService extends AbstractEntityMergeService {
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
+
+            $this->auditMerge($source, $target);
 
             // Hartes Löschen (alle Bezüge sind umgehängt); der Audit-Log hält „deleted" fest.
             $source->delete();

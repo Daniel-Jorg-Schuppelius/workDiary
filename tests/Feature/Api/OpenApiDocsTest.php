@@ -31,7 +31,8 @@ class OpenApiDocsTest extends TestCase {
 
     public function test_swagger_docs_route_serves_json(): void {
         Artisan::call('l5-swagger:generate');
-        $response = $this->get('/docs');
+        // Die Doku liegt seit S-61 hinter der Anmeldung.
+        $response = $this->actingAs(\App\Models\User::factory()->create())->get('/docs');
         $response->assertOk();
         $body = $response->getContent();
         $this->assertNotFalse($body);
@@ -92,8 +93,19 @@ class OpenApiDocsTest extends TestCase {
     }
 
     public function test_swagger_ui_renders(): void {
-        $response = $this->get('/api/documentation');
+        $response = $this->actingAs(\App\Models\User::factory()->create())->get('/api/documentation');
         $response->assertOk();
         $response->assertSee('Swagger UI', false);
     }
+
+    /**
+     * S-61: `storage/api-docs/api-docs.json` beschreibt die vollständige
+     * REST-Oberfläche samt Parametern und Abilities. Ohne Anmeldung war das
+     * eine fertige Landkarte für gezielte Versuche gegen die Sanctum-API.
+     */
+    public function test_dokumentation_ist_ohne_anmeldung_nicht_abrufbar(): void {
+        $this->get('/docs')->assertRedirect(route('login'));
+        $this->get('/api/documentation')->assertRedirect(route('login'));
+    }
+
 }

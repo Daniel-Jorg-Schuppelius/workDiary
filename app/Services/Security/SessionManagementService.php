@@ -148,7 +148,10 @@ class SessionManagementService {
             $userAgent = $row->user_agent !== null ? (string) $row->user_agent : null;
             $ip = $row->ip_address !== null ? (string) $row->ip_address : null;
             $grouped[$userId][] = [
-                'id' => (string) $row->id,
+                // Nicht die rohe Session-ID (Sicherheitsscan 2026-08-23,
+                // S-54): sie steht sonst im HTML, in der Browser-Historie und
+                // in Proxy-Logs. Für den Widerruf genügt ein Handle.
+                'handle' => self::handleFor((string) $row->id),
                 'ip' => $ip,
                 'user_agent' => $userAgent,
                 // Anreicherung (Feature 085, Phase 2): lesbares Gerät/Browser-Label
@@ -163,6 +166,44 @@ class SessionManagementService {
         }
 
         return $grouped;
+    }
+
+    /**
+     * Anzeige-Handle einer Session — ein gekürztes HMAC über die ID.
+     *
+     * Die rohe `sessions.id` ist der Session-Identifier selbst. Laravel
+     * verschlüsselt das Cookie, die ID allein ist also nicht direkt
+     * einsetzbar; zusammen mit einem APP_KEY aus einem Backup oder einer
+     * .env wird daraus aber ein Übernahmevektor — und sie landet über die
+     * Ziel-URL des Widerrufs in Historie und Proxy-Logs. Für den Zweck
+     * „diese eine Sitzung beenden" reicht ein Handle, das sich nicht
+     * zurückrechnen lässt.
+     */
+    public static function handleFor(string $sessionId): string {
+        return substr(hash_hmac('sha256', $sessionId, (string) config('app.key')), 0, 32);
+    }
+
+    /**
+     * Löst ein Handle innerhalb einer Nutzermenge zur Session-ID auf.
+     *
+     * Nebeneffekt mit Absicht: es können nur Sitzungen der übergebenen Nutzer
+     * getroffen werden — die Mandantengrenze liegt damit in der Auflösung
+     * selbst und nicht in einer Prüfung, die man vergessen kann.
+     *
+     * @param  list<int>  $userIds
+     */
+    public static function resolveHandle(string $handle, array $userIds): ?string {
+        if ($userIds === []) {
+            return null;
+        }
+
+        foreach (DB::table('sessions')->whereIn('user_id', $userIds)->pluck('id') as $id) {
+            if (hash_equals(self::handleFor((string) $id), $handle)) {
+                return (string) $id;
+            }
+        }
+
+        return null;
     }
 
     /**

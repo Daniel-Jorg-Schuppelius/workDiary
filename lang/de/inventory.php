@@ -211,6 +211,34 @@ return [
             'unblocked' => 'Seriennummer entsperrt.',
             'scrapped' => 'Seriennummer verschrottet.',
         ],
+        'passport' => [
+            'title' => 'Geräte-Pass (öffentlich)',
+            'intro' => 'Der Geräte-Pass erlaubt eine Echtheits- und Statusprüfung per Seriennummer ohne Anmeldung. Der Zugang hängt allein an einem geheimen Link; es werden keine Kundendaten gezeigt.',
+            'token_once' => 'Dieser Link wird nur jetzt angezeigt — er ist nirgends gespeichert.',
+            'state' => 'Status',
+            'state_none' => 'Nicht eingerichtet',
+            'state_active' => 'Öffentlich erreichbar',
+            'state_paused' => 'Pausiert',
+            'hint' => 'Kennung',
+            'issued_at' => 'Ausgestellt am',
+            'action' => [
+                'issue' => 'Link ausstellen',
+                'rotate' => 'Link erneuern',
+                'revoke' => 'Zugang entziehen',
+                'pause' => 'Pausieren',
+                'resume' => 'Freischalten',
+            ],
+            'confirm' => [
+                'rotate' => 'Neuen Link ausstellen? Der bisherige Link funktioniert danach nicht mehr.',
+                'revoke' => 'Zugang entziehen? Der Geräte-Pass ist danach nicht mehr öffentlich erreichbar.',
+            ],
+            'flash' => [
+                'issued' => 'Neuer Link ausgestellt.',
+                'revoked' => 'Zugang entzogen.',
+                'saved' => 'Gespeichert.',
+            ],
+        ],
+
         'verify' => [
             'title' => 'Geräte-Pass / Echtheitsprüfung',
             'subtitle' => 'Seriennummer eingeben, um Status und Herkunft zu prüfen.',

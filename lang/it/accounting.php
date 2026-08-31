@@ -11,6 +11,11 @@
 declare(strict_types=1);
 
 return [
+    'opos' => [
+        'error' => [
+            'amount_exceeds_open' => 'Si può compensare al massimo :open — non è aperto di più.',
+        ],
+    ],
     'action' => [
         'push' => 'Trasferisci alla contabilità',
     ],

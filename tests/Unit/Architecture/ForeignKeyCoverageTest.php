@@ -39,6 +39,14 @@ class ForeignKeyCoverageTest extends TestCase {
         // F7 (2027_02_19_100600): audit_logs ist eine Hash-Kette — FKs mit
         // SET NULL hätten beim Org-Purge die Kette gebrochen; Werte bleiben.
         'audit_logs.organization_id',
+        // S-21 (2027_02_19_110600): die beiden Spalten markieren den
+        // id-BEREICH, den eine Schwärzung berührt hat — von/bis, keine
+        // Relation. Der Nachweis muss den Bestand überdauern, den er
+        // beschreibt: ein CASCADE würde Beweise löschen, ein RESTRICT eine
+        // spätere Archivierung alter Protokollzeilen blockieren. Die
+        // Zieltabelle ist ohnehin append-only.
+        'audit_redactions.first_audit_log_id',
+        'audit_redactions.last_audit_log_id',
         // Feature 149 (MVP-751): `key_id` ist KEIN Fremdschlüssel, sondern die
         // öffentliche Kennung des Signaturschlüssels — sie steht in der
         // Verifikations-URL eines Zertifikats und darf sich nie ändern.

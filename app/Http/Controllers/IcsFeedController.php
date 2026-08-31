@@ -45,7 +45,8 @@ class IcsFeedController extends Controller {
         if (strlen($token) < 32) {
             abort(404);
         }
-        $user = User::query()->where('calendar_feed_token', $token)->first();
+        // Auflösung über den Hash (S-44) — gespeichert ist kein Klartext mehr.
+        $user = User::query()->where('calendar_feed_token_hash', User::hashCalendarFeedToken($token))->first();
         abort_unless($user instanceof User, 404);
 
         return response($this->ics->feedPersonalSchedule($user), 200, [

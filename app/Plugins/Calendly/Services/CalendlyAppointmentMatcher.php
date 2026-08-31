@@ -25,7 +25,12 @@ class CalendlyAppointmentMatcher {
     /** Invitee-E-Mail → Kunde (E-Mail, Kontaktpersonen-E-Mail, eindeutiger Name). */
     public function matchCustomer(Organization $organization, ?string $email, ?string $name): ?Customer {
         $email = trim((string) $email);
-        if ($email !== '') {
+
+        // Die Adresse stammt aus dem Calendly-Payload, also von der buchenden
+        // Person selbst (Sicherheitsscan 2026-08-23, S-60). Was keine Adresse
+        // ist, wird gar nicht erst gesucht — das spart einen Volltreffer-Scan
+        // über `contact_persons` und schließt Musterzeichen aus.
+        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false) {
             $byEmail = Customer::query()
                 ->where('organization_id', $organization->id)
                 ->whereRaw('LOWER(email) = ?', [mb_strtolower($email)])
@@ -37,6 +42,9 @@ class CalendlyAppointmentMatcher {
             $byContact = Customer::query()
                 ->where('organization_id', $organization->id)
                 ->whereLikeEscaped('contact_persons', $email)
+                // Die Feinprüfung läuft ohnehin in PHP; ohne Grenze zöge ein
+                // unglücklicher Treffer die halbe Kundentabelle in den Speicher.
+                ->limit(50)
                 ->get()
                 ->first(fn(Customer $customer): bool => $this->contactHasEmail($customer, $email));
             if ($byContact instanceof Customer) {

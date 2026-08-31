@@ -250,14 +250,21 @@ class DwdProvider implements WeatherProvider {
         return self::BASE . '/historical/' . $m[0];
     }
 
-    /** Extrahiert die `produkt_klima_tag_*.txt` aus dem ZIP (Toolkit, Zip-Slip-geschützt). */
+    /**
+     * Extrahiert die `produkt_klima_tag_*.txt` aus dem ZIP (Toolkit,
+     * Zip-Slip-geschützt und mit Entpack-Grenzen, Sicherheitsscan S-56).
+     *
+     * Das Archiv kommt von einem fremden Server. Ein Tageswerte-Archiv des DWD
+     * hat eine Handvoll Einträge und wenige Megabyte — die Grenzen sind darauf
+     * zugeschnitten und nicht auf „irgendein ZIP".
+     */
     private function extractProductCsv(string $zipBody): ?string {
         $workDir = sys_get_temp_dir() . '/dwd-' . bin2hex(random_bytes(8));
         try {
             Folder::create($workDir, 0755, true);
             $zipPath = $workDir . '/tageswerte.zip';
             File::write($zipPath, $zipBody);
-            ZipFile::extract($zipPath, $workDir, true);
+            ZipFile::extract($zipPath, $workDir, true, maxEntries: 50, maxBytes: 256 * 1024 * 1024, maxRatio: 200);
 
             $products = glob($workDir . '/produkt_*.txt') ?: [];
 

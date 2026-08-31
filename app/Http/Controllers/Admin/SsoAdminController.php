@@ -19,7 +19,7 @@ use App\Services\Scim\ScimGroupService;
 use App\Services\SqidEncoder;
 use App\Support\UrlSafety;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Carbon;
+use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -140,7 +140,11 @@ class SsoAdminController extends Controller {
             }
         }
 
-        $allowPrivate = $request->boolean('allow_private_network');
+        // Plattform-Vorbehalt (Sicherheitsscan 2026-08-23, S-65): im
+        // SaaS-Betrieb wirkt das Org-Opt-in nicht. Der Wert wird trotzdem
+        // gespeichert — die Oberfläche soll zeigen, was gesetzt wurde.
+        $allowPrivate = $request->boolean('allow_private_network')
+            && (bool) config('plugins.allow_private_network_opt_in', true);
 
         $errors = $this->validateProtocolFields($protocol, $providerType, $data, $tenant, $allowPrivate, $request->boolean('allow_email_link'));
         if ($errors !== []) {
@@ -248,13 +252,68 @@ class SsoAdminController extends Controller {
             return back()->with('success', __('sso.flash.domain_added'));
         }
 
-        OrganizationSsoDomain::query()->create([
+        // Unverifiziert angelegt (Sicherheitsscan 2026-08-23, S-49): erst der
+        // DNS-TXT-Nachweis macht die Domain wirksam. Vorher genügte das bloße
+        // Eintragen, um Anmeldungen einer fremden Mail-Domain auf den eigenen
+        // IdP zu lenken.
+        $record = OrganizationSsoDomain::query()->create([
             'organization_id' => $organization->id,
             'domain' => $domain,
             'created_by' => $admin->id,
+            'verification_token' => Str::random(32),
         ]);
 
-        return back()->with('success', __('sso.flash.domain_added'));
+        return back()->with('success', __('sso.flash.domain_added_unverified', [
+            'name' => $record->dnsRecordName(),
+            'value' => (string) $record->verification_token,
+        ]));
+    }
+
+    /**
+     * Prüft den DNS-TXT-Nachweis einer Domain.
+     *
+     * Bewusst eine ausdrückliche Handlung und kein Hintergrundlauf: der
+     * Betreiber trägt den Eintrag ein und sagt, wann er fertig ist. Ein
+     * Automatismus, der stündlich fremde Domains abfragt, wäre eine
+     * Nebenwirkung, die niemand bestellt hat.
+     */
+    public function verifyDomain(string $domain): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        // Adressiert wird per Sqid — wie beim Entfernen, nie über den rohen
+        // Domainnamen.
+        $decoded = app(SqidEncoder::class)->decode(OrganizationSsoDomain::class, $domain);
+        $record = $decoded !== null
+            ? OrganizationSsoDomain::query()->whereKey($decoded)->where('organization_id', $organization->id)->first()
+            : null;
+
+        abort_unless($record instanceof OrganizationSsoDomain, 404);
+
+        if ($record->isVerified()) {
+            return back()->with('success', __('sso.flash.domain_verified'));
+        }
+
+        $found = false;
+        foreach ((array) @dns_get_record($record->dnsRecordName(), DNS_TXT) as $entry) {
+            $value = is_array($entry) ? (string) ($entry['txt'] ?? '') : '';
+            if ($value !== '' && hash_equals((string) $record->verification_token, trim($value))) {
+                $found = true;
+                break;
+            }
+        }
+
+        $record->forceFill([
+            'verification_checked_at' => now(),
+            'verified_at' => $found ? now() : null,
+        ])->save();
+
+        return $found
+            ? back()->with('success', __('sso.flash.domain_verified'))
+            : back()->withErrors(['domain' => __('sso.error.domain_not_verified', [
+                'name' => $record->dnsRecordName(),
+                'value' => (string) $record->verification_token,
+            ])]);
     }
 
     /** Entfernt eine E-Mail-Domain-Zuordnung der Organisation. */

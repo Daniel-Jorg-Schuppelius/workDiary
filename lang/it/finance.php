@@ -183,6 +183,7 @@ return [
 
     'error' => [
         'local_invoicing_locked' => 'La fatturazione è gestita da :program; la creazione locale di fatture è bloccata.',
+        'sources_already_reserved' => ':count fonte/i di questo documento sono già in un altro documento confermato — crearlo di nuovo.',
         'no_sources' => 'Nessuna fonte trasferibile trovata nel periodo selezionato.',
         'illegal_transition' => 'Il passaggio di stato da «:from» a «:to» non è consentito.',
         'void_after_transfer' => 'Un trasferimento già consegnato non può essere annullato — utilizzare un trasferimento di storno/differenza.',

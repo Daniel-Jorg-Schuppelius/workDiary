@@ -25,6 +25,52 @@ trait Auditable {
     /** @var array<int, string> Felder, die nie geloggt werden. */
     protected array $auditExclude = ['password', 'remember_token', 'updated_at'];
 
+    /**
+     * Felder, deren **Änderung** protokolliert wird, aber ohne den Wert
+     * (Sicherheitsscan 2026-08-23, S-21).
+     *
+     * Zwischen Ausschluss und Klartext liegt genau das, was ein Protokoll
+     * hier leisten soll: dass jemand die IBAN oder die AU-Nummer geändert hat,
+     * bleibt nachvollziehbar; der Wert selbst gehört nicht in eine Tabelle,
+     * die zehn Jahre aufbewahrt wird und sich wegen der Hash-Kette nicht mehr
+     * bereinigen lässt. `null` bleibt `null`, damit „Feld geleert" sichtbar
+     * ist.
+     *
+     * Der Standard leitet sich aus dem Modell selbst ab, statt je Modell
+     * gepflegt zu werden: **was at-rest verschlüsselt ist, erscheint nie als
+     * Wert im Protokoll.** Sonst stünde der Chiffretext derselben Daten in
+     * einer Tabelle, die zehn Jahre steht — mit demselben APP_KEY lesbar und
+     * wegen der Hash-Kette nicht mehr zu bereinigen. Dazu kommen Zugangs-
+     * Geheimnisse, die kein Cast als solche ausweist (Magic-Token,
+     * Kalender-Feed-Token, Lizenzschlüssel).
+     *
+     * Modelle können die Liste erweitern; das Muster ist eng gefasst, damit
+     * fachliche Schlüssel (`match_key`, `sort_key`) nicht mitgeschwärzt
+     * werden.
+     *
+     * Bewusst eine Methode statt einer Eigenschaft: PHP lässt eine
+     * Trait-Eigenschaft nicht mit abweichendem Vorgabewert überschreiben.
+     *
+     * @return array<int, string>
+     */
+    protected function auditRedact(): array {
+        $fields = [];
+
+        foreach ($this->getCasts() as $column => $cast) {
+            if (is_string($cast) && str_starts_with($cast, 'encrypted')) {
+                $fields[] = $column;
+            }
+        }
+
+        foreach ($this->getFillable() as $column) {
+            if (preg_match('/(_token|_secret|api_key|license_key|private_key|_password)$/', $column) === 1) {
+                $fields[] = $column;
+            }
+        }
+
+        return array_values(array_unique($fields));
+    }
+
     public static function bootAuditable(): void {
         static::created(function (Model $model): void {
             assert($model instanceof self);
@@ -150,6 +196,9 @@ trait Auditable {
 
         return collect($attributes)
             ->except($excluded)
+            ->map(fn(mixed $value, string $key): mixed => $value !== null && in_array($key, $this->auditRedact(), true)
+                ? \App\Models\AuditLog::REDACTED
+                : $value)
             ->all();
     }
 }

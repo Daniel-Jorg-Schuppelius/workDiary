@@ -50,12 +50,23 @@ class LegacyCallcenterController extends Controller {
         }
 
         try {
-            $callUser = DB::connection('legacy')
+            // Passwort byte-genau in PHP prüfen statt in der WHERE-Bedingung
+            // (Sicherheitsscan 2026-08-23, S-50): die Legacy-Collation ist
+            // case-insensitiv und PAD SPACE — die Datenbank akzeptierte sonst
+            // Groß-/Kleinschreibungsvarianten und angehängte Leerzeichen.
+            $callUser = null;
+            $candidates = DB::connection('legacy')
                 ->table('calluser')
-                ->select(['uname'])
+                ->select(['uname', 'userpw'])
                 ->where('uname', $credentials['username'])
-                ->where('userpw', $credentials['password'])
-                ->first();
+                ->get();
+
+            foreach ($candidates as $candidate) {
+                if (hash_equals((string) ($candidate->userpw ?? ''), (string) $credentials['password'])) {
+                    $callUser = $candidate;
+                    break;
+                }
+            }
         } catch (\Throwable) {
             $callUser = null;
         }

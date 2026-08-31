@@ -55,7 +55,7 @@ class JtlGateway {
         $this->client = $http->client(
             JtlWawiPlugin::ID,
             $this->baseUrl,
-            allowPrivateNetwork: (bool) $connection->allow_private_network,
+            allowPrivateNetwork: $connection->allowsPrivateNetwork(),
         );
     }
 

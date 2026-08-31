@@ -46,7 +46,7 @@ class TaskController extends Controller {
             $query->where('assigned_to', $assignedTo);
         }
 
-        return TaskResource::collection($query->orderBy('position')->orderBy('id')->paginate((int) $request->input('per_page', 25)));
+        return TaskResource::collection($query->orderBy('position')->orderBy('id')->paginate($this->perPage($request)));
     }
 
     #[OA\Post(
@@ -110,4 +110,14 @@ class TaskController extends Controller {
 
         return response()->noContent();
     }
+
+    /**
+     * Seitengröße klemmen (Sicherheitsscan 2026-08-23, S-58): `per_page` ging
+     * ungeprüft an paginate() — ein Token konnte damit den gesamten Bestand in
+     * einer Antwort anfordern.
+     */
+    private function perPage(Request $request): int {
+        return max(1, min(100, (int) $request->input('per_page', 25)));
+    }
+
 }

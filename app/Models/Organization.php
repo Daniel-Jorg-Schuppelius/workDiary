@@ -265,6 +265,24 @@ class Organization extends Model {
     }
 
     /**
+     * Darf dieser Mandant nach außen sichtbar sein?
+     *
+     * `EnforceTenantStatus` schützt nur **angemeldete** Zugriffe: ohne
+     * `$request->user()` läuft die Middleware durch. Die sessionlosen
+     * Oberflächen — Karriereportal, B2B-Katalog, Hinweisgebersystem,
+     * Token-Ingests — binden ihre Organisation selbst und liefen damit an der
+     * Sperre vorbei: ein suspendierter Mandant nahm weiter Bewerbungen,
+     * Bestellungen, Meldungen und Stempelungen entgegen (Sicherheitsscan
+     * 2026-08-23, S-42).
+     *
+     * Bewusst hier am Modell und nicht in jeder Middleware neu: eine Prüfung,
+     * die man an fünf Stellen abschreibt, fehlt irgendwann an der sechsten.
+     */
+    public function publicSurfacesAvailable(): bool {
+        return $this->is_active && ! $this->tenantWritesBlocked();
+    }
+
+    /**
      * Standard-Jahresurlaubsanspruch in Arbeitstagen (MVP-413) aus
      * settings['vacation']['default_days']; Vorbelegung der Bulk-Anlage.
      */

@@ -27,34 +27,6 @@ use InvalidArgumentException;
  */
 class AssetMergeService extends AbstractEntityMergeService {
     /**
-     * Tabellen mit direkter `asset_id`-Spalte ohne Unique-Konflikt auf
-     * asset_id (Stand Schema 2026-07; Schema-Check schützt vor Abweichungen).
-     *
-     * @var list<string>
-     */
-    private const ASSET_ID_TABLES = [
-        'asset_assignments',
-        'asset_blocks',
-        'asset_defects',
-        'asset_inspection_events',
-        'asset_inspection_schedules',
-        'asset_ownership_changes',
-        'claim_cases',
-        'diary_entries',
-        'key_handovers',
-        'maintenance_plans',
-        'material_usages',
-        'meter_readings',
-        'remote_pending_sessions',
-        'rental_handover_reports',
-        'rental_profiles',
-        'rental_reservations',
-        'rental_return_reports',
-        'service_tickets',
-        'software_installations',
-    ];
-
-    /**
      * Pivot-Tabellen mit Unique-Index (Partner + asset_id): bereits am Ziel
      * bestehende Zuordnungen werden vor dem Umhängen dedupliziert.
      *
@@ -97,10 +69,6 @@ class AssetMergeService extends AbstractEntityMergeService {
         return 'asset_id';
     }
 
-    protected function scalarTables(): array {
-        return self::ASSET_ID_TABLES;
-    }
-
     protected function morphTables(): array {
         return self::MORPH_TABLES;
     }
@@ -132,6 +100,13 @@ class AssetMergeService extends AbstractEntityMergeService {
         $targetId = (int) $target->getKey();
 
         DB::transaction(function () use ($source, $target, $sourceId, $targetId, $morph, $fieldOverrides): void {
+            $this->repointed = [];
+            // Wartungspläne tragen einen je Anlage eindeutigen Code
+            // (`UNIQUE(asset_id, code)`). Zwei Anlagen haben erfahrungsgemäß
+            // beide einen Plan „JAHRESWARTUNG" — das darf den Merge nicht
+            // scheitern lassen, also Code eindeutig machen statt abbrechen.
+            $this->uniquifyChildColumn('maintenance_plans', 'code', $sourceId, $targetId);
+
             $this->repointScalarTables($sourceId, $targetId);
             $this->repointPivots($sourceId, $targetId);
             $this->repointExternalReferences($morph, $sourceId, $targetId);
@@ -139,6 +114,8 @@ class AssetMergeService extends AbstractEntityMergeService {
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
+
+            $this->auditMerge($source, $target);
 
             // Hartes Löschen (Refs bereits umgehängt). Über das Modell, damit
             // der Audit-Log „deleted" festhält.

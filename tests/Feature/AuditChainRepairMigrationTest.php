@@ -114,11 +114,20 @@ class AuditChainRepairMigrationTest extends TestCase {
 
         $this->runRepair();
 
-        $this->assertSame(0, Artisan::call('audit:verify'), 'Nach der Reparatur ist die Kette wieder prüfbar.');
-
+        // Die Reparatur schreibt den Kopf noch unter dem Namen von damals
+        // (eine Kette je TABELLE) — deshalb hier prüfen, bevor die Aufteilung
+        // je Organisation ihn ersetzt.
         $head = DB::table('audit_chain_heads')->where('chain', 'audit_logs');
         $this->assertSame(DB::table('audit_logs')->where('id', $c->id)->value('hash'), $head->value('head_hash'));
         $this->assertSame(3, (int) $head->value('height'));
+
+        // Erst die Aufteilung je Organisation (MVP-722) setzt die Köpfe auf
+        // die heutigen Kettennamen. Seit S-36 gleicht `audit:verify` Kopf und
+        // Höhe mit ab; ein Zwischenstand mit altem Kettennamen zählt damit zu
+        // Recht nicht mehr als „prüfbar".
+        $this->runPerOrganizationRechain();
+
+        $this->assertSame(0, Artisan::call('audit:verify'), 'Nach der Reparatur ist die Kette wieder prüfbar.');
 
         // Zeile 1 war korrekt und bleibt byte-identisch stehen.
         $this->assertSame($a->hash, DB::table('audit_logs')->where('id', $a->id)->value('hash'));

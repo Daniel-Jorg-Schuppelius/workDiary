@@ -49,15 +49,30 @@ class TogglWebhookController extends Controller {
             return response()->json(['validation_code' => $validation]);
         }
 
-        $organization = $gate->organizationFor(TogglPlugin::ID, (string) ($payload['metadata']['workspace_id'] ?? ($payload['payload']['workspace_id'] ?? '')));
-        if (! $organization instanceof Organization) {
-            // Kein Rückschluss nach außen, welcher Workspace bekannt ist.
-            return response()->json(['status' => 'ignored']);
+        // Alle Kandidaten prüfen, nicht nur den ersten (Sicherheitsscan
+        // 2026-08-23, S-57): teilen sich zwei Mandanten eine Workspace-ID,
+        // schnitt die erste Zeile die andere still vom Webhook ab — deren
+        // Geheimnis wurde nie geprüft. Entscheiden soll die Signatur.
+        $candidates = $gate->organizationsFor(TogglPlugin::ID, (string) ($payload['metadata']['workspace_id'] ?? ($payload['payload']['workspace_id'] ?? '')));
+
+        $organization = null;
+        foreach ($candidates as $candidate) {
+            $secret = $gate->secretFor(TogglPlugin::ID, (int) $candidate->id);
+            if (WebhookSignature::hmacValid($raw, $secret, (string) $request->header('X-Webhook-Signature-256', ''), 'sha256', prefix: 'sha256=')) {
+                $organization = $candidate;
+                break;
+            }
         }
 
-        $secret = $gate->secretFor(TogglPlugin::ID, (int) $organization->id);
-        if (! WebhookSignature::hmacValid($raw, $secret, (string) $request->header('X-Webhook-Signature-256', ''), 'sha256', prefix: 'sha256=')) {
-            return response()->json(['message' => 'invalid signature'], 401);
+        if (! $organization instanceof Organization) {
+            // Unterschieden wird weiterhin zwischen „Workspace unbekannt"
+            // (ignoriert) und „bekannt, aber Signatur falsch" (401) — das
+            // braucht der absendende Dienst, um eine Fehlkonfiguration zu
+            // erkennen. Ein Orakel ist es nicht: die Workspace-ID steht in der
+            // Konfiguration des Absenders, sie ist kein Geheimnis.
+            return $candidates->isEmpty()
+                ? response()->json(['status' => 'ignored'])
+                : response()->json(['message' => 'invalid signature'], 401);
         }
 
         $deliveryId = trim((string) ($payload['event_id'] ?? ''));

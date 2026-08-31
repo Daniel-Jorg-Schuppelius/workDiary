@@ -38,41 +38,6 @@ use InvalidArgumentException;
  */
 class CustomerMergeService extends AbstractEntityMergeService {
     /**
-     * Tabellen mit direkter `customer_id`-Spalte. Werden bei Bedarf
-     * (Schema-Check) per Bulk-UPDATE umgehängt. projects und sites werden
-     * gesondert behandelt (zusammengesetzte Unique-Indizes).
-     *
-     * @var list<string>
-     */
-    private const CUSTOMER_ID_TABLES = [
-        'invoices',
-        'invoice_items',
-        'foreign_customers',
-        'assets',
-        'rooms',
-        'diary_entries',
-        'service_tickets',
-        'service_orders',
-        'key_handovers',
-        'travel_logs',
-        'per_diem_trips',
-        'sla_contracts',
-        'recurrence_rules',
-        'manufacturing_orders',
-        'stock_deliveries',
-        'stock_serials',
-        'expenses',
-        'events',
-        'customer_queries',
-        'billing_transfers',
-        'lexoffice_vouchers',
-        'material_usages',
-        'privacy_incidents',
-        'protocol_signature_tokens',
-        'users',
-    ];
-
-    /**
      * Polymorphe Tabellen, deren Zeilen auf den Kunden zeigen können
      * (type-Spalte => id-Spalte). Werden umgehängt, wo der morph-Type auf
      * Customer zeigt. Keine eigenen Unique-Indizes → einfacher Bulk-UPDATE.
@@ -105,8 +70,15 @@ class CustomerMergeService extends AbstractEntityMergeService {
         return 'customer_id';
     }
 
-    protected function scalarTables(): array {
-        return self::CUSTOMER_ID_TABLES;
+    /**
+     * `projects` und `sites` laufen über eigene Schritte: dort muss vor dem
+     * Umhängen der Slug bzw. Code eindeutig gemacht und das Standardprojekt
+     * entwertet werden.
+     *
+     * @return list<string>
+     */
+    protected function separatelyHandledTables(): array {
+        return ['projects', 'sites'];
     }
 
     protected function morphTables(): array {
@@ -136,6 +108,7 @@ class CustomerMergeService extends AbstractEntityMergeService {
         $targetId = (int) $target->getKey();
 
         DB::transaction(function () use ($source, $target, $sourceId, $targetId, $morph, $fieldOverrides): void {
+            $this->repointed = [];
             $this->repointProjects($sourceId, $targetId);
             $this->repointSites($sourceId, $targetId);
             $this->repointScalarTables($sourceId, $targetId);
@@ -144,6 +117,8 @@ class CustomerMergeService extends AbstractEntityMergeService {
             $this->repointMorphTables($morph, $sourceId, $targetId);
             $this->repointTaggables($morph, $sourceId, $targetId);
             $this->mergeFields($source, $target, $fieldOverrides);
+
+            $this->auditMerge($source, $target);
 
             // Hartes Löschen ohne DeletePolicy-Guard (Projekte/Refs bereits umgehängt). Quell-Kunde verschwindet
             // endgültig; der Audit-Log hält „deleted" fest.

@@ -21,6 +21,13 @@ use Illuminate\View\View;
  * generiert einen neuen kryptografisch zufälligen 48-Zeichen-Token;
  * Widerrufen setzt das Feld zurück, sodass bestehende Abonnenten
  * den Feed verlieren (z. B. nach Geräteverlust).
+ *
+ * Gespeichert wird nur der **Hash** (Sicherheitsscan 2026-08-23, S-44): der
+ * Feed trägt Urlaub und Schichten einer namentlich benannten Person, und ein
+ * Datenbank-Dump lieferte den Link bisher direkt benutzbar mit. Der Klartext
+ * ist deshalb **einmalig** nach dem Rotieren sichtbar — danach nicht mehr
+ * herstellbar. Das ist der Preis dafür, dass ihn auch sonst niemand
+ * herstellen kann.
  */
 class CalendarFeedController extends Controller {
     public function show(): View {
@@ -32,18 +39,21 @@ class CalendarFeedController extends Controller {
     public function rotate(): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
-        $user->calendar_feed_token = Str::random(48);
+        $plain = Str::random(48);
+        $user->calendar_feed_token_hash = User::hashCalendarFeedToken($plain);
         $user->save();
 
         return redirect()
             ->route('account.calendar.show')
-            ->with('status', __('Neuer Kalender-Link erzeugt.'));
+            ->with('status', __('Neuer Kalender-Link erzeugt.'))
+            // Nur für diese eine Anzeige — danach ist der Link weg.
+            ->with('calendar_feed_token', $plain);
     }
 
     public function revoke(): RedirectResponse {
         /** @var User $user */
         $user = Auth::user();
-        $user->calendar_feed_token = null;
+        $user->calendar_feed_token_hash = null;
         $user->save();
 
         return redirect()

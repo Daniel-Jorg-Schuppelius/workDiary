@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support\TimeTracking;
 
 use App\Models\{Organization, PluginSetting};
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -42,20 +43,50 @@ class TimeTrackingWebhookGate {
             return null;
         }
 
-        $rows = PluginSetting::query()
+        return $this->organizationsFor($pluginId, $workspaceId)->first();
+    }
+
+    /**
+     * ALLE Organisationen zu einer Workspace-ID.
+     *
+     * Zwei Änderungen gegenüber vorher (Sicherheitsscan 2026-08-23, S-57):
+     *
+     * 1. Gesucht wird über die indizierte Spalte `workspace_lookup` statt
+     *    über das Entschlüsseln **aller** aktiven Zeilen des Plugins. Der
+     *    Endpunkt ist unauthentifiziert; der Aufwand wuchs sonst linear mit
+     *    der Zahl der Mandanten, und zwar für jeden Aufruf, den irgendwer
+     *    auslöst.
+     * 2. Es gewinnt nicht mehr die erste Zeile. Zwei Mandanten mit derselben
+     *    Workspace-ID konnten sich vorher gegenseitig abschneiden: die zweite
+     *    Organisation kam nie zur Signaturprüfung, ihr Geheimnis wurde nie
+     *    geprüft. Jetzt bekommt der Aufrufer alle Kandidaten und probiert
+     *    jedes Geheimnis — entscheiden soll die Signatur, nicht die
+     *    Zeilenreihenfolge.
+     *
+     * @return \Illuminate\Support\Collection<int, Organization>
+     */
+    public function organizationsFor(string $pluginId, string $workspaceId): Collection {
+        $lookup = PluginSetting::workspaceLookup($pluginId, $workspaceId);
+
+        if ($lookup === null) {
+            return collect();
+        }
+
+        $orgIds = PluginSetting::query()
             ->withoutGlobalScopes()
             ->where('plugin_id', $pluginId)
             ->where('enabled', true)
-            ->get();
+            ->where('workspace_lookup', $lookup)
+            ->pluck('organization_id');
 
-        foreach ($rows as $row) {
-            $settings = is_array($row->settings) ? $row->settings : [];
-            if (trim((string) ($settings['workspace_id'] ?? '')) === $workspaceId) {
-                return Organization::query()->withoutGlobalScopes()->find($row->organization_id);
-            }
+        if ($orgIds->isEmpty()) {
+            return collect();
         }
 
-        return null;
+        /** @var \Illuminate\Support\Collection<int, Organization> $orgs */
+        $orgs = Organization::query()->withoutGlobalScopes()->whereIn('id', $orgIds)->get();
+
+        return $orgs;
     }
 
     /** Geteiltes Signaturgeheimnis der Anbindung (bei der Registrierung erhalten). */

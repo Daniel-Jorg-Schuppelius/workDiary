@@ -48,6 +48,14 @@ class ApprovalService {
         if ($approval->decision !== null && $approval->decision !== 'question') {
             throw new \RuntimeException((string) __('Der Schritt ist bereits entschieden.'));
         }
+        // **Vier Augen heißt zwei Personen** (Sicherheitsscan 2026-08-23,
+        // S-34). Geprüft wurde nur „Antragsteller ≠ Entscheider" — dieselbe
+        // Person konnte also Stufe 1 und Stufe 2 derselben Kette entscheiden
+        // und einen Investitionsantrag im Alleingang durchwinken, während die
+        // Oberfläche „weitere Stufe offen (Vier-Augen)" meldete.
+        if ($this->hasDecidedEarlierStep($approval, $actor)) {
+            throw new \RuntimeException((string) __('Wer eine frühere Stufe entschieden hat, kann die nächste nicht ebenfalls entscheiden.'));
+        }
         if ($decision === 'rejected' && trim((string) $reason) === '') {
             throw new \InvalidArgumentException((string) __('Ablehnung braucht eine Begründung.'));
         }
@@ -105,4 +113,17 @@ class ApprovalService {
 
         return $open === 0 ? 'approved_all' : 'pending';
     }
+
+    /** Hat der Entscheider in derselben Kette schon eine Stufe entschieden? */
+    private function hasDecidedEarlierStep(Approval $approval, User $actor): bool {
+        return Approval::query()
+            ->where('approvable_type', $approval->approvable_type)
+            ->where('approvable_id', $approval->approvable_id)
+            ->where('id', '!=', $approval->id)
+            ->where('decided_by', $actor->id)
+            ->whereNotNull('decision')
+            ->where('decision', '!=', 'question')
+            ->exists();
+    }
+
 }

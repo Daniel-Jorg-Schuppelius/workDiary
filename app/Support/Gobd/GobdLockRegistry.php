@@ -50,6 +50,20 @@ final class GobdLockRegistry {
         // Append-only Nachweise (AppendOnly-Trait)
         'StockMovement' => ['file' => 'app/Models/StockMovement.php', 'table' => 'stock_movements', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'DiaryEntryEvent' => ['file' => 'app/Models/DiaryEntryEvent.php', 'table' => 'diary_entry_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        // Hash-verkettet und in config/audit.php als Kette geführt, aber bis
+        // 2026-08-31 nicht im Gate (Sicherheitsscan S-59) — Bulk-/Quiet-Writes
+        // wären unbemerkt geblieben.
+        'AccountingMigrationEvent' => ['file' => 'app/Models/Migration/AccountingMigrationEvent.php', 'table' => 'accounting_migration_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        // Ebenfalls hash-verkettet und bis 2026-08-31 nicht im Gate (S-59).
+        'AuditRedaction' => ['file' => 'app/Models/AuditRedaction.php', 'table' => 'audit_redactions', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        // Restpunkte aus S-59, nachgezogen 2026-08-31.
+        'ApprovalStep' => ['file' => 'app/Models/ApprovalStep.php', 'table' => 'approval_steps', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'InvoiceItem' => ['file' => 'app/Models/InvoiceItem.php', 'table' => 'invoice_items', 'mechanism' => self::MECHANISM_FREEZE],
+        'TimeExport' => ['file' => 'app/Models/TimeExport.php', 'table' => 'time_exports', 'mechanism' => self::MECHANISM_FREEZE],
+        'TimeExportLine' => ['file' => 'app/Models/TimeExportLine.php', 'table' => 'time_export_lines', 'mechanism' => self::MECHANISM_FREEZE],
+        'PrivacyIncidentEvent' => ['file' => 'app/Models/Privacy/IncidentEvent.php', 'table' => 'privacy_incident_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'PrivacyRequestEvent' => ['file' => 'app/Models/Privacy/RequestEvent.php', 'table' => 'privacy_request_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
+        'WhistleblowingCaseEvent' => ['file' => 'app/Models/Whistleblowing/CaseEvent.php', 'table' => 'whistleblowing_case_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'WeatherSnapshot' => ['file' => 'app/Models/WeatherSnapshot.php', 'table' => 'weather_snapshots', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'DocumentRenderSnapshot' => ['file' => 'app/Models/DocumentDesign/DocumentRenderSnapshot.php', 'table' => 'document_render_snapshots', 'mechanism' => self::MECHANISM_APPEND_ONLY],
         'AgileEvent' => ['file' => 'app/Models/Agile/AgileEvent.php', 'table' => 'agile_events', 'mechanism' => self::MECHANISM_APPEND_ONLY],

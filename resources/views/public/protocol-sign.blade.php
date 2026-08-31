@@ -67,7 +67,8 @@
             <label class="label"><span class="label-text">{{ __('Name des Unterzeichners') }}</span></label>
             <input type="text" name="signer_name" class="input input-bordered" value="{{ old('signer_name', $record->signer_name) }}" required maxlength="120">
         </div>
-        <input type="hidden" name="signature_image_path" value="{{ old('signature_image_path') }}">
+        {{-- Feld entfernt (S-63): der Pfad wurde vom Client übernommen und
+             ungeprüft gespeichert. Er gehört serverseitig gesetzt. --}}
         <label class="label cursor-pointer justify-start gap-3">
             <input type="checkbox" name="accept" value="1" class="checkbox" required>
             <span class="label-text">{{ __('Ich bestätige die Richtigkeit der Angaben.') }}</span>

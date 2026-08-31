@@ -106,6 +106,22 @@ git reset --hard origin/main
 
 echo "→ Lizenz-Signierschlüssel absichern (falls vorhanden)"
 [ -f storage/license-keys.env ] && chmod 600 storage/license-keys.env || true
+# Dieselbe Strenge für die .env (S-53): sie trägt APP_KEY, DB-Passwort,
+# Backup-Hauptschlüssel und OAuth-Geheimnisse.
+[ -f .env ] && chmod 600 .env || true
+
+# Debug-Modus in der Produktion ist ein Ausschlusskriterium, kein Hinweis
+# (Sicherheitsscan 2026-08-23, S-66): APP_DEBUG=true liefert Stacktraces samt
+# Konfigurationswerten an jeden Besucher. Lieber ein abgebrochenes Deploy als
+# eine Instanz, die ihre eigenen Geheimnisse ausgibt.
+if [ -f .env ]; then
+    _app_env="$(grep -E '^APP_ENV=' .env | tail -1 | cut -d= -f2- | tr -d '"'"'"'[:space:]')"
+    _app_debug="$(grep -E '^APP_DEBUG=' .env | tail -1 | cut -d= -f2- | tr -d '"'"'"'[:space:]' | tr 'A-Z' 'a-z')"
+    if [ "$_app_env" = "production" ] && [ "$_app_debug" = "true" ]; then
+        echo "ABBRUCH: APP_ENV=production mit APP_DEBUG=true — bitte APP_DEBUG=false setzen." >&2
+        exit 1
+    fi
+fi
 
 echo "→ Composer-Abhängigkeiten (ohne dev)"
 # Composer-Cache in die Site legen: das ISPConfig-Home des Web-Users (…/webNNN)

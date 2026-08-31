@@ -62,7 +62,14 @@ class SessionController extends Controller {
     }
 
     /** Einzelne Web-/App-Sitzung fernabmelden. */
-    public function destroySession(Request $request, string $id): RedirectResponse {
+    /**
+     * `$handle` ist ein HMAC über die Session-ID, nicht die ID selbst
+     * (Sicherheitsscan 2026-08-23, S-54): sonst stünde der Session-Identifier
+     * im HTML und in jeder Ziel-URL. Die Auflösung sucht ausschließlich in den
+     * Sitzungen der eigenen Organisation — die Mandantengrenze liegt damit im
+     * Nachschlagen und nicht in einer nachgelagerten Prüfung.
+     */
+    public function destroySession(Request $request, string $handle): RedirectResponse {
         Gate::authorize(Permission::SecuritySessionsRevoke->value);
 
         $organization = $this->organization($request);
@@ -71,8 +78,18 @@ class SessionController extends Controller {
 
         // Selbst-Aussperr-Schutz: die eigene aktuelle Sitzung wird hier nicht
         // beendet (normaler Logout dafür nutzen).
-        if ($id === $request->session()->getId()) {
+        if (hash_equals(SessionManagementService::handleFor($request->session()->getId()), $handle)) {
             return back()->withErrors(['session' => __('sessions.error.own_current_session')]);
+        }
+
+        /** @var list<int> $memberIds */
+        $memberIds = array_values(array_map('intval', User::query()
+            ->where('organization_id', $organization->id)
+            ->pluck('id')->all()));
+
+        $id = SessionManagementService::resolveHandle($handle, $memberIds);
+        if ($id === null) {
+            return back()->withErrors(['session' => __('sessions.error.session_gone')]);
         }
 
         $row = DB::table('sessions')->where('id', $id)->first(['id', 'user_id']);

@@ -37,6 +37,10 @@ final class DatevBookingConfig {
         public readonly int $accountLength,
         public readonly string $revenueAccount,
         public readonly string $taxFreeRevenueAccount,
+        /** Gegenkonto für gewährtes Skonto (Erlösschmälerung) — S-38. */
+        public readonly string $discountAccount,
+        /** Gegenkonto für die Ausbuchung uneinbringlicher Forderungen — S-38. */
+        public readonly string $writeOffAccount,
         public readonly int $debtorBase,
         public readonly array $taxKeyMap,
         public readonly bool $finalize,
@@ -57,6 +61,8 @@ final class DatevBookingConfig {
 
         $revenue = trim((string) ($datev['revenue_account'] ?? ''));
         $revenueFree = trim((string) ($datev['revenue_account_tax_free'] ?? ''));
+        $discount = trim((string) ($datev['discount_account'] ?? ''));
+        $writeOff = trim((string) ($datev['write_off_account'] ?? ''));
 
         $encoding = strtoupper(trim((string) ($datev['encoding'] ?? '')));
         if ($encoding !== 'UTF-8' && $encoding !== 'ISO-8859-1') {
@@ -72,6 +78,8 @@ final class DatevBookingConfig {
             accountLength: $accountLength,
             revenueAccount: $revenue !== '' ? $revenue : $skr->defaultRevenueAccount(),
             taxFreeRevenueAccount: $revenueFree !== '' ? $revenueFree : $skr->defaultTaxFreeRevenueAccount(),
+            discountAccount: $discount !== '' ? $discount : $skr->defaultDiscountAccount(),
+            writeOffAccount: $writeOff !== '' ? $writeOff : $skr->defaultWriteOffAccount(),
             debtorBase: (int) ($datev['debtor_base'] ?? 10000),
             taxKeyMap: self::resolveTaxKeyMap($datev['tax_keys'] ?? null),
             finalize: self::boolish($datev['finalize'] ?? null, true),

@@ -45,7 +45,7 @@ class CustomerController extends Controller {
             $query->whereLikeEscaped('name', $search);
         }
 
-        return CustomerResource::collection($query->orderBy('name')->paginate((int) $request->input('per_page', 25)));
+        return CustomerResource::collection($query->orderBy('name')->paginate($this->perPage($request)));
     }
 
     #[OA\Post(
@@ -109,4 +109,14 @@ class CustomerController extends Controller {
 
         return response()->noContent();
     }
+
+    /**
+     * Seitengröße klemmen (Sicherheitsscan 2026-08-23, S-58): `per_page` ging
+     * ungeprüft an paginate() — ein Token konnte damit den gesamten Bestand in
+     * einer Antwort anfordern.
+     */
+    private function perPage(Request $request): int {
+        return max(1, min(100, (int) $request->input('per_page', 25)));
+    }
+
 }

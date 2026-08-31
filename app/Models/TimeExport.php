@@ -47,6 +47,53 @@ use Illuminate\Support\Carbon;
  * @property Carbon $updated_at
  */
 class TimeExport extends Model {
+    /**
+     * Felder, die auch nach der Auslieferung noch geändert werden dürfen.
+     *
+     * Alles, was den ausgelieferten Stand beschreibt (Zeilen, Summen,
+     * `payload_hash`, Datei), ist ab `delivered_at` gesperrt — der Hash weist
+     * genau diesen Stand nach. Was danach noch dazukommt, sind Vermerke über
+     * die Auslieferung selbst.
+     *
+     * @var list<string>
+     */
+    public const MUTABLE_AFTER_DELIVERY = [
+        'delivery_note',
+        'delivered_at',
+        'delivered_by_user_id',
+        'status',
+        'updated_at',
+    ];
+
+    /**
+     * Unveränderlich ab Auslieferung (Sicherheitsscan 2026-08-23, S-59).
+     *
+     * Die Unveränderlichkeit stand bisher nur im `TimeExportService`; ein
+     * Schreibpfad, der am Dienst vorbeigeht, konnte Zeilen und Summen einer
+     * bereits an das Lohnbüro übergebenen Ausleitung ändern — der
+     * `payload_hash` hätte dann etwas anderes nachgewiesen als die Datei.
+     */
+    protected static function booted(): void {
+        static::updating(function (self $export): void {
+            if ($export->getRawOriginal('delivered_at') === null) {
+                return; // noch nicht ausgeliefert
+            }
+
+            $blocked = array_diff(array_keys($export->getDirty()), self::MUTABLE_AFTER_DELIVERY);
+            if ($blocked !== []) {
+                throw new \RuntimeException(
+                    'Ausgelieferte Zeitexporte sind unveränderlich (Felder: ' . implode(', ', $blocked) . ').',
+                );
+            }
+        });
+
+        static::deleting(function (self $export): void {
+            if ($export->getRawOriginal('delivered_at') !== null) {
+                throw new \RuntimeException('Ausgelieferte Zeitexporte dürfen nicht gelöscht werden.');
+            }
+        });
+    }
+
     use Auditable;
     use BelongsToOrganization;
 

@@ -269,6 +269,43 @@ class AccountingOpenItemTest extends TestCase {
         $this->assertSame('Sicherheitseinbehalt 5 %', $item->settlements->first()?->note);
     }
 
+    /**
+     * Skonto und Ausbuchung erzeugen die Gegenbuchung im Journal
+     * (Sicherheitsscan 2026-08-23, S-38) — und zwar genau eine, mit genau einem
+     * Ausgleich: der Ausgleich entsteht beim Festbuchen, nicht zusätzlich.
+     */
+    public function test_discount_settlement_books_against_the_discount_account(): void {
+        [, , $item] = $this->postInvoice();
+        $this->actingAs($this->admin);
+
+        app(OpenItemService::class)->settle($item, SettlementKind::Discount, '2.38', null, 'Skonto 2 %');
+
+        $item->refresh();
+        $this->assertSame('116.62', $item->open_amount?->getAmount());
+        $this->assertCount(1, $item->settlements);
+        $this->assertSame(SettlementKind::Discount, $item->settlements->first()?->kind);
+
+        $entry = $item->settlements->first()?->entry;
+        $this->assertNotNull($entry, 'Der Ausgleich muss eine Journalbuchung tragen.');
+        $lines = $entry->lines->keyBy(fn ($line) => (string) $line->account?->number);
+        $this->assertSame('2.38', $lines['8736']?->debit?->getAmount());
+        $this->assertSame('2.38', $lines['1400']?->credit?->getAmount());
+    }
+
+    /** Ohne gepflegtes Gegenkonto wird nicht geraten: der Ausgleich läuft ohne Buchung. */
+    public function test_settlement_without_counter_account_stays_unbooked(): void {
+        [, , $item] = $this->postInvoice();
+        $this->actingAs($this->admin);
+
+        // 2400 (Ausbuchung, SKR03) ist im Kontenplan dieser Organisation nicht angelegt.
+        app(OpenItemService::class)->settle($item, SettlementKind::WriteOff, '19.00');
+
+        $item->refresh();
+        $this->assertSame('100.00', $item->open_amount?->getAmount());
+        $this->assertCount(1, $item->settlements);
+        $this->assertNull($item->settlements->first()?->accounting_entry_id);
+    }
+
     public function test_aging_groups_by_due_date(): void {
         $this->postInvoice();
 

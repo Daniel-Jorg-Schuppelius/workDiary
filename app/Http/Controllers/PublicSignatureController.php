@@ -38,9 +38,13 @@ class PublicSignatureController extends Controller {
     }
 
     protected function resolve(string $token): Timesheet {
-        // TENANT-BYPASS: Public-Route ohne Auth; magic_token ohne Org-Bindung aufgelöst,
-        // Enumeration verhindert durch Token-Entropie + magic_expires_at-Check.
-        $timesheet = Timesheet::query()->withoutGlobalScopes()->where('magic_token', $token)->first();
+        // TENANT-BYPASS: Public-Route ohne Auth; über den Token-HASH ohne
+        // Org-Bindung aufgelöst (S-44), Enumeration verhindert durch
+        // Token-Entropie + magic_expires_at-Check.
+        $timesheet = Timesheet::query()
+            ->withoutGlobalScopes()
+            ->where('magic_token_hash', Timesheet::hashMagicToken($token))
+            ->first();
         abort_if(! $timesheet, 404);
         abort_if($timesheet->magic_expires_at && $timesheet->magic_expires_at->isPast(), 410);
 

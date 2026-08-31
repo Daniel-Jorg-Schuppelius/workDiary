@@ -105,7 +105,7 @@
                 {{-- Click-to-Dial (W4.5): Knopf erscheint nur bei eingerichteter Anlage. --}}
                 <x-detail-grid.row :label="__('Telefon')"><x-phone-value :number="$customer->phone" /></x-detail-grid.row>
                 <x-detail-grid.row :label="__('Mobil')"><x-phone-value :number="$customer->mobile" /></x-detail-grid.row>
-                <x-detail-grid.row :label="__('Homepage')">@if ($customer->homepage)<a class="link" href="{{ $customer->homepage }}" target="_blank" rel="noopener">{{ $customer->homepage }}</a>@endif</x-detail-grid.row>
+                <x-detail-grid.row :label="__('Homepage')"><x-external-link :url="$customer->homepage" /></x-detail-grid.row>
                 @if ($customer->address_street || $customer->address_zip || $customer->address_city)
                     {{-- Newline via echo, nicht als Template-Whitespace: PHP schluckt ein \n direkt nach `?>` --}}
                     <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{{ $customer->address_street }}@if($customer->address_street){{ "\n" }}@endif{{ trim(($customer->address_zip ?? '').' '.($customer->address_city ?? '')) }}</x-detail-grid.row>

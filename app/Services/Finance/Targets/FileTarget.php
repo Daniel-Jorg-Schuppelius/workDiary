@@ -14,6 +14,7 @@ use App\Enums\Finance\{TransferChannel, TransferTarget};
 use App\Models\Finance\BillingTransfer;
 use App\Models\{MaterialUsage, TimeEntry};
 use App\Services\Finance\BillingPositionBuilder;
+use App\Support\CsvExport;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\StringHelper as TextHelper;
@@ -150,7 +151,10 @@ class FileTarget implements FacturationTarget {
                 ->map(fn(TimeEntry $e): string => (string) ($e->user->name ?? ''))
                 ->filter()->unique()->implode(', ');
 
-            $rows[] = StringHelper::encodeLine([
+            // Formel-Guard (Sicherheitsscan 2026-08-23, S-46): Mitarbeitername,
+            // Projektname und Beschreibung sind frei erfasst, und diese Datei
+            // wird von Menschen in Excel geöffnet.
+            $rows[] = StringHelper::encodeLine(CsvExport::guardRow([
                 $position->service_from?->toDateString() ?? '',
                 $employees,
                 (string) $position->project?->name,
@@ -159,7 +163,7 @@ class FileTarget implements FacturationTarget {
                 self::num($position->unitPriceFloat()),
                 self::num($position->amountFloat()),
                 TextHelper::normalizeWhitespace((string) $position->description),
-            ], ';');
+            ]), ';');
 
             $totalHours += $hours;
             $totalAmount += $position->amountFloat();
@@ -202,7 +206,7 @@ class FileTarget implements FacturationTarget {
 
         foreach ($usages as $usage) {
             $item = $items->get($usage->id);
-            $rows[] = StringHelper::encodeLine([
+            $rows[] = StringHelper::encodeLine(CsvExport::guardRow([
                 $usage->timesheet?->work_date?->toDateString() ?? '',
                 trim((string) $usage->description),
                 self::num($item?->quantity),
@@ -210,7 +214,7 @@ class FileTarget implements FacturationTarget {
                 self::num($usage->unit_price?->toFloat()),
                 self::num($item?->amount),
                 $usage->timesheet->project->name ?? '',
-            ], ';');
+            ]), ';');
         }
 
         $rows[] = StringHelper::encodeLine([

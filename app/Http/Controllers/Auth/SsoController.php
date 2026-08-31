@@ -302,7 +302,13 @@ class SsoController extends Controller {
             return null;
         }
 
-        $mapping = OrganizationSsoDomain::query()->where('domain', $domain)->first();
+        // Nur NACHGEWIESENE Domains lenken Anmeldungen (Sicherheitsscan
+        // 2026-08-23, S-49): sonst genügte das bloße Eintragen, um die
+        // Mail-Domain eines fremden Mandanten zu beanspruchen.
+        $mapping = OrganizationSsoDomain::query()
+            ->where('domain', $domain)
+            ->whereNotNull('verified_at')
+            ->first();
         if (! $mapping instanceof OrganizationSsoDomain) {
             return null;
         }

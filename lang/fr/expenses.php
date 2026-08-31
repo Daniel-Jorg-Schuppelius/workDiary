@@ -9,6 +9,10 @@
  */
 
 return [
+    'error' => [
+        'self_approval' => 'Vous ne pouvez pas approuver votre propre note de frais.',
+        'invalid_transition' => 'L’action :action n’est pas possible dans l’état :status.',
+    ],
     'receipt' => [
         'no_vendor' => 'Sans fournisseur',
         'link_title' => 'Pièce comptable',

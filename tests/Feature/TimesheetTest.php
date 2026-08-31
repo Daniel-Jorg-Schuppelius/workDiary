@@ -224,7 +224,8 @@ class TimesheetTest extends TestCase {
     public function test_public_signature_via_magic_token(): void {
         Storage::fake('local');
         $ts = $this->makeTimesheet();
-        $ts->forceFill(['magic_token' => 'tok123', 'magic_expires_at' => now()->addDay()])->save();
+        // Gespeichert wird nur der Hash (Sicherheitsscan S-44).
+        $ts->forceFill(['magic_token_hash' => Timesheet::hashMagicToken('tok123'), 'magic_expires_at' => now()->addDay()])->save();
 
         $this->get(route('timesheets.public-sign', 'tok123'))->assertOk();
 
@@ -235,12 +236,12 @@ class TimesheetTest extends TestCase {
 
         $ts->refresh();
         $this->assertSame(TimesheetStatus::Signed, $ts->status);
-        $this->assertNull($ts->magic_token);
+        $this->assertNull($ts->magic_token_hash);
     }
 
     public function test_expired_magic_token_is_rejected(): void {
         $ts = $this->makeTimesheet();
-        $ts->forceFill(['magic_token' => 'old', 'magic_expires_at' => now()->subDay()])->save();
+        $ts->forceFill(['magic_token_hash' => Timesheet::hashMagicToken('old'), 'magic_expires_at' => now()->subDay()])->save();
 
         $this->get(route('timesheets.public-sign', 'old'))->assertStatus(410);
     }

@@ -16,7 +16,11 @@ use Illuminate\Support\Facades\Route;
  * {@see \App\Plugins\RemoteSupport\RemoteSupportServiceProvider}. Berechtigung
  * wird im Controller per Gate('update', $asset) geprüft.
  */
-Route::middleware(['web', 'auth'])->group(function (): void {
+// Plan-/Modul-Gate wie in den Kern-Routen (Sicherheitsscan 2026-08-23,
+// S-55): dieselben Namenspräfixe (customers.*, invoices.*, assets.*) sind
+// in config/plans.php einem Modul zugeordnet — die Plugin-Routen liefen
+// bisher daran vorbei, ein gesperrtes Modul blieb über sie erreichbar.
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
     Route::post('assets/{asset}/remote-support/id', [RemoteSupportAssetController::class, 'saveId'])
         ->name('assets.remote-support.id');
     Route::delete('assets/{asset}/remote-support/{provider}', [RemoteSupportAssetController::class, 'forgetId'])

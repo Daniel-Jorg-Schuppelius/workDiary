@@ -190,14 +190,33 @@
             @else
                 <ul class="mb-2 space-y-1">
                     @foreach ($ssoDomains as $ssoDomain)
-                        <li class="flex items-center justify-between gap-2 text-sm">
-                            <span class="font-mono">{{ $ssoDomain->domain }}</span>
-                            <form method="POST" action="{{ route('admin.sso.domains.remove', $ssoDomain->sqid) }}">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('sso.action.domain_remove') }}</button>
-                            </form>
+                        <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                            <span class="font-mono">
+                                {{ $ssoDomain->domain }}
+                                {{-- Erst der DNS-Nachweis macht die Domain wirksam (S-49). --}}
+                                @if ($ssoDomain->verified_at === null)
+                                    <span class="badge badge-warning badge-sm ml-1">{{ __('sso.domain_unverified') }}</span>
+                                @endif
+                            </span>
+                            <span class="flex items-center gap-1">
+                                @if ($ssoDomain->verified_at === null)
+                                    <form method="POST" action="{{ route('admin.sso.domains.verify', $ssoDomain->sqid) }}">
+                                        @csrf
+                                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('sso.action.domain_verify') }}</button>
+                                    </form>
+                                @endif
+                                <form method="POST" action="{{ route('admin.sso.domains.remove', $ssoDomain->sqid) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('sso.action.domain_remove') }}</button>
+                                </form>
+                            </span>
                         </li>
+                        @if ($ssoDomain->verified_at === null && $ssoDomain->verification_token)
+                            <li class="pl-1 text-xs text-muted">
+                                {{ __('sso.domain_dns_hint', ['name' => $ssoDomain->dnsRecordName(), 'value' => $ssoDomain->verification_token]) }}
+                            </li>
+                        @endif
                     @endforeach
                 </ul>
             @endif

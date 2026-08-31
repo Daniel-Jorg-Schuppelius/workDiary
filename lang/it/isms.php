@@ -651,6 +651,7 @@ return [
             'unsigned' => 'non firmato',
             'signature_valid' => 'Firma valida',
             'signature_invalid' => 'Firma non valida',
+            'signature_unverifiable' => 'non verificabile (nessuna chiave dell’editore)',
             'integrity' => 'Integrità',
             'integrity_ok' => 'Checksum corretti',
             'integrity_broken' => 'Checksum violati',

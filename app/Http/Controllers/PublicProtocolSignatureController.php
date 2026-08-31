@@ -52,14 +52,20 @@ class PublicProtocolSignatureController extends Controller {
     public function store(Request $request, string $token): RedirectResponse|Response {
         $data = $request->validate([
             'signer_name' => ['required', 'string', 'min:2', 'max:120'],
-            'signature_image_path' => ['nullable', 'string', 'max:255'],
+            // 'signature_image_path' NICHT vom Client annehmen (Sicherheitsscan
+            // 2026-08-23, S-63): der Endpunkt ist nur tokengeschützt, und ein
+            // beliebiger Pfad landete unverändert in der Datenbank. Heute wird
+            // er nirgends gerendert — ein späterer PDF- oder View-Renderer, der
+            // ihn als Bildquelle lädt, verarbeitete damit Pfadangaben aus einer
+            // unauthentifizierten Quelle (`storage/…`, `phar://`). Gesetzt wird
+            // er serverseitig, sobald ein Bild gespeichert wird.
             'accept' => ['accepted'],
         ]);
 
         try {
             $this->tokens->redeem($token, [
                 'signer_name' => $data['signer_name'],
-                'signature_image_path' => $data['signature_image_path'] ?? null,
+                'signature_image_path' => null,
                 'ip' => $request->ip(),
                 'user_agent' => substr((string) $request->userAgent(), 0, 255),
             ]);
