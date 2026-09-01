@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.394.5",
+            "version": "3.394.6",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "12c80170a12c9e9e5d9057bff4d197979631624f"
+                "reference": "860a8b13413adcef698afa0770f0d85f85777a78"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/12c80170a12c9e9e5d9057bff4d197979631624f",
-                "reference": "12c80170a12c9e9e5d9057bff4d197979631624f",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/860a8b13413adcef698afa0770f0d85f85777a78",
+                "reference": "860a8b13413adcef698afa0770f0d85f85777a78",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.5"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.394.6"
             },
-            "time": "2026-08-31T22:10:11+00:00"
+            "time": "2026-09-01T18:09:58+00:00"
         },
         {
             "name": "azuyalabs/yasumi",
@@ -762,16 +762,16 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-api-toolkit",
-            "version": "v2.9.2",
+            "version": "v2.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit.git",
-                "reference": "5fbf016a34da4862af2029b0eca15f3690035304"
+                "reference": "d0f76d2b39960b9cc5441c8226a9955a0329b512"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/5fbf016a34da4862af2029b0eca15f3690035304",
-                "reference": "5fbf016a34da4862af2029b0eca15f3690035304",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-api-toolkit/zipball/d0f76d2b39960b9cc5441c8226a9955a0329b512",
+                "reference": "d0f76d2b39960b9cc5441c8226a9955a0329b512",
                 "shasum": ""
             },
             "require": {
@@ -806,9 +806,9 @@
             "description": "Reused codes for my api php sdks",
             "support": {
                 "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/issues",
-                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.9.2"
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.9.3"
             },
-            "time": "2026-08-24T17:04:48+00:00"
+            "time": "2026-09-01T13:38:45+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
@@ -1664,16 +1664,16 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.31.5",
+            "version": "v1.31.9",
             "source": {
                 "type": "git",
                 "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "66b324887a17b264b0d46e8e6979fb82b09c0d04"
+                "reference": "ced92fccc90c7a525e032f91474b76789747003c"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/66b324887a17b264b0d46e8e6979fb82b09c0d04",
-                "reference": "66b324887a17b264b0d46e8e6979fb82b09c0d04",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/ced92fccc90c7a525e032f91474b76789747003c",
+                "reference": "ced92fccc90c7a525e032f91474b76789747003c",
                 "shasum": ""
             },
             "require": {
@@ -1709,9 +1709,9 @@
             "description": "Project description.",
             "support": {
                 "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.31.5"
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.31.9"
             },
-            "time": "2026-08-31T19:42:31+00:00"
+            "time": "2026-09-01T21:35:14+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -2531,16 +2531,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v13.29.0",
+            "version": "v13.30.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "6e2c363716964d8238cee7097b258119a984f0cf"
+                "reference": "718d17db56861e0a49f644217c8853dab1bff8ce"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/6e2c363716964d8238cee7097b258119a984f0cf",
-                "reference": "6e2c363716964d8238cee7097b258119a984f0cf",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/718d17db56861e0a49f644217c8853dab1bff8ce",
+                "reference": "718d17db56861e0a49f644217c8853dab1bff8ce",
                 "shasum": ""
             },
             "require": {
@@ -2754,7 +2754,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-08-25T20:57:16+00:00"
+            "time": "2026-09-01T21:42:30+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -11429,16 +11429,16 @@
         },
         {
             "name": "tecnickcom/tc-lib-barcode",
-            "version": "2.14.0",
+            "version": "2.15.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tecnickcom/tc-lib-barcode.git",
-                "reference": "4360438c37084f2ba03a4d67284004e11c6708a0"
+                "reference": "94b2a23eb731f0258e123e3c500000725b157fb3"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tecnickcom/tc-lib-barcode/zipball/4360438c37084f2ba03a4d67284004e11c6708a0",
-                "reference": "4360438c37084f2ba03a4d67284004e11c6708a0",
+                "url": "https://api.github.com/repos/tecnickcom/tc-lib-barcode/zipball/94b2a23eb731f0258e123e3c500000725b157fb3",
+                "reference": "94b2a23eb731f0258e123e3c500000725b157fb3",
                 "shasum": ""
             },
             "require": {
@@ -11527,7 +11527,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-08-27T14:19:38+00:00"
+            "time": "2026-09-01T21:18:52+00:00"
         },
         {
             "name": "tecnickcom/tc-lib-color",
@@ -11675,16 +11675,16 @@
         },
         {
             "name": "tecnickcom/tc-lib-pdf",
-            "version": "8.73.0",
+            "version": "8.73.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tecnickcom/tc-lib-pdf.git",
-                "reference": "d87b2bc7f9ba6abec038986946b021c0f0c32d32"
+                "reference": "5859bfeeff3c12a4882daf95e79d7c543f6f8a15"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf/zipball/d87b2bc7f9ba6abec038986946b021c0f0c32d32",
-                "reference": "d87b2bc7f9ba6abec038986946b021c0f0c32d32",
+                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf/zipball/5859bfeeff3c12a4882daf95e79d7c543f6f8a15",
+                "reference": "5859bfeeff3c12a4882daf95e79d7c543f6f8a15",
                 "shasum": ""
             },
             "require": {
@@ -11698,7 +11698,7 @@
                 "ext-xml": "*",
                 "ext-zlib": "*",
                 "php": "^8.2",
-                "tecnickcom/tc-lib-barcode": "^2.14",
+                "tecnickcom/tc-lib-barcode": "^2.15",
                 "tecnickcom/tc-lib-color": "^3.0",
                 "tecnickcom/tc-lib-file": "^3.9",
                 "tecnickcom/tc-lib-pdf-encrypt": "^2.11",
@@ -11756,7 +11756,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-08-31T15:36:48+00:00"
+            "time": "2026-09-01T21:32:24+00:00"
         },
         {
             "name": "tecnickcom/tc-lib-pdf-encrypt",
