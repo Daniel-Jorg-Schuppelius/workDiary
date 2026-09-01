@@ -46,10 +46,17 @@ test("Suche liefert Treffer mit Hervorhebung und stabilen Artikel-Links", async 
     await expect(page.locator("article h2").first()).toBeVisible();
 });
 
-test("Leere Suche zeigt definierten Leerzustand mit Zurücksetzen", async ({ page }) => {
+test("Leere Suche zeigt Leerzustand mit Zurücksetzen und Drawer-Absprung", async ({ page }) => {
     await page.goto("/hilfe?q=xyzzy-gibt-es-nicht");
 
     await expect(page.getByText("Keine passenden Hilfethemen gefunden.")).toBeVisible();
+
+    // Absprung zur kontextbezogenen Hilfe: öffnet den Drawer mit dem
+    // Seitenkontext des Hilfecenters (Meta-Topic help.center).
+    await page.getByRole("button", { name: "Hilfe öffnen" }).filter({ visible: true }).first().click();
+    await expect(page.locator("[data-help-title]")).toContainText("Hilfecenter");
+    await page.keyboard.press("Escape");
+
     await page.getByRole("link", { name: "Suche zurücksetzen" }).click();
     await expect(page).toHaveURL(/\/hilfe$/);
 });

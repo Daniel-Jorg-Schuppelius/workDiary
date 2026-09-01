@@ -61,6 +61,12 @@
                     <x-button tone="outline" size="sm" :href="route('help.center.index')">
                         {{ __('Suche zurücksetzen') }}
                     </x-button>
+                    {{-- Absprung zur kontextbezogenen Hilfe (Issue #93, Abschnitt 1):
+                         öffnet den Drawer mit dem Seitenkontext (help.center). --}}
+                    <x-button type="button" tone="outline" size="sm" icon="help"
+                              data-help-trigger>
+                        {{ __('Hilfe öffnen') }}
+                    </x-button>
                     <x-button tone="outline" size="sm" icon="flag" class="btn-warning"
                               data-entry-modal-trigger
                               :href="route('problem-reports.create', ['route' => 'help.center.index', 'url' => url()->full()])">

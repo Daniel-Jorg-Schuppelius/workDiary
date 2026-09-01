@@ -56,7 +56,9 @@
 
             {{-- Serverseitig gerendertes Markdown (Roh-HTML escaped, unsichere
                  Links deaktiviert) — kein clientseitiges innerHTML. --}}
-            <div class="help-article max-w-prose text-sm leading-relaxed text-base-content">
+            {{-- Volle Kartenbreite (Nutzerentscheid 2026-09-01): kein
+                 max-w-prose — der Artikel füllt den Container aus. --}}
+            <div class="help-article text-sm leading-relaxed text-base-content">
                 {!! $row->body_html !!}
             </div>
         </article>
