@@ -4,6 +4,8 @@ topic: admin.orgamax
 version: 1
 audience:
     - admin
+modules:
+    - module.finance
 related:
     - admin.integrations
     - admin.plugins

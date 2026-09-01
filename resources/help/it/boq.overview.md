@@ -3,6 +3,8 @@ title: "Computi metrici GAEB"
 topic: boq.overview
 version: 1
 audience: []
+modules:
+    - module.bau
 related:
     - projects.manage
     - invoices.manage

@@ -3,6 +3,8 @@ title: "Transport de personnes (taxi/VTC)"
 topic: passenger.overview
 version: 1
 audience: []
+modules:
+    - module.fuhrpark
 related:
     - claims.overview
 ---

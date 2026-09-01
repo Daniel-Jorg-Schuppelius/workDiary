@@ -3,6 +3,8 @@ title: "Etiketten & Vorlagen"
 topic: inventory.labels
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - inventory.stock
     - warehouses.manage

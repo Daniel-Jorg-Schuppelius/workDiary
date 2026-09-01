@@ -3,6 +3,8 @@ title: "Location de matériel"
 topic: rental.overview
 version: 1
 audience: []
+modules:
+    - module.rental
 related:
     - claims.overview
 ---

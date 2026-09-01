@@ -3,6 +3,8 @@ title: "Moyens de contrôle et étalonnage"
 topic: asset-compliance.overview
 version: 1
 audience: []
+modules:
+    - module.asset_compliance
 related:
     - rental.overview
     - asset-finance.overview

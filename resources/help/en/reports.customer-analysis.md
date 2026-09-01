@@ -3,6 +3,8 @@ title: "Customer analysis"
 topic: reports.customer-analysis
 version: 1
 audience: []
+modules:
+    - module.auswertungen_team
 related:
     - reports.drilldown
     - reports.entry-type-analysis

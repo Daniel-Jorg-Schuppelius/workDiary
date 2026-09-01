@@ -3,6 +3,8 @@ title: "Analisi per tipo di incarico"
 topic: reports.entry-type-analysis
 version: 1
 audience: []
+modules:
+    - module.auswertungen_team
 related:
     - reports.customer-analysis
     - reports.drilldown

@@ -38,18 +38,9 @@ class HelpController extends Controller {
             'created_at' => CarbonImmutable::now(),
         ]);
 
-        // Verwandte Themen mit übersetztem Titel ausliefern — und nur solche,
-        // die existieren und für den Nutzer sichtbar sind (kein toter Link,
-        // keine rohen Topic-Codes in der UI).
-        $related = collect($row->related ?? [])
-            ->map(function (string $slug) use ($resolver, $user): ?array {
-                $target = $resolver->find($slug, $user);
-
-                return $target === null ? null : ['topic' => $target->topic, 'title' => $target->title];
-            })
-            ->filter()
-            ->values()
-            ->all();
+        // Verwandte Themen: gemeinsame Quelle mit der Hilfecenter-Vollseite
+        // (nur existente + sichtbare Ziele, lokalisierter Titel).
+        $related = $resolver->relatedFor($row, $user);
 
         return response()->json([
             'found' => true,

@@ -4,6 +4,8 @@ topic: finance.cashbook
 version: 1
 audience:
     - admin
+modules:
+    - module.kasse
 related:
     - invoices.manage
 ---

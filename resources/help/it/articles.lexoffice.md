@@ -3,6 +3,8 @@ title: "Prodotti e servizi Lexoffice"
 topic: articles.lexoffice
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - articles.master
     - invoices.manage

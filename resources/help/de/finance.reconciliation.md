@@ -3,6 +3,8 @@ title: "Zahlungsabgleich"
 topic: finance.reconciliation
 version: 1
 audience: []
+modules:
+    - module.finance
 related:
     - finance.transfers
     - roles.buchhaltung

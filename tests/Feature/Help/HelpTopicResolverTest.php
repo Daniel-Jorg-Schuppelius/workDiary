@@ -34,7 +34,7 @@ class HelpTopicResolverTest extends TestCase {
             'related' => [],
         ]);
 
-        $resolver = new HelpTopicResolver();
+        $resolver = app(HelpTopicResolver::class);
         $found = $resolver->find('sample.x', null, 'en');
 
         $this->assertNotNull($found);
@@ -53,7 +53,7 @@ class HelpTopicResolverTest extends TestCase {
             'related' => [],
         ]);
 
-        $resolver = new HelpTopicResolver();
+        $resolver = app(HelpTopicResolver::class);
 
         $regularUser = User::factory()->user()->create();
         $adminUser = User::factory()->admin()->create();
@@ -74,7 +74,7 @@ class HelpTopicResolverTest extends TestCase {
             'related' => [],
         ]);
 
-        $resolver = new HelpTopicResolver();
+        $resolver = app(HelpTopicResolver::class);
 
         $this->assertNotNull($resolver->find('open.help', null, 'de'));
     }
@@ -101,7 +101,7 @@ class HelpTopicResolverTest extends TestCase {
             'related' => [],
         ]);
 
-        $resolver = new HelpTopicResolver();
+        $resolver = app(HelpTopicResolver::class);
         $results = $resolver->search('Zeiterfassung', null, 'de');
 
         $this->assertCount(1, $results);

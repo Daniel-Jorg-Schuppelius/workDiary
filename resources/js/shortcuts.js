@@ -40,6 +40,8 @@ export const SHORTCUTS = [
     // Bestand (global-search.js): Cmd/Ctrl+K, Escape, Pfeile/Enter im Dialog.
     { keys: ["Mod", "K"], label_key: "js.shortcuts.search", scope: "global" },
     { keys: ["?"], label_key: "js.shortcuts.shortcuts", scope: "global" },
+    // Kontexthilfe (help-drawer.js) — hier nur gelistet, gebunden dort.
+    { keys: ["F1"], label_key: "js.shortcuts.help", scope: "global" },
     { keys: ["Esc"], label_key: "js.shortcuts.escape", scope: "global" },
     { keys: ["↑", "↓"], label_key: "js.shortcuts.search_move", scope: "search" },
     { keys: ["↵"], label_key: "js.shortcuts.search_open", scope: "search" },

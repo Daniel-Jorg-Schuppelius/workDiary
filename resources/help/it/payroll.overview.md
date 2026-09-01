@@ -3,6 +3,8 @@ title: "Retribuzioni e previdenza"
 topic: payroll.overview
 version: 1
 audience: []
+modules:
+    - module.lohn
 related:
     - exports.payroll
     - timesheets.manage

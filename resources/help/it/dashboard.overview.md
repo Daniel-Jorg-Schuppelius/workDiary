@@ -1,37 +1,67 @@
 ---
 title: "Dashboard"
 topic: dashboard.overview
-version: 2
+version: 3
 audience: []
+schema: process
 related:
     - work.overview
+    - time-entries.start
     - account.profile
     - account.notifications
 ---
 
-La dashboard è la tua pagina iniziale personale e riunisce in widget gli
-indicatori, i compiti aperti e gli avvisi più importanti per te; i
-contenuti visibili dipendono dai tuoi permessi e dai moduli attivati.
-Tramite la personalizzazione puoi mostrare o nascondere i widget
-disponibili e definirne l'ordine: la selezione vale solo per il tuo
-account e viene salvata al momento della conferma, e i widget nascosti
-restano riattivabili in qualsiasi momento. Quali widget siano disponibili
-dipende dal tuo ruolo; nel profilo puoi impostare la dashboard come pagina
-predefinita dopo l'accesso.
+## Scopo e contesto
 
-L'intera dashboard è composta da schede — comprese la riga degli
-indicatori e le vecchie schede a linguetta. Ogni scheda può essere
-nascosta singolarmente, riordinata trascinandola o con le frecce e
-impostata a metà larghezza o a larghezza intera. Le schede nascoste non
-eseguono più alcuna query: una dashboard ordinata si carica anche più in
-fretta.
+La dashboard è la tua pagina iniziale personale: riunisce in riquadri
+gli indicatori, le attività aperte e gli avvisi più importanti per te.
+Ciò che appare dipende dai tuoi permessi e dai moduli attivati — chi
+ha diritti di analisi vede riquadri diversi da chi non li ha. I
+riquadri nascosti non interrogano più i dati: una dashboard ordinata
+si carica quindi anche più in fretta.
 
-Oltre alle schede mostrate di default ne sono disponibili molte altre —
-orologio marcatempo, promemoria, scadenze, partite aperte, stato dei
-backup e altro ancora. All'inizio sono nascoste e si attivano nella
-personalizzazione.
+## Prerequisiti
 
-Chi può amministrare l'organizzazione può inoltre salvare la propria
-disposizione come predefinita per tutti. Vale per chi non ha ancora fatto
-una scelta propria; «Ripristina impostazione predefinita» vi riporta in
-qualsiasi momento.
+- Un account utente connesso; non servono diritti particolari.
+- Per le impostazioni predefinite dell'organizzazione: il diritto di
+  gestirla.
+- Nel profilo puoi impostare la pagina iniziale personale come pagina
+  predefinita dopo l'accesso.
+
+## Procedura consigliata
+
+1. Apri la **personalizzazione** e attiva i riquadri che ti servono
+   ogni giorno — timbratura, promemoria, scadenze, partite aperte,
+   stato dei backup e altro sono disponibili e inizialmente nascosti.
+2. Ordina i riquadri trascinandoli o con le frecce e impostali a metà
+   o piena larghezza.
+3. Salva la configurazione — la selezione vale solo per il tuo account
+   e viene conservata.
+4. Chi può gestire l'organizzazione può salvare la propria
+   disposizione come **predefinita per tutti**; vale per gli account
+   senza selezione propria.
+
+![Dashboard con riquadri degli indicatori, timbratura e avanzamento dell’onboarding](media/erste-schritte/dashboard-uebersicht.png)
+*La dashboard: indicatori, timbratura e le azioni «Personalizza» e «Nuova voce».*
+
+## Esempio pratico
+
+Una caposquadra attiva i riquadri «timbratura», «scadenze» e «tempi
+aperti» e mette le scadenze a piena larghezza. Dopo il salvataggio
+ogni giornata inizia con uno sguardo alle scadenze in arrivo — senza
+un solo clic nei sottomenu.
+
+## Errori tipici
+
+- **Attivare tutto:** troppi riquadri rallentano la pagina e
+  nascondono l'essenziale. Qui meno è meglio.
+- **Confondere predefinito e vista personale:** il predefinito
+  dell'organizzazione vale solo per account senza selezione propria;
+  «Ripristina predefinito» ti ci riporta in ogni momento.
+
+## Effetti e prossimi passi
+
+La selezione dei riquadri riguarda solo il tuo account e non modifica
+dati. Come prossimi passi: l'aiuto contestuale dei singoli riquadri
+(tasto `?`) e un controllo delle impostazioni di notifica, così avvisi
+in dashboard ed e-mail coincidono.

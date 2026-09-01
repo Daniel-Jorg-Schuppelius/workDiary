@@ -3,6 +3,8 @@ title: "Analyse par type d'intervention"
 topic: reports.entry-type-analysis
 version: 1
 audience: []
+modules:
+    - module.auswertungen_team
 related:
     - reports.customer-analysis
     - reports.drilldown

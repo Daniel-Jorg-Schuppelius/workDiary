@@ -5,6 +5,8 @@ version: 1
 audience:
     - admin
     - teamleitung
+modules:
+    - module.bau
 related:
     - diary-entries.create
     - protocols.create

@@ -4,6 +4,8 @@ topic: admin.domain-provider
 version: 1
 audience:
     - admin
+modules:
+    - module.domain
 related:
     - admin.plugins
     - admin.integrations

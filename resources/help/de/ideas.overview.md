@@ -3,6 +3,8 @@ title: "Ideenlandkarten"
 topic: ideas.overview
 version: 1
 audience: []
+modules:
+    - module.ideas
 related:
     - work.overview
     - projects.manage

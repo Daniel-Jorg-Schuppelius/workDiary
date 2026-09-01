@@ -3,6 +3,8 @@ title: "Warehouses"
 topic: warehouses.manage
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - inventory.stock
     - inventory.counts

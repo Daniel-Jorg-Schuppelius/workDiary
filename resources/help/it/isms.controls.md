@@ -3,6 +3,8 @@ title: "Gestire le misure"
 topic: isms.controls
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.requirements-soa
     - isms.risks

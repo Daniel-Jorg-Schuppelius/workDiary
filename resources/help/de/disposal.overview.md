@@ -3,6 +3,8 @@ title: "Entsorgung & Nachweise"
 topic: disposal.overview
 version: 1
 audience: []
+modules:
+    - module.entsorgung
 related:
     - assets.fleet
     - customer-portal.overview

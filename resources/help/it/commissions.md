@@ -5,6 +5,8 @@ version: 1
 audience:
     - admin
     - buchhaltung
+modules:
+    - module.vertrieb
 related:
     - invoices.manage
     - finance.reconciliation

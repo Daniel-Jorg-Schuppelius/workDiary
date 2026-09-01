@@ -3,6 +3,8 @@ title: "Planification de menus & buffets (traiteur)"
 topic: recipes.menus
 version: 1
 audience: []
+modules:
+    - module.lager
 related: []
 ---
 

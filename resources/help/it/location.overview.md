@@ -3,6 +3,8 @@ title: "Rilevazione dei tempi basata sulla posizione"
 topic: location.overview
 version: 1
 audience: []
+modules:
+    - module.standorterfassung
 related:
     - time-entries.start
     - attendance.manage

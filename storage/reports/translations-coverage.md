@@ -1,6 +1,6 @@
 # Translations Coverage Report
 
-Generated: 2026-08-30T20:18:17+00:00
+Generated: 2026-09-01T19:02:39+00:00
 
 ## A — Used translation keys NOT defined in catalogs
 

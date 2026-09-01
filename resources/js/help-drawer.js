@@ -437,6 +437,22 @@ function renderTopic(payload) {
         }
     }
 
+    // Absprung zur Hilfecenter-Vollseite (Feature 039, MVP-752): exakt das
+    // aktuell geladene Topic; URL-Template kommt serverseitig aus dem Blade.
+    const fullpage = document.querySelector("[data-help-fullpage]");
+    if (fullpage instanceof HTMLAnchorElement) {
+        const template = fullpage.getAttribute("data-url-template") || "";
+        if (template && payload.topic) {
+            fullpage.href = template.replace(
+                "__TOPIC__",
+                encodeURIComponent(payload.topic),
+            );
+            fullpage.classList.remove("hidden");
+        } else {
+            fullpage.classList.add("hidden");
+        }
+    }
+
     currentTopic = payload.topic;
     currentLocale = payload.locale;
 }
@@ -579,23 +595,18 @@ function bindHelpDrawer() {
             }
             return;
         }
-        // Shortcut "?" (außerhalb von Eingabefeldern) öffnet die Hilfe zum
-        // aktuellen Seitenkontext (body[data-help-context]); ohne Kontext
-        // erscheint das Fallback-Panel mit Hilfe-Suche.
+        // F1 öffnet die Hilfe zum aktuellen Seitenkontext
+        // (body[data-help-context]); ohne Kontext erscheint das
+        // Fallback-Panel mit Hilfe-Suche. Bewusst F1 statt "?": F1 ist die
+        // etablierte Hilfe-Taste, funktioniert auch in Eingabefeldern und
+        // "?" blieb exklusiv der Tastenkürzel-Übersicht (shortcuts.js) —
+        // vorher feuerten BEIDE Handler auf dieselbe Taste.
         if (
-            event.key === "?" &&
+            event.key === "F1" &&
             !event.metaKey &&
             !event.ctrlKey &&
             !event.altKey
         ) {
-            const target = /** @type {HTMLElement} */ (event.target);
-            const isFormField =
-                target &&
-                (target.tagName === "INPUT" ||
-                    target.tagName === "TEXTAREA" ||
-                    target.tagName === "SELECT" ||
-                    target.isContentEditable);
-            if (isFormField) return;
             event.preventDefault();
             openContextHelp();
         }

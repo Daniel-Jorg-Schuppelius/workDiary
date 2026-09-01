@@ -3,6 +3,8 @@ title: "Reporting office – case handling"
 topic: whistleblowing.cases
 version: 1
 audience: []
+modules:
+    - module.compliance
 related:
     - whistleblowing.portal
     - whistleblowing.report

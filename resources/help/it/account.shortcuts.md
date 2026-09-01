@@ -23,6 +23,7 @@ Scorciatoie globali:
   aprilo con `↵`.
 - `Esc` chiude la ricerca o la finestra attualmente aperta.
 - `?` mostra la panoramica di tutte le scorciatoie.
+- `F1` apre l'aiuto contestuale della pagina corrente (barra di aiuto a destra).
 
 Le scorciatoie di navigazione sono brevi sequenze di tasti: prima `g` (per
 «vai a»), poi entro un secondo il tasto di destinazione.

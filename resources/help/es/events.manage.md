@@ -3,6 +3,8 @@ title: "Gestionar eventos"
 topic: events.manage
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - planning.shifts
     - contacts.manage

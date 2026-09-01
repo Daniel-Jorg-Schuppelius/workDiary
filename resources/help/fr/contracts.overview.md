@@ -3,6 +3,8 @@ title: "Gestion des contrats"
 topic: contracts.overview
 version: 1
 audience: []
+modules:
+    - module.contracts
 related:
     - asset-finance.overview
     - documents.manage

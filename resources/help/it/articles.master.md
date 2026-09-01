@@ -3,6 +3,8 @@ title: "Anagrafica articoli"
 topic: articles.master
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - articles.lexoffice
     - materials.manage

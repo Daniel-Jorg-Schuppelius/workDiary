@@ -3,6 +3,8 @@ title: "Maturity & readiness"
 topic: isms.readiness
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.overview
     - isms.suppliers

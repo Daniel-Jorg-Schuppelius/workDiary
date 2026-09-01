@@ -3,6 +3,8 @@ title: "Encuestas"
 topic: sales.surveys
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - contacts.manage
 ---

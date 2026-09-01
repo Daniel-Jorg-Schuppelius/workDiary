@@ -3,6 +3,8 @@ title: "Vulnerabilities & advisories"
 topic: isms.vulnerabilities
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.incidents
     - isms.software

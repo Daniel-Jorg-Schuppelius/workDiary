@@ -3,6 +3,8 @@ title: "Using chat"
 topic: communication.chat
 version: 1
 audience: []
+modules:
+    - module.chat
 related:
     - communication.notes
     - documents.manage

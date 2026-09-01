@@ -3,6 +3,8 @@ title: "Aperçu de la gestion de la protection des données"
 topic: privacy.overview
 version: 1
 audience: []
+modules:
+    - module.datenschutz
 related:
     - documents.manage
     - isms.overview

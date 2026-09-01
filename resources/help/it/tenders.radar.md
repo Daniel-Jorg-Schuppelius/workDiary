@@ -3,6 +3,8 @@ title: "Radar dei bandi di gara"
 topic: tenders.radar
 version: 1
 audience: []
+modules:
+    - module.applications
 related:
     - applications.overview
 ---

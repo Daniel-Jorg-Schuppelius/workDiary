@@ -3,6 +3,8 @@ title: "Guard patrols"
 topic: patrols.overview
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - dispatch.overview
 ---

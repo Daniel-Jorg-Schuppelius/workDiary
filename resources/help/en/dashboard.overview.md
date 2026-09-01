@@ -1,39 +1,66 @@
 ---
 title: "Dashboard"
 topic: dashboard.overview
-version: 2
+version: 3
 audience: []
+schema: process
 related:
     - work.overview
+    - time-entries.start
     - account.profile
     - account.notifications
 ---
 
-The dashboard is your personal start page and gathers the metrics,
-open tasks and notices most relevant to you into widgets. Which content
-appears depends on your permissions and the modules enabled for your
-organization.
+## Purpose and background
 
-Through customization you can show or hide the available widgets and
-set their order by sorting them. The selection applies only to your own
-account and is stored once you save the configuration. Hidden widgets
-can be re-enabled at any time.
+The dashboard is your personal start page: it gathers the key figures,
+open tasks and notices that matter to you into tiles. What appears
+depends on your permissions and the enabled modules — someone with
+reporting rights sees different tiles than someone without. Hidden
+tiles stop querying data, so a tidy dashboard also loads faster.
 
-Which widgets are available to you at all depends on your role. A
-person with reporting rights therefore sees different tiles than
-someone without. The personal start page can also be set as the default
-landing page after sign-in in your profile.
+## Requirements
 
-The entire dashboard is made of tiles — including the metrics row and the
-former tabs. Every tile can be hidden individually, reordered by dragging
-or with the arrow buttons, and set to half or full width. Hidden tiles no
-longer run any queries, so a tidy dashboard also loads faster.
+- A signed-in user account; no special rights are needed.
+- For organisation-wide defaults: the right to manage the
+  organisation.
+- Your profile lets you set the personal start page as the default
+  page after signing in.
 
-Besides the tiles shown by default, a whole range of others is available —
-time clock, reminders, deadlines, open items, backup status and more.
-They start out hidden and can be switched on in the customization.
+## Recommended workflow
 
-Anyone allowed to manage the organization can additionally store their
-arrangement as the default for everyone. It applies to all users who have
-not made their own selection; “Reset to default” returns to it at any
-time.
+1. Open the **customisation** and enable the tiles you need daily —
+   time clock, reminders, deadlines, open items, backup status and
+   more are available and hidden at first.
+2. Sort the tiles by dragging or with the arrow keys and set them to
+   half or full width.
+3. Save the configuration — the selection applies only to your own
+   account and is kept.
+4. Anyone allowed to manage the organisation can store their own
+   arrangement as the **default for everyone**; it applies to all
+   accounts without their own selection.
+
+![Dashboard with key-figure tiles, time clock and onboarding progress](media/erste-schritte/dashboard-uebersicht.png)
+*The dashboard: key figures, time clock and the “Customise” and “New entry” actions.*
+
+## Practical example
+
+A team lead enables the "time clock", "deadlines" and "open times"
+tiles and sets the deadlines tile to full width. After saving, every
+working day starts with a glance at expiring deadlines — without a
+single click into submenus.
+
+## Common mistakes
+
+- **Enabling everything:** too many tiles slow down the page and bury
+  what matters. Less is more here.
+- **Confusing the default with your own view:** the organisation
+  default only applies to accounts without their own selection;
+  "Reset to default" takes you back at any time.
+
+## Effects and next steps
+
+The tile selection affects only your account and changes no data. As
+next steps, try the contextual help of individual tiles (press `?`)
+and review the notification settings so dashboard hints and e-mails
+match.

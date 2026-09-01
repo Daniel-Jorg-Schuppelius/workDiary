@@ -61,6 +61,16 @@
                 <x-icon name="expand_more" class="shrink-0 transition-transform" data-help-footer-chevron />
             </button>
             <div id="help-footer-content" class="px-4 pb-3" data-help-footer-content>
+                {{-- Hilfecenter-Absprung (Feature 039, MVP-752): öffnet exakt das
+                     aktuell geladene Topic als Vollseite; href setzt help-drawer.js
+                     aus dem URL-Template, ohne Topic bleibt der Link versteckt. --}}
+                <a href="#"
+                   class="btn btn-primary btn-sm mb-3 w-full hidden"
+                   data-help-fullpage
+                   data-url-template="{{ route('help.center.show', ['topic' => '__TOPIC__']) }}">
+                    <x-icon name="menu_book" />
+                    {{ __('Ausführliche Hilfe öffnen') }}
+                </a>
                 <p class="mb-2 text-xs uppercase tracking-wider text-muted">{{ __('War das hilfreich?') }}</p>
                 {{-- Outline + Akzentfarbe (grün/rot): nacktes btn-outline ist auf
                      dem dunklen wd-badge-Grund kaum sichtbar – die leuchtenden

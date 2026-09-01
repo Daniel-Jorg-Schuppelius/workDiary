@@ -3,6 +3,8 @@ title: "Certifications et conformité aux normes"
 topic: isms.conformity
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.audits
     - isms.requirements-soa

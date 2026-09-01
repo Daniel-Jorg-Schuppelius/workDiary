@@ -3,6 +3,8 @@ title: "Grupos de costes según DIN 276"
 topic: boq.cost-groups
 version: 1
 audience: []
+modules:
+    - module.bau
 related:
     - boq.overview
 ---

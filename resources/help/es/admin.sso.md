@@ -4,6 +4,8 @@ topic: admin.sso
 version: 1
 audience:
     - admin
+modules:
+    - module.sso
 related:
     - admin.integrations
 ---

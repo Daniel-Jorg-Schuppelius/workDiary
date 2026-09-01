@@ -3,6 +3,8 @@ title: "Cellule de signalement – traitement des cas"
 topic: whistleblowing.cases
 version: 1
 audience: []
+modules:
+    - module.compliance
 related:
     - whistleblowing.portal
     - whistleblowing.report

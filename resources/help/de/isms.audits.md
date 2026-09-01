@@ -3,6 +3,8 @@ title: "Audits, Feststellungen & Korrekturmaßnahmen"
 topic: isms.audits
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.conformity
     - isms.packages

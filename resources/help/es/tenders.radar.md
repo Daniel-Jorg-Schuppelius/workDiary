@@ -3,6 +3,8 @@ title: "Radar de anuncios de licitación"
 topic: tenders.radar
 version: 1
 audience: []
+modules:
+    - module.applications
 related:
     - applications.overview
 ---

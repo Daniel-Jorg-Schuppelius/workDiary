@@ -178,4 +178,108 @@ class HelpContentTest extends TestCase {
             }
         }
     }
+
+    /**
+     * Modul-Gating (MVP-753): `modules` ist über alle Locales eines Topics
+     * identisch (sonst sähe ein fr-Nutzer ein Topic, das de verbirgt) und
+     * nennt nur echte Modul-Codes aus config/plans.php.
+     */
+    public function test_modules_front_matter_is_locale_consistent_and_valid(): void {
+        /** @var list<string> $validModules */
+        $validModules = array_values(array_unique(array_map(
+            'strval',
+            array_values((array) config('plans.routes', [])),
+        )));
+        $this->assertNotEmpty($validModules);
+
+        $locales = $this->loader->locales();
+        $problems = [];
+
+        foreach ($this->loader->topicsForLocale('de') as $topic) {
+            $reference = null;
+            foreach ($locales as $locale) {
+                $loaded = $this->loader->load($topic, $locale);
+                if ($loaded === null) {
+                    continue;
+                }
+                $modules = $loaded['modules'];
+                sort($modules);
+                foreach ($modules as $code) {
+                    if (! in_array($code, $validModules, true)) {
+                        $problems[] = "{$locale}/{$topic}.md nennt unbekanntes Modul: {$code}";
+                    }
+                }
+                if ($reference === null) {
+                    $reference = $modules;
+                } elseif ($modules !== $reference) {
+                    $problems[] = "{$locale}/{$topic}.md weicht in modules von de ab.";
+                }
+            }
+        }
+
+        $this->assertSame([], $problems, implode("\n", $problems));
+    }
+
+    /**
+     * Bild-Gates (MVP-754): Artikel-Bilder sind lokale `media/`-Assets mit
+     * Alt-Text und existierender Basisdatei; der Media-Ordner enthält nur
+     * erlaubte, referenzierte Dateien unterhalb des Größenlimits (kein SVG,
+     * keine externen Quellen — CSP bleibt 'self', kein Tracking).
+     */
+    public function test_article_images_are_local_with_alt_text_and_valid_files(): void {
+        $mediaRoot = (string) config('help-center.media_path');
+        $problems = [];
+        $referenced = [];
+
+        foreach ($this->loader->locales() as $locale) {
+            foreach ($this->loader->topicsForLocale($locale) as $topic) {
+                $loaded = $this->loader->load($topic, $locale);
+                if ($loaded === null) {
+                    continue;
+                }
+                preg_match_all('/!\[([^\]]*)\]\(([^)\s]+)/', $loaded['body_md'], $images, PREG_SET_ORDER);
+                foreach ($images as $image) {
+                    [, $alt, $src] = $image;
+                    if (trim($alt) === '') {
+                        $problems[] = "{$locale}/{$topic}.md: Bild ohne Alt-Text ({$src})";
+                    }
+                    if (! str_starts_with($src, 'media/')) {
+                        $problems[] = "{$locale}/{$topic}.md: Bildquelle außerhalb von media/ ({$src})";
+                        continue;
+                    }
+                    $relative = substr($src, strlen('media/'));
+                    $referenced[$relative] = true;
+                    if (! is_file($mediaRoot . DIRECTORY_SEPARATOR . $relative)) {
+                        $problems[] = "{$locale}/{$topic}.md: Bilddatei fehlt ({$src})";
+                    }
+                }
+            }
+        }
+
+        if (is_dir($mediaRoot)) {
+            $iterator = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($mediaRoot, \FilesystemIterator::SKIP_DOTS));
+            foreach ($iterator as $file) {
+                /** @var \SplFileInfo $file */
+                if ($file->getFilename() === '.gitkeep') {
+                    continue;
+                }
+                $relative = ltrim(str_replace($mediaRoot, '', $file->getPathname()), DIRECTORY_SEPARATOR);
+                $relative = str_replace(DIRECTORY_SEPARATOR, '/', $relative);
+                if (! in_array(strtolower($file->getExtension()), ['png', 'jpg', 'jpeg', 'webp'], true)) {
+                    $problems[] = "media/{$relative}: unerlaubte Dateiendung (kein SVG, nur png/jpg/jpeg/webp)";
+                }
+                if ($file->getSize() > 300 * 1024) {
+                    $problems[] = sprintf('media/%s: %d KB überschreitet das 300-KB-Limit', $relative, (int) ($file->getSize() / 1024));
+                }
+                // Locale-Variante `name.{locale}.{ext}` zählt als referenziert,
+                // wenn ihre Basisdatei referenziert ist.
+                $base = preg_replace('/\.(de|en|fr|it|es)\.([a-z]+)$/', '.$2', $relative);
+                if (! isset($referenced[$relative]) && ! isset($referenced[$base])) {
+                    $problems[] = "media/{$relative}: verwaiste Datei (kein Artikel referenziert sie)";
+                }
+            }
+        }
+
+        $this->assertSame([], $problems, implode("\n", $problems));
+    }
 }

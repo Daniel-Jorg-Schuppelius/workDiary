@@ -3,6 +3,8 @@ title: "Auditorías, hallazgos y acciones correctivas"
 topic: isms.audits
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.conformity
     - isms.packages

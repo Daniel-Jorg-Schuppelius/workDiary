@@ -11165,5 +11165,22 @@
     "… und :count weitere": "… y :count más",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 días",
-    "≤ 3 Monate": "≤ 3 meses"
+    "≤ 3 Monate": "≤ 3 meses",
+    "Hilfecenter": "Centro de ayuda",
+    "Wie können wir helfen?": "¿Cómo podemos ayudarte?",
+    "z. B. Rechnung stornieren": "p. ej. anular una factura",
+    "Prüfe die Schreibweise oder versuche einen allgemeineren Begriff.": "Comprueba la ortografía o prueba con un término más general.",
+    "Suche zurücksetzen": "Restablecer búsqueda",
+    ":count Treffer für „:query“": ":count resultados para «:query»",
+    ":count Artikel|:count Artikel": ":count artículo|:count artículos",
+    ":count Artikel in deiner Sprache verfügbar.": ":count artículos disponibles en tu idioma.",
+    "Anleitungen, Hintergründe und Prozesse zu allen Funktionen — durchsuchbar und nach Themen geordnet.": "Guías, contexto y procesos de todas las funciones: consultables y ordenados por temas.",
+    "Ausführliche Hilfe mit Hintergrund, Ablauf und nächsten Schritten.": "Ayuda detallada con contexto, proceso y próximos pasos.",
+    "Pfadnavigation": "Ruta de navegación",
+    "Version :version": "Versión :version",
+    "aktualisiert am :date": "actualizado el :date",
+    "Auf dieser Seite": "En esta página",
+    "Ausführliche Hilfe öffnen": "Abrir la ayuda detallada",
+    "Beliebte Themen": "Temas populares",
+    "Taste F1 öffnet die Kontexthilfe zur aktuellen Seite.": "La tecla F1 abre la ayuda contextual de la página actual."
 }

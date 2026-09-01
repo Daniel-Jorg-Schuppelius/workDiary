@@ -36,10 +36,12 @@ class HelpTopicReindexer {
                 [
                     'title' => $item['title'],
                     'audience' => $item['audience'],
+                    'modules' => $item['modules'],
                     'version' => $item['version'],
                     'body_md' => $item['body_md'],
                     'body_html' => $item['body_html'],
                     'related' => $item['related'],
+                    'headings' => $item['headings'],
                     'source_updated_at' => $item['source_updated_at'],
                 ]
             );

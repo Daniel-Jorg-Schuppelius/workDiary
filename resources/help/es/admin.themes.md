@@ -4,6 +4,8 @@ topic: admin.themes
 version: 1
 audience:
     - admin
+modules:
+    - module.theming
 related:
     - admin.handbook
     - admin.license

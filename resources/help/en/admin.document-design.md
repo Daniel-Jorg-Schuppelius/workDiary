@@ -4,6 +4,8 @@ topic: admin.document-design
 version: 1
 audience:
     - admin
+modules:
+    - module.dokumentdesign
 related:
     - admin.branding
     - invoices.manage

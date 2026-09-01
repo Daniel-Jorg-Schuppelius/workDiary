@@ -22,6 +22,7 @@ Global shortcuts:
   open it with `↵`.
 - `Esc` closes the search or the dialog that is currently open.
 - `?` shows the overview of all shortcuts.
+- `F1` opens the contextual help for the current page (right-hand help sidebar).
 
 Navigation shortcuts are short key sequences: first `g` (for "go to"), then
 the target key within one second.

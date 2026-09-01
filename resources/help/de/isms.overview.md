@@ -3,6 +3,8 @@ title: "ISMS im Überblick"
 topic: isms.overview
 version: 2
 audience: []
+modules:
+    - module.isms
 related:
     - isms.requirements-soa
     - isms.controls

@@ -3,6 +3,8 @@ title: "Invoicing transfer"
 topic: finance.transfers
 version: 1
 audience: []
+modules:
+    - module.finance
 related:
     - exports.payroll
     - admin.surcharge-rules

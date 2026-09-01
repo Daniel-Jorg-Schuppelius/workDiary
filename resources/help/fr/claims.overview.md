@@ -3,6 +3,8 @@ title: "Réclamations & garantie"
 topic: claims.overview
 version: 1
 audience: []
+modules:
+    - module.claims
 related:
     - documents.manage
 ---

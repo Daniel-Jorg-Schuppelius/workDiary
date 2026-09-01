@@ -3,6 +3,8 @@ title: "Requirements & SoA"
 topic: isms.requirements-soa
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.overview
     - isms.controls

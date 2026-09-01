@@ -3,6 +3,8 @@ title: "Gestion des domaines"
 topic: domains.overview
 version: 1
 audience: []
+modules:
+    - module.domain
 related:
     - admin.domain-provider
     - contacts.manage

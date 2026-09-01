@@ -3,6 +3,8 @@ title: "Valutazione dei fornitori"
 topic: isms.suppliers
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.overview
     - isms.readiness

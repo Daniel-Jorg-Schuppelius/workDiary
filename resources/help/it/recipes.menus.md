@@ -3,6 +3,8 @@ title: "Pianificazione menù & buffet (catering)"
 topic: recipes.menus
 version: 1
 audience: []
+modules:
+    - module.lager
 related: []
 ---
 

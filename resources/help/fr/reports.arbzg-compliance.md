@@ -3,6 +3,8 @@ title: "Conformité au temps de travail (ArbZG)"
 topic: reports.arbzg-compliance
 version: 1
 audience: []
+modules:
+    - module.auswertungen_team
 related:
     - reports.overview
     - reports.drilldown

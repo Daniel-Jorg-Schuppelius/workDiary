@@ -19,10 +19,12 @@ use Illuminate\Database\Eloquent\Model;
  * @property string $locale
  * @property string $title
  * @property array<int,string>|null $audience
+ * @property array<int,string>|null $modules
  * @property int $version
  * @property string $body_md
  * @property string $body_html
  * @property array<int,string>|null $related
+ * @property array<int,array{level:int, text:string, anchor:string}>|null $headings
  * @property \Illuminate\Support\Carbon|null $source_updated_at
  */
 class HelpTopic extends Model {
@@ -35,17 +37,21 @@ class HelpTopic extends Model {
         'locale',
         'title',
         'audience',
+        'modules',
         'version',
         'body_md',
         'body_html',
         'related',
+        'headings',
         'source_updated_at',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'audience' => 'array',
+        'modules' => 'array',
         'related' => 'array',
+        'headings' => 'array',
         'source_updated_at' => 'datetime',
     ];
 }

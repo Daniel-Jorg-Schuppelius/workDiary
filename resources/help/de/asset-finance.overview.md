@@ -3,6 +3,8 @@ title: "Leasing & Asset-Verträge"
 topic: asset-finance.overview
 version: 1
 audience: []
+modules:
+    - module.asset_finance
 related:
     - investments.overview
     - rental.overview

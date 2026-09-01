@@ -3,6 +3,8 @@ title: "Pianificare i giri"
 topic: tours.manage
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - contacts.manage
     - planning.shifts

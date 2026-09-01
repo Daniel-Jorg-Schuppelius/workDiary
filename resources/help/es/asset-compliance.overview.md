@@ -3,6 +3,8 @@ title: "Equipos de medición y calibración"
 topic: asset-compliance.overview
 version: 1
 audience: []
+modules:
+    - module.asset_compliance
 related:
     - rental.overview
     - asset-finance.overview

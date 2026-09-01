@@ -43,6 +43,7 @@ return [
     ],
     // Tastenkürzel-Übersicht (Feature 037, MVP-721): Labels der Registry resources/js/shortcuts.js
     'shortcuts' => [
+        'help' => 'Abrir la ayuda contextual de la página actual',
         'title' => 'Atajos de teclado',
         'scope' => [
             'global' => 'Global',

@@ -4,6 +4,8 @@ topic: invoices.schedules
 version: 1
 audience:
     - admin
+modules:
+    - module.vertrieb
 related:
     - invoices.manage
 ---

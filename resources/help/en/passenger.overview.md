@@ -3,6 +3,8 @@ title: "Passenger transport (taxi/private hire)"
 topic: passenger.overview
 version: 1
 audience: []
+modules:
+    - module.fuhrpark
 related:
     - claims.overview
 ---

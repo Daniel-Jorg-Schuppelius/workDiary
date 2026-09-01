@@ -3,6 +3,8 @@ title: "Registre des autorisations"
 topic: permits.overview
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - facilities.manage
     - safety.overview

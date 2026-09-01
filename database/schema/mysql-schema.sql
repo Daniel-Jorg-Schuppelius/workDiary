@@ -8268,10 +8268,12 @@ CREATE TABLE `help_topics` (
   `locale` varchar(8) NOT NULL,
   `title` varchar(255) NOT NULL,
   `audience` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`audience`)),
+  `modules` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`modules`)),
   `version` smallint(5) unsigned NOT NULL DEFAULT 1,
   `body_md` longtext NOT NULL,
   `body_html` longtext NOT NULL,
   `related` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`related`)),
+  `headings` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`headings`)),
   `source_updated_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
@@ -20901,3 +20903,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (778,'2027_02_19_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (779,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',49);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (780,'2027_02_19_111000_hash_serial_passport_token',50);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (781,'2027_02_19_111100_add_options_to_backup_target_connections',51);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (782,'2027_02_19_111200_add_center_columns_to_help_topics',52);

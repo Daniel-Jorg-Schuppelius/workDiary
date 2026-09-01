@@ -1,35 +1,69 @@
 ---
 title: "Tableau de bord"
 topic: dashboard.overview
-version: 2
+version: 3
 audience: []
+schema: process
 related:
     - work.overview
+    - time-entries.start
     - account.profile
     - account.notifications
 ---
 
+## Objectif et contexte
+
 Le tableau de bord est votre page d'accueil personnelle : il rassemble
-en widgets les indicateurs, tâches ouvertes et informations les plus
-importants pour vous, selon vos droits et les modules activés. Via la
-personnalisation, vous affichez ou masquez les widgets disponibles et
-définissez leur ordre ; ce choix ne vaut que pour votre compte et est
-enregistré dès que vous sauvegardez la configuration. Les widgets
-masqués restent réactivables à tout moment, et l'éventail des widgets
-dépend de votre rôle. Vous pouvez aussi définir cette page comme page
-par défaut après connexion dans votre profil.
+en tuiles les indicateurs, tâches ouvertes et avis qui vous concernent.
+Ce qui s'affiche dépend de vos droits et des modules activés — une
+personne disposant de droits d'analyse voit d'autres tuiles que
+quelqu'un qui n'en a pas. Les tuiles masquées n'interrogent plus les
+données : un tableau de bord rangé se charge donc aussi plus vite.
 
-L'ensemble du tableau de bord est composé de tuiles — y compris la ligne
-d'indicateurs et les anciens onglets. Chaque tuile peut être masquée
-individuellement, réordonnée par glisser-déposer ou avec les flèches, et
-réglée sur demi-largeur ou pleine largeur. Les tuiles masquées ne lancent
-plus aucune requête : un tableau de bord épuré se charge donc plus vite.
+## Prérequis
 
-Outre les tuiles affichées par défaut, bien d'autres sont disponibles —
-pointeuse, rappels, échéances, postes ouverts, état des sauvegardes, etc.
-Elles sont d'abord masquées et s'activent dans la personnalisation.
+- Un compte utilisateur connecté ; aucun droit particulier n'est
+  nécessaire.
+- Pour les valeurs par défaut de l'organisation : le droit de gérer
+  l'organisation.
+- Le profil permet de définir la page d'accueil personnelle comme page
+  par défaut après la connexion.
 
-Les personnes autorisées à gérer l'organisation peuvent en outre
-enregistrer leur disposition comme valeur par défaut pour tous. Elle
-s'applique à celles et ceux qui n'ont pas fait leur propre choix ;
-« Rétablir la valeur par défaut » y ramène à tout moment.
+## Déroulement recommandé
+
+1. Ouvrez la **personnalisation** et activez les tuiles dont vous avez
+   besoin au quotidien — pointeuse, rappels, échéances, postes
+   ouverts, état des sauvegardes et plus encore sont disponibles et
+   d'abord masqués.
+2. Triez les tuiles par glisser-déposer ou avec les flèches et
+   réglez-les en demi-largeur ou pleine largeur.
+3. Enregistrez la configuration — la sélection ne vaut que pour votre
+   compte et est conservée.
+4. Qui peut gérer l'organisation peut enregistrer sa propre
+   disposition comme **valeur par défaut pour tous** ; elle s'applique
+   aux comptes sans sélection propre.
+
+![Tableau de bord avec tuiles d’indicateurs, pointeuse et progression d’intégration](media/erste-schritte/dashboard-uebersicht.png)
+*Le tableau de bord : indicateurs, pointeuse et les actions « Personnaliser » et « Nouvelle entrée ».*
+
+## Exemple pratique
+
+Une cheffe d'équipe active les tuiles « pointeuse », « échéances » et
+« temps ouverts » et met la tuile des échéances en pleine largeur.
+Après l'enregistrement, chaque journée commence par un regard sur les
+échéances qui expirent — sans un seul clic dans les sous-menus.
+
+## Erreurs fréquentes
+
+- **Tout activer :** trop de tuiles ralentissent la page et noient
+  l'essentiel. Ici, moins c'est mieux.
+- **Confondre valeur par défaut et vue personnelle :** la valeur par
+  défaut de l'organisation ne s'applique qu'aux comptes sans sélection
+  propre ; « Rétablir la valeur par défaut » y ramène à tout moment.
+
+## Effets et prochaines étapes
+
+La sélection de tuiles n'affecte que votre compte et ne modifie aucune
+donnée. Prochaines étapes utiles : l'aide contextuelle des tuiles
+(touche `?`) et un tour dans les réglages de notifications pour que
+les avis du tableau de bord et les courriels concordent.

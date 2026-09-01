@@ -3,6 +3,8 @@ title: "Gérer les documents"
 topic: documents.manage
 version: 1
 audience: []
+modules:
+    - module.documents
 related:
     - forms.fill
     - knowledge.articles

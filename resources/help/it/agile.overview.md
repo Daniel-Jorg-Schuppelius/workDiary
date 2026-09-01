@@ -3,6 +3,8 @@ title: "Gestione agile dei progetti"
 topic: agile.overview
 version: 1
 audience: []
+modules:
+    - module.agile_projects
 related:
     - projects.manage
     - work.overview

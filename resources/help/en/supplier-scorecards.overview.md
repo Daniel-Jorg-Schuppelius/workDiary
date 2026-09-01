@@ -3,6 +3,8 @@ title: "Supplier scorecards"
 topic: supplier-scorecards.overview
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - claims.overview
     - documents.manage

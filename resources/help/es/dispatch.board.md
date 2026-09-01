@@ -3,6 +3,8 @@ title: "Centro de control: tablero y mapa"
 topic: dispatch.board
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - dispatch.overview
     - tours.manage

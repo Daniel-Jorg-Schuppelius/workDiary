@@ -3,6 +3,8 @@ title: "Menu & buffet planning (party service)"
 topic: recipes.menus
 version: 1
 audience: []
+modules:
+    - module.lager
 related: []
 ---
 

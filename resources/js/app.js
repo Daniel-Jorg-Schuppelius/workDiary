@@ -29,6 +29,7 @@ import "./contact-persons.js";
 import "./global-search.js";
 import "./header-autohide.js";
 import "./help-drawer.js";
+import "./help-center.js";
 import "./shortcuts.js";
 import "./quick-book.js";
 import "./agile-backlog.js";

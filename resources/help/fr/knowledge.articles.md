@@ -3,6 +3,8 @@ title: "Base de connaissances"
 topic: knowledge.articles
 version: 1
 audience: []
+modules:
+    - module.knowledge
 related:
     - documents.manage
     - communication.notes

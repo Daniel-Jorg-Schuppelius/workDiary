@@ -26,6 +26,8 @@ use League\CommonMark\GithubFlavoredMarkdownConverter;
  *  - version: int
  *  - audience: [list]
  *  - related: [list]
+ *  - modules: [list]  (Modul-Codes für den Sichtbarkeitsfilter, Feature 039)
+ *  - schema: string    (Artikelschema-Kennung, z. B. `process` — MVP-756)
  * (Bewusst minimaler Parser ohne symfony/yaml — die Felder reichen für MVP.)
  */
 class HelpTopicLoader {
@@ -77,10 +79,13 @@ class HelpTopicLoader {
      *     locale:string,
      *     title:string,
      *     audience:list<string>,
+     *     modules:list<string>,
      *     version:int,
      *     body_md:string,
      *     body_html:string,
      *     related:list<string>,
+     *     headings:list<array{level:int, text:string, anchor:string}>,
+     *     schema:string,
      *     source_updated_at:\Carbon\CarbonImmutable
      * }|null
      */
@@ -98,18 +103,66 @@ class HelpTopicLoader {
             'allow_unsafe_links' => false,
         ]);
         $bodyHtml = (string) $converter->convert($bodyMd);
+        // Hilfecenter (MVP-752): stabile h2/h3-Anker + TOC-Daten beim Reindex,
+        // nicht zur Laufzeit — der Drawer rendert dasselbe HTML unverändert mit.
+        [$bodyHtml, $headings] = $this->annotateHeadings($bodyHtml);
+        $bodyHtml = $this->rewriteMediaSources($bodyHtml, $locale);
 
         return [
             'topic' => $topic,
             'locale' => $locale,
             'title' => (string) ($frontMatter['title'] ?? $topic),
             'audience' => $this->normalizeList($frontMatter['audience'] ?? []),
+            'modules' => $this->normalizeList($frontMatter['modules'] ?? []),
             'version' => (int) ($frontMatter['version'] ?? 1),
             'body_md' => trim($bodyMd),
             'body_html' => $bodyHtml,
             'related' => $this->normalizeList($frontMatter['related'] ?? []),
+            'headings' => $headings,
+            'schema' => is_string($frontMatter['schema'] ?? null) ? (string) $frontMatter['schema'] : '',
             'source_updated_at' => \Carbon\CarbonImmutable::createFromTimestamp(File::lastModified($path)),
         ];
+    }
+
+    /**
+     * Versieht h2/h3 im gerenderten HTML mit deterministischen Anker-IDs
+     * (`sec-<slug>`, Kollisionen mit Zähler-Suffix) und liefert die
+     * TOC-Struktur. Bewusst KEIN HeadingPermalink-Symbol: ein leerer
+     * Anker-Link im Heading wäre ein Accessibility-Befund.
+     *
+     * @return array{0:string, 1:list<array{level:int, text:string, anchor:string}>}
+     */
+    private function annotateHeadings(string $bodyHtml): array {
+        $headings = [];
+        $seen = [];
+
+        $annotated = (string) preg_replace_callback(
+            '/<h([23])>(.*?)<\/h\1>/s',
+            static function (array $m) use (&$headings, &$seen): string {
+                $level = (int) $m[1];
+                $inner = $m[2];
+                $text = trim(html_entity_decode(strip_tags($inner), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+
+                $slug = \Illuminate\Support\Str::slug($text);
+                if ($slug === '') {
+                    $slug = 'abschnitt';
+                }
+                $anchor = 'sec-' . $slug;
+                if (isset($seen[$anchor])) {
+                    $seen[$anchor]++;
+                    $anchor .= '-' . $seen[$anchor];
+                } else {
+                    $seen[$anchor] = 1;
+                }
+
+                $headings[] = ['level' => $level, 'text' => $text, 'anchor' => $anchor];
+
+                return sprintf('<h%d id="%s">%s</h%d>', $level, $anchor, $inner, $level);
+            },
+            $bodyHtml,
+        );
+
+        return [$annotated, $headings];
     }
 
     /** @return list<array<string,mixed>> */
@@ -150,6 +203,32 @@ class HelpTopicLoader {
         sort($unique);
 
         return $unique;
+    }
+
+    /**
+     * Schreibt relative Bild-Referenzen (`![Alt](media/…)`) auf die
+     * auth-geschützte Auslieferungsroute um (MVP-754) und löst dabei den
+     * Locale-Override (`name.{locale}.{ext}` vor der Basisdatei) beim
+     * Reindex auf — deterministisch, nicht zur Laufzeit. Externe Bild-URLs
+     * bleiben unangetastet; die fängt das Content-Gate (CSP bleibt 'self').
+     */
+    private function rewriteMediaSources(string $bodyHtml, string $locale): string {
+        $mediaRoot = (string) config('help-center.media_path');
+
+        return (string) preg_replace_callback(
+            '/(<img\b[^>]*\bsrc=")media\/([^"]+)(")/i',
+            static function (array $m) use ($mediaRoot, $locale): string {
+                $path = $m[2];
+                $ext = pathinfo($path, PATHINFO_EXTENSION);
+                $localized = $ext !== ''
+                    ? substr($path, 0, -(strlen($ext) + 1)) . '.' . $locale . '.' . $ext
+                    : $path;
+                $resolved = is_file($mediaRoot . DIRECTORY_SEPARATOR . $localized) ? $localized : $path;
+
+                return $m[1] . '/hilfe/media/' . $resolved . $m[3];
+            },
+            $bodyHtml,
+        );
     }
 
     private function pathFor(string $topic, string $locale): string {

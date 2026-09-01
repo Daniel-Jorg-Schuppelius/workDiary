@@ -3,6 +3,8 @@ title: "Saisie des temps basée sur la localisation"
 topic: location.overview
 version: 1
 audience: []
+modules:
+    - module.standorterfassung
 related:
     - time-entries.start
     - attendance.manage

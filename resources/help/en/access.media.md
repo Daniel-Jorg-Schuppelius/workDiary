@@ -3,6 +3,8 @@ title: "Access media"
 topic: access.media
 version: 1
 audience: []
+modules:
+    - module.fuhrpark
 related:
     - assets.fleet
 ---

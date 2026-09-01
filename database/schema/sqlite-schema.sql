@@ -2072,6 +2072,9 @@ CREATE TABLE IF NOT EXISTS "help_topics"(
   "source_updated_at" datetime,
   "created_at" datetime,
   "updated_at" datetime
+  ,
+  "modules" text,
+  "headings" text
 );
 CREATE UNIQUE INDEX "uniq_help_topic_locale" on "help_topics"(
   "topic",
@@ -19484,3 +19487,4 @@ INSERT INTO migrations VALUES(785,'2027_02_19_110800_add_verification_to_sso_dom
 INSERT INTO migrations VALUES(786,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',175);
 INSERT INTO migrations VALUES(787,'2027_02_19_111000_hash_serial_passport_token',176);
 INSERT INTO migrations VALUES(788,'2027_02_19_111100_add_options_to_backup_target_connections',177);
+INSERT INTO migrations VALUES(789,'2027_02_19_111200_add_center_columns_to_help_topics',178);

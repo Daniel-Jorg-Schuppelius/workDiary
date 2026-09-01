@@ -3,6 +3,8 @@ title: "Candidatures & appels d'offres"
 topic: applications.overview
 version: 1
 audience: []
+modules:
+    - module.applications
 related:
     - documents.manage
 ---

@@ -3,6 +3,8 @@ title: "Registro dei rischi"
 topic: isms.risks
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.controls
     - isms.overview

@@ -4,6 +4,8 @@ topic: admin.billbee
 version: 1
 audience:
     - admin
+modules:
+    - module.lager
 related:
     - admin.integrations
     - admin.plugins

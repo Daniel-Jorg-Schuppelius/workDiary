@@ -3,6 +3,8 @@ title: "Verfügbarkeiten und Wunschdienste"
 topic: planning.availability
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - planning.shifts
     - planning.exchange

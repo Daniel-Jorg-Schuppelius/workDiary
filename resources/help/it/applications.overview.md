@@ -3,6 +3,8 @@ title: "Candidature e gare d'appalto"
 topic: applications.overview
 version: 1
 audience: []
+modules:
+    - module.applications
 related:
     - documents.manage
 ---

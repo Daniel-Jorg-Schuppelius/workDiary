@@ -3,6 +3,8 @@ title: "Giacenze e scansione"
 topic: inventory.stock
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - warehouses.manage
     - inventory.counts

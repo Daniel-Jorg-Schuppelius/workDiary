@@ -23,6 +23,7 @@ Atajos globales:
   y ábrelo con `↵`.
 - `Esc` cierra la búsqueda o el diálogo abierto.
 - `?` muestra el resumen de todos los atajos.
+- `F1` abre la ayuda contextual de la página actual (barra de ayuda derecha).
 
 Los atajos de navegación son secuencias cortas de teclas: primero `g` (por
 «ir a») y, en el plazo de un segundo, la tecla de destino.

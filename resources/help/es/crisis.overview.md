@@ -3,6 +3,8 @@ title: "Gestión de emergencias y crisis"
 topic: crisis.overview
 version: 1
 audience: []
+modules:
+    - module.crisis_management
 related:
     - documents.manage
 ---

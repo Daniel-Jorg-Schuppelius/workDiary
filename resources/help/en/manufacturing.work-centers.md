@@ -3,6 +3,8 @@ title: "Production capacity (work centers)"
 topic: manufacturing.work-centers
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - manufacturing.orders
     - inventory.stock

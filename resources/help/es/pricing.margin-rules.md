@@ -4,6 +4,8 @@ topic: pricing.margin-rules
 version: 1
 audience:
     - admin
+modules:
+    - module.lager
 related:
     - supplier-catalogs.overview
     - articles.master

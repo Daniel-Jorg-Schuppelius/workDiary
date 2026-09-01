@@ -1,68 +1,87 @@
 ---
 title: "DATEV-Buchungsstapel"
 topic: finance.datev-bookings
-version: 1
+version: 2
 audience: []
+modules:
+    - module.finance
+schema: process
 related:
+    - invoices.manage
     - finance.transfers
     - finance.reconciliation
     - roles.buchhaltung
-    - glossary.core
 ---
 
-Der **DATEV-Buchungsstapel** übergibt gestellte Rechnungen, Gutschriften und –
-optional – freigegebene Spesen eines abgeschlossenen Zeitraums als prüfbare
-DATEV-Datei (Format V700) an die Steuerberatung oder Buchhaltung.
+## Zweck und Hintergrund
 
-Grundprinzip: WorkDiary erzeugt **keine** Buchhaltung, sondern einen sauberen
-Übergabe-Stapel. Geführt eine externe Faktura-Software (DATEV oder Lexoffice)
-die Rechnungen, gehören diese **nicht** in den lokalen Buchungsstapel – solche
-Rechnungen werden automatisch ausgeschlossen und in der Prüfansicht
+Der DATEV-Buchungsstapel übergibt gestellte Rechnungen, Gutschriften
+und optional freigegebene Spesen eines abgeschlossenen Zeitraums als
+prüfbare DATEV-Datei (Format V700) an die Steuerberatung. Grundprinzip:
+WorkDiary erzeugt **keine** Buchhaltung, sondern einen sauberen
+Übergabe-Stapel. Führt eine externe Faktura-Software (DATEV oder
+Lexoffice) die Rechnungen, gehören diese **nicht** in den lokalen
+Stapel — sie werden automatisch ausgeschlossen und in der Prüfansicht
 ausgewiesen.
 
-## Vorbereitung
+## Voraussetzungen
 
-Vor dem ersten Export hinterlegt die Verwaltung die **Buchhaltungs-
-Konfiguration** der Organisation:
+Die Verwaltung hinterlegt einmalig die Buchhaltungs-Konfiguration der
+Organisation:
 
 - Berater- und Mandantennummer,
 - Kontenrahmen (SKR03 oder SKR04) und Sachkontenlänge,
-- Standard-Erlöskonto sowie ein eigenes Konto für steuerfreie/0 %-Umsätze,
+- Standard-Erlöskonto sowie ein eigenes Konto für steuerfreie
+  0-%-Umsätze,
 - die Basis des Debitoren-Nummernkreises,
-- die Zuordnung der Steuersätze (19 %, 7 %, 0 %) zu den DATEV-Buchungs-
-  schlüsseln,
-- das Festschreibekennzeichen (GoBD) und den Zeichensatz (üblich
-  ISO-8859-1).
+- die Zuordnung der Steuersätze (19 %, 7 %, 0 %) zu den
+  DATEV-Buchungsschlüsseln,
+- Festschreibekennzeichen (GoBD) und Zeichensatz (üblich ISO-8859-1).
 
-Eine **Debitorennummer** kann je Kunde gepflegt werden. Fehlt sie, wird sie
-deterministisch aus der konfigurierten Nummernkreis-Basis und der Kundennummer
-abgeleitet.
+Eine Debitorennummer kann je Kunde gepflegt werden; fehlt sie, wird
+sie deterministisch aus Nummernkreis-Basis und Kundennummer
+abgeleitet. Stapel anlegen, finalisieren und herunterladen darf die
+Rolle **Buchhaltung** (und Administration); die Konfiguration pflegen
+Administratoren.
 
-## Ablauf
+## Empfohlener Ablauf
 
-1. **Stapel anlegen:** Zeitraum wählen (und optional freigegebene Spesen
-   einbeziehen). Es entsteht ein **Entwurf** mit den buchungsreifen Belegen.
-2. **Prüfen:** Die Vorschau zeigt je Beleg den Buchungssatz – Soll-/Haben-
-   Kennzeichen, Debitoren- und Erlöskonto, Buchungsschlüssel, Belegnummer und
-   Bruttobetrag – samt Summe. Fehlende Stammdaten oder Buchungsschlüssel
-   erscheinen als **Warnung** beziehungsweise blockierender **Fehler**.
-3. **Finalisieren:** Erst die Finalisierung erzeugt die DATEV-Datei, hält eine
-   Prüfsumme (SHA-256) fest und markiert die enthaltenen Belege als übergeben.
-   Ein finalisierter Stapel ist **unveränderlich**; dieselbe Rechnung kann
-   nicht ein zweites Mal übergeben werden.
-4. **Herunterladen:** Die erzeugte CSV-Datei lässt sich für die Kanzlei
-   herunterladen.
+1. **Stapel anlegen:** Zeitraum wählen, optional freigegebene Spesen
+   einbeziehen — es entsteht ein **Entwurf** mit den buchungsreifen
+   Belegen.
+2. **Prüfen:** Die Vorschau zeigt je Beleg den Buchungssatz —
+   Soll-/Haben-Kennzeichen, Debitoren- und Erlöskonto,
+   Buchungsschlüssel, Belegnummer, Bruttobetrag — samt Summe. Fehlende
+   Stammdaten erscheinen als **Warnung**, fehlende Buchungsschlüssel
+   als blockierender **Fehler**.
+3. **Finalisieren:** Erst jetzt entsteht die DATEV-Datei; eine
+   SHA-256-Prüfsumme wird festgehalten und die Belege gelten als
+   übergeben. Ein finalisierter Stapel ist **unveränderlich**.
+4. **Herunterladen** und der Kanzlei bereitstellen.
 
-## Hinweise
+![DATEV-Buchungsstapel mit Kennzahlen, Konfiguration und Stapel-Anlage](media/buchhaltung/datev-stapel.png)
+*Die Stapelübersicht: Kennzahlen, Konfiguration, EXTF-Stammdaten und „Stapel anlegen“.*
 
-- Berücksichtigt werden gestellte und bezahlte Rechnungen mit Belegdatum im
-  Zeitraum; Gutschriften werden als umgekehrte Buchung gebildet.
-- Belege (PDF/Fotos) sind im MVP nicht Teil des Stapels; sie verbleiben als
-  Anlage am Vorgang und werden der Kanzlei separat bereitgestellt.
+## Beispiel aus der Praxis
 
-## Berechtigungen
+Anfang des Monats erzeugt die Buchhaltung den Stapel für den Vormonat:
+Zwei Belege warnen wegen fehlender Debitorennummer — nach der Pflege
+am Kunden verschwinden die Warnungen, der Stapel wird finalisiert und
+die CSV samt Prüfsumme an die Kanzlei gegeben.
 
-- **Stapel anlegen, finalisieren und herunterladen:** die Rolle *Buchhaltung*
-  (und Administratoren).
-- **Buchhaltungs-Konfiguration und Debitorennummern pflegen:**
-  Administratoren.
+## Typische Fehler
+
+- **Dieselbe Rechnung zweimal übergeben wollen:** Finalisierte Belege
+  sind gesperrt — Korrekturen laufen über Gutschrift/Korrekturbeleg im
+  nächsten Stapel.
+- **Warnungen ignorieren:** Fehlende Stammdaten fallen sonst erst in
+  der Kanzlei auf.
+- **Belege im Stapel erwarten:** PDFs/Fotos sind nicht Teil des
+  Stapels; sie bleiben am Vorgang und gehen separat an die Kanzlei.
+
+## Auswirkungen und nächste Schritte
+
+Berücksichtigt werden gestellte und bezahlte Rechnungen mit Belegdatum
+im Zeitraum; Gutschriften werden als umgekehrte Buchung gebildet. Nach
+der Übergabe: Zahlungsabgleich pflegen und den nächsten Zeitraum erst
+nach dessen Abschluss exportieren.

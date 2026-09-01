@@ -3,6 +3,8 @@ title: "Nachhaltigkeit & ESG"
 topic: sustainability.overview
 version: 1
 audience: []
+modules:
+    - module.sustainability
 related:
     - documents.manage
 ---

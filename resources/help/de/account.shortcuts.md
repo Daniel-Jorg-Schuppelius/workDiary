@@ -22,6 +22,7 @@ Globale Kürzel:
   und öffnest ihn mit `↵`.
 - `Esc` schließt die Suche oder den gerade offenen Dialog.
 - `?` zeigt die Übersicht aller Kürzel.
+- `F1` öffnet die Kontexthilfe zur aktuellen Seite (rechte Hilfe-Sidebar).
 
 Navigations-Kürzel sind kurze Tastenfolgen: Erst `g` (für „gehe zu"),
 dann innerhalb einer Sekunde die Zieltaste.

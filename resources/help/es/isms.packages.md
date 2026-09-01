@@ -3,6 +3,8 @@ title: "Paquetes de auditoría y enlaces para auditores"
 topic: isms.packages
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.audits
     - isms.conformity

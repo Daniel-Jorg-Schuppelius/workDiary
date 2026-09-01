@@ -3,6 +3,8 @@ title: "Softwareinventar"
 topic: isms.software
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.overview
     - admin.security

@@ -4,6 +4,8 @@ topic: whistleblowing.portal
 version: 1
 audience:
     - admin
+modules:
+    - module.compliance
 related:
     - whistleblowing.cases
     - whistleblowing.report

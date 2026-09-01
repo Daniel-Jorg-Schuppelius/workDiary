@@ -3,6 +3,8 @@ title: "Planificación de menús & bufés (catering)"
 topic: recipes.menus
 version: 1
 audience: []
+modules:
+    - module.lager
 related: []
 ---
 

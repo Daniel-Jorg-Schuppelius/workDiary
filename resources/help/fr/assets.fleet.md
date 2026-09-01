@@ -3,6 +3,8 @@ title: "Équipements & parc de véhicules"
 topic: assets.fleet
 version: 1
 audience: []
+modules:
+    - module.fuhrpark
 related:
     - documents.manage
     - travel-expenses.manage

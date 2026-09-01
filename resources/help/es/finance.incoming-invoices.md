@@ -3,6 +3,8 @@ title: "Recepción de facturas electrónicas"
 topic: finance.incoming-invoices
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - invoices.manage
     - finance.datev-bookings

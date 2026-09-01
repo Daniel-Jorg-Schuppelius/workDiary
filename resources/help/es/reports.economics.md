@@ -3,6 +3,8 @@ title: "Rentabilidad"
 topic: reports.economics
 version: 1
 audience: []
+modules:
+    - module.auswertungen_team
 related:
     - reports.customer-analysis
     - reports.drilldown

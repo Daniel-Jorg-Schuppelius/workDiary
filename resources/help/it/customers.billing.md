@@ -3,6 +3,8 @@ title: "Condizioni speciali & conto cliente"
 topic: customers.billing
 version: 3
 audience: []
+modules:
+    - module.vertrieb
 related:
     - contacts.manage
     - invoices.manage

@@ -710,6 +710,18 @@ Route::middleware('auth')->group(function () {
         Route::post('onboarding/steps/{step}/skip', [OnboardingController::class, 'skipStep'])->name('onboarding.steps.skip');
         Route::post('onboarding/widget/dismiss', [OnboardingController::class, 'dismissWidget'])->name('onboarding.widget.dismiss');
 
+        // Hilfecenter-Vollseite (Feature 039, MVP-752): Übersicht mit Suche/
+        // Bereichen + ausführliche Artikelseiten. Blade-Routen — der
+        // JSON-Endpunkt help.topics.show bleibt exklusiv für den Drawer.
+        Route::get('hilfe', [\App\Http\Controllers\Help\HelpCenterController::class, 'index'])->name('help.center.index');
+        // Artikel-Bilder (MVP-754): Repo-Assets, auth-pflichtig, kein SVG.
+        Route::get('hilfe/media/{path}', [\App\Http\Controllers\Help\HelpMediaController::class, 'show'])
+            ->where('path', '[A-Za-z0-9_\-\/\.]+')
+            ->name('help.center.media');
+        Route::get('hilfe/{topic}', [\App\Http\Controllers\Help\HelpCenterController::class, 'show'])
+            ->where('topic', '[a-z0-9.\-]+')
+            ->name('help.center.show');
+
         // In-App-Hilfe (MVP-051): topic-Code muss Punkte zulassen (z. B. "diary-entries.create").
         Route::get('help/search', [HelpController::class, 'search'])->name('help.search');
         Route::get('help/topics/{topic}', [HelpController::class, 'show'])

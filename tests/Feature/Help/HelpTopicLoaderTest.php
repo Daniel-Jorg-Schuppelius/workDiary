@@ -92,4 +92,55 @@ MD);
         $this->assertSame(1, $loaded['version']);
         $this->assertSame([], $loaded['audience']);
     }
+
+    public function test_loader_extracts_modules_and_heading_anchors(): void {
+        File::put($this->tmpRoot . '/de/sample.center.md', <<<'MD'
+---
+title: "Hilfecenter-Beispiel"
+version: 1
+audience: []
+modules:
+    - helpdesk
+    - accounting
+related: []
+---
+
+Einleitung.
+
+## Zweck und Hintergrund
+
+Text.
+
+## Ablauf
+
+Text.
+
+## Ablauf
+
+Doppelte Überschrift (Kollisionsfall).
+
+### Unterpunkt
+
+Text.
+MD);
+
+        $loader = new HelpTopicLoader($this->tmpRoot);
+        $loaded = $loader->load('sample.center', 'de');
+
+        $this->assertIsArray($loaded);
+        $this->assertSame(['helpdesk', 'accounting'], $loaded['modules']);
+
+        // h2/h3 bekommen deterministische Anker; Kollisionen zählen hoch.
+        $this->assertStringContainsString('<h2 id="sec-zweck-und-hintergrund">', $loaded['body_html']);
+        $this->assertStringContainsString('<h2 id="sec-ablauf">', $loaded['body_html']);
+        $this->assertStringContainsString('<h2 id="sec-ablauf-2">', $loaded['body_html']);
+        $this->assertStringContainsString('<h3 id="sec-unterpunkt">', $loaded['body_html']);
+
+        $this->assertSame([
+            ['level' => 2, 'text' => 'Zweck und Hintergrund', 'anchor' => 'sec-zweck-und-hintergrund'],
+            ['level' => 2, 'text' => 'Ablauf', 'anchor' => 'sec-ablauf'],
+            ['level' => 2, 'text' => 'Ablauf', 'anchor' => 'sec-ablauf-2'],
+            ['level' => 3, 'text' => 'Unterpunkt', 'anchor' => 'sec-unterpunkt'],
+        ], $loaded['headings']);
+    }
 }

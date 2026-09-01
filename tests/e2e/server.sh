@@ -19,4 +19,8 @@ php artisan migrate:fresh --seed --force --no-interaction
 # würde sonst fast jede Seite sperren. Für E2E: alles freischalten.
 php artisan tinker --execute='\App\Models\Organization::query()->update(["plan" => "enterprise"]);'
 
+# Hilfecenter (MVP-752): help_topics wird im Deploy per Reindex befüllt —
+# die frische E2E-DB braucht denselben Schritt, sonst ist /hilfe leer.
+php artisan help:reindex
+
 exec php artisan serve --host=127.0.0.1 --port="${E2E_PORT:-8010}"

@@ -3,6 +3,8 @@ title: "Datenschutzmanagement im Überblick"
 topic: privacy.overview
 version: 1
 audience: []
+modules:
+    - module.datenschutz
 related:
     - documents.manage
     - isms.overview

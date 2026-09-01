@@ -3,6 +3,8 @@ title: "Registro de tiempo basado en ubicación"
 topic: location.overview
 version: 1
 audience: []
+modules:
+    - module.standorterfassung
 related:
     - time-entries.start
     - attendance.manage

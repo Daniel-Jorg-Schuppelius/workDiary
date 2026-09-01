@@ -3,6 +3,8 @@ title: "Pagamenti in uscita SEPA"
 topic: finance.sepa
 version: 1
 audience: []
+modules:
+    - module.finance
 related:
     - finance.incoming-invoices
     - invoices.manage

@@ -3,6 +3,8 @@ title: "Ubicaciones y salas"
 topic: facilities.manage
 version: 1
 audience: []
+modules:
+    - module.liegenschaften
 related:
     - assets.fleet
     - documents.manage

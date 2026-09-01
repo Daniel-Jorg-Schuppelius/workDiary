@@ -3,6 +3,8 @@ title: "Canal de denuncias – Gestión de casos"
 topic: whistleblowing.cases
 version: 1
 audience: []
+modules:
+    - module.compliance
 related:
     - whistleblowing.portal
     - whistleblowing.report

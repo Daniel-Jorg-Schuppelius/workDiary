@@ -3,6 +3,8 @@ title: "Catégories d'événements"
 topic: catalog.event-categories
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - events.manage
     - catalog.activity-categories

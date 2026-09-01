@@ -11165,5 +11165,22 @@
     "… und :count weitere": "… and :count more",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 days",
-    "≤ 3 Monate": "≤ 3 months"
+    "≤ 3 Monate": "≤ 3 months",
+    "Hilfecenter": "Help center",
+    "Wie können wir helfen?": "How can we help?",
+    "z. B. Rechnung stornieren": "e.g. cancel an invoice",
+    "Prüfe die Schreibweise oder versuche einen allgemeineren Begriff.": "Check the spelling or try a more general term.",
+    "Suche zurücksetzen": "Reset search",
+    ":count Treffer für „:query“": ":count results for “:query”",
+    ":count Artikel|:count Artikel": ":count article|:count articles",
+    ":count Artikel in deiner Sprache verfügbar.": ":count articles available in your language.",
+    "Anleitungen, Hintergründe und Prozesse zu allen Funktionen — durchsuchbar und nach Themen geordnet.": "Guides, background and processes for every feature — searchable and organised by topic.",
+    "Ausführliche Hilfe mit Hintergrund, Ablauf und nächsten Schritten.": "Detailed help with background, workflow and next steps.",
+    "Pfadnavigation": "Breadcrumb",
+    "Version :version": "Version :version",
+    "aktualisiert am :date": "updated on :date",
+    "Auf dieser Seite": "On this page",
+    "Ausführliche Hilfe öffnen": "Open detailed help",
+    "Beliebte Themen": "Popular topics",
+    "Taste F1 öffnet die Kontexthilfe zur aktuellen Seite.": "Press F1 to open the contextual help for the current page."
 }

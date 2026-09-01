@@ -3,6 +3,8 @@ title: "Nómina y seguridad social"
 topic: payroll.overview
 version: 1
 audience: []
+modules:
+    - module.lohn
 related:
     - exports.payroll
     - timesheets.manage

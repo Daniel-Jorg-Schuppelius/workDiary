@@ -3,6 +3,8 @@ title: "Remplir des formulaires"
 topic: forms.fill
 version: 1
 audience: []
+modules:
+    - module.forms
 related:
     - forms.templates
     - documents.manage

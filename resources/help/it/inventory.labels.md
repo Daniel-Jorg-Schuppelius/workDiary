@@ -3,6 +3,8 @@ title: "Etichette e modelli"
 topic: inventory.labels
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - inventory.stock
     - warehouses.manage

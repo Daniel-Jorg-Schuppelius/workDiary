@@ -1,36 +1,67 @@
 ---
 title: "Panel de control"
 topic: dashboard.overview
-version: 2
+version: 3
 audience: []
+schema: process
 related:
     - work.overview
+    - time-entries.start
     - account.profile
     - account.notifications
 ---
 
-El panel de control es tu página de inicio personal y resume en widgets
-los indicadores, tareas abiertas y avisos más importantes para ti; el
-contenido depende de tus permisos y de los módulos activados. Mediante
-la personalización puedes mostrar u ocultar los widgets disponibles y
-ordenarlos; la selección solo afecta a tu propia cuenta y se guarda al
-confirmar la configuración. Los widgets ocultos pueden reactivarse en
-cualquier momento, y qué widgets tienes disponibles depende de tu rol.
-En tu perfil también puedes definir el panel como página predeterminada
-tras iniciar sesión.
+## Objetivo y contexto
 
-Todo el panel se compone de tarjetas, incluida la fila de indicadores y
-las antiguas pestañas. Cada tarjeta puede ocultarse por separado,
-reordenarse arrastrándola o con las flechas y ajustarse a media anchura o
-anchura completa. Las tarjetas ocultas ya no realizan consultas, de modo
-que un panel despejado también carga más rápido.
+El panel es tu página de inicio personal: reúne en mosaicos los
+indicadores, tareas abiertas y avisos más importantes para ti. Lo que
+aparece depende de tus permisos y de los módulos activados — alguien
+con derechos de análisis ve mosaicos distintos que alguien sin ellos.
+Los mosaicos ocultos dejan de consultar datos: un panel ordenado
+también carga más rápido.
 
-Además de las tarjetas visibles de forma predeterminada hay muchas más
-disponibles: reloj de fichar, recordatorios, plazos, partidas abiertas,
-estado de las copias de seguridad y más. Al principio están ocultas y se
-activan en la personalización.
+## Requisitos
 
-Quien pueda administrar la organización puede además guardar su
-disposición como predeterminada para todos. Se aplica a quienes aún no
-han hecho su propia selección; «Restablecer al valor predeterminado»
-vuelve a ella en cualquier momento.
+- Una cuenta de usuario con sesión iniciada; no hacen falta derechos
+  especiales.
+- Para los valores predeterminados de la organización: el derecho a
+  gestionarla.
+- En el perfil puedes fijar la página de inicio personal como página
+  predeterminada tras iniciar sesión.
+
+## Procedimiento recomendado
+
+1. Abre la **personalización** y activa los mosaicos que necesitas a
+   diario — fichaje, recordatorios, plazos, partidas abiertas, estado
+   de las copias y más están disponibles y al principio ocultos.
+2. Ordena los mosaicos arrastrándolos o con las flechas y ponlos a
+   media o a todo lo ancho.
+3. Guarda la configuración — la selección solo vale para tu cuenta y
+   se conserva.
+4. Quien gestiona la organización puede guardar su disposición como
+   **predeterminada para todos**; se aplica a cuentas sin selección
+   propia.
+
+![Panel con mosaicos de indicadores, fichaje y progreso de incorporación](media/erste-schritte/dashboard-uebersicht.png)
+*El panel: indicadores, fichaje y las acciones «Personalizar» y «Nueva entrada».*
+
+## Ejemplo práctico
+
+Una jefa de equipo activa «fichaje», «plazos» y «tiempos abiertos» y
+pone los plazos a todo lo ancho. Tras guardar, cada jornada empieza
+con un vistazo a los plazos que vencen — sin un solo clic en submenús.
+
+## Errores habituales
+
+- **Activarlo todo:** demasiados mosaicos ralentizan la página y
+  entierran lo esencial. Aquí menos es más.
+- **Confundir predeterminado y vista propia:** el predeterminado de
+  la organización solo aplica a cuentas sin selección propia;
+  «Restablecer al predeterminado» te devuelve allí cuando quieras.
+
+## Efectos y próximos pasos
+
+La selección de mosaicos solo afecta a tu cuenta y no cambia datos.
+Próximos pasos útiles: la ayuda contextual de cada mosaico (tecla `?`)
+y revisar los ajustes de notificaciones para que avisos del panel y
+correos encajen.

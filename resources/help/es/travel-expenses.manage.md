@@ -3,6 +3,8 @@ title: "Viajes, gastos y dietas"
 topic: travel-expenses.manage
 version: 1
 audience: []
+modules:
+    - module.spesen
 related:
     - invoices.manage
     - exports.payroll

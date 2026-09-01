@@ -3,6 +3,8 @@ title: "Sedi e locali"
 topic: facilities.manage
 version: 1
 audience: []
+modules:
+    - module.liegenschaften
 related:
     - assets.fleet
     - documents.manage

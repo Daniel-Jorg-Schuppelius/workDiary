@@ -3,6 +3,8 @@ title: "Print orders (print & copy shop)"
 topic: print.orders
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - claims.overview
     - documents.manage

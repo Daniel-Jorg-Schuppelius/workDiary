@@ -3,6 +3,8 @@ title: "Gestion des urgences & des crises"
 topic: crisis.overview
 version: 1
 audience: []
+modules:
+    - module.crisis_management
 related:
     - documents.manage
 ---

@@ -3,6 +3,8 @@ title: "Intercambio de turnos con aprobación"
 topic: planning.exchange
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - planning.shifts
     - planning.availability

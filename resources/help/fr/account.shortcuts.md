@@ -23,6 +23,7 @@ Raccourcis globaux :
   avec `↑`/`↓` et ouvrez-le avec `↵`.
 - `Échap` ferme la recherche ou le dialogue ouvert.
 - `?` affiche l'aperçu de tous les raccourcis.
+- `F1` ouvre l'aide contextuelle de la page actuelle (barre d'aide de droite).
 
 Les raccourcis de navigation sont de courtes séquences : d'abord `g` (pour
 « aller à »), puis la touche cible dans la seconde qui suit.

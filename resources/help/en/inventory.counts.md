@@ -3,6 +3,8 @@ title: "Stocktake"
 topic: inventory.counts
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - inventory.stock
     - warehouses.manage

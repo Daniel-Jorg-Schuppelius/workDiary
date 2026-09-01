@@ -3,6 +3,8 @@ title: "Data protection management at a glance"
 topic: privacy.overview
 version: 1
 audience: []
+modules:
+    - module.datenschutz
 related:
     - documents.manage
     - isms.overview

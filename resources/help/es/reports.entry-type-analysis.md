@@ -3,6 +3,8 @@ title: "Análisis por tipo de orden"
 topic: reports.entry-type-analysis
 version: 1
 audience: []
+modules:
+    - module.auswertungen_team
 related:
     - reports.customer-analysis
     - reports.drilldown

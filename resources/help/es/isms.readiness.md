@@ -3,6 +3,8 @@ title: "Madurez y preparación"
 topic: isms.readiness
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.overview
     - isms.suppliers

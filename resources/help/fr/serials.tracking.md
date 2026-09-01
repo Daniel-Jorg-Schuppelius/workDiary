@@ -3,6 +3,8 @@ title: "Numéros de série"
 topic: serials.tracking
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - inventory.stock
     - articles.master

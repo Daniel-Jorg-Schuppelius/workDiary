@@ -3,6 +3,8 @@ title: "Leitstelle: Board und Karte"
 topic: dispatch.board
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - dispatch.overview
     - tours.manage

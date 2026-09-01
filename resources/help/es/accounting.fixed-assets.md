@@ -5,6 +5,8 @@ version: 1
 audience:
     - admin
     - buchhaltung
+modules:
+    - module.finance
 related:
     - accounting.closing
     - accounting.posting

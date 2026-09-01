@@ -3,6 +3,8 @@ title: "El SGSI en resumen"
 topic: isms.overview
 version: 2
 audience: []
+modules:
+    - module.isms
 related:
     - isms.requirements-soa
     - isms.controls

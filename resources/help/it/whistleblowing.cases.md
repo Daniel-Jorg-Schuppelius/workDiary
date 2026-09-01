@@ -3,6 +3,8 @@ title: "Canale di segnalazione – gestione dei casi"
 topic: whistleblowing.cases
 version: 1
 audience: []
+modules:
+    - module.compliance
 related:
     - whistleblowing.portal
     - whistleblowing.report

@@ -43,6 +43,7 @@ return [
     ],
     // Tastenkürzel-Übersicht (Feature 037, MVP-721): Labels der Registry resources/js/shortcuts.js
     'shortcuts' => [
+        'help' => 'Aprire l\'aiuto contestuale della pagina corrente',
         'title' => 'Scorciatoie da tastiera',
         'scope' => [
             'global' => 'Globale',

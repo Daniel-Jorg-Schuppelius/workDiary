@@ -3,6 +3,8 @@ title: "Audits, findings & corrective actions"
 topic: isms.audits
 version: 1
 audience: []
+modules:
+    - module.isms
 related:
     - isms.conformity
     - isms.packages

@@ -4,6 +4,8 @@ topic: inventory.conflicts
 version: 1
 audience:
     - admin
+modules:
+    - module.lager
 related:
     - inventory.stock
     - warehouses.manage

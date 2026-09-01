@@ -3,6 +3,8 @@ title: "Approvvigionamento e ordini"
 topic: procurement.orders
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - inventory.stock
     - articles.master

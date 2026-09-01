@@ -3,6 +3,8 @@ title: "Trasporto passeggeri (taxi/NCC)"
 topic: passenger.overview
 version: 1
 audience: []
+modules:
+    - module.fuhrpark
 related:
     - claims.overview
 ---

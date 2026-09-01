@@ -3,6 +3,8 @@ title: "Disponibilidades y turnos preferidos"
 topic: planning.availability
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - planning.shifts
     - planning.exchange

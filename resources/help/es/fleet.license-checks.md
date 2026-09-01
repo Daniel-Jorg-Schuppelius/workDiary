@@ -4,6 +4,8 @@ topic: fleet.license-checks
 version: 1
 audience:
     - admin
+modules:
+    - module.fuhrpark
 related:
     - assets.fleet
 ---

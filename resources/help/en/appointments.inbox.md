@@ -3,6 +3,8 @@ title: "Appointment requests"
 topic: appointments.inbox
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - dispatch.overview
 ---

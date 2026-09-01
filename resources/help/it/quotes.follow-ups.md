@@ -3,6 +3,8 @@ title: "Sollecito delle offerte"
 topic: quotes.follow-ups
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - quotes.overview
     - contacts.manage

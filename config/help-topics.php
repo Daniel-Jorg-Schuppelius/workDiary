@@ -36,6 +36,8 @@ return [
     ],
 
     'routes' => [
+        // Hilfecenter-Vollseite (Feature 039, MVP-752): Hilfe zur Hilfe.
+        'help.center.*' => 'help.center',
         // Oberflächen-Konfiguration (Feature 081): Funktionsumfang,
         // Menüanpassung und Funktionskatalog.
         'admin.scope.*' => 'scope.overview',

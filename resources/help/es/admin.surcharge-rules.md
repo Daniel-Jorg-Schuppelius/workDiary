@@ -5,6 +5,8 @@ version: 1
 audience:
     - admin
     - buchhaltung
+modules:
+    - module.lohn
 related:
     - exports.payroll
     - finance.transfers

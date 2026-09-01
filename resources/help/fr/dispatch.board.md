@@ -3,6 +3,8 @@ title: "Centre de dispatching : tableau et carte"
 topic: dispatch.board
 version: 1
 audience: []
+modules:
+    - module.planung
 related:
     - dispatch.overview
     - tours.manage

@@ -48,6 +48,11 @@ async function createOrderForToday(page: Page): Promise<string> {
     // Zeitraum (Default „dieser Monat") und damit vom Board.
     await form.locator('select[name="mode"]').selectOption("fixed");
     await expect(form.locator('input[name="start_at"]')).toHaveValue(new RegExp(`^${isoDay}T`));
+    // Start explizit auf Tagesmitte: der vorbelegte 00:00-Start liegt in UTC
+    // (Europe/Berlin −2 h) im VORTAG — am Monatsersten fiel die Karte damit
+    // aus dem „Dieser Monat"-Fenster (dokumentierte UTC-Schnittsemantik von
+    // DateRange::whereTimestampBetween, kein App-Bug). Erst am 01.09. rot.
+    await form.locator('input[name="start_at"]').fill(`${isoDay}T09:00`);
     // „Terminiert" verlangt auch ein Ende.
     await form.locator('input[name="end_at"]').fill(`${isoDay}T17:00`);
     await form

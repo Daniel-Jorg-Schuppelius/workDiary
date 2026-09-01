@@ -3,6 +3,8 @@ title: "Location-based time tracking"
 topic: location.overview
 version: 1
 audience: []
+modules:
+    - module.standorterfassung
 related:
     - time-entries.start
     - attendance.manage

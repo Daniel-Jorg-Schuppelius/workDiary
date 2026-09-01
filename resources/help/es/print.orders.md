@@ -3,6 +3,8 @@ title: "Órdenes de impresión (imprenta & copistería)"
 topic: print.orders
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - claims.overview
     - documents.manage

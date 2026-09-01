@@ -3,6 +3,8 @@ title: "Ofertas"
 topic: quotes.overview
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - invoices.manage
 ---

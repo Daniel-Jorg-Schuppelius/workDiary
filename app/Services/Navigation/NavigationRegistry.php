@@ -1943,6 +1943,11 @@ class NavigationRegistry {
                 ['route' => 'profile.api-tokens.index', 'label' => __('API-Tokens'), 'modal' => false],
             ],
         ];
+        // Hilfecenter (Feature 039, MVP-752): globaler Hilfe-Einstieg ohne
+        // Seitenkontext — die kontextbezogene Hilfe bleibt der ?-Shortcut.
+        if (! $isLegacyMode) {
+            $userNavItems[] = ['route' => 'help.center.index', 'label' => __('Hilfecenter'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['help.center.*']];
+        }
 
         return $userNavItems;
     }

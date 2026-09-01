@@ -4,6 +4,8 @@ topic: finance.gobd
 version: 1
 audience:
     - admin
+modules:
+    - module.finance
 related:
     - invoices.manage
     - audit.log

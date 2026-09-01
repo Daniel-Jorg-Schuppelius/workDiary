@@ -3,6 +3,8 @@ title: "Pianificazione degli investimenti"
 topic: investments.overview
 version: 1
 audience: []
+modules:
+    - module.investments
 related:
     - documents.manage
 ---

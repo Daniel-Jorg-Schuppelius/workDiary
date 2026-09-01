@@ -3,6 +3,8 @@ title: "Public tender radar"
 topic: tenders.radar
 version: 1
 audience: []
+modules:
+    - module.applications
 related:
     - applications.overview
 ---

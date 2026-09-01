@@ -11165,5 +11165,22 @@
     "… und :count weitere": "… et :count autres",
     "€/km": "€/km",
     "≤ 14 Tage": "≤ 14 jours",
-    "≤ 3 Monate": "≤ 3 mois"
+    "≤ 3 Monate": "≤ 3 mois",
+    "Hilfecenter": "Centre d'aide",
+    "Wie können wir helfen?": "Comment pouvons-nous aider ?",
+    "z. B. Rechnung stornieren": "p. ex. annuler une facture",
+    "Prüfe die Schreibweise oder versuche einen allgemeineren Begriff.": "Vérifiez l'orthographe ou essayez un terme plus général.",
+    "Suche zurücksetzen": "Réinitialiser la recherche",
+    ":count Treffer für „:query“": ":count résultats pour « :query »",
+    ":count Artikel|:count Artikel": ":count article|:count articles",
+    ":count Artikel in deiner Sprache verfügbar.": ":count articles disponibles dans votre langue.",
+    "Anleitungen, Hintergründe und Prozesse zu allen Funktionen — durchsuchbar und nach Themen geordnet.": "Guides, contexte et processus pour toutes les fonctions — consultables et classés par thème.",
+    "Ausführliche Hilfe mit Hintergrund, Ablauf und nächsten Schritten.": "Aide détaillée avec contexte, déroulement et prochaines étapes.",
+    "Pfadnavigation": "Fil d'Ariane",
+    "Version :version": "Version :version",
+    "aktualisiert am :date": "mis à jour le :date",
+    "Auf dieser Seite": "Sur cette page",
+    "Ausführliche Hilfe öffnen": "Ouvrir l'aide détaillée",
+    "Beliebte Themen": "Sujets populaires",
+    "Taste F1 öffnet die Kontexthilfe zur aktuellen Seite.": "La touche F1 ouvre l'aide contextuelle de la page actuelle."
 }

@@ -5,6 +5,8 @@ version: 1
 audience:
     - admin
     - teamleitung
+modules:
+    - module.forms
 related:
     - forms.fill
     - glossary.core

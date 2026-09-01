@@ -3,6 +3,8 @@ title: "Cataloghi fornitori"
 topic: supplier-catalogs.overview
 version: 1
 audience: []
+modules:
+    - module.lager
 related:
     - articles.master
     - procurement.orders

@@ -3,6 +3,8 @@ title: "Materiali"
 topic: materials.manage
 version: 1
 audience: []
+modules:
+    - module.vertrieb
 related:
     - articles.master
     - inventory.stock

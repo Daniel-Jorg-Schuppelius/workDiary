@@ -3,6 +3,8 @@ title: "KI-Dienste"
 topic: ai.services
 version: 1
 audience: []
+modules:
+    - module.ai
 related:
     - invoices.manage
     - quotes.overview

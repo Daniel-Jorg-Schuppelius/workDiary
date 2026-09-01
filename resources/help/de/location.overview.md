@@ -3,6 +3,8 @@ title: "Standortbasierte Zeiterfassung"
 topic: location.overview
 version: 1
 audience: []
+modules:
+    - module.standorterfassung
 related:
     - time-entries.start
     - attendance.manage

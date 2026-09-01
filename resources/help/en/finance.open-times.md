@@ -3,6 +3,8 @@ title: "Open times"
 topic: finance.open-times
 version: 2
 audience: []
+modules:
+    - module.finance
 related:
     - finance.transfers
     - roles.buchhaltung

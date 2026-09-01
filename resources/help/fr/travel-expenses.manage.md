@@ -3,6 +3,8 @@ title: "Trajets, frais & indemnités forfaitaires"
 topic: travel-expenses.manage
 version: 1
 audience: []
+modules:
+    - module.spesen
 related:
     - invoices.manage
     - exports.payroll

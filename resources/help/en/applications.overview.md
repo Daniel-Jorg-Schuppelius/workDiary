@@ -3,6 +3,8 @@ title: "Applications & tenders"
 topic: applications.overview
 version: 1
 audience: []
+modules:
+    - module.applications
 related:
     - documents.manage
 ---
