@@ -55,4 +55,28 @@ final class PwaAssetsTest extends TestCase {
         $this->assertStringContainsString('Du bist offline', $html);
         $this->assertStringContainsString('manifest.webmanifest', $html);
     }
+
+    public function test_offline_fallback_page_is_self_contained(): void {
+        // Der Service Worker cacht NUR offline.html (kein Asset-Caching, siehe
+        // sw.js). Jede externe Referenz der Seite scheitert daher genau dann,
+        // wenn die Seite gebraucht wird \u2014 sichtbar zuletzt als kaputtes
+        // Logo. Erlaubt sind nur data:-URIs; das Manifest ist reine
+        // PWA-Metainfo und beeinflusst die Darstellung nicht.
+        $html = ToolkitFile::read(public_path('offline.html'));
+
+        $this->assertSame(1, preg_match_all('/<img\\b/i', $html), 'Erwartet genau ein Bild auf der Offline-Seite.');
+
+        preg_match_all('/(?:src|href)\\s*=\\s*"([^"]+)"/i', $html, $matches);
+        foreach ($matches[1] as $url) {
+            if ($url === '/manifest.webmanifest') {
+                continue;
+            }
+
+            $this->assertStringStartsWith(
+                'data:',
+                $url,
+                sprintf('Offline-Seite referenziert die netzabhaengige Ressource "%s" - bitte als data:-URI einbetten.', $url),
+            );
+        }
+    }
 }
