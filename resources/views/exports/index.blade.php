@@ -36,13 +36,13 @@
     </x-slot:actions>
 
     <x-filter-bar :action="route('exports.index')" :reset="route('exports.index')">
-        <select name="status" class="select select-sm select-bordered w-40 shrink-0">
+        <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">
             <option value="all" @selected($filters['status'] === 'all')>{{ __('Alle Status') }}</option>
             @foreach ($statuses as $st)
                 <option value="{{ $st->value }}" @selected($filters['status'] === $st->value)>{{ $st->label() }}</option>
             @endforeach
         </select>
-        <select name="profile" class="select select-sm select-bordered w-40 shrink-0">
+        <select name="profile" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Profil') }}">
             <option value="all" @selected($filters['profile'] === 'all')>{{ __('Alle Profile') }}</option>
             @foreach ($profiles as $key => $label)
                 <option value="{{ $key }}" @selected($filters['profile'] === $key)>{{ $label }}</option>

@@ -29,13 +29,13 @@
         <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
                class="input input-sm input-bordered w-44 shrink-0"
                placeholder="{{ __('Meldung/Exception') }}" aria-label="{{ __('Suche') }}" />
-        <select name="plugin" class="select select-sm select-bordered w-40 shrink-0">
+        <select name="plugin" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Plugin') }}">
             <option value="">{{ __('Alle Plugins') }}</option>
             @foreach ($plugins as $p)
                 <option value="{{ $p->id() }}" @selected(($filters['plugin'] ?? '') === $p->id())>{{ $p->name() }}</option>
             @endforeach
         </select>
-        <select name="phase" class="select select-sm select-bordered w-32 shrink-0">
+        <select name="phase" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Phase') }}">
             <option value="">{{ __('Alle Phasen') }}</option>
             <option value="boot" @selected(($filters['phase'] ?? '') === 'boot')>{{ __('Boot') }}</option>
             <option value="runtime" @selected(($filters['phase'] ?? '') === 'runtime')>{{ __('Runtime') }}</option>
@@ -43,7 +43,7 @@
             <option value="compatibility" @selected(($filters['phase'] ?? '') === 'compatibility')>{{ __('Kompatibilität') }}</option>
             <option value="manual" @selected(($filters['phase'] ?? '') === 'manual')>{{ __('Manuell') }}</option>
         </select>
-        <select name="status" class="select select-sm select-bordered w-32 shrink-0">
+        <select name="status" class="select select-sm select-bordered w-32 shrink-0" aria-label="{{ __('Status') }}">
             <option value="open" @selected(($filters['status'] ?? '') === '' || ($filters['status'] ?? '') === 'open')>{{ __('Offen') }}</option>
             <option value="acknowledged" @selected(($filters['status'] ?? '') === 'acknowledged')>{{ __('Bestätigt') }}</option>
             <option value="all" @selected(($filters['status'] ?? '') === 'all')>{{ __('Alle') }}</option>

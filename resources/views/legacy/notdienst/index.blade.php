@@ -26,7 +26,7 @@
             @if ($isAdmin)
                 <div class="flex flex-col min-w-48">
                     <label class="label py-1"><span class="label-text text-xs uppercase tracking-wider text-muted">{{ __('Mitarbeiter') }}</span></label>
-                    <select name="user" class="select select-bordered select-sm w-full">
+                    <select name="user" class="select select-bordered select-sm w-full" aria-label="{{ __('Mitarbeiter') }}">
                         <option value="">{{ __('Alle') }}</option>
                         @foreach ($users as $legacyUser)
                             @php

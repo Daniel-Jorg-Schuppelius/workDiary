@@ -24,7 +24,7 @@
         </x-slot:actions>
 
         <x-filter-bar :action="route('corrections.index')" :reset="route('corrections.index')">
-            <select name="status" class="select select-sm select-bordered w-40 shrink-0">
+            <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $s)
                     <option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>

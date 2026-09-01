@@ -34,7 +34,7 @@
     {{-- ── Filter & Toolbar ────────────────────────────────────────────── --}}
     <x-filter-bar :action="route('schedule.index')" class="bg-base-100!">
         {{-- User filter --}}
-        <select name="user" class="select select-bordered select-sm w-full sm:w-auto sm:min-w-48" data-autosubmit>
+        <select name="user" class="select select-bordered select-sm w-full sm:w-auto sm:min-w-48" data-autosubmit aria-label="{{ __('Mitarbeiter') }}">
             <option value="">{{ __('Alle Mitarbeiter') }}</option>
             @foreach ($users as $u)
                 <option value="{{ $u->sqid }}" @selected(\App\Support\Sqid::encode(\App\Models\User::class, $userFilter) === $u->sqid)>{{ $u->name }}</option>

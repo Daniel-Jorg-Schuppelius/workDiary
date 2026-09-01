@@ -17,7 +17,7 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Beantragte Mehrarbeit entscheiden — Genehmigung quittiert den zugehörigen Rahmenzeit-Befund.')">
         <x-filter-bar :action="route('admin.overtime.index')" :reset="route('admin.overtime.index')">
-            <select name="status" class="select select-sm select-bordered w-40 shrink-0" data-autosubmit>
+            <select name="status" class="select select-sm select-bordered w-40 shrink-0" data-autosubmit aria-label="{{ __('Status') }}">
                 <option value="all" @selected(($filters['status'] ?? '') === 'all')>{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $s)
                     <option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>

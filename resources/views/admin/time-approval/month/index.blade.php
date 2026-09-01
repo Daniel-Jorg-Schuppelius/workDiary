@@ -21,13 +21,13 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Eingereichte und entschiedene Monate der Organisation.')">
         <x-filter-bar :action="route('admin.month-approval.index')" :reset="route('admin.month-approval.index')">
-            <select name="status" class="select select-sm select-bordered w-40 shrink-0">
+            <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">
                 <option value="all" @selected($filters['status'] === 'all')>{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $status)
                     <option value="{{ $status->value }}" @selected($filters['status'] === $status->value)>{{ $status->label() }}</option>
                 @endforeach
             </select>
-            <select name="user" class="select select-sm select-bordered w-48 shrink-0">
+            <select name="user" class="select select-sm select-bordered w-48 shrink-0" aria-label="{{ __('Mitarbeiter') }}">
                 <option value="">{{ __('Alle Mitarbeitenden') }}</option>
                 @foreach ($teamUsers as $u)
                     <option value="{{ $u->sqid }}" @selected($filters['user'] === $u->id)>{{ $u->name }}</option>

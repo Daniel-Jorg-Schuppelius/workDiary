@@ -26,7 +26,7 @@
         <input type="text" name="q" value="{{ $filters['q'] ?? '' }}"
                class="input input-sm input-bordered w-48 shrink-0"
                placeholder="{{ __('Suche') }}" aria-label="{{ __('Suche') }}" />
-        <select name="status" class="select select-sm select-bordered w-40 shrink-0">
+        <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">
             <option value="">{{ __('Alle Status') }}</option>
             <option value="active" @selected(($filters['status'] ?? '') === 'active')>{{ __('Aktiv') }}</option>
             <option value="inactive" @selected(($filters['status'] ?? '') === 'inactive')>{{ __('Inaktiv') }}</option>

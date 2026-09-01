@@ -24,7 +24,7 @@
         </x-slot:actions>
 
         <x-filter-bar :action="route('overtime.index')" :reset="route('overtime.index')">
-            <select name="status" class="select select-sm select-bordered w-40 shrink-0" data-autosubmit>
+            <select name="status" class="select select-sm select-bordered w-40 shrink-0" data-autosubmit aria-label="{{ __('Status') }}">
                 <option value="">{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $s)
                     <option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>

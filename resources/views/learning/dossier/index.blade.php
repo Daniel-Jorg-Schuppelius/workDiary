@@ -28,20 +28,46 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <x-filter-bar :action="route('learning.dossier.index')" method="GET">
-        <x-input-field name="as_of" type="date" :label="__('learning.field.as_of')"
-                       :value="request('as_of', $asOf->toDateString())" />
-        <x-select-field name="team_id" :label="__('learning.field.team')" :value="$teamSqid">
-            <option value="">{{ __('learning.field.all_people') }}</option>
-            @foreach ($teams as $team)
-                <option value="{{ $team->sqid }}" @selected($teamSqid === $team->sqid)>{{ $team->name }}</option>
-            @endforeach
-        </x-select-field>
-        <x-input-field name="reason" :label="__('learning.field.disclosure_reason')"
-                       :hint="__('learning.help.disclosure_reason')" maxlength="180"
-                       :value="$reason" class="order-30" />
-        <x-checkbox-field name="named" :label="__('learning.field.named_dossier')"
-                          :checked="$named" class="order-40" />
+    {{-- Filterleisten-Standard: x-filter-field mit schlichtem Input/Select in
+         `sm`, Schalter als x-filter-toggle (order-40). Die Formular-
+         Komponenten (x-input-field & Co.) gehoeren in Formularkoerper — sie
+         ziehen sich ueber die volle Breite und sprengen die Leiste.
+         Beschriftung nach Komponentenregel: Selects tragen ihre Bedeutung in
+         der „Alle …"-Option (Label sr-only), Eingabefelder nicht (Label
+         inline davor). --}}
+    <x-filter-bar :action="route('learning.dossier.index')" :reset="route('learning.dossier.index')">
+        <x-filter-field :label="__('learning.field.as_of')" for="dossier-as-of" inline>
+            <input id="dossier-as-of" type="date" name="as_of"
+                   value="{{ request('as_of', $asOf->toDateString()) }}"
+                   class="input input-bordered input-sm shrink-0">
+        </x-filter-field>
+
+        <x-filter-field :label="__('learning.field.team')" for="dossier-team" class="min-w-44 flex-1">
+            <select id="dossier-team" name="team_id" class="select select-bordered select-sm w-full">
+                <option value="">{{ __('learning.field.all_people') }}</option>
+                @foreach ($teams as $team)
+                    <option value="{{ $team->sqid }}" @selected($teamSqid === $team->sqid)>{{ $team->name }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+
+        {{-- Der Anlass ist kein Suchfeld, sondern die Begruendung der
+             Weitergabe — er wird protokolliert. Der Hinweistext dazu steht im
+             Info-Kasten unter der Leiste und hier als Tooltip; als Platzhalter
+             waere er zu lang und verschwaende beim Tippen. --}}
+        <x-filter-field :label="__('learning.field.disclosure_reason')" for="dossier-reason" inline>
+            <input id="dossier-reason" type="text" name="reason" maxlength="180"
+                   value="{{ $reason }}"
+                   title="{{ __('learning.help.disclosure_reason') }}"
+                   class="input input-bordered input-sm w-56">
+        </x-filter-field>
+
+        {{-- Warnfarbe mit Absicht: der Schalter wechselt von aggregierter zu
+             namentlicher Auskunft. --}}
+        <x-filter-toggle name="named" tone="warning"
+                         :label="__('learning.field.named_dossier')"
+                         :checked="$named"
+                         :title="__('learning.help.disclosure_reason')" />
     </x-filter-bar>
 
     {{-- Die Ampel bewertet die Besetzbarkeit, nicht die Person. --}}

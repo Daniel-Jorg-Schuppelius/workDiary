@@ -17,7 +17,7 @@
 @section('content')
     <x-index-page overflow="clip" :subtitle="__('Offene und entschiedene Korrekturanträge der Organisation.')">
         <x-filter-bar :action="route('admin.corrections.index')" :reset="route('admin.corrections.index')">
-            <select name="status" class="select select-sm select-bordered w-40 shrink-0">
+            <select name="status" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('Status') }}">
                 <option value="all" @selected(($filters['status'] ?? '') === 'all')>{{ __('Alle Status') }}</option>
                 @foreach ($statuses as $s)
                     <option value="{{ $s->value }}" @selected(($filters['status'] ?? '') === $s->value)>
