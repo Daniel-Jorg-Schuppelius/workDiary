@@ -282,24 +282,11 @@ return Application::configure(basePath: dirname(__DIR__))
                 return null;
             }
 
-            // Nur echte Verbindungsprobleme als "DB unavailable" behandeln.
-            // SQLSTATE-Codes wie 23000 (Integrity constraint), 22xxx
-            // (Data exception) oder 42xxx (Syntax/Access) zeigen, dass die
-            // DB erreichbar ist, aber die Query selbst fehlerhaft war.
-            // Würden wir auch diese als "down" markieren, sperrte ein
-            // einzelner FK-Verstoß die gesamte Anwendung für 60 s aus.
-            // Rohes PDOException ohne errorInfo (typisch für Connect-
-            // Fehler bevor eine Query lief) gilt weiterhin als "down".
-            $pdo = $e instanceof PDOException ? $e : $e->getPrevious();
-            $sqlState = '';
-            if ($pdo instanceof PDOException && is_array($pdo->errorInfo ?? null) && isset($pdo->errorInfo[0])) {
-                $sqlState = (string) $pdo->errorInfo[0];
-            }
-            $isConnectionIssue = $sqlState === ''
-                || str_starts_with($sqlState, '08')    // Connection exception
-                || str_starts_with($sqlState, 'HY000') // General/server gone away
-                || in_array($sqlState, ['57P01', '57P02', '57P03'], true); // PG admin shutdown
-            if (! $isConnectionIssue) {
+            // Nur echte Verbindungsprobleme als "DB unavailable" behandeln —
+            // die Regel steht in DatabaseHealth::isConnectionFailure(), weil
+            // sie hier UND in HandleDatabaseUnavailable gebraucht wird und
+            // zwei Fassungen auseinanderlaufen würden.
+            if (! DatabaseHealth::isConnectionFailure($e)) {
                 return null;
             }
 
@@ -309,7 +296,20 @@ return Application::configure(basePath: dirname(__DIR__))
             $failedConnection = $e instanceof QueryException && $e->connectionName !== ''
                 ? $e->connectionName
                 : DatabaseHealth::defaultConnection();
-            DatabaseHealth::safeMarkUnavailable($failedConnection);
+            DatabaseHealth::safeMarkUnavailable($failedConnection, DatabaseHealth::describe($e));
+
+            // Diese Stelle schwieg — und war damit die eigentliche blinde
+            // Stelle hinter den wandernden 503: Laravels Routing-Pipeline
+            // rendert Ausnahmen INNERHALB der Pipeline, die äußere Middleware
+            // HandleDatabaseUnavailable sieht also bereits eine fertige
+            // Antwort. Ihr catch (das protokolliert) greift für
+            // Controller-Ausnahmen nie; jeder DB-503 entstand hier.
+            \Illuminate\Support\Facades\Log::error('database.unavailable.render', [
+                'connection' => $failedConnection,
+                'path' => $request->path(),
+                'exception' => $e::class,
+                'message' => $e->getMessage(),
+            ]);
 
             if ($request->expectsJson()) {
                 return response()->json([

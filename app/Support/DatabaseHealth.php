@@ -29,6 +29,67 @@ final class DatabaseHealth {
     /** @var array<string, string> Grund je Connection — für die Meldung, wenn kein Marker auf Platte liegt. */
     private static array $requestReason = [];
 
+    /**
+     * Client-/Server-Codes, die ein **Verbindungs**problem bezeichnen.
+     *
+     * MariaDB meldet fast alles unter SQLSTATE `HY000` — ein Sperrtimeout
+     * (1205), ein fehlender Spaltenvorgabewert (1364) und „Out of resources
+     * when opening file" tragen denselben Zustand wie ein echter
+     * Verbindungsabbruch. Wer HY000 pauschal als „Datenbank weg" liest,
+     * sperrt nach einem einzelnen Abfragefehler die ganze Anwendung für 60 s
+     * aus — und genau so entstanden die wandernden 503 in der Testsuite.
+     */
+    private const CONNECTION_DRIVER_CODES = [
+        1040, // Too many connections
+        1042, // Unable to connect to any of the specified MySQL hosts
+        1043, // Bad handshake
+        1044, // Access denied for user to database
+        1045, // Access denied for user
+        1049, // Unknown database
+        1053, // Server shutdown in progress
+        1129, // Host blocked
+        1130, // Host not allowed to connect
+        2002, // Can't connect through socket
+        2003, // Can't connect to server
+        2006, // Server has gone away
+        2013, // Lost connection during query
+    ];
+
+    /**
+     * Ist die Ausnahme ein **Verbindungs**problem — oder nur eine
+     * fehlgeschlagene Abfrage auf einer erreichbaren Datenbank?
+     *
+     * Einzige Stelle, an der diese Unterscheidung getroffen wird: sie
+     * entscheidet, ob eine Verbindung als ausgefallen markiert und damit für
+     * 60 s jede Folge-Anfrage mit 503 beantwortet wird.
+     */
+    public static function isConnectionFailure(Throwable $e): bool {
+        $pdo = $e instanceof PDOException ? $e : $e->getPrevious();
+        while ($pdo !== null && ! $pdo instanceof PDOException) {
+            $pdo = $pdo->getPrevious();
+        }
+
+        if (! $pdo instanceof PDOException) {
+            return false;
+        }
+
+        $info = is_array($pdo->errorInfo ?? null) ? $pdo->errorInfo : [];
+        $sqlState = isset($info[0]) ? (string) $info[0] : '';
+        $driverCode = isset($info[1]) ? (int) $info[1] : 0;
+
+        // Ohne errorInfo lief noch keine Abfrage — typisch für einen
+        // gescheiterten Verbindungsaufbau.
+        return $sqlState === ''
+            || str_starts_with($sqlState, '08')
+            || in_array($sqlState, ['57P01', '57P02', '57P03'], true)
+            || ($sqlState === 'HY000' && in_array($driverCode, self::CONNECTION_DRIVER_CODES, true));
+    }
+
+    /** Kurzbeschreibung einer Ausnahme für Marker und Protokoll. */
+    public static function describe(Throwable $e): string {
+        return $e::class . ': ' . mb_substr($e->getMessage(), 0, 200);
+    }
+
     public static function isAvailable(string $connection): bool {
         if (self::$requestUnavailable[$connection] ?? false) {
             return false;

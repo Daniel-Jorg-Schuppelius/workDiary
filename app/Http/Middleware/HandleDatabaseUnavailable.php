@@ -16,7 +16,6 @@ use Closure;
 use Illuminate\Database\QueryException;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use PDOException;
 use Symfony\Component\HttpFoundation\Response;
 use Throwable;
 
@@ -71,17 +70,16 @@ class HandleDatabaseUnavailable {
         }
     }
 
+    /**
+     * Dieselbe Regel wie im Exception-Handler ({@see DatabaseHealth::isConnectionFailure()}).
+     *
+     * Vorher genügte hier **irgendeine** PDOException in der Kette: ein
+     * Sperrtimeout oder ein Feld ohne Vorgabewert hätte die Verbindung für
+     * 60 s als ausgefallen markiert und jede Folge-Anfrage mit 503
+     * beantwortet.
+     */
     private function isDatabaseUnavailable(Throwable $e): bool {
-        $current = $e;
-        while ($current !== null) {
-            // QueryException erbt von PDOException, daher genügt diese Prüfung.
-            if ($current instanceof PDOException) {
-                return true;
-            }
-            $current = $current->getPrevious();
-        }
-
-        return false;
+        return DatabaseHealth::isConnectionFailure($e);
     }
 
     /**
@@ -107,7 +105,7 @@ class HandleDatabaseUnavailable {
             ? $e->connectionName
             : $defaultConnection;
 
-        DatabaseHealth::safeMarkUnavailable($connection, $e::class . ': ' . mb_substr($e->getMessage(), 0, 200));
+        DatabaseHealth::safeMarkUnavailable($connection, DatabaseHealth::describe($e));
     }
 
     private function renderUnavailable(Request $request, ?Throwable $e): Response {

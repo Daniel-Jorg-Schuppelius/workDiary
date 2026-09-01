@@ -25,6 +25,7 @@
         "laravel/reverb": "^1.10",
         "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
+        "league/flysystem-aws-s3-v3": "^3.35",
         "league/flysystem-ftp": "^3.31",
         "league/flysystem-sftp-v3": "^3.33",
         "minishlink/web-push": "^10.0",
