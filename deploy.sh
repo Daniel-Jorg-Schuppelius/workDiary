@@ -31,6 +31,7 @@ MAINTENANCE_ON=0
 # nur ein Backup gemacht und sich dann kommentarlos beendet.
 finish_maintenance() {
     local rc=$? line="${1:-?}" cmd="${2:-?}"
+    set +e  # nach dem Sichern von $?: sonst kann der Trap mitten in der Meldung abbrechen
     echo "✗ Deploy ABGEBROCHEN in Zeile $line (Exit-Code $rc): $cmd" >&2
     if [ "$MAINTENANCE_ON" = "1" ]; then
         echo "⚠ Die Anwendung bleibt im WARTUNGSMODUS (halb migrierter Stand darf nicht online)." >&2

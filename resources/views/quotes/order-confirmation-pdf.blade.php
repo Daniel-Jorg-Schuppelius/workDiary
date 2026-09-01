@@ -17,7 +17,7 @@
     /** @var \App\Services\DocumentDesign\DesignContext $design MVP-651: Texte + Akzentfarbe aus dem Design-Payload. */
     $design ??= new \App\Services\DocumentDesign\DesignContext(null);
     $accent = $design->accentColor();
-    $fmt = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true);
+    $fmt = fn (float $v) => \App\Support\DocumentNumber::decimal($v, 2);
     $fmtRate = fn ($rate) => rtrim(rtrim(number_format((float) $rate, 2, '.', ''), '0'), '.');
 @endphp
 <style>
@@ -86,7 +86,7 @@
         <tr>
             <td>{{ $item->position }}</td>
             <td>{{ $item->description }}</td>
-            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}</td>
+            <td class="num">{{ \App\Support\DocumentNumber::decimal((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2) }} {{ $item->unit }}</td>
             <td class="num">{{ $fmt($item->unit_price?->toFloat() ?? 0.0) }} EUR</td>
             <td class="num">
                 @if ($item->discount_percent !== null && (float) $item->discount_percent->getNumericValue() > 0)

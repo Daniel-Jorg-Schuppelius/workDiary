@@ -2881,6 +2881,7 @@ CREATE TABLE `backup_target_connections` (
   `token_expires_at` timestamp NULL DEFAULT NULL,
   `granted_scopes` text DEFAULT NULL,
   `root_folder_ref` varchar(255) DEFAULT NULL,
+  `options` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`options`)),
   `quota_total` bigint(20) unsigned DEFAULT NULL,
   `quota_used` bigint(20) unsigned DEFAULT NULL,
   `quota_checked_at` timestamp NULL DEFAULT NULL,
@@ -20119,7 +20120,6 @@ CREATE TABLE `zammad_connections` (
 /*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
-/*M!999999\- enable the sandbox mode */ 
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (2,'0001_01_01_000001_create_cache_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (3,'0001_01_01_000002_create_jobs_table',1);
@@ -20900,3 +20900,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (777,'2027_02_19_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (778,'2027_02_19_110800_add_verification_to_sso_domains',49);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (779,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',49);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (780,'2027_02_19_111000_hash_serial_passport_token',50);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (781,'2027_02_19_111100_add_options_to_backup_target_connections',51);

@@ -37,6 +37,7 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $token_expires_at
  * @property array<int, string>|null $granted_scopes
  * @property string|null $root_folder_ref
+ * @property array<string, mixed>|null $options
  * @property int|null $quota_total
  * @property int|null $quota_used
  * @property Carbon|null $quota_checked_at
@@ -66,6 +67,9 @@ class BackupTargetConnection extends Model {
         'token_expires_at',
         'granted_scopes',
         'root_folder_ref',
+        // Providereigene Einstellungen ohne Geheimnischarakter (MVP-726):
+        // S3 legt hier Region und Path-Style ab.
+        'options',
         'quota_total',
         'quota_used',
         'quota_checked_at',
@@ -87,6 +91,7 @@ class BackupTargetConnection extends Model {
         'refresh_token' => 'encrypted',
         'token_expires_at' => 'datetime',
         'granted_scopes' => 'array',
+        'options' => 'array',
         'quota_total' => 'integer',
         'quota_used' => 'integer',
         'quota_checked_at' => 'datetime',

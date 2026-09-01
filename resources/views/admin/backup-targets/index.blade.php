@@ -36,6 +36,11 @@
                     data-entry-modal-trigger
                     :href="route('admin.backup-targets.webdav.connect-form')"
                     show-label>WebDAV</x-icon-btn>
+        {{-- S3-kompatibel (MVP-726): AWS S3, MinIO, Wasabi, Hetzner. --}}
+        <x-icon-btn icon="add" tone="primary" size="sm"
+                    data-entry-modal-trigger
+                    :href="route('admin.backup-targets.s3.connect-form')"
+                    show-label>S3</x-icon-btn>
     </x-slot:actions>
 
     @unless ($hasMasterKey)

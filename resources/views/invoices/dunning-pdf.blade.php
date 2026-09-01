@@ -18,7 +18,7 @@
     /** @var \App\Services\DocumentDesign\DesignContext $design MVP-651: Texte + Akzentfarbe aus dem Design-Payload. */
     $design ??= new \App\Services\DocumentDesign\DesignContext(null);
     $accent = $design->accentColor();
-    $fmt = fn (float $v) => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true);
+    $fmt = fn (float $v) => \App\Support\DocumentNumber::decimal($v, 2);
     // Sicherheitseinbehalt (Feature 113, MVP-602) NIE mitmahnen: Der Betrag
     // ist vertragsgemäß gestundet — eine Mahnung darüber wäre unbegründet und
     // beschädigt die Geschäftsbeziehung mehr als die offene Restsumme wert ist.
@@ -119,7 +119,7 @@
                 <tr><td colspan="3" class="num">{{ __('Mahngebühr') }}</td><td class="num">{{ $fmt($fee) }} {{ $invoice->currency->value }}</td></tr>
             @endif
             @if ($interest !== null)
-                <tr><td colspan="3" class="num">{{ __('finance.dunning.interest_row', ['rate' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($interest['rate'], 2), 'days' => $interest['days']]) }}</td><td class="num">{{ $fmt($interest['amount']) }} {{ $invoice->currency->value }}</td></tr>
+                <tr><td colspan="3" class="num">{{ __('finance.dunning.interest_row', ['rate' => \App\Support\DocumentNumber::decimal($interest['rate'], 2), 'days' => $interest['days']]) }}</td><td class="num">{{ $fmt($interest['amount']) }} {{ $invoice->currency->value }}</td></tr>
             @endif
             <tr><td colspan="3" class="num">{{ __('Gesamtforderung') }}</td><td class="num">{{ $fmt($claimTotal) }} {{ $invoice->currency->value }}</td></tr>
         </tfoot>

@@ -45,7 +45,7 @@ class SchedulerWatchdogCommand extends Command {
         $overdue = [];
 
         foreach ($registry->all() as $key => $definition) {
-            if ($key === 'scheduler.watchdog') {
+            if ($key === SchedulerRegistrar::WATCHDOG_KEY) {
                 continue;
             }
             if (($overrides[$key]['enabled'] ?? true) === false) {
@@ -73,6 +73,14 @@ class SchedulerWatchdogCommand extends Command {
             if ($state->overdue_notified_at !== null && $state->overdue_notified_at->greaterThanOrEqualTo($due)) {
                 continue; // bereits für diesen Soll-Lauf gemeldet
             }
+            if ($this->runInProgressSince($key, $due)) {
+                // Der Lauf dieses Soll-Slots ist noch unterwegs: Hintergrund-
+                // jobs melden ihren Erfolg erst über schedule:finish, und ein
+                // verspäteter Tick startet sie erst jenseits der Frist. Ein
+                // Befund wäre hier ein Fehlalarm — ein Lauf aus einem älteren
+                // Slot schützt bewusst nicht (started_at >= $due).
+                continue;
+            }
             if (! $this->pluginActive($definition)) {
                 // Plugin-gebundener Job, dessen Plugin nirgends aktiviert ist: läuft bewusst nicht — eine
                 // Überfälligkeits-Meldung wäre Rauschen (z. B. Lexoffice/JTL auf Instanzen ohne diese Anbindungen).
@@ -87,6 +95,9 @@ class SchedulerWatchdogCommand extends Command {
                 'job' => $key,
                 'due_at' => $due->toIso8601String(),
                 'last_success_at' => $state->last_success_at?->toIso8601String(),
+                // Unterscheidet die Ursachen: skipped = Überlappungssperre oder
+                // Wartungsfenster, running = Lauf hängt, failed = Kommando bricht ab.
+                'last_status' => $state->last_status,
                 'criticality' => $definition->criticality->value,
             ]);
             $this->warn("Überfällig: {$key} (fällig {$due->toIso8601String()})");
@@ -145,6 +156,15 @@ class SchedulerWatchdogCommand extends Command {
 
             return false;
         })();
+    }
+
+    /** Läuft für diesen Job bereits ein Lauf des aktuellen Soll-Slots? */
+    private function runInProgressSince(string $jobKey, CarbonImmutable $due): bool {
+        return ScheduledJobRun::query()
+            ->where('job_key', $jobKey)
+            ->where('status', ScheduledJobRun::STATUS_RUNNING)
+            ->where('started_at', '>=', $due)
+            ->exists();
     }
 
     private function purgeOldRuns(CarbonImmutable $now): void {

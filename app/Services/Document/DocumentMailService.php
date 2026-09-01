@@ -20,7 +20,7 @@ use App\Services\Construction\ConstructionNoticePdfRenderer;
 use App\Services\Invoicing\{OrderConfirmationPdfRenderer, QuotePdfRenderer};
 use App\Services\Manufacturing\DeliveryNotePdfRenderer;
 use App\Services\Procurement\PurchaseOrderPdfRenderer;
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DocumentNumber;
 use Illuminate\Support\Facades\{Auth, Mail};
 use InvalidArgumentException;
 
@@ -176,7 +176,7 @@ class DocumentMailService {
                 'document_number' => (string) $document->number,
                 'document_date' => optional($document->created_at)->format('d.m.Y') ?? '',
                 'valid_until' => optional($document->valid_until)->format('d.m.Y') ?? '',
-                'total' => NumberHelper::toGermanFormat($document->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true),
+                'total' => DocumentNumber::decimal($document->total?->toFloat() ?? 0.0, 2),
                 'currency' => $document->total?->getCurrency()->value ?? 'EUR',
             ];
         }

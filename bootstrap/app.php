@@ -26,6 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
         commands: __DIR__ . '/../routes/console.php',
         health: '/up',
         then: function (): void {
+            // CVD-Meldekanal (RFC 9116): ohne jeden Gruppen-Stack, damit er
+            // auch bei DB-Ausfall, fehlender Installation oder Lockdown
+            // erreichbar bleibt — Begründung in routes/well-known.php.
+            Route::group([], __DIR__ . '/../routes/well-known.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/install.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/customer.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');

@@ -14,7 +14,7 @@ namespace App\Mail;
 
 use App\Models\Invoice;
 use App\Services\Invoicing\{DunningPdfRenderer, InvoicePdfRenderer};
-use CommonToolkit\Helper\Data\NumberHelper;
+use App\Support\DocumentNumber;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
@@ -84,13 +84,13 @@ class DunningMail extends Mailable implements ShouldQueue {
                 ? (string) __('zur Rechnung :number vom :date über :total :currency konnten wir bislang keinen Zahlungseingang feststellen. Sicher handelt es sich um ein Versehen — bitte gleichen Sie den offenen Betrag aus.', [
                     'number' => $this->invoice->number,
                     'date' => optional($this->invoice->issued_on)->isoFormat('L') ?? '—',
-                    'total' => NumberHelper::toGermanFormat(($this->invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true),
+                    'total' => DocumentNumber::decimal(($this->invoice->total?->toFloat() ?? 0.0), 2),
                     'currency' => $this->invoice->currency->value,
                 ])
                 : (string) __('trotz vorheriger Erinnerung ist die Rechnung :number vom :date über :total :currency weiterhin offen (Mahnstufe :level). Bitte begleichen Sie den Betrag umgehend.', [
                     'number' => $this->invoice->number,
                     'date' => optional($this->invoice->issued_on)->isoFormat('L') ?? '—',
-                    'total' => NumberHelper::toGermanFormat(($this->invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true),
+                    'total' => DocumentNumber::decimal(($this->invoice->total?->toFloat() ?? 0.0), 2),
                     'currency' => $this->invoice->currency->value,
                     'level' => $this->level,
                 ]),
@@ -101,9 +101,9 @@ class DunningMail extends Mailable implements ShouldQueue {
         if ($this->interest !== null) {
             $lines[] = '';
             $lines[] = (string) __('finance.dunning.mail_interest', [
-                'amount' => NumberHelper::toGermanFormat($this->interest['amount'], 2, withThousandsSeparator: true),
+                'amount' => DocumentNumber::decimal($this->interest['amount'], 2),
                 'currency' => $this->invoice->currency->value,
-                'rate' => NumberHelper::toGermanFormat($this->interest['rate'], 2),
+                'rate' => DocumentNumber::decimal($this->interest['rate'], 2),
                 'days' => $this->interest['days'],
             ]);
         }

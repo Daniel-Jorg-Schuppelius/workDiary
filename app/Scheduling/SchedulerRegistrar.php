@@ -30,10 +30,14 @@ use Illuminate\Support\Facades\{Cache, Log};
 class SchedulerRegistrar {
     public const HEARTBEAT_NAME = 'scheduler.heartbeat';
 
+    /** Selbstüberwachung — wird bewusst als letzter Job eingehängt. */
+    public const WATCHDOG_KEY = 'scheduler.watchdog';
+
     public function __construct(private readonly JobRegistry $registry) {}
 
     public function register(Schedule $schedule): void {
         $overrides = \App\Models\ScheduledJobOverride::systemMap();
+        $watchdog = null;
 
         foreach ($this->registry->all() as $definition) {
             $override = $overrides[$definition->key] ?? null;
@@ -41,24 +45,21 @@ class SchedulerRegistrar {
                 continue; // pausiert (MVP-176) — Sichtbarkeit über die Adminseite
             }
 
-            $event = $schedule->command($definition->command);
-            $event->cron($this->resolveCadence($definition, $override['cadence'] ?? null)->cronExpression());
+            // Der Wächter urteilt über den Erfolg der anderen Jobs. Stünde er
+            // mitten im Stapel, bewertete er in einem verspäteten Tick alles,
+            // was hinter ihm noch aussteht, als überfällig — die Jobs liefen
+            // Sekunden später und der Befund war ein Fehlalarm.
+            if ($definition->key === self::WATCHDOG_KEY) {
+                $watchdog = [$definition, $override];
 
-            // Wartungsfenster-Kopplung (MVP-055): Jobs mit
-            // runs_in_maintenance=false pausieren im aktiven System-Fenster.
-            if (! $definition->runsInMaintenance) {
-                $event->skip(static fn(): bool => \App\Models\MaintenanceWindow::systemActiveNow());
+                continue;
             }
 
-            if ($definition->withoutOverlapping) {
-                $event->withoutOverlapping();
-            }
-            if ($definition->onOneServer) {
-                $event->onOneServer();
-            }
-            if ($definition->runInBackground) {
-                $event->runInBackground();
-            }
+            $this->registerJob($schedule, $definition, $override);
+        }
+
+        if ($watchdog !== null) {
+            $this->registerJob($schedule, $watchdog[0], $watchdog[1]);
         }
 
         // Heartbeat-Writer (schließt die Diagnose-Lücke: die Diagnose-
@@ -69,6 +70,40 @@ class SchedulerRegistrar {
                 CarbonImmutable::now()->toIso8601String(),
             );
         })->everyMinute()->name(self::HEARTBEAT_NAME);
+    }
+
+    /** @param array<string, mixed>|null $override */
+    private function registerJob(Schedule $schedule, JobDefinition $definition, ?array $override): void {
+        $event = $schedule->command($definition->command);
+        $event->cron($this->resolveCadence($definition, $override['cadence'] ?? null)->cronExpression());
+
+        // Wartungsfenster-Kopplung (MVP-055): Jobs mit
+        // runs_in_maintenance=false pausieren im aktiven System-Fenster.
+        if (! $definition->runsInMaintenance) {
+            $event->skip(static fn(): bool => \App\Models\MaintenanceWindow::systemActiveNow());
+        }
+
+        if ($definition->withoutOverlapping) {
+            $event->withoutOverlapping($this->lockMinutes($definition));
+        }
+        if ($definition->onOneServer) {
+            $event->onOneServer();
+        }
+        if ($definition->runInBackground) {
+            $event->runInBackground();
+        }
+    }
+
+    /**
+     * Lebensdauer der Überlappungssperre. Laravels Default sind 1440 Minuten:
+     * ein abgebrochener Lauf (OOM, Neustart, SIGKILL) gibt die Sperre nicht
+     * frei und legt den Job dann einen ganzen Tag still — er läuft genau
+     * einmal täglich und meldet sich jeden Morgen als überfällig. Sechsfache
+     * Soll-Laufzeit lässt echten Überläufen Luft und holt den Job trotzdem
+     * binnen Stunden zurück.
+     */
+    private function lockMinutes(JobDefinition $definition): int {
+        return max(30, $definition->expectedRuntimeMinutes * 6);
     }
 
     /** Effektive Kadenz inkl. System-Override (für Adminseite/Watchdog). */

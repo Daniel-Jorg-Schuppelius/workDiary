@@ -185,6 +185,37 @@ class SchedulerRuntimeTest extends TestCase {
         $this->assertDatabaseCount('scheduled_job_runs', 0);
     }
 
+    /**
+     * Der Wächter urteilt anhand von last_success_at. Hintergrundjobs melden
+     * ihren Erfolg erst über schedule:finish — ein verspäteter Tick startet
+     * sie also erst jenseits der Frist. Solange der Lauf des aktuellen
+     * Soll-Slots noch läuft, ist ein Befund ein Fehlalarm.
+     */
+    public function test_watchdog_ignores_a_running_job_of_the_current_due_slot(): void {
+        $this->enableTogglPlugin();
+        $this->travelTo(now()->startOfHour()->addMinutes(45));
+        ScheduledJobState::query()->create([
+            'job_key' => 'toggl.import',
+            'last_started_at' => CarbonImmutable::now()->startOfHour(),
+            'last_success_at' => CarbonImmutable::now()->subHours(3),
+            'last_status' => ScheduledJobRun::STATUS_RUNNING,
+        ]);
+        ScheduledJobRun::query()->create([
+            'job_key' => 'toggl.import',
+            'started_at' => CarbonImmutable::now()->startOfHour(),
+            'status' => ScheduledJobRun::STATUS_RUNNING,
+        ]);
+
+        $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
+        $this->assertNull(ScheduledJobState::query()->where('job_key', 'toggl.import')->firstOrFail()->overdue_notified_at);
+
+        // Ein hängender Lauf aus einem älteren Soll-Slot schützt bewusst nicht.
+        ScheduledJobRun::query()->where('job_key', 'toggl.import')
+            ->update(['started_at' => CarbonImmutable::now()->subHours(3)]);
+
+        $this->assertSame(1, Artisan::call('scheduler:watchdog', ['--fail' => true]));
+    }
+
     public function test_watchdog_skips_jobs_of_inactive_plugins(): void {
         // Kein plugin_settings-Eintrag: toggl ist nirgends aktiviert. Der
         // eigentlich überfällige Sync darf dann weder alarmieren noch den

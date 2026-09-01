@@ -1496,6 +1496,7 @@ return [
             'google' => 'Google Drive',
             'nextcloud' => 'Nextcloud',
             'webdav' => 'WebDAV (server proprio)',
+            's3' => 'Archiviazione compatibile S3',
         ],
         'target_status' => [
             'draft' => 'Bozza',

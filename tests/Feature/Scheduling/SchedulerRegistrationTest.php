@@ -229,6 +229,44 @@ class SchedulerRegistrationTest extends TestCase {
         $this->assertSame('0 3 * * *', $commands['archive:run']['expression']);
     }
 
+    /**
+     * Der Wächter bewertet den Erfolg der anderen Jobs. Stünde er mitten im
+     * Stapel, meldete ein verspäteter Tick alles hinter ihm als überfällig,
+     * obwohl es Sekunden später anläuft.
+     */
+    public function test_watchdog_is_registered_after_all_other_jobs(): void {
+        $commands = array_keys($this->registeredCommands());
+
+        $this->assertSame('scheduler:watchdog', end($commands));
+    }
+
+    /**
+     * Laravel-Default der Überlappungssperre sind 1440 Minuten: ein
+     * abgebrochener Lauf legt den Job sonst einen ganzen Tag still.
+     */
+    public function test_overlapping_lock_expires_within_hours_not_a_day(): void {
+        $schedule = new Schedule;
+        app(SchedulerRegistrar::class)->register($schedule);
+
+        $byCommand = [];
+        foreach ($schedule->events() as $event) {
+            if (is_string($event->command) && $event->command !== '') {
+                $byCommand[trim(Str::after($event->command, "'artisan' "))] = (int) $event->expiresAt;
+            }
+        }
+
+        // Obergrenze: der längste Job (workdiary:backup:run, 60 min) kommt auf
+        // 6 h — alles darüber wäre wieder eine Tagessperre durch die Hintertür.
+        foreach ($byCommand as $command => $minutes) {
+            $this->assertLessThanOrEqual(360, $minutes, "Überlappungssperre von [{$command}] ist zu lang.");
+        }
+
+        // max(30, erwartete Laufzeit × 6)
+        $this->assertSame(180, $byCommand['archive:run']);        // 30 min erwartete Laufzeit
+        $this->assertSame(90, $byCommand['toggl:import']);        // 15 min
+        $this->assertSame(30, $byCommand['chat:send-reminders']); // 1 min → Untergrenze
+    }
+
     public function test_scheduler_heartbeat_writer_is_registered(): void {
         $schedule = new Schedule;
         app(SchedulerRegistrar::class)->register($schedule);

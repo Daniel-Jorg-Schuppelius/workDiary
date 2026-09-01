@@ -120,9 +120,9 @@
             <td>{{ $item->description }}</td>
             @if ($showServiceDates)<td>{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
             {{-- 3./4. NK nur zeigen, wenn signifikant: die Rechnung muss aus Menge × Preis nachrechenbar sein --}}
-            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) ({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})@endif</td>
-            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
-            <td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>
+            <td class="num">{{ \App\Support\DocumentNumber::decimal((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) ({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})@endif</td>
+            <td class="num">{{ \App\Support\DocumentNumber::decimal(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2) }} {{ $invoice->currency->value }}</td>
+            <td class="num">{{ \App\Support\DocumentNumber::decimal(($item->amount?->toFloat() ?? 0.0), 2) }} {{ $invoice->currency->value }}</td>
         </tr>
     @endforeach
     </tbody>
@@ -138,18 +138,18 @@
         @php $docDiscount = $invoice->documentDiscountTotal(); @endphp
         @if (!$docDiscount->isZero())
             {{-- MVP-416: Positionssumme, Belegrabatt, Netto getrennt ausweisen. --}}
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($invoice->lineSubtotal()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ $fmtRate($invoice->discount_percent) }}%)@endif</td><td class="num">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(abs($docDiscount->toFloat()), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Netto') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \App\Support\DocumentNumber::decimal($invoice->lineSubtotal()->toFloat(), 2) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Rabatt') }}@if ($invoice->discount_percent !== null) ({{ $fmtRate($invoice->discount_percent) }}%)@endif</td><td class="num">−{{ \App\Support\DocumentNumber::decimal(abs($docDiscount->toFloat()), 2) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Netto') }}</td><td class="num">{{ \App\Support\DocumentNumber::decimal(($invoice->subtotal?->toFloat() ?? 0.0), 2) }} {{ $invoice->currency->value }}</td></tr>
         @else
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->subtotal?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Zwischensumme') }}</td><td class="num">{{ \App\Support\DocumentNumber::decimal(($invoice->subtotal?->toFloat() ?? 0.0), 2) }} {{ $invoice->currency->value }}</td></tr>
         @endif
         @if ($taxRows->count() > 1)
             @foreach ($taxRows as $row)
-                <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['net'], 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }})</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['tax'], 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+                <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($row['rate']) }}% ({{ \App\Support\DocumentNumber::decimal((float) $row['net'], 2) }} {{ $invoice->currency->value }})</td><td class="num">{{ \App\Support\DocumentNumber::decimal((float) $row['tax'], 2) }} {{ $invoice->currency->value }}</td></tr>
             @endforeach
         @else
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($invoice->tax_rate) }}%</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->tax_amount?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('USt.') }} {{ $fmtRate($invoice->tax_rate) }}%</td><td class="num">{{ \App\Support\DocumentNumber::decimal(($invoice->tax_amount?->toFloat() ?? 0.0), 2) }} {{ $invoice->currency->value }}</td></tr>
         @endif
         @if ($invoice->is_reverse_charge)
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Steuerschuldnerschaft des Leistungsempfängers (Reverse Charge).') }}</td></tr>
@@ -166,7 +166,7 @@
         @if ($smallBusiness)
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">{{ __('Keine Umsatzsteuer gemäß § 19 UStG (Kleinunternehmerregelung).') }}</td></tr>
         @endif
-        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+        <tr><td colspan="{{ $footColspan }}" class="num">{{ __('Gesamt') }}</td><td class="num">{{ \App\Support\DocumentNumber::decimal(($invoice->total?->toFloat() ?? 0.0), 2) }} {{ $invoice->currency->value }}</td></tr>
         @php
             // Sicherheitseinbehalte (Feature 113, MVP-602): Ohne diesen Ausweis
             // ist der Einbehalt rechtlich angreifbar — er muss auf dem Beleg
@@ -178,18 +178,18 @@
                 {{ __('invoicing.retention.pdf_line', [
                     'kind' => $retention->kind->label(),
                     'basis' => $retention->percent !== null
-                        ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $retention->percent->getNumericValue(), 2) . ' %'
+                        ? \App\Support\DocumentNumber::decimal((float) $retention->percent->getNumericValue(), 2) . ' %'
                         : '',
                 ]) }}@if ($retention->due_on !== null) — {{ __('invoicing.retention.pdf_due', ['date' => $retention->due_on->fdate()]) }}@endif
-            </td><td class="num" style="font-weight: normal;">−{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($retention->amount->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            </td><td class="num" style="font-weight: normal;">−{{ \App\Support\DocumentNumber::decimal($retention->amount->toFloat(), 2) }} {{ $invoice->currency->value }}</td></tr>
         @endforeach
         @if ($retentions->isNotEmpty())
-            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('invoicing.retention.pdf_payable') }}</td><td class="num">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(app(\App\Services\Invoicing\RetentionService::class)->payableAmountOf($invoice), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td></tr>
+            <tr><td colspan="{{ $footColspan }}" class="num">{{ __('invoicing.retention.pdf_payable') }}</td><td class="num">{{ \App\Support\DocumentNumber::decimal(app(\App\Services\Invoicing\RetentionService::class)->payableAmountOf($invoice), 2) }} {{ $invoice->currency->value }}</td></tr>
         @endif
         @if ($invoice->hasSkonto())
             {{-- MVP-416: Skonto-Kondition mit Frist und Zahlbetrag. --}}
             <tr><td colspan="{{ $footColspan + 1 }}" class="num" style="font-size: 8pt; color: #6b7280;">
-                {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => $fmtRate($invoice->skonto_percent), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) — {{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }}: {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}@endif
+                {{ __(':percent % Skonto bei Zahlung innerhalb von :days Tagen', ['percent' => $fmtRate($invoice->skonto_percent), 'days' => (int) $invoice->skonto_days]) }}@if ($invoice->skontoDeadline() !== null) — {{ __('bis :date', ['date' => $invoice->skontoDeadline()->fdate()]) }}: {{ \App\Support\DocumentNumber::decimal(($invoice->total?->toFloat() ?? 0.0) - $invoice->skontoAmount()->toFloat(), 2) }} {{ $invoice->currency->value }}@endif
             </td></tr>
         @endif
     </tfoot>

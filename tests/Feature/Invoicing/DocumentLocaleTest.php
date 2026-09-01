@@ -111,6 +111,51 @@ class DocumentLocaleTest extends TestCase {
         $this->assertStringNotContainsString('Datum:', $html);
     }
 
+    /**
+     * Das Zahlenformat folgt der Belegsprache (MVP-726, Vollscan H19).
+     *
+     * Bis hierher war die Sprache einstellbar, die Zahl blieb deutsch: eine
+     * franzoesische Rechnung wies `1.234,56` aus, wo der Empfaenger
+     * `1 234,56` erwartet — ausserhalb des deutschen Sprachraums liest sich
+     * `1.234` als Bruchteil.
+     */
+    public function test_amounts_follow_the_document_locale(): void {
+        $invoice = $this->invoiceFor($this->customer('fr'));
+        $invoice->items()->create([
+            'organization_id' => $this->org->id,
+            'description' => 'Grossposten',
+            'quantity' => '1.000',
+            'unit_price' => '1234.5600',
+            'tax_rate' => '19.00',
+            'position' => 2,
+        ]);
+        $invoice->load('items');
+
+        $html = app(InvoicePdfRenderer::class)->composedHtml($invoice);
+
+        // Geschuetztes Leerzeichen als Tausendertrennung, Komma als Dezimalzeichen.
+        $this->assertStringContainsString("1\u{00A0}234,56", $html);
+        $this->assertStringNotContainsString('1.234,56', $html);
+    }
+
+    /** Deutsche Belege bleiben unveraendert — das ist der Regelfall. */
+    public function test_german_documents_keep_the_german_format(): void {
+        $invoice = $this->invoiceFor($this->customer('de'));
+        $invoice->items()->create([
+            'organization_id' => $this->org->id,
+            'description' => 'Grossposten',
+            'quantity' => '1.000',
+            'unit_price' => '1234.5600',
+            'tax_rate' => '19.00',
+            'position' => 2,
+        ]);
+        $invoice->load('items');
+
+        $html = app(InvoicePdfRenderer::class)->composedHtml($invoice);
+
+        $this->assertStringContainsString('1.234,56', $html);
+    }
+
     public function test_dunning_mail_subject_uses_the_customer_locale(): void {
         $invoice = $this->invoiceFor($this->customer('fr'));
 

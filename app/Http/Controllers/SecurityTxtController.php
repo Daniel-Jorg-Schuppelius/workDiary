@@ -19,6 +19,9 @@ use Illuminate\Http\Response;
  * WorkDiary-Architecture/security/cra-red-compliance-2026-07.md §5).
  * Ohne konfigurierten Kontakt (SECURITY_TXT_CONTACT) antwortet der
  * Endpunkt 404 — bewusst kein erfundener Default.
+ *
+ * Läuft seit dem CRA-Tabletop 2026-09-01 ohne Gruppen-Stack
+ * ({@see routes/well-known.php}) und setzt seine Header deshalb selbst.
  */
 class SecurityTxtController extends Controller {
     public function __invoke(): Response {
@@ -46,6 +49,11 @@ class SecurityTxtController extends Controller {
 
         return response(implode("\n", $lines) . "\n", 200, [
             'Content-Type' => 'text/plain; charset=utf-8',
+            'X-Content-Type-Options' => 'nosniff',
+            // Anders als bei SCIM ausdrücklich zwischenspeicherbar: das
+            // Dokument ist öffentlich, trägt sein eigenes Verfallsdatum und
+            // soll einen Ausfall der Anwendung überdauern können.
+            'Cache-Control' => 'public, max-age=3600',
         ]);
     }
 }

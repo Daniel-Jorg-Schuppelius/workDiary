@@ -35,6 +35,14 @@ self.addEventListener("activate", (event) => {
 self.addEventListener("fetch", (event) => {
     if (event.request.mode !== "navigate") return;
 
+    // `.well-known` nie aus dem Offline-Cache bedienen (CRA-Tabletop
+    // 2026-09-01): Der CVD-Meldekanal soll den Zustand des Servers zeigen,
+    // nicht den des Browsers. Sonst sieht ein Sicherheitsforscher, dessen
+    // Verbindung kurz hakt, unsere Offline-Seite statt einer Kontaktadresse —
+    // und hält den Kanal für tot.
+    const path = new URL(event.request.url).pathname;
+    if (path.startsWith("/.well-known/") || path === "/security.txt") return;
+
     event.respondWith(
         fetch(event.request).catch(() =>
             caches

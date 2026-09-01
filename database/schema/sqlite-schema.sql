@@ -11743,6 +11743,7 @@ CREATE TABLE IF NOT EXISTS "backup_target_connections"(
   "updated_at" datetime,
   "server_url" varchar,
   "username" varchar,
+  "options" text,
   foreign key("created_by_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "btc_provider_status_ix" on "backup_target_connections"(
@@ -19482,3 +19483,4 @@ INSERT INTO migrations VALUES(784,'2027_02_19_110700_hash_public_link_tokens',17
 INSERT INTO migrations VALUES(785,'2027_02_19_110800_add_verification_to_sso_domains',175);
 INSERT INTO migrations VALUES(786,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',175);
 INSERT INTO migrations VALUES(787,'2027_02_19_111000_hash_serial_passport_token',176);
+INSERT INTO migrations VALUES(788,'2027_02_19_111100_add_options_to_backup_target_connections',177);

@@ -29,6 +29,9 @@ enum BackupProvider: string implements HasLabel {
     // Generisches WebDAV (Feature 123, MVP-612): eigener Server, EU-Hoster,
     // Synology, jeder Apache mit mod_dav.
     case Webdav = 'webdav';
+    // S3-kompatibler Objektspeicher (Feature 123, MVP-726): AWS S3, MinIO,
+    // Wasabi, Hetzner, Scaleway — alles, was die S3-API spricht.
+    case S3 = 's3';
 
     public function label(): string {
         return (string) __('enums.backup.provider.' . $this->value);
@@ -42,6 +45,7 @@ enum BackupProvider: string implements HasLabel {
             self::Google => 'google-drive',
             self::Nextcloud => 'nextcloud',
             self::Webdav => 'webdav',
+            self::S3 => 's3',
         };
     }
 }
