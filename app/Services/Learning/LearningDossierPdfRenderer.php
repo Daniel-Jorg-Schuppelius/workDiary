@@ -30,8 +30,9 @@ class LearningDossierPdfRenderer {
     ) {}
 
     /** @param  Collection<int, User>  $users */
-    public function output(Organization $organization, Collection $users, Carbon $asOf, bool $named, string $reason = ''): string {
-        $payload = $this->dossier->exportPayload($organization, $users, $asOf);
+    public function output(Organization $organization, Collection $users, Carbon $asOf, bool $named, string $reason = '', ?Carbon $asOfTo = null): string {
+        $asOfTo ??= $asOf;
+        $payload = $this->dossier->exportPayload($organization, $users, $asOf, $asOfTo);
 
         return app(DocumentDesignRenderer::class)->renderPdf(
             RenderDocumentKind::Report,
@@ -39,6 +40,7 @@ class LearningDossierPdfRenderer {
             [
                 'organization' => $organization,
                 'asOf' => $asOf,
+                'asOfTo' => $asOfTo,
                 'named' => $named,
                 'reason' => $reason,
                 'summary' => $this->dossier->coverageSummary($users, $asOf),

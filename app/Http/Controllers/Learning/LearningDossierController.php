@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Learning;
 
 use App\Enums\User\Permission;
-use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, Team, User};
 use App\Services\Learning\{LearningDossierPdfRenderer, QualificationDossierService};
@@ -36,6 +36,7 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  */
 class LearningDossierController extends Controller {
     use ResolvesCurrentOrganization;
+    use ResolvesGlobalDateRange;
 
     public function __construct(
         private readonly QualificationDossierService $dossier,
@@ -45,53 +46,55 @@ class LearningDossierController extends Controller {
     public function index(Request $request): View {
         Gate::authorize(Permission::LearningManage->value);
 
-        $asOf = $this->asOf($request);
+        [$from, $to] = $this->period();
         $team = $this->team($request);
         $users = $this->users($team);
         $named = $this->namedRequested($request);
 
-        $rows = $named ? $this->dossier->forUsers($users, $asOf) : [];
+        $rows = $named ? $this->dossier->forUsers($users, $from, $to) : [];
 
         if ($named) {
-            $this->recordNamedAccess($request, $users->count(), $asOf);
+            $this->recordNamedAccess($request, $users->count(), $from, $to);
         }
 
         return view('learning.dossier.index', [
-            'asOf' => $asOf,
+            'from' => $from,
+            'to' => $to,
             'teams' => Team::query()->orderBy('name')->get(),
             'teamSqid' => $team?->sqid,
             'users' => $users,
             'named' => $named,
             'reason' => (string) $request->string('reason'),
             'rows' => $rows,
-            'summary' => $this->dossier->coverageSummary($users, $asOf),
+            'summary' => $this->dossier->coverageSummary($users, $from, $to),
         ]);
     }
 
-    /** Die Mappe als PDF — trägt Stichtag, Anlass und den Prüfhash. */
+    /** Die Mappe als PDF — trägt Zeitraum, Anlass und den Prüfhash. */
     public function pdf(Request $request): Response {
         Gate::authorize(Permission::LearningManage->value);
 
-        $asOf = $this->asOf($request);
+        [$from, $to] = $this->period();
         $team = $this->team($request);
         $users = $this->users($team);
         $named = $this->namedRequested($request);
 
         if ($named) {
-            $this->recordNamedAccess($request, $users->count(), $asOf);
+            $this->recordNamedAccess($request, $users->count(), $from, $to);
         }
 
         $content = $this->pdf->output(
             $this->currentOrganization(),
             $users,
-            $asOf,
+            $from,
             $named,
             (string) $request->string('reason'),
+            $to,
         );
 
         return response($content, 200, [
             'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="nachweismappe-' . $asOf->toDateString() . '.pdf"',
+            'Content-Disposition' => 'attachment; filename="nachweismappe-' . $from->toDateString() . '.pdf"',
         ]);
     }
 
@@ -99,28 +102,37 @@ class LearningDossierController extends Controller {
     public function json(Request $request): StreamedResponse {
         Gate::authorize(Permission::LearningManage->value);
 
-        $asOf = $this->asOf($request);
+        [$from, $to] = $this->period();
         $users = $this->users($this->team($request));
 
-        $this->recordNamedAccess($request, $users->count(), $asOf);
+        $this->recordNamedAccess($request, $users->count(), $from, $to);
 
-        $payload = $this->dossier->exportPayload($this->currentOrganization(), $users, $asOf);
+        $payload = $this->dossier->exportPayload($this->currentOrganization(), $users, $from, $to);
 
         return response()->streamDownload(
             static function () use ($payload): void {
                 echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
             },
-            'nachweismappe-' . $asOf->toDateString() . '.json',
+            'nachweismappe-' . $from->toDateString() . '.json',
             ['Content-Type' => 'application/json']
         );
     }
 
-    private function asOf(Request $request): Carbon {
-        $value = (string) $request->string('as_of');
+    /**
+     * Betrachteter Zeitraum — der globale Kopf-Zeitraum.
+     *
+     * Vorher hatte die Seite einen eigenen Stichtag und daneben den
+     * wirkungslosen Kopf-Regler: zwei Datumsbedienelemente, von denen eines
+     * nichts tat. Der Zeitraum kann mehr als der Stichtag, nicht weniger —
+     * ein Nachweis deckt ihn ganz, teilweise oder gar nicht, und die
+     * Punktaussage ist der Sonderfall `von == bis`.
+     *
+     * @return array{0: Carbon, 1: Carbon}
+     */
+    private function period(): array {
+        [$from, $to] = $this->globalDateRangeBounds();
 
-        // Ein unlesbarer Stichtag darf nicht stillschweigend zu „heute"
-        // werden — dann stünde eine falsche Aussage im Nachweis.
-        return $value !== '' ? Carbon::parse($value)->startOfDay() : Carbon::today();
+        return [Carbon::parse($from->toDateString())->startOfDay(), Carbon::parse($to->toDateString())->startOfDay()];
     }
 
     private function team(Request $request): ?Team {
@@ -156,7 +168,7 @@ class LearningDossierController extends Controller {
      * Eine namentliche Auskunft ist eine Weitergabe personenbezogener Daten
      * — wer sie wann und **warum** angefordert hat, gehört ins Protokoll.
      */
-    private function recordNamedAccess(Request $request, int $people, Carbon $asOf): void {
+    private function recordNamedAccess(Request $request, int $people, Carbon $from, Carbon $to): void {
         $organization = $this->currentOrganization();
 
         AuditLog::query()->create([
@@ -168,7 +180,10 @@ class LearningDossierController extends Controller {
             'changes' => [
                 'reason' => trim((string) $request->string('reason')),
                 'people' => $people,
-                'as_of' => $asOf->toDateString(),
+                // Zeitraum statt Stichtag: das Protokoll muss festhalten,
+                // WORUEBER Auskunft gegeben wurde, nicht nur wann.
+                'as_of' => $from->toDateString(),
+                'as_of_to' => $to->toDateString(),
             ],
         ]);
     }

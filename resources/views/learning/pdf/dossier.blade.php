@@ -15,7 +15,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
-    <title>{{ __('learning.pdf.dossier_title') }} — {{ $asOf->translatedFormat('d.m.Y') }}</title>
+    <title>{{ __('learning.pdf.dossier_title') }} — {{ $asOf->translatedFormat('d.m.Y') }}@if ($asOfTo->notEqualTo($asOf))–{{ $asOfTo->translatedFormat('d.m.Y') }}@endif</title>
     <style>
         body { font-family: DejaVu Sans, sans-serif; font-size: 11px; color: #111; }
         h1 { font-size: 19px; margin: 0 0 2px; }
@@ -35,7 +35,8 @@
 <body>
     <h1>{{ __('learning.pdf.dossier_title') }}</h1>
     <div class="meta">
-        {{ $organization->name }} — {{ __('learning.field.as_of') }}: <strong>{{ $asOf->translatedFormat('d.m.Y') }}</strong>
+        {{ $organization->name }} — {{ __('learning.field.period') }}:
+        <strong>{{ $asOf->translatedFormat('d.m.Y') }}@if ($asOfTo->notEqualTo($asOf)) – {{ $asOfTo->translatedFormat('d.m.Y') }}@endif</strong>
         @if ($named) — {{ __('learning.pdf.named_reason') }}: {{ $reason }} @endif
     </div>
 

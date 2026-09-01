@@ -34,14 +34,12 @@
          ziehen sich ueber die volle Breite und sprengen die Leiste.
          Beschriftung nach Komponentenregel: Selects tragen ihre Bedeutung in
          der „Alle …"-Option (Label sr-only), Eingabefelder nicht (Label
-         inline davor). --}}
-    <x-filter-bar :action="route('learning.dossier.index')" :reset="route('learning.dossier.index')">
-        <x-filter-field :label="__('learning.field.as_of')" for="dossier-as-of" inline>
-            <input id="dossier-as-of" type="date" name="as_of"
-                   value="{{ request('as_of', $asOf->toDateString()) }}"
-                   class="input input-bordered input-sm shrink-0">
-        </x-filter-field>
+         inline davor).
 
+         KEIN eigenes Datumsfeld mehr: Der Zeitraum kommt aus dem Kopfbereich.
+         Vorher standen hier ein Stichtag und dort ein wirkungsloser Regler —
+         zwei Bedienelemente fuer dieselbe Frage, eines davon ohne Wirkung. --}}
+    <x-filter-bar :action="route('learning.dossier.index')" :reset="route('learning.dossier.index')">
         <x-filter-field :label="__('learning.field.team')" for="dossier-team" class="min-w-44 flex-1">
             <select id="dossier-team" name="team_id" class="select select-bordered select-sm w-full">
                 <option value="">{{ __('learning.field.all_people') }}</option>
@@ -70,12 +68,17 @@
                          :title="__('learning.help.disclosure_reason')" />
     </x-filter-bar>
 
-    {{-- Die Ampel bewertet die Besetzbarkeit, nicht die Person. --}}
-    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+    {{-- Die Ampel bewertet die Besetzbarkeit ueber den GANZEN Zeitraum, nicht
+         die Person: gruen = durchgehend gedeckt, gelb = nur einen Teil davon
+         (ein Nachweis laeuft mittendrin ab oder beginnt erst spaeter),
+         rot = im Zeitraum gar nicht gedeckt. --}}
+    <div class="grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
         <x-kpi-tile icon="groups" :label="__('learning.field.people')" :value="$summary['people']" />
         <x-kpi-tile icon="verified" :label="__('learning.field.ready')" :value="$summary['ready']"
                     :tone="$summary['tone']" />
-        <x-kpi-tile icon="event_busy" :label="__('learning.field.expired')" :value="$summary['expired']"
+        <x-kpi-tile icon="timelapse" :label="__('learning.field.partial')" :value="$summary['partial']"
+                    :tone="$summary['partial'] > 0 ? 'warning' : 'success'" />
+        <x-kpi-tile icon="event_busy" :label="__('learning.field.uncovered')" :value="$summary['expired']"
                     :tone="$summary['expired'] > 0 ? 'error' : 'success'" />
         <x-kpi-tile icon="pending_actions" :label="__('learning.field.open_obligations')"
                     :value="$summary['open_obligations']"
@@ -88,6 +91,11 @@
             <span>{{ __('learning.help.dossier_aggregated') }}</span>
         </div>
     @else
+        {{-- Legende: eine Farbskala ohne Erklaerung ist eine Ratefrage — und
+             fuer Farbfehlsichtige unbrauchbar. Die Zahl „voll/gesamt" steht
+             deshalb im Badge, die Farbe ist nur die Zusammenfassung. --}}
+        <p class="text-xs text-muted">{{ __('learning.help.coverage_legend') }}</p>
+
         <x-table scroll="flex" hover :caption="__('learning.title.dossier')">
             <x-slot:head>
                 <tr>
@@ -99,15 +107,41 @@
                 </tr>
             </x-slot:head>
 
+            @php
+                // Kein `use` hier: Blade schiebt @php-Bloecke in den
+                // Kontrollfluss der Seite, dort ist ein Import ein Parse-Fehler.
+                $dossierService = app(\App\Services\Learning\QualificationDossierService::class);
+                $covFull = \App\Services\Learning\QualificationDossierService::COVERAGE_FULL;
+                $covPartial = \App\Services\Learning\QualificationDossierService::COVERAGE_PARTIAL;
+
+                // Zelle = schlechteste Deckung ihrer Nachweise. Die Zahl sagt
+                // „so viele decken den ganzen Zeitraum", die Farbe sagt, was
+                // mit dem Rest ist.
+                $tone = static fn (string $coverage): string => match ($coverage) {
+                    $covFull => 'success',
+                    $covPartial => 'warning',
+                    default => 'error',
+                };
+                $full = static fn (array $entries): int => count(array_filter(
+                    $entries,
+                    static fn (array $e): bool => ($e['coverage'] ?? null) === $covFull,
+                ));
+            @endphp
             @forelse ($rows as $row)
-                @php
-                    $valid = static fn (array $entries): int => count(array_filter($entries, static fn (array $e): bool => (bool) ($e['valid_on'] ?? false)));
-                @endphp
                 <tr>
-                    <td>{{ $row['user']->name }}</td>
-                    <td>{{ $valid($row['qualifications']) }} / {{ count($row['qualifications']) }}</td>
-                    <td>{{ $valid($row['instructions']) }} / {{ count($row['instructions']) }}</td>
-                    <td>{{ $valid($row['certificates']) }} / {{ count($row['certificates']) }}</td>
+                    <td class="font-medium">{{ $row['user']->name }}</td>
+                    @foreach (['qualifications', 'instructions', 'certificates'] as $area)
+                        @php($entries = $row[$area])
+                        <td>
+                            @if ($entries === [])
+                                <span class="text-muted">–</span>
+                            @else
+                                <x-status-badge :tone="$tone($dossierService->worstCoverage($entries))" size="sm">
+                                    {{ $full($entries) }} / {{ count($entries) }}
+                                </x-status-badge>
+                            @endif
+                        </td>
+                    @endforeach
                     <td class="text-right">
                         @if ($row['open_obligations'] > 0)
                             <x-status-badge tone="warning" size="sm">{{ $row['open_obligations'] }}</x-status-badge>

@@ -42,13 +42,17 @@ use Illuminate\Support\{Carbon, Collection};
  */
 class QualificationDossierService {
     /**
-     * Namentliche Mappe für eine Personengruppe zum Stichtag.
+     * Namentliche Mappe für eine Personengruppe über einen Zeitraum.
+     *
+     * Ohne `$to` ist der Zeitraum ein einzelner Tag — die frühere
+     * Stichtags-Betrachtung als Sonderfall.
      *
      * @param  Collection<int, User>  $users
-     * @return list<array{user: User, qualifications: list<array<string, mixed>>, instructions: list<array<string, mixed>>, certificates: list<array<string, mixed>>, open_obligations: int}>
+     * @return list<array{user: User, qualifications: list<array<string, mixed>>, instructions: list<array<string, mixed>>, certificates: list<array<string, mixed>>, open_obligations: int, coverage: string}>
      */
-    public function forUsers(Collection $users, ?Carbon $on = null): array {
+    public function forUsers(Collection $users, ?Carbon $on = null, ?Carbon $to = null): array {
         $on ??= Carbon::today();
+        $to ??= $on;
         $userIds = $users->pluck('id');
 
         $qualifications = UserQualification::query()
@@ -80,10 +84,14 @@ class QualificationDossierService {
         foreach ($users as $user) {
             $rows[] = [
                 'user' => $user,
-                'qualifications' => $this->qualificationRows($qualifications->get($user->id, collect()), $on),
-                'instructions' => $this->instructionRows($instructions->get($user->id, collect()), $on),
-                'certificates' => $this->certificateRows($certificates->get($user->id, collect()), $on),
-                'open_obligations' => $obligations->get($user->id, collect())->count(),
+                'qualifications' => $q = $this->qualificationRows($qualifications->get($user->id, collect()), $on, $to),
+                'instructions' => $i = $this->instructionRows($instructions->get($user->id, collect()), $on, $to),
+                'certificates' => $c = $this->certificateRows($certificates->get($user->id, collect()), $on, $to),
+                'open_obligations' => $open = $obligations->get($user->id, collect())->count(),
+                // Zeilen-Ampel: schlechteste Deckung über alle Nachweisarten;
+                // ein offenes Pflicht-Soll drückt sie höchstens auf „teilweise",
+                // denn es sagt nichts über die vorhandenen Nachweise aus.
+                'coverage' => $this->rowCoverage([...$q, ...$i, ...$c], $open),
             ];
         }
 
@@ -110,7 +118,8 @@ class QualificationDossierService {
         $earliest = null;
 
         foreach ($entries as $entry) {
-            if (! $this->isValidOn($entry->valid_from, $entry->valid_until, $on)) {
+            // Punktbetrachtung: der entartete Zeitraum `on..on`.
+            if ($this->coverage($entry->valid_from, $entry->valid_until, $on, $on) !== self::COVERAGE_FULL) {
                 continue;
             }
 
@@ -143,17 +152,19 @@ class QualificationDossierService {
      * @param  Collection<int, User>  $users
      * @return array<string, mixed>
      */
-    public function exportPayload(Organization $organization, Collection $users, ?Carbon $on = null): array {
+    public function exportPayload(Organization $organization, Collection $users, ?Carbon $on = null, ?Carbon $to = null): array {
         $on ??= Carbon::today();
+        $to ??= $on;
 
         $people = [];
-        foreach ($this->forUsers($users, $on) as $row) {
+        foreach ($this->forUsers($users, $on, $to) as $row) {
             $people[] = [
                 'name' => $row['user']->name,
                 'qualifications' => $row['qualifications'],
                 'instructions' => $row['instructions'],
                 'certificates' => $row['certificates'],
                 'open_obligations' => $row['open_obligations'],
+                'coverage' => $row['coverage'],
             ];
         }
 
@@ -165,7 +176,11 @@ class QualificationDossierService {
             'format' => 'workdiary.learning.dossier',
             'format_version' => 1,
             'organization' => $organization->name,
+            // Zeitraum statt Stichtag (MVP-750, 2026-09-01): `as_of` bleibt
+            // als Beginn erhalten, damit bestehende Auswertungen des Formats
+            // weiterlesen koennen; `as_of_to` ist neu.
             'as_of' => $on->toDateString(),
+            'as_of_to' => $to->toDateString(),
             'people' => $people,
         ];
 
@@ -178,14 +193,15 @@ class QualificationDossierService {
      * @param  Collection<int, UserQualification>  $entries
      * @return list<array<string, mixed>>
      */
-    private function qualificationRows(Collection $entries, Carbon $on): array {
+    private function qualificationRows(Collection $entries, Carbon $on, Carbon $to): array {
         $rows = [];
         foreach ($entries as $entry) {
             $rows[] = [
                 'name' => (string) ($entry->qualification->name ?? ''),
                 'valid_from' => $entry->valid_from?->toDateString(),
                 'valid_until' => $entry->valid_until?->toDateString(),
-                'valid_on' => $this->isValidOn($entry->valid_from, $entry->valid_until, $on),
+                'valid_on' => $this->coverage($entry->valid_from, $entry->valid_until, $on, $to) === self::COVERAGE_FULL,
+                'coverage' => $this->coverage($entry->valid_from, $entry->valid_until, $on, $to),
             ];
         }
 
@@ -196,14 +212,15 @@ class QualificationDossierService {
      * @param  Collection<int, SafetyInstructionParticipant>  $entries
      * @return list<array<string, mixed>>
      */
-    private function instructionRows(Collection $entries, Carbon $on): array {
+    private function instructionRows(Collection $entries, Carbon $on, Carbon $to): array {
         $rows = [];
         foreach ($entries as $entry) {
             $heldOn = $entry->instruction->held_on ?? null;
 
-            // Zum Stichtag zählt nur, was bis dahin stattgefunden hat —
+            // Was erst nach dem Zeitraum stattfindet, deckt ihn nicht —
             // eine spätere Unterweisung heilt keinen früheren Zeitpunkt.
-            if ($heldOn !== null && $heldOn->greaterThan($on)) {
+            // Innerhalb des Zeitraums gehaltene zählen als Teildeckung.
+            if ($heldOn !== null && $heldOn->greaterThan($to)) {
                 continue;
             }
 
@@ -212,7 +229,8 @@ class QualificationDossierService {
                 'held_on' => $heldOn?->toDateString(),
                 'signed_at' => $entry->signed_at?->toDateString(),
                 'next_due_on' => $entry->next_due_on?->toDateString(),
-                'valid_on' => $entry->next_due_on === null || $entry->next_due_on->greaterThanOrEqualTo($on),
+                'valid_on' => $this->coverage($heldOn, $entry->next_due_on, $on, $to) === self::COVERAGE_FULL,
+                'coverage' => $this->coverage($heldOn, $entry->next_due_on, $on, $to),
             ];
         }
 
@@ -223,12 +241,12 @@ class QualificationDossierService {
      * @param  Collection<int, LearningCertificate>  $entries
      * @return list<array<string, mixed>>
      */
-    private function certificateRows(Collection $entries, Carbon $on): array {
+    private function certificateRows(Collection $entries, Carbon $on, Carbon $to): array {
         $rows = [];
         foreach ($entries as $entry) {
             // `issued_on` ist Pflicht — ein Zertifikat ohne Ausstellungsdatum
             // gibt es nicht.
-            if ($entry->issued_on->greaterThan($on)) {
+            if ($entry->issued_on->greaterThan($to)) {
                 continue;
             }
 
@@ -236,6 +254,10 @@ class QualificationDossierService {
             // nicht-nullbar erscheinen, obwohl die Spalte nullable ist.
             $revoked = $entry->getAttribute('revoked_at');
             $revokedOn = $revoked instanceof Carbon && $revoked->lessThanOrEqualTo($on);
+            // Ein Widerruf IM Zeitraum kappt die Gueltigkeit ab seinem Tag.
+            $effectiveUntil = $revoked instanceof Carbon && ! $revokedOn
+                ? ($entry->valid_until === null || $revoked->lessThan($entry->valid_until) ? $revoked : $entry->valid_until)
+                : $entry->valid_until;
 
             $rows[] = [
                 'course' => (string) ($entry->course->title ?? ''),
@@ -244,19 +266,88 @@ class QualificationDossierService {
                 'valid_until' => $entry->valid_until?->toDateString(),
                 // Ein Widerruf wirkt ab seinem Zeitpunkt, nicht rückwirkend.
                 'revoked' => $revokedOn,
-                'valid_on' => $this->isValidOn($entry->issued_on, $entry->valid_until, $on) && ! $revokedOn,
+                'valid_on' => ! $revokedOn && $this->coverage($entry->issued_on, $effectiveUntil, $on, $to) === self::COVERAGE_FULL,
+                'coverage' => $revokedOn
+                    ? self::COVERAGE_NONE
+                    : $this->coverage($entry->issued_on, $effectiveUntil, $on, $to),
             ];
         }
 
         return $rows;
     }
 
-    private function isValidOn(?Carbon $from, ?Carbon $until, Carbon $on): bool {
-        if ($from !== null && $from->greaterThan($on)) {
-            return false;
+    /** Nachweis deckt jeden Tag des Zeitraums. */
+    public const COVERAGE_FULL = 'full';
+
+    /** Nachweis deckt einen Teil des Zeitraums — er beginnt spaeter oder laeuft vorher ab. */
+    public const COVERAGE_PARTIAL = 'partial';
+
+    /** Nachweis deckt keinen einzigen Tag des Zeitraums. */
+    public const COVERAGE_NONE = 'none';
+
+    /**
+     * Deckung eines Gueltigkeitsintervalls ueber den betrachteten Zeitraum.
+     *
+     * Der Stichtag ist der entartete Fall `von == bis`: dort gibt es nur
+     * `full` oder `none`, `partial` kann nicht auftreten. Deshalb ersetzt
+     * dieser Begriff die fruehere Punktbetrachtung, statt neben ihr zu
+     * stehen — zwei Fassungen derselben Regel laufen auseinander.
+     *
+     * `null` bei `$until` heisst unbefristet, `null` bei `$from` heisst „schon
+     * immer".
+     */
+    public function coverage(?Carbon $from, ?Carbon $until, Carbon $rangeFrom, Carbon $rangeTo): string {
+        $startsAfterRange = $from !== null && $from->greaterThan($rangeTo);
+        $endsBeforeRange = $until !== null && $until->lessThan($rangeFrom);
+
+        if ($startsAfterRange || $endsBeforeRange) {
+            return self::COVERAGE_NONE;
         }
 
-        return $until === null || $until->greaterThanOrEqualTo($on);
+        $startsInTime = $from === null || $from->lessThanOrEqualTo($rangeFrom);
+        $lastsThrough = $until === null || $until->greaterThanOrEqualTo($rangeTo);
+
+        return $startsInTime && $lastsThrough ? self::COVERAGE_FULL : self::COVERAGE_PARTIAL;
+    }
+
+    /**
+     * Ampel einer Personenzeile.
+     *
+     * Ein offenes Pflicht-Soll faerbt hoechstens gelb: Es sagt, dass etwas
+     * fehlt — nicht, dass ein vorhandener Nachweis nicht traegt. Rot bleibt
+     * dem Fall vorbehalten, dass ein Nachweis den Zeitraum gar nicht deckt.
+     *
+     * @param  list<array<string, mixed>>  $entries
+     */
+    private function rowCoverage(array $entries, int $openObligations): string {
+        $worst = $this->worstCoverage($entries);
+
+        if ($worst === self::COVERAGE_FULL && $openObligations > 0) {
+            return self::COVERAGE_PARTIAL;
+        }
+
+        return $worst;
+    }
+
+    /**
+     * Schlechteste Deckung einer Menge von Nachweisen — die Ampel einer
+     * Zelle: ein einziger ungedeckter Nachweis macht die Zelle rot.
+     *
+     * @param  list<array<string, mixed>>  $entries
+     */
+    public function worstCoverage(array $entries): string {
+        $worst = self::COVERAGE_FULL;
+        foreach ($entries as $entry) {
+            $value = (string) ($entry['coverage'] ?? self::COVERAGE_NONE);
+            if ($value === self::COVERAGE_NONE) {
+                return self::COVERAGE_NONE;
+            }
+            if ($value === self::COVERAGE_PARTIAL) {
+                $worst = self::COVERAGE_PARTIAL;
+            }
+        }
+
+        return $worst;
     }
 
     /**
@@ -268,55 +359,50 @@ class QualificationDossierService {
      * besetzen" braucht keine Namen.
      *
      * @param  Collection<int, User>  $users
-     * @return array{people: int, ready: int, expired: int, open_obligations: int, earliest_expiry: string|null, tone: string}
+     * @return array{people: int, ready: int, partial: int, expired: int, open_obligations: int, earliest_expiry: string|null, tone: string}
      */
-    public function coverageSummary(Collection $users, ?Carbon $on = null): array {
+    public function coverageSummary(Collection $users, ?Carbon $on = null, ?Carbon $to = null): array {
         $on ??= Carbon::today();
+        $to ??= $on;
 
         $ready = 0;
+        $partial = 0;
         $expired = 0;
         $open = 0;
         $earliest = null;
 
-        foreach ($this->forUsers($users, $on) as $row) {
-            $rowExpired = false;
-
+        foreach ($this->forUsers($users, $on, $to) as $row) {
             foreach (array_merge($row['qualifications'], $row['certificates']) as $entry) {
-                if (($entry['valid_on'] ?? false) !== true) {
-                    $rowExpired = true;
-
-                    continue;
-                }
-
+                // Frühestes Ablaufdatum: die Zahl, nach der in Angeboten
+                // gefragt wird („bis wann sind wir besetzbar?").
                 $until = $entry['valid_until'] ?? null;
-
                 if (is_string($until) && ($earliest === null || $until < $earliest)) {
                     $earliest = $until;
                 }
             }
 
-            $obligations = (int) $row['open_obligations'];
-            $open += $obligations;
+            $open += (int) $row['open_obligations'];
 
-            if ($rowExpired) {
-                $expired++;
-            }
-
-            if (! $rowExpired && $obligations === 0) {
-                $ready++;
-            }
+            match ($row['coverage']) {
+                self::COVERAGE_FULL => $ready++,
+                self::COVERAGE_PARTIAL => $partial++,
+                default => $expired++,
+            };
         }
 
         return [
             'people' => $users->count(),
             'ready' => $ready,
+            'partial' => $partial,
             'expired' => $expired,
             'open_obligations' => $open,
             'earliest_expiry' => $earliest,
-            // Die Ampel bewertet nicht die Person, sondern die Besetzbarkeit.
+            // Die Ampel bewertet nicht die Person, sondern die Besetzbarkeit
+            // über den GANZEN Zeitraum: teilweise gedeckt ist nicht besetzbar,
+            // sondern „nur bis …".
             'tone' => match (true) {
                 $expired > 0 => 'error',
-                $open > 0 => 'warning',
+                $partial > 0 || $open > 0 => 'warning',
                 default => 'success',
             },
         ];
