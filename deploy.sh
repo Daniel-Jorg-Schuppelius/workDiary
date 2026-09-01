@@ -39,6 +39,21 @@ finish_maintenance() {
 }
 trap 'finish_maintenance "$LINENO" "$BASH_COMMAND"' ERR
 
+# Liest einen Wert aus einer .env-artigen Datei. Fehlende Datei und fehlender
+# Schlüssel sind KEIN Fehler, sondern leere Ausgabe: unter `set -o pipefail`
+# reicht sonst der grep-Exit (1 = kein Treffer, 2 = Datei fehlt) durch die
+# Pipeline bis in die Zuweisung, und `set -e` beendet den Deploy mitten im
+# Lauf. Genau daran brach der Deploy am Schritt "Public Key ermitteln" ab,
+# obwohl für den fehlenden Schlüssel ein Fallback vorgesehen war.
+# `tail -1` ist Absicht (nicht head): bei doppeltem Schlüssel in derselben
+# Datei gewinnt auch bei phpdotenv der letzte Eintrag — die Prüfung soll das
+# sehen, was Laravel später wirklich lädt.
+env_value() {
+    local key="$1" file="$2"
+    [ -r "$file" ] || return 0
+    grep -E "^[[:space:]]*${key}=" "$file" 2>/dev/null | tail -1 | cut -d= -f2- | tr -d "[:space:]\"'" || true
+}
+
 # Das Pre-Deploy-Backup bleibt beim Webspace: der Deploy läuft als Web-User
 # (ISPConfig: web141/web143 …), das systemweite /var/backups/workdiary aus der
 # conf gehört dagegen root und ist für ihn nicht beschreibbar. Backup.sh gibt
@@ -115,8 +130,8 @@ echo "→ Lizenz-Signierschlüssel absichern (falls vorhanden)"
 # Konfigurationswerten an jeden Besucher. Lieber ein abgebrochenes Deploy als
 # eine Instanz, die ihre eigenen Geheimnisse ausgibt.
 if [ -f .env ]; then
-    _app_env="$(grep -E '^APP_ENV=' .env | tail -1 | cut -d= -f2- | tr -d '"'"'"'[:space:]')"
-    _app_debug="$(grep -E '^APP_DEBUG=' .env | tail -1 | cut -d= -f2- | tr -d '"'"'"'[:space:]' | tr 'A-Z' 'a-z')"
+    _app_env="$(env_value APP_ENV .env)"
+    _app_debug="$(env_value APP_DEBUG .env | tr 'A-Z' 'a-z')"
     if [ "$_app_env" = "production" ] && [ "$_app_debug" = "true" ]; then
         echo "ABBRUCH: APP_ENV=production mit APP_DEBUG=true — bitte APP_DEBUG=false setzen." >&2
         exit 1
@@ -191,8 +206,10 @@ echo "→ Queue-Worker neu starten (laufende Worker laden den neuen Code)"
 php artisan queue:restart || true
 
 echo "→ Public Key ermitteln (license-keys.env, sonst .env)"
-PUBKEY="$(grep -E '^[[:space:]]*LICENSE_PUBLIC_KEY=' storage/license-keys.env 2>/dev/null | head -1 | cut -d= -f2- | tr -d " \"'")"
-[ -z "$PUBKEY" ] && PUBKEY="$(grep -E '^[[:space:]]*LICENSE_PUBLIC_KEY=' .env 2>/dev/null | head -1 | cut -d= -f2- | tr -d " \"'")"
+PUBKEY="$(env_value LICENSE_PUBLIC_KEY storage/license-keys.env)"
+if [ -z "$PUBKEY" ]; then
+    PUBKEY="$(env_value LICENSE_PUBLIC_KEY .env)"
+fi
 
 echo "→ Lizenzdateien neu sealen"
 if [ -n "$PUBKEY" ]; then
