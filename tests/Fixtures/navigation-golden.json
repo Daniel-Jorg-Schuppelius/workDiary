@@ -312,6 +312,8 @@
         "sections_focus_finance": [
             "travel-expenses",
             "sales",
+            "asset-finance",
+            "contracts",
             "reports",
             "archive"
         ]
