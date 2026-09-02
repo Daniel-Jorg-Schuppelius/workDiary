@@ -69,9 +69,13 @@ jobs:
             composer-${{ runner.os }}-php-8.4-
 
       - name: Install dependencies (incl. php-financial-formats, wenn Token vorhanden)
-        env:
-          COMPOSER_AUTH: '{"github-oauth":{"github.com":"${{ secrets.FINANCIAL_FORMATS_TOKEN }}"}}'
         run: |
+          # COMPOSER_AUTH nur mit vorhandenem Token setzen: ein leerer
+          # github-oauth-Eintrag lässt composer JEDEN github.com-Download
+          # mit "Could not authenticate" abbrechen (Nightly-Dauerrot 08/2026).
+          if [ -n "$FINANCIAL_FORMATS_TOKEN" ]; then
+            export COMPOSER_AUTH='{"github-oauth":{"github.com":"'"$FINANCIAL_FORMATS_TOKEN"'"}}'
+          fi
           if [ -n "$FINANCIAL_FORMATS_TOKEN" ]; then
             cat > composer.local.json <<'JSON'
           {

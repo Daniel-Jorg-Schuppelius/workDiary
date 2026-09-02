@@ -52,12 +52,9 @@ class DateStringBoundRuleTest extends TestCase {
      * @var array<string, string> Regex → Kurzbeschreibung
      */
     private const FORBIDDEN = [
-        '/->(?:or)?[wW]hereBetween\s*\(.*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))\s*\]/'
-            => 'BETWEEN-Obergrenze als Y-m-d-String',
-        '/\'(?:<=|>)\'\s*,\s*.*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))/'
-            => "'<='/'>' gegen Y-m-d-String",
-        '/->(?:or)?[wW]here\s*\(\s*\'[A-Za-z0-9_.]+\'\s*,\s*[^\',\n][^,\n]*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))\s*\)/'
-            => 'Gleichheit gegen Y-m-d-String',
+        '/->(?:or)?[wW]hereBetween\s*\(.*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))\s*\]/' => 'BETWEEN-Obergrenze als Y-m-d-String',
+        '/\'(?:<=|>)\'\s*,\s*.*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))/' => "'<='/'>' gegen Y-m-d-String",
+        '/->(?:or)?[wW]here\s*\(\s*\'[A-Za-z0-9_.]+\'\s*,\s*[^\',\n][^,\n]*(?:->toDateString\(\)|->format\(\'Y-m-d\'\))\s*\)/' => 'Gleichheit gegen Y-m-d-String',
     ];
 
     public function test_no_date_string_upper_bounds(): void {

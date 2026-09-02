@@ -197,6 +197,7 @@ class IcsFeedService {
             ->uniqueIdentifier(self::shiftUid($shift))
             ->startsAt($start->toDateTimeImmutable())
             ->endsAt($end->toDateTimeImmutable())
+            ->createdAt(($shift->updated_at ?? $shift->created_at ?? $start)->toDateTimeImmutable())
             ->withoutTimezone();
 
         return Calendar::create((string) $label)
@@ -216,7 +217,9 @@ class IcsFeedService {
             ->uniqueIdentifier(self::vacationUid($vacation))
             ->fullDay()
             ->startsAt($vacation->start_date->copy()->toDateTimeImmutable())
-            ->endsAt($vacation->end_date->copy()->addDay()->toDateTimeImmutable());
+            ->endsAt($vacation->end_date->copy()->addDay()->toDateTimeImmutable())
+            // DTSTAMP an den Datensatz binden — wie beim Schicht-Dokument.
+            ->createdAt(($vacation->updated_at ?? $vacation->created_at ?? $vacation->start_date)->toDateTimeImmutable());
 
         return Calendar::create($name)
             ->productIdentifier((string) config('events.ics.product_id', '-//workDiary//Schedule//DE'))

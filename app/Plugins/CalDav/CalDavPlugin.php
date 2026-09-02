@@ -156,6 +156,7 @@ class CalDavPlugin extends AbstractPlugin implements CalendarPublisher {
                 ->uniqueIdentifier($item->uid)
                 ->startsAt($item->start)
                 ->endsAt($item->end)
+                ->createdAt($item->start)
                 ->withoutTimezone();
             if ($item->description !== null && $item->description !== '') {
                 $vevent->description($item->description);
