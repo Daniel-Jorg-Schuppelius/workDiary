@@ -16,6 +16,7 @@ use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\{Attachment, Attendance, AuditLog, MonthClosure, Organization, TimeEntry, User};
 use App\Services\Compliance\AttendanceComplianceChecker;
+use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Builders\CSVDocumentBuilder;
@@ -131,7 +132,7 @@ class MonthClosureBundleService {
             ->withoutGlobalScopes()
             ->where('organization_id', $closure->organization_id)
             ->where('user_id', $userId)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->with('project:id,name')
             ->orderBy('date')->orderBy('id')
             ->get()
@@ -152,7 +153,7 @@ class MonthClosureBundleService {
             ->withoutGlobalScopes()
             ->where('organization_id', $closure->organization_id)
             ->where('user_id', $userId)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->orderBy('date')->orderBy('id')
             ->get();
         foreach ($attendances as $attendance) {

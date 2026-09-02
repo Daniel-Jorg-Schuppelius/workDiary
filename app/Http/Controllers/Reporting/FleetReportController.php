@@ -16,6 +16,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportSco
 use App\Models\{EnergyLog, TravelLog, Vehicle};
 use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -90,7 +91,7 @@ class FleetReportController extends Controller {
     private function aggregate(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
         $travelQuery = TravelLog::query()
             ->whereNotNull('vehicle_id')
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->select('vehicle_id', 'distance_km', 'reimbursement_total', 'user_id');
         $energyQuery = EnergyLog::query()
             ->whereBetween('started_at', [$from, $to])
@@ -235,7 +236,7 @@ class FleetReportController extends Controller {
         $granularity = $this->bucketGranularity($from, $to);
         $q = TravelLog::query()
             ->whereNotNull('vehicle_id')
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->select('date', 'distance_km');
         if ($scope === 'mine') {
             $q->where('user_id', $userId);

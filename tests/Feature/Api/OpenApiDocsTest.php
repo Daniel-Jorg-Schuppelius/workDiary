@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Api;
 
 use CommonToolkit\Helper\Data\JsonHelper;
+use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Artisan, Route};
 use Tests\TestCase;
 
@@ -26,6 +27,11 @@ use Tests\TestCase;
  * Duplikate gelten über die dokumentierte PUT-Operation als abgedeckt.
  */
 class OpenApiDocsTest extends TestCase {
+    // Seit S-61 (Doku hinter der Anmeldung) legt der Test User an — ohne den
+    // Trait schaltet ParaTest nicht auf die Worker-DB um und der Insert läuft
+    // in die leere Basis-Datenbank.
+    use RefreshDatabase;
+
     /** Öffentliche Geräte-Ingest-Routen (Token im Pfad) — bewusst ohne Sanctum, im Dokument optional. */
     private const INGEST_ROUTES = ['api.patrol.scan', 'api.location.ingest', 'api.cti.webhook', 'api.terminal.ingest'];
 

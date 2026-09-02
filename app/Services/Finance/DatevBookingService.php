@@ -16,6 +16,7 @@ use App\Models\Finance\{DatevBookingBatch, DatevBookingEvent, DatevBookingSource
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\CryptoHelper;
 use DateTimeImmutable;
@@ -651,7 +652,7 @@ class DatevBookingService {
             $query->where($column, '>=', Carbon::parse($period['from'])->toDateString());
         }
         if (! empty($period['to'])) {
-            $query->where($column, '<=', Carbon::parse($period['to'])->toDateString());
+            $query->where($column, '<', DateRange::dayAfter(Carbon::parse($period['to'])));
         }
     }
 

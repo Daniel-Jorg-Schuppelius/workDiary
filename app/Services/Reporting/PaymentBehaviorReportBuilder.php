@@ -11,6 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\{Customer, Invoice};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
@@ -48,7 +49,7 @@ class PaymentBehaviorReportBuilder {
     public function build(CarbonImmutable $from, CarbonImmutable $to, ?int $customerId, array $excludedCustomerIds = []): array {
         $invoices = Invoice::query()
             ->whereNotNull('issued_on')
-            ->where('issued_on', '<=', $to->toDateString())
+            ->where('issued_on', '<', DateRange::dayAfter($to))
             ->whereIn('type', [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL])
             ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))

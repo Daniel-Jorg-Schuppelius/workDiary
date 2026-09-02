@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesReportScope, ResolvesStandardReportFilters};
 use App\Models\Expense;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -52,7 +53,7 @@ class ExpenseReportController extends Controller {
 
         $query = Expense::query()
             ->with(['user:id,name', 'category:id,label,icon,color'])
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
+            ->whereBetween('date', DateRange::days($from, $to));
 
         if ($scope === 'mine') {
             $query->where('user_id', Auth::id());

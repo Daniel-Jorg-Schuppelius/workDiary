@@ -16,6 +16,7 @@ use App\Enums\Sales\{CommissionSettlementStatus, CommissionStatus};
 use App\Models\{Organization, User};
 use App\Models\Sales\{CommissionSettlementRun, InvoiceCommission};
 use App\Support\CsvExport;
+use App\Support\Query\DateRange;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Collection;
@@ -47,7 +48,7 @@ class CommissionSettlementService {
             ->where('organization_id', $organizationId)
             ->where('currency', $currency->value)
             ->open()
-            ->whereBetween('earned_on', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('earned_on', DateRange::days($start, $end))
             ->with(['user:id,name', 'invoice:id,number,customer_id', 'invoice.customer:id,name,company', 'rule:id,name'])
             ->orderBy('user_id')
             ->orderBy('earned_on')
@@ -129,7 +130,7 @@ class CommissionSettlementService {
         $overlap = CommissionSettlementRun::query()
             ->where('organization_id', $organization->id)
             ->where('currency', $currency->value)
-            ->where('period_start', '<=', $end->toDateString())
+            ->where('period_start', '<', DateRange::dayAfter($end))
             ->where('period_end', '>=', $start->toDateString())
             ->exists();
 

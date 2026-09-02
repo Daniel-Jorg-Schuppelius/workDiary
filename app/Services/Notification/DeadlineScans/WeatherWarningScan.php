@@ -20,6 +20,7 @@ use App\Models\Notification\NotificationRule;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Weather\WeatherService;
 use App\Support\{OrganizationContext, Setting};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
@@ -73,7 +74,7 @@ class WeatherWarningScan extends AbstractDeadlineScan {
             ->whereNull('cancelled_at')
             ->where(fn(Builder $q) => $q->whereNotNull('assigned_user_id')->orWhereNotNull('planned_at'))
             ->where(fn(Builder $q) => $q
-                ->whereBetween('scheduled_for', [$from->toDateString(), $to->toDateString()])
+                ->whereBetween('scheduled_for', DateRange::days($from, $to))
                 ->orWhere(fn(Builder $w) => $w->whereNull('scheduled_for')->whereBetween('start_at', [$from->startOfDay(), $to->endOfDay()])));
     }
 
@@ -118,7 +119,7 @@ class WeatherWarningScan extends AbstractDeadlineScan {
                 }
 
                 $warning = WeatherWarning::query()->firstOrCreate(
-                    ['diary_entry_id' => $entry->id, 'forecast_date' => $day, 'threshold' => $threshold->value],
+                    ['diary_entry_id' => $entry->id, 'forecast_date' => CarbonImmutable::parse($day), 'threshold' => $threshold->value],
                     [
                         'organization_id' => $organization->id,
                         'value' => round($value, 2),

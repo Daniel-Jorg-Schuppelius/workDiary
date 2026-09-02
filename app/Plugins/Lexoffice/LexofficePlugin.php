@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use App\Models\{Customer, ExternalReference, Organization, PluginSetting, Supplier, TimeEntry};
 use App\Plugins\{AbstractPlugin, PluginHealth};
 use App\Plugins\Contracts\{ContactSyncer, PaymentSyncer, Plugin, PluginCapability, SlotRenderer, TimeExporter};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use GuzzleHttp\Exception\ConnectException;
 use Throwable;
@@ -282,7 +283,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
     public function exportCustomerTime(Customer $customer, CarbonImmutable $from, CarbonImmutable $to): array {
         $entries = TimeEntry::query()
             ->whereHas('project', fn($q) => $q->where('customer_id', $customer->id))
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->where('billable', true)
             ->where('exported', false)
             ->with('project')

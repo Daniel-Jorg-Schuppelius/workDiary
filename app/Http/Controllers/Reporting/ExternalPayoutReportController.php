@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\{TimeEntry, User};
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\Request;
@@ -75,7 +76,7 @@ class ExternalPayoutReportController extends Controller {
             if ($model === CompensationModel::NachZeitaufwand) {
                 $minutes = (int) TimeEntry::query()
                     ->where('user_id', $user->id)
-                    ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                    ->whereBetween('date', DateRange::days($from, $to))
                     ->sum('minutes');
                 $rate = ($user->compensation_rate?->toFloat() ?? 0.0);
                 // Auf 2 Dezimalstellen runden (Geldbetrag), damit die Summe der
@@ -95,7 +96,7 @@ class ExternalPayoutReportController extends Controller {
                 } elseif ($interval === FlatInterval::ProEinsatz) {
                     $einsatzDays = TimeEntry::query()
                         ->where('user_id', $user->id)
-                        ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                        ->whereBetween('date', DateRange::days($from, $to))
                         ->distinct()
                         ->count('date');
                     $amount = $flat * $einsatzDays;
@@ -163,7 +164,7 @@ class ExternalPayoutReportController extends Controller {
         if ($timeUserIds !== []) {
             $entries = TimeEntry::query()
                 ->whereIn('user_id', $timeUserIds)
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->whereBetween('date', DateRange::days($from, $to))
                 ->get(['user_id', 'date', 'minutes']);
             foreach ($entries as $entry) {
                 $uid = (int) $entry->user_id;

@@ -11,6 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\{Qualification, TimeEntry, User};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -83,7 +84,7 @@ class CohortComparisonBuilder {
 
             $entriesByUser = TimeEntry::query()
                 ->whereIn('user_id', array_keys($acquiredByUser))
-                ->whereBetween('date', [$minDate->toDateString(), $maxDate->toDateString()])
+                ->whereBetween('date', DateRange::days($minDate, $maxDate))
                 ->get(['user_id', 'date', 'minutes', 'billable'])
                 ->groupBy(static fn (TimeEntry $e): int => (int) $e->user_id);
         }

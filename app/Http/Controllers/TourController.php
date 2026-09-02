@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUse
 use App\Http\Requests\SaveTourRequest;
 use App\Models\{Customer, DiaryEntry, Site, Tour, User, Vehicle};
 use App\Services\Routing\TourService;
+use App\Support\Query\DateRange;
 use App\Support\{Setting, SortableQuery};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -341,7 +342,7 @@ class TourController extends Controller {
             ->whereNotNull('address_lng')
             ->whereIn('status', [DiaryStatus::Open->value, DiaryStatus::Problem->value])
             ->where('is_archived', false)
-            ->whereBetween('scheduled_for', [$from->toDateString(), $to->toDateString()]);
+            ->whereBetween('scheduled_for', DateRange::days($from, $to));
         foreach ($openQuery->limit(500)->get(['id', 'title', 'address_lat', 'address_lng', 'address_city']) as $entry) {
             $markers[] = [
                 'lat' => (float) $entry->address_lat,

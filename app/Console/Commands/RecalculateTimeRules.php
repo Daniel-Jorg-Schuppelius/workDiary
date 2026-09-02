@@ -16,6 +16,7 @@ use App\Models\{Attendance, AuditLog, Organization, TimeExport, User};
 use App\Models\Scopes\OrganizationScope;
 use App\Models\Surcharge\{SurchargeRule, TimeRuleResult};
 use App\Services\Surcharge\TimeRuleEngine;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 
@@ -97,7 +98,7 @@ class RecalculateTimeRules extends Command {
         $persisted = TimeRuleResult::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $orgId)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->count();
 
         AuditLog::create([

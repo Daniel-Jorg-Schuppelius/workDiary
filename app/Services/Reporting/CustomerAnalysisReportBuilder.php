@@ -14,6 +14,7 @@ use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry};
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Cache;
 
@@ -111,7 +112,7 @@ class CustomerAnalysisReportBuilder {
         $timeSums = TimeEntry::query()
             ->join('projects', 'projects.id', '=', 'time_entries.project_id')
             ->whereIn('projects.customer_id', $customerIds)
-            ->whereBetween('time_entries.date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('time_entries.date', DateRange::days($from, $to))
             ->when($projectId !== null, fn($q) => $q->where('time_entries.project_id', $projectId))
             ->when($userId !== null, fn($q) => $q->where('time_entries.user_id', $userId))
             ->when($entryTypeId !== null, fn($q) => $q

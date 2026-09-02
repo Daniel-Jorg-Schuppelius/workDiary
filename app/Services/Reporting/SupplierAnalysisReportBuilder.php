@@ -14,6 +14,7 @@ use App\Enums\Procurement\PurchaseOrderStatus;
 use App\Models\{LexofficeVoucher, PurchaseOrder, Supplier};
 use App\Support\Billing\VoucherTypes;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -156,7 +157,7 @@ class SupplierAnalysisReportBuilder {
             ->whereNotNull('supplier_id')
             ->where('archived', false)
             ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('voucher_date', DateRange::days($from, $to))
             ->whereIn('voucher_type', self::EXPENSE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->get(['voucher_type', 'voucher_date', 'total_amount'])
@@ -193,7 +194,7 @@ class SupplierAnalysisReportBuilder {
             ->where('supplier_id', $supplierId)
             ->where('archived', false)
             ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('voucher_date', DateRange::days($from, $to))
             ->whereIn('voucher_type', self::EXPENSE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->get(['voucher_type', 'voucher_date', 'total_amount'])
@@ -230,7 +231,7 @@ class SupplierAnalysisReportBuilder {
             ->where('supplier_id', $supplierId)
             ->where('archived', false)
             ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('voucher_date', DateRange::days($from, $to))
             ->whereIn('voucher_type', self::EXPENSE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->get(['voucher_date'])
@@ -265,7 +266,7 @@ class SupplierAnalysisReportBuilder {
             ->whereNotNull('supplier_id')
             ->where('archived', false)
             ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('voucher_date', DateRange::days($from, $to))
             ->whereIn('voucher_type', self::EXPENSE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->get(['supplier_id', 'voucher_type', 'voucher_status', 'voucher_date', 'total_amount', 'open_amount'])

@@ -14,6 +14,7 @@ namespace App\Services\Finance\Gdpdu;
 
 use App\Models\{Expense, Invoice, Organization};
 use App\Models\Finance\PaymentAllocation;
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 
 /**
@@ -50,7 +51,7 @@ class PaymentAllocationsSection extends AbstractGdpduSection {
     public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         foreach (PaymentAllocation::query()
             ->where('payment_allocations.organization_id', $organization->id)
-            ->whereHas('transaction', fn ($q) => $q->whereBetween('booking_date', [$from->toDateString(), $to->toDateString()]))
+            ->whereHas('transaction', fn ($q) => $q->whereBetween('booking_date', DateRange::days($from, $to)))
             ->with(['transaction', 'allocatable'])
             ->orderBy('id')
             ->lazy() as $allocation) {

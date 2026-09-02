@@ -370,7 +370,7 @@ class DiaryEntry extends Model {
             $q->orWhere(function (Builder $sub) use ($from, $to): void {
                 $sub->where('mode', Mode::Window->value)
                     ->where('window_end_date', '>=', DateRange::day($from))
-                    ->where('window_start_date', '<=', DateRange::day($to));
+                    ->where('window_start_date', '<', DateRange::dayAfter($to));
             });
             $q->orWhereIn('mode', [Mode::Backlog->value, Mode::Recurring->value]);
         });

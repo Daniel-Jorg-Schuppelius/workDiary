@@ -17,6 +17,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardR
 use App\Models\{Organization, TravelLog, User, Vehicle};
 use App\Services\Compliance\{ComplianceScanService, DrivingTimeComplianceChecker, DrivingTimeRules};
 use App\Support\{Formats, Tz};
+use App\Support\Query\DateRange;
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\Request;
@@ -77,7 +78,7 @@ class DrivingTimeEvidenceExportController extends Controller {
                 ->whereIn('vehicle_id', array_keys($vehicleNames))
                 ->whereNotNull('started_at')
                 ->whereNotNull('ended_at')
-                ->whereBetween('date', [$loadFrom->toDateString(), $to->toDateString()])
+                ->whereBetween('date', DateRange::days($loadFrom, $to))
                 ->effective()
                 ->orderBy('started_at')
                 ->get(['id', 'user_id', 'vehicle_id', 'started_at', 'ended_at'])

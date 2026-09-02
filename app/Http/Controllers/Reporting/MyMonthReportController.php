@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Project, Task, TimeEntry};
+use App\Support\Query\DateRange;
 use App\Support\XlsxExport;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -60,7 +61,7 @@ class MyMonthReportController extends Controller {
         $entriesQuery = TimeEntry::query()
             ->with(['project.customer', 'task'])
             ->where('user_id', $userId)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->when($kind !== 'all', fn($q) => $q->where('kind', $kind))
             ->orderBy('date')
             ->orderBy('started_at')

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Gdpdu;
 
 use App\Models\{CashDailyClosing, Organization};
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 
 /**
@@ -49,7 +50,7 @@ class CashDailyClosingsSection extends AbstractGdpduSection {
         foreach (CashDailyClosing::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
-            ->whereBetween('closing_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('closing_date', DateRange::days($from, $to))
             ->with(['register:id,name,currency,opening_balance,opened_on', 'closedBy:id,name'])
             ->orderBy('cash_register_id')->orderBy('closing_date')->orderBy('id')
             ->lazy() as $closing) {

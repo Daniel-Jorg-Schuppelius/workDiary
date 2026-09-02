@@ -13,6 +13,7 @@ namespace App\Services\Event;
 use App\Enums\Event\ParticipantStatus;
 use App\Models\{Event, EventParticipant, User};
 use App\Notifications\Event\CertificateExpiryNotification;
+use App\Support\Query\DateRange;
 use Illuminate\Support\{Carbon, Collection};
 
 /**
@@ -65,7 +66,7 @@ class CertificateService {
         return EventParticipant::query()
             ->whereNotNull('certificate_expires_at')
             ->where('certificate_expires_at', '>=', $on->toDateString())
-            ->where('certificate_expires_at', '<=', $threshold->toDateString())
+            ->where('certificate_expires_at', '<', DateRange::dayAfter($threshold))
             ->get();
     }
 

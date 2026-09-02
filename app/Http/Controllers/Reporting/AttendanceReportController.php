@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Attendance, TimeEntry, User, WorkSchedule};
 use App\Services\Reporting\ReportFilters;
+use App\Support\Query\DateRange;
 use Carbon\{Carbon, CarbonImmutable, CarbonInterface, CarbonPeriod};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -107,7 +108,7 @@ class AttendanceReportController extends Controller {
 
         $attendances = Attendance::query()
             ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
             ->get(['user_id', 'date', 'duration_minutes']);
         if ($attendances->isEmpty()) {
@@ -151,7 +152,7 @@ class AttendanceReportController extends Controller {
         /** @var array<string, int> $minutesByDate */
         $minutesByDate = Attendance::query()
             ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
             ->selectRaw('date, COALESCE(SUM(duration_minutes), 0) as m')
             ->groupBy('date')
@@ -210,7 +211,7 @@ class AttendanceReportController extends Controller {
         /** @var array<int, int> $attMinByUser */
         $attMinByUser = Attendance::query()
             ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
             ->selectRaw('user_id, COALESCE(SUM(duration_minutes), 0) as m')
             ->groupBy('user_id')
@@ -221,7 +222,7 @@ class AttendanceReportController extends Controller {
         /** @var array<int, int> $teMinByUser */
         $teMinByUser = TimeEntry::query()
             ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->selectRaw('user_id, COALESCE(SUM(minutes), 0) as m')
             ->groupBy('user_id')
             ->pluck('m', 'user_id')
@@ -231,7 +232,7 @@ class AttendanceReportController extends Controller {
         /** @var Collection<int, WorkSchedule> $schedules */
         $schedules = WorkSchedule::query()
             ->whereIn('user_id', $userIds)
-            ->where('valid_from', '<=', $to->toDateString())
+            ->where('valid_from', '<', DateRange::dayAfter($to))
             ->where(function ($q) use ($from): void {
                 $q->whereNull('valid_to')->orWhere('valid_to', '>=', $from->toDateString());
             })

@@ -78,6 +78,7 @@ class LearningBooking extends Model {
     protected $casts = [
         'status' => LearningBookingStatus::class,
         'seats' => 'integer',
+        'unit_price' => 'decimal:2',
         'currency' => CurrencyCode::class,
         'requested_at' => 'datetime',
         'decided_at' => 'datetime',

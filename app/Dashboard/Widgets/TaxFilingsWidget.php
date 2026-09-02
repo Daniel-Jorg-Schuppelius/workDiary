@@ -61,7 +61,7 @@ class TaxFilingsWidget extends Widget {
         $obligations = AccountingFilingObligation::query()
             ->whereNull('submitted_at')
             ->whereNotNull('due_on')
-            ->where('due_on', '<=', DateRange::day(now()->addDays(self::WINDOW_DAYS)))
+            ->where('due_on', '<', DateRange::dayAfter(now()->addDays(self::WINDOW_DAYS)))
             ->orderBy('due_on')
             ->limit(5)
             ->get();

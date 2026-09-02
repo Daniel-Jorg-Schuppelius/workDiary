@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, WritesReportCsv};
 use App\Models\{TimeAccount, TimeAccountEntry, User};
+use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -69,7 +70,7 @@ class TimeAccountsReportController extends Controller {
         $sums = TimeAccountEntry::query()
             ->where('time_account_id', $account->getKey())
             ->whereIn('user_id', $users->pluck('id'))
-            ->where('booking_date', '<=', $to->toDateString())
+            ->where('booking_date', '<', DateRange::dayAfter($to))
             ->selectRaw('user_id, SUM(CASE WHEN booking_date < ? THEN quantity ELSE 0 END) AS opening, SUM(CASE WHEN booking_date >= ? THEN quantity ELSE 0 END) AS turnover', [$from->toDateString(), $from->toDateString()])
             ->groupBy('user_id')
             ->get()

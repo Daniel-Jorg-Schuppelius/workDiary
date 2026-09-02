@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Gdpdu;
 
 use App\Models\{CashEntry, Organization};
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 
 /**
@@ -50,7 +51,7 @@ class CashEntriesSection extends AbstractGdpduSection {
         foreach (CashEntry::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
-            ->whereBetween('booked_on', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('booked_on', DateRange::days($from, $to))
             ->with(['register:id,name', 'invoice:id,number', 'reversalOf:id,seq_no'])
             ->orderBy('cash_register_id')->orderBy('seq_no')->orderBy('id')
             ->lazy() as $entry) {

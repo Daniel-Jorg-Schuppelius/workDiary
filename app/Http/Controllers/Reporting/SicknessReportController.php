@@ -19,6 +19,7 @@ use App\Services\HolidayService;
 use App\Services\Reporting\ReportFilters;
 use App\Services\Sickness\ContinuedPaymentService;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -86,7 +87,7 @@ class SicknessReportController extends Controller {
         $q = SickLeave::query()
             ->whereNull('cancelled_at')
             ->where('end_date', '>=', $from->toDateString())
-            ->where('start_date', '<=', $to->toDateString());
+            ->where('start_date', '<', DateRange::dayAfter($to));
         if ($scope === 'mine') {
             $q->where('user_id', $userId);
         }

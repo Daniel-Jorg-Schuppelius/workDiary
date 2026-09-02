@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, Project, TimeEntry, User};
+use App\Support\Query\DateRange;
 use App\Support\{Sqid, XlsxExport};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -126,7 +127,7 @@ class ProjectInactiveReportController extends Controller {
             ->where('status', '!=', ProjectStatus::Archived->value)
             ->when($customerId !== null, fn($q) => $q->where('customer_id', $customerId))
             ->whereDoesntHave('timeEntries', function ($q) use ($from, $to): void {
-                $q->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
+                $q->whereBetween('date', DateRange::days($from, $to));
             })
             ->orderBy('name')
             ->get();

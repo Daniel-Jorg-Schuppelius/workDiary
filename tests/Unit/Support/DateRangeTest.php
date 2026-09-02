@@ -36,7 +36,9 @@ class DateRangeTest extends TestCase {
 
         $this->assertStringNotContainsString('date(', strtolower($query->toSql()));
         $this->assertStringContainsString('`booked_on` between ? and ?', $query->toSql());
-        $this->assertSame(['2026-01-01', '2026-12-31'], $query->getBindings());
+        // Obergrenze als Tagesende: hält den Grenztag auch dann in der Menge,
+        // wenn der date-Cast auf SQLite `Y-m-d 00:00:00` gespeichert hat.
+        $this->assertSame(['2026-01-01', '2026-12-31 23:59:59'], $query->getBindings());
     }
 
     /**
@@ -56,7 +58,8 @@ class DateRangeTest extends TestCase {
         $this->assertSame('2026-03-07', DateRange::day(CarbonImmutable::parse('2026-03-07 23:59:59')));
         $this->assertSame('2026-03-07 00:00:00', DateRange::dayStart('2026-03-07 18:15:00'));
         $this->assertSame('2026-03-08 00:00:00', DateRange::dayAfter('2026-03-07 18:15:00'));
-        $this->assertSame(['2026-03-01', '2026-03-31'], DateRange::days('2026-03-01', CarbonImmutable::parse('2026-03-31')));
+        $this->assertSame(['2026-03-01', '2026-03-31 23:59:59'], DateRange::days('2026-03-01', CarbonImmutable::parse('2026-03-31')));
+        $this->assertSame('2026-03-31 23:59:59', DateRange::dayEnd(CarbonImmutable::parse('2026-03-31 08:30:00')));
     }
 
     /** Monats-/Jahreswechsel: die obere Grenze rutscht korrekt weiter. */

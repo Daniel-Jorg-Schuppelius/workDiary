@@ -16,6 +16,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportSco
 use App\Models\{Customer, Invoice, TimeEntry};
 use App\Services\Reporting\{LexofficeRevenueMirror, ReportFilters};
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -109,7 +110,7 @@ class BillingReportController extends Controller {
 
         /** @var Collection<int, TimeEntry> $entries */
         $entries = $filters->applyToTimeEntryQuery(
-            TimeEntry::query()->whereBetween('date', [$filters->from->toDateString(), $filters->to->toDateString()])
+            TimeEntry::query()->whereBetween('date', DateRange::days($filters->from, $filters->to))
         )->get(['date', 'minutes', 'billable']);
 
         if ($entries->isEmpty()) {

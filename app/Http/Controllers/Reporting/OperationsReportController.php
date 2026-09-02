@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Customer, DiaryEntry, EntryType, Project, Task, Tour, User};
 use App\Services\Reporting\ReportFilters;
+use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -183,7 +184,7 @@ class OperationsReportController extends Controller {
             ->where(function ($w) use ($from, $to): void {
                 $w->whereBetween('created_at', [$from, $to])
                     ->orWhereBetween('updated_at', [$from, $to])
-                    ->orWhereBetween('due_date', [$from->toDateString(), $to->toDateString()]);
+                    ->orWhereBetween('due_date', DateRange::days($from, $to));
             })
             ->whereNull('archived_at');
         if ($scope === 'mine') {
@@ -253,7 +254,7 @@ class OperationsReportController extends Controller {
      * }
      */
     private function aggregateTours(CarbonImmutable $from, CarbonImmutable $to, string $scope, int $userId, ReportFilters $filters): array {
-        $q = Tour::query()->whereBetween('tour_date', [$from->toDateString(), $to->toDateString()]);
+        $q = Tour::query()->whereBetween('tour_date', DateRange::days($from, $to));
         if ($scope === 'mine') {
             $q->where('user_id', $userId);
         }

@@ -12,6 +12,7 @@ namespace App\Services\Reporting;
 
 use App\Models\{Customer, DiaryEntry, Invoice, Project, TimeEntry};
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -67,7 +68,7 @@ class CustomerValueReportBuilder {
         $minutes = [];
         if ($filteredProjectIds !== []) {
             TimeEntry::query()
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->whereBetween('date', DateRange::days($from, $to))
                 ->whereIn('project_id', $filteredProjectIds)
                 ->when($userId !== null, fn($q) => $q->where('user_id', $userId))
                 ->get(['project_id', 'date', 'minutes', 'billable', 'rate'])
@@ -203,7 +204,7 @@ class CustomerValueReportBuilder {
         $byCustomer = array_fill_keys($customerIds, array_fill_keys($bucketKeys, 0.0));
         if ($projectToCustomer !== []) {
             TimeEntry::query()
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->whereBetween('date', DateRange::days($from, $to))
                 ->whereIn('project_id', array_keys($projectToCustomer))
                 ->where('billable', true)
                 ->get(['project_id', 'date', 'rate'])
@@ -289,7 +290,7 @@ class CustomerValueReportBuilder {
     private function invoicedPerCustomer(CarbonImmutable $from, CarbonImmutable $to): array {
         $sums = [];
         Invoice::query()
-            ->whereBetween('issued_on', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('issued_on', DateRange::days($from, $to))
             ->whereIn('status', [Invoice::STATUS_ISSUED, Invoice::STATUS_PARTIALLY_PAID, Invoice::STATUS_PAID])
             ->whereIn('type', [Invoice::TYPE_INVOICE, Invoice::TYPE_PARTIAL, Invoice::TYPE_FINAL])
             ->get(['customer_id', 'total'])

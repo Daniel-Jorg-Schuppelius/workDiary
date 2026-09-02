@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{TimeEntry, User};
+use App\Support\Query\DateRange;
 use App\Support\XlsxExport;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -62,7 +63,7 @@ class MonthByUserTeamReportController extends Controller {
         $driver = \Illuminate\Support\Facades\DB::connection()->getDriverName();
         $monthExpr = $driver === 'mysql' ? 'MONTH(date)' : "CAST(strftime('%m', date) AS INTEGER)";
         $entriesQuery = TimeEntry::query()
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->selectRaw("user_id, {$monthExpr} AS month_idx, SUM(minutes) AS minutes_sum, SUM(rate) AS rate_sum")
             ->groupBy('user_id')
             ->groupByRaw($monthExpr);

@@ -18,6 +18,7 @@ use App\Models\Organization;
 use App\Models\Passenger\PassengerShiftSettlement;
 use App\Models\{User, Vehicle};
 use App\Services\Passenger\PassengerRideService;
+use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
@@ -46,7 +47,7 @@ class PassengerSettlementController extends Controller {
             // Offene immer zeigen; geschlossene nur im globalen Zeitraum.
             ->where(function ($query) use ($from, $to): void {
                 $query->where('status', PassengerShiftSettlement::STATUS_OPEN)
-                    ->orWhereBetween('shift_date', [$from->toDateString(), $to->toDateString()]);
+                    ->orWhereBetween('shift_date', DateRange::days($from, $to));
             })
             ->when($request->filled('status'), fn($q) => $q->where('status', $request->string('status')->toString()))
             ->orderByDesc('shift_date')

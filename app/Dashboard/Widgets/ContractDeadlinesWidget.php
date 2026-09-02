@@ -66,7 +66,7 @@ class ContractDeadlinesWidget extends Widget {
         $obligations = ContractObligation::query()
             ->open()
             ->whereNotNull('due_on')
-            ->where('due_on', '<=', DateRange::day(now()->addDays(self::WINDOW_DAYS)))
+            ->where('due_on', '<', DateRange::dayAfter(now()->addDays(self::WINDOW_DAYS)))
             ->with('contract:id,number,title')
             ->orderBy('due_on')
             ->limit(5)

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Gdpdu;
 
 use App\Models\{Organization, TimeEntry};
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 
 /** Erfasste Arbeitszeiten des Prüfungszeitraums (GoBD Rz. 20), nach Leistungsdatum. */
@@ -44,7 +45,7 @@ class TimeEntriesSection extends AbstractGdpduSection {
         foreach (TimeEntry::query()
             ->where('organization_id', $organization->id)
             ->whereNotNull('date')
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->with(['user:id,name,personnel_number', 'project:id,name,customer_id', 'project.customer:id,name'])
             ->orderBy('date')->orderBy('id')
             ->lazy() as $entry) {

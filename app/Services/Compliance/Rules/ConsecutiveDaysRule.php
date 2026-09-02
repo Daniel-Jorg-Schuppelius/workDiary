@@ -15,6 +15,7 @@ namespace App\Services\Compliance\Rules;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /** Max. Anzahl aufeinanderfolgender Arbeitstage (default 6). */
@@ -31,7 +32,7 @@ final class ConsecutiveDaysRule implements ComplianceRule {
         $rows = ScheduledShift::query()
             ->where('user_id', $shift->user_id)
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
-            ->whereBetween('date', [$date->subDays(14)->toDateString(), $date->addDays(14)->toDateString()])
+            ->whereBetween('date', DateRange::days($date->subDays(14), $date->addDays(14)))
             ->when($shift->id, fn($q) => $q->where('id', '!=', $shift->id))
             ->get(['id', 'date']);
 

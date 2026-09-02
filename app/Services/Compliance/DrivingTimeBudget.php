@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Compliance;
 
 use App\Models\{Organization, TravelLog, User, Vehicle};
+use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
@@ -81,7 +82,7 @@ final class DrivingTimeBudget {
             ->whereIn('vehicle_id', $vehicleIds)
             ->whereNotNull('started_at')
             ->whereNotNull('ended_at')
-            ->whereBetween('date', [$loadFrom, $dayKey])
+            ->whereBetween('date', DateRange::days($loadFrom, $dayKey))
             ->effective()
             ->orderBy('started_at')
             ->get(['id', 'user_id', 'started_at', 'ended_at'])

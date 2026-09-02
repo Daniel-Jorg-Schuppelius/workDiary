@@ -14,6 +14,7 @@ namespace App\Services;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{CoverageRequirement, DutyPlan, ScheduledShift, ShiftType};
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonPeriod};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -121,7 +122,7 @@ class CoverageService {
             ->where('duty_plan_id', $dutyPlan->id)
             ->whereIn('status', self::ACTUAL_STATUSES)
             ->whereNotNull('shift_type_id')
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->toBase()
             ->selectRaw('date, shift_type_id, COUNT(*) as cnt')
             ->groupBy('date', 'shift_type_id')
@@ -226,7 +227,7 @@ class CoverageService {
             ->whereIn('status', self::ACTUAL_STATUSES)
             ->whereNotNull('shift_type_id')
             ->whereNotNull('user_id')
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->get(['id', 'date', 'shift_type_id', 'user_id']);
         if ($shifts->isEmpty()) {
             return [];

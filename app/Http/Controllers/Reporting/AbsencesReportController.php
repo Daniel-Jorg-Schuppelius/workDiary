@@ -19,6 +19,7 @@ use App\Services\Absence\VacationBalanceService;
 use App\Services\HolidayService;
 use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
@@ -164,7 +165,7 @@ class AbsencesReportController extends Controller {
         $sickQ = SickLeave::query()
             ->whereNull('cancelled_at')
             ->where('end_date', '>=', $from->toDateString())
-            ->where('start_date', '<=', $to->toDateString());
+            ->where('start_date', '<', DateRange::dayAfter($to));
         if ($scope === 'mine') {
             $sickQ->where('user_id', $userId);
         }
@@ -315,7 +316,7 @@ class AbsencesReportController extends Controller {
         $sickQ = SickLeave::query()
             ->whereNull('cancelled_at')
             ->where('end_date', '>=', $from->toDateString())
-            ->where('start_date', '<=', $to->toDateString());
+            ->where('start_date', '<', DateRange::dayAfter($to));
         if ($scope === 'mine') {
             $sickQ->where('user_id', $userId);
         }

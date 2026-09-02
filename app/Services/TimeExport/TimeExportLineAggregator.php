@@ -128,7 +128,7 @@ class TimeExportLineAggregator {
         $vacations = Vacation::query()
             ->where('user_id', $uid)
             ->approved()
-            ->where('start_date', '<=', DateRange::day($end))
+            ->where('start_date', '<', DateRange::dayAfter($end))
             ->where('end_date', '>=', DateRange::day($start))
             ->get(['id', 'start_date', 'end_date']);
         foreach ($vacations as $vacation) {
@@ -154,7 +154,7 @@ class TimeExportLineAggregator {
         $sickLeaves = SickLeave::query()
             ->where('user_id', $uid)
             ->whereNull('cancelled_at')
-            ->where('start_date', '<=', DateRange::day($end))
+            ->where('start_date', '<', DateRange::dayAfter($end))
             ->where('end_date', '>=', DateRange::day($start))
             ->get(['id', 'start_date', 'end_date']);
         foreach ($sickLeaves as $sickLeave) {

@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{TimeEntry, User};
+use App\Support\Query\DateRange;
 use App\Support\XlsxExport;
 use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -86,7 +87,7 @@ class WeekByUserReportController extends Controller {
         );
 
         $query = TimeEntry::query()
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->select('user_id', 'date', 'minutes', 'rate', 'kind');
         if ($scope === 'mine') {
             $query->where('user_id', $userId);

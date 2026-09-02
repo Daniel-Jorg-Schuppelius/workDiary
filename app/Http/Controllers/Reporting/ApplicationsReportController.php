@@ -19,6 +19,7 @@ use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, Writ
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationOpportunity, JobApplication};
 use App\Models\User;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -156,7 +157,7 @@ class ApplicationsReportController extends Controller {
             'upcoming' => ApplicationOpportunity::query()
                 ->whereIn('status', ApplicationOpportunity::OPEN_STATUSES)
                 ->whereNotNull('submission_deadline')
-                ->whereBetween('submission_deadline', [now()->toDateString(), now()->addDays(14)->toDateString()])
+                ->whereBetween('submission_deadline', DateRange::days(now(), now()->addDays(14)))
                 ->count(),
         ];
     }
@@ -207,7 +208,7 @@ class ApplicationsReportController extends Controller {
             'due_soon' => ApplicationContractNegotiation::query()
                 ->whereNull('decision')
                 ->whereNotNull('due_on')
-                ->whereBetween('due_on', [now()->toDateString(), now()->addDays(14)->toDateString()])
+                ->whereBetween('due_on', DateRange::days(now(), now()->addDays(14)))
                 ->count(),
         ];
     }

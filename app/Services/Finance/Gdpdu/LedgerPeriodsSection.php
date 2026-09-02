@@ -43,7 +43,7 @@ class LedgerPeriodsSection extends AbstractGdpduSection {
     public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         foreach (AccountingPeriod::query()
             ->where('organization_id', $organization->id)
-            ->where('starts_on', '<=', DateRange::day($to))
+            ->where('starts_on', '<', DateRange::dayAfter($to))
             ->where('ends_on', '>=', DateRange::day($from))
             ->with('fiscalYear')
             ->orderBy('starts_on')->orderBy('id')

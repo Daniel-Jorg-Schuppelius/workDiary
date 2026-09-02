@@ -18,6 +18,7 @@ use App\Http\Requests\Crisis\{AddCrisisLinkRequest, AssignCrisisTeamRequest, Mar
 use App\Models\Crisis\{CrisisCase, CrisisCommunication, CrisisRole, CrisisTeamAssignment};
 use App\Models\User;
 use App\Services\Crisis\{CrisisAlertService, CrisisDeadlineService};
+use App\Support\Query\DateRange;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -55,7 +56,7 @@ class CrisisCaseController extends Controller {
                 ->count(),
             'openDecisionsExercises' => \App\Models\Crisis\CrisisExercise::query()
                 ->whereNotNull('next_due_on')
-                ->where('next_due_on', '<=', now()->addDays(30)->toDateString())
+                ->where('next_due_on', '<', DateRange::dayAfter(now()->addDays(30)))
                 ->count(),
             'statuses' => CrisisCase::STATUSES,
             'filters' => ['status' => $statusFilter],

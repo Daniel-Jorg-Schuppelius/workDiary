@@ -16,6 +16,7 @@ use App\Enums\Attendance\AttendanceSource;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{Attendance, AttendanceTerminal, ScheduledShift, User};
 use App\Models\Surcharge\{SurchargeRule, TimeRuleResult};
+use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -78,7 +79,7 @@ class TimeRuleEngine {
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('user_id', $userId)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->delete();
 
         if ($attendances->isEmpty() || $rules->isEmpty()) {
@@ -193,7 +194,7 @@ class TimeRuleEngine {
             ->withoutGlobalScopes()
             ->where('organization_id', $organizationId)
             ->where('user_id', $userId)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereNotNull('shift_type_id')
             ->get(['date', 'shift_type_id']);

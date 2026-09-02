@@ -17,6 +17,7 @@ use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
 use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Expense\ExpenseService;
 use App\Support\{CsvExport, SortableQuery};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -42,7 +43,7 @@ class ExpenseController extends Controller {
             ->with(['category:id,label,color,icon', 'project:id,name', 'customer:id,name'])
             ->withCount('attachments')
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
+            ->whereBetween('date', DateRange::days($from, $to));
 
         if ($statusEnum !== null) {
             $query->where('status', $statusEnum->value);
@@ -60,7 +61,7 @@ class ExpenseController extends Controller {
 
         $totalsQuery = Expense::query()
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()]);
+            ->whereBetween('date', DateRange::days($from, $to));
 
         $totals = [
             'gross' => (float) (clone $totalsQuery)->sum('amount_gross'),
@@ -308,7 +309,7 @@ class ExpenseController extends Controller {
                 'customer:id,name',
             ])
             ->where('user_id', Auth::id())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->orderBy('date')
             ->get();
 

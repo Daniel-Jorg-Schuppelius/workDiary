@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\ResolvesStandardReportFilters;
 use App\Models\TimeEntry;
+use App\Support\Query\DateRange;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -49,7 +50,7 @@ class MyYearReportController extends Controller {
 
         $query = TimeEntry::query()
             ->where('user_id', $userId)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->select('date', 'minutes', 'kind');
         if ($kind !== 'all') {
             $query->where('kind', $kind);

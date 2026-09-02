@@ -13,6 +13,7 @@ namespace App\Services\Reporting;
 use App\Enums\OpenIssue\OpenIssueStatus;
 use App\Enums\Protocol\ProtocolType;
 use App\Models\{Asset, DiaryEntry, ExternalReference, OpenIssue, Protocol, TimeEntry};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
@@ -287,7 +288,7 @@ class AssetAnalysisReportBuilder {
         $byAsset = [];
         TimeEntry::query()
             ->whereIn('id', array_keys($entryToAsset))
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->get(['id', 'minutes'])
             ->each(function (TimeEntry $entry) use (&$byAsset, $entryToAsset): void {
                 $assetId = $entryToAsset[(int) $entry->id] ?? null;

@@ -245,7 +245,7 @@ final class TimeAccountPostingService {
                     SickLeave::query()
                         ->withoutGlobalScopes()
                         ->where('organization_id', $orgId)
-                        ->where('start_date', '<=', DateRange::day($toStr))
+                        ->where('start_date', '<', DateRange::dayAfter($toStr))
                         ->where('end_date', '>=', DateRange::day($fromStr))
                         ->get(['id', 'user_id', 'start_date', 'end_date'])
                         ->each(function (SickLeave $s) use (&$out, $from, $to): void {
@@ -260,7 +260,7 @@ final class TimeAccountPostingService {
                     ->where('organization_id', $orgId)
                     ->where('status', VacationStatus::Approved->value)
                     ->when($rule->match_value !== null, fn ($q) => $q->where('type', $rule->match_value))
-                    ->where('start_date', '<=', DateRange::day($toStr))
+                    ->where('start_date', '<', DateRange::dayAfter($toStr))
                     ->where('end_date', '>=', DateRange::day($fromStr))
                     ->get(['id', 'user_id', 'start_date', 'end_date'])
                     ->each(function (Vacation $v) use (&$out, $from, $to): void {
@@ -324,7 +324,7 @@ final class TimeAccountPostingService {
             ->withoutGlobalScopes()
             ->where('time_account_id', $account->getKey())
             ->where('user_id', $candidate['user_id'])
-            ->where('booking_date', DateRange::day($candidate['booking_date']))
+            ->whereBetween('booking_date', DateRange::days($candidate['booking_date'], $candidate['booking_date']))
             ->where('source_id', $candidate['source_id'])
             ->whereNull('reversal_of_id')
             ->whereNotExists(function ($q): void {
@@ -379,7 +379,7 @@ final class TimeAccountPostingService {
                     ->withoutGlobalScopes()
                     ->where('time_account_id', $account->getKey())
                     ->where('user_id', $userId)
-                    ->where('booking_date', '<=', DateRange::day($monthEnd))
+                    ->where('booking_date', '<', DateRange::dayAfter($monthEnd))
                     ->sum('quantity');
                 if ($balance <= $cap) {
                     continue;

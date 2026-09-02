@@ -70,11 +70,11 @@ class SafetyDueWidget extends Widget {
         $assessments = HazardAssessment::query()
             ->where('status', HazardAssessmentStatus::Approved)
             ->whereNotNull('review_due_on')
-            ->where('review_due_on', '<=', DateRange::day($horizon));
+            ->where('review_due_on', '<', DateRange::dayAfter($horizon));
 
         $checkups = MedicalCheckup::query()
             ->whereNotNull('next_due_on')
-            ->where('next_due_on', '<=', DateRange::day($horizon));
+            ->where('next_due_on', '<', DateRange::dayAfter($horizon));
 
         return view('dashboard.widgets.safety-due', [
             'assessmentsDue' => (clone $assessments)->count(),

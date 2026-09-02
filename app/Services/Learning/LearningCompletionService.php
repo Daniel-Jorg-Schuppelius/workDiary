@@ -22,6 +22,7 @@ use App\Models\{Supplier, UserQualification};
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Safety\SafetyInstructionService;
 use App\Services\Training\TrainingAssignmentService;
+use App\Support\Query\DateRange;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 
@@ -219,9 +220,9 @@ class LearningCompletionService {
             // Geräteeinweisung: Nachweise verschiedener Geräte sind
             // verschiedene Unterweisungen, auch am selben Tag.
             ->where('asset_id', $course->asset_id)
-            // Direkter Vergleich statt whereDate(): `held_on` ist eine
-            // DATE-Spalte, und whereDate() umginge den Index.
-            ->where('held_on', $now->toDateString())
+            // Tagesbereich statt whereDate() (Index) und statt `=` gegen
+            // `Y-m-d` (SQLite speichert den date-Cast mit Zeitanteil).
+            ->whereBetween('held_on', DateRange::days($now, $now))
             ->first();
 
         $creator = $course->owner ?? $user;

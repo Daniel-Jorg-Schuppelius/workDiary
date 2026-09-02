@@ -72,7 +72,7 @@ abstract class AbstractAccountingReportBuilder {
                     ->from('accounting_entries')
                     ->whereColumn('accounting_entries.id', 'accounting_entry_lines.accounting_entry_id')
                     ->whereIn('accounting_entries.status', self::POSTED)
-                    ->where('accounting_entries.booked_on', '<=', DateRange::day($to));
+                    ->where('accounting_entries.booked_on', '<', DateRange::dayAfter($to));
 
                 if ($from !== null) {
                     $sub->where('accounting_entries.booked_on', '>=', DateRange::day($from));

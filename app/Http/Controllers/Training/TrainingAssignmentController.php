@@ -19,6 +19,7 @@ use App\Models\Training\{TrainingAssignment, TrainingCourse};
 use App\Models\User;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Training\TrainingAssignmentService;
+use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
@@ -51,7 +52,7 @@ class TrainingAssignmentController extends Controller {
             TrainingAssignmentState::Due->value => $query->whereNotNull('due_at')
                 ->where('due_at', '>=', $today->toDateString())
                 ->whereNotNull('notify_from')
-                ->where('notify_from', '<=', $today->toDateString()),
+                ->where('notify_from', '<', DateRange::dayAfter($today)),
             TrainingAssignmentState::Fulfilled->value => $query->whereNotNull('fulfilled_at'),
             default => null,
         };

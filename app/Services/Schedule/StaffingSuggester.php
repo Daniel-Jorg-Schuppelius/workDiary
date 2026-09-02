@@ -15,6 +15,7 @@ namespace App\Services\Schedule;
 use App\Enums\Shift\{AvailabilityKind, ScheduledShiftStatus, ShiftPreference};
 use App\Models\{AvailabilityWindow, DesiredShift, Organization, ScheduledShift, ShiftType, User};
 use App\Services\Compliance\{ComplianceViolation, ShiftComplianceService};
+use App\Support\Query\DateRange;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
@@ -304,7 +305,7 @@ class StaffingSuggester {
 
         $shifts = ScheduledShift::query()
             ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->with('shiftType')
             ->get();

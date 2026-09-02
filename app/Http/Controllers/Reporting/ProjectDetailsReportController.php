@@ -15,6 +15,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{DiaryEntry, EntryType, Project, TimeEntry, User};
 use App\Services\Reporting\ReportFilters;
+use App\Support\Query\DateRange;
 use App\Support\{Sqid, XlsxExport};
 use Carbon\{Carbon, CarbonImmutable};
 use CommonToolkit\Helper\Data\NumberHelper;
@@ -161,7 +162,7 @@ class ProjectDetailsReportController extends Controller {
 
         $entries = TimeEntry::query()
             ->where('project_id', $project->id)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->when($filterUserId !== null, fn($q) => $q->where('user_id', $filterUserId))
             ->select('user_id', 'date', 'started_at', 'minutes', 'rate', 'diary_entry_id')
             ->get();

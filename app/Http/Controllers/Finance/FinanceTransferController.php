@@ -18,6 +18,7 @@ use App\Models\Finance\BillingTransfer;
 use App\Services\Ai\Suggestions\{ItemTextSuggestionService, SuggestionViewData};
 use App\Services\Finance\{BillingModeResolver, BillingPositionBuilder, BillingTransferException, BillingTransferService};
 use App\Services\Finance\Targets\{FacturationTargetRegistry, FileTarget};
+use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
@@ -70,7 +71,7 @@ class FinanceTransferController extends Controller {
             ->whereIn('status', $activeStatuses)
             ->orWhere(fn($closed) => $closed
                 ->where(fn($p) => $p->whereNull('period_to')->orWhereDate('period_to', '>=', $range['from']->toDateString()))
-                ->where(fn($p) => $p->whereNull('period_from')->orWhereDate('period_from', '<=', $range['to']->toDateString()))));
+                ->where(fn($p) => $p->whereNull('period_from')->orWhereDate('period_from', '<', DateRange::dayAfter($range['to'])))));
 
         $hasActiveFilters = $customerId !== null
             || TransferChannel::tryFrom($filters['channel']) !== null

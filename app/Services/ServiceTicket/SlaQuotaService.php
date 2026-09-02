@@ -14,6 +14,7 @@ namespace App\Services\ServiceTicket;
 
 use App\Models\{DiaryEntry, Project, SlaContract, SlaContractQuota, TimeEntry};
 use App\Models\Scopes\OrganizationScope;
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**
@@ -71,7 +72,7 @@ class SlaQuotaService {
             ->withoutGlobalScope(OrganizationScope::class)
             ->where('organization_id', $contract->organization_id)
             ->where('billable', true)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()]);
+            ->whereBetween('date', DateRange::days($start, $end));
 
         if ($contract->customer_id !== null) {
             $projectIds = Project::query()->withoutGlobalScope(OrganizationScope::class)

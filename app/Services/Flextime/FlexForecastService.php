@@ -14,6 +14,7 @@ namespace App\Services\Flextime;
 
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{FlexBalance, ScheduledShift, User};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
@@ -91,7 +92,7 @@ final class FlexForecastService {
     private function plannedMinutes(User $user, CarbonImmutable $from, CarbonImmutable $to): array {
         $shifts = ScheduledShift::query()
             ->where('user_id', $user->getKey())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->get(['date', 'start_time', 'end_time']);
 

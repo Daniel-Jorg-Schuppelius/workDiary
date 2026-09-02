@@ -72,7 +72,7 @@ class AssetComplianceWidget extends Widget {
         $assignments = AssetComplianceAssignment::query()
             ->active()
             ->whereNotNull('next_due_on')
-            ->where('next_due_on', '<=', DateRange::day(now()->addDays(self::WINDOW_DAYS)))
+            ->where('next_due_on', '<', DateRange::dayAfter(now()->addDays(self::WINDOW_DAYS)))
             ->with(['asset:id,name', 'profile:id,name'])
             ->orderBy('next_due_on')
             ->limit(50)

@@ -12,7 +12,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Auth\Concerns\{CompletesLogin, ResolvesWorkMode};
 use App\Http\Controllers\Controller;
-use App\Legacy\Auth\LegacyUserProvider;
+use App\Legacy\LegacyBridge;
 use App\Models\{SsoConnection, User};
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -56,7 +56,7 @@ class LoginController extends Controller {
         // Die SSO-Sperre des Providers hier bewusst aussetzen: der Controller
         // muss das Passwort prüfen dürfen, um überhaupt entscheiden zu können,
         // ob er freundlich umleitet (S-41). Eingeloggt wird in dem Fall nicht.
-        $validated = LegacyUserProvider::ignoringSsoEnforcement(
+        $validated = LegacyBridge::ignoringSsoEnforcement(
             static fn (): bool => Auth::validate(['username' => $credentials['username'], 'password' => $credentials['password']]),
         );
 

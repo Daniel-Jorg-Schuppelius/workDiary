@@ -11,6 +11,7 @@
 namespace App\Services;
 
 use App\Models\{Customer, TimeEntry};
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\DB;
 
@@ -38,7 +39,7 @@ class CustomerStatsService {
             $query->where('date', '>=', $from->toDateString());
         }
         if ($to instanceof CarbonInterface) {
-            $query->where('date', '<=', $to->toDateString());
+            $query->where('date', '<', DateRange::dayAfter($to));
         }
 
         /** @var array<int, object{project_id: int, mins: int, billable_mins: int}> $rows */

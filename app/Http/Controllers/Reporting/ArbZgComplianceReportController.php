@@ -20,6 +20,7 @@ use App\Models\{ComplianceFinding, Organization, Team, TimeCorrectionRequest, Us
 use App\Services\Compliance\{AttendanceComplianceChecker, AttendanceComplianceFinding, AttendancePlausibilityScanService, ComplianceFindingRecorder, ComplianceFindingService, ComplianceScanService, DrivingTimeComplianceChecker};
 use App\Services\Reporting\ReportFilters;
 use App\Support\{ChartBucket, Sqid};
+use App\Support\Query\DateRange;
 use Carbon\{Carbon, CarbonImmutable};
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request, Response};
@@ -401,7 +402,7 @@ class ArbZgComplianceReportController extends Controller {
         TimeCorrectionRequest::query()
             ->whereIn('user_id', array_keys($findingsByUser))
             ->whereIn('status', [TimeCorrectionStatus::Approved->value, TimeCorrectionStatus::Applied->value])
-            ->whereBetween('scope_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('scope_date', DateRange::days($from, $to))
             ->get(['user_id', 'scope_date'])
             ->each(function (TimeCorrectionRequest $r) use (&$correctedByUserDate): void {
                 $correctedByUserDate[(int) $r->user_id][$r->scope_date->toDateString()] = true;

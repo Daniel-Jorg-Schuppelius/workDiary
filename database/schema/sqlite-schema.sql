@@ -179,9 +179,9 @@ CREATE TABLE IF NOT EXISTS "organizations"(
   "is_demo" tinyint(1) not null default '0',
   "demo_seeded_at" datetime,
   "two_factor_required" tinyint(1) not null default '0',
+  "tenant_status" varchar,
   "license_key" text,
   "license_uid" varchar,
-  "tenant_status" varchar,
   "legal_region" varchar not null default 'DE',
   foreign key("owner_id") references "users"("id") on delete set null
 );
@@ -2038,795 +2038,6 @@ CREATE INDEX "material_usages_org_asset_idx" on "material_usages"(
   "organization_id",
   "asset_id"
 );
-CREATE TABLE IF NOT EXISTS "onboarding_progress"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "step_code" varchar not null,
-  "state" varchar not null default 'open',
-  "done_at" datetime,
-  "done_by_user_id" integer,
-  "skipped_reason" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("done_by_user_id") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "uniq_onboarding_org_step" on "onboarding_progress"(
-  "organization_id",
-  "step_code"
-);
-CREATE INDEX "idx_onboarding_org_state" on "onboarding_progress"(
-  "organization_id",
-  "state"
-);
-CREATE TABLE IF NOT EXISTS "help_topics"(
-  "id" integer primary key autoincrement not null,
-  "topic" varchar not null,
-  "locale" varchar not null,
-  "title" varchar not null,
-  "audience" text,
-  "version" integer not null default '1',
-  "body_md" text not null,
-  "body_html" text not null,
-  "related" text,
-  "source_updated_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime
-  ,
-  "modules" text,
-  "headings" text
-);
-CREATE UNIQUE INDEX "uniq_help_topic_locale" on "help_topics"(
-  "topic",
-  "locale"
-);
-CREATE INDEX "idx_help_topic" on "help_topics"("topic");
-CREATE TABLE IF NOT EXISTS "help_views"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "topic" varchar not null,
-  "locale" varchar not null,
-  "was_helpful" tinyint(1),
-  "created_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete set null
-);
-CREATE INDEX "idx_help_views_topic_locale" on "help_views"(
-  "topic",
-  "locale",
-  "created_at"
-);
-CREATE INDEX "idx_help_views_org_time" on "help_views"(
-  "organization_id",
-  "created_at"
-);
-CREATE INDEX "idx_organizations_is_demo" on "organizations"("is_demo");
-CREATE TABLE IF NOT EXISTS "user_bookmarks"(
-  "id" integer primary key autoincrement not null,
-  "user_id" integer not null,
-  "label" varchar not null,
-  "url" text not null,
-  "icon" varchar,
-  "sort_order" integer not null default '0',
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE INDEX "user_bookmarks_user_id_sort_order_index" on "user_bookmarks"(
-  "user_id",
-  "sort_order"
-);
-CREATE TABLE IF NOT EXISTS "user_dashboard_widgets"(
-  "id" integer primary key autoincrement not null,
-  "user_id" integer not null,
-  "widget_key" varchar not null,
-  "sort_order" integer not null default '0',
-  "hidden" tinyint(1) not null default '0',
-  "created_at" datetime,
-  "updated_at" datetime,
-  "width" varchar,
-  "tab_key" varchar,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "user_dashboard_widgets_user_id_widget_key_unique" on "user_dashboard_widgets"(
-  "user_id",
-  "widget_key"
-);
-CREATE INDEX "user_dashboard_widgets_user_id_sort_order_index" on "user_dashboard_widgets"(
-  "user_id",
-  "sort_order"
-);
-CREATE TABLE IF NOT EXISTS "user_filter_presets"(
-  "id" integer primary key autoincrement not null,
-  "user_id" integer not null,
-  "scope" varchar not null,
-  "name" varchar not null,
-  "query" text not null,
-  "is_default" tinyint(1) not null default '0',
-  "sort_order" integer not null default '0',
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE INDEX "user_filter_presets_user_id_scope_sort_order_index" on "user_filter_presets"(
-  "user_id",
-  "scope",
-  "sort_order"
-);
-CREATE TABLE IF NOT EXISTS "month_closures"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "user_id" integer not null,
-  "period_year" integer not null,
-  "period_month" integer not null,
-  "status" varchar not null default 'draft',
-  "submitted_at" datetime,
-  "submitted_by_user_id" integer,
-  "decided_at" datetime,
-  "decided_by_user_id" integer,
-  "decision_note" text,
-  "locked_at" datetime,
-  "locked_by_user_id" integer,
-  "totals" text,
-  "days_total" integer not null default '0',
-  "days_with_attendance" integer not null default '0',
-  "days_closed" integer not null default '0',
-  "days_open" integer not null default '0',
-  "warnings_count" integer not null default '0',
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("submitted_by_user_id") references "users"("id") on delete set null,
-  foreign key("decided_by_user_id") references "users"("id") on delete set null,
-  foreign key("locked_by_user_id") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "month_closures_period_unique" on "month_closures"(
-  "organization_id",
-  "user_id",
-  "period_year",
-  "period_month"
-);
-CREATE INDEX "month_closures_status_idx" on "month_closures"(
-  "organization_id",
-  "status",
-  "period_year",
-  "period_month"
-);
-CREATE TABLE IF NOT EXISTS "month_closure_events"(
-  "id" integer primary key autoincrement not null,
-  "month_closure_id" integer not null,
-  "event" varchar not null,
-  "actor_user_id" integer not null,
-  "note" text,
-  "payload" text,
-  "created_at" datetime not null default CURRENT_TIMESTAMP,
-  foreign key("month_closure_id") references "month_closures"("id") on delete cascade,
-  foreign key("actor_user_id") references "users"("id") on delete cascade
-);
-CREATE INDEX "month_closure_events_chrono_idx" on "month_closure_events"(
-  "month_closure_id",
-  "created_at"
-);
-CREATE INDEX "month_closure_events_event_index" on "month_closure_events"(
-  "event"
-);
-CREATE TABLE IF NOT EXISTS "time_exports"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "profile" varchar not null,
-  "period_year" integer not null,
-  "period_month" integer not null,
-  "scope" varchar not null,
-  "scope_user_id" integer,
-  "scope_team_id" integer,
-  "status" varchar not null default 'preparing',
-  "rows_count" integer not null default '0',
-  "totals" text,
-  "payload_hash" varchar,
-  "file_path" varchar,
-  "file_format" varchar,
-  "created_by_user_id" integer,
-  "delivered_at" datetime,
-  "delivered_by_user_id" integer,
-  "delivery_note" text,
-  "superseded_by_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "auto_delivery" text,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("scope_user_id") references "users"("id") on delete set null,
-  foreign key("created_by_user_id") references "users"("id") on delete set null,
-  foreign key("delivered_by_user_id") references "users"("id") on delete set null,
-  foreign key("superseded_by_id") references "time_exports"("id") on delete set null
-);
-CREATE INDEX "time_exports_period_idx" on "time_exports"(
-  "organization_id",
-  "period_year",
-  "period_month"
-);
-CREATE INDEX "time_exports_status_idx" on "time_exports"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "time_exports_hash_idx" on "time_exports"("payload_hash");
-CREATE TABLE IF NOT EXISTS "time_export_events"(
-  "id" integer primary key autoincrement not null,
-  "time_export_id" integer not null,
-  "event" varchar not null,
-  "actor_user_id" integer,
-  "note" text,
-  "payload" text,
-  "created_at" datetime not null default CURRENT_TIMESTAMP,
-  foreign key("time_export_id") references "time_exports"("id") on delete cascade,
-  foreign key("actor_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "tee_export_event_idx" on "time_export_events"(
-  "time_export_id",
-  "event"
-);
-CREATE TABLE IF NOT EXISTS "backup_heartbeats"(
-  "id" integer primary key autoincrement not null,
-  "occurred_at" datetime not null,
-  "size_bytes" integer,
-  "manifest_hash" varchar,
-  "source" varchar,
-  "ip" varchar,
-  "created_at" datetime,
-  "updated_at" datetime
-);
-CREATE INDEX "backup_heartbeats_occurred_at_index" on "backup_heartbeats"(
-  "occurred_at"
-);
-CREATE TABLE IF NOT EXISTS "import_runs"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "entity" varchar not null,
-  "state" varchar not null default 'preflight',
-  "input_filename" varchar not null,
-  "input_hash" varchar not null,
-  "storage_path" varchar not null,
-  "delimiter" varchar not null default ';',
-  "encoding" varchar not null default 'UTF-8',
-  "rows_total" integer not null default '0',
-  "rows_created" integer not null default '0',
-  "rows_updated" integer not null default '0',
-  "rows_skipped" integer not null default '0',
-  "rows_failed" integer not null default '0',
-  "preview" text,
-  "started_at" datetime,
-  "finished_at" datetime,
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "match_policy" varchar not null default 'auto_create',
-  "unresolved_values" text,
-  "source_options" text,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "import_runs_org_entity_state_idx" on "import_runs"(
-  "organization_id",
-  "entity",
-  "state"
-);
-CREATE INDEX "import_runs_hash_idx" on "import_runs"("input_hash");
-CREATE TABLE IF NOT EXISTS "import_run_errors"(
-  "id" integer primary key autoincrement not null,
-  "import_run_id" integer not null,
-  "row_number" integer not null,
-  "field" varchar,
-  "code" varchar not null,
-  "message" text not null,
-  "row_data" text,
-  "created_at" datetime not null default CURRENT_TIMESTAMP,
-  foreign key("import_run_id") references "import_runs"("id") on delete cascade
-);
-CREATE INDEX "import_run_errors_row_idx" on "import_run_errors"(
-  "import_run_id",
-  "row_number"
-);
-CREATE INDEX "import_run_errors_code_idx" on "import_run_errors"(
-  "import_run_id",
-  "code"
-);
-CREATE TABLE IF NOT EXISTS "pending_external_conflicts"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "plugin_id" varchar not null,
-  "conflict_type" varchar not null,
-  "referenceable_type" varchar not null,
-  "referenceable_id" integer not null,
-  "external_id" varchar,
-  "local_snapshot" text not null,
-  "remote_snapshot" text not null,
-  "diff_fields" text,
-  "status" varchar not null default 'open',
-  "resolved_by" integer,
-  "resolved_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete set null,
-  foreign key("resolved_by") references "users"("id") on delete set null
-);
-CREATE INDEX "pec_referenceable_idx" on "pending_external_conflicts"(
-  "referenceable_type",
-  "referenceable_id"
-);
-CREATE INDEX "pec_org_plugin_status_idx" on "pending_external_conflicts"(
-  "organization_id",
-  "plugin_id",
-  "status"
-);
-CREATE INDEX "pending_external_conflicts_plugin_id_external_id_index" on "pending_external_conflicts"(
-  "plugin_id",
-  "external_id"
-);
-CREATE TABLE IF NOT EXISTS "plugin_settings"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "plugin_id" varchar not null,
-  "enabled" tinyint(1) not null default '0',
-  "settings" text,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "workspace_lookup" varchar,
-  foreign key("organization_id") references "organizations"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "plugin_settings_organization_id_plugin_id_unique" on "plugin_settings"(
-  "organization_id",
-  "plugin_id"
-);
-CREATE TABLE IF NOT EXISTS "license_flag_overrides"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "flag" varchar not null,
-  "reason" text,
-  "disabled_at" datetime not null,
-  "disabled_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("disabled_by_user_id") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "license_flag_overrides_unique" on "license_flag_overrides"(
-  "organization_id",
-  "flag"
-);
-CREATE INDEX "license_flag_overrides_flag_index" on "license_flag_overrides"(
-  "flag"
-);
-CREATE TABLE IF NOT EXISTS "sites"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "customer_id" integer not null,
-  "name" varchar not null,
-  "code" varchar,
-  "address_street" varchar,
-  "address_zip" varchar,
-  "address_city" varchar,
-  "country" varchar,
-  "geo_lat" numeric,
-  "geo_lng" numeric,
-  "is_active" tinyint(1) not null default '1',
-  "notes" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "holiday_provider" varchar,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "sites_idx_org_customer" on "sites"(
-  "organization_id",
-  "customer_id",
-  "is_active"
-);
-CREATE UNIQUE INDEX "sites_uniq_code_per_customer" on "sites"(
-  "customer_id",
-  "code"
-);
-CREATE TABLE IF NOT EXISTS "buildings"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "site_id" integer not null,
-  "name" varchar not null,
-  "code" varchar,
-  "gross_area_m2" numeric,
-  "year_built" integer,
-  "notes" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("site_id") references "sites"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "buildings_idx_org_site" on "buildings"(
-  "organization_id",
-  "site_id"
-);
-CREATE UNIQUE INDEX "buildings_uniq_code_per_site" on "buildings"(
-  "site_id",
-  "code"
-);
-CREATE TABLE IF NOT EXISTS "floors"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "building_id" integer not null,
-  "level" integer not null,
-  "label" varchar not null,
-  "gross_area_m2" numeric,
-  "notes" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("building_id") references "buildings"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "floors_idx_org_building" on "floors"(
-  "organization_id",
-  "building_id"
-);
-CREATE UNIQUE INDEX "floors_uniq_level_per_building" on "floors"(
-  "building_id",
-  "level"
-);
-CREATE TABLE IF NOT EXISTS "cleaning_profiles"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "code" varchar not null,
-  "label" varchar not null,
-  "interval_days" integer,
-  "requirements" text,
-  "notes" text,
-  "is_active" tinyint(1) not null default '1',
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "cleaning_profiles_idx_org_active" on "cleaning_profiles"(
-  "organization_id",
-  "is_active"
-);
-CREATE UNIQUE INDEX "cleaning_profiles_uniq_code_per_org" on "cleaning_profiles"(
-  "organization_id",
-  "code"
-);
-CREATE TABLE IF NOT EXISTS "rooms"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "name" varchar not null,
-  "code" varchar,
-  "building" varchar,
-  "floor" varchar,
-  "capacity" integer,
-  "equipment" text,
-  "color" varchar,
-  "is_active" tinyint(1) not null default('1'),
-  "notes" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "floor_id" integer,
-  "customer_id" integer,
-  "usage_type" varchar not null default('office'),
-  "net_area_m2" numeric,
-  "cleaning_profile_id" integer,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("floor_id") references floors("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("updated_by") references users("id") on delete set null on update no action,
-  foreign key("cleaning_profile_id") references "cleaning_profiles"("id") on delete set null
-);
-CREATE INDEX "rooms_idx_floor" on "rooms"("floor_id");
-CREATE INDEX "rooms_idx_org_customer" on "rooms"(
-  "organization_id",
-  "customer_id",
-  "is_active"
-);
-CREATE UNIQUE INDEX "rooms_organization_id_code_unique" on "rooms"(
-  "organization_id",
-  "code"
-);
-CREATE INDEX "rooms_organization_id_is_active_index" on "rooms"(
-  "organization_id",
-  "is_active"
-);
-CREATE INDEX "rooms_idx_org_cleaning_profile" on "rooms"(
-  "organization_id",
-  "cleaning_profile_id"
-);
-CREATE TABLE IF NOT EXISTS "software"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "name" varchar not null,
-  "vendor" varchar,
-  "kind" varchar not null,
-  "license_type" varchar not null,
-  "default_version" varchar,
-  "notes" text,
-  "is_active" tinyint(1) not null default '1',
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "software_idx_org_kind" on "software"("organization_id", "kind");
-CREATE INDEX "software_idx_org_active" on "software"(
-  "organization_id",
-  "is_active"
-);
-CREATE UNIQUE INDEX "software_uniq_name_vendor" on "software"(
-  "organization_id",
-  "name",
-  "vendor"
-);
-CREATE TABLE IF NOT EXISTS "software_installations"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "asset_id" integer not null,
-  "software_id" integer not null,
-  "version" varchar,
-  "license_key" text,
-  "seats" integer,
-  "installed_on" date,
-  "expires_on" date,
-  "is_operating_system" tinyint(1) not null default '0',
-  "notes" text,
-  "created_by" integer,
-  "updated_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("asset_id") references "assets"("id") on delete cascade,
-  foreign key("software_id") references "software"("id") on delete restrict,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("updated_by") references "users"("id") on delete set null
-);
-CREATE INDEX "sw_installs_idx_asset" on "software_installations"("asset_id");
-CREATE INDEX "sw_installs_idx_software" on "software_installations"(
-  "software_id"
-);
-CREATE INDEX "sw_installs_idx_org_expiry" on "software_installations"(
-  "organization_id",
-  "expires_on"
-);
-CREATE UNIQUE INDEX sw_installs_uniq_os_per_asset ON software_installations(
-  asset_id
-) WHERE is_operating_system = 1;
-CREATE TABLE IF NOT EXISTS "export_runs"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "entity" varchar not null,
-  "format" varchar not null default 'csv',
-  "state" varchar not null default 'preparing',
-  "filters" text,
-  "output_filename" varchar not null,
-  "storage_path" varchar not null default '',
-  "rows_total" integer not null default '0',
-  "error_message" text,
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "export_runs_org_entity_state_idx" on "export_runs"(
-  "organization_id",
-  "entity",
-  "state"
-);
-CREATE TABLE IF NOT EXISTS "remote_pending_sessions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "provider" varchar not null,
-  "remote_id" varchar not null,
-  "session_id" varchar not null,
-  "started_at" datetime not null,
-  "ended_at" datetime not null,
-  "note" varchar,
-  "status" varchar not null default('open'),
-  "time_entry_id" integer,
-  "resolved_by" integer,
-  "resolved_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "alias" varchar,
-  "asset_id" integer,
-  foreign key("resolved_by") references users("id") on delete set null on update no action,
-  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("asset_id") references "assets"("id") on delete set null
-);
-CREATE INDEX "rps_group_idx" on "remote_pending_sessions"(
-  "organization_id",
-  "status",
-  "provider",
-  "remote_id"
-);
-CREATE UNIQUE INDEX "rps_unique_session" on "remote_pending_sessions"(
-  "organization_id",
-  "provider",
-  "session_id"
-);
-CREATE INDEX "rps_asset_idx" on "remote_pending_sessions"(
-  "organization_id",
-  "status",
-  "asset_id"
-);
-CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "external_id" varchar not null,
-  "contact_external_id" varchar,
-  "customer_id" integer,
-  "supplier_id" integer,
-  "voucher_type" varchar,
-  "voucher_status" varchar,
-  "voucher_number" varchar,
-  "voucher_date" date,
-  "due_date" date,
-  "total_amount" numeric,
-  "open_amount" numeric,
-  "currency" varchar not null default 'EUR',
-  "archived" tinyint(1) not null default '0',
-  "payload" text,
-  "synced_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "paid_date" date,
-  "net_amount" numeric,
-  "file_path" varchar,
-  "file_materialized_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete set null,
-  foreign key("supplier_id") references "suppliers"("id") on delete set null
-);
-CREATE UNIQUE INDEX "lexoffice_vouchers_organization_id_external_id_unique" on "lexoffice_vouchers"(
-  "organization_id",
-  "external_id"
-);
-CREATE INDEX "lexoffice_vouchers_organization_id_customer_id_index" on "lexoffice_vouchers"(
-  "organization_id",
-  "customer_id"
-);
-CREATE INDEX "lexoffice_vouchers_organization_id_supplier_id_index" on "lexoffice_vouchers"(
-  "organization_id",
-  "supplier_id"
-);
-CREATE INDEX "lexoffice_vouchers_organization_id_voucher_type_index" on "lexoffice_vouchers"(
-  "organization_id",
-  "voucher_type"
-);
-CREATE INDEX "lexoffice_vouchers_contact_external_id_index" on "lexoffice_vouchers"(
-  "contact_external_id"
-);
-CREATE TABLE IF NOT EXISTS "foreign_customers"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "customer_id" integer not null,
-  "name" varchar not null,
-  "number" varchar,
-  "company" varchar,
-  "contact_name" varchar,
-  "email" varchar,
-  "phone" varchar,
-  "mobile" varchar,
-  "homepage" varchar,
-  "address" text,
-  "country" varchar,
-  "color" varchar,
-  "comment" text,
-  "archived_at" datetime,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "matchcode" varchar,
-  "phone_e164" varchar,
-  "mobile_e164" varchar,
-  foreign key("organization_id") references "organizations"("id") on delete set null,
-  foreign key("customer_id") references "customers"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "foreign_customers_organization_id_index" on "foreign_customers"(
-  "organization_id"
-);
-CREATE INDEX "foreign_customers_customer_id_index" on "foreign_customers"(
-  "customer_id"
-);
-CREATE INDEX "foreign_customers_archived_at_index" on "foreign_customers"(
-  "archived_at"
-);
-CREATE TABLE IF NOT EXISTS "projects"(
-  "id" integer primary key autoincrement not null,
-  "name" varchar not null,
-  "slug" varchar not null,
-  "description" text,
-  "color" varchar,
-  "status" varchar not null default('active'),
-  "starts_on" date,
-  "ends_on" date,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "organization_id" integer,
-  "customer_id" integer,
-  "number" varchar,
-  "hourly_rate" numeric,
-  "internal_rate" numeric,
-  "time_budget" integer not null default('0'),
-  "budget" numeric not null default('0'),
-  "budget_type" varchar,
-  "billable" tinyint(1),
-  "invoice_text" text,
-  "global_activities" tinyint(1) not null default('1'),
-  "archived_at" datetime,
-  "is_default" tinyint(1) not null default('0'),
-  "parent_id" integer,
-  "is_maintenance" tinyint(1) not null default('0'),
-  "default_location_mode" varchar,
-  "foreign_customer_id" integer,
-  "billing_increment_minutes" integer,
-  "billing_grouping_gap_minutes" integer,
-  "weather_auto_fetch" tinyint(1),
-  "keywords" text,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("created_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("parent_id") references projects("id") on delete set null on update no action,
-  foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null
-);
-CREATE INDEX "idx_projects_org" on "projects"("organization_id");
-CREATE INDEX "projects_archived_at_index" on "projects"("archived_at");
-CREATE INDEX "projects_customer_id_index" on "projects"("customer_id");
-CREATE INDEX "projects_customer_id_is_default_index" on "projects"(
-  "customer_id",
-  "is_default"
-);
-CREATE UNIQUE INDEX "projects_customer_slug_unique" on "projects"(
-  "customer_id",
-  "slug"
-);
-CREATE INDEX "projects_is_maintenance_idx" on "projects"("is_maintenance");
-CREATE INDEX "projects_parent_id_index" on "projects"("parent_id");
-CREATE INDEX "projects_status_index" on "projects"("status");
-CREATE TABLE IF NOT EXISTS "invoice_item_time_entries"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "invoice_item_id" integer not null,
-  "time_entry_id" integer not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("invoice_item_id") references "invoice_items"("id") on delete cascade,
-  foreign key("time_entry_id") references "time_entries"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "iite_item_entry_unique" on "invoice_item_time_entries"(
-  "invoice_item_id",
-  "time_entry_id"
-);
-CREATE INDEX "invoice_item_time_entries_time_entry_id_index" on "invoice_item_time_entries"(
-  "time_entry_id"
-);
-CREATE INDEX "material_usages_billed_index" on "material_usages"("billed");
-CREATE INDEX "tours_travel_billed_index" on "tours"("travel_billed");
 CREATE TABLE IF NOT EXISTS "teams"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -2890,6 +2101,27 @@ CREATE UNIQUE INDEX "project_user_project_id_user_id_unique" on "project_user"(
   "project_id",
   "user_id"
 );
+CREATE TABLE IF NOT EXISTS "onboarding_progress"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "step_code" varchar not null,
+  "state" varchar not null default 'open',
+  "done_at" datetime,
+  "done_by_user_id" integer,
+  "skipped_reason" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("done_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "uniq_onboarding_org_step" on "onboarding_progress"(
+  "organization_id",
+  "step_code"
+);
+CREATE INDEX "idx_onboarding_org_state" on "onboarding_progress"(
+  "organization_id",
+  "state"
+);
 CREATE TABLE IF NOT EXISTS "task_user"(
   "id" integer primary key autoincrement not null,
   "task_id" integer not null,
@@ -2941,1015 +2173,46 @@ CREATE UNIQUE INDEX "minimum_wage_references_country_valid_from_currency_unique"
 CREATE INDEX "minimum_wage_references_country_index" on "minimum_wage_references"(
   "country"
 );
-CREATE TABLE IF NOT EXISTS "plugin_states"(
+CREATE TABLE IF NOT EXISTS "help_topics"(
   "id" integer primary key autoincrement not null,
-  "plugin_id" varchar not null,
-  "installed_version" varchar,
-  "installed_at" datetime,
-  "last_health_check_at" datetime,
-  "last_health_status" varchar,
-  "last_health_message" text,
-  "failure_count" integer not null default('0'),
-  "disabled_reason" text,
+  "topic" varchar not null,
+  "locale" varchar not null,
+  "title" varchar not null,
+  "audience" text,
+  "version" integer not null default '1',
+  "body_md" text not null,
+  "body_html" text not null,
+  "related" text,
+  "source_updated_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "modules" text,
+  "headings" text
+);
+CREATE UNIQUE INDEX "uniq_help_topic_locale" on "help_topics"(
+  "topic",
+  "locale"
+);
+CREATE INDEX "idx_help_topic" on "help_topics"("topic");
+CREATE TABLE IF NOT EXISTS "help_views"(
+  "id" integer primary key autoincrement not null,
   "organization_id" integer,
-  "last_ok_at" datetime,
-  "failure_window_started_at" datetime,
-  "last_health_latency_ms" integer,
-  "last_health_code" varchar,
-  "last_announced_status" varchar,
-  "health_streak" integer not null default '0',
+  "topic" varchar not null,
+  "locale" varchar not null,
+  "was_helpful" tinyint(1),
+  "created_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
-CREATE UNIQUE INDEX "plugin_states_plugin_id_organization_id_unique" on "plugin_states"(
-  "plugin_id",
-  "organization_id"
+CREATE INDEX "idx_help_views_topic_locale" on "help_views"(
+  "topic",
+  "locale",
+  "created_at"
 );
-CREATE TABLE IF NOT EXISTS "plugin_errors"(
-  "id" integer primary key autoincrement not null,
-  "plugin_id" varchar not null,
-  "phase" varchar not null,
-  "exception_class" varchar,
-  "message" text not null,
-  "trace" text,
-  "context" text,
-  "occurred_at" datetime not null,
-  "acknowledged_at" datetime,
-  "acknowledged_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "organization_id" integer,
-  "error_hash" varchar,
-  "occurrences" integer not null default '1',
-  "last_occurred_at" datetime,
-  foreign key("acknowledged_by") references users("id") on delete set null on update no action,
-  foreign key("organization_id") references "organizations"("id") on delete set null
-);
-CREATE INDEX "plugin_errors_phase_occurred_at_index" on "plugin_errors"(
-  "phase",
-  "occurred_at"
-);
-CREATE INDEX "plugin_errors_plugin_id_acknowledged_at_index" on "plugin_errors"(
-  "plugin_id",
-  "acknowledged_at"
-);
-CREATE INDEX "plugin_errors_plugin_id_organization_id_index" on "plugin_errors"(
-  "plugin_id",
-  "organization_id"
-);
-CREATE TABLE IF NOT EXISTS "chat_channels"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "name" varchar,
-  "slug" varchar,
-  "description" text,
-  "type" varchar not null default 'channel',
-  "visibility" varchar not null default 'private',
-  "is_archived" tinyint(1) not null default '0',
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "chat_channels_organization_id_type_index" on "chat_channels"(
+CREATE INDEX "idx_help_views_org_time" on "help_views"(
   "organization_id",
-  "type"
+  "created_at"
 );
-CREATE UNIQUE INDEX "chat_channels_organization_id_slug_unique" on "chat_channels"(
-  "organization_id",
-  "slug"
-);
-CREATE TABLE IF NOT EXISTS "chat_channel_user"(
-  "id" integer primary key autoincrement not null,
-  "channel_id" integer not null,
-  "user_id" integer not null,
-  "role" varchar not null default 'member',
-  "last_read_at" datetime,
-  "muted_at" datetime,
-  "joined_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("channel_id") references "chat_channels"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "chat_channel_user_channel_id_user_id_unique" on "chat_channel_user"(
-  "channel_id",
-  "user_id"
-);
-CREATE INDEX "chat_channel_user_user_id_channel_id_index" on "chat_channel_user"(
-  "user_id",
-  "channel_id"
-);
-CREATE TABLE IF NOT EXISTS "chat_message_reactions"(
-  "id" integer primary key autoincrement not null,
-  "message_id" integer not null,
-  "user_id" integer not null,
-  "emoji" varchar not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("message_id") references "chat_messages"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "chat_message_reactions_message_id_user_id_emoji_unique" on "chat_message_reactions"(
-  "message_id",
-  "user_id",
-  "emoji"
-);
-CREATE INDEX "chat_message_reactions_message_id_index" on "chat_message_reactions"(
-  "message_id"
-);
-CREATE TABLE IF NOT EXISTS "chat_polls"(
-  "id" integer primary key autoincrement not null,
-  "message_id" integer not null,
-  "question" varchar not null,
-  "multiple" tinyint(1) not null default '0',
-  "closes_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("message_id") references "chat_messages"("id") on delete cascade
-);
-CREATE INDEX "chat_polls_message_id_index" on "chat_polls"("message_id");
-CREATE TABLE IF NOT EXISTS "chat_poll_options"(
-  "id" integer primary key autoincrement not null,
-  "poll_id" integer not null,
-  "label" varchar not null,
-  "position" integer not null default '0',
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("poll_id") references "chat_polls"("id") on delete cascade
-);
-CREATE INDEX "chat_poll_options_poll_id_index" on "chat_poll_options"(
-  "poll_id"
-);
-CREATE TABLE IF NOT EXISTS "chat_poll_votes"(
-  "id" integer primary key autoincrement not null,
-  "poll_option_id" integer not null,
-  "user_id" integer not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("poll_option_id") references "chat_poll_options"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "chat_poll_votes_poll_option_id_user_id_unique" on "chat_poll_votes"(
-  "poll_option_id",
-  "user_id"
-);
-CREATE INDEX "chat_poll_votes_poll_option_id_index" on "chat_poll_votes"(
-  "poll_option_id"
-);
-CREATE TABLE IF NOT EXISTS "chat_messages"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "channel_id" integer not null,
-  "user_id" integer,
-  "parent_id" integer,
-  "body" text,
-  "type" varchar not null default('text'),
-  "pinned_at" datetime,
-  "pinned_by" integer,
-  "edited_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  "quoted_id" integer,
-  "forwarded_from_user_id" integer,
-  foreign key("pinned_by") references users("id") on delete set null on update no action,
-  foreign key("parent_id") references chat_messages("id") on delete cascade on update no action,
-  foreign key("user_id") references users("id") on delete set null on update no action,
-  foreign key("channel_id") references chat_channels("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
-  foreign key("quoted_id") references "chat_messages"("id") on delete set null,
-  foreign key("forwarded_from_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "chat_messages_channel_id_id_index" on "chat_messages"(
-  "channel_id",
-  "id"
-);
-CREATE INDEX "chat_messages_channel_id_parent_id_index" on "chat_messages"(
-  "channel_id",
-  "parent_id"
-);
-CREATE INDEX "chat_messages_channel_id_pinned_at_index" on "chat_messages"(
-  "channel_id",
-  "pinned_at"
-);
-CREATE TABLE IF NOT EXISTS "chat_message_stars"(
-  "message_id" integer not null,
-  "user_id" integer not null,
-  "created_at" datetime,
-  foreign key("message_id") references "chat_messages"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  primary key("message_id", "user_id")
-);
-CREATE TABLE IF NOT EXISTS "chat_reminders"(
-  "id" integer primary key autoincrement not null,
-  "user_id" integer not null,
-  "message_id" integer not null,
-  "channel_id" integer not null,
-  "remind_at" datetime not null,
-  "sent_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("message_id") references "chat_messages"("id") on delete cascade,
-  foreign key("channel_id") references "chat_channels"("id") on delete cascade
-);
-CREATE INDEX "chat_reminders_sent_at_remind_at_index" on "chat_reminders"(
-  "sent_at",
-  "remind_at"
-);
-CREATE TABLE IF NOT EXISTS "chat_scheduled_messages"(
-  "id" integer primary key autoincrement not null,
-  "channel_id" integer not null,
-  "user_id" integer not null,
-  "body" text,
-  "scheduled_at" datetime not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("channel_id") references "chat_channels"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE INDEX "chat_scheduled_messages_scheduled_at_index" on "chat_scheduled_messages"(
-  "scheduled_at"
-);
-CREATE TABLE IF NOT EXISTS "contact_bank_accounts"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "accountable_type" varchar not null,
-  "accountable_id" integer not null,
-  "account_holder" text,
-  "iban" text,
-  "bic" text,
-  "bank_name" varchar,
-  "is_primary" tinyint(1) not null default('0'),
-  "external_id" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action
-);
-CREATE INDEX "contact_bank_accounts_accountable_type_accountable_id_index" on "contact_bank_accounts"(
-  "accountable_type",
-  "accountable_id"
-);
-CREATE INDEX "contact_bank_accounts_organization_id_index" on "contact_bank_accounts"(
-  "organization_id"
-);
-CREATE INDEX "contact_bank_accounts_owner_idx" on "contact_bank_accounts"(
-  "accountable_type",
-  "accountable_id"
-);
-CREATE TABLE IF NOT EXISTS "contact_addresses"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "addressable_type" varchar not null,
-  "addressable_id" integer not null,
-  "kind" varchar not null default('billing'),
-  "supplement" text,
-  "street" text,
-  "zip" varchar,
-  "city" varchar,
-  "country_code" varchar,
-  "is_primary" tinyint(1) not null default('0'),
-  "external_id" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action
-);
-CREATE INDEX "contact_addresses_addressable_type_addressable_id_index" on "contact_addresses"(
-  "addressable_type",
-  "addressable_id"
-);
-CREATE INDEX "contact_addresses_kind_idx" on "contact_addresses"(
-  "addressable_type",
-  "addressable_id",
-  "kind"
-);
-CREATE INDEX "contact_addresses_organization_id_index" on "contact_addresses"(
-  "organization_id"
-);
-CREATE INDEX "organization_audit_logs_hash_index" on "organization_audit_logs"(
-  "hash"
-);
-CREATE TABLE IF NOT EXISTS "audit_chain_heads"(
-  "chain" varchar not null,
-  "head_hash" varchar,
-  "height" integer not null default '0',
-  primary key("chain")
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_portals"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "public_slug" varchar not null,
-  "is_enabled" tinyint(1) not null default '0',
-  "allow_anonymous" tinyint(1) not null default '1',
-  "allow_confidential" tinyint(1) not null default '1',
-  "allowed_locales" text,
-  "default_locale" varchar,
-  "intro_text" text,
-  "privacy_text_version" varchar,
-  "external_channels" text,
-  "retention_months" integer not null default '36',
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "whistleblowing_portals_organization_id_unique" on "whistleblowing_portals"(
-  "organization_id"
-);
-CREATE UNIQUE INDEX "whistleblowing_portals_public_slug_unique" on "whistleblowing_portals"(
-  "public_slug"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_case_assignments"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "case_id" integer not null,
-  "user_id" integer not null,
-  "role" varchar not null,
-  "assigned_by" integer,
-  "assigned_at" datetime not null,
-  "revoked_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("assigned_by") references "users"("id") on delete set null
-);
-CREATE INDEX "whistleblowing_case_assignments_case_id_user_id_revoked_at_index" on "whistleblowing_case_assignments"(
-  "case_id",
-  "user_id",
-  "revoked_at"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_messages"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "case_id" integer not null,
-  "author_type" varchar not null,
-  "author_user_id" integer,
-  "visibility" varchar not null,
-  "body_ciphertext" text not null,
-  "sent_at" datetime not null,
-  "read_by_reporter_at" datetime,
-  "created_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
-  foreign key("author_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "whistleblowing_messages_case_id_visibility_index" on "whistleblowing_messages"(
-  "case_id",
-  "visibility"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_attachments"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "case_id" integer not null,
-  "message_id" integer,
-  "uploaded_by_type" varchar not null,
-  "storage_key" varchar not null,
-  "original_name_ciphertext" text not null,
-  "mime_detected" varchar,
-  "size" integer not null default '0',
-  "sha256" varchar,
-  "scan_status" varchar not null default 'pending',
-  "metadata_scrubbed" tinyint(1) not null default '0',
-  "created_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
-  foreign key("message_id") references "whistleblowing_messages"("id") on delete set null
-);
-CREATE UNIQUE INDEX "whistleblowing_attachments_storage_key_unique" on "whistleblowing_attachments"(
-  "storage_key"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_case_events"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "case_id" integer,
-  "actor_type" varchar not null,
-  "actor_user_id" integer,
-  "event" varchar not null,
-  "metadata" text,
-  "prev_hash" varchar,
-  "hash" varchar,
-  "created_at" datetime
-);
-CREATE INDEX "whistleblowing_case_events_case_id_event_index" on "whistleblowing_case_events"(
-  "case_id",
-  "event"
-);
-CREATE INDEX "whistleblowing_case_events_hash_index" on "whistleblowing_case_events"(
-  "hash"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_case_tombstones"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "case_number" varchar not null,
-  "public_id" varchar not null,
-  "period_from" date,
-  "period_to" date,
-  "closed_category" varchar,
-  "deleted_at" datetime not null,
-  "audit_hash" varchar
-);
-CREATE INDEX "whistleblowing_case_tombstones_case_number_index" on "whistleblowing_case_tombstones"(
-  "case_number"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_case_conflicts"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "case_id" integer not null,
-  "user_id" integer not null,
-  "reason_ciphertext" text,
-  "declared_at" datetime not null,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "whistleblowing_case_conflicts_case_id_user_id_unique" on "whistleblowing_case_conflicts"(
-  "case_id",
-  "user_id"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_emergency_grants"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "case_id" integer not null,
-  "user_id" integer not null,
-  "granted_by" integer not null,
-  "reason_ciphertext" text not null,
-  "granted_at" datetime not null,
-  "expires_at" datetime not null,
-  "revoked_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("granted_by") references "users"("id") on delete cascade
-);
-CREATE INDEX "whistleblowing_emergency_grants_case_id_user_id_expires_at_index" on "whistleblowing_emergency_grants"(
-  "case_id",
-  "user_id",
-  "expires_at"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_deadline_reminders"(
-  "id" integer primary key autoincrement not null,
-  "case_id" integer not null,
-  "kind" varchar not null,
-  "reminder_date" date not null,
-  "created_at" datetime,
-  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "whistleblowing_deadline_reminders_case_id_kind_reminder_date_unique" on "whistleblowing_deadline_reminders"(
-  "case_id",
-  "kind",
-  "reminder_date"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_case_subjects"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "case_id" integer not null,
-  "user_id" integer not null,
-  "added_by" integer,
-  "note_ciphertext" text,
-  "created_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
-  foreign key("user_id") references "users"("id") on delete cascade,
-  foreign key("added_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "whistleblowing_case_subjects_case_id_user_id_unique" on "whistleblowing_case_subjects"(
-  "case_id",
-  "user_id"
-);
-CREATE TABLE IF NOT EXISTS "whistleblowing_cases"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "public_id" varchar not null,
-  "case_number" varchar not null,
-  "access_code_hash" varchar not null,
-  "access_code_lookup" varchar not null,
-  "dek_wrapped" text,
-  "reporter_mode" varchar not null,
-  "category" varchar not null,
-  "status" varchar not null,
-  "priority" varchar not null default('normal'),
-  "subject_ciphertext" text,
-  "description_ciphertext" text,
-  "contact_ciphertext" text,
-  "occurred_from" date,
-  "occurred_to" date,
-  "acknowledgement_due_at" datetime,
-  "feedback_due_at" datetime,
-  "acknowledged_at" datetime,
-  "feedback_sent_at" datetime,
-  "closed_at" datetime,
-  "retention_due_at" datetime,
-  "legal_hold_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
-);
-CREATE UNIQUE INDEX "whistleblowing_cases_access_code_lookup_unique" on "whistleblowing_cases"(
-  "access_code_lookup"
-);
-CREATE UNIQUE INDEX "whistleblowing_cases_organization_id_case_number_unique" on "whistleblowing_cases"(
-  "organization_id",
-  "case_number"
-);
-CREATE UNIQUE INDEX "whistleblowing_cases_public_id_unique" on "whistleblowing_cases"(
-  "public_id"
-);
-CREATE INDEX "whistleblowing_cases_status_index" on "whistleblowing_cases"(
-  "status"
-);
-CREATE TABLE IF NOT EXISTS "plan_module_grace"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "module" varchar not null,
-  "lost_at" datetime not null,
-  "grace_until" datetime not null,
-  "purged_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "plan_module_grace_organization_id_module_unique" on "plan_module_grace"(
-  "organization_id",
-  "module"
-);
-CREATE INDEX "plan_module_grace_grace_until_index" on "plan_module_grace"(
-  "grace_until"
-);
-CREATE TABLE IF NOT EXISTS "privacy_processing_activities"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "name" varchar not null,
-  "purpose" text,
-  "controller_role" varchar not null default 'controller',
-  "area" varchar,
-  "status" varchar not null default 'draft',
-  "current_version_id" integer,
-  "review_due_at" date,
-  "dsfa_required" tinyint(1) not null default '0',
-  "risk_level" varchar,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_processing_activities_organization_id_status_index" on "privacy_processing_activities"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "privacy_processing_activities_review_due_at_index" on "privacy_processing_activities"(
-  "review_due_at"
-);
-CREATE TABLE IF NOT EXISTS "privacy_processing_activity_versions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "activity_id" integer not null,
-  "version_no" integer not null,
-  "payload" text not null,
-  "note" varchar,
-  "created_by" integer,
-  "approved_by" integer,
-  "approved_at" datetime,
-  "valid_from" date,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("approved_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "ppav_activity_version_unique" on "privacy_processing_activity_versions"(
-  "activity_id",
-  "version_no"
-);
-CREATE TABLE IF NOT EXISTS "privacy_data_subject_requests"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "request_number" varchar not null,
-  "type" varchar not null,
-  "status" varchar not null default 'intake',
-  "channel" varchar,
-  "identity_verified_at" datetime,
-  "assigned_user_id" integer,
-  "received_at" datetime,
-  "deadline_at" datetime,
-  "subject_ciphertext" text,
-  "content_ciphertext" text,
-  "decision_note_ciphertext" text,
-  "dek_wrapped" text,
-  "decision" varchar,
-  "decided_at" datetime,
-  "closed_at" datetime,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "contact_email_ciphertext" text,
-  "contact_email_confirmed_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("assigned_user_id") references "users"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "pdsr_org_number_unique" on "privacy_data_subject_requests"(
-  "organization_id",
-  "request_number"
-);
-CREATE INDEX "privacy_data_subject_requests_organization_id_status_index" on "privacy_data_subject_requests"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "privacy_data_subject_requests_deadline_at_index" on "privacy_data_subject_requests"(
-  "deadline_at"
-);
-CREATE TABLE IF NOT EXISTS "privacy_request_events"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "request_id" integer,
-  "actor_type" varchar not null,
-  "actor_user_id" integer,
-  "event" varchar not null,
-  "metadata" text,
-  "prev_hash" varchar,
-  "hash" varchar,
-  "created_at" datetime
-);
-CREATE INDEX "privacy_request_events_request_id_event_index" on "privacy_request_events"(
-  "request_id",
-  "event"
-);
-CREATE INDEX "privacy_request_events_hash_index" on "privacy_request_events"(
-  "hash"
-);
-CREATE TABLE IF NOT EXISTS "privacy_processors"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "name" varchar not null,
-  "role" varchar not null default 'processor',
-  "contact" varchar,
-  "location" varchar,
-  "third_country" tinyint(1) not null default '0',
-  "notes" text,
-  "is_active" tinyint(1) not null default '1',
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_processors_organization_id_is_active_index" on "privacy_processors"(
-  "organization_id",
-  "is_active"
-);
-CREATE TABLE IF NOT EXISTS "privacy_processing_agreements"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "processor_id" integer not null,
-  "title" varchar not null,
-  "version" varchar not null default '1.0',
-  "status" varchar not null default 'draft',
-  "valid_from" date,
-  "valid_until" date,
-  "review_due_at" date,
-  "data_categories" text,
-  "tom_checked" tinyint(1) not null default '0',
-  "document_path" varchar,
-  "document_name" varchar,
-  "terminated_at" datetime,
-  "data_return" varchar,
-  "data_return_confirmed_at" datetime,
-  "notes" text,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("processor_id") references "privacy_processors"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_processing_agreements_organization_id_status_index" on "privacy_processing_agreements"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "privacy_processing_agreements_review_due_at_index" on "privacy_processing_agreements"(
-  "review_due_at"
-);
-CREATE TABLE IF NOT EXISTS "privacy_subprocessors"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "agreement_id" integer not null,
-  "name" varchar not null,
-  "purpose" varchar,
-  "location" varchar,
-  "third_country" tinyint(1) not null default '0',
-  "approved" tinyint(1) not null default '0',
-  "added_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "safeguards" varchar,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade
-);
-CREATE TABLE IF NOT EXISTS "privacy_agreement_activity"(
-  "id" integer primary key autoincrement not null,
-  "agreement_id" integer not null,
-  "activity_id" integer not null,
-  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade,
-  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "paa_agreement_activity_unique" on "privacy_agreement_activity"(
-  "agreement_id",
-  "activity_id"
-);
-CREATE TABLE IF NOT EXISTS "privacy_incidents"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "incident_number" varchar not null,
-  "type" varchar not null,
-  "status" varchar not null default 'detected',
-  "occurred_at" datetime,
-  "discovered_at" datetime,
-  "reported_internally_at" datetime,
-  "authority_deadline_at" datetime,
-  "risk_level" varchar,
-  "affected_count" integer,
-  "notify_authority" tinyint(1) not null default '0',
-  "notify_subjects" tinyint(1) not null default '0',
-  "authority_notified_at" datetime,
-  "subjects_notified_at" datetime,
-  "assigned_user_id" integer,
-  "summary_ciphertext" text,
-  "affected_ciphertext" text,
-  "measures_ciphertext" text,
-  "lessons_ciphertext" text,
-  "dek_wrapped" text,
-  "closed_at" datetime,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "controller_role" varchar not null default 'controller',
-  "controller_name" varchar,
-  "controller_notified_at" datetime,
-  "own_infrastructure_affected" tinyint(1) not null default '0',
-  "authority_name" varchar,
-  "authority_portal_url" text,
-  "authority_report_type" varchar,
-  "authority_report_reference" varchar,
-  "authority_case_number" varchar,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("assigned_user_id") references "users"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "pinc_org_number_unique" on "privacy_incidents"(
-  "organization_id",
-  "incident_number"
-);
-CREATE INDEX "privacy_incidents_organization_id_status_index" on "privacy_incidents"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "privacy_incidents_authority_deadline_at_index" on "privacy_incidents"(
-  "authority_deadline_at"
-);
-CREATE TABLE IF NOT EXISTS "privacy_incident_events"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer,
-  "incident_id" integer,
-  "actor_type" varchar not null,
-  "actor_user_id" integer,
-  "event" varchar not null,
-  "metadata" text,
-  "prev_hash" varchar,
-  "hash" varchar,
-  "created_at" datetime
-);
-CREATE INDEX "privacy_incident_events_incident_id_event_index" on "privacy_incident_events"(
-  "incident_id",
-  "event"
-);
-CREATE INDEX "privacy_incident_events_hash_index" on "privacy_incident_events"(
-  "hash"
-);
-CREATE TABLE IF NOT EXISTS "privacy_measures"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "incident_id" integer,
-  "activity_id" integer,
-  "title" varchar not null,
-  "description" text,
-  "due_at" date,
-  "status" varchar not null default 'open',
-  "assigned_user_id" integer,
-  "completed_at" datetime,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("incident_id") references "privacy_incidents"("id") on delete cascade,
-  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
-  foreign key("assigned_user_id") references "users"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_measures_organization_id_status_index" on "privacy_measures"(
-  "organization_id",
-  "status"
-);
-CREATE TABLE IF NOT EXISTS "privacy_dpias"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "activity_id" integer not null,
-  "necessity" text,
-  "risks" text,
-  "mitigations" text,
-  "residual_risk" varchar,
-  "outcome" varchar not null default 'open',
-  "assessed_by" integer,
-  "assessed_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
-  foreign key("assessed_by") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_dpias_organization_id_outcome_index" on "privacy_dpias"(
-  "organization_id",
-  "outcome"
-);
-CREATE TABLE IF NOT EXISTS "privacy_technical_measures"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "name" varchar not null,
-  "category" varchar not null,
-  "responsible_user_id" integer,
-  "implementation_status" varchar not null default 'planned',
-  "protection_level" varchar,
-  "current_version_id" integer,
-  "valid_from" date,
-  "valid_until" date,
-  "next_review_at" date,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("responsible_user_id") references "users"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_technical_measures_organization_id_implementation_status_index" on "privacy_technical_measures"(
-  "organization_id",
-  "implementation_status"
-);
-CREATE INDEX "privacy_technical_measures_next_review_at_index" on "privacy_technical_measures"(
-  "next_review_at"
-);
-CREATE TABLE IF NOT EXISTS "privacy_technical_measure_versions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "measure_id" integer not null,
-  "version_no" integer not null,
-  "payload" text not null,
-  "note" varchar,
-  "created_by" integer,
-  "approved_by" integer,
-  "approved_at" datetime,
-  "valid_from" date,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("measure_id") references "privacy_technical_measures"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null,
-  foreign key("approved_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "ptmv_measure_version_unique" on "privacy_technical_measure_versions"(
-  "measure_id",
-  "version_no"
-);
-CREATE TABLE IF NOT EXISTS "privacy_measure_assignments"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "measure_id" integer not null,
-  "activity_id" integer,
-  "agreement_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("measure_id") references "privacy_technical_measures"("id") on delete cascade,
-  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
-  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade
-);
-CREATE INDEX "privacy_measure_assignments_organization_id_index" on "privacy_measure_assignments"(
-  "organization_id"
-);
-CREATE TABLE IF NOT EXISTS "privacy_measure_reviews"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "measure_id" integer not null,
-  "reviewed_at" datetime,
-  "result" varchar not null,
-  "deviation" text,
-  "follow_up" text,
-  "due_at" date,
-  "reviewer_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("measure_id") references "privacy_technical_measures"("id") on delete cascade,
-  foreign key("reviewer_id") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_measure_reviews_organization_id_index" on "privacy_measure_reviews"(
-  "organization_id"
-);
-CREATE TABLE IF NOT EXISTS "privacy_joint_controller_agreements"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "partner_id" integer not null,
-  "title" varchar not null,
-  "version" varchar not null default '1.0',
-  "status" varchar not null default 'draft',
-  "valid_from" date,
-  "valid_until" date,
-  "review_due_at" date,
-  "responsibilities" text,
-  "contact_point" varchar,
-  "essence_provided" tinyint(1) not null default '0',
-  "document_path" varchar,
-  "document_name" varchar,
-  "notes" text,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("partner_id") references "privacy_processors"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_joint_controller_agreements_organization_id_status_index" on "privacy_joint_controller_agreements"(
-  "organization_id",
-  "status"
-);
-CREATE TABLE IF NOT EXISTS "privacy_gvv_activity"(
-  "id" integer primary key autoincrement not null,
-  "gvv_id" integer not null,
-  "activity_id" integer not null,
-  foreign key("gvv_id") references "privacy_joint_controller_agreements"("id") on delete cascade,
-  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "pgvva_gvv_activity_unique" on "privacy_gvv_activity"(
-  "gvv_id",
-  "activity_id"
-);
-CREATE TABLE IF NOT EXISTS "privacy_compliance_findings"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "requirement_key" varchar not null,
-  "label" varchar not null,
-  "category" varchar,
-  "status" varchar not null default 'missing',
-  "trigger" varchar,
-  "activity_id" integer,
-  "agreement_id" integer,
-  "processor_id" integer,
-  "responsible_user_id" integer,
-  "due_at" date,
-  "justification" text,
-  "auto_detected" tinyint(1) not null default '1',
-  "detected_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
-  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade,
-  foreign key("processor_id") references "privacy_processors"("id") on delete cascade,
-  foreign key("responsible_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "privacy_compliance_findings_organization_id_status_index" on "privacy_compliance_findings"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "privacy_compliance_findings_organization_id_requirement_key_index" on "privacy_compliance_findings"(
-  "organization_id",
-  "requirement_key"
-);
-CREATE TABLE IF NOT EXISTS "privacy_attachments"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "attachable_type" varchar not null,
-  "attachable_id" integer not null,
-  "filename" varchar not null,
-  "path" varchar not null,
-  "size" integer not null default '0',
-  "mime" varchar,
-  "uploaded_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "valid_until" date,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("uploaded_by") references "users"("id") on delete set null
-);
-CREATE INDEX "pa_attachable_index" on "privacy_attachments"(
-  "attachable_type",
-  "attachable_id"
-);
-CREATE UNIQUE INDEX "orgs_license_uid_unique" on "organizations"(
-  "license_uid"
-);
+CREATE INDEX "idx_organizations_is_demo" on "organizations"("is_demo");
 CREATE TABLE IF NOT EXISTS "two_factor_credentials"(
   "id" integer primary key autoincrement not null,
   "user_id" integer not null,
@@ -3971,28 +2234,20 @@ CREATE INDEX "tfc_user_type_index" on "two_factor_credentials"(
 CREATE INDEX "tfc_credential_id_index" on "two_factor_credentials"(
   "credential_id"
 );
-CREATE TABLE IF NOT EXISTS "webauthn_credentials"(
-  "id" varchar not null,
-  "authenticatable_type" varchar not null,
-  "authenticatable_id" integer not null,
-  "user_id" varchar not null,
-  "alias" varchar,
-  "counter" integer,
-  "rp_id" varchar not null,
-  "origin" varchar not null,
-  "transports" text,
-  "aaguid" varchar,
-  "public_key" text not null,
-  "attestation_format" varchar not null default 'none',
-  "certificates" text,
-  "disabled_at" datetime,
+CREATE TABLE IF NOT EXISTS "user_bookmarks"(
+  "id" integer primary key autoincrement not null,
+  "user_id" integer not null,
+  "label" varchar not null,
+  "url" text not null,
+  "icon" varchar,
+  "sort_order" integer not null default '0',
   "created_at" datetime,
   "updated_at" datetime,
-  primary key("id")
+  foreign key("user_id") references "users"("id") on delete cascade
 );
-CREATE INDEX "webauthn_user_index" on "webauthn_credentials"(
-  "authenticatable_type",
-  "authenticatable_id"
+CREATE INDEX "user_bookmarks_user_id_sort_order_index" on "user_bookmarks"(
+  "user_id",
+  "sort_order"
 );
 CREATE TABLE IF NOT EXISTS "communication_notes"(
   "id" integer primary key autoincrement not null,
@@ -4345,35 +2600,6 @@ CREATE INDEX "bte_transfer_event_idx" on "billing_transfer_events"(
   "event"
 );
 CREATE INDEX "bte_hash_idx" on "billing_transfer_events"("hash");
-CREATE TABLE IF NOT EXISTS "time_export_lines"(
-  "id" integer primary key autoincrement not null,
-  "time_export_id" integer not null,
-  "user_id" integer not null,
-  "wage_type" varchar not null,
-  "cost_center" varchar,
-  "quantity" numeric not null default('0'),
-  "unit" varchar not null default('h'),
-  "period_start" date not null,
-  "period_end" date not null,
-  "note" text,
-  "source_refs" text,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "surcharge_rule_id" integer,
-  "wage_type_code" varchar,
-  "percentage" numeric,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("time_export_id") references time_exports("id") on delete cascade on update no action,
-  foreign key("surcharge_rule_id") references "surcharge_rules"("id") on delete set null
-);
-CREATE INDEX "tel_export_user_idx" on "time_export_lines"(
-  "time_export_id",
-  "user_id"
-);
-CREATE INDEX "tel_export_wage_idx" on "time_export_lines"(
-  "time_export_id",
-  "wage_type"
-);
 CREATE TABLE IF NOT EXISTS "isms_scopes"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -4804,32 +3030,6 @@ CREATE TABLE IF NOT EXISTS "day_correction_requests"(
 CREATE INDEX "day_corr_requests_status_idx" on "day_correction_requests"(
   "organization_id",
   "status"
-);
-CREATE TABLE IF NOT EXISTS "diary_entry_events"(
-  "id" integer primary key autoincrement not null,
-  "diary_entry_id" integer not null,
-  "organization_id" integer not null,
-  "event" varchar not null,
-  "from_status" varchar,
-  "to_status" varchar not null,
-  "actor_user_id" integer,
-  "actor_kind" varchar not null default 'user',
-  "note" text,
-  "payload" text,
-  "occurred_at" datetime not null,
-  "created_at" datetime,
-  foreign key("diary_entry_id") references "diary_entries"("id") on delete cascade,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("actor_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "diary_events_entry_idx" on "diary_entry_events"(
-  "diary_entry_id",
-  "occurred_at"
-);
-CREATE INDEX "diary_events_org_idx" on "diary_entry_events"(
-  "organization_id",
-  "event",
-  "occurred_at"
 );
 CREATE TABLE IF NOT EXISTS "bank_statements"(
   "id" integer primary key autoincrement not null,
@@ -5360,133 +3560,6 @@ CREATE INDEX "webhook_deliveries_endpoint_idx" on "webhook_deliveries"(
 CREATE INDEX "webhook_deliveries_org_status_idx" on "webhook_deliveries"(
   "organization_id",
   "status"
-);
-CREATE TABLE IF NOT EXISTS "diary_entries"(
-  "id" integer primary key autoincrement not null,
-  "legacy_id" integer,
-  "user_id" integer not null,
-  "content" text not null,
-  "response" text,
-  "status" integer not null default('2'),
-  "start_at" datetime,
-  "end_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "on_call_shift_id" integer,
-  "emergency_assignment_id" integer,
-  "is_archived" tinyint(1) not null default('0'),
-  "archived_at" datetime,
-  "project_id" integer,
-  "organization_id" integer,
-  "entry_type_id" integer,
-  "customer_id" integer,
-  "assigned_user_id" integer,
-  "title" varchar,
-  "address_line" varchar,
-  "address_zip" varchar,
-  "address_city" varchar,
-  "address_country" varchar,
-  "address_lat" numeric,
-  "address_lng" numeric,
-  "scheduled_for" date,
-  "time_window_start" time,
-  "time_window_end" time,
-  "service_minutes" integer,
-  "priority" varchar,
-  "tour_id" integer,
-  "tour_position" integer,
-  "notes" text,
-  "mode" varchar not null default('fixed'),
-  "due_date" date,
-  "window_start_date" date,
-  "window_end_date" date,
-  "location_mode" varchar not null default('onsite'),
-  "recurrence_rule_id" integer,
-  "asset_id" integer,
-  "planned_minutes" integer,
-  "planned_at" datetime,
-  "planned_by_user_id" integer,
-  "accepted_at" datetime,
-  "accepted_by_user_id" integer,
-  "started_at" datetime,
-  "paused_at" datetime,
-  "pause_reason" varchar,
-  "pause_note" text,
-  "resumed_at" datetime,
-  "wait_seconds_total" integer not null default('0'),
-  "completed_at" datetime,
-  "completed_by_user_id" integer,
-  "completion_summary" text,
-  "accepted_final_at" datetime,
-  "accepted_final_by" integer,
-  "signature_attachment_id" integer,
-  "protocol_id" integer,
-  "invoiced_at" datetime,
-  "invoice_reference" varchar,
-  "cancelled_at" datetime,
-  "cancelled_by_user_id" integer,
-  "cancellation_reason" text,
-  "dispatch_status" varchar,
-  "dispatch_confirmed_at" datetime,
-  "dispatch_override_reason" text,
-  "dispatch_override_by_user_id" integer,
-  foreign key("cancelled_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("protocol_id") references protocols("id") on delete set null on update no action,
-  foreign key("signature_attachment_id") references attachments("id") on delete set null on update no action,
-  foreign key("accepted_final_by") references users("id") on delete set null on update no action,
-  foreign key("completed_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("accepted_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("asset_id") references assets("id") on delete set null on update no action,
-  foreign key("tour_id") references tours("id") on delete set null on update no action,
-  foreign key("assigned_user_id") references users("id") on delete set null on update no action,
-  foreign key("customer_id") references customers("id") on delete set null on update no action,
-  foreign key("entry_type_id") references entry_types("id") on delete set null on update no action,
-  foreign key("project_id") references projects("id") on delete set null on update no action,
-  foreign key("user_id") references users("id") on delete cascade on update no action,
-  foreign key("on_call_shift_id") references on_call_shifts("id") on delete set null on update no action,
-  foreign key("emergency_assignment_id") references emergency_assignments("id") on delete set null on update no action,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
-  foreign key("recurrence_rule_id") references recurrence_rules("id") on delete set null on update no action,
-  foreign key("planned_by_user_id") references users("id") on delete set null on update no action,
-  foreign key("dispatch_override_by_user_id") references "users"("id") on delete set null
-);
-CREATE INDEX "de_assigned_sched_idx" on "diary_entries"(
-  "assigned_user_id",
-  "scheduled_for"
-);
-CREATE INDEX "de_due_date_idx" on "diary_entries"("due_date");
-CREATE INDEX "de_entry_type_idx" on "diary_entries"("entry_type_id");
-CREATE INDEX "de_location_mode_idx" on "diary_entries"("location_mode");
-CREATE INDEX "de_org_asset_idx" on "diary_entries"(
-  "organization_id",
-  "asset_id"
-);
-CREATE INDEX "de_org_mode_idx" on "diary_entries"("organization_id", "mode");
-CREATE INDEX "de_org_sched_idx" on "diary_entries"(
-  "organization_id",
-  "scheduled_for"
-);
-CREATE INDEX "de_recurrence_rule_idx" on "diary_entries"("recurrence_rule_id");
-CREATE INDEX "de_scheduled_for_idx" on "diary_entries"("scheduled_for");
-CREATE INDEX "de_tour_pos_idx" on "diary_entries"("tour_id", "tour_position");
-CREATE INDEX "diary_entries_archived_at_index" on "diary_entries"(
-  "archived_at"
-);
-CREATE INDEX "diary_entries_is_archived_index" on "diary_entries"(
-  "is_archived"
-);
-CREATE INDEX "diary_entries_legacy_id_index" on "diary_entries"("legacy_id");
-CREATE INDEX "diary_entries_project_id_index" on "diary_entries"("project_id");
-CREATE INDEX "diary_entries_start_at_index" on "diary_entries"("start_at");
-CREATE INDEX "diary_entries_user_id_status_start_at_index" on "diary_entries"(
-  "user_id",
-  "status",
-  "start_at"
-);
-CREATE INDEX "idx_diary_entries_org" on "diary_entries"("organization_id");
-CREATE INDEX "diary_org_dispatch_idx" on "diary_entries"(
-  "organization_id",
-  "dispatch_status"
 );
 CREATE TABLE IF NOT EXISTS "vehicle_reservations"(
   "id" integer primary key autoincrement not null,
@@ -6209,6 +4282,26 @@ CREATE INDEX "stock_val_layers_fefo_idx" on "stock_valuation_layers"(
   "warehouse_id",
   "best_before"
 );
+CREATE TABLE IF NOT EXISTS "user_dashboard_widgets"(
+  "id" integer primary key autoincrement not null,
+  "user_id" integer not null,
+  "widget_key" varchar not null,
+  "sort_order" integer not null default '0',
+  "hidden" tinyint(1) not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  "width" varchar,
+  "tab_key" varchar,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "user_dashboard_widgets_user_id_widget_key_unique" on "user_dashboard_widgets"(
+  "user_id",
+  "widget_key"
+);
+CREATE INDEX "user_dashboard_widgets_user_id_sort_order_index" on "user_dashboard_widgets"(
+  "user_id",
+  "sort_order"
+);
 CREATE TABLE IF NOT EXISTS "article_supplies"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -6447,14 +4540,22 @@ CREATE UNIQUE INDEX "label_templates_org_name_uq" on "label_templates"(
   "organization_id",
   "name"
 );
-CREATE INDEX "tasks_org_status_idx" on "tasks"("organization_id", "status");
-CREATE INDEX "timesheets_org_status_idx" on "timesheets"(
-  "organization_id",
-  "status"
+CREATE TABLE IF NOT EXISTS "user_filter_presets"(
+  "id" integer primary key autoincrement not null,
+  "user_id" integer not null,
+  "scope" varchar not null,
+  "name" varchar not null,
+  "query" text not null,
+  "is_default" tinyint(1) not null default '0',
+  "sort_order" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("user_id") references "users"("id") on delete cascade
 );
-CREATE INDEX "diary_org_start_idx" on "diary_entries"(
-  "organization_id",
-  "start_at"
+CREATE INDEX "user_filter_presets_user_id_scope_sort_order_index" on "user_filter_presets"(
+  "user_id",
+  "scope",
+  "sort_order"
 );
 CREATE TABLE IF NOT EXISTS "permits"(
   "id" integer primary key autoincrement not null,
@@ -6527,7 +4628,6 @@ CREATE TABLE IF NOT EXISTS "supplier_catalog_sources"(
   "remote_path" varchar,
   "remote_username" varchar,
   "remote_password" text,
-  "remote_host_fingerprint" varchar,
   "mapping" text,
   "fetch_interval_minutes" integer,
   "next_fetch_at" datetime,
@@ -6536,6 +4636,7 @@ CREATE TABLE IF NOT EXISTS "supplier_catalog_sources"(
   "punchout_password" text,
   "sheet_name" varchar,
   "expected_customer_no" varchar,
+  "remote_host_fingerprint" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("supplier_id") references "suppliers"("id") on delete cascade
 );
@@ -6848,6 +4949,2190 @@ CREATE INDEX "boqe_boq_phase_idx" on "boq_exports"(
   "bill_of_quantity_id",
   "phase"
 );
+CREATE TABLE IF NOT EXISTS "month_closures"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "period_year" integer not null,
+  "period_month" integer not null,
+  "status" varchar not null default 'draft',
+  "submitted_at" datetime,
+  "submitted_by_user_id" integer,
+  "decided_at" datetime,
+  "decided_by_user_id" integer,
+  "decision_note" text,
+  "locked_at" datetime,
+  "locked_by_user_id" integer,
+  "totals" text,
+  "days_total" integer not null default '0',
+  "days_with_attendance" integer not null default '0',
+  "days_closed" integer not null default '0',
+  "days_open" integer not null default '0',
+  "warnings_count" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("submitted_by_user_id") references "users"("id") on delete set null,
+  foreign key("decided_by_user_id") references "users"("id") on delete set null,
+  foreign key("locked_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "month_closures_period_unique" on "month_closures"(
+  "organization_id",
+  "user_id",
+  "period_year",
+  "period_month"
+);
+CREATE INDEX "month_closures_status_idx" on "month_closures"(
+  "organization_id",
+  "status",
+  "period_year",
+  "period_month"
+);
+CREATE TABLE IF NOT EXISTS "month_closure_events"(
+  "id" integer primary key autoincrement not null,
+  "month_closure_id" integer not null,
+  "event" varchar not null,
+  "actor_user_id" integer not null,
+  "note" text,
+  "payload" text,
+  "created_at" datetime not null default CURRENT_TIMESTAMP,
+  foreign key("month_closure_id") references "month_closures"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete cascade
+);
+CREATE INDEX "month_closure_events_chrono_idx" on "month_closure_events"(
+  "month_closure_id",
+  "created_at"
+);
+CREATE INDEX "month_closure_events_event_index" on "month_closure_events"(
+  "event"
+);
+CREATE TABLE IF NOT EXISTS "time_exports"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "profile" varchar not null,
+  "period_year" integer not null,
+  "period_month" integer not null,
+  "scope" varchar not null,
+  "scope_user_id" integer,
+  "scope_team_id" integer,
+  "status" varchar not null default 'preparing',
+  "rows_count" integer not null default '0',
+  "totals" text,
+  "payload_hash" varchar,
+  "file_path" varchar,
+  "file_format" varchar,
+  "created_by_user_id" integer,
+  "delivered_at" datetime,
+  "delivered_by_user_id" integer,
+  "delivery_note" text,
+  "superseded_by_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "auto_delivery" text,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("scope_user_id") references "users"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete set null,
+  foreign key("delivered_by_user_id") references "users"("id") on delete set null,
+  foreign key("superseded_by_id") references "time_exports"("id") on delete set null
+);
+CREATE INDEX "time_exports_period_idx" on "time_exports"(
+  "organization_id",
+  "period_year",
+  "period_month"
+);
+CREATE INDEX "time_exports_status_idx" on "time_exports"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "time_exports_hash_idx" on "time_exports"("payload_hash");
+CREATE TABLE IF NOT EXISTS "time_export_events"(
+  "id" integer primary key autoincrement not null,
+  "time_export_id" integer not null,
+  "event" varchar not null,
+  "actor_user_id" integer,
+  "note" text,
+  "payload" text,
+  "created_at" datetime not null default CURRENT_TIMESTAMP,
+  foreign key("time_export_id") references "time_exports"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "tee_export_event_idx" on "time_export_events"(
+  "time_export_id",
+  "event"
+);
+CREATE TABLE IF NOT EXISTS "time_export_lines"(
+  "id" integer primary key autoincrement not null,
+  "time_export_id" integer not null,
+  "user_id" integer not null,
+  "wage_type" varchar not null,
+  "cost_center" varchar,
+  "quantity" numeric not null default('0'),
+  "unit" varchar not null default('h'),
+  "period_start" date not null,
+  "period_end" date not null,
+  "note" text,
+  "source_refs" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "surcharge_rule_id" integer,
+  "wage_type_code" varchar,
+  "percentage" numeric,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("time_export_id") references time_exports("id") on delete cascade on update no action,
+  foreign key("surcharge_rule_id") references "surcharge_rules"("id") on delete set null
+);
+CREATE INDEX "tel_export_user_idx" on "time_export_lines"(
+  "time_export_id",
+  "user_id"
+);
+CREATE INDEX "tel_export_wage_idx" on "time_export_lines"(
+  "time_export_id",
+  "wage_type"
+);
+CREATE TABLE IF NOT EXISTS "backup_heartbeats"(
+  "id" integer primary key autoincrement not null,
+  "occurred_at" datetime not null,
+  "size_bytes" integer,
+  "manifest_hash" varchar,
+  "source" varchar,
+  "ip" varchar,
+  "created_at" datetime,
+  "updated_at" datetime
+);
+CREATE INDEX "backup_heartbeats_occurred_at_index" on "backup_heartbeats"(
+  "occurred_at"
+);
+CREATE TABLE IF NOT EXISTS "pricing_change_alerts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "supplier_catalog_item_id" integer not null,
+  "article_id" integer not null,
+  "supplier_id" integer,
+  "old_purchase_price" numeric,
+  "new_purchase_price" numeric,
+  "sale_price" numeric,
+  "new_margin" numeric,
+  "min_margin" numeric,
+  "status" varchar not null default('open'),
+  "acknowledged_by" integer,
+  "acknowledged_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "type" varchar not null default 'margin',
+  "impacts" text,
+  foreign key("acknowledged_by") references users("id") on delete set null on update no action,
+  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
+  foreign key("article_id") references articles("id") on delete cascade on update no action,
+  foreign key("supplier_catalog_item_id") references supplier_catalog_items("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+);
+CREATE INDEX "pca_org_status_idx" on "pricing_change_alerts"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "import_runs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "entity" varchar not null,
+  "state" varchar not null default 'preflight',
+  "input_filename" varchar not null,
+  "input_hash" varchar not null,
+  "storage_path" varchar not null,
+  "delimiter" varchar not null default ';',
+  "encoding" varchar not null default 'UTF-8',
+  "rows_total" integer not null default '0',
+  "rows_created" integer not null default '0',
+  "rows_updated" integer not null default '0',
+  "rows_skipped" integer not null default '0',
+  "rows_failed" integer not null default '0',
+  "preview" text,
+  "started_at" datetime,
+  "finished_at" datetime,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "match_policy" varchar not null default 'auto_create',
+  "unresolved_values" text,
+  "source_options" text,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "import_runs_org_entity_state_idx" on "import_runs"(
+  "organization_id",
+  "entity",
+  "state"
+);
+CREATE INDEX "import_runs_hash_idx" on "import_runs"("input_hash");
+CREATE TABLE IF NOT EXISTS "import_run_errors"(
+  "id" integer primary key autoincrement not null,
+  "import_run_id" integer not null,
+  "row_number" integer not null,
+  "field" varchar,
+  "code" varchar not null,
+  "message" text not null,
+  "row_data" text,
+  "created_at" datetime not null default CURRENT_TIMESTAMP,
+  foreign key("import_run_id") references "import_runs"("id") on delete cascade
+);
+CREATE INDEX "import_run_errors_row_idx" on "import_run_errors"(
+  "import_run_id",
+  "row_number"
+);
+CREATE INDEX "import_run_errors_code_idx" on "import_run_errors"(
+  "import_run_id",
+  "code"
+);
+CREATE TABLE IF NOT EXISTS "jtl_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "mode" varchar not null default 'on_premise',
+  "base_url" varchar,
+  "api_version" varchar not null default '2.0',
+  "allow_private_network" tinyint(1) not null default '0',
+  "tenant_id" varchar,
+  "company_id" varchar,
+  "app_id" varchar,
+  "challenge_code" text,
+  "registration_id" varchar,
+  "registration_status" varchar,
+  "api_key" text,
+  "client_id" text,
+  "client_secret" text,
+  "access_token" text,
+  "token_expires_at" datetime,
+  "granted_scopes" text,
+  "status" varchar not null default 'draft',
+  "blocked_reason" varchar,
+  "stock_checkpoint_at" datetime,
+  "article_checkpoint_at" datetime,
+  "last_sync_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "detected_version" varchar,
+  "contract_notes" text,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "jtlc_org_unique" on "jtl_connections"("organization_id");
+CREATE TABLE IF NOT EXISTS "jtl_warehouse_mappings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "jtl_warehouse_id" varchar not null,
+  "name" varchar not null,
+  "code" varchar,
+  "warehouse_type" varchar,
+  "jtl_is_active" tinyint(1) not null default '1',
+  "lock_for_shipment" tinyint(1) not null default '0',
+  "lock_for_availability" tinyint(1) not null default '0',
+  "warehouse_id" integer,
+  "last_seen_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("warehouse_id") references "warehouses"("id") on delete set null
+);
+CREATE UNIQUE INDEX "jtlwm_org_ext_unique" on "jtl_warehouse_mappings"(
+  "organization_id",
+  "jtl_warehouse_id"
+);
+CREATE TABLE IF NOT EXISTS "jtl_stock_snapshots"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "article_variant_id" integer not null,
+  "warehouse_id" integer not null,
+  "quantity_total" numeric not null default '0',
+  "quantity_available" numeric not null default '0',
+  "quantity_reserved" numeric not null default '0',
+  "quantity_blocked" numeric not null default '0',
+  "fetched_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("article_variant_id") references "article_variants"("id") on delete cascade,
+  foreign key("warehouse_id") references "warehouses"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "jtlss_org_var_wh_unique" on "jtl_stock_snapshots"(
+  "organization_id",
+  "article_variant_id",
+  "warehouse_id"
+);
+CREATE TABLE IF NOT EXISTS "pending_external_conflicts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "plugin_id" varchar not null,
+  "conflict_type" varchar not null,
+  "referenceable_type" varchar not null,
+  "referenceable_id" integer not null,
+  "external_id" varchar,
+  "local_snapshot" text not null,
+  "remote_snapshot" text not null,
+  "diff_fields" text,
+  "status" varchar not null default 'open',
+  "resolved_by" integer,
+  "resolved_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null,
+  foreign key("resolved_by") references "users"("id") on delete set null
+);
+CREATE INDEX "pec_referenceable_idx" on "pending_external_conflicts"(
+  "referenceable_type",
+  "referenceable_id"
+);
+CREATE INDEX "pec_org_plugin_status_idx" on "pending_external_conflicts"(
+  "organization_id",
+  "plugin_id",
+  "status"
+);
+CREATE INDEX "pending_external_conflicts_plugin_id_external_id_index" on "pending_external_conflicts"(
+  "plugin_id",
+  "external_id"
+);
+CREATE TABLE IF NOT EXISTS "plugin_settings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "plugin_id" varchar not null,
+  "enabled" tinyint(1) not null default '0',
+  "settings" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "workspace_lookup" varchar,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "plugin_settings_organization_id_plugin_id_unique" on "plugin_settings"(
+  "organization_id",
+  "plugin_id"
+);
+CREATE TABLE IF NOT EXISTS "wage_type_mappings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "profile" varchar not null,
+  "wage_type" varchar not null,
+  "external_code" varchar not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "wtm_org_profile_type_uq" on "wage_type_mappings"(
+  "organization_id",
+  "profile",
+  "wage_type"
+);
+CREATE TABLE IF NOT EXISTS "time_export_delivery_configs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "profile" varchar not null,
+  "mail_enabled" tinyint(1) not null default '0',
+  "mail_recipients" text,
+  "sftp_enabled" tinyint(1) not null default '0',
+  "sftp_host" varchar,
+  "sftp_port" integer not null default '22',
+  "sftp_username" varchar,
+  "sftp_password" text,
+  "sftp_root" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "sftp_host_fingerprint" varchar,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "tedc_org_profile_uq" on "time_export_delivery_configs"(
+  "organization_id",
+  "profile"
+);
+CREATE TABLE IF NOT EXISTS "license_flag_overrides"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "flag" varchar not null,
+  "reason" text,
+  "disabled_at" datetime not null,
+  "disabled_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("disabled_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "license_flag_overrides_unique" on "license_flag_overrides"(
+  "organization_id",
+  "flag"
+);
+CREATE INDEX "license_flag_overrides_flag_index" on "license_flag_overrides"(
+  "flag"
+);
+CREATE TABLE IF NOT EXISTS "sites"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "name" varchar not null,
+  "code" varchar,
+  "address_street" varchar,
+  "address_zip" varchar,
+  "address_city" varchar,
+  "country" varchar,
+  "geo_lat" numeric,
+  "geo_lng" numeric,
+  "is_active" tinyint(1) not null default '1',
+  "notes" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "holiday_provider" varchar,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "sites_idx_org_customer" on "sites"(
+  "organization_id",
+  "customer_id",
+  "is_active"
+);
+CREATE UNIQUE INDEX "sites_uniq_code_per_customer" on "sites"(
+  "customer_id",
+  "code"
+);
+CREATE TABLE IF NOT EXISTS "buildings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "site_id" integer not null,
+  "name" varchar not null,
+  "code" varchar,
+  "gross_area_m2" numeric,
+  "year_built" integer,
+  "notes" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("site_id") references "sites"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "buildings_idx_org_site" on "buildings"(
+  "organization_id",
+  "site_id"
+);
+CREATE UNIQUE INDEX "buildings_uniq_code_per_site" on "buildings"(
+  "site_id",
+  "code"
+);
+CREATE TABLE IF NOT EXISTS "floors"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "building_id" integer not null,
+  "level" integer not null,
+  "label" varchar not null,
+  "gross_area_m2" numeric,
+  "notes" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("building_id") references "buildings"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "floors_idx_org_building" on "floors"(
+  "organization_id",
+  "building_id"
+);
+CREATE UNIQUE INDEX "floors_uniq_level_per_building" on "floors"(
+  "building_id",
+  "level"
+);
+CREATE TABLE IF NOT EXISTS "cleaning_profiles"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "code" varchar not null,
+  "label" varchar not null,
+  "interval_days" integer,
+  "requirements" text,
+  "notes" text,
+  "is_active" tinyint(1) not null default '1',
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "cleaning_profiles_idx_org_active" on "cleaning_profiles"(
+  "organization_id",
+  "is_active"
+);
+CREATE UNIQUE INDEX "cleaning_profiles_uniq_code_per_org" on "cleaning_profiles"(
+  "organization_id",
+  "code"
+);
+CREATE TABLE IF NOT EXISTS "rooms"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "name" varchar not null,
+  "code" varchar,
+  "building" varchar,
+  "floor" varchar,
+  "capacity" integer,
+  "equipment" text,
+  "color" varchar,
+  "is_active" tinyint(1) not null default('1'),
+  "notes" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "floor_id" integer,
+  "customer_id" integer,
+  "usage_type" varchar not null default('office'),
+  "net_area_m2" numeric,
+  "cleaning_profile_id" integer,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("floor_id") references floors("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("updated_by") references users("id") on delete set null on update no action,
+  foreign key("cleaning_profile_id") references "cleaning_profiles"("id") on delete set null
+);
+CREATE INDEX "rooms_idx_floor" on "rooms"("floor_id");
+CREATE INDEX "rooms_idx_org_customer" on "rooms"(
+  "organization_id",
+  "customer_id",
+  "is_active"
+);
+CREATE UNIQUE INDEX "rooms_organization_id_code_unique" on "rooms"(
+  "organization_id",
+  "code"
+);
+CREATE INDEX "rooms_organization_id_is_active_index" on "rooms"(
+  "organization_id",
+  "is_active"
+);
+CREATE INDEX "rooms_idx_org_cleaning_profile" on "rooms"(
+  "organization_id",
+  "cleaning_profile_id"
+);
+CREATE TABLE IF NOT EXISTS "software"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "vendor" varchar,
+  "kind" varchar not null,
+  "license_type" varchar not null,
+  "default_version" varchar,
+  "notes" text,
+  "is_active" tinyint(1) not null default '1',
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "software_idx_org_kind" on "software"("organization_id", "kind");
+CREATE INDEX "software_idx_org_active" on "software"(
+  "organization_id",
+  "is_active"
+);
+CREATE UNIQUE INDEX "software_uniq_name_vendor" on "software"(
+  "organization_id",
+  "name",
+  "vendor"
+);
+CREATE TABLE IF NOT EXISTS "software_installations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "asset_id" integer not null,
+  "software_id" integer not null,
+  "version" varchar,
+  "license_key" text,
+  "seats" integer,
+  "installed_on" date,
+  "expires_on" date,
+  "is_operating_system" tinyint(1) not null default '0',
+  "notes" text,
+  "created_by" integer,
+  "updated_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("asset_id") references "assets"("id") on delete cascade,
+  foreign key("software_id") references "software"("id") on delete restrict,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("updated_by") references "users"("id") on delete set null
+);
+CREATE INDEX "sw_installs_idx_asset" on "software_installations"("asset_id");
+CREATE INDEX "sw_installs_idx_software" on "software_installations"(
+  "software_id"
+);
+CREATE INDEX "sw_installs_idx_org_expiry" on "software_installations"(
+  "organization_id",
+  "expires_on"
+);
+CREATE UNIQUE INDEX sw_installs_uniq_os_per_asset ON software_installations(
+  asset_id
+) WHERE is_operating_system = 1;
+CREATE TABLE IF NOT EXISTS "billbee_orders"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "billbee_order_id" varchar not null,
+  "external_order_id" varchar,
+  "order_number" varchar,
+  "channel" varchar,
+  "state" integer not null default '0',
+  "currency" varchar,
+  "total_gross" numeric not null default '0',
+  "buyer_external_id" varchar,
+  "buyer" text,
+  "items" text,
+  "raw" text,
+  "ordered_at" datetime,
+  "billbee_modified_at" datetime,
+  "customer_id" integer,
+  "inbox_status" varchar not null default 'open',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "bbo_org_order_unique" on "billbee_orders"(
+  "organization_id",
+  "billbee_order_id"
+);
+CREATE INDEX "bbo_buyer_idx" on "billbee_orders"("buyer_external_id");
+CREATE INDEX "bbo_modified_idx" on "billbee_orders"("billbee_modified_at");
+CREATE TABLE IF NOT EXISTS "export_runs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "entity" varchar not null,
+  "format" varchar not null default 'csv',
+  "state" varchar not null default 'preparing',
+  "filters" text,
+  "output_filename" varchar not null,
+  "storage_path" varchar not null default '',
+  "rows_total" integer not null default '0',
+  "error_message" text,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "export_runs_org_entity_state_idx" on "export_runs"(
+  "organization_id",
+  "entity",
+  "state"
+);
+CREATE TABLE IF NOT EXISTS "remote_pending_sessions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "provider" varchar not null,
+  "remote_id" varchar not null,
+  "session_id" varchar not null,
+  "started_at" datetime not null,
+  "ended_at" datetime not null,
+  "note" varchar,
+  "status" varchar not null default('open'),
+  "time_entry_id" integer,
+  "resolved_by" integer,
+  "resolved_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "alias" varchar,
+  "asset_id" integer,
+  foreign key("resolved_by") references users("id") on delete set null on update no action,
+  foreign key("time_entry_id") references time_entries("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("asset_id") references "assets"("id") on delete set null
+);
+CREATE INDEX "rps_group_idx" on "remote_pending_sessions"(
+  "organization_id",
+  "status",
+  "provider",
+  "remote_id"
+);
+CREATE UNIQUE INDEX "rps_unique_session" on "remote_pending_sessions"(
+  "organization_id",
+  "provider",
+  "session_id"
+);
+CREATE INDEX "rps_asset_idx" on "remote_pending_sessions"(
+  "organization_id",
+  "status",
+  "asset_id"
+);
+CREATE TABLE IF NOT EXISTS "etsy_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "shop_id" integer,
+  "shop_name" varchar,
+  "etsy_user_id" integer,
+  "access_token" text,
+  "refresh_token" text,
+  "token_expires_at" datetime,
+  "refresh_issued_at" datetime,
+  "scopes" varchar,
+  "status" varchar not null default 'active',
+  "webhook_token" varchar,
+  "checkpoints" text,
+  "last_synced_at" datetime,
+  "last_sync_counters" text,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "etsyc_org_unique" on "etsy_connections"(
+  "organization_id"
+);
+CREATE UNIQUE INDEX "etsyc_shop_unique" on "etsy_connections"("shop_id");
+CREATE UNIQUE INDEX "etsyc_hook_unique" on "etsy_connections"("webhook_token");
+CREATE TABLE IF NOT EXISTS "etsy_receipts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "receipt_id" integer not null,
+  "status" varchar,
+  "was_paid" tinyint(1) not null default '0',
+  "was_shipped" tinyint(1) not null default '0',
+  "currency" varchar,
+  "total_gross" numeric not null default '0',
+  "total_shipping" numeric not null default '0',
+  "total_tax" numeric not null default '0',
+  "discount" numeric not null default '0',
+  "buyer_external_id" varchar,
+  "buyer" text,
+  "items" text,
+  "raw" text,
+  "ordered_at" datetime,
+  "etsy_modified_at" datetime,
+  "customer_id" integer,
+  "inbox_status" varchar not null default 'open',
+  "shipped_pushed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "etsyr_org_receipt_unique" on "etsy_receipts"(
+  "organization_id",
+  "receipt_id"
+);
+CREATE INDEX "etsyr_buyer_idx" on "etsy_receipts"("buyer_external_id");
+CREATE INDEX "etsyr_modified_idx" on "etsy_receipts"("etsy_modified_at");
+CREATE TABLE IF NOT EXISTS "etsy_webhook_deliveries"(
+  "id" integer primary key autoincrement not null,
+  "delivery_hash" varchar not null,
+  "webhook_id" varchar,
+  "event_type" varchar,
+  "receipt_id" integer,
+  "organization_id" integer,
+  "received_at" datetime not null,
+  "processed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null
+);
+CREATE UNIQUE INDEX "etsydel_org_hash_unique" on "etsy_webhook_deliveries"(
+  "organization_id",
+  "delivery_hash"
+);
+CREATE TABLE IF NOT EXISTS "etsy_ledger_entries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "ledger_entry_id" integer not null,
+  "ledger_type" varchar,
+  "amount" integer not null default '0',
+  "balance" integer not null default '0',
+  "currency" varchar,
+  "description" varchar,
+  "reference_type" varchar,
+  "reference_id" varchar,
+  "receipt_id" integer,
+  "posted_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "etsyl_org_entry_unique" on "etsy_ledger_entries"(
+  "organization_id",
+  "ledger_entry_id"
+);
+CREATE INDEX "etsyl_receipt_idx" on "etsy_ledger_entries"("receipt_id");
+CREATE INDEX "etsyl_posted_idx" on "etsy_ledger_entries"("posted_at");
+CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "external_id" varchar not null,
+  "contact_external_id" varchar,
+  "customer_id" integer,
+  "supplier_id" integer,
+  "voucher_type" varchar,
+  "voucher_status" varchar,
+  "voucher_number" varchar,
+  "voucher_date" date,
+  "due_date" date,
+  "total_amount" numeric,
+  "open_amount" numeric,
+  "currency" varchar not null default 'EUR',
+  "archived" tinyint(1) not null default '0',
+  "payload" text,
+  "synced_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "paid_date" date,
+  "net_amount" numeric,
+  "file_path" varchar,
+  "file_materialized_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("supplier_id") references "suppliers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lexoffice_vouchers_organization_id_external_id_unique" on "lexoffice_vouchers"(
+  "organization_id",
+  "external_id"
+);
+CREATE INDEX "lexoffice_vouchers_organization_id_customer_id_index" on "lexoffice_vouchers"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "lexoffice_vouchers_organization_id_supplier_id_index" on "lexoffice_vouchers"(
+  "organization_id",
+  "supplier_id"
+);
+CREATE INDEX "lexoffice_vouchers_organization_id_voucher_type_index" on "lexoffice_vouchers"(
+  "organization_id",
+  "voucher_type"
+);
+CREATE INDEX "lexoffice_vouchers_contact_external_id_index" on "lexoffice_vouchers"(
+  "contact_external_id"
+);
+CREATE TABLE IF NOT EXISTS "contact_addresses"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "addressable_type" varchar not null,
+  "addressable_id" integer not null,
+  "kind" varchar not null default 'billing',
+  "supplement" text,
+  "street" text,
+  "zip" text,
+  "city" text,
+  "country_code" varchar,
+  "is_primary" tinyint(1) not null default '0',
+  "external_id" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null
+);
+CREATE INDEX "contact_addresses_addressable_type_addressable_id_index" on "contact_addresses"(
+  "addressable_type",
+  "addressable_id"
+);
+CREATE INDEX "contact_addresses_organization_id_index" on "contact_addresses"(
+  "organization_id"
+);
+CREATE INDEX "contact_addresses_kind_idx" on "contact_addresses"(
+  "addressable_type",
+  "addressable_id",
+  "kind"
+);
+CREATE TABLE IF NOT EXISTS "material_cost_allocations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "customer_id" integer not null,
+  "project_id" integer,
+  "source_type" varchar,
+  "source_id" integer,
+  "description" varchar,
+  "allocated_amount" numeric not null,
+  "currency" varchar not null default 'EUR',
+  "allocated_on" date not null,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("project_id") references "projects"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "mat_alloc_org_customer_idx" on "material_cost_allocations"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "mat_alloc_source_idx" on "material_cost_allocations"(
+  "source_type",
+  "source_id"
+);
+CREATE TABLE IF NOT EXISTS "contact_bank_accounts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "accountable_type" varchar not null,
+  "accountable_id" integer not null,
+  "account_holder" text,
+  "iban" text,
+  "bic" text,
+  "bank_name" varchar,
+  "is_primary" tinyint(1) not null default '0',
+  "external_id" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null
+);
+CREATE INDEX "contact_bank_accounts_accountable_type_accountable_id_index" on "contact_bank_accounts"(
+  "accountable_type",
+  "accountable_id"
+);
+CREATE INDEX "contact_bank_accounts_organization_id_index" on "contact_bank_accounts"(
+  "organization_id"
+);
+CREATE INDEX "contact_bank_accounts_owner_idx" on "contact_bank_accounts"(
+  "accountable_type",
+  "accountable_id"
+);
+CREATE TABLE IF NOT EXISTS "foreign_customers"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "customer_id" integer not null,
+  "name" varchar not null,
+  "number" varchar,
+  "company" varchar,
+  "contact_name" varchar,
+  "email" varchar,
+  "phone" varchar,
+  "mobile" varchar,
+  "homepage" varchar,
+  "address" text,
+  "country" varchar,
+  "color" varchar,
+  "comment" text,
+  "archived_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "matchcode" varchar,
+  "phone_e164" varchar,
+  "mobile_e164" varchar,
+  foreign key("organization_id") references "organizations"("id") on delete set null,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "foreign_customers_organization_id_index" on "foreign_customers"(
+  "organization_id"
+);
+CREATE INDEX "foreign_customers_customer_id_index" on "foreign_customers"(
+  "customer_id"
+);
+CREATE INDEX "foreign_customers_archived_at_index" on "foreign_customers"(
+  "archived_at"
+);
+CREATE TABLE IF NOT EXISTS "projects"(
+  "id" integer primary key autoincrement not null,
+  "name" varchar not null,
+  "slug" varchar not null,
+  "description" text,
+  "color" varchar,
+  "status" varchar not null default('active'),
+  "starts_on" date,
+  "ends_on" date,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "organization_id" integer,
+  "customer_id" integer,
+  "number" varchar,
+  "hourly_rate" numeric,
+  "internal_rate" numeric,
+  "time_budget" integer not null default('0'),
+  "budget" numeric not null default('0'),
+  "budget_type" varchar,
+  "billable" tinyint(1),
+  "invoice_text" text,
+  "global_activities" tinyint(1) not null default('1'),
+  "archived_at" datetime,
+  "is_default" tinyint(1) not null default('0'),
+  "parent_id" integer,
+  "is_maintenance" tinyint(1) not null default('0'),
+  "default_location_mode" varchar,
+  "weather_auto_fetch" tinyint(1),
+  "foreign_customer_id" integer,
+  "billing_increment_minutes" integer,
+  "billing_grouping_gap_minutes" integer,
+  "keywords" text,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("parent_id") references projects("id") on delete set null on update no action,
+  foreign key("foreign_customer_id") references "foreign_customers"("id") on delete set null
+);
+CREATE INDEX "idx_projects_org" on "projects"("organization_id");
+CREATE INDEX "projects_archived_at_index" on "projects"("archived_at");
+CREATE INDEX "projects_customer_id_index" on "projects"("customer_id");
+CREATE INDEX "projects_customer_id_is_default_index" on "projects"(
+  "customer_id",
+  "is_default"
+);
+CREATE UNIQUE INDEX "projects_customer_slug_unique" on "projects"(
+  "customer_id",
+  "slug"
+);
+CREATE INDEX "projects_is_maintenance_idx" on "projects"("is_maintenance");
+CREATE INDEX "projects_parent_id_index" on "projects"("parent_id");
+CREATE INDEX "projects_status_index" on "projects"("status");
+CREATE TABLE IF NOT EXISTS "invoice_item_time_entries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "invoice_item_id" integer not null,
+  "time_entry_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("invoice_item_id") references "invoice_items"("id") on delete cascade,
+  foreign key("time_entry_id") references "time_entries"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "iite_item_entry_unique" on "invoice_item_time_entries"(
+  "invoice_item_id",
+  "time_entry_id"
+);
+CREATE INDEX "invoice_item_time_entries_time_entry_id_index" on "invoice_item_time_entries"(
+  "time_entry_id"
+);
+CREATE INDEX "material_usages_billed_index" on "material_usages"("billed");
+CREATE INDEX "tours_travel_billed_index" on "tours"("travel_billed");
+CREATE TABLE IF NOT EXISTS "plugin_states"(
+  "id" integer primary key autoincrement not null,
+  "plugin_id" varchar not null,
+  "installed_version" varchar,
+  "installed_at" datetime,
+  "last_health_check_at" datetime,
+  "last_health_status" varchar,
+  "last_health_message" text,
+  "failure_count" integer not null default('0'),
+  "disabled_reason" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "organization_id" integer,
+  "last_ok_at" datetime,
+  "failure_window_started_at" datetime,
+  "last_health_latency_ms" integer,
+  "last_health_code" varchar,
+  "last_announced_status" varchar,
+  "health_streak" integer not null default '0',
+  foreign key("organization_id") references "organizations"("id") on delete set null
+);
+CREATE UNIQUE INDEX "plugin_states_plugin_id_organization_id_unique" on "plugin_states"(
+  "plugin_id",
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "plugin_errors"(
+  "id" integer primary key autoincrement not null,
+  "plugin_id" varchar not null,
+  "phase" varchar not null,
+  "exception_class" varchar,
+  "message" text not null,
+  "trace" text,
+  "context" text,
+  "occurred_at" datetime not null,
+  "acknowledged_at" datetime,
+  "acknowledged_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "organization_id" integer,
+  "error_hash" varchar,
+  "occurrences" integer not null default '1',
+  "last_occurred_at" datetime,
+  foreign key("acknowledged_by") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references "organizations"("id") on delete set null
+);
+CREATE INDEX "plugin_errors_phase_occurred_at_index" on "plugin_errors"(
+  "phase",
+  "occurred_at"
+);
+CREATE INDEX "plugin_errors_plugin_id_acknowledged_at_index" on "plugin_errors"(
+  "plugin_id",
+  "acknowledged_at"
+);
+CREATE INDEX "plugin_errors_plugin_id_organization_id_index" on "plugin_errors"(
+  "plugin_id",
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "chat_channels"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar,
+  "slug" varchar,
+  "description" text,
+  "type" varchar not null default 'channel',
+  "visibility" varchar not null default 'private',
+  "is_archived" tinyint(1) not null default '0',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "chat_channels_organization_id_type_index" on "chat_channels"(
+  "organization_id",
+  "type"
+);
+CREATE UNIQUE INDEX "chat_channels_organization_id_slug_unique" on "chat_channels"(
+  "organization_id",
+  "slug"
+);
+CREATE TABLE IF NOT EXISTS "chat_channel_user"(
+  "id" integer primary key autoincrement not null,
+  "channel_id" integer not null,
+  "user_id" integer not null,
+  "role" varchar not null default 'member',
+  "last_read_at" datetime,
+  "muted_at" datetime,
+  "joined_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("channel_id") references "chat_channels"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "chat_channel_user_channel_id_user_id_unique" on "chat_channel_user"(
+  "channel_id",
+  "user_id"
+);
+CREATE INDEX "chat_channel_user_user_id_channel_id_index" on "chat_channel_user"(
+  "user_id",
+  "channel_id"
+);
+CREATE TABLE IF NOT EXISTS "chat_message_reactions"(
+  "id" integer primary key autoincrement not null,
+  "message_id" integer not null,
+  "user_id" integer not null,
+  "emoji" varchar not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("message_id") references "chat_messages"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "chat_message_reactions_message_id_user_id_emoji_unique" on "chat_message_reactions"(
+  "message_id",
+  "user_id",
+  "emoji"
+);
+CREATE INDEX "chat_message_reactions_message_id_index" on "chat_message_reactions"(
+  "message_id"
+);
+CREATE TABLE IF NOT EXISTS "chat_polls"(
+  "id" integer primary key autoincrement not null,
+  "message_id" integer not null,
+  "question" varchar not null,
+  "multiple" tinyint(1) not null default '0',
+  "closes_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("message_id") references "chat_messages"("id") on delete cascade
+);
+CREATE INDEX "chat_polls_message_id_index" on "chat_polls"("message_id");
+CREATE TABLE IF NOT EXISTS "chat_poll_options"(
+  "id" integer primary key autoincrement not null,
+  "poll_id" integer not null,
+  "label" varchar not null,
+  "position" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("poll_id") references "chat_polls"("id") on delete cascade
+);
+CREATE INDEX "chat_poll_options_poll_id_index" on "chat_poll_options"(
+  "poll_id"
+);
+CREATE TABLE IF NOT EXISTS "chat_poll_votes"(
+  "id" integer primary key autoincrement not null,
+  "poll_option_id" integer not null,
+  "user_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("poll_option_id") references "chat_poll_options"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "chat_poll_votes_poll_option_id_user_id_unique" on "chat_poll_votes"(
+  "poll_option_id",
+  "user_id"
+);
+CREATE INDEX "chat_poll_votes_poll_option_id_index" on "chat_poll_votes"(
+  "poll_option_id"
+);
+CREATE TABLE IF NOT EXISTS "chat_messages"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "channel_id" integer not null,
+  "user_id" integer,
+  "parent_id" integer,
+  "body" text,
+  "type" varchar not null default('text'),
+  "pinned_at" datetime,
+  "pinned_by" integer,
+  "edited_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "deleted_at" datetime,
+  "quoted_id" integer,
+  "forwarded_from_user_id" integer,
+  foreign key("pinned_by") references users("id") on delete set null on update no action,
+  foreign key("parent_id") references chat_messages("id") on delete cascade on update no action,
+  foreign key("user_id") references users("id") on delete set null on update no action,
+  foreign key("channel_id") references chat_channels("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("quoted_id") references "chat_messages"("id") on delete set null,
+  foreign key("forwarded_from_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "chat_messages_channel_id_id_index" on "chat_messages"(
+  "channel_id",
+  "id"
+);
+CREATE INDEX "chat_messages_channel_id_parent_id_index" on "chat_messages"(
+  "channel_id",
+  "parent_id"
+);
+CREATE INDEX "chat_messages_channel_id_pinned_at_index" on "chat_messages"(
+  "channel_id",
+  "pinned_at"
+);
+CREATE TABLE IF NOT EXISTS "chat_message_stars"(
+  "message_id" integer not null,
+  "user_id" integer not null,
+  "created_at" datetime,
+  foreign key("message_id") references "chat_messages"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  primary key("message_id", "user_id")
+);
+CREATE TABLE IF NOT EXISTS "chat_reminders"(
+  "id" integer primary key autoincrement not null,
+  "user_id" integer not null,
+  "message_id" integer not null,
+  "channel_id" integer not null,
+  "remind_at" datetime not null,
+  "sent_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("message_id") references "chat_messages"("id") on delete cascade,
+  foreign key("channel_id") references "chat_channels"("id") on delete cascade
+);
+CREATE INDEX "chat_reminders_sent_at_remind_at_index" on "chat_reminders"(
+  "sent_at",
+  "remind_at"
+);
+CREATE TABLE IF NOT EXISTS "chat_scheduled_messages"(
+  "id" integer primary key autoincrement not null,
+  "channel_id" integer not null,
+  "user_id" integer not null,
+  "body" text,
+  "scheduled_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("channel_id") references "chat_channels"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE INDEX "chat_scheduled_messages_scheduled_at_index" on "chat_scheduled_messages"(
+  "scheduled_at"
+);
+CREATE INDEX "organization_audit_logs_hash_index" on "organization_audit_logs"(
+  "hash"
+);
+CREATE TABLE IF NOT EXISTS "audit_chain_heads"(
+  "chain" varchar not null,
+  "head_hash" varchar,
+  "height" integer not null default '0',
+  primary key("chain")
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_portals"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "public_slug" varchar not null,
+  "is_enabled" tinyint(1) not null default '0',
+  "allow_anonymous" tinyint(1) not null default '1',
+  "allow_confidential" tinyint(1) not null default '1',
+  "allowed_locales" text,
+  "default_locale" varchar,
+  "intro_text" text,
+  "privacy_text_version" varchar,
+  "external_channels" text,
+  "retention_months" integer not null default '36',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "whistleblowing_portals_organization_id_unique" on "whistleblowing_portals"(
+  "organization_id"
+);
+CREATE UNIQUE INDEX "whistleblowing_portals_public_slug_unique" on "whistleblowing_portals"(
+  "public_slug"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_case_assignments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "case_id" integer not null,
+  "user_id" integer not null,
+  "role" varchar not null,
+  "assigned_by" integer,
+  "assigned_at" datetime not null,
+  "revoked_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("assigned_by") references "users"("id") on delete set null
+);
+CREATE INDEX "whistleblowing_case_assignments_case_id_user_id_revoked_at_index" on "whistleblowing_case_assignments"(
+  "case_id",
+  "user_id",
+  "revoked_at"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_messages"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "case_id" integer not null,
+  "author_type" varchar not null,
+  "author_user_id" integer,
+  "visibility" varchar not null,
+  "body_ciphertext" text not null,
+  "sent_at" datetime not null,
+  "read_by_reporter_at" datetime,
+  "created_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
+  foreign key("author_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "whistleblowing_messages_case_id_visibility_index" on "whistleblowing_messages"(
+  "case_id",
+  "visibility"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_attachments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "case_id" integer not null,
+  "message_id" integer,
+  "uploaded_by_type" varchar not null,
+  "storage_key" varchar not null,
+  "original_name_ciphertext" text not null,
+  "mime_detected" varchar,
+  "size" integer not null default '0',
+  "sha256" varchar,
+  "scan_status" varchar not null default 'pending',
+  "metadata_scrubbed" tinyint(1) not null default '0',
+  "created_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
+  foreign key("message_id") references "whistleblowing_messages"("id") on delete set null
+);
+CREATE UNIQUE INDEX "whistleblowing_attachments_storage_key_unique" on "whistleblowing_attachments"(
+  "storage_key"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_case_events"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "case_id" integer,
+  "actor_type" varchar not null,
+  "actor_user_id" integer,
+  "event" varchar not null,
+  "metadata" text,
+  "prev_hash" varchar,
+  "hash" varchar,
+  "created_at" datetime
+);
+CREATE INDEX "whistleblowing_case_events_case_id_event_index" on "whistleblowing_case_events"(
+  "case_id",
+  "event"
+);
+CREATE INDEX "whistleblowing_case_events_hash_index" on "whistleblowing_case_events"(
+  "hash"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_case_tombstones"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "case_number" varchar not null,
+  "public_id" varchar not null,
+  "period_from" date,
+  "period_to" date,
+  "closed_category" varchar,
+  "deleted_at" datetime not null,
+  "audit_hash" varchar
+);
+CREATE INDEX "whistleblowing_case_tombstones_case_number_index" on "whistleblowing_case_tombstones"(
+  "case_number"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_case_conflicts"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "case_id" integer not null,
+  "user_id" integer not null,
+  "reason_ciphertext" text,
+  "declared_at" datetime not null,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "whistleblowing_case_conflicts_case_id_user_id_unique" on "whistleblowing_case_conflicts"(
+  "case_id",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_emergency_grants"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "case_id" integer not null,
+  "user_id" integer not null,
+  "granted_by" integer not null,
+  "reason_ciphertext" text not null,
+  "granted_at" datetime not null,
+  "expires_at" datetime not null,
+  "revoked_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("granted_by") references "users"("id") on delete cascade
+);
+CREATE INDEX "whistleblowing_emergency_grants_case_id_user_id_expires_at_index" on "whistleblowing_emergency_grants"(
+  "case_id",
+  "user_id",
+  "expires_at"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_deadline_reminders"(
+  "id" integer primary key autoincrement not null,
+  "case_id" integer not null,
+  "kind" varchar not null,
+  "reminder_date" date not null,
+  "created_at" datetime,
+  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "wb_deadline_reminder_unique" on "whistleblowing_deadline_reminders"(
+  "case_id",
+  "kind",
+  "reminder_date"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_case_subjects"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "case_id" integer not null,
+  "user_id" integer not null,
+  "added_by" integer,
+  "note_ciphertext" text,
+  "created_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("added_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "whistleblowing_case_subjects_case_id_user_id_unique" on "whistleblowing_case_subjects"(
+  "case_id",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "whistleblowing_cases"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "public_id" varchar not null,
+  "case_number" varchar not null,
+  "access_code_hash" varchar not null,
+  "access_code_lookup" varchar not null,
+  "dek_wrapped" text,
+  "reporter_mode" varchar not null,
+  "category" varchar not null,
+  "status" varchar not null,
+  "priority" varchar not null default('normal'),
+  "subject_ciphertext" text,
+  "description_ciphertext" text,
+  "contact_ciphertext" text,
+  "occurred_from" date,
+  "occurred_to" date,
+  "acknowledgement_due_at" datetime,
+  "feedback_due_at" datetime,
+  "acknowledged_at" datetime,
+  "feedback_sent_at" datetime,
+  "closed_at" datetime,
+  "retention_due_at" datetime,
+  "legal_hold_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+);
+CREATE UNIQUE INDEX "whistleblowing_cases_access_code_lookup_unique" on "whistleblowing_cases"(
+  "access_code_lookup"
+);
+CREATE UNIQUE INDEX "whistleblowing_cases_organization_id_case_number_unique" on "whistleblowing_cases"(
+  "organization_id",
+  "case_number"
+);
+CREATE UNIQUE INDEX "whistleblowing_cases_public_id_unique" on "whistleblowing_cases"(
+  "public_id"
+);
+CREATE INDEX "whistleblowing_cases_status_index" on "whistleblowing_cases"(
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "plan_module_grace"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "module" varchar not null,
+  "lost_at" datetime not null,
+  "grace_until" datetime not null,
+  "purged_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "plan_module_grace_organization_id_module_unique" on "plan_module_grace"(
+  "organization_id",
+  "module"
+);
+CREATE INDEX "plan_module_grace_grace_until_index" on "plan_module_grace"(
+  "grace_until"
+);
+CREATE TABLE IF NOT EXISTS "privacy_processing_activities"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "purpose" text,
+  "controller_role" varchar not null default 'controller',
+  "area" varchar,
+  "status" varchar not null default 'draft',
+  "current_version_id" integer,
+  "review_due_at" date,
+  "dsfa_required" tinyint(1) not null default '0',
+  "risk_level" varchar,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_processing_activities_organization_id_status_index" on "privacy_processing_activities"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "privacy_processing_activities_review_due_at_index" on "privacy_processing_activities"(
+  "review_due_at"
+);
+CREATE TABLE IF NOT EXISTS "privacy_processing_activity_versions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "activity_id" integer not null,
+  "version_no" integer not null,
+  "payload" text not null,
+  "note" varchar,
+  "created_by" integer,
+  "approved_by" integer,
+  "approved_at" datetime,
+  "valid_from" date,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("approved_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ppav_activity_version_unique" on "privacy_processing_activity_versions"(
+  "activity_id",
+  "version_no"
+);
+CREATE TABLE IF NOT EXISTS "privacy_data_subject_requests"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "request_number" varchar not null,
+  "type" varchar not null,
+  "status" varchar not null default 'intake',
+  "channel" varchar,
+  "identity_verified_at" datetime,
+  "assigned_user_id" integer,
+  "received_at" datetime,
+  "deadline_at" datetime,
+  "subject_ciphertext" text,
+  "content_ciphertext" text,
+  "decision_note_ciphertext" text,
+  "dek_wrapped" text,
+  "decision" varchar,
+  "decided_at" datetime,
+  "closed_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "contact_email_ciphertext" text,
+  "contact_email_confirmed_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("assigned_user_id") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "pdsr_org_number_unique" on "privacy_data_subject_requests"(
+  "organization_id",
+  "request_number"
+);
+CREATE INDEX "privacy_data_subject_requests_organization_id_status_index" on "privacy_data_subject_requests"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "privacy_data_subject_requests_deadline_at_index" on "privacy_data_subject_requests"(
+  "deadline_at"
+);
+CREATE TABLE IF NOT EXISTS "privacy_request_events"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "request_id" integer,
+  "actor_type" varchar not null,
+  "actor_user_id" integer,
+  "event" varchar not null,
+  "metadata" text,
+  "prev_hash" varchar,
+  "hash" varchar,
+  "created_at" datetime
+);
+CREATE INDEX "privacy_request_events_request_id_event_index" on "privacy_request_events"(
+  "request_id",
+  "event"
+);
+CREATE INDEX "privacy_request_events_hash_index" on "privacy_request_events"(
+  "hash"
+);
+CREATE TABLE IF NOT EXISTS "privacy_processors"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "role" varchar not null default 'processor',
+  "contact" varchar,
+  "location" varchar,
+  "third_country" tinyint(1) not null default '0',
+  "notes" text,
+  "is_active" tinyint(1) not null default '1',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_processors_organization_id_is_active_index" on "privacy_processors"(
+  "organization_id",
+  "is_active"
+);
+CREATE TABLE IF NOT EXISTS "privacy_processing_agreements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "processor_id" integer not null,
+  "title" varchar not null,
+  "version" varchar not null default '1.0',
+  "status" varchar not null default 'draft',
+  "valid_from" date,
+  "valid_until" date,
+  "review_due_at" date,
+  "data_categories" text,
+  "tom_checked" tinyint(1) not null default '0',
+  "document_path" varchar,
+  "document_name" varchar,
+  "terminated_at" datetime,
+  "data_return" varchar,
+  "data_return_confirmed_at" datetime,
+  "notes" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("processor_id") references "privacy_processors"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_processing_agreements_organization_id_status_index" on "privacy_processing_agreements"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "privacy_processing_agreements_review_due_at_index" on "privacy_processing_agreements"(
+  "review_due_at"
+);
+CREATE TABLE IF NOT EXISTS "privacy_subprocessors"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "agreement_id" integer not null,
+  "name" varchar not null,
+  "purpose" varchar,
+  "location" varchar,
+  "third_country" tinyint(1) not null default '0',
+  "approved" tinyint(1) not null default '0',
+  "added_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "safeguards" varchar,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade
+);
+CREATE TABLE IF NOT EXISTS "privacy_agreement_activity"(
+  "id" integer primary key autoincrement not null,
+  "agreement_id" integer not null,
+  "activity_id" integer not null,
+  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade,
+  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "paa_agreement_activity_unique" on "privacy_agreement_activity"(
+  "agreement_id",
+  "activity_id"
+);
+CREATE TABLE IF NOT EXISTS "privacy_incident_events"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer,
+  "incident_id" integer,
+  "actor_type" varchar not null,
+  "actor_user_id" integer,
+  "event" varchar not null,
+  "metadata" text,
+  "prev_hash" varchar,
+  "hash" varchar,
+  "created_at" datetime
+);
+CREATE INDEX "privacy_incident_events_incident_id_event_index" on "privacy_incident_events"(
+  "incident_id",
+  "event"
+);
+CREATE INDEX "privacy_incident_events_hash_index" on "privacy_incident_events"(
+  "hash"
+);
+CREATE TABLE IF NOT EXISTS "privacy_measures"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "incident_id" integer,
+  "activity_id" integer,
+  "title" varchar not null,
+  "description" text,
+  "due_at" date,
+  "status" varchar not null default 'open',
+  "assigned_user_id" integer,
+  "completed_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("incident_id") references "privacy_incidents"("id") on delete cascade,
+  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
+  foreign key("assigned_user_id") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_measures_organization_id_status_index" on "privacy_measures"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "privacy_dpias"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "activity_id" integer not null,
+  "necessity" text,
+  "risks" text,
+  "mitigations" text,
+  "residual_risk" varchar,
+  "outcome" varchar not null default 'open',
+  "assessed_by" integer,
+  "assessed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
+  foreign key("assessed_by") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_dpias_organization_id_outcome_index" on "privacy_dpias"(
+  "organization_id",
+  "outcome"
+);
+CREATE TABLE IF NOT EXISTS "privacy_technical_measures"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "category" varchar not null,
+  "responsible_user_id" integer,
+  "implementation_status" varchar not null default 'planned',
+  "protection_level" varchar,
+  "current_version_id" integer,
+  "valid_from" date,
+  "valid_until" date,
+  "next_review_at" date,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("responsible_user_id") references "users"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "ptm_org_impl_index" on "privacy_technical_measures"(
+  "organization_id",
+  "implementation_status"
+);
+CREATE INDEX "privacy_technical_measures_next_review_at_index" on "privacy_technical_measures"(
+  "next_review_at"
+);
+CREATE TABLE IF NOT EXISTS "privacy_technical_measure_versions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "measure_id" integer not null,
+  "version_no" integer not null,
+  "payload" text not null,
+  "note" varchar,
+  "created_by" integer,
+  "approved_by" integer,
+  "approved_at" datetime,
+  "valid_from" date,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("measure_id") references "privacy_technical_measures"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null,
+  foreign key("approved_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "ptmv_measure_version_unique" on "privacy_technical_measure_versions"(
+  "measure_id",
+  "version_no"
+);
+CREATE TABLE IF NOT EXISTS "privacy_measure_assignments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "measure_id" integer not null,
+  "activity_id" integer,
+  "agreement_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("measure_id") references "privacy_technical_measures"("id") on delete cascade,
+  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
+  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade
+);
+CREATE INDEX "privacy_measure_assignments_organization_id_index" on "privacy_measure_assignments"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "privacy_measure_reviews"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "measure_id" integer not null,
+  "reviewed_at" datetime,
+  "result" varchar not null,
+  "deviation" text,
+  "follow_up" text,
+  "due_at" date,
+  "reviewer_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("measure_id") references "privacy_technical_measures"("id") on delete cascade,
+  foreign key("reviewer_id") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_measure_reviews_organization_id_index" on "privacy_measure_reviews"(
+  "organization_id"
+);
+CREATE TABLE IF NOT EXISTS "privacy_joint_controller_agreements"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "partner_id" integer not null,
+  "title" varchar not null,
+  "version" varchar not null default '1.0',
+  "status" varchar not null default 'draft',
+  "valid_from" date,
+  "valid_until" date,
+  "review_due_at" date,
+  "responsibilities" text,
+  "contact_point" varchar,
+  "essence_provided" tinyint(1) not null default '0',
+  "document_path" varchar,
+  "document_name" varchar,
+  "notes" text,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("partner_id") references "privacy_processors"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_joint_controller_agreements_organization_id_status_index" on "privacy_joint_controller_agreements"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "privacy_gvv_activity"(
+  "id" integer primary key autoincrement not null,
+  "gvv_id" integer not null,
+  "activity_id" integer not null,
+  foreign key("gvv_id") references "privacy_joint_controller_agreements"("id") on delete cascade,
+  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "pgvva_gvv_activity_unique" on "privacy_gvv_activity"(
+  "gvv_id",
+  "activity_id"
+);
+CREATE TABLE IF NOT EXISTS "privacy_compliance_findings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "requirement_key" varchar not null,
+  "label" varchar not null,
+  "category" varchar,
+  "status" varchar not null default 'missing',
+  "trigger" varchar,
+  "activity_id" integer,
+  "agreement_id" integer,
+  "processor_id" integer,
+  "responsible_user_id" integer,
+  "due_at" date,
+  "justification" text,
+  "auto_detected" tinyint(1) not null default '1',
+  "detected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("activity_id") references "privacy_processing_activities"("id") on delete cascade,
+  foreign key("agreement_id") references "privacy_processing_agreements"("id") on delete cascade,
+  foreign key("processor_id") references "privacy_processors"("id") on delete cascade,
+  foreign key("responsible_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "privacy_compliance_findings_organization_id_status_index" on "privacy_compliance_findings"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "pcf_org_reqkey_index" on "privacy_compliance_findings"(
+  "organization_id",
+  "requirement_key"
+);
+CREATE TABLE IF NOT EXISTS "privacy_attachments"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "attachable_type" varchar not null,
+  "attachable_id" integer not null,
+  "filename" varchar not null,
+  "path" varchar not null,
+  "size" integer not null default '0',
+  "mime" varchar,
+  "uploaded_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "valid_until" date,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("uploaded_by") references "users"("id") on delete set null
+);
+CREATE INDEX "pa_attachable_index" on "privacy_attachments"(
+  "attachable_type",
+  "attachable_id"
+);
+CREATE UNIQUE INDEX "orgs_license_uid_unique" on "organizations"(
+  "license_uid"
+);
+CREATE TABLE IF NOT EXISTS "privacy_incidents"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "incident_number" varchar not null,
+  "type" varchar not null,
+  "status" varchar not null default('detected'),
+  "occurred_at" datetime,
+  "discovered_at" datetime,
+  "reported_internally_at" datetime,
+  "authority_deadline_at" datetime,
+  "risk_level" varchar,
+  "affected_count" integer,
+  "notify_authority" tinyint(1) not null default('0'),
+  "notify_subjects" tinyint(1) not null default('0'),
+  "authority_notified_at" datetime,
+  "subjects_notified_at" datetime,
+  "assigned_user_id" integer,
+  "summary_ciphertext" text,
+  "affected_ciphertext" text,
+  "measures_ciphertext" text,
+  "lessons_ciphertext" text,
+  "dek_wrapped" text,
+  "closed_at" datetime,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "controller_role" varchar not null default 'controller',
+  "controller_name" varchar,
+  "controller_customer_id" integer,
+  "controller_notified_at" datetime,
+  "own_infrastructure_affected" tinyint(1) not null default '0',
+  "authority_key" varchar,
+  "authority_name" varchar,
+  "authority_portal_url" text,
+  "authority_report_type" varchar,
+  "authority_report_reference" varchar,
+  "authority_case_number" varchar,
+  foreign key("created_by") references users("id") on delete set null on update no action,
+  foreign key("assigned_user_id") references users("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("controller_customer_id") references "customers"("id") on delete set null
+);
+CREATE UNIQUE INDEX "pinc_org_number_unique" on "privacy_incidents"(
+  "organization_id",
+  "incident_number"
+);
+CREATE INDEX "privacy_incidents_authority_deadline_at_index" on "privacy_incidents"(
+  "authority_deadline_at"
+);
+CREATE INDEX "privacy_incidents_organization_id_status_index" on "privacy_incidents"(
+  "organization_id",
+  "status"
+);
+CREATE TABLE IF NOT EXISTS "diary_entries"(
+  "id" integer primary key autoincrement not null,
+  "legacy_id" integer,
+  "user_id" integer not null,
+  "content" text not null,
+  "response" text,
+  "status" integer not null default('2'),
+  "start_at" datetime,
+  "end_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "on_call_shift_id" integer,
+  "emergency_assignment_id" integer,
+  "is_archived" tinyint(1) not null default('0'),
+  "archived_at" datetime,
+  "project_id" integer,
+  "organization_id" integer,
+  "entry_type_id" integer,
+  "customer_id" integer,
+  "assigned_user_id" integer,
+  "title" varchar,
+  "address_line" varchar,
+  "address_zip" varchar,
+  "address_city" varchar,
+  "address_country" varchar,
+  "address_lat" numeric,
+  "address_lng" numeric,
+  "scheduled_for" date,
+  "time_window_start" time,
+  "time_window_end" time,
+  "service_minutes" integer,
+  "priority" varchar,
+  "tour_id" integer,
+  "tour_position" integer,
+  "notes" text,
+  "mode" varchar not null default('fixed'),
+  "due_date" date,
+  "window_start_date" date,
+  "window_end_date" date,
+  "location_mode" varchar not null default('onsite'),
+  "recurrence_rule_id" integer,
+  "asset_id" integer,
+  "planned_minutes" integer,
+  "planned_at" datetime,
+  "planned_by_user_id" integer,
+  "dispatch_status" varchar,
+  "dispatch_confirmed_at" datetime,
+  "dispatch_override_reason" text,
+  "dispatch_override_by_user_id" integer,
+  "accepted_at" datetime,
+  "accepted_by_user_id" integer,
+  "started_at" datetime,
+  "paused_at" datetime,
+  "pause_reason" varchar,
+  "pause_note" text,
+  "resumed_at" datetime,
+  "wait_seconds_total" integer not null default '0',
+  "completed_at" datetime,
+  "completed_by_user_id" integer,
+  "completion_summary" text,
+  "accepted_final_at" datetime,
+  "accepted_final_by" integer,
+  "signature_attachment_id" integer,
+  "protocol_id" integer,
+  "invoiced_at" datetime,
+  "invoice_reference" varchar,
+  "cancelled_at" datetime,
+  "cancelled_by_user_id" integer,
+  "cancellation_reason" text,
+  foreign key("dispatch_override_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("asset_id") references assets("id") on delete set null on update no action,
+  foreign key("tour_id") references tours("id") on delete set null on update no action,
+  foreign key("assigned_user_id") references users("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("entry_type_id") references entry_types("id") on delete set null on update no action,
+  foreign key("project_id") references projects("id") on delete set null on update no action,
+  foreign key("user_id") references users("id") on delete cascade on update no action,
+  foreign key("on_call_shift_id") references on_call_shifts("id") on delete set null on update no action,
+  foreign key("emergency_assignment_id") references emergency_assignments("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
+  foreign key("recurrence_rule_id") references recurrence_rules("id") on delete set null on update no action,
+  foreign key("planned_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("accepted_by_user_id") references "users"("id") on delete set null,
+  foreign key("completed_by_user_id") references "users"("id") on delete set null,
+  foreign key("accepted_final_by") references "users"("id") on delete set null,
+  foreign key("signature_attachment_id") references "attachments"("id") on delete set null,
+  foreign key("protocol_id") references "protocols"("id") on delete set null,
+  foreign key("cancelled_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "de_assigned_sched_idx" on "diary_entries"(
+  "assigned_user_id",
+  "scheduled_for"
+);
+CREATE INDEX "de_due_date_idx" on "diary_entries"("due_date");
+CREATE INDEX "de_entry_type_idx" on "diary_entries"("entry_type_id");
+CREATE INDEX "de_location_mode_idx" on "diary_entries"("location_mode");
+CREATE INDEX "de_org_asset_idx" on "diary_entries"(
+  "organization_id",
+  "asset_id"
+);
+CREATE INDEX "de_org_mode_idx" on "diary_entries"("organization_id", "mode");
+CREATE INDEX "de_org_sched_idx" on "diary_entries"(
+  "organization_id",
+  "scheduled_for"
+);
+CREATE INDEX "de_recurrence_rule_idx" on "diary_entries"("recurrence_rule_id");
+CREATE INDEX "de_scheduled_for_idx" on "diary_entries"("scheduled_for");
+CREATE INDEX "de_tour_pos_idx" on "diary_entries"("tour_id", "tour_position");
+CREATE INDEX "diary_entries_archived_at_index" on "diary_entries"(
+  "archived_at"
+);
+CREATE INDEX "diary_entries_is_archived_index" on "diary_entries"(
+  "is_archived"
+);
+CREATE INDEX "diary_entries_legacy_id_index" on "diary_entries"("legacy_id");
+CREATE INDEX "diary_entries_project_id_index" on "diary_entries"("project_id");
+CREATE INDEX "diary_entries_start_at_index" on "diary_entries"("start_at");
+CREATE INDEX "diary_entries_user_id_status_start_at_index" on "diary_entries"(
+  "user_id",
+  "status",
+  "start_at"
+);
+CREATE INDEX "diary_org_dispatch_idx" on "diary_entries"(
+  "organization_id",
+  "dispatch_status"
+);
+CREATE INDEX "idx_diary_entries_org" on "diary_entries"("organization_id");
+CREATE TABLE IF NOT EXISTS "diary_entry_events"(
+  "id" integer primary key autoincrement not null,
+  "diary_entry_id" integer not null,
+  "organization_id" integer not null,
+  "event" varchar not null,
+  "from_status" varchar,
+  "to_status" varchar not null,
+  "actor_user_id" integer,
+  "actor_kind" varchar not null default 'user',
+  "note" text,
+  "payload" text,
+  "occurred_at" datetime not null,
+  "created_at" datetime,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete cascade,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "diary_events_entry_idx" on "diary_entry_events"(
+  "diary_entry_id",
+  "occurred_at"
+);
+CREATE INDEX "diary_events_org_idx" on "diary_entry_events"(
+  "organization_id",
+  "event",
+  "occurred_at"
+);
+CREATE INDEX "tasks_org_status_idx" on "tasks"("organization_id", "status");
+CREATE INDEX "timesheets_org_status_idx" on "timesheets"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "diary_org_start_idx" on "diary_entries"(
+  "organization_id",
+  "start_at"
+);
 CREATE TABLE IF NOT EXISTS "customer_merge_dismissals"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer,
@@ -7082,7 +7367,7 @@ CREATE TABLE IF NOT EXISTS "external_reference_aliases"(
   "updated_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete set null
 );
-CREATE INDEX "external_reference_aliases_referenceable_type_referenceable_id_index" on "external_reference_aliases"(
+CREATE INDEX "extref_alias_ref" on "external_reference_aliases"(
   "referenceable_type",
   "referenceable_id"
 );
@@ -7091,34 +7376,6 @@ CREATE UNIQUE INDEX "extref_alias_unique" on "external_reference_aliases"(
   "plugin_id",
   "external_type",
   "external_id"
-);
-CREATE TABLE IF NOT EXISTS "pricing_change_alerts"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "supplier_catalog_item_id" integer not null,
-  "article_id" integer not null,
-  "supplier_id" integer,
-  "old_purchase_price" numeric,
-  "new_purchase_price" numeric,
-  "sale_price" numeric,
-  "new_margin" numeric,
-  "min_margin" numeric,
-  "status" varchar not null default('open'),
-  "acknowledged_by" integer,
-  "acknowledged_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "type" varchar not null default 'margin',
-  "impacts" text,
-  foreign key("acknowledged_by") references users("id") on delete set null on update no action,
-  foreign key("supplier_id") references suppliers("id") on delete set null on update no action,
-  foreign key("article_id") references articles("id") on delete cascade on update no action,
-  foreign key("supplier_catalog_item_id") references supplier_catalog_items("id") on delete cascade on update no action,
-  foreign key("organization_id") references organizations("id") on delete cascade on update no action
-);
-CREATE INDEX "pca_org_status_idx" on "pricing_change_alerts"(
-  "organization_id",
-  "status"
 );
 CREATE TABLE IF NOT EXISTS "procedure_material_requirements"(
   "id" integer primary key autoincrement not null,
@@ -7888,6 +8145,129 @@ CREATE INDEX "ext_part_subject_idx" on "external_participants"(
 );
 CREATE UNIQUE INDEX "ext_part_token_hash_uq" on "external_participants"(
   "token_hash"
+);
+CREATE TABLE IF NOT EXISTS "disposal_jobs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "number" varchar not null,
+  "status" varchar not null default 'draft',
+  "customer_id" integer not null,
+  "site_id" integer,
+  "diary_entry_id" integer,
+  "responsible_user_id" integer,
+  "picked_up_on" date,
+  "total_weight_kg" numeric,
+  "notes" text,
+  "record_document_id" integer,
+  "signer_name" varchar,
+  "signed_at" datetime,
+  "signature_attachment_id" integer,
+  "signature_hash" varchar,
+  "completed_at" datetime,
+  "completed_by" integer,
+  "cancelled_at" datetime,
+  "cancel_reason" varchar,
+  "created_by_user_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete cascade,
+  foreign key("site_id") references "sites"("id") on delete set null,
+  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null,
+  foreign key("responsible_user_id") references "users"("id") on delete set null,
+  foreign key("record_document_id") references "documents"("id") on delete set null,
+  foreign key("signature_attachment_id") references "attachments"("id") on delete set null,
+  foreign key("completed_by") references "users"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "disposal_jobs_org_number_uq" on "disposal_jobs"(
+  "organization_id",
+  "number"
+);
+CREATE INDEX "disposal_jobs_org_status_idx" on "disposal_jobs"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "disposal_jobs_customer_idx" on "disposal_jobs"(
+  "customer_id",
+  "picked_up_on"
+);
+CREATE TABLE IF NOT EXISTS "disposal_items"(
+  "id" integer primary key autoincrement not null,
+  "disposal_job_id" integer not null,
+  "sort_order" integer not null default '0',
+  "category" varchar not null,
+  "manufacturer" varchar,
+  "model" varchar,
+  "serial_number" varchar,
+  "quantity" integer not null default '1',
+  "weight_kg" numeric,
+  "condition_note" varchar,
+  "avv_code" varchar not null,
+  "is_hazardous" tinyint(1) not null default '0',
+  "has_data_storage" tinyint(1) not null default '0',
+  "asset_id" integer,
+  "note" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("disposal_job_id") references "disposal_jobs"("id") on delete cascade,
+  foreign key("asset_id") references "assets"("id") on delete set null
+);
+CREATE INDEX "disposal_items_order_idx" on "disposal_items"(
+  "disposal_job_id",
+  "sort_order"
+);
+CREATE TABLE IF NOT EXISTS "data_media_treatments"(
+  "id" integer primary key autoincrement not null,
+  "disposal_item_id" integer not null,
+  "media_type" varchar not null,
+  "method" varchar not null,
+  "din_category" varchar not null,
+  "security_level" integer not null,
+  "protection_class" integer,
+  "treated_at" datetime not null,
+  "performed_by_user_id" integer not null,
+  "evidence_reference" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("disposal_item_id") references "disposal_items"("id") on delete cascade,
+  foreign key("performed_by_user_id") references "users"("id") on delete cascade
+);
+CREATE TABLE IF NOT EXISTS "disposal_handovers"(
+  "id" integer primary key autoincrement not null,
+  "disposal_job_id" integer not null,
+  "external_contact_id" integer not null,
+  "proof_type" varchar not null,
+  "document_number" varchar not null,
+  "handed_over_on" date not null,
+  "document_id" integer,
+  "certificate_reference" varchar,
+  "note" text,
+  "created_by_user_id" integer not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("disposal_job_id") references "disposal_jobs"("id") on delete cascade,
+  foreign key("external_contact_id") references "external_contacts"("id") on delete cascade,
+  foreign key("document_id") references "documents"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete cascade
+);
+CREATE INDEX "disposal_handovers_job_idx" on "disposal_handovers"(
+  "disposal_job_id",
+  "handed_over_on"
+);
+CREATE TABLE IF NOT EXISTS "disposal_job_events"(
+  "id" integer primary key autoincrement not null,
+  "disposal_job_id" integer not null,
+  "event" varchar not null,
+  "actor_user_id" integer not null,
+  "payload" text,
+  "created_at" datetime not null,
+  foreign key("disposal_job_id") references "disposal_jobs"("id") on delete cascade,
+  foreign key("actor_user_id") references "users"("id") on delete cascade
+);
+CREATE INDEX "disposal_job_events_idx" on "disposal_job_events"(
+  "disposal_job_id",
+  "created_at"
 );
 CREATE TABLE IF NOT EXISTS "attachment_confirmations"(
   "id" integer primary key autoincrement not null,
@@ -9769,84 +10149,6 @@ CREATE INDEX "taxr_lookup_idx" on "tax_rules"(
   "rate_type",
   "valid_from"
 );
-CREATE TABLE IF NOT EXISTS "jtl_connections"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "mode" varchar not null default 'on_premise',
-  "base_url" varchar,
-  "api_version" varchar not null default '2.0',
-  "allow_private_network" tinyint(1) not null default '0',
-  "tenant_id" varchar,
-  "company_id" varchar,
-  "app_id" varchar,
-  "challenge_code" text,
-  "registration_id" varchar,
-  "registration_status" varchar,
-  "api_key" text,
-  "client_id" text,
-  "client_secret" text,
-  "access_token" text,
-  "token_expires_at" datetime,
-  "granted_scopes" text,
-  "status" varchar not null default 'draft',
-  "blocked_reason" varchar,
-  "stock_checkpoint_at" datetime,
-  "article_checkpoint_at" datetime,
-  "last_sync_at" datetime,
-  "last_sync_counters" text,
-  "last_error" varchar,
-  "detected_version" varchar,
-  "contract_notes" text,
-  "connected_by" integer,
-  "connected_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("connected_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "jtlc_org_unique" on "jtl_connections"("organization_id");
-CREATE TABLE IF NOT EXISTS "jtl_warehouse_mappings"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "jtl_warehouse_id" varchar not null,
-  "name" varchar not null,
-  "code" varchar,
-  "warehouse_type" varchar,
-  "jtl_is_active" tinyint(1) not null default '1',
-  "lock_for_shipment" tinyint(1) not null default '0',
-  "lock_for_availability" tinyint(1) not null default '0',
-  "warehouse_id" integer,
-  "last_seen_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("warehouse_id") references "warehouses"("id") on delete set null
-);
-CREATE UNIQUE INDEX "jtlwm_org_ext_unique" on "jtl_warehouse_mappings"(
-  "organization_id",
-  "jtl_warehouse_id"
-);
-CREATE TABLE IF NOT EXISTS "jtl_stock_snapshots"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "article_variant_id" integer not null,
-  "warehouse_id" integer not null,
-  "quantity_total" numeric not null default '0',
-  "quantity_available" numeric not null default '0',
-  "quantity_reserved" numeric not null default '0',
-  "quantity_blocked" numeric not null default '0',
-  "fetched_at" datetime not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("article_variant_id") references "article_variants"("id") on delete cascade,
-  foreign key("warehouse_id") references "warehouses"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "jtlss_org_var_wh_unique" on "jtl_stock_snapshots"(
-  "organization_id",
-  "article_variant_id",
-  "warehouse_id"
-);
 CREATE TABLE IF NOT EXISTS "claim_cases"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -11102,42 +11404,6 @@ CREATE UNIQUE INDEX "sso_ident_conn_user_unique" on "sso_identities"(
   "sso_connection_id",
   "user_id"
 );
-CREATE TABLE IF NOT EXISTS "wage_type_mappings"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "profile" varchar not null,
-  "wage_type" varchar not null,
-  "external_code" varchar not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "wtm_org_profile_type_uq" on "wage_type_mappings"(
-  "organization_id",
-  "profile",
-  "wage_type"
-);
-CREATE TABLE IF NOT EXISTS "time_export_delivery_configs"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "profile" varchar not null,
-  "mail_enabled" tinyint(1) not null default '0',
-  "mail_recipients" text,
-  "sftp_enabled" tinyint(1) not null default '0',
-  "sftp_host" varchar,
-  "sftp_port" integer not null default '22',
-  "sftp_username" varchar,
-  "sftp_password" text,
-  "sftp_root" varchar,
-  "sftp_host_fingerprint" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "tedc_org_profile_uq" on "time_export_delivery_configs"(
-  "organization_id",
-  "profile"
-);
 CREATE TABLE IF NOT EXISTS "change_asset"(
   "id" integer primary key autoincrement not null,
   "change_id" integer not null,
@@ -11805,35 +12071,6 @@ CREATE UNIQUE INDEX "bgp_gen_part_uq" on "backup_generation_parts"(
   "generation_id",
   "part_no"
 );
-CREATE TABLE IF NOT EXISTS "billbee_orders"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "billbee_order_id" varchar not null,
-  "external_order_id" varchar,
-  "order_number" varchar,
-  "channel" varchar,
-  "state" integer not null default '0',
-  "currency" varchar,
-  "total_gross" numeric not null default '0',
-  "buyer_external_id" varchar,
-  "buyer" text,
-  "items" text,
-  "raw" text,
-  "ordered_at" datetime,
-  "billbee_modified_at" datetime,
-  "customer_id" integer,
-  "inbox_status" varchar not null default 'open',
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete set null
-);
-CREATE UNIQUE INDEX "bbo_org_order_unique" on "billbee_orders"(
-  "organization_id",
-  "billbee_order_id"
-);
-CREATE INDEX "bbo_buyer_idx" on "billbee_orders"("buyer_external_id");
-CREATE INDEX "bbo_modified_idx" on "billbee_orders"("billbee_modified_at");
 CREATE TABLE IF NOT EXISTS "domain_provider_connections"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -12432,6 +12669,34 @@ CREATE INDEX "jau_org_scan_idx" on "job_application_uploads"(
   "organization_id",
   "scan_status"
 );
+CREATE TABLE IF NOT EXISTS "calendly_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "access_token" text,
+  "refresh_token" text,
+  "token_expires_at" datetime,
+  "scopes" varchar,
+  "calendly_user_uri" varchar,
+  "calendly_organization_uri" varchar,
+  "status" varchar not null default 'active',
+  "last_synced_at" datetime,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "calc_org_unique" on "calendly_connections"(
+  "organization_id"
+);
 CREATE TABLE IF NOT EXISTS "integrity_checks"(
   "id" integer primary key autoincrement not null,
   "ran_at" datetime not null,
@@ -12454,6 +12719,29 @@ CREATE TABLE IF NOT EXISTS "integrity_checks"(
 );
 CREATE INDEX "ic_status_ran_idx" on "integrity_checks"("status", "ran_at");
 CREATE INDEX "ic_ran_idx" on "integrity_checks"("ran_at");
+CREATE TABLE IF NOT EXISTS "calendly_webhook_subscriptions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "calendly_connection_id" integer not null,
+  "url_token" varchar not null,
+  "signing_key" text not null,
+  "calendly_subscription_uri" varchar,
+  "scope" varchar not null default 'organization',
+  "events" text not null,
+  "status" varchar not null default 'active',
+  "last_delivery_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("calendly_connection_id") references "calendly_connections"("id") on delete cascade
+);
+CREATE INDEX "calsub_org_status_idx" on "calendly_webhook_subscriptions"(
+  "organization_id",
+  "status"
+);
+CREATE UNIQUE INDEX "calsub_token_unique" on "calendly_webhook_subscriptions"(
+  "url_token"
+);
 CREATE TABLE IF NOT EXISTS "security_events"(
   "id" integer primary key autoincrement not null,
   "event" varchar not null,
@@ -12470,6 +12758,22 @@ CREATE TABLE IF NOT EXISTS "security_events"(
 CREATE INDEX "se_event_time_idx" on "security_events"("event", "occurred_at");
 CREATE INDEX "se_ip_time_idx" on "security_events"("ip", "occurred_at");
 CREATE INDEX "se_time_idx" on "security_events"("occurred_at");
+CREATE TABLE IF NOT EXISTS "calendly_webhook_deliveries"(
+  "id" integer primary key autoincrement not null,
+  "delivery_hash" varchar not null,
+  "event_name" varchar,
+  "invitee_uri" varchar,
+  "organization_id" integer,
+  "received_at" datetime not null,
+  "processed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete set null
+);
+CREATE UNIQUE INDEX "caldel_org_hash_unique" on "calendly_webhook_deliveries"(
+  "organization_id",
+  "delivery_hash"
+);
 CREATE TABLE IF NOT EXISTS "user_known_devices"(
   "id" integer primary key autoincrement not null,
   "user_id" integer not null,
@@ -12569,6 +12873,7 @@ CREATE TABLE IF NOT EXISTS "time_entries"(
   "customer_visible_at" datetime,
   foreign key("goodwill_reason_classification_id") references classifications("id") on delete set null on update no action,
   foreign key("rework_reason_classification_id") references classifications("id") on delete set null on update no action,
+  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete set null on update no action,
   foreign key("travel_log_id") references travel_logs("id") on delete set null on update no action,
   foreign key("attendance_id") references attendances("id") on delete set null on update no action,
   foreign key("activity_category_id") references activity_categories("id") on delete set null on update no action,
@@ -12578,7 +12883,6 @@ CREATE TABLE IF NOT EXISTS "time_entries"(
   foreign key("task_id") references tasks("id") on delete set null on update no action,
   foreign key("user_id") references users("id") on delete cascade on update no action,
   foreign key("diary_entry_id") references diary_entries("id") on delete set null on update no action,
-  foreign key("manufacturing_order_id") references manufacturing_orders("id") on delete set null on update no action,
   foreign key("customer_billing_rate_id") references "customer_billing_rates"("id") on delete set null
 );
 CREATE INDEX "te_diary_entry_idx" on "time_entries"("diary_entry_id");
@@ -12606,73 +12910,6 @@ CREATE INDEX "time_entries_travel_log_id_index" on "time_entries"(
   "travel_log_id"
 );
 CREATE INDEX "time_entries_user_id_index" on "time_entries"("user_id");
-CREATE TABLE IF NOT EXISTS "calendly_connections"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "access_token" text,
-  "refresh_token" text,
-  "token_expires_at" datetime,
-  "scopes" varchar,
-  "calendly_user_uri" varchar,
-  "calendly_organization_uri" varchar,
-  "status" varchar not null default 'active',
-  "last_synced_at" datetime,
-  "last_error" varchar,
-  "last_error_at" datetime,
-  "consecutive_failures" integer not null default '0',
-  "disabled_at" datetime,
-  "connected_by" integer,
-  "connected_at" datetime,
-  "disconnected_by" integer,
-  "disconnected_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("connected_by") references "users"("id") on delete set null,
-  foreign key("disconnected_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "calc_org_unique" on "calendly_connections"(
-  "organization_id"
-);
-CREATE TABLE IF NOT EXISTS "calendly_webhook_subscriptions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "calendly_connection_id" integer not null,
-  "url_token" varchar not null,
-  "signing_key" text not null,
-  "calendly_subscription_uri" varchar,
-  "scope" varchar not null default 'organization',
-  "events" text not null,
-  "status" varchar not null default 'active',
-  "last_delivery_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("calendly_connection_id") references "calendly_connections"("id") on delete cascade
-);
-CREATE INDEX "calsub_org_status_idx" on "calendly_webhook_subscriptions"(
-  "organization_id",
-  "status"
-);
-CREATE UNIQUE INDEX "calsub_token_unique" on "calendly_webhook_subscriptions"(
-  "url_token"
-);
-CREATE TABLE IF NOT EXISTS "calendly_webhook_deliveries"(
-  "id" integer primary key autoincrement not null,
-  "delivery_hash" varchar not null,
-  "event_name" varchar,
-  "invitee_uri" varchar,
-  "organization_id" integer,
-  "received_at" datetime not null,
-  "processed_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete set null
-);
-CREATE UNIQUE INDEX "caldel_org_hash_unique" on "calendly_webhook_deliveries"(
-  "organization_id",
-  "delivery_hash"
-);
 CREATE TABLE IF NOT EXISTS "sla_contracts"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -13192,264 +13429,6 @@ CREATE UNIQUE INDEX "uq_cbs_period" on "customer_billing_statements"(
 );
 CREATE UNIQUE INDEX "uq_cbs_lexoffice_voucher" on "customer_billing_statements"(
   "lexoffice_voucher_id"
-);
-CREATE TABLE IF NOT EXISTS "etsy_connections"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "shop_id" integer,
-  "shop_name" varchar,
-  "etsy_user_id" integer,
-  "access_token" text,
-  "refresh_token" text,
-  "token_expires_at" datetime,
-  "refresh_issued_at" datetime,
-  "scopes" varchar,
-  "status" varchar not null default 'active',
-  "webhook_token" varchar,
-  "checkpoints" text,
-  "last_synced_at" datetime,
-  "last_sync_counters" text,
-  "last_error" varchar,
-  "last_error_at" datetime,
-  "consecutive_failures" integer not null default '0',
-  "disabled_at" datetime,
-  "connected_by" integer,
-  "connected_at" datetime,
-  "disconnected_by" integer,
-  "disconnected_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("connected_by") references "users"("id") on delete set null,
-  foreign key("disconnected_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "etsyc_org_unique" on "etsy_connections"(
-  "organization_id"
-);
-CREATE UNIQUE INDEX "etsyc_shop_unique" on "etsy_connections"("shop_id");
-CREATE UNIQUE INDEX "etsyc_hook_unique" on "etsy_connections"("webhook_token");
-CREATE TABLE IF NOT EXISTS "etsy_receipts"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "receipt_id" integer not null,
-  "status" varchar,
-  "was_paid" tinyint(1) not null default '0',
-  "was_shipped" tinyint(1) not null default '0',
-  "currency" varchar,
-  "total_gross" numeric not null default '0',
-  "total_shipping" numeric not null default '0',
-  "total_tax" numeric not null default '0',
-  "discount" numeric not null default '0',
-  "buyer_external_id" varchar,
-  "buyer" text,
-  "items" text,
-  "raw" text,
-  "ordered_at" datetime,
-  "etsy_modified_at" datetime,
-  "customer_id" integer,
-  "inbox_status" varchar not null default 'open',
-  "shipped_pushed_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete set null
-);
-CREATE UNIQUE INDEX "etsyr_org_receipt_unique" on "etsy_receipts"(
-  "organization_id",
-  "receipt_id"
-);
-CREATE INDEX "etsyr_buyer_idx" on "etsy_receipts"("buyer_external_id");
-CREATE INDEX "etsyr_modified_idx" on "etsy_receipts"("etsy_modified_at");
-CREATE TABLE IF NOT EXISTS "etsy_webhook_deliveries"(
-  "id" integer primary key autoincrement not null,
-  "delivery_hash" varchar not null,
-  "webhook_id" varchar,
-  "event_type" varchar,
-  "receipt_id" integer,
-  "organization_id" integer,
-  "received_at" datetime not null,
-  "processed_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete set null
-);
-CREATE UNIQUE INDEX "etsydel_org_hash_unique" on "etsy_webhook_deliveries"(
-  "organization_id",
-  "delivery_hash"
-);
-CREATE TABLE IF NOT EXISTS "etsy_ledger_entries"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "ledger_entry_id" integer not null,
-  "ledger_type" varchar,
-  "amount" integer not null default '0',
-  "balance" integer not null default '0',
-  "currency" varchar,
-  "description" varchar,
-  "reference_type" varchar,
-  "reference_id" varchar,
-  "receipt_id" integer,
-  "posted_at" datetime,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "etsyl_org_entry_unique" on "etsy_ledger_entries"(
-  "organization_id",
-  "ledger_entry_id"
-);
-CREATE INDEX "etsyl_receipt_idx" on "etsy_ledger_entries"("receipt_id");
-CREATE INDEX "etsyl_posted_idx" on "etsy_ledger_entries"("posted_at");
-CREATE TABLE IF NOT EXISTS "material_cost_allocations"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "customer_id" integer not null,
-  "project_id" integer,
-  "source_type" varchar,
-  "source_id" integer,
-  "description" varchar,
-  "allocated_amount" numeric not null,
-  "currency" varchar not null default 'EUR',
-  "allocated_on" date not null,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "deleted_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete cascade,
-  foreign key("project_id") references "projects"("id") on delete set null,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE INDEX "mat_alloc_org_customer_idx" on "material_cost_allocations"(
-  "organization_id",
-  "customer_id"
-);
-CREATE INDEX "mat_alloc_source_idx" on "material_cost_allocations"(
-  "source_type",
-  "source_id"
-);
-CREATE TABLE IF NOT EXISTS "disposal_jobs"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "number" varchar not null,
-  "status" varchar not null default 'draft',
-  "customer_id" integer not null,
-  "site_id" integer,
-  "diary_entry_id" integer,
-  "responsible_user_id" integer,
-  "picked_up_on" date,
-  "total_weight_kg" numeric,
-  "notes" text,
-  "record_document_id" integer,
-  "signer_name" varchar,
-  "signed_at" datetime,
-  "signature_attachment_id" integer,
-  "signature_hash" varchar,
-  "completed_at" datetime,
-  "completed_by" integer,
-  "cancelled_at" datetime,
-  "cancel_reason" varchar,
-  "created_by_user_id" integer not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("customer_id") references "customers"("id") on delete cascade,
-  foreign key("site_id") references "sites"("id") on delete set null,
-  foreign key("diary_entry_id") references "diary_entries"("id") on delete set null,
-  foreign key("responsible_user_id") references "users"("id") on delete set null,
-  foreign key("record_document_id") references "documents"("id") on delete set null,
-  foreign key("signature_attachment_id") references "attachments"("id") on delete set null,
-  foreign key("completed_by") references "users"("id") on delete set null,
-  foreign key("created_by_user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "disposal_jobs_org_number_uq" on "disposal_jobs"(
-  "organization_id",
-  "number"
-);
-CREATE INDEX "disposal_jobs_org_status_idx" on "disposal_jobs"(
-  "organization_id",
-  "status"
-);
-CREATE INDEX "disposal_jobs_customer_idx" on "disposal_jobs"(
-  "customer_id",
-  "picked_up_on"
-);
-CREATE TABLE IF NOT EXISTS "disposal_items"(
-  "id" integer primary key autoincrement not null,
-  "disposal_job_id" integer not null,
-  "sort_order" integer not null default '0',
-  "category" varchar not null,
-  "manufacturer" varchar,
-  "model" varchar,
-  "serial_number" varchar,
-  "quantity" integer not null default '1',
-  "weight_kg" numeric,
-  "condition_note" varchar,
-  "avv_code" varchar not null,
-  "is_hazardous" tinyint(1) not null default '0',
-  "has_data_storage" tinyint(1) not null default '0',
-  "asset_id" integer,
-  "note" text,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("disposal_job_id") references "disposal_jobs"("id") on delete cascade,
-  foreign key("asset_id") references "assets"("id") on delete set null
-);
-CREATE INDEX "disposal_items_order_idx" on "disposal_items"(
-  "disposal_job_id",
-  "sort_order"
-);
-CREATE TABLE IF NOT EXISTS "data_media_treatments"(
-  "id" integer primary key autoincrement not null,
-  "disposal_item_id" integer not null,
-  "media_type" varchar not null,
-  "method" varchar not null,
-  "din_category" varchar not null,
-  "security_level" integer not null,
-  "protection_class" integer,
-  "treated_at" datetime not null,
-  "performed_by_user_id" integer not null,
-  "evidence_reference" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("disposal_item_id") references "disposal_items"("id") on delete cascade,
-  foreign key("performed_by_user_id") references "users"("id") on delete cascade
-);
-CREATE TABLE IF NOT EXISTS "disposal_handovers"(
-  "id" integer primary key autoincrement not null,
-  "disposal_job_id" integer not null,
-  "external_contact_id" integer not null,
-  "proof_type" varchar not null,
-  "document_number" varchar not null,
-  "handed_over_on" date not null,
-  "document_id" integer,
-  "certificate_reference" varchar,
-  "note" text,
-  "created_by_user_id" integer not null,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("disposal_job_id") references "disposal_jobs"("id") on delete cascade,
-  foreign key("external_contact_id") references "external_contacts"("id") on delete cascade,
-  foreign key("document_id") references "documents"("id") on delete set null,
-  foreign key("created_by_user_id") references "users"("id") on delete cascade
-);
-CREATE INDEX "disposal_handovers_job_idx" on "disposal_handovers"(
-  "disposal_job_id",
-  "handed_over_on"
-);
-CREATE TABLE IF NOT EXISTS "disposal_job_events"(
-  "id" integer primary key autoincrement not null,
-  "disposal_job_id" integer not null,
-  "event" varchar not null,
-  "actor_user_id" integer not null,
-  "payload" text,
-  "created_at" datetime not null,
-  foreign key("disposal_job_id") references "disposal_jobs"("id") on delete cascade,
-  foreign key("actor_user_id") references "users"("id") on delete cascade
-);
-CREATE INDEX "disposal_job_events_idx" on "disposal_job_events"(
-  "disposal_job_id",
-  "created_at"
 );
 CREATE TABLE IF NOT EXISTS "customer_account_payments"(
   "id" integer primary key autoincrement not null,
@@ -14118,16 +14097,10 @@ CREATE TABLE IF NOT EXISTS "users"(
   "preferences" text,
   "is_new_system" tinyint(1) not null default('0'),
   "customer_id" integer,
-  "first_name" varchar,
-  "middle_names" varchar,
-  "last_name" varchar,
-  "phone" varchar,
-  "mobile" varchar,
-  "fax" varchar,
   "personnel_number" varchar,
   "payroll_hourly_wage" numeric,
-  "tax_identification_number" text,
-  "social_security_number" text,
+  "tax_identification_number" varchar,
+  "social_security_number" varchar,
   "date_of_birth" date,
   "health_insurance" varchar,
   "tax_class" varchar,
@@ -14136,16 +14109,22 @@ CREATE TABLE IF NOT EXISTS "users"(
   "employment_start_date" date,
   "employment_end_date" date,
   "employment_type" varchar,
+  "two_factor_secret" text,
+  "two_factor_recovery_codes" text,
+  "two_factor_confirmed_at" datetime,
+  "cti_extension" text,
+  "cti_extension_hash" varchar,
+  "first_name" varchar,
+  "middle_names" varchar,
+  "last_name" varchar,
+  "phone" varchar,
+  "mobile" varchar,
+  "fax" varchar,
   "compensation_model" varchar,
   "flat_amount" numeric,
   "flat_interval" varchar,
   "compensation_rate" numeric,
-  "two_factor_secret" text,
-  "two_factor_recovery_codes" text,
-  "two_factor_confirmed_at" datetime,
   "deactivated_at" datetime,
-  "cti_extension" text,
-  "cti_extension_hash" varchar,
   "is_platform_admin" tinyint(1) not null default('0'),
   "sso_exempt" tinyint(1) not null default('0'),
   "portal_invite_token_hash" varchar,
@@ -14157,8 +14136,8 @@ CREATE TABLE IF NOT EXISTS "users"(
   "portal_pending_email" varchar,
   "portal_pending_email_requested_at" datetime,
   "calendar_feed_token_hash" varchar,
-  foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("deputy_user_id") references "users"("id") on delete set null
 );
 CREATE INDEX "idx_users_org" on "users"("organization_id");
@@ -15269,6 +15248,21 @@ CREATE TABLE IF NOT EXISTS "appointment_requests"(
   foreign key("customer_id") references customers("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete cascade on update no action,
   foreign key("portal_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "apreq_org_status_idx" on "appointment_requests"(
+  "organization_id",
+  "status"
+);
+CREATE INDEX "apreq_resched_from_idx" on "appointment_requests"(
+  "rescheduled_from_uri"
+);
+CREATE INDEX "apreq_resched_to_idx" on "appointment_requests"(
+  "rescheduled_to_uri"
+);
+CREATE UNIQUE INDEX "apreq_source_unique" on "appointment_requests"(
+  "organization_id",
+  "source",
+  "source_uri"
 );
 CREATE TABLE IF NOT EXISTS "accounting_migration_runs"(
   "id" integer primary key autoincrement not null,
@@ -18429,35 +18423,6 @@ CREATE INDEX "lrn_trans_org_locale_idx" on "learning_content_translations"(
   "locale"
 );
 CREATE INDEX "attach_media_state_idx" on "attachments"("media_state");
-CREATE TABLE IF NOT EXISTS "media_renditions"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "attachment_id" integer not null,
-  "kind" varchar not null,
-  "variant" varchar,
-  "disk" varchar not null,
-  "path" varchar not null,
-  "mime" varchar not null,
-  "size_bytes" integer not null default '0',
-  "width" integer,
-  "height" integer,
-  "locale" varchar,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "source" varchar not null default 'manual',
-  "reviewed_at" datetime,
-  "reviewed_by" integer,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("attachment_id") references "attachments"("id") on delete cascade,
-  foreign key("reviewed_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "media_rend_uq" on "media_renditions"(
-  "attachment_id",
-  "kind",
-  "variant",
-  "locale"
-);
-CREATE INDEX "media_rend_org_idx" on "media_renditions"("organization_id");
 CREATE TABLE IF NOT EXISTS "learning_issuer_keys"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -18477,6 +18442,35 @@ CREATE INDEX "lrn_issuer_key_active_idx" on "learning_issuer_keys"(
 CREATE UNIQUE INDEX "lrn_issuer_key_uq" on "learning_issuer_keys"(
   "organization_id",
   "key_id"
+);
+CREATE TABLE IF NOT EXISTS "media_renditions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "attachment_id" integer not null,
+  "kind" varchar not null,
+  "variant" varchar,
+  "disk" varchar not null,
+  "path" varchar not null,
+  "mime" varchar not null,
+  "size_bytes" integer not null default('0'),
+  "width" integer,
+  "height" integer,
+  "locale" varchar,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "source" varchar not null default 'manual',
+  "reviewed_at" datetime,
+  "reviewed_by" integer,
+  foreign key("attachment_id") references attachments("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("reviewed_by") references "users"("id") on delete set null
+);
+CREATE INDEX "media_rend_org_idx" on "media_renditions"("organization_id");
+CREATE UNIQUE INDEX "media_rend_uq" on "media_renditions"(
+  "attachment_id",
+  "kind",
+  "variant",
+  "locale"
 );
 CREATE TABLE IF NOT EXISTS "customers"(
   "id" integer primary key autoincrement not null,
@@ -18512,6 +18506,9 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "address_lat" numeric,
   "address_lng" numeric,
   "slug" varchar,
+  "billing_mode" varchar,
+  "buyer_reference" varchar,
+  "debtor_no" varchar,
   "bank_account_holder" text,
   "bank_iban" text,
   "bank_bic" text,
@@ -18522,9 +18519,6 @@ CREATE TABLE IF NOT EXISTS "customers"(
   "billing_increment_minutes" integer,
   "billing_grouping_gap_minutes" integer,
   "travel_settings" text,
-  "billing_mode" varchar,
-  "buyer_reference" varchar,
-  "debtor_no" varchar,
   "matchcode" varchar,
   "exclude_from_reports" tinyint(1) not null default('0'),
   "portal_settings" text,
@@ -18843,648 +18837,647 @@ INSERT INTO migrations VALUES(135,'2026_06_03_120000_create_classifications_tabl
 INSERT INTO migrations VALUES(136,'2026_06_03_130000_create_classification_requirements_table',1);
 INSERT INTO migrations VALUES(137,'2026_06_03_150000_add_asset_links_to_diary_entries_and_material_usages',1);
 INSERT INTO migrations VALUES(138,'2026_06_04_090000_add_planning_columns_to_diary_entries',1);
-INSERT INTO migrations VALUES(139,'2026_06_04_160000_create_onboarding_progress_table',1);
-INSERT INTO migrations VALUES(140,'2026_06_05_120000_create_help_topics_table',1);
-INSERT INTO migrations VALUES(141,'2026_06_05_120100_create_help_views_table',1);
-INSERT INTO migrations VALUES(142,'2026_06_06_120000_add_demo_columns_to_organizations',1);
-INSERT INTO migrations VALUES(143,'2026_06_10_120000_create_user_bookmarks_table',1);
-INSERT INTO migrations VALUES(144,'2026_06_17_120000_create_user_dashboard_widgets_table',1);
-INSERT INTO migrations VALUES(145,'2026_06_20_120000_create_user_filter_presets_table',1);
-INSERT INTO migrations VALUES(146,'2026_06_25_120000_create_invoice_templates_table',1);
-INSERT INTO migrations VALUES(147,'2026_07_01_120000_create_month_closures_table',1);
-INSERT INTO migrations VALUES(148,'2026_07_01_120100_create_month_closure_events_table',1);
-INSERT INTO migrations VALUES(149,'2026_07_01_140000_create_time_exports_table',1);
-INSERT INTO migrations VALUES(150,'2026_07_01_140100_create_time_export_lines_table',1);
-INSERT INTO migrations VALUES(151,'2026_07_01_140200_create_time_export_events_table',1);
-INSERT INTO migrations VALUES(152,'2026_07_02_120000_create_backup_heartbeats_table',1);
-INSERT INTO migrations VALUES(153,'2026_07_10_120000_create_import_runs_table',1);
-INSERT INTO migrations VALUES(154,'2026_07_10_120100_create_import_run_errors_table',1);
-INSERT INTO migrations VALUES(155,'2026_07_11_120000_add_bank_columns_to_customers_table',1);
-INSERT INTO migrations VALUES(156,'2026_07_11_120100_create_pending_external_conflicts_table',1);
-INSERT INTO migrations VALUES(157,'2026_07_11_120200_add_version_to_lexoffice_articles_table',1);
-INSERT INTO migrations VALUES(158,'2026_07_11_120300_create_plugin_settings_table',1);
-INSERT INTO migrations VALUES(159,'2026_07_12_120000_create_plugin_states_table',1);
-INSERT INTO migrations VALUES(160,'2026_07_12_120100_create_plugin_errors_table',1);
-INSERT INTO migrations VALUES(161,'2026_07_13_120000_create_license_flag_overrides_table',1);
-INSERT INTO migrations VALUES(162,'2026_07_14_120000_create_sites_table',1);
-INSERT INTO migrations VALUES(163,'2026_07_14_120100_create_buildings_table',1);
-INSERT INTO migrations VALUES(164,'2026_07_14_120200_create_floors_table',1);
-INSERT INTO migrations VALUES(165,'2026_07_14_120300_extend_rooms_for_hierarchy',1);
-INSERT INTO migrations VALUES(166,'2026_07_14_120400_add_room_id_to_assets_table',1);
-INSERT INTO migrations VALUES(167,'2026_07_14_130000_make_maintenance_plans_polymorph',1);
-INSERT INTO migrations VALUES(168,'2026_07_14_140000_create_cleaning_profiles_table',1);
-INSERT INTO migrations VALUES(169,'2026_07_14_140100_add_cleaning_profile_id_to_rooms',1);
-INSERT INTO migrations VALUES(170,'2026_07_14_150000_migrate_legacy_room_facility_strings',1);
-INSERT INTO migrations VALUES(171,'2026_07_15_120000_create_software_table',1);
-INSERT INTO migrations VALUES(172,'2026_07_15_120100_create_software_installations_table',1);
-INSERT INTO migrations VALUES(173,'2026_07_15_120200_create_remote_pending_sessions_table',1);
-INSERT INTO migrations VALUES(174,'2026_07_15_120300_create_toggl_pending_entries_table',1);
-INSERT INTO migrations VALUES(175,'2026_08_01_120000_create_export_runs_table',1);
-INSERT INTO migrations VALUES(176,'2026_08_01_120100_add_alias_to_remote_pending_sessions',1);
-INSERT INTO migrations VALUES(177,'2026_08_02_120000_add_shared_remote_to_assets',1);
-INSERT INTO migrations VALUES(178,'2026_08_02_120100_add_asset_id_to_remote_pending_sessions',1);
-INSERT INTO migrations VALUES(180,'2026_08_05_130000_create_lexoffice_vouchers_table',1);
-INSERT INTO migrations VALUES(181,'2026_08_06_120000_create_contact_addresses_table',1);
-INSERT INTO migrations VALUES(182,'2026_08_06_120100_create_contact_bank_accounts_table',1);
-INSERT INTO migrations VALUES(183,'2026_08_06_120200_add_lexoffice_fields_to_contacts',1);
-INSERT INTO migrations VALUES(184,'2026_08_06_120300_add_source_to_number_formats',1);
-INSERT INTO migrations VALUES(185,'2026_08_06_120400_add_external_number_to_invoices',1);
-INSERT INTO migrations VALUES(186,'2026_08_07_120000_create_foreign_customers_table',1);
-INSERT INTO migrations VALUES(187,'2026_08_07_120100_add_foreign_customer_id_to_projects_table',1);
-INSERT INTO migrations VALUES(188,'2026_08_07_120200_add_foreign_customer_id_to_invoices_table',1);
-INSERT INTO migrations VALUES(189,'2026_08_08_120000_add_billing_increment_to_projects_table',1);
-INSERT INTO migrations VALUES(190,'2026_08_08_120100_add_billing_increment_to_customers_table',1);
-INSERT INTO migrations VALUES(191,'2026_08_08_120200_create_invoice_item_time_entries_table',1);
-INSERT INTO migrations VALUES(192,'2026_08_08_120300_add_service_date_to_invoice_items_table',1);
-INSERT INTO migrations VALUES(193,'2026_08_08_120400_add_category_to_invoices_table',1);
-INSERT INTO migrations VALUES(194,'2026_08_08_120500_add_material_billing_fields',1);
-INSERT INTO migrations VALUES(195,'2026_08_08_120600_add_travel_billing_fields',1);
-INSERT INTO migrations VALUES(196,'2026_08_08_120700_add_foreign_customer_id_to_assets_table',1);
-INSERT INTO migrations VALUES(197,'2026_08_09_120000_add_personal_fields_to_users_table',2);
-INSERT INTO migrations VALUES(198,'2026_06_04_120000_add_personnel_number_to_users_table',3);
-INSERT INTO migrations VALUES(199,'2026_06_04_121000_add_payroll_fields_to_users_table',3);
-INSERT INTO migrations VALUES(200,'2026_06_04_130000_create_teams_table',4);
-INSERT INTO migrations VALUES(201,'2026_06_04_140000_create_project_team_and_member_tables',4);
-INSERT INTO migrations VALUES(202,'2026_06_04_150000_add_start_date_to_tasks_table',4);
-INSERT INTO migrations VALUES(203,'2026_06_04_160000_create_task_user_table',4);
-INSERT INTO migrations VALUES(204,'2026_06_04_170000_create_minimum_wages_table',5);
-INSERT INTO migrations VALUES(205,'2026_06_04_171000_add_employment_type_to_users_table',5);
-INSERT INTO migrations VALUES(206,'2026_06_04_180000_create_minimum_wage_references_table',6);
-INSERT INTO migrations VALUES(207,'2026_08_10_120000_add_schedule_type_to_work_schedules',7);
-INSERT INTO migrations VALUES(208,'2026_08_11_120000_widen_time_entry_descriptions_to_text',8);
-INSERT INTO migrations VALUES(209,'2026_08_11_120100_add_organization_to_plugin_state',8);
-INSERT INTO migrations VALUES(210,'2026_08_11_120200_add_last_ok_at_to_plugin_states',8);
-INSERT INTO migrations VALUES(211,'2026_08_12_000000_add_compensation_model_to_users',9);
-INSERT INTO migrations VALUES(212,'2026_08_13_000001_create_chat_channels_table',10);
-INSERT INTO migrations VALUES(213,'2026_08_13_000002_create_chat_messages_table',10);
-INSERT INTO migrations VALUES(214,'2026_08_13_000003_create_chat_polls_table',10);
-INSERT INTO migrations VALUES(215,'2026_08_13_000004_create_password_reset_tokens_table',11);
-INSERT INTO migrations VALUES(216,'2026_08_13_000005_add_quote_forward_to_chat_messages',12);
-INSERT INTO migrations VALUES(217,'2026_08_13_000006_create_chat_message_stars_table',13);
-INSERT INTO migrations VALUES(218,'2026_08_13_000007_create_chat_reminders_table',13);
-INSERT INTO migrations VALUES(219,'2026_08_13_000008_create_chat_scheduled_messages_table',14);
-INSERT INTO migrations VALUES(220,'2026_06_07_120000_add_two_factor_columns',15);
-INSERT INTO migrations VALUES(221,'2026_06_07_130000_widen_encrypted_pii_columns',16);
-INSERT INTO migrations VALUES(222,'2026_06_08_120000_widen_address_zip_city_columns',17);
-INSERT INTO migrations VALUES(223,'2026_08_13_000009_add_preferred_work_mode_to_users_table',17);
-INSERT INTO migrations VALUES(224,'2026_08_13_000010_add_hash_chain_to_audit_logs_table',18);
-INSERT INTO migrations VALUES(226,'2026_08_13_000012_add_hash_chain_to_org_audit_and_chain_heads',20);
-INSERT INTO migrations VALUES(227,'2026_08_13_000013_move_preferred_work_mode_into_preferences',21);
-INSERT INTO migrations VALUES(229,'2026_08_13_000014_create_whistleblowing_tables',22);
-INSERT INTO migrations VALUES(230,'2026_08_13_000015_create_whistleblowing_access_and_reminder_tables',23);
-INSERT INTO migrations VALUES(231,'2026_08_13_000016_create_whistleblowing_case_subjects_table',24);
-INSERT INTO migrations VALUES(232,'2026_08_13_000017_make_whistleblowing_case_content_nullable',25);
-INSERT INTO migrations VALUES(233,'2026_08_13_000018_grandfather_existing_orgs_to_enterprise',26);
-INSERT INTO migrations VALUES(234,'2026_08_13_000019_create_plan_module_grace_table',27);
-INSERT INTO migrations VALUES(235,'2026_08_13_000020_add_self_applied_to_time_correction_requests',28);
-INSERT INTO migrations VALUES(236,'2026_08_13_000021_create_privacy_mvp1_tables',29);
-INSERT INTO migrations VALUES(237,'2026_08_13_000022_create_privacy_avv_tables',30);
-INSERT INTO migrations VALUES(238,'2026_08_13_000023_create_privacy_mvp3_tables',31);
-INSERT INTO migrations VALUES(239,'2026_08_13_000024_create_privacy_tom_tables',32);
-INSERT INTO migrations VALUES(240,'2026_08_13_000025_create_privacy_gvv_tables',33);
-INSERT INTO migrations VALUES(241,'2026_08_13_000026_create_privacy_compliance_findings_table',34);
-INSERT INTO migrations VALUES(242,'2026_08_13_000027_create_privacy_attachments_table',35);
-INSERT INTO migrations VALUES(243,'2026_08_13_000028_add_license_columns_to_organizations',36);
-INSERT INTO migrations VALUES(244,'2026_08_13_000029_add_processor_dimension_to_incidents',37);
-INSERT INTO migrations VALUES(245,'2026_08_13_000030_add_authority_reporting_to_incidents',38);
-INSERT INTO migrations VALUES(246,'2026_06_10_120000_create_two_factor_credentials_table',39);
-INSERT INTO migrations VALUES(247,'2026_06_10_073952_create_webauthn_credentials',40);
-INSERT INTO migrations VALUES(248,'2026_06_10_130000_create_communication_notes_table',41);
-INSERT INTO migrations VALUES(249,'2026_06_10_130000_create_feature_usage_counters_table',41);
-INSERT INTO migrations VALUES(250,'2026_06_10_130100_create_communication_note_participants_table',41);
-INSERT INTO migrations VALUES(251,'2026_06_10_140000_create_documents_table',41);
-INSERT INTO migrations VALUES(252,'2026_06_10_140100_create_document_versions_table',41);
-INSERT INTO migrations VALUES(253,'2026_06_10_150000_create_notifications_table',41);
-INSERT INTO migrations VALUES(254,'2026_06_10_150100_create_notification_rules_table',41);
-INSERT INTO migrations VALUES(255,'2026_06_10_150200_create_notification_dispatch_log_table',41);
-INSERT INTO migrations VALUES(256,'2026_06_10_160000_create_surcharge_rules_table',41);
-INSERT INTO migrations VALUES(257,'2026_06_10_170000_create_knowledge_articles_table',41);
-INSERT INTO migrations VALUES(258,'2026_06_10_170100_create_knowledge_article_links_table',41);
-INSERT INTO migrations VALUES(259,'2026_06_10_170200_create_knowledge_article_feedback_table',41);
-INSERT INTO migrations VALUES(260,'2026_06_10_180000_create_form_templates_table',41);
-INSERT INTO migrations VALUES(261,'2026_06_10_180100_create_form_submissions_table',41);
-INSERT INTO migrations VALUES(262,'2026_06_10_190000_create_isms_risks_table',41);
-INSERT INTO migrations VALUES(263,'2026_06_10_190100_create_isms_controls_table',41);
-INSERT INTO migrations VALUES(264,'2026_06_10_190200_create_isms_control_risk_table',41);
-INSERT INTO migrations VALUES(265,'2026_06_10_200000_add_billing_mode_to_customers_table',41);
-INSERT INTO migrations VALUES(266,'2026_06_10_200100_create_billing_transfers_table',41);
-INSERT INTO migrations VALUES(267,'2026_06_10_200200_create_billing_transfer_items_table',41);
-INSERT INTO migrations VALUES(268,'2026_06_10_200300_create_billing_transfer_events_table',41);
-INSERT INTO migrations VALUES(269,'2026_07_01_150000_add_surcharge_columns_to_time_export_lines',41);
-INSERT INTO migrations VALUES(270,'2026_06_11_090000_create_isms_scopes_table',42);
-INSERT INTO migrations VALUES(271,'2026_06_11_090100_create_isms_requirements_table',42);
-INSERT INTO migrations VALUES(272,'2026_06_11_090200_create_isms_control_requirement_table',42);
-INSERT INTO migrations VALUES(273,'2026_06_11_090300_create_isms_applicability_statements_table',42);
-INSERT INTO migrations VALUES(274,'2026_06_11_090400_add_scope_to_isms_risks_table',42);
-INSERT INTO migrations VALUES(275,'2026_06_11_090500_migrate_isms_controls_to_requirements',42);
-INSERT INTO migrations VALUES(276,'2026_06_11_090600_drop_soa_columns_from_isms_controls',42);
-INSERT INTO migrations VALUES(277,'2026_06_11_100000_create_isms_software_products_table',42);
-INSERT INTO migrations VALUES(278,'2026_06_11_100100_create_isms_software_installations_table',42);
-INSERT INTO migrations VALUES(279,'2026_06_11_120000_create_isms_norm_statuses_table',43);
-INSERT INTO migrations VALUES(280,'2026_06_11_120100_create_isms_certificates_table',43);
-INSERT INTO migrations VALUES(281,'2026_06_11_130000_create_isms_audits_table',43);
-INSERT INTO migrations VALUES(282,'2026_06_11_130100_create_isms_audit_findings_table',43);
-INSERT INTO migrations VALUES(283,'2026_06_11_130200_create_isms_corrective_actions_table',43);
-INSERT INTO migrations VALUES(284,'2026_06_11_130300_create_isms_management_reviews_table',43);
-INSERT INTO migrations VALUES(285,'2026_06_11_140000_create_isms_risk_assessments_table',43);
-INSERT INTO migrations VALUES(286,'2026_06_11_150000_create_isms_audit_packages_table',44);
-INSERT INTO migrations VALUES(287,'2026_06_11_150100_create_isms_audit_package_tokens_table',44);
-INSERT INTO migrations VALUES(288,'2026_06_12_100000_add_buyer_reference_to_customers_table',45);
-INSERT INTO migrations VALUES(289,'2026_06_12_110000_create_day_closures_table',45);
-INSERT INTO migrations VALUES(290,'2026_06_12_110100_create_day_correction_requests_table',45);
-INSERT INTO migrations VALUES(291,'2026_08_14_000000_add_order_lifecycle_to_diary_entries',45);
-INSERT INTO migrations VALUES(292,'2026_06_12_120000_create_bank_accounts_table',46);
-INSERT INTO migrations VALUES(293,'2026_06_12_120100_create_bank_statements_table',46);
-INSERT INTO migrations VALUES(294,'2026_06_12_120200_create_bank_transactions_table',46);
-INSERT INTO migrations VALUES(295,'2026_06_12_120300_create_payment_allocations_table',46);
-INSERT INTO migrations VALUES(296,'2026_06_12_120400_create_payment_reconciliation_events_table',46);
-INSERT INTO migrations VALUES(297,'2026_06_14_100000_create_datev_booking_batches_table',47);
-INSERT INTO migrations VALUES(298,'2026_06_14_100100_create_datev_booking_sources_table',47);
-INSERT INTO migrations VALUES(299,'2026_06_14_100200_create_datev_booking_events_table',47);
-INSERT INTO migrations VALUES(300,'2026_06_14_100300_add_debtor_no_to_customers_table',47);
-INSERT INTO migrations VALUES(301,'2026_06_14_110000_create_isms_security_incidents_table',47);
-INSERT INTO migrations VALUES(302,'2026_06_14_110100_create_isms_incident_risk_table',47);
-INSERT INTO migrations VALUES(303,'2026_06_14_110200_create_isms_incident_control_table',47);
-INSERT INTO migrations VALUES(304,'2026_06_14_110300_create_isms_advisories_table',47);
-INSERT INTO migrations VALUES(305,'2026_06_14_110400_create_isms_vulnerabilities_table',47);
-INSERT INTO migrations VALUES(306,'2026_06_14_120000_create_restore_tests_table',48);
-INSERT INTO migrations VALUES(307,'2026_06_14_130000_create_sla_violations_table',48);
-INSERT INTO migrations VALUES(308,'2026_06_14_140000_create_asset_assignments_table',49);
-INSERT INTO migrations VALUES(309,'2026_06_14_140100_create_asset_defects_table',49);
-INSERT INTO migrations VALUES(310,'2026_06_14_170000_create_safety_events_table',50);
-INSERT INTO migrations VALUES(311,'2026_06_14_200000_create_webhook_endpoints_table',51);
-INSERT INTO migrations VALUES(312,'2026_06_14_200100_create_webhook_deliveries_table',51);
-INSERT INTO migrations VALUES(313,'2026_06_14_210000_add_dispatch_status_to_diary_entries',52);
-INSERT INTO migrations VALUES(314,'2026_06_14_210100_create_vehicle_reservations_table',52);
-INSERT INTO migrations VALUES(315,'2026_06_14_240000_create_availability_windows_table',53);
-INSERT INTO migrations VALUES(316,'2026_06_14_240100_create_desired_shifts_table',53);
-INSERT INTO migrations VALUES(317,'2026_06_14_240200_create_shift_exchanges_table',53);
-INSERT INTO migrations VALUES(318,'2026_06_14_260000_create_isms_supplier_assessments_table',54);
-INSERT INTO migrations VALUES(319,'2026_06_14_270000_create_room_requirements_table',55);
-INSERT INTO migrations VALUES(320,'2026_06_14_280000_create_external_participants_table',55);
-INSERT INTO migrations VALUES(321,'2026_06_14_280100_add_external_author_to_comments_table',55);
-INSERT INTO migrations VALUES(322,'2026_06_14_300000_create_report_targets_table',56);
-INSERT INTO migrations VALUES(323,'2026_06_15_290000_create_room_requirement_templates_table',56);
-INSERT INTO migrations VALUES(324,'2026_06_15_310000_add_tenant_status_to_organizations',57);
-INSERT INTO migrations VALUES(325,'2026_06_15_320000_create_customer_queries_and_token_decisions',58);
-INSERT INTO migrations VALUES(326,'2026_08_09_100000_add_material_fields_to_billing_transfer_items',59);
-INSERT INTO migrations VALUES(327,'2026_06_16_120000_create_openproject_pending_entries_table',60);
-INSERT INTO migrations VALUES(328,'2026_06_14_255000_create_suppliers_table',61);
-INSERT INTO migrations VALUES(329,'2026_06_16_130000_create_articles_table',62);
-INSERT INTO migrations VALUES(330,'2026_06_16_130100_create_article_option_definitions_table',62);
-INSERT INTO migrations VALUES(331,'2026_06_16_130200_create_article_option_values_table',62);
-INSERT INTO migrations VALUES(332,'2026_06_16_130300_create_article_variants_table',62);
-INSERT INTO migrations VALUES(333,'2026_06_16_130400_create_article_variant_option_values_table',62);
-INSERT INTO migrations VALUES(334,'2026_06_16_130500_create_article_units_table',62);
-INSERT INTO migrations VALUES(335,'2026_06_16_130600_create_external_article_mappings_table',62);
-INSERT INTO migrations VALUES(336,'2026_06_16_140000_create_warehouses_table',62);
-INSERT INTO migrations VALUES(337,'2026_06_16_140100_create_stock_movements_table',62);
-INSERT INTO migrations VALUES(338,'2026_06_16_150000_create_stock_reservations_table',62);
-INSERT INTO migrations VALUES(339,'2026_06_16_150100_create_stock_level_settings_table',62);
-INSERT INTO migrations VALUES(340,'2026_06_16_160000_create_stock_counts_table',62);
-INSERT INTO migrations VALUES(341,'2026_06_16_160100_create_stock_count_lines_table',62);
-INSERT INTO migrations VALUES(342,'2026_06_16_170000_create_stock_valuations_table',62);
-INSERT INTO migrations VALUES(343,'2026_06_16_180000_create_procedure_material_requirements_table',62);
-INSERT INTO migrations VALUES(344,'2026_06_16_180100_create_manufacturing_orders_table',62);
-INSERT INTO migrations VALUES(345,'2026_06_16_180200_create_manufacturing_order_materials_table',62);
-INSERT INTO migrations VALUES(346,'2026_06_16_180300_create_article_variant_bom_overrides_table',62);
-INSERT INTO migrations VALUES(347,'2026_06_16_190000_create_manufacturing_order_reports_table',62);
-INSERT INTO migrations VALUES(348,'2026_06_16_190100_create_stock_deliveries_table',62);
-INSERT INTO migrations VALUES(349,'2026_06_16_200000_create_material_substitutes_table',62);
-INSERT INTO migrations VALUES(350,'2026_06_16_200100_create_procurement_requests_table',62);
-INSERT INTO migrations VALUES(351,'2026_06_16_210000_add_wait_until_to_procedure_step_runs',62);
-INSERT INTO migrations VALUES(352,'2026_06_16_220000_create_stock_serials_table',62);
-INSERT INTO migrations VALUES(353,'2026_06_16_230000_create_inventory_outbox_table',62);
-INSERT INTO migrations VALUES(354,'2026_06_16_240000_create_stock_valuation_layers_table',62);
-INSERT INTO migrations VALUES(355,'2026_06_16_250000_create_stock_lots_table',62);
-INSERT INTO migrations VALUES(356,'2026_06_16_250100_add_lot_to_stock_valuation_layers',62);
-INSERT INTO migrations VALUES(357,'2026_06_19_100000_add_lot_serial_to_stock_movements',62);
-INSERT INTO migrations VALUES(358,'2026_06_19_100100_add_valuation_and_serial_scheme_to_articles',62);
-INSERT INTO migrations VALUES(359,'2026_06_19_110000_create_article_supplies_table',62);
-INSERT INTO migrations VALUES(360,'2026_06_19_110100_create_purchase_orders_table',62);
-INSERT INTO migrations VALUES(361,'2026_06_19_110200_create_purchase_order_lines_table',62);
-INSERT INTO migrations VALUES(362,'2026_06_19_120000_add_count_type_to_stock_counts',62);
-INSERT INTO migrations VALUES(363,'2026_06_19_130000_add_stock_lot_to_manufacturing_order_reports',62);
-INSERT INTO migrations VALUES(364,'2026_06_19_130100_add_subcontract_to_manufacturing_orders',62);
-INSERT INTO migrations VALUES(365,'2026_06_19_140000_create_work_centers_table',62);
-INSERT INTO migrations VALUES(366,'2026_06_19_140100_add_work_center_to_manufacturing_orders',62);
-INSERT INTO migrations VALUES(367,'2026_06_19_150000_add_actual_cost_to_manufacturing_order_materials',62);
-INSERT INTO migrations VALUES(368,'2026_06_19_160000_add_manufacturing_order_to_time_entries',62);
-INSERT INTO migrations VALUES(369,'2026_06_19_170000_create_purchase_order_advices_table',62);
-INSERT INTO migrations VALUES(370,'2026_06_19_180000_create_label_templates_table',62);
-INSERT INTO migrations VALUES(371,'2026_08_15_000000_add_org_scoped_composite_indexes',63);
-INSERT INTO migrations VALUES(372,'2026_06_22_120000_create_permits_table',64);
-INSERT INTO migrations VALUES(373,'2026_06_26_090000_create_procedure_parameter_definitions_table',64);
-INSERT INTO migrations VALUES(374,'2026_06_26_120000_create_supplier_catalog_tables',64);
-INSERT INTO migrations VALUES(375,'2026_06_26_130000_create_pricing_margin_rules_table',64);
-INSERT INTO migrations VALUES(376,'2026_06_26_140000_create_pricing_change_alerts_table',64);
-INSERT INTO migrations VALUES(377,'2026_06_27_100000_add_remote_fields_to_supplier_catalog_sources',64);
-INSERT INTO migrations VALUES(378,'2026_06_27_110000_add_schedule_to_supplier_catalog_sources',64);
-INSERT INTO migrations VALUES(379,'2026_06_27_110100_create_supplier_catalog_imports_table',64);
-INSERT INTO migrations VALUES(380,'2026_06_27_120000_add_classification_media_to_supplier_catalog_items',64);
-INSERT INTO migrations VALUES(381,'2026_06_27_130000_create_supplier_catalog_item_price_tiers_table',64);
-INSERT INTO migrations VALUES(382,'2026_06_28_100000_add_freight_and_line_note_to_purchase_orders',64);
-INSERT INTO migrations VALUES(383,'2026_06_28_120000_create_gaeb_boq_tables',64);
-INSERT INTO migrations VALUES(384,'2026_06_28_130000_create_boq_progress_and_mappings_tables',64);
-INSERT INTO migrations VALUES(385,'2026_06_28_140000_create_boq_exports_table',64);
-INSERT INTO migrations VALUES(386,'2026_08_20_120000_create_customer_merge_dismissals_table',64);
-INSERT INTO migrations VALUES(387,'2026_08_21_120000_create_customer_geofences_table',64);
-INSERT INTO migrations VALUES(388,'2026_08_21_120000_create_integration_inbox_items_table',64);
-INSERT INTO migrations VALUES(389,'2026_08_21_120100_create_location_points_table',64);
-INSERT INTO migrations VALUES(390,'2026_08_21_120200_create_location_visits_table',64);
-INSERT INTO migrations VALUES(391,'2026_08_21_120300_create_location_pending_entries_table',64);
-INSERT INTO migrations VALUES(392,'2026_08_21_120400_create_location_device_tokens_table',64);
-INSERT INTO migrations VALUES(393,'2026_08_21_120500_encrypt_location_points_coordinates',64);
-INSERT INTO migrations VALUES(394,'2026_08_22_120000_backfill_lexoffice_conflicts_to_inbox',64);
-INSERT INTO migrations VALUES(395,'2026_08_22_120000_create_project_merge_dismissals_table',64);
-INSERT INTO migrations VALUES(396,'2026_08_23_120000_add_group_key_to_integration_inbox_items',64);
-INSERT INTO migrations VALUES(397,'2026_08_24_120000_backfill_toggl_pending_to_inbox',64);
-INSERT INTO migrations VALUES(398,'2026_08_25_120000_backfill_openproject_pending_to_inbox',64);
-INSERT INTO migrations VALUES(399,'2026_08_26_120000_add_match_policy_to_import_runs',64);
-INSERT INTO migrations VALUES(400,'2026_08_27_120000_create_external_reference_aliases_table',65);
-INSERT INTO migrations VALUES(401,'2026_07_03_120000_add_type_and_impacts_to_pricing_change_alerts',66);
-INSERT INTO migrations VALUES(402,'2026_08_28_120000_convert_material_rounding_to_enum',66);
-INSERT INTO migrations VALUES(403,'2026_09_01_120000_drop_legacy_pending_entry_tables',66);
-INSERT INTO migrations VALUES(404,'2026_09_01_130000_create_price_change_requests_table',66);
-INSERT INTO migrations VALUES(405,'2026_09_01_140000_add_punchout_fields_to_supplier_catalog_sources',66);
-INSERT INTO migrations VALUES(406,'2026_09_02_100000_create_idea_maps_tables',66);
-INSERT INTO migrations VALUES(407,'2026_09_03_100000_create_todoist_connections_table',66);
-INSERT INTO migrations VALUES(408,'2026_09_03_110000_create_todoist_link_tables',66);
-INSERT INTO migrations VALUES(409,'2026_09_03_120000_create_integration_outbox_table',66);
-INSERT INTO migrations VALUES(410,'2026_09_03_140000_create_todoist_webhook_deliveries_table',66);
-INSERT INTO migrations VALUES(411,'2026_09_04_100000_add_lock_version_to_idea_maps',67);
-INSERT INTO migrations VALUES(412,'2026_09_05_100000_create_idea_node_links_table',68);
-INSERT INTO migrations VALUES(413,'2026_09_06_100000_create_idea_node_summaries_table',69);
-INSERT INTO migrations VALUES(414,'2026_09_07_100000_create_gobd_exports_table',70);
-INSERT INTO migrations VALUES(415,'2026_09_08_100000_create_weather_snapshots_table',71);
-INSERT INTO migrations VALUES(416,'2026_09_08_110000_add_weather_snapshot_to_protocols',72);
-INSERT INTO migrations VALUES(417,'2026_09_09_100000_create_zammad_connections_table',73);
-INSERT INTO migrations VALUES(418,'2026_09_11_100000_create_caldav_connections_table',74);
-INSERT INTO migrations VALUES(419,'2026_09_12_100000_create_webdav_connections_table',75);
-INSERT INTO migrations VALUES(420,'2026_09_13_100000_add_deactivated_at_to_users_table',76);
-INSERT INTO migrations VALUES(421,'2026_09_13_100100_create_scim_tokens_table',76);
-INSERT INTO migrations VALUES(422,'2026_09_14_100000_create_email_connections_table',77);
-INSERT INTO migrations VALUES(423,'2026_09_15_100000_create_cti_connections_table',78);
-INSERT INTO migrations VALUES(424,'2026_09_16_100000_create_chat_webhooks_table',79);
-INSERT INTO migrations VALUES(425,'2026_09_17_100000_create_attendance_terminals_table',80);
-INSERT INTO migrations VALUES(426,'2026_09_17_100100_create_user_badges_table',80);
-INSERT INTO migrations VALUES(427,'2026_09_18_100000_create_carrier_connections_table',81);
-INSERT INTO migrations VALUES(428,'2026_09_18_100100_create_shipments_table',81);
-INSERT INTO migrations VALUES(429,'2026_09_19_100000_add_resolved_state_to_zammad_connections',82);
-INSERT INTO migrations VALUES(430,'2026_07_07_100000_add_cti_extension_to_users_table',83);
-INSERT INTO migrations VALUES(431,'2026_07_07_110000_add_weather_auto_fetch_to_projects',83);
-INSERT INTO migrations VALUES(432,'2026_07_07_120000_add_break_started_at_to_attendances',83);
-INSERT INTO migrations VALUES(433,'2026_09_20_100000_create_scim_groups_table',83);
-INSERT INTO migrations VALUES(434,'2026_09_21_100000_add_diary_entry_id_to_service_tickets',83);
-INSERT INTO migrations VALUES(435,'2026_09_22_100000_add_sla_binding_to_maintenance_plans',83);
-INSERT INTO migrations VALUES(436,'2026_09_23_100000_create_sla_contract_quotas_table',83);
-INSERT INTO migrations VALUES(437,'2026_09_24_100000_add_sla_contract_id_to_assets',83);
-INSERT INTO migrations VALUES(438,'2026_09_25_100000_create_asset_ownership_changes_table',83);
-INSERT INTO migrations VALUES(439,'2026_09_26_100000_add_scopes_to_caldav_connections',83);
-INSERT INTO migrations VALUES(440,'2026_09_27_100000_add_webdav_mirror_detached_to_documents',83);
-INSERT INTO migrations VALUES(441,'2026_09_28_100000_add_sources_to_webdav_connections',83);
-INSERT INTO migrations VALUES(442,'2026_09_29_100000_add_time_unit_to_zammad_connections',83);
-INSERT INTO migrations VALUES(443,'2026_09_30_100000_create_external_contacts_table',83);
-INSERT INTO migrations VALUES(444,'2026_09_30_100100_add_external_contact_id_to_external_participants_table',83);
-INSERT INTO migrations VALUES(445,'2026_10_01_100000_add_tax_split_to_surcharge_rules',83);
-INSERT INTO migrations VALUES(446,'2026_10_01_100100_create_cost_center_rules_table',83);
-INSERT INTO migrations VALUES(447,'2026_10_01_100200_add_customer_visible_to_attachments',83);
-INSERT INTO migrations VALUES(448,'2026_10_01_100300_create_attachment_confirmations_table',83);
-INSERT INTO migrations VALUES(449,'2026_10_01_100400_create_diary_entry_qualifications_table',83);
-INSERT INTO migrations VALUES(450,'2026_10_01_100500_create_import_value_mappings_table',83);
-INSERT INTO migrations VALUES(451,'2026_10_01_100600_add_unresolved_values_to_import_runs',83);
-INSERT INTO migrations VALUES(452,'2026_10_01_100700_add_rework_goodwill_to_time_entries',83);
-INSERT INTO migrations VALUES(453,'2026_10_01_100800_create_support_access_grants_table',83);
-INSERT INTO migrations VALUES(454,'2026_10_01_100900_create_security_advisories_table',84);
-INSERT INTO migrations VALUES(455,'2026_10_01_101000_privacy_followup_tables',85);
-INSERT INTO migrations VALUES(456,'2026_10_01_101100_add_description_to_isms_requirements',86);
-INSERT INTO migrations VALUES(457,'2026_10_01_101200_create_isms_audit_programs_table',87);
-INSERT INTO migrations VALUES(458,'2026_10_01_101300_add_profile_version_to_isms_norm_statuses',88);
-INSERT INTO migrations VALUES(459,'2026_10_01_101400_create_retention_proposals_table',89);
-INSERT INTO migrations VALUES(460,'2026_10_01_101500_add_reverse_charge_to_invoices',90);
-INSERT INTO migrations VALUES(461,'2026_10_01_101600_create_isms_assessment_snapshots_table',91);
-INSERT INTO migrations VALUES(462,'2026_10_01_101700_create_agile_core_tables',92);
-INSERT INTO migrations VALUES(463,'2026_10_01_101800_create_agile_backlog_tables',93);
-INSERT INTO migrations VALUES(464,'2026_10_01_101900_create_agile_sprint_tables',94);
-INSERT INTO migrations VALUES(465,'2026_10_01_102000_add_capacity_snapshot_to_agile_sprints',94);
-INSERT INTO migrations VALUES(466,'2026_10_01_102100_create_service_queues_table',94);
-INSERT INTO migrations VALUES(467,'2026_10_01_102200_extend_service_tickets_for_helpdesk',94);
-INSERT INTO migrations VALUES(468,'2026_10_01_102300_create_service_ticket_messages_table',94);
-INSERT INTO migrations VALUES(469,'2026_10_01_102400_create_ticket_routing_rules_table',94);
-INSERT INTO migrations VALUES(470,'2026_10_01_102500_create_service_catalog_tables',94);
-INSERT INTO migrations VALUES(471,'2026_10_01_102600_add_major_incident_and_links',94);
-INSERT INTO migrations VALUES(472,'2026_10_01_102700_create_problems_table',94);
-INSERT INTO migrations VALUES(473,'2026_10_01_102800_create_changes_and_approvals_tables',94);
-INSERT INTO migrations VALUES(474,'2026_10_01_102900_add_ticket_target_to_zammad_connections',94);
-INSERT INTO migrations VALUES(475,'2026_10_01_103000_create_ticket_satisfaction_table',94);
-INSERT INTO migrations VALUES(476,'2026_10_01_103100_extend_invoices_for_tax_model',94);
-INSERT INTO migrations VALUES(477,'2026_10_01_103200_add_workflow_fields_to_invoices',94);
-INSERT INTO migrations VALUES(478,'2026_10_01_103300_create_incoming_einvoices_table',94);
-INSERT INTO migrations VALUES(479,'2026_10_01_103400_create_quotes_and_proforma',94);
-INSERT INTO migrations VALUES(480,'2026_10_01_110000_create_system_settings_table',94);
-INSERT INTO migrations VALUES(481,'2026_10_01_110100_create_scheduler_tables',94);
-INSERT INTO migrations VALUES(482,'2026_10_01_110200_create_operations_tasks_table',94);
-INSERT INTO migrations VALUES(483,'2026_10_01_110300_create_problem_reports_table',94);
-INSERT INTO migrations VALUES(484,'2026_10_01_110400_create_component_updates_table',94);
-INSERT INTO migrations VALUES(485,'2026_10_01_110500_create_maintenance_windows_table',94);
-INSERT INTO migrations VALUES(486,'2026_10_01_110600_add_connection_health_columns',94);
-INSERT INTO migrations VALUES(487,'2026_10_02_120000_add_is_platform_admin_to_users',95);
-INSERT INTO migrations VALUES(488,'2026_10_02_130000_widen_invoice_item_precision',95);
-INSERT INTO migrations VALUES(489,'2026_10_02_140000_add_invoice_delivery_and_incoming_transfer',95);
-INSERT INTO migrations VALUES(490,'2026_10_03_100000_create_applications_module_tables',95);
-INSERT INTO migrations VALUES(491,'2026_10_03_110000_create_investments_module_tables',96);
-INSERT INTO migrations VALUES(492,'2026_10_03_120000_create_crisis_module_tables',97);
-INSERT INTO migrations VALUES(493,'2026_10_03_130000_create_sustainability_module_tables',98);
-INSERT INTO migrations VALUES(494,'2026_10_03_140000_create_tax_rules_and_position_categories',99);
-INSERT INTO migrations VALUES(495,'2026_07_11_100000_create_jtl_connections_table',100);
-INSERT INTO migrations VALUES(496,'2026_07_11_100100_create_jtl_warehouse_mappings_table',100);
-INSERT INTO migrations VALUES(497,'2026_07_11_100200_create_jtl_stock_snapshots_table',100);
-INSERT INTO migrations VALUES(498,'2026_10_03_150000_create_claims_module_tables',100);
-INSERT INTO migrations VALUES(499,'2026_10_04_100000_create_asset_blocks_tables',100);
-INSERT INTO migrations VALUES(500,'2026_10_04_110000_create_rental_module_tables',100);
-INSERT INTO migrations VALUES(501,'2026_10_04_120000_create_asset_finance_module_tables',100);
-INSERT INTO migrations VALUES(502,'2026_10_04_130000_create_asset_compliance_module_tables',100);
-INSERT INTO migrations VALUES(503,'2026_10_04_140000_add_settlement_to_invoice_items',100);
-INSERT INTO migrations VALUES(504,'2026_10_05_100000_create_document_design_tables',100);
-INSERT INTO migrations VALUES(505,'2026_10_06_100000_create_orgamax_connections_table',100);
-INSERT INTO migrations VALUES(506,'2026_10_07_100000_create_sso_connections_tables',100);
-INSERT INTO migrations VALUES(507,'2026_07_13_100000_create_wage_type_mappings_table',101);
-INSERT INTO migrations VALUES(508,'2026_07_13_100100_create_time_export_delivery_configs_table',101);
-INSERT INTO migrations VALUES(509,'2026_07_13_100200_add_auto_delivery_to_time_exports_table',101);
-INSERT INTO migrations VALUES(510,'2026_10_08_100000_create_change_asset_table',101);
-INSERT INTO migrations VALUES(511,'2026_10_09_100000_create_msgraph_connections_table',101);
-INSERT INTO migrations VALUES(512,'2026_10_09_100100_create_google_calendar_connections_table',101);
-INSERT INTO migrations VALUES(513,'2026_10_10_100000_create_carddav_tables',101);
-INSERT INTO migrations VALUES(514,'2026_10_11_100000_create_sharepoint_connections_table',101);
-INSERT INTO migrations VALUES(515,'2026_10_11_100100_add_sharepoint_mirror_detached_to_documents',101);
-INSERT INTO migrations VALUES(516,'2026_10_12_100000_add_escalation_ladder_to_notification_rules',101);
-INSERT INTO migrations VALUES(517,'2026_10_12_110000_add_classification_targets_to_import_value_mappings',101);
-INSERT INTO migrations VALUES(518,'2026_10_13_100000_add_finance_format_and_datev_rest_columns',101);
-INSERT INTO migrations VALUES(519,'2026_10_14_100000_add_txn_details_to_bank_transactions',101);
-INSERT INTO migrations VALUES(520,'2026_10_15_100000_add_processing_agreement_to_isms_supplier_assessments',101);
-INSERT INTO migrations VALUES(521,'2026_10_16_100000_add_customer_visible_to_documents',101);
-INSERT INTO migrations VALUES(522,'2026_10_16_100000_create_compliance_findings_table',101);
-INSERT INTO migrations VALUES(523,'2026_10_16_100000_create_contract_module_tables',101);
-INSERT INTO migrations VALUES(524,'2026_10_16_100100_add_contract_id_to_asset_finance_contracts',101);
-INSERT INTO migrations VALUES(525,'2026_10_17_100000_create_sync_commands_table',101);
-INSERT INTO migrations VALUES(526,'2026_10_17_110000_create_products_table',101);
-INSERT INTO migrations VALUES(527,'2026_10_17_110100_add_product_id_to_articles_and_assets',101);
-INSERT INTO migrations VALUES(528,'2026_10_18_100000_create_cloud_intake_tables',101);
-INSERT INTO migrations VALUES(530,'2026_10_19_100000_create_backup_target_tables',102);
-INSERT INTO migrations VALUES(531,'2026_07_18_120000_create_billbee_orders_table',103);
-INSERT INTO migrations VALUES(532,'2026_10_20_100000_add_nextcloud_columns_to_cloud_document_connections',103);
-INSERT INTO migrations VALUES(533,'2026_10_20_100100_add_nextcloud_columns_to_backup_target_connections',103);
-INSERT INTO migrations VALUES(534,'2026_10_21_100000_create_domain_provider_connections_table',103);
-INSERT INTO migrations VALUES(535,'2026_10_21_100100_create_domain_projection_tables',103);
-INSERT INTO migrations VALUES(536,'2026_10_21_100200_create_domain_command_and_dns_tables',103);
-INSERT INTO migrations VALUES(537,'2026_10_21_100300_create_domain_accounting_event_invoice_tables',103);
-INSERT INTO migrations VALUES(538,'2026_10_21_100400_tighten_domain_projection_uniqueness',103);
-INSERT INTO migrations VALUES(539,'2026_10_22_100000_create_ai_foundation_tables',103);
-INSERT INTO migrations VALUES(540,'2026_10_22_101000_create_ai_memory_entries_table',103);
-INSERT INTO migrations VALUES(541,'2026_10_22_102000_create_ai_text_suggestions_table',103);
-INSERT INTO migrations VALUES(542,'2026_10_23_100000_create_vacation_entitlements_table',103);
-INSERT INTO migrations VALUES(543,'2026_10_23_110000_add_discount_skonto_to_invoicing',103);
-INSERT INTO migrations VALUES(544,'2026_10_23_120000_create_invoice_schedules_tables',103);
-INSERT INTO migrations VALUES(545,'2026_10_23_130000_create_cash_book_tables',103);
-INSERT INTO migrations VALUES(546,'2026_10_23_140000_create_driver_license_checks_table',103);
-INSERT INTO migrations VALUES(547,'2026_10_24_100000_add_reservation_snapshot_to_manufacturing_orders',103);
-INSERT INTO migrations VALUES(548,'2026_10_24_110000_add_confidential_to_documents',103);
-INSERT INTO migrations VALUES(549,'2026_10_24_120000_add_cost_to_asset_inspection_events',103);
-INSERT INTO migrations VALUES(550,'2026_10_24_130000_add_validity_and_target_to_form_templates',103);
-INSERT INTO migrations VALUES(551,'2026_10_24_140000_add_source_options_to_import_runs',103);
-INSERT INTO migrations VALUES(552,'2026_10_25_100000_add_public_career_fields',103);
-INSERT INTO migrations VALUES(553,'2026_10_25_100100_create_job_application_uploads_table',103);
-INSERT INTO migrations VALUES(554,'2026_10_26_100000_create_integrity_checks_table',103);
-INSERT INTO migrations VALUES(555,'2026_10_26_100100_create_security_events_table',103);
-INSERT INTO migrations VALUES(556,'2026_10_26_100200_create_user_known_devices_table',103);
-INSERT INTO migrations VALUES(557,'2026_10_27_100000_add_matchcode_to_customers',103);
-INSERT INTO migrations VALUES(558,'2026_10_27_100100_add_matchcode_to_foreign_customers',104);
-INSERT INTO migrations VALUES(559,'2026_10_28_100000_create_customer_billing_tables',105);
-INSERT INTO migrations VALUES(560,'2026_10_28_100100_add_customer_billing_rate_id_to_time_entries',105);
-INSERT INTO migrations VALUES(561,'2026_10_29_100000_extend_customer_billing_retainer',106);
-INSERT INTO migrations VALUES(562,'2026_11_06_100000_backfill_toggl_project_billable_to_inherit',107);
-INSERT INTO migrations VALUES(563,'2026_10_26_100000_create_calendly_connections_table',108);
-INSERT INTO migrations VALUES(564,'2026_10_26_100100_create_calendly_webhook_subscriptions_table',108);
-INSERT INTO migrations VALUES(565,'2026_10_26_100200_create_calendly_webhook_deliveries_table',108);
-INSERT INTO migrations VALUES(566,'2026_10_26_100300_create_appointment_requests_table',108);
-INSERT INTO migrations VALUES(567,'2026_10_30_100000_seed_privacy_number_sequences',108);
-INSERT INTO migrations VALUES(568,'2026_10_31_100000_add_project_id_to_sla_contracts',108);
-INSERT INTO migrations VALUES(569,'2026_11_02_100000_create_b2b_catalog_tables',108);
-INSERT INTO migrations VALUES(570,'2026_11_03_100000_create_recipe_tables',108);
-INSERT INTO migrations VALUES(571,'2026_11_04_100000_add_coordinates_to_user_known_devices',108);
-INSERT INTO migrations VALUES(572,'2026_11_05_100000_create_passenger_transport_tables',108);
-INSERT INTO migrations VALUES(573,'2026_11_07_100000_add_callreport_intake_to_email_connections',108);
-INSERT INTO migrations VALUES(574,'2026_11_08_100000_rechain_audit_hashes_after_value_object_casts',108);
-INSERT INTO migrations VALUES(575,'2026_11_09_100000_add_exclude_from_reports_to_customers_table',108);
-INSERT INTO migrations VALUES(576,'2026_11_10_100000_create_print_orders_table',108);
-INSERT INTO migrations VALUES(577,'2026_11_12_100000_add_passenger_retention_and_cash_link',108);
-INSERT INTO migrations VALUES(578,'2026_11_13_100000_fix_plugin_fqcn_ids',109);
-INSERT INTO migrations VALUES(579,'2026_11_14_100000_harden_plugin_error_store',109);
-INSERT INTO migrations VALUES(580,'2026_11_15_100000_add_paid_date_to_lexoffice_vouchers',109);
-INSERT INTO migrations VALUES(581,'2026_11_16_100000_link_lexoffice_voucher_to_billing_statement',109);
-INSERT INTO migrations VALUES(582,'2026_08_04_120000_create_etsy_connections_table',110);
-INSERT INTO migrations VALUES(583,'2026_08_04_120100_create_etsy_receipts_table',110);
-INSERT INTO migrations VALUES(584,'2026_08_04_120200_create_etsy_webhook_deliveries_table',110);
-INSERT INTO migrations VALUES(585,'2026_08_04_120300_create_etsy_ledger_entries_table',110);
-INSERT INTO migrations VALUES(586,'2026_08_06_120000_create_material_cost_allocations_table',110);
-INSERT INTO migrations VALUES(587,'2026_09_30_101000_create_disposal_module_tables',110);
-INSERT INTO migrations VALUES(588,'2026_11_17_100000_add_travel_flat_to_customer_billing',110);
-INSERT INTO migrations VALUES(589,'2026_11_18_100000_add_statement_link_to_account_payments',110);
-INSERT INTO migrations VALUES(590,'2026_11_19_100000_add_keywords_to_projects_table',110);
-INSERT INTO migrations VALUES(591,'2026_11_20_100000_create_billing_transfer_positions_table',110);
-INSERT INTO migrations VALUES(592,'2026_11_21_100000_add_correction_link_to_billing_transfers',110);
-INSERT INTO migrations VALUES(593,'2026_11_22_100000_add_invoice_texts_to_billing_transfers',110);
-INSERT INTO migrations VALUES(594,'2026_11_23_100000_create_text_corrections_table',110);
-INSERT INTO migrations VALUES(595,'2026_11_24_100000_add_owner_mapping_to_domain_projections',110);
-INSERT INTO migrations VALUES(596,'2026_11_25_100000_create_msgraph_mail_connections_table',110);
-INSERT INTO migrations VALUES(597,'2026_11_26_100000_add_jit_provisioning_to_sso_connections',110);
-INSERT INTO migrations VALUES(598,'2026_11_27_100000_add_transport_to_email_connections',110);
-INSERT INTO migrations VALUES(599,'2026_11_28_100000_add_teams_meetings_to_msgraph_connections',110);
-INSERT INTO migrations VALUES(600,'2026_11_29_100000_create_msgraph_contact_connections_table',110);
-INSERT INTO migrations VALUES(601,'2026_11_30_100000_create_msgraph_task_tables',110);
-INSERT INTO migrations VALUES(602,'2026_12_01_100000_add_two_way_to_msgraph_connections',110);
-INSERT INTO migrations VALUES(603,'2026_12_02_100000_add_msgraph_webhooks_and_todo_delta',110);
-INSERT INTO migrations VALUES(605,'2026_12_03_100000_add_provider_type_and_sso_email_domains',111);
-INSERT INTO migrations VALUES(606,'2026_12_01_100000_add_owner_handle_to_domain_projections',112);
-INSERT INTO migrations VALUES(607,'2026_12_04_100000_add_portal_invite_fields_to_users',112);
-INSERT INTO migrations VALUES(608,'2026_12_04_100000_widen_audit_logs_event_column',112);
-INSERT INTO migrations VALUES(609,'2026_12_04_100100_fix_column_widths_for_strict_sql',112);
-INSERT INTO migrations VALUES(610,'2026_12_04_100200_add_attendances_open_unique_for_mysql',112);
-INSERT INTO migrations VALUES(611,'2026_12_05_100000_add_portal_visibility_settings',112);
-INSERT INTO migrations VALUES(612,'2026_12_05_100100_add_cost_center_fk_to_cost_center_rules',112);
-INSERT INTO migrations VALUES(613,'2026_12_06_100000_add_priority_to_shift_wishes',112);
-INSERT INTO migrations VALUES(614,'2026_12_06_100100_add_validity_and_status_to_terminal_credentials',112);
-INSERT INTO migrations VALUES(615,'2026_12_06_100200_add_holiday_provider_to_sites',112);
-INSERT INTO migrations VALUES(616,'2026_12_06_100300_add_conditions_to_surcharge_rules',112);
-INSERT INTO migrations VALUES(617,'2026_12_06_100400_create_time_rule_results_table',112);
-INSERT INTO migrations VALUES(618,'2026_12_06_100500_create_time_allocations_table',112);
-INSERT INTO migrations VALUES(619,'2026_12_06_100600_create_time_dimension_tables',112);
-INSERT INTO migrations VALUES(620,'2026_12_06_100700_create_overtime_requests_table',112);
-INSERT INTO migrations VALUES(621,'2026_12_06_100800_create_shift_rotations_tables',112);
-INSERT INTO migrations VALUES(622,'2026_12_06_100900_add_vacation_two_stage_and_deputy',112);
-INSERT INTO migrations VALUES(623,'2026_12_06_101000_add_approval_to_duty_plans',112);
-INSERT INTO migrations VALUES(624,'2026_12_06_101100_add_ideal_staff_to_coverage_requirements',112);
-INSERT INTO migrations VALUES(625,'2026_12_06_101200_add_on_call_times_to_shift_types',112);
-INSERT INTO migrations VALUES(626,'2026_12_06_101300_create_external_wage_items_table',112);
-INSERT INTO migrations VALUES(627,'2026_12_06_101400_create_time_accounts_tables',112);
-INSERT INTO migrations VALUES(628,'2026_12_06_101500_create_saved_report_views_table',112);
-INSERT INTO migrations VALUES(629,'2026_12_06_101600_add_qualification_minima_to_coverage_requirements',112);
-INSERT INTO migrations VALUES(630,'2026_12_06_101700_create_approval_steps_table',112);
-INSERT INTO migrations VALUES(631,'2026_12_06_101800_add_intermediate_statuses_to_attendances',112);
-INSERT INTO migrations VALUES(632,'2026_12_06_101900_add_components_to_vacation_entitlements',112);
-INSERT INTO migrations VALUES(633,'2026_12_06_102000_prune_profile_foreign_default_entry_types',112);
-INSERT INTO migrations VALUES(634,'2026_12_06_102100_add_einvoice_options_and_pdf_import_to_invoices',112);
-INSERT INTO migrations VALUES(635,'2026_12_06_102200_add_delivery_format_to_customers',112);
-INSERT INTO migrations VALUES(636,'2026_12_06_102300_add_user_target_to_import_value_mappings',112);
-INSERT INTO migrations VALUES(637,'2026_12_06_102400_add_sheet_name_to_supplier_catalog_sources',113);
-INSERT INTO migrations VALUES(638,'2026_12_06_102500_add_extra_attributes_and_list_price_to_supplier_catalog_items',113);
-INSERT INTO migrations VALUES(639,'2026_12_06_102600_add_datanorm_conditions_to_supplier_catalogs',113);
-INSERT INTO migrations VALUES(640,'2026_12_06_102600_add_denormalized_amounts_to_incoming_einvoices',113);
-INSERT INTO migrations VALUES(641,'2026_12_06_102700_add_category_to_articles',113);
-INSERT INTO migrations VALUES(642,'2026_12_06_102700_add_gaeb_traits_to_boq_items',113);
-INSERT INTO migrations VALUES(643,'2026_12_06_102800_add_text_complements_to_boq_items',113);
-INSERT INTO migrations VALUES(644,'2026_12_06_102800_create_sales_discount_groups',113);
-INSERT INTO migrations VALUES(645,'2026_12_06_102900_add_unit_price_components_to_boq',113);
-INSERT INTO migrations VALUES(646,'2026_12_06_102900_create_article_sale_price_histories',113);
-INSERT INTO migrations VALUES(647,'2026_12_06_103000_add_assembly_minutes_to_articles',113);
-INSERT INTO migrations VALUES(648,'2026_12_06_103000_add_change_order_fields_to_boq_items',113);
-INSERT INTO migrations VALUES(649,'2026_12_06_103100_add_bid_traits_to_boq',113);
-INSERT INTO migrations VALUES(650,'2026_12_06_103100_create_metal_quotations',113);
-INSERT INTO migrations VALUES(651,'2026_12_06_103200_add_external_id_to_boq_sections',113);
-INSERT INTO migrations VALUES(652,'2026_12_06_103200_create_sales_discount_group_overrides',113);
-INSERT INTO migrations VALUES(653,'2026_12_06_103300_add_format_to_boq_import_and_export',113);
-INSERT INTO migrations VALUES(654,'2026_12_06_103300_add_matchcode_to_supplier_catalog_items',113);
-INSERT INTO migrations VALUES(655,'2026_12_06_103400_add_copper_fields_and_price_tiers_to_articles',113);
-INSERT INTO migrations VALUES(656,'2026_12_06_103400_create_boq_catalog_tables',113);
-INSERT INTO migrations VALUES(657,'2027_01_10_090000_add_tender_fields_to_application_opportunities',113);
-INSERT INTO migrations VALUES(658,'2027_01_10_100000_create_tender_notice_tables',114);
-INSERT INTO migrations VALUES(659,'2027_01_10_110000_create_tender_competitor_bids',115);
-INSERT INTO migrations VALUES(660,'2027_01_10_120000_add_package_fields_to_gaeb_imports',115);
-INSERT INTO migrations VALUES(661,'2027_01_10_130000_create_catalog_registry_tables',115);
-INSERT INTO migrations VALUES(662,'2027_01_10_140000_create_catalog_assignment_rules',115);
-INSERT INTO migrations VALUES(663,'2027_01_10_150000_create_boq_change_orders',115);
-INSERT INTO migrations VALUES(664,'2027_01_10_160000_create_cost_estimates',115);
-INSERT INTO migrations VALUES(665,'2027_01_10_170000_create_boq_calculation_data',115);
-INSERT INTO migrations VALUES(666,'2027_01_10_180000_create_cost_element_catalogs',115);
-INSERT INTO migrations VALUES(667,'2027_01_10_190000_link_cost_elements_to_articles',115);
-INSERT INTO migrations VALUES(668,'2027_01_10_200000_add_excluded_buyers_to_tender_filter_profiles',115);
-INSERT INTO migrations VALUES(669,'2027_01_10_210000_add_accounting_category_to_expense_categories',116);
-INSERT INTO migrations VALUES(670,'2027_01_11_100000_add_ci_base_design_inheritance',116);
-INSERT INTO migrations VALUES(672,'2027_01_12_100000_consolidate_invoice_templates_into_render_profiles',117);
-INSERT INTO migrations VALUES(673,'2027_01_12_110000_create_leads_table',118);
-INSERT INTO migrations VALUES(674,'2027_01_13_100000_drop_invoice_templates_table',118);
-INSERT INTO migrations VALUES(675,'2027_01_12_120000_create_access_media_tables',119);
-INSERT INTO migrations VALUES(676,'2027_01_12_130000_create_survey_tables',120);
-INSERT INTO migrations VALUES(677,'2027_01_12_140000_create_patrol_tables',121);
-INSERT INTO migrations VALUES(678,'2027_01_12_150000_create_bookable_services_and_extend_appointment_requests',122);
-INSERT INTO migrations VALUES(679,'2027_01_12_160000_add_signature_to_access_medium_handovers',123);
-INSERT INTO migrations VALUES(680,'2027_01_14_100000_add_landscape_support_to_document_design',124);
-INSERT INTO migrations VALUES(681,'2027_01_15_100000_create_accounting_migration_tables',124);
-INSERT INTO migrations VALUES(682,'2027_01_16_100000_create_orgamax_invoices_table',124);
-INSERT INTO migrations VALUES(683,'2027_01_17_100000_add_timesheets_open_day_unique',124);
-INSERT INTO migrations VALUES(684,'2027_01_18_100000_create_lexoffice_webhook_deliveries_table',124);
-INSERT INTO migrations VALUES(685,'2027_01_19_100000_create_supplier_merge_dismissals_table',124);
-INSERT INTO migrations VALUES(686,'2027_01_20_100000_create_article_merge_dismissals_table',125);
-INSERT INTO migrations VALUES(687,'2027_01_21_100000_add_dial_fields_to_cti_connections',126);
-INSERT INTO migrations VALUES(688,'2027_01_22_100000_add_subscription_resource_to_cloud_document_connections',126);
-INSERT INTO migrations VALUES(689,'2027_01_23_100000_add_follow_up_to_quotes',126);
-INSERT INTO migrations VALUES(690,'2027_01_24_100000_create_invoice_retentions_table',126);
-INSERT INTO migrations VALUES(691,'2027_01_25_100000_create_guarantees_table',126);
-INSERT INTO migrations VALUES(692,'2027_01_26_100000_create_warranty_periods_table',126);
-INSERT INTO migrations VALUES(693,'2027_01_27_100000_create_meter_billing_agreements_table',126);
-INSERT INTO migrations VALUES(694,'2027_01_28_100000_create_supplier_credentials_tables',126);
-INSERT INTO migrations VALUES(695,'2027_01_29_100000_create_asset_components_table',126);
-INSERT INTO migrations VALUES(696,'2027_01_30_100000_create_customer_circulars_tables',126);
-INSERT INTO migrations VALUES(697,'2027_01_30_110000_add_bulk_mail_optout_to_customers',126);
-INSERT INTO migrations VALUES(698,'2027_01_31_100000_create_payment_runs_tables',126);
-INSERT INTO migrations VALUES(699,'2027_02_01_100000_add_two_way_to_calendar_connections',126);
-INSERT INTO migrations VALUES(700,'2027_02_02_100000_create_accounting_vouchers_table',126);
-INSERT INTO migrations VALUES(701,'2027_02_03_100000_create_time_tracking_webhook_deliveries_table',126);
-INSERT INTO migrations VALUES(702,'2027_02_04_100000_add_base_kind_to_invoice_retentions',126);
-INSERT INTO migrations VALUES(703,'2027_02_05_100000_add_phone_search_keys_to_contacts',126);
-INSERT INTO migrations VALUES(704,'2027_02_06_100000_add_approval_and_serial_links',126);
-INSERT INTO migrations VALUES(705,'2027_02_07_100000_create_accounting_profile_tables',126);
-INSERT INTO migrations VALUES(706,'2027_02_08_100000_create_accounting_ledger_tables',126);
-INSERT INTO migrations VALUES(707,'2027_02_09_100000_create_accounting_posting_rules_table',126);
-INSERT INTO migrations VALUES(708,'2027_02_10_100000_create_accounting_open_item_tables',126);
-INSERT INTO migrations VALUES(709,'2027_02_11_100000_widen_accounting_entry_rule_version',126);
-INSERT INTO migrations VALUES(710,'2027_02_12_100000_create_accounting_recurring_tables',126);
-INSERT INTO migrations VALUES(711,'2027_02_13_100000_create_accounting_taxation_periods_table',126);
-INSERT INTO migrations VALUES(712,'2027_02_14_100000_add_euer_fields_to_accounting_accounts',126);
-INSERT INTO migrations VALUES(713,'2027_02_15_100000_create_accounting_transfers_table',126);
-INSERT INTO migrations VALUES(714,'2027_02_16_100000_create_vat_filing_tables',126);
-INSERT INTO migrations VALUES(715,'2027_02_17_100000_create_accounting_filing_obligations_table',126);
-INSERT INTO migrations VALUES(716,'2027_02_18_100000_add_ustva_fields_to_tax_codes',126);
-INSERT INTO migrations VALUES(717,'2027_02_19_100000_scope_holiday_and_tag_uniques_to_organization',126);
-INSERT INTO migrations VALUES(718,'2027_02_19_100100_encrypt_incoming_einvoice_creditor_bank_details',126);
-INSERT INTO migrations VALUES(719,'2027_02_19_100200_replace_duty_plan_db_enums_with_strings',126);
-INSERT INTO migrations VALUES(720,'2027_02_19_100300_add_creditor_iban_confirmation_to_incoming_einvoices',127);
-INSERT INTO migrations VALUES(721,'2027_02_19_100400_restrict_user_fks_on_append_only_evidence_tables',127);
-INSERT INTO migrations VALUES(722,'2027_02_19_100500_harden_stock_movements_ledger_constraints',127);
-INSERT INTO migrations VALUES(723,'2027_02_19_100600_drop_audit_log_user_org_foreign_keys',127);
-INSERT INTO migrations VALUES(724,'2027_02_19_100700_add_missing_reference_foreign_keys',127);
-INSERT INTO migrations VALUES(725,'2027_02_19_100800_require_organization_on_core_tenant_tables',127);
-INSERT INTO migrations VALUES(726,'2027_02_19_100900_drop_unbuilt_reserve_columns',127);
-INSERT INTO migrations VALUES(727,'2027_02_19_101000_add_offboarding_and_restrict_evidence_user_fks',128);
-INSERT INTO migrations VALUES(728,'2027_02_19_101100_add_local_file_to_lexoffice_vouchers',129);
-INSERT INTO migrations VALUES(729,'2027_02_19_101200_add_dunning_blocked_at_to_invoices',130);
-INSERT INTO migrations VALUES(730,'2027_02_19_101300_add_document_kind_to_invoice_mail_templates',131);
-INSERT INTO migrations VALUES(731,'2027_02_19_101400_generalize_invoice_dispatches_to_document_dispatches',131);
-INSERT INTO migrations VALUES(732,'2027_02_19_101500_add_anonymized_at_to_users',132);
-INSERT INTO migrations VALUES(733,'2027_02_19_101600_create_safety_register_tables',133);
-INSERT INTO migrations VALUES(734,'2027_02_19_101700_create_fixed_assets_table',134);
-INSERT INTO migrations VALUES(735,'2027_02_19_101800_create_procedure_documentations_table',135);
-INSERT INTO migrations VALUES(736,'2027_02_19_101900_add_logbook_fields_to_vehicles_and_travel_logs',136);
-INSERT INTO migrations VALUES(737,'2027_02_19_102000_add_asset_id_to_vehicles',136);
-INSERT INTO migrations VALUES(738,'2027_02_19_102100_add_follow_up_diary_entry_id_to_open_issues',137);
-INSERT INTO migrations VALUES(739,'2027_02_19_102200_add_article_id_to_invoice_and_quote_items',137);
-INSERT INTO migrations VALUES(740,'2027_02_19_102300_add_bins_and_kind_to_warehouses',138);
-INSERT INTO migrations VALUES(741,'2027_02_19_102400_add_hr_fields_to_documents',139);
-INSERT INTO migrations VALUES(742,'2027_02_19_102500_add_cost_center_dimension_and_accounting_budgets',140);
-INSERT INTO migrations VALUES(743,'2027_02_19_102600_create_rental_requests_and_portal_profile_fields',141);
-INSERT INTO migrations VALUES(744,'2027_02_19_102700_create_weather_warnings_table',142);
-INSERT INTO migrations VALUES(745,'2027_02_19_102800_add_subject_to_driving_time_rules_to_vehicles',143);
-INSERT INTO migrations VALUES(746,'2027_02_19_102900_add_document_locale_to_customers',144);
-INSERT INTO migrations VALUES(747,'2027_02_19_103000_add_measured_composite_indexes',145);
-INSERT INTO migrations VALUES(748,'2027_02_19_103100_rechain_audit_hashes_per_organization',145);
-INSERT INTO migrations VALUES(749,'2027_02_19_103200_add_run_state_to_gobd_exports',145);
-INSERT INTO migrations VALUES(750,'2027_02_19_103300_drop_unbuilt_planning_and_contact_columns',146);
-INSERT INTO migrations VALUES(751,'2027_02_19_103400_create_training_management_tables',147);
-INSERT INTO migrations VALUES(752,'2027_02_19_103500_create_privacy_dsar_portal_tables',148);
-INSERT INTO migrations VALUES(753,'2027_02_19_103600_create_construction_notices_table',148);
-INSERT INTO migrations VALUES(754,'2027_02_19_103700_create_commission_tables',149);
-INSERT INTO migrations VALUES(755,'2027_02_19_103800_add_sms_channel_to_notification_dispatch_log',150);
-INSERT INTO migrations VALUES(756,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',151);
-INSERT INTO migrations VALUES(757,'2027_02_19_104000_create_user_workspaces_table',151);
-INSERT INTO migrations VALUES(758,'2027_02_19_104100_add_peppol_participant_and_lookups',152);
-INSERT INTO migrations VALUES(759,'2027_02_19_104200_add_width_to_user_dashboard_widgets',153);
-INSERT INTO migrations VALUES(760,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',153);
-INSERT INTO migrations VALUES(761,'2027_02_19_104400_create_learning_platform_tables',154);
-INSERT INTO migrations VALUES(762,'2027_02_19_104500_create_learning_enrollment_tables',155);
-INSERT INTO migrations VALUES(763,'2027_02_19_104600_create_learning_time_sessions_table',156);
-INSERT INTO migrations VALUES(764,'2027_02_19_104700_create_learning_quiz_tables',157);
-INSERT INTO migrations VALUES(765,'2027_02_19_104800_create_learning_assignment_tables',158);
-INSERT INTO migrations VALUES(766,'2027_02_19_104900_create_learning_certificates_table',159);
-INSERT INTO migrations VALUES(767,'2027_02_19_105000_link_learning_units_to_events',160);
-INSERT INTO migrations VALUES(768,'2027_02_19_105100_create_learning_access_tokens_table',161);
-INSERT INTO migrations VALUES(769,'2027_02_19_105200_create_learning_bookings_table',162);
-INSERT INTO migrations VALUES(770,'2027_02_19_105300_create_learning_paths_and_competencies',162);
-INSERT INTO migrations VALUES(771,'2027_02_19_105400_add_course_completion_trigger_to_surveys',163);
-INSERT INTO migrations VALUES(772,'2027_02_19_105500_create_learning_issuer_keys_table',164);
-INSERT INTO migrations VALUES(773,'2027_02_19_105600_create_learning_scorm_tables',165);
-INSERT INTO migrations VALUES(774,'2027_02_19_105700_add_heartbeat_to_learning_time_sessions',166);
-INSERT INTO migrations VALUES(775,'2027_02_19_105800_add_asset_to_learning_courses',167);
-INSERT INTO migrations VALUES(776,'2027_02_19_105900_create_learning_content_translations',168);
-INSERT INTO migrations VALUES(777,'2027_02_19_110000_create_media_renditions_table',169);
-INSERT INTO migrations VALUES(778,'2027_02_19_110100_widen_issuer_key_for_rsa',170);
-INSERT INTO migrations VALUES(779,'2027_02_19_110200_add_subtitle_review_to_media_renditions',171);
-INSERT INTO migrations VALUES(780,'2027_02_19_110300_restrict_evidence_authorship_user_fks',172);
-INSERT INTO migrations VALUES(781,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',173);
-INSERT INTO migrations VALUES(782,'2027_02_19_110500_encrypt_bank_and_health_columns',174);
-INSERT INTO migrations VALUES(783,'2027_02_19_110600_create_audit_redactions_table',174);
-INSERT INTO migrations VALUES(784,'2027_02_19_110700_hash_public_link_tokens',175);
-INSERT INTO migrations VALUES(785,'2027_02_19_110800_add_verification_to_sso_domains',175);
-INSERT INTO migrations VALUES(786,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',175);
-INSERT INTO migrations VALUES(787,'2027_02_19_111000_hash_serial_passport_token',176);
-INSERT INTO migrations VALUES(788,'2027_02_19_111100_add_options_to_backup_target_connections',177);
-INSERT INTO migrations VALUES(789,'2027_02_19_111200_add_center_columns_to_help_topics',178);
+INSERT INTO migrations VALUES(139,'2026_06_04_120000_add_personnel_number_to_users_table',1);
+INSERT INTO migrations VALUES(140,'2026_06_04_121000_add_payroll_fields_to_users_table',1);
+INSERT INTO migrations VALUES(141,'2026_06_04_130000_create_teams_table',1);
+INSERT INTO migrations VALUES(142,'2026_06_04_140000_create_project_team_and_member_tables',1);
+INSERT INTO migrations VALUES(143,'2026_06_04_150000_add_start_date_to_tasks_table',1);
+INSERT INTO migrations VALUES(144,'2026_06_04_160000_create_onboarding_progress_table',1);
+INSERT INTO migrations VALUES(145,'2026_06_04_160000_create_task_user_table',1);
+INSERT INTO migrations VALUES(146,'2026_06_04_170000_create_minimum_wages_table',1);
+INSERT INTO migrations VALUES(147,'2026_06_04_171000_add_employment_type_to_users_table',1);
+INSERT INTO migrations VALUES(148,'2026_06_04_180000_create_minimum_wage_references_table',1);
+INSERT INTO migrations VALUES(149,'2026_06_05_120000_create_help_topics_table',1);
+INSERT INTO migrations VALUES(150,'2026_06_05_120100_create_help_views_table',1);
+INSERT INTO migrations VALUES(151,'2026_06_06_120000_add_demo_columns_to_organizations',1);
+INSERT INTO migrations VALUES(152,'2026_06_07_120000_add_two_factor_columns',1);
+INSERT INTO migrations VALUES(153,'2026_06_07_130000_widen_encrypted_pii_columns',1);
+INSERT INTO migrations VALUES(154,'2026_06_08_120000_widen_address_zip_city_columns',1);
+INSERT INTO migrations VALUES(155,'2026_06_10_120000_create_two_factor_credentials_table',1);
+INSERT INTO migrations VALUES(156,'2026_06_10_120000_create_user_bookmarks_table',1);
+INSERT INTO migrations VALUES(157,'2026_06_10_130000_create_communication_notes_table',1);
+INSERT INTO migrations VALUES(158,'2026_06_10_130000_create_feature_usage_counters_table',1);
+INSERT INTO migrations VALUES(159,'2026_06_10_130100_create_communication_note_participants_table',1);
+INSERT INTO migrations VALUES(160,'2026_06_10_140000_create_documents_table',1);
+INSERT INTO migrations VALUES(161,'2026_06_10_140100_create_document_versions_table',1);
+INSERT INTO migrations VALUES(162,'2026_06_10_150000_create_notifications_table',1);
+INSERT INTO migrations VALUES(163,'2026_06_10_150100_create_notification_rules_table',1);
+INSERT INTO migrations VALUES(164,'2026_06_10_150200_create_notification_dispatch_log_table',1);
+INSERT INTO migrations VALUES(165,'2026_06_10_160000_create_surcharge_rules_table',1);
+INSERT INTO migrations VALUES(166,'2026_06_10_170000_create_knowledge_articles_table',1);
+INSERT INTO migrations VALUES(167,'2026_06_10_170100_create_knowledge_article_links_table',1);
+INSERT INTO migrations VALUES(168,'2026_06_10_170200_create_knowledge_article_feedback_table',1);
+INSERT INTO migrations VALUES(169,'2026_06_10_180000_create_form_templates_table',1);
+INSERT INTO migrations VALUES(170,'2026_06_10_180100_create_form_submissions_table',1);
+INSERT INTO migrations VALUES(171,'2026_06_10_190000_create_isms_risks_table',1);
+INSERT INTO migrations VALUES(172,'2026_06_10_190100_create_isms_controls_table',1);
+INSERT INTO migrations VALUES(173,'2026_06_10_190200_create_isms_control_risk_table',1);
+INSERT INTO migrations VALUES(174,'2026_06_10_200000_add_billing_mode_to_customers_table',1);
+INSERT INTO migrations VALUES(175,'2026_06_10_200100_create_billing_transfers_table',1);
+INSERT INTO migrations VALUES(176,'2026_06_10_200200_create_billing_transfer_items_table',1);
+INSERT INTO migrations VALUES(177,'2026_06_10_200300_create_billing_transfer_events_table',1);
+INSERT INTO migrations VALUES(178,'2026_06_11_090000_create_isms_scopes_table',1);
+INSERT INTO migrations VALUES(179,'2026_06_11_090100_create_isms_requirements_table',1);
+INSERT INTO migrations VALUES(180,'2026_06_11_090200_create_isms_control_requirement_table',1);
+INSERT INTO migrations VALUES(181,'2026_06_11_090300_create_isms_applicability_statements_table',1);
+INSERT INTO migrations VALUES(182,'2026_06_11_090400_add_scope_to_isms_risks_table',1);
+INSERT INTO migrations VALUES(183,'2026_06_11_090500_migrate_isms_controls_to_requirements',1);
+INSERT INTO migrations VALUES(184,'2026_06_11_090600_drop_soa_columns_from_isms_controls',1);
+INSERT INTO migrations VALUES(185,'2026_06_11_100000_create_isms_software_products_table',1);
+INSERT INTO migrations VALUES(186,'2026_06_11_100100_create_isms_software_installations_table',1);
+INSERT INTO migrations VALUES(187,'2026_06_11_120000_create_isms_norm_statuses_table',1);
+INSERT INTO migrations VALUES(188,'2026_06_11_120100_create_isms_certificates_table',1);
+INSERT INTO migrations VALUES(189,'2026_06_11_130000_create_isms_audits_table',1);
+INSERT INTO migrations VALUES(190,'2026_06_11_130100_create_isms_audit_findings_table',1);
+INSERT INTO migrations VALUES(191,'2026_06_11_130200_create_isms_corrective_actions_table',1);
+INSERT INTO migrations VALUES(192,'2026_06_11_130300_create_isms_management_reviews_table',1);
+INSERT INTO migrations VALUES(193,'2026_06_11_140000_create_isms_risk_assessments_table',1);
+INSERT INTO migrations VALUES(194,'2026_06_11_150000_create_isms_audit_packages_table',1);
+INSERT INTO migrations VALUES(195,'2026_06_11_150100_create_isms_audit_package_tokens_table',1);
+INSERT INTO migrations VALUES(196,'2026_06_12_100000_add_buyer_reference_to_customers_table',1);
+INSERT INTO migrations VALUES(197,'2026_06_12_110000_create_day_closures_table',1);
+INSERT INTO migrations VALUES(198,'2026_06_12_110100_create_day_correction_requests_table',1);
+INSERT INTO migrations VALUES(199,'2026_06_12_120000_create_bank_accounts_table',1);
+INSERT INTO migrations VALUES(200,'2026_06_12_120100_create_bank_statements_table',1);
+INSERT INTO migrations VALUES(201,'2026_06_12_120200_create_bank_transactions_table',1);
+INSERT INTO migrations VALUES(202,'2026_06_12_120300_create_payment_allocations_table',1);
+INSERT INTO migrations VALUES(203,'2026_06_12_120400_create_payment_reconciliation_events_table',1);
+INSERT INTO migrations VALUES(204,'2026_06_14_100000_create_datev_booking_batches_table',1);
+INSERT INTO migrations VALUES(205,'2026_06_14_100100_create_datev_booking_sources_table',1);
+INSERT INTO migrations VALUES(206,'2026_06_14_100200_create_datev_booking_events_table',1);
+INSERT INTO migrations VALUES(207,'2026_06_14_100300_add_debtor_no_to_customers_table',1);
+INSERT INTO migrations VALUES(208,'2026_06_14_110000_create_isms_security_incidents_table',1);
+INSERT INTO migrations VALUES(209,'2026_06_14_110100_create_isms_incident_risk_table',1);
+INSERT INTO migrations VALUES(210,'2026_06_14_110200_create_isms_incident_control_table',1);
+INSERT INTO migrations VALUES(211,'2026_06_14_110300_create_isms_advisories_table',1);
+INSERT INTO migrations VALUES(212,'2026_06_14_110400_create_isms_vulnerabilities_table',1);
+INSERT INTO migrations VALUES(213,'2026_06_14_120000_create_restore_tests_table',1);
+INSERT INTO migrations VALUES(214,'2026_06_14_130000_create_sla_violations_table',1);
+INSERT INTO migrations VALUES(215,'2026_06_14_140000_create_asset_assignments_table',1);
+INSERT INTO migrations VALUES(216,'2026_06_14_140100_create_asset_defects_table',1);
+INSERT INTO migrations VALUES(217,'2026_06_14_170000_create_safety_events_table',1);
+INSERT INTO migrations VALUES(218,'2026_06_14_200000_create_webhook_endpoints_table',1);
+INSERT INTO migrations VALUES(219,'2026_06_14_200100_create_webhook_deliveries_table',1);
+INSERT INTO migrations VALUES(220,'2026_06_14_210000_add_dispatch_status_to_diary_entries',1);
+INSERT INTO migrations VALUES(221,'2026_06_14_210100_create_vehicle_reservations_table',1);
+INSERT INTO migrations VALUES(222,'2026_06_14_240000_create_availability_windows_table',1);
+INSERT INTO migrations VALUES(223,'2026_06_14_240100_create_desired_shifts_table',1);
+INSERT INTO migrations VALUES(224,'2026_06_14_240200_create_shift_exchanges_table',1);
+INSERT INTO migrations VALUES(225,'2026_06_14_255000_create_suppliers_table',1);
+INSERT INTO migrations VALUES(226,'2026_06_14_260000_create_isms_supplier_assessments_table',1);
+INSERT INTO migrations VALUES(227,'2026_06_14_270000_create_room_requirements_table',1);
+INSERT INTO migrations VALUES(228,'2026_06_14_280000_create_external_participants_table',1);
+INSERT INTO migrations VALUES(229,'2026_06_14_280100_add_external_author_to_comments_table',1);
+INSERT INTO migrations VALUES(230,'2026_06_14_300000_create_report_targets_table',1);
+INSERT INTO migrations VALUES(231,'2026_06_15_290000_create_room_requirement_templates_table',1);
+INSERT INTO migrations VALUES(232,'2026_06_15_310000_add_tenant_status_to_organizations',1);
+INSERT INTO migrations VALUES(233,'2026_06_15_320000_create_customer_queries_and_token_decisions',1);
+INSERT INTO migrations VALUES(234,'2026_06_16_120000_create_openproject_pending_entries_table',1);
+INSERT INTO migrations VALUES(235,'2026_06_16_130000_create_articles_table',1);
+INSERT INTO migrations VALUES(236,'2026_06_16_130100_create_article_option_definitions_table',1);
+INSERT INTO migrations VALUES(237,'2026_06_16_130200_create_article_option_values_table',1);
+INSERT INTO migrations VALUES(238,'2026_06_16_130300_create_article_variants_table',1);
+INSERT INTO migrations VALUES(239,'2026_06_16_130400_create_article_variant_option_values_table',1);
+INSERT INTO migrations VALUES(240,'2026_06_16_130500_create_article_units_table',1);
+INSERT INTO migrations VALUES(241,'2026_06_16_130600_create_external_article_mappings_table',1);
+INSERT INTO migrations VALUES(242,'2026_06_16_140000_create_warehouses_table',1);
+INSERT INTO migrations VALUES(243,'2026_06_16_140100_create_stock_movements_table',1);
+INSERT INTO migrations VALUES(244,'2026_06_16_150000_create_stock_reservations_table',1);
+INSERT INTO migrations VALUES(245,'2026_06_16_150100_create_stock_level_settings_table',1);
+INSERT INTO migrations VALUES(246,'2026_06_16_160000_create_stock_counts_table',1);
+INSERT INTO migrations VALUES(247,'2026_06_16_160100_create_stock_count_lines_table',1);
+INSERT INTO migrations VALUES(248,'2026_06_16_170000_create_stock_valuations_table',1);
+INSERT INTO migrations VALUES(249,'2026_06_16_180000_create_procedure_material_requirements_table',1);
+INSERT INTO migrations VALUES(250,'2026_06_16_180100_create_manufacturing_orders_table',1);
+INSERT INTO migrations VALUES(251,'2026_06_16_180200_create_manufacturing_order_materials_table',1);
+INSERT INTO migrations VALUES(252,'2026_06_16_180300_create_article_variant_bom_overrides_table',1);
+INSERT INTO migrations VALUES(253,'2026_06_16_190000_create_manufacturing_order_reports_table',1);
+INSERT INTO migrations VALUES(254,'2026_06_16_190100_create_stock_deliveries_table',1);
+INSERT INTO migrations VALUES(255,'2026_06_16_200000_create_material_substitutes_table',1);
+INSERT INTO migrations VALUES(256,'2026_06_16_200100_create_procurement_requests_table',1);
+INSERT INTO migrations VALUES(257,'2026_06_16_210000_add_wait_until_to_procedure_step_runs',1);
+INSERT INTO migrations VALUES(258,'2026_06_16_220000_create_stock_serials_table',1);
+INSERT INTO migrations VALUES(259,'2026_06_16_230000_create_inventory_outbox_table',1);
+INSERT INTO migrations VALUES(260,'2026_06_16_240000_create_stock_valuation_layers_table',1);
+INSERT INTO migrations VALUES(261,'2026_06_16_250000_create_stock_lots_table',1);
+INSERT INTO migrations VALUES(262,'2026_06_16_250100_add_lot_to_stock_valuation_layers',1);
+INSERT INTO migrations VALUES(263,'2026_06_17_120000_create_user_dashboard_widgets_table',1);
+INSERT INTO migrations VALUES(264,'2026_06_19_100000_add_lot_serial_to_stock_movements',1);
+INSERT INTO migrations VALUES(265,'2026_06_19_100100_add_valuation_and_serial_scheme_to_articles',1);
+INSERT INTO migrations VALUES(266,'2026_06_19_110000_create_article_supplies_table',1);
+INSERT INTO migrations VALUES(267,'2026_06_19_110100_create_purchase_orders_table',1);
+INSERT INTO migrations VALUES(268,'2026_06_19_110200_create_purchase_order_lines_table',1);
+INSERT INTO migrations VALUES(269,'2026_06_19_120000_add_count_type_to_stock_counts',1);
+INSERT INTO migrations VALUES(270,'2026_06_19_130000_add_stock_lot_to_manufacturing_order_reports',1);
+INSERT INTO migrations VALUES(271,'2026_06_19_130100_add_subcontract_to_manufacturing_orders',1);
+INSERT INTO migrations VALUES(272,'2026_06_19_140000_create_work_centers_table',1);
+INSERT INTO migrations VALUES(273,'2026_06_19_140100_add_work_center_to_manufacturing_orders',1);
+INSERT INTO migrations VALUES(274,'2026_06_19_150000_add_actual_cost_to_manufacturing_order_materials',1);
+INSERT INTO migrations VALUES(275,'2026_06_19_160000_add_manufacturing_order_to_time_entries',1);
+INSERT INTO migrations VALUES(276,'2026_06_19_170000_create_purchase_order_advices_table',1);
+INSERT INTO migrations VALUES(277,'2026_06_19_180000_create_label_templates_table',1);
+INSERT INTO migrations VALUES(278,'2026_06_20_120000_create_user_filter_presets_table',1);
+INSERT INTO migrations VALUES(279,'2026_06_22_120000_create_permits_table',1);
+INSERT INTO migrations VALUES(280,'2026_06_25_120000_create_invoice_templates_table',1);
+INSERT INTO migrations VALUES(281,'2026_06_26_090000_create_procedure_parameter_definitions_table',1);
+INSERT INTO migrations VALUES(282,'2026_06_26_120000_create_supplier_catalog_tables',1);
+INSERT INTO migrations VALUES(283,'2026_06_26_130000_create_pricing_margin_rules_table',1);
+INSERT INTO migrations VALUES(284,'2026_06_26_140000_create_pricing_change_alerts_table',1);
+INSERT INTO migrations VALUES(285,'2026_06_27_100000_add_remote_fields_to_supplier_catalog_sources',1);
+INSERT INTO migrations VALUES(286,'2026_06_27_110000_add_schedule_to_supplier_catalog_sources',1);
+INSERT INTO migrations VALUES(287,'2026_06_27_110100_create_supplier_catalog_imports_table',1);
+INSERT INTO migrations VALUES(288,'2026_06_27_120000_add_classification_media_to_supplier_catalog_items',1);
+INSERT INTO migrations VALUES(289,'2026_06_27_130000_create_supplier_catalog_item_price_tiers_table',1);
+INSERT INTO migrations VALUES(290,'2026_06_28_100000_add_freight_and_line_note_to_purchase_orders',1);
+INSERT INTO migrations VALUES(291,'2026_06_28_120000_create_gaeb_boq_tables',1);
+INSERT INTO migrations VALUES(292,'2026_06_28_130000_create_boq_progress_and_mappings_tables',1);
+INSERT INTO migrations VALUES(293,'2026_06_28_140000_create_boq_exports_table',1);
+INSERT INTO migrations VALUES(294,'2026_07_01_120000_create_month_closures_table',1);
+INSERT INTO migrations VALUES(295,'2026_07_01_120100_create_month_closure_events_table',1);
+INSERT INTO migrations VALUES(296,'2026_07_01_140000_create_time_exports_table',1);
+INSERT INTO migrations VALUES(297,'2026_07_01_140100_create_time_export_lines_table',1);
+INSERT INTO migrations VALUES(298,'2026_07_01_140200_create_time_export_events_table',1);
+INSERT INTO migrations VALUES(299,'2026_07_01_150000_add_surcharge_columns_to_time_export_lines',1);
+INSERT INTO migrations VALUES(300,'2026_07_02_120000_create_backup_heartbeats_table',1);
+INSERT INTO migrations VALUES(301,'2026_07_03_120000_add_type_and_impacts_to_pricing_change_alerts',1);
+INSERT INTO migrations VALUES(302,'2026_07_07_100000_add_cti_extension_to_users_table',1);
+INSERT INTO migrations VALUES(303,'2026_07_07_110000_add_weather_auto_fetch_to_projects',1);
+INSERT INTO migrations VALUES(304,'2026_07_07_120000_add_break_started_at_to_attendances',1);
+INSERT INTO migrations VALUES(305,'2026_07_10_120000_create_import_runs_table',1);
+INSERT INTO migrations VALUES(306,'2026_07_10_120100_create_import_run_errors_table',1);
+INSERT INTO migrations VALUES(307,'2026_07_11_100000_create_jtl_connections_table',1);
+INSERT INTO migrations VALUES(308,'2026_07_11_100100_create_jtl_warehouse_mappings_table',1);
+INSERT INTO migrations VALUES(309,'2026_07_11_100200_create_jtl_stock_snapshots_table',1);
+INSERT INTO migrations VALUES(310,'2026_07_11_120000_add_bank_columns_to_customers_table',1);
+INSERT INTO migrations VALUES(311,'2026_07_11_120100_create_pending_external_conflicts_table',1);
+INSERT INTO migrations VALUES(312,'2026_07_11_120200_add_version_to_lexoffice_articles_table',1);
+INSERT INTO migrations VALUES(313,'2026_07_11_120300_create_plugin_settings_table',1);
+INSERT INTO migrations VALUES(314,'2026_07_12_120000_create_plugin_states_table',1);
+INSERT INTO migrations VALUES(315,'2026_07_12_120100_create_plugin_errors_table',1);
+INSERT INTO migrations VALUES(316,'2026_07_13_100000_create_wage_type_mappings_table',1);
+INSERT INTO migrations VALUES(317,'2026_07_13_100100_create_time_export_delivery_configs_table',1);
+INSERT INTO migrations VALUES(318,'2026_07_13_100200_add_auto_delivery_to_time_exports_table',1);
+INSERT INTO migrations VALUES(319,'2026_07_13_120000_create_license_flag_overrides_table',1);
+INSERT INTO migrations VALUES(320,'2026_07_14_120000_create_sites_table',1);
+INSERT INTO migrations VALUES(321,'2026_07_14_120100_create_buildings_table',1);
+INSERT INTO migrations VALUES(322,'2026_07_14_120200_create_floors_table',1);
+INSERT INTO migrations VALUES(323,'2026_07_14_120300_extend_rooms_for_hierarchy',1);
+INSERT INTO migrations VALUES(324,'2026_07_14_120400_add_room_id_to_assets_table',1);
+INSERT INTO migrations VALUES(325,'2026_07_14_130000_make_maintenance_plans_polymorph',1);
+INSERT INTO migrations VALUES(326,'2026_07_14_140000_create_cleaning_profiles_table',1);
+INSERT INTO migrations VALUES(327,'2026_07_14_140100_add_cleaning_profile_id_to_rooms',1);
+INSERT INTO migrations VALUES(328,'2026_07_14_150000_migrate_legacy_room_facility_strings',1);
+INSERT INTO migrations VALUES(329,'2026_07_15_120000_create_software_table',1);
+INSERT INTO migrations VALUES(330,'2026_07_15_120100_create_software_installations_table',1);
+INSERT INTO migrations VALUES(331,'2026_07_15_120200_create_remote_pending_sessions_table',1);
+INSERT INTO migrations VALUES(332,'2026_07_15_120300_create_toggl_pending_entries_table',1);
+INSERT INTO migrations VALUES(333,'2026_07_18_120000_create_billbee_orders_table',1);
+INSERT INTO migrations VALUES(334,'2026_08_01_120000_create_export_runs_table',1);
+INSERT INTO migrations VALUES(335,'2026_08_01_120100_add_alias_to_remote_pending_sessions',1);
+INSERT INTO migrations VALUES(336,'2026_08_02_120000_add_shared_remote_to_assets',1);
+INSERT INTO migrations VALUES(337,'2026_08_02_120100_add_asset_id_to_remote_pending_sessions',1);
+INSERT INTO migrations VALUES(338,'2026_08_04_120000_create_etsy_connections_table',1);
+INSERT INTO migrations VALUES(339,'2026_08_04_120100_create_etsy_receipts_table',1);
+INSERT INTO migrations VALUES(340,'2026_08_04_120200_create_etsy_webhook_deliveries_table',1);
+INSERT INTO migrations VALUES(341,'2026_08_04_120300_create_etsy_ledger_entries_table',1);
+INSERT INTO migrations VALUES(342,'2026_08_05_130000_create_lexoffice_vouchers_table',1);
+INSERT INTO migrations VALUES(343,'2026_08_06_120000_create_contact_addresses_table',1);
+INSERT INTO migrations VALUES(344,'2026_08_06_120000_create_material_cost_allocations_table',1);
+INSERT INTO migrations VALUES(345,'2026_08_06_120100_create_contact_bank_accounts_table',1);
+INSERT INTO migrations VALUES(346,'2026_08_06_120200_add_lexoffice_fields_to_contacts',1);
+INSERT INTO migrations VALUES(347,'2026_08_06_120300_add_source_to_number_formats',1);
+INSERT INTO migrations VALUES(348,'2026_08_06_120400_add_external_number_to_invoices',1);
+INSERT INTO migrations VALUES(349,'2026_08_07_120000_create_foreign_customers_table',1);
+INSERT INTO migrations VALUES(350,'2026_08_07_120100_add_foreign_customer_id_to_projects_table',1);
+INSERT INTO migrations VALUES(351,'2026_08_07_120200_add_foreign_customer_id_to_invoices_table',1);
+INSERT INTO migrations VALUES(352,'2026_08_08_120000_add_billing_increment_to_projects_table',1);
+INSERT INTO migrations VALUES(353,'2026_08_08_120100_add_billing_increment_to_customers_table',1);
+INSERT INTO migrations VALUES(354,'2026_08_08_120200_create_invoice_item_time_entries_table',1);
+INSERT INTO migrations VALUES(355,'2026_08_08_120300_add_service_date_to_invoice_items_table',1);
+INSERT INTO migrations VALUES(356,'2026_08_08_120400_add_category_to_invoices_table',1);
+INSERT INTO migrations VALUES(357,'2026_08_08_120500_add_material_billing_fields',1);
+INSERT INTO migrations VALUES(358,'2026_08_08_120600_add_travel_billing_fields',1);
+INSERT INTO migrations VALUES(359,'2026_08_08_120700_add_foreign_customer_id_to_assets_table',1);
+INSERT INTO migrations VALUES(360,'2026_08_09_100000_add_material_fields_to_billing_transfer_items',1);
+INSERT INTO migrations VALUES(361,'2026_08_09_120000_add_personal_fields_to_users_table',1);
+INSERT INTO migrations VALUES(362,'2026_08_10_120000_add_schedule_type_to_work_schedules',1);
+INSERT INTO migrations VALUES(363,'2026_08_11_120000_widen_time_entry_descriptions_to_text',1);
+INSERT INTO migrations VALUES(364,'2026_08_11_120100_add_organization_to_plugin_state',1);
+INSERT INTO migrations VALUES(365,'2026_08_11_120200_add_last_ok_at_to_plugin_states',1);
+INSERT INTO migrations VALUES(366,'2026_08_12_000000_add_compensation_model_to_users',1);
+INSERT INTO migrations VALUES(367,'2026_08_13_000001_create_chat_channels_table',1);
+INSERT INTO migrations VALUES(368,'2026_08_13_000002_create_chat_messages_table',1);
+INSERT INTO migrations VALUES(369,'2026_08_13_000003_create_chat_polls_table',1);
+INSERT INTO migrations VALUES(370,'2026_08_13_000004_create_password_reset_tokens_table',1);
+INSERT INTO migrations VALUES(371,'2026_08_13_000005_add_quote_forward_to_chat_messages',1);
+INSERT INTO migrations VALUES(372,'2026_08_13_000006_create_chat_message_stars_table',1);
+INSERT INTO migrations VALUES(373,'2026_08_13_000007_create_chat_reminders_table',1);
+INSERT INTO migrations VALUES(374,'2026_08_13_000008_create_chat_scheduled_messages_table',1);
+INSERT INTO migrations VALUES(375,'2026_08_13_000009_add_preferred_work_mode_to_users_table',1);
+INSERT INTO migrations VALUES(376,'2026_08_13_000010_add_hash_chain_to_audit_logs_table',1);
+INSERT INTO migrations VALUES(377,'2026_08_13_000012_add_hash_chain_to_org_audit_and_chain_heads',1);
+INSERT INTO migrations VALUES(378,'2026_08_13_000013_move_preferred_work_mode_into_preferences',1);
+INSERT INTO migrations VALUES(379,'2026_08_13_000014_create_whistleblowing_tables',1);
+INSERT INTO migrations VALUES(380,'2026_08_13_000015_create_whistleblowing_access_and_reminder_tables',1);
+INSERT INTO migrations VALUES(381,'2026_08_13_000016_create_whistleblowing_case_subjects_table',1);
+INSERT INTO migrations VALUES(382,'2026_08_13_000017_make_whistleblowing_case_content_nullable',1);
+INSERT INTO migrations VALUES(383,'2026_08_13_000018_grandfather_existing_orgs_to_enterprise',1);
+INSERT INTO migrations VALUES(384,'2026_08_13_000019_create_plan_module_grace_table',1);
+INSERT INTO migrations VALUES(385,'2026_08_13_000020_add_self_applied_to_time_correction_requests',1);
+INSERT INTO migrations VALUES(386,'2026_08_13_000021_create_privacy_mvp1_tables',1);
+INSERT INTO migrations VALUES(387,'2026_08_13_000022_create_privacy_avv_tables',1);
+INSERT INTO migrations VALUES(388,'2026_08_13_000023_create_privacy_mvp3_tables',1);
+INSERT INTO migrations VALUES(389,'2026_08_13_000024_create_privacy_tom_tables',1);
+INSERT INTO migrations VALUES(390,'2026_08_13_000025_create_privacy_gvv_tables',1);
+INSERT INTO migrations VALUES(391,'2026_08_13_000026_create_privacy_compliance_findings_table',1);
+INSERT INTO migrations VALUES(392,'2026_08_13_000027_create_privacy_attachments_table',1);
+INSERT INTO migrations VALUES(393,'2026_08_13_000028_add_license_columns_to_organizations',1);
+INSERT INTO migrations VALUES(394,'2026_08_13_000029_add_processor_dimension_to_incidents',1);
+INSERT INTO migrations VALUES(395,'2026_08_13_000030_add_authority_reporting_to_incidents',1);
+INSERT INTO migrations VALUES(396,'2026_08_14_000000_add_order_lifecycle_to_diary_entries',1);
+INSERT INTO migrations VALUES(397,'2026_08_15_000000_add_org_scoped_composite_indexes',1);
+INSERT INTO migrations VALUES(398,'2026_08_20_120000_create_customer_merge_dismissals_table',1);
+INSERT INTO migrations VALUES(399,'2026_08_21_120000_create_customer_geofences_table',1);
+INSERT INTO migrations VALUES(400,'2026_08_21_120000_create_integration_inbox_items_table',1);
+INSERT INTO migrations VALUES(401,'2026_08_21_120100_create_location_points_table',1);
+INSERT INTO migrations VALUES(402,'2026_08_21_120200_create_location_visits_table',1);
+INSERT INTO migrations VALUES(403,'2026_08_21_120300_create_location_pending_entries_table',1);
+INSERT INTO migrations VALUES(404,'2026_08_21_120400_create_location_device_tokens_table',1);
+INSERT INTO migrations VALUES(405,'2026_08_21_120500_encrypt_location_points_coordinates',1);
+INSERT INTO migrations VALUES(406,'2026_08_22_120000_backfill_lexoffice_conflicts_to_inbox',1);
+INSERT INTO migrations VALUES(407,'2026_08_22_120000_create_project_merge_dismissals_table',1);
+INSERT INTO migrations VALUES(408,'2026_08_23_120000_add_group_key_to_integration_inbox_items',1);
+INSERT INTO migrations VALUES(409,'2026_08_24_120000_backfill_toggl_pending_to_inbox',1);
+INSERT INTO migrations VALUES(410,'2026_08_25_120000_backfill_openproject_pending_to_inbox',1);
+INSERT INTO migrations VALUES(411,'2026_08_26_120000_add_match_policy_to_import_runs',1);
+INSERT INTO migrations VALUES(412,'2026_08_27_120000_create_external_reference_aliases_table',1);
+INSERT INTO migrations VALUES(413,'2026_08_28_120000_convert_material_rounding_to_enum',1);
+INSERT INTO migrations VALUES(414,'2026_09_01_120000_drop_legacy_pending_entry_tables',1);
+INSERT INTO migrations VALUES(415,'2026_09_01_130000_create_price_change_requests_table',1);
+INSERT INTO migrations VALUES(416,'2026_09_01_140000_add_punchout_fields_to_supplier_catalog_sources',1);
+INSERT INTO migrations VALUES(417,'2026_09_02_100000_create_idea_maps_tables',1);
+INSERT INTO migrations VALUES(418,'2026_09_03_100000_create_todoist_connections_table',1);
+INSERT INTO migrations VALUES(419,'2026_09_03_110000_create_todoist_link_tables',1);
+INSERT INTO migrations VALUES(420,'2026_09_03_120000_create_integration_outbox_table',1);
+INSERT INTO migrations VALUES(421,'2026_09_03_140000_create_todoist_webhook_deliveries_table',1);
+INSERT INTO migrations VALUES(422,'2026_09_04_100000_add_lock_version_to_idea_maps',1);
+INSERT INTO migrations VALUES(423,'2026_09_05_100000_create_idea_node_links_table',1);
+INSERT INTO migrations VALUES(424,'2026_09_06_100000_create_idea_node_summaries_table',1);
+INSERT INTO migrations VALUES(425,'2026_09_07_100000_create_gobd_exports_table',1);
+INSERT INTO migrations VALUES(426,'2026_09_08_100000_create_weather_snapshots_table',1);
+INSERT INTO migrations VALUES(427,'2026_09_08_110000_add_weather_snapshot_to_protocols',1);
+INSERT INTO migrations VALUES(428,'2026_09_09_100000_create_zammad_connections_table',1);
+INSERT INTO migrations VALUES(429,'2026_09_11_100000_create_caldav_connections_table',1);
+INSERT INTO migrations VALUES(430,'2026_09_12_100000_create_webdav_connections_table',1);
+INSERT INTO migrations VALUES(431,'2026_09_13_100000_add_deactivated_at_to_users_table',1);
+INSERT INTO migrations VALUES(432,'2026_09_13_100100_create_scim_tokens_table',1);
+INSERT INTO migrations VALUES(433,'2026_09_14_100000_create_email_connections_table',1);
+INSERT INTO migrations VALUES(434,'2026_09_15_100000_create_cti_connections_table',1);
+INSERT INTO migrations VALUES(435,'2026_09_16_100000_create_chat_webhooks_table',1);
+INSERT INTO migrations VALUES(436,'2026_09_17_100000_create_attendance_terminals_table',1);
+INSERT INTO migrations VALUES(437,'2026_09_17_100100_create_user_badges_table',1);
+INSERT INTO migrations VALUES(438,'2026_09_18_100000_create_carrier_connections_table',1);
+INSERT INTO migrations VALUES(439,'2026_09_18_100100_create_shipments_table',1);
+INSERT INTO migrations VALUES(440,'2026_09_19_100000_add_resolved_state_to_zammad_connections',1);
+INSERT INTO migrations VALUES(441,'2026_09_20_100000_create_scim_groups_table',1);
+INSERT INTO migrations VALUES(442,'2026_09_21_100000_add_diary_entry_id_to_service_tickets',1);
+INSERT INTO migrations VALUES(443,'2026_09_22_100000_add_sla_binding_to_maintenance_plans',1);
+INSERT INTO migrations VALUES(444,'2026_09_23_100000_create_sla_contract_quotas_table',1);
+INSERT INTO migrations VALUES(445,'2026_09_24_100000_add_sla_contract_id_to_assets',1);
+INSERT INTO migrations VALUES(446,'2026_09_25_100000_create_asset_ownership_changes_table',1);
+INSERT INTO migrations VALUES(447,'2026_09_26_100000_add_scopes_to_caldav_connections',1);
+INSERT INTO migrations VALUES(448,'2026_09_27_100000_add_webdav_mirror_detached_to_documents',1);
+INSERT INTO migrations VALUES(449,'2026_09_28_100000_add_sources_to_webdav_connections',1);
+INSERT INTO migrations VALUES(450,'2026_09_29_100000_add_time_unit_to_zammad_connections',1);
+INSERT INTO migrations VALUES(451,'2026_09_30_100000_create_external_contacts_table',1);
+INSERT INTO migrations VALUES(452,'2026_09_30_100100_add_external_contact_id_to_external_participants_table',1);
+INSERT INTO migrations VALUES(453,'2026_09_30_101000_create_disposal_module_tables',1);
+INSERT INTO migrations VALUES(454,'2026_10_01_100000_add_tax_split_to_surcharge_rules',1);
+INSERT INTO migrations VALUES(455,'2026_10_01_100100_create_cost_center_rules_table',1);
+INSERT INTO migrations VALUES(456,'2026_10_01_100200_add_customer_visible_to_attachments',1);
+INSERT INTO migrations VALUES(457,'2026_10_01_100300_create_attachment_confirmations_table',1);
+INSERT INTO migrations VALUES(458,'2026_10_01_100400_create_diary_entry_qualifications_table',1);
+INSERT INTO migrations VALUES(459,'2026_10_01_100500_create_import_value_mappings_table',1);
+INSERT INTO migrations VALUES(460,'2026_10_01_100600_add_unresolved_values_to_import_runs',1);
+INSERT INTO migrations VALUES(461,'2026_10_01_100700_add_rework_goodwill_to_time_entries',1);
+INSERT INTO migrations VALUES(462,'2026_10_01_100800_create_support_access_grants_table',1);
+INSERT INTO migrations VALUES(463,'2026_10_01_100900_create_security_advisories_table',1);
+INSERT INTO migrations VALUES(464,'2026_10_01_101000_privacy_followup_tables',1);
+INSERT INTO migrations VALUES(465,'2026_10_01_101100_add_description_to_isms_requirements',1);
+INSERT INTO migrations VALUES(466,'2026_10_01_101200_create_isms_audit_programs_table',1);
+INSERT INTO migrations VALUES(467,'2026_10_01_101300_add_profile_version_to_isms_norm_statuses',1);
+INSERT INTO migrations VALUES(468,'2026_10_01_101400_create_retention_proposals_table',1);
+INSERT INTO migrations VALUES(469,'2026_10_01_101500_add_reverse_charge_to_invoices',1);
+INSERT INTO migrations VALUES(470,'2026_10_01_101600_create_isms_assessment_snapshots_table',1);
+INSERT INTO migrations VALUES(471,'2026_10_01_101700_create_agile_core_tables',1);
+INSERT INTO migrations VALUES(472,'2026_10_01_101800_create_agile_backlog_tables',1);
+INSERT INTO migrations VALUES(473,'2026_10_01_101900_create_agile_sprint_tables',1);
+INSERT INTO migrations VALUES(474,'2026_10_01_102000_add_capacity_snapshot_to_agile_sprints',1);
+INSERT INTO migrations VALUES(475,'2026_10_01_102100_create_service_queues_table',1);
+INSERT INTO migrations VALUES(476,'2026_10_01_102200_extend_service_tickets_for_helpdesk',1);
+INSERT INTO migrations VALUES(477,'2026_10_01_102300_create_service_ticket_messages_table',1);
+INSERT INTO migrations VALUES(478,'2026_10_01_102400_create_ticket_routing_rules_table',1);
+INSERT INTO migrations VALUES(479,'2026_10_01_102500_create_service_catalog_tables',1);
+INSERT INTO migrations VALUES(480,'2026_10_01_102600_add_major_incident_and_links',1);
+INSERT INTO migrations VALUES(481,'2026_10_01_102700_create_problems_table',1);
+INSERT INTO migrations VALUES(482,'2026_10_01_102800_create_changes_and_approvals_tables',1);
+INSERT INTO migrations VALUES(483,'2026_10_01_102900_add_ticket_target_to_zammad_connections',1);
+INSERT INTO migrations VALUES(484,'2026_10_01_103000_create_ticket_satisfaction_table',1);
+INSERT INTO migrations VALUES(485,'2026_10_01_103100_extend_invoices_for_tax_model',1);
+INSERT INTO migrations VALUES(486,'2026_10_01_103200_add_workflow_fields_to_invoices',1);
+INSERT INTO migrations VALUES(487,'2026_10_01_103300_create_incoming_einvoices_table',1);
+INSERT INTO migrations VALUES(488,'2026_10_01_103400_create_quotes_and_proforma',1);
+INSERT INTO migrations VALUES(489,'2026_10_01_110000_create_system_settings_table',1);
+INSERT INTO migrations VALUES(490,'2026_10_01_110100_create_scheduler_tables',1);
+INSERT INTO migrations VALUES(491,'2026_10_01_110200_create_operations_tasks_table',1);
+INSERT INTO migrations VALUES(492,'2026_10_01_110300_create_problem_reports_table',1);
+INSERT INTO migrations VALUES(493,'2026_10_01_110400_create_component_updates_table',1);
+INSERT INTO migrations VALUES(494,'2026_10_01_110500_create_maintenance_windows_table',1);
+INSERT INTO migrations VALUES(495,'2026_10_01_110600_add_connection_health_columns',1);
+INSERT INTO migrations VALUES(496,'2026_10_02_120000_add_is_platform_admin_to_users',1);
+INSERT INTO migrations VALUES(497,'2026_10_02_130000_widen_invoice_item_precision',1);
+INSERT INTO migrations VALUES(498,'2026_10_02_140000_add_invoice_delivery_and_incoming_transfer',1);
+INSERT INTO migrations VALUES(499,'2026_10_03_100000_create_applications_module_tables',1);
+INSERT INTO migrations VALUES(500,'2026_10_03_110000_create_investments_module_tables',1);
+INSERT INTO migrations VALUES(501,'2026_10_03_120000_create_crisis_module_tables',1);
+INSERT INTO migrations VALUES(502,'2026_10_03_130000_create_sustainability_module_tables',1);
+INSERT INTO migrations VALUES(503,'2026_10_03_140000_create_tax_rules_and_position_categories',1);
+INSERT INTO migrations VALUES(504,'2026_10_03_150000_create_claims_module_tables',1);
+INSERT INTO migrations VALUES(505,'2026_10_04_100000_create_asset_blocks_tables',1);
+INSERT INTO migrations VALUES(506,'2026_10_04_110000_create_rental_module_tables',1);
+INSERT INTO migrations VALUES(507,'2026_10_04_120000_create_asset_finance_module_tables',1);
+INSERT INTO migrations VALUES(508,'2026_10_04_130000_create_asset_compliance_module_tables',1);
+INSERT INTO migrations VALUES(509,'2026_10_04_140000_add_settlement_to_invoice_items',1);
+INSERT INTO migrations VALUES(510,'2026_10_05_100000_create_document_design_tables',1);
+INSERT INTO migrations VALUES(511,'2026_10_06_100000_create_orgamax_connections_table',1);
+INSERT INTO migrations VALUES(512,'2026_10_07_100000_create_sso_connections_tables',1);
+INSERT INTO migrations VALUES(513,'2026_10_08_100000_create_change_asset_table',1);
+INSERT INTO migrations VALUES(514,'2026_10_09_100000_create_msgraph_connections_table',1);
+INSERT INTO migrations VALUES(515,'2026_10_09_100100_create_google_calendar_connections_table',1);
+INSERT INTO migrations VALUES(516,'2026_10_10_100000_create_carddav_tables',1);
+INSERT INTO migrations VALUES(517,'2026_10_11_100000_create_sharepoint_connections_table',1);
+INSERT INTO migrations VALUES(518,'2026_10_11_100100_add_sharepoint_mirror_detached_to_documents',1);
+INSERT INTO migrations VALUES(519,'2026_10_12_100000_add_escalation_ladder_to_notification_rules',1);
+INSERT INTO migrations VALUES(520,'2026_10_12_110000_add_classification_targets_to_import_value_mappings',1);
+INSERT INTO migrations VALUES(521,'2026_10_13_100000_add_finance_format_and_datev_rest_columns',1);
+INSERT INTO migrations VALUES(522,'2026_10_14_100000_add_txn_details_to_bank_transactions',1);
+INSERT INTO migrations VALUES(523,'2026_10_15_100000_add_processing_agreement_to_isms_supplier_assessments',1);
+INSERT INTO migrations VALUES(524,'2026_10_16_100000_add_customer_visible_to_documents',1);
+INSERT INTO migrations VALUES(525,'2026_10_16_100000_create_compliance_findings_table',1);
+INSERT INTO migrations VALUES(526,'2026_10_16_100000_create_contract_module_tables',1);
+INSERT INTO migrations VALUES(527,'2026_10_16_100100_add_contract_id_to_asset_finance_contracts',1);
+INSERT INTO migrations VALUES(528,'2026_10_17_100000_create_sync_commands_table',1);
+INSERT INTO migrations VALUES(529,'2026_10_17_110000_create_products_table',1);
+INSERT INTO migrations VALUES(530,'2026_10_17_110100_add_product_id_to_articles_and_assets',1);
+INSERT INTO migrations VALUES(531,'2026_10_18_100000_create_cloud_intake_tables',1);
+INSERT INTO migrations VALUES(532,'2026_10_19_100000_create_backup_target_tables',1);
+INSERT INTO migrations VALUES(533,'2026_10_20_100000_add_nextcloud_columns_to_cloud_document_connections',1);
+INSERT INTO migrations VALUES(534,'2026_10_20_100100_add_nextcloud_columns_to_backup_target_connections',1);
+INSERT INTO migrations VALUES(535,'2026_10_21_100000_create_domain_provider_connections_table',1);
+INSERT INTO migrations VALUES(536,'2026_10_21_100100_create_domain_projection_tables',1);
+INSERT INTO migrations VALUES(537,'2026_10_21_100200_create_domain_command_and_dns_tables',1);
+INSERT INTO migrations VALUES(538,'2026_10_21_100300_create_domain_accounting_event_invoice_tables',1);
+INSERT INTO migrations VALUES(539,'2026_10_21_100400_tighten_domain_projection_uniqueness',1);
+INSERT INTO migrations VALUES(540,'2026_10_22_100000_create_ai_foundation_tables',1);
+INSERT INTO migrations VALUES(541,'2026_10_22_101000_create_ai_memory_entries_table',1);
+INSERT INTO migrations VALUES(542,'2026_10_22_102000_create_ai_text_suggestions_table',1);
+INSERT INTO migrations VALUES(543,'2026_10_23_100000_create_vacation_entitlements_table',1);
+INSERT INTO migrations VALUES(544,'2026_10_23_110000_add_discount_skonto_to_invoicing',1);
+INSERT INTO migrations VALUES(545,'2026_10_23_120000_create_invoice_schedules_tables',1);
+INSERT INTO migrations VALUES(546,'2026_10_23_130000_create_cash_book_tables',1);
+INSERT INTO migrations VALUES(547,'2026_10_23_140000_create_driver_license_checks_table',1);
+INSERT INTO migrations VALUES(548,'2026_10_24_100000_add_reservation_snapshot_to_manufacturing_orders',1);
+INSERT INTO migrations VALUES(549,'2026_10_24_110000_add_confidential_to_documents',1);
+INSERT INTO migrations VALUES(550,'2026_10_24_120000_add_cost_to_asset_inspection_events',1);
+INSERT INTO migrations VALUES(551,'2026_10_24_130000_add_validity_and_target_to_form_templates',1);
+INSERT INTO migrations VALUES(552,'2026_10_24_140000_add_source_options_to_import_runs',1);
+INSERT INTO migrations VALUES(553,'2026_10_25_100000_add_public_career_fields',1);
+INSERT INTO migrations VALUES(554,'2026_10_25_100100_create_job_application_uploads_table',1);
+INSERT INTO migrations VALUES(555,'2026_10_26_100000_create_calendly_connections_table',1);
+INSERT INTO migrations VALUES(556,'2026_10_26_100000_create_integrity_checks_table',1);
+INSERT INTO migrations VALUES(557,'2026_10_26_100100_create_calendly_webhook_subscriptions_table',1);
+INSERT INTO migrations VALUES(558,'2026_10_26_100100_create_security_events_table',1);
+INSERT INTO migrations VALUES(559,'2026_10_26_100200_create_calendly_webhook_deliveries_table',1);
+INSERT INTO migrations VALUES(560,'2026_10_26_100200_create_user_known_devices_table',1);
+INSERT INTO migrations VALUES(561,'2026_10_26_100300_create_appointment_requests_table',1);
+INSERT INTO migrations VALUES(562,'2026_10_27_100000_add_matchcode_to_customers',1);
+INSERT INTO migrations VALUES(563,'2026_10_27_100100_add_matchcode_to_foreign_customers',1);
+INSERT INTO migrations VALUES(564,'2026_10_28_100000_create_customer_billing_tables',1);
+INSERT INTO migrations VALUES(565,'2026_10_28_100100_add_customer_billing_rate_id_to_time_entries',1);
+INSERT INTO migrations VALUES(566,'2026_10_29_100000_extend_customer_billing_retainer',1);
+INSERT INTO migrations VALUES(567,'2026_10_30_100000_seed_privacy_number_sequences',1);
+INSERT INTO migrations VALUES(568,'2026_10_31_100000_add_project_id_to_sla_contracts',1);
+INSERT INTO migrations VALUES(569,'2026_11_02_100000_create_b2b_catalog_tables',1);
+INSERT INTO migrations VALUES(570,'2026_11_03_100000_create_recipe_tables',1);
+INSERT INTO migrations VALUES(571,'2026_11_04_100000_add_coordinates_to_user_known_devices',1);
+INSERT INTO migrations VALUES(572,'2026_11_05_100000_create_passenger_transport_tables',1);
+INSERT INTO migrations VALUES(573,'2026_11_06_100000_backfill_toggl_project_billable_to_inherit',1);
+INSERT INTO migrations VALUES(574,'2026_11_07_100000_add_callreport_intake_to_email_connections',1);
+INSERT INTO migrations VALUES(575,'2026_11_08_100000_rechain_audit_hashes_after_value_object_casts',1);
+INSERT INTO migrations VALUES(576,'2026_11_09_100000_add_exclude_from_reports_to_customers_table',1);
+INSERT INTO migrations VALUES(577,'2026_11_10_100000_create_print_orders_table',1);
+INSERT INTO migrations VALUES(578,'2026_11_12_100000_add_passenger_retention_and_cash_link',1);
+INSERT INTO migrations VALUES(579,'2026_11_13_100000_fix_plugin_fqcn_ids',1);
+INSERT INTO migrations VALUES(580,'2026_11_14_100000_harden_plugin_error_store',1);
+INSERT INTO migrations VALUES(581,'2026_11_15_100000_add_paid_date_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(582,'2026_11_16_100000_link_lexoffice_voucher_to_billing_statement',1);
+INSERT INTO migrations VALUES(583,'2026_11_17_100000_add_travel_flat_to_customer_billing',1);
+INSERT INTO migrations VALUES(584,'2026_11_18_100000_add_statement_link_to_account_payments',1);
+INSERT INTO migrations VALUES(585,'2026_11_19_100000_add_keywords_to_projects_table',1);
+INSERT INTO migrations VALUES(586,'2026_11_20_100000_create_billing_transfer_positions_table',1);
+INSERT INTO migrations VALUES(587,'2026_11_21_100000_add_correction_link_to_billing_transfers',1);
+INSERT INTO migrations VALUES(588,'2026_11_22_100000_add_invoice_texts_to_billing_transfers',1);
+INSERT INTO migrations VALUES(589,'2026_11_23_100000_create_text_corrections_table',1);
+INSERT INTO migrations VALUES(590,'2026_11_24_100000_add_owner_mapping_to_domain_projections',1);
+INSERT INTO migrations VALUES(591,'2026_11_25_100000_create_msgraph_mail_connections_table',1);
+INSERT INTO migrations VALUES(592,'2026_11_26_100000_add_jit_provisioning_to_sso_connections',1);
+INSERT INTO migrations VALUES(593,'2026_11_27_100000_add_transport_to_email_connections',1);
+INSERT INTO migrations VALUES(594,'2026_11_28_100000_add_teams_meetings_to_msgraph_connections',1);
+INSERT INTO migrations VALUES(595,'2026_11_29_100000_create_msgraph_contact_connections_table',1);
+INSERT INTO migrations VALUES(596,'2026_11_30_100000_create_msgraph_task_tables',1);
+INSERT INTO migrations VALUES(597,'2026_12_01_100000_add_owner_handle_to_domain_projections',1);
+INSERT INTO migrations VALUES(598,'2026_12_01_100000_add_two_way_to_msgraph_connections',1);
+INSERT INTO migrations VALUES(599,'2026_12_02_100000_add_msgraph_webhooks_and_todo_delta',1);
+INSERT INTO migrations VALUES(600,'2026_12_03_100000_add_provider_type_and_sso_email_domains',1);
+INSERT INTO migrations VALUES(601,'2026_12_04_100000_add_portal_invite_fields_to_users',1);
+INSERT INTO migrations VALUES(602,'2026_12_04_100000_widen_audit_logs_event_column',1);
+INSERT INTO migrations VALUES(603,'2026_12_04_100100_fix_column_widths_for_strict_sql',1);
+INSERT INTO migrations VALUES(604,'2026_12_04_100200_add_attendances_open_unique_for_mysql',1);
+INSERT INTO migrations VALUES(605,'2026_12_05_100000_add_portal_visibility_settings',1);
+INSERT INTO migrations VALUES(606,'2026_12_05_100100_add_cost_center_fk_to_cost_center_rules',1);
+INSERT INTO migrations VALUES(607,'2026_12_06_100000_add_priority_to_shift_wishes',1);
+INSERT INTO migrations VALUES(608,'2026_12_06_100100_add_validity_and_status_to_terminal_credentials',1);
+INSERT INTO migrations VALUES(609,'2026_12_06_100200_add_holiday_provider_to_sites',1);
+INSERT INTO migrations VALUES(610,'2026_12_06_100300_add_conditions_to_surcharge_rules',1);
+INSERT INTO migrations VALUES(611,'2026_12_06_100400_create_time_rule_results_table',1);
+INSERT INTO migrations VALUES(612,'2026_12_06_100500_create_time_allocations_table',1);
+INSERT INTO migrations VALUES(613,'2026_12_06_100600_create_time_dimension_tables',1);
+INSERT INTO migrations VALUES(614,'2026_12_06_100700_create_overtime_requests_table',1);
+INSERT INTO migrations VALUES(615,'2026_12_06_100800_create_shift_rotations_tables',1);
+INSERT INTO migrations VALUES(616,'2026_12_06_100900_add_vacation_two_stage_and_deputy',1);
+INSERT INTO migrations VALUES(617,'2026_12_06_101000_add_approval_to_duty_plans',1);
+INSERT INTO migrations VALUES(618,'2026_12_06_101100_add_ideal_staff_to_coverage_requirements',1);
+INSERT INTO migrations VALUES(619,'2026_12_06_101200_add_on_call_times_to_shift_types',1);
+INSERT INTO migrations VALUES(620,'2026_12_06_101300_create_external_wage_items_table',1);
+INSERT INTO migrations VALUES(621,'2026_12_06_101400_create_time_accounts_tables',1);
+INSERT INTO migrations VALUES(622,'2026_12_06_101500_create_saved_report_views_table',1);
+INSERT INTO migrations VALUES(623,'2026_12_06_101600_add_qualification_minima_to_coverage_requirements',1);
+INSERT INTO migrations VALUES(624,'2026_12_06_101700_create_approval_steps_table',1);
+INSERT INTO migrations VALUES(625,'2026_12_06_101800_add_intermediate_statuses_to_attendances',1);
+INSERT INTO migrations VALUES(626,'2026_12_06_101900_add_components_to_vacation_entitlements',1);
+INSERT INTO migrations VALUES(627,'2026_12_06_102000_prune_profile_foreign_default_entry_types',1);
+INSERT INTO migrations VALUES(628,'2026_12_06_102100_add_einvoice_options_and_pdf_import_to_invoices',1);
+INSERT INTO migrations VALUES(629,'2026_12_06_102200_add_delivery_format_to_customers',1);
+INSERT INTO migrations VALUES(630,'2026_12_06_102300_add_user_target_to_import_value_mappings',1);
+INSERT INTO migrations VALUES(631,'2026_12_06_102400_add_sheet_name_to_supplier_catalog_sources',1);
+INSERT INTO migrations VALUES(632,'2026_12_06_102500_add_extra_attributes_and_list_price_to_supplier_catalog_items',1);
+INSERT INTO migrations VALUES(633,'2026_12_06_102600_add_datanorm_conditions_to_supplier_catalogs',1);
+INSERT INTO migrations VALUES(634,'2026_12_06_102600_add_denormalized_amounts_to_incoming_einvoices',1);
+INSERT INTO migrations VALUES(635,'2026_12_06_102700_add_category_to_articles',1);
+INSERT INTO migrations VALUES(636,'2026_12_06_102700_add_gaeb_traits_to_boq_items',1);
+INSERT INTO migrations VALUES(637,'2026_12_06_102800_add_text_complements_to_boq_items',1);
+INSERT INTO migrations VALUES(638,'2026_12_06_102800_create_sales_discount_groups',1);
+INSERT INTO migrations VALUES(639,'2026_12_06_102900_add_unit_price_components_to_boq',1);
+INSERT INTO migrations VALUES(640,'2026_12_06_102900_create_article_sale_price_histories',1);
+INSERT INTO migrations VALUES(641,'2026_12_06_103000_add_assembly_minutes_to_articles',1);
+INSERT INTO migrations VALUES(642,'2026_12_06_103000_add_change_order_fields_to_boq_items',1);
+INSERT INTO migrations VALUES(643,'2026_12_06_103100_add_bid_traits_to_boq',1);
+INSERT INTO migrations VALUES(644,'2026_12_06_103100_create_metal_quotations',1);
+INSERT INTO migrations VALUES(645,'2026_12_06_103200_add_external_id_to_boq_sections',1);
+INSERT INTO migrations VALUES(646,'2026_12_06_103200_create_sales_discount_group_overrides',1);
+INSERT INTO migrations VALUES(647,'2026_12_06_103300_add_format_to_boq_import_and_export',1);
+INSERT INTO migrations VALUES(648,'2026_12_06_103300_add_matchcode_to_supplier_catalog_items',1);
+INSERT INTO migrations VALUES(649,'2026_12_06_103400_add_copper_fields_and_price_tiers_to_articles',1);
+INSERT INTO migrations VALUES(650,'2026_12_06_103400_create_boq_catalog_tables',1);
+INSERT INTO migrations VALUES(651,'2027_01_10_090000_add_tender_fields_to_application_opportunities',1);
+INSERT INTO migrations VALUES(652,'2027_01_10_100000_create_tender_notice_tables',1);
+INSERT INTO migrations VALUES(653,'2027_01_10_110000_create_tender_competitor_bids',1);
+INSERT INTO migrations VALUES(654,'2027_01_10_120000_add_package_fields_to_gaeb_imports',1);
+INSERT INTO migrations VALUES(655,'2027_01_10_130000_create_catalog_registry_tables',1);
+INSERT INTO migrations VALUES(656,'2027_01_10_140000_create_catalog_assignment_rules',1);
+INSERT INTO migrations VALUES(657,'2027_01_10_150000_create_boq_change_orders',1);
+INSERT INTO migrations VALUES(658,'2027_01_10_160000_create_cost_estimates',1);
+INSERT INTO migrations VALUES(659,'2027_01_10_170000_create_boq_calculation_data',1);
+INSERT INTO migrations VALUES(660,'2027_01_10_180000_create_cost_element_catalogs',1);
+INSERT INTO migrations VALUES(661,'2027_01_10_190000_link_cost_elements_to_articles',1);
+INSERT INTO migrations VALUES(662,'2027_01_10_200000_add_excluded_buyers_to_tender_filter_profiles',1);
+INSERT INTO migrations VALUES(663,'2027_01_10_210000_add_accounting_category_to_expense_categories',1);
+INSERT INTO migrations VALUES(664,'2027_01_11_100000_add_ci_base_design_inheritance',1);
+INSERT INTO migrations VALUES(665,'2027_01_12_100000_consolidate_invoice_templates_into_render_profiles',1);
+INSERT INTO migrations VALUES(666,'2027_01_12_110000_create_leads_table',1);
+INSERT INTO migrations VALUES(667,'2027_01_12_120000_create_access_media_tables',1);
+INSERT INTO migrations VALUES(668,'2027_01_12_130000_create_survey_tables',1);
+INSERT INTO migrations VALUES(669,'2027_01_12_140000_create_patrol_tables',1);
+INSERT INTO migrations VALUES(670,'2027_01_12_150000_create_bookable_services_and_extend_appointment_requests',1);
+INSERT INTO migrations VALUES(671,'2027_01_12_160000_add_signature_to_access_medium_handovers',1);
+INSERT INTO migrations VALUES(672,'2027_01_13_100000_drop_invoice_templates_table',1);
+INSERT INTO migrations VALUES(673,'2027_01_14_100000_add_landscape_support_to_document_design',1);
+INSERT INTO migrations VALUES(674,'2027_01_15_100000_create_accounting_migration_tables',1);
+INSERT INTO migrations VALUES(675,'2027_01_16_100000_create_orgamax_invoices_table',1);
+INSERT INTO migrations VALUES(676,'2027_01_17_100000_add_timesheets_open_day_unique',1);
+INSERT INTO migrations VALUES(677,'2027_01_18_100000_create_lexoffice_webhook_deliveries_table',1);
+INSERT INTO migrations VALUES(678,'2027_01_19_100000_create_supplier_merge_dismissals_table',1);
+INSERT INTO migrations VALUES(679,'2027_01_20_100000_create_article_merge_dismissals_table',1);
+INSERT INTO migrations VALUES(680,'2027_01_21_100000_add_dial_fields_to_cti_connections',1);
+INSERT INTO migrations VALUES(681,'2027_01_22_100000_add_subscription_resource_to_cloud_document_connections',1);
+INSERT INTO migrations VALUES(682,'2027_01_23_100000_add_follow_up_to_quotes',1);
+INSERT INTO migrations VALUES(683,'2027_01_24_100000_create_invoice_retentions_table',1);
+INSERT INTO migrations VALUES(684,'2027_01_25_100000_create_guarantees_table',1);
+INSERT INTO migrations VALUES(685,'2027_01_26_100000_create_warranty_periods_table',1);
+INSERT INTO migrations VALUES(686,'2027_01_27_100000_create_meter_billing_agreements_table',1);
+INSERT INTO migrations VALUES(687,'2027_01_28_100000_create_supplier_credentials_tables',1);
+INSERT INTO migrations VALUES(688,'2027_01_29_100000_create_asset_components_table',1);
+INSERT INTO migrations VALUES(689,'2027_01_30_100000_create_customer_circulars_tables',1);
+INSERT INTO migrations VALUES(690,'2027_01_30_110000_add_bulk_mail_optout_to_customers',1);
+INSERT INTO migrations VALUES(691,'2027_01_31_100000_create_payment_runs_tables',1);
+INSERT INTO migrations VALUES(692,'2027_02_01_100000_add_two_way_to_calendar_connections',1);
+INSERT INTO migrations VALUES(693,'2027_02_02_100000_create_accounting_vouchers_table',1);
+INSERT INTO migrations VALUES(694,'2027_02_03_100000_create_time_tracking_webhook_deliveries_table',1);
+INSERT INTO migrations VALUES(695,'2027_02_04_100000_add_base_kind_to_invoice_retentions',1);
+INSERT INTO migrations VALUES(696,'2027_02_05_100000_add_phone_search_keys_to_contacts',1);
+INSERT INTO migrations VALUES(697,'2027_02_06_100000_add_approval_and_serial_links',1);
+INSERT INTO migrations VALUES(698,'2027_02_07_100000_create_accounting_profile_tables',1);
+INSERT INTO migrations VALUES(699,'2027_02_08_100000_create_accounting_ledger_tables',1);
+INSERT INTO migrations VALUES(700,'2027_02_09_100000_create_accounting_posting_rules_table',1);
+INSERT INTO migrations VALUES(701,'2027_02_10_100000_create_accounting_open_item_tables',1);
+INSERT INTO migrations VALUES(702,'2027_02_11_100000_widen_accounting_entry_rule_version',1);
+INSERT INTO migrations VALUES(703,'2027_02_12_100000_create_accounting_recurring_tables',1);
+INSERT INTO migrations VALUES(704,'2027_02_13_100000_create_accounting_taxation_periods_table',1);
+INSERT INTO migrations VALUES(705,'2027_02_14_100000_add_euer_fields_to_accounting_accounts',1);
+INSERT INTO migrations VALUES(706,'2027_02_15_100000_create_accounting_transfers_table',1);
+INSERT INTO migrations VALUES(707,'2027_02_16_100000_create_vat_filing_tables',1);
+INSERT INTO migrations VALUES(708,'2027_02_17_100000_create_accounting_filing_obligations_table',1);
+INSERT INTO migrations VALUES(709,'2027_02_18_100000_add_ustva_fields_to_tax_codes',1);
+INSERT INTO migrations VALUES(710,'2027_02_19_100000_scope_holiday_and_tag_uniques_to_organization',1);
+INSERT INTO migrations VALUES(711,'2027_02_19_100100_encrypt_incoming_einvoice_creditor_bank_details',1);
+INSERT INTO migrations VALUES(712,'2027_02_19_100200_replace_duty_plan_db_enums_with_strings',1);
+INSERT INTO migrations VALUES(713,'2027_02_19_100300_add_creditor_iban_confirmation_to_incoming_einvoices',1);
+INSERT INTO migrations VALUES(714,'2027_02_19_100400_restrict_user_fks_on_append_only_evidence_tables',1);
+INSERT INTO migrations VALUES(715,'2027_02_19_100500_harden_stock_movements_ledger_constraints',1);
+INSERT INTO migrations VALUES(716,'2027_02_19_100600_drop_audit_log_user_org_foreign_keys',1);
+INSERT INTO migrations VALUES(717,'2027_02_19_100700_add_missing_reference_foreign_keys',1);
+INSERT INTO migrations VALUES(718,'2027_02_19_100800_require_organization_on_core_tenant_tables',1);
+INSERT INTO migrations VALUES(719,'2027_02_19_100900_drop_unbuilt_reserve_columns',1);
+INSERT INTO migrations VALUES(720,'2027_02_19_101000_add_offboarding_and_restrict_evidence_user_fks',1);
+INSERT INTO migrations VALUES(721,'2027_02_19_101100_add_local_file_to_lexoffice_vouchers',1);
+INSERT INTO migrations VALUES(722,'2027_02_19_101200_add_dunning_blocked_at_to_invoices',1);
+INSERT INTO migrations VALUES(723,'2027_02_19_101300_add_document_kind_to_invoice_mail_templates',1);
+INSERT INTO migrations VALUES(724,'2027_02_19_101400_generalize_invoice_dispatches_to_document_dispatches',1);
+INSERT INTO migrations VALUES(725,'2027_02_19_101500_add_anonymized_at_to_users',1);
+INSERT INTO migrations VALUES(726,'2027_02_19_101600_create_safety_register_tables',1);
+INSERT INTO migrations VALUES(727,'2027_02_19_101700_create_fixed_assets_table',1);
+INSERT INTO migrations VALUES(728,'2027_02_19_101800_create_procedure_documentations_table',1);
+INSERT INTO migrations VALUES(729,'2027_02_19_101900_add_logbook_fields_to_vehicles_and_travel_logs',1);
+INSERT INTO migrations VALUES(730,'2027_02_19_102000_add_asset_id_to_vehicles',1);
+INSERT INTO migrations VALUES(731,'2027_02_19_102100_add_follow_up_diary_entry_id_to_open_issues',1);
+INSERT INTO migrations VALUES(732,'2027_02_19_102200_add_article_id_to_invoice_and_quote_items',1);
+INSERT INTO migrations VALUES(733,'2027_02_19_102300_add_bins_and_kind_to_warehouses',1);
+INSERT INTO migrations VALUES(734,'2027_02_19_102400_add_hr_fields_to_documents',1);
+INSERT INTO migrations VALUES(735,'2027_02_19_102500_add_cost_center_dimension_and_accounting_budgets',1);
+INSERT INTO migrations VALUES(736,'2027_02_19_102600_create_rental_requests_and_portal_profile_fields',1);
+INSERT INTO migrations VALUES(737,'2027_02_19_102700_create_weather_warnings_table',1);
+INSERT INTO migrations VALUES(738,'2027_02_19_102800_add_subject_to_driving_time_rules_to_vehicles',1);
+INSERT INTO migrations VALUES(739,'2027_02_19_102900_add_document_locale_to_customers',1);
+INSERT INTO migrations VALUES(740,'2027_02_19_103000_add_measured_composite_indexes',1);
+INSERT INTO migrations VALUES(741,'2027_02_19_103100_rechain_audit_hashes_per_organization',1);
+INSERT INTO migrations VALUES(742,'2027_02_19_103200_add_run_state_to_gobd_exports',1);
+INSERT INTO migrations VALUES(743,'2027_02_19_103300_drop_unbuilt_planning_and_contact_columns',1);
+INSERT INTO migrations VALUES(744,'2027_02_19_103400_create_training_management_tables',1);
+INSERT INTO migrations VALUES(745,'2027_02_19_103500_create_privacy_dsar_portal_tables',1);
+INSERT INTO migrations VALUES(746,'2027_02_19_103600_create_construction_notices_table',1);
+INSERT INTO migrations VALUES(747,'2027_02_19_103700_create_commission_tables',1);
+INSERT INTO migrations VALUES(748,'2027_02_19_103800_add_sms_channel_to_notification_dispatch_log',1);
+INSERT INTO migrations VALUES(749,'2027_02_19_103900_add_voucher_semantics_to_accounting_vouchers',1);
+INSERT INTO migrations VALUES(750,'2027_02_19_104000_create_user_workspaces_table',1);
+INSERT INTO migrations VALUES(751,'2027_02_19_104100_add_peppol_participant_and_lookups',1);
+INSERT INTO migrations VALUES(752,'2027_02_19_104200_add_width_to_user_dashboard_widgets',1);
+INSERT INTO migrations VALUES(753,'2027_02_19_104300_add_tab_key_to_user_dashboard_widgets',1);
+INSERT INTO migrations VALUES(754,'2027_02_19_104400_create_learning_platform_tables',1);
+INSERT INTO migrations VALUES(755,'2027_02_19_104500_create_learning_enrollment_tables',1);
+INSERT INTO migrations VALUES(756,'2027_02_19_104600_create_learning_time_sessions_table',1);
+INSERT INTO migrations VALUES(757,'2027_02_19_104700_create_learning_quiz_tables',1);
+INSERT INTO migrations VALUES(758,'2027_02_19_104800_create_learning_assignment_tables',1);
+INSERT INTO migrations VALUES(759,'2027_02_19_104900_create_learning_certificates_table',1);
+INSERT INTO migrations VALUES(760,'2027_02_19_105000_link_learning_units_to_events',1);
+INSERT INTO migrations VALUES(761,'2027_02_19_105100_create_learning_access_tokens_table',1);
+INSERT INTO migrations VALUES(762,'2027_02_19_105200_create_learning_bookings_table',1);
+INSERT INTO migrations VALUES(763,'2027_02_19_105300_create_learning_paths_and_competencies',1);
+INSERT INTO migrations VALUES(764,'2027_02_19_105400_add_course_completion_trigger_to_surveys',1);
+INSERT INTO migrations VALUES(765,'2027_02_19_105500_create_learning_issuer_keys_table',1);
+INSERT INTO migrations VALUES(766,'2027_02_19_105600_create_learning_scorm_tables',1);
+INSERT INTO migrations VALUES(767,'2027_02_19_105700_add_heartbeat_to_learning_time_sessions',1);
+INSERT INTO migrations VALUES(768,'2027_02_19_105800_add_asset_to_learning_courses',1);
+INSERT INTO migrations VALUES(769,'2027_02_19_105900_create_learning_content_translations',1);
+INSERT INTO migrations VALUES(770,'2027_02_19_110000_create_media_renditions_table',1);
+INSERT INTO migrations VALUES(771,'2027_02_19_110100_widen_issuer_key_for_rsa',1);
+INSERT INTO migrations VALUES(772,'2027_02_19_110200_add_subtitle_review_to_media_renditions',1);
+INSERT INTO migrations VALUES(773,'2027_02_19_110300_restrict_evidence_authorship_user_fks',1);
+INSERT INTO migrations VALUES(774,'2027_02_19_110400_add_sftp_host_fingerprint_to_time_export_delivery_configs',1);
+INSERT INTO migrations VALUES(775,'2027_02_19_110500_encrypt_bank_and_health_columns',1);
+INSERT INTO migrations VALUES(776,'2027_02_19_110600_create_audit_redactions_table',1);
+INSERT INTO migrations VALUES(777,'2027_02_19_110700_hash_public_link_tokens',1);
+INSERT INTO migrations VALUES(778,'2027_02_19_110800_add_verification_to_sso_domains',1);
+INSERT INTO migrations VALUES(779,'2027_02_19_110900_add_workspace_lookup_to_plugin_settings',1);
+INSERT INTO migrations VALUES(780,'2027_02_19_111000_hash_serial_passport_token',1);
+INSERT INTO migrations VALUES(781,'2027_02_19_111100_add_options_to_backup_target_connections',1);
+INSERT INTO migrations VALUES(782,'2027_02_19_111200_add_center_columns_to_help_topics',1);

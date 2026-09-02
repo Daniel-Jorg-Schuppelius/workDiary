@@ -323,7 +323,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
         $runs = AccountingRecurringRun::query()
             ->where('organization_id', $organization->id)
             ->whereIn('accounting_recurring_template_id', $templates->pluck('id')->all())
-            ->where('due_on', '<=', DateRange::day($to))
+            ->where('due_on', '<', DateRange::dayAfter($to))
             ->get()
             ->groupBy('accounting_recurring_template_id');
 
@@ -375,7 +375,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
         $schedules = InvoiceSchedule::query()
             ->where('organization_id', $organization->id)
             ->active()
-            ->where('next_run_on', '<=', DateRange::day($to))
+            ->where('next_run_on', '<', DateRange::dayAfter($to))
             ->with(['items', 'customer'])
             ->get();
         $customerType = (new Customer())->getMorphClass();
@@ -456,7 +456,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
         $rates = AssetFinanceRateSchedule::query()
             ->where('organization_id', $organization->id)
             ->planned()
-            ->where('due_on', '<=', DateRange::day($to))
+            ->where('due_on', '<', DateRange::dayAfter($to))
             ->with('contract')
             ->orderBy('due_on')
             ->get();
@@ -493,7 +493,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
             ->where('organization_id', $organization->id)
             ->where('status', FilingObligationStatus::Open->value)
             ->whereIn('kind', [FilingObligationKind::VatAdvance->value, FilingObligationKind::SpecialPrepayment->value])
-            ->where('due_on', '<=', DateRange::day($to))
+            ->where('due_on', '<', DateRange::dayAfter($to))
             ->orderBy('due_on')
             ->get();
 

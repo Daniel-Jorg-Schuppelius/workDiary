@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Finance\Gdpdu;
 
 use App\Models\{Invoice, Organization};
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -61,7 +62,7 @@ class InvoicesSection extends AbstractGdpduSection {
     public static function invoicesInPeriod(Organization $organization, CarbonInterface $from, CarbonInterface $to): Builder {
         return Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereBetween('issued_on', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('issued_on', DateRange::days($from, $to))
             ->orderBy('id');
     }
 

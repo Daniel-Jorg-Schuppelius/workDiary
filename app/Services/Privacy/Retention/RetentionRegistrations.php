@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Privacy\Retention;
 
 use App\Models\{CommunicationNote, TimeExport};
+use App\Support\Query\DateRange;
 
 /**
  * Registriert alle {@see RetentionPolicy}-Einträge der App in der
@@ -117,7 +118,7 @@ class RetentionRegistrations {
                 ->where('organization_id', $organization->id)
                 ->whereNull('anonymized_at')
                 ->whereNotNull('retention_until')
-                ->where('retention_until', '<=', now()->toDateString()),
+                ->where('retention_until', '<', DateRange::dayAfter(now())),
             purge: function (\App\Models\Applications\JobApplication $subject): void {
                 $subject->interviews()->update(['notes' => null]);
                 $subject->reviews()->update(['comment' => null]);

@@ -15,6 +15,7 @@ namespace App\Services\Billing\Feed\Sources;
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection};
+use App\Support\Query\DateRange;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -60,6 +61,6 @@ class QuoteSource implements DocumentFeedSource {
                 "'" . FeedProjection::defaultCurrency() . "' AS currency",
             ]))
             ->where('quotes.organization_id', $f->organizationId)
-            ->whereBetween(DB::raw('DATE(quotes.created_at)'), [$f->from->toDateString(), $f->to->toDateString()]);
+            ->whereBetween(DB::raw('DATE(quotes.created_at)'), DateRange::days($f->from, $f->to));
     }
 }

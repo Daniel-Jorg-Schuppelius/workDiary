@@ -15,6 +15,7 @@ namespace App\Services\Surcharge;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ScheduledShift, User};
 use App\Models\Surcharge\SurchargeRule;
+use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -57,7 +58,7 @@ class SurchargeForecastService {
 
         $shifts = ScheduledShift::query()
             ->where('organization_id', $organizationId)
-            ->whereBetween('date', [$start->toDateString(), $end->subDay()->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end->subDay()))
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->when($userId !== null, fn ($q) => $q->where('user_id', $userId))
             ->with('shiftType')

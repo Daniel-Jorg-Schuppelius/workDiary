@@ -16,6 +16,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{Attendance, Organization, User};
+use App\Support\Query\DateRange;
 use App\Support\Toolkit\CsvFacade;
 use App\Support\Tz;
 use Illuminate\Http\{Request, Response};
@@ -59,7 +60,7 @@ class MilogEvidenceExportController extends Controller {
         $byUserDate = [];
         Attendance::query()
             ->whereIn('user_id', $users->pluck('id')->all())
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
             ->whereNotNull('started_at')
             ->whereNotNull('ended_at')

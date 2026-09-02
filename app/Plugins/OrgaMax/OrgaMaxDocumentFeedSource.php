@@ -15,6 +15,7 @@ namespace App\Plugins\OrgaMax;
 use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, SuppressesCoreInvoices};
+use App\Support\Query\DateRange;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -80,7 +81,7 @@ class OrgaMaxDocumentFeedSource implements DocumentFeedSource, SuppressesCoreInv
             ->where('orgamax_invoices.organization_id', $f->organizationId)
             ->where('orgamax_invoices.invoice_type', '!=', 'recurringInvoiceTemplate')
             ->whereNotNull('orgamax_invoices.invoice_date')
-            ->whereBetween('orgamax_invoices.invoice_date', [$f->from->toDateString(), $f->to->toDateString()]);
+            ->whereBetween('orgamax_invoices.invoice_date', DateRange::days($f->from, $f->to));
     }
 
     /** Dieselbe Dublettenregel wie beim Lexoffice-Spiegel (MVP-670): extern führt. */

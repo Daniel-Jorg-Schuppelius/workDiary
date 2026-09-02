@@ -14,6 +14,7 @@ namespace App\Services\Finance\Gdpdu;
 
 use App\Enums\Expense\ExpenseStatus;
 use App\Models\{Expense, Organization};
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 
 /**
@@ -54,7 +55,7 @@ class ExpensesSection extends AbstractGdpduSection {
     public function rows(Organization $organization, CarbonInterface $from, CarbonInterface $to): iterable {
         foreach (Expense::query()
             ->where('organization_id', $organization->id)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->whereIn('status', [ExpenseStatus::Approved->value, ExpenseStatus::Reimbursed->value, ExpenseStatus::Invoiced->value])
             ->with('category:id,label')
             ->orderBy('date')->orderBy('id')

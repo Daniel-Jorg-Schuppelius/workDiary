@@ -14,6 +14,7 @@ use App\Enums\Finance\{TransferChannel, TransferStatus, TransferTarget};
 use App\Models\{Customer, ExternalReference, MaterialUsage, TimeEntry, User};
 use App\Models\Finance\{BillingTransfer, BillingTransferEvent, BillingTransferItem};
 use App\Services\Concerns\ResolvesActorId;
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\{Carbon, Collection};
@@ -466,7 +467,7 @@ class BillingTransferService {
             $query->where('date', '>=', Carbon::parse($period['from'])->toDateString());
         }
         if (! empty($period['to'])) {
-            $query->where('date', '<=', Carbon::parse($period['to'])->toDateString());
+            $query->where('date', '<', DateRange::dayAfter(Carbon::parse($period['to'])));
         }
         if ($sourceIds !== null) {
             $query->whereIn('id', $sourceIds);
@@ -506,7 +507,7 @@ class BillingTransferService {
                     $q->where('work_date', '>=', Carbon::parse($period['from'])->toDateString());
                 }
                 if (! empty($period['to'])) {
-                    $q->where('work_date', '<=', Carbon::parse($period['to'])->toDateString());
+                    $q->where('work_date', '<', DateRange::dayAfter(Carbon::parse($period['to'])));
                 }
             });
 

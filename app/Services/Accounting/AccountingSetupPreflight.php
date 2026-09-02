@@ -79,7 +79,7 @@ class AccountingSetupPreflight {
     private function checkFiscalYear(Organization $organization, CarbonImmutable $startsOn): AccountingPreflightCheck {
         $year = AccountingFiscalYear::query()
             ->where('organization_id', $organization->id)
-            ->where('starts_on', '<=', DateRange::day($startsOn))
+            ->where('starts_on', '<', DateRange::dayAfter($startsOn))
             ->where('ends_on', '>=', DateRange::day($startsOn))
             ->withCount('periods')
             ->first();

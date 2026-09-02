@@ -14,6 +14,7 @@ use App\Enums\Numbering\NumberScope;
 use App\Models\{Customer, ForeignCustomer, Invoice, MaterialUsage, Project, TimeEntry};
 use App\Services\Finance\{BillingModeLockedException, BillingModeResolver};
 use App\Services\Numbering\NumberSequenceService;
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
@@ -176,7 +177,7 @@ class InvoiceGenerator {
             $query->where('date', '>=', Carbon::parse($range['from'])->toDateString());
         }
         if (! empty($range['to'])) {
-            $query->where('date', '<=', Carbon::parse($range['to'])->toDateString());
+            $query->where('date', '<', DateRange::dayAfter(Carbon::parse($range['to'])));
         }
 
         return $query
@@ -356,7 +357,7 @@ class InvoiceGenerator {
                         $q->where('work_date', '>=', Carbon::parse($range['from'])->toDateString());
                     }
                     if (! empty($range['to'])) {
-                        $q->where('work_date', '<=', Carbon::parse($range['to'])->toDateString());
+                        $q->where('work_date', '<', DateRange::dayAfter(Carbon::parse($range['to'])));
                     }
                 })
                 ->with([

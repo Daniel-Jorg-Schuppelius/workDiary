@@ -15,6 +15,7 @@ namespace App\Services\Compliance;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Models\{Attendance, Organization, TravelLog, User, Vehicle};
 use App\Services\HolidayService;
+use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
@@ -56,7 +57,7 @@ final class ComplianceScanService {
         /** @var Collection<int, Attendance> $attendances */
         $attendances = Attendance::query()
             ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$loadFrom->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($loadFrom, $to))
             ->whereNotIn('status', [AttendanceStatus::Cancelled->value, AttendanceStatus::Open->value])
             ->whereNotNull('started_at')
             ->whereNotNull('ended_at')
@@ -151,7 +152,7 @@ final class ComplianceScanService {
             ->whereIn('vehicle_id', $vehicleIds)
             ->whereNotNull('started_at')
             ->whereNotNull('ended_at')
-            ->whereBetween('date', [$loadFrom->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($loadFrom, $to))
             ->effective()
             ->orderBy('started_at')
             ->get(['id', 'user_id', 'started_at', 'ended_at'])

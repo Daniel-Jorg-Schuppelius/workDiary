@@ -52,6 +52,8 @@ class WeatherWarning extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'forecast_date' => 'date',
+        'value' => 'decimal:2',
+        'limit_value' => 'decimal:2',
         'threshold' => WeatherWarningThreshold::class,
         'forecast' => 'array',
     ];

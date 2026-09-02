@@ -13,6 +13,7 @@ namespace App\Services\TimeApproval;
 use App\Enums\Attendance\AttendanceStatus;
 use App\Models\{Attendance, User};
 use App\Services\Flextime\FlexCalculator;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
@@ -104,7 +105,7 @@ class MonthTotalsSnapshotter {
         // Strukturelle Tageszählungen aus Attendance-Status.
         $attendances = Attendance::query()
             ->where('user_id', $user->id)
-            ->whereBetween('date', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($start, $end))
             ->get(['date', 'status', 'duration_minutes']);
 
         $datesWithAttendance = [];

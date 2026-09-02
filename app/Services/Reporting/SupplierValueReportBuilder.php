@@ -13,6 +13,7 @@ namespace App\Services\Reporting;
 use App\Models\{LexofficeVoucher, Supplier};
 use App\Support\Billing\VoucherTypes;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -171,7 +172,7 @@ class SupplierValueReportBuilder {
             ->whereIn('supplier_id', $supplierIds)
             ->where('archived', false)
             ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('voucher_date', DateRange::days($from, $to))
             ->whereIn('voucher_type', self::EXPENSE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->get(['supplier_id', 'voucher_type', 'voucher_date', 'total_amount'])
@@ -211,7 +212,7 @@ class SupplierValueReportBuilder {
             ->whereNotNull('supplier_id')
             ->where('archived', false)
             ->whereNotNull('voucher_date')
-            ->whereBetween('voucher_date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('voucher_date', DateRange::days($from, $to))
             ->whereIn('voucher_type', self::EXPENSE_TYPES)
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->get(['supplier_id', 'voucher_type', 'voucher_date', 'total_amount'])

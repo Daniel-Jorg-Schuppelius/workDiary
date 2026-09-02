@@ -16,6 +16,7 @@ use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection, MarksLinkedExpenses, SuppressesCoreInvoices};
 use App\Support\Billing\VoucherTypes;
+use App\Support\Query\DateRange;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -103,7 +104,7 @@ class LexofficeDocumentFeedSource implements DocumentFeedSource, MarksLinkedExpe
             ]))
             ->where('lexoffice_vouchers.organization_id', $f->organizationId)
             ->whereNotNull('lexoffice_vouchers.voucher_date')
-            ->whereBetween('lexoffice_vouchers.voucher_date', [$f->from->toDateString(), $f->to->toDateString()]);
+            ->whereBetween('lexoffice_vouchers.voucher_date', DateRange::days($f->from, $f->to));
     }
 
     /**

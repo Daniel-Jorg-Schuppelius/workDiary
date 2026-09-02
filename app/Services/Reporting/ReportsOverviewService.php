@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reporting;
 
 use App\Models\{Project, TimeEntry, User};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -41,7 +42,7 @@ final class ReportsOverviewService {
         /** @var Collection<int, TimeEntry> $entries */
         $entries = TimeEntry::query()
             ->where('user_id', $user->id)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->get(['date', 'minutes', 'project_id']);
 
         $totalMinutes = (int) $entries->sum('minutes');

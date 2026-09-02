@@ -11,6 +11,7 @@
 namespace App\Services\Reporting;
 
 use App\Models\{Invoice, TimeEntry, User};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -51,7 +52,7 @@ class UtilizationReportBuilder {
         $billableByUserMonth = [];
         if ($userIds !== []) {
             TimeEntry::query()
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->whereBetween('date', DateRange::days($from, $to))
                 ->whereIn('user_id', $userIds)
                 ->where('billable', true)
                 ->get(['user_id', 'date', 'minutes'])
@@ -68,7 +69,7 @@ class UtilizationReportBuilder {
         $invoicedByUser = [];
         if ($hasInvoiceData && $userIds !== []) {
             TimeEntry::query()
-                ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+                ->whereBetween('date', DateRange::days($from, $to))
                 ->whereIn('user_id', $userIds)
                 ->whereIn('id', DB::table('invoice_item_time_entries')->select('time_entry_id'))
                 ->get(['user_id', 'minutes'])

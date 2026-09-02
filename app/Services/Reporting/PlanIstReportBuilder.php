@@ -12,6 +12,7 @@ namespace App\Services\Reporting;
 
 use App\Models\{Attendance, DiaryEntry, Project, ScheduledShift, Site, TimeEntry, User, WorkSchedule};
 use App\Models\Location\LocationVisit;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -65,7 +66,7 @@ class PlanIstReportBuilder {
             ->where('user_id', $user->id)
             ->where('organization_id', $user->organization_id)
             ->where(function ($q) use ($to) {
-                $q->whereNull('valid_from')->orWhere('valid_from', '<=', $to->toDateString());
+                $q->whereNull('valid_from')->orWhere('valid_from', '<', DateRange::dayAfter($to));
             })
             ->where(function ($q) use ($from) {
                 $q->whereNull('valid_to')->orWhere('valid_to', '>=', $from->toDateString());

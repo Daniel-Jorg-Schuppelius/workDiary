@@ -15,6 +15,7 @@ namespace App\Http\Controllers;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{DutyPlan, EmergencyAssignment, OnCallShift, ScheduledShift, ShiftType, User, Vacation};
 use App\Services\HolidayService;
+use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonPeriod};
 use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Http\Request;
@@ -170,7 +171,7 @@ class PrintController extends Controller {
         $shifts = ScheduledShift::query()
             ->with('shiftType')
             ->where('user_id', $user->id)
-            ->whereBetween('date', [$month->toDateString(), $end->toDateString()])
+            ->whereBetween('date', DateRange::days($month, $end))
             ->orderBy('date')
             ->orderBy('start_time')
             ->get();
@@ -178,7 +179,7 @@ class PrintController extends Controller {
         $vacations = Vacation::query()
             ->where('user_id', $user->id)
             ->where('end_date', '>=', $month->toDateString())
-            ->where('start_date', '<=', $end->toDateString())
+            ->where('start_date', '<', DateRange::dayAfter($end))
             ->get();
 
         return view('print.duty_plan_a4_user_month', [
@@ -307,7 +308,7 @@ class PrintController extends Controller {
         $vacations = Vacation::query()
             ->with('user:id,name')
             ->where('end_date', '>=', $from->toDateString())
-            ->where('start_date', '<=', $to->toDateString())
+            ->where('start_date', '<', DateRange::dayAfter($to))
             ->whereIn('status', [VacationStatus::Approved->value, VacationStatus::Pending->value])
             ->orderBy('start_date')
             ->get();

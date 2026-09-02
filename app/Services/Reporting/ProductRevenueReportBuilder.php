@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reporting;
 
 use App\Models\{Invoice, InvoiceItem};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
@@ -44,7 +45,7 @@ class ProductRevenueReportBuilder {
         $aggregates = InvoiceItem::query()
             ->join('invoices', 'invoices.id', '=', 'invoice_items.invoice_id')
             ->leftJoin('articles', 'articles.id', '=', 'invoice_items.article_id')
-            ->whereBetween('invoices.issued_on', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('invoices.issued_on', DateRange::days($from, $to))
             ->whereIn('invoices.status', self::STATUSES)
             ->whereIn('invoices.type', self::TYPES)
             ->groupBy('invoice_items.article_id', 'articles.number', 'articles.name', 'articles.base_unit')

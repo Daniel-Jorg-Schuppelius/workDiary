@@ -19,6 +19,7 @@ use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\SevDesk\SevDeskPlugin;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, FeedProjection};
+use App\Support\Query\DateRange;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -124,6 +125,6 @@ class AccountingVoucherSource implements DocumentFeedSource {
             ->where('accounting_vouchers.organization_id', $f->organizationId)
             ->whereIn('accounting_vouchers.plugin_id', array_keys($origins))
             ->whereNotNull('accounting_vouchers.voucher_date')
-            ->whereBetween('accounting_vouchers.voucher_date', [$f->from->toDateString(), $f->to->toDateString()]);
+            ->whereBetween('accounting_vouchers.voucher_date', DateRange::days($f->from, $f->to));
     }
 }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Models\{ExternalReference, IntegrationInboxItem, Organization, TimeEntry};
+use App\Support\Query\DateRange;
 
 /**
  * Erkennt Zeiteinträge, die im Fremdsystem verschwunden sind — der Gegenpart
@@ -39,7 +40,7 @@ trait ReconcilesRemoteDeletions {
             ->whereNotIn('external_id', $seenKeys)
             ->whereIn('referenceable_id', TimeEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
-                ->whereBetween('date', [$window->from->toDateString(), $window->to->toDateString()])
+                ->whereBetween('date', DateRange::days($window->from, $window->to))
                 ->select('id'))
             ->get();
 

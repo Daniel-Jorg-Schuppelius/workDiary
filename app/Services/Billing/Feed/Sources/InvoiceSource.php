@@ -16,6 +16,7 @@ use App\Enums\Billing\{DocumentDirection, DocumentKind, DocumentOrigin};
 use App\Models\Invoice;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, DocumentFeedSourceRegistry, FeedProjection};
+use App\Support\Query\DateRange;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
@@ -85,7 +86,7 @@ class InvoiceSource implements DocumentFeedSource {
                 'invoices.currency AS currency',
             ]))
             ->where('invoices.organization_id', $f->organizationId)
-            ->whereBetween(DB::raw('COALESCE(invoices.issued_on, DATE(invoices.created_at))'), [$f->from->toDateString(), $f->to->toDateString()]);
+            ->whereBetween(DB::raw('COALESCE(invoices.issued_on, DATE(invoices.created_at))'), DateRange::days($f->from, $f->to));
 
         $this->registry->suppressCoreInvoices($query);
 

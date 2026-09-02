@@ -45,7 +45,7 @@ class TaxationMethodResolver {
 
         return AccountingTaxationPeriod::query()
             ->where('organization_id', $organization->id)
-            ->where('valid_from', '<=', DateRange::day($day))
+            ->where('valid_from', '<', DateRange::dayAfter($day))
             ->where(function ($query) use ($day): void {
                 $query->whereNull('valid_to')->orWhere('valid_to', '>=', DateRange::day($day));
             })
@@ -79,7 +79,7 @@ class TaxationMethodResolver {
 
         $later = AccountingTaxationPeriod::query()
             ->where('organization_id', $organization->id)
-            ->where('valid_from', '>', DateRange::day($from))
+            ->where('valid_from', '>=', DateRange::dayAfter($from))
             ->orderBy('valid_from')
             ->first();
 
@@ -96,7 +96,8 @@ class TaxationMethodResolver {
         return DB::transaction(function () use ($organization, $method, $from, $actor, $reason, $changeover): AccountingTaxationPeriod {
             AccountingTaxationPeriod::query()
                 ->where('organization_id', $organization->id)
-                ->where('valid_from', '=', DateRange::day($from))
+                ->where('valid_from', '>=', DateRange::day($from))
+                ->where('valid_from', '<', DateRange::dayAfter($from))
                 ->delete();
 
             AccountingTaxationPeriod::query()

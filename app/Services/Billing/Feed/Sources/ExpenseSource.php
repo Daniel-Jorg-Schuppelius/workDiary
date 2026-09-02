@@ -17,6 +17,7 @@ use App\Enums\Expense\ExpenseStatus;
 use App\Models\Expense;
 use App\Services\Billing\DocumentFeedFilters;
 use App\Services\Billing\Feed\{DocumentFeedSource, DocumentFeedSourceRegistry, FeedProjection};
+use App\Support\Query\DateRange;
 use Illuminate\Database\Query\{Builder, JoinClause};
 use Illuminate\Support\Facades\DB;
 
@@ -103,7 +104,7 @@ class ExpenseSource implements DocumentFeedSource {
                 'expenses.currency AS currency',
             ]))
             ->where('expenses.organization_id', $f->organizationId)
-            ->whereBetween('expenses.date', [$f->from->toDateString(), $f->to->toDateString()]);
+            ->whereBetween('expenses.date', DateRange::days($f->from, $f->to));
 
         if (! $f->allExpenses) {
             $query->where('expenses.user_id', $f->userId);

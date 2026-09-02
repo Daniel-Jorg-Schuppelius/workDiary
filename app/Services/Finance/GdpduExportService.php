@@ -34,6 +34,7 @@ use App\Services\Finance\Gdpdu\{
     PaymentAllocationsSection,
     TimeEntriesSection,
 };
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use CommonToolkit\Builders\{CSVDocumentBuilder, XmlDocumentBuilder};
 use CommonToolkit\Entities\CSV\DataLine;
@@ -157,7 +158,7 @@ class GdpduExportService {
         $warnings = [];
         $drafts = Invoice::query()
             ->where('organization_id', $organization->id)
-            ->whereBetween('issued_on', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('issued_on', DateRange::days($from, $to))
             ->where('status', 'draft')
             ->count();
         if ($drafts > 0) {
@@ -172,7 +173,7 @@ class GdpduExportService {
         $draftBatches = DatevBookingBatch::query()
             ->where('organization_id', $organization->id)
             ->where('status', DatevBatchStatus::Draft->value)
-            ->where('period_from', '<=', $to->toDateString())
+            ->where('period_from', '<', DateRange::dayAfter($to))
             ->where('period_to', '>=', $from->toDateString())
             ->count();
         if ($draftBatches > 0) {

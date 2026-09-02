@@ -90,10 +90,11 @@ RUN set -eux; \
 # ext-libxml: erechnung-toolkit) + Laravel/DB-Treiber (pdo_mysql, pdo_pgsql;
 # pdo_sqlite/sodium/mbstring/dom/curl/fileinfo sind im Basis-Image enthalten).
 # pcntl: queue:work-Signale (SIGTERM-Graceful), exif: Bild-Orientierung,
-# redis: Profil „redis" in compose.yml, inotify: optional (integrity:watch).
+# redis: Profil „redis" in compose.yml, inotify: optional (integrity:watch),
+# ftp: league/flysystem-ftp (FTP-Backupziele) verlangt ext-ftp im Lock-Check.
 COPY --from=mlocati/php-extension-installer:latest /usr/bin/install-php-extensions /usr/local/bin/
 RUN set -eux; \
-    install-php-extensions pdo_mysql pdo_pgsql intl gd zip bcmath opcache pcntl exif redis; \
+    install-php-extensions pdo_mysql pdo_pgsql intl gd zip bcmath opcache pcntl exif redis ftp; \
     if [ "$WD_WITH_INOTIFY" = "1" ]; then install-php-extensions inotify; fi
 
 COPY deploy/docker/php.ini /usr/local/etc/php/conf.d/zz-workdiary.ini

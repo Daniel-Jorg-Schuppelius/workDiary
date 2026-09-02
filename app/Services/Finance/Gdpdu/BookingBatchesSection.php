@@ -15,6 +15,7 @@ namespace App\Services\Finance\Gdpdu;
 use App\Enums\Finance\DatevBatchStatus;
 use App\Models\Finance\DatevBookingBatch;
 use App\Models\Organization;
+use App\Support\Query\DateRange;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Builder;
 
@@ -59,7 +60,7 @@ class BookingBatchesSection extends AbstractGdpduSection {
         return DatevBookingBatch::query()
             ->where('organization_id', $organization->id)
             ->where('status', DatevBatchStatus::Exported->value)
-            ->where('period_from', '<=', $to->toDateString())
+            ->where('period_from', '<', DateRange::dayAfter($to))
             ->where('period_to', '>=', $from->toDateString())
             ->orderBy('batch_no')->orderBy('id');
     }

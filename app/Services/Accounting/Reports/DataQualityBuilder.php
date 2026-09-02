@@ -53,7 +53,7 @@ class DataQualityBuilder extends AbstractAccountingReportBuilder {
         $openExpectations = AccountingRecurringRun::query()
             ->where('organization_id', $organization->id)
             ->where('status', RecurringRunStatus::Expected->value)
-            ->where('due_on', '<=', DateRange::day($to))
+            ->where('due_on', '<', DateRange::dayAfter($to))
             ->count();
 
         $tenDayCases = $this->tenDayRuleCases($organization, $from, $to);

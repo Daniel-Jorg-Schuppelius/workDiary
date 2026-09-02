@@ -16,6 +16,7 @@ use App\Casts\PercentageCast;
 use App\Enums\Sales\CommissionScope;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\User;
+use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Percentage;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -98,7 +99,7 @@ class CommissionRule extends Model {
     public function scopeValidOn(Builder $query, Carbon $date): Builder {
         return $query->where('is_active', true)
             ->where(function (Builder $q) use ($date): void {
-                $q->whereNull('valid_from')->orWhere('valid_from', '<=', $date->toDateString());
+                $q->whereNull('valid_from')->orWhere('valid_from', '<', DateRange::dayAfter($date));
             })
             ->where(function (Builder $q) use ($date): void {
                 $q->whereNull('valid_to')->orWhere('valid_to', '>=', $date->toDateString());

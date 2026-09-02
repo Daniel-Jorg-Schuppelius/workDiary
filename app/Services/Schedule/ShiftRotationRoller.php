@@ -15,6 +15,7 @@ namespace App\Services\Schedule;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{OnCallShift, Organization, ScheduledShift, ShiftRotationAssignment, SickLeave, Vacation};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 
 /**
@@ -50,7 +51,7 @@ final class ShiftRotationRoller {
         $occupied = [];
         ScheduledShift::query()
             ->whereIn('user_id', $userIds)
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->get(['user_id', 'date'])
             ->each(function (ScheduledShift $s) use (&$occupied): void {

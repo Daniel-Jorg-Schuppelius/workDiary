@@ -21,6 +21,7 @@ use App\Services\CustomerStatsService;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Stammdaten\IdentifierIssueDetector;
 use App\Services\Timeline\DiaryEntryTimelineService;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Gate};
@@ -74,11 +75,11 @@ class CustomerDetailAssembler {
         $rangeTo = $globalRange['to']->endOfDay();
         $rangeMinutes = (int) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
-            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->whereBetween('date', DateRange::days($rangeFrom, $rangeTo))
             ->sum('minutes');
         $rangeRate = (float) TimeEntry::query()
             ->whereIn('project_id', $projectIds)
-            ->whereBetween('date', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->whereBetween('date', DateRange::days($rangeFrom, $rangeTo))
             ->sum('rate');
 
         $lexoffice = $this->plugins->withCapability(PluginCapability::TimeExport)->get(LexofficePlugin::ID);
@@ -146,7 +147,7 @@ class CustomerDetailAssembler {
             ->limit(100)
             ->get();
         $materialRange = (float) $customer->materialCostAllocations()
-            ->whereBetween('allocated_on', [$rangeFrom->toDateString(), $rangeTo->toDateString()])
+            ->whereBetween('allocated_on', DateRange::days($rangeFrom, $rangeTo))
             ->get()
             ->sum(static fn(MaterialCostAllocation $a): float => $a->allocated_amount?->toFloat() ?? 0.0);
         $profitRange = $invoicedRange - $materialRange;

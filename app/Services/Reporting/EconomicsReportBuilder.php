@@ -15,6 +15,7 @@ use App\Models\{BillOfQuantity, BoqItem, BoqItemMapping, BoqItemProgress, Custom
 use App\Services\Gaeb\BoqCalculationDataService;
 use App\Services\Travel\TravelChargeService;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -518,7 +519,7 @@ class EconomicsReportBuilder {
     public function timeByMonth(CarbonImmutable $from, CarbonImmutable $to, string $unit, ?int $customerId = null, ?int $projectId = null, array $excludedCustomerIds = []): array {
         /** @var Collection<int, TimeEntry> $entries */
         $entries = TimeEntry::query()
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->when($projectId !== null, fn($q) => $q->where('project_id', $projectId))
             ->when($projectId === null && $customerId !== null, fn($q) => $q->whereIn(
                 'project_id',

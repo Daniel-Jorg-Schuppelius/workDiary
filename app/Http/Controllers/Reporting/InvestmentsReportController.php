@@ -21,6 +21,7 @@ use App\Models\User;
 use App\Services\Investments\InvestmentService;
 use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
@@ -118,7 +119,7 @@ class InvestmentsReportController extends Controller {
     private function monthlyActualSeries(CarbonImmutable $from, CarbonImmutable $to, ReportFilters $filters): array {
         $granularity = $this->bucketGranularity($from, $to);
         $actuals = InvestmentActual::query()
-            ->whereBetween('occurred_on', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('occurred_on', DateRange::days($from, $to))
             ->when($filters->status !== null, fn($q) => $q->whereHas('investmentCase', fn($c) => $c->where('status', $filters->status)))
             ->get(['amount', 'occurred_on']);
 

@@ -15,6 +15,7 @@ use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, OpenIssue, PerDiemTrip, ScheduledShift, User, Vacation};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use App\Support\Query\DateRange;
 use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -294,7 +295,7 @@ class DashboardService {
             $expenseAggregates = Expense::query()
                 ->where('user_id', $user->id)
                 ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
-                ->whereBetween('date', [$monthStart->toDateString(), $monthEnd->toDateString()])
+                ->whereBetween('date', DateRange::days($monthStart, $monthEnd))
                 ->selectRaw('
                     COALESCE(SUM(CASE WHEN status IN (?, ?, ?) THEN amount_gross ELSE 0 END), 0) AS submitted_gross,
                     COALESCE(SUM(CASE WHEN status = ? THEN amount_gross ELSE 0 END), 0) AS reimbursed_gross,

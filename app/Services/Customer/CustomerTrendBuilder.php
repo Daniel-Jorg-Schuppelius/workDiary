@@ -11,6 +11,7 @@
 namespace App\Services\Customer;
 
 use App\Models\{Customer, Invoice, LexofficeVoucher, TimeEntry, User};
+use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\{DB, Gate};
 
@@ -59,7 +60,7 @@ class CustomerTrendBuilder {
             /** @var iterable<int, object{y: int|string, m: int|string, mins: int|string, billable_mins: int|string}> $rows */
             $rows = TimeEntry::query()
                 ->whereIn('project_id', $projectIds)
-                ->whereBetween('date', [$prevStart->toDateString(), $end->toDateString()])
+                ->whereBetween('date', DateRange::days($prevStart, $end))
                 ->toBase()
                 ->selectRaw("{$yearExpr} as y, {$monthExpr} as m, COALESCE(SUM(minutes), 0) as mins, COALESCE(SUM(CASE WHEN billable = 1 THEN minutes ELSE 0 END), 0) as billable_mins")
                 ->groupBy('y', 'm')
@@ -106,7 +107,7 @@ class CustomerTrendBuilder {
                 ->where('customer_id', $customer->getKey())
                 ->whereIn('type', self::INVOICE_TYPES)
                 ->whereNotIn('status', self::VOID_STATUSES)
-                ->whereBetween('issued_on', [$prevStart->toDateString(), $end->toDateString()])
+                ->whereBetween('issued_on', DateRange::days($prevStart, $end))
                 ->toBase()
                 ->selectRaw("{$yearExpr} as y, {$monthExpr} as m, COALESCE(SUM(total), 0) as amount")
                 ->groupBy('y', 'm')
@@ -126,7 +127,7 @@ class CustomerTrendBuilder {
         [$yearExpr, $monthExpr] = $this->yearMonthExprs('allocated_on');
         /** @var iterable<int, object{y: int|string, m: int|string, amount: float|int|string}> $materialRows */
         $materialRows = $customer->materialCostAllocations()
-            ->whereBetween('allocated_on', [$start->toDateString(), $end->toDateString()])
+            ->whereBetween('allocated_on', DateRange::days($start, $end))
             ->toBase()
             ->selectRaw("{$yearExpr} as y, {$monthExpr} as m, COALESCE(SUM(allocated_amount), 0) as amount")
             ->groupBy('y', 'm')

@@ -72,4 +72,18 @@ class LegacyBridge {
     public static function makeAuthProvider(Hasher $hasher): UserProvider {
         return new LegacyUserProvider($hasher);
     }
+
+    /**
+     * SSO-Sperre des Providers für die Dauer von `$work` aussetzen (S-41):
+     * der Login-Controller muss das Passwort prüfen dürfen, bevor er über die
+     * SSO-Umleitung entscheidet. Eingeloggt wird dabei nicht.
+     *
+     * @template T
+     *
+     * @param  callable():T  $work
+     * @return T
+     */
+    public static function ignoringSsoEnforcement(callable $work): mixed {
+        return LegacyUserProvider::ignoringSsoEnforcement($work);
+    }
 }

@@ -11,6 +11,7 @@
 namespace App\Models;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Support\Query\DateRange;
 use Carbon\Carbon;
 use Database\Factories\CoverageRequirementFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -122,7 +123,7 @@ class CoverageRequirement extends Model {
     public function scopeForDate(Builder $query, \DateTimeInterface $date): void {
         $weekday = (int) $date->format('w');
         $query->where(function (Builder $q) use ($date, $weekday): void {
-            $q->where('specific_date', $date->format('Y-m-d'))
+            $q->whereBetween('specific_date', DateRange::days($date, $date))
                 ->orWhere(function (Builder $q2) use ($weekday): void {
                     $q2->whereNull('specific_date')->where('weekday', $weekday);
                 });

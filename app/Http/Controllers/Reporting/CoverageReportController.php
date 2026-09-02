@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportScope, ResolvesStandardReportFilters, WritesReportCsv};
 use App\Models\{CoverageRequirement, ScheduledShift, ShiftType};
+use App\Support\Query\DateRange;
 use Carbon\{Carbon, CarbonImmutable, CarbonPeriod};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Collection;
@@ -192,7 +193,7 @@ class CoverageReportController extends Controller {
         /** @var array<string, int> $scheduledByKey */
         $scheduledByKey = [];
         ScheduledShift::query()
-            ->whereBetween('date', [$from->toDateString(), $to->toDateString()])
+            ->whereBetween('date', DateRange::days($from, $to))
             ->where('status', '!=', ScheduledShiftStatus::Cancelled->value)
             ->whereNotNull('shift_type_id')
             ->when($teamUserIds !== [], fn ($q) => $q->whereIn('user_id', $teamUserIds))

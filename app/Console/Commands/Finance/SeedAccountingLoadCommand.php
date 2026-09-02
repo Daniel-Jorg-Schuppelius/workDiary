@@ -124,7 +124,7 @@ class SeedAccountingLoadCommand extends Command {
             $from = $start->addYears($i);
             $exists = AccountingFiscalYear::query()
                 ->where('organization_id', $organization->id)
-                ->where('starts_on', DateRange::day($from))
+                ->whereBetween('starts_on', DateRange::days($from, $from))
                 ->exists();
 
             if (! $exists) {
