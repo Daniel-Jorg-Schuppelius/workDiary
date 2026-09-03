@@ -38,6 +38,13 @@ updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # FullCalendar nur im Gleichschritt heben: core 7.x ist erschienen, die
+      # Plugins (daygrid/timegrid/…) gibt es nur als Beta/RC — ein einzelner
+      # core-Major-Bump bricht npm ci am Peer-Konflikt (CI-Rot 2026-09-02).
+      # Regel entfernen, sobald alle @fullcalendar-Pakete stabil auf 7.x sind.
+      - dependency-name: "@fullcalendar/*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "github-actions"
     directory: "/"
