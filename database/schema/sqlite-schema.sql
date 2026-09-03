@@ -18721,6 +18721,26 @@ CREATE INDEX "reselling_runs_org_created_idx" on "reselling_reconciliation_runs"
   "organization_id",
   "created_at"
 );
+CREATE TABLE IF NOT EXISTS "reselling_company_mappings"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "company_key" varchar,
+  "company_name" varchar not null,
+  "normalized_name" varchar not null,
+  "mode" varchar not null,
+  "customer_id" integer,
+  "contact_external_id" varchar,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("customer_id") references "customers"("id") on delete set null,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "reselling_map_org_name_uq" on "reselling_company_mappings"(
+  "organization_id",
+  "normalized_name"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -19505,3 +19525,4 @@ INSERT INTO migrations VALUES(780,'2027_02_19_111000_hash_serial_passport_token'
 INSERT INTO migrations VALUES(781,'2027_02_19_111100_add_options_to_backup_target_connections',1);
 INSERT INTO migrations VALUES(782,'2027_02_19_111200_add_center_columns_to_help_topics',1);
 INSERT INTO migrations VALUES(783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',2);
+INSERT INTO migrations VALUES(784,'2027_02_19_111400_create_reselling_company_mappings_table',3);

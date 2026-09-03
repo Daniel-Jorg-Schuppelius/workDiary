@@ -21,6 +21,9 @@ return [
         'download' => 'CSV',
         'delete' => 'Supprimer',
         'refresh' => 'Actualiser',
+        'assign' => 'Affecter',
+        'rerun' => 'Recalculer',
+        'remove_mapping' => 'Supprimer l’affectation',
         'back' => 'Retour à la vue d’ensemble',
     ],
     'dialog' => [
@@ -49,6 +52,8 @@ return [
         'product' => 'Produit', 'term' => 'Durée', 'running' => 'Unités en cours', 'contract_price' => 'Achat (contrat)', 'list_price' => 'Achat (liste)',
         'uvp' => 'Prix conseillé', 'sales' => 'Vente (médiane, nombre)', 'sales_range' => 'Vente min – max', 'margin' => 'Marge vs liste',
         'telekom_from' => 'Telekom à partir de', 'telekom_to' => 'Telekom jusqu’au', 'successor' => 'Contrat QH', 'successor_from' => 'QH à partir de',
+        'billed_via' => 'Facturé via un partenaire (client tiers)',
+        'stored_mapping' => 'Affectation enregistrée',
         'valid_from' => 'Liste de prix valable à partir du',
     ],
     'status' => [
@@ -71,17 +76,41 @@ return [
         'below_list' => 'sous le prix d’achat', 'below_uvp' => 'sous le prix conseillé', 'contract_above_list' => 'contrat plus cher que la liste', 'no_sales' => 'aucune donnée de facture', 'no_list' => 'absent de la liste de prix',
     ],
     'flash' => [
+        'mapping_saved' => 'Affectation enregistrée. « Recalculer » l’applique au rapport.', 'mapping_removed' => 'Affectation supprimée.', 'rerun' => 'L’exécution est recalculée.',
         'created' => 'Exécution démarrée. Le rapport apparaîtra ici une fois Lexoffice lu.', 'deleted' => 'Exécution supprimée.', 'not_done' => 'L’exécution n’est pas encore terminée.',
     ],
     'validation' => [
+        'customer_required' => 'Veuillez choisir un client.', 'contact_required' => 'Veuillez indiquer l’UUID d’un contact Lexoffice.',
         'need_file' => 'Au moins un fichier d’export (Telekom ou Quality Hosting) est requis.',
     ],
     'hint' => [
         'run_pending' => 'L’exécution n’est pas encore terminée. Actualisez la page pour voir le rapport.', 'run_failed' => 'L’exécution a échoué.', 'unmapped' => 'Les sociétés sans affectation peuvent être résolues avec un fichier d’affectation lors de la prochaine exécution.', 'extras' => 'Facturé sans abonnement en cours, ou édition non reconnue par le rapprochement.',
+        'mapping' => 'Avec « Affecter », vous définissez par société qui reçoit la facture : la société elle-même, un partenaire ou un contact Lexoffice. Les affectations enregistrées priment sur la détection automatique.',
+        'foreign' => 'Les clients finaux d’un partenaire (clients tiers) sont vérifiés via le partenaire : la facture va au partenaire, qui la répercute. Créez les clients tiers sous le client partenaire, ou ajoutez « Société;partner:<nom ou Sqid> » au fichier d’affectation.',
         'succession' => 'La durée Telekom a été coupée au début du contrat Quality Hosting ; sinon chaque migration compterait deux fois.', 'price' => 'Les prix de vente proviennent des lignes de facture affectées ; le prix d’achat de liste et le prix conseillé de la liste de prix pour la même durée et le même rythme.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',
+    ],
+    'mapping' => [
+        'title' => 'Affecter la société',
+        'submit' => 'Enregistrer l’affectation',
+        'hint' => 'L’affectation s’applique à toutes les exécutions futures de cette organisation. Utilisez ensuite « Recalculer » pour qu’elle apparaisse dans le rapport.',
+        'mode_label' => 'Facturation',
+        'mode' => [
+            'customer' => 'Directement : la société est le client',
+            'partner' => 'Via un partenaire (client tiers)',
+            'contact' => 'Contact Lexoffice',
+        ],
+        'mode_hint' => [
+            'customer' => 'La facture est adressée à ce client lui-même.',
+            'partner' => 'Le client choisi reçoit la facture et la répercute. La société est créée comme client tiers chez lui si elle manque.',
+            'contact' => 'Sans fiche client : les factures de ce contact Lexoffice sont vérifiées.',
+        ],
+        'customer' => 'Client ou partenaire',
+        'customer_placeholder' => 'Choisir un client',
+        'contact' => 'UUID du contact Lexoffice',
+        'contact_hint' => 'Nécessaire seulement pour « Contact Lexoffice » ; figure dans l’URL Lexoffice du contact.',
     ],
     'months' => 'mois',
 ];

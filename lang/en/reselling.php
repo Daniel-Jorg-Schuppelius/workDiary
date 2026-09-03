@@ -21,6 +21,9 @@ return [
         'download' => 'CSV',
         'delete' => 'Delete',
         'refresh' => 'Refresh',
+        'assign' => 'Map',
+        'rerun' => 'Recalculate',
+        'remove_mapping' => 'Remove mapping',
         'back' => 'Back to overview',
     ],
     'dialog' => [
@@ -49,6 +52,8 @@ return [
         'product' => 'Product', 'term' => 'Term', 'running' => 'Units running', 'contract_price' => 'Purchase (contract)', 'list_price' => 'Purchase (list)',
         'uvp' => 'RRP', 'sales' => 'Sales (median, count)', 'sales_range' => 'Sales min – max', 'margin' => 'Margin vs. list',
         'telekom_from' => 'Telekom from', 'telekom_to' => 'Telekom until', 'successor' => 'QH contract', 'successor_from' => 'QH from',
+        'billed_via' => 'Billed via partner (foreign customer)',
+        'stored_mapping' => 'Stored mapping',
         'valid_from' => 'Price list valid from',
     ],
     'status' => [
@@ -71,17 +76,41 @@ return [
         'below_list' => 'below purchase', 'below_uvp' => 'below RRP', 'contract_above_list' => 'contract above list', 'no_sales' => 'no invoice data', 'no_list' => 'not in price list',
     ],
     'flash' => [
+        'mapping_saved' => 'Mapping saved. Use “Recalculate” to apply it to the report.', 'mapping_removed' => 'Mapping removed.', 'rerun' => 'The run is being recalculated.',
         'created' => 'Run started. The report appears here once Lexoffice has been read.', 'deleted' => 'Run deleted.', 'not_done' => 'The run has not finished yet.',
     ],
     'validation' => [
+        'customer_required' => 'Please select a customer.', 'contact_required' => 'Please enter a Lexoffice contact UUID.',
         'need_file' => 'At least one export file (Telekom or Quality Hosting) is required.',
     ],
     'hint' => [
         'run_pending' => 'The run has not finished yet. Refresh the page to see the report.', 'run_failed' => 'The run failed.', 'unmapped' => 'Companies without a mapping can be resolved with a mapping file on the next run.', 'extras' => 'Invoiced without a running subscription, or an edition the reconciliation does not recognise.',
+        'mapping' => 'Use “Map” to define per company who receives the invoice: the company itself, a partner or a Lexoffice contact. Stored mappings take precedence over automatic detection.',
+        'foreign' => 'End customers of a partner (foreign customers) are checked via the partner: the invoice goes to the partner, who passes it on. Create foreign customers under the partner customer, or add “Company;partner:<name or Sqid>” to the mapping file.',
         'succession' => 'The Telekom term was cut at the Quality Hosting contract start; otherwise every migration would count twice.', 'price' => 'Sales prices come from the matched invoice line items; list purchase price and RRP from the price list for the same term and interval.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',
+    ],
+    'mapping' => [
+        'title' => 'Map company',
+        'submit' => 'Save mapping',
+        'hint' => 'The mapping applies to all future runs of this organisation. Use “Recalculate” afterwards so it takes effect in the report.',
+        'mode_label' => 'Billing',
+        'mode' => [
+            'customer' => 'Directly: the company is the customer',
+            'partner' => 'Via a partner (foreign customer)',
+            'contact' => 'Lexoffice contact',
+        ],
+        'mode_hint' => [
+            'customer' => 'The invoice goes to this customer itself.',
+            'partner' => 'The selected customer receives the invoice and passes it on. The company is created as a foreign customer under it if missing.',
+            'contact' => 'Without master data: the invoices of this Lexoffice contact are checked.',
+        ],
+        'customer' => 'Customer or partner',
+        'customer_placeholder' => 'Select customer',
+        'contact' => 'Lexoffice contact UUID',
+        'contact_hint' => 'Only needed for “Lexoffice contact”; found in the contact\'s Lexoffice URL.',
     ],
     'months' => 'mo.',
 ];

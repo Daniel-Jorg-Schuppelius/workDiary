@@ -21,6 +21,9 @@ return [
         'download' => 'CSV',
         'delete' => 'Löschen',
         'refresh' => 'Aktualisieren',
+        'assign' => 'Zuordnen',
+        'rerun' => 'Neu berechnen',
+        'remove_mapping' => 'Zuordnung entfernen',
         'back' => 'Zur Übersicht',
     ],
     'dialog' => [
@@ -49,6 +52,8 @@ return [
         'product' => 'Produkt', 'term' => 'Laufzeit', 'running' => 'Stück laufend', 'contract_price' => 'Einkauf Vertrag', 'list_price' => 'Einkauf Liste',
         'uvp' => 'UVP', 'sales' => 'Verkauf (Median, Anzahl)', 'sales_range' => 'Verkauf min – max', 'margin' => 'Marge zur Liste',
         'telekom_from' => 'Telekom ab', 'telekom_to' => 'Telekom bis', 'successor' => 'QH-Vertrag', 'successor_from' => 'QH ab',
+        'billed_via' => 'Abrechnung über Partner (Fremdkunde)',
+        'stored_mapping' => 'Gespeicherte Zuordnung',
         'valid_from' => 'Preisliste gültig ab',
     ],
     'status' => [
@@ -71,17 +76,41 @@ return [
         'below_list' => 'unter Einkauf', 'below_uvp' => 'unter UVP', 'contract_above_list' => 'Vertrag teurer als Liste', 'no_sales' => 'keine Rechnungsdaten', 'no_list' => 'nicht in Preisliste',
     ],
     'flash' => [
+        'mapping_saved' => 'Zuordnung gespeichert. Mit „Neu berechnen“ wirkt sie im Bericht.', 'mapping_removed' => 'Zuordnung entfernt.', 'rerun' => 'Lauf wird neu berechnet.',
         'created' => 'Lauf gestartet. Der Bericht erscheint hier, sobald Lexoffice gelesen ist.', 'deleted' => 'Lauf gelöscht.', 'not_done' => 'Der Lauf ist noch nicht fertig.',
     ],
     'validation' => [
+        'customer_required' => 'Bitte einen Kunden wählen.', 'contact_required' => 'Bitte eine Lexoffice-Kontakt-UUID angeben.',
         'need_file' => 'Mindestens eine Exportdatei (Telekom oder Quality Hosting) ist nötig.',
     ],
     'hint' => [
         'run_pending' => 'Der Lauf ist noch nicht fertig. Die Seite zeigt den Bericht nach dem Aktualisieren.', 'run_failed' => 'Der Lauf ist fehlgeschlagen.', 'unmapped' => 'Firmen ohne Zuordnung kannst du über eine Zuordnungsdatei beim nächsten Lauf auflösen.', 'extras' => 'Berechnet ohne laufendes Abo oder eine Edition, die der Abgleich nicht erkennt.',
+        'mapping' => 'Über „Zuordnen“ legst du je Firma fest, wer die Rechnung bekommt: die Firma selbst, ein Partner oder ein Lexoffice-Kontakt. Gespeicherte Zuordnungen gehen der automatischen Erkennung vor.',
+        'foreign' => 'Endkunden eines Partners (Fremdkunden) werden über den Partner geprüft: Die Rechnung geht an den Partner, der sie weiterreicht. Fremdkunden legst du am Partner-Kunden an, oder du trägst in der Zuordnungsdatei „Firma;partner:<Name oder Sqid>“ ein.',
         'succession' => 'Die Telekom-Laufzeit wurde am Vertragsstart bei Quality Hosting gekappt, sonst zählte jede Migration doppelt.', 'price' => 'Verkaufspreise stammen aus den zugeordneten Rechnungspositionen; Einkauf Liste und UVP aus der Preisliste für dieselbe Laufzeit und denselben Rhythmus.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',
+    ],
+    'mapping' => [
+        'title' => 'Firma zuordnen',
+        'submit' => 'Zuordnung speichern',
+        'hint' => 'Die Zuordnung gilt für alle künftigen Läufe dieser Organisation. Danach „Neu berechnen“, damit sie im Bericht wirkt.',
+        'mode_label' => 'Abrechnung',
+        'mode' => [
+            'customer' => 'Direkt: die Firma ist der Kunde',
+            'partner' => 'Über einen Partner (Fremdkunde)',
+            'contact' => 'Lexoffice-Kontakt',
+        ],
+        'mode_hint' => [
+            'customer' => 'Die Rechnung geht an diesen Kunden selbst.',
+            'partner' => 'Der gewählte Kunde bekommt die Rechnung und reicht sie weiter. Die Firma wird als Fremdkunde bei ihm angelegt, falls sie dort noch fehlt.',
+            'contact' => 'Ohne Kundenstamm: die Rechnungen dieses Lexoffice-Kontakts werden geprüft.',
+        ],
+        'customer' => 'Kunde bzw. Partner',
+        'customer_placeholder' => 'Kunde wählen',
+        'contact' => 'Lexoffice-Kontakt-UUID',
+        'contact_hint' => 'Nur bei Abrechnung „Lexoffice-Kontakt“ nötig; steht in der Lexoffice-URL des Kontakts.',
     ],
     'months' => 'Mon.',
 ];

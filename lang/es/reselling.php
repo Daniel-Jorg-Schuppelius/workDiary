@@ -21,6 +21,9 @@ return [
         'download' => 'CSV',
         'delete' => 'Eliminar',
         'refresh' => 'Actualizar',
+        'assign' => 'Asignar',
+        'rerun' => 'Recalcular',
+        'remove_mapping' => 'Quitar asignación',
         'back' => 'Volver al resumen',
     ],
     'dialog' => [
@@ -49,6 +52,8 @@ return [
         'product' => 'Producto', 'term' => 'Duración', 'running' => 'Unidades activas', 'contract_price' => 'Compra (contrato)', 'list_price' => 'Compra (lista)',
         'uvp' => 'PVP recomendado', 'sales' => 'Venta (mediana, número)', 'sales_range' => 'Venta mín – máx', 'margin' => 'Margen vs lista',
         'telekom_from' => 'Telekom desde', 'telekom_to' => 'Telekom hasta', 'successor' => 'Contrato QH', 'successor_from' => 'QH desde',
+        'billed_via' => 'Facturado a través de un socio (cliente externo)',
+        'stored_mapping' => 'Asignación guardada',
         'valid_from' => 'Lista de precios válida desde',
     ],
     'status' => [
@@ -71,17 +76,41 @@ return [
         'below_list' => 'por debajo del coste', 'below_uvp' => 'por debajo del PVP recomendado', 'contract_above_list' => 'contrato más caro que la lista', 'no_sales' => 'sin datos de factura', 'no_list' => 'no está en la lista de precios',
     ],
     'flash' => [
+        'mapping_saved' => 'Asignación guardada. Con «Recalcular» se aplica al informe.', 'mapping_removed' => 'Asignación eliminada.', 'rerun' => 'La ejecución se está recalculando.',
         'created' => 'Ejecución iniciada. El informe aparecerá aquí en cuanto se haya leído Lexoffice.', 'deleted' => 'Ejecución eliminada.', 'not_done' => 'La ejecución aún no ha terminado.',
     ],
     'validation' => [
+        'customer_required' => 'Selecciona un cliente.', 'contact_required' => 'Indica un UUID de contacto Lexoffice.',
         'need_file' => 'Se necesita al menos un archivo de exportación (Telekom o Quality Hosting).',
     ],
     'hint' => [
         'run_pending' => 'La ejecución aún no ha terminado. Actualiza la página para ver el informe.', 'run_failed' => 'La ejecución falló.', 'unmapped' => 'Las empresas sin asignación se pueden resolver con un archivo de asignación en la próxima ejecución.', 'extras' => 'Facturado sin suscripción activa, o una edición que la conciliación no reconoce.',
+        'mapping' => 'Con «Asignar» defines por empresa quién recibe la factura: la propia empresa, un socio o un contacto Lexoffice. Las asignaciones guardadas tienen prioridad sobre la detección automática.',
+        'foreign' => 'Los clientes finales de un socio (clientes externos) se comprueban a través del socio: la factura va al socio, que la traslada. Crea los clientes externos bajo el cliente socio, o añade «Empresa;partner:<nombre o Sqid>» al archivo de asignación.',
         'succession' => 'La duración Telekom se cortó al inicio del contrato de Quality Hosting; de lo contrario cada migración contaría dos veces.', 'price' => 'Los precios de venta proceden de las líneas de factura asignadas; el precio de compra de lista y el PVP recomendado, de la lista de precios para la misma duración y el mismo ritmo.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',
+    ],
+    'mapping' => [
+        'title' => 'Asignar empresa',
+        'submit' => 'Guardar asignación',
+        'hint' => 'La asignación se aplica a todas las ejecuciones futuras de esta organización. Después usa «Recalcular» para que aparezca en el informe.',
+        'mode_label' => 'Facturación',
+        'mode' => [
+            'customer' => 'Directamente: la empresa es el cliente',
+            'partner' => 'A través de un socio (cliente externo)',
+            'contact' => 'Contacto Lexoffice',
+        ],
+        'mode_hint' => [
+            'customer' => 'La factura va a este cliente mismo.',
+            'partner' => 'El cliente elegido recibe la factura y la traslada. La empresa se crea como cliente externo bajo él si falta.',
+            'contact' => 'Sin datos maestros: se comprueban las facturas de este contacto Lexoffice.',
+        ],
+        'customer' => 'Cliente o socio',
+        'customer_placeholder' => 'Elegir cliente',
+        'contact' => 'UUID del contacto Lexoffice',
+        'contact_hint' => 'Solo necesario para «Contacto Lexoffice»; está en la URL de Lexoffice del contacto.',
     ],
     'months' => 'meses',
 ];

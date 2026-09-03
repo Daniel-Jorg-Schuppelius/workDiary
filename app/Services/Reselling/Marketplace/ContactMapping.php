@@ -21,6 +21,8 @@ use App\Models\Customer;
 final readonly class ContactMapping {
     public const SOURCE_MANUAL = 'Zuordnungsdatei';
 
+    public const SOURCE_STORED = 'Zuordnung (gespeichert)';
+
     public const SOURCE_REFERENCE = 'Kunde + Verknüpfung';
 
     public const SOURCE_NUMBER = 'Kundennummer';
@@ -29,12 +31,15 @@ final readonly class ContactMapping {
 
     public const SOURCE_SEARCH = 'Namenssuche';
 
+    public const SOURCE_FOREIGN = 'Fremdkunde';
+
     public const SOURCE_NONE = '—';
 
     /**
      * @param  list<string>  $contactIds
      * @param  list<string>  $candidates  Klartext-Kandidaten für die manuelle Nacharbeit
      * @param  string  $detail  Grund der Zuordnung (Matching-Signal, Namensabweichung) — zum Prüfen, nicht zum Vertrauen
+     * @param  string|null  $billedVia  Name des Partners, der die Rechnung bekommt und an den Endkunden weiterreicht (Fremdkunde)
      */
     public function __construct(
         public MarketplaceCompany $company,
@@ -43,7 +48,12 @@ final readonly class ContactMapping {
         public string $source,
         public array $candidates = [],
         public string $detail = '',
+        public ?string $billedVia = null,
     ) {}
+
+    public function isBilledViaPartner(): bool {
+        return $this->billedVia !== null && $this->billedVia !== '';
+    }
 
     public function sourceLabel(): string {
         return $this->detail === '' ? $this->source : $this->source . ' (' . $this->detail . ')';

@@ -32,6 +32,12 @@
                 <x-icon-btn icon="download" tone="ghost" size="sm"
                             :href="route('finance.reselling.download', $run->sqid)"
                             show-label>{{ __('reselling.action.download') }}</x-icon-btn>
+            @endif
+            @if ($run->status->isFinished())
+                <form method="POST" action="{{ route('finance.reselling.rerun', $run->sqid) }}">
+                    @csrf
+                    <x-icon-btn icon="replay" tone="primary" size="sm" type="submit" show-label>{{ __('reselling.action.rerun') }}</x-icon-btn>
+                </form>
             @else
                 <x-icon-btn icon="refresh" tone="ghost" size="sm"
                             :href="route('finance.reselling.show', $run->sqid)"
@@ -217,6 +223,8 @@
                 @if (($summary['unmapped_companies'] ?? 0) > 0)
                     <p class="text-xs text-muted mb-2">{{ __('reselling.hint.unmapped') }}</p>
                 @endif
+                <p class="text-xs text-muted mb-2">{{ __('reselling.hint.foreign') }}</p>
+                <p class="text-xs text-muted mb-2">{{ __('reselling.hint.mapping') }}</p>
                 <x-table bare>
                     <x-slot:head>
                         <tr>
@@ -227,12 +235,22 @@
                             <x-table.th class="text-right">{{ __('reselling.field.periods') }}</x-table.th>
                             <x-table.th class="text-right">{{ __('reselling.field.problems') }}</x-table.th>
                             <x-table.th>{{ __('reselling.field.candidates') }}</x-table.th>
+                            <x-table.th>{{ __('reselling.field.stored_mapping') }}</x-table.th>
+                            <x-table.th></x-table.th>
                         </tr>
                     </x-slot:head>
                     @forelse ($report['mappings'] ?? [] as $mapping)
+                        @php
+                            $stored = $storedMappings[\App\Services\Reselling\Marketplace\MarketplaceCompany::normalizeName((string) $mapping['company'])] ?? null;
+                        @endphp
                         <tr>
                             <td>{{ $mapping['company'] }}</td>
-                            <td>{{ $mapping['customer'] ?? '—' }}</td>
+                            <td>
+                                {{ $mapping['customer'] ?? '—' }}
+                                @if (($mapping['billed_via'] ?? null) !== null)
+                                    <div class="text-xs text-muted">{{ __('reselling.field.billed_via') }}</div>
+                                @endif
+                            </td>
                             <td class="font-mono text-xs">{{ implode(', ', $mapping['contact_ids']) ?: '—' }}</td>
                             <td>
                                 @if ($mapping['resolved'])
@@ -244,9 +262,34 @@
                             <td class="text-right">{{ $mapping['periods'] }}</td>
                             <td class="text-right">{{ $mapping['problems'] }}</td>
                             <td class="text-xs">{{ implode(' | ', $mapping['candidates']) }}</td>
+                            <td class="text-xs">
+                                @if ($stored)
+                                    <x-status-badge size="xs" tone="info" :label="$stored->mode->label()" />
+                                    @if ($stored->customer)
+                                        <span>{{ $stored->customer->name }}</span>
+                                    @elseif ($stored->contact_external_id)
+                                        <span class="font-mono">{{ $stored->contact_external_id }}</span>
+                                    @endif
+                                @endif
+                            </td>
+                            <td class="text-right">
+                                <div class="flex justify-end gap-1">
+                                    <x-icon-btn icon="link" size="xs" tone="ghost"
+                                                data-entry-modal-trigger
+                                                :href="route('finance.reselling.mappings.create', ['run' => $run->sqid, 'company' => $mapping['company'], 'key' => $mapping['key']])"
+                                                :title="__('reselling.action.assign')" />
+                                    @if ($stored)
+                                        <form method="POST" action="{{ route('finance.reselling.mappings.destroy', ['run' => $run->sqid, 'mapping' => $stored->sqid]) }}" data-confirm="{{ __('reselling.action.remove_mapping') }}">
+                                            @csrf
+                                            @method('DELETE')
+                                            <x-icon-btn icon="link_off" size="xs" tone="ghost" type="submit" :title="__('reselling.action.remove_mapping')" />
+                                        </form>
+                                    @endif
+                                </div>
+                            </td>
                         </tr>
                     @empty
-                        <x-table.empty :colspan="7" :title="__('reselling.empty.mappings')" />
+                        <x-table.empty :colspan="9" :title="__('reselling.empty.mappings')" />
                     @endforelse
                 </x-table>
             </x-card>

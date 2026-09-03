@@ -53,6 +53,7 @@ final class ReconciliationReportSerializer {
                 'partner_number' => $mapping->company->partnerCustomerNumber,
                 'customer' => $mapping->customer?->name,
                 'customer_sqid' => $mapping->customer?->sqid,
+                'billed_via' => $mapping->billedVia,
                 'contact_ids' => $mapping->contactIds,
                 'source' => $mapping->source,
                 'detail' => $mapping->detail,
@@ -157,6 +158,7 @@ final class ReconciliationReportSerializer {
             'note' => $finding->note,
             'succession' => $entitlement->successionNote,
             'customer' => $company->mapping->customer?->name,
+            'billed_via' => $company->mapping->billedVia,
             'contact_ids' => $company->mapping->contactIds,
             'mapping_source' => $company->mapping->source === ContactMapping::SOURCE_NONE ? '' : $company->mapping->sourceLabel(),
         ];

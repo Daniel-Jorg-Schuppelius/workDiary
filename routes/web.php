@@ -2475,6 +2475,10 @@ Route::middleware('auth')->group(function () {
             Route::post('/', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'store'])->name('store');
             Route::get('{run}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'show'])->name('show');
             Route::get('{run}/csv', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'download'])->name('download');
+            Route::post('{run}/neu-berechnen', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'rerun'])->name('rerun');
+            Route::get('{run}/zuordnung', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'mappingCreate'])->name('mappings.create');
+            Route::post('{run}/zuordnung', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'mappingStore'])->name('mappings.store');
+            Route::delete('{run}/zuordnung/{mapping}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'mappingDestroy'])->name('mappings.destroy');
             Route::delete('{run}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'destroy'])->name('destroy');
         });
 

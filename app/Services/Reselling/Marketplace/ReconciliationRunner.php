@@ -14,7 +14,7 @@ namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\ReconciliationRunStatus;
 use App\Models\Organization;
-use App\Models\Reselling\ReconciliationRun;
+use App\Models\Reselling\{CompanyMapping, ReconciliationRun};
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceLineReader};
 use App\Services\Reselling\Contracts\InvoiceLineSource;
 use App\Support\OrganizationContext;
@@ -105,9 +105,10 @@ final class ReconciliationRunner {
 
         $source->verifyAccess();
 
+        $stored = CompanyMapping::targetsFor($organization);
         $mappings = [];
         foreach ($import->companies() as $key => $company) {
-            $mappings[$key] = $this->resolver->resolve($organization, $company, $manual, $source);
+            $mappings[$key] = $this->resolver->resolve($organization, $company, $manual, $source, $stored);
         }
 
         $options = new ReconciliationOptions($run->reference_date->startOfDay(), $run->window_before, $run->window_after);

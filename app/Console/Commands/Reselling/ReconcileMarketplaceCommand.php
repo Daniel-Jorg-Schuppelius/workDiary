@@ -15,6 +15,7 @@ namespace App\Console\Commands\Reselling;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Enums\Reselling\ReconciliationStatus;
 use App\Models\Organization;
+use App\Models\Reselling\CompanyMapping;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceLineReader};
 use App\Services\Reselling\Contracts\InvoiceLineSource;
 use App\Services\Reselling\Marketplace\{MarketplaceContactResolver, MarketplaceEntitlement, MarketplacePurchasesReader, MarketplaceReconciler, PriceCheckBuilder, PriceCheckRow, PriceList, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, ReconciliationCsvBuilder, ReconciliationOptions, ReconciliationReport, ReconciliationReportSerializer};
@@ -130,9 +131,10 @@ class ReconcileMarketplaceCommand extends Command {
             return self::FAILURE;
         }
 
+        $stored = CompanyMapping::targetsFor($organization);
         $mappings = [];
         foreach ($import->companies() as $key => $company) {
-            $mappings[$key] = $resolver->resolve($organization, $company, $manual, $source);
+            $mappings[$key] = $resolver->resolve($organization, $company, $manual, $source, $stored);
         }
         foreach ($resolver->errors() as $error) {
             $this->warn('  Lexoffice-Suche: ' . $error);

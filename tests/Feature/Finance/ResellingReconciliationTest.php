@@ -12,10 +12,10 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Finance;
 
-use App\Enums\Reselling\ReconciliationRunStatus;
+use App\Enums\Reselling\{CompanyMappingMode, ReconciliationRunStatus};
 use App\Jobs\Reselling\RunReconciliationJob;
-use App\Models\{Customer, ExternalReference};
-use App\Models\Reselling\ReconciliationRun;
+use App\Models\{Customer, ExternalReference, ForeignCustomer};
+use App\Models\Reselling\{CompanyMapping, ReconciliationRun};
 use App\Plugins\Lexoffice\{LexofficeInvoiceLineReader, LexofficePlugin};
 use App\Services\Reselling\Marketplace\ReconciliationRunner;
 use App\Support\XlsxExport;
@@ -190,6 +190,114 @@ class ResellingReconciliationTest extends TestCase {
         foreach ($paths as $path) {
             Storage::disk(ReconciliationRun::DISK)->assertMissing($path);
         }
+    }
+
+    public function test_mappings_can_be_stored_in_the_ui_and_drive_the_next_run(): void {
+        Bus::fake();
+        $admin = $this->orgAdmin();
+        $this->enablePluginFor($this->organization, LexofficePlugin::ID, ['api_key' => 'lex-key']);
+        $partner = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'IT-Haus GmbH',
+            'company' => 'IT-Haus GmbH',
+        ]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-partner',
+            'referenceable_type' => $partner->getMorphClass(),
+            'referenceable_id' => $partner->getKey(),
+        ]);
+        MarketplaceReconcilerTest::fakeLexoffice();
+
+        $this->actingAs($admin)->post(route('finance.reselling.store'), [
+            'telekom' => UploadedFile::fake()->createWithContent('purchases.csv', (string) file_get_contents(MarketplaceReconcilerTest::FIXTURE)),
+            'reference_date' => '2025-01-01',
+        ]);
+        /** @var ReconciliationRun $run */
+        $run = ReconciliationRun::query()->firstOrFail();
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        app(ReconciliationRunner::class)->run($run, $source);
+        $run->refresh();
+        $this->assertSame(2, $run->summary['unmapped_companies'] ?? null, 'Beispiel Logistik (Namenssuche) findet Lexoffice, Unbekannt UG und Muster Bau nicht');
+
+        // Dialog öffnen
+        $this->actingAs($admin)->get(route('finance.reselling.mappings.create', ['run' => $run->sqid, 'company' => 'Unbekannt UG', 'key' => '100003']))
+            ->assertOk()
+            ->assertSee(__('reselling.mapping.title'))
+            ->assertSee('Unbekannt UG')
+            ->assertSee('IT-Haus GmbH');
+
+        // Unbekannt UG über den Partner abrechnen → Fremdkunde wird angelegt
+        $this->actingAs($admin)->post(route('finance.reselling.mappings.store', $run->sqid), [
+            'company_name' => 'Unbekannt UG',
+            'company_key' => '100003',
+            'mode' => CompanyMappingMode::Partner->value,
+            'customer' => $partner->sqid,
+        ])->assertRedirect(route('finance.reselling.show', $run->sqid));
+
+        $mapping = CompanyMapping::query()->where('normalized_name', 'unbekannt ug')->firstOrFail();
+        $this->assertSame(CompanyMappingMode::Partner, $mapping->mode);
+        $this->assertSame($partner->id, $mapping->customer_id);
+        $this->assertSame('100003', $mapping->company_key);
+        $this->assertSame('partner:' . $partner->sqid, $mapping->target());
+        $this->assertSame(1, ForeignCustomer::query()->where('customer_id', $partner->id)->where('name', 'Unbekannt UG')->count(), 'Fremdkunde beim Partner angelegt');
+
+        // Zweites Speichern legt keinen zweiten Fremdkunden an und aktualisiert die Zuordnung
+        $this->actingAs($admin)->post(route('finance.reselling.mappings.store', $run->sqid), [
+            'company_name' => 'Unbekannt UG',
+            'mode' => CompanyMappingMode::Partner->value,
+            'customer' => $partner->sqid,
+        ]);
+        $this->assertSame(1, CompanyMapping::query()->count());
+        $this->assertSame(1, ForeignCustomer::query()->where('customer_id', $partner->id)->count());
+
+        // Muster Bau direkt als Lexoffice-Kontakt
+        $this->actingAs($admin)->post(route('finance.reselling.mappings.store', $run->sqid), [
+            'company_name' => 'Muster Bau GmbH',
+            'company_key' => '100001',
+            'mode' => CompanyMappingMode::Contact->value,
+            'contact_external_id' => 'AAAAAAAA-BBBB-CCCC-DDDD-EEEEEEEEEEEE',
+        ]);
+        $this->assertSame('aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee', CompanyMapping::query()->where('normalized_name', 'muster bau gmbh')->value('contact_external_id'));
+
+        // Fehlender Kunde bei Modus „direkt"
+        $this->actingAs($admin)->from(route('finance.reselling.show', $run->sqid))->post(route('finance.reselling.mappings.store', $run->sqid), [
+            'company_name' => 'Beispiel Logistik',
+            'mode' => CompanyMappingMode::Customer->value,
+        ])->assertSessionHasErrors('customer');
+
+        // Neu berechnen: Lauf zurück in die Warteschlange, Job erneut
+        $this->actingAs($admin)->post(route('finance.reselling.rerun', $run->sqid))
+            ->assertRedirect(route('finance.reselling.show', $run->sqid));
+        $run->refresh();
+        $this->assertSame(ReconciliationRunStatus::Queued, $run->status);
+        $this->assertNull($run->report);
+        Bus::assertDispatched(RunReconciliationJob::class, static fn(RunReconciliationJob $job): bool => $job->runId === $run->id);
+
+        // Zweiter Lauf nutzt die gespeicherten Zuordnungen
+        app(ReconciliationRunner::class)->run($run, $source);
+        $run->refresh();
+        $this->assertSame(ReconciliationRunStatus::Done, $run->status, (string) $run->error);
+        $mappings = collect($run->report['mappings']);
+        $unbekannt = $mappings->firstWhere('company', 'Unbekannt UG');
+        $this->assertSame(\App\Services\Reselling\Marketplace\ContactMapping::SOURCE_STORED, $unbekannt['source']);
+        $this->assertSame('IT-Haus GmbH', $unbekannt['billed_via']);
+        $this->assertSame(['c-partner'], $unbekannt['contact_ids']);
+        $muster = $mappings->firstWhere('company', 'Muster Bau GmbH');
+        $this->assertSame(['aaaaaaaa-bbbb-cccc-dddd-eeeeeeeeeeee'], $muster['contact_ids']);
+        $this->assertSame(0, $run->summary['unmapped_companies']);
+
+        $this->actingAs($admin)->get(route('finance.reselling.show', $run->sqid))
+            ->assertOk()
+            ->assertSee(__('reselling.field.stored_mapping'))
+            ->assertSee(CompanyMappingMode::Partner->label());
+
+        // Zuordnung entfernen
+        $this->actingAs($admin)->delete(route('finance.reselling.mappings.destroy', ['run' => $run->sqid, 'mapping' => $mapping->sqid]))
+            ->assertRedirect(route('finance.reselling.show', $run->sqid));
+        $this->assertSame(1, CompanyMapping::query()->count());
     }
 
     public function test_runner_marks_run_failed_when_lexoffice_rejects_the_key(): void {

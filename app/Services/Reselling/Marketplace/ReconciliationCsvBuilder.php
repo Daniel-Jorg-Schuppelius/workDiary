@@ -22,7 +22,7 @@ final class ReconciliationCsvBuilder {
      * @return list<string>
      */
     public function header(): array {
-        return ['Firma', 'Kunde', 'Lexoffice-Kontakt', 'Zuordnung', 'Quelle', 'Vertrag/Entitlement', 'Bestellung', 'Anwendung', 'Edition', 'Periode', 'Von', 'Bis', 'Menge', 'Stückpreis Einkauf', 'Gebühr Einkauf', 'Status', 'Rechnungen', 'Netto/Stück min', 'Offen Einkauf', 'Hinweis', 'Ablösung'];
+        return ['Firma', 'Kunde', 'Lexoffice-Kontakt', 'Zuordnung', 'Abrechnung über', 'Quelle', 'Vertrag/Entitlement', 'Bestellung', 'Anwendung', 'Edition', 'Periode', 'Von', 'Bis', 'Menge', 'Stückpreis Einkauf', 'Gebühr Einkauf', 'Status', 'Rechnungen', 'Netto/Stück min', 'Offen Einkauf', 'Hinweis', 'Ablösung'];
     }
 
     /**
@@ -37,6 +37,7 @@ final class ReconciliationCsvBuilder {
                 (string) ($finding['customer'] ?? ''),
                 implode(', ', (array) ($finding['contact_ids'] ?? [])),
                 (string) ($finding['mapping_source'] ?? ''),
+                (string) ($finding['billed_via'] ?? ''),
                 (string) $finding['source_label'],
                 (string) $finding['entitlement'],
                 (string) $finding['order'],

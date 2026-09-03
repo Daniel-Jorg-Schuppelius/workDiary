@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Marketplace;
 
-use App\Models\{Customer, ExternalReference, Organization};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Integration\Match\{EntityMatcher, MatchStrategy};
 use App\Services\Integration\Profiles\CustomerMatchProfile;
@@ -23,14 +23,18 @@ use Throwable;
 /**
  * Ordnet Marketplace-Firmen den Lexoffice-Kontakten zu — in dieser Reihenfolge:
  *
- * 1. Zuordnungsdatei (Firma → Kontakt-UUID oder Kunden-Sqid),
- * 2. Partner-Kundennummer aus dem Export (Quality Hosting trägt die
+ * 1. Zuordnungsdatei (Firma → Kontakt-UUID, Kunden-Sqid oder
+ *    `partner:<Name|Sqid>` für Abrechnung über einen Partner),
+ * 2. **Fremdkunde**: Die Firma ist als Fremdkunde eines Kunden angelegt —
+ *    die Rechnung geht an diesen Partner, der sie an den Endkunden
+ *    weiterreicht; geprüft werden die Rechnungen des Partners,
+ * 3. Partner-Kundennummer aus dem Export (Quality Hosting trägt die
  *    Kundennummer des Resellers): Kunde mit dieser Nummer bzw. Lexoffice-
  *    Kontakt mit dieser Kundennummer,
- * 3. Kunden-Matching über das Integrations-Profil (USt-ID/E-Mail/Name) und
+ * 4. Kunden-Matching über das Integrations-Profil (USt-ID/E-Mail/Name) und
  *    dessen Lexoffice-Kontaktverknüpfung (`external_references`),
- * 4. Lexoffice-Kundennummer am Kunden,
- * 5. Namenssuche in Lexoffice, nur bei eindeutigem Treffer.
+ * 5. Lexoffice-Kundennummer am Kunden,
+ * 6. Namenssuche in Lexoffice, nur bei eindeutigem Treffer.
  *
  * Mehrdeutiges wird nicht geraten, sondern mit Kandidaten gemeldet. Ein
  * unscharfer Namenstreffer zählt nur bei gleichem normalisierten Namen; ein
@@ -58,15 +62,23 @@ final class MarketplaceContactResolver {
     ) {}
 
     /**
-     * @param  array<string, string>  $manual  Firmen-Schlüssel oder normalisierter Name → Ziel (Kontakt-UUID | customer:<sqid>)
+     * @param  array<string, string>  $manual  Zuordnungsdatei: Firmen-Schlüssel oder normalisierter Name → Ziel (Kontakt-UUID | customer:<sqid> | partner:<Name|sqid>)
+     * @param  array<string, string>  $stored  in der Oberfläche gespeicherte Zuordnungen, gleiches Format (Datei gewinnt)
      */
-    public function resolve(Organization $organization, MarketplaceCompany $company, array $manual, ?InvoiceLineSource $source): ContactMapping {
-        $target = $this->manualTarget($company, $manual);
-        if ($target !== null) {
-            $mapping = $this->fromManual($organization, $company, $target);
-            if ($mapping !== null) {
-                return $mapping;
+    public function resolve(Organization $organization, MarketplaceCompany $company, array $manual, ?InvoiceLineSource $source, array $stored = []): ContactMapping {
+        foreach ([[$manual, ContactMapping::SOURCE_MANUAL], [$stored, ContactMapping::SOURCE_STORED]] as [$targets, $label]) {
+            $target = $this->manualTarget($company, $targets);
+            if ($target !== null) {
+                $mapping = $this->fromManual($organization, $company, $target, $source, $label);
+                if ($mapping !== null) {
+                    return $mapping;
+                }
             }
+        }
+
+        $mapping = $this->fromForeignCustomer($organization, $company, $source);
+        if ($mapping !== null) {
+            return $mapping;
         }
 
         $partner = trim((string) ($company->partnerCustomerNumber ?? ''));
@@ -165,29 +177,138 @@ final class MarketplaceContactResolver {
         return null;
     }
 
-    private function fromManual(Organization $organization, MarketplaceCompany $company, string $target): ?ContactMapping {
+    private function fromManual(Organization $organization, MarketplaceCompany $company, string $target, ?InvoiceLineSource $source, string $label = ContactMapping::SOURCE_MANUAL): ?ContactMapping {
         $target = trim($target);
         if (preg_match(self::UUID, $target) === 1) {
-            return new ContactMapping($company, null, [$target], ContactMapping::SOURCE_MANUAL);
+            return new ContactMapping($company, null, [$target], $label);
+        }
+
+        // `partner:<Name|Sqid>`: Abrechnung über einen Partner (Fremdkunde ohne Stammsatz).
+        if (str_starts_with($target, 'partner:')) {
+            $partner = $this->customerByReference($organization, substr($target, 8));
+            if (! $partner instanceof Customer) {
+                return null;
+            }
+            $ids = $this->contactIdsForCustomer($organization, $partner, $source);
+
+            return $ids === [] ? null : new ContactMapping($company, $partner, $ids, $label, [], 'über ' . $partner->name, $partner->name);
         }
 
         $sqid = str_starts_with($target, 'customer:') ? substr($target, 9) : $target;
-        $id = $this->sqids->decode(Customer::class, $sqid);
-        if ($id === null) {
-            return null;
-        }
-
-        $customer = Customer::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereKey($id)
-            ->first();
+        $customer = $this->customerByReference($organization, $sqid);
         if (! $customer instanceof Customer) {
             return null;
         }
 
-        $ids = $this->contactIdsOf($organization, $customer);
+        $ids = $this->contactIdsForCustomer($organization, $customer, $source);
 
-        return $ids === [] ? null : new ContactMapping($company, $customer, $ids, ContactMapping::SOURCE_MANUAL);
+        return $ids === [] ? null : new ContactMapping($company, $customer, $ids, $label);
+    }
+
+    /**
+     * Fremdkunde: Die Marketplace-Firma steht als Fremdkunde unter einem
+     * Kunden (Partner) — der Partner bekommt die Rechnung und reicht sie an
+     * den Endkunden weiter. Geprüft werden deshalb die Rechnungen des Partners.
+     */
+    private function fromForeignCustomer(Organization $organization, MarketplaceCompany $company, ?InvoiceLineSource $source): ?ContactMapping {
+        $wanted = $company->normalizedName();
+        if ($wanted === '') {
+            return null;
+        }
+
+        $matches = [];
+        $candidates = ForeignCustomer::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereNull('archived_at')
+            ->with('customer')
+            ->get();
+        foreach ($candidates as $foreign) {
+            foreach ([$foreign->name, $foreign->company] as $name) {
+                if (is_string($name) && $name !== '' && MarketplaceCompany::normalizeName($name) === $wanted) {
+                    $matches[$foreign->id] = $foreign;
+                    break;
+                }
+            }
+        }
+        if (count($matches) !== 1) {
+            return null;
+        }
+
+        /** @var ForeignCustomer $foreign */
+        $foreign = array_values($matches)[0];
+        $partner = $foreign->customer;
+        if (! $partner instanceof Customer) {
+            return null;
+        }
+
+        $ids = $this->contactIdsForCustomer($organization, $partner, $source);
+        if ($ids === []) {
+            return new ContactMapping($company, $partner, [], ContactMapping::SOURCE_NONE, ['Partner ' . $partner->name . ' ohne Lexoffice-Kontakt'], 'über ' . $partner->name, $partner->name);
+        }
+
+        return new ContactMapping($company, $partner, $ids, ContactMapping::SOURCE_FOREIGN, [], 'über ' . $partner->name, $partner->name);
+    }
+
+    /**
+     * Kunde per Sqid oder eindeutigem (normalisiertem) Namen/Firma.
+     */
+    private function customerByReference(Organization $organization, string $reference): ?Customer {
+        $reference = trim($reference);
+        if ($reference === '') {
+            return null;
+        }
+
+        $id = $this->sqids->decode(Customer::class, $reference);
+        if ($id !== null) {
+            $customer = Customer::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereKey($id)
+                ->first();
+            if ($customer instanceof Customer) {
+                return $customer;
+            }
+        }
+
+        $wanted = MarketplaceCompany::normalizeName($reference);
+        $hits = [];
+        foreach (Customer::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->get(['id', 'name', 'company', 'lexoffice_contact_number']) as $customer) {
+            foreach ([$customer->name, $customer->company] as $name) {
+                if (is_string($name) && $name !== '' && MarketplaceCompany::normalizeName($name) === $wanted) {
+                    $hits[$customer->id] = $customer;
+                    break;
+                }
+            }
+        }
+
+        return count($hits) === 1 ? array_values($hits)[0] : null;
+    }
+
+    /**
+     * Lexoffice-Kontakte eines Kunden: Verknüpfung, sonst Kundennummer, sonst
+     * eindeutige Namenssuche.
+     *
+     * @return list<string>
+     */
+    private function contactIdsForCustomer(Organization $organization, Customer $customer, ?InvoiceLineSource $source): array {
+        $ids = $this->contactIdsOf($organization, $customer);
+        if ($ids !== [] || $source === null) {
+            return $ids;
+        }
+
+        $number = trim((string) ($customer->lexoffice_contact_number ?? ''));
+        if ($number !== '') {
+            $hits = $this->safe(static fn(): array => $source->findContactsByNumber($number));
+            if (count($hits) === 1) {
+                return [$hits[0]['id']];
+            }
+        }
+
+        $name = (string) ($customer->company ?: $customer->name);
+        $wanted = MarketplaceCompany::normalizeName($name);
+        $hits = $this->safe(static fn(): array => $source->findContactsByName($name));
+        $exact = array_values(array_filter($hits, static fn(array $hit): bool => MarketplaceCompany::normalizeName($hit['name']) === $wanted));
+
+        return count($exact) === 1 ? [$exact[0]['id']] : [];
     }
 
     /**
