@@ -108,7 +108,9 @@ final class MarketplaceReconciler {
                 continue;
             }
             foreach ($periods as $period) {
-                $queue[] = ['key' => $key, 'period' => $period];
+                // Numerische Firmen-Schlüssel („100001") werden als Array-Schlüssel
+                // zu int — für den Tiebreaker ausdrücklich als String führen.
+                $queue[] = ['key' => (string) $key, 'period' => $period];
             }
         }
         usort($queue, static fn(array $a, array $b): int => $a['period']->startsOn <=> $b['period']->startsOn ?: strcmp($a['key'], $b['key']));
@@ -119,6 +121,8 @@ final class MarketplaceReconciler {
             $mapping = $resolvedMappings[$entry['key']];
             $findingsByCompany[$entry['key']][] = $this->reconcilePeriod($entry['period'], $mapping, $lines, $remaining, $options);
         }
+        // Hinweis: $resolvedMappings/$findingsByCompany sind über den ursprünglichen
+        // (ggf. int-)Schlüssel adressiert; PHP normalisiert "100001" und 100001 gleich.
 
         $companies = [];
         $extrasClaimed = [];

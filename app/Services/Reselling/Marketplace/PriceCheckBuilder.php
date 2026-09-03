@@ -105,7 +105,7 @@ final class PriceCheckBuilder {
             );
         }
 
-        usort($rows, static fn(PriceCheckRow $a, PriceCheckRow $b): int => strcmp($a->product, $b->product) ?: $a->termMonths <=> $b->termMonths);
+        usort($rows, static fn(PriceCheckRow $a, PriceCheckRow $b): int => strcmp((string) $a->product, (string) $b->product) ?: $a->termMonths <=> $b->termMonths);
 
         return $rows;
     }

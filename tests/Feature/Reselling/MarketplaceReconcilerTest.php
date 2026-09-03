@@ -289,6 +289,48 @@ class MarketplaceReconcilerTest extends TestCase {
         $this->assertSame(['c-partner'], $bySqid->contactIds);
     }
 
+    /**
+     * Produktionslauf 2026-09-03: „strcmp(): Argument #2 must be of type string,
+     * int given" — numerische Firmen-Schlüssel werden als Array-Schlüssel zu int,
+     * der Tiebreaker greift nur bei Perioden mit gleichem Beginn.
+     */
+    public function test_periods_of_different_numeric_companies_starting_on_the_same_day_do_not_crash(): void {
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+        ]);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+
+        $companyA = new \App\Services\Reselling\Marketplace\MarketplaceCompany('100001', 'Firma A', null, null);
+        $companyB = new \App\Services\Reselling\Marketplace\MarketplaceCompany('100002', 'Firma B', null, null);
+        $make = static fn(\App\Services\Reselling\Marketplace\MarketplaceCompany $company, string $id): \App\Services\Reselling\Marketplace\MarketplaceEntitlement => new \App\Services\Reselling\Marketplace\MarketplaceEntitlement(
+            company: $company,
+            entitlementId: $id,
+            orderId: $id,
+            application: 'Microsoft Exchange Online',
+            edition: 'Exchange Online (Plan 1)',
+            fee: \CommonToolkit\ValueObjects\Money::of('41.55', \CommonToolkit\Enums\CurrencyCode::Euro),
+            frequency: \App\Enums\Reselling\BillingFrequency::Yearly,
+            startsOn: CarbonImmutable::parse('2023-04-01'),
+            endsOn: CarbonImmutable::parse('2027-04-06'),
+            status: 'CANCELLED',
+            assignedUsers: 0,
+            sourceLine: 2,
+        );
+        $entitlements = [$make($companyA, 'a-1'), $make($companyB, 'b-1'), $make($companyA, 'a-2')];
+        $mappings = [
+            '100001' => new ContactMapping($companyA, null, ['c-a'], ContactMapping::SOURCE_MANUAL),
+            '100002' => new ContactMapping($companyB, null, ['c-b'], ContactMapping::SOURCE_MANUAL),
+        ];
+
+        $report = (new MarketplaceReconciler)->reconcile($entitlements, $mappings, $source, new ReconciliationOptions(CarbonImmutable::parse('2026-09-03')));
+
+        $this->assertCount(2, $report->companies);
+        $this->assertCount(8, $report->companies[0]->findings, 'Firma A: zwei Positionen × vier Perioden');
+        $this->assertCount(4, $report->companies[1]->findings);
+        $this->assertSame(12, $report->countsByStatus()['missing']);
+    }
+
     public function test_manual_map_wins_over_matching(): void {
         self::fakeLexoffice();
         $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
