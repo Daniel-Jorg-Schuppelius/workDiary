@@ -129,7 +129,7 @@ final class PriceCheckBuilder {
                 if ($match['quantity'] <= 0.0 || ($match['exact'] ?? true) === false) {
                     continue;
                 }
-                $sales[$key][] = $match['line']->unitNet;
+                $sales[$key][] = $match['annual_unit'] ?? $match['line']->unitNet;
             }
         }
 

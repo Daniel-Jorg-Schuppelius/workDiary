@@ -216,7 +216,10 @@ final class MarketplaceContactResolver {
             return null;
         }
 
-        $matches = [];
+        // Exakte Namensgleichheit zuerst, sonst tokenbasiert („Auerswald" ↔
+        // „Auerswald GmbH & Co. KG", „Urban Fliesen" ↔ „Fliesen Urban").
+        $exact = [];
+        $fuzzy = [];
         $candidates = ForeignCustomer::query()->withoutGlobalScopes()
             ->where('organization_id', $organization->id)
             ->whereNull('archived_at')
@@ -224,29 +227,54 @@ final class MarketplaceContactResolver {
             ->get();
         foreach ($candidates as $foreign) {
             foreach ([$foreign->name, $foreign->company] as $name) {
-                if (is_string($name) && $name !== '' && MarketplaceCompany::normalizeName($name) === $wanted) {
-                    $matches[$foreign->id] = $foreign;
+                if (! is_string($name) || $name === '') {
+                    continue;
+                }
+                if (MarketplaceCompany::normalizeName($name) === $wanted) {
+                    $exact[$foreign->id] = $foreign;
                     break;
+                }
+                if (NameTokenMatcher::matches($name, $company->name)) {
+                    $fuzzy[$foreign->id] = $foreign;
                 }
             }
         }
-        if (count($matches) !== 1) {
+        $matches = $exact !== [] ? $exact : $fuzzy;
+        if ($matches === []) {
             return null;
         }
 
-        /** @var ForeignCustomer $foreign */
-        $foreign = array_values($matches)[0];
-        $partner = $foreign->customer;
-        if (! $partner instanceof Customer) {
+        // Mehrere Fremdkunden desselben Partners sind eindeutig; verschiedene Partner nicht.
+        $partners = [];
+        foreach ($matches as $foreign) {
+            if ($foreign->customer instanceof Customer) {
+                $partners[$foreign->customer->id] = $foreign->customer;
+            }
+        }
+        if (count($partners) !== 1) {
             return null;
         }
+        /** @var Customer $partner */
+        $partner = array_values($partners)[0];
 
         $ids = $this->contactIdsForCustomer($organization, $partner, $source);
         if ($ids === []) {
             return new ContactMapping($company, $partner, [], ContactMapping::SOURCE_NONE, ['Partner ' . $partner->name . ' ohne Lexoffice-Kontakt'], 'über ' . $partner->name, $partner->name);
         }
 
-        return new ContactMapping($company, $partner, $ids, ContactMapping::SOURCE_FOREIGN, [], 'über ' . $partner->name, $partner->name);
+        // Ist die Firma zugleich eigener Kunde (z. B. Thieme Transporte), zählen
+        // auch dessen Rechnungen — der Vorrat wird je Kontakt geteilt.
+        $detail = 'über ' . $partner->name . ($exact === [] ? ' · Name ähnlich' : '');
+        $own = $this->matchCustomer($organization, $company);
+        if ($own['customer'] instanceof Customer && $own['customer']->id !== $partner->id) {
+            $ownIds = $this->contactIdsForCustomer($organization, $own['customer'], $source);
+            if ($ownIds !== []) {
+                $ids = array_values(array_unique(array_merge($ids, $ownIds)));
+                $detail .= ' + eigener Kunde ' . $own['customer']->name;
+            }
+        }
+
+        return new ContactMapping($company, $partner, $ids, ContactMapping::SOURCE_FOREIGN, [], $detail, $partner->name);
     }
 
     /**
@@ -364,7 +392,10 @@ final class MarketplaceContactResolver {
     private function sameName(MarketplaceCompany $company, Customer $customer): bool {
         $wanted = $company->normalizedName();
         foreach ([$customer->company, $customer->name] as $candidate) {
-            if (is_string($candidate) && $candidate !== '' && MarketplaceCompany::normalizeName($candidate) === $wanted) {
+            if (! is_string($candidate) || $candidate === '') {
+                continue;
+            }
+            if (MarketplaceCompany::normalizeName($candidate) === $wanted || NameTokenMatcher::matches($candidate, $company->name)) {
                 return true;
             }
         }

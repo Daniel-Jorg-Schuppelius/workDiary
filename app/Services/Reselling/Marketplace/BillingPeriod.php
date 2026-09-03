@@ -34,6 +34,16 @@ final readonly class BillingPeriod {
         return $this->entitlement->fee;
     }
 
+    /** Länge der Periode in Monaten (Jahresrhythmus 12, Monatsrhythmus 1). */
+    public function termMonths(): int {
+        return $this->entitlement->frequency === \App\Enums\Reselling\BillingFrequency::Monthly ? 1 : 12;
+    }
+
+    /** Bedarf der Periode in Lizenzmonaten. */
+    public function licenseMonths(): int {
+        return $this->quantity * $this->termMonths();
+    }
+
     public function label(): string {
         return $this->startsOn->format('d.m.Y') . ' – ' . $this->endsOn->format('d.m.Y');
     }

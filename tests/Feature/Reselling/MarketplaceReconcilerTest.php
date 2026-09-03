@@ -421,6 +421,120 @@ class MarketplaceReconcilerTest extends TestCase {
         $this->assertSame(ReconciliationStatus::CoveredByAmount, $companyStrict->findings[0]->status, 'streng: Beleg im Fenster mit ausreichendem Betrag, Produkt nicht erkannt');
     }
 
+    /**
+     * Produktivbericht 2026-09-03: Positionen sind Monatspreise mit Menge in
+     * Monaten — „Business Premium 12 × 20,60 €" ist EINE Lizenz für ein Jahr,
+     * nicht zwölf Lizenzen unter Einkauf. Gerechnet wird in Lizenzmonaten.
+     */
+    public function test_monthly_priced_lines_are_counted_in_license_months(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Muster Bau GmbH',
+            'company' => 'Muster Bau GmbH',
+        ]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-1',
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+        ]);
+        $monthly = static fn(string $name, float $months, float $unit): array => ['type' => 'custom', 'name' => $name, 'description' => 'Monatspreis', 'quantity' => $months, 'unitName' => 'Monat', 'unitPrice' => ['currency' => 'EUR', 'netAmount' => $unit, 'grossAmount' => round($unit * 1.19, 2), 'taxRatePercentage' => 19]];
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response(['organizationId' => 'org-1']),
+            'https://api.lexoffice.io/v1/voucherlist*' => static function (RequestInterface $request) {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = ($query['contactId'] ?? '') === 'c-1' ? [
+                    ['id' => 'inv-a', 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => 'RE-A', 'voucherDate' => '2024-08-05T00:00:00.000+02:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false],
+                    ['id' => 'inv-b', 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => 'RE-B', 'voucherDate' => '2024-10-10T00:00:00.000+02:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false],
+                ] : [];
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+            // Acht Zeilen à 12 Monate = acht Lizenzen für ein Jahr (Periode mit Menge 8).
+            'https://api.lexoffice.io/v1/invoices/inv-a' => FakePluginHttp::response([
+                'id' => 'inv-a', 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'],
+                'lineItems' => array_map(static fn(int $i): array => $monthly('Microsoft 365 Business Premium', 12, 20.60), range(1, 8)),
+            ]),
+            // Eine Lizenz anteilig: 4 + 8 Monate — deckt die Periode mit Menge 1 vollständig.
+            'https://api.lexoffice.io/v1/invoices/inv-b' => FakePluginHttp::response([
+                'id' => 'inv-b', 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'],
+                'lineItems' => [$monthly('Microsoft 365 Business Premium', 4, 20.60), $monthly('Microsoft 365 Business Premium', 8, 20.60)],
+            ]),
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+        ]);
+
+        $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $resolver = app(MarketplaceContactResolver::class);
+        $mappings = [];
+        foreach ($import->companies() as $key => $company) {
+            $mappings[$key] = $resolver->resolve($this->organization, $company, [], $source);
+        }
+
+        $report = (new MarketplaceReconciler)->reconcile($import->entitlements, $mappings, $source, new ReconciliationOptions(CarbonImmutable::parse('2025-01-01'), 45, 90));
+        [$premium8, $premium1] = $report->companies[0]->findings;
+
+        $this->assertSame(ReconciliationStatus::Covered, $premium8->status, '8 × 12 Monate = 96 Lizenzmonate für 8 Lizenzen');
+        $this->assertSame(24720, $premium8->lowestUnitNet?->getMinorAmount(), '20,60 €/Monat aufs Jahr = 247,20 € ≥ Einkauf 244,76 €');
+        $this->assertCount(8, $premium8->matches);
+        $this->assertTrue($premium8->matches[0]['monthly']);
+        $this->assertSame(12.0, $premium8->matches[0]['months']);
+
+        $this->assertSame(ReconciliationStatus::Covered, $premium1->status, '4 + 8 Monate = eine Lizenz für ein Jahr');
+        $this->assertCount(2, $premium1->matches);
+        $this->assertSame(0.0, $premium1->uncoveredQuantity);
+        $this->assertSame([], $report->companies[0]->extras, 'alle Monate verbraucht');
+    }
+
+    public function test_monthly_line_for_one_license_covers_only_half_of_a_two_license_period(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Beispiel Logistik',
+            'company' => 'Beispiel Logistik',
+        ]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-2',
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+        ]);
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => static function (RequestInterface $request) {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = ($query['contactId'] ?? '') === 'c-2' ? [
+                    ['id' => 'inv-x', 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => 'RE-X', 'voucherDate' => '2023-04-01T00:00:00.000+02:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false],
+                ] : [];
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+            'https://api.lexoffice.io/v1/invoices/inv-x' => FakePluginHttp::response([
+                'id' => 'inv-x', 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'],
+                // 12 Monate zu 3,95 €: eine Exchange-Lizenz für ein Jahr; die 7er-Position bleibt offen.
+                'lineItems' => [['type' => 'custom', 'name' => 'Exchange Online (Plan 1)', 'description' => '', 'quantity' => 12, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 3.95, 'grossAmount' => 4.70, 'taxRatePercentage' => 19]]],
+            ]),
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+        ]);
+
+        $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $mappings = ['100002' => new ContactMapping($import->companies()['100002'], $customer, ['c-2'], ContactMapping::SOURCE_REFERENCE)];
+        $entitlements = array_values(array_filter($import->entitlements, static fn($e) => $e->company->key === '100002'));
+
+        $report = (new MarketplaceReconciler)->reconcile($entitlements, $mappings, $source, new ReconciliationOptions(CarbonImmutable::parse('2023-12-31'), 45, 90));
+        $findings = $report->companies[0]->findings;
+        $this->assertCount(2, $findings);
+        // Periode 28.03.23 (1 Lizenz) zuerst: gedeckt mit 12 Monaten, Jahresstückpreis 47,40 € ≥ 41,55 €.
+        $this->assertSame(ReconciliationStatus::Covered, $findings[0]->status);
+        $this->assertSame(4740, $findings[0]->lowestUnitNet?->getMinorAmount());
+        // Periode 30.03.23 (7 Lizenzen): nichts mehr übrig → fehlt, offene Gebühr voll.
+        $this->assertSame(ReconciliationStatus::Missing, $findings[1]->status);
+        $this->assertSame(29088, $findings[1]->openFee()->getMinorAmount());
+    }
+
     public function test_manual_map_wins_over_matching(): void {
         self::fakeLexoffice();
         $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);

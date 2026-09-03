@@ -20,7 +20,7 @@ use CommonToolkit\ValueObjects\Money;
  */
 final readonly class PeriodFinding {
     /**
-     * @param  list<array{line: InvoiceLine, quantity: float, exact?: bool}>  $matches  verbrauchte Positionen und Mengen; exact = Edition im Text erkannt
+     * @param  list<array{line: InvoiceLine, quantity: float, exact?: bool, months?: float, monthly?: bool, annual_unit?: Money}>  $matches  verbrauchte Positionen: quantity in Lizenzen, months in Lizenzmonaten, annual_unit = Stückpreis aufs Jahr
      */
     public function __construct(
         public BillingPeriod $period,

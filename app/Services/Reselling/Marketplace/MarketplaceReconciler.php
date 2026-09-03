@@ -214,24 +214,31 @@ final class MarketplaceReconciler {
         }
         usort($candidates, static fn(array $a, array $b): int => $a['tier'] <=> $b['tier'] ?: $a['mentions'] <=> $b['mentions'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->position <=> $b['line']->position);
 
-        $needed = (float) $period->quantity;
+        $termMonths = $period->termMonths();
+        $neededMonths = (float) $period->licenseMonths();
         $matches = [];
         $lowest = null;
         $generic = [];
         foreach ($candidates as $candidate) {
-            if ($needed <= 0.0) {
+            if ($neededMonths <= 0.0) {
                 break;
             }
-            $take = min($remaining[$candidate['key']], $needed);
-            $remaining[$candidate['key']] -= $take;
-            $needed -= $take;
-            $matches[] = ['line' => $candidate['line'], 'quantity' => $take, 'exact' => $candidate['tier'] === 0];
+            $line = $candidate['line'];
+            // Monatspreis? Dann ist jede Mengeneinheit ein Lizenzmonat.
+            $monthly = $this->isMonthlyPriced($line, $period);
+            $monthsPerUnit = $monthly ? 1 : $termMonths;
+            $availableMonths = $remaining[$candidate['key']] * $monthsPerUnit;
+            $takeMonths = min($availableMonths, $neededMonths);
+            $remaining[$candidate['key']] -= $takeMonths / $monthsPerUnit;
+            $neededMonths -= $takeMonths;
+            $annualUnit = $monthly ? $line->unitNet->times($termMonths) : $line->unitNet;
+            $matches[] = ['line' => $line, 'quantity' => $takeMonths / $termMonths, 'months' => $takeMonths, 'exact' => $candidate['tier'] === 0, 'monthly' => $monthly, 'annual_unit' => $annualUnit];
             if ($candidate['tier'] === 1) {
-                $generic[] = $candidate['line']->name;
+                $generic[] = $line->name;
             }
-            $unit = $candidate['line']->unitNet;
-            $lowest = $lowest === null || $unit->lessThan($lowest) ? $unit : $lowest;
+            $lowest = $lowest === null || $annualUnit->lessThan($lowest) ? $annualUnit : $lowest;
         }
+        $needed = $neededMonths / $termMonths; // offener Anteil in Lizenzen
         $genericNote = $generic === [] ? '' : 'Produkt nur allgemein erkannt: ' . implode(', ', array_unique($generic));
 
         if ($matches === []) {
@@ -254,8 +261,8 @@ final class MarketplaceReconciler {
 
         $withGeneric = static fn(string $note): string => trim($note . ($genericNote !== '' ? ($note !== '' ? ' · ' : '') . $genericNote : ''));
 
-        if ($needed > 0.0) {
-            return new PeriodFinding($period, ReconciliationStatus::Partial, $matches, $lowest, $needed, $withGeneric(sprintf('%s von %d berechnet', $this->formatQuantity($period->quantity - $needed), $period->quantity)));
+        if ($needed > 0.005) {
+            return new PeriodFinding($period, ReconciliationStatus::Partial, $matches, $lowest, $needed, $withGeneric(sprintf('%s von %d Lizenzen berechnet (%s von %d Lizenzmonaten)', $this->formatQuantity($period->quantity - $needed), $period->quantity, $this->formatQuantity($period->licenseMonths() - $neededMonths), $period->licenseMonths())));
         }
 
         if ($lowest instanceof Money && $lowest->lessThan($period->unitFee)) {
@@ -263,6 +270,18 @@ final class MarketplaceReconciler {
         }
 
         return new PeriodFinding($period, ReconciliationStatus::Covered, $matches, $lowest, 0.0, $genericNote);
+    }
+
+    /**
+     * Monatspreis-Erkennung: Der Stückpreis der Position liegt deutlich unter
+     * dem jährlichen Einkaufspreis je Lizenz — dann ist die Menge in Monaten.
+     */
+    private function isMonthlyPriced(InvoiceLine $line, BillingPeriod $period): bool {
+        if ($period->termMonths() <= 1) {
+            return false;
+        }
+
+        return $line->unitNet->lessThan($period->unitFee->times(0.5));
     }
 
     private function formatQuantity(float $quantity): string {
