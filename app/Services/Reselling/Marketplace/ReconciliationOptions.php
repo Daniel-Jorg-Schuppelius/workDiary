@@ -20,9 +20,16 @@ use Carbon\CarbonImmutable;
  * Periodenbeginn liegt (Vorab- bzw. Nachberechnung).
  */
 final readonly class ReconciliationOptions {
+    /**
+     * @param  bool  $strictProducts  true = nur Positionen mit erkannter Edition zählen;
+     *                                false (Standard) = fehlt eine solche, zählt jede
+     *                                Microsoft-Position des Kontakts im Fenster (Sammelrechnungen
+     *                                mit allgemeinem Text wie „Microsoft 365 Lizenzen")
+     */
     public function __construct(
         public CarbonImmutable $reference,
         public int $windowBefore = 45,
         public int $windowAfter = 90,
+        public bool $strictProducts = false,
     ) {}
 }

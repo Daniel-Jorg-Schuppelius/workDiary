@@ -32,6 +32,7 @@ use Illuminate\Support\Facades\Storage;
  * @property CarbonImmutable $reference_date
  * @property int $window_before
  * @property int $window_after
+ * @property bool $strict_products
  * @property list<array{kind: string, name: string, path: string}> $files
  * @property array<string, mixed>|null $summary
  * @property array<string, mixed>|null $report
@@ -62,6 +63,7 @@ class ReconciliationRun extends Model {
         'reference_date',
         'window_before',
         'window_after',
+        'strict_products',
         'files',
         'summary',
         'report',
@@ -75,6 +77,7 @@ class ReconciliationRun extends Model {
         'reference_date' => 'immutable_date',
         'window_before' => 'integer',
         'window_after' => 'integer',
+        'strict_products' => 'boolean',
         'files' => 'array',
         'summary' => 'array',
         'report' => 'array',

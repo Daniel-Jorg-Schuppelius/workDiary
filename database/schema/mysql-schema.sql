@@ -15681,6 +15681,7 @@ CREATE TABLE `reselling_reconciliation_runs` (
   `reference_date` date NOT NULL,
   `window_before` smallint(5) unsigned NOT NULL DEFAULT 45,
   `window_after` smallint(5) unsigned NOT NULL DEFAULT 90,
+  `strict_products` tinyint(1) NOT NULL DEFAULT 0,
   `files` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`files`)),
   `summary` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`summary`)),
   `report` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`report`)),
@@ -20956,3 +20957,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (781,'2027_02_19_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (782,'2027_02_19_111200_add_center_columns_to_help_topics',52);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',53);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (784,'2027_02_19_111400_create_reselling_company_mappings_table',54);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',55);

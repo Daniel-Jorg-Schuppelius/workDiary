@@ -39,6 +39,8 @@ return [
         'before' => 'Días antes del inicio del periodo',
         'after' => 'Días después del inicio del periodo',
         'window_hint' => 'Una factura pertenece a un periodo si su fecha cae dentro de esta ventana alrededor del inicio del periodo.',
+        'strict' => 'Comprobación estricta del producto',
+        'strict_hint' => 'Contar solo las líneas de factura cuyo texto nombra la edición. Sin marcar, cuenta cualquier línea Microsoft del contacto en la ventana si no se encuentra una edición coincidente (facturas agrupadas).',
         'submit' => 'Iniciar',
     ],
     'field' => [
@@ -54,6 +56,7 @@ return [
         'telekom_from' => 'Telekom desde', 'telekom_to' => 'Telekom hasta', 'successor' => 'Contrato QH', 'successor_from' => 'QH desde',
         'billed_via' => 'Facturado a través de un socio (cliente externo)',
         'stored_mapping' => 'Asignación guardada',
+        'used' => 'Utilizado', 'recognized' => 'Reconocido como',
         'valid_from' => 'Lista de precios válida desde',
     ],
     'status' => [
@@ -63,6 +66,7 @@ return [
         'failed' => 'Fallida',
     ],
     'section' => [
+        'lines' => 'Líneas de factura encontradas para los contactos asignados',
         'summary' => 'Resumen', 'price' => 'Comprobación de precios', 'findings' => 'Periodos', 'mappings' => 'Asignación empresa marketplace → contacto Lexoffice',
         'extras' => 'Líneas Microsoft sin periodo vencido', 'successions' => 'Sucesiones Telekom → Quality Hosting', 'issues' => 'Notas de los archivos', 'errors' => 'Errores de lectura', 'files' => 'Archivos y opciones',
     ],
@@ -70,6 +74,7 @@ return [
         'status' => 'Estado', 'problems' => 'Solo señalados', 'all' => 'Todos', 'company' => 'Empresa', 'all_companies' => 'Todas las empresas',
     ],
     'empty' => [
+        'lines' => 'No se encontraron líneas de factura.',
         'runs' => 'Aún no hay ejecuciones. Sube los archivos de exportación para iniciar la primera conciliación.', 'findings' => 'No hay periodos en esta selección.', 'price' => 'No hay contratos activos o no se subió una lista de precios.', 'mappings' => 'No hay empresas.', 'extras' => 'No hay líneas adicionales.', 'successions' => 'No se detectaron sucesiones.',
     ],
     'price_flag' => [
@@ -84,6 +89,7 @@ return [
         'need_file' => 'Se necesita al menos un archivo de exportación (Telekom o Quality Hosting).',
     ],
     'hint' => [
+        'lines' => 'Diagnóstico: todo lo que la conciliación vio en Lexoffice para los contactos asignados en el periodo, con la cantidad utilizada. Una empresa sin filas aquí no tiene facturas para su contacto en el periodo.',
         'run_pending' => 'La ejecución aún no ha terminado. Actualiza la página para ver el informe.', 'run_failed' => 'La ejecución falló.', 'unmapped' => 'Las empresas sin asignación se pueden resolver con un archivo de asignación en la próxima ejecución.', 'extras' => 'Facturado sin suscripción activa, o una edición que la conciliación no reconoce.',
         'mapping' => 'Con «Asignar» defines por empresa quién recibe la factura: la propia empresa, un socio o un contacto Lexoffice. Las asignaciones guardadas tienen prioridad sobre la detección automática.',
         'foreign' => 'Los clientes finales de un socio (clientes externos) se comprueban a través del socio: la factura va al socio, que la traslada. Crea los clientes externos bajo el cliente socio, o añade «Empresa;partner:<nombre o Sqid>» al archivo de asignación.',
@@ -111,6 +117,11 @@ return [
         'customer_placeholder' => 'Elegir cliente',
         'contact' => 'UUID del contacto Lexoffice',
         'contact_hint' => 'Solo necesario para «Contacto Lexoffice»; está en la URL de Lexoffice del contacto.',
+    ],
+    'line' => [
+        'header_only' => 'Documento sin líneas',
+        'microsoft' => 'Línea Microsoft',
+        'other' => 'Otro',
     ],
     'months' => 'meses',
 ];

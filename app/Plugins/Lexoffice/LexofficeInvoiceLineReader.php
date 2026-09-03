@@ -142,6 +142,14 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
     private function invoiceLines(string $id, string $number, CarbonImmutable $date, string $contactId): array {
         $invoice = $this->getJson('/invoices/' . $id, [], 'Rechnung abrufen');
         $currency = CurrencyCode::tryFrom((string) ($invoice['totalPrice']['currency'] ?? 'EUR')) ?? CurrencyCode::Euro;
+        // Belegtexte: Bei Partnerrechnungen steht der Endkunde in Titel,
+        // Einleitung oder Schlusstext — nicht in den Positionen.
+        $voucherText = trim(implode(' ', array_filter([
+            (string) ($invoice['title'] ?? ''),
+            (string) ($invoice['introduction'] ?? ''),
+            (string) ($invoice['remark'] ?? ''),
+        ], static fn(string $part): bool => $part !== '')));
+        $recipient = trim((string) ($invoice['address']['name'] ?? ''));
 
         $lines = [];
         foreach (array_values((array) ($invoice['lineItems'] ?? [])) as $position => $item) {
@@ -175,6 +183,8 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
                 description: (string) ($item['description'] ?? ''),
                 quantity: (float) ($item['quantity'] ?? 1),
                 unitNet: Money::ofFloat($net, $currency),
+                voucherText: $voucherText,
+                recipient: $recipient,
             );
         }
 

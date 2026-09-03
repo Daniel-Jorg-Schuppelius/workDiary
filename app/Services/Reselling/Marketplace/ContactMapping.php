@@ -33,6 +33,8 @@ final readonly class ContactMapping {
 
     public const SOURCE_FOREIGN = 'Fremdkunde';
 
+    public const SOURCE_INVOICE_TEXT = 'Rechnungstext';
+
     public const SOURCE_NONE = '—';
 
     /**

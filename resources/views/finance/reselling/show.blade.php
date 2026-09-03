@@ -52,6 +52,9 @@
             <div class="flex flex-wrap items-center gap-3 text-sm">
                 <x-status-badge :tone="$run->status->tone()" :label="$run->status->label()" />
                 <span class="text-muted">{{ __('reselling.field.window') }}: −{{ $run->window_before }} / +{{ $run->window_after }}</span>
+                @if ($run->strict_products)
+                    <span class="badge badge-outline badge-sm">{{ __('reselling.dialog.strict') }}</span>
+                @endif
                 @foreach ($run->files ?? [] as $file)
                     <span class="badge badge-ghost badge-sm" title="{{ $file['name'] ?? '' }}">{{ $kindLabel((string) ($file['kind'] ?? '')) }}: {{ $file['name'] ?? '' }}</span>
                 @endforeach
@@ -290,6 +293,59 @@
                         </tr>
                     @empty
                         <x-table.empty :colspan="9" :title="__('reselling.empty.mappings')" />
+                    @endforelse
+                </x-table>
+            </x-card>
+
+            <x-card :title="__('reselling.section.lines')" class="mb-4">
+                <p class="text-xs text-muted mb-2">{{ __('reselling.hint.lines') }}</p>
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th>{{ __('reselling.field.company') }}</x-table.th>
+                            <x-table.th>{{ __('reselling.field.voucher') }}</x-table.th>
+                            <x-table.th>{{ __('reselling.field.date') }}</x-table.th>
+                            <x-table.th>{{ __('reselling.field.position') }}</x-table.th>
+                            <x-table.th class="text-right">{{ __('reselling.field.quantity') }}</x-table.th>
+                            <x-table.th class="text-right">{{ __('reselling.field.used') }}</x-table.th>
+                            <x-table.th class="text-right">{{ __('reselling.field.unit_net') }}</x-table.th>
+                            <x-table.th>{{ __('reselling.field.recognized') }}</x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    @forelse ($lines as $line)
+                        <tr>
+                            <td>
+                                {{ $line['company'] }}
+                                @if (($line['recipient'] ?? '') !== '' && \App\Services\Reselling\Marketplace\MarketplaceCompany::normalizeName($line['recipient']) !== \App\Services\Reselling\Marketplace\MarketplaceCompany::normalizeName($line['company']))
+                                    <div class="text-xs text-muted">{{ __('reselling.field.billed_via') }}: {{ $line['recipient'] }}</div>
+                                @endif
+                            </td>
+                            <td>{{ $line['voucher'] }}</td>
+                            <td class="whitespace-nowrap">{{ \Carbon\CarbonImmutable::parse($line['date'])->format('d.m.Y') }}</td>
+                            <td>
+                                {{ $line['name'] }}
+                                @if (($line['description'] ?? '') !== '')
+                                    <div class="text-xs text-muted">{{ $line['description'] }}</div>
+                                @endif
+                                @if (($line['voucher_text'] ?? '') !== '')
+                                    <div class="text-xs text-muted italic">{{ $line['voucher_text'] }}</div>
+                                @endif
+                            </td>
+                            <td class="text-right">{{ $line['header_only'] ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line['quantity'], 2) }}</td>
+                            <td class="text-right">{{ $line['header_only'] ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $line['used'], 2) }}</td>
+                            <td class="text-right whitespace-nowrap">{{ $line['unit_net']['formatted'] }}</td>
+                            <td>
+                                @if ($line['header_only'])
+                                    <x-status-badge size="xs" tone="ghost" :label="__('reselling.line.header_only')" />
+                                @elseif ($line['microsoft'])
+                                    <x-status-badge size="xs" tone="info" :label="__('reselling.line.microsoft')" />
+                                @else
+                                    <x-status-badge size="xs" tone="ghost" :label="__('reselling.line.other')" />
+                                @endif
+                            </td>
+                        </tr>
+                    @empty
+                        <x-table.empty :colspan="8" :title="__('reselling.empty.lines')" />
                     @endforelse
                 </x-table>
             </x-card>

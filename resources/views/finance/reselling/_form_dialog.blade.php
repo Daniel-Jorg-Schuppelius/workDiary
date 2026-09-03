@@ -89,4 +89,12 @@
         </div>
     </div>
     <p class="text-xs text-muted">{{ __('reselling.dialog.window_hint') }}</p>
+
+    <label class="flex items-start gap-2 text-sm cursor-pointer" for="reselling-strict">
+        <input id="reselling-strict" type="checkbox" name="strict_products" value="1" class="checkbox checkbox-sm mt-0.5" @checked(old('strict_products'))>
+        <span>
+            <span class="font-medium">{{ __('reselling.dialog.strict') }}</span>
+            <span class="block text-xs text-muted">{{ __('reselling.dialog.strict_hint') }}</span>
+        </span>
+    </label>
 </x-modal>

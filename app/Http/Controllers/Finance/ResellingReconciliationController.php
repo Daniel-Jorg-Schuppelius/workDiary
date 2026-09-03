@@ -63,6 +63,7 @@ class ResellingReconciliationController extends Controller {
             'reference_date' => ['nullable', 'date_format:Y-m-d'],
             'window_before' => ['nullable', 'integer', 'min:0', 'max:365'],
             'window_after' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'strict_products' => ['nullable', 'boolean'],
         ]);
 
         if (! $request->hasFile('telekom') && ! $request->hasFile('qualityhosting')) {
@@ -76,6 +77,7 @@ class ResellingReconciliationController extends Controller {
             'reference_date' => ($validated['reference_date'] ?? null) ?: CarbonImmutable::today()->toDateString(),
             'window_before' => (int) ($validated['window_before'] ?? 45),
             'window_after' => (int) ($validated['window_after'] ?? 90),
+            'strict_products' => (bool) ($validated['strict_products'] ?? false),
             'files' => [],
         ]);
 
@@ -129,6 +131,8 @@ class ResellingReconciliationController extends Controller {
             $companies[(string) $mapping['key']] = (string) $mapping['company'];
         }
 
+        $lines = array_values(array_filter((array) ($report['lines'] ?? []), static fn(array $line): bool => $companyFilter === '' || ($line['company_key'] ?? '') === $companyFilter));
+
         $stored = CompanyMapping::query()->with('customer')->get()->keyBy('normalized_name');
 
         return view('finance.reselling.show', [
@@ -140,6 +144,7 @@ class ResellingReconciliationController extends Controller {
             'companies' => $companies,
             'statuses' => ReconciliationStatus::cases(),
             'storedMappings' => $stored,
+            'lines' => $lines,
         ]);
     }
 

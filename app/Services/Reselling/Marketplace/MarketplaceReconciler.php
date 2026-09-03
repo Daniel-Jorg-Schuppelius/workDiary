@@ -39,7 +39,8 @@ final class MarketplaceReconciler {
      * @param  list<MarketplaceEntitlement>  $entitlements
      * @param  array<string, ContactMapping>  $mappings  Firmen-Schlüssel → Zuordnung
      */
-    public function reconcile(array $entitlements, array $mappings, InvoiceLineSource $source, ReconciliationOptions $options): ReconciliationReport {
+    public function reconcile(array $entitlements, array $mappings, InvoiceLineSource $source, ReconciliationOptions $options, ?InvoiceLinePool $pool = null): ReconciliationReport {
+        $pool ??= new InvoiceLinePool($source);
         $expander = new BillingPeriodExpander(UnitPriceCatalog::fromEntitlements($entitlements));
 
         /** @var array<string, list<MarketplaceEntitlement>> $byCompany */
@@ -90,7 +91,7 @@ final class MarketplaceReconciler {
         $errorsByContact = [];
         foreach ($windowByContact as $contactId => $window) {
             try {
-                foreach ($source->linesForContact($contactId, $window['from']->subDays($options->windowBefore), $window['to']->addDays($options->windowAfter)) as $line) {
+                foreach ($pool->linesFor((string) $contactId, $window['from']->subDays($options->windowBefore), $window['to']->addDays($options->windowAfter)) as $line) {
                     $lines[$line->key()] = $line;
                     $remaining[$line->key()] = $line->headerOnly ? 0.0 : $line->quantity;
                 }
@@ -126,6 +127,7 @@ final class MarketplaceReconciler {
 
         $companies = [];
         $extrasClaimed = [];
+        $linesClaimed = [];
         foreach ($byCompany as $key => $items) {
             $mapping = $resolvedMappings[$key];
             $periods = $periodsByCompany[$key];
@@ -150,12 +152,20 @@ final class MarketplaceReconciler {
 
             $extras = [];
             $errors = [];
+            $seen = [];
             foreach ($mapping->contactIds as $contactId) {
                 foreach ($errorsByContact[$contactId] ?? [] as $error) {
                     $errors[] = $error;
                 }
                 foreach ($lines as $lineKey => $line) {
-                    if ($line->contactId !== $contactId || $line->headerOnly || $remaining[$lineKey] < 1.0 || isset($extrasClaimed[$lineKey])) {
+                    if ($line->contactId !== $contactId) {
+                        continue;
+                    }
+                    if (! isset($linesClaimed[$lineKey])) {
+                        $seen[] = ['line' => $line, 'remaining' => $remaining[$lineKey]];
+                        $linesClaimed[$lineKey] = true;
+                    }
+                    if ($line->headerOnly || $remaining[$lineKey] < 1.0 || isset($extrasClaimed[$lineKey])) {
                         continue;
                     }
                     if ($this->matcher->looksLikeMicrosoftProduct($line->text())) {
@@ -164,8 +174,9 @@ final class MarketplaceReconciler {
                     }
                 }
             }
+            usort($seen, static fn(array $a, array $b): int => $a['line']->voucherDate <=> $b['line']->voucherDate ?: $a['line']->position <=> $b['line']->position);
 
-            $companies[] = new CompanyReconciliation($mapping, $findings, $extras, array_values(array_unique($errors)));
+            $companies[] = new CompanyReconciliation($mapping, $findings, $extras, array_values(array_unique($errors)), $seen);
         }
 
         return new ReconciliationReport($companies, $options);
@@ -181,6 +192,9 @@ final class MarketplaceReconciler {
         $contactIds = array_flip($mapping->contactIds);
         $companyName = $mapping->company->normalizedName();
 
+        // Stufe 0: Positionen mit erkannter Edition. Stufe 1 (nur ohne
+        // strictProducts): jede Microsoft-Position des Kontakts — Sammel-
+        // rechnungen nennen die Edition oft nicht („Microsoft 365 Lizenzen").
         $candidates = [];
         foreach ($lines as $key => $line) {
             if (! isset($contactIds[$line->contactId]) || $line->headerOnly || $remaining[$key] <= 0.0) {
@@ -189,17 +203,21 @@ final class MarketplaceReconciler {
             if ($line->voucherDate->lessThan($windowStart) || $line->voucherDate->greaterThan($windowEnd)) {
                 continue;
             }
-            if (! $this->matcher->matches($period->entitlement->edition, $line->text())) {
+            $text = $line->text();
+            $exact = $this->matcher->matches($period->entitlement->edition, $text);
+            if (! $exact && ($options->strictProducts || ! $this->matcher->looksLikeMicrosoftProduct($text))) {
                 continue;
             }
-            $mentions = $companyName !== '' && str_contains(' ' . ProductNameMatcher::normalize($line->text()) . ' ', ' ' . $companyName . ' ');
-            $candidates[] = ['key' => $key, 'line' => $line, 'mentions' => $mentions ? 0 : 1, 'distance' => abs($line->voucherDate->diffInDays($period->startsOn))];
+            // Nennung des Endkunden zählt auch im Belegtext (Titel/Einleitung/Schluss).
+            $mentions = $companyName !== '' && str_contains(' ' . ProductNameMatcher::normalize($line->fullText()) . ' ', ' ' . $companyName . ' ');
+            $candidates[] = ['key' => $key, 'line' => $line, 'tier' => $exact ? 0 : 1, 'mentions' => $mentions ? 0 : 1, 'distance' => abs($line->voucherDate->diffInDays($period->startsOn))];
         }
-        usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->position <=> $b['line']->position);
+        usort($candidates, static fn(array $a, array $b): int => $a['tier'] <=> $b['tier'] ?: $a['mentions'] <=> $b['mentions'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->position <=> $b['line']->position);
 
         $needed = (float) $period->quantity;
         $matches = [];
         $lowest = null;
+        $generic = [];
         foreach ($candidates as $candidate) {
             if ($needed <= 0.0) {
                 break;
@@ -207,10 +225,14 @@ final class MarketplaceReconciler {
             $take = min($remaining[$candidate['key']], $needed);
             $remaining[$candidate['key']] -= $take;
             $needed -= $take;
-            $matches[] = ['line' => $candidate['line'], 'quantity' => $take];
+            $matches[] = ['line' => $candidate['line'], 'quantity' => $take, 'exact' => $candidate['tier'] === 0];
+            if ($candidate['tier'] === 1) {
+                $generic[] = $candidate['line']->name;
+            }
             $unit = $candidate['line']->unitNet;
             $lowest = $lowest === null || $unit->lessThan($lowest) ? $unit : $lowest;
         }
+        $genericNote = $generic === [] ? '' : 'Produkt nur allgemein erkannt: ' . implode(', ', array_unique($generic));
 
         if ($matches === []) {
             foreach ($lines as $line) {
@@ -223,22 +245,24 @@ final class MarketplaceReconciler {
                 if ($line->netTotal()->greaterThanOrEqual($period->fee())) {
                     $label = $line->voucherNumber !== '' ? $line->voucherNumber : $line->voucherId;
 
-                    return new PeriodFinding($period, ReconciliationStatus::CoveredByAmount, [['line' => $line, 'quantity' => 0.0]], null, $needed, 'Beleg ' . $label . ' im Fenster, Produkt nicht erkannt: ' . $line->name);
+                    return new PeriodFinding($period, ReconciliationStatus::CoveredByAmount, [['line' => $line, 'quantity' => 0.0, 'exact' => false]], null, $needed, 'Beleg ' . $label . ' im Fenster, Produkt nicht erkannt: ' . $line->name);
                 }
             }
 
             return new PeriodFinding($period, ReconciliationStatus::Missing, [], null, $needed, 'Keine Rechnung ' . $windowStart->format('d.m.Y') . ' – ' . $windowEnd->format('d.m.Y') . ($mapping->isBilledViaPartner() ? ' bei ' . $mapping->billedVia : ''));
         }
 
+        $withGeneric = static fn(string $note): string => trim($note . ($genericNote !== '' ? ($note !== '' ? ' · ' : '') . $genericNote : ''));
+
         if ($needed > 0.0) {
-            return new PeriodFinding($period, ReconciliationStatus::Partial, $matches, $lowest, $needed, sprintf('%s von %d berechnet', $this->formatQuantity($period->quantity - $needed), $period->quantity));
+            return new PeriodFinding($period, ReconciliationStatus::Partial, $matches, $lowest, $needed, $withGeneric(sprintf('%s von %d berechnet', $this->formatQuantity($period->quantity - $needed), $period->quantity)));
         }
 
         if ($lowest instanceof Money && $lowest->lessThan($period->unitFee)) {
-            return new PeriodFinding($period, ReconciliationStatus::Underpriced, $matches, $lowest, 0.0, 'Netto/Stück ' . $lowest->format() . ' unter Einkauf ' . $period->unitFee->format());
+            return new PeriodFinding($period, ReconciliationStatus::Underpriced, $matches, $lowest, 0.0, $withGeneric('Netto/Stück ' . $lowest->format() . ' unter Einkauf ' . $period->unitFee->format()));
         }
 
-        return new PeriodFinding($period, ReconciliationStatus::Covered, $matches, $lowest, 0.0);
+        return new PeriodFinding($period, ReconciliationStatus::Covered, $matches, $lowest, 0.0, $genericNote);
     }
 
     private function formatQuantity(float $quantity): string {

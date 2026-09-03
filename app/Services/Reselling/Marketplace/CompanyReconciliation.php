@@ -20,12 +20,14 @@ final readonly class CompanyReconciliation {
      * @param  list<PeriodFinding>  $findings
      * @param  list<ExtraLine>  $extras
      * @param  list<string>  $errors
+     * @param  list<array{line: InvoiceLine, remaining: float}>  $lines  alle Positionen der Kontakte im Zeitraum — Diagnose: was der Abgleich gesehen hat
      */
     public function __construct(
         public ContactMapping $mapping,
         public array $findings,
         public array $extras,
         public array $errors = [],
+        public array $lines = [],
     ) {}
 
     public function company(): MarketplaceCompany {

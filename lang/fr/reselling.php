@@ -39,6 +39,8 @@ return [
         'before' => 'Jours avant le début de période',
         'after' => 'Jours après le début de période',
         'window_hint' => 'Une facture appartient à une période si sa date se situe dans cette fenêtre autour du début de période.',
+        'strict' => 'Contrôle strict du produit',
+        'strict_hint' => 'Ne compter que les lignes de facture dont le texte nomme l’édition. Sans coche, toute ligne Microsoft du contact dans la fenêtre compte si aucune édition correspondante n’est trouvée (factures groupées).',
         'submit' => 'Démarrer',
     ],
     'field' => [
@@ -54,6 +56,7 @@ return [
         'telekom_from' => 'Telekom à partir de', 'telekom_to' => 'Telekom jusqu’au', 'successor' => 'Contrat QH', 'successor_from' => 'QH à partir de',
         'billed_via' => 'Facturé via un partenaire (client tiers)',
         'stored_mapping' => 'Affectation enregistrée',
+        'used' => 'Utilisé', 'recognized' => 'Reconnu comme',
         'valid_from' => 'Liste de prix valable à partir du',
     ],
     'status' => [
@@ -63,6 +66,7 @@ return [
         'failed' => 'Échouée',
     ],
     'section' => [
+        'lines' => 'Lignes de facture trouvées pour les contacts affectés',
         'summary' => 'Résumé', 'price' => 'Contrôle des prix', 'findings' => 'Périodes', 'mappings' => 'Affectation société marketplace → contact Lexoffice',
         'extras' => 'Lignes Microsoft sans période due', 'successions' => 'Successions Telekom → Quality Hosting', 'issues' => 'Remarques issues des fichiers', 'errors' => 'Erreurs de lecture', 'files' => 'Fichiers et options',
     ],
@@ -70,6 +74,7 @@ return [
         'status' => 'Statut', 'problems' => 'Signalées seulement', 'all' => 'Toutes', 'company' => 'Société', 'all_companies' => 'Toutes les sociétés',
     ],
     'empty' => [
+        'lines' => 'Aucune ligne de facture trouvée.',
         'runs' => 'Aucune exécution. Téléversez les fichiers d’export pour lancer le premier rapprochement.', 'findings' => 'Aucune période dans cette sélection.', 'price' => 'Aucun contrat en cours ou aucune liste de prix téléversée.', 'mappings' => 'Aucune société.', 'extras' => 'Aucune ligne supplémentaire.', 'successions' => 'Aucune succession détectée.',
     ],
     'price_flag' => [
@@ -84,6 +89,7 @@ return [
         'need_file' => 'Au moins un fichier d’export (Telekom ou Quality Hosting) est requis.',
     ],
     'hint' => [
+        'lines' => 'Diagnostic : tout ce que le rapprochement a vu dans Lexoffice pour les contacts affectés sur la période, avec la quantité utilisée. Une société sans lignes ici n’a aucune facture pour son contact sur la période.',
         'run_pending' => 'L’exécution n’est pas encore terminée. Actualisez la page pour voir le rapport.', 'run_failed' => 'L’exécution a échoué.', 'unmapped' => 'Les sociétés sans affectation peuvent être résolues avec un fichier d’affectation lors de la prochaine exécution.', 'extras' => 'Facturé sans abonnement en cours, ou édition non reconnue par le rapprochement.',
         'mapping' => 'Avec « Affecter », vous définissez par société qui reçoit la facture : la société elle-même, un partenaire ou un contact Lexoffice. Les affectations enregistrées priment sur la détection automatique.',
         'foreign' => 'Les clients finaux d’un partenaire (clients tiers) sont vérifiés via le partenaire : la facture va au partenaire, qui la répercute. Créez les clients tiers sous le client partenaire, ou ajoutez « Société;partner:<nom ou Sqid> » au fichier d’affectation.',
@@ -111,6 +117,11 @@ return [
         'customer_placeholder' => 'Choisir un client',
         'contact' => 'UUID du contact Lexoffice',
         'contact_hint' => 'Nécessaire seulement pour « Contact Lexoffice » ; figure dans l’URL Lexoffice du contact.',
+    ],
+    'line' => [
+        'header_only' => 'Pièce sans lignes',
+        'microsoft' => 'Ligne Microsoft',
+        'other' => 'Autre',
     ],
     'months' => 'mois',
 ];

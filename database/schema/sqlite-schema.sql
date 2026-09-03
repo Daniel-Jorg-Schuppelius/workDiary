@@ -18714,6 +18714,7 @@ CREATE TABLE IF NOT EXISTS "reselling_reconciliation_runs"(
   "finished_at" datetime,
   "created_at" datetime,
   "updated_at" datetime,
+  "strict_products" tinyint(1) not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by_user_id") references "users"("id") on delete set null
 );
@@ -19526,3 +19527,4 @@ INSERT INTO migrations VALUES(781,'2027_02_19_111100_add_options_to_backup_targe
 INSERT INTO migrations VALUES(782,'2027_02_19_111200_add_center_columns_to_help_topics',1);
 INSERT INTO migrations VALUES(783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',2);
 INSERT INTO migrations VALUES(784,'2027_02_19_111400_create_reselling_company_mappings_table',3);
+INSERT INTO migrations VALUES(785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',4);

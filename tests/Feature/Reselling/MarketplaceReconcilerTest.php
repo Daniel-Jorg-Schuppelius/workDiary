@@ -331,6 +331,96 @@ class MarketplaceReconcilerTest extends TestCase {
         $this->assertSame(12, $report->countsByStatus()['missing']);
     }
 
+    /**
+     * Betreiber 2026-09-03: „auf den Rechnungen steht bei LDS meistens im Text der
+     * Rechnung, welcher Fremdkunde das ist, nicht in den Positionen". Eine offene
+     * Firma wird über die Belegtexte der Partner zugeordnet; die Position ohne
+     * Editionsnennung deckt die Periode tolerant, streng bleibt sie „Fehlt".
+     */
+    public function test_open_company_is_resolved_via_partner_invoice_text_and_generic_lines_count_tolerantly(): void {
+        $partner = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'LDS Systems GmbH',
+            'company' => 'LDS Systems GmbH',
+        ]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-lds',
+            'referenceable_type' => $partner->getMorphClass(),
+            'referenceable_id' => $partner->getKey(),
+        ]);
+        // Der Partner ist als solcher bekannt: er hat bereits einen (anderen) Fremdkunden.
+        ForeignCustomer::create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Irgendwer AG']);
+
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/profile' => FakePluginHttp::response(['organizationId' => 'org-1']),
+            'https://api.lexoffice.io/v1/voucherlist*' => static function (RequestInterface $request) {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = ($query['contactId'] ?? '') === 'c-lds' ? [
+                    ['id' => 'inv-lds', 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => 'RE-LDS-1', 'voucherDate' => '2023-12-01T00:00:00.000+01:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false],
+                ] : [];
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+            'https://api.lexoffice.io/v1/invoices/inv-lds' => FakePluginHttp::response([
+                'id' => 'inv-lds',
+                'title' => 'Rechnung',
+                'introduction' => 'Microsoft-Lizenzen für Ihren Kunden Unbekannt UG, Laufzeit 11/2023 bis 10/2024',
+                'remark' => 'Vielen Dank.',
+                'address' => ['name' => 'LDS Systems GmbH'],
+                'taxConditions' => ['taxType' => 'net'],
+                'totalPrice' => ['currency' => 'EUR'],
+                'lineItems' => [
+                    // Allgemeiner Text ohne Edition — tolerant zählt er, streng nicht.
+                    ['type' => 'custom', 'name' => 'Microsoft 365 Lizenzen', 'description' => 'Jahresabrechnung', 'quantity' => 1, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 60.00, 'grossAmount' => 71.40, 'taxRatePercentage' => 19]],
+                ],
+            ]),
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+        ]);
+
+        $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $resolver = app(MarketplaceContactResolver::class);
+        $mappings = [];
+        foreach ($import->companies() as $key => $company) {
+            $mappings[$key] = $resolver->resolve($this->organization, $company, [], $source);
+        }
+        $this->assertFalse($mappings['100003']->isResolved(), 'Unbekannt UG: kein Kunde, kein Fremdkunden-Stammsatz, kein Lexoffice-Treffer');
+
+        $options = new ReconciliationOptions(CarbonImmutable::parse('2024-06-01'), 45, 90);
+        $pool = new \App\Services\Reselling\Marketplace\InvoiceLinePool($source);
+        [$from, $to] = \App\Services\Reselling\Marketplace\ReconciliationRunner::globalWindow($import, $options);
+        $partners = \App\Services\Reselling\Marketplace\ReconciliationRunner::partnerContacts($this->organization, $mappings);
+        $this->assertArrayHasKey('c-lds', $partners, 'Kunde mit Fremdkunden gehört in den Partner-Pool');
+
+        $mappings = (new \App\Services\Reselling\Marketplace\ForeignCustomerTextResolver)->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
+
+        $unbekannt = $mappings['100003'];
+        $this->assertTrue($unbekannt->isResolved());
+        $this->assertSame(ContactMapping::SOURCE_INVOICE_TEXT, $unbekannt->source);
+        $this->assertSame(['c-lds'], $unbekannt->contactIds);
+        $this->assertSame('LDS Systems GmbH', $unbekannt->billedVia);
+        $this->assertTrue($unbekannt->customer?->is($partner));
+
+        // Tolerant: die allgemeine Microsoft-Position deckt die Teams-Periode 11/2023.
+        $report = (new MarketplaceReconciler)->reconcile($import->entitlements, $mappings, $source, $options, $pool);
+        $company = collect($report->companies)->first(static fn($c) => $c->company()->key === '100003');
+        $this->assertNotNull($company);
+        $this->assertSame(ReconciliationStatus::Covered, $company->findings[0]->status);
+        $this->assertStringContainsString('Produkt nur allgemein erkannt: Microsoft 365 Lizenzen', $company->findings[0]->note);
+        $this->assertFalse($company->findings[0]->matches[0]['exact']);
+        $this->assertNotEmpty($company->lines, 'Diagnosezeilen enthalten die gesehene Position');
+        $this->assertSame('LDS Systems GmbH', $company->lines[0]['line']->recipient);
+
+        // Streng: ohne Editionsnennung bleibt die Periode offen.
+        $strict = new ReconciliationOptions(CarbonImmutable::parse('2024-06-01'), 45, 90, true);
+        $reportStrict = (new MarketplaceReconciler)->reconcile($import->entitlements, $mappings, $source, $strict, new \App\Services\Reselling\Marketplace\InvoiceLinePool($source));
+        $companyStrict = collect($reportStrict->companies)->first(static fn($c) => $c->company()->key === '100003');
+        $this->assertSame(ReconciliationStatus::CoveredByAmount, $companyStrict->findings[0]->status, 'streng: Beleg im Fenster mit ausreichendem Betrag, Produkt nicht erkannt');
+    }
+
     public function test_manual_map_wins_over_matching(): void {
         self::fakeLexoffice();
         $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);

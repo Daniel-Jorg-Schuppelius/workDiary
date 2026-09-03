@@ -19,6 +19,8 @@ use CommonToolkit\ValueObjects\Money;
  * Eine Ausgangsrechnungsposition des Resellers, quellneutral. `headerOnly`
  * markiert Belege, von denen nur der Kopf bekannt ist (Buchungsbelege ohne
  * Positionen): sie decken nie eine Produktperiode, höchstens den Betrag.
+ * `voucherText` trägt Titel/Einleitung/Schlusstext des Belegs, `recipient`
+ * den Rechnungsempfänger laut Beleg.
  */
 final readonly class InvoiceLine {
     public function __construct(
@@ -33,10 +35,21 @@ final readonly class InvoiceLine {
         public float $quantity,
         public Money $unitNet,
         public bool $headerOnly = false,
+        public string $voucherText = '',
+        public string $recipient = '',
     ) {}
 
+    /** Positionstext (Name + Beschreibung). */
     public function text(): string {
         return trim($this->name . ' ' . $this->description);
+    }
+
+    /**
+     * Positionstext plus Belegtexte (Titel, Einleitung, Schlusstext) — bei
+     * Partnerrechnungen steht der Endkunde meist dort und nicht in der Position.
+     */
+    public function fullText(): string {
+        return trim($this->text() . ' ' . $this->voucherText);
     }
 
     public function netTotal(): Money {

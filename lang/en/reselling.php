@@ -39,6 +39,8 @@ return [
         'before' => 'Days before period start',
         'after' => 'Days after period start',
         'window_hint' => 'An invoice belongs to a period if its date falls within this window around the period start.',
+        'strict' => 'Strict product matching',
+        'strict_hint' => 'Only count invoice line items whose text names the edition. Unchecked, any Microsoft line item of the contact within the window counts when no matching edition is found (collective invoices).',
         'submit' => 'Start run',
     ],
     'field' => [
@@ -54,6 +56,7 @@ return [
         'telekom_from' => 'Telekom from', 'telekom_to' => 'Telekom until', 'successor' => 'QH contract', 'successor_from' => 'QH from',
         'billed_via' => 'Billed via partner (foreign customer)',
         'stored_mapping' => 'Stored mapping',
+        'used' => 'Used', 'recognized' => 'Recognised as',
         'valid_from' => 'Price list valid from',
     ],
     'status' => [
@@ -63,6 +66,7 @@ return [
         'failed' => 'Failed',
     ],
     'section' => [
+        'lines' => 'Invoice line items found for the mapped contacts',
         'summary' => 'Summary', 'price' => 'Price check', 'findings' => 'Periods', 'mappings' => 'Mapping marketplace company → Lexoffice contact',
         'extras' => 'Microsoft line items without a due period', 'successions' => 'Successions Telekom → Quality Hosting', 'issues' => 'Notes from the files', 'errors' => 'Read errors', 'files' => 'Files and options',
     ],
@@ -70,6 +74,7 @@ return [
         'status' => 'Status', 'problems' => 'Flagged only', 'all' => 'All', 'company' => 'Company', 'all_companies' => 'All companies',
     ],
     'empty' => [
+        'lines' => 'No invoice line items found.',
         'runs' => 'No run yet. Upload the export files to start the first reconciliation.', 'findings' => 'No periods in this selection.', 'price' => 'No running contracts or no price list uploaded.', 'mappings' => 'No companies.', 'extras' => 'No extra line items.', 'successions' => 'No successions detected.',
     ],
     'price_flag' => [
@@ -84,6 +89,7 @@ return [
         'need_file' => 'At least one export file (Telekom or Quality Hosting) is required.',
     ],
     'hint' => [
+        'lines' => 'Diagnostics: everything the reconciliation saw in Lexoffice for the mapped contacts within the period, with the quantity used. A company without rows here has no invoices for its contact in the period.',
         'run_pending' => 'The run has not finished yet. Refresh the page to see the report.', 'run_failed' => 'The run failed.', 'unmapped' => 'Companies without a mapping can be resolved with a mapping file on the next run.', 'extras' => 'Invoiced without a running subscription, or an edition the reconciliation does not recognise.',
         'mapping' => 'Use “Map” to define per company who receives the invoice: the company itself, a partner or a Lexoffice contact. Stored mappings take precedence over automatic detection.',
         'foreign' => 'End customers of a partner (foreign customers) are checked via the partner: the invoice goes to the partner, who passes it on. Create foreign customers under the partner customer, or add “Company;partner:<name or Sqid>” to the mapping file.',
@@ -111,6 +117,11 @@ return [
         'customer_placeholder' => 'Select customer',
         'contact' => 'Lexoffice contact UUID',
         'contact_hint' => 'Only needed for “Lexoffice contact”; found in the contact\'s Lexoffice URL.',
+    ],
+    'line' => [
+        'header_only' => 'Voucher without line items',
+        'microsoft' => 'Microsoft line item',
+        'other' => 'Other',
     ],
     'months' => 'mo.',
 ];

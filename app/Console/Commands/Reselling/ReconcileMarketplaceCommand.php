@@ -44,6 +44,7 @@ class ReconcileMarketplaceCommand extends Command {
         {--after=90 : Tage nach Periodenbeginn, in denen eine Rechnung zählt}
         {--csv= : Bericht zusätzlich als CSV (Semikolon, UTF-8) schreiben}
         {--all : auch gedeckte Perioden auflisten}
+        {--strict : nur Positionen mit erkannter Edition zählen (Standard: jede Microsoft-Position des Kontakts, wenn keine Edition passt)}
         ' . self::ORGANIZATION_OPTION;
 
     protected $description = 'Gleicht Marketplace-Abos (M365-Reselling, Telekom + Quality Hosting) mit den Lexoffice-Ausgangsrechnungen ab: fehlende, teilweise und unter Einkauf berechnete Perioden.';
@@ -140,7 +141,12 @@ class ReconcileMarketplaceCommand extends Command {
             $this->warn('  Lexoffice-Suche: ' . $error);
         }
 
-        $report = $this->withOrganizationContext($organization, fn(): ReconciliationReport => $reconciler->reconcile($import->entitlements, $mappings, $source, $options));
+        $pool = new \App\Services\Reselling\Marketplace\InvoiceLinePool($source);
+        [$from, $to] = \App\Services\Reselling\Marketplace\ReconciliationRunner::globalWindow($import, $options);
+        $partners = \App\Services\Reselling\Marketplace\ReconciliationRunner::partnerContacts($organization, $mappings);
+        $mappings = (new \App\Services\Reselling\Marketplace\ForeignCustomerTextResolver)->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
+
+        $report = $this->withOrganizationContext($organization, fn(): ReconciliationReport => $reconciler->reconcile($import->entitlements, $mappings, $source, $options, $pool));
         $priceRows = $priceCheck->build($import->entitlements, $priceList, $report, $options->reference);
         $serialized = $serializer->toArray($import, $report, $priceRows, $resolver->errors(), $priceList);
 
@@ -228,7 +234,7 @@ class ReconcileMarketplaceCommand extends Command {
             return null;
         }
 
-        return new ReconciliationOptions($reference->startOfDay(), $before, $after);
+        return new ReconciliationOptions($reference->startOfDay(), $before, $after, (bool) $this->option('strict'));
     }
 
     /**

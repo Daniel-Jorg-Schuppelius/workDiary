@@ -124,7 +124,9 @@ final class PriceCheckBuilder {
             }
             $key = $this->matcher->productKey($finding->period->entitlement->edition);
             foreach ($finding->matches as $match) {
-                if ($match['quantity'] <= 0.0) {
+                // Nur Positionen mit erkannter Edition — eine allgemeine
+                // „Microsoft-Lizenzen"-Zeile sagt nichts über den Preis DIESES Produkts.
+                if ($match['quantity'] <= 0.0 || ($match['exact'] ?? true) === false) {
                     continue;
                 }
                 $sales[$key][] = $match['line']->unitNet;

@@ -33,6 +33,7 @@ final class ReconciliationReportSerializer {
         $findings = [];
         $mappings = [];
         $extras = [];
+        $lines = [];
         $errors = $resolverErrors;
         $problems = 0;
 
@@ -78,6 +79,27 @@ final class ReconciliationReportSerializer {
             foreach ($company->errors as $error) {
                 $errors[] = $mapping->company->name . ': ' . $error;
             }
+            foreach ($company->lines as $seen) {
+                $line = $seen['line'];
+                $lines[] = [
+                    'company' => $mapping->company->name,
+                    'company_key' => $mapping->company->key,
+                    'contact_id' => $line->contactId,
+                    'voucher' => $line->voucherNumber !== '' ? $line->voucherNumber : $line->voucherId,
+                    'date' => $line->voucherDate->toDateString(),
+                    'type' => $line->voucherType,
+                    'name' => $line->name,
+                    'description' => mb_substr($line->description, 0, 160),
+                    'quantity' => $line->quantity,
+                    'remaining' => $seen['remaining'],
+                    'used' => $line->headerOnly ? 0.0 : $line->quantity - $seen['remaining'],
+                    'unit_net' => $this->money($line->unitNet),
+                    'header_only' => $line->headerOnly,
+                    'microsoft' => (new ProductNameMatcher)->looksLikeMicrosoftProduct($line->text()),
+                    'recipient' => $line->recipient,
+                    'voucher_text' => mb_substr($line->voucherText, 0, 200),
+                ];
+            }
         }
 
         $successions = [];
@@ -98,6 +120,7 @@ final class ReconciliationReportSerializer {
                 'reference' => $report->options->reference->toDateString(),
                 'window_before' => $report->options->windowBefore,
                 'window_after' => $report->options->windowAfter,
+                'strict_products' => $report->options->strictProducts,
             ],
             'summary' => [
                 'entitlements' => count($import->entitlements),
@@ -117,6 +140,7 @@ final class ReconciliationReportSerializer {
             'mappings' => $mappings,
             'findings' => $findings,
             'extras' => $extras,
+            'lines' => $lines,
             'successions' => $successions,
             'price_check' => array_map(fn(PriceCheckRow $row): array => $this->priceRow($row), $priceRows),
             'price_list' => [
