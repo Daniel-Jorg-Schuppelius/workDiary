@@ -146,8 +146,9 @@ class ReconcileMarketplaceCommand extends Command {
         $partners = \App\Services\Reselling\Marketplace\ReconciliationRunner::partnerContacts($organization, $mappings);
         $mappings = (new \App\Services\Reselling\Marketplace\ForeignCustomerTextResolver)->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
 
-        $report = $this->withOrganizationContext($organization, fn(): ReconciliationReport => $reconciler->reconcile($import->entitlements, $mappings, $source, $options, $pool));
-        $priceRows = $priceCheck->build($import->entitlements, $priceList, $report, $options->reference);
+        $articles = \App\Services\Reselling\Marketplace\ArticleCatalog::forOrganization($organization->id);
+        $report = $this->withOrganizationContext($organization, fn(): ReconciliationReport => $reconciler->reconcile($import->entitlements, $mappings, $source, $options, $pool, $articles));
+        $priceRows = $priceCheck->build($import->entitlements, $priceList, $report, $options->reference, $articles);
         $serialized = $serializer->toArray($import, $report, $priceRows, $resolver->errors(), $priceList);
 
         $this->renderMappings($report);
@@ -189,6 +190,7 @@ class ReconcileMarketplaceCommand extends Command {
                 $row->listPrice?->format() ?? '—',
                 $row->uvp?->format() ?? '—',
                 $row->salesMedian === null ? '—' : $row->salesMedian->format() . ' (' . $row->salesSamples . ')',
+                $row->articlePrice?->format() ?? '—',
                 $row->marginPercent === null ? '' : number_format($row->marginPercent, 1, ',', '') . ' %',
                 implode(', ', array_map(static fn(string $flag): string => match ($flag) {
                     PriceCheckRow::FLAG_BELOW_LIST => 'unter Einkauf',
@@ -203,7 +205,7 @@ class ReconcileMarketplaceCommand extends Command {
 
         $this->newLine();
         $this->line('<comment>Preisprüfung' . ($priceList->isEmpty() ? ' (ohne Preisliste)' : ($priceList->validFrom !== null ? ' (Preisliste gültig ab ' . $priceList->validFrom->format('d.m.Y') . ')' : '')) . '</comment>');
-        $this->table(['Produkt', 'Laufzeit', 'Stück laufend', 'Einkauf Vertrag', 'Einkauf Liste', 'UVP', 'Verkauf Median (n)', 'Marge zur Liste', 'Hinweis'], $table);
+        $this->table(['Produkt', 'Laufzeit', 'Stück laufend', 'Einkauf Vertrag', 'Einkauf Liste', 'UVP', 'Verkauf Median (n)', 'Artikelpreis', 'Marge zur Liste', 'Hinweis'], $table);
     }
 
     /**

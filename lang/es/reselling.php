@@ -57,6 +57,7 @@ return [
         'billed_via' => 'Facturado a través de un socio (cliente externo)',
         'stored_mapping' => 'Asignación guardada',
         'used' => 'Utilizado', 'recognized' => 'Reconocido como',
+        'article_price' => 'Precio de artículo (año)',
         'valid_from' => 'Lista de precios válida desde',
     ],
     'status' => [
@@ -93,7 +94,7 @@ return [
         'run_pending' => 'La ejecución aún no ha terminado. Actualiza la página para ver el informe.', 'run_failed' => 'La ejecución falló.', 'unmapped' => 'Las empresas sin asignación se pueden resolver con un archivo de asignación en la próxima ejecución.', 'extras' => 'Facturado sin suscripción activa, o una edición que la conciliación no reconoce.',
         'mapping' => 'Con «Asignar» defines por empresa quién recibe la factura: la propia empresa, un socio o un contacto Lexoffice. Las asignaciones guardadas tienen prioridad sobre la detección automática.',
         'foreign' => 'Los clientes finales de un socio (clientes externos) se comprueban a través del socio: la factura va al socio, que la traslada. Crea los clientes externos bajo el cliente socio, o añade «Empresa;partner:<nombre o Sqid>» al archivo de asignación.',
-        'succession' => 'La duración Telekom se cortó al inicio del contrato de Quality Hosting; de lo contrario cada migración contaría dos veces.', 'price' => 'Los precios de venta proceden de las líneas de factura asignadas; el precio de compra de lista y el PVP recomendado, de la lista de precios para la misma duración y el mismo ritmo.',
+        'succession' => 'La duración Telekom se cortó al inicio del contrato de Quality Hosting; de lo contrario cada migración contaría dos veces.', 'price' => 'Los precios de venta proceden de las líneas de factura asignadas; el precio de compra de lista y el PVP recomendado, de la lista de precios para la misma duración y el mismo ritmo. El precio de artículo es tu precio de venta actual del maestro de artículos de Lexoffice, escalado a la duración; sin datos de factura sirve como referencia.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',

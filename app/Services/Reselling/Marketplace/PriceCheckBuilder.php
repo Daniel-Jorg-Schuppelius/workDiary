@@ -33,8 +33,9 @@ final class PriceCheckBuilder {
      * @param  list<MarketplaceEntitlement>  $entitlements
      * @return list<PriceCheckRow>
      */
-    public function build(array $entitlements, PriceList $priceList, ReconciliationReport $report, CarbonImmutable $reference): array {
+    public function build(array $entitlements, PriceList $priceList, ReconciliationReport $report, CarbonImmutable $reference, ?ArticleCatalog $articles = null): array {
         $catalog = UnitPriceCatalog::fromEntitlements($entitlements);
+        $articles ??= ArticleCatalog::empty();
 
         /** @var array<string, array{product: string, term: int, interval: BillingFrequency, quantity: int, units: list<Money>}> $groups */
         $groups = [];
@@ -65,6 +66,19 @@ final class PriceCheckBuilder {
             $listPrice = $entry?->pricePerInterval;
             $uvp = $entry?->uvpPerInterval;
 
+            // Eigener Artikelpreis (Lexoffice-Artikelstamm), auf die Periode hochgerechnet.
+            $articlePrice = null;
+            $articleName = null;
+            foreach ($articles->forEdition($group['product']) as $article) {
+                $price = $article->priceForTerm($group['term']);
+                if ($price instanceof Money && ($articlePrice === null || $price->lessThan($articlePrice))) {
+                    $articlePrice = $price;
+                    $articleName = $article->name;
+                }
+            }
+            // Verkaufspreis für den Vergleich: berechnete Positionen, sonst der Artikelpreis.
+            $reference = $median ?? $articlePrice;
+
             $flags = [];
             if ($entry === null) {
                 $flags[] = PriceCheckRow::FLAG_NO_LIST;
@@ -73,13 +87,13 @@ final class PriceCheckBuilder {
                 $flags[] = PriceCheckRow::FLAG_NO_SALES;
             }
             $margin = null;
-            if ($median instanceof Money && $listPrice instanceof Money && $listPrice->isPositive()) {
-                $margin = round(($median->toFloat() - $listPrice->toFloat()) / $listPrice->toFloat() * 100, 1);
-                if ($median->lessThan($listPrice)) {
+            if ($reference instanceof Money && $listPrice instanceof Money && $listPrice->isPositive()) {
+                $margin = round(($reference->toFloat() - $listPrice->toFloat()) / $listPrice->toFloat() * 100, 1);
+                if ($reference->lessThan($listPrice)) {
                     $flags[] = PriceCheckRow::FLAG_BELOW_LIST;
                 }
             }
-            if ($median instanceof Money && $uvp instanceof Money && $median->lessThan($uvp)) {
+            if ($reference instanceof Money && $uvp instanceof Money && $reference->lessThan($uvp)) {
                 $flags[] = PriceCheckRow::FLAG_BELOW_UVP;
             }
             $contractMax = $group['units'] === [] ? null : Money::max(...$group['units']);
@@ -102,6 +116,8 @@ final class PriceCheckBuilder {
                 salesSamples: count($samples),
                 marginPercent: $margin,
                 flags: $flags,
+                articlePrice: $articlePrice,
+                articleName: $articleName,
             );
         }
 

@@ -57,6 +57,7 @@ return [
         'billed_via' => 'Fatturato tramite partner (cliente terzo)',
         'stored_mapping' => 'Assegnazione salvata',
         'used' => 'Utilizzato', 'recognized' => 'Riconosciuto come',
+        'article_price' => 'Prezzo articolo (anno)',
         'valid_from' => 'Listino valido dal',
     ],
     'status' => [
@@ -93,7 +94,7 @@ return [
         'run_pending' => 'L’esecuzione non è ancora terminata. Aggiorna la pagina per vedere il report.', 'run_failed' => 'L’esecuzione è fallita.', 'unmapped' => 'Le aziende senza assegnazione si risolvono con un file di assegnazione alla prossima esecuzione.', 'extras' => 'Fatturato senza abbonamento attivo, oppure edizione non riconosciuta dalla riconciliazione.',
         'mapping' => 'Con «Assegna» definisci per azienda chi riceve la fattura: l’azienda stessa, un partner o un contatto Lexoffice. Le assegnazioni salvate hanno la precedenza sul riconoscimento automatico.',
         'foreign' => 'I clienti finali di un partner (clienti terzi) vengono verificati tramite il partner: la fattura va al partner, che la gira. Crea i clienti terzi sotto il cliente partner, oppure aggiungi «Azienda;partner:<nome o Sqid>» al file di assegnazione.',
-        'succession' => 'La durata Telekom è stata troncata all’inizio del contratto Quality Hosting; altrimenti ogni migrazione conterebbe due volte.', 'price' => 'I prezzi di vendita provengono dalle righe di fattura assegnate; prezzo d’acquisto di listino e prezzo consigliato dal listino per la stessa durata e lo stesso ritmo.',
+        'succession' => 'La durata Telekom è stata troncata all’inizio del contratto Quality Hosting; altrimenti ogni migrazione conterebbe due volte.', 'price' => 'I prezzi di vendita provengono dalle righe di fattura assegnate; prezzo d’acquisto di listino e prezzo consigliato dal listino per la stessa durata e lo stesso ritmo. Il prezzo articolo è il tuo prezzo di vendita attuale dall’anagrafica articoli Lexoffice, riportato alla durata; senza dati di fattura funge da riferimento.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',

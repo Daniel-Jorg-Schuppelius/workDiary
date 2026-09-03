@@ -31,16 +31,31 @@ use Throwable;
  * einmal je Kontakt als Zusatzposition im Bericht.
  */
 final class MarketplaceReconciler {
+    private ArticleCatalog $catalog;
+
     public function __construct(
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),
-    ) {}
+    ) {
+        $this->catalog = ArticleCatalog::empty();
+    }
+
+    /**
+     * Produkttext einer Position: der Artikelname aus dem eigenen Stamm, wenn
+     * die Position aus einem Artikel stammt, sonst der Positionstext.
+     */
+    private function productText(InvoiceLine $line): string {
+        $article = $this->catalog->forLine($line);
+
+        return $article === null ? $line->text() : $article->name . ' ' . $line->text();
+    }
 
     /**
      * @param  list<MarketplaceEntitlement>  $entitlements
      * @param  array<string, ContactMapping>  $mappings  Firmen-Schlüssel → Zuordnung
      */
-    public function reconcile(array $entitlements, array $mappings, InvoiceLineSource $source, ReconciliationOptions $options, ?InvoiceLinePool $pool = null): ReconciliationReport {
+    public function reconcile(array $entitlements, array $mappings, InvoiceLineSource $source, ReconciliationOptions $options, ?InvoiceLinePool $pool = null, ?ArticleCatalog $catalog = null): ReconciliationReport {
         $pool ??= new InvoiceLinePool($source);
+        $this->catalog = $catalog ?? ArticleCatalog::empty();
         $expander = new BillingPeriodExpander(UnitPriceCatalog::fromEntitlements($entitlements));
 
         /** @var array<string, list<MarketplaceEntitlement>> $byCompany */
@@ -168,7 +183,7 @@ final class MarketplaceReconciler {
                     if ($line->headerOnly || $remaining[$lineKey] < 1.0 || isset($extrasClaimed[$lineKey])) {
                         continue;
                     }
-                    if ($this->matcher->looksLikeMicrosoftProduct($line->text())) {
+                    if ($this->matcher->looksLikeMicrosoftProduct($this->productText($line))) {
                         $extras[] = new ExtraLine($line, $remaining[$lineKey]);
                         $extrasClaimed[$lineKey] = true;
                     }
@@ -203,7 +218,7 @@ final class MarketplaceReconciler {
             if ($line->voucherDate->lessThan($windowStart) || $line->voucherDate->greaterThan($windowEnd)) {
                 continue;
             }
-            $text = $line->text();
+            $text = $this->productText($line);
             $exact = $this->matcher->matches($period->entitlement->edition, $text);
             if (! $exact && ($options->strictProducts || ! $this->matcher->looksLikeMicrosoftProduct($text))) {
                 continue;
@@ -279,6 +294,11 @@ final class MarketplaceReconciler {
     private function isMonthlyPriced(InvoiceLine $line, BillingPeriod $period): bool {
         if ($period->termMonths() <= 1) {
             return false;
+        }
+        // Artikel mit Einheit „Monat" entscheidet; sonst der Preis.
+        $article = $this->catalog->forLine($line);
+        if ($article !== null && $article->unit !== '') {
+            return $article->isMonthly();
         }
 
         return $line->unitNet->lessThan($period->unitFee->times(0.5));

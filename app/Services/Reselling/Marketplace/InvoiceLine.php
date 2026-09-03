@@ -37,7 +37,13 @@ final readonly class InvoiceLine {
         public bool $headerOnly = false,
         public string $voucherText = '',
         public string $recipient = '',
+        public string $articleId = '',
     ) {}
+
+    /** Artikelnummer aus eckigen Klammern am Anfang des Positionsnamens. */
+    public function articleNumber(): string {
+        return ArticleCatalog::numberFromText($this->name);
+    }
 
     /** Positionstext (Name + Beschreibung). */
     public function text(): string {

@@ -134,8 +134,9 @@ final class ReconciliationRunner {
         $partners = self::partnerContacts($organization, $mappings);
         $mappings = $this->textResolver->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
 
-        $report = $this->reconciler->reconcile($import->entitlements, $mappings, $source, $options, $pool);
-        $priceRows = $this->priceCheck->build($import->entitlements, $priceList, $report, $options->reference);
+        $articles = ArticleCatalog::forOrganization($organization->id);
+        $report = $this->reconciler->reconcile($import->entitlements, $mappings, $source, $options, $pool, $articles);
+        $priceRows = $this->priceCheck->build($import->entitlements, $priceList, $report, $options->reference, $articles);
 
         return $this->serializer->toArray($import, $report, $priceRows, $this->resolver->errors(), $priceList);
     }

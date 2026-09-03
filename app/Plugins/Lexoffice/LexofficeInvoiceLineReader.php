@@ -185,6 +185,7 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
                 unitNet: Money::ofFloat($net, $currency),
                 voucherText: $voucherText,
                 recipient: $recipient,
+                articleId: (string) ($item['id'] ?? ''),
             );
         }
 

@@ -57,6 +57,7 @@ return [
         'billed_via' => 'Abrechnung über Partner (Fremdkunde)',
         'stored_mapping' => 'Gespeicherte Zuordnung',
         'used' => 'Verwendet', 'recognized' => 'Erkannt als',
+        'article_price' => 'Artikelpreis (Jahr)',
         'valid_from' => 'Preisliste gültig ab',
     ],
     'status' => [
@@ -93,7 +94,7 @@ return [
         'run_pending' => 'Der Lauf ist noch nicht fertig. Die Seite zeigt den Bericht nach dem Aktualisieren.', 'run_failed' => 'Der Lauf ist fehlgeschlagen.', 'unmapped' => 'Firmen ohne Zuordnung kannst du über eine Zuordnungsdatei beim nächsten Lauf auflösen.', 'extras' => 'Berechnet ohne laufendes Abo oder eine Edition, die der Abgleich nicht erkennt.',
         'mapping' => 'Über „Zuordnen“ legst du je Firma fest, wer die Rechnung bekommt: die Firma selbst, ein Partner oder ein Lexoffice-Kontakt. Gespeicherte Zuordnungen gehen der automatischen Erkennung vor.',
         'foreign' => 'Endkunden eines Partners (Fremdkunden) werden über den Partner geprüft: Die Rechnung geht an den Partner, der sie weiterreicht. Fremdkunden legst du am Partner-Kunden an, oder du trägst in der Zuordnungsdatei „Firma;partner:<Name oder Sqid>“ ein.',
-        'succession' => 'Die Telekom-Laufzeit wurde am Vertragsstart bei Quality Hosting gekappt, sonst zählte jede Migration doppelt.', 'price' => 'Verkaufspreise stammen aus den zugeordneten Rechnungspositionen; Einkauf Liste und UVP aus der Preisliste für dieselbe Laufzeit und denselben Rhythmus.',
+        'succession' => 'Die Telekom-Laufzeit wurde am Vertragsstart bei Quality Hosting gekappt, sonst zählte jede Migration doppelt.', 'price' => 'Verkaufspreise stammen aus den zugeordneten Rechnungspositionen; Einkauf Liste und UVP aus der Preisliste für dieselbe Laufzeit und denselben Rhythmus. Der Artikelpreis ist dein aktueller Verkaufspreis aus dem Lexoffice-Artikelstamm, auf die Laufzeit hochgerechnet; ohne Rechnungsdaten dient er als Vergleichswert.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',

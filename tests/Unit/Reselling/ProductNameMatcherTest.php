@@ -51,5 +51,10 @@ class ProductNameMatcherTest extends TestCase {
         $this->assertTrue($matcher->looksLikeMicrosoftProduct('Exchange Online Plan 2'));
         $this->assertTrue($matcher->looksLikeMicrosoftProduct('M365 Business Basic'));
         $this->assertFalse($matcher->looksLikeMicrosoftProduct('Fernwartung 2 Stunden'));
+        // Eigene Leistungen mit „Business" oder „Microsoft" im Text sind keine Lizenzen.
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('Business Support'));
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('[SGIT-IT-DSBB-00001HO] - Business Support'));
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('Business Support für Microsoft 365 Umgebung'));
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('Einrichtung Microsoft 365 Tenant, 2 Stunden'));
     }
 }

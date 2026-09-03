@@ -48,5 +48,7 @@ final readonly class PriceCheckRow {
         public int $salesSamples,
         public ?float $marginPercent,
         public array $flags,
+        public ?Money $articlePrice = null,
+        public ?string $articleName = null,
     ) {}
 }

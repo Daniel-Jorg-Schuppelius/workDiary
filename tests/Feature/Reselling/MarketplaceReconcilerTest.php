@@ -535,6 +535,83 @@ class MarketplaceReconcilerTest extends TestCase {
         $this->assertSame(29088, $findings[1]->openFee()->getMinorAmount());
     }
 
+    /**
+     * Betreiber 2026-09-04: „die Microsoft-Produkte müsstest du im Lexoffice
+     * finden" — der Artikelstamm liefert Produkt (Artikelnummer in Klammern),
+     * Einheit „Monat" und den aktuellen Verkaufspreis für die Preisprüfung.
+     */
+    public function test_article_master_drives_product_recognition_and_price_check(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Beispiel Logistik',
+            'company' => 'Beispiel Logistik',
+        ]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-2',
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+        ]);
+        \App\Models\LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'art-exo',
+            'name' => 'Exchange Online (Plan 1)',
+            'article_number' => 'DJS-IT-MCLD-EX01P1',
+            'type' => 'SERVICE',
+            'unit_name' => 'Monat',
+            'net_unit_price' => '3.95',
+            'currency' => 'EUR',
+            'vat_rate' => '19',
+            'synced_at' => now(),
+        ]);
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => static function (RequestInterface $request) {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = ($query['contactId'] ?? '') === 'c-2' ? [
+                    ['id' => 'inv-y', 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => 'RE-Y', 'voucherDate' => '2023-04-01T00:00:00.000+02:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false],
+                ] : [];
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+            'https://api.lexoffice.io/v1/invoices/inv-y' => FakePluginHttp::response([
+                'id' => 'inv-y', 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'],
+                'lineItems' => [
+                    // Positionsname ohne „Plan 1" — erst der Artikel sagt, welches Produkt es ist. 8 × 12 Monate.
+                    ['type' => 'service', 'id' => 'art-exo', 'name' => '[DJS-IT-MCLD-EX01P1] Exchange Online', 'description' => '', 'quantity' => 96, 'unitName' => 'Monat', 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 3.95, 'grossAmount' => 4.70, 'taxRatePercentage' => 19]],
+                    // Eigene Leistung bleibt außen vor.
+                    ['type' => 'service', 'name' => 'Business Support', 'description' => 'Microsoft 365 Betreuung', 'quantity' => 2, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 90.00, 'grossAmount' => 107.10, 'taxRatePercentage' => 19]],
+                ],
+            ]),
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+        ]);
+
+        $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $mappings = ['100002' => new ContactMapping($import->companies()['100002'], $customer, ['c-2'], ContactMapping::SOURCE_REFERENCE)];
+        $entitlements = array_values(array_filter($import->entitlements, static fn($e) => $e->company->key === '100002'));
+        $articles = \App\Services\Reselling\Marketplace\ArticleCatalog::forOrganization($this->organization->id);
+        $this->assertFalse($articles->isEmpty());
+
+        $options = new ReconciliationOptions(CarbonImmutable::parse('2023-12-31'), 45, 90, true);
+        $report = (new MarketplaceReconciler)->reconcile($entitlements, $mappings, $source, $options, null, $articles);
+        $findings = $report->companies[0]->findings;
+        // Streng UND nur „Exchange Online" im Text: der Artikel macht daraus „Exchange Online (Plan 1)" → beide Perioden gedeckt (1 + 7 Lizenzen = 96 Monate).
+        $this->assertSame(ReconciliationStatus::Covered, $findings[0]->status);
+        $this->assertSame(ReconciliationStatus::Covered, $findings[1]->status);
+        $this->assertTrue($findings[1]->matches[0]['exact']);
+        $this->assertTrue($findings[1]->matches[0]['monthly'], 'Einheit Monat aus dem Artikel');
+        $this->assertSame([], $report->companies[0]->extras, 'Business Support ist keine Microsoft-Position');
+
+        $rows = (new \App\Services\Reselling\Marketplace\PriceCheckBuilder)->build($entitlements, \App\Services\Reselling\Marketplace\PriceList::empty(), $report, $options->reference, $articles);
+        $exchange = collect($rows)->first(static fn($r) => str_contains($r->product, 'Exchange'));
+        $this->assertNotNull($exchange);
+        $this->assertSame(4740, $exchange->articlePrice?->getMinorAmount(), '3,95 € × 12 aus dem Artikelstamm');
+        $this->assertSame('Exchange Online (Plan 1)', $exchange->articleName);
+        $this->assertSame(4740, $exchange->salesMedian?->getMinorAmount());
+    }
+
     public function test_manual_map_wins_over_matching(): void {
         self::fakeLexoffice();
         $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);

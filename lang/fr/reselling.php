@@ -57,6 +57,7 @@ return [
         'billed_via' => 'Facturé via un partenaire (client tiers)',
         'stored_mapping' => 'Affectation enregistrée',
         'used' => 'Utilisé', 'recognized' => 'Reconnu comme',
+        'article_price' => 'Prix article (an)',
         'valid_from' => 'Liste de prix valable à partir du',
     ],
     'status' => [
@@ -93,7 +94,7 @@ return [
         'run_pending' => 'L’exécution n’est pas encore terminée. Actualisez la page pour voir le rapport.', 'run_failed' => 'L’exécution a échoué.', 'unmapped' => 'Les sociétés sans affectation peuvent être résolues avec un fichier d’affectation lors de la prochaine exécution.', 'extras' => 'Facturé sans abonnement en cours, ou édition non reconnue par le rapprochement.',
         'mapping' => 'Avec « Affecter », vous définissez par société qui reçoit la facture : la société elle-même, un partenaire ou un contact Lexoffice. Les affectations enregistrées priment sur la détection automatique.',
         'foreign' => 'Les clients finaux d’un partenaire (clients tiers) sont vérifiés via le partenaire : la facture va au partenaire, qui la répercute. Créez les clients tiers sous le client partenaire, ou ajoutez « Société;partner:<nom ou Sqid> » au fichier d’affectation.',
-        'succession' => 'La durée Telekom a été coupée au début du contrat Quality Hosting ; sinon chaque migration compterait deux fois.', 'price' => 'Les prix de vente proviennent des lignes de facture affectées ; le prix d’achat de liste et le prix conseillé de la liste de prix pour la même durée et le même rythme.',
+        'succession' => 'La durée Telekom a été coupée au début du contrat Quality Hosting ; sinon chaque migration compterait deux fois.', 'price' => 'Les prix de vente proviennent des lignes de facture affectées ; le prix d’achat de liste et le prix conseillé de la liste de prix pour la même durée et le même rythme. Le prix article est votre prix de vente actuel issu du catalogue d’articles Lexoffice, ramené à la durée ; sans données de facture, il sert de référence.',
     ],
     'source' => [
         'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',

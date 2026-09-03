@@ -38,6 +38,12 @@ final class ProductNameMatcher {
         'office 365 e5 eea no teams' => ['office 365 e5', 'o365 e5', 'e5 eea'],
     ];
 
+    /** Eigene Dienstleistungen, die trotz „Business"/„Microsoft" im Text keine Lizenzposition sind. */
+    private const SERVICE_HINTS = [
+        'support', 'stunde', 'stunden', 'wartung', 'beratung', 'einrichtung', 'schulung', 'entwicklung',
+        'pauschale', 'anfahrt', 'fernwartung', 'migration', 'installation', 'datev',
+    ];
+
     private const MICROSOFT_HINTS = [
         'microsoft', 'm365', 'o365', 'office 365', 'exchange online', 'teams essentials',
         'business premium', 'business standard', 'business basic', 'apps for business', 'sharepoint', 'onedrive', 'azure',
@@ -106,6 +112,11 @@ final class ProductNameMatcher {
 
     public function looksLikeMicrosoftProduct(string $text): bool {
         $haystack = ' ' . self::normalize($text) . ' ';
+        foreach (self::SERVICE_HINTS as $hint) {
+            if (str_contains($haystack, ' ' . $hint . ' ')) {
+                return false; // „Business Support" ist eine eigene Leistung, keine Lizenz
+            }
+        }
         foreach (self::MICROSOFT_HINTS as $hint) {
             if (str_contains($haystack, $hint)) {
                 return true;

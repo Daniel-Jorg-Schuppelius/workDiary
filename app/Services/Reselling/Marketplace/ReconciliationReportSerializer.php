@@ -208,6 +208,8 @@ final class ReconciliationReportSerializer {
             'sales_samples' => $row->salesSamples,
             'margin_percent' => $row->marginPercent,
             'flags' => $row->flags,
+            'article_price' => $row->articlePrice === null ? null : $this->money($row->articlePrice),
+            'article_name' => $row->articleName,
         ];
     }
 

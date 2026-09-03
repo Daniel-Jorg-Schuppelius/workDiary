@@ -106,6 +106,7 @@
                             <x-table.th class="text-right">{{ __('reselling.field.uvp') }}</x-table.th>
                             <x-table.th class="text-right">{{ __('reselling.field.sales') }}</x-table.th>
                             <x-table.th class="text-right">{{ __('reselling.field.sales_range') }}</x-table.th>
+                            <x-table.th class="text-right">{{ __('reselling.field.article_price') }}</x-table.th>
                             <x-table.th class="text-right">{{ __('reselling.field.margin') }}</x-table.th>
                             <x-table.th>{{ __('reselling.field.note') }}</x-table.th>
                         </tr>
@@ -138,6 +139,7 @@
                                     —
                                 @endif
                             </td>
+                            <td class="text-right whitespace-nowrap" title="{{ $row['article_name'] ?? '' }}">{{ $row['article_price']['formatted'] ?? '—' }}</td>
                             <td class="text-right {{ $row['margin_percent'] !== null && $row['margin_percent'] < 0 ? 'text-error font-medium' : '' }}">
                                 {{ $row['margin_percent'] === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $row['margin_percent'], 1) . ' %' }}
                             </td>
@@ -148,7 +150,7 @@
                             </td>
                         </tr>
                     @empty
-                        <x-table.empty :colspan="10" :title="__('reselling.empty.price')" />
+                        <x-table.empty :colspan="11" :title="__('reselling.empty.price')" />
                     @endforelse
                 </x-table>
             </x-card>
