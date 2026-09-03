@@ -46,7 +46,7 @@ class LexofficeInvoiceService {
 
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl, LexofficeConfig::requestInterval());
             $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
         }
 

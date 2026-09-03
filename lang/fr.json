@@ -6635,6 +6635,7 @@
     "Nummernkreis-Format aktualisiert.": "Format de la plage de numéros mis à jour.",
     "Nummernkreise": "Plages de numéros",
     "Nummernkreise von Lexoffice führen lassen (Kunde, Lieferant, Rechnung, Gutschrift)": "Faire gérer les plages de numéros par Lexoffice (client, fournisseur, facture, avoir)",
+    "Mindestabstand zwischen API-Anfragen in Sekunden (Lexoffice erlaubt 2 je Sekunde)": "Intervalle minimal entre les requêtes API en secondes (Lexoffice autorise 2 par seconde)",
     "Nur A4 Hochformat wird im MVP unterstützt.": "Seul le format A4 portrait est pris en charge dans le MVP.",
     "Nur Entwurfs-Konditionen können entfernt werden.": "Seules les conditions en brouillon peuvent être supprimées.",
     "Nur Entwurfspositionen können freigegeben werden.": "Seuls les postes en brouillon peuvent être approuvés.",

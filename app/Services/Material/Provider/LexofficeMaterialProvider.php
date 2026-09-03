@@ -110,7 +110,7 @@ class LexofficeMaterialProvider implements MaterialProviderInterface {
 
     protected function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api = app(PluginHttpFactory::class)->client(\App\Plugins\Lexoffice\LexofficePlugin::ID, $this->baseUrl, \App\Plugins\Lexoffice\LexofficeConfig::requestInterval());
             $this->api->setAuthentication(new BearerAuthentication($this->apiKey));
         }
 

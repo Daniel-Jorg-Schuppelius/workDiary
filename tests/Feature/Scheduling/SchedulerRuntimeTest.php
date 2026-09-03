@@ -11,6 +11,7 @@
 namespace Tests\Feature\Scheduling;
 
 use App\Models\{Organization, PluginSetting, ScheduledJobRun, ScheduledJobState};
+use App\Models\ScheduledJobOverride;
 use App\Scheduling\ScheduleRunRecorder;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Events\{ScheduledTaskFinished, ScheduledTaskStarting};
@@ -151,6 +152,41 @@ class SchedulerRuntimeTest extends TestCase {
         $this->assertNotNull($state->overdue_notified_at);
 
         // Zweiter Lauf im selben Soll-Fenster: Dedup, kein erneuter Befund.
+        $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
+    }
+
+    /**
+     * Ein dailyAt-Override „22:10" gilt in der Zeitplan-Zeitzone (Europe/Berlin).
+     * Um 23:30 Ortszeit ist er fällig gewesen — in UTC gerechnet läge er noch
+     * 40 Minuten in der Zukunft und der Ausfall bliebe unsichtbar.
+     */
+    public function test_watchdog_evaluates_due_times_in_the_schedule_timezone(): void {
+        config(['app.schedule_timezone' => 'Europe/Berlin']);
+        // 2026-09-02 21:30 UTC = 23:30 Europe/Berlin (Sommerzeit).
+        $this->travelTo(CarbonImmutable::parse('2026-09-02 21:30:00', 'UTC'));
+
+        ScheduledJobOverride::query()->create([
+            'job_key' => 'plans.purge',
+            'organization_id' => null,
+            'enabled' => true,
+            'cadence' => ['type' => 'dailyAt', 'time' => '22:10'],
+        ]);
+        // Letzter Erfolg heute 10:30 UTC: nach dem gestrigen, vor dem heutigen Soll-Lauf.
+        ScheduledJobState::query()->create([
+            'job_key' => 'plans.purge',
+            'last_started_at' => CarbonImmutable::now()->subHours(11),
+            'last_success_at' => CarbonImmutable::now()->subHours(11),
+            'last_status' => ScheduledJobRun::STATUS_SUCCESS,
+        ]);
+
+        $this->assertSame(1, Artisan::call('scheduler:watchdog', ['--fail' => true]), '22:10 Ortszeit (20:10 UTC) ist um 23:30 Ortszeit überfällig');
+        $notified = ScheduledJobState::query()->where('job_key', 'plans.purge')->firstOrFail()->overdue_notified_at;
+        $this->assertNotNull($notified);
+        $this->assertSame('2026-09-02 21:30:00', $notified->utc()->format('Y-m-d H:i:s'), 'in UTC gespeichert, nicht als Ortszeit-String');
+
+        // Gegenprobe: in UTC gerechnet wäre der heutige Soll-Lauf 22:10 UTC noch nicht erreicht.
+        ScheduledJobState::query()->where('job_key', 'plans.purge')->update(['overdue_notified_at' => null]);
+        config(['app.schedule_timezone' => 'UTC']);
         $this->assertSame(0, Artisan::call('scheduler:watchdog', ['--fail' => true]));
     }
 

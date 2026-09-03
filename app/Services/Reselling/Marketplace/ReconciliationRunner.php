@@ -19,7 +19,8 @@ use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceLineReader};
 use App\Services\Reselling\Contracts\InvoiceLineSource;
 use App\Support\OrganizationContext;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\{Cache, Storage};
 use RuntimeException;
 use Throwable;
 
@@ -53,13 +54,25 @@ final class ReconciliationRunner {
         $run->error = null;
         $run->save();
 
+        $lock = Cache::lock(LexofficeConfig::apiLockKey($organization->id), 1800);
+        try {
+            $lock->block(600);
+        } catch (LockTimeoutException) {
+            $this->fail($run, 'Ein anderer Lexoffice-Lauf dieser Organisation blockiert seit 10 Minuten — bitte später erneut starten.');
+
+            return;
+        }
+
         try {
             $report = OrganizationContext::run($organization, fn(): array => $this->execute($run, $organization, $source));
         } catch (Throwable $e) {
+            $lock->release();
             $this->fail($run, $e->getMessage());
 
             return;
         }
+
+        $lock->release();
 
         $run->report = $report;
         $run->summary = $report['summary'];

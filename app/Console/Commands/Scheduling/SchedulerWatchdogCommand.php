@@ -40,7 +40,9 @@ class SchedulerWatchdogCommand extends Command {
     public function handle(JobRegistry $registry, SchedulerRegistrar $registrar): int {
         // Command-Instanzen werden im Container wiederverwendet (Tests, schedule:work) — Plugin-Cache gilt nur pro Lauf.
         $this->pluginActiveCache = [];
-        $now = CarbonImmutable::now();
+        // Fälligkeit in der Zeitzone des Zeitplans berechnen — sonst gilt ein
+        // „22:10"-Job um 22:10 UTC als fällig, obwohl er 22:10 Ortszeit meint.
+        $now = CarbonImmutable::now((string) config('app.schedule_timezone', config('app.timezone')));
         $overrides = ScheduledJobOverride::systemMap();
         $overdue = [];
 
@@ -61,7 +63,11 @@ class SchedulerWatchdogCommand extends Command {
 
             $cadence = $registrar->resolvedCadence($definition);
             $cron = new CronExpression($cadence->cronExpression());
+            // Fälligkeit in der Zeitplan-Zeitzone ermitteln, für Datenbank-
+            // Vergleiche aber in UTC binden: Eloquent formatiert eine Carbon-
+            // Instanz in IHRER Zeitzone, die Spalten liegen in UTC.
             $due = CarbonImmutable::instance($cron->getPreviousRunDate($now->toDateTime()));
+            $dueUtc = $due->utc();
             $deadline = $due->addMinutes($definition->expectedRuntimeMinutes + self::GRACE_MINUTES);
 
             if ($now->lessThanOrEqualTo($deadline)) {
@@ -73,7 +79,7 @@ class SchedulerWatchdogCommand extends Command {
             if ($state->overdue_notified_at !== null && $state->overdue_notified_at->greaterThanOrEqualTo($due)) {
                 continue; // bereits für diesen Soll-Lauf gemeldet
             }
-            if ($this->runInProgressSince($key, $due)) {
+            if ($this->runInProgressSince($key, $dueUtc)) {
                 // Der Lauf dieses Soll-Slots ist noch unterwegs: Hintergrund-
                 // jobs melden ihren Erfolg erst über schedule:finish, und ein
                 // verspäteter Tick startet sie erst jenseits der Frist. Ein
@@ -88,7 +94,7 @@ class SchedulerWatchdogCommand extends Command {
             }
 
             $overdue[] = $key;
-            $state->overdue_notified_at = $now;
+            $state->overdue_notified_at = $now->utc();
             $state->save();
 
             Log::warning('scheduler.job_overdue', [
@@ -170,7 +176,7 @@ class SchedulerWatchdogCommand extends Command {
     private function purgeOldRuns(CarbonImmutable $now): void {
         $days = (int) Setting::get('scheduler.retention_days', 30);
         $deleted = ScheduledJobRun::query()
-            ->where('started_at', '<', $now->subDays(max(1, $days)))
+            ->where('started_at', '<', $now->utc()->subDays(max(1, $days)))
             ->delete();
         if ($deleted > 0) {
             $this->line("Laufnachweise bereinigt: {$deleted}");

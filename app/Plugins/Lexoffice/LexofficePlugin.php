@@ -198,6 +198,7 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
             ], 'default' => 'manual_review'],
             ['key' => 'create_missing_local', 'label' => __('Fehlende Kunden aus Lexoffice neu anlegen'), 'type' => 'boolean', 'default' => false],
             ['key' => 'number_authority', 'label' => __('Nummernkreise von Lexoffice führen lassen (Kunde, Lieferant, Rechnung, Gutschrift)'), 'type' => 'boolean', 'default' => false],
+            ['key' => 'request_interval', 'label' => __('Mindestabstand zwischen API-Anfragen in Sekunden (Lexoffice erlaubt 2 je Sekunde)'), 'type' => 'text', 'default' => '0.5'],
         ];
     }
 

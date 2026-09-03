@@ -128,6 +128,16 @@ return [
     'display_timezone' => env('APP_DISPLAY_TIMEZONE', 'Europe/Berlin'),
 
     /*
+     * Zeitzone des Zeitplans (Laravel: app.schedule_timezone). Alle
+     * `dailyAt`-/Cron-Zeiten der Job-Registry und der Admin-Overrides werden
+     * in DIESER Zeitzone ausgewertet, nicht in app.timezone (UTC). Ohne sie
+     * lief „22:10" als 22:10 UTC = 00:10 Ortszeit — nach der nächtlichen
+     * Abschaltung des Servers (Produktionslog 2026-09-03). Standard ist die
+     * Anzeige-Zeitzone, damit Betreiber die Uhrzeit eingeben, die sie meinen.
+     */
+    'schedule_timezone' => env('SCHEDULE_TIMEZONE', env('APP_DISPLAY_TIMEZONE', 'Europe/Berlin')),
+
+    /*
     |--------------------------------------------------------------------------
     | Application Locale Configuration
     |--------------------------------------------------------------------------

@@ -37,7 +37,7 @@
             <span class="fieldset-label">{{ __('scheduler.field.time') }}</span>
             <input type="time" name="time" class="input input-bordered w-full"
                    value="{{ old('time', $cadence->time) }}">
-            <p class="mt-1 text-xs text-muted">{{ __('scheduler.hint.time') }}</p>
+            <p class="mt-1 text-xs text-muted">{{ __('scheduler.hint.time', ['tz' => config('app.schedule_timezone', config('app.timezone'))]) }}</p>
             @error('time')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
 

@@ -13,6 +13,8 @@ namespace App\Plugins\Lexoffice\Console;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeArticleSync, LexofficeConfig};
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 
 class LexofficeSyncArticlesCommand extends Command {
     use IteratesOrganizations;
@@ -47,12 +49,22 @@ class LexofficeSyncArticlesCommand extends Command {
 
                 continue;
             }
+            $lock = Cache::lock(LexofficeConfig::apiLockKey($org->id), 1800);
+            try {
+                $lock->block(600);
+            } catch (LockTimeoutException) {
+                $this->warn("Organisation #{$org->id} ({$org->name}): anderer Lexoffice-Lauf blockiert seit 10 Minuten — übersprungen.");
+
+                continue;
+            }
             $this->info("Sync Lexoffice-Artikel für Organisation #{$org->id} ({$org->name})...");
             try {
                 $result = (new LexofficeArticleSync($config['api_key'], $config['base_url']))->sync($org);
                 $this->line("  created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, conflicts: {$result['conflicts']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
+            } finally {
+                $lock->release();
             }
         }
 

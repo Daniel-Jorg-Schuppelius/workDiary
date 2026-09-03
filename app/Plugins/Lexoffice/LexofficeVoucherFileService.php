@@ -229,7 +229,7 @@ class LexofficeVoucherFileService {
      */
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl, LexofficeConfig::requestInterval());
             $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
             // Der Antwort-Body geht unverändert an den Browser. Die
             // SSRF-Schranke prüft die Basis-URL — eine Weiterleitung führte

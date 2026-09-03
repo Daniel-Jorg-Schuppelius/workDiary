@@ -28,8 +28,8 @@ use Throwable;
  * voucherlist liefert nur Köpfe; für Rechnungen (`invoice`) wird deshalb je
  * Beleg `GET /invoices/{id}` nachgeladen. Buchungsbelege (`salesinvoice`)
  * haben in Lexoffice keine Positionen und kommen als Kopf-Zeile durch.
- * Entwürfe und stornierte Belege bleiben außen vor. Ratelimit wie beim
- * Belegsync: sanft drosseln, bei 429 mit Retry-After warten.
+ * Entwürfe und stornierte Belege bleiben außen vor. Ratelimit: Anfrageabstand
+ * über den Client (LexofficeConfig::requestInterval), bei 429 Retry-After.
  */
 final class LexofficeInvoiceLineReader implements InvoiceLineSource {
     private const PAGE_SIZE = 250;
@@ -38,14 +38,20 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
 
     private ?PluginApiClient $api = null;
 
+    private float $requestInterval;
+
     public function __construct(
         private readonly string $apiKey,
         private readonly string $baseUrl,
-        private int $throttleMicros = 600_000,
-    ) {}
+        ?float $requestInterval = null,
+    ) {
+        $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
+    }
 
+    /** Tests: weder Anfrageabstand noch Retry-Wartezeit real schlafen. */
     public function withoutThrottle(): self {
-        $this->throttleMicros = 0;
+        $this->requestInterval = 0.0;
+        $this->api = null;
 
         return $this;
     }
@@ -204,15 +210,11 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
     private function getJson(string $path, array $query, string $action): array {
         $attempts = 0;
         do {
-            if ($this->throttleMicros > 0) {
-                usleep($this->throttleMicros);
-            }
-
             $response = $this->api()->getResponse($this->baseUrl . $path, $query);
 
             if ($response->status() === 429 && $attempts < 5) {
                 $retryAfter = (int) ($response->header('Retry-After') ?: 0);
-                if ($this->throttleMicros > 0) {
+                if ($this->requestInterval > 0) {
                     usleep(max($retryAfter, 1) * 1_000_000);
                 }
                 $attempts++;
@@ -234,7 +236,7 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
 
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl);
+            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl, $this->requestInterval);
             $this->api->setAuthentication(new BearerAuthentication($this->apiKey));
         }
 

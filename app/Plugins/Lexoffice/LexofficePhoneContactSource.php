@@ -36,7 +36,7 @@ final class LexofficePhoneContactSource implements ExternalPhoneContactSource {
         }
 
         $baseUrl = rtrim($config['base_url'], '/');
-        $api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $baseUrl);
+        $api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $baseUrl, LexofficeConfig::requestInterval());
         $api->setAuthentication(new BearerAuthentication($apiKey));
 
         $contacts = [];

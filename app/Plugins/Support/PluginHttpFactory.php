@@ -23,20 +23,48 @@ use GuzzleHttp\Client as GuzzleClient;
  */
 class PluginHttpFactory {
     /**
+     * Bekannte API-Limits als Vorgabe für den Anfrageabstand (Sekunden), wenn
+     * der Aufrufer keinen nennt. Plugins mit tarifabhängigem Limit (Toggl,
+     * Etsy, Billbee, easybill, Clockify, BuchhaltungsButler) rechnen ihr
+     * Intervall selbst aus und übergeben es explizit.
+     */
+    public const DEFAULT_REQUEST_INTERVALS = [
+        'lexoffice' => 0.5, // 2 Anfragen je Sekunde und API-Schlüssel
+    ];
+
+    public const MAX_REQUEST_INTERVAL = 5.0;
+
+    /**
      * `$requestInterval` (Sekunden) drosselt aufeinanderfolgende Requests
      * desselben Clients (Toolkit-Throttle) — für tarifgebundene API-Limits
-     * (z. B. easybill 10/min, Billbee 2/s). Der Test-Fake ignoriert das
-     * Intervall, damit Tests nicht real schlafen.
+     * (z. B. easybill 10/min, Billbee 2/s). Nennt der Aufrufer kein Intervall
+     * (0), gilt für JEDES Plugin die Einstellung `request_interval` der
+     * Organisation, ersatzweise die bekannte Vorgabe — so lässt sich ein
+     * Ratenlimit im Betrieb entschärfen, ohne das Plugin anzufassen
+     * (Lexoffice-429-Serie im Produktionslog 2026-09-03). Der Test-Fake
+     * ignoriert das Intervall, damit Tests nicht real schlafen.
      */
     public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
         $this->assertTargetAllowed($pluginId, $baseUrl, $allowPrivateNetwork);
 
         $client = new PluginApiClient($pluginId, $baseUrl);
-        if ($requestInterval > 0) {
-            $client->setRequestInterval($requestInterval);
+        $interval = $requestInterval > 0 ? $requestInterval : self::configuredRequestInterval($pluginId);
+        if ($interval > 0) {
+            $client->setRequestInterval(min($interval, self::MAX_REQUEST_INTERVAL));
         }
 
         return $client;
+    }
+
+    /**
+     * Anfrageabstand aus der Plugin-Einstellung `request_interval` der aktuellen
+     * Organisation, sonst die bekannte Vorgabe des Plugins, sonst 0 (ungedrosselt).
+     */
+    public static function configuredRequestInterval(string $pluginId): float {
+        $default = self::DEFAULT_REQUEST_INTERVALS[$pluginId] ?? 0.0;
+        $value = PluginSettingsResolver::for($pluginId)->float('request_interval', $default);
+
+        return max(0.0, min(self::MAX_REQUEST_INTERVAL, $value));
     }
 
     /**

@@ -13,6 +13,8 @@ namespace App\Plugins\Lexoffice\Console;
 use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeContactSync, LexofficeMatchPolicy, LexofficeNumberAuthority};
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 
 class LexofficeSyncContactsCommand extends Command {
     use IteratesOrganizations;
@@ -66,6 +68,14 @@ class LexofficeSyncContactsCommand extends Command {
             // Nummernkreis-Hoheit gemäß Plugin-Einstellung an die Org übertragen.
             $numberAuthority->apply($org, (bool) $config['number_authority']);
 
+            $lock = Cache::lock(LexofficeConfig::apiLockKey($org->id), 1800);
+            try {
+                $lock->block(600);
+            } catch (LockTimeoutException) {
+                $this->warn("Organisation #{$org->id} ({$org->name}): anderer Lexoffice-Lauf blockiert seit 10 Minuten — übersprungen.");
+
+                continue;
+            }
             $this->info("Sync Lexoffice-Kontakte für Organisation #{$org->id} ({$org->name}) [policy={$policy->value}, only={$only}]...");
             try {
                 $result = $sync->sync($org, $policy, $config['api_key'], $config['base_url'], $createMissing, $only, $stageUnmatched);
@@ -74,6 +84,8 @@ class LexofficeSyncContactsCommand extends Command {
                 $this->line("  ambiguous (übersprungen): {$result['ambiguous']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
+            } finally {
+                $lock->release();
             }
         }
 

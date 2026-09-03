@@ -234,6 +234,24 @@ class SchedulerRegistrationTest extends TestCase {
      * Stapel, meldete ein verspäteter Tick alles hinter ihm als überfällig,
      * obwohl es Sekunden später anläuft.
      */
+    /**
+     * Produktionslog 2026-09-03: Overrides wie „22:10" waren als Ortszeit gemeint,
+     * liefen aber um 22:10 UTC = 00:10 Ortszeit — hinter der nächtlichen
+     * Abschaltung. Der Zeitplan muss in app.schedule_timezone rechnen.
+     */
+    public function test_schedule_runs_in_the_configured_schedule_timezone(): void {
+        $this->assertSame('Europe/Berlin', config('app.schedule_timezone'), 'Standard ist die Anzeige-Zeitzone, nicht UTC');
+
+        $this->app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+        $schedule = app(Schedule::class);
+        app(SchedulerRegistrar::class)->register($schedule);
+
+        $this->assertNotEmpty($schedule->events());
+        foreach ($schedule->events() as $event) {
+            $this->assertSame('Europe/Berlin', (string) $event->timezone, 'Job ohne Zeitplan-Zeitzone: ' . $event->command);
+        }
+    }
+
     public function test_watchdog_is_registered_after_all_other_jobs(): void {
         $commands = array_keys($this->registeredCommands());
 

@@ -72,7 +72,7 @@ class LexofficeContactSync {
             'supplier_unmatched' => 0,
         ];
 
-        $api = app(PluginHttpFactory::class)->client('lexoffice', $baseUrl);
+        $api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $baseUrl, LexofficeConfig::requestInterval());
         $api->setAuthentication(new BearerAuthentication($apiKey));
 
         $page = 0;

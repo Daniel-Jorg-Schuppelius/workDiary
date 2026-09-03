@@ -41,7 +41,7 @@ class LexofficeVoucherSync {
 
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client('lexoffice', $this->baseUrl);
+            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl, LexofficeConfig::requestInterval());
             $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
         }
 
@@ -146,8 +146,6 @@ class LexofficeVoucherSync {
 
         $enriched = 0;
         foreach ($candidates as $voucher) {
-            usleep(600_000); // sanftes Throttling wie beim voucherlist-Abruf
-
             $response = $this->api()->getResponse($this->baseUrl . '/payments/' . $voucher->external_id);
             if (! $response->successful()) {
                 continue;
@@ -360,9 +358,8 @@ class LexofficeVoucherSync {
     private function requestVoucherlist(string $contactExternalId, int $page, int $pageSize): \Illuminate\Http\Client\Response {
         $attempts = 0;
         do {
-            // Sanftes Throttling, um das Ratelimit (2 req/s) nicht zu reißen.
-            usleep(600_000);
-
+            // Drosselung übernimmt der Client (LexofficeConfig::requestInterval);
+            // hier bleibt nur die Wiederholung nach 429 mit Retry-After.
             $response = $this->api()
                 ->getResponse($this->baseUrl . '/voucherlist', [
                     'voucherType' => 'any',

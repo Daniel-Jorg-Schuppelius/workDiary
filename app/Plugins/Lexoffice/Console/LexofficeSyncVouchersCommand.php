@@ -14,6 +14,8 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceService, LexofficeVoucherSync};
 use App\Services\Billing\RetainerVoucherReconciler;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Cache\LockTimeoutException;
+use Illuminate\Support\Facades\Cache;
 
 class LexofficeSyncVouchersCommand extends Command {
     use IteratesOrganizations;
@@ -48,6 +50,14 @@ class LexofficeSyncVouchersCommand extends Command {
 
                 continue;
             }
+            $lock = Cache::lock(LexofficeConfig::apiLockKey($org->id), 1800);
+            try {
+                $lock->block(600);
+            } catch (LockTimeoutException) {
+                $this->warn("Organisation #{$org->id} ({$org->name}): anderer Lexoffice-Lauf blockiert seit 10 Minuten — übersprungen.");
+
+                continue;
+            }
             $this->info("Sync Lexoffice-Belege für Organisation #{$org->id} ({$org->name})...");
             try {
                 $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url']))->sync($org);
@@ -65,6 +75,8 @@ class LexofficeSyncVouchersCommand extends Command {
                 $this->line("  Retainer: gebucht {$retainer['booked']}, storniert {$retainer['revoked']}, neu verknüpft {$retainer['linked']}");
             } catch (\Throwable $e) {
                 $this->error("  Fehler: {$e->getMessage()}");
+            } finally {
+                $lock->release();
             }
         }
 

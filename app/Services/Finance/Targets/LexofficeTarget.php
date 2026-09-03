@@ -266,7 +266,7 @@ class LexofficeTarget implements FacturationTarget {
 
     /** @param  array{api_key: ?string, base_url: string}  $config */
     private function api(array $config): PluginApiClient {
-        $client = app(PluginHttpFactory::class)->client('lexoffice', (string) $config['base_url']);
+        $client = app(PluginHttpFactory::class)->client(\App\Plugins\Lexoffice\LexofficePlugin::ID, (string) $config['base_url'], \App\Plugins\Lexoffice\LexofficeConfig::requestInterval());
         $client->setAuthentication(new BearerAuthentication((string) $config['api_key']));
 
         return $client;

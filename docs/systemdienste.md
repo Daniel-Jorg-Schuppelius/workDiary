@@ -85,3 +85,9 @@ php artisan workdiary:backup:rotate-token   # Heartbeat-Token rotieren (angelegt
 verpasste Läufe NICHT nach. Alle täglichen Jobs müssen per Scheduler-Adminseite
 (Systembetrieb → Geplante Aufgaben) in die Betriebszeit gelegt werden — ebenso
 die Backup-Zeit (`--backup-time`). Details zum Backup: [backup-restore.md](backup-restore.md).
+
+> **Zeitzone:** Alle Uhrzeiten des Zeitplans (Registry-Defaults und Overrides der
+> Adminseite) gelten in `SCHEDULE_TIMEZONE` (Standard: `APP_DISPLAY_TIMEZONE`,
+> also Europe/Berlin), nicht in UTC. Vor 2026-09 wurden sie in UTC ausgewertet —
+> ein „22:10"-Job lief um 00:10 Ortszeit und fiel auf Servern mit nächtlicher
+> Abschaltung dauerhaft aus.

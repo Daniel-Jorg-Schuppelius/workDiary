@@ -165,7 +165,7 @@ return [
         'updates' => ['check' => 'Comprobación de actualizaciones'],
     ],
     'hint' => [
-        'time' => 'Solo para planes diarios/semanales/mensuales.',
+        'time' => 'Hora en la zona horaria :tz — tal como la ejecutará el servidor.',
         'day' => 'Día de la semana 0–6 (0 = domingo) o día del mes 1–31.',
         'expression' => 'Solo para operadores: minuto hora día mes día-semana.',
         'allowlist' => 'Duración prevista aprox. :runtime min. El trabajo se ejecuta con protección contra solapamientos; los intervalos demasiado cortos se rechazan en el servidor.',

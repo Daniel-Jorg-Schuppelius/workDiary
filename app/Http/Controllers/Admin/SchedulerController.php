@@ -49,7 +49,7 @@ class SchedulerController extends Controller {
 
         $overrideMap = ScheduledJobOverride::systemMap();
         $states = ScheduledJobState::query()->get()->keyBy('job_key');
-        $now = CarbonImmutable::now();
+        $now = CarbonImmutable::now((string) config('app.schedule_timezone', config('app.timezone')));
 
         $jobs = collect($this->registry->all())->map(function ($definition) use ($overrideMap, $states, $now) {
             $override = $overrideMap[$definition->key] ?? null;

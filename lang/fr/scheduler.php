@@ -165,7 +165,7 @@ return [
         'updates' => ['check' => 'Vérification des mises à jour'],
     ],
     'hint' => [
-        'time' => 'Uniquement pour les plans quotidiens/hebdomadaires/mensuels.',
+        'time' => 'Heure dans le fuseau :tz — telle que le serveur l’exécutera.',
         'day' => 'Jour de semaine 0–6 (0 = dimanche) ou jour du mois 1–31.',
         'expression' => 'Réservé aux exploitants : minute heure jour mois jour-semaine.',
         'allowlist' => 'Durée prévue env. :runtime min. La tâche s\'exécute avec protection contre les chevauchements ; les intervalles trop courts sont refusés côté serveur.',

@@ -165,7 +165,7 @@ return [
         'updates' => ['check' => 'Verifica aggiornamenti'],
     ],
     'hint' => [
-        'time' => 'Solo per piani giornalieri/settimanali/mensili.',
+        'time' => 'Ora nel fuso orario :tz — così come il server la eseguirà.',
         'day' => 'Giorno della settimana 0–6 (0 = domenica) o giorno del mese 1–31.',
         'expression' => 'Solo per gestori: minuto ora giorno mese giorno-settimana.',
         'allowlist' => 'Durata prevista ca. :runtime min. Il job viene eseguito con protezione da sovrapposizioni; intervalli troppo stretti vengono rifiutati lato server.',

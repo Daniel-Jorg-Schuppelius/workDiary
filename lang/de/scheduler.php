@@ -165,7 +165,7 @@ return [
         'updates' => ['check' => 'Update-Prüfung'],
     ],
     'hint' => [
-        'time' => 'Nur für tägliche/wöchentliche/monatliche Pläne.',
+        'time' => 'Uhrzeit in der Zeitzone :tz — so, wie der Server sie ausführt.',
         'day' => 'Wochentag 0–6 (0 = Sonntag) bzw. Monatstag 1–31.',
         'expression' => 'Nur für Betreiber: Minute Stunde Tag Monat Wochentag.',
         'allowlist' => 'Erwartete Laufzeit ca. :runtime Min. Der Job läuft mit Überschneidungsschutz; zu enge Intervalle werden serverseitig abgelehnt.',

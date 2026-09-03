@@ -165,7 +165,7 @@ return [
         'updates' => ['check' => 'Update check'],
     ],
     'hint' => [
-        'time' => 'Only for daily/weekly/monthly plans.',
+        'time' => 'Time in the :tz timezone — as the server will run it.',
         'day' => 'Weekday 0–6 (0 = Sunday) or day of month 1–31.',
         'expression' => 'Operators only: minute hour day month weekday.',
         'allowlist' => 'Expected runtime approx. :runtime min. The job runs with overlap protection; intervals that are too tight are rejected server-side.',

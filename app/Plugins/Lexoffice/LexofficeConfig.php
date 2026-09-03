@@ -20,6 +20,8 @@ use App\Plugins\Support\PluginSettingsResolver;
  * während die UI-Konfiguration pro Org Vorrang hat.
  */
 class LexofficeConfig {
+    public const DEFAULT_REQUEST_INTERVAL = 0.5;
+
     /**
      * @return array{api_key: ?string, base_url: string, defaults: array<string, mixed>, match_policy: string, create_missing_local: bool, number_authority: bool, webhook_secret: ?string, webhook_public_key: ?string, enabled: bool}
      */
@@ -44,6 +46,30 @@ class LexofficeConfig {
             'webhook_secret' => $r->settingString('webhook_secret'),
             'webhook_public_key' => $r->string('webhook_public_key'),
             'enabled' => $r->enabled(),
+            'request_interval' => self::clampInterval($r->float('request_interval', self::DEFAULT_REQUEST_INTERVAL)),
         ];
+    }
+
+    /**
+     * Mindestabstand zwischen zwei Lexoffice-Anfragen desselben Clients in
+     * Sekunden. Lexoffice erlaubt 2 Anfragen je Sekunde und API-Schlüssel;
+     * 0,5 s hält einen einzelnen Lauf sicher darunter. Die Sync-Kommandos
+     * serialisieren sich zusätzlich je Organisation über eine Sperre, damit
+     * parallel gestartete Läufe das Limit nicht gemeinsam reißen.
+     */
+    public static function requestInterval(?int $organizationId = null): float {
+        return self::clampInterval(PluginSettingsResolver::for(LexofficePlugin::ID, $organizationId)->float('request_interval', self::DEFAULT_REQUEST_INTERVAL));
+    }
+
+    /**
+     * Sperrschlüssel, unter dem sich Lexoffice-Läufe einer Organisation
+     * (Kontakte, Artikel, Belege, Lizenz-Abgleich) gegenseitig ausschließen.
+     */
+    public static function apiLockKey(int $organizationId): string {
+        return 'lexoffice:api:' . $organizationId;
+    }
+
+    private static function clampInterval(float $seconds): float {
+        return max(0.0, min(5.0, $seconds));
     }
 }

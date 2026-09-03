@@ -59,7 +59,7 @@
                 </td>
                 <td class="text-sm">
                     @if ($state?->last_started_at)
-                        <div>{{ $state->last_started_at->timezone(config('app.timezone'))->format('d.m.Y H:i') }}</div>
+                        <div>{{ $state->last_started_at->timezone(config('app.schedule_timezone', config('app.timezone')))->format('d.m.Y H:i') }}</div>
                         <div class="mt-1 flex flex-wrap items-center gap-1">
                             @if ($state->last_status === \App\Models\ScheduledJobRun::STATUS_SUCCESS)
                                 <x-status-badge size="xs" tone="success">{{ __('scheduler.state.success') }}</x-status-badge>
@@ -78,7 +78,7 @@
                 </td>
                 <td class="text-sm">
                     @if ($job['next_due_at'])
-                        {{ $job['next_due_at']->timezone(config('app.timezone'))->format('d.m.Y H:i') }}
+                        {{ $job['next_due_at']->timezone(config('app.schedule_timezone', config('app.timezone')))->format('d.m.Y H:i') }}
                     @else
                         <span class="opacity-50">–</span>
                     @endif

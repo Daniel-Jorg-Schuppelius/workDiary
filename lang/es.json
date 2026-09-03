@@ -6635,6 +6635,7 @@
     "Nummernkreis-Format aktualisiert.": "Formato de serie numérica actualizado.",
     "Nummernkreise": "Series numéricas",
     "Nummernkreise von Lexoffice führen lassen (Kunde, Lieferant, Rechnung, Gutschrift)": "Dejar que Lexoffice gestione las series numéricas (cliente, proveedor, factura, abono)",
+    "Mindestabstand zwischen API-Anfragen in Sekunden (Lexoffice erlaubt 2 je Sekunde)": "Intervalo mínimo entre solicitudes API en segundos (Lexoffice permite 2 por segundo)",
     "Nur A4 Hochformat wird im MVP unterstützt.": "En el MVP solo se admite A4 vertical.",
     "Nur Entwurfs-Konditionen können entfernt werden.": "Solo se pueden eliminar condiciones en borrador.",
     "Nur Entwurfspositionen können freigegeben werden.": "Solo se pueden aprobar posiciones en borrador.",

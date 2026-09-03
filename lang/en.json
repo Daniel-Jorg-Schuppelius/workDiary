@@ -6635,6 +6635,7 @@
     "Nummernkreis-Format aktualisiert.": "Number range format updated.",
     "Nummernkreise": "Number ranges",
     "Nummernkreise von Lexoffice führen lassen (Kunde, Lieferant, Rechnung, Gutschrift)": "Let Lexoffice manage the number ranges (customer, supplier, invoice, credit note)",
+    "Mindestabstand zwischen API-Anfragen in Sekunden (Lexoffice erlaubt 2 je Sekunde)": "Minimum gap between API requests in seconds (Lexoffice allows 2 per second)",
     "Nur A4 Hochformat wird im MVP unterstützt.": "Only A4 portrait is supported in the MVP.",
     "Nur Entwurfs-Konditionen können entfernt werden.": "Only draft terms can be removed.",
     "Nur Entwurfspositionen können freigegeben werden.": "Only draft line items can be approved.",
