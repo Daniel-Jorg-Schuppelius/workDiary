@@ -35,7 +35,7 @@ return [
         'map' => 'File di assegnazione (facoltativo)',
         'map_hint' => 'Una riga per azienda: «Azienda;UUID contatto Lexoffice» oppure «Azienda;customer:<Sqid>». Per tutto ciò che l’esecuzione non assegna in modo univoco.',
         'reference' => 'Data di riferimento',
-        'reference_hint' => 'I periodi iniziati entro questo giorno contano come dovuti.',
+        'reference_hint' => 'I periodi iniziati entro questo giorno contano come dovuti. Non c’è limite verso il passato: viene verificato tutto dal primo inizio contratto negli export.',
         'before' => 'Giorni prima dell’inizio periodo',
         'after' => 'Giorni dopo l’inizio periodo',
         'window_hint' => 'Una fattura appartiene a un periodo se la sua data cade in questa finestra intorno all’inizio del periodo.',

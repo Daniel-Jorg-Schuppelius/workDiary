@@ -35,7 +35,7 @@ return [
         'map' => 'Archivo de asignación (opcional)',
         'map_hint' => 'Una línea por empresa: «Empresa;UUID del contacto Lexoffice» o «Empresa;customer:<Sqid>». Para todo lo que la ejecución no pueda asignar de forma inequívoca.',
         'reference' => 'Fecha de referencia',
-        'reference_hint' => 'Los periodos iniciados hasta este día cuentan como vencidos.',
+        'reference_hint' => 'Los periodos iniciados hasta este día cuentan como vencidos. No hay límite hacia atrás: se comprueba todo desde el primer inicio de contrato de las exportaciones.',
         'before' => 'Días antes del inicio del periodo',
         'after' => 'Días después del inicio del periodo',
         'window_hint' => 'Una factura pertenece a un periodo si su fecha cae dentro de esta ventana alrededor del inicio del periodo.',

@@ -35,7 +35,7 @@ return [
         'map' => 'Mapping file (optional)',
         'map_hint' => 'One line per company: “Company;Lexoffice contact UUID” or “Company;customer:<Sqid>”. For everything the run cannot map unambiguously.',
         'reference' => 'Reference date',
-        'reference_hint' => 'Periods that started on or before this day count as due.',
+        'reference_hint' => 'Periods that started on or before this day count as due. There is no lower bound: everything since the first contract start in the exports is checked.',
         'before' => 'Days before period start',
         'after' => 'Days after period start',
         'window_hint' => 'An invoice belongs to a period if its date falls within this window around the period start.',

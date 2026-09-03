@@ -35,7 +35,7 @@ return [
         'map' => 'Fichier d’affectation (facultatif)',
         'map_hint' => 'Une ligne par société : « Société;UUID du contact Lexoffice » ou « Société;customer:<Sqid> ». Pour tout ce que l’exécution ne peut pas affecter sans ambiguïté.',
         'reference' => 'Date de référence',
-        'reference_hint' => 'Les périodes commencées au plus tard ce jour comptent comme dues.',
+        'reference_hint' => 'Les périodes commencées au plus tard ce jour comptent comme dues. Pas de limite vers le passé : tout est vérifié depuis le premier début de contrat des exports.',
         'before' => 'Jours avant le début de période',
         'after' => 'Jours après le début de période',
         'window_hint' => 'Une facture appartient à une période si sa date se situe dans cette fenêtre autour du début de période.',

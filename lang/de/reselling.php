@@ -35,7 +35,7 @@ return [
         'map' => 'Zuordnungsdatei (optional)',
         'map_hint' => 'Eine Zeile je Firma: „Firma;Lexoffice-Kontakt-UUID“ oder „Firma;customer:<Sqid>“. Für alles, was der Lauf nicht eindeutig zuordnet.',
         'reference' => 'Stichtag',
-        'reference_hint' => 'Perioden, die bis zu diesem Tag begonnen haben, gelten als fällig.',
+        'reference_hint' => 'Perioden, die bis zu diesem Tag begonnen haben, gelten als fällig. Nach hinten gibt es keine Grenze: geprüft wird alles seit dem ersten Vertragsstart in den Exporten.',
         'before' => 'Tage vor Periodenbeginn',
         'after' => 'Tage nach Periodenbeginn',
         'window_hint' => 'Eine Rechnung zählt zur Periode, wenn ihr Datum in diesem Fenster um den Periodenbeginn liegt.',
