@@ -734,6 +734,9 @@ class PermissionsSeeder extends Seeder {
             // Fakturierungswegs bleibt dem Admin vorbehalten).
             PermissionEnum::FinanceViewAny,
             PermissionEnum::FinanceTransferTime,
+            // Lizenz-Reselling-Abgleich (Feature 151): Abrechnungsluecken
+            // und Margen pruefen ist Buchhaltungsarbeit.
+            PermissionEnum::FinanceResellingManage,
             PermissionEnum::FinanceTransferMaterial,
             // Zahlungsabgleich (Feature 045, Priorität 3): Bankdatei importieren
             // und Zuordnungen bestätigen. Die Verwaltung eigener Bankkonten

@@ -371,6 +371,7 @@ return [
         // Provisionen (Feature 146)
         'commission.viewAny' => 'Provisionen sehen (Regeln, Zeilen, Läufe)',
         'commission.manage' => 'Provisionen verwalten (Regeln, Zuordnung, Abrechnungslauf)',
+        'finance.reselling.manage' => 'Lizenz-Reselling-Abgleich ausführen (Exporte hochladen, Berichte sehen)',
 
         'finance.viewAny' => 'Übergabenachweise einsehen',
         'finance.config' => 'Finanzkonfiguration verwalten',

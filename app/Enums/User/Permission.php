@@ -262,6 +262,9 @@ enum Permission: string implements HasLabel {
 
         // ── Finanzschnittstelle (Feature 045) ──────────────────────────────
     case FinanceViewAny = 'finance.viewAny';
+        // Lizenz-Reselling-Abgleich (Feature 151): Exporte hochladen, Läufe
+        // sehen, Bericht laden. Verkaufspreise und Kundenzuordnung — Buchhaltung.
+    case FinanceResellingManage = 'finance.reselling.manage';
     case FinanceConfig = 'finance.config';
 
     /** Buchhaltungswechsel planen, umschalten und abschließen (MVP-653). */

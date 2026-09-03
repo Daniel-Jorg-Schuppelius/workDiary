@@ -371,6 +371,7 @@ return [
         // Provisionen (Feature 146)
         'commission.viewAny' => 'View commissions (rules, entries, runs)',
         'commission.manage' => 'Manage commissions (rules, assignment, settlement run)',
+        'finance.reselling.manage' => 'Run licence reselling reconciliation (upload exports, view reports)',
 
         'finance.viewAny' => 'View transfer receipts',
         'finance.config' => 'Manage finance configuration',

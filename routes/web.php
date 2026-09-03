@@ -2467,6 +2467,17 @@ Route::middleware('auth')->group(function () {
             Route::delete('zuordnung/{allocation}', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'unmatch'])->name('unmatch');
         });
 
+        // ── Lizenz-Reselling-Abgleich (Feature 151): Marketplace-Exporte gegen
+        // Lexoffice-Rechnungen, Lauf im Hintergrund, Bericht mit Preisprüfung. ──
+        Route::prefix('finanzen/lizenz-abgleich')->name('finance.reselling.')->middleware('can:finance.reselling.manage')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'index'])->name('index');
+            Route::get('neu', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'store'])->name('store');
+            Route::get('{run}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'show'])->name('show');
+            Route::get('{run}/csv', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'download'])->name('download');
+            Route::delete('{run}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'destroy'])->name('destroy');
+        });
+
         // ── Eigene Bankkonten (Feature 045, finance.config) ─────────────────────
         Route::prefix('finanzen/bankkonten')->name('finance.bank-accounts.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Finance\BankAccountController::class, 'index'])->name('index');

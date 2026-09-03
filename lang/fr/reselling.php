@@ -1,0 +1,87 @@
+<?php
+/*
+ * Created on   : Thu Sep 03 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : reselling.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+// Lizenz-Reselling-Abgleich (Feature 151, MVP-757).
+return [
+    'title' => [
+        'menu' => 'Rapprochement licences',
+        'index' => 'Rapprochement de revente de licences',
+        'show' => 'Exécution du rapprochement',
+    ],
+    'subtitle' => 'Comparer les abonnements marketplace (Telekom, Quality Hosting) avec les factures sortantes Lexoffice : périodes manquantes, partielles ou facturées sous le prix d’achat, plus un contrôle des prix contre la liste de prix revendeur.',
+    'action' => [
+        'new' => 'Nouvelle exécution',
+        'download' => 'CSV',
+        'delete' => 'Supprimer',
+        'refresh' => 'Actualiser',
+        'back' => 'Retour à la vue d’ensemble',
+    ],
+    'dialog' => [
+        'title' => 'Démarrer une nouvelle exécution',
+        'hint' => 'Au moins un fichier d’export est requis. L’exécution lit Lexoffice en arrière-plan ; avec de nombreux clients, cela prend quelques minutes.',
+        'telekom' => 'Telekom Cloud Marketplace : purchases.csv',
+        'qualityhosting' => 'Quality Hosting : export des contrats (.xlsx)',
+        'pricelist' => 'Quality Hosting : liste de prix (.xlsx, facultatif)',
+        'map' => 'Fichier d’affectation (facultatif)',
+        'map_hint' => 'Une ligne par société : « Société;UUID du contact Lexoffice » ou « Société;customer:<Sqid> ». Pour tout ce que l’exécution ne peut pas affecter sans ambiguïté.',
+        'reference' => 'Date de référence',
+        'reference_hint' => 'Les périodes commencées au plus tard ce jour comptent comme dues.',
+        'before' => 'Jours avant le début de période',
+        'after' => 'Jours après le début de période',
+        'window_hint' => 'Une facture appartient à une période si sa date se situe dans cette fenêtre autour du début de période.',
+        'submit' => 'Démarrer',
+    ],
+    'field' => [
+        'created' => 'Démarrée', 'status' => 'Statut', 'sources' => 'Sources', 'reference' => 'Date de référence',
+        'periods' => 'Périodes', 'problems' => 'Signalées', 'open_fee' => 'Frais d’achat ouverts', 'unmapped' => 'Sans affectation',
+        'window' => 'Fenêtre', 'files' => 'Fichiers', 'by' => 'Par', 'error' => 'Erreur', 'price_flags' => 'Alertes prix',
+        'company' => 'Société', 'customer' => 'Client', 'contact' => 'Contact Lexoffice', 'mapping' => 'Affectation', 'candidates' => 'Candidats',
+        'source' => 'Source', 'edition' => 'Édition', 'period' => 'Période', 'quantity' => 'Quantité', 'purchase' => 'Achat',
+        'vouchers' => 'Facture(s)', 'unit_net' => 'Net par unité', 'note' => 'Remarque', 'succession' => 'Succession',
+        'voucher' => 'Facture', 'date' => 'Date', 'position' => 'Ligne', 'remaining' => 'Restant',
+        'product' => 'Produit', 'term' => 'Durée', 'running' => 'Unités en cours', 'contract_price' => 'Achat (contrat)', 'list_price' => 'Achat (liste)',
+        'uvp' => 'Prix conseillé', 'sales' => 'Vente (médiane, nombre)', 'sales_range' => 'Vente min – max', 'margin' => 'Marge vs liste',
+        'telekom_from' => 'Telekom à partir de', 'telekom_to' => 'Telekom jusqu’au', 'successor' => 'Contrat QH', 'successor_from' => 'QH à partir de',
+        'valid_from' => 'Liste de prix valable à partir du',
+    ],
+    'status' => [
+        'queued' => 'En attente',
+        'running' => 'En cours',
+        'done' => 'Terminée',
+        'failed' => 'Échouée',
+    ],
+    'section' => [
+        'summary' => 'Résumé', 'price' => 'Contrôle des prix', 'findings' => 'Périodes', 'mappings' => 'Affectation société marketplace → contact Lexoffice',
+        'extras' => 'Lignes Microsoft sans période due', 'successions' => 'Successions Telekom → Quality Hosting', 'issues' => 'Remarques issues des fichiers', 'errors' => 'Erreurs de lecture', 'files' => 'Fichiers et options',
+    ],
+    'filter' => [
+        'status' => 'Statut', 'problems' => 'Signalées seulement', 'all' => 'Toutes', 'company' => 'Société', 'all_companies' => 'Toutes les sociétés',
+    ],
+    'empty' => [
+        'runs' => 'Aucune exécution. Téléversez les fichiers d’export pour lancer le premier rapprochement.', 'findings' => 'Aucune période dans cette sélection.', 'price' => 'Aucun contrat en cours ou aucune liste de prix téléversée.', 'mappings' => 'Aucune société.', 'extras' => 'Aucune ligne supplémentaire.', 'successions' => 'Aucune succession détectée.',
+    ],
+    'price_flag' => [
+        'below_list' => 'sous le prix d’achat', 'below_uvp' => 'sous le prix conseillé', 'contract_above_list' => 'contrat plus cher que la liste', 'no_sales' => 'aucune donnée de facture', 'no_list' => 'absent de la liste de prix',
+    ],
+    'flash' => [
+        'created' => 'Exécution démarrée. Le rapport apparaîtra ici une fois Lexoffice lu.', 'deleted' => 'Exécution supprimée.', 'not_done' => 'L’exécution n’est pas encore terminée.',
+    ],
+    'validation' => [
+        'need_file' => 'Au moins un fichier d’export (Telekom ou Quality Hosting) est requis.',
+    ],
+    'hint' => [
+        'run_pending' => 'L’exécution n’est pas encore terminée. Actualisez la page pour voir le rapport.', 'run_failed' => 'L’exécution a échoué.', 'unmapped' => 'Les sociétés sans affectation peuvent être résolues avec un fichier d’affectation lors de la prochaine exécution.', 'extras' => 'Facturé sans abonnement en cours, ou édition non reconnue par le rapprochement.',
+        'succession' => 'La durée Telekom a été coupée au début du contrat Quality Hosting ; sinon chaque migration compterait deux fois.', 'price' => 'Les prix de vente proviennent des lignes de facture affectées ; le prix d’achat de liste et le prix conseillé de la liste de prix pour la même durée et le même rythme.',
+    ],
+    'source' => [
+        'telekom' => 'Telekom', 'qualityhosting' => 'Quality Hosting',
+    ],
+    'months' => 'mois',
+];

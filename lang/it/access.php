@@ -344,6 +344,7 @@ return [
         // Provisionen (Feature 146)
         'commission.viewAny' => 'Visualizzare le provvigioni (regole, righe, liquidazioni)',
         'commission.manage' => 'Gestire le provvigioni (regole, assegnazione, liquidazione)',
+        'finance.reselling.manage' => 'Eseguire la riconciliazione della rivendita licenze (caricare export, vedere report)',
 
         'finance.viewAny' => 'Consultare le ricevute di trasferimento',
         'finance.config' => 'Gestire la configurazione finanziaria',

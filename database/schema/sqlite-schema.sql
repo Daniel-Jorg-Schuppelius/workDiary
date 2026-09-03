@@ -18698,6 +18698,29 @@ CREATE UNIQUE INDEX "users_calendar_feed_token_unique_h" on "users"(
 CREATE INDEX "plugin_settings_workspace_lookup_idx" on "plugin_settings"(
   "workspace_lookup"
 );
+CREATE TABLE IF NOT EXISTS "reselling_reconciliation_runs"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "created_by_user_id" integer,
+  "status" varchar not null default 'queued',
+  "reference_date" date not null,
+  "window_before" integer not null default '45',
+  "window_after" integer not null default '90',
+  "files" text not null,
+  "summary" text,
+  "report" text,
+  "error" text,
+  "started_at" datetime,
+  "finished_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "reselling_runs_org_created_idx" on "reselling_reconciliation_runs"(
+  "organization_id",
+  "created_at"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -19481,3 +19504,4 @@ INSERT INTO migrations VALUES(779,'2027_02_19_110900_add_workspace_lookup_to_plu
 INSERT INTO migrations VALUES(780,'2027_02_19_111000_hash_serial_passport_token',1);
 INSERT INTO migrations VALUES(781,'2027_02_19_111100_add_options_to_backup_target_connections',1);
 INSERT INTO migrations VALUES(782,'2027_02_19_111200_add_center_columns_to_help_topics',1);
+INSERT INTO migrations VALUES(783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',2);

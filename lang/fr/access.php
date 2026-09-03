@@ -344,6 +344,7 @@ return [
         // Provisionen (Feature 146)
         'commission.viewAny' => 'Consulter les commissions (règles, lignes, décomptes)',
         'commission.manage' => 'Gérer les commissions (règles, affectation, décompte)',
+        'finance.reselling.manage' => 'Exécuter le rapprochement de revente de licences (téléverser les exports, voir les rapports)',
 
         'finance.viewAny' => 'Consulter les justificatifs de transfert',
         'finance.config' => 'Gérer la configuration financière',

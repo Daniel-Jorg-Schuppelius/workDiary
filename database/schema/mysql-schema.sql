@@ -15646,6 +15646,32 @@ CREATE TABLE `request_items` (
   CONSTRAINT `rqi_sla_fk` FOREIGN KEY (`sla_contract_id`) REFERENCES `sla_contracts` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `reselling_reconciliation_runs`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `reselling_reconciliation_runs` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'queued',
+  `reference_date` date NOT NULL,
+  `window_before` smallint(5) unsigned NOT NULL DEFAULT 45,
+  `window_after` smallint(5) unsigned NOT NULL DEFAULT 90,
+  `files` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`files`)),
+  `summary` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`summary`)),
+  `report` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`report`)),
+  `error` text DEFAULT NULL,
+  `started_at` timestamp NULL DEFAULT NULL,
+  `finished_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `reselling_reconciliation_runs_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `reselling_runs_org_created_idx` (`organization_id`,`created_at`),
+  CONSTRAINT `reselling_reconciliation_runs_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `reselling_reconciliation_runs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `restore_tests`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -20904,3 +20930,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (779,'2027_02_19_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (780,'2027_02_19_111000_hash_serial_passport_token',50);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (781,'2027_02_19_111100_add_options_to_backup_target_connections',51);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (782,'2027_02_19_111200_add_center_columns_to_help_topics',52);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',53);

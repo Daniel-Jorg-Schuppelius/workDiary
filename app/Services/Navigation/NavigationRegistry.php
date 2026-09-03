@@ -293,6 +293,7 @@ class NavigationRegistry {
             'finance.dunning.index' => 'module.finance',
             'finance.transfers.index' => 'module.finance',
             'finance.reconciliation.index' => 'module.finance',
+            'finance.reselling.index' => 'module.finance',
             'finance.bank-accounts.index' => 'module.finance',
             'finance.datev.index' => 'module.finance',
             'finance.gobd.index' => 'module.finance',
@@ -637,6 +638,11 @@ class NavigationRegistry {
                         // Ein Eintrag für alle drei Seiten (Zeilen, Regeln, Läufe).
                         ...(($user?->can(Permission::CommissionViewAny->value) || $user?->can(Permission::CommissionManage->value))
                             ? [['route' => 'commissions.index', 'label' => __('commission.title'), 'icon' => 'percent', 'modal' => false, 'matches' => ['commissions.*', 'commission-rules.*', 'commission-runs.*']]]
+                            : []),
+                        // Lizenz-Reselling-Abgleich (Feature 151, MVP-757): Marketplace-
+                        // Abos gegen die eigenen Rechnungen — Abrechnungsarbeit, deshalb hier.
+                        ...(($user?->can(Permission::FinanceResellingManage->value) ?? false)
+                            ? [['route' => 'finance.reselling.index', 'label' => __('reselling.title.menu'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['finance.reselling.*']]]
                             : []),
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],
