@@ -17,9 +17,15 @@ use Carbon\CarbonImmutable;
 /**
  * Stichtag und Suchfenster: Eine Rechnung gilt als zur Periode gehörig, wenn
  * ihr Datum zwischen `windowBefore` Tagen vor und `windowAfter` Tagen nach dem
- * Periodenbeginn liegt (Vorab- bzw. Nachberechnung).
+ * Periodenbeginn liegt. Nach hinten ist das Fenster weit (Standard zwei
+ * Jahre): Der Reseller berechnet oft Monate später und mehrere Jahre in einem
+ * Block — die Zuteilung in Lizenzmonaten sorgt dafür, dass nichts doppelt zählt.
  */
 final readonly class ReconciliationOptions {
+    public const DEFAULT_BEFORE = 90;
+
+    public const DEFAULT_AFTER = 730;
+
     /**
      * @param  bool  $strictProducts  true = nur Positionen mit erkannter Edition zählen;
      *                                false (Standard) = fehlt eine solche, zählt jede
@@ -28,8 +34,8 @@ final readonly class ReconciliationOptions {
      */
     public function __construct(
         public CarbonImmutable $reference,
-        public int $windowBefore = 45,
-        public int $windowAfter = 90,
+        public int $windowBefore = self::DEFAULT_BEFORE,
+        public int $windowAfter = self::DEFAULT_AFTER,
         public bool $strictProducts = false,
     ) {}
 }

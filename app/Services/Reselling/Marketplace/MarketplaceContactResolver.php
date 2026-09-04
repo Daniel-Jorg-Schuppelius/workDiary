@@ -110,21 +110,37 @@ final class MarketplaceContactResolver {
         }
 
         if ($source !== null) {
-            $hits = $this->safe(static fn(): array => $source->findContactsByName($company->name));
-            $wanted = $company->normalizedName();
-            $exact = array_values(array_filter($hits, static fn(array $hit): bool => MarketplaceCompany::normalizeName($hit['name']) === $wanted));
-            if (count($exact) === 1) {
-                return new ContactMapping($company, $customer, [$exact[0]['id']], ContactMapping::SOURCE_SEARCH, [], 'Name gleich');
-            }
-            if ($exact === [] && count($hits) === 1) {
-                return new ContactMapping($company, $customer, [$hits[0]['id']], ContactMapping::SOURCE_SEARCH, [], 'einziger Treffer: ' . $hits[0]['name']);
-            }
-            foreach ($hits as $hit) {
-                $candidates[] = 'Lexoffice: ' . $hit['name'] . ' (' . $hit['id'] . ')';
+            $found = $this->fromLexofficeSearch($company, $source, $customer, $candidates);
+            if ($found !== null) {
+                return $found;
             }
         }
 
         return new ContactMapping($company, $customer, [], ContactMapping::SOURCE_NONE, array_values(array_unique($candidates)));
+    }
+
+    /**
+     * Lexoffice-Namenssuche: eindeutiger Namenstreffer oder einziger Treffer.
+     * Auch als Nachschlag für zurückgestufte Zuordnungen (E-Mail-Treffer ohne
+     * Microsoft-Positionen), damit der echte Lexoffice-Kontakt noch gefunden wird.
+     *
+     * @param  list<string>  $candidates  wird um die Suchtreffer ergänzt
+     */
+    public function fromLexofficeSearch(MarketplaceCompany $company, InvoiceLineSource $source, ?Customer $customer = null, array &$candidates = []): ?ContactMapping {
+        $hits = $this->safe(static fn(): array => $source->findContactsByName($company->name));
+        $wanted = $company->normalizedName();
+        $exact = array_values(array_filter($hits, static fn(array $hit): bool => MarketplaceCompany::normalizeName($hit['name']) === $wanted));
+        if (count($exact) === 1) {
+            return new ContactMapping($company, $customer, [$exact[0]['id']], ContactMapping::SOURCE_SEARCH, [], 'Name gleich');
+        }
+        if ($exact === [] && count($hits) === 1) {
+            return new ContactMapping($company, $customer, [$hits[0]['id']], ContactMapping::SOURCE_SEARCH, [], 'einziger Treffer: ' . $hits[0]['name']);
+        }
+        foreach ($hits as $hit) {
+            $candidates[] = 'Lexoffice: ' . $hit['name'] . ' (' . $hit['id'] . ')';
+        }
+
+        return null;
     }
 
     private function fromPartnerNumber(Organization $organization, MarketplaceCompany $company, string $partner, ?InvoiceLineSource $source): ?ContactMapping {

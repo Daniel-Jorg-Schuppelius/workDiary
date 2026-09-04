@@ -81,9 +81,12 @@ final class ReconciliationReportSerializer {
             }
             foreach ($company->lines as $seen) {
                 $line = $seen['line'];
+                $shared = (bool) ($seen['shared'] ?? false);
                 $lines[] = [
-                    'company' => $mapping->company->name,
-                    'company_key' => $mapping->company->key,
+                    // Zeilen eines Partnerkontakts ohne Nennung der Firma laufen unter dem Partner.
+                    'company' => $shared ? (($mapping->billedVia ?: $line->recipient) ?: $mapping->company->name) . ' (Partner)' : $mapping->company->name,
+                    'company_key' => $shared ? '' : $mapping->company->key,
+                    'shared' => $shared,
                     'contact_id' => $line->contactId,
                     'voucher' => $line->voucherNumber !== '' ? $line->voucherNumber : $line->voucherId,
                     'date' => $line->voucherDate->toDateString(),

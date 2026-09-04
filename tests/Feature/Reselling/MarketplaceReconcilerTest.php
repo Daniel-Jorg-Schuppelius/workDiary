@@ -418,7 +418,7 @@ class MarketplaceReconcilerTest extends TestCase {
         $strict = new ReconciliationOptions(CarbonImmutable::parse('2024-06-01'), 45, 90, true);
         $reportStrict = (new MarketplaceReconciler)->reconcile($import->entitlements, $mappings, $source, $strict, new \App\Services\Reselling\Marketplace\InvoiceLinePool($source));
         $companyStrict = collect($reportStrict->companies)->first(static fn($c) => $c->company()->key === '100003');
-        $this->assertSame(ReconciliationStatus::CoveredByAmount, $companyStrict->findings[0]->status, 'streng: Beleg im Fenster mit ausreichendem Betrag, Produkt nicht erkannt');
+        $this->assertSame(ReconciliationStatus::Missing, $companyStrict->findings[0]->status, 'streng: eine Rechnung mit Positionen ohne erkannte Edition deckt nichts — „Nur Betrag" gilt nur für Belege ohne Positionen');
     }
 
     /**
@@ -527,12 +527,15 @@ class MarketplaceReconcilerTest extends TestCase {
         $report = (new MarketplaceReconciler)->reconcile($entitlements, $mappings, $source, new ReconciliationOptions(CarbonImmutable::parse('2023-12-31'), 45, 90));
         $findings = $report->companies[0]->findings;
         $this->assertCount(2, $findings);
-        // Periode 28.03.23 (1 Lizenz) zuerst: gedeckt mit 12 Monaten, Jahresstückpreis 47,40 € ≥ 41,55 €.
-        $this->assertSame(ReconciliationStatus::Covered, $findings[0]->status);
-        $this->assertSame(4740, $findings[0]->lowestUnitNet?->getMinorAmount());
-        // Periode 30.03.23 (7 Lizenzen): nichts mehr übrig → fehlt, offene Gebühr voll.
-        $this->assertSame(ReconciliationStatus::Missing, $findings[1]->status);
-        $this->assertSame(29088, $findings[1]->openFee()->getMinorAmount());
+        // Die Rechnung vom 01.04.23 liegt der Periode 30.03.23 (7 Lizenzen) am nächsten:
+        // sie bekommt die 12 Monate zuerst → 1 von 7 berechnet, Jahresstückpreis 47,40 € ≥ 41,55 €.
+        $this->assertSame(ReconciliationStatus::Partial, $findings[1]->status);
+        $this->assertSame(4740, $findings[1]->lowestUnitNet?->getMinorAmount());
+        $this->assertStringContainsString('1 von 7 Lizenzen berechnet (12 von 84 Lizenzmonaten)', $findings[1]->note);
+        $this->assertSame(24933, $findings[1]->openFee()->getMinorAmount(), '6/7 von 290,88 €');
+        // Periode 28.03.23 (1 Lizenz): nichts mehr übrig → fehlt.
+        $this->assertSame(ReconciliationStatus::Missing, $findings[0]->status);
+        $this->assertSame(4155, $findings[0]->openFee()->getMinorAmount());
     }
 
     /**
@@ -610,6 +613,172 @@ class MarketplaceReconcilerTest extends TestCase {
         $this->assertSame(4740, $exchange->articlePrice?->getMinorAmount(), '3,95 € × 12 aus dem Artikelstamm');
         $this->assertSame('Exchange Online (Plan 1)', $exchange->articleName);
         $this->assertSame(4740, $exchange->salesMedian?->getMinorAmount());
+    }
+
+    /**
+     * Produktivlauf 2026-09-03: „Daniel Mihajlovic" hing per E-Mail an
+     * „Sprecherdatei Stimmgerecht", deren Rechnungen keine einzige Microsoft-
+     * Position enthalten. Solche Treffer werden geprüft und, wenn ein Partner die
+     * Firma im Rechnungstext nennt, dorthin umgehängt; sonst bleiben sie mit
+     * Warnhinweis stehen.
+     */
+    public function test_email_mapping_without_microsoft_lines_is_demoted_and_rehomed_by_invoice_text(): void {
+        $wrong = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Andere Firma e.K.', 'company' => 'Andere Firma e.K.', 'email' => 'max@musterbau.test']);
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'IT-Haus GmbH', 'company' => 'IT-Haus GmbH']);
+        foreach ([[$wrong, 'c-wrong'], [$partner, 'c-partner']] as [$customer, $contactId]) {
+            ExternalReference::create([
+                'organization_id' => $this->organization->id,
+                'plugin_id' => LexofficePlugin::ID,
+                'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+                'external_id' => $contactId,
+                'referenceable_type' => $customer->getMorphClass(),
+                'referenceable_id' => $customer->getKey(),
+            ]);
+        }
+        ForeignCustomer::create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Jemand anders']);
+
+        $invoice = static fn(string $id, string $number, string $date): array => ['id' => $id, 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => $number, 'voucherDate' => $date . 'T00:00:00.000+02:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false];
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => static function (RequestInterface $request) use ($invoice) {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = match ($query['contactId'] ?? '') {
+                    'c-wrong' => [$invoice('inv-w', 'RE-W', '2024-08-05')],
+                    'c-partner' => [$invoice('inv-p', 'RE-P', '2024-08-06')],
+                    default => [],
+                };
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+            'https://api.lexoffice.io/v1/invoices/inv-w' => FakePluginHttp::response(['id' => 'inv-w', 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'], 'lineItems' => [
+                ['type' => 'service', 'name' => 'Business Support', 'description' => '', 'quantity' => 3, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 90.0, 'grossAmount' => 107.1, 'taxRatePercentage' => 19]],
+            ]]),
+            'https://api.lexoffice.io/v1/invoices/inv-p' => FakePluginHttp::response(['id' => 'inv-p', 'introduction' => 'Lizenzen für Muster Bau GmbH', 'address' => ['name' => 'IT-Haus GmbH'], 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'], 'lineItems' => [
+                ['type' => 'custom', 'name' => 'Microsoft 365 Business Premium', 'description' => '', 'quantity' => 108, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 20.6, 'grossAmount' => 24.51, 'taxRatePercentage' => 19]],
+            ]]),
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+        ]);
+
+        $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $resolver = app(MarketplaceContactResolver::class);
+        $mappings = [];
+        foreach ($import->companies() as $key => $company) {
+            $mappings[$key] = $resolver->resolve($this->organization, $company, [], $source);
+        }
+        $this->assertSame(['c-wrong'], $mappings['100001']->contactIds, 'E-Mail-Treffer mit abweichendem Namen');
+        $this->assertStringContainsString('Name weicht ab', $mappings['100001']->detail);
+
+        $options = new ReconciliationOptions(CarbonImmutable::parse('2025-01-01'));
+        $pool = new \App\Services\Reselling\Marketplace\InvoiceLinePool($source);
+        [$from, $to] = \App\Services\Reselling\Marketplace\ReconciliationRunner::globalWindow($import, $options);
+        $check = new \App\Services\Reselling\Marketplace\MappingPlausibilityCheck();
+        ['mappings' => $mappings, 'demoted' => $demoted] = $check->demoteImplausible($mappings, $pool, $from, $to);
+        $this->assertArrayHasKey('100001', $demoted);
+        $this->assertFalse($mappings['100001']->isResolved());
+
+        $partners = \App\Services\Reselling\Marketplace\ReconciliationRunner::partnerContacts($this->organization, $mappings + $demoted);
+        $mappings = (new \App\Services\Reselling\Marketplace\ForeignCustomerTextResolver)->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
+        $mappings = $check->restoreUnresolved($mappings, $demoted);
+
+        $this->assertSame(['c-partner'], $mappings['100001']->contactIds, 'über den Rechnungstext zum Partner umgehängt');
+        $this->assertSame(ContactMapping::SOURCE_INVOICE_TEXT, $mappings['100001']->source);
+        $this->assertSame('IT-Haus GmbH', $mappings['100001']->billedVia);
+
+        $report = (new MarketplaceReconciler)->reconcile($import->entitlements, $mappings, $source, $options, $pool);
+        [$premium8, $premium1] = $report->companies[0]->findings;
+        $this->assertSame(ReconciliationStatus::Covered, $premium8->status, '96 von 108 Lizenzmonaten: ' . $premium8->status->value . ' — ' . $premium8->note);
+        $this->assertSame(ReconciliationStatus::Covered, $premium1->status, 'die restlichen 12 Monate: ' . $premium1->status->value . ' — ' . $premium1->note);
+    }
+
+    public function test_demoted_mapping_without_text_mention_is_rehomed_by_lexoffice_name_search(): void {
+        $wrong = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Andere Firma e.K.', 'company' => 'Andere Firma e.K.', 'email' => 'max@musterbau.test']);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-wrong',
+            'referenceable_type' => $wrong->getMorphClass(),
+            'referenceable_id' => $wrong->getKey(),
+        ]);
+
+        $invoice = static fn(string $id, string $number, string $date): array => ['id' => $id, 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => $number, 'voucherDate' => $date . 'T00:00:00.000+02:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false];
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => static function (RequestInterface $request) use ($invoice) {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = match ($query['contactId'] ?? '') {
+                    'c-wrong' => [$invoice('inv-w', 'RE-W', '2024-08-05')],
+                    'c-right' => [$invoice('inv-r', 'RE-R', '2024-08-06')],
+                    default => [],
+                };
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+            'https://api.lexoffice.io/v1/invoices/inv-w' => FakePluginHttp::response(['id' => 'inv-w', 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'], 'lineItems' => [
+                ['type' => 'service', 'name' => 'Business Support', 'description' => '', 'quantity' => 3, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 90.0, 'grossAmount' => 107.1, 'taxRatePercentage' => 19]],
+            ]]),
+            'https://api.lexoffice.io/v1/invoices/inv-r' => FakePluginHttp::response(['id' => 'inv-r', 'address' => ['name' => 'Muster Bau GmbH'], 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'], 'lineItems' => [
+                ['type' => 'custom', 'name' => 'Microsoft 365 Business Premium', 'description' => '', 'quantity' => 108, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 20.6, 'grossAmount' => 24.51, 'taxRatePercentage' => 19]],
+            ]]),
+            // Kontaktsuche: der Lexoffice-Kontakt heißt exakt wie die Firma aus der Telekom-Datei
+            'https://api.lexoffice.io/v1/contacts*' => static function (RequestInterface $request): \Psr\Http\Message\ResponseInterface {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = ($query['name'] ?? '') === 'Muster Bau GmbH'
+                    ? [['id' => 'c-right', 'company' => ['name' => 'Muster Bau GmbH']]]
+                    : [];
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+        ]);
+
+        $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $resolver = app(MarketplaceContactResolver::class);
+        $mappings = [];
+        foreach ($import->companies() as $key => $company) {
+            $mappings[$key] = $resolver->resolve($this->organization, $company, [], $source);
+        }
+        // Der E-Mail-Treffer hat Vorrang vor der Namenssuche – und ist hier falsch.
+        $this->assertSame(['c-wrong'], $mappings['100001']->contactIds);
+
+        $options = new ReconciliationOptions(CarbonImmutable::parse('2025-01-01'));
+        $pool = new \App\Services\Reselling\Marketplace\InvoiceLinePool($source);
+        [$from, $to] = \App\Services\Reselling\Marketplace\ReconciliationRunner::globalWindow($import, $options);
+        $check = new \App\Services\Reselling\Marketplace\MappingPlausibilityCheck();
+        ['mappings' => $mappings, 'demoted' => $demoted] = $check->demoteImplausible($mappings, $pool, $from, $to);
+        $this->assertArrayHasKey('100001', $demoted);
+
+        // Kein Partner nennt die Firma im Rechnungstext → Nachschlag über die Namenssuche
+        $partners = \App\Services\Reselling\Marketplace\ReconciliationRunner::partnerContacts($this->organization, $mappings + $demoted);
+        $mappings = (new \App\Services\Reselling\Marketplace\ForeignCustomerTextResolver)->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
+        $this->assertFalse($mappings['100001']->isResolved());
+        $found = $resolver->fromLexofficeSearch($demoted['100001']->company, $source, $demoted['100001']->customer);
+        $this->assertNotNull($found);
+        $mappings['100001'] = $found;
+        $mappings = $check->restoreUnresolved($mappings, $demoted);
+
+        $this->assertSame(['c-right'], $mappings['100001']->contactIds, 'über die Namenssuche zum richtigen Kontakt');
+        $this->assertSame(ContactMapping::SOURCE_SEARCH, $mappings['100001']->source);
+        $this->assertSame('Name gleich', $mappings['100001']->detail);
+
+        $report = (new MarketplaceReconciler)->reconcile($import->entitlements, $mappings, $source, $options, $pool);
+        [$premium8, $premium1] = $report->companies[0]->findings;
+        $this->assertSame(ReconciliationStatus::Covered, $premium8->status, $premium8->status->value . ' — ' . $premium8->note);
+        $this->assertSame(ReconciliationStatus::Covered, $premium1->status, $premium1->status->value . ' — ' . $premium1->note);
+    }
+
+    public function test_demoted_mapping_is_restored_with_warning_when_no_partner_mentions_the_company(): void {
+        $company = new \App\Services\Reselling\Marketplace\MarketplaceCompany('100009', 'Nirgends Genannt GmbH', null, null);
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Falscher Kunde', 'company' => 'Falscher Kunde']);
+        $original = new ContactMapping($company, $customer, ['c-x'], ContactMapping::SOURCE_REFERENCE, [], 'E-Mail · Name weicht ab');
+        FakePluginHttp::fake(['https://api.lexoffice.io/v1/voucherlist*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1])]);
+        $pool = new \App\Services\Reselling\Marketplace\InvoiceLinePool((new LexofficeInvoiceLineReader('k', 'https://api.lexoffice.io/v1'))->withoutThrottle());
+        $check = new \App\Services\Reselling\Marketplace\MappingPlausibilityCheck();
+
+        ['mappings' => $mappings, 'demoted' => $demoted] = $check->demoteImplausible(['100009' => $original], $pool, CarbonImmutable::parse('2024-01-01'), CarbonImmutable::parse('2025-01-01'));
+        $this->assertFalse($mappings['100009']->isResolved());
+        $restored = $check->restoreUnresolved($mappings, $demoted)['100009'];
+        $this->assertSame(['c-x'], $restored->contactIds);
+        $this->assertStringContainsString('keine Microsoft-Positionen beim Kontakt', $restored->detail);
     }
 
     public function test_manual_map_wins_over_matching(): void {

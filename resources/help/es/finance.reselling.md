@@ -31,7 +31,7 @@ una línea de factura coincidente en la ventana alrededor del inicio del
 periodo.
 
 **Estado por periodo:** Cubierto, Por debajo del coste, Parcial, Solo
-importe (documento sin producto reconocido), Faltante, Sin asignación. Las
+importe (documento sin posiciones), Faltante, Sin asignación. Las
 empresas sin asignación se resuelven en la próxima ejecución con un archivo
 de asignación: una línea por empresa, `Empresa;UUID del contacto Lexoffice`
 o `Empresa;customer:<Sqid>`.

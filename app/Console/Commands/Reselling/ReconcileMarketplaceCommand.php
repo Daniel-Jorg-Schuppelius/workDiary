@@ -40,8 +40,8 @@ class ReconcileMarketplaceCommand extends Command {
         {--map= : Zuordnungsdatei (Zeile: Firma;Lexoffice-Kontakt-UUID oder customer:<Sqid>)}
         {--pricelist= : Reseller-Preisliste (XLSX) für die Preisprüfung}
         {--until= : Stichtag (Y-m-d), Standard heute}
-        {--before=45 : Tage vor Periodenbeginn, in denen eine Rechnung zählt}
-        {--after=90 : Tage nach Periodenbeginn, in denen eine Rechnung zählt}
+        {--before=90 : Tage vor Periodenbeginn, in denen eine Rechnung zählt (Vorauszahlung)}
+        {--after=730 : Tage nach Periodenbeginn, in denen eine Rechnung noch zählt (Nachberechnung, auch Mehrjahresblöcke)}
         {--csv= : Bericht zusätzlich als CSV (Semikolon, UTF-8) schreiben}
         {--all : auch gedeckte Perioden auflisten}
         {--strict : nur Positionen mit erkannter Edition zählen (Standard: jede Microsoft-Position des Kontakts, wenn keine Edition passt)}
@@ -143,8 +143,20 @@ class ReconcileMarketplaceCommand extends Command {
 
         $pool = new \App\Services\Reselling\Marketplace\InvoiceLinePool($source);
         [$from, $to] = \App\Services\Reselling\Marketplace\ReconciliationRunner::globalWindow($import, $options);
-        $partners = \App\Services\Reselling\Marketplace\ReconciliationRunner::partnerContacts($organization, $mappings);
+        $check = new \App\Services\Reselling\Marketplace\MappingPlausibilityCheck();
+        ['mappings' => $mappings, 'demoted' => $demoted] = $check->demoteImplausible($mappings, $pool, $from, $to);
+        $partners = \App\Services\Reselling\Marketplace\ReconciliationRunner::partnerContacts($organization, $mappings + $demoted);
         $mappings = (new \App\Services\Reselling\Marketplace\ForeignCustomerTextResolver)->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
+        foreach ($demoted as $key => $original) {
+            if (($mappings[$key] ?? null) === null || $mappings[$key]->contactIds !== []) {
+                continue;
+            }
+            $found = $resolver->fromLexofficeSearch($original->company, $source, $original->customer);
+            if ($found !== null) {
+                $mappings[$key] = $found;
+            }
+        }
+        $mappings = $check->restoreUnresolved($mappings, $demoted);
 
         $articles = \App\Services\Reselling\Marketplace\ArticleCatalog::forOrganization($organization->id);
         $report = $this->withOrganizationContext($organization, fn(): ReconciliationReport => $reconciler->reconcile($import->entitlements, $mappings, $source, $options, $pool, $articles));

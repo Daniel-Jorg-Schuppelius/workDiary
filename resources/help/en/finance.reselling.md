@@ -28,7 +28,7 @@ never guessing) and looks for a matching invoice line item in the window
 around each period start.
 
 **Status per period:** Covered, Below purchase (unit price below cost),
-Partial, Amount only (voucher without a recognised product), Missing,
+Partial (licences and licence months), Amount only (voucher without line items), Missing,
 Unmapped. Resolve unmapped companies on the next run with a mapping file:
 one line per company, `Company;Lexoffice contact UUID` or
 `Company;customer:<Sqid>`.

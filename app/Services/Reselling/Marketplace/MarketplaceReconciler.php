@@ -29,9 +29,14 @@ use Throwable;
  * (Fremdkunden) ab, deckt eine Position mit Menge 2 zwei Endkunden, und keine
  * Position deckt zweimal. Was übrig bleibt und nach Microsoft aussieht, landet
  * einmal je Kontakt als Zusatzposition im Bericht.
- */
-final class MarketplaceReconciler {
+ *
+ * @phpstan-type LineMatch array{line: InvoiceLine, quantity: float, exact?: bool, months?: float, monthly?: bool, annual_unit?: Money}
+ * @phpstan-type PeriodState array{key: string, period: BillingPeriod, needed: float, matches: list<LineMatch>, lowest: ?Money, generic: list<string>}
+ */ final class MarketplaceReconciler {
     private ArticleCatalog $catalog;
+
+    /** @var list<string> Editionen des laufenden Abgleichs */
+    private array $editions = [];
 
     public function __construct(
         private readonly ProductNameMatcher $matcher = new ProductNameMatcher(),
@@ -56,6 +61,7 @@ final class MarketplaceReconciler {
     public function reconcile(array $entitlements, array $mappings, InvoiceLineSource $source, ReconciliationOptions $options, ?InvoiceLinePool $pool = null, ?ArticleCatalog $catalog = null): ReconciliationReport {
         $pool ??= new InvoiceLinePool($source);
         $this->catalog = $catalog ?? ArticleCatalog::empty();
+        $this->editions = array_values(array_unique(array_map(static fn(MarketplaceEntitlement $e): string => $e->edition, $entitlements)));
         $expander = new BillingPeriodExpander(UnitPriceCatalog::fromEntitlements($entitlements));
 
         /** @var array<string, list<MarketplaceEntitlement>> $byCompany */
@@ -131,11 +137,39 @@ final class MarketplaceReconciler {
         }
         usort($queue, static fn(array $a, array $b): int => $a['period']->startsOn <=> $b['period']->startsOn ?: strcmp($a['key'], $b['key']));
 
+        // Zuteilung in Pässen über ALLE Perioden: erst Positionen mit erkannter
+        // Edition an die Periode, deren Beginn ihrem Belegdatum am nächsten liegt;
+        // dann Reste an jede Periode im Fenster (Mehrjahresblöcke, Nachberechnung);
+        // danach dasselbe für allgemeine Microsoft-Positionen. So schluckt eine
+        // frühere, offene Periode nicht die Rechnung, die klar zur nächsten gehört.
+        $states = [];
+        foreach ($queue as $entry) {
+            $states[] = ['key' => $entry['key'], 'period' => $entry['period'], 'needed' => (float) $entry['period']->licenseMonths(), 'matches' => [], 'lowest' => null, 'generic' => []];
+        }
+        $ownerCount = [];
+        foreach ($resolvedMappings as $mapping) {
+            foreach ($mapping->contactIds as $contactId) {
+                $ownerCount[$contactId] = ($ownerCount[$contactId] ?? 0) + 1;
+            }
+        }
+        $nearest = $this->nearestPeriods($states, $lines);
+        foreach ([[true, true], [true, false], [false, true], [false, false]] as [$exactOnly, $nearestOnly]) {
+            if (! $exactOnly && $options->strictProducts) {
+                break;
+            }
+            foreach ($states as $index => $state) {
+                if ($state['needed'] <= 0.0) {
+                    continue;
+                }
+                $states[$index] = $this->allocate($index, $state, $resolvedMappings[$state['key']], $lines, $remaining, $options, $exactOnly, $nearestOnly, $nearest, $ownerCount);
+            }
+        }
+
         /** @var array<string, list<PeriodFinding>> $findingsByCompany */
         $findingsByCompany = [];
-        foreach ($queue as $entry) {
-            $mapping = $resolvedMappings[$entry['key']];
-            $findingsByCompany[$entry['key']][] = $this->reconcilePeriod($entry['period'], $mapping, $lines, $remaining, $options);
+        foreach ($states as $state) {
+            $mapping = $resolvedMappings[$state['key']];
+            $findingsByCompany[$state['key']][] = $this->finding($state, $mapping, $lines, $options);
         }
         // Hinweis: $resolvedMappings/$findingsByCompany sind über den ursprünglichen
         // (ggf. int-)Schlüssel adressiert; PHP normalisiert "100001" und 100001 gleich.
@@ -143,6 +177,32 @@ final class MarketplaceReconciler {
         $companies = [];
         $extrasClaimed = [];
         $linesClaimed = [];
+
+        // Geteilte Kontakte (Partner): Diagnosezeilen der Firma zuordnen, deren
+        // Name im Belegtext steht; ohne Nennung bleibt die Zeile beim Partner.
+        /** @var array<string, list<string>> $ownersByContact */
+        $ownersByContact = [];
+        foreach ($resolvedMappings as $key => $mapping) {
+            foreach ($mapping->contactIds as $contactId) {
+                $ownersByContact[$contactId][] = (string) $key;
+            }
+        }
+        /** @var array<string, string> $mentionOwner Zeilen-Schlüssel → Firmen-Schlüssel laut Belegtext */
+        $mentionOwner = [];
+        foreach ($lines as $lineKey => $line) {
+            $owners = $ownersByContact[$line->contactId] ?? [];
+            if (count($owners) < 2) {
+                continue;
+            }
+            $haystack = ' ' . ProductNameMatcher::normalize($line->fullText()) . ' ';
+            foreach ($owners as $ownerKey) {
+                $name = $resolvedMappings[$ownerKey]->company->normalizedName();
+                if ($name !== '' && str_contains($haystack, ' ' . $name . ' ')) {
+                    $mentionOwner[$lineKey] = $ownerKey;
+                    break;
+                }
+            }
+        }
         foreach ($byCompany as $key => $items) {
             $mapping = $resolvedMappings[$key];
             $periods = $periodsByCompany[$key];
@@ -176,8 +236,10 @@ final class MarketplaceReconciler {
                     if ($line->contactId !== $contactId) {
                         continue;
                     }
-                    if (! isset($linesClaimed[$lineKey])) {
-                        $seen[] = ['line' => $line, 'remaining' => $remaining[$lineKey]];
+                    $shared = count($ownersByContact[$contactId] ?? []) > 1;
+                    $mentioned = $mentionOwner[$lineKey] ?? null;
+                    if (! isset($linesClaimed[$lineKey]) && (! $shared || $mentioned === null || $mentioned === (string) $key)) {
+                        $seen[] = ['line' => $line, 'remaining' => $remaining[$lineKey], 'shared' => $shared && $mentioned === null];
                         $linesClaimed[$lineKey] = true;
                     }
                     if ($line->headerOnly || $remaining[$lineKey] < 1.0 || isset($extrasClaimed[$lineKey])) {
@@ -198,18 +260,55 @@ final class MarketplaceReconciler {
     }
 
     /**
+     * Je Position: Index des Zustands (Periode), dessen Beginn dem Belegdatum
+     * am nächsten liegt — getrennt nach exaktem Produkt und allgemein, jeweils
+     * nur unter den Perioden der Firmen, die den Kontakt der Position nutzen.
+     *
+     * @param  list<PeriodState>  $states
+     * @param  array<string, InvoiceLine>  $lines
+     * @return array<string, array{exact: ?int, any: ?int}>
+     */
+    private function nearestPeriods(array $states, array $lines): array {
+        $nearest = [];
+        foreach ($lines as $lineKey => $line) {
+            if ($line->headerOnly) {
+                continue;
+            }
+            $text = $this->productText($line);
+            $bestExact = null;
+            $bestAny = null;
+            foreach ($states as $index => $state) {
+                $distance = abs($line->voucherDate->diffInDays($state['period']->startsOn));
+                if ($bestAny === null || $distance < $bestAny[1]) {
+                    $bestAny = [$index, $distance];
+                }
+                if ($this->matcher->matches($state['period']->entitlement->edition, $text) && ($bestExact === null || $distance < $bestExact[1])) {
+                    $bestExact = [$index, $distance];
+                }
+            }
+            $nearest[$lineKey] = ['exact' => $bestExact[0] ?? null, 'any' => $bestAny[0] ?? null];
+        }
+
+        return $nearest;
+    }
+
+    /**
+     * Ein Pass für eine Periode: passende Positionen verbrauchen.
+     *
+     * @param  PeriodState  $state
      * @param  array<string, InvoiceLine>  $lines
      * @param  array<string, float>  $remaining
+     * @param  array<string, array{exact: ?int, any: ?int}>  $nearest
+     * @param  array<string, int>  $ownerCount
+     * @return PeriodState
      */
-    private function reconcilePeriod(BillingPeriod $period, ContactMapping $mapping, array $lines, array &$remaining, ReconciliationOptions $options): PeriodFinding {
+    private function allocate(int $index, array $state, ContactMapping $mapping, array $lines, array &$remaining, ReconciliationOptions $options, bool $exactOnly, bool $nearestOnly, array $nearest, array $ownerCount): array {
+        $period = $state['period'];
         $windowStart = $period->startsOn->subDays($options->windowBefore);
         $windowEnd = $period->startsOn->addDays($options->windowAfter);
         $contactIds = array_flip($mapping->contactIds);
         $companyName = $mapping->company->normalizedName();
 
-        // Stufe 0: Positionen mit erkannter Edition. Stufe 1 (nur ohne
-        // strictProducts): jede Microsoft-Position des Kontakts — Sammel-
-        // rechnungen nennen die Edition oft nicht („Microsoft 365 Lizenzen").
         $candidates = [];
         foreach ($lines as $key => $line) {
             if (! isset($contactIds[$line->contactId]) || $line->headerOnly || $remaining[$key] <= 0.0) {
@@ -220,45 +319,78 @@ final class MarketplaceReconciler {
             }
             $text = $this->productText($line);
             $exact = $this->matcher->matches($period->entitlement->edition, $text);
-            if (! $exact && ($options->strictProducts || ! $this->matcher->looksLikeMicrosoftProduct($text))) {
+            if ($exactOnly && ! $exact) {
                 continue;
             }
-            // Nennung des Endkunden zählt auch im Belegtext (Titel/Einleitung/Schluss).
+            if (! $exactOnly && ($exact || ! $this->matcher->looksLikeMicrosoftProduct($text) || $this->matchesAnyEdition($text))) {
+                // Allgemeine Stufe nur für Positionen OHNE erkennbare Edition
+                // („Microsoft 365 Lizenzen"). Eine klar andere Edition (Exchange
+                // für eine Standard-Periode) bleibt liegen, statt als „unter
+                // Einkauf" in der falschen Periode zu landen.
+                continue;
+            }
             $mentions = $companyName !== '' && str_contains(' ' . ProductNameMatcher::normalize($line->fullText()) . ' ', ' ' . $companyName . ' ');
-            $candidates[] = ['key' => $key, 'line' => $line, 'tier' => $exact ? 0 : 1, 'mentions' => $mentions ? 0 : 1, 'distance' => abs($line->voucherDate->diffInDays($period->startsOn))];
+            // Allgemeine Positionen eines geteilten Partnerkontakts nur bei Nennung der Firma —
+            // sonst wandern die Apps-Zeilen des einen Endkunden in die Premium-Periode des anderen.
+            if (! $exact && ($ownerCount[$line->contactId] ?? 1) > 1 && ! $mentions) {
+                continue;
+            }
+            if ($nearestOnly && ($nearest[$key][$exact ? 'exact' : 'any'] ?? null) !== $index) {
+                continue;
+            }
+            $candidates[] = ['key' => $key, 'line' => $line, 'exact' => $exact, 'mentions' => $mentions ? 0 : 1, 'distance' => abs($line->voucherDate->diffInDays($period->startsOn))];
         }
-        usort($candidates, static fn(array $a, array $b): int => $a['tier'] <=> $b['tier'] ?: $a['mentions'] <=> $b['mentions'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->position <=> $b['line']->position);
+        usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->position <=> $b['line']->position);
 
         $termMonths = $period->termMonths();
-        $neededMonths = (float) $period->licenseMonths();
-        $matches = [];
-        $lowest = null;
-        $generic = [];
         foreach ($candidates as $candidate) {
-            if ($neededMonths <= 0.0) {
+            if ($state['needed'] <= 0.0) {
                 break;
             }
             $line = $candidate['line'];
-            // Monatspreis? Dann ist jede Mengeneinheit ein Lizenzmonat.
             $monthly = $this->isMonthlyPriced($line, $period);
             $monthsPerUnit = $monthly ? 1 : $termMonths;
             $availableMonths = $remaining[$candidate['key']] * $monthsPerUnit;
-            $takeMonths = min($availableMonths, $neededMonths);
-            $remaining[$candidate['key']] -= $takeMonths / $monthsPerUnit;
-            $neededMonths -= $takeMonths;
-            $annualUnit = $monthly ? $line->unitNet->times($termMonths) : $line->unitNet;
-            $matches[] = ['line' => $line, 'quantity' => $takeMonths / $termMonths, 'months' => $takeMonths, 'exact' => $candidate['tier'] === 0, 'monthly' => $monthly, 'annual_unit' => $annualUnit];
-            if ($candidate['tier'] === 1) {
-                $generic[] = $line->name;
+            $takeMonths = min($availableMonths, $state['needed']);
+            if ($takeMonths <= 0.0) {
+                continue;
             }
-            $lowest = $lowest === null || $annualUnit->lessThan($lowest) ? $annualUnit : $lowest;
+            $remaining[$candidate['key']] -= $takeMonths / $monthsPerUnit;
+            $state['needed'] -= $takeMonths;
+            $annualUnit = $monthly ? $line->unitNet->times($termMonths) : $line->unitNet;
+            $state['matches'][] = ['line' => $line, 'quantity' => $takeMonths / $termMonths, 'months' => $takeMonths, 'exact' => $candidate['exact'], 'monthly' => $monthly, 'annual_unit' => $annualUnit];
+            if (! $candidate['exact']) {
+                $state['generic'][] = $line->name;
+            }
+            $state['lowest'] = $state['lowest'] === null || $annualUnit->lessThan($state['lowest']) ? $annualUnit : $state['lowest'];
         }
+
+        return $state;
+    }
+
+    /**
+     * @param  PeriodState  $state
+     * @param  array<string, InvoiceLine>  $lines
+     */
+    private function finding(array $state, ContactMapping $mapping, array $lines, ReconciliationOptions $options): PeriodFinding {
+        $period = $state['period'];
+        $matches = $state['matches'];
+        $lowest = $state['lowest'];
+        $neededMonths = $state['needed'];
+        $termMonths = $period->termMonths();
         $needed = $neededMonths / $termMonths; // offener Anteil in Lizenzen
-        $genericNote = $generic === [] ? '' : 'Produkt nur allgemein erkannt: ' . implode(', ', array_unique($generic));
+        $genericNote = $state['generic'] === [] ? '' : 'Produkt nur allgemein erkannt: ' . implode(', ', array_unique($state['generic']));
+        $withGeneric = static fn(string $note): string => trim($note . ($genericNote !== '' ? ($note !== '' ? ' · ' : '') . $genericNote : ''));
 
         if ($matches === []) {
+            $windowStart = $period->startsOn->subDays($options->windowBefore);
+            $windowEnd = $period->startsOn->addDays($options->windowAfter);
+            $contactIds = array_flip($mapping->contactIds);
+            // „Nur Betrag" nur für Belege OHNE Positionen (Buchungsbelege): Bei
+            // einer Rechnung mit Positionen wissen wir, dass keine davon eine
+            // Lizenz ist — eine Support- oder Hardware-Rechnung deckt nichts.
             foreach ($lines as $line) {
-                if (! isset($contactIds[$line->contactId])) {
+                if (! isset($contactIds[$line->contactId]) || ! $line->headerOnly) {
                     continue;
                 }
                 if ($line->voucherDate->lessThan($windowStart) || $line->voucherDate->greaterThan($windowEnd)) {
@@ -274,8 +406,6 @@ final class MarketplaceReconciler {
             return new PeriodFinding($period, ReconciliationStatus::Missing, [], null, $needed, 'Keine Rechnung ' . $windowStart->format('d.m.Y') . ' – ' . $windowEnd->format('d.m.Y') . ($mapping->isBilledViaPartner() ? ' bei ' . $mapping->billedVia : ''));
         }
 
-        $withGeneric = static fn(string $note): string => trim($note . ($genericNote !== '' ? ($note !== '' ? ' · ' : '') . $genericNote : ''));
-
         if ($needed > 0.005) {
             return new PeriodFinding($period, ReconciliationStatus::Partial, $matches, $lowest, $needed, $withGeneric(sprintf('%s von %d Lizenzen berechnet (%s von %d Lizenzmonaten)', $this->formatQuantity($period->quantity - $needed), $period->quantity, $this->formatQuantity($period->licenseMonths() - $neededMonths), $period->licenseMonths())));
         }
@@ -285,6 +415,17 @@ final class MarketplaceReconciler {
         }
 
         return new PeriodFinding($period, ReconciliationStatus::Covered, $matches, $lowest, 0.0, $genericNote);
+    }
+
+    /** Nennt der Text irgendeine Edition des Laufs? Dann ist die Position nicht „allgemein". */
+    private function matchesAnyEdition(string $text): bool {
+        foreach ($this->editions as $edition) {
+            if ($this->matcher->matches($edition, $text)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

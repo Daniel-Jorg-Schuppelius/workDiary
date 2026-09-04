@@ -77,14 +77,14 @@
             <label class="label" for="reselling-before">
                 <span class="label-text">{{ __('reselling.dialog.before') }}</span>
             </label>
-            <input id="reselling-before" type="number" name="window_before" min="0" max="365" value="{{ old('window_before', 45) }}"
+            <input id="reselling-before" type="number" name="window_before" min="0" max="365" value="{{ old('window_before', \App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_BEFORE) }}"
                    class="input input-bordered w-full @error('window_before') input-error @enderror">
         </div>
         <div>
             <label class="label" for="reselling-after">
                 <span class="label-text">{{ __('reselling.dialog.after') }}</span>
             </label>
-            <input id="reselling-after" type="number" name="window_after" min="0" max="365" value="{{ old('window_after', 90) }}"
+            <input id="reselling-after" type="number" name="window_after" min="0" max="1825" value="{{ old('window_after', \App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_AFTER) }}"
                    class="input input-bordered w-full @error('window_after') input-error @enderror">
         </div>
     </div>

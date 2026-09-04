@@ -131,8 +131,14 @@ final class ReconciliationRunner {
         // Partnerrechnungen im Titel/Einleitung/Schlusstext, nicht in den Positionen.
         $pool = new InvoiceLinePool($source);
         [$from, $to] = self::globalWindow($import, $options);
-        $partners = self::partnerContacts($organization, $mappings);
+        // E-Mail-Treffer mit abweichendem Namen an den Rechnungen prüfen, bevor
+        // die Text-Zuordnung läuft (Mihajlovic → Sprecherdatei ohne eine Lizenz).
+        $check = new MappingPlausibilityCheck();
+        ['mappings' => $mappings, 'demoted' => $demoted] = $check->demoteImplausible($mappings, $pool, $from, $to);
+        $partners = self::partnerContacts($organization, $mappings + $demoted);
         $mappings = $this->textResolver->resolve($mappings, $import->companies(), $pool, array_keys($partners), $from, $to, $partners);
+        $mappings = $this->retryByLexofficeSearch($mappings, $demoted, $source);
+        $mappings = $check->restoreUnresolved($mappings, $demoted);
 
         $articles = ArticleCatalog::forOrganization($organization->id);
         $report = $this->reconciler->reconcile($import->entitlements, $mappings, $source, $options, $pool, $articles);
@@ -218,5 +224,28 @@ final class ReconciliationRunner {
         $run->error = mb_substr($message, 0, 2000);
         $run->finished_at = CarbonImmutable::now();
         $run->save();
+    }
+
+    /**
+     * Zurückgestufte E-Mail-Treffer ohne Microsoft-Positionen, die auch der
+     * Rechnungstext nicht zuordnen konnte: Lexoffice-Namenssuche als Nachschlag.
+     *
+     * @param  array<string, ContactMapping>  $mappings
+     * @param  array<string, ContactMapping>  $demoted
+     * @return array<string, ContactMapping>
+     */
+    private function retryByLexofficeSearch(array $mappings, array $demoted, InvoiceLineSource $source): array {
+        foreach ($demoted as $key => $original) {
+            $current = $mappings[$key] ?? null;
+            if ($current === null || $current->contactIds !== []) {
+                continue;
+            }
+            $found = $this->resolver->fromLexofficeSearch($original->company, $source, $original->customer);
+            if ($found !== null) {
+                $mappings[$key] = $found;
+            }
+        }
+
+        return $mappings;
     }
 }

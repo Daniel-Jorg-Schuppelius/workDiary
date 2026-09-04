@@ -62,7 +62,7 @@ class ResellingReconciliationController extends Controller {
             'map' => ['nullable', 'file', 'max:1024', 'extensions:csv,txt'],
             'reference_date' => ['nullable', 'date_format:Y-m-d'],
             'window_before' => ['nullable', 'integer', 'min:0', 'max:365'],
-            'window_after' => ['nullable', 'integer', 'min:0', 'max:365'],
+            'window_after' => ['nullable', 'integer', 'min:0', 'max:1825'],
             'strict_products' => ['nullable', 'boolean'],
         ]);
 
@@ -75,8 +75,8 @@ class ResellingReconciliationController extends Controller {
             'created_by_user_id' => $request->user()?->id,
             'status' => ReconciliationRunStatus::Queued,
             'reference_date' => ($validated['reference_date'] ?? null) ?: CarbonImmutable::today()->toDateString(),
-            'window_before' => (int) ($validated['window_before'] ?? 45),
-            'window_after' => (int) ($validated['window_after'] ?? 90),
+            'window_before' => (int) ($validated['window_before'] ?? \App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_BEFORE),
+            'window_after' => (int) ($validated['window_after'] ?? \App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_AFTER),
             'strict_products' => (bool) ($validated['strict_products'] ?? false),
             'files' => [],
         ]);

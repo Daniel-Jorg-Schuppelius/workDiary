@@ -20,7 +20,7 @@ final readonly class CompanyReconciliation {
      * @param  list<PeriodFinding>  $findings
      * @param  list<ExtraLine>  $extras
      * @param  list<string>  $errors
-     * @param  list<array{line: InvoiceLine, remaining: float}>  $lines  alle Positionen der Kontakte im Zeitraum — Diagnose: was der Abgleich gesehen hat
+     * @param  list<array{line: InvoiceLine, remaining: float, shared?: bool}>  $lines  alle Positionen der Kontakte im Zeitraum — Diagnose: was der Abgleich gesehen hat; shared = Partnerkontakt ohne Nennung dieser Firma
      */
     public function __construct(
         public ContactMapping $mapping,
