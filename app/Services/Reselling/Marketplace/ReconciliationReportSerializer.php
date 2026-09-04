@@ -34,6 +34,7 @@ final class ReconciliationReportSerializer {
         $mappings = [];
         $extras = [];
         $lines = [];
+        $hiddenLines = 0;
         $errors = $resolverErrors;
         $problems = 0;
 
@@ -82,6 +83,12 @@ final class ReconciliationReportSerializer {
             foreach ($company->lines as $seen) {
                 $line = $seen['line'];
                 $shared = (bool) ($seen['shared'] ?? false);
+                $microsoft = (bool) ($seen['microsoft'] ?? (new ProductNameMatcher)->looksLikeMicrosoftProduct($line->text()));
+                if (! $microsoft && ! $line->headerOnly) {
+                    $hiddenLines++; // eigene Leistungen, Hardware, Domains: für den Lizenzabgleich ohne Belang
+
+                    continue;
+                }
                 $lines[] = [
                     // Zeilen eines Partnerkontakts ohne Nennung der Firma laufen unter dem Partner.
                     'company' => $shared ? (($mapping->billedVia ?: $line->recipient) ?: $mapping->company->name) . ' (Partner)' : $mapping->company->name,
@@ -98,7 +105,7 @@ final class ReconciliationReportSerializer {
                     'used' => $line->headerOnly ? 0.0 : $line->quantity - $seen['remaining'],
                     'unit_net' => $this->money($line->unitNet),
                     'header_only' => $line->headerOnly,
-                    'microsoft' => (new ProductNameMatcher)->looksLikeMicrosoftProduct($line->text()),
+                    'microsoft' => $microsoft,
                     'recipient' => $line->recipient,
                     'voucher_text' => mb_substr($line->voucherText, 0, 200),
                 ];
@@ -136,6 +143,7 @@ final class ReconciliationReportSerializer {
                 'open_fee' => $this->money($report->openFee()),
                 'unmapped_fee' => $this->money($report->unmappedFee()),
                 'unmapped_companies' => count($report->unmappedCompanies()),
+                'lines_hidden' => $hiddenLines,
                 'price_flags' => count(array_filter($priceRows, static fn(PriceCheckRow $row): bool => $row->flags !== [] && $row->flags !== [PriceCheckRow::FLAG_NO_SALES])),
             ],
             'issues' => $import->issues,

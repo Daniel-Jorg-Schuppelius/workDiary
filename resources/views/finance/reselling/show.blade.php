@@ -300,7 +300,12 @@
             </x-card>
 
             <x-card :title="__('reselling.section.lines')" class="mb-4">
-                <p class="text-xs text-muted mb-2">{{ __('reselling.hint.lines') }}</p>
+                <p class="text-xs text-muted mb-2">
+                    {{ __('reselling.hint.lines') }}
+                    @if (($summary['lines_hidden'] ?? 0) > 0)
+                        {{ __('reselling.hint.lines_hidden', ['count' => $summary['lines_hidden']]) }}
+                    @endif
+                </p>
                 <x-table bare>
                     <x-slot:head>
                         <tr>

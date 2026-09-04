@@ -91,6 +91,7 @@ return [
     ],
     'hint' => [
         'lines' => 'Diagnosi: tutto ciò che la riconciliazione ha visto in Lexoffice per i contatti assegnati nel periodo, con la quantità utilizzata. Un’azienda senza righe qui non ha fatture per il suo contatto nel periodo.',
+        'lines_hidden' => ':count posizioni senza attinenza alle licenze (servizi propri, hardware, domini) sono nascoste.',
         'run_pending' => 'L’esecuzione non è ancora terminata. Aggiorna la pagina per vedere il report.', 'run_failed' => 'L’esecuzione è fallita.', 'unmapped' => 'Le aziende senza assegnazione si risolvono con un file di assegnazione alla prossima esecuzione.', 'extras' => 'Fatturato senza abbonamento attivo, oppure edizione non riconosciuta dalla riconciliazione.',
         'mapping' => 'Con «Assegna» definisci per azienda chi riceve la fattura: l’azienda stessa, un partner o un contatto Lexoffice. Le assegnazioni salvate hanno la precedenza sul riconoscimento automatico.',
         'foreign' => 'I clienti finali di un partner (clienti terzi) vengono verificati tramite il partner: la fattura va al partner, che la gira. Crea i clienti terzi sotto il cliente partner, oppure aggiungi «Azienda;partner:<nome o Sqid>» al file di assegnazione.',

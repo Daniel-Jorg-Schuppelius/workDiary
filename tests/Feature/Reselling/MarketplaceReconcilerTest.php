@@ -616,6 +616,79 @@ class MarketplaceReconcilerTest extends TestCase {
     }
 
     /**
+     * Produktivlauf 2026-09-04: „[SGIT-IT-DSBB-00001HO] - Business Support" tauchte
+     * in der Positionsliste auf. Der eigene Artikelstamm entscheidet verbindlich:
+     * Eine Position aus einem Nicht-Microsoft-Artikel ist nie eine Lizenzposition,
+     * auch wenn ihre Beschreibung die Edition nennt — und die Diagnose blendet
+     * solche Positionen aus.
+     */
+    public function test_own_service_article_never_counts_and_is_hidden_from_diagnostics(): void {
+        $customer = Customer::factory()->create([
+            'organization_id' => $this->organization->id,
+            'name' => 'Beispiel Logistik',
+            'company' => 'Beispiel Logistik',
+        ]);
+        ExternalReference::create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-2',
+            'referenceable_type' => $customer->getMorphClass(),
+            'referenceable_id' => $customer->getKey(),
+        ]);
+        \App\Models\LexofficeArticle::create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'art-support',
+            'name' => 'Business Support',
+            'article_number' => 'SGIT-IT-DSBB-A01HO',
+            'type' => 'SERVICE',
+            'unit_name' => 'Stunde',
+            'net_unit_price' => '60.00',
+            'currency' => 'EUR',
+            'vat_rate' => '19',
+            'synced_at' => now(),
+        ]);
+        FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/voucherlist*' => static function (RequestInterface $request) {
+                parse_str($request->getUri()->getQuery(), $query);
+                $content = ($query['contactId'] ?? '') === 'c-2' ? [
+                    ['id' => 'inv-s', 'voucherType' => 'invoice', 'voucherStatus' => 'paid', 'voucherNumber' => 'RE-S', 'voucherDate' => '2023-04-01T00:00:00.000+02:00', 'totalAmount' => 0, 'currency' => 'EUR', 'archived' => false],
+                ] : [];
+
+                return FakePluginHttp::response(['content' => $content, 'totalPages' => 1]);
+            },
+            'https://api.lexoffice.io/v1/invoices/inv-s' => FakePluginHttp::response([
+                'id' => 'inv-s', 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'],
+                'lineItems' => [
+                    // Alte Artikelnummer im Text, Artikel-ID stimmt; die Beschreibung nennt die Edition.
+                    ['type' => 'service', 'id' => 'art-support', 'name' => '[SGIT-IT-DSBB-00001HO] - Business Support', 'description' => 'Exchange Online (Plan 1) einrichten für Beispiel Logistik', 'quantity' => 96, 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 3.95, 'grossAmount' => 4.70, 'taxRatePercentage' => 19]],
+                ],
+            ]),
+            'https://api.lexoffice.io/v1/contacts*' => FakePluginHttp::response(['content' => [], 'totalPages' => 1]),
+        ]);
+
+        $import = (new MarketplacePurchasesReader)->read(self::FIXTURE);
+        $source = (new LexofficeInvoiceLineReader('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle();
+        $mappings = ['100002' => new ContactMapping($import->companies()['100002'], $customer, ['c-2'], ContactMapping::SOURCE_REFERENCE)];
+        $entitlements = array_values(array_filter($import->entitlements, static fn($e) => $e->company->key === '100002'));
+        $articles = \App\Services\Reselling\Marketplace\ArticleCatalog::forOrganization($this->organization->id);
+
+        $options = new ReconciliationOptions(CarbonImmutable::parse('2023-12-31'));
+        $report = (new MarketplaceReconciler)->reconcile($entitlements, $mappings, $source, $options, null, $articles);
+        $company = $report->companies[0];
+        foreach ($company->findings as $finding) {
+            $this->assertSame(ReconciliationStatus::Missing, $finding->status, $finding->note);
+        }
+        $this->assertSame([], $company->extras);
+        $this->assertCount(1, $company->lines, 'gesehen wurde die Position trotzdem');
+        $this->assertFalse($company->lines[0]['microsoft'] ?? true);
+
+        $out = (new \App\Services\Reselling\Marketplace\ReconciliationReportSerializer)->toArray($import, $report);
+        $this->assertSame([], $out['lines'], 'eigene Leistung erscheint nicht in der Positionsliste');
+        $this->assertSame(1, $out['summary']['lines_hidden']);
+    }
+
+    /**
      * Produktivlauf 2026-09-03: „Daniel Mihajlovic" hing per E-Mail an
      * „Sprecherdatei Stimmgerecht", deren Rechnungen keine einzige Microsoft-
      * Position enthalten. Solche Treffer werden geprüft und, wenn ein Partner die

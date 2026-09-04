@@ -91,6 +91,7 @@ return [
     ],
     'hint' => [
         'lines' => 'Diagnóstico: todo lo que la conciliación vio en Lexoffice para los contactos asignados en el periodo, con la cantidad utilizada. Una empresa sin filas aquí no tiene facturas para su contacto en el periodo.',
+        'lines_hidden' => ':count posiciones sin relación con licencias (servicios propios, hardware, dominios) están ocultas.',
         'run_pending' => 'La ejecución aún no ha terminado. Actualiza la página para ver el informe.', 'run_failed' => 'La ejecución falló.', 'unmapped' => 'Las empresas sin asignación se pueden resolver con un archivo de asignación en la próxima ejecución.', 'extras' => 'Facturado sin suscripción activa, o una edición que la conciliación no reconoce.',
         'mapping' => 'Con «Asignar» defines por empresa quién recibe la factura: la propia empresa, un socio o un contacto Lexoffice. Las asignaciones guardadas tienen prioridad sobre la detección automática.',
         'foreign' => 'Los clientes finales de un socio (clientes externos) se comprueban a través del socio: la factura va al socio, que la traslada. Crea los clientes externos bajo el cliente socio, o añade «Empresa;partner:<nombre o Sqid>» al archivo de asignación.',

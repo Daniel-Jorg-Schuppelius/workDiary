@@ -41,12 +41,18 @@ final class ProductNameMatcher {
     /** Eigene Dienstleistungen, die trotz „Business"/„Microsoft" im Text keine Lizenzposition sind. */
     private const SERVICE_HINTS = [
         'support', 'stunde', 'stunden', 'wartung', 'beratung', 'einrichtung', 'schulung', 'entwicklung',
-        'pauschale', 'anfahrt', 'fernwartung', 'migration', 'installation', 'datev',
+        'pauschale', 'anfahrt', 'fernwartung', 'migration', 'installation', 'datev', 'betreuung',
     ];
 
+    /**
+     * Bewusst OHNE „business premium/standard/basic": Der Reseller führt eigene
+     * „Business …"-Leistungen (Business Support, Business DATEV-Updates,
+     * Business-Rechner); seine Microsoft-Positionen tragen immer „Microsoft 365",
+     * „M365", „Exchange Online" oder „Teams Essentials" im Namen.
+     */
     private const MICROSOFT_HINTS = [
         'microsoft', 'm365', 'o365', 'office 365', 'exchange online', 'teams essentials',
-        'business premium', 'business standard', 'business basic', 'apps for business', 'sharepoint', 'onedrive', 'azure',
+        'apps for business', 'sharepoint', 'onedrive', 'azure',
     ];
 
     public static function normalize(string $text): string {

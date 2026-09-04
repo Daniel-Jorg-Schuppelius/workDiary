@@ -56,5 +56,11 @@ class ProductNameMatcherTest extends TestCase {
         $this->assertFalse($matcher->looksLikeMicrosoftProduct('[SGIT-IT-DSBB-00001HO] - Business Support'));
         $this->assertFalse($matcher->looksLikeMicrosoftProduct('Business Support für Microsoft 365 Umgebung'));
         $this->assertFalse($matcher->looksLikeMicrosoftProduct('Einrichtung Microsoft 365 Tenant, 2 Stunden'));
+        // Eigene „Business …"-Leistungen dürfen nie über „Business Premium/Standard/Basic" zünden.
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('Business Premium'));
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('Business Standard Betreuung'));
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('Business Basic Paket'));
+        $this->assertFalse($matcher->looksLikeMicrosoftProduct('[SGIT-IT-DSBB-01PRE] - Business Support Premium'));
+        $this->assertTrue($matcher->looksLikeMicrosoftProduct('Microsoft 365 Business Premium'));
     }
 }

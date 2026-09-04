@@ -157,6 +157,9 @@ class ResellingReconciliationController extends Controller {
             return redirect()->route('finance.reselling.show', $run->sqid)->with('error', __('reselling.flash.not_done'));
         }
 
+        // Das Suchfenster ist eine Heuristik, kein Nutzerentscheid: Ein Lauf aus
+        // der Zeit engerer Vorgaben (45/90 Tage) fände späte Abrechnungen und
+        // Mehrjahresblöcke nicht — beim Neuberechnen mindestens die aktuellen Vorgaben.
         $run->forceFill([
             'status' => ReconciliationRunStatus::Queued,
             'summary' => null,
@@ -164,6 +167,8 @@ class ResellingReconciliationController extends Controller {
             'error' => null,
             'started_at' => null,
             'finished_at' => null,
+            'window_before' => max((int) $run->window_before, \App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_BEFORE),
+            'window_after' => max((int) $run->window_after, \App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_AFTER),
         ])->save();
 
         RunReconciliationJob::dispatch($run->id);

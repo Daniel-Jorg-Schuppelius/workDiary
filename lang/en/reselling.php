@@ -91,6 +91,7 @@ return [
     ],
     'hint' => [
         'lines' => 'Diagnostics: everything the reconciliation saw in Lexoffice for the mapped contacts within the period, with the quantity used. A company without rows here has no invoices for its contact in the period.',
+        'lines_hidden' => ':count line items without licence relevance (own services, hardware, domains) are hidden.',
         'run_pending' => 'The run has not finished yet. Refresh the page to see the report.', 'run_failed' => 'The run failed.', 'unmapped' => 'Companies without a mapping can be resolved with a mapping file on the next run.', 'extras' => 'Invoiced without a running subscription, or an edition the reconciliation does not recognise.',
         'mapping' => 'Use “Map” to define per company who receives the invoice: the company itself, a partner or a Lexoffice contact. Stored mappings take precedence over automatic detection.',
         'foreign' => 'End customers of a partner (foreign customers) are checked via the partner: the invoice goes to the partner, who passes it on. Create foreign customers under the partner customer, or add “Company;partner:<name or Sqid>” to the mapping file.',

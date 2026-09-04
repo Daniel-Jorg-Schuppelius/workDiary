@@ -55,6 +55,25 @@ use Throwable;
     }
 
     /**
+     * Ist die Position eine Lizenzposition? Der eigene Artikelstamm entscheidet
+     * verbindlich: Stammt die Position aus einem Artikel, zählt nur, ob DER
+     * ARTIKEL ein Microsoft-Produkt ist („Business Support" bleibt Support,
+     * auch wenn die Beschreibung „Microsoft 365" nennt). Ohne Artikel
+     * entscheidet der Positionstext.
+     */
+    private function isLicenseLine(InvoiceLine $line): bool {
+        if ($line->headerOnly) {
+            return false;
+        }
+        $article = $this->catalog->forLine($line);
+        if ($article !== null) {
+            return $this->matcher->looksLikeMicrosoftProduct($article->name) || $this->matchesAnyEdition($article->name);
+        }
+
+        return $this->matcher->looksLikeMicrosoftProduct($line->text());
+    }
+
+    /**
      * @param  list<MarketplaceEntitlement>  $entitlements
      * @param  array<string, ContactMapping>  $mappings  Firmen-Schlüssel → Zuordnung
      */
@@ -239,13 +258,13 @@ use Throwable;
                     $shared = count($ownersByContact[$contactId] ?? []) > 1;
                     $mentioned = $mentionOwner[$lineKey] ?? null;
                     if (! isset($linesClaimed[$lineKey]) && (! $shared || $mentioned === null || $mentioned === (string) $key)) {
-                        $seen[] = ['line' => $line, 'remaining' => $remaining[$lineKey], 'shared' => $shared && $mentioned === null];
+                        $seen[] = ['line' => $line, 'remaining' => $remaining[$lineKey], 'shared' => $shared && $mentioned === null, 'microsoft' => $this->isLicenseLine($line)];
                         $linesClaimed[$lineKey] = true;
                     }
                     if ($line->headerOnly || $remaining[$lineKey] < 1.0 || isset($extrasClaimed[$lineKey])) {
                         continue;
                     }
-                    if ($this->matcher->looksLikeMicrosoftProduct($this->productText($line))) {
+                    if ($this->isLicenseLine($line)) {
                         $extras[] = new ExtraLine($line, $remaining[$lineKey]);
                         $extrasClaimed[$lineKey] = true;
                     }
@@ -271,7 +290,7 @@ use Throwable;
     private function nearestPeriods(array $states, array $lines): array {
         $nearest = [];
         foreach ($lines as $lineKey => $line) {
-            if ($line->headerOnly) {
+            if (! $this->isLicenseLine($line)) {
                 continue;
             }
             $text = $this->productText($line);
@@ -317,12 +336,15 @@ use Throwable;
             if ($line->voucherDate->lessThan($windowStart) || $line->voucherDate->greaterThan($windowEnd)) {
                 continue;
             }
+            if (! $this->isLicenseLine($line)) {
+                continue; // eigene Leistung, Hardware, Domain — nie eine Lizenzposition
+            }
             $text = $this->productText($line);
             $exact = $this->matcher->matches($period->entitlement->edition, $text);
             if ($exactOnly && ! $exact) {
                 continue;
             }
-            if (! $exactOnly && ($exact || ! $this->matcher->looksLikeMicrosoftProduct($text) || $this->matchesAnyEdition($text))) {
+            if (! $exactOnly && ($exact || $this->matchesAnyEdition($text))) {
                 // Allgemeine Stufe nur für Positionen OHNE erkennbare Edition
                 // („Microsoft 365 Lizenzen"). Eine klar andere Edition (Exchange
                 // für eine Standard-Periode) bleibt liegen, statt als „unter
@@ -399,7 +421,7 @@ use Throwable;
                 if ($line->netTotal()->greaterThanOrEqual($period->fee())) {
                     $label = $line->voucherNumber !== '' ? $line->voucherNumber : $line->voucherId;
 
-                    return new PeriodFinding($period, ReconciliationStatus::CoveredByAmount, [['line' => $line, 'quantity' => 0.0, 'exact' => false]], null, $needed, 'Beleg ' . $label . ' im Fenster, Produkt nicht erkannt: ' . $line->name);
+                    return new PeriodFinding($period, ReconciliationStatus::CoveredByAmount, [['line' => $line, 'quantity' => 0.0, 'exact' => false]], null, $needed, 'Buchungsbeleg ' . $label . ' ohne Positionen im Fenster, Betrag deckt die Gebühr');
                 }
             }
 

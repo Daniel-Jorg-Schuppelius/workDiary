@@ -274,6 +274,9 @@ class ResellingReconciliationTest extends TestCase {
         $run->refresh();
         $this->assertSame(ReconciliationRunStatus::Queued, $run->status);
         $this->assertNull($run->report);
+        // Ein Lauf aus der Zeit engerer Vorgaben bekommt beim Neuberechnen mindestens das aktuelle Fenster.
+        $this->assertSame(\App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_BEFORE, $run->window_before);
+        $this->assertSame(\App\Services\Reselling\Marketplace\ReconciliationOptions::DEFAULT_AFTER, $run->window_after);
         Bus::assertDispatched(RunReconciliationJob::class, static fn(RunReconciliationJob $job): bool => $job->runId === $run->id);
 
         // Zweiter Lauf nutzt die gespeicherten Zuordnungen

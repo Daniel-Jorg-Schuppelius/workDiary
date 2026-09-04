@@ -91,6 +91,7 @@ return [
     ],
     'hint' => [
         'lines' => 'Diagnose: alles, was der Abgleich in Lexoffice für die zugeordneten Kontakte im Zeitraum gesehen hat, mit verbrauchter Menge. Steht eine Firma hier ohne Zeilen, hat ihr Kontakt in Lexoffice keine Rechnungen im Zeitraum.',
+        'lines_hidden' => ':count Positionen ohne Lizenzbezug (eigene Leistungen, Hardware, Domains) sind ausgeblendet.',
         'run_pending' => 'Der Lauf ist noch nicht fertig. Die Seite zeigt den Bericht nach dem Aktualisieren.', 'run_failed' => 'Der Lauf ist fehlgeschlagen.', 'unmapped' => 'Firmen ohne Zuordnung kannst du über eine Zuordnungsdatei beim nächsten Lauf auflösen.', 'extras' => 'Berechnet ohne laufendes Abo oder eine Edition, die der Abgleich nicht erkennt.',
         'mapping' => 'Über „Zuordnen“ legst du je Firma fest, wer die Rechnung bekommt: die Firma selbst, ein Partner oder ein Lexoffice-Kontakt. Gespeicherte Zuordnungen gehen der automatischen Erkennung vor.',
         'foreign' => 'Endkunden eines Partners (Fremdkunden) werden über den Partner geprüft: Die Rechnung geht an den Partner, der sie weiterreicht. Fremdkunden legst du am Partner-Kunden an, oder du trägst in der Zuordnungsdatei „Firma;partner:<Name oder Sqid>“ ein.',
