@@ -28,8 +28,7 @@ assegnazione, numero cliente partner, anagrafica clienti, ricerca univoca per
 nome — mai per ipotesi) e cerca per ogni periodo una riga di fattura
 corrispondente nella finestra intorno all’inizio del periodo.
 
-**Stato per periodo:** Coperto, Sotto costo, Parziale, Solo importo
-(documento senza posizioni), Mancante, Senza assegnazione. Le
+**Stato per periodo:** Coperto, Sotto costo, Parziale, Mancante, Senza assegnazione. Le
 aziende senza assegnazione si risolvono alla prossima esecuzione con un file
 di assegnazione: una riga per azienda, `Azienda;UUID contatto Lexoffice` o
 `Azienda;customer:<Sqid>`.

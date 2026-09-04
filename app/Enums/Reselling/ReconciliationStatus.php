@@ -28,9 +28,6 @@ enum ReconciliationStatus: string implements HasLabel {
     /** Nur ein Teil der Menge ist berechnet. */
     case Partial = 'partial';
 
-    /** Keine Produktposition, aber ein Beleg im Zeitfenster mit ausreichendem Betrag (schwach). */
-    case CoveredByAmount = 'covered_by_amount';
-
     /** Keine Rechnung im Zeitfenster. */
     case Missing = 'missing';
 
@@ -42,7 +39,6 @@ enum ReconciliationStatus: string implements HasLabel {
             self::Covered => 'Gedeckt',
             self::Underpriced => 'Unter Einkauf',
             self::Partial => 'Teilweise',
-            self::CoveredByAmount => 'Nur Betrag',
             self::Missing => 'Fehlt',
             self::Unmapped => 'Nicht zugeordnet',
         };

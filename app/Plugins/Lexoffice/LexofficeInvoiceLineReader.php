@@ -66,7 +66,7 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
 
         do {
             $body = $this->getJson('/voucherlist', [
-                'voucherType' => 'invoice,salesinvoice',
+                'voucherType' => 'invoice',
                 'voucherStatus' => 'any',
                 'contactId' => $externalContactId,
                 'voucherDateFrom' => $from->format('Y-m-d'),
@@ -87,30 +87,13 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
                     continue;
                 }
 
-                $id = (string) $item['id'];
-                $number = (string) ($item['voucherNumber'] ?? '');
-                $type = (string) ($item['voucherType'] ?? '');
-
-                if ($type === 'invoice') {
-                    array_push($lines, ...$this->invoiceLines($id, $number, $date, $externalContactId));
-
+                // Nur Lexoffice-eigene Rechnungen (RE/…) tragen Positionen. Buchungsbelege
+                // (`salesinvoice`) sind in anderen Programmen erstellte Fremdrechnungen —
+                // beim Reseller die Domainrechnungen (10021-01-2020) — und decken nie eine Lizenz.
+                if ((string) ($item['voucherType'] ?? '') !== 'invoice') {
                     continue;
                 }
-
-                $currency = CurrencyCode::tryFrom((string) ($item['currency'] ?? 'EUR')) ?? CurrencyCode::Euro;
-                $lines[] = new InvoiceLine(
-                    voucherId: $id,
-                    voucherNumber: $number,
-                    voucherDate: $date,
-                    voucherType: $type,
-                    contactId: $externalContactId,
-                    position: 0,
-                    name: '(Beleg ohne Positionen)',
-                    description: '',
-                    quantity: 1.0,
-                    unitNet: Money::ofFloat((float) ($item['totalAmount'] ?? 0), $currency),
-                    headerOnly: true,
-                );
+                array_push($lines, ...$this->invoiceLines((string) $item['id'], (string) ($item['voucherNumber'] ?? ''), $date, $externalContactId));
             }
 
             $totalPages = max(1, (int) ($body['totalPages'] ?? 1));

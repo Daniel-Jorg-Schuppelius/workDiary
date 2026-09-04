@@ -28,8 +28,7 @@ recherche de nom sans ambiguïté — jamais de supposition) et cherche pour
 chaque période une ligne de facture correspondante dans la fenêtre autour du
 début de période.
 
-**Statut par période :** Couverte, Sous le prix d’achat, Partielle, Montant
-seulement (pièce sans positions), Manquante, Sans affectation. Les
+**Statut par période :** Couverte, Sous le prix d’achat, Partielle, Manquante, Sans affectation. Les
 sociétés sans affectation se résolvent à la prochaine exécution avec un
 fichier d’affectation : une ligne par société, `Société;UUID du contact
 Lexoffice` ou `Société;customer:<Sqid>`.

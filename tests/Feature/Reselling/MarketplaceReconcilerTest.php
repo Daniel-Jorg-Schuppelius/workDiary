@@ -86,7 +86,6 @@ class MarketplaceReconcilerTest extends TestCase {
             'covered' => 1,
             'underpriced' => 1,
             'partial' => 0,
-            'covered_by_amount' => 0,
             'missing' => 4,
             'unmapped' => 2,
         ], $report->countsByStatus());

@@ -405,25 +405,10 @@ use Throwable;
         $withGeneric = static fn(string $note): string => trim($note . ($genericNote !== '' ? ($note !== '' ? ' · ' : '') . $genericNote : ''));
 
         if ($matches === []) {
+            // Buchungsbelege ohne Positionen (Fremdrechnungen anderer Programme) lädt der
+            // Reader nicht mehr — ohne Lizenzposition im Fenster fehlt die Rechnung.
             $windowStart = $period->startsOn->subDays($options->windowBefore);
             $windowEnd = $period->startsOn->addDays($options->windowAfter);
-            $contactIds = array_flip($mapping->contactIds);
-            // „Nur Betrag" nur für Belege OHNE Positionen (Buchungsbelege): Bei
-            // einer Rechnung mit Positionen wissen wir, dass keine davon eine
-            // Lizenz ist — eine Support- oder Hardware-Rechnung deckt nichts.
-            foreach ($lines as $line) {
-                if (! isset($contactIds[$line->contactId]) || ! $line->headerOnly) {
-                    continue;
-                }
-                if ($line->voucherDate->lessThan($windowStart) || $line->voucherDate->greaterThan($windowEnd)) {
-                    continue;
-                }
-                if ($line->netTotal()->greaterThanOrEqual($period->fee())) {
-                    $label = $line->voucherNumber !== '' ? $line->voucherNumber : $line->voucherId;
-
-                    return new PeriodFinding($period, ReconciliationStatus::CoveredByAmount, [['line' => $line, 'quantity' => 0.0, 'exact' => false]], null, $needed, 'Buchungsbeleg ' . $label . ' ohne Positionen im Fenster, Betrag deckt die Gebühr');
-                }
-            }
 
             return new PeriodFinding($period, ReconciliationStatus::Missing, [], null, $needed, 'Keine Rechnung ' . $windowStart->format('d.m.Y') . ' – ' . $windowEnd->format('d.m.Y') . ($mapping->isBilledViaPartner() ? ' bei ' . $mapping->billedVia : ''));
         }

@@ -28,7 +28,7 @@ nie geraten) und sucht je Periode eine passende Rechnungsposition im
 Zeitfenster um den Periodenbeginn.
 
 **Status je Periode:** Gedeckt, Unter Einkauf (Stückpreis unter Einkauf),
-Teilweise (Lizenzen und Lizenzmonate), Nur Betrag (Beleg ohne Positionen), Fehlt, Nicht
+Teilweise (Lizenzen und Lizenzmonate), Fehlt, Nicht
 zugeordnet. Firmen ohne Zuordnung löst du beim nächsten Lauf über eine
 Zuordnungsdatei auf: eine Zeile je Firma, `Firma;Lexoffice-Kontakt-UUID`
 oder `Firma;customer:<Sqid>`.

@@ -84,7 +84,7 @@ final class ReconciliationReportSerializer {
                 $line = $seen['line'];
                 $shared = (bool) ($seen['shared'] ?? false);
                 $microsoft = (bool) ($seen['microsoft'] ?? (new ProductNameMatcher)->looksLikeMicrosoftProduct($line->text()));
-                if (! $microsoft && ! $line->headerOnly) {
+                if (! $microsoft) {
                     $hiddenLines++; // eigene Leistungen, Hardware, Domains: für den Lizenzabgleich ohne Belang
 
                     continue;

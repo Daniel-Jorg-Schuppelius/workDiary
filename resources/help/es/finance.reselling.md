@@ -30,8 +30,7 @@ búsqueda inequívoca por nombre — nunca adivinando) y busca para cada periodo
 una línea de factura coincidente en la ventana alrededor del inicio del
 periodo.
 
-**Estado por periodo:** Cubierto, Por debajo del coste, Parcial, Solo
-importe (documento sin posiciones), Faltante, Sin asignación. Las
+**Estado por periodo:** Cubierto, Por debajo del coste, Parcial, Faltante, Sin asignación. Las
 empresas sin asignación se resuelven en la próxima ejecución con un archivo
 de asignación: una línea por empresa, `Empresa;UUID del contacto Lexoffice`
 o `Empresa;customer:<Sqid>`.
