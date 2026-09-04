@@ -6,7 +6,6 @@ audience: []
 modules:
     - module.reselling
 related:
-    - finance.reselling
     - roles.buchhaltung
     - glossary.core
 ---

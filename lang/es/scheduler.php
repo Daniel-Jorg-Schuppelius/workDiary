@@ -118,6 +118,7 @@ return [
         'jtl' => ['sync' => 'Sincronización JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Suscripciones de reventa: adoptar dominios de la gestión de dominios',
+            'sync_purchases' => 'Suscripciones de reventa: adoptar asientos de dominios como compras',
             'sync_periods' => 'Suscripciones de reventa: generar los periodos de facturación',
         ],
         'lexoffice' => [

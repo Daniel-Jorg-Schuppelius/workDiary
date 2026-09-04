@@ -126,6 +126,7 @@ class SchedulerRegistrationTest extends TestCase {
         // Neu mit Feature 152 (MVP-758): Reselling-Register, Perioden vorrollen.
         'resale:sync-periods' => ['5 6 * * *', true, true],
         'resale:sync-domains' => ['10 5 * * *', true, true],
+        'resale:sync-purchases' => ['20 5 * * *', true, true],
         // Neu mit Feature 078 (MVP-322): JTL-Wawi-Projektions-Sync.
         'jtl:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 093 (MVP-433/434): Billbee-Multichannel-Sync.

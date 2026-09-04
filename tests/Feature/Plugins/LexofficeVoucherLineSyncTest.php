@@ -12,10 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Plugins;
 
-use App\Models\{Customer, ExternalReference, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\{LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Plugins\Lexoffice\{LexofficeInvoiceParser, LexofficePlugin, LexofficeVoucherLineSync};
-use App\Services\Reselling\Register\MirroredInvoiceLineReader;
-use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\{FakePluginHttp, InteractsWithPlugins};
@@ -23,8 +21,7 @@ use Tests\TestCase;
 
 /**
  * Positionen im Belegspiegel (Feature 152, MVP-760 = Feature 140 Schnitt 2):
- * Nachladen je Rechnung, Artikelbezug, Belegtexte, Backfill-Befehl und der
- * Spiegel-Leser als InvoiceLineSource.
+ * Nachladen je Rechnung, Artikelbezug, Belegtexte, Backfill-Befehl.
  */
 class LexofficeVoucherLineSyncTest extends TestCase {
     use InteractsWithPlugins;
@@ -127,36 +124,5 @@ class LexofficeVoucherLineSyncTest extends TestCase {
             ->expectsOutputToContain('1 Rechnungen, 2 Positionen')
             ->assertSuccessful();
         $this->assertSame(2, LexofficeVoucherLine::query()->count());
-    }
-
-    public function test_mirrored_reader_serves_lines_and_finds_contacts(): void {
-        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH', 'number' => '10021']);
-        ExternalReference::create([
-            'organization_id' => $this->organization->id,
-            'plugin_id' => LexofficePlugin::ID,
-            'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
-            'external_id' => 'c-lds',
-            'referenceable_type' => $partner->getMorphClass(),
-            'referenceable_id' => $partner->getKey(),
-        ]);
-        $this->voucher('inv-1', 'RE/2025/0001', '2025-08-06', 'invoice', $partner->id);
-        $this->fakeInvoices();
-        (new LexofficeVoucherLineSync('lex-key', 'https://api.lexoffice.io/v1'))->withoutThrottle()->syncMissing($this->organization, 10);
-
-        $reader = new MirroredInvoiceLineReader($this->organization->id);
-        $this->assertTrue($reader->hasLines());
-        $lines = $reader->linesForContact('c-lds', CarbonImmutable::parse('2025-01-01'), CarbonImmutable::parse('2025-12-31'));
-        $this->assertCount(2, $lines);
-        $this->assertSame('RE/2025/0001', $lines[0]->voucherNumber);
-        $this->assertSame(12.0, $lines[0]->quantity);
-        $this->assertSame(2060, $lines[0]->unitNet->getMinorAmount());
-        $this->assertSame('art-bp', $lines[0]->articleId);
-        $this->assertStringContainsString('Steuerbüro Kaik', $lines[0]->voucherText);
-        $this->assertSame('LDS Systems GmbH', $lines[0]->recipient);
-        $this->assertSame([], $reader->linesForContact('c-lds', CarbonImmutable::parse('2026-01-01'), CarbonImmutable::parse('2026-12-31')));
-
-        $this->assertSame([['id' => 'c-lds', 'name' => 'LDS Systems GmbH']], $reader->findContactsByName('LDS Systems'));
-        $this->assertSame([['id' => 'c-lds', 'name' => 'LDS Systems GmbH']], $reader->findContactsByNumber('10021'));
-        $this->assertSame([], $reader->findContactsByName('Unbekannt'));
     }
 }

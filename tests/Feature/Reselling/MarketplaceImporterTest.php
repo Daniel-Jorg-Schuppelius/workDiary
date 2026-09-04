@@ -33,6 +33,8 @@ class MarketplaceImporterTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
 
+    public const FIXTURE = __DIR__ . '/../../Fixtures/Reselling/marketplace-purchases.csv';
+
     /** @var list<string> */
     private array $tempFiles = [];
 
@@ -57,7 +59,7 @@ class MarketplaceImporterTest extends TestCase {
         $qh = QualityHostingContractsReaderTest::writeFixture();
         $this->tempFiles[] = $qh;
         $files = [
-            ResaleImport::KIND_PURCHASES => ['name' => 'purchases.csv', 'path' => MarketplaceReconcilerTest::FIXTURE],
+            ResaleImport::KIND_PURCHASES => ['name' => 'purchases.csv', 'path' => self::FIXTURE],
             ResaleImport::KIND_CONTRACTS => ['name' => 'Export.xlsx', 'path' => $qh],
         ];
         if ($withPriceList) {
@@ -208,7 +210,7 @@ class MarketplaceImporterTest extends TestCase {
         $this->tempFiles[] = $qh;
 
         $response = $this->actingAs($admin)->post(route('finance.resale.import.store'), [
-            'telekom' => UploadedFile::fake()->createWithContent('purchases.csv', (string) file_get_contents(MarketplaceReconcilerTest::FIXTURE)),
+            'telekom' => UploadedFile::fake()->createWithContent('purchases.csv', (string) file_get_contents(self::FIXTURE)),
             'qualityhosting' => new UploadedFile($qh, 'Export.xlsx', null, null, true),
         ]);
         $response->assertRedirect(route('finance.resale.inbox'))->assertSessionHas('success');
@@ -222,7 +224,7 @@ class MarketplaceImporterTest extends TestCase {
     public function test_console_import_command(): void {
         $qh = QualityHostingContractsReaderTest::writeFixture();
         $this->tempFiles[] = $qh;
-        $this->artisan('resale:import', ['--org' => $this->organization->id, '--telekom' => MarketplaceReconcilerTest::FIXTURE, '--qualityhosting' => $qh])
+        $this->artisan('resale:import', ['--org' => $this->organization->id, '--telekom' => self::FIXTURE, '--qualityhosting' => $qh])
             ->expectsOutputToContain('Telekom-Käufe: 5 Zeilen')
             ->assertSuccessful();
         $this->assertSame(8, ResaleSubscription::query()->count());

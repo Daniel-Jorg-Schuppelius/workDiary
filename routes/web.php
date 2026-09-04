@@ -2491,6 +2491,17 @@ Route::middleware('auth')->group(function () {
             Route::get('perioden', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
             Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
             Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Finance\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
+            Route::get('preise', [\App\Http\Controllers\Finance\ResaleReportController::class, 'prices'])->name('prices')->middleware('can:reselling.view');
+            Route::get('einkauf', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'index'])->name('purchases.index')->middleware('can:reselling.view');
+            Route::middleware('can:reselling.manage')->group(function (): void {
+                Route::get('einkauf/neu', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'create'])->name('purchases.create');
+                Route::post('einkauf', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'store'])->name('purchases.store');
+                Route::get('einkauf/import', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'importCreate'])->name('purchases.import.create');
+                Route::post('einkauf/import', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'importStore'])->name('purchases.import.store');
+                Route::delete('einkauf/{entry}', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'destroy'])->name('purchases.destroy');
+            });
+            Route::get('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.manage');
+            Route::post('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.manage');
             Route::middleware('can:reselling.view')->group(function (): void {
                 Route::get('/', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'index'])->name('index');
                 Route::get('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'show'])->name('show');
@@ -2501,21 +2512,6 @@ Route::middleware('auth')->group(function () {
                 Route::put('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'update'])->name('update');
                 Route::delete('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'destroy'])->name('destroy');
             });
-        });
-
-        // ── Lizenz-Reselling-Abgleich (Feature 151): Marketplace-Exporte gegen
-        // Lexoffice-Rechnungen, Lauf im Hintergrund, Bericht mit Preisprüfung. ──
-        Route::prefix('finanzen/lizenz-abgleich')->name('finance.reselling.')->middleware('can:finance.reselling.manage')->group(function (): void {
-            Route::get('/', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'index'])->name('index');
-            Route::get('neu', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'create'])->name('create');
-            Route::post('/', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'store'])->name('store');
-            Route::get('{run}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'show'])->name('show');
-            Route::get('{run}/csv', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'download'])->name('download');
-            Route::post('{run}/neu-berechnen', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'rerun'])->name('rerun');
-            Route::get('{run}/zuordnung', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'mappingCreate'])->name('mappings.create');
-            Route::post('{run}/zuordnung', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'mappingStore'])->name('mappings.store');
-            Route::delete('{run}/zuordnung/{mapping}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'mappingDestroy'])->name('mappings.destroy');
-            Route::delete('{run}', [\App\Http\Controllers\Finance\ResellingReconciliationController::class, 'destroy'])->name('destroy');
         });
 
         // ── Eigene Bankkonten (Feature 045, finance.config) ─────────────────────

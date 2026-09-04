@@ -15794,6 +15794,43 @@ CREATE TABLE `resale_price_catalog` (
   CONSTRAINT `resale_price_catalog_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `resale_purchase_entries`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `resale_purchase_entries` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `subscription_id` bigint(20) unsigned DEFAULT NULL,
+  `period_id` bigint(20) unsigned DEFAULT NULL,
+  `provider` varchar(32) NOT NULL,
+  `source` varchar(24) NOT NULL,
+  `lexoffice_voucher_id` bigint(20) unsigned DEFAULT NULL,
+  `domain_accounting_entry_id` bigint(20) unsigned DEFAULT NULL,
+  `document_number` varchar(64) DEFAULT NULL,
+  `entry_date` date NOT NULL,
+  `description` varchar(255) DEFAULT NULL,
+  `net_amount` decimal(12,2) NOT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `raw_hash` varchar(64) NOT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `resale_purchases_org_hash_uq` (`organization_id`,`raw_hash`),
+  KEY `resale_purchase_entries_subscription_id_foreign` (`subscription_id`),
+  KEY `resale_purchase_entries_lexoffice_voucher_id_foreign` (`lexoffice_voucher_id`),
+  KEY `resale_purchase_entries_domain_accounting_entry_id_foreign` (`domain_accounting_entry_id`),
+  KEY `resale_purchase_entries_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `resale_purchases_org_prov_date_idx` (`organization_id`,`provider`,`entry_date`),
+  KEY `resale_purchases_period_idx` (`period_id`),
+  CONSTRAINT `resale_purchase_entries_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_purchase_entries_domain_accounting_entry_id_foreign` FOREIGN KEY (`domain_accounting_entry_id`) REFERENCES `domain_accounting_entries` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_purchase_entries_lexoffice_voucher_id_foreign` FOREIGN KEY (`lexoffice_voucher_id`) REFERENCES `lexoffice_vouchers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_purchase_entries_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `resale_purchase_entries_period_id_foreign` FOREIGN KEY (`period_id`) REFERENCES `resale_periods` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_purchase_entries_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `resale_subscriptions`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -15880,33 +15917,6 @@ CREATE TABLE `reselling_company_mappings` (
   CONSTRAINT `reselling_company_mappings_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `reselling_company_mappings_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `reselling_company_mappings_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `reselling_reconciliation_runs`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `reselling_reconciliation_runs` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `organization_id` bigint(20) unsigned NOT NULL,
-  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
-  `status` varchar(16) NOT NULL DEFAULT 'queued',
-  `reference_date` date NOT NULL,
-  `window_before` smallint(5) unsigned NOT NULL DEFAULT 45,
-  `window_after` smallint(5) unsigned NOT NULL DEFAULT 90,
-  `strict_products` tinyint(1) NOT NULL DEFAULT 0,
-  `files` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`files`)),
-  `summary` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`summary`)),
-  `report` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`report`)),
-  `error` text DEFAULT NULL,
-  `started_at` timestamp NULL DEFAULT NULL,
-  `finished_at` timestamp NULL DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `reselling_reconciliation_runs_created_by_user_id_foreign` (`created_by_user_id`),
-  KEY `reselling_runs_org_created_idx` (`organization_id`,`created_at`),
-  CONSTRAINT `reselling_reconciliation_runs_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `reselling_reconciliation_runs_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `restore_tests`;
@@ -21175,3 +21185,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (787,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (788,'2027_02_20_100200_create_resale_imports_and_price_catalog',57);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (789,'2027_02_20_100300_create_lexoffice_voucher_lines_table',58);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (790,'2027_02_20_100400_create_resale_period_links_table',59);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',60);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (792,'2027_02_20_100600_create_resale_purchase_entries_table',61);

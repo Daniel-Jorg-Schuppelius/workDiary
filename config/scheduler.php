@@ -756,6 +756,13 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        'resale.sync_purchases' => [
+            'command' => 'resale:sync-purchases',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:20'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
         'resale.sync_periods' => [
             'command' => 'resale:sync-periods',
             'cadence' => ['type' => 'dailyAt', 'time' => '06:05'],

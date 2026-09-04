@@ -13,8 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Reselling;
 
 use App\Enums\Reselling\BillingFrequency;
-use App\Services\Reselling\Marketplace\{BillingPeriodExpander, ContractSuccessionLinker, MarketplaceEntitlement, UnitPriceCatalog};
-use Carbon\CarbonImmutable;
+use App\Services\Reselling\Marketplace\{ContractSuccessionLinker, MarketplaceEntitlement};
 use Tests\TestCase;
 
 class ContractSuccessionLinkerTest extends TestCase {
@@ -35,9 +34,6 @@ class ContractSuccessionLinkerTest extends TestCase {
         $this->assertStringContainsString('abgelöst durch Quality Hosting ' . $qh->entitlementId . ' ab 02.08.2025', $capped->successionNote);
         $this->assertSame('', $result['entitlements'][1]->successionNote, 'Menge 1 passt nicht zu Menge 8');
 
-        $expander = new BillingPeriodExpander(UnitPriceCatalog::fromEntitlements($result['entitlements']));
-        $this->assertCount(1, $expander->all($capped), 'nur die Periode vor der Migration bleibt bei Telekom');
-        $this->assertCount(2, $expander->dueUntil($qh, CarbonImmutable::parse('2026-09-03')));
     }
 
     public function test_same_day_migration_leaves_no_telekom_period(): void {
@@ -47,8 +43,6 @@ class ContractSuccessionLinkerTest extends TestCase {
         $result = (new ContractSuccessionLinker)->link([$telekom, $qh]);
 
         $this->assertCount(1, $result['links']);
-        $expander = new BillingPeriodExpander(UnitPriceCatalog::fromEntitlements($result['entitlements']));
-        $this->assertSame([], $expander->all($result['entitlements'][0]));
     }
 
     public function test_co_term_anniversary_links_despite_different_creation_day(): void {

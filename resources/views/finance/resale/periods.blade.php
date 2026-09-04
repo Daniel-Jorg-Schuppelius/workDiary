@@ -28,6 +28,9 @@
                     <x-icon-btn icon="auto_awesome" tone="primary" size="sm" type="submit" show-label>{{ __('resale.link.action.propose') }}</x-icon-btn>
                 </form>
             @endif
+            @if ($canManage)
+                <x-icon-btn icon="receipt_long" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.periods.draft.create')" show-label>{{ __('resale.draft.action') }}</x-icon-btn>
+            @endif
             <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('finance.resale.report.export')" show-label>{{ __('resale.export.action') }}</x-icon-btn>
             <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>

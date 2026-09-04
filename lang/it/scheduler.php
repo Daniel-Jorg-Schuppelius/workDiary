@@ -118,6 +118,7 @@ return [
         'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],
         'resale' => [
             'sync_domains' => 'Abbonamenti in rivendita: acquisire i domini dalla gestione domini',
+            'sync_purchases' => 'Abbonamenti in rivendita: acquisire le registrazioni domini come acquisti',
             'sync_periods' => 'Abbonamenti in rivendita: generare i periodi di fatturazione',
         ],
         'lexoffice' => [

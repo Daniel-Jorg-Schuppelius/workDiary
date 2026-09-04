@@ -40,6 +40,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property string|null $waived_reason
  * @property string|null $note
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ResalePeriodLink> $links
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ResalePurchaseEntry> $purchases
  * @property int|null $decided_by_user_id
  * @property CarbonImmutable|null $decided_at
  * @property-read ResaleSubscription $subscription
@@ -90,6 +91,20 @@ class ResalePeriod extends Model {
     /** @return BelongsTo<User, $this> */
     public function decidedBy(): BelongsTo {
         return $this->belongsTo(User::class, 'decided_by_user_id');
+    }
+
+    /** @return HasMany<ResalePurchaseEntry, $this> */
+    public function purchases(): HasMany {
+        return $this->hasMany(ResalePurchaseEntry::class, 'period_id');
+    }
+
+    /** Ist-Einkauf aus Einkaufsbelegen (null, wenn keiner zugeteilt ist). */
+    public function actualPurchase(): ?float {
+        if ($this->purchases->isEmpty()) {
+            return null;
+        }
+
+        return (float) $this->purchases->sum(static fn(ResalePurchaseEntry $e): float => $e->net_amount->toFloat());
     }
 
     /** @return HasMany<ResalePeriodLink, $this> */

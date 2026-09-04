@@ -344,7 +344,6 @@ return [
         // Provisionen (Feature 146)
         'commission.viewAny' => 'Ver comisiones (reglas, líneas, liquidaciones)',
         'commission.manage' => 'Gestionar comisiones (reglas, asignación, liquidación)',
-        'finance.reselling.manage' => 'Ejecutar la conciliación de reventa de licencias (subir exportaciones, ver informes)',
         'reselling.view' => 'Ver el registro de reventa (suscripciones, titulares, periodos)',
         'reselling.manage' => 'Gestionar el registro de reventa (crear/editar suscripciones, decidir periodos)',
 

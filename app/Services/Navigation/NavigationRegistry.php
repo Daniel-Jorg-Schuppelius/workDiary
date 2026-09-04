@@ -293,7 +293,6 @@ class NavigationRegistry {
             'finance.dunning.index' => 'module.finance',
             'finance.transfers.index' => 'module.finance',
             'finance.reconciliation.index' => 'module.finance',
-            'finance.reselling.index' => 'module.finance',
             'finance.resale.index' => 'module.reselling',
             'finance.bank-accounts.index' => 'module.finance',
             'finance.datev.index' => 'module.finance',
@@ -646,9 +645,6 @@ class NavigationRegistry {
                         // der dauerhafte Bestand, der den Abgleich ablöst.
                         ...(($user?->can(Permission::ResellingView->value) ?? false)
                             ? [['route' => 'finance.resale.index', 'label' => __('resale.title.menu'), 'icon' => 'subscriptions', 'modal' => false, 'matches' => ['finance.resale.*']]]
-                            : []),
-                        ...(($user?->can(Permission::FinanceResellingManage->value) ?? false)
-                            ? [['route' => 'finance.reselling.index', 'label' => __('reselling.title.menu'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['finance.reselling.*']]]
                             : []),
                         ['route' => 'lexoffice.articles.index', 'label' => __('Produkte & Leistungen'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['lexoffice.articles.*']],
                         ['route' => 'investments.index', 'label' => __('Investitionen'), 'icon' => 'trending_up', 'modal' => false, 'matches' => ['investments.*']],

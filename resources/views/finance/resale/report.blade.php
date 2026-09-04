@@ -20,6 +20,7 @@
 @section('content')
     <x-index-page :title="__('resale.report.title')" :subtitle="__('resale.report.subtitle', ['date' => $today->format('d.m.Y')])">
         <x-slot:actions>
+            <x-icon-btn icon="shopping_cart" tone="ghost" size="sm" :href="route('finance.resale.purchases.index')" show-label>{{ __('resale.purchase.title') }}</x-icon-btn>
             <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('finance.resale.report.export')" show-label>{{ __('resale.export.action') }}</x-icon-btn>
             <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
@@ -35,6 +36,7 @@
                             <x-table.th class="text-right" sort type="number">{{ __('resale.report.expected_sale') }}</x-table.th>
                             <x-table.th class="text-right" sort type="number">{{ __('resale.report.billed') }}</x-table.th>
                             <x-table.th class="text-right" sort type="number">{{ __('resale.report.expected_purchase') }}</x-table.th>
+                            <x-table.th class="text-right" sort type="number">{{ __('resale.report.actual_purchase') }}</x-table.th>
                             <x-table.th class="text-right" sort type="number">{{ __('resale.report.margin') }}</x-table.th>
                         </tr>
                     </x-slot:head>
@@ -46,10 +48,12 @@
                             <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['expected_sale']) }}</td>
                             <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['billed']) }}</td>
                             <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['expected_purchase']) }}</td>
-                            <td class="text-right tabular-nums whitespace-nowrap {{ $row['billed'] - $row['expected_purchase'] < 0 ? 'text-error' : 'text-success' }}">{{ $money($row['billed'] - $row['expected_purchase']) }}</td>
+                            <td class="text-right tabular-nums whitespace-nowrap">{{ $row['with_actual'] > 0 ? $money($row['actual_purchase']) : '—' }}@if ($row['with_actual'] > 0 && $row['with_actual'] < $row['periods'])<span class="block text-xs text-muted">{{ $row['with_actual'] }}/{{ $row['periods'] }}</span>@endif</td>
+                            @php $purchase = $row['with_actual'] === $row['periods'] && $row['periods'] > 0 ? $row['actual_purchase'] : $row['expected_purchase']; @endphp
+                            <td class="text-right tabular-nums whitespace-nowrap {{ $row['billed'] - $purchase < 0 ? 'text-error' : 'text-success' }}">{{ $money($row['billed'] - $purchase) }}</td>
                         </tr>
                     @empty
-                        <x-table.empty :colspan="7" :title="__('resale.report.empty')" compact />
+                        <x-table.empty :colspan="8" :title="__('resale.report.empty')" compact />
                     @endforelse
                 </x-table>
             </x-card>

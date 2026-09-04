@@ -62,6 +62,7 @@ final class LinkProposer {
             ResalePeriodLink::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('origin', LinkOrigin::Proposed->value)
+                ->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass()) // lokale Rechnungsentwürfe bleiben
                 ->delete();
 
             $contactsByCustomer = $this->contactsByCustomer($organization, $subscriptions);
@@ -391,13 +392,17 @@ final class LinkProposer {
      */
     public function contactsFor(ResaleSubscription $subscription): array {
         $billedTo = $subscription->billedTo();
-        if ($billedTo === null) {
-            return [];
-        }
 
+        return $billedTo === null ? [] : $this->contactsForCustomer($billedTo);
+    }
+
+    /**
+     * @return list<string>
+     */
+    public function contactsForCustomer(Customer $billedTo): array {
         $ids = [];
         foreach (ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $subscription->organization_id)
+            ->where('organization_id', $billedTo->organization_id)
             ->where('plugin_id', LexofficePlugin::ID)
             ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
             ->where('referenceable_type', (new Customer)->getMorphClass())

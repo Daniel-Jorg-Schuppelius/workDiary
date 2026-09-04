@@ -118,6 +118,7 @@ return [
         'jtl' => ['sync' => 'JTL Wawi sync'],
         'resale' => [
             'sync_domains' => 'Resale subscriptions: adopt domains from domain management',
+            'sync_purchases' => 'Resale subscriptions: adopt domain accounting entries as purchases',
             'sync_periods' => 'Resale subscriptions: roll billing periods forward',
         ],
         'lexoffice' => [

@@ -20,6 +20,8 @@
         <x-slot:actions>
             @can(\App\Enums\User\Permission::ResellingManage->value)
                 <x-icon-btn icon="insights" tone="ghost" size="sm" :href="route('finance.resale.report.index')" show-label>{{ __('resale.report.title') }}</x-icon-btn>
+                <x-icon-btn icon="price_check" tone="ghost" size="sm" :href="route('finance.resale.prices')" show-label>{{ __('resale.prices.title') }}</x-icon-btn>
+                <x-icon-btn icon="shopping_cart" tone="ghost" size="sm" :href="route('finance.resale.purchases.index')" show-label>{{ __('resale.purchase.title') }}</x-icon-btn>
                 <x-icon-btn icon="fact_check" :tone="$summary['open_periods'] > 0 ? 'warning' : 'ghost'" size="sm"
                             :href="route('finance.resale.periods.index')"
                             show-label>{{ __('resale.periods.title') }}@if ($summary['open_periods'] > 0) ({{ $summary['open_periods'] }})@endif</x-icon-btn>
