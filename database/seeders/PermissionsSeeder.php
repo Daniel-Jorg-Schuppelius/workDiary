@@ -737,6 +737,9 @@ class PermissionsSeeder extends Seeder {
             // Lizenz-Reselling-Abgleich (Feature 151): Abrechnungsluecken
             // und Margen pruefen ist Buchhaltungsarbeit.
             PermissionEnum::FinanceResellingManage,
+            // Reselling-Register (Feature 152): Abos und Perioden pflegen.
+            PermissionEnum::ResellingView,
+            PermissionEnum::ResellingManage,
             PermissionEnum::FinanceTransferMaterial,
             // Zahlungsabgleich (Feature 045, Priorität 3): Bankdatei importieren
             // und Zuordnungen bestätigen. Die Verwaltung eigener Bankkonten

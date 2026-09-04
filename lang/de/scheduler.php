@@ -116,6 +116,10 @@ return [
         'accounting' => ['recurring' => 'Wiederkehrende Belegerwartungen und Buchungsentwürfe', 'filings' => 'Steuertermine abgleichen und an Fristen erinnern'],
         'invoicing' => ['recurring' => 'Wiederkehrende Rechnungsentwürfe erzeugen'],
         'jtl' => ['sync' => 'JTL-Wawi-Abgleich'],
+        'resale' => [
+            'sync_domains' => 'Reselling-Abos: Domains aus der Domainverwaltung übernehmen',
+            'sync_periods' => 'Reselling-Abos: Abrechnungsperioden vorrollen',
+        ],
         'lexoffice' => [
             'sync_articles' => 'Lexoffice-Artikel synchronisieren',
             'sync_contacts' => 'Lexoffice-Kontakte synchronisieren',

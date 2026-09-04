@@ -90,6 +90,7 @@ return [
         'need_file' => 'At least one export file (Telekom or Quality Hosting) is required.',
     ],
     'hint' => [
+        'register' => 'The licence reconciliation is the predecessor of the resale register. Keep subscriptions, holders and billing periods there permanently and link invoices once.',
         'lines' => 'Diagnostics: everything the reconciliation saw in Lexoffice for the mapped contacts within the period, with the quantity used. A company without rows here has no invoices for its contact in the period.',
         'lines_hidden' => ':count line items without licence relevance (own services, hardware, domains) are hidden.',
         'run_pending' => 'The run has not finished yet. Refresh the page to see the report.', 'run_failed' => 'The run failed.', 'unmapped' => 'Companies without a mapping can be resolved with a mapping file on the next run.', 'extras' => 'Invoiced without a running subscription, or an edition the reconciliation does not recognise.',

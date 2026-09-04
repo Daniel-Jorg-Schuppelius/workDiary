@@ -90,6 +90,7 @@ return [
         'need_file' => 'È necessario almeno un file di export (Telekom o Quality Hosting).',
     ],
     'hint' => [
+        'register' => 'Il confronto licenze è il predecessore del registro di rivendita. Lì gestisci abbonamenti, titolari e periodi di fatturazione in modo permanente e colleghi le fatture una volta sola.',
         'lines' => 'Diagnosi: tutto ciò che la riconciliazione ha visto in Lexoffice per i contatti assegnati nel periodo, con la quantità utilizzata. Un’azienda senza righe qui non ha fatture per il suo contatto nel periodo.',
         'lines_hidden' => ':count posizioni senza attinenza alle licenze (servizi propri, hardware, domini) sono nascoste.',
         'run_pending' => 'L’esecuzione non è ancora terminata. Aggiorna la pagina per vedere il report.', 'run_failed' => 'L’esecuzione è fallita.', 'unmapped' => 'Le aziende senza assegnazione si risolvono con un file di assegnazione alla prossima esecuzione.', 'extras' => 'Fatturato senza abbonamento attivo, oppure edizione non riconosciuta dalla riconciliazione.',

@@ -116,6 +116,10 @@ return [
         'accounting' => ['recurring' => 'Attese di documenti e bozze di registrazione ricorrenti', 'filings' => 'Allinea le scadenze fiscali e invia promemoria'],
         'invoicing' => ['recurring' => 'Generare bozze di fatture ricorrenti'],
         'jtl' => ['sync' => 'Sincronizzazione JTL Wawi'],
+        'resale' => [
+            'sync_domains' => 'Abbonamenti in rivendita: acquisire i domini dalla gestione domini',
+            'sync_periods' => 'Abbonamenti in rivendita: generare i periodi di fatturazione',
+        ],
         'lexoffice' => [
             'sync_articles' => 'Sincronizzare gli articoli Lexoffice',
             'sync_contacts' => 'Sincronizzare i contatti Lexoffice',

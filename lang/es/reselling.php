@@ -90,6 +90,7 @@ return [
         'need_file' => 'Se necesita al menos un archivo de exportación (Telekom o Quality Hosting).',
     ],
     'hint' => [
+        'register' => 'La conciliación de licencias es la predecesora del registro de reventa. Allí gestionas suscripciones, titulares y periodos de facturación de forma permanente y vinculas las facturas una sola vez.',
         'lines' => 'Diagnóstico: todo lo que la conciliación vio en Lexoffice para los contactos asignados en el periodo, con la cantidad utilizada. Una empresa sin filas aquí no tiene facturas para su contacto en el periodo.',
         'lines_hidden' => ':count posiciones sin relación con licencias (servicios propios, hardware, dominios) están ocultas.',
         'run_pending' => 'La ejecución aún no ha terminado. Actualiza la página para ver el informe.', 'run_failed' => 'La ejecución falló.', 'unmapped' => 'Las empresas sin asignación se pueden resolver con un archivo de asignación en la próxima ejecución.', 'extras' => 'Facturado sin suscripción activa, o una edición que la conciliación no reconoce.',

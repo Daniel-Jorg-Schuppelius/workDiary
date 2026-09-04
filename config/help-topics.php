@@ -525,6 +525,7 @@ return [
         'finance.transfers.*' => 'finance.transfers',
         'finance.reconciliation.*' => 'finance.reconciliation',
         'finance.reselling.*' => 'finance.reselling',
+        'finance.resale.*' => 'finance.resale',
         'finance.bank-accounts.*' => 'finance.reconciliation',
         'finance.datev.*' => 'finance.datev-bookings',
         'exports.*' => 'exports.payroll',

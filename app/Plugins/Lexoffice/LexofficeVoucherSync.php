@@ -34,6 +34,9 @@ use RuntimeException;
 class LexofficeVoucherSync {
     private ?PluginApiClient $api = null;
 
+    /** Rechnungen, deren Positionen je Sync-Lauf nachgeladen werden (Ratenlimit). */
+    private const LINES_PER_RUN = 100;
+
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
@@ -49,7 +52,7 @@ class LexofficeVoucherSync {
     }
 
     /**
-     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int}
+     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, frozen?: bool}
      */
     public function sync(Organization $organization): array {
         // G3 (MVP-690): Nach abgeschlossenem Buchhaltungswechsel mit Quelle
@@ -61,7 +64,7 @@ class LexofficeVoucherSync {
             ->where('status', \App\Enums\Migration\AccountingMigrationStatus::Completed->value)
             ->exists();
         if ($completedMigration) {
-            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'frozen' => true];
+            return ['contacts' => 0, 'created' => 0, 'updated' => 0, 'archived' => 0, 'paid_dates' => 0, 'lines' => 0, 'frozen' => true];
         }
 
         if ($this->apiKey === null || $this->apiKey === '') {
@@ -97,6 +100,9 @@ class LexofficeVoucherSync {
             'updated' => $updated,
             'archived' => (int) $archived,
             'paid_dates' => $this->enrichPaidDates($organization->id),
+            // Feature 152 (MVP-760): Positionen der neuen Rechnungen nachladen —
+            // je Lauf begrenzt, der Backfill läuft über lexoffice:sync-voucher-lines.
+            'lines' => (new LexofficeVoucherLineSync((string) $this->apiKey, $this->baseUrl))->syncMissing($organization, self::LINES_PER_RUN)['synced'],
         ];
     }
 

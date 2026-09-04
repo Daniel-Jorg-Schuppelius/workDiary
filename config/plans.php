@@ -64,6 +64,7 @@ return [
             'module.contracts',
             'module.kasse',
             'module.domain',
+            'module.reselling',
         ],
         'enterprise' => [
             'module.kanban',
@@ -88,6 +89,7 @@ return [
             'module.compliance',
             'module.isms',
             'module.finance',
+            'module.reselling',
             'module.lager',
             'module.b2b_katalog',
             'module.bau',
@@ -149,6 +151,7 @@ return [
         'module.compliance' => 'Hinweisgebersystem',
         'module.isms' => 'ISMS',
         'module.finance' => 'Finanzschnittstelle',
+        'module.reselling' => 'Reselling-Register',
         'module.lager' => 'Lager & Artikel',
         'module.b2b_katalog' => 'B2B-Katalogzugang (OCI-Punchout)',
         'module.bau' => 'Bau & GAEB',
@@ -196,6 +199,7 @@ return [
         'module.compliance' => 'Hinweisgebersystem (HinSchG).',
         'module.isms' => 'Informationssicherheits-Managementsystem (ISO 27001).',
         'module.finance' => 'Finanz-/DATEV-Schnittstelle.',
+        'module.reselling' => 'Weiterverkaufte Abos (Lizenzen, Domains, Hosting) mit Haltern, Abrechnungsperioden und Rechnungsbezügen.',
         'module.lager' => 'Lagerwirtschaft, Artikelstamm und Fertigung.',
         'module.b2b_katalog' => 'Punchout-Katalog für Einkaufssysteme der B2B-Kunden (OCI 4.0) mit kundenindividuellen Freigaben/Preisen und openTRANS-2.1-Auftragseingang.',
         'module.bau' => 'Bau-/Ausbau: GAEB-Leistungsverzeichnisse, Ordnungszahlen, Aufmaß und Nachträge.',
@@ -424,6 +428,8 @@ return [
         // Finanzschnittstelle (Feature 045): Routen kommen in Teil B —
         // das Mapping ist bereits eingetragen, damit EnforcePlanModules
         // neue finance.*-Routen sofort gated.
+        // Reselling-Register (Feature 152): eigenes Modul, VOR dem finance.*-Sammelmuster.
+        'finance.resale.*' => 'module.reselling',
         'finance.*' => 'module.finance',
 
         'reports.week-by-user' => 'module.auswertungen_team',
@@ -475,6 +481,7 @@ return [
         'module.compliance' => false,       // Hinweisgeber → HinSchG (3 J.)
         'module.isms' => false,             // Risikoregister/SoA → Compliance-Nachweise (Auditfähigkeit)
         'module.finance' => false,          // Übergabenachweise/Exportpakete → GoBD / §147 AO (10 J.)
+        'module.reselling' => false,        // Rechnungsbezüge sind Nachweise zu Ausgangsrechnungen → §147 AO
         'module.versand' => false,          // Versandbelege/Labels → Handelsbriefe (§147 AO), nie automatisch purgen
         'module.b2b_katalog' => false,      // eingegangene Bestellungen → Handelsbriefe (§147 AO), nie automatisch purgen
         'module.ideas' => false,            // Karten werden bei Downgrade NIE gelöscht, nur unzugänglich (DoD Feature 054)

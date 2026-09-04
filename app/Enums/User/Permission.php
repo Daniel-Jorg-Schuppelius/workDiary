@@ -265,6 +265,10 @@ enum Permission: string implements HasLabel {
         // Lizenz-Reselling-Abgleich (Feature 151): Exporte hochladen, Läufe
         // sehen, Bericht laden. Verkaufspreise und Kundenzuordnung — Buchhaltung.
     case FinanceResellingManage = 'finance.reselling.manage';
+        // Reselling-Register (Feature 152): Abos, Halter, Perioden sehen bzw.
+        // pflegen. Sehen für Vertrieb/Buchhaltung, pflegen für Buchhaltung.
+    case ResellingView = 'reselling.view';
+    case ResellingManage = 'reselling.manage';
     case FinanceConfig = 'finance.config';
 
     /** Buchhaltungswechsel planen, umschalten und abschließen (MVP-653). */

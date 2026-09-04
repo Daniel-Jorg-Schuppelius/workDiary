@@ -116,6 +116,10 @@ return [
         'accounting' => ['recurring' => 'Expectativas de documentos y borradores de asiento recurrentes', 'filings' => 'Sincronizar plazos fiscales y recordar'],
         'invoicing' => ['recurring' => 'Generar borradores de facturas recurrentes'],
         'jtl' => ['sync' => 'Sincronización JTL Wawi'],
+        'resale' => [
+            'sync_domains' => 'Suscripciones de reventa: adoptar dominios de la gestión de dominios',
+            'sync_periods' => 'Suscripciones de reventa: generar los periodos de facturación',
+        ],
         'lexoffice' => [
             'sync_articles' => 'Sincronizar artículos de Lexoffice',
             'sync_contacts' => 'Sincronizar contactos de Lexoffice',

@@ -90,6 +90,7 @@ return [
         'need_file' => 'Mindestens eine Exportdatei (Telekom oder Quality Hosting) ist nötig.',
     ],
     'hint' => [
+        'register' => 'Der Lizenz-Abgleich ist der Vorläufer des Reselling-Registers. Dort führst du Abos, Halter und Abrechnungsperioden dauerhaft und ordnest Rechnungen einmal zu.',
         'lines' => 'Diagnose: alles, was der Abgleich in Lexoffice für die zugeordneten Kontakte im Zeitraum gesehen hat, mit verbrauchter Menge. Steht eine Firma hier ohne Zeilen, hat ihr Kontakt in Lexoffice keine Rechnungen im Zeitraum.',
         'lines_hidden' => ':count Positionen ohne Lizenzbezug (eigene Leistungen, Hardware, Domains) sind ausgeblendet.',
         'run_pending' => 'Der Lauf ist noch nicht fertig. Die Seite zeigt den Bericht nach dem Aktualisieren.', 'run_failed' => 'Der Lauf ist fehlgeschlagen.', 'unmapped' => 'Firmen ohne Zuordnung kannst du über eine Zuordnungsdatei beim nächsten Lauf auflösen.', 'extras' => 'Berechnet ohne laufendes Abo oder eine Edition, die der Abgleich nicht erkennt.',

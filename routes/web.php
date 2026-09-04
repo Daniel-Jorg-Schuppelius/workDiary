@@ -2467,6 +2467,42 @@ Route::middleware('auth')->group(function () {
             Route::delete('zuordnung/{allocation}', [\App\Http\Controllers\Finance\PaymentReconciliationController::class, 'unmatch'])->name('unmatch');
         });
 
+        // ── Reselling-Register (Feature 152, MVP-758): Abos mit Halter, Laufzeit,
+        // Preisen und geplanten Abrechnungsperioden. ──
+        Route::prefix('finanzen/abos')->name('finance.resale.')->group(function (): void {
+            // „neu" vor dem Sqid-Parameter, sonst fängt {subscription} den Dialog ab.
+            Route::get('neu', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'create'])->name('create')->middleware('can:reselling.manage');
+            Route::middleware('can:reselling.manage')->group(function (): void {
+                Route::get('import', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importCreate'])->name('import.create');
+                Route::post('import', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importStore'])->name('import.store');
+                Route::get('inbox', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'inbox'])->name('inbox');
+                Route::get('inbox/zuordnen', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'assignCreate'])->name('inbox.assign');
+                Route::post('inbox/zuordnen', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'assignStore'])->name('inbox.store');
+                // Perioden und Rechnungsbezüge (MVP-761)
+                Route::post('perioden/vorschlaege', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'propose'])->name('periods.propose');
+                Route::post('perioden/{period}/bestaetigen', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'confirm'])->name('periods.confirm');
+                Route::get('perioden/{period}/verzichten', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'waiveCreate'])->name('periods.waive.create');
+                Route::post('perioden/{period}/verzichten', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'waive'])->name('periods.waive');
+                Route::post('perioden/{period}/oeffnen', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'reopen'])->name('periods.reopen');
+                Route::get('perioden/{period}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkCreate'])->name('periods.link.create');
+                Route::post('perioden/{period}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkStore'])->name('periods.link.store');
+                Route::delete('bezuege/{link}', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkDestroy'])->name('links.destroy');
+            });
+            Route::get('perioden', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
+            Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
+            Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Finance\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
+            Route::middleware('can:reselling.view')->group(function (): void {
+                Route::get('/', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'index'])->name('index');
+                Route::get('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'show'])->name('show');
+            });
+            Route::middleware('can:reselling.manage')->group(function (): void {
+                Route::post('/', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'store'])->name('store');
+                Route::get('{subscription}/bearbeiten', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'edit'])->name('edit');
+                Route::put('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'update'])->name('update');
+                Route::delete('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'destroy'])->name('destroy');
+            });
+        });
+
         // ── Lizenz-Reselling-Abgleich (Feature 151): Marketplace-Exporte gegen
         // Lexoffice-Rechnungen, Lauf im Hintergrund, Bericht mit Preisprüfung. ──
         Route::prefix('finanzen/lizenz-abgleich')->name('finance.reselling.')->middleware('can:finance.reselling.manage')->group(function (): void {

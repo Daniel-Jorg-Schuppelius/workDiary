@@ -345,6 +345,8 @@ return [
         'commission.viewAny' => 'Consulter les commissions (règles, lignes, décomptes)',
         'commission.manage' => 'Gérer les commissions (règles, affectation, décompte)',
         'finance.reselling.manage' => 'Exécuter le rapprochement de revente de licences (téléverser les exports, voir les rapports)',
+        'reselling.view' => 'Voir le registre de revente (abonnements, titulaires, périodes)',
+        'reselling.manage' => 'Gérer le registre de revente (créer/modifier des abonnements, décider des périodes)',
 
         'finance.viewAny' => 'Consulter les justificatifs de transfert',
         'finance.config' => 'Gérer la configuration financière',

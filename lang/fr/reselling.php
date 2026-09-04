@@ -90,6 +90,7 @@ return [
         'need_file' => 'Au moins un fichier d’export (Telekom ou Quality Hosting) est requis.',
     ],
     'hint' => [
+        'register' => 'Le rapprochement des licences est le prédécesseur du registre de revente. Gérez-y durablement abonnements, titulaires et périodes de facturation et rattachez les factures une seule fois.',
         'lines' => 'Diagnostic : tout ce que le rapprochement a vu dans Lexoffice pour les contacts affectés sur la période, avec la quantité utilisée. Une société sans lignes ici n’a aucune facture pour son contact sur la période.',
         'lines_hidden' => ':count positions sans rapport avec les licences (prestations propres, matériel, domaines) sont masquées.',
         'run_pending' => 'L’exécution n’est pas encore terminée. Actualisez la page pour voir le rapport.', 'run_failed' => 'L’exécution a échoué.', 'unmapped' => 'Les sociétés sans affectation peuvent être résolues avec un fichier d’affectation lors de la prochaine exécution.', 'extras' => 'Facturé sans abonnement en cours, ou édition non reconnue par le rapprochement.',

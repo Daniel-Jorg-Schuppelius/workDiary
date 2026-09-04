@@ -80,6 +80,7 @@
             "/expense-approvals",
             "/expenses",
             "/expenses/create",
+            "/finanzen/abos",
             "/finanzen/belege",
             "/finanzen/buchhaltung/einrichtung",
             "/finanzen/datev-buchungen",

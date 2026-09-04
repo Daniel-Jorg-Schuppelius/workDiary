@@ -11151,6 +11151,36 @@ CREATE TABLE `lexoffice_articles` (
   CONSTRAINT `lexoffice_articles_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `lexoffice_voucher_lines`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `lexoffice_voucher_lines` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `voucher_id` bigint(20) unsigned NOT NULL,
+  `position` smallint(5) unsigned NOT NULL,
+  `type` varchar(16) DEFAULT NULL,
+  `external_article_id` varchar(64) DEFAULT NULL,
+  `lexoffice_article_id` bigint(20) unsigned DEFAULT NULL,
+  `name` varchar(255) NOT NULL,
+  `description` text DEFAULT NULL,
+  `quantity` decimal(12,3) NOT NULL DEFAULT 1.000,
+  `unit_name` varchar(32) DEFAULT NULL,
+  `unit_net` decimal(12,4) NOT NULL,
+  `total_net` decimal(12,2) NOT NULL,
+  `tax_rate` decimal(5,2) DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lex_voucher_lines_voucher_pos_uq` (`voucher_id`,`position`),
+  KEY `lexoffice_voucher_lines_lexoffice_article_id_foreign` (`lexoffice_article_id`),
+  KEY `lex_voucher_lines_org_article_idx` (`organization_id`,`lexoffice_article_id`),
+  CONSTRAINT `lexoffice_voucher_lines_lexoffice_article_id_foreign` FOREIGN KEY (`lexoffice_article_id`) REFERENCES `lexoffice_articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lexoffice_voucher_lines_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lexoffice_voucher_lines_voucher_id_foreign` FOREIGN KEY (`voucher_id`) REFERENCES `lexoffice_vouchers` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `lexoffice_vouchers`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -11173,6 +11203,9 @@ CREATE TABLE `lexoffice_vouchers` (
   `currency` varchar(3) NOT NULL DEFAULT 'EUR',
   `archived` tinyint(1) NOT NULL DEFAULT 0,
   `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
+  `voucher_text` text DEFAULT NULL,
+  `recipient_name` varchar(255) DEFAULT NULL,
+  `lines_synced_at` timestamp NULL DEFAULT NULL,
   `file_path` varchar(255) DEFAULT NULL,
   `file_materialized_at` timestamp NULL DEFAULT NULL,
   `synced_at` timestamp NULL DEFAULT NULL,
@@ -15644,6 +15677,185 @@ CREATE TABLE `request_items` (
   CONSTRAINT `rqi_offering_fk` FOREIGN KEY (`service_offering_id`) REFERENCES `service_offerings` (`id`) ON DELETE CASCADE,
   CONSTRAINT `rqi_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `rqi_sla_fk` FOREIGN KEY (`sla_contract_id`) REFERENCES `sla_contracts` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `resale_imports`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `resale_imports` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `provider` varchar(32) NOT NULL,
+  `kind` varchar(16) NOT NULL,
+  `file_name` varchar(190) NOT NULL,
+  `file_path` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'done',
+  `rows_total` int(10) unsigned NOT NULL DEFAULT 0,
+  `rows_created` int(10) unsigned NOT NULL DEFAULT 0,
+  `rows_updated` int(10) unsigned NOT NULL DEFAULT 0,
+  `rows_unchanged` int(10) unsigned NOT NULL DEFAULT 0,
+  `rows_unassigned` int(10) unsigned NOT NULL DEFAULT 0,
+  `issues` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`issues`)),
+  `error` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `resale_imports_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `resale_imports_org_created_idx` (`organization_id`,`created_at`),
+  CONSTRAINT `resale_imports_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_imports_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `resale_period_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `resale_period_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `period_id` bigint(20) unsigned NOT NULL,
+  `subscription_id` bigint(20) unsigned NOT NULL,
+  `linkable_type` varchar(120) NOT NULL,
+  `linkable_id` bigint(20) unsigned NOT NULL,
+  `voucher_number` varchar(64) DEFAULT NULL,
+  `voucher_date` date DEFAULT NULL,
+  `quantity` decimal(10,3) NOT NULL DEFAULT 0.000,
+  `months` decimal(10,2) NOT NULL DEFAULT 0.00,
+  `amount` decimal(12,2) DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `origin` varchar(16) NOT NULL DEFAULT 'proposed',
+  `note` varchar(255) DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `confirmed_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `resale_links_period_linkable_uq` (`period_id`,`linkable_type`,`linkable_id`),
+  KEY `resale_period_links_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `resale_links_org_linkable_idx` (`organization_id`,`linkable_type`,`linkable_id`),
+  KEY `resale_links_sub_origin_idx` (`subscription_id`,`origin`),
+  CONSTRAINT `resale_period_links_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_period_links_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `resale_period_links_period_id_foreign` FOREIGN KEY (`period_id`) REFERENCES `resale_periods` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `resale_period_links_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `resale_periods`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `resale_periods` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `subscription_id` bigint(20) unsigned NOT NULL,
+  `starts_on` date NOT NULL,
+  `ends_on` date NOT NULL,
+  `quantity` int(10) unsigned NOT NULL DEFAULT 1,
+  `expected_purchase` decimal(12,2) DEFAULT NULL,
+  `expected_sale` decimal(12,2) DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `status` varchar(16) NOT NULL DEFAULT 'open',
+  `waived_reason` varchar(255) DEFAULT NULL,
+  `note` varchar(255) DEFAULT NULL,
+  `decided_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `decided_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `resale_periods_sub_start_uq` (`subscription_id`,`starts_on`),
+  KEY `resale_periods_decided_by_user_id_foreign` (`decided_by_user_id`),
+  KEY `resale_periods_org_status_start_idx` (`organization_id`,`status`,`starts_on`),
+  CONSTRAINT `resale_periods_decided_by_user_id_foreign` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_periods_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `resale_periods_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `resale_price_catalog`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `resale_price_catalog` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `import_id` bigint(20) unsigned DEFAULT NULL,
+  `provider` varchar(32) NOT NULL,
+  `product` varchar(190) NOT NULL,
+  `term_months` smallint(5) unsigned NOT NULL DEFAULT 12,
+  `interval` varchar(8) NOT NULL DEFAULT 'yearly',
+  `valid_from` date NOT NULL,
+  `valid_to` date DEFAULT NULL,
+  `purchase_unit_price` decimal(12,4) NOT NULL,
+  `list_unit_price` decimal(12,4) DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `resale_prices_uq` (`organization_id`,`provider`,`product`,`term_months`,`interval`,`valid_from`),
+  KEY `resale_price_catalog_import_id_foreign` (`import_id`),
+  CONSTRAINT `resale_price_catalog_import_id_foreign` FOREIGN KEY (`import_id`) REFERENCES `resale_imports` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_price_catalog_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `resale_subscriptions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `resale_subscriptions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(16) NOT NULL,
+  `provider` varchar(32) NOT NULL,
+  `external_id` varchar(120) DEFAULT NULL,
+  `external_order_id` varchar(120) DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `foreign_customer_id` bigint(20) unsigned DEFAULT NULL,
+  `is_own_holding` tinyint(1) NOT NULL DEFAULT 0,
+  `article_id` bigint(20) unsigned DEFAULT NULL,
+  `lexoffice_article_id` bigint(20) unsigned DEFAULT NULL,
+  `label` varchar(190) NOT NULL,
+  `company_name` varchar(190) DEFAULT NULL,
+  `quantity` int(10) unsigned NOT NULL DEFAULT 1,
+  `starts_on` date NOT NULL,
+  `ends_on` date DEFAULT NULL,
+  `term_months` smallint(5) unsigned NOT NULL DEFAULT 12,
+  `interval` varchar(8) NOT NULL DEFAULT 'yearly',
+  `renewal` varchar(8) NOT NULL DEFAULT 'auto',
+  `purchase_unit_price` decimal(12,4) DEFAULT NULL,
+  `sale_unit_price` decimal(12,4) DEFAULT NULL,
+  `currency` char(3) NOT NULL DEFAULT 'EUR',
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `successor_id` bigint(20) unsigned DEFAULT NULL,
+  `contract_id` bigint(20) unsigned DEFAULT NULL,
+  `domain_projection_id` bigint(20) unsigned DEFAULT NULL,
+  `raw_hash` varchar(64) DEFAULT NULL,
+  `import_id` bigint(20) unsigned DEFAULT NULL,
+  `last_seen_at` timestamp NULL DEFAULT NULL,
+  `sync_status` varchar(16) DEFAULT NULL,
+  `notes` text DEFAULT NULL,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `resale_subs_org_provider_ext_uq` (`organization_id`,`provider`,`external_id`),
+  KEY `resale_subscriptions_customer_id_foreign` (`customer_id`),
+  KEY `resale_subscriptions_foreign_customer_id_foreign` (`foreign_customer_id`),
+  KEY `resale_subscriptions_article_id_foreign` (`article_id`),
+  KEY `resale_subscriptions_successor_id_foreign` (`successor_id`),
+  KEY `resale_subscriptions_contract_id_foreign` (`contract_id`),
+  KEY `resale_subscriptions_domain_projection_id_foreign` (`domain_projection_id`),
+  KEY `resale_subscriptions_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `resale_subs_org_status_kind_idx` (`organization_id`,`status`,`kind`),
+  KEY `resale_subs_org_customer_idx` (`organization_id`,`customer_id`),
+  KEY `resale_subs_org_foreign_idx` (`organization_id`,`foreign_customer_id`),
+  KEY `resale_subscriptions_lexoffice_article_id_foreign` (`lexoffice_article_id`),
+  KEY `resale_subscriptions_import_id_foreign` (`import_id`),
+  CONSTRAINT `resale_subscriptions_article_id_foreign` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_contract_id_foreign` FOREIGN KEY (`contract_id`) REFERENCES `contracts` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_domain_projection_id_foreign` FOREIGN KEY (`domain_projection_id`) REFERENCES `domain_projections` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_foreign_customer_id_foreign` FOREIGN KEY (`foreign_customer_id`) REFERENCES `foreign_customers` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_import_id_foreign` FOREIGN KEY (`import_id`) REFERENCES `resale_imports` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_lexoffice_article_id_foreign` FOREIGN KEY (`lexoffice_article_id`) REFERENCES `lexoffice_articles` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `resale_subscriptions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `resale_subscriptions_successor_id_foreign` FOREIGN KEY (`successor_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `reselling_company_mappings`;
@@ -20958,3 +21170,8 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (782,'2027_02_19_11
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',53);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (784,'2027_02_19_111400_create_reselling_company_mappings_table',54);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',55);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (786,'2027_02_20_100000_create_resale_subscriptions_table',56);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (787,'2027_02_20_100100_create_resale_periods_table',56);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (788,'2027_02_20_100200_create_resale_imports_and_price_catalog',57);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (789,'2027_02_20_100300_create_lexoffice_voucher_lines_table',58);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (790,'2027_02_20_100400_create_resale_period_links_table',59);

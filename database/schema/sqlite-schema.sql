@@ -5799,6 +5799,9 @@ CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
   "net_amount" numeric,
   "file_path" varchar,
   "file_materialized_at" datetime,
+  "voucher_text" text,
+  "recipient_name" varchar,
+  "lines_synced_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null,
   foreign key("supplier_id") references "suppliers"("id") on delete set null
@@ -18742,6 +18745,219 @@ CREATE UNIQUE INDEX "reselling_map_org_name_uq" on "reselling_company_mappings"(
   "organization_id",
   "normalized_name"
 );
+CREATE TABLE IF NOT EXISTS "resale_periods"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "subscription_id" integer not null,
+  "starts_on" date not null,
+  "ends_on" date not null,
+  "quantity" integer not null default '1',
+  "expected_purchase" numeric,
+  "expected_sale" numeric,
+  "currency" varchar not null default 'EUR',
+  "status" varchar not null default 'open',
+  "waived_reason" varchar,
+  "decided_by_user_id" integer,
+  "decided_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "note" varchar,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("subscription_id") references "resale_subscriptions"("id") on delete cascade,
+  foreign key("decided_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_periods_sub_start_uq" on "resale_periods"(
+  "subscription_id",
+  "starts_on"
+);
+CREATE INDEX "resale_periods_org_status_start_idx" on "resale_periods"(
+  "organization_id",
+  "status",
+  "starts_on"
+);
+CREATE TABLE IF NOT EXISTS "resale_imports"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "created_by_user_id" integer,
+  "provider" varchar not null,
+  "kind" varchar not null,
+  "file_name" varchar not null,
+  "file_path" varchar,
+  "status" varchar not null default 'done',
+  "rows_total" integer not null default '0',
+  "rows_created" integer not null default '0',
+  "rows_updated" integer not null default '0',
+  "rows_unchanged" integer not null default '0',
+  "rows_unassigned" integer not null default '0',
+  "issues" text,
+  "error" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "resale_imports_org_created_idx" on "resale_imports"(
+  "organization_id",
+  "created_at"
+);
+CREATE TABLE IF NOT EXISTS "resale_price_catalog"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "import_id" integer,
+  "provider" varchar not null,
+  "product" varchar not null,
+  "term_months" integer not null default '12',
+  "interval" varchar not null default 'yearly',
+  "valid_from" date not null,
+  "valid_to" date,
+  "purchase_unit_price" numeric not null,
+  "list_unit_price" numeric,
+  "currency" varchar not null default 'EUR',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("import_id") references "resale_imports"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_prices_uq" on "resale_price_catalog"(
+  "organization_id",
+  "provider",
+  "product",
+  "term_months",
+  "interval",
+  "valid_from"
+);
+CREATE TABLE IF NOT EXISTS "resale_subscriptions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "kind" varchar not null,
+  "provider" varchar not null,
+  "external_id" varchar,
+  "external_order_id" varchar,
+  "customer_id" integer,
+  "foreign_customer_id" integer,
+  "is_own_holding" tinyint(1) not null default('0'),
+  "article_id" integer,
+  "label" varchar not null,
+  "quantity" integer not null default('1'),
+  "starts_on" date not null,
+  "ends_on" date,
+  "term_months" integer not null default('12'),
+  "interval" varchar not null default('yearly'),
+  "renewal" varchar not null default('auto'),
+  "purchase_unit_price" numeric,
+  "sale_unit_price" numeric,
+  "currency" varchar not null default('EUR'),
+  "status" varchar not null default('active'),
+  "successor_id" integer,
+  "contract_id" integer,
+  "domain_projection_id" integer,
+  "raw_hash" varchar,
+  "sync_status" varchar,
+  "notes" text,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "company_name" varchar,
+  "lexoffice_article_id" integer,
+  "import_id" integer,
+  "last_seen_at" datetime,
+  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("domain_projection_id") references domain_projections("id") on delete set null on update no action,
+  foreign key("contract_id") references contracts("id") on delete set null on update no action,
+  foreign key("successor_id") references resale_subscriptions("id") on delete set null on update no action,
+  foreign key("article_id") references articles("id") on delete set null on update no action,
+  foreign key("foreign_customer_id") references foreign_customers("id") on delete set null on update no action,
+  foreign key("customer_id") references customers("id") on delete set null on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action,
+  foreign key("lexoffice_article_id") references "lexoffice_articles"("id") on delete set null,
+  foreign key("import_id") references "resale_imports"("id") on delete set null
+);
+CREATE INDEX "resale_subs_org_customer_idx" on "resale_subscriptions"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "resale_subs_org_foreign_idx" on "resale_subscriptions"(
+  "organization_id",
+  "foreign_customer_id"
+);
+CREATE UNIQUE INDEX "resale_subs_org_provider_ext_uq" on "resale_subscriptions"(
+  "organization_id",
+  "provider",
+  "external_id"
+);
+CREATE INDEX "resale_subs_org_status_kind_idx" on "resale_subscriptions"(
+  "organization_id",
+  "status",
+  "kind"
+);
+CREATE TABLE IF NOT EXISTS "lexoffice_voucher_lines"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "voucher_id" integer not null,
+  "position" integer not null,
+  "type" varchar,
+  "external_article_id" varchar,
+  "lexoffice_article_id" integer,
+  "name" varchar not null,
+  "description" text,
+  "quantity" numeric not null default '1',
+  "unit_name" varchar,
+  "unit_net" numeric not null,
+  "total_net" numeric not null,
+  "tax_rate" numeric,
+  "currency" varchar not null default 'EUR',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("voucher_id") references "lexoffice_vouchers"("id") on delete cascade,
+  foreign key("lexoffice_article_id") references "lexoffice_articles"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lex_voucher_lines_voucher_pos_uq" on "lexoffice_voucher_lines"(
+  "voucher_id",
+  "position"
+);
+CREATE INDEX "lex_voucher_lines_org_article_idx" on "lexoffice_voucher_lines"(
+  "organization_id",
+  "lexoffice_article_id"
+);
+CREATE TABLE IF NOT EXISTS "resale_period_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "period_id" integer not null,
+  "subscription_id" integer not null,
+  "linkable_type" varchar not null,
+  "linkable_id" integer not null,
+  "voucher_number" varchar,
+  "voucher_date" date,
+  "quantity" numeric not null default '0',
+  "months" numeric not null default '0',
+  "amount" numeric,
+  "currency" varchar not null default 'EUR',
+  "origin" varchar not null default 'proposed',
+  "note" varchar,
+  "created_by_user_id" integer,
+  "confirmed_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("period_id") references "resale_periods"("id") on delete cascade,
+  foreign key("subscription_id") references "resale_subscriptions"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "resale_links_period_linkable_uq" on "resale_period_links"(
+  "period_id",
+  "linkable_type",
+  "linkable_id"
+);
+CREATE INDEX "resale_links_org_linkable_idx" on "resale_period_links"(
+  "organization_id",
+  "linkable_type",
+  "linkable_id"
+);
+CREATE INDEX "resale_links_sub_origin_idx" on "resale_period_links"(
+  "subscription_id",
+  "origin"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -19528,3 +19744,8 @@ INSERT INTO migrations VALUES(782,'2027_02_19_111200_add_center_columns_to_help_
 INSERT INTO migrations VALUES(783,'2027_02_19_111300_create_reselling_reconciliation_runs_table',2);
 INSERT INTO migrations VALUES(784,'2027_02_19_111400_create_reselling_company_mappings_table',3);
 INSERT INTO migrations VALUES(785,'2027_02_19_111500_add_strict_products_to_reselling_reconciliation_runs',4);
+INSERT INTO migrations VALUES(786,'2027_02_20_100000_create_resale_subscriptions_table',5);
+INSERT INTO migrations VALUES(787,'2027_02_20_100100_create_resale_periods_table',5);
+INSERT INTO migrations VALUES(788,'2027_02_20_100200_create_resale_imports_and_price_catalog',6);
+INSERT INTO migrations VALUES(789,'2027_02_20_100300_create_lexoffice_voucher_lines_table',7);
+INSERT INTO migrations VALUES(790,'2027_02_20_100400_create_resale_period_links_table',8);

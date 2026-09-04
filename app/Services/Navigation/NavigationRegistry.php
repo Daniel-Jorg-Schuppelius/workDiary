@@ -294,6 +294,7 @@ class NavigationRegistry {
             'finance.transfers.index' => 'module.finance',
             'finance.reconciliation.index' => 'module.finance',
             'finance.reselling.index' => 'module.finance',
+            'finance.resale.index' => 'module.reselling',
             'finance.bank-accounts.index' => 'module.finance',
             'finance.datev.index' => 'module.finance',
             'finance.gobd.index' => 'module.finance',
@@ -641,6 +642,11 @@ class NavigationRegistry {
                             : []),
                         // Lizenz-Reselling-Abgleich (Feature 151, MVP-757): Marketplace-
                         // Abos gegen die eigenen Rechnungen — Abrechnungsarbeit, deshalb hier.
+                        // Reselling-Register (Feature 152, MVP-758): Abos, Halter, Perioden —
+                        // der dauerhafte Bestand, der den Abgleich ablöst.
+                        ...(($user?->can(Permission::ResellingView->value) ?? false)
+                            ? [['route' => 'finance.resale.index', 'label' => __('resale.title.menu'), 'icon' => 'subscriptions', 'modal' => false, 'matches' => ['finance.resale.*']]]
+                            : []),
                         ...(($user?->can(Permission::FinanceResellingManage->value) ?? false)
                             ? [['route' => 'finance.reselling.index', 'label' => __('reselling.title.menu'), 'icon' => 'fact_check', 'modal' => false, 'matches' => ['finance.reselling.*']]]
                             : []),

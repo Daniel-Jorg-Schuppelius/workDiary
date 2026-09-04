@@ -14,6 +14,13 @@
 
 @section('content')
     <x-index-page :subtitle="__('reselling.subtitle')">
+        @can(\App\Enums\User\Permission::ResellingView->value)
+            {{-- Feature 152 (MVP-766): der Abgleich ist der Vorläufer des Registers. --}}
+            <div class="alert alert-info mb-4 text-sm">
+                <span>{{ __('reselling.hint.register') }}</span>
+                <a href="{{ route('finance.resale.index') }}" class="btn btn-sm btn-primary">{{ __('resale.title.menu') }} →</a>
+            </div>
+        @endcan
         <x-slot:actions>
             <x-icon-btn icon="upload" tone="primary" size="sm"
                         data-entry-modal-trigger

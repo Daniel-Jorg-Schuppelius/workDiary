@@ -13,6 +13,7 @@ namespace App\Services\Customer;
 use App\Enums\User\Permission;
 use App\Models\{ActivityCategory, AuditLog, Customer, ExternalReference, Invoice, LexofficeVoucher, MaterialCostAllocation, TimeEntry, User};
 use App\Models\Domain\{DomainProjection, DomainResellerAccount};
+use App\Models\Reselling\ResaleSubscription;
 use App\Plugins\Contracts\PluginCapability;
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Plugins\PluginManager;
@@ -185,6 +186,21 @@ class CustomerDetailAssembler {
                 ->get();
         }
 
+        // Kundenakte-Reiter „Abos" (Feature 152, MVP-758): Abos des Kunden und
+        // seiner Fremdkunden (Endkunden) mit der Zahl offener Perioden.
+        $customerSubscriptions = collect();
+        if (Gate::forUser($user)->allows(Permission::ResellingView->value)) {
+            $today = CarbonImmutable::today();
+            $customerSubscriptions = ResaleSubscription::query()
+                ->with(['foreignCustomer:id,name', 'article:id,number,name'])
+                ->withCount(['periods as open_periods_count' => static fn($q) => $q->where('status', \App\Enums\Reselling\PeriodStatus::Open->value)->where('starts_on', '<', $today->addDay()->toDateString())])
+                ->forCustomer($customer)
+                ->planning()
+                ->orderBy('label')
+                ->limit(200)
+                ->get();
+        }
+
         // Kunden-Sonderkonditionen & Abrechnungskonto (Feature 098): Panel nur
         // mit update-Recht; im saldenführenden Modus (Konto/Retainer) offene
         // Monate frisch durchrechnen. Retainer zeigt zusätzlich die Lexoffice-
@@ -246,6 +262,7 @@ class CustomerDetailAssembler {
             'identifierIssues' => $this->identifierIssues->forContact($customer),
             'customer' => $customer,
             'customerDomains' => $customerDomains,
+            'customerSubscriptions' => $customerSubscriptions,
             'portalUsers' => $portalUsers,
             'portalLastLogins' => $portalLastLogins,
             'billingAgreement' => $billingAgreement,

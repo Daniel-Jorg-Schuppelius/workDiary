@@ -116,6 +116,10 @@ return [
         'accounting' => ['recurring' => 'Recurring document expectations and posting drafts', 'filings' => 'Sync tax deadlines and send reminders'],
         'invoicing' => ['recurring' => 'Generate recurring invoice drafts'],
         'jtl' => ['sync' => 'JTL Wawi sync'],
+        'resale' => [
+            'sync_domains' => 'Resale subscriptions: adopt domains from domain management',
+            'sync_periods' => 'Resale subscriptions: roll billing periods forward',
+        ],
         'lexoffice' => [
             'sync_articles' => 'Sync Lexoffice articles',
             'sync_contacts' => 'Sync Lexoffice contacts',

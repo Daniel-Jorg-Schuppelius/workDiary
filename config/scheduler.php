@@ -748,6 +748,21 @@ return [
             'criticality' => 'integration',
             'expected_runtime_minutes' => 15,
         ],
+        // --- Reselling-Register (Feature 152, MVP-758): Perioden vorrollen ---
+        'resale.sync_domains' => [
+            'command' => 'resale:sync-domains',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:10'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
+        'resale.sync_periods' => [
+            'command' => 'resale:sync-periods',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:05'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+        ],
         'lexoffice.sync_articles' => [
             'command' => 'lexoffice:sync-articles',
             'plugin' => 'lexoffice',

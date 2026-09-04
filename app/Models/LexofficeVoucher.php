@@ -31,6 +31,10 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $voucher_date
  * @property ?Carbon $due_date
  * @property ?Carbon $paid_date
+ * @property ?string $voucher_text
+ * @property ?string $recipient_name
+ * @property ?Carbon $lines_synced_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, LexofficeVoucherLine> $lines
  * @property \CommonToolkit\ValueObjects\Money|null $total_amount
  * @property \CommonToolkit\ValueObjects\Money|null $open_amount
  * @property \CommonToolkit\ValueObjects\Money|null $net_amount
@@ -57,6 +61,9 @@ class LexofficeVoucher extends Model {
         'voucher_date',
         'due_date',
         'paid_date',
+        'voucher_text',
+        'recipient_name',
+        'lines_synced_at',
         'total_amount',
         'open_amount',
         'net_amount',
@@ -74,6 +81,7 @@ class LexofficeVoucher extends Model {
         'voucher_date' => 'date',
         'due_date' => 'date',
         'paid_date' => 'date',
+        'lines_synced_at' => 'datetime',
         'total_amount' => MoneyCast::class . ':currency,2',
         'open_amount' => MoneyCast::class . ':currency,2',
         // Nur der Nettobetrag der voucherlist-Belege ist NICHT enthalten — er
@@ -97,6 +105,16 @@ class LexofficeVoucher extends Model {
      */
     public function supplier(): BelongsTo {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /**
+     * Positionen aus dem Belegspiegel (Feature 152, MVP-760) — nur für
+     * Lexoffice-eigene Rechnungen nach dem Positions-Sync gefüllt.
+     *
+     * @return \Illuminate\Database\Eloquent\Relations\HasMany<LexofficeVoucherLine, $this>
+     */
+    public function lines(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(LexofficeVoucherLine::class, 'voucher_id')->orderBy('position');
     }
 
     /**

@@ -475,6 +475,9 @@
 
     @include('customers._domains_panel', ['customer' => $customer, 'customerDomains' => $customerDomains])
 
+    {{-- Abos & Lizenzen (Feature 152, MVP-758) — nur mit reselling.view. --}}
+    @include('customers._resale_panel', ['customer' => $customer, 'customerSubscriptions' => $customerSubscriptions])
+
     {{-- Portalzugänge (MVP-510) — nur mit customerPortal.access.manage. --}}
     @include('customers._portal_access_panel', [
         'customer' => $customer,

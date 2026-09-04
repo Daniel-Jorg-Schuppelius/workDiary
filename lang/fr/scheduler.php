@@ -116,6 +116,10 @@ return [
         "accounting" => ["recurring" => "Attentes de pièces et brouillons d'écriture récurrents", "filings" => "Synchroniser les échéances fiscales et rappeler"],
         'invoicing' => ['recurring' => 'Générer les brouillons de factures récurrentes'],
         'jtl' => ['sync' => 'Synchronisation JTL Wawi'],
+        'resale' => [
+            'sync_domains' => 'Abonnements de revente : reprendre les domaines de la gestion des domaines',
+            'sync_periods' => 'Abonnements de revente : générer les périodes de facturation',
+        ],
         'lexoffice' => [
             'sync_articles' => 'Synchroniser les articles Lexoffice',
             'sync_contacts' => 'Synchroniser les contacts Lexoffice',

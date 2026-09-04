@@ -372,6 +372,8 @@ return [
         'commission.viewAny' => 'View commissions (rules, entries, runs)',
         'commission.manage' => 'Manage commissions (rules, assignment, settlement run)',
         'finance.reselling.manage' => 'Run licence reselling reconciliation (upload exports, view reports)',
+        'reselling.view' => 'View resale register (subscriptions, holders, periods)',
+        'reselling.manage' => 'Manage resale register (create/edit subscriptions, decide periods)',
 
         'finance.viewAny' => 'View transfer receipts',
         'finance.config' => 'Manage finance configuration',

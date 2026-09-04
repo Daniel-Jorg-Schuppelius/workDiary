@@ -123,6 +123,9 @@ class SchedulerRegistrationTest extends TestCase {
         'lexoffice:sync-contacts' => ['0 * * * *', true, true],
         'lexoffice:sync-articles' => ['0 * * * *', true, true],
         'lexoffice:sync-vouchers' => ['0 * * * *', true, true],
+        // Neu mit Feature 152 (MVP-758): Reselling-Register, Perioden vorrollen.
+        'resale:sync-periods' => ['5 6 * * *', true, true],
+        'resale:sync-domains' => ['10 5 * * *', true, true],
         // Neu mit Feature 078 (MVP-322): JTL-Wawi-Projektions-Sync.
         'jtl:sync' => ['0 * * * *', true, true],
         // Neu mit Feature 093 (MVP-433/434): Billbee-Multichannel-Sync.

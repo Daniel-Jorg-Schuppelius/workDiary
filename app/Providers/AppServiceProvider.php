@@ -974,6 +974,7 @@ class AppServiceProvider extends ServiceProvider {
             \App\Dashboard\Widgets\VacationFlexWidget::class,
             \App\Dashboard\Widgets\OpenTimesWidget::class,
             \App\Dashboard\Widgets\OpenItemsWidget::class,
+            \App\Dashboard\Widgets\ResalePeriodsWidget::class,
             \App\Dashboard\Widgets\TaxFilingsWidget::class,
 
             // Fristen & Betrieb

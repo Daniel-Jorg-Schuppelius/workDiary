@@ -17,7 +17,6 @@ use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Services\Reselling\Contracts\InvoiceLineSource;
 use App\Services\Reselling\Marketplace\InvoiceLine;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
 use Throwable;
@@ -123,52 +122,23 @@ final class LexofficeInvoiceLineReader implements InvoiceLineSource {
      * @return list<InvoiceLine>
      */
     private function invoiceLines(string $id, string $number, CarbonImmutable $date, string $contactId): array {
-        $invoice = $this->getJson('/invoices/' . $id, [], 'Rechnung abrufen');
-        $currency = CurrencyCode::tryFrom((string) ($invoice['totalPrice']['currency'] ?? 'EUR')) ?? CurrencyCode::Euro;
-        // Belegtexte: Bei Partnerrechnungen steht der Endkunde in Titel,
-        // Einleitung oder Schlusstext — nicht in den Positionen.
-        $voucherText = trim(implode(' ', array_filter([
-            (string) ($invoice['title'] ?? ''),
-            (string) ($invoice['introduction'] ?? ''),
-            (string) ($invoice['remark'] ?? ''),
-        ], static fn(string $part): bool => $part !== '')));
-        $recipient = trim((string) ($invoice['address']['name'] ?? ''));
-
+        $parsed = LexofficeInvoiceParser::parse($this->getJson('/invoices/' . $id, [], 'Rechnung abrufen'));
         $lines = [];
-        foreach (array_values((array) ($invoice['lineItems'] ?? [])) as $position => $item) {
-            if (! is_array($item) || (string) ($item['type'] ?? '') === 'text') {
-                continue;
-            }
-
-            $unit = is_array($item['unitPrice'] ?? null) ? $item['unitPrice'] : [];
-            $net = isset($unit['netAmount']) ? (float) $unit['netAmount'] : null;
-            if ($net === null && isset($unit['grossAmount'])) {
-                $rate = (float) ($unit['taxRatePercentage'] ?? 0);
-                $net = (float) $unit['grossAmount'] / (1 + $rate / 100);
-            }
-            if ($net === null) {
-                continue;
-            }
-
-            $discount = (float) ($item['discountPercentage'] ?? 0);
-            if ($discount > 0) {
-                $net *= 1 - $discount / 100;
-            }
-
+        foreach ($parsed['lines'] as $line) {
             $lines[] = new InvoiceLine(
                 voucherId: $id,
                 voucherNumber: $number,
                 voucherDate: $date,
                 voucherType: 'invoice',
                 contactId: $contactId,
-                position: $position + 1,
-                name: (string) ($item['name'] ?? ''),
-                description: (string) ($item['description'] ?? ''),
-                quantity: (float) ($item['quantity'] ?? 1),
-                unitNet: Money::ofFloat($net, $currency),
-                voucherText: $voucherText,
-                recipient: $recipient,
-                articleId: (string) ($item['id'] ?? ''),
+                position: $line['position'],
+                name: $line['name'],
+                description: $line['description'],
+                quantity: $line['quantity'],
+                unitNet: Money::ofFloat($line['unit_net'], $parsed['currency']),
+                voucherText: $parsed['voucher_text'],
+                recipient: $parsed['recipient'],
+                articleId: $line['external_article_id'],
             );
         }
 

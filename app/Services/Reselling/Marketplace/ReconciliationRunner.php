@@ -17,6 +17,7 @@ use App\Models\{Customer, ExternalReference, ForeignCustomer, Organization};
 use App\Models\Reselling\{CompanyMapping, ReconciliationRun};
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeInvoiceLineReader, LexofficePlugin};
 use App\Services\Reselling\Contracts\InvoiceLineSource;
+use App\Services\Reselling\Register\MirroredInvoiceLineReader;
 use App\Support\OrganizationContext;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\LockTimeoutException;
@@ -88,10 +89,18 @@ final class ReconciliationRunner {
     private function execute(ReconciliationRun $run, Organization $organization, ?InvoiceLineSource $source): array {
         $config = LexofficeConfig::resolve($organization->id);
         if ($source === null) {
-            if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
-                throw new RuntimeException('Lexoffice-Plugin ist für diese Organisation nicht aktiv oder ohne API-Schlüssel.');
+            // Feature 152 (MVP-760): Ist der Belegspiegel positionsgenau vollständig,
+            // liest der Abgleich dort — ohne Ratenlimit, reproduzierbar. Lücken im
+            // Spiegel (Backfill läuft noch) → weiter live über die API.
+            $mirror = new MirroredInvoiceLineReader($organization->id);
+            if ($mirror->hasLines() && $mirror->pendingCount() === 0) {
+                $source = $mirror;
+            } else {
+                if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
+                    throw new RuntimeException('Lexoffice-Plugin ist für diese Organisation nicht aktiv oder ohne API-Schlüssel.');
+                }
+                $source = new LexofficeInvoiceLineReader((string) $config['api_key'], (string) $config['base_url']);
             }
-            $source = new LexofficeInvoiceLineReader((string) $config['api_key'], (string) $config['base_url']);
         }
 
         $disk = Storage::disk(ReconciliationRun::DISK);
