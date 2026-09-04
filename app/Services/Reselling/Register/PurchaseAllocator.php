@@ -61,11 +61,11 @@ final class PurchaseAllocator {
         $baseHash = $voucher->id . '|' . $provider->value . '|' . $month->format('Y-m');
 
         DB::transaction(function () use ($organization, $voucher, $provider, $net, $month, $user, $source, $periods, $weights, $total, $baseHash, &$result): void {
-            // Alte Zuteilung dieses Belegs/Monats ersetzen.
+            // Alte pro-rata-Zuteilung dieses Belegs ersetzen (ein Beleg = eine Zuteilung).
             ResalePurchaseEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('lexoffice_voucher_id', $voucher->id)
-                ->where('raw_hash', 'like', CryptoHelper::hash($baseHash) . '%')
+                ->where('source', $source)
                 ->delete();
             $remaining = round($net->toFloat(), 2);
             $count = count($weights);
