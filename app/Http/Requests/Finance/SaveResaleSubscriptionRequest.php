@@ -87,6 +87,10 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
     public function subscriptionAttributes(): array {
         $data = $this->validated();
         $holder = (string) $data['holder'];
+        // Dialog: Kunde gewählt + Fremdkunde gewählt ⇒ Halter ist der Fremdkunde.
+        if ($holder === 'customer' && ! empty($data['foreign_customer_id'])) {
+            $holder = 'foreign';
+        }
 
         return [
             'kind' => $data['kind'],

@@ -67,6 +67,8 @@ return [
         'notes' => 'Notizen',
     ],
     'holder' => [
+        'customer_or_foreign' => 'Kunde (ggf. Fremdkunde)',
+        'customer_self' => '— der Kunde selbst —',
         'own' => 'Eigener Bestand',
         'unassigned' => 'Noch nicht zugeordnet',
         'customer' => 'Kunde',
@@ -101,6 +103,8 @@ return [
         'delete' => 'Abo wirklich löschen? Offene Perioden werden mit gelöscht.',
     ],
     'dialog' => [
+        'foreign_hint' => 'Endkunde dieses Kunden: die Rechnung geht an den Kunden.',
+        'no_foreign_customers' => 'Dieser Kunde hat keine Fremdkunden.',
         'lexoffice_article_hint' => 'Produkt und Verkaufspreis aus Lexoffice, wenn kein lokaler Artikel gepflegt ist.',
         'title_new' => 'Abo anlegen',
         'title_edit' => 'Abo bearbeiten',

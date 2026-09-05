@@ -67,6 +67,8 @@ return [
         'notes' => 'Notas',
     ],
     'holder' => [
+        'customer_or_foreign' => 'Cliente (o su cliente final)',
+        'customer_self' => '— el propio cliente —',
         'own' => 'Parque propio',
         'unassigned' => 'Aún sin asignar',
         'customer' => 'Cliente',
@@ -101,6 +103,8 @@ return [
         'delete' => '¿Eliminar realmente esta suscripción? Los periodos abiertos se eliminan con ella.',
     ],
     'dialog' => [
+        'foreign_hint' => 'Cliente final de este cliente: la factura va al cliente.',
+        'no_foreign_customers' => 'Este cliente no tiene clientes finales.',
         'lexoffice_article_hint' => 'Producto y precio de venta desde Lexoffice si no hay artículo local.',
         'title_new' => 'Nueva suscripción',
         'title_edit' => 'Editar suscripción',

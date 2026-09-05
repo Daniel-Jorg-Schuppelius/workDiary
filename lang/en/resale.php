@@ -67,6 +67,8 @@ return [
         'notes' => 'Notes',
     ],
     'holder' => [
+        'customer_or_foreign' => 'Customer (or its end customer)',
+        'customer_self' => '— the customer itself —',
         'own' => 'Own holding',
         'unassigned' => 'Not assigned yet',
         'customer' => 'Customer',
@@ -101,6 +103,8 @@ return [
         'delete' => 'Really delete this subscription? Open periods are deleted with it.',
     ],
     'dialog' => [
+        'foreign_hint' => 'End customer of this customer: the invoice goes to the customer.',
+        'no_foreign_customers' => 'This customer has no end customers.',
         'lexoffice_article_hint' => 'Product and sale price from Lexoffice when no local article is maintained.',
         'title_new' => 'New subscription',
         'title_edit' => 'Edit subscription',

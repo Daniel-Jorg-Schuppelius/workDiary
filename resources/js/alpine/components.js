@@ -173,6 +173,36 @@ export function registerAlpineComponents(Alpine) {
         },
     }));
 
+    // Halterwahl im Reselling-Register (Feature 152): Kunde wählen, der
+    // Fremdkunden-Schritt erscheint nur, wenn dieser Kunde Fremdkunden hat;
+    // Kundenwechsel setzt die Fremdkunden-Auswahl zurück.
+    Alpine.data("resaleHolderPicker", (map, holder, customer, foreign) => ({
+        map: map && typeof map === "object" ? map : {},
+        holder: holder || "none",
+        customer: customer || "",
+        foreign: foreign || "",
+        init() {
+            this.$watch("customer", () => {
+                this.foreign = "";
+            });
+        },
+        needsCustomer() {
+            return this.holder === "customer" || this.holder === "partner" || this.holder === "foreign";
+        },
+        options() {
+            return this.map[this.customer] || [];
+        },
+        hasOptions() {
+            return this.options().length > 0;
+        },
+        showForeign() {
+            return this.needsCustomer() && this.holder !== "partner" && this.customer !== "" && this.hasOptions();
+        },
+        noForeign() {
+            return this.holder === "foreign" && this.customer !== "" && !this.hasOptions();
+        },
+    }));
+
     // Aufklappbarer Baum in einer Tabelle (Kostengruppen-Pivot, MVP-648).
     // Der Zustand hängt an den Nummern, nicht an Zeilenindizes - sonst ginge
     // er beim Ebenenwechsel verloren.

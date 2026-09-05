@@ -114,6 +114,26 @@ class ResaleSubscriptionTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.index', ['customer' => $partner->sqid]))->assertOk()->assertSee('Steuerbüro Kaik');
     }
 
+    public function test_customer_plus_end_customer_in_the_dialog_makes_the_end_customer_the_holder(): void {
+        $admin = $this->orgAdmin();
+        $partner = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'LDS Systems GmbH']);
+        $end = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+
+        // Der Dialog kennt nur „Kunde (ggf. Fremdkunde)": Kunde gewählt, Fremdkunde gewählt ⇒ Halter Fremdkunde.
+        $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload([
+            'holder' => 'customer',
+            'customer_id' => $partner->sqid,
+            'foreign_customer_id' => $end->sqid,
+        ]));
+        $subscription = ResaleSubscription::query()->firstOrFail();
+        $this->assertSame($end->id, $subscription->foreign_customer_id);
+        $this->assertNull($subscription->customer_id);
+        $this->assertSame($partner->id, $subscription->billedTo()?->id);
+
+        // Der Dialog liefert die Fremdkunden je Kunde als Karte an die Halterwahl.
+        $this->actingAs($admin)->get(route('finance.resale.create'))->assertOk()->assertSee('resaleHolderPicker', false)->assertSee('Steuerbüro Kaik');
+    }
+
     public function test_holder_choice_requires_the_matching_id_and_cancel_needs_an_end(): void {
         $admin = $this->orgAdmin();
         $this->actingAs($admin)->from(route('finance.resale.index'))->post(route('finance.resale.store'), $this->payload(['holder' => 'customer']))

@@ -228,7 +228,7 @@ class ResaleSubscriptionController extends Controller {
             'company' => $company,
             'count' => ResaleSubscription::query()->planning()->unassigned()->where('company_name', $company)->count(),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'foreignCustomers' => ForeignCustomer::query()->with('customer:id,name')->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'customer_id']),
+            'foreignByCustomer' => $this->foreignCustomersByCustomer(),
         ]);
     }
 
@@ -288,6 +288,21 @@ class ResaleSubscriptionController extends Controller {
     }
 
     /**
+     * Fremdkunden je Kunde (Sqids) für die Halterwahl — der Fremdkunden-Schritt
+     * erscheint nur bei Kunden, die welche haben.
+     *
+     * @return array<string, list<array{sqid: string, name: string}>>
+     */
+    private function foreignCustomersByCustomer(): array {
+        $out = [];
+        foreach (ForeignCustomer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'customer_id']) as $foreign) {
+            $out[Sqid::encode(Customer::class, (int) $foreign->customer_id)][] = ['sqid' => $foreign->sqid, 'name' => (string) $foreign->name];
+        }
+
+        return $out;
+    }
+
+    /**
      * @param  array<string, mixed>  $prefill
      */
     private function dialog(?ResaleSubscription $subscription, array $prefill): View {
@@ -295,7 +310,7 @@ class ResaleSubscriptionController extends Controller {
             'subscription' => $subscription,
             'prefill' => $prefill,
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'foreignCustomers' => ForeignCustomer::query()->with('customer:id,name')->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'customer_id']),
+            'foreignByCustomer' => $this->foreignCustomersByCustomer(),
             'articles' => Article::query()->where('sellable', true)->orderBy('name')->get(['id', 'number', 'name']),
             'lexofficeArticles' => LexofficeArticle::query()->active()->orderBy('name')->get(['id', 'article_number', 'name', 'unit_name', 'net_unit_price', 'currency']),
             'kinds' => SubscriptionKind::cases(),
