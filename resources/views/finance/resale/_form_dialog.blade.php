@@ -50,26 +50,31 @@
         <x-input-field name="external_order_id" :label="__('resale.field.external_order_id')" :value="$value('external_order_id')" span="2" />
 
         {{-- Halterwahl: Fremdkunde erscheint nur, wenn der gewählte Kunde Fremdkunden hat (resaleHolderPicker). --}}
+        @php $holderMode = $holder === 'foreign' ? 'customer' : $holder; @endphp
         <div class="md:col-span-6 grid grid-cols-1 md:grid-cols-3 gap-3"
-             x-data="resaleHolderPicker(@js($foreignByCustomer), @js($holder === 'foreign' ? 'customer' : $holder), @js($customerSqid), @js($foreignSqid))">
+             x-data="resaleHolderPicker"
+             data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
+             data-holder="{{ $holderMode }}"
+             data-customer="{{ $customerSqid }}"
+             data-foreign="{{ $foreignSqid }}">
             <x-select-field name="holder" :label="__('resale.field.holder')" :hint="__('resale.dialog.holder_hint')" x-model="holder">
-                <option value="none">{{ __('resale.holder.unassigned') }}</option>
-                <option value="customer">{{ __('resale.holder.customer_or_foreign') }}</option>
-                <option value="own">{{ __('resale.holder.own') }}</option>
+                <option value="none" @selected($holderMode === 'none')>{{ __('resale.holder.unassigned') }}</option>
+                <option value="customer" @selected($holderMode === 'customer')>{{ __('resale.holder.customer_or_foreign') }}</option>
+                <option value="own" @selected($holderMode === 'own')>{{ __('resale.holder.own') }}</option>
             </x-select-field>
-            <div x-show="needsCustomer()" x-cloak>
+            <div x-show="needsCustomer()">
                 <x-select-field name="customer_id" :label="__('resale.holder.customer')" x-model="customer">
                     <option value="">—</option>
                     @foreach ($customers as $customer)
-                        <option value="{{ $customer->sqid }}">{{ $customer->name }}</option>
+                        <option value="{{ $customer->sqid }}" @selected($customerSqid === $customer->sqid)>{{ $customer->name }}</option>
                     @endforeach
                 </x-select-field>
             </div>
-            <div x-show="showForeign()" x-cloak>
+            <div x-show="showForeign()">
                 <x-select-field name="foreign_customer_id" :label="__('resale.holder.foreign')" :hint="__('resale.dialog.foreign_hint')" x-model="foreign">
                     <option value="">{{ __('resale.holder.customer_self') }}</option>
                     <template x-for="fc in options()" :key="fc.sqid">
-                        <option :value="fc.sqid" x-text="fc.name"></option>
+                        <option :value="fc.sqid" x-text="fc.name" :selected="fc.sqid === foreign"></option>
                     </template>
                 </x-select-field>
             </div>

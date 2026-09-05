@@ -176,14 +176,23 @@ export function registerAlpineComponents(Alpine) {
     // Halterwahl im Reselling-Register (Feature 152): Kunde wählen, der
     // Fremdkunden-Schritt erscheint nur, wenn dieser Kunde Fremdkunden hat;
     // Kundenwechsel setzt die Fremdkunden-Auswahl zurück.
-    Alpine.data("resaleHolderPicker", (map, holder, customer, foreign) => ({
-        map: map && typeof map === "object" ? map : {},
-        holder: holder || "none",
-        customer: customer || "",
-        foreign: foreign || "",
+    // Startwerte kommen als data-Attribute (CSP-Build: keine Ausdrücke im
+    // x-data), die Karte Kunde → Fremdkunden als data-map (JSON).
+    Alpine.data("resaleHolderPicker", () => ({
+        map: {},
+        holder: "none",
+        customer: "",
+        foreign: "",
         init() {
-            this.$watch("customer", () => {
-                this.foreign = "";
+            const data = this.$root.dataset;
+            this.map = JSON.parse(data.map || "{}");
+            this.holder = data.holder || "none";
+            this.customer = data.customer || "";
+            this.foreign = data.foreign || "";
+            this.$watch("customer", (value, previous) => {
+                if (previous !== undefined && value !== previous) {
+                    this.foreign = "";
+                }
             });
         },
         needsCustomer() {
