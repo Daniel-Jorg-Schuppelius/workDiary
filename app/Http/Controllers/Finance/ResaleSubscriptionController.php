@@ -142,6 +142,7 @@ class ResaleSubscriptionController extends Controller {
         $licenseIds = [];
         foreach ($vouchers as $voucher) {
             foreach ($voucher->lines as $line) {
+                $line->setRelation('voucher', $voucher); // Leistungszeitraum für die Lizenzmonate
                 $isLicense = $classifier->isLicense($line->article);
                 $line->setAttribute('is_license', $isLicense);
                 if ($isLicense) {

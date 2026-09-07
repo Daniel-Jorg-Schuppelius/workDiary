@@ -54,6 +54,7 @@ class LexofficeVoucherLineSyncTest extends TestCase {
             'https://api.lexoffice.io/v1/invoices/inv-1' => FakePluginHttp::response([
                 'id' => 'inv-1', 'title' => 'Rechnung', 'introduction' => 'Lizenzen für Steuerbüro Kaik', 'remark' => 'Danke', 'address' => ['name' => 'LDS Systems GmbH'],
                 'taxConditions' => ['taxType' => 'net'], 'totalPrice' => ['currency' => 'EUR'],
+                'shippingConditions' => ['shippingDate' => '2025-08-05T00:00:00.000+02:00', 'shippingEndDate' => '2026-08-04T00:00:00.000+02:00', 'shippingType' => 'serviceperiod'],
                 'lineItems' => [
                     ['type' => 'service', 'id' => 'art-bp', 'name' => 'Microsoft 365 Business Premium', 'description' => '', 'quantity' => 12, 'unitName' => 'Monat', 'unitPrice' => ['currency' => 'EUR', 'netAmount' => 20.6, 'grossAmount' => 24.51, 'taxRatePercentage' => 19]],
                     ['type' => 'text', 'name' => 'Hinweis', 'description' => 'nur Text'],
@@ -78,6 +79,15 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $this->assertSame(100.0, $parsed['lines'][0]['unit_net']);
         $this->assertSame(300.0, $parsed['lines'][0]['total_net']);
         $this->assertSame(19.0, $parsed['lines'][0]['tax_rate']);
+        $this->assertNull($parsed['service_from'], 'ohne shippingConditions kein Leistungszeitraum');
+
+        // Leistungsdatum (Einzeltag) → nur Beginn; Zeitraum → Beginn und Ende; „none" → nichts.
+        $single = LexofficeInvoiceParser::parse(['lineItems' => [], 'shippingConditions' => ['shippingDate' => '2025-08-05T00:00:00.000+02:00', 'shippingType' => 'service']]);
+        $this->assertSame(['2025-08-05', null], [$single['service_from'], $single['service_to']]);
+        $period = LexofficeInvoiceParser::parse(['lineItems' => [], 'shippingConditions' => ['shippingDate' => '2025-08-05T00:00:00.000+02:00', 'shippingEndDate' => '2026-08-04T00:00:00.000+02:00', 'shippingType' => 'serviceperiod']]);
+        $this->assertSame(['2025-08-05', '2026-08-04'], [$period['service_from'], $period['service_to']]);
+        $none = LexofficeInvoiceParser::parse(['lineItems' => [], 'shippingConditions' => ['shippingDate' => '2025-08-05T00:00:00.000+02:00', 'shippingType' => 'none']]);
+        $this->assertNull($none['service_from']);
     }
 
     public function test_sync_missing_loads_lines_texts_and_article_links(): void {
@@ -98,6 +108,8 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $this->assertNotNull($invoice->lines_synced_at);
         $this->assertSame('Rechnung Lizenzen für Steuerbüro Kaik Danke', $invoice->voucher_text);
         $this->assertSame('LDS Systems GmbH', $invoice->recipient_name);
+        $this->assertSame('05.08.2025 – 04.08.2026', $invoice->servicePeriodLabel());
+        $this->assertSame(12, $invoice->serviceMonths());
         $lines = LexofficeVoucherLine::query()->where('voucher_id', $invoice->id)->orderBy('position')->get();
         $this->assertCount(2, $lines, 'Textposition entfällt');
         $this->assertSame('Microsoft 365 Business Premium', $lines[0]->name);
@@ -111,8 +123,11 @@ class LexofficeVoucherLineSyncTest extends TestCase {
         $this->assertNotNull($gone->fresh()?->lines_synced_at, 'gelöschte Rechnung gilt als erledigt');
         $this->assertNull($booking->fresh()?->lines_synced_at, 'Buchungsbelege werden nie geladen');
 
-        // Zweiter Lauf: nichts mehr offen.
+        // Zweiter Lauf: nichts mehr offen. --refresh markiert alles neu (Buchungsbelege bleiben außen vor).
         $this->assertSame(['synced' => 0, 'lines' => 0, 'failed' => 0, 'remaining' => 0], $sync->syncMissing($this->organization, 10));
+        $this->assertSame(2, $sync->resetSynced($this->organization));
+        $this->assertSame(2, $sync->syncMissing($this->organization, 10)['synced']);
+        $this->assertCount(2, LexofficeVoucherLine::query()->where('voucher_id', $invoice->id)->get(), 'Neuladen ersetzt, verdoppelt nicht');
     }
 
     public function test_backfill_command_runs_per_enabled_organization(): void {

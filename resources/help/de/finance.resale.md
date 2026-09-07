@@ -53,11 +53,16 @@ Positionen — Rechnung nachholen über den Entwurf oder Periode verzichten)
 oder „ohne Periode" (mehr Positionen als Perioden — Abo fehlt im Register
 oder Doppelabrechnung). Je offener Periode stehen die Positionen desselben
 Produkts mit Abstand zum Periodenbeginn: freie mit Zuordnung, bereits
-vergebene mit ihrem Halter zur Kontrolle. Dazu drei Fallen, die je Abo
-unsichtbar wären: Rechnungen an **verwandte Empfänger** (Schwesterfirma
-oder Endkunde direkt statt über den Partner, erkannt am gemeinsamen
-Namensbestandteil — „Rechnung an …"), **stornierte** Rechnungen nahe am
-Periodenbeginn und Abos aus dem **Posteingang**, deren Firma im
-Rechnungstext an diesen Empfänger steht. Die Zuordnung darf hier auch eine
-Periode eines anderen Abos desselben Empfängers treffen und eine Position
-eines verwandten Empfängers nehmen — nie eine Periode eines fremden Kunden.
+vergebene mit ihrem Halter zur Kontrolle. Bezugsdatum ist der
+**Leistungszeitraum** der Rechnung, sonst das Rechnungsdatum; Lizenzen und
+Monate stehen getrennt („5 × 12 Mon." = fünf Lizenzen für ein Jahr). Dazu
+drei Fallen, die je Abo unsichtbar wären: **Rechnung an einen anderen
+Kunden** (das Anbieter-Konto ist nicht der Kunde, oder der Endkunde wird
+direkt statt über den Partner berechnet; erkannt am gemeinsamen
+Namensbestandteil) — die Lösung ist „Halter → Kunde": das Abo wechselt zu
+diesem Kunden und der Vorschlagslauf greift sofort. **Stornierte**
+Rechnungen nahe am Periodenbeginn zeigen, warum eine Periode leer ist. Abos
+aus dem **Posteingang**, deren Firma im Rechnungstext an diesen Empfänger
+steht, warten auf ihren Halter. Die Zuordnung darf eine Periode eines
+anderen Abos desselben Empfängers treffen — nie eine Periode eines fremden
+Kunden.

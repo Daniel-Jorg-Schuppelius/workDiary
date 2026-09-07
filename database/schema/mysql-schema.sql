@@ -11206,6 +11206,8 @@ CREATE TABLE `lexoffice_vouchers` (
   `payload` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`payload`)),
   `voucher_text` text DEFAULT NULL,
   `recipient_name` varchar(255) DEFAULT NULL,
+  `service_starts_on` date DEFAULT NULL,
+  `service_ends_on` date DEFAULT NULL,
   `lines_synced_at` timestamp NULL DEFAULT NULL,
   `file_path` varchar(255) DEFAULT NULL,
   `file_materialized_at` timestamp NULL DEFAULT NULL,
@@ -21189,3 +21191,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (790,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',60);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (792,'2027_02_20_100600_create_resale_purchase_entries_table',61);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',62);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',63);

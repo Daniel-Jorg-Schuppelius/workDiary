@@ -53,12 +53,16 @@ fattura di recupero tramite bozza o rinuncia al periodo) oppure «senza
 periodo» (più righe che periodi — manca un abbonamento nel registro o
 doppia fatturazione). Per ogni periodo aperto sono elencate le righe dello
 stesso prodotto con la distanza dall’inizio periodo: le libere con
-assegnazione, le consumate con il loro titolare per controllo. Inoltre tre
-trappole invisibili per abbonamento: fatture a **destinatari affini**
-(società sorella o cliente finale fatturato direttamente invece che tramite
-il partner, riconosciuti da una parte di nome comune — «Fatturato a …»),
-fatture **stornate** vicino all’inizio periodo e abbonamenti della **posta
-in arrivo** la cui azienda compare nei testi fattura a questo destinatario.
-L’assegnazione può qui colpire anche un periodo di un altro abbonamento
-dello stesso destinatario e prendere una riga di un destinatario affine —
-mai un periodo di un altro cliente.
+assegnazione, le consumate con il loro titolare per controllo. La data di
+riferimento è il **periodo di prestazione** della fattura, altrimenti la
+data fattura; licenze e mesi sono mostrati separati («5 × 12 mesi» = cinque
+licenze per un anno). Inoltre tre trappole invisibili per abbonamento:
+**fattura a un altro cliente** (l’account del fornitore non è il cliente,
+oppure il cliente finale è fatturato direttamente invece che tramite il
+partner; riconosciuto da una parte di nome comune) — la soluzione è
+«Titolare → cliente»: l’abbonamento passa a quel cliente e la proposta si
+applica subito. Le fatture **stornate** vicino all’inizio periodo spiegano
+un periodo vuoto. Gli abbonamenti della **posta in arrivo** la cui azienda
+compare nei testi fattura attendono il titolare. L’assegnazione può colpire
+un periodo di un altro abbonamento dello stesso destinatario — mai un
+periodo di un altro cliente.

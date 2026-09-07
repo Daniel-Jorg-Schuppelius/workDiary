@@ -110,11 +110,26 @@ final class LexofficeVoucherLineSync {
             $voucher->forceFill([
                 'voucher_text' => $parsed['voucher_text'] !== '' ? $parsed['voucher_text'] : null,
                 'recipient_name' => $parsed['recipient'] !== '' ? mb_substr($parsed['recipient'], 0, 255) : null,
+                'service_starts_on' => $parsed['service_from'],
+                'service_ends_on' => $parsed['service_to'],
                 'lines_synced_at' => now(),
             ])->save();
         });
 
         return count($parsed['lines']);
+    }
+
+    /**
+     * Spiegel zurücksetzen: alle Rechnungen wieder als „Positionen fehlen"
+     * markieren, damit `syncMissing` sie neu lädt (Positionen bleiben bis
+     * zum Neuladen stehen). Liefert die Zahl der markierten Rechnungen.
+     */
+    public function resetSynced(Organization $organization): int {
+        return LexofficeVoucher::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('voucher_type', 'invoice')
+            ->whereNotNull('lines_synced_at')
+            ->update(['lines_synced_at' => null]);
     }
 
     /**

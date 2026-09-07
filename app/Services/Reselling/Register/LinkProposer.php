@@ -28,8 +28,9 @@ use Illuminate\Support\Facades\DB;
  * Nutzer bestätigt. Regeln aus 151, aber gegen den Bestand statt gegen
  * Heuristik: Positionen des Rechnungsempfängers (Kunde bzw. Partner des
  * Fremdkunden), Produkt über Lexoffice-Artikel oder Namen, Verbrauch in
- * Lizenzmonaten (Monatspreis-Positionen: Menge = Monate), Periode mit dem
- * nächsten Beginn zuerst, dann Reste im Fenster. Bei Partnerkontakten mit
+ * Lizenzmonaten (`LicenseMonths`), Bezugsdatum = Beginn des Leistungszeitraums
+ * der Rechnung, sonst Rechnungsdatum; Periode mit dem nächsten Beginn zuerst,
+ * dann Reste im Fenster. Bei Partnerkontakten mit
  * mehreren Endkunden desselben Produkts zählt nur eine Position, die den
  * Endkunden nennt. Bestätigte und manuelle Bezüge werden nie angefasst;
  * alte Vorschläge werden ersetzt.
@@ -119,7 +120,7 @@ final class LinkProposer {
             /** @var array<int, float> $remaining Positions-ID → restliche Lizenzmonate */
             $remaining = [];
             foreach ($lines as $line) {
-                $remaining[$line->id] = $this->lineMonths($line, null);
+                $remaining[$line->id] = LicenseMonths::ofLine($line);
             }
             foreach (ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->get(['linkable_id', 'months']) as $existing) {
                 if (isset($remaining[(int) $existing->linkable_id])) {
@@ -163,7 +164,7 @@ final class LinkProposer {
             }
 
             foreach ($lines as $line) {
-                if (($remaining[$line->id] ?? 0.0) >= $this->lineMonths($line, null) - 0.001 && $this->looksLikeLicense($line)) {
+                if (($remaining[$line->id] ?? 0.0) >= LicenseMonths::ofLine($line) - 0.001 && $this->looksLikeLicense($line)) {
                     $result['lines_without_subscription']++;
                 }
             }
@@ -200,11 +201,10 @@ final class LinkProposer {
             if (! isset($contacts[$contact]) || ($remaining[$line->id] ?? 0.0) <= 0.001) {
                 continue;
             }
-            $voucherDate = $line->voucher->voucher_date;
-            if ($voucherDate === null) {
+            $date = LicenseMonths::referenceDate($line);
+            if ($date === null) {
                 continue;
             }
-            $date = CarbonImmutable::instance($voucherDate);
             if ($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) {
                 continue;
             }
@@ -232,9 +232,8 @@ final class LinkProposer {
             }
             /** @var LexofficeVoucherLine $line */
             $line = $candidate['line'];
-            $monthsPerUnit = $this->monthsPerUnit($line, $subscription, $termMonths);
             $take = min($state['needed'], $remaining[$line->id]);
-            $units = $monthsPerUnit > 0 ? $take / $monthsPerUnit : 0.0;
+            $units = LicenseMonths::unitsFor($line, $take, $termMonths);
             ResalePeriodLink::query()->create([
                 'organization_id' => $period->organization_id,
                 'period_id' => $period->id,
@@ -270,13 +269,12 @@ final class LinkProposer {
         $nearest = [];
         foreach ($lines as $line) {
             $contact = (string) $line->voucher->contact_external_id;
-            $voucherDate = $line->voucher->voucher_date;
-            if ($voucherDate === null) {
+            $date = LicenseMonths::referenceDate($line);
+            if ($date === null) {
                 $nearest[$line->id] = null;
 
                 continue;
             }
-            $date = CarbonImmutable::instance($voucherDate);
             $best = null;
             foreach ($states as $index => $state) {
                 if (! in_array($contact, $contactsBySubscription[$state['subscription']->id] ?? [], true) || ! $this->matchesProduct($state['subscription'], $line)) {
@@ -386,46 +384,6 @@ final class LinkProposer {
     }
 
     /**
-     * Lizenzmonate einer Position aus Menge und Einheit: „12 Monat" = 12,
-     * „1 Jahr" = 12, „5 Jahr" = 60; ohne Einheit über den Preis.
-     */
-    private function lineMonths(LexofficeVoucherLine $line, ?ResaleSubscription $subscription): float {
-        $quantity = (float) $line->quantity;
-        if ($this->isMonthly($line, $subscription)) {
-            return $quantity;
-        }
-
-        return $quantity * 12.0;
-    }
-
-    private function monthsPerUnit(LexofficeVoucherLine $line, ResaleSubscription $subscription, int $termMonths): float {
-        return $this->isMonthly($line, $subscription) ? 1.0 : (float) $termMonths;
-    }
-
-    /**
-     * Monatspreis-Position: Einheit „Monat" oder Stückpreis deutlich unter dem
-     * Jahres-Verkaufspreis des Abos (Reseller rechnet „12 × 20,60 €" je Lizenz).
-     */
-    private function isMonthly(LexofficeVoucherLine $line, ?ResaleSubscription $subscription): bool {
-        $unit = mb_strtolower(trim((string) $line->unit_name));
-        if (in_array($unit, ['monat', 'monate', 'month', 'months'], true)) {
-            return true;
-        }
-        if (in_array($unit, ['jahr', 'jahre', 'year', 'years'], true)) {
-            return false;
-        }
-        if ($unit !== '') {
-            return false;
-        }
-        $yearly = $subscription === null ? null : ($subscription->sale_unit_price ?? $subscription->purchase_unit_price);
-        if ($yearly === null) {
-            return $line->unit_net->toFloat() < 30.0; // Microsoft-Monatspreise liegen unter 30 €
-        }
-
-        return $line->unit_net->toFloat() < $yearly->toFloat() * 0.5;
-    }
-
-    /**
      * @param  list<string>  $contactIds
      * @return Collection<int, LexofficeVoucherLine>
      */
@@ -439,7 +397,7 @@ final class LinkProposer {
             ->whereHas('voucher', static fn($q) => $q->whereIn('contact_external_id', $contactIds)
                 ->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided'])
                 ->where('voucher_date', '>=', DateRange::day($from))->where('voucher_date', '<', DateRange::dayAfter($to)))
-            ->with(['voucher:id,external_id,contact_external_id,voucher_number,voucher_date,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
+            ->with(['voucher:id,external_id,contact_external_id,voucher_number,voucher_date,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
             ->orderBy('id')
             ->get();
     }

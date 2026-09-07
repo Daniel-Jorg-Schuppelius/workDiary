@@ -23,6 +23,10 @@
     $lineSqid = static fn(\App\Models\LexofficeVoucherLine $l): string => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $l->id);
     $voucherSqid = static fn(\App\Models\LexofficeVoucherLine $l): string => \App\Support\Sqid::encode(\App\Models\LexofficeVoucher::class, $l->voucher_id);
     $openPeriodRows = $periods;
+    // Lizenzen × Monate je Position („5 × 12 Mon."), eine Lizenz nur als Monate.
+    $derive = static fn(array $row): string => $row['licences'] > 1.001
+        ? $fmt($row['licences']) . ' × ' . $fmt($row['per_licence']) . ' ' . __('resale.link.months_short')
+        : $fmt($row['months']) . ' ' . __('resale.link.months_short');
 @endphp
 
 @section('content')
@@ -143,9 +147,9 @@
                             </span>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span class="text-sm tabular-nums whitespace-nowrap">
+                            <span class="text-sm tabular-nums whitespace-nowrap" title="{{ __('resale.reconcile.periods.need', ['licences' => $period->quantity, 'months' => $period->termMonths()]) }}">
                                 <span @class(['text-error font-medium' => $row['covered'] <= 0.001, 'text-warning font-medium' => $row['covered'] > 0.001])>{{ $fmt($row['covered']) }} / {{ $fmt($row['required']) }}</span>
-                                <span class="text-xs text-muted">{{ __('resale.link.months') }}</span>
+                                <span class="text-xs text-muted">{{ __('resale.link.months') }} ({{ $period->quantity }} × {{ $period->termMonths() }})</span>
                             </span>
                             <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
                             @if ($canManage)
@@ -162,27 +166,25 @@
                                     $line = $candidate['row']['line'];
                                     $voucher = $line->voucher;
                                     $recipient = $candidate['row']['recipient'] ?? '—';
+                                    $targetId = $candidate['row']['recipient_id'];
                                 @endphp
                                 <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                                     <span class="flex flex-wrap items-center gap-2">
                                         <x-status-badge size="xs" tone="warning" :label="__('resale.reconcile.periods.foreign', ['recipient' => $recipient])" />
                                         <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
-                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }} · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
+                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
                                         <span>{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }} × {{ $line->unit_net->withScale(2)->format() }}</span>
-                                        <span class="text-success text-xs">{{ __('resale.invoices.remaining', ['months' => $fmt($candidate['row']['free'])]) }}</span>
+                                        <span class="text-xs text-muted tabular-nums">= {{ $derive($candidate['row']) }}</span>
                                         @if ($canPreview)
                                             <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $voucherSqid($line))" :title="__('resale.invoices.preview')" />
                                         @endif
                                     </span>
-                                    @if ($canManage)
-                                        <form method="POST" action="{{ route('finance.resale.reconcile.assign', $customer) }}" class="flex items-center gap-1">
+                                    @if ($canManage && $targetId !== null)
+                                        <form method="POST" action="{{ route('finance.resale.reconcile.rehome', $customer) }}" data-confirm="{{ __('resale.reconcile.confirm.rehome', ['subscription' => $subscription->label, 'customer' => $recipient]) }}">
                                             @csrf
                                             <input type="hidden" name="period_id" value="{{ $period->sqid }}">
-                                            <input type="hidden" name="line_id" value="{{ $lineSqid($line) }}">
-                                            <input type="hidden" name="note" value="{{ __('resale.reconcile.periods.foreign_note', ['recipient' => $recipient]) }}">
-                                            <input type="number" name="months" step="0.01" min="0.01" value="{{ number_format(min($row['needed'], $candidate['row']['free']), 2, '.', '') }}"
-                                                   class="input input-xs input-bordered w-20 text-right" aria-label="{{ __('resale.link.months_field') }}">
-                                            <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" show-label>{{ __('resale.link.action.link') }}</x-icon-btn>
+                                            <input type="hidden" name="target_id" value="{{ \App\Support\Sqid::encode(\App\Models\Customer::class, $targetId) }}">
+                                            <x-icon-btn icon="swap_horiz" size="xs" tone="warning" type="submit" show-label>{{ __('resale.reconcile.action.rehome', ['customer' => $recipient]) }}</x-icon-btn>
                                         </form>
                                     @endif
                                 </li>
@@ -195,8 +197,9 @@
                                 <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                                     <span class="flex flex-wrap items-center gap-2">
                                         <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
-                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }} · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
+                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
                                         <span>{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }} × {{ $line->unit_net->withScale(2)->format() }}</span>
+                                        <span class="text-xs text-muted tabular-nums">= {{ $derive($candidate['row']) }}</span>
                                         <span class="text-success text-xs">{{ __('resale.invoices.remaining', ['months' => $fmt($candidate['row']['free'])]) }}</span>
                                         @if ($voucher->voucherTextHint() !== null)
                                             <span class="badge badge-info badge-outline badge-xs" title="{{ $voucher->voucher_text }}">{{ $voucher->voucherTextHint() }}</span>
@@ -232,7 +235,7 @@
                                     <x-status-badge size="xs" tone="error" :label="__('resale.reconcile.periods.voided')" />
                                     <span class="font-mono">{{ $line->voucher->voucher_number }}</span>
                                     <span class="tabular-nums">{{ $line->voucher->voucher_date?->format('d.m.Y') }}</span>
-                                    <span>{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }} · {{ $fmt($candidate['row']['months']) }} {{ __('resale.link.months_short') }}</span>
+                                    <span>{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }} · {{ $derive($candidate['row']) }}</span>
                                     @if ($canPreview)
                                         <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $voucherSqid($line))" :title="__('resale.invoices.preview')" />
                                     @endif
@@ -258,7 +261,7 @@
                         <x-table.th>{{ __('resale.invoices.voucher') }}</x-table.th>
                         <x-table.th>{{ __('resale.field.article') }}</x-table.th>
                         <x-table.th class="text-right">{{ __('resale.field.quantity') }}</x-table.th>
-                        <x-table.th class="text-right">{{ __('resale.link.months') }}</x-table.th>
+                        <x-table.th class="text-right">{{ __('resale.reconcile.col.licence_months') }}</x-table.th>
                         <x-table.th>{{ __('resale.invoices.linked') }}</x-table.th>
                         <x-table.th class="text-right">{{ __('resale.invoices.assign') }}</x-table.th>
                     </tr>
@@ -273,6 +276,9 @@
                         <td class="whitespace-nowrap">
                             <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
                             <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }}</span>
+                            @if ($voucher->servicePeriodLabel() !== null)
+                                <span class="block text-xs text-muted tabular-nums">{{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}</span>
+                            @endif
                             @if ($voucher->voucherTextHint() !== null)
                                 <span class="badge badge-info badge-outline badge-xs ml-1" title="{{ $voucher->voucher_text }}">{{ $voucher->voucherTextHint() }}</span>
                             @endif
@@ -282,7 +288,7 @@
                         </td>
                         <td class="text-sm">{{ $line->article?->name ?? $line->name }}</td>
                         <td class="text-right tabular-nums whitespace-nowrap">{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
-                        <td class="text-right tabular-nums">{{ $fmt($lineRow['months']) }}</td>
+                        <td class="text-right tabular-nums whitespace-nowrap">{{ $derive($lineRow) }}</td>
                         <td class="text-xs">
                             @if ($lineRow['linked'] > 0.001)
                                 <span class="text-success">{{ $fmt($lineRow['linked']) }} {{ __('resale.link.months_short') }}</span>

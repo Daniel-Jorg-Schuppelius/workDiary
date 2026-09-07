@@ -26,7 +26,7 @@ use CommonToolkit\Enums\CurrencyCode;
 final class LexofficeInvoiceParser {
     /**
      * @param  array<string, mixed>  $invoice
-     * @return array{currency: CurrencyCode, voucher_text: string, recipient: string, lines: list<ParsedLine>}
+     * @return array{currency: CurrencyCode, voucher_text: string, recipient: string, service_from: ?string, service_to: ?string, lines: list<ParsedLine>}
      */
     public static function parse(array $invoice): array {
         $currency = CurrencyCode::tryFrom((string) ($invoice['totalPrice']['currency'] ?? 'EUR')) ?? CurrencyCode::Euro;
@@ -38,6 +38,7 @@ final class LexofficeInvoiceParser {
             (string) ($invoice['remark'] ?? ''),
         ], static fn(string $part): bool => $part !== '')));
         $recipient = trim((string) ($invoice['address']['name'] ?? ''));
+        [$serviceFrom, $serviceTo] = self::servicePeriod($invoice);
 
         $lines = [];
         foreach (array_values((array) ($invoice['lineItems'] ?? [])) as $position => $item) {
@@ -72,6 +73,43 @@ final class LexofficeInvoiceParser {
             ];
         }
 
-        return ['currency' => $currency, 'voucher_text' => $voucherText, 'recipient' => $recipient, 'lines' => $lines];
+        return ['currency' => $currency, 'voucher_text' => $voucherText, 'recipient' => $recipient, 'service_from' => $serviceFrom, 'service_to' => $serviceTo, 'lines' => $lines];
+    }
+
+    /**
+     * Leistungs-/Lieferdatum bzw. -zeitraum (shippingConditions.shippingDate /
+     * shippingEndDate; shippingType service|serviceperiod|delivery|deliveryperiod).
+     * Ein Einzeldatum liefert nur den Beginn; „none" nichts.
+     *
+     * @param  array<string, mixed>  $invoice
+     * @return array{0: ?string, 1: ?string} Y-m-d
+     */
+    private static function servicePeriod(array $invoice): array {
+        $conditions = is_array($invoice['shippingConditions'] ?? null) ? $invoice['shippingConditions'] : [];
+        $type = (string) ($conditions['shippingType'] ?? 'none');
+        if ($type === 'none' || $type === '') {
+            return [null, null];
+        }
+        $from = self::day($conditions['shippingDate'] ?? null);
+        $to = str_ends_with($type, 'period') ? self::day($conditions['shippingEndDate'] ?? null) : null;
+        if ($from === null) {
+            return [null, null];
+        }
+        if ($to !== null && $to < $from) {
+            $to = null;
+        }
+
+        return [$from, $to];
+    }
+
+    private static function day(mixed $value): ?string {
+        if (! is_string($value) || $value === '') {
+            return null;
+        }
+        try {
+            return \Carbon\CarbonImmutable::parse($value)->format('Y-m-d');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

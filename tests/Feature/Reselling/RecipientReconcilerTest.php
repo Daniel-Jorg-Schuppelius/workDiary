@@ -76,10 +76,11 @@ class RecipientReconcilerTest extends TestCase {
     /**
      * @param  list<array{article: LexofficeArticle, quantity: float, unit?: string, net: string}>  $lines
      */
-    private function voucher(string $contactId, string $number, string $date, array $lines, ?Customer $customer = null, string $status = 'paid', string $text = ''): LexofficeVoucher {
+    private function voucher(string $contactId, string $number, string $date, array $lines, ?Customer $customer = null, string $status = 'paid', string $text = '', ?string $serviceFrom = null, ?string $serviceTo = null): LexofficeVoucher {
         $voucher = LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'v-' . $number, 'contact_external_id' => $contactId, 'customer_id' => $customer?->id,
             'voucher_type' => 'invoice', 'voucher_status' => $status, 'voucher_number' => $number, 'voucher_date' => $date, 'total_amount' => 100, 'currency' => 'EUR', 'voucher_text' => $text,
+            'service_starts_on' => $serviceFrom, 'service_ends_on' => $serviceTo,
             'archived' => false, 'recipient_name' => 'Unbekannte GmbH', 'lines_synced_at' => now(),
         ]);
         foreach ($lines as $position => $line) {
@@ -126,8 +127,8 @@ class RecipientReconcilerTest extends TestCase {
         $admin = $this->orgAdmin();
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))
             ->assertOk()
-            ->assertSee('120 Monate nie abgerechnet')
-            ->assertSee('12 Monate ohne Periode')
+            ->assertSee('120 Lizenzmonate nie abgerechnet')
+            ->assertSee('12 Lizenzmonate ohne Periode')
             ->assertSee('RE/2024/0630')
             ->assertSee('vergeben an EcoTec Service GmbH · 10.04.2024 – 09.04.2025');
     }
@@ -241,18 +242,50 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertCount(1, $result['inbox'][0]['subscriptions']);
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
-        $page->assertSee('Rechnung an EcoTec - HLSK GmbH')->assertSee('RE/2025/0271')->assertSee('storniert')->assertSee('Robert Kasch')->assertDontSee('RE/2024/0201');
+        $page->assertSee('Rechnung an EcoTec - HLSK GmbH')->assertSee('5 × 12 Mon.')->assertSee('RE/2025/0271')->assertSee('storniert')->assertSee('Robert Kasch')->assertDontSee('RE/2024/0201');
+        $this->assertSame($sister->id, $first['foreign'][0]['row']['recipient_id']);
 
-        // Zuordnung der Schwesterfirmen-Rechnung: erlaubt, mit Vermerk, deckt die erste Periode.
-        $line = LexofficeVoucher::query()->where('voucher_number', 'RE/2024/0171')->firstOrFail()->lines()->firstOrFail();
-        $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $customer), [
-            'period_id' => $first['period']->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $line->id), 'months' => '60', 'note' => 'Rechnung ging an EcoTec - HLSK GmbH',
-        ])->assertRedirect(route('finance.resale.reconcile.show', $customer));
-        $this->assertSame(PeriodStatus::Billed, $first['period']->fresh()?->status);
-        $this->assertSame('Rechnung ging an EcoTec - HLSK GmbH', ResalePeriodLink::query()->where('period_id', $first['period']->id)->firstOrFail()->note);
-        // Bei der Schwesterfirma ist die Position nun vergeben — mit dem Halter als Ziel.
+        // Zwei Firmen, nicht eine: der Halter wird auf den tatsächlichen Rechnungsempfänger gesetzt,
+        // danach greift der Vorschlagslauf — kein Bezug über Kundengrenzen.
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.rehome', $customer), [
+            'period_id' => $first['period']->sqid, 'target_id' => $sister->sqid,
+        ])->assertRedirect(route('finance.resale.reconcile.show', $sister));
+        $five->refresh();
+        $this->assertSame($sister->id, $five->customer_id);
+        $this->assertSame(PeriodStatus::Billed, $first['period']->fresh()?->status, 'RE/2024/0171 sofort vorgeschlagen');
+        $this->assertSame(PeriodStatus::Open, $second['period']->fresh()?->status, 'Storno deckt nichts');
         $sisterView = (new RecipientReconciler)->forCustomer($this->organization, $sister);
         $this->assertSame(0.0, $sisterView['free']);
-        $this->assertStringContainsString('EcoTec Service GmbH', $sisterView['lines'][0]['periods'][0]);
+        $this->assertSame(60.0, $sisterView['missing'], 'zweite Periode: 5 × 12 ohne gültige Rechnung');
+
+        // Fremder Kunde als Ziel einer Periode, die nicht diesem Empfänger gehört: abgelehnt.
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.rehome', $customer), [
+            'period_id' => $second['period']->sqid, 'target_id' => $customer->sqid,
+        ])->assertRedirect(route('finance.resale.reconcile.show', $customer))->assertSessionHas('error');
+        $this->assertSame($sister->id, $five->fresh()?->customer_id);
+    }
+
+    public function test_service_period_beats_invoice_date_for_assignment(): void {
+        $customer = $this->customerWithContact('Marina Vulkan Werft', 'c-mv');
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-12-31', 'quantity' => 2]);
+        [$p2024, $p2025] = $subscription->periods()->get()->all();
+        // Rechnung erst im März 2026 gestellt, Leistungszeitraum aber das Jahr ab 31.12.2024: gehört zur ERSTEN Periode.
+        // „24 Monat" bei zwölf Monaten Leistung = zwei Lizenzen × 12.
+        $late = $this->voucher('c-mv', 'RE/2026/1050', '2026-03-10', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']], null, 'paid', '', '2024-12-31', '2025-12-30');
+        $onTime = $this->voucher('c-mv', 'RE/2026/1002', '2026-01-05', [['article' => $this->exchange, 'quantity' => 2, 'unit' => 'Stück', 'net' => '47.40']], null, 'paid', '', '2025-12-31', '2026-12-30');
+        $line = $late->lines()->firstOrFail()->load('voucher');
+        $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($line));
+        $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($onTime->lines()->firstOrFail()->load('voucher')), '„Stück" nimmt die Laufzeit aus dem Leistungszeitraum');
+
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame('RE/2026/1050', $p2024->fresh()?->links()->first()?->voucher_number, 'Leistungszeitraum schlägt Rechnungsdatum');
+        $this->assertSame('RE/2026/1002', $p2025->fresh()?->links()->first()?->voucher_number);
+        $this->assertSame(PeriodStatus::Billed, $p2024->fresh()?->status);
+        $this->assertSame(PeriodStatus::Billed, $p2025->fresh()?->status);
+
+        $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
+        $this->assertSame([], $result['periods']);
+        $this->assertSame(2.0, $result['lines'][0]['licences']);
+        $this->actingAs($this->orgAdmin())->get(route('finance.resale.reconcile.show', $customer))->assertOk()->assertSee('Leistung 31.12.2024 – 30.12.2025')->assertSee('2 × 12 Mon.');
     }
 }

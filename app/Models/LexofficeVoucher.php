@@ -33,6 +33,8 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $paid_date
  * @property ?string $voucher_text
  * @property ?string $recipient_name
+ * @property ?Carbon $service_starts_on
+ * @property ?Carbon $service_ends_on
  * @property ?Carbon $lines_synced_at
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LexofficeVoucherLine> $lines
  * @property \CommonToolkit\ValueObjects\Money|null $total_amount
@@ -63,6 +65,8 @@ class LexofficeVoucher extends Model {
         'paid_date',
         'voucher_text',
         'recipient_name',
+        'service_starts_on',
+        'service_ends_on',
         'lines_synced_at',
         'total_amount',
         'open_amount',
@@ -81,6 +85,8 @@ class LexofficeVoucher extends Model {
         'voucher_date' => 'date',
         'due_date' => 'date',
         'paid_date' => 'date',
+        'service_starts_on' => 'date',
+        'service_ends_on' => 'date',
         'lines_synced_at' => 'datetime',
         'total_amount' => MoneyCast::class . ':currency,2',
         'open_amount' => MoneyCast::class . ':currency,2',
@@ -105,6 +111,35 @@ class LexofficeVoucher extends Model {
      */
     public function supplier(): BelongsTo {
         return $this->belongsTo(Supplier::class);
+    }
+
+    /**
+     * Leistungszeitraum laut Rechnung (Lexoffice shippingConditions): Beginn
+     * ist bei Leistungsdatum und -zeitraum gesetzt, Ende nur beim Zeitraum.
+     * Das Register ordnet danach zu — nicht nach dem Rechnungsdatum.
+     */
+    public function serviceStart(): ?\Carbon\CarbonImmutable {
+        return $this->service_starts_on === null ? null : \Carbon\CarbonImmutable::instance($this->service_starts_on);
+    }
+
+    /** Leistungsmonate aus dem Zeitraum (gerundet; Einzeldatum = null). */
+    public function serviceMonths(): ?int {
+        if ($this->service_starts_on === null || $this->service_ends_on === null) {
+            return null;
+        }
+        $months = (int) round($this->service_starts_on->diffInMonths($this->service_ends_on->copy()->addDay()));
+
+        return $months > 0 ? $months : null;
+    }
+
+    /** Anzeige „dd.mm.yyyy – dd.mm.yyyy" bzw. nur der Beginn. */
+    public function servicePeriodLabel(): ?string {
+        if ($this->service_starts_on === null) {
+            return null;
+        }
+        $label = $this->service_starts_on->format('d.m.Y');
+
+        return $this->service_ends_on === null ? $label : $label . ' – ' . $this->service_ends_on->format('d.m.Y');
     }
 
     /**

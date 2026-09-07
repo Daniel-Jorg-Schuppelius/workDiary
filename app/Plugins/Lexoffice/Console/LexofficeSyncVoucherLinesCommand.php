@@ -21,12 +21,14 @@ use Illuminate\Support\Facades\Cache;
 /**
  * Positionen der gespiegelten Lexoffice-Rechnungen nachladen (Feature 152,
  * MVP-760). Rückwirkend in Häppchen (`--limit`), damit das Ratenlimit hält;
- * `--all` läuft, bis nichts mehr fehlt.
+ * `--all` läuft, bis nichts mehr fehlt; `--refresh` setzt den Spiegel zurück
+ * und lädt alles neu (nötig, wenn neue Felder wie der Leistungszeitraum
+ * dazukommen).
  */
 class LexofficeSyncVoucherLinesCommand extends Command {
     use IteratesOrganizations;
 
-    protected $signature = 'lexoffice:sync-voucher-lines ' . self::ORGANIZATION_OPTION . ' {--limit=200 : Rechnungen je Lauf} {--all : Alle fehlenden Rechnungen in Häppchen nachladen}';
+    protected $signature = 'lexoffice:sync-voucher-lines ' . self::ORGANIZATION_OPTION . ' {--limit=200 : Rechnungen je Lauf} {--all : Alle fehlenden Rechnungen in Häppchen nachladen} {--refresh : Bereits gespiegelte Rechnungen erneut laden (z. B. für den Leistungszeitraum)}';
 
     protected $description = 'Lädt Positionen und Belegtexte der gespiegelten Lexoffice-Rechnungen in `lexoffice_voucher_lines` nach.';
 
@@ -53,6 +55,10 @@ class LexofficeSyncVoucherLinesCommand extends Command {
             }
             try {
                 $sync = new LexofficeVoucherLineSync($config['api_key'], $config['base_url']);
+                if ($this->option('refresh')) {
+                    $reset = $sync->resetSynced($org);
+                    $this->line("Organisation #{$org->id} ({$org->name}): {$reset} Rechnungen zum Neuladen markiert");
+                }
                 do {
                     $result = $sync->syncMissing($org, $limit);
                     $this->line("Organisation #{$org->id} ({$org->name}): {$result['synced']} Rechnungen, {$result['lines']} Positionen, {$result['failed']} Fehler, {$result['remaining']} offen");

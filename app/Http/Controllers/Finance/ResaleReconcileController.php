@@ -62,6 +62,32 @@ class ResaleReconcileController extends Controller {
         return view('finance.resale.reconcile_show', ['customer' => $customer, 'today' => $today] + $this->reconciler->forCustomer($organization, $customer, $today));
     }
 
+    /**
+     * Halter eines Abos auf einen anderen Kunden setzen — die Rechnung ging
+     * nachweislich dorthin (Anbieter-Konto ≠ Kunde). Danach Vorschlagslauf,
+     * damit die Positionen des neuen Empfängers sofort greifen.
+     */
+    public function rehome(Request $request, Customer $customer, \App\Services\Reselling\Register\LinkProposer $proposer): RedirectResponse {
+        $validated = $request->validate([
+            'period_id' => ['required', 'string'],
+            'target_id' => ['required', 'string'],
+        ]);
+        $periodId = Sqid::decode(ResalePeriod::class, (string) $validated['period_id']);
+        $period = $periodId === null ? null : ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer.customer')->find($periodId);
+        $targetId = Sqid::decode(Customer::class, (string) $validated['target_id']);
+        $target = $targetId === null ? null : Customer::query()->find($targetId);
+        if ($period === null || $target === null || $period->subscription->billedTo()?->id !== $customer->id) {
+            return redirect(route('finance.resale.reconcile.show', $customer))->with('error', __('resale.link.error.line_missing'));
+        }
+        $period->subscription->forceFill(['customer_id' => $target->id, 'foreign_customer_id' => null, 'is_own_holding' => false])->save();
+        $organization = $this->currentOrganizationOrNull();
+        if ($organization !== null) {
+            $proposer->propose($organization);
+        }
+
+        return redirect(route('finance.resale.reconcile.show', $target))->with('success', __('resale.reconcile.flash.rehomed', ['subscription' => $period->subscription->label, 'customer' => $target->name]));
+    }
+
     /** Position → Periode eines beliebigen Abos dieses Empfängers. */
     public function assign(Request $request, Customer $customer): RedirectResponse {
         $validated = $request->validate([

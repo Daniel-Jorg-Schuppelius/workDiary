@@ -5803,6 +5803,8 @@ CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
   "voucher_text" text,
   "recipient_name" varchar,
   "lines_synced_at" datetime,
+  "service_starts_on" date,
+  "service_ends_on" date,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null,
   foreign key("supplier_id") references "suppliers"("id") on delete set null
@@ -19766,3 +19768,4 @@ INSERT INTO migrations VALUES(790,'2027_02_20_100400_create_resale_period_links_
 INSERT INTO migrations VALUES(791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',9);
 INSERT INTO migrations VALUES(792,'2027_02_20_100600_create_resale_purchase_entries_table',10);
 INSERT INTO migrations VALUES(793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',11);
+INSERT INTO migrations VALUES(794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',12);

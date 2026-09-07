@@ -34,7 +34,7 @@ use Illuminate\Support\Collection;
  * storniert, der Endkunde steht im Rechnungstext, sein Abo aber noch ohne
  * Halter im Posteingang.
  *
- * @phpstan-type LineRow array{line: LexofficeVoucherLine, product: string, months: float, linked: float, free: float, periods: list<string>, recipient: string|null, contact: string}
+ * @phpstan-type LineRow array{line: LexofficeVoucherLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string}
  * @phpstan-type Candidate array{row: LineRow, distance: int}
  * @phpstan-type PeriodRow array{period: ResalePeriod, subscription: ResaleSubscription, required: float, covered: float, needed: float, product: string, candidates: list<Candidate>, taken: list<Candidate>, foreign: list<Candidate>, voided: list<Candidate>}
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
@@ -144,7 +144,7 @@ final class RecipientReconciler {
         $inbox = $this->inboxHints($organization, $lines);
 
         return ['subscriptions' => $subscriptions, 'contacts' => $contacts, 'pending' => $pending, 'inbox' => $inbox]
-            + $this->analyze($subscriptions, $lines, $linkedMonths, $reference, $others, $voided, $names, $contactTokens, self::tokens($customer->name), $own);
+            + $this->analyze($subscriptions, $lines, $linkedMonths, $reference, $others, $voided, $names, $contactTokens, self::tokens($customer->name), $own, $contactMap);
     }
 
     /**
@@ -292,9 +292,10 @@ final class RecipientReconciler {
      * @param  array<string, array<string, true>>  $contactTokens  Kontakt → Kern-Tokens des Empfängernamens
      * @param  array<string, true>  $baseTokens  Kern-Tokens des Empfängers selbst
      * @param  array<string, int>  $own  eigene Kontakte
+     * @param  array<string, int>  $customerIds  Kontakt → Kunde (für „Halter auf diesen Kunden setzen")
      * @return array{products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
      */
-    private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $names = [], array $contactTokens = [], array $baseTokens = [], array $own = []): array {
+    private function analyze(Collection $subscriptions, Collection $lines, array $linkedMonths, CarbonImmutable $reference, ?Collection $others = null, ?Collection $voided = null, array $names = [], array $contactTokens = [], array $baseTokens = [], array $own = [], array $customerIds = []): array {
         /** @var array<int, string> $articleNames */
         $articleNames = [];
         foreach ($lines as $line) {
@@ -319,11 +320,12 @@ final class RecipientReconciler {
         /** @var array<string, float> $freeByProduct */
         $freeByProduct = [];
         foreach ($lines as $line) {
-            $months = LicenseMonths::ofLine($line);
+            $split = LicenseMonths::split($line);
+            $months = $split['licences'] * $split['months'];
             $linked = $linkedMonths[$line->id]['months'] ?? 0.0;
             $key = 'art:' . $line->lexoffice_article_id;
             $labels[$key] ??= $line->article !== null ? $line->article->name : $line->name;
-            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => null, 'contact' => (string) $line->voucher->contact_external_id];
+            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => null, 'recipient_id' => null, 'contact' => (string) $line->voucher->contact_external_id];
             $lineRows[] = $lineRow;
             $invoiced[$key] = ($invoiced[$key] ?? 0.0) + $months;
             $freeByProduct[$key] = ($freeByProduct[$key] ?? 0.0) + $lineRow['free'];
@@ -332,20 +334,22 @@ final class RecipientReconciler {
         /** @var list<LineRow> $otherRows Freie Positionen anderer Empfänger */
         $otherRows = [];
         foreach ($others ?? collect() as $line) {
-            $months = LicenseMonths::ofLine($line);
+            $split = LicenseMonths::split($line);
+            $months = $split['licences'] * $split['months'];
             $linked = $linkedMonths[$line->id]['months'] ?? 0.0;
             if ($months - $linked <= 0.001) {
                 continue;
             }
             $contact = (string) $line->voucher->contact_external_id;
             $recipient = $names[$contact] ?? trim((string) $line->voucher->recipient_name);
-            $otherRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => $months, 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'contact' => $contact];
+            $otherRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'recipient_id' => $customerIds[$contact] ?? null, 'contact' => $contact];
         }
         /** @var list<LineRow> $voidedRows */
         $voidedRows = [];
         foreach ($voided ?? collect() as $line) {
             $contact = (string) $line->voucher->contact_external_id;
-            $voidedRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => LicenseMonths::ofLine($line), 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => isset($own[$contact]) ? null : ($names[$contact] ?? null), 'contact' => $contact];
+            $split = LicenseMonths::split($line);
+            $voidedRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => isset($own[$contact]) ? null : ($names[$contact] ?? null), 'recipient_id' => null, 'contact' => $contact];
         }
 
         /** @var array<string, int> $subscriptionCount */
@@ -396,17 +400,13 @@ final class RecipientReconciler {
                 if ($lineRow['product'] !== $row['product']) {
                     continue;
                 }
-                $date = $lineRow['line']->voucher->voucher_date;
-                if ($date === null) {
+                // Bezug = Beginn des Leistungszeitraums, sonst Rechnungsdatum; nur im Fenster der Periode.
+                $date = LicenseMonths::referenceDate($lineRow['line']);
+                if ($date === null || $date->lessThan($windowStart) || $date->greaterThan($windowEnd)) {
                     continue;
                 }
-                $date = CarbonImmutable::instance($date);
                 $distance = (int) abs($date->diffInDays($start));
-                if ($lineRow['free'] > 0.001) {
-                    $periodRows[$index]['candidates'][] = ['row' => $lineRow, 'distance' => $distance];
-                } elseif (! $date->lessThan($windowStart) && ! $date->greaterThan($windowEnd)) {
-                    $periodRows[$index]['taken'][] = ['row' => $lineRow, 'distance' => $distance];
-                }
+                $periodRows[$index][$lineRow['free'] > 0.001 ? 'candidates' : 'taken'][] = ['row' => $lineRow, 'distance' => $distance];
             }
             // Verwandt je Periode: Empfänger, Firmenname des Abos oder sein Endkunde
             // teilen ein Kern-Token mit dem Namen des anderen Empfängers.
@@ -416,12 +416,8 @@ final class RecipientReconciler {
                     if ($lineRow['product'] !== $row['product']) {
                         continue;
                     }
-                    $date = $lineRow['line']->voucher->voucher_date;
-                    if ($date === null) {
-                        continue;
-                    }
-                    $date = CarbonImmutable::instance($date);
-                    if ($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) {
+                    $date = LicenseMonths::referenceDate($lineRow['line']);
+                    if ($date === null || $date->lessThan($windowStart) || $date->greaterThan($windowEnd)) {
                         continue;
                     }
                     $distance = (int) abs($date->diffInDays($start));
@@ -550,7 +546,7 @@ final class RecipientReconciler {
                     $q->whereIn('contact_external_id', $contacts);
                 }
             })
-            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_number,voucher_date,voucher_status,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
+            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
             ->get();
     }
 

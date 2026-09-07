@@ -2494,6 +2494,7 @@ Route::middleware('auth')->group(function () {
             Route::get('abgleich', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'index'])->name('reconcile.index')->middleware('can:reselling.view');
             Route::get('abgleich/{customer}', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'show'])->name('reconcile.show')->middleware('can:reselling.view');
             Route::post('abgleich/{customer}/bezug', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'assign'])->name('reconcile.assign')->middleware('can:reselling.manage');
+            Route::post('abgleich/{customer}/halter', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'rehome'])->name('reconcile.rehome')->middleware('can:reselling.manage');
             Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
             Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Finance\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
             Route::get('preise', [\App\Http\Controllers\Finance\ResaleReportController::class, 'prices'])->name('prices')->middleware('can:reselling.view');
