@@ -390,6 +390,11 @@ return [
         'empty' => 'Aucune ligne de licence dans le miroir de ce destinataire.',
         'empty_pending' => 'Lignes pas encore miroitées — lancez lexoffice:sync-voucher-lines.',
     ],
+    'unlinked' => [
+        'title' => ':count ligne de licence sans abonnement|:count lignes de licence sans abonnement',
+        'hint' => 'Lignes d’articles Microsoft du miroir non rattachées à une période : abonnement manquant, mauvais titulaire ou double facturation.',
+        'text' => 'Texte de la pièce',
+    ],
     'period_status' => [
         'open' => 'Ouverte',
         'billed' => 'Facturée',

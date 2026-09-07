@@ -390,6 +390,11 @@ return [
         'empty' => 'No hay líneas de licencia en el espejo de este destinatario.',
         'empty_pending' => 'Líneas aún no reflejadas — ejecuta lexoffice:sync-voucher-lines.',
     ],
+    'unlinked' => [
+        'title' => ':count línea de licencia sin suscripción|:count líneas de licencia sin suscripción',
+        'hint' => 'Líneas de artículos Microsoft del espejo sin vínculo a un periodo: suscripción ausente, titular erróneo o doble facturación.',
+        'text' => 'Texto del documento',
+    ],
     'period_status' => [
         'open' => 'Abierto',
         'billed' => 'Facturado',

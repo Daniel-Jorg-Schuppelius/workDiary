@@ -42,6 +42,36 @@
             @endforeach
         </div>
 
+        @if ($unlinked->isNotEmpty())
+            {{-- Lizenzpositionen ohne Abo: fehlende Abos oder falsche Halter finden. --}}
+            <details class="collapse collapse-arrow border border-base-300 bg-base-100 mb-4">
+                <summary class="collapse-title text-sm font-medium">{{ trans_choice('resale.unlinked.title', $unlinked->count(), ['count' => $unlinked->count()]) }}</summary>
+                <div class="collapse-content p-0">
+                    <p class="px-4 pb-2 text-xs text-muted">{{ __('resale.unlinked.hint') }}</p>
+                    <x-table bare>
+                        <x-slot:head>
+                            <tr>
+                                <x-table.th>{{ __('resale.invoices.voucher') }}</x-table.th>
+                                <x-table.th>{{ __('resale.field.billed_to') }}</x-table.th>
+                                <x-table.th>{{ __('resale.field.article') }}</x-table.th>
+                                <x-table.th class="text-right">{{ __('resale.field.quantity') }}</x-table.th>
+                                <x-table.th>{{ __('resale.unlinked.text') }}</x-table.th>
+                            </tr>
+                        </x-slot:head>
+                        @foreach ($unlinked->take(100) as $line)
+                            <tr>
+                                <td class="whitespace-nowrap"><span class="font-mono text-xs">{{ $line->voucher->voucher_number }}</span> <span class="text-xs text-muted tabular-nums">{{ $line->voucher->voucher_date?->format('d.m.Y') }}</span></td>
+                                <td class="text-sm">{{ $line->voucher->customer?->name ?? '—' }}</td>
+                                <td class="text-sm">{{ $line->article?->name ?? $line->name }}</td>
+                                <td class="text-right tabular-nums whitespace-nowrap">{{ rtrim(rtrim(number_format((float) $line->quantity, 2, ',', '.'), '0'), ',') }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
+                                <td class="text-xs text-muted max-w-xs truncate" title="{{ $line->voucher->voucher_text }}">{{ \Illuminate\Support\Str::limit((string) $line->voucher->voucher_text, 70) }}</td>
+                            </tr>
+                        @endforeach
+                    </x-table>
+                </div>
+            </details>
+        @endif
+
         <x-filter-bar :action="route('finance.resale.periods.index')" :reset="route('finance.resale.periods.index')">
             <input type="search" name="q" value="{{ $filters['q'] }}" class="input input-sm input-bordered w-48"
                    placeholder="{{ __('resale.filter.search') }}" aria-label="{{ __('resale.filter.search') }}">

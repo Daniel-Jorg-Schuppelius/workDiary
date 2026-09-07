@@ -390,6 +390,11 @@ return [
         'empty' => 'No licence lines in this recipient\'s voucher mirror.',
         'empty_pending' => 'Lines not mirrored yet — please run lexoffice:sync-voucher-lines.',
     ],
+    'unlinked' => [
+        'title' => ':count licence line without subscription|:count licence lines without subscription',
+        'hint' => 'Microsoft article lines in the mirror not linked to any period: missing subscription in the register, wrong holder or double billing.',
+        'text' => 'Voucher text',
+    ],
     'period_status' => [
         'open' => 'Open',
         'billed' => 'Billed',

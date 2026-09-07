@@ -390,6 +390,11 @@ return [
         'empty' => 'Keine Lizenzpositionen im Belegspiegel dieses Empfängers.',
         'empty_pending' => 'Positionen noch nicht gespiegelt — bitte lexoffice:sync-voucher-lines ausführen.',
     ],
+    'unlinked' => [
+        'title' => ':count Lizenzposition ohne Abo|:count Lizenzpositionen ohne Abo',
+        'hint' => 'Microsoft-Artikelpositionen im Belegspiegel, die keiner Periode zugeordnet sind: fehlendes Abo im Register, falscher Halter oder Doppelabrechnung.',
+        'text' => 'Belegtext',
+    ],
     'period_status' => [
         'open' => 'Offen',
         'billed' => 'Berechnet',

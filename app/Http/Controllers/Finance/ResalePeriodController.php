@@ -78,7 +78,35 @@ class ResalePeriodController extends Controller {
             'counts' => $counts,
             'statuses' => PeriodStatus::cases(),
             'today' => $today,
+            'unlinked' => $this->unlinkedLicenseLines(),
         ]);
+    }
+
+    /**
+     * Lizenzpositionen (Microsoft-Artikel) im Belegspiegel ohne Bezug zu einer
+     * Periode — Hinweis auf fehlende Abos oder falsche Halter.
+     *
+     * @return \Illuminate\Support\Collection<int, LexofficeVoucherLine>
+     */
+    private function unlinkedLicenseLines(): \Illuminate\Support\Collection {
+        $matcher = new \App\Services\Reselling\Marketplace\ProductNameMatcher;
+        $articleIds = \App\Models\LexofficeArticle::query()->active()->get(['id', 'name'])
+            ->filter(static fn(\App\Models\LexofficeArticle $a): bool => $matcher->looksLikeMicrosoftProduct((string) $a->name))
+            ->pluck('id')
+            ->all();
+        if ($articleIds === []) {
+            return collect();
+        }
+        $linked = ResalePeriodLink::query()->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->pluck('linkable_id');
+
+        return LexofficeVoucherLine::query()
+            ->whereIn('lexoffice_article_id', $articleIds)
+            ->whereNotIn('id', $linked)
+            ->whereHas('voucher', static fn(Builder $v) => $v->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided']))
+            ->with(['voucher:id,voucher_number,voucher_date,customer_id,voucher_text', 'voucher.customer:id,name', 'article:id,name'])
+            ->get()
+            ->sortByDesc(static fn(LexofficeVoucherLine $l) => $l->voucher->voucher_date)
+            ->values();
     }
 
     public function propose(LinkProposer $proposer): RedirectResponse {
@@ -223,7 +251,10 @@ class ResalePeriodController extends Controller {
     /** Positionsmenge, die $months Lizenzmonaten entspricht (Monatspreis: 1 je Monat, sonst Laufzeit je Stück). */
     private function unitsFor(LexofficeVoucherLine $line, float $months, int $termMonths): float {
         $unit = mb_strtolower(trim((string) $line->unit_name));
-        $monthly = in_array($unit, ['monat', 'monate', 'month'], true) || ($unit === '' && $line->unit_net->toFloat() < 30.0);
+        $monthly = in_array($unit, ['monat', 'monate', 'month', 'months'], true) || ($unit === '' && $line->unit_net->toFloat() < 30.0);
+        if (in_array($unit, ['jahr', 'jahre', 'year', 'years'], true)) {
+            return $months / 12.0; // „1 Jahr" = 12 Lizenzmonate je Stück
+        }
 
         return $monthly ? $months : $months / $termMonths;
     }

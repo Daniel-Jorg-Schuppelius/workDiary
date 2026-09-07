@@ -38,6 +38,14 @@ final class LinkProposer {
     public const WINDOW_BEFORE = 90;
     public const WINDOW_AFTER = 730;
 
+    /**
+     * Partnerkontakt mit mehreren Endkunden desselben Produkts: ohne Nennung
+     * zählt eine Position nur im Nächste-Periode-Pass und nur, wenn ihr
+     * Belegdatum dicht am Periodenbeginn liegt (Reseller rechnet je Lizenz
+     * eine Position „12 Monat" zum Jahrestag ab).
+     */
+    public const SHARED_NEAREST_DAYS = 45;
+
     public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher()) {}
 
     /**
@@ -204,14 +212,16 @@ final class LinkProposer {
                 continue;
             }
             $mentions = $mentionTokens !== [] && $this->mentions($mentionTokens, $line->text() . ' ' . (string) $line->voucher->voucher_text);
-            // Mehrere Endkunden desselben Produkts am selben Kontakt: nur mit Nennung.
-            if (($productOwners[$contact][$product] ?? 1) > 1 && ! $mentions) {
-                continue;
-            }
+            $distance = abs($date->diffInDays($period->starts_on));
             if ($nearestOnly && ($nearest[$line->id] ?? null) !== $index) {
                 continue;
             }
-            $candidates[] = ['line' => $line, 'mentions' => $mentions ? 0 : 1, 'distance' => abs($date->diffInDays($period->starts_on))];
+            // Mehrere Endkunden desselben Produkts am selben Kontakt: ohne Nennung
+            // nur als nächste Periode und dicht am Periodenbeginn.
+            if (($productOwners[$contact][$product] ?? 1) > 1 && ! $mentions && (! $nearestOnly || $distance > self::SHARED_NEAREST_DAYS)) {
+                continue;
+            }
+            $candidates[] = ['line' => $line, 'mentions' => $mentions ? 0 : 1, 'distance' => $distance];
         }
         usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->id <=> $b['line']->id);
 
@@ -319,20 +329,23 @@ final class LinkProposer {
             || ($subscription->lexofficeArticle !== null && $this->matcher->matches($subscription->lexofficeArticle->name, $text));
     }
 
-    /** Eigene Leistungen (Support, Stunden) sind nie Lizenzpositionen; der Artikel entscheidet verbindlich. */
+    /**
+     * Lizenzposition = Position eines Microsoft-Artikels. Verkaufte Lizenzen
+     * sind Artikel der Rechnungsverwaltung; freie Positionen (Support, Stunden,
+     * Texte) sind nie Lizenzen — der Artikel entscheidet, sonst nichts.
+     */
     private function looksLikeLicense(LexofficeVoucherLine $line): bool {
-        if ($line->article !== null) {
-            return $this->matcher->looksLikeMicrosoftProduct($line->article->name);
-        }
-
-        return $this->matcher->looksLikeMicrosoftProduct($line->text());
+        return $line->article !== null && $this->matcher->looksLikeMicrosoftProduct($line->article->name);
     }
 
     private function productKey(ResaleSubscription $subscription): string {
         return $subscription->lexoffice_article_id !== null ? 'art:' . $subscription->lexoffice_article_id : 'name:' . ProductNameMatcher::normalize($subscription->label);
     }
 
-    /** Lizenzmonate, die eine Position insgesamt liefert. */
+    /**
+     * Lizenzmonate einer Position aus Menge und Einheit: „12 Monat" = 12,
+     * „1 Jahr" = 12, „5 Jahr" = 60; ohne Einheit über den Preis.
+     */
     private function lineMonths(LexofficeVoucherLine $line, ?ResaleSubscription $subscription): float {
         $quantity = (float) $line->quantity;
         if ($this->isMonthly($line, $subscription)) {
@@ -352,8 +365,11 @@ final class LinkProposer {
      */
     private function isMonthly(LexofficeVoucherLine $line, ?ResaleSubscription $subscription): bool {
         $unit = mb_strtolower(trim((string) $line->unit_name));
-        if ($unit === 'monat' || $unit === 'monate' || $unit === 'month') {
+        if (in_array($unit, ['monat', 'monate', 'month', 'months'], true)) {
             return true;
+        }
+        if (in_array($unit, ['jahr', 'jahre', 'year', 'years'], true)) {
+            return false;
         }
         if ($unit !== '') {
             return false;

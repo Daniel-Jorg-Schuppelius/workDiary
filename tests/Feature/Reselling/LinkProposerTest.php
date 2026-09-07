@@ -138,7 +138,7 @@ class LinkProposerTest extends TestCase {
 
         $result = (new LinkProposer)->propose($this->organization);
         $this->assertSame(2, $result['links']);
-        $this->assertSame(1, $result['lines_without_subscription'], 'die Zeile ohne Endkunden bleibt liegen');
+        $this->assertSame(1, $result['lines_without_subscription'], 'die Zeile ohne Endkunden bleibt liegen: nächste Periode (Kaik) ist schon gedeckt, im Fenster-Pass zählt ohne Nennung nichts');
 
         $this->assertSame(PeriodStatus::Billed, $subKaik->periods()->first()?->status);
         $this->assertSame(PeriodStatus::Partial, $subUte->periods()->first()?->status, '24 von 36 Lizenzmonaten');

@@ -390,6 +390,11 @@ return [
         'empty' => 'Nessuna riga di licenza nello specchio di questo destinatario.',
         'empty_pending' => 'Righe non ancora specchiate — esegui lexoffice:sync-voucher-lines.',
     ],
+    'unlinked' => [
+        'title' => ':count riga di licenza senza abbonamento|:count righe di licenza senza abbonamento',
+        'hint' => 'Righe di articoli Microsoft nello specchio non collegate a un periodo: abbonamento mancante, titolare errato o doppia fatturazione.',
+        'text' => 'Testo documento',
+    ],
     'period_status' => [
         'open' => 'Aperto',
         'billed' => 'Fatturato',

@@ -194,7 +194,8 @@
                             @foreach ($voucher->lines as $line)
                                 @php
                                     $info = $invoices['linked'][$line->id] ?? null;
-                                    $lineMonths = in_array(mb_strtolower(trim((string) $line->unit_name)), ['monat', 'monate', 'month'], true) ? (float) $line->quantity : (float) $line->quantity * 12;
+                                    // Lizenzmonate aus Menge und Einheit: „12 Monat" = 12, „1 Jahr" = 12.
+                                    $lineMonths = in_array(mb_strtolower(trim((string) $line->unit_name)), ['monat', 'monate', 'month', 'months'], true) ? (float) $line->quantity : (float) $line->quantity * 12;
                                     $remaining = max(0.0, $lineMonths - ($info['months'] ?? 0.0));
                                     $lineSqid = \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line->id);
                                 @endphp
