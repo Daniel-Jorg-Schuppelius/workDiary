@@ -209,7 +209,9 @@ class LinkProposerTest extends TestCase {
         [$p2025, $p2026] = $subscription->periods()->get();
         $this->assertTrue($p2025->isProposedOnly());
 
-        $this->actingAs($admin)->get(route('finance.resale.periods.index'))->assertOk()->assertSee('RE/2025/0820')->assertSee(__('resale.link.proposed_hint'));
+        $voucherSqid = \App\Support\Sqid::encode(\App\Models\LexofficeVoucher::class, LexofficeVoucher::query()->where('voucher_number', 'RE/2025/0820')->value('id'));
+        $this->actingAs($admin)->get(route('finance.resale.periods.index'))->assertOk()->assertSee('RE/2025/0820')->assertSee(__('resale.link.proposed_hint'))
+            ->assertSee(route('lexoffice.vouchers.preview', $voucherSqid), false);
 
         // Bestätigen
         $this->actingAs($admin)->post(route('finance.resale.periods.confirm', $p2025->sqid))->assertRedirect();

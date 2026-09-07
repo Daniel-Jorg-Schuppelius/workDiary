@@ -48,7 +48,7 @@
                 <x-status-badge size="xs" :tone="$link->origin->tone()" :label="($link->voucher_number ?: '—') . ' · ' . $fmt((float) $link->months) . ' ' . __('resale.link.months_short')" :title="$link->origin->label() . ($link->note ? ' · ' . $link->note : '')" />
                 @php $linkedLine = $link->linkable; @endphp
                 @if ($linkedLine instanceof \App\Models\LexofficeVoucherLine && auth()->user()?->can(\App\Enums\User\Permission::VoucherViewAny->value))
-                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $linkedLine->voucher_id)" :title="__('resale.invoices.preview')" />
+                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', \App\Support\Sqid::encode(\App\Models\LexofficeVoucher::class, $linkedLine->voucher_id))" :title="__('resale.invoices.preview')" />
                 @endif
                 @if ($canManage && ! $period->status->isDecided() || $canManage && $period->status !== \App\Enums\Reselling\PeriodStatus::Waived)
                     <form method="POST" action="{{ route('finance.resale.links.destroy', $link->sqid) }}" class="inline">
