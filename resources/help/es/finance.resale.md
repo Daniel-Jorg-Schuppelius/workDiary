@@ -54,5 +54,11 @@ borrador o renuncia al periodo) o «sin periodo» (más líneas que periodos —
 falta una suscripción en el registro o doble facturación). Por cada periodo
 abierto se listan las líneas del mismo producto con su distancia al inicio
 del periodo: las libres con asignación, las consumidas con su titular para
-control. La asignación puede dirigirse aquí a un periodo de otra
-suscripción del mismo destinatario — nunca de otro.
+control. Además tres trampas invisibles por suscripción: facturas a
+**destinatarios relacionados** (empresa hermana o cliente final facturado
+directamente en vez de a través del socio, reconocidos por una parte común
+del nombre — «Facturado a …»), facturas **anuladas** cerca del inicio del
+periodo y suscripciones de la **bandeja de entrada** cuya empresa aparece
+en los textos de factura a este destinatario. La asignación puede dirigirse
+aquí a un periodo de otra suscripción del mismo destinatario y tomar una
+línea de un destinatario relacionado — nunca un periodo de otro cliente.

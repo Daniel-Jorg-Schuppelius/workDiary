@@ -53,6 +53,11 @@ Positionen — Rechnung nachholen über den Entwurf oder Periode verzichten)
 oder „ohne Periode" (mehr Positionen als Perioden — Abo fehlt im Register
 oder Doppelabrechnung). Je offener Periode stehen die Positionen desselben
 Produkts mit Abstand zum Periodenbeginn: freie mit Zuordnung, bereits
-vergebene mit ihrem Halter zur Kontrolle. Die Zuordnung darf hier auch eine
-Periode eines anderen Abos desselben Empfängers treffen — nie eines
-fremden.
+vergebene mit ihrem Halter zur Kontrolle. Dazu drei Fallen, die je Abo
+unsichtbar wären: Rechnungen an **verwandte Empfänger** (Schwesterfirma
+oder Endkunde direkt statt über den Partner, erkannt am gemeinsamen
+Namensbestandteil — „Rechnung an …"), **stornierte** Rechnungen nahe am
+Periodenbeginn und Abos aus dem **Posteingang**, deren Firma im
+Rechnungstext an diesen Empfänger steht. Die Zuordnung darf hier auch eine
+Periode eines anderen Abos desselben Empfängers treffen und eine Position
+eines verwandten Empfängers nehmen — nie eine Periode eines fremden Kunden.

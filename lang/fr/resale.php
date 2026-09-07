@@ -437,8 +437,16 @@ return [
             'hint' => 'Attendu = mois de licence de toutes les périodes échues (hors renoncées/contestées). Facturé = mois de licence de toutes les lignes du produit. Plus d’attendu que de facturé : factures manquantes ; plus de facturé que d’attendu : abonnement manquant.',
             'empty' => 'Ni abonnements ni lignes de licence pour ce destinataire.',
         ],
+        'inbox' => [
+            'title' => 'Clients finaux dans les textes de facture dont l’abonnement n’a pas encore de détenteur',
+            'hint' => 'Ces abonnements de la boîte de réception nomment des sociétés qui apparaissent dans les factures à :customer — probablement des clients finaux de ce partenaire. Attribuez d’abord le détenteur, les périodes s’aligneront ensuite.',
+            'mentions' => 'nommé dans :count facture|nommé dans :count factures',
+        ],
         'periods' => [
             'title' => 'Périodes ouvertes',
+            'foreign' => 'Facturé à :recipient',
+            'foreign_note' => 'La facture est allée à :recipient',
+            'voided' => 'annulée',
             'hint' => 'Par période, les lignes du même produit : les libres avec rattachement, les déjà consommées pour contrôle. Sans aucune ligne, il ne reste que la facture de rattrapage (brouillon) ou la renonciation.',
             'none' => 'Aucune ligne de licence de ce produit dans le miroir — :months mois n’ont probablement jamais été facturés. Facture de rattrapage ou renonciation.',
             'taken' => 'consommée par :periods',

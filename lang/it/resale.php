@@ -437,8 +437,16 @@ return [
             'hint' => 'Dovuto = mesi licenza di tutti i periodi scaduti (esclusi rinunciati/contestati). Fatturato = mesi licenza di tutte le righe del prodotto. Più dovuto che fatturato: mancano fatture; più fatturato che dovuto: manca un abbonamento.',
             'empty' => 'Né abbonamenti né righe licenza per questo destinatario.',
         ],
+        'inbox' => [
+            'title' => 'Clienti finali nei testi fattura il cui abbonamento non ha ancora un titolare',
+            'hint' => 'Questi abbonamenti della posta in arrivo nominano aziende che compaiono nelle fatture a :customer — probabilmente clienti finali di questo partner. Assegna prima il titolare, poi i periodi tornano.',
+            'mentions' => 'citato in :count fattura|citato in :count fatture',
+        ],
         'periods' => [
             'title' => 'Periodi aperti',
+            'foreign' => 'Fatturato a :recipient',
+            'foreign_note' => 'La fattura è andata a :recipient',
+            'voided' => 'stornata',
             'hint' => 'Per periodo le righe dello stesso prodotto: libere con assegnazione, già consumate per controllo. Senza alcuna riga resta solo la fattura di recupero (bozza) o la rinuncia.',
             'none' => 'Nessuna riga licenza di questo prodotto nello specchio — :months mesi probabilmente mai fatturati. Fattura di recupero o rinuncia.',
             'taken' => 'consumata da :periods',

@@ -53,5 +53,11 @@ waive the period) or "without period" (more lines than periods — a
 subscription is missing in the register or something was billed twice).
 Per open period the lines of the same product are listed with their
 distance from the period start: free ones with assignment, consumed ones
-with their holder for review. Assignment here may also target a period of
-another subscription of the same recipient — never of a different one.
+with their holder for review. Plus three traps invisible per subscription:
+invoices to **related recipients** (sister company, or end customer billed
+directly instead of via the partner, recognised by a shared name part —
+"Invoiced to …"), **voided** invoices near the period start, and **inbox**
+subscriptions whose company appears in invoice texts to this recipient.
+Assignment here may also target a period of another subscription of the
+same recipient and take a line of a related recipient — never a period of
+a different customer.

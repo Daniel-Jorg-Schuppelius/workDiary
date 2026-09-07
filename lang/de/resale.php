@@ -437,8 +437,16 @@ return [
             'hint' => 'Soll = Lizenzmonate aller fälligen Perioden (ohne Verzicht/strittig). Abgerechnet = Lizenzmonate aller Positionen des Produkts. Steht mehr Soll als Abgerechnet, fehlen Rechnungen; steht mehr Abgerechnet als Soll, fehlt ein Abo.',
             'empty' => 'Weder Abos noch Lizenzpositionen für diesen Empfänger.',
         ],
+        'inbox' => [
+            'title' => 'Endkunden im Rechnungstext, deren Abo noch ohne Halter ist',
+            'hint' => 'Diese Abos aus dem Posteingang nennen Firmen, die in Rechnungen an :customer vorkommen — vermutlich Endkunden dieses Partners. Erst Halter zuordnen, dann passen die Perioden.',
+            'mentions' => 'in :count Rechnung genannt|in :count Rechnungen genannt',
+        ],
         'periods' => [
             'title' => 'Offene Perioden',
+            'foreign' => 'Rechnung an :recipient',
+            'foreign_note' => 'Rechnung ging an :recipient',
+            'voided' => 'storniert',
             'hint' => 'Je Periode die Positionen desselben Produkts: freie mit Zuordnung, bereits vergebene zur Kontrolle. Ohne jede Position bleibt nur Rechnung nachholen (Entwurf) oder verzichten.',
             'none' => 'Keine Lizenzposition dieses Produkts im Belegspiegel — :months Monate wurden vermutlich nie abgerechnet. Rechnung nachholen oder verzichten.',
             'taken' => 'vergeben an :periods',

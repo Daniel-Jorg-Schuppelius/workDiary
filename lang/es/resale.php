@@ -437,8 +437,16 @@ return [
             'hint' => 'Previsto = meses de licencia de todos los periodos vencidos (sin renunciados/disputados). Facturado = meses de licencia de todas las líneas del producto. Más previsto que facturado: faltan facturas; más facturado que previsto: falta una suscripción.',
             'empty' => 'Ni suscripciones ni líneas de licencia para este destinatario.',
         ],
+        'inbox' => [
+            'title' => 'Clientes finales en textos de factura cuya suscripción aún no tiene titular',
+            'hint' => 'Estas suscripciones de la bandeja de entrada nombran empresas que aparecen en facturas a :customer — probablemente clientes finales de este socio. Asigne primero el titular y los periodos encajarán.',
+            'mentions' => 'nombrado en :count factura|nombrado en :count facturas',
+        ],
         'periods' => [
             'title' => 'Periodos abiertos',
+            'foreign' => 'Facturado a :recipient',
+            'foreign_note' => 'La factura fue a :recipient',
+            'voided' => 'anulada',
             'hint' => 'Por periodo, las líneas del mismo producto: libres con asignación, ya consumidas para control. Sin ninguna línea solo queda la factura de regularización (borrador) o la renuncia.',
             'none' => 'Ninguna línea de licencia de este producto en el espejo — :months meses probablemente nunca facturados. Factura de regularización o renuncia.',
             'taken' => 'consumida por :periods',

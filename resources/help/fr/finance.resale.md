@@ -55,6 +55,12 @@ lignes — facture de rattrapage via le brouillon ou renonciation) ou « sans
 période » (plus de lignes que de périodes — abonnement manquant dans le
 registre ou double facturation). Par période ouverte, les lignes du même
 produit sont listées avec leur distance au début de période : les libres
-avec rattachement, les consommées avec leur détenteur pour contrôle. Le
+avec rattachement, les consommées avec leur détenteur pour contrôle. Plus trois pièges invisibles par
+abonnement : factures à des **destinataires apparentés** (société sœur ou
+client final facturé directement au lieu du partenaire, reconnus à un
+élément de nom commun — « Facturé à … »), factures **annulées** près du
+début de période et abonnements de la **boîte de réception** dont la
+société apparaît dans les textes de facture à ce destinataire. Le
 rattachement peut viser ici une période d’un autre abonnement du même
-destinataire — jamais d’un autre.
+destinataire et prendre une ligne d’un destinataire apparenté — jamais une
+période d’un autre client.

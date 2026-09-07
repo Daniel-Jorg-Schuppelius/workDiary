@@ -76,10 +76,10 @@ class RecipientReconcilerTest extends TestCase {
     /**
      * @param  list<array{article: LexofficeArticle, quantity: float, unit?: string, net: string}>  $lines
      */
-    private function voucher(string $contactId, string $number, string $date, array $lines, ?Customer $customer = null): LexofficeVoucher {
+    private function voucher(string $contactId, string $number, string $date, array $lines, ?Customer $customer = null, string $status = 'paid', string $text = ''): LexofficeVoucher {
         $voucher = LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'v-' . $number, 'contact_external_id' => $contactId, 'customer_id' => $customer?->id,
-            'voucher_type' => 'invoice', 'voucher_status' => 'paid', 'voucher_number' => $number, 'voucher_date' => $date, 'total_amount' => 100, 'currency' => 'EUR',
+            'voucher_type' => 'invoice', 'voucher_status' => $status, 'voucher_number' => $number, 'voucher_date' => $date, 'total_amount' => 100, 'currency' => 'EUR', 'voucher_text' => $text,
             'archived' => false, 'recipient_name' => 'Unbekannte GmbH', 'lines_synced_at' => now(),
         ]);
         foreach ($lines as $position => $line) {
@@ -207,5 +207,52 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame(0, $result['open']);
         $this->assertSame(0.0, $result['free']);
         $this->assertSame([], $result['periods']);
+    }
+
+    public function test_sister_company_invoice_voided_invoice_and_inbox_mentions_are_shown(): void {
+        $admin = $this->orgAdmin();
+        $customer = $this->customerWithContact('EcoTec Service GmbH', 'c-eco');
+        $sister = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
+        $this->customerWithContact('Delta Allround Service GmbH', 'c-delta');
+        // Der Anbieter führt den Vertrag auf EcoTec Service, berechnet wurde er an die Schwesterfirma;
+        // die zweite Rechnung wurde storniert und nie neu gestellt.
+        $five = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'company_name' => 'EcoTec Service GmbH', 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24', 'quantity' => 5, 'status' => 'ended']);
+        $this->voucher('c-hlsk', 'RE/2024/0171', '2024-05-11', [['article' => $this->exchange, 'quantity' => 5, 'unit' => 'Jahr', 'net' => '47.40']]);
+        $this->voucher('c-hlsk', 'RE/2025/0271', '2025-05-11', [['article' => $this->exchange, 'quantity' => 5, 'unit' => 'Jahr', 'net' => '47.40']], null, 'voided');
+        // Unverwandter Empfänger mit derselben Menge, aber nicht dicht am Periodenbeginn: kein Kandidat.
+        $this->voucher('c-delta', 'RE/2024/0201', '2024-10-01', [['article' => $this->exchange, 'quantity' => 60, 'net' => '3.95']]);
+        // Partnerfall: Abo ohne Halter, dessen Firma im Rechnungstext an diesen Empfänger steht.
+        ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'quantity' => 4, 'label' => 'Microsoft 365 Apps for business',
+            'company_name' => 'Robert Kasch', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR', 'starts_on' => '2025-02-13',
+        ]);
+        $this->voucher('c-eco', 'RE/2025/0800', '2025-02-13', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'paid', 'Microsoftdienste Robert Kasch');
+
+        $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
+        [$first, $second] = $result['periods'];
+        $this->assertSame([], $first['candidates']);
+        $this->assertSame(['RE/2024/0171'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucher->voucher_number, $first['foreign']), 'Schwesterfirma über gemeinsames Namens-Token, Delta nicht');
+        $this->assertSame('EcoTec - HLSK GmbH', $first['foreign'][0]['row']['recipient']);
+        $this->assertSame([], $first['voided'], 'Storno vom Folgejahr gehört nicht zur ersten Periode');
+        $this->assertSame(['RE/2025/0271'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucher->voucher_number, $second['voided']));
+        $this->assertSame([], $second['foreign']);
+        $this->assertSame('Robert Kasch', $result['inbox'][0]['company']);
+        $this->assertSame(1, $result['inbox'][0]['mentions']);
+        $this->assertCount(1, $result['inbox'][0]['subscriptions']);
+
+        $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
+        $page->assertSee('Rechnung an EcoTec - HLSK GmbH')->assertSee('RE/2025/0271')->assertSee('storniert')->assertSee('Robert Kasch')->assertDontSee('RE/2024/0201');
+
+        // Zuordnung der Schwesterfirmen-Rechnung: erlaubt, mit Vermerk, deckt die erste Periode.
+        $line = LexofficeVoucher::query()->where('voucher_number', 'RE/2024/0171')->firstOrFail()->lines()->firstOrFail();
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $customer), [
+            'period_id' => $first['period']->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $line->id), 'months' => '60', 'note' => 'Rechnung ging an EcoTec - HLSK GmbH',
+        ])->assertRedirect(route('finance.resale.reconcile.show', $customer));
+        $this->assertSame(PeriodStatus::Billed, $first['period']->fresh()?->status);
+        $this->assertSame('Rechnung ging an EcoTec - HLSK GmbH', ResalePeriodLink::query()->where('period_id', $first['period']->id)->firstOrFail()->note);
+        // Bei der Schwesterfirma ist die Position nun vergeben — mit dem Halter als Ziel.
+        $sisterView = (new RecipientReconciler)->forCustomer($this->organization, $sister);
+        $this->assertSame(0.0, $sisterView['free']);
+        $this->assertStringContainsString('EcoTec Service GmbH', $sisterView['lines'][0]['periods'][0]);
     }
 }

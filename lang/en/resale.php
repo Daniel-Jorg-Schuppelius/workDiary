@@ -437,8 +437,16 @@ return [
             'hint' => 'Required = licence months of all due periods (excluding waived/disputed). Invoiced = licence months of all lines of the product. More required than invoiced means invoices are missing; more invoiced than required means a subscription is missing.',
             'empty' => 'Neither subscriptions nor licence lines for this recipient.',
         ],
+        'inbox' => [
+            'title' => 'End customers in invoice texts whose subscription has no holder yet',
+            'hint' => 'These inbox subscriptions name companies that appear in invoices to :customer — probably end customers of this partner. Assign the holder first, then the periods line up.',
+            'mentions' => 'named in :count invoice|named in :count invoices',
+        ],
         'periods' => [
             'title' => 'Open periods',
+            'foreign' => 'Invoiced to :recipient',
+            'foreign_note' => 'Invoice went to :recipient',
+            'voided' => 'voided',
             'hint' => 'Per period the lines of the same product: free ones with assignment, already consumed ones for review. Without any line only a catch-up invoice (draft) or a waiver remains.',
             'none' => 'No licence line of this product in the mirror — :months months were probably never invoiced. Create a catch-up invoice or waive.',
             'taken' => 'consumed by :periods',

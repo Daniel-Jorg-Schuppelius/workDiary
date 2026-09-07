@@ -54,6 +54,28 @@
             <div class="alert alert-info mb-4 text-sm" title="lexoffice:sync-voucher-lines --all">{{ trans_choice('resale.invoices.pending', $pending, ['count' => $pending]) }}</div>
         @endif
 
+        @if ($inbox !== [])
+            {{-- Endkunden im Rechnungstext, deren Abos noch ohne Halter sind. --}}
+            <div class="alert alert-warning mb-4 text-sm">
+                <div>
+                    <span class="font-medium">{{ __('resale.reconcile.inbox.title') }}</span>
+                    <span class="block text-xs">{{ __('resale.reconcile.inbox.hint', ['customer' => $customer->name]) }}</span>
+                    <ul class="mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs">
+                        @foreach ($inbox as $hint)
+                            <li>
+                                <span class="font-medium">{{ $hint['company'] }}</span>
+                                @foreach ($hint['subscriptions'] as $unassigned)
+                                    · <a href="{{ route('finance.resale.show', $unassigned->sqid) }}" class="link link-hover">{{ $unassigned->label }} × {{ $unassigned->quantity }}</a>
+                                @endforeach
+                                · {{ trans_choice('resale.reconcile.inbox.mentions', $hint['mentions'], ['count' => $hint['mentions']]) }}
+                            </li>
+                        @endforeach
+                    </ul>
+                    <x-icon-btn icon="inbox" size="xs" tone="ghost" :href="route('finance.resale.inbox')" show-label class="mt-1">{{ __('resale.inbox.title') }}</x-icon-btn>
+                </div>
+            </div>
+        @endif
+
         {{-- Bilanz je Produkt: Soll aus Perioden gegen Ist aus Positionen. --}}
         <x-card :title="__('resale.reconcile.products.title')" padding="p-0" class="mb-4">
             <p class="px-4 py-2 text-xs text-muted border-b border-base-300">{{ __('resale.reconcile.products.hint') }}</p>
@@ -131,10 +153,40 @@
                             @endif
                         </div>
                     </div>
-                    @if ($row['candidates'] === [] && $row['taken'] === [])
+                    @if ($row['candidates'] === [] && $row['taken'] === [] && $row['foreign'] === [] && $row['voided'] === [])
                         <p class="mt-2 text-xs text-error">{{ __('resale.reconcile.periods.none', ['months' => $fmt($row['needed'])]) }}</p>
                     @else
                         <ul class="mt-2 space-y-1">
+                            @foreach (array_slice($row['foreign'], 0, 4) as $candidate)
+                                @php
+                                    $line = $candidate['row']['line'];
+                                    $voucher = $line->voucher;
+                                    $recipient = $candidate['row']['recipient'] ?? '—';
+                                @endphp
+                                <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
+                                    <span class="flex flex-wrap items-center gap-2">
+                                        <x-status-badge size="xs" tone="warning" :label="__('resale.reconcile.periods.foreign', ['recipient' => $recipient])" />
+                                        <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
+                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }} · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
+                                        <span>{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }} × {{ $line->unit_net->withScale(2)->format() }}</span>
+                                        <span class="text-success text-xs">{{ __('resale.invoices.remaining', ['months' => $fmt($candidate['row']['free'])]) }}</span>
+                                        @if ($canPreview)
+                                            <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $voucherSqid($line))" :title="__('resale.invoices.preview')" />
+                                        @endif
+                                    </span>
+                                    @if ($canManage)
+                                        <form method="POST" action="{{ route('finance.resale.reconcile.assign', $customer) }}" class="flex items-center gap-1">
+                                            @csrf
+                                            <input type="hidden" name="period_id" value="{{ $period->sqid }}">
+                                            <input type="hidden" name="line_id" value="{{ $lineSqid($line) }}">
+                                            <input type="hidden" name="note" value="{{ __('resale.reconcile.periods.foreign_note', ['recipient' => $recipient]) }}">
+                                            <input type="number" name="months" step="0.01" min="0.01" value="{{ number_format(min($row['needed'], $candidate['row']['free']), 2, '.', '') }}"
+                                                   class="input input-xs input-bordered w-20 text-right" aria-label="{{ __('resale.link.months_field') }}">
+                                            <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" show-label>{{ __('resale.link.action.link') }}</x-icon-btn>
+                                        </form>
+                                    @endif
+                                </li>
+                            @endforeach
                             @foreach (array_slice($row['candidates'], 0, 6) as $candidate)
                                 @php
                                     $line = $candidate['row']['line'];
@@ -174,8 +226,20 @@
                                     <span>{{ __('resale.reconcile.periods.taken', ['periods' => implode(' · ', array_unique($candidate['row']['periods']))]) }}</span>
                                 </li>
                             @endforeach
+                            @foreach (array_slice($row['voided'], 0, 3) as $candidate)
+                                @php $line = $candidate['row']['line']; @endphp
+                                <li class="flex flex-wrap items-center gap-2 text-xs text-muted">
+                                    <x-status-badge size="xs" tone="error" :label="__('resale.reconcile.periods.voided')" />
+                                    <span class="font-mono">{{ $line->voucher->voucher_number }}</span>
+                                    <span class="tabular-nums">{{ $line->voucher->voucher_date?->format('d.m.Y') }}</span>
+                                    <span>{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }} · {{ $fmt($candidate['row']['months']) }} {{ __('resale.link.months_short') }}</span>
+                                    @if ($canPreview)
+                                        <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $voucherSqid($line))" :title="__('resale.invoices.preview')" />
+                                    @endif
+                                </li>
+                            @endforeach
                         </ul>
-                        @if ($row['candidates'] === [])
+                        @if ($row['candidates'] === [] && $row['foreign'] === [])
                             <p class="mt-1 text-xs text-error">{{ __('resale.reconcile.periods.all_taken', ['months' => $fmt($row['needed'])]) }}</p>
                         @endif
                     @endif
