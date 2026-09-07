@@ -2490,6 +2490,10 @@ Route::middleware('auth')->group(function () {
                 Route::post('{subscription}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'quickLink'])->name('links.quick');
             });
             Route::get('perioden', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
+            // Abgleich je Rechnungsempfänger: Perioden aller Abos gegen die Lizenzpositionen seiner Rechnungen.
+            Route::get('abgleich', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'index'])->name('reconcile.index')->middleware('can:reselling.view');
+            Route::get('abgleich/{customer}', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'show'])->name('reconcile.show')->middleware('can:reselling.view');
+            Route::post('abgleich/{customer}/bezug', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'assign'])->name('reconcile.assign')->middleware('can:reselling.manage');
             Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
             Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Finance\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
             Route::get('preise', [\App\Http\Controllers\Finance\ResaleReportController::class, 'prices'])->name('prices')->middleware('can:reselling.view');

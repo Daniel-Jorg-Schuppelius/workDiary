@@ -172,9 +172,14 @@
                             · {{ trans_choice('resale.invoices.hidden', $invoices['hidden'], ['count' => $invoices['hidden']]) }}
                         @endif
                     </span>
-                    @if ($invoices['pending'] > 0)
-                        <span class="badge badge-warning badge-sm" title="lexoffice:sync-voucher-lines --all">{{ trans_choice('resale.invoices.pending', $invoices['pending'], ['count' => $invoices['pending']]) }}</span>
-                    @endif
+                    <span class="flex items-center gap-2">
+                        @if ($invoices['pending'] > 0)
+                            <span class="badge badge-warning badge-sm" title="lexoffice:sync-voucher-lines --all">{{ trans_choice('resale.invoices.pending', $invoices['pending'], ['count' => $invoices['pending']]) }}</span>
+                        @endif
+                        @if ($billedTo !== null)
+                            <x-icon-btn icon="compare_arrows" size="xs" tone="ghost" :href="route('finance.resale.reconcile.show', $billedTo)" show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
+                        @endif
+                    </span>
                 </div>
                 @if ($invoices['contacts'] === [])
                     <div class="px-4 py-3 text-sm text-warning">{{ __('resale.link.no_contacts') }}</div>
@@ -200,8 +205,7 @@
                             @foreach ($licenseLines as $line)
                                 @php
                                     $info = $invoices['linked'][$line->id] ?? null;
-                                    // Lizenzmonate aus Menge und Einheit: „12 Monat" = 12, „1 Jahr" = 12.
-                                    $lineMonths = in_array(mb_strtolower(trim((string) $line->unit_name)), ['monat', 'monate', 'month', 'months'], true) ? (float) $line->quantity : (float) $line->quantity * 12;
+                                    $lineMonths = \App\Services\Reselling\Register\LicenseMonths::ofLine($line);
                                     $remaining = max(0.0, $lineMonths - ($info['months'] ?? 0.0));
                                     $lineSqid = \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line->id);
                                 @endphp

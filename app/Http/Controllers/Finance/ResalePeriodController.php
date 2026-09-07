@@ -17,7 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
-use App\Services\Reselling\Register\LinkProposer;
+use App\Services\Reselling\Register\{LinkProposer, PeriodLinker};
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -34,6 +34,8 @@ class ResalePeriodController extends Controller {
     use ResolvesCurrentOrganization;
 
     private const PER_PAGE = 50;
+
+    public function __construct(private readonly PeriodLinker $linker) {}
 
     public function index(Request $request): View {
         $today = CarbonImmutable::today();
@@ -122,7 +124,7 @@ class ResalePeriodController extends Controller {
     public function confirm(Request $request, ResalePeriod $period): RedirectResponse {
         $period->links()->where('origin', LinkOrigin::Proposed->value)->update(['origin' => LinkOrigin::Confirmed->value, 'confirmed_at' => now()]);
         $period->unsetRelation('links');
-        $this->settle($period, $request->user()?->id, (string) $request->input('note', ''));
+        $this->linker->settle($period, $request->user()?->id, (string) $request->input('note', ''));
 
         return back()->with('success', __('resale.link.flash.confirmed'));
     }
@@ -143,14 +145,14 @@ class ResalePeriodController extends Controller {
             'decided_at' => now(),
         ])->save();
 
-        return redirect()->route('finance.resale.periods.index')->with('success', __('resale.link.flash.waived'));
+        return redirect(url()->previous(route('finance.resale.periods.index')))->with('success', __('resale.link.flash.waived'));
     }
 
     public function reopen(ResalePeriod $period): RedirectResponse {
         $period->forceFill(['status' => PeriodStatus::Open, 'waived_reason' => null, 'decided_by_user_id' => null, 'decided_at' => null])->save();
         $period->links()->where('origin', LinkOrigin::Proposed->value)->delete();
         $period->unsetRelation('links');
-        $this->settle($period, null, null, false);
+        $this->linker->settle($period, null, null, false);
 
         return back()->with('success', __('resale.link.flash.reopened'));
     }
@@ -188,7 +190,7 @@ class ResalePeriodController extends Controller {
         if ($line === null) {
             return back()->withErrors(['line_id' => __('resale.link.error.line_missing')]);
         }
-        $link = $this->attach($period, $line, (float) $validated['months'], $validated['note'] ?? null, $request->user()?->id);
+        $link = $this->linker->attach($period, $line, (float) $validated['months'], $validated['note'] ?? null, $request->user()?->id);
 
         return redirect()->route('finance.resale.show', $period->subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }
@@ -209,66 +211,17 @@ class ResalePeriodController extends Controller {
         if ($period === null || $line === null) {
             return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.link.error.line_missing'));
         }
-        $link = $this->attach($period, $line, (float) $validated['months'], null, $request->user()?->id);
+        $link = $this->linker->attach($period, $line, (float) $validated['months'], null, $request->user()?->id);
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
-    }
-
-    private function attach(ResalePeriod $period, LexofficeVoucherLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
-        $termMonths = $period->termMonths();
-        $link = ResalePeriodLink::query()->updateOrCreate(
-            ['period_id' => $period->id, 'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id],
-            [
-                'organization_id' => $period->organization_id,
-                'subscription_id' => $period->subscription_id,
-                'voucher_number' => $line->voucher->voucher_number,
-                'voucher_date' => $line->voucher->voucher_date,
-                'quantity' => round($months / $termMonths, 3),
-                'months' => round($months, 2),
-                'amount' => $line->unit_net->times($this->unitsFor($line, $months, $termMonths))->withScale(2),
-                'currency' => $line->currency->value,
-                'origin' => LinkOrigin::Manual,
-                'note' => $note,
-                'created_by_user_id' => $userId,
-                'confirmed_at' => now(),
-            ],
-        );
-        $period->unsetRelation('links');
-        $this->settle($period, $userId, null);
-
-        return $link;
     }
 
     public function linkDestroy(ResalePeriodLink $link): RedirectResponse {
         $period = $link->period;
         $link->delete();
         $period->unsetRelation('links');
-        $this->settle($period, null, null, false);
+        $this->linker->settle($period, null, null, false);
 
         return back()->with('success', __('resale.link.flash.unlinked'));
-    }
-
-    /** Positionsmenge, die $months Lizenzmonaten entspricht (Monatspreis: 1 je Monat, sonst Laufzeit je Stück). */
-    private function unitsFor(LexofficeVoucherLine $line, float $months, int $termMonths): float {
-        $unit = mb_strtolower(trim((string) $line->unit_name));
-        $monthly = in_array($unit, ['monat', 'monate', 'month', 'months'], true) || ($unit === '' && $line->unit_net->toFloat() < 30.0);
-        if (in_array($unit, ['jahr', 'jahre', 'year', 'years'], true)) {
-            return $months / 12.0; // „1 Jahr" = 12 Lizenzmonate je Stück
-        }
-
-        return $monthly ? $months : $months / $termMonths;
-    }
-
-    /** Status aus der Deckung ableiten; entschieden = Nutzer hat bestätigt/verknüpft. */
-    private function settle(ResalePeriod $period, ?int $userId, ?string $note, bool $decided = true): void {
-        $period->load('links');
-        $covered = $period->coveredMonths();
-        $status = $covered >= $period->requiredMonths() - 0.001 ? PeriodStatus::Billed : ($covered > 0.001 ? PeriodStatus::Partial : PeriodStatus::Open);
-        $period->forceFill([
-            'status' => $status,
-            'decided_by_user_id' => $decided ? $userId : null,
-            'decided_at' => $decided ? now() : null,
-            'note' => $note !== null && $note !== '' ? $note : $period->note,
-        ])->save();
     }
 }

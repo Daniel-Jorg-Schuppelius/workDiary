@@ -22,6 +22,9 @@
                 <x-icon-btn icon="list" tone="ghost" size="sm"
                             :href="route('finance.resale.index', ['customer' => $customer->sqid])"
                             show-label>{{ __('resale.customer_panel.all') }}</x-icon-btn>
+                <x-icon-btn icon="compare_arrows" tone="ghost" size="sm"
+                            :href="route('finance.resale.reconcile.show', $customer)"
+                            show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
                 @can(\App\Enums\User\Permission::ResellingManage->value)
                     <x-icon-btn icon="add" tone="ghost" size="sm" data-entry-modal-trigger
                                 :href="route('finance.resale.create', ['customer' => $customer->sqid])"

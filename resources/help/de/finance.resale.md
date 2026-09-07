@@ -40,3 +40,19 @@ Beendete und abgelöste Abos bekommen keine neuen Perioden.
 **Löschen:** Ein Abo mit entschiedenen Perioden lässt sich nicht löschen —
 setze es auf „beendet". Rechte: Sehen mit *Reselling-Register sehen*,
 Pflegen mit *Reselling-Register pflegen*.
+
+**Abgleich je Rechnungsempfänger:** Wenn Perioden offen bleiben und unklar
+ist, ob eine Rechnung fehlt oder nur die Zuordnung, hilft der Abgleich
+(Schaltfläche in der Abo-Liste, auf der Periodenseite und am Kunden). Er
+stellt je Empfänger — Kunde samt seiner Endkunden — die fälligen Perioden
+aller Abos den Lizenzpositionen seiner Rechnungen gegenüber, in
+Lizenzmonaten je Produkt: *Soll* aus den Perioden, *Abgerechnet* aus den
+Positionen. Der Befund sagt, was zu tun ist: „nur nicht zugeordnet" (freie
+Positionen reichen — zuordnen), „nie abgerechnet" (mehr Perioden als
+Positionen — Rechnung nachholen über den Entwurf oder Periode verzichten)
+oder „ohne Periode" (mehr Positionen als Perioden — Abo fehlt im Register
+oder Doppelabrechnung). Je offener Periode stehen die Positionen desselben
+Produkts mit Abstand zum Periodenbeginn: freie mit Zuordnung, bereits
+vergebene mit ihrem Halter zur Kontrolle. Die Zuordnung darf hier auch eine
+Periode eines anderen Abos desselben Empfängers treffen — nie eines
+fremden.

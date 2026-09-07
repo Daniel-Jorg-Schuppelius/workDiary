@@ -40,3 +40,19 @@ abbonamenti terminati e sostituiti non ricevono nuovi periodi.
 **Eliminazione:** un abbonamento con periodi decisi non può essere eliminato
 — impostalo su «terminato». Permessi: vedere con *Vedere il registro di
 rivendita*, gestire con *Gestire il registro di rivendita*.
+
+**Riconciliazione per destinatario fattura:** quando periodi restano aperti
+e non è chiaro se manca una fattura o solo l’assegnazione, usa la
+riconciliazione (pulsante nell’elenco abbonamenti, nella pagina periodi e
+sul cliente). Per destinatario — il cliente con i suoi clienti finali —
+confronta i periodi scaduti di tutti gli abbonamenti con le righe licenza
+delle sue fatture, in mesi licenza per prodotto: *dovuto* dai periodi,
+*fatturato* dalle righe. L’esito dice cosa fare: «solo non assegnato» (le
+righe libere bastano — assegnare), «mai fatturato» (più periodi che righe —
+fattura di recupero tramite bozza o rinuncia al periodo) oppure «senza
+periodo» (più righe che periodi — manca un abbonamento nel registro o
+doppia fatturazione). Per ogni periodo aperto sono elencate le righe dello
+stesso prodotto con la distanza dall’inizio periodo: le libere con
+assegnazione, le consumate con il loro titolare per controllo.
+L’assegnazione può qui colpire anche un periodo di un altro abbonamento
+dello stesso destinatario — mai di un altro.

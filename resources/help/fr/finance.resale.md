@@ -41,3 +41,20 @@ abonnements terminés et remplacés ne reçoivent plus de périodes.
 **Suppression :** un abonnement avec des périodes décidées ne peut pas être
 supprimé — passez-le à « terminé ». Droits : voir avec *Voir le registre de
 revente*, gérer avec *Gérer le registre de revente*.
+
+**Rapprochement par destinataire de facture :** lorsque des périodes restent
+ouvertes sans que l’on sache s’il manque une facture ou seulement le
+rattachement, utilisez le rapprochement (bouton dans la liste des
+abonnements, sur la page des périodes et sur le client). Par destinataire —
+le client avec ses clients finaux — il confronte les périodes échues de
+tous les abonnements aux lignes de licence de ses factures, en mois de
+licence par produit : *attendu* d’après les périodes, *facturé* d’après les
+lignes. Le constat dit quoi faire : « seulement non rattaché » (les lignes
+libres suffisent — rattacher), « jamais facturé » (plus de périodes que de
+lignes — facture de rattrapage via le brouillon ou renonciation) ou « sans
+période » (plus de lignes que de périodes — abonnement manquant dans le
+registre ou double facturation). Par période ouverte, les lignes du même
+produit sont listées avec leur distance au début de période : les libres
+avec rattachement, les consommées avec leur détenteur pour contrôle. Le
+rattachement peut viser ici une période d’un autre abonnement du même
+destinataire — jamais d’un autre.

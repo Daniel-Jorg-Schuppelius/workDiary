@@ -40,3 +40,19 @@ suscripciones terminadas y sustituidas no reciben nuevos periodos.
 **Eliminar:** una suscripción con periodos decididos no se puede eliminar —
 ponla en «terminada». Permisos: ver con *Ver el registro de reventa*,
 gestionar con *Gestionar el registro de reventa*.
+
+**Conciliación por destinatario de factura:** cuando quedan periodos
+abiertos y no está claro si falta una factura o solo la asignación, use la
+conciliación (botón en la lista de suscripciones, en la página de periodos
+y en el cliente). Por destinatario — el cliente con sus clientes finales —
+contrasta los periodos vencidos de todas las suscripciones con las líneas
+de licencia de sus facturas, en meses de licencia por producto: *previsto*
+según los periodos, *facturado* según las líneas. El hallazgo dice qué
+hacer: «solo sin asignar» (las líneas libres bastan — asignar), «nunca
+facturado» (más periodos que líneas — factura de regularización mediante el
+borrador o renuncia al periodo) o «sin periodo» (más líneas que periodos —
+falta una suscripción en el registro o doble facturación). Por cada periodo
+abierto se listan las líneas del mismo producto con su distancia al inicio
+del periodo: las libres con asignación, las consumidas con su titular para
+control. La asignación puede dirigirse aquí a un periodo de otra
+suscripción del mismo destinatario — nunca de otro.

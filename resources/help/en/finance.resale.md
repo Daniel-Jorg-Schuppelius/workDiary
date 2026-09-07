@@ -39,3 +39,19 @@ subscriptions get no new periods.
 **Deleting:** A subscription with decided periods cannot be deleted — set it
 to “ended”. Permissions: view with *View resale register*, manage with
 *Manage resale register*.
+
+**Reconciliation per invoice recipient:** When periods stay open and it is
+unclear whether an invoice is missing or merely the assignment, use the
+reconciliation (button in the subscription list, on the periods page and
+on the customer). Per recipient — the customer including their end
+customers — it sets the due periods of all subscriptions against the
+licence lines of their invoices, in licence months per product: *required*
+from the periods, *invoiced* from the lines. The finding tells you what to
+do: "merely unassigned" (free lines suffice — assign), "never invoiced"
+(more periods than lines — create a catch-up invoice via the draft or
+waive the period) or "without period" (more lines than periods — a
+subscription is missing in the register or something was billed twice).
+Per open period the lines of the same product are listed with their
+distance from the period start: free ones with assignment, consumed ones
+with their holder for review. Assignment here may also target a period of
+another subscription of the same recipient — never of a different one.

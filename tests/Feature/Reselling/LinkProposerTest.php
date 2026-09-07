@@ -224,7 +224,8 @@ class LinkProposerTest extends TestCase {
 
         // Verzichten auf 2026, dann zurücknehmen
         $this->actingAs($admin)->get(route('finance.resale.periods.waive.create', $p2026->sqid))->assertOk();
-        $this->actingAs($admin)->post(route('finance.resale.periods.waive', $p2026->sqid), ['decision' => 'waived', 'reason' => 'Kulanz'])->assertRedirect(route('finance.resale.periods.index'));
+        // Zurück auf die Seite, von der der Dialog kam (Perioden, Abo oder Abgleich).
+        $this->actingAs($admin)->from(route('finance.resale.periods.index'))->post(route('finance.resale.periods.waive', $p2026->sqid), ['decision' => 'waived', 'reason' => 'Kulanz'])->assertRedirect(route('finance.resale.periods.index'));
         $p2026->refresh();
         $this->assertSame(PeriodStatus::Waived, $p2026->status);
         $this->assertSame('Kulanz', $p2026->waived_reason);
