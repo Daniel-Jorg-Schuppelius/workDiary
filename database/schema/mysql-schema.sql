@@ -11143,6 +11143,7 @@ CREATE TABLE `lexoffice_articles` (
   `is_dirty` tinyint(1) NOT NULL DEFAULT 0,
   `last_pushed_at` timestamp NULL DEFAULT NULL,
   `archived_at` timestamp NULL DEFAULT NULL,
+  `resale_role` varchar(16) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
@@ -21187,3 +21188,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (789,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (790,'2027_02_20_100400_create_resale_period_links_table',59);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',60);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (792,'2027_02_20_100600_create_resale_purchase_entries_table',61);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',62);

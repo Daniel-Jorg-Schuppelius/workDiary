@@ -103,7 +103,7 @@ class ResaleSubscriptionController extends Controller {
     }
 
     public function show(ResaleSubscription $subscription, LinkProposer $proposer): View {
-        $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'successor', 'predecessors', 'periods.decidedBy', 'periods.links', 'creator']);
+        $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'successor', 'predecessors', 'periods.decidedBy', 'periods.links.linkable', 'creator']);
 
         return view('finance.resale.show', [
             'subscription' => $subscription,
@@ -133,24 +133,28 @@ class ResaleSubscriptionController extends Controller {
             ->whereNotIn('voucher_status', ['draft', 'voided'])
             ->where('voucher_date', '>=', \App\Support\Query\DateRange::day($from));
         $pending = (clone $base)->whereNull('lines_synced_at')->count();
-        $vouchers = (clone $base)->whereNotNull('lines_synced_at')->with(['lines.article:id,name'])->orderByDesc('voucher_date')->limit(150)->get();
+        $vouchers = (clone $base)->whereNotNull('lines_synced_at')->with(['lines.article:id,name,resale_role'])->orderByDesc('voucher_date')->limit(150)->get();
 
-        // Nur Lizenzpositionen zeigen; eigene Leistungen zählen, nicht listen.
-        $matcher = new \App\Services\Reselling\Marketplace\ProductNameMatcher;
+        // Lizenzpositionen (Microsoft-Artikel) tragen die Zuordnung; die übrigen
+        // Positionen bleiben zur Prüfung der Rechnung einklappbar dabei.
+        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
         $hidden = 0;
+        $licenseIds = [];
         foreach ($vouchers as $voucher) {
-            $kept = $voucher->lines->filter(static function (\App\Models\LexofficeVoucherLine $line) use ($matcher): bool {
-                $text = $line->article !== null ? $line->article->name : $line->text();
-
-                return $matcher->looksLikeMicrosoftProduct($text);
-            });
-            $hidden += $voucher->lines->count() - $kept->count();
-            $voucher->setRelation('lines', $kept->values());
+            foreach ($voucher->lines as $line) {
+                $isLicense = $classifier->isLicense($line->article);
+                $line->setAttribute('is_license', $isLicense);
+                if ($isLicense) {
+                    $licenseIds[] = $line->id;
+                } else {
+                    $hidden++;
+                }
+            }
         }
-        $vouchers = $vouchers->filter(static fn(\App\Models\LexofficeVoucher $v): bool => $v->lines->isNotEmpty())->values();
+        $vouchers = $vouchers->filter(static fn(\App\Models\LexofficeVoucher $v): bool => $v->lines->contains(static fn($l): bool => (bool) $l->getAttribute('is_license')))->values();
 
         $linked = [];
-        $lineIds = $vouchers->flatMap(static fn(\App\Models\LexofficeVoucher $v) => $v->lines->pluck('id'))->all();
+        $lineIds = $licenseIds;
         if ($lineIds !== []) {
             $links = \App\Models\Reselling\ResalePeriodLink::query()
                 ->where('linkable_type', (new \App\Models\LexofficeVoucherLine)->getMorphClass())

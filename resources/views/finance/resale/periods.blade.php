@@ -64,7 +64,7 @@
                                 <td class="text-sm">{{ $line->voucher->customer?->name ?? '—' }}</td>
                                 <td class="text-sm">{{ $line->article?->name ?? $line->name }}</td>
                                 <td class="text-right tabular-nums whitespace-nowrap">{{ rtrim(rtrim(number_format((float) $line->quantity, 2, ',', '.'), '0'), ',') }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
-                                <td class="text-xs text-muted max-w-xs truncate" title="{{ $line->voucher->voucher_text }}">{{ \Illuminate\Support\Str::limit((string) $line->voucher->voucher_text, 70) }}</td>
+                                <td class="text-xs max-w-xs truncate" title="{{ $line->voucher->voucher_text }}">{{ $line->voucher->voucherTextHint() ?? \Illuminate\Support\Str::limit((string) $line->voucher->voucher_text, 70) }}</td>
                             </tr>
                         @endforeach
                     </x-table>

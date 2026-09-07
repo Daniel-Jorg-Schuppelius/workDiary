@@ -377,6 +377,9 @@ return [
         ],
     ],
     'invoices' => [
+        'preview' => 'Belegbild ansehen',
+        'open_lexoffice' => 'In Lexoffice öffnen',
+        'other_lines' => ':count weitere Position (keine Lizenz)|:count weitere Positionen (keine Lizenz)',
         'title' => 'Rechnungen des Rechnungsempfängers',
         'subtitle' => 'Belegspiegel von :customer ab 90 Tage vor Abo-Beginn — Lizenzpositionen mit Schnellzuordnung',
         'hidden' => ':count Position ohne Lizenzbezug ausgeblendet|:count Positionen ohne Lizenzbezug ausgeblendet',
@@ -394,6 +397,28 @@ return [
         'title' => ':count Lizenzposition ohne Abo|:count Lizenzpositionen ohne Abo',
         'hint' => 'Microsoft-Artikelpositionen im Belegspiegel, die keiner Periode zugeordnet sind: fehlendes Abo im Register, falscher Halter oder Doppelabrechnung.',
         'text' => 'Belegtext',
+    ],
+    'products' => [
+        'title' => 'Produkt-Einstufung',
+        'subtitle' => 'Welche Lexoffice-Artikel sind Abo-Produkte? Erkannt über den Namen, je Artikel übersteuerbar',
+        'hint' => '„Nie Abo-Position“ hält Dienstleistungen mit Microsoft im Namen (z. B. Wartung an Exchange) aus Vorschlägen, Rechnungslisten und Positionen ohne Abo heraus. „Abo-Produkt“ erzwingt die Erkennung für Artikel, die der Name nicht verrät.',
+        'number' => 'Nummer',
+        'unit' => 'Einheit',
+        'price' => 'Preis',
+        'subscriptions' => 'Abos',
+        'detected' => 'Erkannt',
+        'override' => 'Einstufung',
+        'save' => 'Speichern',
+        'empty' => 'Keine Lexoffice-Artikel gespiegelt.',
+        'role' => [
+            'auto' => 'Automatisch',
+            'license' => 'Abo-Produkt',
+            'excluded' => 'Nie Abo-Position',
+        ],
+        'flash' => [
+            'saved' => '„:article“: :role.',
+            'missing' => 'Artikel nicht gefunden.',
+        ],
     ],
     'period_status' => [
         'open' => 'Offen',

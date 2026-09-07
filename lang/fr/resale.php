@@ -377,6 +377,9 @@ return [
         ],
     ],
     'invoices' => [
+        'preview' => 'Voir la pièce',
+        'open_lexoffice' => 'Ouvrir dans Lexoffice',
+        'other_lines' => ':count autre ligne (hors licence)|:count autres lignes (hors licence)',
         'title' => 'Factures du destinataire',
         'subtitle' => 'Miroir des pièces de :customer depuis 90 jours avant le début — lignes de licence avec affectation rapide',
         'hidden' => ':count ligne sans rapport avec les licences masquée|:count lignes sans rapport avec les licences masquées',
@@ -394,6 +397,28 @@ return [
         'title' => ':count ligne de licence sans abonnement|:count lignes de licence sans abonnement',
         'hint' => 'Lignes d’articles Microsoft du miroir non rattachées à une période : abonnement manquant, mauvais titulaire ou double facturation.',
         'text' => 'Texte de la pièce',
+    ],
+    'products' => [
+        'title' => 'Classification des produits',
+        'subtitle' => 'Quels articles Lexoffice sont des produits d’abonnement ? Détecté par le nom, modifiable par article',
+        'hint' => '« Jamais une ligne d’abonnement » écarte les prestations avec Microsoft dans le nom (p. ex. maintenance Exchange) des propositions, listes de factures et lignes sans abonnement. « Produit d’abonnement » force la reconnaissance.',
+        'number' => 'Numéro',
+        'unit' => 'Unité',
+        'price' => 'Prix',
+        'subscriptions' => 'Abonnements',
+        'detected' => 'Détecté',
+        'override' => 'Classification',
+        'save' => 'Enregistrer',
+        'empty' => 'Aucun article Lexoffice en miroir.',
+        'role' => [
+            'auto' => 'Automatique',
+            'license' => 'Produit d’abonnement',
+            'excluded' => 'Jamais une ligne d’abonnement',
+        ],
+        'flash' => [
+            'saved' => '« :article » : :role.',
+            'missing' => 'Article introuvable.',
+        ],
     ],
     'period_status' => [
         'open' => 'Ouverte',

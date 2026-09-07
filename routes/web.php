@@ -2493,6 +2493,8 @@ Route::middleware('auth')->group(function () {
             Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
             Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Finance\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
             Route::get('preise', [\App\Http\Controllers\Finance\ResaleReportController::class, 'prices'])->name('prices')->middleware('can:reselling.view');
+            Route::get('produkte', [\App\Http\Controllers\Finance\ResaleReportController::class, 'products'])->name('products')->middleware('can:reselling.view');
+            Route::post('produkte', [\App\Http\Controllers\Finance\ResaleReportController::class, 'productsStore'])->name('products.store')->middleware('can:reselling.manage');
             Route::get('einkauf', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'index'])->name('purchases.index')->middleware('can:reselling.view');
             Route::middleware('can:reselling.manage')->group(function (): void {
                 Route::get('einkauf/neu', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'create'])->name('purchases.create');

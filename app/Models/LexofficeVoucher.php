@@ -108,6 +108,49 @@ class LexofficeVoucher extends Model {
     }
 
     /**
+     * Belegtext ohne die Standardfloskeln (Titel, „stellen wir Ihnen wie folgt
+     * in Rechnung", „Vielen Dank für die gute Zusammenarbeit") — übrig bleibt,
+     * was der Reseller je Beleg ergänzt hat, beim Endkunden z. B.
+     * „Microsoft Dienste - Klimpel Bäder" oder „(M365 Haus24)".
+     */
+    public function voucherTextHint(): ?string {
+        $text = trim((string) $this->voucher_text);
+        if ($text === '') {
+            return null;
+        }
+        $segments = preg_split('/(?<=[.!?])\s+|\R+/u', $text) ?: [];
+        $kept = [];
+        foreach ($segments as $segment) {
+            $segment = trim($segment, " \t()");
+            if ($segment === '' || preg_match('/^(Rechnung|Gutschrift|Invoice|Credit Note)$/iu', $segment) === 1) {
+                continue;
+            }
+            if (preg_match('/Lieferungen\/Leistungen|in Rechnung|Zusammenarbeit|Vielen Dank|Thank you|Zahlbar|zahlbar|Zahlungsziel/iu', $segment) === 1) {
+                continue;
+            }
+            $kept[] = $segment;
+        }
+        $hint = trim(implode(' · ', $kept));
+
+        return $hint !== '' && mb_strlen($hint) <= 120 ? $hint : null;
+    }
+
+    /**
+     * Direktlink in die Lexoffice-Oberfläche (dokumentierter Permalink für
+     * Rechnungen/Gutschriften; Buchungsbelege haben keinen).
+     */
+    public function lexofficePermalink(): ?string {
+        $type = match ((string) $this->voucher_type) {
+            'invoice' => 'invoices',
+            'creditnote' => 'credit-notes',
+            'downpaymentinvoice' => 'down-payment-invoices',
+            default => null,
+        };
+
+        return $type === null || $this->external_id === '' ? null : 'https://app.lexoffice.de/permalink/' . $type . '/view/' . $this->external_id;
+    }
+
+    /**
      * Positionen aus dem Belegspiegel (Feature 152, MVP-760) — nur für
      * Lexoffice-eigene Rechnungen nach dem Positions-Sync gefüllt.
      *

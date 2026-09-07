@@ -27,6 +27,7 @@ use Illuminate\Support\Carbon;
  * @property ?string $description
  * @property string $type
  * @property ?string $unit_name
+ * @property \App\Enums\Reselling\ResaleArticleRole|null $resale_role
  * @property \CommonToolkit\ValueObjects\Money|null $net_unit_price
  * @property \CommonToolkit\Enums\CurrencyCode $currency
  * @property \CommonToolkit\ValueObjects\Percentage|null $vat_rate
@@ -41,6 +42,7 @@ class LexofficeArticle extends Model {
     use BelongsToOrganization;
 
     protected $fillable = [
+        'resale_role',
         'organization_id',
         'external_id',
         'external_version',
@@ -67,6 +69,7 @@ class LexofficeArticle extends Model {
         'currency' => \CommonToolkit\Enums\CurrencyCode::class,
         'external_version' => 'integer',
         'net_unit_price' => MoneyCast::class . ':currency,4',
+        'resale_role' => \App\Enums\Reselling\ResaleArticleRole::class,
         'gross_unit_price' => MoneyCast::class . ':currency,4',
         'vat_rate' => PercentageCast::class . ':2',
         'synced_at' => 'datetime',

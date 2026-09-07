@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Reselling\{BillingFrequency, PeriodStatus};
+use App\Enums\Reselling\{BillingFrequency, PeriodStatus, ResaleArticleRole};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\Customer;
+use App\Models\{Customer, LexofficeArticle};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
-use App\Services\Reselling\Register\ResaleInvoiceDraftService;
+use App\Services\Reselling\Register\{LicenseArticleClassifier, ResaleInvoiceDraftService};
 use App\Support\{CsvExport, Sqid};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
@@ -174,6 +174,44 @@ class ResaleReportController extends Controller {
         usort($rows, static fn(array $a, array $b): int => count($b['flags']) <=> count($a['flags']) ?: strcmp($a['label'], $b['label']));
 
         return view('finance.resale.prices', ['rows' => $rows, 'today' => $today, 'catalogDate' => $catalog->max('valid_from')]);
+    }
+
+    /**
+     * Produkt-Einstufung: welche Lexoffice-Artikel Abo-Produkte sind — erkannt
+     * über den Namen, vom Betreiber übersteuerbar (nie Abo-Position / immer).
+     */
+    public function products(LicenseArticleClassifier $classifier): View {
+        $articles = LexofficeArticle::query()->active()->orderBy('name')->get()
+            ->map(static fn(LexofficeArticle $article): array => [
+                'article' => $article,
+                'detected' => $classifier->detected($article),
+                'effective' => $classifier->isLicense($article),
+                'subscriptions' => 0,
+            ]);
+        $counts = ResaleSubscription::query()->whereNotNull('lexoffice_article_id')->selectRaw('lexoffice_article_id, COUNT(*) AS n')->groupBy('lexoffice_article_id')->pluck('n', 'lexoffice_article_id')->all();
+        $articles = $articles->map(static function (array $row) use ($counts): array {
+            $row['subscriptions'] = (int) ($counts[$row['article']->id] ?? 0);
+
+            return $row;
+        })->sortBy(static fn(array $row): string => ($row['effective'] ? '0' : '1') . mb_strtolower((string) $row['article']->name))->values();
+
+        return view('finance.resale.products', ['rows' => $articles, 'roles' => ResaleArticleRole::cases()]);
+    }
+
+    public function productsStore(Request $request): RedirectResponse {
+        $validated = $request->validate([
+            'article_id' => ['required', 'string'],
+            'role' => ['nullable', 'string', 'in:auto,license,excluded'],
+        ]);
+        $id = Sqid::decode(LexofficeArticle::class, (string) $validated['article_id']);
+        $article = $id === null ? null : LexofficeArticle::query()->find($id);
+        if ($article === null) {
+            return back()->with('error', __('resale.products.flash.missing'));
+        }
+        $role = ResaleArticleRole::tryFrom((string) ($validated['role'] ?? ''));
+        $article->forceFill(['resale_role' => $role])->save();
+
+        return redirect()->route('finance.resale.products')->with('success', __('resale.products.flash.saved', ['article' => $article->name, 'role' => $role?->label() ?? __('resale.products.role.auto')]));
     }
 
     public function draftCreate(ResaleInvoiceDraftService $drafts): View {

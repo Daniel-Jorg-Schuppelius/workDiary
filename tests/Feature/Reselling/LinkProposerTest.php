@@ -123,6 +123,60 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(2, ResalePeriodLink::query()->count());
     }
 
+    public function test_article_classification_override_controls_what_counts_as_a_licence_line(): void {
+        $admin = $this->orgAdmin();
+        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        // Dienstleistung mit Microsoft im Namen: die Erkennung hielte sie für ein Produkt.
+        $service = $this->article('art-pc', 'Microsoft Partner Center Verwaltung', '90.00');
+        $this->voucher('c-kl', 'RE/2025/0900', '2025-08-06', [
+            ['article' => $service, 'name' => 'Microsoft Partner Center Verwaltung', 'quantity' => 12, 'unit' => 'Monat', 'net' => '20.00'],
+        ]);
+        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
+        $this->assertTrue($classifier->isLicense($service), 'ohne Einstufung: Name trifft');
+
+        $this->actingAs($admin)->get(route('finance.resale.products'))->assertOk()->assertSee('Microsoft Partner Center Verwaltung');
+        $this->actingAs($admin)->post(route('finance.resale.products.store'), [
+            'article_id' => \App\Support\Sqid::encode(LexofficeArticle::class, $service->id),
+            'role' => 'excluded',
+        ])->assertRedirect(route('finance.resale.products'));
+        $this->assertFalse($classifier->isLicense($service->fresh()), 'Betreiber: nie Abo-Position');
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(0, $result['links'], 'ausgeschlossener Artikel wird nie zugeordnet');
+        $this->assertSame(0, $result['lines_without_subscription'], 'und zählt auch nicht als Lizenzposition ohne Abo');
+        $this->assertSame(PeriodStatus::Open, $subscription->periods()->first()?->status);
+
+        // Umgekehrt: Artikel ohne Microsoft im Namen als Abo-Produkt erzwingen.
+        $plain = $this->article('art-plain', 'Cloud-Arbeitsplatz Premium', '20.60');
+        $this->voucher('c-kl', 'RE/2025/0901', '2025-08-07', [['article' => $plain, 'name' => 'Cloud-Arbeitsplatz Premium', 'quantity' => 12, 'unit' => 'Monat', 'net' => '20.60']]);
+        $this->assertFalse($classifier->isLicense($plain));
+        $plain->forceFill(['resale_role' => \App\Enums\Reselling\ResaleArticleRole::License])->save();
+        $subscription->forceFill(['lexoffice_article_id' => $plain->id, 'label' => 'Cloud-Arbeitsplatz Premium'])->save();
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(1, $result['links']);
+        $this->assertSame(PeriodStatus::Billed, $subscription->periods()->first()?->fresh()?->status);
+    }
+
+    public function test_end_customer_in_closing_text_is_recognised_even_when_shortened(): void {
+        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
+        $haus = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Haus 24 GmbH', 'matchcode' => null]);
+        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik', 'matchcode' => 'STBK']);
+        $subHaus = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $haus->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-09-04']);
+        $subKaik = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-09-04']);
+
+        // Gleicher Tag, gleiches Produkt — nur der Schlusstext unterscheidet die Endkunden.
+        $this->voucher('c-lds', 'RE/2025/1116', '2025-09-04', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '12.13']], 'Rechnung Unsere Lieferungen/Leistungen stellen wir Ihnen wie folgt in Rechnung. Vielen Dank für die gute Zusammenarbeit. (M365 Haus24)');
+        $this->voucher('c-lds', 'RE/2025/1117', '2025-09-05', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '12.13']], 'Rechnung Vielen Dank für die gute Zusammenarbeit. M365 STBK');
+
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame('RE/2025/1116', $subHaus->periods()->first()?->links()->first()?->voucher_number, '„Haus24" trifft „Haus 24 GmbH" ohne Leerzeichen');
+        $this->assertSame('RE/2025/1117', $subKaik->periods()->first()?->links()->first()?->voucher_number, 'Matchcode STBK im Schlusstext');
+
+        $voucher = LexofficeVoucher::query()->where('voucher_number', 'RE/2025/1116')->firstOrFail();
+        $this->assertSame('M365 Haus24', $voucher->voucherTextHint());
+    }
+
     public function test_partner_invoice_lines_need_the_end_customer_name(): void {
         $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
@@ -175,8 +229,8 @@ class LinkProposerTest extends TestCase {
         $this->actingAs($admin)->post(route('finance.resale.periods.reopen', $p2026->sqid))->assertRedirect();
         $this->assertSame(PeriodStatus::Open, $p2026->fresh()?->status);
 
-        // Manueller Bezug für 2026 auf eine Rechnung ohne Artikelbezug
-        $voucher = $this->voucher('c-kl', 'RE/2026/0001', '2026-08-30', [['article' => null, 'name' => 'Lizenzen Microsoft', 'quantity' => 12, 'net' => '20.60']]);
+        // Manueller Bezug für 2026 auf eine Rechnung, die der Vorschlagslauf nicht kennt
+        $voucher = $this->voucher('c-kl', 'RE/2026/0001', '2026-08-30', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'description' => 'Nachberechnung', 'quantity' => 12, 'net' => '20.60']]);
         $line = $voucher->lines()->first();
         $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2026->sqid))->assertOk()->assertSee('RE/2026/0001');
         $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $p2026->sqid), ['line_id' => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line?->id), 'months' => 12])
@@ -193,7 +247,7 @@ class LinkProposerTest extends TestCase {
 
         // Abo-Seite listet die Rechnungen des Empfängers mit Schnellzuordnung je Position.
         $page = $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk();
-        $page->assertSee(__('resale.invoices.title'))->assertSee('RE/2026/0001')->assertSee('Lizenzen Microsoft');
+        $page->assertSee(__('resale.invoices.title'))->assertSee('RE/2026/0001')->assertSee('Nachberechnung');
         $this->actingAs($admin)->post(route('finance.resale.links.quick', $subscription->sqid), [
             'period_id' => $p2026->sqid,
             'line_id' => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line?->id),

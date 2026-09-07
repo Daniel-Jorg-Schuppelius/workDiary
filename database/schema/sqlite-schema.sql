@@ -544,6 +544,7 @@ CREATE TABLE IF NOT EXISTS "lexoffice_articles"(
   "external_version" integer,
   "is_dirty" tinyint(1) not null default '0',
   "last_pushed_at" datetime,
+  "resale_role" varchar,
   foreign key("organization_id") references "organizations"("id") on delete cascade
 );
 CREATE UNIQUE INDEX "lexoffice_articles_organization_id_external_id_unique" on "lexoffice_articles"(
@@ -19764,3 +19765,4 @@ INSERT INTO migrations VALUES(789,'2027_02_20_100300_create_lexoffice_voucher_li
 INSERT INTO migrations VALUES(790,'2027_02_20_100400_create_resale_period_links_table',8);
 INSERT INTO migrations VALUES(791,'2027_02_20_100500_drop_reselling_reconciliation_runs_table',9);
 INSERT INTO migrations VALUES(792,'2027_02_20_100600_create_resale_purchase_entries_table',10);
+INSERT INTO migrations VALUES(793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',11);

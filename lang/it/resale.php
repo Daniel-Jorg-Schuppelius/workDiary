@@ -377,6 +377,9 @@ return [
         ],
     ],
     'invoices' => [
+        'preview' => 'Vedi documento',
+        'open_lexoffice' => 'Apri in Lexoffice',
+        'other_lines' => ':count altra riga (non licenza)|:count altre righe (non licenze)',
         'title' => 'Fatture del destinatario',
         'subtitle' => 'Specchio documenti di :customer da 90 giorni prima dell’inizio — righe di licenza con assegnazione rapida',
         'hidden' => ':count riga senza attinenza alle licenze nascosta|:count righe senza attinenza alle licenze nascoste',
@@ -394,6 +397,28 @@ return [
         'title' => ':count riga di licenza senza abbonamento|:count righe di licenza senza abbonamento',
         'hint' => 'Righe di articoli Microsoft nello specchio non collegate a un periodo: abbonamento mancante, titolare errato o doppia fatturazione.',
         'text' => 'Testo documento',
+    ],
+    'products' => [
+        'title' => 'Classificazione prodotti',
+        'subtitle' => 'Quali articoli Lexoffice sono prodotti in abbonamento? Rilevato dal nome, modificabile per articolo',
+        'hint' => '«Mai riga di abbonamento» tiene i servizi con Microsoft nel nome (es. manutenzione Exchange) fuori da proposte, elenchi fatture e righe senza abbonamento. «Prodotto in abbonamento» forza il riconoscimento.',
+        'number' => 'Numero',
+        'unit' => 'Unità',
+        'price' => 'Prezzo',
+        'subscriptions' => 'Abbonamenti',
+        'detected' => 'Rilevato',
+        'override' => 'Classificazione',
+        'save' => 'Salva',
+        'empty' => 'Nessun articolo Lexoffice specchiato.',
+        'role' => [
+            'auto' => 'Automatico',
+            'license' => 'Prodotto in abbonamento',
+            'excluded' => 'Mai riga di abbonamento',
+        ],
+        'flash' => [
+            'saved' => '«:article»: :role.',
+            'missing' => 'Articolo non trovato.',
+        ],
     ],
     'period_status' => [
         'open' => 'Aperto',

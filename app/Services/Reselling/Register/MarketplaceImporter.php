@@ -307,7 +307,11 @@ final class MarketplaceImporter {
     private function matchArticle(string $edition, $articles): ?LexofficeArticle {
         $wanted = ProductNameMatcher::normalize($edition);
         $hits = [];
+        $classifier = new LicenseArticleClassifier($this->matcher);
         foreach ($articles as $article) {
+            if ($article->resale_role === \App\Enums\Reselling\ResaleArticleRole::Excluded) {
+                continue; // Betreiber: nie Abo-Position
+            }
             if (ProductNameMatcher::normalize((string) $article->name) === $wanted) {
                 return $article;
             }

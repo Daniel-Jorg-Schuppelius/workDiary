@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\{Customer, ExternalReference, LexofficeVoucherLine, Organization};
+use App\Models\{Customer, ExternalReference, ForeignCustomer, LexofficeVoucherLine, Organization};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProductNameMatcher};
@@ -46,7 +46,7 @@ final class LinkProposer {
      */
     public const SHARED_NEAREST_DAYS = 45;
 
-    public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher()) {}
+    public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier()) {}
 
     /**
      * @return array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}
@@ -192,7 +192,7 @@ final class LinkProposer {
         $windowStart = $period->starts_on->subDays(self::WINDOW_BEFORE);
         $windowEnd = $period->starts_on->addDays(self::WINDOW_AFTER);
         $product = $this->productKey($subscription);
-        $mentionTokens = $subscription->foreignCustomer !== null ? NameTokenMatcher::significantTokens($subscription->foreignCustomer->name) : [];
+        $mentionKeys = $subscription->foreignCustomer !== null ? $this->mentionKeys($subscription->foreignCustomer) : null;
 
         $candidates = [];
         foreach ($lines as $line) {
@@ -211,7 +211,7 @@ final class LinkProposer {
             if (! $this->matchesProduct($subscription, $line)) {
                 continue;
             }
-            $mentions = $mentionTokens !== [] && $this->mentions($mentionTokens, $line->text() . ' ' . (string) $line->voucher->voucher_text);
+            $mentions = $mentionKeys !== null && $this->mentions($mentionKeys, $line->text() . ' ' . (string) $line->voucher->voucher_text);
             $distance = abs($date->diffInDays($period->starts_on));
             if ($nearestOnly && ($nearest[$line->id] ?? null) !== $index) {
                 continue;
@@ -294,23 +294,66 @@ final class LinkProposer {
     }
 
     /**
-     * Nennt der Text den Endkunden? Alle Kern-Tokens des Namens (ohne Rechtsform
-     * und Füllwörter) kommen als Wörter vor, mindestens eines mit ≥ 4 Zeichen —
-     * „Klimpel Bäder GmbH" trifft „Lizenzen Klimpel Bäder", nicht „Bäder Berlin".
+     * Suchschlüssel eines Endkunden für die Nennung im Belegtext: Kern-Tokens
+     * des Namens, der Name ohne Leerzeichen („Haus 24" ↔ „Haus24") und der
+     * Matchcode des Fremdkunden. Der Reseller schreibt den Endkunden meist
+     * verkürzt in den Schlusstext („Vielen Dank … M365 Haus24").
      *
-     * @param  list<string>  $tokens
+     * @return array{tokens: list<string>, squashed: list<string>}
      */
-    private function mentions(array $tokens, string $text): bool {
-        $words = array_flip(explode(' ', MarketplaceCompany::normalizeName($text)));
-        $long = false;
-        foreach ($tokens as $token) {
-            if (! isset($words[$token])) {
-                return false;
+    private function mentionKeys(ForeignCustomer $foreign): array {
+        $squashed = [];
+        foreach ([$foreign->name, $foreign->company, $foreign->matchcode] as $candidate) {
+            $key = self::squash((string) $candidate);
+            if (mb_strlen($key) >= 4) {
+                $squashed[] = $key;
             }
-            $long = $long || mb_strlen($token) >= 4;
+        }
+        // Auch der Name ohne Rechtsform („Haus 24 GmbH" → „haus24").
+        $core = self::squash(implode(' ', NameTokenMatcher::significantTokens($foreign->name)));
+        if (mb_strlen($core) >= 4) {
+            $squashed[] = $core;
         }
 
-        return $long;
+        return ['tokens' => NameTokenMatcher::significantTokens($foreign->name), 'squashed' => array_values(array_unique($squashed))];
+    }
+
+    /**
+     * Nennt der Text den Endkunden? Alle Kern-Tokens des Namens als Wörter
+     * (mindestens eines mit ≥ 4 Zeichen) — oder die leerzeichenfreie Form von
+     * Name, Firma oder Matchcode als Teil des leerzeichenfreien Textes.
+     *
+     * @param  array{tokens: list<string>, squashed: list<string>}  $keys
+     */
+    private function mentions(array $keys, string $text): bool {
+        $words = array_flip(explode(' ', MarketplaceCompany::normalizeName($text)));
+        if ($keys['tokens'] !== []) {
+            $long = false;
+            $all = true;
+            foreach ($keys['tokens'] as $token) {
+                if (! isset($words[$token])) {
+                    $all = false;
+                    break;
+                }
+                $long = $long || mb_strlen($token) >= 4;
+            }
+            if ($all && $long) {
+                return true;
+            }
+        }
+        $flat = self::squash($text);
+        foreach ($keys['squashed'] as $key) {
+            if (str_contains($flat, $key)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /** Normalisiert und entfernt alles außer Buchstaben und Ziffern. */
+    private static function squash(string $value): string {
+        return str_replace(' ', '', MarketplaceCompany::normalizeName($value));
     }
 
     private function matchesProduct(ResaleSubscription $subscription, LexofficeVoucherLine $line): bool {
@@ -335,7 +378,7 @@ final class LinkProposer {
      * Texte) sind nie Lizenzen — der Artikel entscheidet, sonst nichts.
      */
     private function looksLikeLicense(LexofficeVoucherLine $line): bool {
-        return $line->article !== null && $this->matcher->looksLikeMicrosoftProduct($line->article->name);
+        return $this->classifier->isLicense($line->article);
     }
 
     private function productKey(ResaleSubscription $subscription): string {
@@ -396,7 +439,7 @@ final class LinkProposer {
             ->whereHas('voucher', static fn($q) => $q->whereIn('contact_external_id', $contactIds)
                 ->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided'])
                 ->where('voucher_date', '>=', DateRange::day($from))->where('voucher_date', '<', DateRange::dayAfter($to)))
-            ->with(['voucher:id,external_id,contact_external_id,voucher_number,voucher_date,voucher_text,recipient_name', 'article:id,name,unit_name'])
+            ->with(['voucher:id,external_id,contact_external_id,voucher_number,voucher_date,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
             ->orderBy('id')
             ->get();
     }

@@ -191,7 +191,13 @@
                             </tr>
                         </x-slot:head>
                         @forelse ($invoices['vouchers'] as $voucher)
-                            @foreach ($voucher->lines as $line)
+                            @php
+                                $licenseLines = $voucher->lines->filter(static fn($l) => (bool) $l->getAttribute('is_license'))->values();
+                                $otherLines = $voucher->lines->reject(static fn($l) => (bool) $l->getAttribute('is_license'))->values();
+                                $rows = $licenseLines->count() + ($otherLines->isNotEmpty() ? 1 : 0);
+                                $permalink = $voucher->lexofficePermalink();
+                            @endphp
+                            @foreach ($licenseLines as $line)
                                 @php
                                     $info = $invoices['linked'][$line->id] ?? null;
                                     // Lizenzmonate aus Menge und Einheit: „12 Monat" = 12, „1 Jahr" = 12.
@@ -201,12 +207,22 @@
                                 @endphp
                                 <tr @class(['opacity-60' => $remaining <= 0.001])>
                                     @if ($loop->first)
-                                        <td class="whitespace-nowrap align-top" rowspan="{{ $voucher->lines->count() }}">
+                                        <td class="whitespace-nowrap align-top" rowspan="{{ $rows }}">
                                             <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
                                             <span class="block text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }}</span>
-                                            @if ($voucher->voucher_text)
+                                            @if ($voucher->voucherTextHint() !== null)
+                                                <span class="badge badge-info badge-outline badge-sm mt-1" title="{{ $voucher->voucher_text }}">{{ $voucher->voucherTextHint() }}</span>
+                                            @elseif ($voucher->voucher_text)
                                                 <span class="block text-xs text-muted max-w-xs truncate" title="{{ $voucher->voucher_text }}">{{ \Illuminate\Support\Str::limit($voucher->voucher_text, 60) }}</span>
                                             @endif
+                                            <span class="flex gap-1 mt-1">
+                                                @can(\App\Enums\User\Permission::VoucherViewAny->value)
+                                                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $voucher)" :title="__('resale.invoices.preview')" />
+                                                @endcan
+                                                @if ($permalink !== null)
+                                                    <a href="{{ $permalink }}" target="_blank" rel="noopener" class="btn btn-ghost btn-xs" title="{{ __('resale.invoices.open_lexoffice') }}"><x-icon name="open_in_new" size="1rem" /></a>
+                                                @endif
+                                            </span>
                                         </td>
                                     @endif
                                     <td class="text-sm">
@@ -246,6 +262,23 @@
                                     </td>
                                 </tr>
                             @endforeach
+                            @if ($otherLines->isNotEmpty())
+                                <tr class="bg-base-200/40">
+                                    <td colspan="5" class="text-xs">
+                                        <details>
+                                            <summary class="cursor-pointer select-none text-muted">{{ trans_choice('resale.invoices.other_lines', $otherLines->count(), ['count' => $otherLines->count()]) }}</summary>
+                                            <ul class="mt-1 space-y-0.5">
+                                                @foreach ($otherLines as $other)
+                                                    <li class="flex justify-between gap-3">
+                                                        <span class="truncate" title="{{ $other->description }}">{{ $other->name }}</span>
+                                                        <span class="whitespace-nowrap tabular-nums text-muted">{{ $fmt((float) $other->quantity) }}{{ $other->unit_name ? ' ' . $other->unit_name : '' }} × {{ $other->unit_net->withScale(2)->format() }}</span>
+                                                    </li>
+                                                @endforeach
+                                            </ul>
+                                        </details>
+                                    </td>
+                                </tr>
+                            @endif
                         @empty
                             <x-table.empty :colspan="6" :title="$invoices['pending'] > 0 ? __('resale.invoices.empty_pending') : __('resale.invoices.empty')" compact />
                         @endforelse

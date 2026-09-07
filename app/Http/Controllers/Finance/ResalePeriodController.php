@@ -43,7 +43,7 @@ class ResalePeriodController extends Controller {
             'q' => trim((string) $request->query('q', '')),
         ];
         $query = ResalePeriod::query()
-            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links'])
+            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links.linkable'])
             ->where('starts_on', '<', DateRange::dayAfter($today))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
         if ($filters['status'] === 'problems') {
@@ -89,9 +89,9 @@ class ResalePeriodController extends Controller {
      * @return \Illuminate\Support\Collection<int, LexofficeVoucherLine>
      */
     private function unlinkedLicenseLines(): \Illuminate\Support\Collection {
-        $matcher = new \App\Services\Reselling\Marketplace\ProductNameMatcher;
-        $articleIds = \App\Models\LexofficeArticle::query()->active()->get(['id', 'name'])
-            ->filter(static fn(\App\Models\LexofficeArticle $a): bool => $matcher->looksLikeMicrosoftProduct((string) $a->name))
+        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
+        $articleIds = \App\Models\LexofficeArticle::query()->active()->get(['id', 'name', 'resale_role'])
+            ->filter(static fn(\App\Models\LexofficeArticle $a): bool => $classifier->isLicense($a))
             ->pluck('id')
             ->all();
         if ($articleIds === []) {

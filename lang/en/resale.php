@@ -377,6 +377,9 @@ return [
         ],
     ],
     'invoices' => [
+        'preview' => 'View voucher image',
+        'open_lexoffice' => 'Open in Lexoffice',
+        'other_lines' => ':count more line (not a licence)|:count more lines (not licences)',
         'title' => 'Invoices of the invoice recipient',
         'subtitle' => 'Voucher mirror of :customer from 90 days before the subscription start — licence lines with quick assignment',
         'hidden' => ':count line without licence relevance hidden|:count lines without licence relevance hidden',
@@ -394,6 +397,28 @@ return [
         'title' => ':count licence line without subscription|:count licence lines without subscription',
         'hint' => 'Microsoft article lines in the mirror not linked to any period: missing subscription in the register, wrong holder or double billing.',
         'text' => 'Voucher text',
+    ],
+    'products' => [
+        'title' => 'Product classification',
+        'subtitle' => 'Which Lexoffice articles are subscription products? Detected by name, overridable per article',
+        'hint' => '“Never a subscription line” keeps services with Microsoft in the name (e.g. Exchange maintenance) out of proposals, invoice lists and unlinked lines. “Subscription product” forces recognition for articles the name does not reveal.',
+        'number' => 'Number',
+        'unit' => 'Unit',
+        'price' => 'Price',
+        'subscriptions' => 'Subscriptions',
+        'detected' => 'Detected',
+        'override' => 'Classification',
+        'save' => 'Save',
+        'empty' => 'No Lexoffice articles mirrored.',
+        'role' => [
+            'auto' => 'Automatic',
+            'license' => 'Subscription product',
+            'excluded' => 'Never a subscription line',
+        ],
+        'flash' => [
+            'saved' => '“:article”: :role.',
+            'missing' => 'Article not found.',
+        ],
     ],
     'period_status' => [
         'open' => 'Open',

@@ -377,6 +377,9 @@ return [
         ],
     ],
     'invoices' => [
+        'preview' => 'Ver documento',
+        'open_lexoffice' => 'Abrir en Lexoffice',
+        'other_lines' => ':count línea más (sin licencia)|:count líneas más (sin licencia)',
         'title' => 'Facturas del destinatario',
         'subtitle' => 'Espejo de documentos de :customer desde 90 días antes del inicio — líneas de licencia con asignación rápida',
         'hidden' => ':count línea sin relación con licencias oculta|:count líneas sin relación con licencias ocultas',
@@ -394,6 +397,28 @@ return [
         'title' => ':count línea de licencia sin suscripción|:count líneas de licencia sin suscripción',
         'hint' => 'Líneas de artículos Microsoft del espejo sin vínculo a un periodo: suscripción ausente, titular erróneo o doble facturación.',
         'text' => 'Texto del documento',
+    ],
+    'products' => [
+        'title' => 'Clasificación de productos',
+        'subtitle' => '¿Qué artículos de Lexoffice son productos de suscripción? Detectado por nombre, ajustable por artículo',
+        'hint' => '«Nunca línea de suscripción» mantiene servicios con Microsoft en el nombre (p. ej. mantenimiento de Exchange) fuera de propuestas, listas de facturas y líneas sin suscripción. «Producto de suscripción» fuerza el reconocimiento.',
+        'number' => 'Número',
+        'unit' => 'Unidad',
+        'price' => 'Precio',
+        'subscriptions' => 'Suscripciones',
+        'detected' => 'Detectado',
+        'override' => 'Clasificación',
+        'save' => 'Guardar',
+        'empty' => 'No hay artículos de Lexoffice reflejados.',
+        'role' => [
+            'auto' => 'Automático',
+            'license' => 'Producto de suscripción',
+            'excluded' => 'Nunca línea de suscripción',
+        ],
+        'flash' => [
+            'saved' => '«:article»: :role.',
+            'missing' => 'Artículo no encontrado.',
+        ],
     ],
     'period_status' => [
         'open' => 'Abierto',
