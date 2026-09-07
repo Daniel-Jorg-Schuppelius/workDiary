@@ -19,7 +19,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveResaleSubscriptionRequest;
 use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle};
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResaleSubscription};
-use App\Services\Reselling\Register\{HolderResolver, MarketplaceImporter, PeriodPlanner};
+use App\Services\Reselling\Register\{HolderResolver, LinkProposer, MarketplaceImporter, PeriodPlanner};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
@@ -102,13 +102,71 @@ class ResaleSubscriptionController extends Controller {
         ]);
     }
 
-    public function show(ResaleSubscription $subscription): View {
+    public function show(ResaleSubscription $subscription, LinkProposer $proposer): View {
         $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'successor', 'predecessors', 'periods.decidedBy', 'periods.links', 'creator']);
 
         return view('finance.resale.show', [
             'subscription' => $subscription,
             'today' => CarbonImmutable::today(),
+            'invoices' => $this->recipientInvoices($subscription, $proposer),
         ]);
+    }
+
+    /**
+     * Rechnungen des Rechnungsempfängers aus dem Belegspiegel im Zeitraum des
+     * Abos (ab 90 Tage vor Beginn), mit Positionen, deren bereits zugeordneten
+     * Lizenzmonaten und der Zahl der noch nicht gespiegelten Rechnungen.
+     *
+     * @return array{contacts: list<string>, vouchers: \Illuminate\Support\Collection<int, \App\Models\LexofficeVoucher>, linked: array<int, array{months: float, periods: list<string>}>, pending: int, hidden: int}
+     */
+    private function recipientInvoices(ResaleSubscription $subscription, LinkProposer $proposer): array {
+        $contacts = $subscription->is_own_holding ? [] : $proposer->contactsFor($subscription);
+        $empty = ['contacts' => $contacts, 'vouchers' => collect(), 'linked' => [], 'pending' => 0, 'hidden' => 0];
+        if ($contacts === []) {
+            return $empty;
+        }
+        $from = $subscription->starts_on->subDays(LinkProposer::WINDOW_BEFORE);
+        $base = \App\Models\LexofficeVoucher::query()
+            ->whereIn('contact_external_id', $contacts)
+            ->where('voucher_type', 'invoice')
+            ->where('archived', false)
+            ->whereNotIn('voucher_status', ['draft', 'voided'])
+            ->where('voucher_date', '>=', \App\Support\Query\DateRange::day($from));
+        $pending = (clone $base)->whereNull('lines_synced_at')->count();
+        $vouchers = (clone $base)->whereNotNull('lines_synced_at')->with(['lines.article:id,name'])->orderByDesc('voucher_date')->limit(150)->get();
+
+        // Nur Lizenzpositionen zeigen; eigene Leistungen zählen, nicht listen.
+        $matcher = new \App\Services\Reselling\Marketplace\ProductNameMatcher;
+        $hidden = 0;
+        foreach ($vouchers as $voucher) {
+            $kept = $voucher->lines->filter(static function (\App\Models\LexofficeVoucherLine $line) use ($matcher): bool {
+                $text = $line->article !== null ? $line->article->name : $line->text();
+
+                return $matcher->looksLikeMicrosoftProduct($text);
+            });
+            $hidden += $voucher->lines->count() - $kept->count();
+            $voucher->setRelation('lines', $kept->values());
+        }
+        $vouchers = $vouchers->filter(static fn(\App\Models\LexofficeVoucher $v): bool => $v->lines->isNotEmpty())->values();
+
+        $linked = [];
+        $lineIds = $vouchers->flatMap(static fn(\App\Models\LexofficeVoucher $v) => $v->lines->pluck('id'))->all();
+        if ($lineIds !== []) {
+            $links = \App\Models\Reselling\ResalePeriodLink::query()
+                ->where('linkable_type', (new \App\Models\LexofficeVoucherLine)->getMorphClass())
+                ->whereIn('linkable_id', $lineIds)
+                ->with(['period:id,starts_on,ends_on', 'subscription:id,label'])
+                ->get();
+            foreach ($links as $link) {
+                $id = (int) $link->linkable_id;
+                $linked[$id] ??= ['months' => 0.0, 'periods' => []];
+                $linked[$id]['months'] += (float) $link->months;
+                $other = $link->subscription_id === $subscription->id || $link->subscription === null ? '' : $link->subscription->label . ' · ';
+                $linked[$id]['periods'][] = $other . $link->period->label();
+            }
+        }
+
+        return ['contacts' => $contacts, 'vouchers' => $vouchers, 'linked' => $linked, 'pending' => $pending, 'hidden' => $hidden];
     }
 
     public function create(Request $request): View {

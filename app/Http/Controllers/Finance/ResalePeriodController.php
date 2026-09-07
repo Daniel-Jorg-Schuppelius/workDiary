@@ -16,7 +16,7 @@ use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{Customer, LexofficeVoucherLine};
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Services\Reselling\Register\LinkProposer;
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
@@ -160,7 +160,33 @@ class ResalePeriodController extends Controller {
         if ($line === null) {
             return back()->withErrors(['line_id' => __('resale.link.error.line_missing')]);
         }
-        $months = (float) $validated['months'];
+        $link = $this->attach($period, $line, (float) $validated['months'], $validated['note'] ?? null, $request->user()?->id);
+
+        return redirect()->route('finance.resale.show', $period->subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
+    }
+
+    /**
+     * Schnellzuordnung aus der Rechnungsliste des Abos: Position → gewählte Periode.
+     */
+    public function quickLink(Request $request, ResaleSubscription $subscription): RedirectResponse {
+        $validated = $request->validate([
+            'period_id' => ['required', 'string'],
+            'line_id' => ['required', 'string'],
+            'months' => ['required', 'numeric', 'min:0.01', 'max:100000'],
+        ]);
+        $periodId = Sqid::decode(ResalePeriod::class, (string) $validated['period_id']);
+        $period = $periodId === null ? null : $subscription->periods()->whereKey($periodId)->first();
+        $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $validated['line_id']);
+        $line = $lineId === null ? null : LexofficeVoucherLine::query()->with('voucher')->find($lineId);
+        if ($period === null || $line === null) {
+            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.link.error.line_missing'));
+        }
+        $link = $this->attach($period, $line, (float) $validated['months'], null, $request->user()?->id);
+
+        return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
+    }
+
+    private function attach(ResalePeriod $period, LexofficeVoucherLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
         $termMonths = $period->termMonths();
         $link = ResalePeriodLink::query()->updateOrCreate(
             ['period_id' => $period->id, 'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id],
@@ -174,15 +200,15 @@ class ResalePeriodController extends Controller {
                 'amount' => $line->unit_net->times($this->unitsFor($line, $months, $termMonths))->withScale(2),
                 'currency' => $line->currency->value,
                 'origin' => LinkOrigin::Manual,
-                'note' => $validated['note'] ?? null,
-                'created_by_user_id' => $request->user()?->id,
+                'note' => $note,
+                'created_by_user_id' => $userId,
                 'confirmed_at' => now(),
             ],
         );
         $period->unsetRelation('links');
-        $this->settle($period, $request->user()?->id, null);
+        $this->settle($period, $userId, null);
 
-        return redirect()->route('finance.resale.show', $period->subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
+        return $link;
     }
 
     public function linkDestroy(ResalePeriodLink $link): RedirectResponse {

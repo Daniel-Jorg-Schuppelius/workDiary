@@ -190,6 +190,17 @@ class LinkProposerTest extends TestCase {
         $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk()->assertSee('RE/2026/0001');
         $this->actingAs($admin)->delete(route('finance.resale.links.destroy', $link?->sqid))->assertRedirect();
         $this->assertSame(PeriodStatus::Open, $p2026->fresh()?->status);
+
+        // Abo-Seite listet die Rechnungen des Empfängers mit Schnellzuordnung je Position.
+        $page = $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk();
+        $page->assertSee(__('resale.invoices.title'))->assertSee('RE/2026/0001')->assertSee('Lizenzen Microsoft');
+        $this->actingAs($admin)->post(route('finance.resale.links.quick', $subscription->sqid), [
+            'period_id' => $p2026->sqid,
+            'line_id' => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line?->id),
+            'months' => 12,
+        ])->assertRedirect(route('finance.resale.show', $subscription->sqid))->assertSessionHas('success');
+        $this->assertSame(PeriodStatus::Billed, $p2026->fresh()?->status);
+        $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk()->assertSee('12 ' . __('resale.link.months_short'));
         $this->actingAs($this->orgUser())->post(route('finance.resale.periods.propose'))->assertForbidden();
     }
 }

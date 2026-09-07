@@ -2487,6 +2487,7 @@ Route::middleware('auth')->group(function () {
                 Route::get('perioden/{period}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkCreate'])->name('periods.link.create');
                 Route::post('perioden/{period}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkStore'])->name('periods.link.store');
                 Route::delete('bezuege/{link}', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'linkDestroy'])->name('links.destroy');
+                Route::post('{subscription}/bezug', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'quickLink'])->name('links.quick');
             });
             Route::get('perioden', [\App\Http\Controllers\Finance\ResalePeriodController::class, 'index'])->name('periods.index')->middleware('can:reselling.view');
             Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
