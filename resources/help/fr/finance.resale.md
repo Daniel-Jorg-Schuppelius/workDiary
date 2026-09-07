@@ -65,5 +65,10 @@ la solution est « Détenteur → client » : l’abonnement passe à ce client 
 la proposition s’applique aussitôt. Les factures **annulées** près du début
 de période expliquent une période vide. Les abonnements de la **boîte de
 réception** dont la société apparaît dans les textes de facture attendent
-leur détenteur. Le rattachement peut viser une période d’un autre
-abonnement du même destinataire — jamais une période d’un autre client.
+leur détenteur. Une ligne libre qui ne touche plus aucune période de son
+produit signale un contrat absent du registre (l’export fournisseur ne le
+connaît pas) : la ligne produit indique « Ligne sans abonnement à partir
+du … » et « Créer l’abonnement depuis la ligne » ouvre le dialogue avec
+article, quantité, début et prix issus de la facture. Le rattachement peut
+viser une période d’un autre abonnement du même destinataire — jamais une
+période d’un autre client.

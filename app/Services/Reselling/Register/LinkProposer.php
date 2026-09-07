@@ -47,6 +47,12 @@ final class LinkProposer {
      */
     public const SHARED_NEAREST_DAYS = 45;
 
+    /** @var array<int, array<int, true>> Position → Abos, an die sie in diesem Lauf schon hängt (Mehrjahres-Positionen bleiben beim Abo). */
+    private array $linkedSubscriptions = [];
+
+    /** @var array<int, array<int, ResalePeriodLink>> Periode → Position → Vorschlag dieses Laufs (zweiter Pass erhöht statt zu doppeln). */
+    private array $proposed = [];
+
     public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier()) {}
 
     /**
@@ -122,9 +128,12 @@ final class LinkProposer {
             foreach ($lines as $line) {
                 $remaining[$line->id] = LicenseMonths::ofLine($line);
             }
-            foreach (ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->get(['linkable_id', 'months']) as $existing) {
+            $this->linkedSubscriptions = [];
+            $this->proposed = [];
+            foreach (ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->get(['linkable_id', 'subscription_id', 'months']) as $existing) {
                 if (isset($remaining[(int) $existing->linkable_id])) {
                     $remaining[(int) $existing->linkable_id] = max(0.0, $remaining[(int) $existing->linkable_id] - (float) $existing->months);
+                    $this->linkedSubscriptions[(int) $existing->linkable_id][(int) $existing->subscription_id] = true;
                 }
             }
 
@@ -205,7 +214,7 @@ final class LinkProposer {
             if ($date === null) {
                 continue;
             }
-            if ($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) {
+            if (($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) && ! LicenseMonths::serviceCovers($line, $period->starts_on)) {
                 continue;
             }
             if (! $this->matchesProduct($subscription, $line)) {
@@ -221,9 +230,13 @@ final class LinkProposer {
             if (($productOwners[$contact][$product] ?? 1) > 1 && ! $mentions && (! $nearestOnly || $distance > self::SHARED_NEAREST_DAYS)) {
                 continue;
             }
-            $candidates[] = ['line' => $line, 'mentions' => $mentions ? 0 : 1, 'distance' => $distance];
+            // Eine Position, die schon an einer anderen Periode DIESES Abos hängt
+            // („24 Monat" = eine Lizenz über zwei Jahre), bleibt beim Abo.
+            // Umgekehrt: eine Position, die schon an einem ANDEREN Abo hängt, kommt erst nach den freien.
+            $continuity = isset($this->linkedSubscriptions[$line->id][$subscription->id]) ? 0 : (isset($this->linkedSubscriptions[$line->id]) ? 2 : 1);
+            $candidates[] = ['line' => $line, 'mentions' => $mentions ? 0 : 1, 'continuity' => $continuity, 'distance' => $distance];
         }
-        usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->id <=> $b['line']->id);
+        usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['continuity'] <=> $b['continuity'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->id <=> $b['line']->id);
 
         $termMonths = $period->termMonths();
         foreach ($candidates as $candidate) {
@@ -232,26 +245,45 @@ final class LinkProposer {
             }
             /** @var LexofficeVoucherLine $line */
             $line = $candidate['line'];
-            $take = min($state['needed'], $remaining[$line->id]);
-            $units = LicenseMonths::unitsFor($line, $take, $termMonths);
-            ResalePeriodLink::query()->create([
-                'organization_id' => $period->organization_id,
-                'period_id' => $period->id,
-                'subscription_id' => $subscription->id,
-                'linkable_type' => $line->getMorphClass(),
-                'linkable_id' => $line->id,
-                'voucher_number' => $line->voucher->voucher_number,
-                'voucher_date' => $line->voucher->voucher_date,
-                'quantity' => round($take / $termMonths, 3),
-                'months' => round($take, 2),
+            // Je Periode höchstens Lizenzen × Periodenlänge, wenn die Lizenzzahl sicher ist
+            // („5 Jahr", Leistungszeitraum): eine Lizenz über zwei Jahre deckt zwölf Monate
+            // dieser Periode, der Rest gehört der Folgeperiode. „24 Monat" ohne Zeitraum
+            // bleibt offen — zwei Lizenzen für ein Jahr sind ebenso möglich.
+            $existing = $this->proposed[$period->id][$line->id] ?? null;
+            $cap = LicenseMonths::isLicenceCountCertain($line)
+                ? LicenseMonths::split($line)['licences'] * $termMonths - ($existing === null ? 0.0 : (float) $existing->months)
+                : PHP_FLOAT_MAX;
+            $take = min($state['needed'], $remaining[$line->id], $cap);
+            if ($take <= 0.001) {
+                continue;
+            }
+            $months = $take + ($existing === null ? 0.0 : (float) $existing->months);
+            $units = LicenseMonths::unitsFor($line, $months, $termMonths);
+            $attributes = [
+                'quantity' => round($months / $termMonths, 3),
+                'months' => round($months, 2),
                 'amount' => $line->unit_net->times($units)->withScale(2),
-                'currency' => $line->currency->value,
-                'origin' => LinkOrigin::Proposed,
-            ]);
+            ];
+            if ($existing !== null) {
+                $existing->forceFill($attributes)->save();
+            } else {
+                $this->proposed[$period->id][$line->id] = ResalePeriodLink::query()->create($attributes + [
+                    'organization_id' => $period->organization_id,
+                    'period_id' => $period->id,
+                    'subscription_id' => $subscription->id,
+                    'linkable_type' => $line->getMorphClass(),
+                    'linkable_id' => $line->id,
+                    'voucher_number' => $line->voucher->voucher_number,
+                    'voucher_date' => $line->voucher->voucher_date,
+                    'currency' => $line->currency->value,
+                    'origin' => LinkOrigin::Proposed,
+                ]);
+                $result['links']++;
+            }
             $remaining[$line->id] -= $take;
             $state['needed'] -= $take;
             $state['covered'] += $take;
-            $result['links']++;
+            $this->linkedSubscriptions[$line->id][$subscription->id] = true;
         }
 
         return $state;

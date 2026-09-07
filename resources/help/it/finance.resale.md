@@ -63,6 +63,10 @@ partner; riconosciuto da una parte di nome comune) — la soluzione è
 «Titolare → cliente»: l’abbonamento passa a quel cliente e la proposta si
 applica subito. Le fatture **stornate** vicino all’inizio periodo spiegano
 un periodo vuoto. Gli abbonamenti della **posta in arrivo** la cui azienda
-compare nei testi fattura attendono il titolare. L’assegnazione può colpire
-un periodo di un altro abbonamento dello stesso destinatario — mai un
-periodo di un altro cliente.
+compare nei testi fattura attendono il titolare. Una riga libera che non
+tocca più alcun periodo del suo prodotto segnala un contratto assente nel
+registro (l’export del fornitore non lo conosce): la riga prodotto dice
+«Riga senza abbonamento dal …» e «Crea abbonamento dalla riga» apre il
+dialogo con articolo, quantità, inizio e prezzo presi dalla fattura.
+L’assegnazione può colpire un periodo di un altro abbonamento dello stesso
+destinatario — mai un periodo di un altro cliente.

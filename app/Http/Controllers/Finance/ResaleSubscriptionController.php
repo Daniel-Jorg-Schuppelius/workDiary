@@ -17,7 +17,7 @@ use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, Subscripti
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveResaleSubscriptionRequest;
-use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle};
+use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle, LexofficeVoucherLine};
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResaleSubscription};
 use App\Services\Reselling\Register\{HolderResolver, LinkProposer, MarketplaceImporter, PeriodPlanner};
 use App\Support\Sqid;
@@ -160,13 +160,14 @@ class ResaleSubscriptionController extends Controller {
             $links = \App\Models\Reselling\ResalePeriodLink::query()
                 ->where('linkable_type', (new \App\Models\LexofficeVoucherLine)->getMorphClass())
                 ->whereIn('linkable_id', $lineIds)
-                ->with(['period:id,starts_on,ends_on', 'subscription:id,label'])
+                ->with(['period:id,starts_on,ends_on', 'subscription:id,label,quantity,provider,starts_on'])
                 ->get();
             foreach ($links as $link) {
                 $id = (int) $link->linkable_id;
                 $linked[$id] ??= ['months' => 0.0, 'periods' => []];
                 $linked[$id]['months'] += (float) $link->months;
-                $other = $link->subscription_id === $subscription->id || $link->subscription === null ? '' : $link->subscription->label . ' · ';
+                // Anderes Abo desselben Empfängers: Kennung mit Menge und Start, damit gleichnamige Verträge unterscheidbar sind.
+                $other = $link->subscription_id === $subscription->id || $link->subscription === null ? '' : $link->subscription->label . ' ' . $link->subscription->identityLabel() . ' · ';
                 $linked[$id]['periods'][] = $other . $link->period->label();
             }
         }
@@ -177,12 +178,31 @@ class ResaleSubscriptionController extends Controller {
     public function create(Request $request): View {
         $customerId = Sqid::decode(Customer::class, (string) $request->query('customer', ''));
         $foreignId = Sqid::decode(ForeignCustomer::class, (string) $request->query('foreign', ''));
-
-        return $this->dialog(null, [
+        $prefill = [
             'holder' => $foreignId !== null ? 'foreign' : ($customerId !== null ? 'customer' : 'none'),
             'customer_id' => $customerId,
             'foreign_customer_id' => $foreignId,
-        ]);
+        ];
+        // „Abo aus Rechnungsposition anlegen" (Abgleich): Position liefert Produkt, Menge, Beginn und Preis.
+        $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $request->query('line', ''));
+        $line = $lineId === null ? null : LexofficeVoucherLine::query()->with(['voucher', 'article'])->find($lineId);
+        if ($line !== null) {
+            $split = \App\Services\Reselling\Register\LicenseMonths::split($line);
+            $start = \App\Services\Reselling\Register\LicenseMonths::referenceDate($line);
+            $perLicenceYear = \App\Services\Reselling\Register\LicenseMonths::isMonthly($line) ? $line->unit_net->times(12) : $line->unit_net;
+            $prefill += [
+                'label' => $line->article !== null ? $line->article->name : $line->name,
+                'lexoffice_article_id' => $line->lexoffice_article_id,
+                'quantity' => (int) round($split['licences']),
+                'starts_on' => $start?->toDateString(),
+                'provider' => (string) $request->query('provider', SubscriptionProvider::Manual->value),
+                'sale_unit_price' => $perLicenceYear->withScale(2)->getAmount(),
+                // Laufzeit nur aus der Position, wenn die Lizenzzahl sicher ist („24 Monat" allein kann 2 × 12 sein).
+                'term_months' => \App\Services\Reselling\Register\LicenseMonths::isLicenceCountCertain($line) && (int) round($split['months']) > 0 ? (int) round($split['months']) : 12,
+            ];
+        }
+
+        return $this->dialog(null, $prefill);
     }
 
     public function store(SaveResaleSubscriptionRequest $request, PeriodPlanner $planner): RedirectResponse {

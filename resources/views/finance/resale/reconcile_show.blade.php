@@ -107,16 +107,20 @@
                         <td class="text-right tabular-nums">{{ $fmt($product['invoiced']) }}</td>
                         <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $product['free'] > 0.001])>{{ $fmt($product['free']) }}</span></td>
                         <td class="text-sm">
+                            @php $lm = static fn(float $v): string => \App\Services\Reselling\Register\LicenseMonths::label($v, (float) $product['term']); @endphp
                             @if ($product['missing'] > 0.001)
-                                <x-status-badge size="xs" tone="error" :label="__('resale.reconcile.verdict.missing', ['months' => $fmt($product['missing'])])" />
+                                <x-status-badge size="xs" tone="error" :label="__('resale.reconcile.verdict.missing', ['amount' => $lm($product['missing'])])" />
                             @elseif ($openMonths > 0.001)
-                                <x-status-badge size="xs" tone="warning" :label="__('resale.reconcile.verdict.unassigned', ['months' => $fmt($openMonths)])" />
+                                <x-status-badge size="xs" tone="warning" :label="__('resale.reconcile.verdict.unassigned', ['amount' => $lm($openMonths)])" />
                             @endif
                             @if ($product['surplus'] > 0.001)
-                                <x-status-badge size="xs" tone="info" :label="__('resale.reconcile.verdict.surplus', ['months' => $fmt($product['surplus'])])" />
+                                <x-status-badge size="xs" tone="info" :label="__('resale.reconcile.verdict.surplus', ['amount' => $lm($product['surplus'])])" />
                             @endif
                             @if ($product['missing'] <= 0.001 && $openMonths <= 0.001 && $product['surplus'] <= 0.001)
                                 <x-status-badge size="xs" tone="success" :label="__('resale.reconcile.verdict.balanced')" />
+                            @endif
+                            @if ($product['gap_since'] !== null)
+                                <span class="block text-xs text-warning mt-0.5">{{ __('resale.reconcile.verdict.gap_since', ['date' => $product['gap_since']->format('d.m.Y')]) }}</span>
                             @endif
                         </td>
                     </tr>
@@ -148,8 +152,7 @@
                         </div>
                         <div class="flex items-center gap-2">
                             <span class="text-sm tabular-nums whitespace-nowrap" title="{{ __('resale.reconcile.periods.need', ['licences' => $period->quantity, 'months' => $period->termMonths()]) }}">
-                                <span @class(['text-error font-medium' => $row['covered'] <= 0.001, 'text-warning font-medium' => $row['covered'] > 0.001])>{{ $fmt($row['covered']) }} / {{ $fmt($row['required']) }}</span>
-                                <span class="text-xs text-muted">{{ __('resale.link.months') }} ({{ $period->quantity }} × {{ $period->termMonths() }})</span>
+                                <span @class(['text-error font-medium' => $row['covered'] <= 0.001, 'text-warning font-medium' => $row['covered'] > 0.001])>{{ __('resale.link.licences_of', ['covered' => $fmt($row['covered'] / max(1, $period->termMonths())), 'quantity' => $period->quantity, 'months' => $period->termMonths()]) }}</span>
                             </span>
                             <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
                             @if ($canManage)
@@ -158,7 +161,7 @@
                         </div>
                     </div>
                     @if ($row['candidates'] === [] && $row['taken'] === [] && $row['foreign'] === [] && $row['voided'] === [])
-                        <p class="mt-2 text-xs text-error">{{ __('resale.reconcile.periods.none', ['months' => $fmt($row['needed'])]) }}</p>
+                        <p class="mt-2 text-xs text-error">{{ __('resale.reconcile.periods.none', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['needed'], (float) $period->termMonths())]) }}</p>
                     @else
                         <ul class="mt-2 space-y-1">
                             @foreach (array_slice($row['foreign'], 0, 4) as $candidate)
@@ -200,7 +203,7 @@
                                         <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->format('d.m.Y') }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
                                         <span>{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }} × {{ $line->unit_net->withScale(2)->format() }}</span>
                                         <span class="text-xs text-muted tabular-nums">= {{ $derive($candidate['row']) }}</span>
-                                        <span class="text-success text-xs">{{ __('resale.invoices.remaining', ['months' => $fmt($candidate['row']['free'])]) }}</span>
+                                        <span class="text-success text-xs">{{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($candidate['row']['free'], $candidate['row']['per_licence'])]) }}</span>
                                         @if ($voucher->voucherTextHint() !== null)
                                             <span class="badge badge-info badge-outline badge-xs" title="{{ $voucher->voucher_text }}">{{ $voucher->voucherTextHint() }}</span>
                                         @endif
@@ -213,8 +216,9 @@
                                             @csrf
                                             <input type="hidden" name="period_id" value="{{ $period->sqid }}">
                                             <input type="hidden" name="line_id" value="{{ $lineSqid($line) }}">
-                                            <input type="number" name="months" step="0.01" min="0.01" value="{{ number_format(min($row['needed'], $candidate['row']['free']), 2, '.', '') }}"
-                                                   class="input input-xs input-bordered w-20 text-right" aria-label="{{ __('resale.link.months_field') }}">
+                                            <input type="hidden" name="per_licence" value="{{ number_format($candidate['row']['per_licence'], 2, '.', '') }}">
+                                            <input type="number" name="licences" step="0.01" min="0.01" value="{{ number_format(min($row['needed'], $candidate['row']['free']) / max(0.01, $candidate['row']['per_licence']), 2, '.', '') }}"
+                                                   class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.licences_field') }}" title="{{ __('resale.link.licences_field') }} × {{ $fmt($candidate['row']['per_licence']) }} {{ __('resale.link.months_short') }}">
                                             <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" show-label>{{ __('resale.link.action.link') }}</x-icon-btn>
                                         </form>
                                     @endif
@@ -243,7 +247,7 @@
                             @endforeach
                         </ul>
                         @if ($row['candidates'] === [] && $row['foreign'] === [])
-                            <p class="mt-1 text-xs text-error">{{ __('resale.reconcile.periods.all_taken', ['months' => $fmt($row['needed'])]) }}</p>
+                            <p class="mt-1 text-xs text-error">{{ __('resale.reconcile.periods.all_taken', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['needed'], (float) $period->termMonths())]) }}</p>
                         @endif
                     @endif
                 </div>
@@ -291,34 +295,41 @@
                         <td class="text-right tabular-nums whitespace-nowrap">{{ $derive($lineRow) }}</td>
                         <td class="text-xs">
                             @if ($lineRow['linked'] > 0.001)
-                                <span class="text-success">{{ $fmt($lineRow['linked']) }} {{ __('resale.link.months_short') }}</span>
+                                <span class="text-success">{{ \App\Services\Reselling\Register\LicenseMonths::label($lineRow['linked'], $lineRow['per_licence']) }}</span>
                                 <span class="block text-muted">{{ implode(' · ', array_unique($lineRow['periods'])) }}</span>
                             @endif
                             @if ($lineRow['free'] > 0.001)
-                                <span class="block text-warning">{{ __('resale.invoices.remaining', ['months' => $fmt($lineRow['free'])]) }}</span>
+                                <span class="block text-warning">{{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($lineRow['free'], $lineRow['per_licence'])]) }}</span>
                             @endif
                         </td>
                         <td class="text-right">
+                            @if ($canManage && $lineRow['gap'])
+                                {{-- Keine Periode dieses Produkts um das Bezugsdatum: das Abo fehlt im Register (z. B. nicht im Anbieter-Export). --}}
+                                <x-icon-btn icon="add" size="xs" tone="warning" data-entry-modal-trigger
+                                            :href="route('finance.resale.create', ['customer' => $customer->sqid, 'line' => $lineSqid($line)])"
+                                            show-label>{{ __('resale.reconcile.action.create_from_line') }}</x-icon-btn>
+                            @endif
                             @if ($canManage && $lineRow['free'] > 0.001 && $openPeriodRows !== [])
-                                <form method="POST" action="{{ route('finance.resale.reconcile.assign', $customer) }}" class="flex items-center justify-end gap-1">
+                                <form method="POST" action="{{ route('finance.resale.reconcile.assign', $customer) }}" class="flex items-center justify-end gap-1 mt-1">
                                     @csrf
                                     <input type="hidden" name="line_id" value="{{ $lineSqid($line) }}">
                                     <select name="period_id" class="select select-xs select-bordered w-64" aria-label="{{ __('resale.field.period') }}">
                                         @foreach ($sameProduct !== [] ? $sameProduct : $openPeriodRows as $target)
-                                            <option value="{{ $target['period']->sqid }}" @selected($loop->first)>{{ $target['subscription']->label }} · {{ $target['period']->label() }} ({{ $fmt($target['needed']) }} {{ __('resale.link.months_short') }})</option>
+                                            <option value="{{ $target['period']->sqid }}" @selected($loop->first)>{{ $target['subscription']->label }} · {{ $target['period']->label() }} ({{ \App\Services\Reselling\Register\LicenseMonths::label($target['needed'], (float) $target['period']->termMonths()) }})</option>
                                         @endforeach
                                         @if ($sameProduct !== [] && count($sameProduct) < count($openPeriodRows))
                                             <optgroup label="{{ __('resale.reconcile.lines.other_products') }}">
                                                 @foreach ($openPeriodRows as $target)
                                                     @if ($target['product'] !== $lineRow['product'])
-                                                        <option value="{{ $target['period']->sqid }}">{{ $target['subscription']->label }} · {{ $target['period']->label() }} ({{ $fmt($target['needed']) }} {{ __('resale.link.months_short') }})</option>
+                                                        <option value="{{ $target['period']->sqid }}">{{ $target['subscription']->label }} · {{ $target['period']->label() }} ({{ \App\Services\Reselling\Register\LicenseMonths::label($target['needed'], (float) $target['period']->termMonths()) }})</option>
                                                     @endif
                                                 @endforeach
                                             </optgroup>
                                         @endif
                                     </select>
-                                    <input type="number" name="months" step="0.01" min="0.01" value="{{ number_format(min($lineRow['free'], ($sameProduct[0] ?? $openPeriodRows[0])['needed']), 2, '.', '') }}"
-                                           class="input input-xs input-bordered w-20 text-right" aria-label="{{ __('resale.link.months_field') }}">
+                                    <input type="hidden" name="per_licence" value="{{ number_format($lineRow['per_licence'], 2, '.', '') }}">
+                                    <input type="number" name="licences" step="0.01" min="0.01" value="{{ number_format(min($lineRow['free'], ($sameProduct[0] ?? $openPeriodRows[0])['needed']) / max(0.01, $lineRow['per_licence']), 2, '.', '') }}"
+                                           class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.licences_field') }}" title="{{ __('resale.link.licences_field') }} × {{ $fmt($lineRow['per_licence']) }} {{ __('resale.link.months_short') }}">
                                     <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" :title="__('resale.link.action.link')" />
                                 </form>
                             @endif

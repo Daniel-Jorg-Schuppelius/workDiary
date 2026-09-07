@@ -122,15 +122,16 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame($five->id, $first['subscription']->id);
         $this->assertSame([], $first['candidates']);
         $this->assertSame(['RE/2024/0630', 'RE/2025/0830'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucher->voucher_number, $first['taken']), 'im Fenster der Periode, nächste zuerst');
-        $this->assertStringContainsString('EcoTec Service GmbH · 10.04.2024 – 09.04.2025', $first['taken'][0]['row']['periods'][0]);
+        $this->assertStringContainsString('EcoTec Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025', $first['taken'][0]['row']['periods'][0]);
 
         $admin = $this->orgAdmin();
         $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))
             ->assertOk()
-            ->assertSee('120 Lizenzmonate nie abgerechnet')
-            ->assertSee('12 Lizenzmonate ohne Periode')
+            ->assertSee('0 / 5 Lizenzen · 12 Mon.')
+            ->assertSee('10 × 12 Mon. nie abgerechnet')
+            ->assertSee('1 × 12 Mon. ohne Periode')
             ->assertSee('RE/2024/0630')
-            ->assertSee('vergeben an EcoTec Service GmbH · 10.04.2024 – 09.04.2025');
+            ->assertSee('vergeben an EcoTec Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025');
     }
 
     public function test_overview_lists_recipients_with_problems_first_and_contacts_without_customer(): void {
@@ -184,8 +185,9 @@ class RecipientReconcilerTest extends TestCase {
         $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
             'period_id' => $periodKaik->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',
         ])->assertRedirect(route('finance.resale.reconcile.show', $partner));
+        // Formular denkt in Lizenzen: 1 Lizenz × 12 Monate je Lizenz = 12 Lizenzmonate.
         $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
-            'period_id' => $periodHaus->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineB->id), 'months' => '12', 'note' => 'laut Telefonat',
+            'period_id' => $periodHaus->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineB->id), 'licences' => '1', 'per_licence' => '12.00', 'note' => 'laut Telefonat',
         ])->assertRedirect(route('finance.resale.reconcile.show', $partner));
 
         $periodKaik->refresh();
@@ -195,6 +197,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertNotNull($periodHaus->decided_at, 'manuelle Zuordnung ist eine Entscheidung');
         $link = ResalePeriodLink::query()->where('period_id', $periodHaus->id)->firstOrFail();
         $this->assertSame(LinkOrigin::Manual, $link->origin);
+        $this->assertSame('12.00', $link->months);
         $this->assertSame('145.56', $link->amount?->getAmount(), 'Jahresposition: 12 Monate = 1 Stück');
         $this->assertSame('laut Telefonat', $link->note);
 
@@ -287,5 +290,34 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame([], $result['periods']);
         $this->assertSame(2.0, $result['lines'][0]['licences']);
         $this->actingAs($this->orgAdmin())->get(route('finance.resale.reconcile.show', $customer))->assertOk()->assertSee('Leistung 31.12.2024 – 30.12.2025')->assertSee('2 × 12 Mon.');
+    }
+
+    public function test_lines_after_the_last_period_mark_a_gap_and_prefill_a_new_subscription(): void {
+        $admin = $this->orgAdmin();
+        $customer = $this->customerWithContact('Ute Mayershofer', 'c-um');
+        // Anbieter-Export kennt nur den gekündigten Vertrag bis 2024 — die Rechnungen laufen weiter.
+        $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2023-08-07', 'ends_on' => '2024-08-12', 'quantity' => 3, 'status' => 'ended']);
+        $this->voucher('c-um', 'RE/2023/0568', '2023-08-10', [['article' => $this->exchange, 'quantity' => 36, 'net' => '3.95']]);
+        $this->voucher('c-um', 'RE/2024/0724', '2024-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
+        $this->voucher('c-um', 'RE/2025/0945', '2025-10-26', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']]);
+        (new LinkProposer)->propose($this->organization);
+
+        $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
+        $product = $result['products'][0];
+        $this->assertSame('Exchange Online (Plan 1)', $product['label']);
+        $this->assertSame('2024-10-26', $product['gap_since']?->toDateString(), 'ab der ersten Position, die keine Periode mehr trifft');
+        $gaps = array_values(array_filter($result['lines'], static fn(array $l): bool => $l['gap']));
+        $this->assertSame(['RE/2025/0945', 'RE/2024/0724'], array_map(static fn(array $l): string => (string) $l['line']->voucher->voucher_number, $gaps));
+
+        $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
+        $page->assertSee('Position ohne Abo ab 26.10.2024')->assertSee('Abo aus Position anlegen');
+
+        // Dialog aus der Position: Produkt, Menge (1 Lizenz — „24 Monat" ohne Zeitraum), Beginn, Jahrespreis vorbelegt.
+        $line = $gaps[1]['line'];
+        $dialog = $this->actingAs($admin)->get(route('finance.resale.create', ['customer' => $customer->sqid, 'line' => Sqid::encode(LexofficeVoucherLine::class, $line->id)]))->assertOk();
+        $dialog->assertSee('value="Exchange Online (Plan 1)"', false)
+            ->assertSee('name="quantity"', false)
+            ->assertSee('value="47.40"', false)
+            ->assertSee('2024-10-26');
     }
 }

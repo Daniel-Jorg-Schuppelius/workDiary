@@ -75,11 +75,11 @@ class LinkProposerTest extends TestCase {
     /**
      * @param  list<array{article?: LexofficeArticle|null, name: string, description?: string, quantity: float, unit?: string|null, net: string}>  $lines
      */
-    private function voucher(string $contactId, string $number, string $date, array $lines, string $text = ''): LexofficeVoucher {
+    private function voucher(string $contactId, string $number, string $date, array $lines, string $text = '', ?string $serviceFrom = null, ?string $serviceTo = null): LexofficeVoucher {
         $voucher = LexofficeVoucher::create([
             'organization_id' => $this->organization->id, 'external_id' => 'v-' . $number, 'contact_external_id' => $contactId, 'voucher_type' => 'invoice',
             'voucher_status' => 'paid', 'voucher_number' => $number, 'voucher_date' => $date, 'total_amount' => 100, 'currency' => 'EUR', 'archived' => false,
-            'voucher_text' => $text, 'lines_synced_at' => now(),
+            'voucher_text' => $text, 'service_starts_on' => $serviceFrom, 'service_ends_on' => $serviceTo, 'lines_synced_at' => now(),
         ]);
         foreach ($lines as $position => $line) {
             LexofficeVoucherLine::create([
@@ -251,13 +251,56 @@ class LinkProposerTest extends TestCase {
         // Abo-Seite listet die Rechnungen des Empfängers mit Schnellzuordnung je Position.
         $page = $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk();
         $page->assertSee(__('resale.invoices.title'))->assertSee('RE/2026/0001')->assertSee('Nachberechnung');
+        // Schnellzuordnung in Lizenzen: 1 × 12 Monate je Lizenz.
         $this->actingAs($admin)->post(route('finance.resale.links.quick', $subscription->sqid), [
             'period_id' => $p2026->sqid,
             'line_id' => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line?->id),
-            'months' => 12,
+            'licences' => 1,
+            'per_licence' => 12,
         ])->assertRedirect(route('finance.resale.show', $subscription->sqid))->assertSessionHas('success');
         $this->assertSame(PeriodStatus::Billed, $p2026->fresh()?->status);
-        $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk()->assertSee('12 ' . __('resale.link.months_short'));
+        $this->actingAs($admin)->get(route('finance.resale.show', $subscription->sqid))->assertOk()
+            ->assertSee('1 × 12 ' . __('resale.link.months_short'))
+            ->assertSee('1 / 1 Lizenzen · 12 Mon.');
         $this->actingAs($this->orgUser())->post(route('finance.resale.periods.propose'))->assertForbidden();
+    }
+
+    public function test_multi_year_line_stays_with_one_subscription_across_consecutive_periods(): void {
+        // ReproBerlin-Muster: drei Verträge desselben Produkts (1 + 1 + 2 Lizenzen), zwei Jahre
+        // erst im August 2025 nachberechnet — je Lizenz eine Position „24 Monat".
+        $this->travelTo('2025-12-01');
+        $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
+        $standard = $this->article('art-bs', 'Microsoft 365 Business Standard', '11.70');
+        $one = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-07', 'ends_on' => '2026-02-07', 'status' => 'cancelled']);
+        $two = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'cancelled']);
+        $pair = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'quantity' => 2, 'status' => 'cancelled']);
+        // Leistungszeitraum zwei Jahre: damit ist „24 Monat" sicher EINE Lizenz über zwei Perioden.
+        $this->voucher('c-repro', 'RE/2025/0895', '2025-08-21', [['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 24, 'net' => '11.70']], '', '2024-02-07', '2026-02-06');
+        $this->voucher('c-repro', 'RE/2025/0896', '2025-08-21', [
+            ['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 24, 'net' => '11.70'],
+            ['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 24, 'net' => '11.70'],
+            ['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 24, 'net' => '11.70'],
+        ], '', '2024-02-25', '2026-02-24');
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(6, $result['linked'], 'alle sechs Perioden gedeckt');
+
+        foreach ([$one, $two, $pair] as $subscription) {
+            $periods = $subscription->periods()->with('links')->get();
+            $this->assertCount(2, $periods);
+            // Jede Position deckt je Periode höchstens eine Lizenz × 12 — und bleibt beim selben Abo.
+            $first = $periods[0]->links->pluck('linkable_id')->sort()->values()->all();
+            $second = $periods[1]->links->pluck('linkable_id')->sort()->values()->all();
+            $this->assertSame($first, $second, 'dieselben Positionen decken beide Jahre des Abos');
+            $this->assertCount($subscription->quantity, $first);
+            foreach ($periods as $period) {
+                foreach ($period->links as $link) {
+                    $this->assertSame('12.00', $link->months, 'eine Lizenz × 12 je Periode, nicht 24');
+                }
+            }
+        }
+        // Keine Position hängt an zwei verschiedenen Abos.
+        $bySubscription = ResalePeriodLink::query()->get()->groupBy('linkable_id')->map(static fn($links) => $links->pluck('subscription_id')->unique()->count());
+        $this->assertSame([1, 1, 1, 1], $bySubscription->values()->all());
     }
 }

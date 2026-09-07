@@ -24,7 +24,7 @@
 >
     <div class="text-sm text-base-content/70">
         {{ $period->subscription->label }} · {{ $period->subscription->holderLabel() }} ·
-        {{ __('resale.link.needed', ['months' => $fmt($needed)]) }}
+        {{ __('resale.link.needed', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($needed, (float) $period->termMonths())]) }}
     </div>
     @if (! $hasContacts)
         <div class="alert alert-warning text-sm"><span>{{ __('resale.link.no_contacts') }}</span></div>

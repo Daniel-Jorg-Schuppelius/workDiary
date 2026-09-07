@@ -64,5 +64,10 @@ solución es «Titular → cliente»: la suscripción pasa a ese cliente y la
 propuesta se aplica de inmediato. Las facturas **anuladas** cerca del
 inicio del periodo explican un periodo vacío. Las suscripciones de la
 **bandeja de entrada** cuya empresa aparece en los textos de factura
-esperan su titular. La asignación puede dirigirse a un periodo de otra
-suscripción del mismo destinatario — nunca a un periodo de otro cliente.
+esperan su titular. Una línea libre que ya no toca ningún periodo de su
+producto señala un contrato ausente en el registro (la exportación del
+proveedor no lo conoce): la fila del producto dice «Línea sin suscripción
+desde …» y «Crear suscripción desde la línea» abre el diálogo con artículo,
+cantidad, inicio y precio tomados de la factura. La asignación puede
+dirigirse a un periodo de otra suscripción del mismo destinatario — nunca a
+un periodo de otro cliente.

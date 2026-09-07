@@ -19,9 +19,10 @@
     $customerSqid = (string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $editing ? $subscription->customer_id : ($prefill['customer_id'] ?? null)));
     $foreignSqid = (string) old('foreign_customer_id', \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $editing ? $subscription->foreign_customer_id : ($prefill['foreign_customer_id'] ?? null)));
     $articleSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article::class, $editing ? $subscription->article_id : null));
-    $lexArticleSqid = (string) old('lexoffice_article_id', \App\Support\Sqid::encode(\App\Models\LexofficeArticle::class, $editing ? $subscription->lexoffice_article_id : null));
-    $value = static fn(string $field, mixed $default = null): mixed => old($field, $editing ? ($subscription->{$field} ?? $default) : $default);
-    $enumValue = static fn(string $field, string $default): string => (string) old($field, $editing ? $subscription->{$field}->value : $default);
+    $lexArticleSqid = (string) old('lexoffice_article_id', \App\Support\Sqid::encode(\App\Models\LexofficeArticle::class, $editing ? $subscription->lexoffice_article_id : ($prefill['lexoffice_article_id'] ?? null)));
+    // Vorbelegung („Abo aus Rechnungsposition anlegen") greift nur beim Anlegen.
+    $value = static fn(string $field, mixed $default = null): mixed => old($field, $editing ? ($subscription->{$field} ?? $default) : ($prefill[$field] ?? $default));
+    $enumValue = static fn(string $field, string $default): string => (string) old($field, $editing ? $subscription->{$field}->value : ($prefill[$field] ?? $default));
 @endphp
 <x-modal
     :title="$editing ? __('resale.dialog.title_edit') : __('resale.dialog.title_new')"
@@ -102,7 +103,7 @@
                           :from-label="__('resale.field.starts_on')"
                           :to-label="__('resale.field.ends_on')"
                           :from-required="true"
-                          :from="old('starts_on', $editing ? $subscription->starts_on->toDateString() : now()->toDateString())"
+                          :from="old('starts_on', $editing ? $subscription->starts_on->toDateString() : ($prefill['starts_on'] ?? now()->toDateString()))"
                           :to="old('ends_on', $editing ? ($subscription->ends_on?->toDateString() ?? '') : '')" />
             <p class="text-xs text-muted mt-1">{{ __('resale.dialog.ends_on_hint') }}</p>
         </div>
@@ -125,7 +126,7 @@
         </x-select-field>
 
         <x-input-field name="purchase_unit_price" type="number" step="0.01" min="0" :label="__('resale.field.purchase_unit_price')" :value="old('purchase_unit_price', $editing ? $subscription->purchase_unit_price?->withScale(2)->getAmount() : null)" span="3" :hint="__('resale.dialog.price_hint')" />
-        <x-input-field name="sale_unit_price" type="number" step="0.01" min="0" :label="__('resale.field.sale_unit_price')" :value="old('sale_unit_price', $editing ? $subscription->sale_unit_price?->withScale(2)->getAmount() : null)" span="3" />
+        <x-input-field name="sale_unit_price" type="number" step="0.01" min="0" :label="__('resale.field.sale_unit_price')" :value="old('sale_unit_price', $editing ? $subscription->sale_unit_price?->withScale(2)->getAmount() : ($prefill['sale_unit_price'] ?? null))" span="3" />
 
         <x-textarea-field name="notes" :label="__('resale.field.notes')" :value="$value('notes')" span="6" rows="2" />
     </div>

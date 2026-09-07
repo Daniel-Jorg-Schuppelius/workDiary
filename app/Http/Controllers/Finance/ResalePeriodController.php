@@ -202,8 +202,7 @@ class ResalePeriodController extends Controller {
         $validated = $request->validate([
             'period_id' => ['required', 'string'],
             'line_id' => ['required', 'string'],
-            'months' => ['required', 'numeric', 'min:0.01', 'max:100000'],
-        ]);
+        ] + PeriodLinker::amountRules());
         $periodId = Sqid::decode(ResalePeriod::class, (string) $validated['period_id']);
         $period = $periodId === null ? null : $subscription->periods()->whereKey($periodId)->first();
         $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $validated['line_id']);
@@ -211,7 +210,7 @@ class ResalePeriodController extends Controller {
         if ($period === null || $line === null) {
             return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.link.error.line_missing'));
         }
-        $link = $this->linker->attach($period, $line, (float) $validated['months'], null, $request->user()?->id);
+        $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), null, $request->user()?->id);
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }

@@ -63,6 +63,9 @@ Namensbestandteil) — die Lösung ist „Halter → Kunde": das Abo wechselt zu
 diesem Kunden und der Vorschlagslauf greift sofort. **Stornierte**
 Rechnungen nahe am Periodenbeginn zeigen, warum eine Periode leer ist. Abos
 aus dem **Posteingang**, deren Firma im Rechnungstext an diesen Empfänger
-steht, warten auf ihren Halter. Die Zuordnung darf eine Periode eines
-anderen Abos desselben Empfängers treffen — nie eine Periode eines fremden
-Kunden.
+steht, warten auf ihren Halter. Trifft eine freie Position keine Periode
+ihres Produkts mehr, fehlt der Vertrag im Register (der Anbieter-Export kennt
+ihn nicht): die Produktzeile sagt „Position ohne Abo ab …", und „Abo aus
+Position anlegen" öffnet den Abo-Dialog mit Artikel, Menge, Beginn und Preis
+aus der Rechnung. Die Zuordnung darf eine Periode eines anderen Abos
+desselben Empfängers treffen — nie eine Periode eines fremden Kunden.

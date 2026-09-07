@@ -47,6 +47,33 @@ final class PeriodLinker {
         return $link;
     }
 
+    /**
+     * Validierungsregeln für die Deckung: Lizenzen × Monate je Lizenz (Formulare
+     * am Abo und im Abgleich) oder rohe Lizenzmonate (Dialog).
+     *
+     * @return array<string, list<string>>
+     */
+    public static function amountRules(): array {
+        return [
+            'months' => ['required_without:licences', 'nullable', 'numeric', 'min:0.01', 'max:100000'],
+            'licences' => ['required_without:months', 'nullable', 'numeric', 'min:0.01', 'max:10000'],
+            'per_licence' => ['required_with:licences', 'nullable', 'numeric', 'min:0.01', 'max:1200'],
+        ];
+    }
+
+    /**
+     * Lizenzmonate aus der Eingabe: Lizenzen × Monate je Lizenz, sonst Lizenzmonate.
+     *
+     * @param  array<string, mixed>  $validated
+     */
+    public static function monthsFrom(array $validated): float {
+        if (isset($validated['licences']) && $validated['licences'] !== '') {
+            return round((float) $validated['licences'] * (float) ($validated['per_licence'] ?? 1), 2);
+        }
+
+        return (float) ($validated['months'] ?? 0);
+    }
+
     /** Status aus der Deckung ableiten; entschieden = Nutzer hat bestätigt/verknüpft. */
     public function settle(ResalePeriod $period, ?int $userId, ?string $note, bool $decided = true): void {
         $period->load('links');

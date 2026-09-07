@@ -34,11 +34,11 @@ use Illuminate\Support\Collection;
  * storniert, der Endkunde steht im Rechnungstext, sein Abo aber noch ohne
  * Halter im Posteingang.
  *
- * @phpstan-type LineRow array{line: LexofficeVoucherLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string}
+ * @phpstan-type LineRow array{line: LexofficeVoucherLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool}
  * @phpstan-type Candidate array{row: LineRow, distance: int}
  * @phpstan-type PeriodRow array{period: ResalePeriod, subscription: ResaleSubscription, required: float, covered: float, needed: float, product: string, candidates: list<Candidate>, taken: list<Candidate>, foreign: list<Candidate>, voided: list<Candidate>}
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
- * @phpstan-type ProductRow array{key: string, label: string, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float}
+ * @phpstan-type ProductRow array{key: string, label: string, term: int, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float, gap_since: CarbonImmutable|null}
  * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int}
  */
 final class RecipientReconciler {
@@ -325,7 +325,7 @@ final class RecipientReconciler {
             $linked = $linkedMonths[$line->id]['months'] ?? 0.0;
             $key = 'art:' . $line->lexoffice_article_id;
             $labels[$key] ??= $line->article !== null ? $line->article->name : $line->name;
-            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => null, 'recipient_id' => null, 'contact' => (string) $line->voucher->contact_external_id];
+            $lineRow = ['line' => $line, 'product' => $key, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => max(0.0, $months - $linked), 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => null, 'recipient_id' => null, 'contact' => (string) $line->voucher->contact_external_id, 'gap' => false];
             $lineRows[] = $lineRow;
             $invoiced[$key] = ($invoiced[$key] ?? 0.0) + $months;
             $freeByProduct[$key] = ($freeByProduct[$key] ?? 0.0) + $lineRow['free'];
@@ -342,18 +342,20 @@ final class RecipientReconciler {
             }
             $contact = (string) $line->voucher->contact_external_id;
             $recipient = $names[$contact] ?? trim((string) $line->voucher->recipient_name);
-            $otherRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'recipient_id' => $customerIds[$contact] ?? null, 'contact' => $contact];
+            $otherRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => $months, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => $linked, 'free' => $months - $linked, 'periods' => $linkedMonths[$line->id]['periods'] ?? [], 'recipient' => $recipient !== '' ? $recipient : null, 'recipient_id' => $customerIds[$contact] ?? null, 'contact' => $contact, 'gap' => false];
         }
         /** @var list<LineRow> $voidedRows */
         $voidedRows = [];
         foreach ($voided ?? collect() as $line) {
             $contact = (string) $line->voucher->contact_external_id;
             $split = LicenseMonths::split($line);
-            $voidedRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => isset($own[$contact]) ? null : ($names[$contact] ?? null), 'recipient_id' => null, 'contact' => $contact];
+            $voidedRows[] = ['line' => $line, 'product' => 'art:' . $line->lexoffice_article_id, 'months' => $split['licences'] * $split['months'], 'licences' => $split['licences'], 'per_licence' => $split['months'], 'linked' => 0.0, 'free' => 0.0, 'periods' => [], 'recipient' => isset($own[$contact]) ? null : ($names[$contact] ?? null), 'recipient_id' => null, 'contact' => $contact, 'gap' => false];
         }
 
         /** @var array<string, int> $subscriptionCount */
         $subscriptionCount = [];
+        /** @var array<string, int> $termByProduct Monate je Lizenz und Periode (Intervall des Abos) */
+        $termByProduct = [];
         /** @var array<string, int> $periodCount */
         $periodCount = [];
         /** @var array<string, float> $requiredByProduct */
@@ -372,6 +374,7 @@ final class RecipientReconciler {
                 }
                 $required = $period->requiredMonths();
                 $covered = $period->coveredMonths();
+                $termByProduct[$key] ??= $period->termMonths();
                 $periodCount[$key] = ($periodCount[$key] ?? 0) + 1;
                 $requiredByProduct[$key] = ($requiredByProduct[$key] ?? 0.0) + $required;
                 $coveredByProduct[$key] = ($coveredByProduct[$key] ?? 0.0) + $covered;
@@ -400,9 +403,10 @@ final class RecipientReconciler {
                 if ($lineRow['product'] !== $row['product']) {
                     continue;
                 }
-                // Bezug = Beginn des Leistungszeitraums, sonst Rechnungsdatum; nur im Fenster der Periode.
+                // Bezug = Beginn des Leistungszeitraums, sonst Rechnungsdatum; nur im Fenster der
+                // Periode — oder der Leistungszeitraum deckt den Periodenbeginn (Mehrjahres-Position).
                 $date = LicenseMonths::referenceDate($lineRow['line']);
-                if ($date === null || $date->lessThan($windowStart) || $date->greaterThan($windowEnd)) {
+                if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
                     continue;
                 }
                 $distance = (int) abs($date->diffInDays($start));
@@ -417,7 +421,7 @@ final class RecipientReconciler {
                         continue;
                     }
                     $date = LicenseMonths::referenceDate($lineRow['line']);
-                    if ($date === null || $date->lessThan($windowStart) || $date->greaterThan($windowEnd)) {
+                    if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
                         continue;
                     }
                     $distance = (int) abs($date->diffInDays($start));
@@ -441,6 +445,43 @@ final class RecipientReconciler {
             }
         }
 
+        // Freie Position, deren Bezugsdatum keine Periode des Produkts (welchen Status auch immer)
+        // enthält: ab dort fehlt ein Abo im Register — typisch ein Vertrag, den der Anbieter-Export
+        // nicht mehr liefert (nur gekündigte Verträge exportiert, laufende fehlen).
+        /** @var array<string, list<array{0: CarbonImmutable, 1: CarbonImmutable}>> $ranges */
+        $ranges = [];
+        foreach ($subscriptions as $subscription) {
+            $key = $productBySubscription[$subscription->id];
+            foreach ($subscription->periods as $period) {
+                $ranges[$key][] = [$period->starts_on->subDays(LinkProposer::WINDOW_BEFORE), $period->ends_on];
+            }
+        }
+        /** @var array<string, CarbonImmutable> $gapSince */
+        $gapSince = [];
+        foreach ($lineRows as $index => $lineRow) {
+            if ($lineRow['free'] <= 0.001) {
+                continue;
+            }
+            $date = LicenseMonths::referenceDate($lineRow['line']);
+            if ($date === null) {
+                continue;
+            }
+            $covered = false;
+            foreach ($ranges[$lineRow['product']] ?? [] as [$from, $to]) {
+                if (! $date->lessThan($from) && ! $date->greaterThan($to)) {
+                    $covered = true;
+                    break;
+                }
+            }
+            if ($covered) {
+                continue;
+            }
+            $lineRows[$index]['gap'] = true;
+            if (! isset($gapSince[$lineRow['product']]) || $date->lessThan($gapSince[$lineRow['product']])) {
+                $gapSince[$lineRow['product']] = $date;
+            }
+        }
+
         /** @var list<ProductRow> $productRows */
         $productRows = [];
         $free = $missing = $surplus = 0.0;
@@ -454,6 +495,7 @@ final class RecipientReconciler {
             $productRows[] = [
                 'key' => $key,
                 'label' => $label,
+                'term' => $termByProduct[$key] ?? 12,
                 'subscriptions' => $subscriptionCount[$key] ?? 0,
                 'periods' => $periodCount[$key] ?? 0,
                 'required' => $productRequired,
@@ -462,6 +504,7 @@ final class RecipientReconciler {
                 'free' => $productFree,
                 'missing' => $productMissing,
                 'surplus' => $productSurplus,
+                'gap_since' => $gapSince[$key] ?? null,
             ];
             $free += $productFree;
             $missing += $productMissing;
@@ -565,14 +608,15 @@ final class RecipientReconciler {
             ->where('organization_id', $organization->id)
             ->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())
             ->whereIn('linkable_id', $lineIds)
-            ->with(['period:id,starts_on,ends_on', 'subscription:id,label,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name'])
+            ->with(['period:id,starts_on,ends_on', 'subscription:id,label,quantity,provider,starts_on,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name'])
             ->get();
         foreach ($links as $link) {
             $id = (int) $link->linkable_id;
             $linked[$id] ??= ['months' => 0.0, 'periods' => []];
             $linked[$id]['months'] += (float) $link->months;
-            // Halter statt Produkt: bei Partnern mit mehreren Endkunden ist das die Information, die fehlt.
-            $linked[$id]['periods'][] = ($link->subscription !== null ? $link->subscription->holderLabel() . ' · ' : '') . $link->period->label();
+            // Halter und Abo-Kennung statt Produkt: bei Partnern mit mehreren Endkunden fehlt der
+            // Halter, bei Kunden mit mehreren Verträgen desselben Produkts die Kennung.
+            $linked[$id]['periods'][] = ($link->subscription !== null ? $link->subscription->holderLabel() . ' · ' . $link->subscription->identityLabel() . ' · ' : '') . $link->period->label();
         }
 
         return $linked;

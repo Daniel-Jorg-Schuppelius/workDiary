@@ -62,6 +62,10 @@ directly instead of via the partner; recognised by a shared name part) —
 the fix is "Holder → customer": the subscription moves to that customer and
 the proposal run applies immediately. **Voided** invoices near the period
 start explain an empty period. **Inbox** subscriptions whose company
-appears in invoice texts to this recipient are waiting for their holder.
-Assignment may target a period of another subscription of the same
-recipient — never a period of a different customer.
+appears in invoice texts to this recipient are waiting for their holder. A
+free line that no longer hits any period of its product means the contract
+is missing in the register (the provider export does not know it): the
+product row says "Line without subscription from …" and "Create subscription
+from line" opens the subscription dialog with article, quantity, start and
+price taken from the invoice. Assignment may target a period of another
+subscription of the same recipient — never a period of a different customer.

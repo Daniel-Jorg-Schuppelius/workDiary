@@ -205,8 +205,10 @@
                             @foreach ($licenseLines as $line)
                                 @php
                                     $info = $invoices['linked'][$line->id] ?? null;
-                                    $lineMonths = \App\Services\Reselling\Register\LicenseMonths::ofLine($line);
+                                    $split = \App\Services\Reselling\Register\LicenseMonths::split($line);
+                                    $lineMonths = $split['licences'] * $split['months'];
                                     $remaining = max(0.0, $lineMonths - ($info['months'] ?? 0.0));
+                                    $label = static fn(float $lm): string => \App\Services\Reselling\Register\LicenseMonths::label($lm, $split['months']);
                                     $lineSqid = \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line->id);
                                 @endphp
                                 <tr @class(['opacity-60' => $remaining <= 0.001])>
@@ -238,14 +240,15 @@
                                     <td class="text-right tabular-nums whitespace-nowrap">{{ $fmt((float) $line->quantity) }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
                                     <td class="text-right tabular-nums whitespace-nowrap">{{ $line->unit_net->withScale(2)->format() }}</td>
                                     <td class="text-xs">
+                                        <span class="block text-muted tabular-nums">= {{ $label($lineMonths) }}</span>
                                         @if ($info !== null)
-                                            <span class="text-success">{{ $fmt($info['months']) }} {{ __('resale.link.months_short') }}</span>
+                                            <span class="text-success">{{ $label($info['months']) }}</span>
                                             <span class="block text-muted">{{ implode(' · ', array_unique($info['periods'])) }}</span>
                                         @else
                                             <span class="text-muted">—</span>
                                         @endif
                                         @if ($remaining > 0.001 && $info !== null)
-                                            <span class="block text-muted">{{ __('resale.invoices.remaining', ['months' => $fmt($remaining)]) }}</span>
+                                            <span class="block text-muted">{{ __('resale.invoices.remaining', ['amount' => $label($remaining)]) }}</span>
                                         @endif
                                     </td>
                                     <td class="text-right">
@@ -258,8 +261,10 @@
                                                         <option value="{{ $period->sqid }}" @selected($period->starts_on->lessThanOrEqualTo($voucher->voucher_date ?? $today) && $period->ends_on->greaterThanOrEqualTo($voucher->voucher_date ?? $today))>{{ $period->label() }}</option>
                                                     @endforeach
                                                 </select>
-                                                <input type="number" name="months" step="0.01" min="0.01" value="{{ number_format(min($remaining, max(1.0, $openPeriods->first()?->requiredMonths() ?? 1.0)), 2, '.', '') }}"
-                                                       class="input input-xs input-bordered w-20 text-right" aria-label="{{ __('resale.link.months_field') }}">
+                                                @php $needLicences = max(1.0, ($openPeriods->first()?->requiredMonths() ?? 1.0) / $split['months']); @endphp
+                                                <input type="hidden" name="per_licence" value="{{ number_format($split['months'], 2, '.', '') }}">
+                                                <input type="number" name="licences" step="0.01" min="0.01" value="{{ number_format(min($remaining / $split['months'], $needLicences), 2, '.', '') }}"
+                                                       class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.licences_field') }}" title="{{ __('resale.link.licences_field') }} × {{ $fmt($split['months']) }} {{ __('resale.link.months_short') }}">
                                                 <x-icon-btn icon="add_link" size="xs" tone="primary" type="submit" :title="__('resale.link.action.link')" />
                                             </form>
                                         @endif

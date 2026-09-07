@@ -13,6 +13,7 @@
 @php
     $required = $period->requiredMonths();
     $covered = $period->coveredMonths();
+    $term = $period->termMonths();
     $upcoming = $period->starts_on->greaterThan($today);
     $fmt = static fn(float $v): string => rtrim(rtrim(number_format($v, 2, ',', '.'), '0'), ',');
 @endphp
@@ -37,15 +38,16 @@
     <td class="text-right tabular-nums">{{ $period->quantity }}</td>
     <td class="text-right tabular-nums whitespace-nowrap">{{ $period->expected_sale?->format() ?? '—' }}</td>
     <td class="text-right tabular-nums whitespace-nowrap">
-        <span @class(['text-success font-medium' => $covered >= $required - 0.001 && $required > 0, 'text-warning' => $covered > 0.001 && $covered < $required - 0.001, 'text-error' => $covered <= 0.001 && ! $upcoming])>
-            {{ $fmt($covered) }} / {{ $fmt($required) }}
+        {{-- Lizenzen × Monate statt Lizenzmonate: „5 / 5 Lizenzen · 12 Mon." --}}
+        <span @class(['text-success font-medium' => $covered >= $required - 0.001 && $required > 0, 'text-warning' => $covered > 0.001 && $covered < $required - 0.001, 'text-error' => $covered <= 0.001 && ! $upcoming])
+              title="{{ $fmt($covered) }} / {{ $fmt($required) }} {{ __('resale.link.months') }}">
+            {{ __('resale.link.licences_of', ['covered' => $fmt($covered / max(1, $term)), 'quantity' => $period->quantity, 'months' => $term]) }}
         </span>
-        <span class="block text-xs text-muted">{{ __('resale.link.months') }}</span>
     </td>
     <td class="text-sm">
         @forelse ($period->links as $link)
             <span class="inline-flex items-center gap-1 mr-1 mb-0.5">
-                <x-status-badge size="xs" :tone="$link->origin->tone()" :label="($link->voucher_number ?: '—') . ' · ' . $fmt((float) $link->months) . ' ' . __('resale.link.months_short')" :title="$link->origin->label() . ($link->note ? ' · ' . $link->note : '')" />
+                <x-status-badge size="xs" :tone="$link->origin->tone()" :label="($link->voucher_number ?: '—') . ' · ' . \App\Services\Reselling\Register\LicenseMonths::label((float) $link->months, (float) $term)" :title="$link->origin->label() . ($link->note ? ' · ' . $link->note : '')" />
                 @php $linkedLine = $link->linkable; @endphp
                 @if ($linkedLine instanceof \App\Models\LexofficeVoucherLine && auth()->user()?->can(\App\Enums\User\Permission::VoucherViewAny->value))
                     <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', \App\Support\Sqid::encode(\App\Models\LexofficeVoucher::class, $linkedLine->voucher_id))" :title="__('resale.invoices.preview')" />

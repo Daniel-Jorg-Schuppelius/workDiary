@@ -62,6 +62,19 @@ final class LicenseMonths {
         return ['licences' => $quantity, 'months' => $service !== null ? (float) $service : 12.0];
     }
 
+    /**
+     * Ist die Lizenzzahl der Position sicher? Bei „Jahr"/„Stück" steht sie in
+     * der Menge, bei Monatspositionen erst mit Leistungszeitraum — „24 Monat"
+     * allein kann zwei Lizenzen für ein Jahr oder eine für zwei Jahre sein.
+     */
+    public static function isLicenceCountCertain(LexofficeVoucherLine $line): bool {
+        if (self::serviceMonths($line) !== null) {
+            return true;
+        }
+
+        return ! self::isMonthly($line);
+    }
+
     /** Monatsposition: Einheit Monat, oder ohne Einheit ein Stückpreis unter dem Monatslimit. */
     public static function isMonthly(LexofficeVoucherLine $line): bool {
         $unit = self::unit($line);
@@ -93,6 +106,26 @@ final class LicenseMonths {
     }
 
     /**
+     * Anzeige von Lizenzmonaten so, wie der Reseller denkt: „5 × 12 Mon."
+     * (Lizenzen × Monate je Lizenz), bei einem Rest unter einer Lizenz nur
+     * die Monate („6 Mon."), sonst die nackten Lizenzmonate.
+     */
+    public static function label(float $licenceMonths, float $perLicence): string {
+        $fmt = static fn(float $v): string => rtrim(rtrim(number_format($v, 2, ',', '.'), '0'), ',');
+        if ($perLicence > 0 && $licenceMonths >= $perLicence - 0.001) {
+            $licences = $licenceMonths / $perLicence;
+            if (abs($licences - round($licences)) < 0.001) {
+                return (string) __('resale.link.licences_x_months', ['licences' => $fmt(round($licences)), 'months' => $fmt($perLicence)]);
+            }
+        }
+        if ($perLicence > 0 && $licenceMonths < $perLicence) {
+            return (string) __('resale.link.months_only', ['months' => $fmt($licenceMonths)]);
+        }
+
+        return (string) __('resale.link.licence_months_only', ['months' => $fmt($licenceMonths)]);
+    }
+
+    /**
      * Bezugsdatum einer Position: Beginn des Leistungszeitraums, sonst das
      * Rechnungsdatum — danach findet die Zuordnung die Periode.
      */
@@ -107,6 +140,20 @@ final class LicenseMonths {
         }
 
         return $voucher->voucher_date === null ? null : CarbonImmutable::instance($voucher->voucher_date);
+    }
+
+    /**
+     * Deckt der Leistungszeitraum der Rechnung den Tag? Eine Mehrjahres-
+     * Position gehört auch zu Perioden, die lange nach dem Leistungsbeginn
+     * starten — das Fenster um das Bezugsdatum reicht dafür nicht.
+     */
+    public static function serviceCovers(LexofficeVoucherLine $line, CarbonImmutable $day): bool {
+        $voucher = $line->relationLoaded('voucher') ? $line->voucher : null;
+        if ($voucher === null || $voucher->service_starts_on === null || $voucher->service_ends_on === null) {
+            return false;
+        }
+
+        return ! $day->lessThan(CarbonImmutable::instance($voucher->service_starts_on)) && ! $day->greaterThan(CarbonImmutable::instance($voucher->service_ends_on));
     }
 
     private static function serviceMonths(LexofficeVoucherLine $line): ?int {

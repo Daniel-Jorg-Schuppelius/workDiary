@@ -93,9 +93,8 @@ class ResaleReconcileController extends Controller {
         $validated = $request->validate([
             'period_id' => ['required', 'string'],
             'line_id' => ['required', 'string'],
-            'months' => ['required', 'numeric', 'min:0.01', 'max:100000'],
             'note' => ['nullable', 'string', 'max:255'],
-        ]);
+        ] + PeriodLinker::amountRules());
         $periodId = Sqid::decode(ResalePeriod::class, (string) $validated['period_id']);
         $period = $periodId === null ? null : ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer.customer')->find($periodId);
         $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $validated['line_id']);
@@ -104,7 +103,7 @@ class ResaleReconcileController extends Controller {
         if ($period === null || $line === null || $period->subscription->billedTo()?->id !== $customer->id) {
             return redirect($target)->with('error', __('resale.link.error.line_missing'));
         }
-        $link = $this->linker->attach($period, $line, (float) $validated['months'], $validated['note'] ?? null, $request->user()?->id);
+        $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), $validated['note'] ?? null, $request->user()?->id);
 
         return redirect($target)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }

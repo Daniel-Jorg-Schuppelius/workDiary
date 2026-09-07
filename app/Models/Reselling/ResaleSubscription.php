@@ -251,6 +251,15 @@ class ResaleSubscription extends Model {
         return $this->customer !== null ? $this->customer->name : (string) __('resale.holder.unassigned');
     }
 
+    /**
+     * Kurzkennung, die gleichnamige Abos desselben Halters unterscheidet:
+     * „×2 · Telekom Marketplace ab 25.02.2023" — Kunden haben oft mehrere
+     * Verträge desselben Produkts mit verschiedenen Mengen und Startdaten.
+     */
+    public function identityLabel(): string {
+        return '×' . $this->quantity . ' · ' . $this->provider->label() . ' ' . __('resale.field.since_short', ['date' => $this->starts_on->format('d.m.Y')]);
+    }
+
     /** Ist der Halter geklärt? Ein Abo ohne Halter und ohne eigenen Bestand wartet auf Zuordnung. */
     public function hasHolder(): bool {
         return $this->is_own_holding || $this->customer_id !== null || $this->foreign_customer_id !== null;
