@@ -87,4 +87,7 @@ abbonamento separato per l’altro titolare con periodi propri; il contratto
 pianifica i suoi periodi con il resto. Ogni titolare riceve le proprie
 fatture assegnate. Se un successore sostituisce il contratto (import), la
 cessione prosegue lì. Un contratto con cessioni si elimina solo dopo aver
-rimosso le cessioni.
+rimosso le cessioni. Anche un cambio di titolare nel tempo — un’azienda si
+scinde e la nuova rileva i contratti — è una cessione: tutte le licenze del
+vecchio periodo al titolare precedente; la riconciliazione lo propone su una
+fattura dell’altro cliente come «Cedere il periodo a …», precompilato.

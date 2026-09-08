@@ -86,4 +86,8 @@ separate subscription for the other holder with its own billing periods
 appears; the contract plans its periods with the remainder. Each holder
 gets its own invoices assigned. When a successor replaces the contract
 (import), the transfer continues there. A contract with transfers can only
-be deleted once the transfers are gone.
+be deleted once the transfers are gone. A holder change over time — a
+company splits and the new one takes over the contracts — is a transfer
+too: all licences for the old period to the former holder; the
+reconciliation offers this at an invoice of the other customer as
+"Transfer period to …", prefilled.

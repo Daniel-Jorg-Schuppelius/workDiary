@@ -488,6 +488,8 @@ return [
         'submit' => 'Cedere',
         'hint' => 'Il titolare :holder ha :quantity licenze, di cui :available non ancora cedute. Il nuovo titolare riceve periodi propri; il contratto pianifica con il resto.',
         'mode' => 'Nuovo titolare',
+        'action_period' => 'Cedere il periodo a :customer',
+        'timeline_hint' => 'Anche un cambio di titolare nel tempo è una cessione: tutte le licenze del vecchio periodo al titolare precedente, poi il contratto prosegue con il titolare attuale.',
         'quantity' => 'Licenze cedute',
         'section' => 'Licenze cedute',
         'from' => 'Ceduto da',

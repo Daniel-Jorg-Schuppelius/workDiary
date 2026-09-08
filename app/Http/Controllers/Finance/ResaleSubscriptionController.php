@@ -246,12 +246,25 @@ class ResaleSubscriptionController extends Controller {
         return redirect()->route('finance.resale.index')->with('success', __('resale.flash.deleted'));
     }
 
-    /** Dialog: Lizenzen dieses Vertrags an einen anderen Halter abtreten. */
-    public function transferCreate(ResaleSubscription $subscription): View {
+    /**
+     * Dialog: Lizenzen dieses Vertrags an einen anderen Halter abtreten. Aus
+     * dem Abgleich kommt die Vorbelegung (Kunde, Menge, Zeitraum der Periode):
+     * ein Halterwechsel im Zeitverlauf — etwa eine Firma, die aufgespalten
+     * wurde — ist eine Abtretung aller Lizenzen für den alten Zeitraum.
+     */
+    public function transferCreate(Request $request, ResaleSubscription $subscription): View {
+        $customerId = Sqid::decode(Customer::class, (string) $request->query('customer', ''));
+
         return view('finance.resale._transfer_dialog', [
             'subscription' => $subscription->load(['assignments', 'customer', 'foreignCustomer']),
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'foreignByCustomer' => $this->foreignCustomersByCustomer(),
+            'prefill' => [
+                'customer_id' => $customerId !== null ? Sqid::encode(Customer::class, $customerId) : '',
+                'quantity' => max(0, (int) $request->query('quantity', 0)),
+                'starts_on' => (string) $request->query('starts_on', ''),
+                'ends_on' => (string) $request->query('ends_on', ''),
+            ],
         ]);
     }
 

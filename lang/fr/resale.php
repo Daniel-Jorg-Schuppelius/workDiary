@@ -488,6 +488,8 @@ return [
         'submit' => 'Céder',
         'hint' => 'Le détenteur :holder a :quantity licences, dont :available non encore cédées. Le nouveau détenteur reçoit ses propres périodes ; le contrat planifie avec le reste.',
         'mode' => 'Nouveau détenteur',
+        'action_period' => 'Céder la période à :customer',
+        'timeline_hint' => 'Un changement de détenteur dans le temps est aussi une cession : toutes les licences de l’ancienne période vont à l’ancien détenteur, ensuite le contrat continue avec le détenteur actuel.',
         'quantity' => 'Licences cédées',
         'section' => 'Licences cédées',
         'from' => 'Cédé depuis',

@@ -488,6 +488,8 @@ return [
         'submit' => 'Ceder',
         'hint' => 'El titular :holder tiene :quantity licencias, de las cuales :available aún no están cedidas. El nuevo titular recibe periodos propios; el contrato planifica con el resto.',
         'mode' => 'Nuevo titular',
+        'action_period' => 'Ceder el periodo a :customer',
+        'timeline_hint' => 'Un cambio de titular en el tiempo también es una cesión: todas las licencias del periodo antiguo al titular anterior, después el contrato continúa con el titular actual.',
         'quantity' => 'Licencias cedidas',
         'section' => 'Licencias cedidas',
         'from' => 'Cedido desde',

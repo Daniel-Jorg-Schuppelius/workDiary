@@ -89,4 +89,8 @@ suscripción propia para el otro titular con sus propios periodos; el
 contrato planifica sus periodos con el resto. Cada titular recibe sus
 propias facturas asignadas. Si un sucesor sustituye el contrato
 (importación), la cesión continúa allí. Un contrato con cesiones solo se
-elimina cuando las cesiones han desaparecido.
+elimina cuando las cesiones han desaparecido. Un cambio de titular en el
+tiempo — una empresa se escinde y la nueva asume los contratos — también es
+una cesión: todas las licencias del periodo antiguo al titular anterior; la
+conciliación lo ofrece en una factura del otro cliente como «Ceder el
+periodo a …», ya rellenado.

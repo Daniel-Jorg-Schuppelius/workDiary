@@ -151,4 +151,46 @@ class LicenceTransferTest extends TestCase {
         $method->invoke($importer, $contract, $successor, \Carbon\CarbonImmutable::parse('2026-09-08'));
         $this->assertSame(1, ResaleSubscription::query()->where('parent_id', $successor->id)->count());
     }
+
+    public function test_holder_change_over_time_is_a_full_transfer_for_the_old_period(): void {
+        // EcoTec: Firma aufgespalten, HLSK insolvent, der Vertrag lief bei Service weiter.
+        // 2020 an HLSK berechnet, danach gehört der Vertrag Service.
+        $admin = $this->orgAdmin();
+        $service = $this->customerWithContact('EcoTec Service GmbH', 'c-eco');
+        $hlsk = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
+        $contract = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-5', 'label' => 'Exchange Online (Plan 1)',
+            'customer_id' => $service->id, 'lexoffice_article_id' => $this->exchange->id, 'quantity' => 5, 'starts_on' => '2024-04-24', 'ends_on' => '2026-04-24',
+            'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'ended', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
+        ]);
+        (new PeriodPlanner)->sync($contract);
+        [$p2024, $p2025] = $contract->periods()->get()->all();
+        $voucher = LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-171', 'contact_external_id' => 'c-hlsk', 'voucher_type' => 'invoice',
+            'voucher_status' => 'paid', 'voucher_number' => 'RE/2024/0171', 'voucher_date' => '2024-05-11', 'total_amount' => 282.03, 'currency' => 'EUR', 'archived' => false, 'lines_synced_at' => now(),
+        ]);
+        LexofficeVoucherLine::create([
+            'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service', 'external_article_id' => 'art-exo',
+            'lexoffice_article_id' => $this->exchange->id, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 5, 'unit_name' => 'Jahr', 'unit_net' => '47.40', 'total_net' => '237.00', 'tax_rate' => 19, 'currency' => 'EUR',
+        ]);
+
+        // Der Abgleich bietet die HLSK-Rechnung mit „Periode an … abtreten" an — vorbelegt mit Kunde, Menge und Zeitraum.
+        $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $service))->assertOk();
+        $page->assertSee(__('resale.transfer.action_period', ['customer' => 'EcoTec - HLSK GmbH']));
+        $dialog = $this->actingAs($admin)->get(route('finance.resale.transfer.create', ['subscription' => $contract->sqid, 'customer' => $hlsk->sqid, 'quantity' => 5, 'starts_on' => '2024-04-24', 'ends_on' => '2025-04-23']))->assertOk();
+        $dialog->assertSee('value="5"', false)->assertSee('2024-04-24')->assertSee('2025-04-23');
+
+        $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
+            'mode' => 'customer', 'customer_id' => $hlsk->sqid, 'quantity' => 5, 'starts_on' => '2024-04-24', 'ends_on' => '2025-04-23',
+        ])->assertRedirect(route('finance.resale.show', $contract->sqid));
+
+        $assignment = ResaleSubscription::query()->where('parent_id', $contract->id)->firstOrFail();
+        $this->assertSame(['2024-04-24'], $assignment->periods()->pluck('starts_on')->map(static fn($d) => $d->toDateString())->all(), 'HLSK hat nur 2024');
+        $this->assertNull($p2024->fresh(), 'ganz abgetreten: keine 2024er-Periode mehr beim Vertrag');
+        $this->assertSame(5, $p2025->fresh()?->quantity, '2025 gehört Service');
+
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status, 'RE/2024/0171 deckt HLSKs Periode');
+        $this->assertSame(PeriodStatus::Open, $p2025->fresh()?->status, 'Service 2025 nie berechnet — verzichten oder nachberechnen');
+    }
 }

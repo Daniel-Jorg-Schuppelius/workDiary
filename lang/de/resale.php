@@ -488,6 +488,8 @@ return [
         'submit' => 'Abtreten',
         'hint' => 'Halter :holder hat :quantity Lizenzen, davon sind :available noch nicht abgetreten. Der neue Halter bekommt eigene Abrechnungsperioden; der Vertrag plant mit dem Rest.',
         'mode' => 'Neuer Halter',
+        'action_period' => 'Periode an :customer abtreten',
+        'timeline_hint' => 'Auch ein Halterwechsel im Zeitverlauf ist eine Abtretung: alle Lizenzen für den alten Zeitraum an den früheren Halter, danach läuft der Vertrag beim jetzigen Halter weiter.',
         'quantity' => 'Abgetretene Lizenzen',
         'section' => 'Abgetretene Lizenzen',
         'from' => 'Abgetreten aus',

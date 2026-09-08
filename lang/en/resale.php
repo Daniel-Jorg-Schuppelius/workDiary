@@ -488,6 +488,8 @@ return [
         'submit' => 'Transfer',
         'hint' => 'Holder :holder has :quantity licences, :available of them not yet transferred. The new holder gets its own billing periods; the contract plans with the rest.',
         'mode' => 'New holder',
+        'action_period' => 'Transfer period to :customer',
+        'timeline_hint' => 'A holder change over time is a transfer too: all licences for the old period go to the former holder, afterwards the contract continues with the current holder.',
         'quantity' => 'Transferred licences',
         'section' => 'Transferred licences',
         'from' => 'Transferred from',

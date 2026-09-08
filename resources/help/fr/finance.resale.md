@@ -91,4 +91,8 @@ détenteur avec ses propres périodes apparaît ; le contrat planifie ses
 périodes avec le reste. Chaque détenteur se voit rattacher ses propres
 factures. Si un successeur remplace le contrat (import), la cession y
 continue. Un contrat avec cessions ne se supprime qu’une fois les cessions
-retirées.
+retirées. Un changement de détenteur dans le temps — une société se scinde
+et la nouvelle reprend les contrats — est aussi une cession : toutes les
+licences de l’ancienne période à l’ancien détenteur ; le rapprochement le
+propose sur une facture de l’autre client sous « Céder la période à … »,
+prérempli.
