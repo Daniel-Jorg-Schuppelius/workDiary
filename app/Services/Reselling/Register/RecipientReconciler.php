@@ -416,6 +416,26 @@ final class RecipientReconciler {
             // Verwandt je Periode: Empfänger, Firmenname des Abos oder sein Endkunde
             // teilen ein Kern-Token mit dem Namen des anderen Empfängers.
             $periodTokens = $baseTokens + self::holderTokens($row['subscription']);
+            // Unverwandter Empfänger, dessen freie Positionen in der Laufzeit der Periode
+            // zusammen genau die Periode ergeben (Delta Allround: 3 × 12 für Utes 3er-Vertrag):
+            // ein früherer Kontoinhaber. Nur bei mehr als einer Lizenz — „12 Monat" passt überall.
+            /** @var array<string, float> $sumsByContact */
+            $sumsByContact = [];
+            if ($row['required'] > 12.001) {
+                foreach ($otherRows as $lineRow) {
+                    if ($lineRow['product'] !== $row['product']) {
+                        continue;
+                    }
+                    $date = LicenseMonths::referenceDate($lineRow['line']);
+                    if ($date === null || abs($date->diffInDays($start)) > LinkProposer::WINDOW_BEFORE) {
+                        continue;
+                    }
+                    $sumsByContact[$lineRow['contact']] = ($sumsByContact[$lineRow['contact']] ?? 0.0) + $lineRow['free'];
+                }
+            }
+            // Summe = ganze Periode (nicht nur der Rest), dicht am Periodenbeginn — sonst
+            // trifft jede Firma mit zufällig gleich vielen Lizenzen.
+            $formerHolders = array_keys(array_filter($sumsByContact, static fn(float $sum): bool => abs($sum - $row['required']) < 0.001));
             foreach ([['foreign', $otherRows], ['voided', $voidedRows]] as [$bucket, $rows]) {
                 foreach ($rows as $lineRow) {
                     if ($lineRow['product'] !== $row['product']) {
@@ -431,11 +451,13 @@ final class RecipientReconciler {
                     if ($bucket === 'voided' && ((! $related && ! isset($own[$lineRow['contact']])) || $distance > LinkProposer::WINDOW_BEFORE)) {
                         continue;
                     }
-                    // Fremde Positionen nur von verwandten Empfängern — oder, wenn der
-                    // Empfänger selbst nichts Freies hat, bei exakt passender ungewöhnlicher
+                    // Fremde Positionen nur von verwandten Empfängern — oder von einem
+                    // früheren Kontoinhaber (Summe seiner Positionen = Periode) — oder, wenn
+                    // der Empfänger selbst nichts Freies hat, bei exakt passender ungewöhnlicher
                     // Menge (mehr als eine Lizenz) dicht am Periodenbeginn: Rechnung an die
                     // falsche Firma. „12 Monat" passt sonst überall.
-                    if ($bucket === 'foreign' && ! $related && ($periodRows[$index]['candidates'] !== [] || $row['needed'] <= 12.001 || abs($lineRow['free'] - $row['needed']) > 0.001 || $distance > LinkProposer::SHARED_NEAREST_DAYS)) {
+                    $former = in_array($lineRow['contact'], $formerHolders, true) && $distance <= LinkProposer::WINDOW_BEFORE;
+                    if ($bucket === 'foreign' && ! $related && ! $former && ($periodRows[$index]['candidates'] !== [] || $row['needed'] <= 12.001 || abs($lineRow['free'] - $row['needed']) > 0.001 || $distance > LinkProposer::SHARED_NEAREST_DAYS)) {
                         continue;
                     }
                     $periodRows[$index][$bucket][] = ['row' => $lineRow, 'distance' => $distance];

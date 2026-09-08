@@ -322,4 +322,42 @@ class RecipientReconcilerTest extends TestCase {
             ->assertSee('value="47.40"', false)
             ->assertSee('2025-10-26');
     }
+
+    public function test_former_account_holder_is_found_by_the_sum_of_its_lines(): void {
+        // Ute Mayershofer: Delta Allround war Lizenznehmer und wurde je Jahr mit 3 × 12 berechnet,
+        // Ute übernahm das Konto später — die Namen haben nichts gemeinsam.
+        $admin = $this->orgAdmin();
+        $ute = $this->customerWithContact('Ute Mayershofer', 'c-um');
+        $delta = $this->customerWithContact('Delta Allround Service GmbH', 'c-delta');
+        $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $ute->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2024-08-12', 'ends_on' => '2026-08-12', 'quantity' => 3, 'status' => 'ended']);
+        foreach (['RE/2024/0201' => '2024-10-16', 'RE/2025/0303' => '2025-08-12'] as $number => $date) {
+            $this->voucher('c-delta', $number, $date, [
+                ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+                ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+                ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+            ]);
+        }
+        // Zufällig ebenfalls drei Lizenzen, aber weit weg vom Periodenbeginn: kein Kandidat.
+        $this->voucher('c-mb', 'RE/2025/0100', '2025-02-08', [
+            ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95'],
+        ]);
+
+        $result = (new RecipientReconciler)->forCustomer($this->organization, $ute);
+        [$first, $second] = $result['periods'];
+        $this->assertSame(['Delta Allround Service GmbH'], array_values(array_unique(array_map(static fn(array $c): string => (string) $c['row']['recipient'], $first['foreign']))));
+        $this->assertCount(3, $first['foreign'], 'alle drei Positionen der Sammelrechnung');
+        $this->assertCount(3, $second['foreign']);
+        $this->assertSame($delta->id, $first['foreign'][0]['row']['recipient_id']);
+
+        $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $ute))->assertOk();
+        $page->assertSee('Rechnung an Delta Allround Service GmbH')->assertSee(__('resale.reconcile.action.rehome', ['customer' => 'Delta Allround Service GmbH']))->assertDontSee('RE/2025/0100');
+
+        // Ganzer Vertrag gehörte Delta: Halter wechseln, Vorschlagslauf deckt beide Jahre.
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.rehome', $ute), ['period_id' => $first['period']->sqid, 'target_id' => $delta->sqid])
+            ->assertRedirect(route('finance.resale.reconcile.show', $delta));
+        $this->assertSame([PeriodStatus::Billed, PeriodStatus::Billed], $subscription->periods()->get()->map(static fn($p) => $p->status)->all());
+    }
 }
