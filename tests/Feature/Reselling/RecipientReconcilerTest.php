@@ -305,19 +305,21 @@ class RecipientReconcilerTest extends TestCase {
         $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
         $product = $result['products'][0];
         $this->assertSame('Exchange Online (Plan 1)', $product['label']);
-        $this->assertSame('2024-10-26', $product['gap_since']?->toDateString(), 'ab der ersten Position, die keine Periode mehr trifft');
+        // Die 24er-Position vom Oktober 2024 deckt noch die letzte Periode (rückwirkend, Fenster verlängert);
+        // erst die vom Oktober 2025 trifft keine Periode mehr — ab da fehlt der Vertrag.
+        $this->assertSame('2025-10-26', $product['gap_since']?->toDateString(), 'ab der ersten Position, die keine Periode mehr trifft');
         $gaps = array_values(array_filter($result['lines'], static fn(array $l): bool => $l['gap']));
-        $this->assertSame(['RE/2025/0945', 'RE/2024/0724'], array_map(static fn(array $l): string => (string) $l['line']->voucher->voucher_number, $gaps));
+        $this->assertSame(['RE/2025/0945'], array_map(static fn(array $l): string => (string) $l['line']->voucher->voucher_number, $gaps));
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
-        $page->assertSee('Position ohne Abo ab 26.10.2024')->assertSee('Abo aus Position anlegen');
+        $page->assertSee('Position ohne Abo ab 26.10.2025')->assertSee('Abo aus Position anlegen');
 
         // Dialog aus der Position: Produkt, Menge (1 Lizenz — „24 Monat" ohne Zeitraum), Beginn, Jahrespreis vorbelegt.
-        $line = $gaps[1]['line'];
+        $line = $gaps[0]['line'];
         $dialog = $this->actingAs($admin)->get(route('finance.resale.create', ['customer' => $customer->sqid, 'line' => Sqid::encode(LexofficeVoucherLine::class, $line->id)]))->assertOk();
         $dialog->assertSee('value="Exchange Online (Plan 1)"', false)
             ->assertSee('name="quantity"', false)
             ->assertSee('value="47.40"', false)
-            ->assertSee('2024-10-26');
+            ->assertSee('2025-10-26');
     }
 }

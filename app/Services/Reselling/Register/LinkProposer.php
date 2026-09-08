@@ -47,13 +47,37 @@ final class LinkProposer {
      */
     public const SHARED_NEAREST_DAYS = 45;
 
+    private const PASS_NEAREST = 'nearest';
+
+    private const PASS_RESERVED = 'reserved';
+
+    private const PASS_FREE = 'free';
+
     /** @var array<int, array<int, true>> Position → Abos, an die sie in diesem Lauf schon hängt (Mehrjahres-Positionen bleiben beim Abo). */
     private array $linkedSubscriptions = [];
 
     /** @var array<int, array<int, ResalePeriodLink>> Periode → Position → Vorschlag dieses Laufs (zweiter Pass erhöht statt zu doppeln). */
     private array $proposed = [];
 
+    /** @var array<int, list<int>> Position → Indizes der Perioden, deren Laufzeit das Bezugsdatum enthält. */
+    private array $containing = [];
+
+    /** @var array<int, float> Periodenindex → noch offene Lizenzmonate (für die Reservierung im Fenster-Pass). */
+    private array $needed = [];
+
     public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier()) {}
+
+    /**
+     * Fensterende für eine Position: 730 Tage nach Periodenbeginn — bei
+     * Mehrperioden-Positionen („48 Monat" für vier Jahre, rückwirkend
+     * berechnet) um die zusätzlichen Monate je Lizenz verlängert, sonst
+     * fände die erste Periode ihre Rechnung nie.
+     */
+    public static function windowEnd(CarbonImmutable $periodStart, int $termMonths, LexofficeVoucherLine $line): CarbonImmutable {
+        $extra = (int) round(LicenseMonths::split($line)['months']) - $termMonths;
+
+        return $periodStart->addDays(self::WINDOW_AFTER)->addMonthsNoOverflow(max(0, $extra));
+    }
 
     /**
      * @return array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}
@@ -148,13 +172,19 @@ final class LinkProposer {
                 $states[] = ['period' => $period, 'subscription' => $subscription, 'needed' => max(0.0, $period->requiredMonths() - $confirmed), 'covered' => $confirmed];
             }
             $nearest = $this->nearestPeriods($states, $lines, $contactsBySubscription);
+            $this->needed = array_map(static fn(array $state): float => $state['needed'], $states);
 
-            foreach ([true, false] as $nearestOnly) {
+            // Drei Pässe: nächste Periode je Position; dann chronologisch, aber eine Position,
+            // deren Bezugsdatum in der Laufzeit einer anderen noch offenen Periode liegt, bleibt
+            // für diese reserviert (Rechnung vom Februar 2026 gehört dem Nachfolger, nicht
+            // dem alten Vertrag von 2024); zuletzt frei — Nachberechnungen über mehrere Jahre
+            // („48 Monat" im August 2025) füllen die ältesten offenen Perioden.
+            foreach ([self::PASS_NEAREST, self::PASS_RESERVED, self::PASS_FREE] as $pass) {
                 foreach ($states as $index => $state) {
                     if ($state['needed'] <= 0.001) {
                         continue;
                     }
-                    $states[$index] = $this->allocate($index, $state, $lines, $remaining, $contactsBySubscription, $productOwners, $nearest, $nearestOnly, $result);
+                    $states[$index] = $this->allocate($index, $state, $lines, $remaining, $contactsBySubscription, $productOwners, $nearest, $pass, $result);
                 }
             }
 
@@ -192,7 +222,8 @@ final class LinkProposer {
      * @param  array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}  $result
      * @return array{period: ResalePeriod, subscription: ResaleSubscription, needed: float, covered: float}
      */
-    private function allocate(int $index, array $state, Collection $lines, array &$remaining, array $contactsBySubscription, array $productOwners, array $nearest, bool $nearestOnly, array &$result): array {
+    private function allocate(int $index, array $state, Collection $lines, array &$remaining, array $contactsBySubscription, array $productOwners, array $nearest, string $pass, array &$result): array {
+        $nearestOnly = $pass === self::PASS_NEAREST;
         $period = $state['period'];
         $subscription = $state['subscription'];
         $contacts = array_flip($contactsBySubscription[$subscription->id] ?? []);
@@ -200,7 +231,7 @@ final class LinkProposer {
             return $state;
         }
         $windowStart = $period->starts_on->subDays(self::WINDOW_BEFORE);
-        $windowEnd = $period->starts_on->addDays(self::WINDOW_AFTER);
+        $termMonths = $period->termMonths();
         $product = $this->productKey($subscription);
         $mentionKeys = $subscription->foreignCustomer !== null ? $this->mentionKeys($subscription->foreignCustomer) : null;
 
@@ -214,7 +245,7 @@ final class LinkProposer {
             if ($date === null) {
                 continue;
             }
-            if (($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) && ! LicenseMonths::serviceCovers($line, $period->starts_on)) {
+            if (($date->lessThan($windowStart) || $date->greaterThan(self::windowEnd($period->starts_on, $termMonths, $line))) && ! LicenseMonths::serviceCovers($line, $period->starts_on)) {
                 continue;
             }
             if (! $this->matchesProduct($subscription, $line)) {
@@ -223,6 +254,9 @@ final class LinkProposer {
             $mentions = $mentionKeys !== null && $this->mentions($mentionKeys, $line->text() . ' ' . (string) $line->voucher->voucher_text);
             $distance = abs($date->diffInDays($period->starts_on));
             if ($nearestOnly && ($nearest[$line->id] ?? null) !== $index) {
+                continue;
+            }
+            if ($pass === self::PASS_RESERVED && $this->reservedElsewhere($line->id, $index)) {
                 continue;
             }
             // Mehrere Endkunden desselben Produkts am selben Kontakt: ohne Nennung
@@ -234,11 +268,14 @@ final class LinkProposer {
             // („24 Monat" = eine Lizenz über zwei Jahre), bleibt beim Abo.
             // Umgekehrt: eine Position, die schon an einem ANDEREN Abo hängt, kommt erst nach den freien.
             $continuity = isset($this->linkedSubscriptions[$line->id][$subscription->id]) ? 0 : (isset($this->linkedSubscriptions[$line->id]) ? 2 : 1);
-            $candidates[] = ['line' => $line, 'mentions' => $mentions ? 0 : 1, 'continuity' => $continuity, 'distance' => $distance];
+            // Passgenau zuerst: eine Jahresperiode nimmt Positionen mit 12 Monaten je Lizenz
+            // („12 Monat", „1 Jahr") vor Mehrjahres-Positionen („48 Monat" = vier Jahre eines
+            // anderen Vertrags) — die kommen erst dran, wenn nichts Passendes mehr frei ist.
+            $fit = abs(LicenseMonths::split($line)['months'] - $termMonths);
+            $candidates[] = ['line' => $line, 'mentions' => $mentions ? 0 : 1, 'continuity' => $continuity, 'fit' => $fit, 'distance' => $distance];
         }
-        usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['continuity'] <=> $b['continuity'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->id <=> $b['line']->id);
+        usort($candidates, static fn(array $a, array $b): int => $a['mentions'] <=> $b['mentions'] ?: $a['continuity'] <=> $b['continuity'] ?: $a['fit'] <=> $b['fit'] ?: $a['distance'] <=> $b['distance'] ?: $a['line']->id <=> $b['line']->id);
 
-        $termMonths = $period->termMonths();
         foreach ($candidates as $candidate) {
             if ($state['needed'] <= 0.001) {
                 break;
@@ -283,10 +320,29 @@ final class LinkProposer {
             $remaining[$line->id] -= $take;
             $state['needed'] -= $take;
             $state['covered'] += $take;
+            $this->needed[$index] = $state['needed'];
             $this->linkedSubscriptions[$line->id][$subscription->id] = true;
         }
 
         return $state;
+    }
+
+    /**
+     * Liegt das Bezugsdatum der Position in der Laufzeit einer ANDEREN Periode,
+     * die noch Lizenzmonate braucht — während die aktuelle es nicht enthält?
+     */
+    private function reservedElsewhere(int $lineId, int $index): bool {
+        $containing = $this->containing[$lineId] ?? [];
+        if (in_array($index, $containing, true)) {
+            return false;
+        }
+        foreach ($containing as $other) {
+            if (($this->needed[$other] ?? 0.0) > 0.001) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -308,15 +364,21 @@ final class LinkProposer {
                 continue;
             }
             $best = null;
+            $containing = [];
             foreach ($states as $index => $state) {
                 if (! in_array($contact, $contactsBySubscription[$state['subscription']->id] ?? [], true) || ! $this->matchesProduct($state['subscription'], $line)) {
                     continue;
                 }
-                $distance = abs($date->diffInDays($state['period']->starts_on));
+                $period = $state['period'];
+                $distance = (int) abs($date->diffInDays($period->starts_on));
                 if ($best === null || $distance < $best[1]) {
                     $best = [$index, $distance];
                 }
+                if (! $date->lessThan($period->starts_on) && ! $date->greaterThan($period->ends_on)) {
+                    $containing[] = $index;
+                }
             }
+            $this->containing[$line->id] = $containing;
             $nearest[$line->id] = $best[0] ?? null;
         }
 

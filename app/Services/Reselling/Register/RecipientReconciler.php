@@ -397,16 +397,17 @@ final class RecipientReconciler {
 
         foreach ($periodRows as $index => $row) {
             $start = $row['period']->starts_on;
+            $term = $row['period']->termMonths();
             $windowStart = $start->subDays(LinkProposer::WINDOW_BEFORE);
-            $windowEnd = $start->addDays(LinkProposer::WINDOW_AFTER);
             foreach ($lineRows as $lineRow) {
                 if ($lineRow['product'] !== $row['product']) {
                     continue;
                 }
                 // Bezug = Beginn des Leistungszeitraums, sonst Rechnungsdatum; nur im Fenster der
-                // Periode — oder der Leistungszeitraum deckt den Periodenbeginn (Mehrjahres-Position).
+                // Periode (bei Mehrperioden-Positionen verlängert) — oder der Leistungszeitraum
+                // deckt den Periodenbeginn.
                 $date = LicenseMonths::referenceDate($lineRow['line']);
-                if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
+                if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan(LinkProposer::windowEnd($start, $term, $lineRow['line']))) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
                     continue;
                 }
                 $distance = (int) abs($date->diffInDays($start));
@@ -421,7 +422,7 @@ final class RecipientReconciler {
                         continue;
                     }
                     $date = LicenseMonths::referenceDate($lineRow['line']);
-                    if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan($windowEnd)) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
+                    if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan(LinkProposer::windowEnd($start, $term, $lineRow['line']))) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
                         continue;
                     }
                     $distance = (int) abs($date->diffInDays($start));

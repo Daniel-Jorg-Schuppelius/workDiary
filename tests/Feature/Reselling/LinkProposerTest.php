@@ -309,4 +309,37 @@ class LinkProposerTest extends TestCase {
         $bySubscription = ResalePeriodLink::query()->get()->groupBy('linkable_id')->map(static fn($links) => $links->pluck('subscription_id')->unique()->count());
         $this->assertSame([1, 1, 1, 1], $bySubscription->values()->all());
     }
+
+    public function test_retroactive_four_year_line_fills_the_oldest_periods_of_its_contract(): void {
+        // Marina-Vulkan-Muster: vier Jahre eines 1er-Vertrags im August 2025 als „48 Monat" nachberechnet,
+        // daneben ein zweiter Vertrag ab Mai 2025 mit einer 12er-Position auf derselben Rechnung.
+        $this->travelTo('2026-09-08');
+        $customer = $this->customerWithContact('Marina Vulkan Werft', 'c-mv');
+        $old = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2022-04-01', 'ends_on' => '2026-04-01', 'status' => 'cancelled']);
+        $new = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-05-06', 'ends_on' => '2026-05-06', 'status' => 'cancelled']);
+        $this->voucher('c-mv', 'RE/2025/0902', '2025-08-22', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 48, 'net' => '3.95']]);
+        $this->voucher('c-mv', 'RE/2025/0903', '2025-08-22', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 12, 'net' => '3.95']]);
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(5, $result['linked'], 'vier alte Perioden plus die neue');
+        $this->assertSame(['RE/2025/0902', 'RE/2025/0902', 'RE/2025/0902', 'RE/2025/0902'], $old->periods()->get()->map(static fn($p) => $p->links()->first()?->voucher_number)->all(), '48 Monate = die vier Jahre des alten Vertrags, auch außerhalb des 730-Tage-Fensters');
+        $this->assertSame('RE/2025/0903', $new->periods()->first()?->links()->first()?->voucher_number, 'die passende 12er-Position vor der 48er');
+        $this->assertSame(0, $result['lines_without_subscription']);
+    }
+
+    public function test_invoice_inside_the_successors_period_is_not_taken_by_the_old_contract(): void {
+        // ReproBerlin-Muster: Telekom-Vertrag 2024/2025 noch offen, der Quality-Hosting-Nachfolger ab Februar 2026
+        // wird pünktlich berechnet — diese Rechnung gehört dem Nachfolger, nicht den alten Perioden im Fenster.
+        $this->travelTo('2026-09-08');
+        $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
+        $standard = $this->article('art-bs', 'Microsoft 365 Business Standard', '11.70');
+        $telekom = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2024-02-25', 'ends_on' => '2026-02-25', 'status' => 'superseded']);
+        $qh = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'provider' => 'qualityhosting', 'customer_id' => $customer->id, 'lexoffice_article_id' => $standard->id, 'starts_on' => '2026-02-25']);
+        $this->voucher('c-repro', 'RE/2026/1026', '2026-02-25', [['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 12, 'net' => '11.70']]);
+        $this->voucher('c-repro', 'RE/2025/0896', '2025-08-21', [['article' => $standard, 'name' => 'Microsoft 365 Business Standard', 'quantity' => 24, 'net' => '11.70']]);
+
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame('RE/2026/1026', $qh->periods()->first()?->links()->first()?->voucher_number, 'Rechnung in der Laufzeit des Nachfolgers bleibt beim Nachfolger');
+        $this->assertSame(['RE/2025/0896', 'RE/2025/0896'], $telekom->periods()->get()->map(static fn($p) => $p->links()->first()?->voucher_number)->all(), 'die 24 Monate decken beide alten Jahre');
+    }
 }

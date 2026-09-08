@@ -171,11 +171,16 @@ class ResalePeriodController extends Controller {
         $lines = $contacts === [] ? collect() : LexofficeVoucherLine::query()
             ->whereNotNull('lexoffice_article_id')
             ->whereHas('voucher', static fn(Builder $q) => $q->whereIn('contact_external_id', $contacts)->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided'])
-                ->where('voucher_date', '>=', DateRange::day($period->starts_on->subDays(LinkProposer::WINDOW_BEFORE)))
-                ->where('voucher_date', '<', DateRange::dayAfter($period->starts_on->addDays(LinkProposer::WINDOW_AFTER))))
+                ->where('voucher_date', '>=', DateRange::day($period->starts_on->subDays(LinkProposer::WINDOW_BEFORE))))
             ->with(['voucher:id,voucher_number,voucher_date,contact_external_id,service_starts_on,service_ends_on', 'article:id,name,unit_name,resale_role'])
             ->get()
             ->filter(static fn(LexofficeVoucherLine $l): bool => $classifier->isLicense($l->article))
+            // Fensterende je Position: Mehrperioden-Positionen („48 Monat") dürfen Jahre später kommen.
+            ->filter(static function (LexofficeVoucherLine $l) use ($period): bool {
+                $date = \App\Services\Reselling\Register\LicenseMonths::referenceDate($l);
+
+                return $date !== null && (! $date->greaterThan(LinkProposer::windowEnd($period->starts_on, $period->termMonths(), $l)) || \App\Services\Reselling\Register\LicenseMonths::serviceCovers($l, $period->starts_on));
+            })
             ->sortBy([static fn(LexofficeVoucherLine $a, LexofficeVoucherLine $b): int => ($b->voucher->voucher_date <=> $a->voucher->voucher_date) ?: ($a->position <=> $b->position)])
             ->values();
         $consumed = [];
