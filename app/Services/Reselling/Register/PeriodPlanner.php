@@ -123,6 +123,21 @@ final class PeriodPlanner {
                     continue;
                 }
                 if ($period->status->isDecided()) {
+                    // Entschiedene Perioden bleiben — außer die Menge hat sich durch eine
+                    // Abtretung geändert: die Deckung bleibt, Soll und Status folgen der
+                    // neuen Menge (4 statt 9 Lizenzen → 48 von 48 = berechnet, nicht teilweise).
+                    if ($subscription->assignments->isNotEmpty() && $period->quantity !== $quantity) {
+                        $period->fill(['quantity' => $quantity, 'expected_purchase' => $expectedPurchase, 'expected_sale' => $expectedSale]);
+                        if (in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial, PeriodStatus::Billed], true)) {
+                            $period->load('links');
+                            $covered = $period->coveredMonths();
+                            $period->status = $covered >= $period->requiredMonths() - 0.001 ? PeriodStatus::Billed : ($covered > 0.001 ? PeriodStatus::Partial : PeriodStatus::Open);
+                        }
+                        $period->save();
+                        $result['updated']++;
+
+                        continue;
+                    }
                     $result['kept']++;
 
                     continue;

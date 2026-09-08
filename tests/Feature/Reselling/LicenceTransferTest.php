@@ -193,4 +193,38 @@ class LicenceTransferTest extends TestCase {
         $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status, 'RE/2024/0171 deckt HLSKs Periode');
         $this->assertSame(PeriodStatus::Open, $p2025->fresh()?->status, 'Service 2025 nie berechnet — verzichten oder nachberechnen');
     }
+
+    public function test_transfer_after_confirmed_periods_reduces_their_quantity_and_settles_them(): void {
+        // Prod-Fall Schub & Schlepp: Perioden waren schon mit 9 Lizenzen bestätigt (4 Schub-Positionen = teilweise),
+        // dann kam die Abtretung von 5 an Märkische — die bestätigten Perioden müssen auf 4 fallen und damit voll sein.
+        $admin = $this->orgAdmin();
+        $schub = $this->customerWithContact('Schub- und Schleppreederei U. Golka GmbH & CO. KG', 'c-schub');
+        $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
+        $contract = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
+            'customer_id' => $schub->id, 'lexoffice_article_id' => $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-13', 'ends_on' => '2026-10-18',
+            'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'cancelled', 'currency' => 'EUR', 'sale_unit_price' => '47.40',
+        ]);
+        (new PeriodPlanner)->sync($contract);
+        $this->invoice('c-schub', 'RE/2024/0719', '2024-10-23', 4);
+        $this->invoice('c-mb', 'RE/2024/0718', '2024-10-23', 5);
+        (new LinkProposer)->propose($this->organization);
+        $first = $contract->periods()->firstOrFail();
+        $this->assertSame(PeriodStatus::Partial, $first->status, '48 von 108 — Schub allein');
+        $this->actingAs($admin)->post(route('finance.resale.periods.confirm', $first->sqid))->assertRedirect();
+        $this->assertNotNull($first->fresh()?->decided_at);
+
+        $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
+            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2024-10-13',
+        ])->assertRedirect(route('finance.resale.show', $contract->sqid));
+
+        $first->refresh();
+        $this->assertSame(4, $first->quantity, 'auch die bestätigte Periode folgt der Abtretung');
+        $this->assertSame(PeriodStatus::Billed, $first->status, '48 von 48');
+        $this->assertNotNull($first->decided_at, 'Entscheidung bleibt');
+        $this->assertSame('189.60', $first->expected_sale?->getAmount(), '4 × 47,40');
+        $assignment = ResaleSubscription::query()->where('parent_id', $contract->id)->firstOrFail();
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status, 'Märkisches fünf Positionen decken die Abtretung');
+    }
 }
