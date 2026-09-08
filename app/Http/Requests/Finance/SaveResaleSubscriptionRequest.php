@@ -52,7 +52,10 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'lexoffice_article_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('lexoffice_articles')],
             'quantity' => ['required', 'integer', 'min:1', 'max:100000'],
             'starts_on' => ['required', 'date_format:Y-m-d'],
-            'ends_on' => ['nullable', 'date_format:Y-m-d', 'after:starts_on'],
+            // Gleicher Tag ist erlaubt: der Anbieter-Import legt Verträge an, die am
+            // Tag der Ablösung begannen und endeten — sonst ließe sich an ihnen nichts
+            // mehr ändern, nicht einmal der Halter.
+            'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
             'term_months' => ['required', 'integer', 'min:1', 'max:120'],
             'interval' => ['required', Rule::enum(BillingFrequency::class)],
             'renewal' => ['required', Rule::enum(RenewalMode::class)],

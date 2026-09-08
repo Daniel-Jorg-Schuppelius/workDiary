@@ -171,6 +171,22 @@ class ResaleSubscriptionTest extends TestCase {
         $this->assertSame(0, ResalePeriod::query()->count());
     }
 
+    public function test_zero_length_contract_from_migration_day_can_still_change_its_holder(): void {
+        // Telekom → Quality Hosting am selben Tag: Beginn = Ende. Der Halter muss trotzdem änderbar sein.
+        $admin = $this->orgAdmin();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ambulanter Pflegedienst']);
+        $subscription = ResaleSubscription::query()->create(array_merge($this->payload(['holder' => 'none']), [
+            'organization_id' => $this->organization->id, 'provider' => 'telekom_marketplace', 'external_id' => 'ent-1', 'external_order_id' => '4413689',
+            'starts_on' => '2026-03-26', 'ends_on' => '2026-03-26', 'renewal' => 'cancel', 'status' => 'superseded', 'currency' => 'EUR',
+        ]));
+        $this->actingAs($admin)->put(route('finance.resale.update', $subscription->sqid), $this->payload([
+            'holder' => 'customer', 'customer_id' => $customer->sqid, 'provider' => 'telekom_marketplace', 'external_id' => 'ent-1',
+            'starts_on' => '2026-03-26', 'ends_on' => '2026-03-26', 'renewal' => 'cancel', 'status' => 'superseded',
+        ]))->assertRedirect(route('finance.resale.show', $subscription->sqid))->assertSessionHasNoErrors();
+        $this->assertSame($customer->id, $subscription->fresh()?->customer_id);
+        $this->assertCount(0, $subscription->fresh()?->periods ?? collect(), 'ein Tag ist keine Periode');
+    }
+
     public function test_subscriptions_are_organization_scoped(): void {
         $other = Organization::factory()->create();
         $foreign = ResaleSubscription::query()->create([
