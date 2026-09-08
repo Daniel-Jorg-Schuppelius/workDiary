@@ -92,13 +92,19 @@ final class PeriodPlanner {
             }
             // Auf Cent runden: die Periode speichert zwei Nachkommastellen, der
             // Stückpreis vier — sonst gilt jede Neuplanung als Änderung.
-            $expectedSale = $subscription->expectedSalePerPeriod()?->withScale(2);
-            $expectedPurchase = $subscription->expectedPurchasePerPeriod()?->withScale(2);
-
+            $subscription->loadMissing('assignments');
             $seen = [];
             foreach ($planned as $slot) {
                 $key = $slot['starts_on']->toDateString();
+                // Abgetretene Lizenzen berechnet der andere Halter: Periodenmenge = Rest;
+                // ganz abgetreten = keine Periode beim Vertrag (nur bei den Abtretungen).
+                $quantity = $subscription->billableQuantityOn($slot['starts_on']);
+                if ($quantity <= 0 && ! (($existing[$key] ?? null)?->status->isDecided() ?? false)) {
+                    continue;
+                }
                 $seen[$key] = true;
+                $expectedSale = $subscription->sale_unit_price?->times($quantity)->withScale(2);
+                $expectedPurchase = $subscription->purchase_unit_price?->times($quantity)->withScale(2);
                 $period = $existing[$key] ?? null;
                 if ($period === null) {
                     ResalePeriod::query()->create([
@@ -106,7 +112,7 @@ final class PeriodPlanner {
                         'subscription_id' => $subscription->id,
                         'starts_on' => $slot['starts_on'],
                         'ends_on' => $slot['ends_on'],
-                        'quantity' => $subscription->quantity,
+                        'quantity' => $quantity,
                         'expected_purchase' => $expectedPurchase,
                         'expected_sale' => $expectedSale,
                         'currency' => $subscription->currency,
@@ -123,7 +129,7 @@ final class PeriodPlanner {
                 }
                 $period->fill([
                     'ends_on' => $slot['ends_on'],
-                    'quantity' => $subscription->quantity,
+                    'quantity' => $quantity,
                     'expected_purchase' => $expectedPurchase,
                     'expected_sale' => $expectedSale,
                     'currency' => $subscription->currency,

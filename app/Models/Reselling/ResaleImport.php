@@ -50,6 +50,8 @@ class ResaleImport extends Model {
     public const KIND_CONTRACTS = 'contracts';
     public const KIND_PRICELIST = 'pricelist';
 
+    public const KIND_GENERIC = 'generic';
+
     protected $table = 'resale_imports';
 
     protected $fillable = [

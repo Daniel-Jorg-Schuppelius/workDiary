@@ -15862,6 +15862,7 @@ CREATE TABLE `resale_subscriptions` (
   `currency` char(3) NOT NULL DEFAULT 'EUR',
   `status` varchar(16) NOT NULL DEFAULT 'active',
   `successor_id` bigint(20) unsigned DEFAULT NULL,
+  `parent_id` bigint(20) unsigned DEFAULT NULL,
   `contract_id` bigint(20) unsigned DEFAULT NULL,
   `domain_projection_id` bigint(20) unsigned DEFAULT NULL,
   `raw_hash` varchar(64) DEFAULT NULL,
@@ -15886,6 +15887,7 @@ CREATE TABLE `resale_subscriptions` (
   KEY `resale_subs_org_foreign_idx` (`organization_id`,`foreign_customer_id`),
   KEY `resale_subscriptions_lexoffice_article_id_foreign` (`lexoffice_article_id`),
   KEY `resale_subscriptions_import_id_foreign` (`import_id`),
+  KEY `rs_parent_fk` (`parent_id`),
   CONSTRAINT `resale_subscriptions_article_id_foreign` FOREIGN KEY (`article_id`) REFERENCES `articles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_subscriptions_contract_id_foreign` FOREIGN KEY (`contract_id`) REFERENCES `contracts` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_subscriptions_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -15895,7 +15897,8 @@ CREATE TABLE `resale_subscriptions` (
   CONSTRAINT `resale_subscriptions_import_id_foreign` FOREIGN KEY (`import_id`) REFERENCES `resale_imports` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_subscriptions_lexoffice_article_id_foreign` FOREIGN KEY (`lexoffice_article_id`) REFERENCES `lexoffice_articles` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_subscriptions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `resale_subscriptions_successor_id_foreign` FOREIGN KEY (`successor_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE SET NULL
+  CONSTRAINT `resale_subscriptions_successor_id_foreign` FOREIGN KEY (`successor_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `rs_parent_fk` FOREIGN KEY (`parent_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `reselling_company_mappings`;
@@ -21192,3 +21195,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (791,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (792,'2027_02_20_100600_create_resale_purchase_entries_table',61);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',62);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',63);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',64);

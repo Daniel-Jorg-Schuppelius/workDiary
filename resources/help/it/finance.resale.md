@@ -70,3 +70,21 @@ registro (l’export del fornitore non lo conosce): la riga prodotto dice
 dialogo con articolo, quantità, inizio e prezzo presi dalla fattura.
 L’assegnazione può colpire un periodo di un altro abbonamento dello stesso
 destinatario — mai un periodo di un altro cliente.
+
+**Elenco generico:** oltre agli export dei fornitori (Telekom, Quality
+Hosting) l’import accetta qualsiasi elenco CSV o XLSX le cui colonne siano
+riconoscibili dal nome — tedesco o inglese: id, azienda, prodotto, quantità,
+inizio, fine, intervallo, durata, prezzo di acquisto, prezzo di vendita,
+fornitore, ordine. Obbligatori sono azienda, prodotto e inizio. Senza id
+viene derivato da azienda, prodotto e inizio, così un nuovo import aggiorna
+gli stessi abbonamenti invece di duplicarli. Il fornitore viene dalla
+colonna o dal dialogo; un modello CSV è nel dialogo di import.
+
+**Cedere licenze:** se due aziende condividono la sede e la seconda usa una
+parte delle licenze di un contratto, cedi quelle licenze sul contratto
+(«Cedere licenze»: titolare, quantità, periodo, prezzo di vendita). Nasce un
+abbonamento separato per l’altro titolare con periodi propri; il contratto
+pianifica i suoi periodi con il resto. Ogni titolare riceve le proprie
+fatture assegnate. Se un successore sostituisce il contratto (import), la
+cessione prosegue lì. Un contratto con cessioni si elimina solo dopo aver
+rimosso le cessioni.

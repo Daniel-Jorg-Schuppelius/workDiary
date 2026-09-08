@@ -58,6 +58,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property CurrencyCode $currency
  * @property SubscriptionStatus $status
  * @property int|null $successor_id
+ * @property int|null $parent_id
  * @property int|null $contract_id
  * @property int|null $domain_projection_id
  * @property string|null $raw_hash
@@ -111,6 +112,7 @@ class ResaleSubscription extends Model {
         'currency',
         'status',
         'successor_id',
+        'parent_id',
         'contract_id',
         'domain_projection_id',
         'raw_hash',
@@ -176,6 +178,47 @@ class ResaleSubscription extends Model {
     /** @return HasMany<ResaleSubscription, $this> */
     public function predecessors(): HasMany {
         return $this->hasMany(self::class, 'successor_id');
+    }
+
+    /**
+     * Vertrag, aus dem dieses Abo abgetreten wurde (Lizenzabtretung: zwei
+     * Firmen im selben Haus, ein Vertrag beim Anbieter).
+     *
+     * @return BelongsTo<ResaleSubscription, $this>
+     */
+    public function parent(): BelongsTo {
+        return $this->belongsTo(self::class, 'parent_id');
+    }
+
+    /**
+     * Abgetretene Teile dieses Vertrags — eigener Halter, eigene Menge, eigene Perioden.
+     *
+     * @return HasMany<ResaleSubscription, $this>
+     */
+    public function assignments(): HasMany {
+        return $this->hasMany(self::class, 'parent_id')->orderBy('starts_on');
+    }
+
+    public function isAssignment(): bool {
+        return $this->parent_id !== null;
+    }
+
+    /** Lizenzen, die am Tag an andere Halter abgetreten sind. */
+    public function assignedQuantityOn(CarbonImmutable $day): int {
+        $assigned = 0;
+        foreach ($this->assignments as $assignment) {
+            if ($assignment->starts_on->greaterThan($day) || ($assignment->ends_on !== null && $assignment->ends_on->lessThan($day))) {
+                continue;
+            }
+            $assigned += $assignment->quantity;
+        }
+
+        return $assigned;
+    }
+
+    /** Lizenzen, die der eigene Halter am Tag berechnet bekommt: Vertragsmenge abzüglich Abtretungen. */
+    public function billableQuantityOn(CarbonImmutable $day): int {
+        return max(0, $this->quantity - $this->assignedQuantityOn($day));
     }
 
     /** @return BelongsTo<Contract, $this> */

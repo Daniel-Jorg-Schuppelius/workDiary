@@ -26,4 +26,14 @@
     <x-input-field name="telekom" type="file" :label="__('resale.import.telekom')" accept=".csv,.txt,text/csv,text/plain" />
     <x-input-field name="qualityhosting" type="file" :label="__('resale.import.qualityhosting')" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
     <x-input-field name="pricelist" type="file" :label="__('resale.import.pricelist')" accept=".xlsx,.xlsm,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" :hint="__('resale.import.pricelist_hint')" />
+
+    {{-- Generische Liste: jede Quelle ohne eigenen Reader (Anbieter-Portal-Export, eigene Tabelle). --}}
+    <div class="divider my-1 text-xs">{{ __('resale.import.generic_section') }}</div>
+    <x-input-field name="generic" type="file" :label="__('resale.import.generic')" accept=".csv,.txt,.xlsx,.xlsm,text/csv,text/plain,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" :hint="__('resale.import.generic_hint')" />
+    <x-select-field name="generic_provider" :label="__('resale.field.provider')">
+        @foreach (\App\Enums\Reselling\SubscriptionProvider::cases() as $provider)
+            <option value="{{ $provider->value }}" @selected(old('generic_provider', 'other') === $provider->value)>{{ $provider->label() }}</option>
+        @endforeach
+    </x-select-field>
+    <a href="{{ route('finance.resale.import.template') }}" class="link link-hover text-xs">{{ __('resale.import.generic_template') }}</a>
 </x-modal>

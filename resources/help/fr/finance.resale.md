@@ -72,3 +72,23 @@ du … » et « Créer l’abonnement depuis la ligne » ouvre le dialogue avec
 article, quantité, début et prix issus de la facture. Le rattachement peut
 viser une période d’un autre abonnement du même destinataire — jamais une
 période d’un autre client.
+
+**Liste générique :** outre les exports fournisseurs (Telekom, Quality
+Hosting), l’import accepte toute liste CSV ou XLSX dont les colonnes sont
+reconnaissables par leur nom — allemand ou anglais : identifiant, société,
+produit, quantité, début, fin, intervalle, durée, prix d’achat, prix de
+vente, fournisseur, commande. Société, produit et début sont obligatoires.
+Sans identifiant, il est dérivé de société, produit et début, si bien qu’un
+nouvel import met à jour les mêmes abonnements au lieu de les dupliquer. Le
+fournisseur vient de la colonne ou du dialogue ; un modèle CSV se trouve
+dans le dialogue d’import.
+
+**Céder des licences :** quand deux sociétés partagent les mêmes locaux et
+que la seconde utilise une partie des licences d’un contrat, cédez ces
+licences au niveau du contrat (« Céder des licences » : détenteur,
+quantité, période, prix de vente). Un abonnement distinct pour l’autre
+détenteur avec ses propres périodes apparaît ; le contrat planifie ses
+périodes avec le reste. Chaque détenteur se voit rattacher ses propres
+factures. Si un successeur remplace le contrat (import), la cession y
+continue. Un contrat avec cessions ne se supprime qu’une fois les cessions
+retirées.

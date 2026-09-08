@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 /**
  * Reselling-Register (Feature 152, MVP-758): Abos mit Halter, Laufzeit,
@@ -103,7 +104,7 @@ class ResaleSubscriptionController extends Controller {
     }
 
     public function show(ResaleSubscription $subscription, LinkProposer $proposer): View {
-        $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'successor', 'predecessors', 'periods.decidedBy', 'periods.links.linkable', 'creator']);
+        $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'successor', 'predecessors', 'parent.customer', 'parent.foreignCustomer', 'assignments.customer', 'assignments.foreignCustomer', 'periods.decidedBy', 'periods.links.linkable', 'creator']);
 
         return view('finance.resale.show', [
             'subscription' => $subscription,
@@ -226,29 +227,141 @@ class ResaleSubscriptionController extends Controller {
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.updated'));
     }
 
-    public function destroy(ResaleSubscription $subscription): RedirectResponse {
+    public function destroy(ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
         $decided = $subscription->periods()->where('status', '!=', PeriodStatus::Open->value)->exists();
         if ($decided) {
             return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.flash.has_decisions'));
         }
+        if ($subscription->assignments()->exists()) {
+            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.transfer.flash.has_assignments'));
+        }
+        $parent = $subscription->parent;
         $subscription->delete();
+        if ($parent !== null) {
+            // Abtretung weg: der Vertrag bekommt seine Lizenzen zurück.
+            $parent->unsetRelation('assignments');
+            $planner->sync($parent);
+        }
 
         return redirect()->route('finance.resale.index')->with('success', __('resale.flash.deleted'));
+    }
+
+    /** Dialog: Lizenzen dieses Vertrags an einen anderen Halter abtreten. */
+    public function transferCreate(ResaleSubscription $subscription): View {
+        return view('finance.resale._transfer_dialog', [
+            'subscription' => $subscription->load(['assignments', 'customer', 'foreignCustomer']),
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'foreignByCustomer' => $this->foreignCustomersByCustomer(),
+        ]);
+    }
+
+    /**
+     * Abtretung anlegen: Kind-Abo mit Halter, Menge und Laufzeit; Produkt,
+     * Preise und Rhythmus vom Vertrag. Der Vertrag plant danach mit dem Rest.
+     */
+    public function transferStore(Request $request, ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
+        $validated = $request->validate([
+            'mode' => ['required', 'in:customer,foreign'],
+            'customer_id' => ['required', 'string'],
+            'foreign_customer_id' => ['nullable', 'string'],
+            'quantity' => ['required', 'integer', 'min:1'],
+            'sale_unit_price' => ['nullable', 'numeric', 'min:0'],
+            'starts_on' => ['required', 'date'],
+            'ends_on' => ['nullable', 'date', 'after:starts_on'],
+            'note' => ['nullable', 'string', 'max:1000'],
+        ]);
+        if ($subscription->isAssignment()) {
+            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.transfer.flash.nested'));
+        }
+        $customerId = Sqid::decode(Customer::class, (string) $validated['customer_id']);
+        $customer = $customerId === null ? null : Customer::query()->find($customerId);
+        $foreign = null;
+        if ($validated['mode'] === 'foreign') {
+            $foreignId = Sqid::decode(ForeignCustomer::class, (string) ($validated['foreign_customer_id'] ?? ''));
+            $foreign = $foreignId === null ? null : ForeignCustomer::query()->find($foreignId);
+            if ($foreign === null || ($customer !== null && $foreign->customer_id !== $customer->id)) {
+                return back()->withErrors(['foreign_customer_id' => __('resale.dialog.no_foreign_customers')])->withInput();
+            }
+        }
+        if ($customer === null) {
+            return back()->withErrors(['customer_id' => __('resale.transfer.error.holder')])->withInput();
+        }
+        $startsOn = CarbonImmutable::parse((string) $validated['starts_on']);
+        $subscription->load('assignments');
+        $available = $subscription->quantity - $subscription->assignedQuantityOn($startsOn);
+        $quantity = (int) $validated['quantity'];
+        if ($quantity > $available) {
+            return back()->withErrors(['quantity' => __('resale.transfer.error.quantity', ['available' => max(0, $available)])])->withInput();
+        }
+        $sequence = $subscription->assignments()->count() + 1;
+        $assignment = ResaleSubscription::query()->create([
+            'organization_id' => $subscription->organization_id,
+            'parent_id' => $subscription->id,
+            'kind' => $subscription->kind,
+            'provider' => $subscription->provider,
+            'external_id' => $subscription->external_id !== null ? $subscription->external_id . '#' . $sequence : null,
+            'label' => $subscription->label,
+            'company_name' => $foreign !== null ? $foreign->name : $customer->name,
+            'customer_id' => $foreign === null ? $customer->id : null,
+            'foreign_customer_id' => $foreign?->id,
+            'is_own_holding' => false,
+            'article_id' => $subscription->article_id,
+            'lexoffice_article_id' => $subscription->lexoffice_article_id,
+            'quantity' => $quantity,
+            'starts_on' => $startsOn->toDateString(),
+            'ends_on' => $validated['ends_on'] ?? $subscription->ends_on?->toDateString(),
+            'term_months' => $subscription->term_months,
+            'interval' => $subscription->interval,
+            'renewal' => $subscription->renewal,
+            'purchase_unit_price' => $subscription->purchase_unit_price?->getAmount(),
+            'sale_unit_price' => isset($validated['sale_unit_price']) ? (string) $validated['sale_unit_price'] : $subscription->sale_unit_price?->getAmount(),
+            'currency' => $subscription->currency,
+            'status' => $subscription->status,
+            'notes' => $validated['note'] ?? null,
+            'created_by_user_id' => $request->user()?->id,
+        ]);
+        $planner->sync($assignment);
+        $subscription->unsetRelation('assignments');
+        $planner->sync($subscription);
+
+        return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
     }
 
     public function importCreate(): View {
         return view('finance.resale._import_dialog');
     }
 
+    /** CSV-Vorlage für die generische Liste: Spaltennamen, die der Reader erkennt, plus eine Beispielzeile. */
+    public function importTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse {
+        $rows = [
+            ['Kennung', 'Firma', 'Produkt', 'Menge', 'Beginn', 'Ende', 'Intervall', 'Laufzeit (Monate)', 'Einkaufspreis', 'Verkaufspreis', 'Anbieter', 'Bestellnummer'],
+            ['V-2026-001', 'Beispiel GmbH', 'Microsoft 365 Business Standard', '3', '01.03.2026', '', 'jährlich', '12', '128,38', '145,56', 'manual', ''],
+        ];
+
+        return response()->streamDownload(static function () use ($rows): void {
+            $out = fopen('php://output', 'wb');
+            if ($out === false) {
+                return;
+            }
+            fwrite($out, "\xEF\xBB\xBF");
+            foreach ($rows as $row) {
+                fputcsv($out, $row, ';', '"', '\\');
+            }
+            fclose($out);
+        }, 'abo-liste-vorlage.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+    }
+
     public function importStore(Request $request, MarketplaceImporter $importer): RedirectResponse {
-        $request->validate([
+        $validated = $request->validate([
             'telekom' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt'],
             'qualityhosting' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
             'pricelist' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
+            'generic' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt,xlsx,xlsm'],
+            'generic_provider' => ['nullable', 'string', Rule::in(array_map(static fn(SubscriptionProvider $p): string => $p->value, SubscriptionProvider::cases()))],
         ]);
         $files = [];
         $directory = 'resale/' . $this->currentOrganizationId() . '/' . Str::uuid();
-        foreach ([ResaleImport::KIND_PURCHASES => 'telekom', ResaleImport::KIND_CONTRACTS => 'qualityhosting', ResaleImport::KIND_PRICELIST => 'pricelist'] as $kind => $field) {
+        foreach ([ResaleImport::KIND_PURCHASES => 'telekom', ResaleImport::KIND_CONTRACTS => 'qualityhosting', ResaleImport::KIND_PRICELIST => 'pricelist', ResaleImport::KIND_GENERIC => 'generic'] as $kind => $field) {
             $upload = $request->file($field);
             if ($upload === null) {
                 continue;
@@ -264,7 +377,8 @@ class ResaleSubscriptionController extends Controller {
         if ($organization === null) {
             abort(404);
         }
-        $records = $importer->import($organization, $request->user(), $files);
+        $genericProvider = SubscriptionProvider::tryFrom((string) ($validated['generic_provider'] ?? '')) ?? SubscriptionProvider::Other;
+        $records = $importer->import($organization, $request->user(), $files, null, $genericProvider);
         $summary = [];
         $unassigned = 0;
         $failed = false;

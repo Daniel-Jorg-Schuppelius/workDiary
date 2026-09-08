@@ -28,6 +28,8 @@ final readonly class MarketplaceEntitlement {
 
     public const SOURCE_QUALITYHOSTING = 'qualityhosting';
 
+    public const SOURCE_GENERIC = 'generic';
+
     public function __construct(
         public MarketplaceCompany $company,
         public string $entitlementId,
@@ -46,6 +48,8 @@ final readonly class MarketplaceEntitlement {
         public ?Money $unitFee = null,
         public string $successionNote = '',
         public ?int $termMonths = null,
+        public ?string $provider = null,
+        public ?Money $salePrice = null,
     ) {}
 
     /**
@@ -75,6 +79,7 @@ final readonly class MarketplaceEntitlement {
         return match ($source) {
             self::SOURCE_TELEKOM => 'Telekom',
             self::SOURCE_QUALITYHOSTING => 'Quality Hosting',
+            self::SOURCE_GENERIC => 'Liste',
             default => $source,
         };
     }
@@ -98,6 +103,8 @@ final readonly class MarketplaceEntitlement {
             unitFee: $this->unitFee,
             successionNote: $successionNote,
             termMonths: $this->termMonths,
+            provider: $this->provider,
+            salePrice: $this->salePrice,
         );
     }
 
@@ -120,6 +127,8 @@ final readonly class MarketplaceEntitlement {
             unitFee: $this->unitFee,
             successionNote: $this->successionNote,
             termMonths: $this->termMonths,
+            provider: $this->provider,
+            salePrice: $this->salePrice,
         );
     }
 }

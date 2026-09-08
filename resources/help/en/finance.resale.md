@@ -69,3 +69,21 @@ product row says "Line without subscription from …" and "Create subscription
 from line" opens the subscription dialog with article, quantity, start and
 price taken from the invoice. Assignment may target a period of another
 subscription of the same recipient — never a period of a different customer.
+
+**Generic list:** Besides the provider exports (Telekom, Quality Hosting)
+the import accepts any CSV or XLSX list whose columns are recognisable by
+name — German or English: id, company, product, quantity, start, end,
+interval, term, purchase price, sale price, provider, order. Required are
+company, product and start. Without an id it is derived from company,
+product and start, so a repeated import updates the same subscriptions
+instead of duplicating them. The provider comes from the column or the
+dialog; a CSV template is available in the import dialog.
+
+**Transferring licences:** When two companies share premises and the second
+one uses part of the licences of a contract, transfer those licences at the
+contract ("Transfer licences": holder, quantity, period, sale price). A
+separate subscription for the other holder with its own billing periods
+appears; the contract plans its periods with the remainder. Each holder
+gets its own invoices assigned. When a successor replaces the contract
+(import), the transfer continues there. A contract with transfers can only
+be deleted once the transfers are gone.

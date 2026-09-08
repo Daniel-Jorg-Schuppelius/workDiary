@@ -2474,6 +2474,7 @@ Route::middleware('auth')->group(function () {
             Route::get('neu', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'create'])->name('create')->middleware('can:reselling.manage');
             Route::middleware('can:reselling.manage')->group(function (): void {
                 Route::get('import', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importCreate'])->name('import.create');
+                Route::get('import/vorlage.csv', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importTemplate'])->name('import.template');
                 Route::post('import', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'importStore'])->name('import.store');
                 Route::get('inbox', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'inbox'])->name('inbox');
                 Route::get('inbox/zuordnen', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'assignCreate'])->name('inbox.assign');
@@ -2517,6 +2518,9 @@ Route::middleware('auth')->group(function () {
             Route::middleware('can:reselling.manage')->group(function (): void {
                 Route::post('/', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'store'])->name('store');
                 Route::get('{subscription}/bearbeiten', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'edit'])->name('edit');
+                // Lizenzabtretung: Teil der Lizenzen an einen anderen Halter (zwei Firmen, ein Vertrag).
+                Route::get('{subscription}/abtretung', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'transferCreate'])->name('transfer.create');
+                Route::post('{subscription}/abtretung', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'transferStore'])->name('transfer.store');
                 Route::put('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'update'])->name('update');
                 Route::delete('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'destroy'])->name('destroy');
             });

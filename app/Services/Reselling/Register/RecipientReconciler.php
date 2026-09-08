@@ -112,7 +112,7 @@ final class RecipientReconciler {
      */
     public function forCustomer(Organization $organization, Customer $customer, ?CarbonImmutable $reference = null): array {
         $reference ??= CarbonImmutable::today();
-        $all = $this->subscriptions($organization)->with(['periods.links', 'periods.subscription'])->get();
+        $all = $this->subscriptions($organization)->with(['periods.links.linkable', 'periods.subscription'])->get();
         $subscriptions = $all->filter(static fn(ResaleSubscription $s): bool => $s->billedTo()?->id === $customer->id)->values();
         $contactMap = $this->contactMap($organization)['byContact'];
         $contacts = [];

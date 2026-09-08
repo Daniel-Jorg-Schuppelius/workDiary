@@ -256,6 +256,32 @@
             @endforelse
         </x-card>
 
+        {{-- Alle Abrechnungsperioden des Empfängers (auch gedeckte) — „wie viele gibt es, was ist gedeckt". --}}
+        @php $allPeriods = $subscriptions->flatMap(static fn($s) => $s->periods->map(static fn($p) => ['period' => $p, 'subscription' => $s]))->sortBy(static fn(array $r) => $r['period']->starts_on->toDateString() . '-' . $r['subscription']->id)->values(); @endphp
+        <details class="collapse collapse-arrow border border-base-300 bg-base-100 mb-4">
+            <summary class="collapse-title text-sm font-medium">{{ trans_choice('resale.reconcile.all_periods', $allPeriods->count(), ['count' => $allPeriods->count()]) }}</summary>
+            <div class="collapse-content p-0">
+                <x-table bare>
+                    <x-slot:head>
+                        <tr>
+                            <x-table.th>{{ __('resale.field.label') }}</x-table.th>
+                            <x-table.th>{{ __('resale.field.holder') }}</x-table.th>
+                            <x-table.th>{{ __('resale.field.period') }}</x-table.th>
+                            <x-table.th class="text-right">{{ __('resale.field.quantity') }}</x-table.th>
+                            <x-table.th class="text-right">{{ __('resale.field.expected_sale') }}</x-table.th>
+                            <x-table.th class="text-right">{{ __('resale.link.covered') }}</x-table.th>
+                            <x-table.th>{{ __('resale.link.links') }}</x-table.th>
+                            <x-table.th>{{ __('resale.field.status') }}</x-table.th>
+                            <x-table.th class="text-right"></x-table.th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($allPeriods as $row)
+                        @include('finance.resale._period_row', ['period' => $row['period'], 'subscription' => $row['subscription'], 'showSubscription' => true, 'canManage' => $canManage, 'today' => $today])
+                    @endforeach
+                </x-table>
+            </div>
+        </details>
+
         {{-- Alle Lizenzpositionen des Empfängers mit Verbrauch. --}}
         <x-card :title="__('resale.reconcile.lines.title')" padding="p-0">
             <p class="px-4 py-2 text-xs text-muted border-b border-base-300">{{ __('resale.reconcile.lines.hint') }}</p>

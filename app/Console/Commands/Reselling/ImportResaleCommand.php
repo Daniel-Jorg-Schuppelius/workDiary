@@ -26,9 +26,11 @@ class ImportResaleCommand extends Command {
         {--org= : Organisation (ID)}
         {--telekom= : Telekom Cloud Marketplace purchases.csv}
         {--qualityhosting= : Quality-Hosting-Vertragsexport (XLSX)}
-        {--pricelist= : Quality-Hosting-Preisliste (XLSX)}';
+        {--pricelist= : Quality-Hosting-Preisliste (XLSX)}
+        {--generic= : Generische Abo-Liste (CSV/XLSX, Spalten am Namen erkannt)}
+        {--provider=other : Anbieter der generischen Liste (telekom_marketplace|qualityhosting|domainreselling|manual|other)}';
 
-    protected $description = 'Anbieter-Exporte (Telekom, Quality Hosting, Preisliste) ins Reselling-Register importieren';
+    protected $description = 'Anbieter-Exporte (Telekom, Quality Hosting, Preisliste, generische Liste) ins Reselling-Register importieren';
 
     public function handle(MarketplaceImporter $importer): int {
         $organization = Organization::query()->find((int) $this->option('org'));
@@ -38,7 +40,7 @@ class ImportResaleCommand extends Command {
             return self::FAILURE;
         }
         $files = [];
-        foreach ([ResaleImport::KIND_PURCHASES => 'telekom', ResaleImport::KIND_CONTRACTS => 'qualityhosting', ResaleImport::KIND_PRICELIST => 'pricelist'] as $kind => $option) {
+        foreach ([ResaleImport::KIND_PURCHASES => 'telekom', ResaleImport::KIND_CONTRACTS => 'qualityhosting', ResaleImport::KIND_PRICELIST => 'pricelist', ResaleImport::KIND_GENERIC => 'generic'] as $kind => $option) {
             $path = (string) ($this->option($option) ?? '');
             if ($path === '') {
                 continue;
@@ -57,7 +59,8 @@ class ImportResaleCommand extends Command {
         }
 
         $failed = false;
-        foreach ($importer->import($organization, null, $files) as $record) {
+        $provider = \App\Enums\Reselling\SubscriptionProvider::tryFrom((string) ($this->option('provider') ?? '')) ?? \App\Enums\Reselling\SubscriptionProvider::Other;
+        foreach ($importer->import($organization, null, $files, null, $provider) as $record) {
             if ($record->status === \App\Enums\Reselling\ImportStatus::Failed) {
                 $failed = true;
                 $this->error(sprintf('%s: %s', $record->kindLabel(), (string) $record->error));

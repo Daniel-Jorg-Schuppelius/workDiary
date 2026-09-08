@@ -71,3 +71,22 @@ desde …» y «Crear suscripción desde la línea» abre el diálogo con artíc
 cantidad, inicio y precio tomados de la factura. La asignación puede
 dirigirse a un periodo de otra suscripción del mismo destinatario — nunca a
 un periodo de otro cliente.
+
+**Lista genérica:** además de las exportaciones de proveedores (Telekom,
+Quality Hosting), la importación acepta cualquier lista CSV o XLSX cuyas
+columnas se reconozcan por su nombre — alemán o inglés: id, empresa,
+producto, cantidad, inicio, fin, intervalo, plazo, precio de compra, precio
+de venta, proveedor, pedido. Obligatorios son empresa, producto e inicio.
+Sin id se deriva de empresa, producto e inicio, de modo que una nueva
+importación actualiza las mismas suscripciones en vez de duplicarlas. El
+proveedor viene de la columna o del diálogo; una plantilla CSV está en el
+diálogo de importación.
+
+**Ceder licencias:** si dos empresas comparten sede y la segunda usa parte
+de las licencias de un contrato, ceda esas licencias en el contrato («Ceder
+licencias»: titular, cantidad, periodo, precio de venta). Surge una
+suscripción propia para el otro titular con sus propios periodos; el
+contrato planifica sus periodos con el resto. Cada titular recibe sus
+propias facturas asignadas. Si un sucesor sustituye el contrato
+(importación), la cesión continúa allí. Un contrato con cesiones solo se
+elimina cuando las cesiones han desaparecido.

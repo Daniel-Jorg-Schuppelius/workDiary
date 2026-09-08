@@ -33,6 +33,11 @@
                     <x-icon-btn icon="delete" tone="ghost" size="sm" type="submit" show-label>{{ __('resale.action.delete') }}</x-icon-btn>
                 </form>
             @endif
+            @if ($canManage && ! $subscription->isAssignment() && $subscription->quantity > 1)
+                <x-icon-btn icon="call_split" tone="ghost" size="sm" data-entry-modal-trigger
+                            :href="route('finance.resale.transfer.create', $subscription->sqid)"
+                            show-label>{{ __('resale.transfer.action') }}</x-icon-btn>
+            @endif
             @if ($canManage && $subscription->hasHolder() && ! $subscription->is_own_holding)
                 <form method="POST" action="{{ route('finance.resale.periods.propose') }}">
                     @csrf
@@ -80,13 +85,30 @@
                         <dt class="text-muted">{{ __('resale.field.predecessor') }}</dt>
                         <dd><a href="{{ route('finance.resale.show', $predecessor->sqid) }}" class="link link-hover">{{ $predecessor->label }} ({{ $predecessor->provider->label() }})</a></dd>
                     @endforeach
+                    @if ($subscription->parent !== null)
+                        <dt class="text-muted">{{ __('resale.transfer.from') }}</dt>
+                        <dd><a href="{{ route('finance.resale.show', $subscription->parent->sqid) }}" class="link link-hover">{{ $subscription->parent->holderLabel() }} · {{ $subscription->parent->identityLabel() }}</a></dd>
+                    @endif
+                    @foreach ($subscription->assignments as $assignment)
+                        <dt class="text-muted">{{ __('resale.transfer.section') }}</dt>
+                        <dd>
+                            <a href="{{ route('finance.resale.show', $assignment->sqid) }}" class="link link-hover">{{ $assignment->holderLabel() }}</a>
+                            · ×{{ $assignment->quantity }} · {{ $assignment->starts_on->format('d.m.Y') }}@if ($assignment->ends_on) – {{ $assignment->ends_on->format('d.m.Y') }}@endif
+                        </dd>
+                    @endforeach
                 </dl>
             </x-card>
 
             <x-card :title="__('resale.section.terms')">
                 <dl class="grid grid-cols-[auto_1fr] gap-x-4 gap-y-1 text-sm">
                     <dt class="text-muted">{{ __('resale.field.quantity') }}</dt>
-                    <dd class="tabular-nums">{{ $subscription->quantity }}</dd>
+                    <dd class="tabular-nums">
+                        {{ $subscription->quantity }}
+                        @if ($subscription->assignments->isNotEmpty())
+                            @php $assignedNow = $subscription->assignedQuantityOn($today); @endphp
+                            <span class="block text-xs text-warning">{{ trans_choice('resale.transfer.assigned_hint', $assignedNow, ['count' => $assignedNow]) }}</span>
+                        @endif
+                    </dd>
                     <dt class="text-muted">{{ __('resale.field.starts_on') }}</dt>
                     <dd class="tabular-nums">{{ $subscription->starts_on->format('d.m.Y') }}</dd>
                     <dt class="text-muted">{{ __('resale.field.ends_on') }}</dt>

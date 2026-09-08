@@ -15,7 +15,7 @@ namespace App\Services\Reselling\Register;
 use App\Enums\Reselling\{BillingFrequency, ImportStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\{LexofficeArticle, Organization, User};
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePriceEntry, ResaleSubscription};
-use App\Services\Reselling\Marketplace\{MarketplaceEntitlement, MarketplacePurchasesReader, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
+use App\Services\Reselling\Marketplace\{GenericSubscriptionReader, MarketplaceEntitlement, MarketplacePurchasesReader, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -35,6 +35,7 @@ final class MarketplaceImporter {
         private readonly MarketplacePurchasesReader $telekomReader,
         private readonly QualityHostingContractsReader $qualityHostingReader,
         private readonly QualityHostingPriceListReader $priceListReader,
+        private readonly GenericSubscriptionReader $genericReader,
         private readonly PurchasesImportMerger $merger,
         private readonly HolderResolver $holders,
         private readonly PeriodPlanner $planner,
@@ -43,22 +44,25 @@ final class MarketplaceImporter {
 
     /**
      * @param  array<string, array{name: string, path: string, stored?: string|null}>  $files  Schlüssel: ResaleImport::KIND_*
+     * @param  SubscriptionProvider  $genericProvider  Anbieter der generischen Liste, wenn die Datei keine Spalte „Anbieter" hat
      * @return list<ResaleImport>
      */
-    public function import(Organization $organization, ?User $user, array $files, ?CarbonImmutable $reference = null): array {
+    public function import(Organization $organization, ?User $user, array $files, ?CarbonImmutable $reference = null, SubscriptionProvider $genericProvider = SubscriptionProvider::Other): array {
         $reference ??= CarbonImmutable::today();
         $records = [];
         $imports = [];
 
-        foreach ([ResaleImport::KIND_PURCHASES => SubscriptionProvider::TelekomMarketplace, ResaleImport::KIND_CONTRACTS => SubscriptionProvider::QualityHosting] as $kind => $provider) {
+        foreach ([ResaleImport::KIND_PURCHASES => SubscriptionProvider::TelekomMarketplace, ResaleImport::KIND_CONTRACTS => SubscriptionProvider::QualityHosting, ResaleImport::KIND_GENERIC => $genericProvider] as $kind => $provider) {
             if (! isset($files[$kind])) {
                 continue;
             }
             $record = $this->record($organization, $user, $provider, $kind, $files[$kind]);
             try {
-                $parsed = $kind === ResaleImport::KIND_PURCHASES
-                    ? $this->telekomReader->read($files[$kind]['path'])
-                    : $this->qualityHostingReader->read($files[$kind]['path']);
+                $parsed = match ($kind) {
+                    ResaleImport::KIND_PURCHASES => $this->telekomReader->read($files[$kind]['path']),
+                    ResaleImport::KIND_CONTRACTS => $this->qualityHostingReader->read($files[$kind]['path']),
+                    default => $this->genericReader->read($files[$kind]['path'], $genericProvider),
+                };
                 $imports[$kind] = ['record' => $record, 'import' => $parsed];
                 $record->rows_total = count($parsed->entitlements);
                 $record->issues = array_map('strval', $parsed->issues);
@@ -123,7 +127,11 @@ final class MarketplaceImporter {
         /** @var array<string, ResaleSubscription> $byKey */
         $byKey = [];
         foreach ($import->entitlements as $entitlement) {
-            $kind = $entitlement->source === MarketplaceEntitlement::SOURCE_TELEKOM ? ResaleImport::KIND_PURCHASES : ResaleImport::KIND_CONTRACTS;
+            $kind = match ($entitlement->source) {
+                MarketplaceEntitlement::SOURCE_TELEKOM => ResaleImport::KIND_PURCHASES,
+                MarketplaceEntitlement::SOURCE_QUALITYHOSTING => ResaleImport::KIND_CONTRACTS,
+                default => ResaleImport::KIND_GENERIC,
+            };
             $counters[$kind] ??= ['rows_created' => 0, 'rows_updated' => 0, 'rows_unchanged' => 0, 'rows_unassigned' => 0];
             $provider = $this->provider($entitlement);
             $externalId = $entitlement->entitlementId;
@@ -174,6 +182,10 @@ final class MarketplaceImporter {
                         $subscription->foreign_customer_id = $holder['foreign_customer_id'];
                     }
                 }
+                // Verkaufspreis aus der Liste, solange keiner gepflegt ist (generischer Import).
+                if ($subscription->sale_unit_price === null && $entitlement->salePrice !== null) {
+                    $subscription->sale_unit_price = $entitlement->salePrice->withScale(4);
+                }
                 // Produkt und Verkaufspreis aus dem Lexoffice-Artikel, solange nichts gepflegt ist.
                 if ($subscription->lexoffice_article_id === null && $subscription->article_id === null) {
                     $article = $this->matchArticle($entitlement->edition, $articles);
@@ -210,6 +222,7 @@ final class MarketplaceImporter {
             } elseif ($successor->hasHolder() && ! $predecessor->hasHolder()) {
                 $predecessor->forceFill(['customer_id' => $successor->customer_id, 'foreign_customer_id' => $successor->foreign_customer_id, 'is_own_holding' => $successor->is_own_holding])->save();
             }
+            $this->carryAssignments($predecessor, $successor, $reference);
         }
 
         $result = [];
@@ -223,6 +236,62 @@ final class MarketplaceImporter {
         }
 
         return $result;
+    }
+
+    /**
+     * Lizenzabtretungen laufen beim Nachfolger weiter: jede offene Abtretung
+     * des Vorgängers bekommt ein Gegenstück am Nachfolger (gleicher Halter,
+     * gleiche Menge, ab dessen Beginn) und endet selbst mit dem Vorgänger.
+     */
+    private function carryAssignments(ResaleSubscription $predecessor, ResaleSubscription $successor, CarbonImmutable $reference): void {
+        $predecessor->load('assignments');
+        if ($predecessor->assignments->isEmpty()) {
+            return;
+        }
+        $successor->load('assignments');
+        $sequence = $successor->assignments->count();
+        $handover = $successor->starts_on;
+        foreach ($predecessor->assignments as $assignment) {
+            if ($assignment->ends_on !== null && $assignment->ends_on->lessThan($handover)) {
+                continue;
+            }
+            $exists = $successor->assignments->contains(static fn(ResaleSubscription $a): bool => $a->customer_id === $assignment->customer_id && $a->foreign_customer_id === $assignment->foreign_customer_id);
+            if (! $exists) {
+                $sequence++;
+                $carried = ResaleSubscription::query()->create([
+                    'organization_id' => $successor->organization_id,
+                    'parent_id' => $successor->id,
+                    'kind' => $successor->kind,
+                    'provider' => $successor->provider,
+                    'external_id' => $successor->external_id !== null ? $successor->external_id . '#' . $sequence : null,
+                    'label' => $successor->label,
+                    'company_name' => $assignment->company_name,
+                    'customer_id' => $assignment->customer_id,
+                    'foreign_customer_id' => $assignment->foreign_customer_id,
+                    'is_own_holding' => false,
+                    'article_id' => $successor->article_id,
+                    'lexoffice_article_id' => $successor->lexoffice_article_id,
+                    'quantity' => $assignment->quantity,
+                    'starts_on' => $handover->toDateString(),
+                    'ends_on' => $successor->ends_on?->toDateString(),
+                    'term_months' => $successor->term_months,
+                    'interval' => $successor->interval,
+                    'renewal' => $successor->renewal,
+                    'purchase_unit_price' => $successor->purchase_unit_price?->getAmount(),
+                    'sale_unit_price' => $assignment->sale_unit_price?->getAmount() ?? $successor->sale_unit_price?->getAmount(),
+                    'currency' => $successor->currency,
+                    'status' => $successor->status,
+                    'notes' => $assignment->notes,
+                ]);
+                $this->planner->sync($carried, $reference);
+            }
+            if ($assignment->ends_on === null || $assignment->ends_on->greaterThan($handover->subDay())) {
+                $assignment->forceFill(['ends_on' => $handover->subDay()->toDateString(), 'status' => SubscriptionStatus::Superseded])->save();
+                $this->planner->sync($assignment, $reference);
+            }
+        }
+        $successor->unsetRelation('assignments');
+        $this->planner->sync($successor, $reference);
     }
 
     /**
@@ -280,7 +349,11 @@ final class MarketplaceImporter {
     }
 
     private function provider(MarketplaceEntitlement $entitlement): SubscriptionProvider {
-        return $entitlement->source === MarketplaceEntitlement::SOURCE_TELEKOM ? SubscriptionProvider::TelekomMarketplace : SubscriptionProvider::QualityHosting;
+        return match ($entitlement->source) {
+            MarketplaceEntitlement::SOURCE_TELEKOM => SubscriptionProvider::TelekomMarketplace,
+            MarketplaceEntitlement::SOURCE_QUALITYHOSTING => SubscriptionProvider::QualityHosting,
+            default => SubscriptionProvider::tryFrom((string) $entitlement->provider) ?? SubscriptionProvider::Other,
+        };
     }
 
     private function externalKey(MarketplaceEntitlement $entitlement): string {

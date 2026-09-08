@@ -69,3 +69,21 @@ ihn nicht): die Produktzeile sagt „Position ohne Abo ab …", und „Abo aus
 Position anlegen" öffnet den Abo-Dialog mit Artikel, Menge, Beginn und Preis
 aus der Rechnung. Die Zuordnung darf eine Periode eines anderen Abos
 desselben Empfängers treffen — nie eine Periode eines fremden Kunden.
+
+**Generische Liste:** Neben den Anbieter-Exporten (Telekom, Quality
+Hosting) nimmt der Import jede CSV- oder XLSX-Liste, deren Spalten am Namen
+erkennbar sind — deutsch oder englisch: Kennung, Firma, Produkt, Menge,
+Beginn, Ende, Intervall, Laufzeit, Einkaufspreis, Verkaufspreis, Anbieter,
+Bestellnummer. Pflicht sind Firma, Produkt und Beginn. Ohne Kennung entsteht
+sie aus Firma, Produkt und Beginn, sodass ein erneuter Import dieselben Abos
+aktualisiert statt zu verdoppeln. Der Anbieter kommt aus der Spalte oder
+aus dem Dialog; eine CSV-Vorlage liegt im Import-Dialog.
+
+**Lizenzen abtreten:** Sitzen zwei Firmen im selben Haus und nutzt die
+zweite einen Teil der Lizenzen eines Vertrags, trittst du diese Lizenzen am
+Vertrag ab („Lizenzen abtreten": Halter, Menge, Zeitraum, Verkaufspreis).
+Es entsteht ein eigenes Abo für den anderen Halter mit eigenen
+Abrechnungsperioden; der Vertrag plant seine Perioden mit dem Rest. Jeder
+Halter bekommt seine eigenen Rechnungen zugeordnet. Löst ein Nachfolger den
+Vertrag ab (Import), läuft die Abtretung dort weiter. Ein Vertrag mit
+Abtretungen lässt sich erst löschen, wenn die Abtretungen weg sind.
