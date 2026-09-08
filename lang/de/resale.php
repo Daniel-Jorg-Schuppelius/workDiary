@@ -235,6 +235,8 @@ return [
         'no_contacts' => 'Der Rechnungsempfänger hat keinen verknüpften Lexoffice-Kontakt.',
         'no_lines' => 'Keine gespiegelten Rechnungspositionen im Fenster um den Periodenbeginn.',
         'line' => 'Rechnungsposition',
+        'line_hint' => 'Nur Abo-Positionen des Empfängers im Zeitfenster der Periode. Fehlt ein Artikel, stufe ihn unter „Produkte“ als Abo-Produkt ein.',
+        'line_used' => 'bereits vergeben',
         'months_field' => 'Gedeckte Lizenzmonate',
         'months_hint' => 'Monatspreis-Position: Menge = Monate je Lizenz. Jahresposition: 12 je Stück.',
         'link_title' => 'Bezug für :period',

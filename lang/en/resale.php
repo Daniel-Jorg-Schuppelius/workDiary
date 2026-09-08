@@ -235,6 +235,8 @@ return [
         'no_contacts' => 'The invoice recipient has no linked Lexoffice contact.',
         'no_lines' => 'No mirrored invoice line items in the window around the period start.',
         'line' => 'Invoice line item',
+        'line_hint' => 'Only subscription lines of the recipient within the period window. If an article is missing, classify it as a subscription product under “Products”.',
+        'line_used' => 'already consumed',
         'months_field' => 'Covered licence months',
         'months_hint' => 'Monthly-priced line: quantity = months per licence. Annual line: 12 per unit.',
         'link_title' => 'Link for :period',

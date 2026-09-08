@@ -235,6 +235,8 @@ return [
         'no_contacts' => 'Il destinatario della fattura non ha un contatto Lexoffice collegato.',
         'no_lines' => 'Nessuna riga di fattura specchiata nella finestra intorno all’inizio del periodo.',
         'line' => 'Riga di fattura',
+        'line_hint' => 'Solo righe abbonamento del destinatario nella finestra del periodo. Se manca un articolo, classificalo come prodotto abbonamento sotto «Prodotti».',
+        'line_used' => 'già consumata',
         'months_field' => 'Mesi di licenza coperti',
         'months_hint' => 'Riga a prezzo mensile: quantità = mesi per licenza. Riga annuale: 12 per unità.',
         'link_title' => 'Collegamento per :period',

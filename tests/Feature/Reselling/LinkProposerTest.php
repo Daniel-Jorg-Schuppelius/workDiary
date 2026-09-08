@@ -233,9 +233,15 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(PeriodStatus::Open, $p2026->fresh()?->status);
 
         // Manueller Bezug für 2026 auf eine Rechnung, die der Vorschlagslauf nicht kennt
-        $voucher = $this->voucher('c-kl', 'RE/2026/0001', '2026-08-30', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'description' => 'Nachberechnung', 'quantity' => 12, 'net' => '20.60']]);
+        $voucher = $this->voucher('c-kl', 'RE/2026/0001', '2026-08-30', [
+            ['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'description' => 'Nachberechnung', 'quantity' => 12, 'net' => '20.60'],
+            ['article' => null, 'name' => 'Business Support', 'description' => 'Stunden', 'quantity' => 3, 'unit' => 'Stunde', 'net' => '60.00'],
+        ]);
         $line = $voucher->lines()->first();
-        $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2026->sqid))->assertOk()->assertSee('RE/2026/0001');
+        // Der Dialog kennt nur Abo-Positionen mit Lizenzen × Monaten — keine Support-Stunden; verbrauchte sind gesperrt.
+        $this->actingAs($admin)->get(route('finance.resale.periods.link.create', $p2026->sqid))->assertOk()
+            ->assertSee('RE/2026/0001')->assertSee('Pos. 1')->assertSee('1 × 12 ' . __('resale.link.months_short'))
+            ->assertDontSee('Business Support');
         $this->actingAs($admin)->post(route('finance.resale.periods.link.store', $p2026->sqid), ['line_id' => \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line?->id), 'months' => 12])
             ->assertRedirect(route('finance.resale.show', $subscription->sqid));
         $p2026->refresh();

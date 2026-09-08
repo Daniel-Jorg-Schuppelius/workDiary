@@ -157,23 +157,44 @@ class ResalePeriodController extends Controller {
         return back()->with('success', __('resale.link.flash.reopened'));
     }
 
+    /**
+     * Dialog für den manuellen Bezug: nur Abo-Positionen (Artikel laut
+     * Einstufung) des Empfängers im Fenster der Periode, je Position
+     * Lizenzen × Monate und der noch freie Rest; verbrauchte Positionen
+     * bleiben sichtbar, aber gesperrt. Support-Stunden und Hardware haben
+     * hier nichts verloren — sie waren die lange Liste.
+     */
     public function linkCreate(ResalePeriod $period, LinkProposer $proposer): View {
         $period->load(['subscription.customer', 'subscription.foreignCustomer.customer', 'links']);
         $contacts = $proposer->contactsFor($period->subscription);
+        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
         $lines = $contacts === [] ? collect() : LexofficeVoucherLine::query()
-            ->whereHas('voucher', static fn(Builder $q) => $q->whereIn('contact_external_id', $contacts)->where('voucher_type', 'invoice')->where('archived', false)
+            ->whereNotNull('lexoffice_article_id')
+            ->whereHas('voucher', static fn(Builder $q) => $q->whereIn('contact_external_id', $contacts)->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided'])
                 ->where('voucher_date', '>=', DateRange::day($period->starts_on->subDays(LinkProposer::WINDOW_BEFORE)))
                 ->where('voucher_date', '<', DateRange::dayAfter($period->starts_on->addDays(LinkProposer::WINDOW_AFTER))))
-            ->with('voucher:id,voucher_number,voucher_date,contact_external_id')
+            ->with(['voucher:id,voucher_number,voucher_date,contact_external_id,service_starts_on,service_ends_on', 'article:id,name,unit_name,resale_role'])
             ->get()
-            ->sortByDesc(static fn(LexofficeVoucherLine $l) => $l->voucher->voucher_date)
+            ->filter(static fn(LexofficeVoucherLine $l): bool => $classifier->isLicense($l->article))
+            ->sortBy([static fn(LexofficeVoucherLine $a, LexofficeVoucherLine $b): int => ($b->voucher->voucher_date <=> $a->voucher->voucher_date) ?: ($a->position <=> $b->position)])
             ->values();
-        $linked = $period->links->pluck('linkable_id')->all();
+        $consumed = [];
+        if ($lines->isNotEmpty()) {
+            foreach (ResalePeriodLink::query()->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->whereIn('linkable_id', $lines->pluck('id')->all())->get(['linkable_id', 'months']) as $link) {
+                $consumed[(int) $link->linkable_id] = ($consumed[(int) $link->linkable_id] ?? 0.0) + (float) $link->months;
+            }
+        }
+        $rows = [];
+        foreach ($lines as $line) {
+            $split = \App\Services\Reselling\Register\LicenseMonths::split($line);
+            $months = $split['licences'] * $split['months'];
+            $rows[] = ['line' => $line, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'free' => max(0.0, $months - ($consumed[$line->id] ?? 0.0))];
+        }
 
         return view('finance.resale._link_dialog', [
             'period' => $period,
-            'lines' => $lines,
-            'linkedIds' => $linked,
+            'rows' => $rows,
+            'linkedIds' => $period->links->pluck('linkable_id')->all(),
             'needed' => max(0.0, $period->requiredMonths() - $period->coveredMonths()),
             'hasContacts' => $contacts !== [],
         ]);

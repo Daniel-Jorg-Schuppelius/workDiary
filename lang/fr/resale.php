@@ -235,6 +235,8 @@ return [
         'no_contacts' => 'Le destinataire de la facture n’a pas de contact Lexoffice lié.',
         'no_lines' => 'Aucune ligne de facture miroir dans la fenêtre autour du début de période.',
         'line' => 'Ligne de facture',
+        'line_hint' => 'Seulement les lignes d’abonnement du destinataire dans la fenêtre de la période. S’il manque un article, classez-le comme produit d’abonnement sous « Produits ».',
+        'line_used' => 'déjà consommée',
         'months_field' => 'Mois de licence couverts',
         'months_hint' => 'Ligne au prix mensuel : quantité = mois par licence. Ligne annuelle : 12 par unité.',
         'link_title' => 'Rattachement pour :period',
