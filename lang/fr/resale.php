@@ -269,6 +269,7 @@ return [
         ],
         'error' => [
             'line_missing' => 'Ligne de facture introuvable.',
+            'exceeds' => 'La ligne n’a plus que :amount de disponible.',
         ],
     ],
     'widget' => [

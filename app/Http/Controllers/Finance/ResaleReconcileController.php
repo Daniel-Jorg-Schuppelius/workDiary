@@ -103,7 +103,11 @@ class ResaleReconcileController extends Controller {
         if ($period === null || $line === null || $period->subscription->billedTo()?->id !== $customer->id) {
             return redirect($target)->with('error', __('resale.link.error.line_missing'));
         }
-        $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), $validated['note'] ?? null, $request->user()?->id);
+        try {
+            $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), $validated['note'] ?? null, $request->user()?->id);
+        } catch (\InvalidArgumentException $e) {
+            return redirect($target)->with('error', $e->getMessage());
+        }
 
         return redirect($target)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }

@@ -269,6 +269,7 @@ return [
         ],
         'error' => [
             'line_missing' => 'Invoice line item not found.',
+            'exceeds' => 'The line has only :amount left.',
         ],
     ],
     'widget' => [

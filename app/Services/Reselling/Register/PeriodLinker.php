@@ -22,7 +22,29 @@ use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
  * für Dialog, Schnellzuordnung am Abo und Abgleich je Empfänger.
  */
 final class PeriodLinker {
+    /**
+     * Noch nicht vergebene Lizenzmonate der Position — Bezüge an DIESER Periode
+     * zählen nicht, weil ein erneuter Bezug sie ersetzt. Eine 24er-Position
+     * darf nicht mit 48 + 12 verbucht werden.
+     */
+    public function freeMonths(LexofficeVoucherLine $line, ?ResalePeriod $except = null): float {
+        $line->loadMissing('voucher');
+        $query = ResalePeriodLink::query()
+            ->where('linkable_type', $line->getMorphClass())
+            ->where('linkable_id', $line->id);
+        if ($except !== null) {
+            $query->where('period_id', '!=', $except->id);
+        }
+        $used = (float) $query->sum('months');
+
+        return max(0.0, LicenseMonths::ofLine($line) - $used);
+    }
+
     public function attach(ResalePeriod $period, LexofficeVoucherLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
+        $free = $this->freeMonths($line, $period);
+        if ($months > $free + 0.001) {
+            throw new \InvalidArgumentException((string) __('resale.link.error.exceeds', ['amount' => LicenseMonths::label($free, LicenseMonths::split($line)['months'])]));
+        }
         $termMonths = $period->termMonths();
         $link = ResalePeriodLink::query()->updateOrCreate(
             ['period_id' => $period->id, 'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id],

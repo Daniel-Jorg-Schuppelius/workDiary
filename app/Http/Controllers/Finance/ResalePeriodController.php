@@ -216,7 +216,11 @@ class ResalePeriodController extends Controller {
         if ($line === null) {
             return back()->withErrors(['line_id' => __('resale.link.error.line_missing')]);
         }
-        $link = $this->linker->attach($period, $line, (float) $validated['months'], $validated['note'] ?? null, $request->user()?->id);
+        try {
+            $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), $validated['note'] ?? null, $request->user()?->id);
+        } catch (\InvalidArgumentException $e) {
+            return back()->withErrors(['months' => $e->getMessage()])->withInput();
+        }
 
         return redirect()->route('finance.resale.show', $period->subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }
@@ -236,7 +240,11 @@ class ResalePeriodController extends Controller {
         if ($period === null || $line === null) {
             return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.link.error.line_missing'));
         }
-        $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), null, $request->user()?->id);
+        try {
+            $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), null, $request->user()?->id);
+        } catch (\InvalidArgumentException $e) {
+            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', $e->getMessage());
+        }
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }

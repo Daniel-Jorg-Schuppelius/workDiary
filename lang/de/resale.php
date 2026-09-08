@@ -269,6 +269,7 @@ return [
         ],
         'error' => [
             'line_missing' => 'Rechnungsposition nicht gefunden.',
+            'exceeds' => 'Die Position hat nur noch :amount frei.',
         ],
     ],
     'widget' => [

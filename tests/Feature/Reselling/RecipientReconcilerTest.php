@@ -201,6 +201,14 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame('145.56', $link->amount?->getAmount(), 'Jahresposition: 12 Monate = 1 Stück');
         $this->assertSame('laut Telefonat', $link->note);
 
+        // Mehr als die Position hergibt: eine 12er-Position kann nicht noch einmal 12 an eine weitere Periode geben.
+        $second = ResaleSubscription::query()->create(array_merge($subKaik->only(['organization_id', 'kind', 'provider', 'label', 'foreign_customer_id', 'lexoffice_article_id', 'term_months', 'interval', 'renewal', 'status', 'currency']), ['quantity' => 1, 'starts_on' => '2026-09-12', 'external_id' => 'x2']));
+        (new \App\Services\Reselling\Register\PeriodPlanner)->sync($second);
+        $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
+            'period_id' => $second->periods()->firstOrFail()->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',
+        ])->assertRedirect(route('finance.resale.reconcile.show', $partner))->assertSessionHas('error');
+        $this->assertSame(0, $second->periods()->firstOrFail()->links()->count());
+
         // Periode eines anderen Kunden: kein Bezug über fremde Empfänger.
         $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
             'period_id' => $subOther->periods()->firstOrFail()->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',

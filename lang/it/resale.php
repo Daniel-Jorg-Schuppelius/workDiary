@@ -269,6 +269,7 @@ return [
         ],
         'error' => [
             'line_missing' => 'Riga di fattura non trovata.',
+            'exceeds' => 'La riga ha solo :amount ancora disponibili.',
         ],
     ],
     'widget' => [
