@@ -15,7 +15,7 @@
     $covered = $period->coveredMonths();
     $term = $period->termMonths();
     $upcoming = $period->starts_on->greaterThan($today);
-    $fmt = static fn(float $v): string => rtrim(rtrim(number_format($v, 2, ',', '.'), '0'), ',');
+    $compact = \App\View\Components\Resale\LicenceMonths::class;
 @endphp
 <tr @class(['hover', 'opacity-60' => $upcoming])>
     @if ($showSubscription)
@@ -40,8 +40,8 @@
     <td class="text-right tabular-nums whitespace-nowrap">
         {{-- Lizenzen × Monate statt Lizenzmonate: „5 / 5 Lizenzen · 12 Mon." --}}
         <span @class(['text-success font-medium' => $covered >= $required - 0.001 && $required > 0, 'text-warning' => $covered > 0.001 && $covered < $required - 0.001, 'text-error' => $covered <= 0.001 && ! $upcoming])
-              title="{{ $fmt($covered) }} / {{ $fmt($required) }} {{ __('resale.link.months') }}">
-            {{ __('resale.link.licences_of', ['covered' => $fmt($covered / max(1, $term)), 'quantity' => $period->quantity, 'months' => $term]) }}
+              title="{{ $compact::compact($covered) }} / {{ $compact::compact($required) }} {{ __('resale.link.months') }}">
+            {{ __('resale.link.licences_of', ['covered' => $compact::compact($covered / max(1, $term)), 'quantity' => $period->quantity, 'months' => $term]) }}
         </span>
     </td>
     <td class="text-sm">
@@ -73,7 +73,7 @@
     <td>
         <x-status-badge size="xs" :tone="$period->status->tone()" :label="$period->status->label()" />
         @if ($period->decided_at !== null)
-            <span class="block text-xs text-muted">{{ $period->decidedBy?->name }} · {{ $period->decided_at->format('d.m.Y') }}</span>
+            <span class="block text-xs text-muted">{{ $period->decidedBy?->name }} · {{ $period->decided_at->fdate() }}</span>
         @endif
     </td>
     <td class="text-right">

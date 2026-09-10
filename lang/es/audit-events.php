@@ -1015,4 +1015,16 @@ return [
     'learning' => [
         'dossierDisclosed' => 'Expediente de cualificaciones entregado con nombres',
     ],
+    // Registro de reventa (función 152, revisión 2026-09-10 A2): decisiones del usuario.
+    'resale_period' => [
+        'confirmed' => 'Referencia de factura confirmada',
+        'waived' => 'Renuncia a la facturación del periodo',
+        'disputed' => 'Periodo marcado como en disputa',
+        'reopened' => 'Decisión sobre el periodo retirada',
+        'linked' => 'Línea de factura asignada manualmente',
+        'link_removed' => 'Referencia de factura eliminada',
+    ],
+    'resale_subscription' => [
+        'rehomed' => 'Titular de la suscripción cambiado',
+    ],
 ];

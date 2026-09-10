@@ -13,9 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\{BillingFrequency, SubscriptionProvider};
-use Carbon\CarbonImmutable;
+use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, ParsesImportValues};
+use CommonToolkit\Contracts\Interfaces\CSV\FieldInterface;
+use CommonToolkit\Entities\CSV\HeaderLine;
+use CommonToolkit\Entities\XLSX\Cell;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Parsers\{CSVDocumentParser, XLSXDocumentParser};
 use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
@@ -28,8 +31,13 @@ use Throwable;
  * Einkaufs-/Verkaufspreis, Bestellnummer und Anbieter sind optional. Ohne
  * Kennung entsteht sie aus Firma, Produkt und Beginn — stabil, solange die
  * Zeile gleich bleibt. Der Anbieter kommt aus der Spalte oder dem Dialog.
+ * Zeilen mit unlesbaren Werten werden als Befund gemeldet und übersprungen,
+ * nie still ergänzt (Review 2026-09-10, B15/B16/C3/C4).
  */
 final class GenericSubscriptionReader {
+    use NormalizesHeaders;
+    use ParsesImportValues;
+
     /** @var array<string, list<string>> Zielspalte → erkannte Überschriften (normalisiert) */
     private const COLUMNS = [
         'id' => ['kennung', 'id', 'vertrag', 'vertragsnummer', 'vertragsnr', 'contract', 'contract id', 'entitlement', 'subscription', 'subscription id', 'abo', 'abo-id', 'abo id'],
@@ -51,110 +59,144 @@ final class GenericSubscriptionReader {
 
     private const REQUIRED = ['company', 'product', 'start'];
 
-    private const DATE_FORMATS = ['d.m.Y', 'd.m.y', 'Y-m-d', 'd/m/Y', 'm/d/Y', 'Y-m-d H:i:s', 'd.m.Y H:i'];
+    /** Stückpreise mit vier, Summen mit zwei Nachkommastellen (B19). */
+    private const UNIT_SCALE = 4;
+
+    private const TOTAL_SCALE = 2;
 
     public function read(string $file, SubscriptionProvider $provider = SubscriptionProvider::Other): PurchasesImport {
+        $name = basename($file);
         if (! is_readable($file)) {
-            throw new RuntimeException("Datei nicht lesbar: {$file}");
+            throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
+        $skipped = [];
         [$headers, $rows] = str_ends_with(mb_strtolower($file), '.xlsx') || str_ends_with(mb_strtolower($file), '.xlsm')
             ? $this->readXlsx($file)
-            : $this->readCsv($file);
+            : $this->readCsv($file, $skipped);
 
         $index = $this->columnIndex($headers);
         $missing = [];
         foreach (self::REQUIRED as $column) {
             if (! isset($index[$column])) {
-                $missing[] = $column;
+                $missing[] = (string) __('resale_import.column.' . $column);
             }
         }
         if ($missing !== []) {
-            throw new RuntimeException('Pflichtspalten fehlen: ' . implode(', ', array_map(static fn(string $c): string => match ($c) {
-                'company' => 'Firma',
-                'product' => 'Produkt',
-                default => 'Beginn',
-            }, $missing)));
+            throw new RuntimeException((string) __('resale_import.file.missing_columns', ['columns' => implode(', ', $missing)]));
         }
 
         $entitlements = [];
         $issues = [];
-        foreach ($rows as $offset => $row) {
-            $line = $offset + 2;
-            $value = static function (string $column) use ($row, $index): string {
+        /** @var array<string, int> $seenIds Kennung (groß) → erste Zeile */
+        $seenIds = [];
+        foreach ($rows as $line => $row) {
+            if ($row === null) {
+                $issues[] = $skipped[$line] ?? '';
+
+                continue;
+            }
+            $cell = static function (string $column) use ($row, $index): ?Cell {
                 $position = $index[$column] ?? null;
 
-                return $position === null ? '' : trim((string) ($row[$position] ?? ''));
+                return $position === null ? null : ($row[$position] ?? null);
             };
-            $companyName = $value('company');
-            $product = $value('product');
-            if ($companyName === '' && $product === '' && $value('start') === '') {
+            $text = static fn(string $column): string => trim($cell($column)?->toCanonicalString() ?? '');
+            $companyName = $text('company');
+            $product = $text('product');
+            if ($companyName === '' && $product === '' && $text('start') === '') {
                 continue; // Leerzeile
             }
+            $issue = static fn(string $key, array $params = []): string => (string) __('resale_import.row.' . $key, $params + ['line' => $line, 'company' => $companyName !== '' ? $companyName : $product]);
             if ($companyName === '' || $product === '') {
-                $issues[] = sprintf('Zeile %d: Firma oder Produkt fehlt - übersprungen.', $line);
+                $issues[] = $issue('missing_company_or_product');
 
                 continue;
             }
-            $startsOn = $this->parseDate($value('start'));
+            $startsOn = self::importDate($cell('start')?->getValue());
             if ($startsOn === null) {
-                $issues[] = sprintf('Zeile %d (%s): Beginn "%s" nicht lesbar - übersprungen.', $line, $companyName, $value('start'));
+                $issues[] = $issue('start_unreadable', ['value' => $text('start')]);
 
                 continue;
             }
-            $endRaw = $value('end');
-            $endsOn = $endRaw === '' ? null : $this->parseDate($endRaw);
+            $endRaw = $text('end');
+            $endsOn = $endRaw === '' ? null : self::importDate($cell('end')?->getValue());
             if ($endRaw !== '' && $endsOn === null) {
-                $issues[] = sprintf('Zeile %d (%s): Ende "%s" nicht lesbar - übersprungen.', $line, $companyName, $endRaw);
+                $issues[] = $issue('end_unreadable', ['value' => $endRaw]);
 
                 continue;
             }
             if ($endsOn !== null && $endsOn->lessThanOrEqualTo($startsOn)) {
-                $issues[] = sprintf('Zeile %d (%s): Ende liegt nicht nach dem Beginn - übersprungen.', $line, $companyName);
+                $issues[] = $issue('end_before_start');
 
                 continue;
             }
-            $frequencyRaw = $value('frequency');
+            $frequencyRaw = $text('frequency');
             $frequency = $frequencyRaw === '' ? BillingFrequency::Yearly : BillingFrequency::fromLabel($frequencyRaw);
             if ($frequency === null) {
-                $issues[] = sprintf('Zeile %d (%s): unbekannter Rhythmus "%s" - übersprungen.', $line, $companyName, $frequencyRaw);
+                $issues[] = $issue('unknown_frequency', ['value' => $frequencyRaw]);
 
                 continue;
             }
-            $quantity = max(1, (int) round((float) NumberHelper::normalizeDecimalStringOrNull($value('quantity')) ?: 1));
-            $currency = $value('currency');
-            $unitFee = $this->parseMoney($value('purchase'), $currency);
-            $fee = $this->parseMoney($value('fee'), $currency);
-            if ($unitFee === null && $fee !== null) {
-                $unitFee = $fee->dividedBy($quantity)->withScale(4);
+            // Menge: leer = 1; „4 Stück", „0", „2,5" oder „8 S" (= −8) sind Befunde, keine 1.
+            $quantityRaw = $text('quantity');
+            $quantity = $quantityRaw === '' ? 1 : self::importInteger($cell('quantity')?->getValue());
+            if ($quantity === null || $quantity <= 0) {
+                $issues[] = $issue('quantity_invalid', ['value' => $quantityRaw]);
+
+                continue;
             }
-            $unitFee ??= Money::of('0', CurrencyCode::tryFrom(strtoupper($currency)) ?? CurrencyCode::Euro);
-            $rowProvider = $this->provider($value('provider')) ?? $provider;
-            $externalId = $value('id');
+            $currencyRaw = $text('currency');
+            $currency = $currencyRaw === '' ? CurrencyCode::Euro : CurrencyCode::tryFrom(strtoupper($currencyRaw));
+            if ($currency === null) {
+                $issues[] = $issue('unknown_currency', ['value' => $currencyRaw]);
+
+                continue;
+            }
+            $unitFee = self::importMoney($cell('purchase')?->getValue(), $currency, self::UNIT_SCALE);
+            $fee = self::importMoney($cell('fee')?->getValue(), $currency, self::TOTAL_SCALE);
+            if ($unitFee === null && $fee !== null) {
+                $unitFee = $fee->withScale(self::UNIT_SCALE)->dividedBy($quantity); // erst Scale, dann teilen: 100/3 → 33,3333
+            }
+            $unitFee ??= Money::zero($currency, self::UNIT_SCALE);
+            $rowProvider = $this->provider($text('provider')) ?? $provider;
+            $externalId = $text('id');
             if ($externalId === '') {
                 // Stabil, solange Firma, Produkt und Beginn gleich bleiben.
-                $externalId = 'gen:' . substr((string) \CommonToolkit\Helper\Data\CryptoHelper::hash(MarketplaceCompany::normalizeName($companyName) . '|' . ProductNameMatcher::normalize($product) . '|' . $startsOn->toDateString()), 0, 24);
+                $externalId = 'gen:' . substr((string) CryptoHelper::hash(MarketplaceCompany::matchKey($companyName) . '|' . MarketplaceCompany::matchKey($product) . '|' . $startsOn->toDateString()), 0, 24);
             }
-            $term = (int) round((float) (NumberHelper::normalizeDecimalStringOrNull($value('term')) ?? 0));
+            $idKey = mb_strtoupper($externalId);
+            if (isset($seenIds[$idKey])) {
+                $issues[] = $issue('duplicate_id', ['value' => $externalId, 'other' => $seenIds[$idKey]]);
+
+                continue;
+            }
+            $seenIds[$idKey] = $line;
+            $termRaw = $text('term');
+            $term = $termRaw === '' ? null : self::importInteger($cell('term')?->getValue());
+            if ($termRaw !== '' && ($term === null || $term <= 0)) {
+                $issues[] = $issue('term_unreadable', ['value' => $termRaw]);
+                $term = null;
+            }
 
             $entitlements[] = new MarketplaceEntitlement(
-                company: new MarketplaceCompany(key: MarketplaceCompany::normalizeName($companyName), name: $companyName, email: null, phone: null),
+                company: new MarketplaceCompany(key: MarketplaceCompany::matchKey($companyName), name: $companyName, email: null, phone: null),
                 entitlementId: $externalId,
-                orderId: $value('order'),
+                orderId: $text('order'),
                 application: $product,
                 edition: $product,
-                fee: $fee ?? $unitFee->times($quantity),
+                fee: $fee ?? $unitFee->times($quantity)->withScale(self::TOTAL_SCALE),
                 frequency: $frequency,
                 startsOn: $startsOn,
                 endsOn: $endsOn,
-                status: $value('status'),
+                status: $text('status'),
                 assignedUsers: 0,
                 sourceLine: $line,
                 source: MarketplaceEntitlement::SOURCE_GENERIC,
                 quantity: $quantity,
                 unitFee: $unitFee,
-                termMonths: $term > 0 ? $term : null,
+                termMonths: $term,
                 provider: $rowProvider->value,
-                salePrice: $this->parseMoney($value('sale'), $currency),
+                salePrice: self::importMoney($cell('sale')?->getValue(), $currency, self::UNIT_SCALE),
             );
         }
 
@@ -162,49 +204,61 @@ final class GenericSubscriptionReader {
     }
 
     /**
-     * @return array{0: list<string>, 1: list<array<int, string>>}
+     * Zeilenweise über `streamAll`, damit eine Zeile mit abweichender
+     * Feldzahl (Excel lässt leere Endspalten weg, unmaskiertes Trennzeichen)
+     * nicht die ganze Datei kippt: zu wenige Felder gelten als leer, zu
+     * viele als Befund.
+     *
+     * @param  array<int, string>  $skipped  Zeilennummer → Befund (Zeile fehlt dann als null in den Zeilen)
+     * @return array{0: list<string>, 1: array<int, array<int, Cell>|null>}  Kopfzeile, Zeilennummer → Zellen
      */
-    private function readCsv(string $file): array {
+    private function readCsv(string $file, array &$skipped): array {
         $delimiter = CSVDocumentParser::detectDelimiter($file);
-        $document = CSVDocumentParser::fromFile($file, $delimiter, '"', true);
-        $header = $document->getHeader();
-        if ($header === null) {
-            throw new RuntimeException("CSV ohne Kopfzeile: {$file}");
-        }
-        $headers = array_map('strval', array_values($header->getColumnNames()));
+        $headers = [];
         $rows = [];
-        foreach ($document->getRows() as $row) {
-            $cells = [];
-            foreach ($headers as $position => $name) {
-                $cells[$position] = (string) ($row->getField($position)?->getValue() ?? '');
+        foreach (CSVDocumentParser::streamAll($file, $delimiter, '"', true) as $line => $parsed) {
+            if ($parsed instanceof HeaderLine) {
+                $headers = array_map('strval', array_values($parsed->getColumnNames()));
+
+                continue;
             }
-            $rows[] = $cells;
+            $values = array_map(static fn(FieldInterface $field): string => $field->getValue(), array_values($parsed->getFields()));
+            if (count($values) > count($headers) && trim(implode('', array_slice($values, count($headers)))) !== '') {
+                $skipped[(int) $line] = (string) __('resale_import.row.too_many_fields', ['line' => $line, 'expected' => count($headers), 'found' => count($values)]);
+                $rows[(int) $line] = null;
+
+                continue;
+            }
+            $cells = [];
+            foreach (array_keys($headers) as $position) {
+                $cells[$position] = new Cell($values[$position] ?? '', 's');
+            }
+            $rows[(int) $line] = $cells;
+        }
+        if ($headers === []) {
+            throw new RuntimeException((string) __('resale_import.file.no_header', ['file' => basename($file)]));
         }
 
         return [$headers, $rows];
     }
 
     /**
-     * @return array{0: list<string>, 1: list<array<int, string>>}
+     * @return array{0: list<string>, 1: array<int, array<int, Cell>|null>}  Kopfzeile, Zeilennummer → Zellen
      */
     private function readXlsx(string $file): array {
         try {
             $document = XLSXDocumentParser::fromFile($file, true);
         } catch (Throwable $e) {
-            throw new RuntimeException("XLSX-Datei nicht lesbar: {$file} ({$e->getMessage()})", 0, $e);
+            throw new RuntimeException((string) __('resale_import.file.xlsx_unreadable', ['file' => basename($file), 'reason' => str_replace($file, basename($file), $e->getMessage())]), 0, $e);
         }
         $sheet = $document->getFirstSheet();
         if ($sheet === null) {
-            throw new RuntimeException("XLSX ohne Tabellenblatt: {$file}");
+            throw new RuntimeException((string) __('resale_import.file.no_sheet', ['file' => basename($file)]));
         }
-        $headers = array_map('strval', array_values($sheet->getHeaderNames()));
+        $headers = self::sheetHeaderNames($sheet);
         $rows = [];
         foreach ($sheet->getRows() as $row) {
-            $cells = [];
-            foreach (array_values($row->getCells()) as $position => $cell) {
-                $cells[$position] = (string) ($cell->getValue() ?? '');
-            }
-            $rows[] = $cells;
+            $rows[$row->getRowIndex()] = array_values($row->getCells());
         }
 
         return [$headers, $rows];
@@ -217,7 +271,7 @@ final class GenericSubscriptionReader {
     private function columnIndex(array $headers): array {
         $index = [];
         foreach ($headers as $position => $name) {
-            $normalized = self::normalizeHeader($name);
+            $normalized = self::normalizeHeader($name, stripUnitSuffix: true);
             foreach (self::COLUMNS as $column => $aliases) {
                 if (! isset($index[$column]) && in_array($normalized, $aliases, true)) {
                     $index[$column] = $position;
@@ -227,13 +281,6 @@ final class GenericSubscriptionReader {
         }
 
         return $index;
-    }
-
-    private static function normalizeHeader(string $name): string {
-        $name = preg_replace('/^\xEF\xBB\xBF/', '', $name) ?? $name;
-        $name = mb_strtolower(trim(preg_replace('/\s+/', ' ', $name) ?? $name));
-
-        return trim(preg_replace('/\s*\((?:eur|€|netto|net)\)\s*$/u', '', $name) ?? $name);
     }
 
     private function provider(string $raw): ?SubscriptionProvider {
@@ -254,44 +301,5 @@ final class GenericSubscriptionReader {
             str_contains($normalized, 'manuell') || str_contains($normalized, 'manual') => SubscriptionProvider::Manual,
             default => SubscriptionProvider::Other,
         };
-    }
-
-    private function parseMoney(string $raw, string $currency): ?Money {
-        if ($raw === '') {
-            return null;
-        }
-        $cleaned = str_replace(["\u{00A0}", "\u{202F}"], ' ', $raw);
-        $decimal = NumberHelper::normalizeDecimalStringOrNull($cleaned);
-        if ($decimal === null) {
-            return null;
-        }
-        $code = CurrencyCode::tryFrom(strtoupper(trim($currency))) ?? CurrencyCode::Euro;
-        try {
-            return Money::of($decimal, $code);
-        } catch (Throwable) {
-            return null;
-        }
-    }
-
-    private function parseDate(string $raw): ?CarbonImmutable {
-        $raw = trim($raw);
-        if ($raw === '') {
-            return null;
-        }
-        foreach (self::DATE_FORMATS as $format) {
-            try {
-                $parsed = CarbonImmutable::createFromFormat($format, $raw);
-                if ($parsed !== null && $parsed->format($format) === $raw) {
-                    return $parsed->startOfDay();
-                }
-            } catch (Throwable) {
-                continue;
-            }
-        }
-        try {
-            return CarbonImmutable::parse($raw)->startOfDay();
-        } catch (Throwable) {
-            return null;
-        }
     }
 }

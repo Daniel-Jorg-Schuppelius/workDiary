@@ -110,7 +110,7 @@
                 </div>
 
                 <form method="POST" action="{{ route('admin.orgamax.disconnect') }}" class="mt-3"
-                      data-confirm-dialog data-confirm="{{ __('orgamax.connect.disconnect_confirm') }}">
+                      data-confirm-dialog data-confirm-message="{{ __('orgamax.connect.disconnect_confirm') }}">
                     @csrf
                     <button type="submit" class="btn btn-xs btn-ghost text-error">{{ __('orgamax.connect.disconnect') }}</button>
                 </form>
@@ -198,7 +198,7 @@
                                         <td class="text-xs text-muted">{{ $order->synced_at?->fdatetime() ?? '—' }}</td>
                                         <td class="text-right">
                                             <form method="POST" action="{{ route('admin.orgamax.invoices.convert') }}" class="inline"
-                                                  data-confirm-dialog data-confirm="{{ __('orgamax.invoice.convert_confirm') }}">
+                                                  data-confirm-dialog data-confirm-message="{{ __('orgamax.invoice.convert_confirm') }}">
                                                 @csrf
                                                 <input type="hidden" name="order_id" value="{{ $order->external_id }}">
                                                 <button type="submit" class="btn btn-xs btn-outline">{{ __('orgamax.invoice.convert') }}</button>
@@ -244,7 +244,7 @@
                                             <div class="flex justify-end gap-1">
                                                 <a class="btn btn-xs btn-ghost" href="{{ route('admin.orgamax.invoices.pdf', $projection->external_id) }}">PDF</a>
                                                 <form method="POST" action="{{ route('admin.orgamax.invoices.lock', $projection->external_id) }}" class="inline"
-                                                      data-confirm-dialog data-confirm="{{ __('orgamax.invoice.lock_confirm') }}">
+                                                      data-confirm-dialog data-confirm-message="{{ __('orgamax.invoice.lock_confirm') }}">
                                                     @csrf
                                                     <button type="submit" class="btn btn-xs btn-outline btn-error">{{ __('orgamax.invoice.lock') }}</button>
                                                 </form>

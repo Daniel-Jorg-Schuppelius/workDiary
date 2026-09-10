@@ -61,7 +61,6 @@ return [
         'successor' => 'Successor',
         'predecessor' => 'Predecessor',
         'expected_sale' => 'Expected sale per period',
-        'expected_purchase' => 'Expected purchase',
         'margin' => 'Margin/unit',
         'period' => 'Period',
         'note' => 'Note',
@@ -233,6 +232,7 @@ return [
         'voucher_only' => 'Voucher (no line item)',
         'needed' => 'open: :amount',
         'no_contacts' => 'The invoice recipient has no linked Lexoffice contact.',
+        'note_voided' => 'Invoice voided — covered :months', // Review 2026-09-10
         'no_lines' => 'No mirrored invoice line items in the window around the period start.',
         'line' => 'Invoice line item',
         'line_hint' => 'Only subscription lines of the recipient within the period window. If an article is missing, classify it as a subscription product under “Products”.',
@@ -338,6 +338,7 @@ return [
             'lexoffice' => 'Lexoffice is not enabled for this organization or has no API key.',
             'nothing_open' => 'No open periods with a sale price for this recipient.',
         ],
+        'already_drafted' => 'A draft is already pending for this recipient (:reference from :date). Finish it in Lexoffice or locally first, or decide the period.', // Review 2026-09-10
     ],
     'purchase' => [
         'title' => 'Purchase entries',
@@ -540,5 +541,134 @@ return [
         'partial' => 'Partial',
         'waived' => 'Waived',
         'disputed' => 'Disputed',
+    ],
+    // Review 2026-09-10
+    'propose' => [
+        'locked' => 'The proposal run is already in progress — please wait a moment.',
+    ],
+    // Review 2026-09-10 (Import)
+    'import_issues' => [
+        'domain_provider' => 'Line :line (:company, :product): provider “Domain reselling” is not imported — domains only come in through the domain sync.',
+    ],
+    // Review 2026-09-10 (UI-B)
+    'report_tabs' => [
+        'margin' => 'Margin',
+        'renewals' => 'Renewals',
+        'unbilled' => 'Without invoice',
+    ],
+    'margin' => [
+        'subtitle' => 'Due periods starting :from – :to: expected sale, billed per links, expected/actual purchase, margin',
+        'block' => 'Block',
+        'key' => 'Product / invoice recipient',
+        'currency' => 'Currency',
+        'mixed_currencies' => 'Periods in several currencies (:list) — amounts are not summed, one row per currency.',
+        'export_csv' => 'CSV',
+        'export_xlsx' => 'XLSX',
+        'export_pdf' => 'PDF',
+        'pdf_title' => 'Margin report subscriptions & licences',
+        'file' => 'subscription-margin',
+    ],
+    'renewals' => [
+        'subtitle' => 'Subscriptions renewing or ending between :from and :to',
+        'bucket' => 'Within :days days',
+        'date' => 'Date',
+        'mode' => 'Event',
+        'mode_renews' => 'renews',
+        'mode_ends' => 'ends',
+        'today' => 'today',
+        'in_days' => 'in :days day|in :days days',
+        'hint' => 'Renewal = start of the next billing period as planned; for cancelled subscriptions and a known end before the next period, the end counts.',
+        'empty' => 'No renewals or ends in this range.',
+        'file' => 'subscription-renewals',
+    ],
+    'unbilled' => [
+        'subtitle' => 'Subscriptions whose oldest open due period is older than :days days',
+        'days_label' => 'Older than (days)',
+        'oldest' => 'Oldest open period',
+        'days' => 'Days open',
+        'open_periods' => 'Open periods',
+        'hint' => 'Open periods of external holders without a link; open amount = expected sale of the open months per subscription. Own holdings do not count.',
+        'empty' => 'No subscription without invoice older than :days days.',
+        'file' => 'subscription-unbilled',
+    ],
+    'export_files' => [
+        'proposal' => 'subscription-invoice-proposal',
+        'xlsx_action' => 'Invoice proposal (XLSX)',
+    ],
+    'draft_dialog' => [
+        'drafted' => 'Already in a draft',
+        'drafted_line' => ':count period in draft :reference of :date|:count periods in draft :reference of :date',
+        'drafted_hint' => 'These recipients do not get a second draft: finalise it in Lexoffice or locally first, or decide the period.',
+    ],
+    'draft_flash' => [
+        'created' => 'Draft for :customer created: :lines lines, :net net (Lexoffice ID :id). Please review and finalise in Lexoffice.',
+        'created_local' => 'Invoice draft :id for :customer created: :lines lines, :net net. Periods are linked as proposals — confirm when issuing.',
+        'failed' => 'The draft could not be created — details are in the log.',
+    ],
+    'purchase_flash' => [
+        'allocated' => 'Voucher :voucher: :amount spread over :entries periods.',
+    ],
+    'purchase_filter' => [
+        'search' => 'Search (subscription, identifier, document, description)',
+        'all_sources' => 'All sources',
+    ],
+    'purchase_dialog' => [
+        'search' => 'Search voucher (number, supplier)',
+        'no_match' => 'No voucher matches the search.',
+        'domain_provider' => 'Domain vouchers only come in through the domain sync.',
+    ],
+    'purchase_issues' => [
+        'count' => ':count import notice — please check.|:count import notices — please check.',
+        'line' => ':file: :issue',
+        'result' => 'Document :number: :matched of :lines lines allocated (:duplicates already present), :net net.',
+        'failed' => ':file: import failed — details are in the log.',
+    ],
+    // Review 2026-09-10 (UI-A)
+    'holder_error' => [
+        'foreign_mismatch' => 'The end customer does not belong to the selected customer.',
+        'foreign_archived' => 'This end customer is archived and cannot become a new holder.',
+        'quantity_below_assigned' => ':assigned licences are assigned to other holders — the quantity cannot fall below that.',
+    ],
+    'link_error' => [
+        'period_missing' => 'Period not found.',
+        'period_foreign' => 'The period does not belong to this invoice recipient.',
+        'line_foreign' => 'The invoice line does not belong to :customer — links never cross customer boundaries.',
+    ],
+    'edit_hint' => [
+        'imported' => 'Imported subscription: the next import overwrites label, quantity, term and purchase price; the external ID is locked. Holder and sale price are kept.',
+        'domain' => 'Domain subscription from the domain sync: provider and external ID are locked.',
+        'assignment' => 'Assignment from :contract — product, provider and billing interval come from the contract; the quantity may not exceed the free remainder.',
+    ],
+    'delete_error' => [
+        'has_purchases' => 'Purchase entries are allocated to this subscription — release the purchase lines first.',
+        'is_domain' => 'Domain subscriptions are managed by the domain sync — end them in domain management.',
+    ],
+    'general' => [
+        'failed' => 'The operation failed; details are in the log.',
+    ],
+    'import_review' => [
+        'skipped' => 'Skipped',
+        'issues_title' => ':count row issue|:count row issues',
+        'flash_skipped' => ':count row skipped|:count rows skipped',
+        'template_filename' => 'subscription-list-template.csv',
+    ],
+    'link_ui' => [
+        'position' => 'Pos. :position',
+        'licences_times' => 'Licences × :months mo.',
+        'pending_hint' => 'The lines of these invoices are not mirrored yet — the next voucher sync fetches them.',
+        'unlinked_truncated' => 'Showing the newest :shown.',
+    ],
+    // Review 2026-09-10 (Gutschriften)
+    'credit_notes' => [
+        'title' => 'Credit notes',
+        'hint' => 'Credit notes reduce the coverage of a period. Assignment is manual only — the proposal run does not net them. Enter the credited licences; a negative link is stored.',
+        'col_linked' => 'Netted',
+        'linked_with' => ':amount against :periods',
+        'unlinked' => 'not netted yet',
+        'licences_field' => 'Credited licences',
+        'action_link' => 'Net as credit note',
+        'sign_hint' => 'Stored as a negative link.',
+        'error_amount' => 'Please enter a quantity above zero.',
+        'error_positive' => 'Invoice lines need positive licence months — reductions go through the credit note line.',
     ],
 ];

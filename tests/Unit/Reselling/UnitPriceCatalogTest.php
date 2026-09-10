@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Unit\Reselling;
 
 use App\Services\Reselling\Marketplace\UnitPriceCatalog;
+use CommonToolkit\Enums\CurrencyCode;
 use Tests\TestCase;
 
 class UnitPriceCatalogTest extends TestCase {
@@ -58,5 +59,20 @@ class UnitPriceCatalogTest extends TestCase {
         $other = $this->entitlement('Microsoft Teams Essentials', '83.11');
         $this->assertSame(1, $catalog->quantityOf($other));
         $this->assertSame(8311, $catalog->unitPriceOf($other)->getMinorAmount());
+    }
+
+    public function test_fees_of_different_currencies_are_never_compared(): void {
+        // 489,52 CHF ist kein „2 × 244,76 EUR" — je Währung ein eigener Katalog (Review 2026-09-10, E).
+        $euro = $this->entitlement('Microsoft 365 Business Premium', '244.76');
+        $twiceEuro = $this->entitlement('Microsoft 365 Business Premium', '489.52');
+        $franken = $this->entitlement('Microsoft 365 Business Premium', '489.52', currency: CurrencyCode::SwissFranc);
+        $catalog = UnitPriceCatalog::fromEntitlements([$euro, $twiceEuro, $franken]);
+
+        $this->assertSame(2, $catalog->quantityOf($twiceEuro));
+        $this->assertSame(1, $catalog->quantityOf($franken), 'CHF-Gebühr ist ein eigener Stückpreis');
+        $this->assertSame('CHF', $catalog->unitPriceOf($franken)->getCurrency()->value);
+        $units = $catalog->unitPrices();
+        $this->assertSame([24476], array_map(static fn($m) => $m->getMinorAmount(), $units['Microsoft 365 Business Premium|EUR']));
+        $this->assertSame([48952], array_map(static fn($m) => $m->getMinorAmount(), $units['Microsoft 365 Business Premium|CHF']));
     }
 }

@@ -16,12 +16,12 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
-    $money = static fn(?float $v): string => $v === null ? '—' : \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
+    $money = static fn(?float $v, \CommonToolkit\Enums\CurrencyCode $c): string => $v === null ? '—' : \CommonToolkit\ValueObjects\Money::ofFloat($v, $c, 2)->format();
     $tones = ['below_purchase' => 'error', 'below_list' => 'warning', 'contract_above_catalog' => 'info', 'no_sales' => 'neutral'];
 @endphp
 
 @section('content')
-    <x-index-page :title="__('resale.prices.title')" :subtitle="$catalogDate !== null ? __('resale.prices.subtitle', ['date' => $catalogDate->format('d.m.Y')]) : __('resale.prices.subtitle_no_catalog')">
+    <x-index-page :title="__('resale.prices.title')" :subtitle="$catalogDate !== null ? __('resale.prices.subtitle', ['date' => $catalogDate->fdate()]) : __('resale.prices.subtitle_no_catalog')">
         <x-slot:actions>
             <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
         </x-slot:actions>
@@ -46,16 +46,16 @@
                     <td class="font-medium">{{ $row['label'] }}</td>
                     <td class="text-right tabular-nums">{{ $row['subscriptions'] }}</td>
                     <td class="text-right tabular-nums">{{ $row['quantity'] }}</td>
-                    <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['purchase_min']) }}@if ($row['purchase_max'] !== null && $row['purchase_max'] !== $row['purchase_min']) – {{ $money($row['purchase_max']) }}@endif</td>
-                    <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['list_price']) }}</td>
-                    <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['uvp']) }}</td>
+                    <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['purchase_min'], $row['currency']) }}@if ($row['purchase_max'] !== null && $row['purchase_max'] !== $row['purchase_min']) – {{ $money($row['purchase_max'], $row['currency']) }}@endif</td>
+                    <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['list_price'], $row['currency']) }}</td>
+                    <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['uvp'], $row['currency']) }}</td>
                     <td class="text-right tabular-nums whitespace-nowrap">
-                        {{ $money($row['sale_median']) }}
+                        {{ $money($row['sale_median'], $row['currency']) }}
                         @if ($row['sale_min'] !== null && $row['sale_min'] !== $row['sale_max'])
-                            <span class="block text-xs text-muted">{{ $money($row['sale_min']) }} – {{ $money($row['sale_max']) }}</span>
+                            <span class="block text-xs text-muted">{{ $money($row['sale_min'], $row['currency']) }} – {{ $money($row['sale_max'], $row['currency']) }}</span>
                         @endif
                     </td>
-                    <td class="text-right tabular-nums whitespace-nowrap {{ ($row['margin'] ?? 0) < 0 ? 'text-error' : '' }}">{{ $money($row['margin']) }}</td>
+                    <td class="text-right tabular-nums whitespace-nowrap {{ ($row['margin'] ?? 0) < 0 ? 'text-error' : '' }}">{{ $money($row['margin'], $row['currency']) }}</td>
                     <td>
                         @foreach ($row['flags'] as $flag)
                             <x-status-badge size="xs" :tone="$tones[$flag] ?? 'neutral'" :label="__('resale.prices.flag.' . $flag)" />

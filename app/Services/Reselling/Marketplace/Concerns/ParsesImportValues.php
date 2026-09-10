@@ -1,0 +1,92 @@
+<?php
+/*
+ * Created on   : Thu Sep 10 2026
+ * Author       : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : ParsesImportValues.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+namespace App\Services\Reselling\Marketplace\Concerns;
+
+use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\{CountryCode, CurrencyCode};
+use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
+use CommonToolkit\ValueObjects\Money;
+use DateTimeInterface;
+
+/**
+ * Zellwerte der Reseller-Exporte (CSV-Text oder XLSX-Rohwert) in Datum,
+ * Betrag und Ganzzahl übersetzen (Review 2026-09-10, C4/C5/F). Eine Stelle
+ * statt vier Kopien; die Deutung ist deutsch (Tausenderpunkt, TT.MM.JJJJ),
+ * numerische XLSX-Zellen bleiben exakt. Unlesbares wird null, nie geraten.
+ */
+trait ParsesImportValues {
+    /**
+     * Datum aus Datumszelle, Excel-Seriennummer, ISO, TT.MM.JJJJ oder T/M/JJJJ
+     * (deutsch gelesen). Ein Slash-Datum, das deutsch unmöglich ist
+     * („8/15/25"), gilt als US-Reihenfolge. „2026", „3.2026" und „31.02.2026"
+     * sind kein Datum.
+     */
+    protected static function importDate(mixed $raw): ?CarbonImmutable {
+        if ($raw === null || $raw === '' || is_bool($raw)) {
+            return null;
+        }
+        if ($raw instanceof DateTimeInterface) {
+            return CarbonImmutable::instance($raw)->startOfDay();
+        }
+        $german = DateHelper::excelCellToGerman(is_string($raw) ? trim($raw) : $raw);
+        if ($german === null) {
+            return null;
+        }
+        $parsed = DateHelper::parseDateTime($german, CountryCode::Germany); // Round-Trip-geprüft: 31.02. → null
+        if ($parsed === null && is_string($raw) && str_contains($raw, '/') && preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $german, $m) === 1) {
+            $parsed = DateHelper::parseDateTime($m[2] . '.' . $m[1] . '.' . $m[3], CountryCode::Germany);
+        }
+        if ($parsed === null) {
+            return null;
+        }
+        $date = CarbonImmutable::instance($parsed)->startOfDay();
+
+        // Dreistellige Jahre („1.2.202") überleben den Round-Trip — für Abos unplausibel.
+        return $date->year >= 1900 && $date->year <= 2200 ? $date : null;
+    }
+
+    /**
+     * Betrag: numerische Zellen exakt, Text deutsch gedeutet („1.200" = 1200,
+     * „10,70 €", geschützte Leerzeichen). Stückpreise mit Scale 4, Summen mit 2.
+     */
+    protected static function importMoney(mixed $raw, CurrencyCode $currency, int $scale): ?Money {
+        if ($raw === null || $raw === '' || is_bool($raw) || $raw instanceof DateTimeInterface) {
+            return null;
+        }
+        if (is_int($raw) || is_float($raw)) {
+            return Money::ofFloat((float) $raw, $currency, $scale);
+        }
+
+        return Money::ofNullable(is_string($raw) ? $raw : null, $currency, $scale, country: CountryCode::Germany);
+    }
+
+    /**
+     * Ganzzahl (Menge, Laufzeit): null bei leer, unlesbar oder gebrochen.
+     */
+    protected static function importInteger(mixed $raw): ?int {
+        if ($raw === null || $raw === '' || is_bool($raw) || $raw instanceof DateTimeInterface) {
+            return null;
+        }
+        if (is_int($raw) || is_float($raw)) {
+            $number = (float) $raw;
+        } else {
+            $decimal = NumberHelper::normalizeDecimalStringOrNull(is_string($raw) ? $raw : '', CountryCode::Germany);
+            if ($decimal === null) {
+                return null;
+            }
+            $number = (float) $decimal;
+        }
+
+        return floor($number) === $number && abs($number) < PHP_INT_MAX ? (int) $number : null;
+    }
+}

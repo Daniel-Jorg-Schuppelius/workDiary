@@ -227,4 +227,59 @@ class LicenceTransferTest extends TestCase {
         (new LinkProposer)->propose($this->organization);
         $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status, 'Märkisches fünf Positionen decken die Abtretung');
     }
+
+    public function test_assignment_helpers_compute_peak_quantity_and_next_suffix(): void {
+        // Review 2026-09-10 (B8/B10): Verfügbarkeit über die ganze Laufzeit statt nur am Starttag;
+        // Suffix aus dem höchsten vorhandenen `#n`, nicht aus der Anzahl.
+        $schub = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Schub- und Schleppreederei']);
+        $maerkische = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Märkische Bunker']);
+        $contract = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
+            'customer_id' => $schub->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
+        ]);
+        $assignment = static fn(string $externalId, int $quantity, string $from, ?string $to) => ResaleSubscription::query()->create([
+            'organization_id' => $contract->organization_id, 'parent_id' => $contract->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => $externalId, 'label' => 'Exchange Online (Plan 1)',
+            'customer_id' => $maerkische->id, 'quantity' => $quantity, 'starts_on' => $from, 'ends_on' => $to, 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto', 'status' => 'active', 'currency' => 'EUR',
+        ]);
+        $day = static fn(string $d): \Carbon\CarbonImmutable => \Carbon\CarbonImmutable::parse($d);
+
+        $this->assertSame(0, $contract->assignedQuantityBetween($day('2024-10-18'), null), 'ohne Abtretungen nichts');
+        $this->assertSame(1, $contract->nextAssignmentSuffix());
+
+        // Zwei Abtretungen: 5 vom 01.01.–30.06.2025, 2 vom 01.07.2025 offen; dazwischen keine Überlappung.
+        $assignment('ent-9#1', 5, '2025-01-01', '2025-06-30');
+        $assignment('ent-9#3', 2, '2025-07-01', null);
+        $contract->unsetRelation('assignments');
+        $this->assertSame(5, $contract->assignedQuantityBetween($day('2024-10-18'), null), 'Spitze über die gesamte Laufzeit');
+        $this->assertSame(5, $contract->assignedQuantityBetween($day('2025-03-01'), $day('2025-03-31')), 'mitten in der ersten Abtretung');
+        $this->assertSame(2, $contract->assignedQuantityBetween($day('2025-07-01'), null), 'nach dem Wechsel nur die offene');
+        $this->assertSame(0, $contract->assignedQuantityBetween($day('2024-10-18'), $day('2024-12-31')), 'vor der ersten Abtretung');
+        $this->assertSame(5, $contract->assignedQuantityBetween($day('2024-12-01'), $day('2025-01-01')), 'Beginn am letzten Tag des Zeitraums zählt');
+        $this->assertSame(5, $contract->assignedQuantityBetween($day('2025-06-30'), $day('2025-07-01')), 'Wechseltag: 5 endet, 2 beginnt — kein Doppelzählen (Spitze 5, nicht 7)');
+        $this->assertSame(4, $contract->nextAssignmentSuffix(), 'höchster Suffix + 1, nicht Anzahl + 1 (#2 wäre nach dem Löschen frei gewesen, #3 existiert)');
+
+        // Überlappende Abtretungen addieren sich.
+        $assignment('ent-9#4', 3, '2025-05-01', '2025-08-31');
+        $contract->unsetRelation('assignments');
+        $this->assertSame(8, $contract->assignedQuantityBetween($day('2025-01-01'), null), '5 + 3 im Mai/Juni');
+        $this->assertSame(5, $contract->assignedQuantityBetween($day('2025-08-01'), null), '2 + 3 im August');
+        $this->assertSame(5, $contract->nextAssignmentSuffix());
+
+        // Ohne Suffix-Muster: Anzahl + 1.
+        $assignment('manual-x', 1, '2025-09-01', null);
+        $contract->unsetRelation('assignments');
+        $this->assertSame(5, $contract->nextAssignmentSuffix(), 'höchster Suffix (#4) + 1');
+        $plain = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'manual', 'label' => 'Ohne Muster', 'customer_id' => $schub->id, 'quantity' => 3, 'starts_on' => '2025-01-01', 'currency' => 'EUR', 'status' => 'active',
+        ]);
+        ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'parent_id' => $plain->id, 'kind' => 'license', 'provider' => 'manual', 'external_id' => 'frei', 'label' => 'Ohne Muster', 'customer_id' => $maerkische->id, 'quantity' => 1, 'starts_on' => '2025-01-01', 'currency' => 'EUR', 'status' => 'active',
+        ]);
+        $this->assertSame(2, $plain->nextAssignmentSuffix(), 'kein #n: Anzahl + 1');
+
+        $this->assertFalse($contract->isImported());
+        $this->assertTrue($contract->replicate()->forceFill(['import_id' => 1])->isImported());
+        $this->assertFalse($contract->isDomain());
+        $this->assertTrue($contract->replicate()->forceFill(['provider' => \App\Enums\Reselling\SubscriptionProvider::DomainReselling])->isDomain());
+    }
 }

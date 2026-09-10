@@ -373,6 +373,7 @@ return [
         'commission.manage' => 'Manage commissions (rules, assignment, settlement run)',
         'reselling.view' => 'View resale register (subscriptions, holders, periods)',
         'reselling.manage' => 'Manage resale register (create/edit subscriptions, decide periods)',
+        'reselling.invoice' => 'Resale register: create invoice drafts from periods (Lexoffice/local)',
 
         'finance.viewAny' => 'View transfer receipts',
         'finance.config' => 'Manage finance configuration',

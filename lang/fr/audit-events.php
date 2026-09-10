@@ -1015,4 +1015,16 @@ return [
     'learning' => [
         'dossierDisclosed' => 'Dossier de qualification communiqué nominativement',
     ],
+    // Registre de revente (fonctionnalité 152, revue 2026-09-10 A2) : décisions utilisateur.
+    'resale_period' => [
+        'confirmed' => 'Référence de facture confirmée',
+        'waived' => 'Renonciation à la facturation de la période',
+        'disputed' => 'Période marquée comme contestée',
+        'reopened' => 'Décision sur la période annulée',
+        'linked' => 'Ligne de facture affectée manuellement',
+        'link_removed' => 'Référence de facture supprimée',
+    ],
+    'resale_subscription' => [
+        'rehomed' => 'Titulaire de l’abonnement modifié',
+    ],
 ];

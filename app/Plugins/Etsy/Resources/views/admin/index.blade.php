@@ -45,7 +45,7 @@
             <div class="flex flex-wrap items-center gap-2 text-sm">
                 @if ($connection?->isActive())
                     <span class="badge badge-success badge-sm">{{ __('etsy.connection.active', ['shop' => $connection->shop_name ?? ('#' . $connection->shop_id)]) }}</span>
-                    <form method="POST" action="{{ route('admin.etsy.disconnect') }}" data-confirm="{{ __('etsy.connection.disconnect_confirm') }}">
+                    <form method="POST" action="{{ route('admin.etsy.disconnect') }}" data-confirm-dialog data-confirm-message="{{ __('etsy.connection.disconnect_confirm') }}" data-confirm-tone="error">
                         @csrf
                         <button type="submit" class="btn btn-ghost btn-xs">{{ __('etsy.connection.disconnect') }}</button>
                     </form>

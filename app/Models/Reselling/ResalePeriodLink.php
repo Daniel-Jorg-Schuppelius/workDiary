@@ -14,7 +14,7 @@ namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\LinkOrigin;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{InvoiceItem, LexofficeVoucher, LexofficeVoucherLine, User};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -48,6 +48,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property-read Model|null $linkable
  */
 class ResalePeriodLink extends Model {
+    use Auditable;
     use BelongsToOrganization;
     use HasSqid;
 
@@ -99,6 +100,11 @@ class ResalePeriodLink extends Model {
     /** @return BelongsTo<User, $this> */
     public function creator(): BelongsTo {
         return $this->belongsTo(User::class, 'created_by_user_id');
+    }
+
+    /** Bemerkung anhängen (Trenner „ · "), bestehende bleibt. */
+    public function appendNote(string $text): void {
+        $this->note = ResalePeriod::joinNote($this->note, $text);
     }
 
     /** Anzeigetext der verknüpften Position. */

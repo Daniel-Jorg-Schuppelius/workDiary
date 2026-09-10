@@ -346,6 +346,7 @@ return [
         'commission.manage' => 'Gérer les commissions (règles, affectation, décompte)',
         'reselling.view' => 'Voir le registre de revente (abonnements, titulaires, périodes)',
         'reselling.manage' => 'Gérer le registre de revente (créer/modifier des abonnements, décider des périodes)',
+        'reselling.invoice' => 'Registre de revente : créer des brouillons de facture à partir des périodes (Lexoffice/local)',
 
         'finance.viewAny' => 'Consulter les justificatifs de transfert',
         'finance.config' => 'Gérer la configuration financière',

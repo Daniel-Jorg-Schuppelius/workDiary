@@ -8,7 +8,7 @@
 
   Zuordnungs-Inbox (Feature 152, MVP-759): Firmen aus den Anbieter-Exporten
   ohne Halter, mit Vorschlägen aus Kunden- und Fremdkundenstamm, plus die
-  letzten Import-Läufe.
+  letzten Import-Läufe mit ihren Zeilenbefunden (übersprungene Zeilen).
 --}}
 @extends('layouts.app')
 @section('title', __('resale.inbox.title'))
@@ -77,24 +77,51 @@
                         <x-table.th class="text-right">{{ __('resale.import.created') }}</x-table.th>
                         <x-table.th class="text-right">{{ __('resale.import.updated') }}</x-table.th>
                         <x-table.th class="text-right">{{ __('resale.import.unassigned') }}</x-table.th>
+                        <x-table.th class="text-right">{{ __('resale.import_review.skipped') }}</x-table.th>
                         <x-table.th>{{ __('resale.field.status') }}</x-table.th>
                     </tr>
                 </x-slot:head>
                 @forelse ($imports as $import)
+                    @php $issueCount = $import->issueCount(); @endphp
                     <tr>
-                        <td class="whitespace-nowrap text-sm">{{ $import->created_at->format('d.m.Y H:i') }} · {{ $import->creator?->name }}</td>
+                        <td class="whitespace-nowrap text-sm">{{ $import->created_at->fdatetime() }} · {{ $import->creator?->name }}</td>
                         <td class="text-sm">{{ $import->kindLabel() }}</td>
                         <td class="text-sm">{{ $import->file_name }}</td>
                         <td class="text-right tabular-nums">{{ $import->rows_total }}</td>
                         <td class="text-right tabular-nums">{{ $import->rows_created }}</td>
                         <td class="text-right tabular-nums">{{ $import->rows_updated }}</td>
                         <td class="text-right tabular-nums">{{ $import->rows_unassigned }}</td>
+                        <td class="text-right tabular-nums">
+                            @if ($issueCount > 0)
+                                <span class="badge badge-warning badge-sm">{{ $issueCount }}</span>
+                            @else
+                                <span class="text-muted">0</span>
+                            @endif
+                        </td>
                         <td>
                             <x-status-badge size="xs" :tone="$import->status->tone()" :label="$import->status->label()" :title="$import->error" />
                         </td>
                     </tr>
+                    @if ($issueCount > 0 || $import->error)
+                        {{-- Zeilenbefunde: was der Import übersprungen hat, je Zeile — sonst wären die Zeilen still weg (A1). --}}
+                        <tr class="bg-base-200/40">
+                            <td colspan="9" class="text-xs">
+                                <details>
+                                    <summary class="cursor-pointer select-none text-muted">{{ trans_choice('resale.import_review.issues_title', $issueCount, ['count' => $issueCount]) }}</summary>
+                                    @if ($import->error)
+                                        <p class="mt-1 text-error">{{ $import->error }}</p>
+                                    @endif
+                                    <ul class="mt-1 list-disc pl-5 space-y-0.5">
+                                        @foreach ($import->issues ?? [] as $issue)
+                                            <li>{{ $issue }}</li>
+                                        @endforeach
+                                    </ul>
+                                </details>
+                            </td>
+                        </tr>
+                    @endif
                 @empty
-                    <x-table.empty :colspan="8" :title="__('resale.import.none')" compact />
+                    <x-table.empty :colspan="9" :title="__('resale.import.none')" compact />
                 @endforelse
             </x-table>
         </x-card>

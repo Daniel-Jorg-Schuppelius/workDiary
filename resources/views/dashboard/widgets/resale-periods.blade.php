@@ -6,7 +6,8 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Kachel „Abos & Lizenzen" — Daten: ResalePeriodsWidget.
+  Kachel „Abos & Lizenzen" — Daten: ResalePeriodsWidget ($openAmount: offener
+  Betrag je Währung, fertig formatiert).
 --}}
 <x-card :title="__('resale.widget.title')" icon="subscriptions">
     <x-slot:actions>
@@ -20,7 +21,7 @@
             <a href="{{ route('finance.resale.periods.index') }}" class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs hover:bg-base-200">
                 <p class="text-xs uppercase tracking-wider text-muted">{{ __('resale.widget.open') }}</p>
                 <p class="mt-1 font-['Space_Grotesk'] text-2xl font-bold tabular-nums {{ $open > 0 ? 'text-error' : '' }}">{{ $open }}</p>
-                <p class="text-xs text-muted">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($openAmount, 2, withThousandsSeparator: true) }} €</p>
+                <p class="text-xs text-muted">{{ $openAmount !== '' ? $openAmount : '—' }}</p>
             </a>
             <a href="{{ route('finance.resale.periods.index') }}" class="rounded-box border border-base-300 bg-base-100 px-4 py-3 shadow-xs hover:bg-base-200">
                 <p class="text-xs uppercase tracking-wider text-muted">{{ __('resale.widget.proposed') }}</p>

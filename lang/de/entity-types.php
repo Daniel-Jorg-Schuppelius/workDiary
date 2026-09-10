@@ -19,6 +19,7 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Report-Export: Buchhaltung',
+    'ResaleReportController' => 'Report-Export: Abo-Reselling',
     'AccountingBudgetController' => 'Report-Export: Budget',
     'AbsenceCalendarReportController' => 'Report-Export: Abwesenheitskalender',
     'AbsencesReportController' => 'Report-Export: Abwesenheiten',
@@ -526,4 +527,10 @@ return [
     'FixedAsset' => 'Anlage',
     'AccountingVatExtension' => 'Dauerfristverlängerung',
     'AccountingFilingObligation' => 'Meldepflicht',
+    // Reselling-Register (Feature 152, Review 2026-09-10 A2).
+    'ResaleSubscription' => 'Reselling-Abo',
+    'ResalePeriod' => 'Reselling-Abrechnungsperiode',
+    'ResalePeriodLink' => 'Reselling-Rechnungsbezug',
+    'ResalePurchaseEntry' => 'Reselling-Einkaufsbeleg',
+    'CompanyMapping' => 'Reselling-Firmenzuordnung',
 ];

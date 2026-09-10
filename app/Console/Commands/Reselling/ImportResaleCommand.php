@@ -28,7 +28,7 @@ class ImportResaleCommand extends Command {
         {--qualityhosting= : Quality-Hosting-Vertragsexport (XLSX)}
         {--pricelist= : Quality-Hosting-Preisliste (XLSX)}
         {--generic= : Generische Abo-Liste (CSV/XLSX, Spalten am Namen erkannt)}
-        {--provider=other : Anbieter der generischen Liste (telekom_marketplace|qualityhosting|domainreselling|manual|other)}';
+        {--provider=other : Anbieter der generischen Liste (telekom_marketplace|qualityhosting|manual|other — Domains nur über resale:sync-domains)}';
 
     protected $description = 'Anbieter-Exporte (Telekom, Quality Hosting, Preisliste, generische Liste) ins Reselling-Register importieren';
 
@@ -53,7 +53,7 @@ class ImportResaleCommand extends Command {
             $files[$kind] = ['name' => basename($path), 'path' => $path];
         }
         if ($files === []) {
-            $this->error('Keine Datei angegeben (--telekom, --qualityhosting, --pricelist).');
+            $this->error('Keine Datei angegeben (--telekom, --qualityhosting, --pricelist, --generic).');
 
             return self::FAILURE;
         }
@@ -67,7 +67,11 @@ class ImportResaleCommand extends Command {
 
                 continue;
             }
-            $this->info(sprintf('%s: %d Zeilen, %d neu, %d geändert, %d unverändert, %d ohne Halter', $record->kindLabel(), $record->rows_total, $record->rows_created, $record->rows_updated, $record->rows_unchanged, $record->rows_unassigned));
+            $this->info(sprintf('%s: %d Zeilen, %d neu, %d geändert, %d unverändert, %d ohne Halter, %d Befunde', $record->kindLabel(), $record->rows_total, $record->rows_created, $record->rows_updated, $record->rows_unchanged, $record->rows_unassigned, $record->issueCount()));
+            // Zeilenbefunde (unlesbares Datum, abgelehnter Anbieter …) — sonst wäre die Zeile still weg.
+            foreach ($record->issuesPreview(PHP_INT_MAX) as $issue) {
+                $this->warn('  ' . $issue);
+            }
         }
 
         return $failed ? self::FAILURE : self::SUCCESS;

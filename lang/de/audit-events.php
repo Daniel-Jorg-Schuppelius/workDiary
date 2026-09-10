@@ -1015,4 +1015,16 @@ return [
     'learning' => [
         'dossierDisclosed' => 'Nachweismappe namentlich herausgegeben',
     ],
+    // Reselling-Register (Feature 152, Review 2026-09-10 A2): Nutzerentscheidungen.
+    'resale_period' => [
+        'confirmed' => 'Rechnungsbezug bestätigt',
+        'waived' => 'Auf Berechnung der Periode verzichtet',
+        'disputed' => 'Periode als strittig markiert',
+        'reopened' => 'Entscheidung zur Periode zurückgenommen',
+        'linked' => 'Rechnungsposition manuell zugeordnet',
+        'link_removed' => 'Rechnungsbezug gelöst',
+    ],
+    'resale_subscription' => [
+        'rehomed' => 'Halter des Abos gewechselt',
+    ],
 ];

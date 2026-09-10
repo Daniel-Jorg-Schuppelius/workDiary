@@ -8,10 +8,9 @@
 
   Rechnungsposition von Hand einer Periode zuordnen (Feature 152, MVP-761):
   Positionen des Rechnungsempfängers im Fenster um den Periodenbeginn.
+  Zeilen ($rows: line, licences, per_licence, free, used, partly) bereitet
+  der Controller vor.
 --}}
-@php
-    $fmt = static fn(float $v): string => rtrim(rtrim(number_format($v, 2, ',', '.'), '0'), ',');
-@endphp
 <x-modal
     :title="__('resale.link.link_title', ['period' => $period->label()])"
     icon="add_link"
@@ -35,14 +34,10 @@
     <x-select-field name="line_id" :label="__('resale.link.line')" required :hint="__('resale.link.line_hint')">
         <option value="">—</option>
         @foreach ($rows as $row)
-            @php
-                $line = $row['line'];
-                $lineSqid = \App\Support\Sqid::encode(\App\Models\LexofficeVoucherLine::class, $line->id);
-                $used = in_array($line->id, $linkedIds, true) || $row['free'] <= 0.001;
-            @endphp
-            <option value="{{ $lineSqid }}" @selected((string) old('line_id') === $lineSqid) @disabled($used)>
-                {{ $line->voucher->voucher_number }} · {{ $line->voucher->voucher_date?->format('d.m.Y') }}@if ($line->voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $line->voucher->servicePeriodLabel() }}@endif · Pos. {{ $line->position }} · {{ \Illuminate\Support\Str::limit($line->article?->name ?? $line->name, 40) }} · {{ \App\Services\Reselling\Register\LicenseMonths::label($row['licences'] * $row['per_licence'], $row['per_licence']) }} × {{ $line->unit_net->withScale(2)->format() }}
-                @if ($used) · {{ __('resale.link.line_used') }} @elseif ($row['free'] < $row['licences'] * $row['per_licence'] - 0.001) · {{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['free'], $row['per_licence'])]) }} @endif
+            @php $line = $row['line']; @endphp
+            <option value="{{ $line->sqid }}" @selected((string) old('line_id') === $line->sqid) @disabled($row['used'])>
+                {{ $line->voucher->voucher_number }} · {{ $line->voucher->voucher_date?->fdate() }}@if ($line->voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $line->voucher->servicePeriodLabel() }}@endif · {{ __('resale.link_ui.position', ['position' => $line->position]) }} · {{ \Illuminate\Support\Str::limit($line->article?->name ?? $line->name, 40) }} · {{ \App\Services\Reselling\Register\LicenseMonths::label($row['licences'] * $row['per_licence'], $row['per_licence']) }} × {{ $line->unit_net->withScale(2)->format() }}
+                @if ($row['used']) · {{ __('resale.link.line_used') }} @elseif ($row['partly']) · {{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($row['free'], $row['per_licence'])]) }} @endif
             </option>
         @endforeach
     </x-select-field>

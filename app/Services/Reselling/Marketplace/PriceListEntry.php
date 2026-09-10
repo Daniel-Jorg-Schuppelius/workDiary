@@ -13,11 +13,13 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\BillingFrequency;
+use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
 
 /**
  * Eine Zeile der Reseller-Preisliste: Produkttarif je Laufzeit und
- * Zahlungsintervall mit Einkaufspreis und Hersteller-UVP.
+ * Zahlungsintervall mit Einkaufspreis und Hersteller-UVP. `validFrom` ist
+ * die Gültigkeit der Zeile („Gültig ab", sonst Deckblatt), null ohne Angabe.
  */
 final readonly class PriceListEntry {
     public function __construct(
@@ -30,5 +32,6 @@ final readonly class PriceListEntry {
         public ?Money $uvpPerInterval,
         public string $offerKey,
         public int $sourceLine,
+        public ?CarbonImmutable $validFrom = null,
     ) {}
 }

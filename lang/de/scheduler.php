@@ -120,6 +120,8 @@ return [
             'sync_domains' => 'Reselling-Abos: Domains aus der Domainverwaltung übernehmen',
             'sync_purchases' => 'Reselling-Abos: Domain-Buchungen als Einkaufsbelege übernehmen',
             'sync_periods' => 'Reselling-Abos: Abrechnungsperioden vorrollen',
+            'digest' => 'Reselling-Abos: Wochen-Digest an die Abo-Verantwortlichen',
+            'prune_imports' => 'Reselling-Abos: abgelegte Importdateien nach Ablauf der Aufbewahrung löschen',
         ],
         'lexoffice' => [
             'sync_articles' => 'Lexoffice-Artikel synchronisieren',

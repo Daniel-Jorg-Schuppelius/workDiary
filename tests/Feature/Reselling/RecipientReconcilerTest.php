@@ -204,16 +204,24 @@ class RecipientReconcilerTest extends TestCase {
         // Mehr als die Position hergibt: eine 12er-Position kann nicht noch einmal 12 an eine weitere Periode geben.
         $second = ResaleSubscription::query()->create(array_merge($subKaik->only(['organization_id', 'kind', 'provider', 'label', 'foreign_customer_id', 'lexoffice_article_id', 'term_months', 'interval', 'renewal', 'status', 'currency']), ['quantity' => 1, 'starts_on' => '2026-09-12', 'external_id' => 'x2']));
         (new \App\Services\Reselling\Register\PeriodPlanner)->sync($second);
-        $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
+        // Review 2026-09-10 (C1): Feldfehler statt stillem Flash — der Dialog zeigt sie als 422.
+        $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $partner))->post(route('finance.resale.reconcile.assign', $partner), [
             'period_id' => $second->periods()->firstOrFail()->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',
-        ])->assertRedirect(route('finance.resale.reconcile.show', $partner))->assertSessionHas('error');
+        ])->assertRedirect(route('finance.resale.reconcile.show', $partner))->assertSessionHasErrors('months');
         $this->assertSame(0, $second->periods()->firstOrFail()->links()->count());
 
         // Periode eines anderen Kunden: kein Bezug über fremde Empfänger.
-        $this->actingAs($admin)->post(route('finance.resale.reconcile.assign', $partner), [
+        $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $partner))->post(route('finance.resale.reconcile.assign', $partner), [
             'period_id' => $subOther->periods()->firstOrFail()->sqid, 'line_id' => Sqid::encode(LexofficeVoucherLine::class, $lineA->id), 'months' => '12',
-        ])->assertRedirect(route('finance.resale.reconcile.show', $partner))->assertSessionHas('error');
+        ])->assertRedirect(route('finance.resale.reconcile.show', $partner))->assertSessionHasErrors('period_id');
         $this->assertSame(0, ResalePeriodLink::query()->where('subscription_id', $subOther->id)->count());
+
+        // Position eines fremden Kontakts (B13): auch bei passender Periode kein Bezug über Kundengrenzen.
+        $foreignVoucher = $this->voucher('c-x', 'RE/2025/2000', '2025-09-15', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $partner))->post(route('finance.resale.reconcile.assign', $partner), [
+            'period_id' => $second->periods()->firstOrFail()->sqid, 'line_id' => $foreignVoucher->lines()->firstOrFail()->sqid, 'months' => '12',
+        ])->assertRedirect(route('finance.resale.reconcile.show', $partner))->assertSessionHasErrors('line_id');
+        $this->assertSame(0, $second->periods()->firstOrFail()->links()->count());
 
         $result = (new RecipientReconciler)->forCustomer($this->organization, $partner);
         $this->assertSame(0, $result['open']);
@@ -269,10 +277,10 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertSame(0.0, $sisterView['free']);
         $this->assertSame(60.0, $sisterView['missing'], 'zweite Periode: 5 × 12 ohne gültige Rechnung');
 
-        // Fremder Kunde als Ziel einer Periode, die nicht diesem Empfänger gehört: abgelehnt.
-        $this->actingAs($admin)->post(route('finance.resale.reconcile.rehome', $customer), [
+        // Fremder Kunde als Ziel einer Periode, die nicht diesem Empfänger gehört: abgelehnt (Feldfehler, Review C1).
+        $this->actingAs($admin)->from(route('finance.resale.reconcile.show', $customer))->post(route('finance.resale.reconcile.rehome', $customer), [
             'period_id' => $second['period']->sqid, 'target_id' => $customer->sqid,
-        ])->assertRedirect(route('finance.resale.reconcile.show', $customer))->assertSessionHas('error');
+        ])->assertRedirect(route('finance.resale.reconcile.show', $customer))->assertSessionHasErrors('period_id');
         $this->assertSame($sister->id, $five->fresh()?->customer_id);
     }
 
@@ -367,5 +375,97 @@ class RecipientReconcilerTest extends TestCase {
         $this->actingAs($admin)->post(route('finance.resale.reconcile.rehome', $ute), ['period_id' => $first['period']->sqid, 'target_id' => $delta->sqid])
             ->assertRedirect(route('finance.resale.reconcile.show', $delta));
         $this->assertSame([PeriodStatus::Billed, PeriodStatus::Billed], $subscription->periods()->get()->map(static fn($p) => $p->status)->all());
+    }
+
+    public function test_recipient_invoice_lines_and_contact_map_are_the_shared_reading_side(): void {
+        // Review 2026-09-10 (E): Kontakte → gültige Rechnungen im Fenster → Klassifikator → Verbrauch je Position.
+        // Ein Lexoffice-Kontakt je Kunde (Unique `extref_unique` auf Plugin/Typ/Referenz).
+        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $other = $this->customerWithContact('Fremde GmbH', 'c-x');
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Standard', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->standard->id, 'starts_on' => '2025-10-01']);
+        $period = $subscription->periods()->firstOrFail();
+        $support = $this->article('art-sup', 'Business Support', '90.00');
+
+        $map = \App\Plugins\Lexoffice\Services\LexofficeContactMap::forOrganization($this->organization);
+        $this->assertSame(['c-kl'], $map->byCustomer($customer->id));
+        $this->assertSame($customer->id, $map->byContact('c-kl'));
+        $this->assertNull($map->byContact('c-unknown'));
+        $this->assertSame(['c-x'], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forCustomer($other)->byCustomer($other->id));
+        $this->assertSame([], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forOrganization($this->organization, collect())->all(), 'ohne Abos keine Kontakte');
+        $this->assertSame(['c-kl'], (new LinkProposer)->contactsFor($subscription), 'Delegation am Proposer bleibt');
+
+        // Rechnungen: eine vor dem Fenster (zählt nur über ihr Leistungsende), eine stornierte,
+        // eine ohne gespiegelte Positionen, eine Support-Position, eine fremde.
+        $this->voucher('c-kl', 'RE/2025/0900', '2025-10-01', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        $this->voucher('c-kl', 'RE/2025/0901', '2025-10-02', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13'], ['article' => $support, 'quantity' => 2, 'unit' => 'Stunde', 'net' => '90.00']]);
+        $this->voucher('c-kl', 'RE/2024/0100', '2024-01-01', [['article' => $this->standard, 'quantity' => 36, 'net' => '12.13']], null, 'paid', '', '2024-01-01', '2026-12-31');
+        $this->voucher('c-kl', 'RE/2025/0950', '2025-10-05', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']], null, 'voided');
+        $this->voucher('c-kl', 'RE/2025/0960', '2025-10-06', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']])->forceFill(['lines_synced_at' => null])->save();
+        $this->voucher('c-x', 'RE/2025/0970', '2025-10-03', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+
+        $lines = new \App\Plugins\Lexoffice\Services\LexofficeRecipientInvoiceLines;
+        $contacts = $map->byCustomer($customer->id);
+        $from = \Carbon\CarbonImmutable::parse('2025-07-03');
+        $numbers = static fn(\Illuminate\Support\Collection $rows): array => $rows->map(static fn(LexofficeVoucherLine $l): string => (string) $l->voucher->voucher_number)->sort()->values()->all();
+        $this->assertSame(['RE/2024/0100', 'RE/2025/0900', 'RE/2025/0901', 'RE/2025/0960'], $numbers($lines->for($this->organization, $contacts, $from)), 'nur Lizenzpositionen, gültige Rechnungen, Leistungsende zählt');
+        $this->assertSame(['RE/2025/0950'], $numbers($lines->voided($this->organization, $contacts)));
+        $this->assertSame([], $lines->for($this->organization, [], $from)->all(), 'leere Kontaktliste = nichts');
+        $this->assertSame(5, $lines->for($this->organization, null)->count(), 'null = alle Kontakte der Organisation (auch Fremde GmbH)');
+        $this->assertSame(['RE/2024/0100', 'RE/2025/0900', 'RE/2025/0901', 'RE/2025/0960'], $numbers($lines->forPeriod($this->organization, $contacts, $period)));
+        $this->assertSame(1, $lines->pendingCount($this->organization, $contacts, $from));
+
+        $vouchers = $lines->vouchers($this->organization, $contacts, $from);
+        $this->assertSame(['RE/2025/0901', 'RE/2025/0900', 'RE/2024/0100'], $vouchers->pluck('voucher_number')->all(), 'neueste zuerst, nur gespiegelte');
+        $flags = $vouchers->firstWhere('voucher_number', 'RE/2025/0901')?->lines->map(static fn($l): bool => (bool) $l->getAttribute('is_license'))->all();
+        $this->assertSame([true, false], $flags, 'Support-Position bleibt sichtbar, aber markiert');
+
+        (new LinkProposer)->propose($this->organization);
+        $consumed = $lines->consumed($lines->for($this->organization, $contacts, $from));
+        $this->assertCount(1, $consumed, 'eine Position deckt die Periode');
+        $this->assertSame(12.0, array_values($consumed)[0]['months']);
+        $this->assertSame([$subscription->holderLabel() . ' · ' . $subscription->identityLabel() . ' · ' . $period->label()], array_values($consumed)[0]['periods'], 'Halter · Kennung · Zeitraum');
+        $this->assertSame([], $lines->consumed($lines->for($this->organization, $contacts, $from), $period), 'Bezüge an der Ausnahme-Periode zählen nicht');
+    }
+
+    public function test_overview_falls_back_to_the_voucher_customer_when_the_contact_is_not_mapped(): void {
+        // Review 2026-09-10 (G): Kontakt ohne ExternalReference, aber der Spiegel kennt den Kunden (`voucher.customer_id`,
+        // z. B. aus dem Belegabgleich): die Positionen zählen beim Kunden — eine Zeile mit Abos UND Rechnungen statt
+        // einer Kundenzeile „nie berechnet" plus einer Kontaktzeile „ohne Abo".
+        $fallback = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Fallback GmbH']);
+        $this->assertSame([], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forCustomer($fallback)->byCustomer($fallback->id), 'kein verknüpfter Kontakt');
+        $subscription = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $fallback->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01']);
+        $this->voucher('c-unmapped', 'RE/2025/0960', '2025-10-03', [['article' => $this->exchange, 'quantity' => 12, 'net' => '3.95']], $fallback);
+        // Ein weiterer unbekannter Kontakt ohne Kunden-ID bleibt eine eigene Kontaktzeile (Empfängername aus dem Beleg).
+        $this->voucher('c-nobody', 'RE/2025/0961', '2025-10-04', [['article' => $this->standard, 'quantity' => 12, 'net' => '12.13']]);
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Open, $subscription->periods()->firstOrFail()->status, 'ohne Kontakt kann der Lauf nichts zuordnen');
+
+        $rows = (new RecipientReconciler)->overview($this->organization);
+        $this->assertSame(['Fallback GmbH', 'Unbekannte GmbH'], array_column($rows, 'name'));
+        $byName = array_column($rows, null, 'name');
+        $this->assertSame($fallback->id, $byName['Fallback GmbH']['customer']?->id, 'Kunde aus voucher.customer_id');
+        $this->assertSame(1, $byName['Fallback GmbH']['subscriptions']);
+        $this->assertSame(1, $byName['Fallback GmbH']['lines'], 'die Position hängt am Kunden, nicht an einer Kontaktzeile');
+        $this->assertSame(1, $byName['Fallback GmbH']['open']);
+        $this->assertSame(12.0, $byName['Fallback GmbH']['free'], 'freie Position desselben Produkts');
+        $this->assertSame(0.0, $byName['Fallback GmbH']['missing'], 'nicht „nie berechnet" — nur nicht zugeordnet');
+        $this->assertSame(0.0, $byName['Fallback GmbH']['surplus']);
+        $this->assertNull($byName['Unbekannte GmbH']['customer']);
+        $this->assertSame(0, $byName['Unbekannte GmbH']['subscriptions']);
+        $this->assertSame(12.0, $byName['Unbekannte GmbH']['surplus'], 'Kontakt ohne Kunden-ID: Positionen ohne Abo');
+        $this->assertCount(2, $rows, 'kein drittes Ergebnis für c-unmapped');
+
+        // Sobald der Kontakt verknüpft ist, gewinnt die Verknüpfung — gleiche Zeile, der Lauf deckt die Periode.
+        ExternalReference::create([
+            'organization_id' => $this->organization->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-unmapped', 'referenceable_type' => $fallback->getMorphClass(), 'referenceable_id' => $fallback->getKey(),
+        ]);
+        (new LinkProposer)->propose($this->organization);
+        $rows = (new RecipientReconciler)->overview($this->organization);
+        $byName = array_column($rows, null, 'name');
+        $this->assertSame(1, $byName['Fallback GmbH']['proposed']);
+        $this->assertSame(0, $byName['Fallback GmbH']['open']);
+        $this->assertSame(0.0, $byName['Fallback GmbH']['free']);
+        $this->assertSame(1, $byName['Fallback GmbH']['lines']);
     }
 }

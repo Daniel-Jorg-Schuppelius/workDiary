@@ -19,8 +19,10 @@ use App\Models\Reselling\{ResalePeriod, ResalePurchaseEntry, ResaleSubscription}
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProviderInvoice};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -33,6 +35,14 @@ use Illuminate\Support\Facades\DB;
  * Soll-Einkauf. Domain-Buchungen (083) treffen ihre Domain direkt.
  */
 final class PurchaseAllocator {
+    /** @var array<int, Collection<int, ResaleSubscription>> Organisation → alle Abos (Gutschrift-Fallback), je Lauf einmal geladen */
+    private array $subscriptions = [];
+
+    /** Lauf-Cache leeren (vor einem neuen Lauf oder nach Änderungen am Register). */
+    public function reset(): void {
+        $this->subscriptions = [];
+    }
+
     /**
      * @return array{entries: int, allocated: float, unallocated: float}
      */
@@ -108,19 +118,23 @@ final class PurchaseAllocator {
      * der Betrag geht exakt an die Periode, deren Beginn die Laufzeit nennt.
      * Gutschrift-Positionen ohne Vertrag (Umzugsbonus je Endkunde) gelten der
      * Firma: erstes Abo dieser Firma beim Anbieter, Periode am Belegdatum.
+     * Weicht die Positionssumme von der Belegsumme ab (Seite nicht gelesen),
+     * wird importiert und in `issues` gewarnt — nie still.
      *
-     * @return array{lines: int, matched: int, unmatched: list<string>, duplicates: int, net: float}
+     * @return array{lines: int, matched: int, unmatched: list<string>, duplicates: int, net: float, issues: list<string>}
      */
-    public function importProviderInvoice(Organization $organization, ProviderInvoice $invoice, SubscriptionProvider $provider, ?User $user = null, ?string $fileName = null): array {
-        $result = ['lines' => count($invoice->lines), 'matched' => 0, 'unmatched' => [], 'duplicates' => 0, 'net' => 0.0];
-        $subscriptions = ResaleSubscription::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('provider', $provider->value)
-            ->get();
+    public function importProviderInvoice(Organization $organization, ProviderInvoice $invoice, SubscriptionProvider $provider, ?User $user = null, ?string $fileName = null, CurrencyCode $currency = CurrencyCode::Euro): array {
+        $result = ['lines' => count($invoice->lines), 'matched' => 0, 'unmatched' => [], 'duplicates' => 0, 'net' => 0.0, 'issues' => array_map('strval', $invoice->issues)];
+        $consistency = $invoice->consistencyIssue();
+        if ($consistency !== null) {
+            $result['issues'][] = $consistency;
+        }
+        $all = $this->subscriptions($organization);
+        $subscriptions = $all->filter(static fn(ResaleSubscription $s): bool => $s->provider === $provider)->values();
         $byContract = $subscriptions->filter(static fn(ResaleSubscription $s): bool => $s->external_id !== null)->keyBy(static fn(ResaleSubscription $s): string => mb_strtoupper((string) $s->external_id));
-        $entryDate = $invoice->date ?? CarbonImmutable::today();
+        $entryDate = $invoice->date ?? ResalePeriod::today();
 
-        DB::transaction(function () use ($organization, $invoice, $provider, $user, $fileName, $subscriptions, $byContract, $entryDate, &$result): void {
+        DB::transaction(function () use ($organization, $invoice, $provider, $user, $fileName, $currency, $all, $subscriptions, $byContract, $entryDate, &$result): void {
             foreach ($invoice->lines as $line) {
                 $subscription = null;
                 if ($line->contract !== null) {
@@ -138,9 +152,7 @@ final class PurchaseAllocator {
                     $subscription = $exact->sortBy('starts_on')->first();
                     // Gutschrift für eine Firma, die beim Anbieter kein Abo (mehr) hat: jüngstes Abo der Firma egal welchen Anbieters.
                     if ($subscription === null) {
-                        $subscription = ResaleSubscription::query()->withoutGlobalScopes()
-                            ->where('organization_id', $organization->id)
-                            ->get()
+                        $subscription = $all
                             ->filter(static fn(ResaleSubscription $s): bool => $s->company_name !== null && MarketplaceCompany::normalizeName((string) $s->company_name) === $wanted)
                             ->sortByDesc('starts_on')
                             ->first();
@@ -151,8 +163,16 @@ final class PurchaseAllocator {
 
                     continue;
                 }
-                $hash = (string) CryptoHelper::hash('provider|' . $provider->value . '|' . $invoice->number . '|' . $line->position . '|' . ($line->contract ?? $line->companyKey ?? ''));
-                if (ResalePurchaseEntry::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('raw_hash', $hash)->exists()) {
+                $lineKey = '|' . ($line->contract ?? $line->companyKey ?? '');
+                $hash = (string) CryptoHelper::hash('provider|' . $provider->value . '|' . $invoice->number . '|' . $line->position . $lineKey);
+                // Vor dem Review 2026-09-10 trugen Gutschrift-Positionen alle die Nummer 0;
+                // der alte Hash gilt weiter als Dublette, sonst käme die Zeile beim Re-Import doppelt.
+                $legacyHash = (string) CryptoHelper::hash('provider|' . $provider->value . '|' . $invoice->number . '|0' . $lineKey);
+                $duplicate = ResalePurchaseEntry::query()->withoutGlobalScopes()->where('organization_id', $organization->id)
+                    ->where(static fn($q) => $q->where('raw_hash', $hash)
+                        ->orWhere(static fn($legacy) => $legacy->where('raw_hash', $legacyHash)->where('net_amount', number_format($line->total, 2, '.', ''))))
+                    ->exists();
+                if ($duplicate) {
                     $result['duplicates']++;
 
                     continue;
@@ -174,7 +194,7 @@ final class PurchaseAllocator {
                     'entry_date' => $entryDate->toDateString(),
                     'description' => mb_substr(trim($line->description . ($line->periodStart !== null ? ' · ' . $line->periodStart->format('d.m.Y') . ' – ' . ($line->periodEnd?->format('d.m.Y') ?? '') : '') . ($fileName !== null ? ' · ' . $fileName : '')), 0, 255),
                     'net_amount' => $line->total,
-                    'currency' => 'EUR',
+                    'currency' => $currency->value,
                     'raw_hash' => $hash,
                     'created_by_user_id' => $user?->id,
                 ]);
@@ -185,6 +205,13 @@ final class PurchaseAllocator {
         });
 
         return $result;
+    }
+
+    /** @return Collection<int, ResaleSubscription> */
+    private function subscriptions(Organization $organization): Collection {
+        return $this->subscriptions[$organization->id] ??= ResaleSubscription::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->get();
     }
 
     /**

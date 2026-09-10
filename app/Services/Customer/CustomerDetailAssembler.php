@@ -187,13 +187,15 @@ class CustomerDetailAssembler {
         }
 
         // Kundenakte-Reiter „Abos" (Feature 152, MVP-758): Abos des Kunden und
-        // seiner Fremdkunden (Endkunden) mit der Zahl offener Perioden.
+        // seiner Fremdkunden (Endkunden) mit der Zahl fälliger Perioden (offen,
+        // Beginn erreicht, fremder Halter) — nur mit Modul und Recht.
         $customerSubscriptions = collect();
-        if (Gate::forUser($user)->allows(Permission::ResellingView->value)) {
-            $today = CarbonImmutable::today();
+        $resaleModuleActive = $this->featureFlags->isEnabled('module.reselling');
+        if ($resaleModuleActive && Gate::forUser($user)->allows(Permission::ResellingView->value)) {
+            $today = \App\Models\Reselling\ResalePeriod::today();
             $customerSubscriptions = ResaleSubscription::query()
                 ->with(['foreignCustomer:id,name', 'article:id,number,name'])
-                ->withCount(['periods as open_periods_count' => static fn($q) => $q->where('status', \App\Enums\Reselling\PeriodStatus::Open->value)->where('starts_on', '<', $today->addDay()->toDateString())])
+                ->withCount(['periods as open_periods_count' => static fn($q) => $q->due($today)])
                 ->forCustomer($customer)
                 ->planning()
                 ->orderBy('label')
@@ -263,6 +265,7 @@ class CustomerDetailAssembler {
             'customer' => $customer,
             'customerDomains' => $customerDomains,
             'customerSubscriptions' => $customerSubscriptions,
+            'resaleModuleActive' => $resaleModuleActive,
             'portalUsers' => $portalUsers,
             'portalLastLogins' => $portalLastLogins,
             'billingAgreement' => $billingAgreement,

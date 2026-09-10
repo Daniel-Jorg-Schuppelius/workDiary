@@ -61,7 +61,6 @@ return [
         'successor' => 'Nachfolger',
         'predecessor' => 'Vorgänger',
         'expected_sale' => 'Soll-Verkauf je Periode',
-        'expected_purchase' => 'Soll-Einkauf',
         'margin' => 'Marge/Stück',
         'period' => 'Periode',
         'note' => 'Bemerkung',
@@ -233,6 +232,7 @@ return [
         'voucher_only' => 'Beleg (ohne Position)',
         'needed' => 'offen: :amount',
         'no_contacts' => 'Der Rechnungsempfänger hat keinen verknüpften Lexoffice-Kontakt.',
+        'note_voided' => 'Rechnung storniert — deckte :months', // Review 2026-09-10
         'no_lines' => 'Keine gespiegelten Rechnungspositionen im Fenster um den Periodenbeginn.',
         'line' => 'Rechnungsposition',
         'line_hint' => 'Nur Abo-Positionen des Empfängers im Zeitfenster der Periode. Fehlt ein Artikel, stufe ihn unter „Produkte“ als Abo-Produkt ein.',
@@ -338,6 +338,7 @@ return [
             'lexoffice' => 'Lexoffice ist für diese Organisation nicht aktiv oder ohne API-Schlüssel.',
             'nothing_open' => 'Keine offenen Perioden mit Verkaufspreis für diesen Empfänger.',
         ],
+        'already_drafted' => 'Für diesen Empfänger steht bereits ein Entwurf aus (:reference vom :date). Erst in Lexoffice bzw. lokal abschließen oder die Periode entscheiden.', // Review 2026-09-10
     ],
     'purchase' => [
         'title' => 'Einkaufsbelege',
@@ -540,5 +541,134 @@ return [
         'partial' => 'Teilweise',
         'waived' => 'Verzichtet',
         'disputed' => 'Strittig',
+    ],
+    // Review 2026-09-10
+    'propose' => [
+        'locked' => 'Der Vorschlagslauf läuft bereits — bitte kurz warten.',
+    ],
+    // Review 2026-09-10 (Import)
+    'import_issues' => [
+        'domain_provider' => 'Zeile :line (:company, :product): Anbieter „Domain-Reselling“ wird nicht importiert — Domains kommen nur über den Domain-Sync.',
+    ],
+    // Review 2026-09-10 (UI-B)
+    'report_tabs' => [
+        'margin' => 'Marge',
+        'renewals' => 'Verlängerungen',
+        'unbilled' => 'Ohne Rechnung',
+    ],
+    'margin' => [
+        'subtitle' => 'Fällige Perioden mit Beginn :from – :to: Soll-Verkauf, berechnet laut Bezügen, Soll-/Ist-Einkauf, Marge',
+        'block' => 'Block',
+        'key' => 'Produkt / Rechnungsempfänger',
+        'currency' => 'Währung',
+        'mixed_currencies' => 'Perioden in mehreren Währungen (:list) — Beträge werden nicht summiert, je Währung eine Zeile.',
+        'export_csv' => 'CSV',
+        'export_xlsx' => 'XLSX',
+        'export_pdf' => 'PDF',
+        'pdf_title' => 'Margenbericht Abos & Lizenzen',
+        'file' => 'abo-marge',
+    ],
+    'renewals' => [
+        'subtitle' => 'Abos, die sich zwischen :from und :to verlängern oder enden',
+        'bucket' => 'In :days Tagen',
+        'date' => 'Datum',
+        'mode' => 'Ereignis',
+        'mode_renews' => 'verlängert sich',
+        'mode_ends' => 'endet',
+        'today' => 'heute',
+        'in_days' => 'in :days Tag|in :days Tagen',
+        'hint' => 'Verlängerung = Beginn der nächsten Abrechnungsperiode laut Planung; bei gekündigten Abos und bei bekanntem Ende vor der nächsten Periode zählt das Ende.',
+        'empty' => 'Keine Verlängerungen oder Enden im Zeitraum.',
+        'file' => 'abo-verlaengerungen',
+    ],
+    'unbilled' => [
+        'subtitle' => 'Abos, deren älteste offene fällige Periode länger als :days Tage zurückliegt',
+        'days_label' => 'Älter als (Tage)',
+        'oldest' => 'Älteste offene Periode',
+        'days' => 'Tage offen',
+        'open_periods' => 'Offene Perioden',
+        'hint' => 'Offene Perioden fremder Halter ohne Bezug; offener Betrag = Soll-Verkauf der offenen Monate je Abo. Eigener Bestand zählt nicht.',
+        'empty' => 'Kein Abo ohne Rechnung älter als :days Tage.',
+        'file' => 'abo-ohne-rechnung',
+    ],
+    'export_files' => [
+        'proposal' => 'abo-rechnungsvorschlag',
+        'xlsx_action' => 'Rechnungsvorschlag (XLSX)',
+    ],
+    'draft_dialog' => [
+        'drafted' => 'Bereits im Entwurf',
+        'drafted_line' => ':count Periode im Entwurf :reference vom :date|:count Perioden im Entwurf :reference vom :date',
+        'drafted_hint' => 'Diese Empfänger bekommen keinen zweiten Entwurf: erst in Lexoffice bzw. lokal abschließen oder die Periode entscheiden.',
+    ],
+    'draft_flash' => [
+        'created' => 'Entwurf für :customer angelegt: :lines Positionen, :net netto (Lexoffice-ID :id). Bitte in Lexoffice prüfen und abschließen.',
+        'created_local' => 'Rechnungsentwurf :id für :customer angelegt: :lines Positionen, :net netto. Perioden sind als Vorschlag verknüpft — beim Ausstellen bestätigen.',
+        'failed' => 'Der Entwurf konnte nicht angelegt werden — Details stehen im Protokoll.',
+    ],
+    'purchase_flash' => [
+        'allocated' => 'Beleg :voucher: :amount auf :entries Perioden verteilt.',
+    ],
+    'purchase_filter' => [
+        'search' => 'Suche (Abo, Kennung, Beleg, Beschreibung)',
+        'all_sources' => 'Alle Quellen',
+    ],
+    'purchase_dialog' => [
+        'search' => 'Beleg suchen (Nummer, Lieferant)',
+        'no_match' => 'Kein Beleg passt zur Suche.',
+        'domain_provider' => 'Domain-Belege kommen nur über den Domain-Sync.',
+    ],
+    'purchase_issues' => [
+        'count' => ':count Hinweis zum Import — bitte prüfen.|:count Hinweise zum Import — bitte prüfen.',
+        'line' => ':file: :issue',
+        'result' => 'Beleg :number: :matched von :lines Positionen zugeteilt (:duplicates bereits vorhanden), :net netto.',
+        'failed' => ':file: Import fehlgeschlagen — Details stehen im Protokoll.',
+    ],
+    // Review 2026-09-10 (UI-A)
+    'holder_error' => [
+        'foreign_mismatch' => 'Der Fremdkunde gehört nicht zum gewählten Kunden.',
+        'foreign_archived' => 'Dieser Fremdkunde ist archiviert und kann kein neuer Halter werden.',
+        'quantity_below_assigned' => ':assigned Lizenzen sind an andere Halter abgetreten — die Menge kann nicht darunter liegen.',
+    ],
+    'link_error' => [
+        'period_missing' => 'Periode nicht gefunden.',
+        'period_foreign' => 'Die Periode gehört nicht zu diesem Rechnungsempfänger.',
+        'line_foreign' => 'Die Rechnungsposition gehört nicht zu :customer — Bezüge gehen nie über Kundengrenzen.',
+    ],
+    'edit_hint' => [
+        'imported' => 'Importiertes Abo: der nächste Import überschreibt Bezeichnung, Menge, Laufzeit und Einkaufspreis; die Kennung ist gesperrt. Halter und Verkaufspreis bleiben.',
+        'domain' => 'Domain-Abo aus dem Domain-Sync: Anbieter und Kennung sind gesperrt.',
+        'assignment' => 'Abtretung aus :contract — Produkt, Anbieter und Rhythmus kommen vom Vertrag; die Menge darf den freien Rest nicht übersteigen.',
+    ],
+    'delete_error' => [
+        'has_purchases' => 'Diesem Abo sind Einkaufsbelege zugeteilt — erst die Einkaufszeilen lösen.',
+        'is_domain' => 'Domain-Abos führt der Domain-Sync — bitte über die Domainverwaltung beenden.',
+    ],
+    'general' => [
+        'failed' => 'Der Vorgang ist fehlgeschlagen; Einzelheiten stehen im Protokoll.',
+    ],
+    'import_review' => [
+        'skipped' => 'Übersprungen',
+        'issues_title' => ':count Zeilenbefund|:count Zeilenbefunde',
+        'flash_skipped' => ':count Zeile übersprungen|:count Zeilen übersprungen',
+        'template_filename' => 'abo-liste-vorlage.csv',
+    ],
+    'link_ui' => [
+        'position' => 'Pos. :position',
+        'licences_times' => 'Lizenzen × :months Mon.',
+        'pending_hint' => 'Die Positionen dieser Rechnungen sind noch nicht gespiegelt — der nächste Belegabgleich holt sie.',
+        'unlinked_truncated' => 'Angezeigt werden die neuesten :shown.',
+    ],
+    // Review 2026-09-10 (Gutschriften)
+    'credit_notes' => [
+        'title' => 'Gutschriften',
+        'hint' => 'Gutschriften mindern die Deckung einer Periode. Zuordnung nur von Hand — der Vorschlagslauf verrechnet sie nicht. Eingegeben werden die gutgeschriebenen Lizenzen, gespeichert wird ein negativer Bezug.',
+        'col_linked' => 'Verrechnet',
+        'linked_with' => ':amount an :periods',
+        'unlinked' => 'noch nicht verrechnet',
+        'licences_field' => 'Gutgeschriebene Lizenzen',
+        'action_link' => 'Als Gutschrift verrechnen',
+        'sign_hint' => 'Wird als negativer Bezug gespeichert.',
+        'error_amount' => 'Bitte eine Menge über null angeben.',
+        'error_positive' => 'Rechnungspositionen brauchen positive Lizenzmonate — Minderungen laufen über die Gutschrift-Position.',
     ],
 ];

@@ -1015,4 +1015,16 @@ return [
     'learning' => [
         'dossierDisclosed' => 'Qualification dossier disclosed by name',
     ],
+    // Resale register (feature 152, review 2026-09-10 A2): user decisions.
+    'resale_period' => [
+        'confirmed' => 'Invoice reference confirmed',
+        'waived' => 'Billing of the period waived',
+        'disputed' => 'Period marked as disputed',
+        'reopened' => 'Decision on the period withdrawn',
+        'linked' => 'Invoice line assigned manually',
+        'link_removed' => 'Invoice reference removed',
+    ],
+    'resale_subscription' => [
+        'rehomed' => 'Subscription holder changed',
+    ],
 ];

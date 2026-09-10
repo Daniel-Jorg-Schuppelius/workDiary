@@ -5805,6 +5805,8 @@ CREATE TABLE IF NOT EXISTS "lexoffice_vouchers"(
   "lines_synced_at" datetime,
   "service_starts_on" date,
   "service_ends_on" date,
+  "lines_sync_failed_at" datetime,
+  "lines_sync_attempts" integer not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("customer_id") references "customers"("id") on delete set null,
   foreign key("supplier_id") references "suppliers"("id") on delete set null
@@ -18741,6 +18743,8 @@ CREATE TABLE IF NOT EXISTS "resale_periods"(
   "created_at" datetime,
   "updated_at" datetime,
   "note" varchar,
+  "draft_reference" varchar,
+  "draft_created_at" datetime,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("subscription_id") references "resale_subscriptions"("id") on delete cascade,
   foreign key("decided_by_user_id") references "users"("id") on delete set null
@@ -18975,6 +18979,10 @@ CREATE INDEX "resale_subs_org_status_kind_idx" on "resale_subscriptions"(
   "organization_id",
   "status",
   "kind"
+);
+CREATE INDEX "resale_periods_org_draft_idx" on "resale_periods"(
+  "organization_id",
+  "draft_reference"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -19772,3 +19780,5 @@ INSERT INTO migrations VALUES(792,'2027_02_20_100600_create_resale_purchase_entr
 INSERT INTO migrations VALUES(793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',11);
 INSERT INTO migrations VALUES(794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',12);
 INSERT INTO migrations VALUES(795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',13);
+INSERT INTO migrations VALUES(796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',14);
+INSERT INTO migrations VALUES(797,'2027_02_20_101100_add_draft_reference_to_resale_periods',14);

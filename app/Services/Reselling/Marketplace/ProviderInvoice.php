@@ -33,8 +33,32 @@ final class ProviderInvoice {
         public array $issues = [],
     ) {}
 
+    /** Toleranz zwischen Positionssumme und Nettobetrag des Belegs. */
+    public const TOTAL_TOLERANCE = 0.01;
+
     /** Summe der Positionen (Gutschrift negativ). */
     public function linesTotal(): float {
         return round(array_sum(array_map(static fn(ProviderInvoiceLine $l): float => $l->total, $this->lines)), 2);
+    }
+
+    /**
+     * Positionssumme trifft den Nettobetrag (|Δ| ≤ 0,01). Ohne Nettobetrag im
+     * Text gilt der Beleg als konsistent — nur eine erkannte Abweichung zählt
+     * (Review 2026-09-10, B17: Seite 2 anders zerlegt → Positionen fehlen).
+     */
+    public function isConsistent(): bool {
+        return $this->netTotal === null || abs($this->linesTotal() - $this->netTotal) <= self::TOTAL_TOLERANCE + 1e-9;
+    }
+
+    /** Befund zur Summenabweichung, null wenn konsistent. */
+    public function consistencyIssue(): ?string {
+        if ($this->isConsistent()) {
+            return null;
+        }
+
+        return (string) __('resale_import.invoice.total_mismatch', [
+            'lines' => number_format($this->linesTotal(), 2, ',', '.'),
+            'net' => number_format((float) $this->netTotal, 2, ',', '.'),
+        ]);
     }
 }

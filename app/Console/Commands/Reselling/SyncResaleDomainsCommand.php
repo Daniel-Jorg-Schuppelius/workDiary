@@ -12,7 +12,9 @@ declare(strict_types=1);
 
 namespace App\Console\Commands\Reselling;
 
+use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Organization;
+use App\Models\Reselling\ResaleSubscription;
 use App\Services\Reselling\Register\DomainSubscriptionSync;
 use Illuminate\Console\Command;
 
@@ -33,6 +35,11 @@ class SyncResaleDomainsCommand extends Command {
         foreach ($query->orderBy('id')->get() as $organization) {
             $result = $sync->sync($organization);
             if ($result['domains'] === 0 && $result['ended'] === 0) {
+                // Ohne Projektionen beendet der Sync nichts (Review 2026-09-10, B6) — nur melden, wenn es Domain-Abos gibt.
+                if ($result['skipped_gone'] && ResaleSubscription::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('provider', SubscriptionProvider::DomainReselling->value)->exists()) {
+                    $this->warn(sprintf('Organisation #%d (%s): keine Domain-Projektionen — Domain-Abos bleiben unverändert.', $organization->id, $organization->name));
+                }
+
                 continue;
             }
             $this->info(sprintf('Organisation #%d (%s): %d Domains, %d neu, %d geändert, %d unverändert, %d beendet.', $organization->id, $organization->name, $result['domains'], $result['created'], $result['updated'], $result['unchanged'], $result['ended']));

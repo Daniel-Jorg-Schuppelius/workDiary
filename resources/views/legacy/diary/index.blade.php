@@ -165,7 +165,7 @@
                             <option value="status_alert">{{ __('Status → Problem') }}</option>
                             <option value="status_progress">{{ __('Status → Bestätigt') }}</option>
                             <option value="status_done">{{ __('Status → Erledigt') }}</option>
-                            <option value="delete" data-confirm="1">{{ __('Löschen') }}</option>
+                            <option value="delete">{{ __('Löschen') }}</option>
                         </select>
                         <x-icon-btn icon="check" tone="primary" size="sm" type="submit" id="bulk-apply" disabled show-label>{{ __('Anwenden') }}</x-icon-btn>
                     </div>

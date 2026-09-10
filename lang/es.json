@@ -11183,5 +11183,8 @@
     "Auf dieser Seite": "En esta página",
     "Ausführliche Hilfe öffnen": "Abrir la ayuda detallada",
     "Beliebte Themen": "Temas populares",
-    "Taste F1 öffnet die Kontexthilfe zur aktuellen Seite.": "La tecla F1 abre la ayuda contextual de la página actual."
+    "Taste F1 öffnet die Kontexthilfe zur aktuellen Seite.": "La tecla F1 abre la ayuda contextual de la página actual.",
+    "Abos & Lizenzen: :count Punkte warten auf Bearbeitung": "Suscripciones y licencias: :count puntos esperan tramitación",
+    ":due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen. Bitte die Periodenseite „Abos & Lizenzen\" prüfen.": ":due periodos vencidos (abierto :amount), :proposed propuestas sin confirmar, :unassigned suscripciones sin titular, :renewals renovaciones o finalizaciones en :renewal_days días, :stale suscripciones sin factura desde hace más de :stale_days días. Revise la página de periodos «Suscripciones y licencias».",
+    "Abo-Perioden öffnen": "Abrir los periodos de suscripción"
 }

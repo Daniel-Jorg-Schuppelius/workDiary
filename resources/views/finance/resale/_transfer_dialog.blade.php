@@ -9,14 +9,11 @@
   Lizenzabtretung (Feature 152): einen Teil der Lizenzen eines Vertrags an
   einen anderen Halter abtreten — zwei Firmen im selben Haus, ein Vertrag
   beim Anbieter. Es entsteht ein Kind-Abo mit eigenem Halter, eigener Menge
-  und eigenen Perioden; der Vertrag plant mit dem Rest.
+  und eigenen Perioden; der Vertrag plant mit dem Rest. Verfügbarkeit und
+  Vorbelegung ($available, $quantityDefault, $prefill) rechnet der Controller.
 --}}
 @php
     $mode = (string) old('mode', 'customer');
-    $prefill = $prefill ?? [];
-    $startsOn = (string) old('starts_on', ($prefill['starts_on'] ?? '') !== '' ? $prefill['starts_on'] : $subscription->starts_on->toDateString());
-    $available = $subscription->quantity - $subscription->assignedQuantityOn(\Carbon\CarbonImmutable::parse($startsOn));
-    $quantityDefault = ($prefill['quantity'] ?? 0) > 0 ? min((int) $prefill['quantity'], max(1, $available)) : max(1, min(1, $available));
 @endphp
 <x-modal
     :title="__('resale.transfer.title', ['subscription' => $subscription->label])"
@@ -28,13 +25,13 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="__('resale.transfer.submit')"
 >
-    <div class="text-sm text-base-content/70">{{ __('resale.transfer.hint', ['holder' => $subscription->holderLabel(), 'quantity' => $subscription->quantity, 'available' => max(0, $available)]) }}</div>
+    <div class="text-sm text-base-content/70">{{ __('resale.transfer.hint', ['holder' => $subscription->holderLabel(), 'quantity' => $subscription->quantity, 'available' => $available]) }}</div>
     <p class="text-xs text-muted">{{ __('resale.transfer.timeline_hint') }}</p>
 
     <div class="space-y-3" x-data="resaleHolderPicker"
          data-map="{{ json_encode($foreignByCustomer, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE) }}"
          data-holder="{{ $mode }}"
-         data-customer="{{ old('customer_id', $prefill['customer_id'] ?? '') }}"
+         data-customer="{{ old('customer_id', $prefill['customer_id']) }}"
          data-foreign="{{ old('foreign_customer_id', '') }}">
         <x-select-field name="mode" :label="__('resale.transfer.mode')" x-model="holder">
             <option value="customer" @selected($mode === 'customer')>{{ __('resale.inbox.mode_customer') }}</option>
@@ -43,7 +40,7 @@
         <x-select-field name="customer_id" :label="__('resale.inbox.customer')" x-model="customer" required>
             <option value="">—</option>
             @foreach ($customers as $customer)
-                <option value="{{ $customer->sqid }}" @selected(old('customer_id', $prefill['customer_id'] ?? '') === $customer->sqid)>{{ $customer->name }}</option>
+                <option value="{{ $customer->sqid }}" @selected(old('customer_id', $prefill['customer_id']) === $customer->sqid)>{{ $customer->name }}</option>
             @endforeach
         </x-select-field>
         <div x-show="showForeign()">
@@ -64,7 +61,7 @@
     <x-date-range layout="split" from-name="starts_on" to-name="ends_on" form-control size=""
                   :from-label="__('resale.field.starts_on')" :to-label="__('resale.field.ends_on')"
                   :from-required="true"
-                  :from="$startsOn"
-                  :to="old('ends_on', ($prefill['ends_on'] ?? '') !== '' ? $prefill['ends_on'] : ($subscription->ends_on?->toDateString() ?? ''))" />
+                  :from="old('starts_on', $prefill['starts_on'])"
+                  :to="old('ends_on', $prefill['ends_on'])" />
     <x-input-field name="note" :label="__('resale.field.note')" :value="old('note')" />
 </x-modal>

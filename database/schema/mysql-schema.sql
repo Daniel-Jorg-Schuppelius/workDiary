@@ -11209,6 +11209,8 @@ CREATE TABLE `lexoffice_vouchers` (
   `service_starts_on` date DEFAULT NULL,
   `service_ends_on` date DEFAULT NULL,
   `lines_synced_at` timestamp NULL DEFAULT NULL,
+  `lines_sync_failed_at` timestamp NULL DEFAULT NULL,
+  `lines_sync_attempts` smallint(5) unsigned NOT NULL DEFAULT 0,
   `file_path` varchar(255) DEFAULT NULL,
   `file_materialized_at` timestamp NULL DEFAULT NULL,
   `synced_at` timestamp NULL DEFAULT NULL,
@@ -15759,6 +15761,8 @@ CREATE TABLE `resale_periods` (
   `status` varchar(16) NOT NULL DEFAULT 'open',
   `waived_reason` varchar(255) DEFAULT NULL,
   `note` varchar(255) DEFAULT NULL,
+  `draft_reference` varchar(64) DEFAULT NULL,
+  `draft_created_at` timestamp NULL DEFAULT NULL,
   `decided_by_user_id` bigint(20) unsigned DEFAULT NULL,
   `decided_at` timestamp NULL DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
@@ -15767,6 +15771,7 @@ CREATE TABLE `resale_periods` (
   UNIQUE KEY `resale_periods_sub_start_uq` (`subscription_id`,`starts_on`),
   KEY `resale_periods_decided_by_user_id_foreign` (`decided_by_user_id`),
   KEY `resale_periods_org_status_start_idx` (`organization_id`,`status`,`starts_on`),
+  KEY `resale_periods_org_draft_idx` (`organization_id`,`draft_reference`),
   CONSTRAINT `resale_periods_decided_by_user_id_foreign` FOREIGN KEY (`decided_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_periods_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `resale_periods_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE CASCADE
@@ -21196,3 +21201,5 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (792,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (793,'2027_02_20_100700_add_resale_role_to_lexoffice_articles',62);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (794,'2027_02_20_100800_add_service_period_to_lexoffice_vouchers',63);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',64);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',65);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (797,'2027_02_20_101100_add_draft_reference_to_resale_periods',65);

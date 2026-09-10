@@ -15,10 +15,11 @@ namespace App\Models\Reselling;
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\{BillingFrequency, PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Article;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Contract\Contract;
 use App\Models\{Customer, ForeignCustomer, LexofficeArticle, Organization, User};
 use App\Models\Domain\DomainProjection;
+use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -62,7 +63,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int|null $contract_id
  * @property int|null $domain_projection_id
  * @property string|null $raw_hash
- * @property string|null $sync_status
+ * @property string|null $sync_status Domain-Sync: zuletzt gespiegelter Projektions-Halter (`p:c<id>`, `p:f<id>`, `p:own`, `p:none`)
  * @property string|null $notes
  * @property int|null $created_by_user_id
  * @property-read Customer|null $customer
@@ -70,8 +71,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property-read Article|null $article
  * @property-read LexofficeArticle|null $lexofficeArticle
  * @property-read \Illuminate\Database\Eloquent\Collection<int, ResalePeriod> $periods
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, ResalePurchaseEntry> $purchases
  */
 class ResaleSubscription extends Model {
+    use Auditable;
     use BelongsToOrganization;
     use HasSqid;
 
@@ -221,6 +224,63 @@ class ResaleSubscription extends Model {
         return max(0, $this->quantity - $this->assignedQuantityOn($day));
     }
 
+    /**
+     * Höchste an einem Tag des Zeitraums abgetretene Menge (Ende offen = bis
+     * in alle Zukunft). Beginn/Ende der Abtretungen sind die Ereignisse —
+     * kein Tagesloop; am selben Tag endet erst, was endet, dann beginnt Neues.
+     */
+    public function assignedQuantityBetween(CarbonImmutable $from, ?CarbonImmutable $to): int {
+        $from = $from->startOfDay();
+        $to = $to?->startOfDay();
+        $running = $this->assignedQuantityOn($from);
+        $max = $running;
+        /** @var list<array{0: string, 1: int, 2: int}> $events Datum, Rang (Ende vor Beginn), Delta */
+        $events = [];
+        foreach ($this->assignments as $assignment) {
+            $start = $assignment->starts_on;
+            $end = $assignment->ends_on;
+            if ($start->greaterThan($from) && ($to === null || ! $start->greaterThan($to))) {
+                $events[] = [$start->toDateString(), 1, $assignment->quantity];
+            }
+            if ($end !== null && ! $end->lessThan($from) && ($to === null || $end->lessThan($to))) {
+                $events[] = [$end->addDay()->toDateString(), 0, -$assignment->quantity];
+            }
+        }
+        usort($events, static fn(array $a, array $b): int => strcmp($a[0], $b[0]) ?: $a[1] <=> $b[1]);
+        foreach ($events as [, , $delta]) {
+            $running += $delta;
+            $max = max($max, $running);
+        }
+
+        return max(0, $max);
+    }
+
+    /**
+     * Nächster Suffix für die Kennung einer Abtretung (`Vertrag#n`): höchster
+     * vorhandener Suffix + 1, sonst Anzahl + 1 — eine gelöschte `#1` macht
+     * die nächste nicht wieder zur `#2`, die es schon gibt.
+     */
+    public function nextAssignmentSuffix(): int {
+        $highest = 0;
+        foreach ($this->assignments as $assignment) {
+            if (preg_match('/#(\d+)$/', (string) $assignment->external_id, $m) === 1) {
+                $highest = max($highest, (int) $m[1]);
+            }
+        }
+
+        return $highest > 0 ? $highest + 1 : $this->assignments->count() + 1;
+    }
+
+    /** Kommt aus einem Datei-Import (der nächste Import überschreibt Label, Menge, Laufzeit, Einkauf). */
+    public function isImported(): bool {
+        return $this->import_id !== null;
+    }
+
+    /** Domain-Abo aus dem DomainReselling-Sync (Anbieter DomainReselling bzw. Projektion). */
+    public function isDomain(): bool {
+        return $this->provider === SubscriptionProvider::DomainReselling || $this->domain_projection_id !== null;
+    }
+
     /** @return BelongsTo<Contract, $this> */
     public function contract(): BelongsTo {
         return $this->belongsTo(Contract::class);
@@ -239,6 +299,11 @@ class ResaleSubscription extends Model {
     /** @return HasMany<ResalePeriod, $this> */
     public function periods(): HasMany {
         return $this->hasMany(ResalePeriod::class, 'subscription_id')->orderBy('starts_on');
+    }
+
+    /** @return HasMany<ResalePurchaseEntry, $this> */
+    public function purchases(): HasMany {
+        return $this->hasMany(ResalePurchaseEntry::class, 'subscription_id');
     }
 
     /**
@@ -323,6 +388,30 @@ class ResaleSubscription extends Model {
         return null;
     }
 
+    /**
+     * Produktschlüssel für Deckung und Sharing-Regel: der Lexoffice-Artikel
+     * (`art:{id}`), sonst der Artikel aus der Liste, dessen Name zum Abo-Namen
+     * passt, sonst der normalisierte Abo-Name (`name:…`). Eine Regel für
+     * Vorschlagslauf, Abgleich und Bericht — sonst zählt ein Produkt doppelt.
+     *
+     * @param  array<int, string>|null  $articleNames  Lexoffice-Artikel-ID → Name (z. B. die Artikel der Rechnungen des Empfängers)
+     */
+    public function productKey(?array $articleNames = null): string {
+        if ($this->lexoffice_article_id !== null) {
+            return 'art:' . $this->lexoffice_article_id;
+        }
+        if ($articleNames !== null && $articleNames !== []) {
+            $matcher = new ProductNameMatcher;
+            foreach ($articleNames as $id => $name) {
+                if ($matcher->matches($this->label, $name)) {
+                    return 'art:' . $id;
+                }
+            }
+        }
+
+        return 'name:' . ProductNameMatcher::normalize($this->label);
+    }
+
     /** Erwarteter Verkauf je Periode (Menge × Stückpreis), wenn ein Preis hinterlegt ist. */
     public function expectedSalePerPeriod(): ?Money {
         return $this->sale_unit_price?->times($this->quantity);
@@ -332,8 +421,13 @@ class ResaleSubscription extends Model {
         return $this->purchase_unit_price?->times($this->quantity);
     }
 
-    /** Offene Perioden mit erreichtem Beginn — das, was noch nicht berechnet ist. */
+    /** Offene Perioden mit erreichtem Beginn (Stichtag in Ortszeit) — das, was noch nicht berechnet ist. */
     public function openPeriodCount(): int {
-        return $this->periods->filter(static fn(ResalePeriod $p): bool => $p->status === PeriodStatus::Open && ! $p->starts_on->isFuture())->count();
+        if ($this->is_own_holding) {
+            return 0; // eigener Bestand wird nie berechnet (wie ResalePeriod::scopeDue)
+        }
+        $today = ResalePeriod::today();
+
+        return $this->periods->filter(static fn(ResalePeriod $p): bool => $p->status === PeriodStatus::Open && ! $p->starts_on->greaterThan($today))->count();
     }
 }

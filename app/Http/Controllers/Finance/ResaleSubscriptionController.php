@@ -12,22 +12,26 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
-use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode};
+use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus};
 use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Finance\Resale\{AssignResaleHolderRequest, ImportResaleFilesRequest, TransferResaleSubscriptionRequest};
 use App\Http\Requests\Finance\SaveResaleSubscriptionRequest;
-use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle, LexofficeVoucherLine};
-use App\Models\Reselling\{CompanyMapping, ResaleImport, ResaleSubscription};
-use App\Services\Reselling\Register\{HolderResolver, LinkProposer, MarketplaceImporter, PeriodPlanner};
-use App\Support\Sqid;
+use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResaleSubscription};
+use App\Plugins\Lexoffice\Services\LexofficeRecipientInvoiceLines;
+use App\Services\Reselling\Marketplace\MarketplaceCompany;
+use App\Services\Reselling\Register\{HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodPlanner};
+use App\Support\{CsvExport, Sqid};
 use Carbon\CarbonImmutable;
+use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Str;
-use Illuminate\Validation\Rule;
+use Illuminate\Support\{Collection, Str};
+use Illuminate\Support\Facades\{DB, Log, Storage};
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
  * Reselling-Register (Feature 152, MVP-758): Abos mit Halter, Laufzeit,
@@ -38,10 +42,10 @@ class ResaleSubscriptionController extends Controller {
 
     private const PER_PAGE = 50;
 
-    private const MAX_FILE_KB = 10240;
+    public function __construct(private readonly LexofficeRecipientInvoiceLines $invoiceLines) {}
 
     public function index(Request $request): View {
-        $today = CarbonImmutable::today();
+        $today = ResalePeriod::today();
         $filters = [
             'q' => trim((string) $request->query('q', '')),
             'kind' => (string) $request->query('kind', ''),
@@ -51,9 +55,10 @@ class ResaleSubscriptionController extends Controller {
             'open' => $request->boolean('open'),
         ];
 
+        // Fällig = offen, Beginn erreicht, fremder Halter — eigener Bestand wird nie berechnet (B14).
         $query = ResaleSubscription::query()
             ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name', 'article:id,number,name', 'lexofficeArticle:id,article_number,name'])
-            ->withCount(['periods as open_periods_count' => static fn(Builder $q) => $q->where('status', PeriodStatus::Open->value)->where('starts_on', '<', $today->addDay()->toDateString())]);
+            ->withCount(['periods as open_periods_count' => static fn($q) => $q->due($today)]);
 
         if ($filters['q'] !== '') {
             $q = $filters['q'];
@@ -81,14 +86,14 @@ class ResaleSubscriptionController extends Controller {
             $query->forCustomer($customer);
         }
         if ($filters['open']) {
-            $query->whereHas('periods', static fn(Builder $p) => $p->where('status', PeriodStatus::Open->value)->where('starts_on', '<', $today->addDay()->toDateString()));
+            $query->whereIn('id', ResalePeriod::query()->due($today)->select('subscription_id'));
         }
 
         $subscriptions = $query->orderBy('label')->orderBy('starts_on')->paginate(self::PER_PAGE)->withQueryString();
 
         $summary = [
             'active' => ResaleSubscription::query()->planning()->count(),
-            'open_periods' => \App\Models\Reselling\ResalePeriod::query()->due($today)->count(),
+            'open_periods' => ResalePeriod::query()->due($today)->count(),
             'unassigned' => ResaleSubscription::query()->planning()->unassigned()->count(),
         ];
 
@@ -105,75 +110,82 @@ class ResaleSubscriptionController extends Controller {
 
     public function show(ResaleSubscription $subscription, LinkProposer $proposer): View {
         $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'successor', 'predecessors', 'parent.customer', 'parent.foreignCustomer', 'assignments.customer', 'assignments.foreignCustomer', 'periods.decidedBy', 'periods.links.linkable', 'creator']);
+        $today = ResalePeriod::today();
+        // Ziele der Schnellzuordnung: noch nicht entschieden oder teilweise gedeckt, Beginn erreicht.
+        $openPeriods = $subscription->periods
+            ->filter(static fn(ResalePeriod $p): bool => (! $p->status->isDecided() || $p->status === PeriodStatus::Partial) && ! $p->starts_on->greaterThan($today))
+            ->values();
 
         return view('finance.resale.show', [
             'subscription' => $subscription,
-            'today' => CarbonImmutable::today(),
-            'invoices' => $this->recipientInvoices($subscription, $proposer),
+            'today' => $today,
+            'assignedNow' => $subscription->assignments->isNotEmpty() ? $subscription->assignedQuantityOn($today) : 0,
+            'openPeriods' => $openPeriods,
+            'invoices' => $this->recipientInvoices($subscription, $proposer, $openPeriods->first()),
         ]);
     }
 
     /**
-     * Rechnungen des Rechnungsempfängers aus dem Belegspiegel im Zeitraum des
-     * Abos (ab 90 Tage vor Beginn), mit Positionen, deren bereits zugeordneten
-     * Lizenzmonaten und der Zahl der noch nicht gespiegelten Rechnungen.
+     * Rechnungen des Rechnungsempfängers aus dem Belegspiegel im Fenster des
+     * Abos (ab 90 Tage vor Beginn): je Beleg die Lizenzpositionen mit Lizenz-
+     * monaten, Verbrauch, Rest und Vorbelegung der Schnellzuordnung; die
+     * übrigen Positionen einklappbar; dazu die Zahl noch nicht gespiegelter
+     * Rechnungen.
      *
-     * @return array{contacts: list<string>, vouchers: \Illuminate\Support\Collection<int, \App\Models\LexofficeVoucher>, linked: array<int, array{months: float, periods: list<string>}>, pending: int, hidden: int}
+     * @return array{contacts: list<string>, vouchers: list<array{voucher: LexofficeVoucher, permalink: string|null, rows: int, licence: list<array{line: LexofficeVoucherLine, months: float, per_licence: float, linked: array{months: float, periods: list<string>}|null, remaining: float, default_licences: float}>, other: list<LexofficeVoucherLine>}>, pending: int, hidden: int}
      */
-    private function recipientInvoices(ResaleSubscription $subscription, LinkProposer $proposer): array {
+    private function recipientInvoices(ResaleSubscription $subscription, LinkProposer $proposer, ?ResalePeriod $firstOpen): array {
         $contacts = $subscription->is_own_holding ? [] : $proposer->contactsFor($subscription);
-        $empty = ['contacts' => $contacts, 'vouchers' => collect(), 'linked' => [], 'pending' => 0, 'hidden' => 0];
+        $empty = ['contacts' => $contacts, 'vouchers' => [], 'pending' => 0, 'hidden' => 0];
         if ($contacts === []) {
             return $empty;
         }
+        $organization = $this->currentOrganizationOrAbort(404);
         $from = $subscription->starts_on->subDays(LinkProposer::WINDOW_BEFORE);
-        $base = \App\Models\LexofficeVoucher::query()
-            ->whereIn('contact_external_id', $contacts)
-            ->where('voucher_type', 'invoice')
-            ->where('archived', false)
-            ->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->where('voucher_date', '>=', \App\Support\Query\DateRange::day($from));
-        $pending = (clone $base)->whereNull('lines_synced_at')->count();
-        $vouchers = (clone $base)->whereNotNull('lines_synced_at')->with(['lines.article:id,name,resale_role'])->orderByDesc('voucher_date')->limit(150)->get();
+        $vouchers = $this->invoiceLines->vouchers($organization, $contacts, $from);
+        $licenseLines = $vouchers->flatMap(static fn(LexofficeVoucher $v): Collection => $v->lines->filter(static fn(LexofficeVoucherLine $l): bool => (bool) $l->getAttribute('is_license')));
+        $linked = $this->invoiceLines->consumed($licenseLines);
 
-        // Lizenzpositionen (Microsoft-Artikel) tragen die Zuordnung; die übrigen
-        // Positionen bleiben zur Prüfung der Rechnung einklappbar dabei.
-        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
+        $rows = [];
         $hidden = 0;
-        $licenseIds = [];
         foreach ($vouchers as $voucher) {
+            $licence = [];
+            $other = [];
             foreach ($voucher->lines as $line) {
-                $line->setRelation('voucher', $voucher); // Leistungszeitraum für die Lizenzmonate
-                $isLicense = $classifier->isLicense($line->article);
-                $line->setAttribute('is_license', $isLicense);
-                if ($isLicense) {
-                    $licenseIds[] = $line->id;
-                } else {
+                if (! (bool) $line->getAttribute('is_license')) {
+                    $other[] = $line;
                     $hidden++;
+
+                    continue;
                 }
+                $split = LicenseMonths::split($line);
+                $months = $split['licences'] * $split['months'];
+                $info = $linked[$line->id] ?? null;
+                $remaining = max(0.0, $months - ($info['months'] ?? 0.0));
+                $perLicence = max(0.01, $split['months']);
+                $needLicences = max(1.0, ($firstOpen?->requiredMonths() ?? 1.0) / $perLicence);
+                $licence[] = [
+                    'line' => $line,
+                    'months' => $months,
+                    'per_licence' => $split['months'],
+                    'linked' => $info,
+                    'remaining' => $remaining,
+                    'default_licences' => round(min($remaining / $perLicence, $needLicences), 2),
+                ];
             }
-        }
-        $vouchers = $vouchers->filter(static fn(\App\Models\LexofficeVoucher $v): bool => $v->lines->contains(static fn($l): bool => (bool) $l->getAttribute('is_license')))->values();
-
-        $linked = [];
-        $lineIds = $licenseIds;
-        if ($lineIds !== []) {
-            $links = \App\Models\Reselling\ResalePeriodLink::query()
-                ->where('linkable_type', (new \App\Models\LexofficeVoucherLine)->getMorphClass())
-                ->whereIn('linkable_id', $lineIds)
-                ->with(['period:id,starts_on,ends_on', 'subscription:id,label,quantity,provider,starts_on'])
-                ->get();
-            foreach ($links as $link) {
-                $id = (int) $link->linkable_id;
-                $linked[$id] ??= ['months' => 0.0, 'periods' => []];
-                $linked[$id]['months'] += (float) $link->months;
-                // Anderes Abo desselben Empfängers: Kennung mit Menge und Start, damit gleichnamige Verträge unterscheidbar sind.
-                $other = $link->subscription_id === $subscription->id || $link->subscription === null ? '' : $link->subscription->label . ' ' . $link->subscription->identityLabel() . ' · ';
-                $linked[$id]['periods'][] = $other . $link->period->label();
+            if ($licence === []) {
+                continue; // nur Nicht-Lizenzpositionen: Rechnung gehört nicht in die Liste
             }
+            $rows[] = [
+                'voucher' => $voucher,
+                'permalink' => $voucher->lexofficePermalink(),
+                'rows' => count($licence) + ($other !== [] ? 1 : 0),
+                'licence' => $licence,
+                'other' => $other,
+            ];
         }
 
-        return ['contacts' => $contacts, 'vouchers' => $vouchers, 'linked' => $linked, 'pending' => $pending, 'hidden' => $hidden];
+        return ['contacts' => $contacts, 'vouchers' => $rows, 'pending' => $this->invoiceLines->pendingCount($organization, $contacts, $from), 'hidden' => $hidden];
     }
 
     public function create(Request $request): View {
@@ -188,18 +200,19 @@ class ResaleSubscriptionController extends Controller {
         $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $request->query('line', ''));
         $line = $lineId === null ? null : LexofficeVoucherLine::query()->with(['voucher', 'article'])->find($lineId);
         if ($line !== null) {
-            $split = \App\Services\Reselling\Register\LicenseMonths::split($line);
-            $start = \App\Services\Reselling\Register\LicenseMonths::referenceDate($line);
-            $perLicenceYear = \App\Services\Reselling\Register\LicenseMonths::isMonthly($line) ? $line->unit_net->times(12) : $line->unit_net;
+            $split = LicenseMonths::split($line);
+            $start = LicenseMonths::referenceDate($line);
+            $perLicenceYear = LicenseMonths::isMonthly($line) ? $line->unit_net->times(12) : $line->unit_net;
+            $provider = SubscriptionProvider::tryFrom((string) $request->query('provider', '')) ?? SubscriptionProvider::Manual;
             $prefill += [
                 'label' => $line->article !== null ? $line->article->name : $line->name,
                 'lexoffice_article_id' => $line->lexoffice_article_id,
                 'quantity' => (int) round($split['licences']),
                 'starts_on' => $start?->toDateString(),
-                'provider' => (string) $request->query('provider', SubscriptionProvider::Manual->value),
+                'provider' => $provider === SubscriptionProvider::DomainReselling ? SubscriptionProvider::Manual->value : $provider->value,
                 'sale_unit_price' => $perLicenceYear->withScale(2)->getAmount(),
                 // Laufzeit nur aus der Position, wenn die Lizenzzahl sicher ist („24 Monat" allein kann 2 × 12 sein).
-                'term_months' => \App\Services\Reselling\Register\LicenseMonths::isLicenceCountCertain($line) && (int) round($split['months']) > 0 ? (int) round($split['months']) : 12,
+                'term_months' => LicenseMonths::isLicenceCountCertain($line) && (int) round($split['months']) > 0 ? (int) round($split['months']) : 12,
             ];
         }
 
@@ -223,17 +236,25 @@ class ResaleSubscriptionController extends Controller {
     public function update(SaveResaleSubscriptionRequest $request, ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
         $subscription->fill($request->subscriptionAttributes())->save();
         $planner->sync($subscription);
+        if ($subscription->isAssignment() && $subscription->parent !== null) {
+            // Menge oder Laufzeit der Abtretung geändert: der Vertrag plant mit dem neuen Rest.
+            $subscription->parent->unsetRelation('assignments');
+            $planner->sync($subscription->parent);
+        }
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.flash.updated'));
     }
 
     public function destroy(ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
-        $decided = $subscription->periods()->where('status', '!=', PeriodStatus::Open->value)->exists();
-        if ($decided) {
-            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.flash.has_decisions'));
-        }
-        if ($subscription->assignments()->exists()) {
-            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.transfer.flash.has_assignments'));
+        $blocked = match (true) {
+            $subscription->isDomain() => 'resale.delete_error.is_domain',
+            $subscription->periods()->where('status', '!=', PeriodStatus::Open->value)->exists() => 'resale.flash.has_decisions',
+            $subscription->assignments()->exists() => 'resale.transfer.flash.has_assignments',
+            $subscription->purchases()->exists() => 'resale.delete_error.has_purchases',
+            default => null,
+        };
+        if ($blocked !== null) {
+            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __($blocked));
         }
         $parent = $subscription->parent;
         $subscription->delete();
@@ -254,88 +275,67 @@ class ResaleSubscriptionController extends Controller {
      */
     public function transferCreate(Request $request, ResaleSubscription $subscription): View {
         $customerId = Sqid::decode(Customer::class, (string) $request->query('customer', ''));
+        $subscription->load(['assignments', 'customer', 'foreignCustomer']);
+        $startsOn = $this->queryDate($request, 'starts_on') ?? $subscription->starts_on;
+        $endsOn = $this->queryDate($request, 'ends_on') ?? $subscription->ends_on;
+        $available = max(0, $subscription->quantity - $subscription->assignedQuantityBetween($startsOn, $endsOn));
+        $wanted = max(0, (int) $request->query('quantity', '0'));
 
         return view('finance.resale._transfer_dialog', [
-            'subscription' => $subscription->load(['assignments', 'customer', 'foreignCustomer']),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'foreignByCustomer' => $this->foreignCustomersByCustomer(),
+            'subscription' => $subscription,
+            'available' => $available,
+            'quantityDefault' => $wanted > 0 ? min($wanted, max(1, $available)) : 1,
             'prefill' => [
                 'customer_id' => $customerId !== null ? Sqid::encode(Customer::class, $customerId) : '',
-                'quantity' => max(0, (int) $request->query('quantity', 0)),
-                'starts_on' => (string) $request->query('starts_on', ''),
-                'ends_on' => (string) $request->query('ends_on', ''),
+                'starts_on' => $startsOn->toDateString(),
+                'ends_on' => $endsOn?->toDateString() ?? '',
             ],
-        ]);
+        ] + $this->holderPicker());
     }
 
     /**
      * Abtretung anlegen: Kind-Abo mit Halter, Menge und Laufzeit; Produkt,
      * Preise und Rhythmus vom Vertrag. Der Vertrag plant danach mit dem Rest.
      */
-    public function transferStore(Request $request, ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
-        $validated = $request->validate([
-            'mode' => ['required', 'in:customer,foreign'],
-            'customer_id' => ['required', 'string'],
-            'foreign_customer_id' => ['nullable', 'string'],
-            'quantity' => ['required', 'integer', 'min:1'],
-            'sale_unit_price' => ['nullable', 'numeric', 'min:0'],
-            'starts_on' => ['required', 'date'],
-            'ends_on' => ['nullable', 'date', 'after:starts_on'],
-            'note' => ['nullable', 'string', 'max:1000'],
-        ]);
-        if ($subscription->isAssignment()) {
-            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.transfer.flash.nested'));
-        }
-        $customerId = Sqid::decode(Customer::class, (string) $validated['customer_id']);
-        $customer = $customerId === null ? null : Customer::query()->find($customerId);
-        $foreign = null;
-        if ($validated['mode'] === 'foreign') {
-            $foreignId = Sqid::decode(ForeignCustomer::class, (string) ($validated['foreign_customer_id'] ?? ''));
-            $foreign = $foreignId === null ? null : ForeignCustomer::query()->find($foreignId);
-            if ($foreign === null || ($customer !== null && $foreign->customer_id !== $customer->id)) {
-                return back()->withErrors(['foreign_customer_id' => __('resale.dialog.no_foreign_customers')])->withInput();
-            }
-        }
-        if ($customer === null) {
-            return back()->withErrors(['customer_id' => __('resale.transfer.error.holder')])->withInput();
-        }
-        $startsOn = CarbonImmutable::parse((string) $validated['starts_on']);
-        $subscription->load('assignments');
-        $available = $subscription->quantity - $subscription->assignedQuantityOn($startsOn);
-        $quantity = (int) $validated['quantity'];
-        if ($quantity > $available) {
-            return back()->withErrors(['quantity' => __('resale.transfer.error.quantity', ['available' => max(0, $available)])])->withInput();
-        }
-        $sequence = $subscription->assignments()->count() + 1;
-        $assignment = ResaleSubscription::query()->create([
-            'organization_id' => $subscription->organization_id,
-            'parent_id' => $subscription->id,
-            'kind' => $subscription->kind,
-            'provider' => $subscription->provider,
-            'external_id' => $subscription->external_id !== null ? $subscription->external_id . '#' . $sequence : null,
-            'label' => $subscription->label,
-            'company_name' => $foreign !== null ? $foreign->name : $customer->name,
-            'customer_id' => $foreign === null ? $customer->id : null,
-            'foreign_customer_id' => $foreign?->id,
-            'is_own_holding' => false,
-            'article_id' => $subscription->article_id,
-            'lexoffice_article_id' => $subscription->lexoffice_article_id,
-            'quantity' => $quantity,
-            'starts_on' => $startsOn->toDateString(),
-            'ends_on' => $validated['ends_on'] ?? $subscription->ends_on?->toDateString(),
-            'term_months' => $subscription->term_months,
-            'interval' => $subscription->interval,
-            'renewal' => $subscription->renewal,
-            'purchase_unit_price' => $subscription->purchase_unit_price?->getAmount(),
-            'sale_unit_price' => isset($validated['sale_unit_price']) ? (string) $validated['sale_unit_price'] : $subscription->sale_unit_price?->getAmount(),
-            'currency' => $subscription->currency,
-            'status' => $subscription->status,
-            'notes' => $validated['note'] ?? null,
-            'created_by_user_id' => $request->user()?->id,
-        ]);
-        $planner->sync($assignment);
-        $subscription->unsetRelation('assignments');
-        $planner->sync($subscription);
+    public function transferStore(TransferResaleSubscriptionRequest $request, ResaleSubscription $subscription, PeriodPlanner $planner): RedirectResponse {
+        $holder = $request->holder();
+        $quantity = (int) $request->validated('quantity');
+        $salePrice = $request->validated('sale_unit_price');
+        $assignment = DB::transaction(function () use ($request, $subscription, $planner, $holder, $quantity, $salePrice): ResaleSubscription {
+            $subscription->load('assignments');
+            $sequence = $subscription->nextAssignmentSuffix();
+            $assignment = ResaleSubscription::query()->create([
+                'organization_id' => $subscription->organization_id,
+                'parent_id' => $subscription->id,
+                'kind' => $subscription->kind,
+                'provider' => $subscription->provider,
+                'external_id' => $subscription->external_id !== null ? $subscription->external_id . '#' . $sequence : null,
+                'label' => $subscription->label,
+                'company_name' => $holder['foreign'] !== null ? $holder['foreign']->name : $holder['customer']->name,
+                'customer_id' => $holder['foreign'] === null ? $holder['customer']->id : null,
+                'foreign_customer_id' => $holder['foreign']?->id,
+                'is_own_holding' => false,
+                'article_id' => $subscription->article_id,
+                'lexoffice_article_id' => $subscription->lexoffice_article_id,
+                'quantity' => $quantity,
+                'starts_on' => (string) $request->validated('starts_on'),
+                'ends_on' => $request->validated('ends_on') ?: $subscription->ends_on?->toDateString(),
+                'term_months' => $subscription->term_months,
+                'interval' => $subscription->interval,
+                'renewal' => $subscription->renewal,
+                'purchase_unit_price' => $subscription->purchase_unit_price?->getAmount(),
+                'sale_unit_price' => is_numeric($salePrice) ? (string) $salePrice : $subscription->sale_unit_price?->getAmount(),
+                'currency' => $subscription->currency,
+                'status' => $subscription->status,
+                'notes' => $request->validated('note') ?: null,
+                'created_by_user_id' => $request->user()?->id,
+            ]);
+            $planner->sync($assignment);
+            $subscription->unsetRelation('assignments');
+            $planner->sync($subscription);
+
+            return $assignment;
+        });
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.transfer.flash.created', ['quantity' => $quantity, 'holder' => $assignment->holderLabel()]));
     }
@@ -345,73 +345,76 @@ class ResaleSubscriptionController extends Controller {
     }
 
     /** CSV-Vorlage für die generische Liste: Spaltennamen, die der Reader erkennt, plus eine Beispielzeile. */
-    public function importTemplate(): \Symfony\Component\HttpFoundation\StreamedResponse {
-        $rows = [
+    public function importTemplate(): StreamedResponse {
+        return CsvExport::streamFromRows(
+            (string) __('resale.import_review.template_filename'),
             ['Kennung', 'Firma', 'Produkt', 'Menge', 'Beginn', 'Ende', 'Intervall', 'Laufzeit (Monate)', 'Einkaufspreis', 'Verkaufspreis', 'Anbieter', 'Bestellnummer'],
-            ['V-2026-001', 'Beispiel GmbH', 'Microsoft 365 Business Standard', '3', '01.03.2026', '', 'jährlich', '12', '128,38', '145,56', 'manual', ''],
-        ];
-
-        return response()->streamDownload(static function () use ($rows): void {
-            $out = fopen('php://output', 'wb');
-            if ($out === false) {
-                return;
-            }
-            fwrite($out, "\xEF\xBB\xBF");
-            foreach ($rows as $row) {
-                fputcsv($out, $row, ';', '"', '\\');
-            }
-            fclose($out);
-        }, 'abo-liste-vorlage.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+            [['V-2026-001', 'Beispiel GmbH', 'Microsoft 365 Business Standard', '3', '01.03.2026', '', 'jährlich', '12', '128,38', '145,56', 'manual', '']],
+        );
     }
 
-    public function importStore(Request $request, MarketplaceImporter $importer): RedirectResponse {
-        $validated = $request->validate([
-            'telekom' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt'],
-            'qualityhosting' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
-            'pricelist' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
-            'generic' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt,xlsx,xlsm'],
-            'generic_provider' => ['nullable', 'string', Rule::in(array_map(static fn(SubscriptionProvider $p): string => $p->value, SubscriptionProvider::cases()))],
-        ]);
-        $files = [];
-        $directory = 'resale/' . $this->currentOrganizationId() . '/' . Str::uuid();
-        foreach ([ResaleImport::KIND_PURCHASES => 'telekom', ResaleImport::KIND_CONTRACTS => 'qualityhosting', ResaleImport::KIND_PRICELIST => 'pricelist', ResaleImport::KIND_GENERIC => 'generic'] as $kind => $field) {
-            $upload = $request->file($field);
-            if ($upload === null) {
-                continue;
-            }
-            $stored = (string) Storage::disk(ResaleImport::DISK)->putFileAs($directory, $upload, $kind . '.' . strtolower((string) $upload->getClientOriginalExtension()));
-            $files[$kind] = ['name' => (string) $upload->getClientOriginalName(), 'path' => Storage::disk(ResaleImport::DISK)->path($stored), 'stored' => $stored];
-        }
-        if ($files === []) {
+    public function importStore(ImportResaleFilesRequest $request, MarketplaceImporter $importer): RedirectResponse {
+        $uploads = $request->uploads();
+        if ($uploads === []) {
             return redirect()->route('finance.resale.index')->with('error', __('resale.import.flash.no_files'));
         }
-
-        $organization = $this->currentOrganizationOrNull();
-        if ($organization === null) {
-            abort(404);
+        $organization = $this->currentOrganizationOrAbort(404);
+        $files = [];
+        $directory = 'resale/' . $organization->id . '/' . Str::uuid();
+        foreach ($uploads as $kind => $upload) {
+            $stored = (string) Storage::disk(ResaleImport::DISK)->putFileAs($directory, $upload, $kind . '.' . strtolower((string) $upload->getClientOriginalExtension()));
+            $files[$kind] = ['name' => Str::limit((string) $upload->getClientOriginalName(), 180, ''), 'path' => Storage::disk(ResaleImport::DISK)->path($stored), 'stored' => $stored];
         }
-        $genericProvider = SubscriptionProvider::tryFrom((string) ($validated['generic_provider'] ?? '')) ?? SubscriptionProvider::Other;
-        $records = $importer->import($organization, $request->user(), $files, null, $genericProvider);
+
+        try {
+            $records = $importer->import($organization, $request->user(), $files, null, $request->genericProvider());
+        } catch (\Throwable $e) {
+            Log::error('resale.import failed', ['organization_id' => $organization->id, 'exception' => $e]);
+
+            return redirect()->route('finance.resale.index')->with('error', __('resale.general.failed'));
+        }
         $summary = [];
         $unassigned = 0;
+        $skipped = 0;
         $failed = false;
         foreach ($records as $record) {
-            $failed = $failed || $record->status === \App\Enums\Reselling\ImportStatus::Failed;
+            $failed = $failed || $record->status === ImportStatus::Failed;
             $unassigned += $record->rows_unassigned;
-            $summary[] = $record->status === \App\Enums\Reselling\ImportStatus::Failed
-                ? $record->kindLabel() . ': ' . $record->error
+            $skipped += $record->issueCount();
+            $summary[] = $record->status === ImportStatus::Failed
+                ? $record->kindLabel() . ': ' . $this->safeImportError($record)
                 : __('resale.import.flash.line', ['kind' => $record->kindLabel(), 'created' => $record->rows_created, 'updated' => $record->rows_updated, 'unchanged' => $record->rows_unchanged, 'unassigned' => $record->rows_unassigned]);
+        }
+        if ($skipped > 0) {
+            $summary[] = trans_choice('resale.import_review.flash_skipped', $skipped, ['count' => $skipped]);
         }
         $message = __('resale.import.flash.done') . ' ' . implode(' · ', $summary);
 
-        return redirect()->route($unassigned > 0 ? 'finance.resale.inbox' : 'finance.resale.index')->with($failed ? 'error' : 'success', $message);
+        // Übersprungene Zeilen sind kein Fehlschlag: der Lauf ist durch, die Inbox zeigt die Befunde je Zeile.
+        return redirect()->route($unassigned > 0 || $skipped > 0 ? 'finance.resale.inbox' : 'finance.resale.index')->with($failed ? 'error' : 'success', $message);
+    }
+
+    /**
+     * Fehlertext eines gescheiterten Laufs für den Flash (C9): die Reader
+     * werfen übersetzte Meldungen ohne Pfade; alles, was nach PHP-Fehler oder
+     * Serverpfad aussieht, wird protokolliert und durch den Sammelkey ersetzt.
+     */
+    private function safeImportError(ResaleImport $record): string {
+        $error = trim((string) $record->error);
+        $raw = $error === ''
+            || str_contains($error, base_path())
+            || preg_match('~(\.php(:\d+| on line)|Stack trace|Call to |Undefined |Uncaught |Argument #\d)~', $error) === 1;
+        if ($raw) {
+            Log::warning('resale.import record failed', ['import_id' => $record->id, 'kind' => $record->kind, 'error' => $error]);
+
+            return (string) __('resale.general.failed');
+        }
+
+        return $error;
     }
 
     public function inbox(HolderResolver $resolver): View {
-        $organization = $this->currentOrganizationOrNull();
-        if ($organization === null) {
-            abort(404);
-        }
+        $organization = $this->currentOrganizationOrAbort(404);
         $groups = [];
         $subscriptions = ResaleSubscription::query()->planning()->unassigned()->orderBy('company_name')->orderBy('label')->get();
         foreach ($subscriptions as $subscription) {
@@ -420,7 +423,7 @@ class ResaleSubscriptionController extends Controller {
             $groups[$name]['subscriptions'][] = $subscription;
             $groups[$name]['providers'][$subscription->provider->value] = $subscription->provider->label();
         }
-        foreach ($groups as $name => $group) {
+        foreach (array_keys($groups) as $name) {
             $groups[$name]['suggestions'] = $name === '' ? ['customers' => collect(), 'foreign' => collect()] : $resolver->suggestions($organization, $name);
         }
         ksort($groups);
@@ -436,61 +439,41 @@ class ResaleSubscriptionController extends Controller {
 
         return view('finance.resale._assign_dialog', [
             'company' => $company,
-            'count' => ResaleSubscription::query()->planning()->unassigned()->where('company_name', $company)->count(),
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'foreignByCustomer' => $this->foreignCustomersByCustomer(),
-        ]);
+            'count' => $this->unassignedOf($company)->count(),
+        ] + $this->holderPicker());
     }
 
-    public function assignStore(Request $request, HolderResolver $resolver): RedirectResponse {
-        $validated = $request->validate([
-            'company' => ['required', 'string', 'max:190'],
-            'mode' => ['required', 'in:customer,partner,foreign,own'],
-            'customer_id' => ['nullable', 'string'],
-            'foreign_customer_id' => ['nullable', 'string'],
-        ]);
-        $organization = $this->currentOrganizationOrNull();
-        if ($organization === null) {
-            abort(404);
-        }
-        $mode = (string) $validated['mode'];
-        $customer = null;
-        $foreign = null;
-        if ($mode === 'customer' || $mode === 'partner') {
-            $id = Sqid::decode(Customer::class, (string) ($validated['customer_id'] ?? ''));
-            $customer = $id === null ? null : Customer::query()->find($id);
-            if ($customer === null) {
-                return back()->withErrors(['customer_id' => __('resale.error.customer_required')]);
-            }
-        }
-        if ($mode === 'foreign') {
-            $id = Sqid::decode(ForeignCustomer::class, (string) ($validated['foreign_customer_id'] ?? ''));
-            $foreign = $id === null ? null : ForeignCustomer::query()->find($id);
-            if ($foreign === null) {
-                return back()->withErrors(['foreign_customer_id' => __('resale.error.foreign_required')]);
-            }
-        }
+    public function assignStore(AssignResaleHolderRequest $request, HolderResolver $resolver): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $mode = $request->mode();
+        $company = $request->company();
+        $holder = $request->holder();
+        $customer = $holder['customer'];
+        $foreign = $holder['foreign'];
         if ($mode === 'partner' && $customer !== null) {
-            $foreign = $resolver->foreignCustomerUnder($organization, $customer, (string) $validated['company']);
+            $foreign = $resolver->foreignCustomerUnder($organization, $customer, $company);
         }
 
-        $attributes = [
+        $affected = $this->unassignedOf($company)->update([
             'customer_id' => $mode === 'customer' ? $customer?->id : null,
-            'foreign_customer_id' => $foreign?->id,
+            'foreign_customer_id' => $mode === 'customer' ? null : $foreign?->id,
             'is_own_holding' => $mode === 'own',
-        ];
-        $affected = ResaleSubscription::query()->unassigned()->where('company_name', (string) $validated['company'])->update($attributes);
+        ]);
 
-        // Merken, damit der nächste Import dieselbe Entscheidung trifft.
-        if ($mode === 'customer' || $mode === 'partner') {
+        // Merken, damit der nächste Import dieselbe Entscheidung trifft — auch
+        // „eigener Bestand" (Review 2026-09-10): sonst landet die Firma beim
+        // nächsten Import wieder in der Inbox.
+        $mappingMode = match ($mode) {
+            'customer' => CompanyMappingMode::Customer,
+            'partner', 'foreign' => CompanyMappingMode::Partner,
+            'own' => CompanyMappingMode::Own,
+            default => null,
+        };
+        $mappingCustomerId = $mode === 'foreign' ? $foreign?->customer_id : $customer?->id;
+        if ($mappingMode !== null && ($mappingMode === CompanyMappingMode::Own || $mappingCustomerId !== null)) {
             CompanyMapping::query()->updateOrCreate(
-                ['organization_id' => $organization->id, 'normalized_name' => \App\Services\Reselling\Marketplace\MarketplaceCompany::normalizeName((string) $validated['company'])],
-                ['company_name' => (string) $validated['company'], 'mode' => $mode === 'customer' ? CompanyMappingMode::Customer : CompanyMappingMode::Partner, 'customer_id' => $customer?->id, 'contact_external_id' => null, 'created_by_user_id' => $request->user()?->id],
-            );
-        } elseif ($mode === 'foreign' && $foreign !== null) {
-            CompanyMapping::query()->updateOrCreate(
-                ['organization_id' => $organization->id, 'normalized_name' => \App\Services\Reselling\Marketplace\MarketplaceCompany::normalizeName((string) $validated['company'])],
-                ['company_name' => (string) $validated['company'], 'mode' => CompanyMappingMode::Partner, 'customer_id' => $foreign->customer_id, 'contact_external_id' => null, 'created_by_user_id' => $request->user()?->id],
+                ['organization_id' => $organization->id, 'normalized_name' => MarketplaceCompany::normalizeName($company)],
+                ['company_name' => $company, 'mode' => $mappingMode, 'customer_id' => $mappingMode === CompanyMappingMode::Own ? null : $mappingCustomerId, 'contact_external_id' => null, 'created_by_user_id' => $request->user()?->id],
             );
         }
 
@@ -498,36 +481,70 @@ class ResaleSubscriptionController extends Controller {
     }
 
     /**
-     * Fremdkunden je Kunde (Sqids) für die Halterwahl — der Fremdkunden-Schritt
-     * erscheint nur bei Kunden, die welche haben.
+     * Abos ohne Halter einer Firma laut Anbieter — Dialogzähler und Zuordnung
+     * treffen dieselben Zeilen (auch beendete: ein Halter gehört zur Historie).
      *
-     * @return array<string, list<array{sqid: string, name: string}>>
+     * @return Builder<ResaleSubscription>
      */
-    private function foreignCustomersByCustomer(): array {
-        $out = [];
-        foreach (ForeignCustomer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'customer_id']) as $foreign) {
-            $out[Sqid::encode(Customer::class, (int) $foreign->customer_id)][] = ['sqid' => $foreign->sqid, 'name' => (string) $foreign->name];
+    private function unassignedOf(string $company): Builder {
+        return ResaleSubscription::query()->unassigned()->where('company_name', $company);
+    }
+
+    /**
+     * ISO-Datum aus der Query (die Links des Abgleichs), alles andere gilt als
+     * nicht angegeben — `parse('x')` wäre „heute", Überläufe wie 2025-13-45
+     * würden still weitergerechnet, deshalb Format + Rundlauf-Prüfung.
+     */
+    private function queryDate(Request $request, string $key): ?CarbonImmutable {
+        $value = trim((string) $request->query($key, ''));
+        if ($value === '') {
+            return null;
+        }
+        try {
+            $date = CarbonImmutable::createFromFormat('!Y-m-d', $value);
+        } catch (InvalidFormatException) {
+            return null;
         }
 
-        return $out;
+        return $date !== null && $date->toDateString() === $value ? $date : null;
+    }
+
+    /**
+     * Halterwahl für die Dialoge: Kunden und ihre nicht archivierten Fremdkunden
+     * (Sqids) — der Fremdkunden-Schritt erscheint nur bei Kunden, die welche haben.
+     *
+     * @return array{customers: \Illuminate\Database\Eloquent\Collection<int, Customer>, foreignByCustomer: array<string, list<array{sqid: string, name: string}>>}
+     */
+    private function holderPicker(): array {
+        $foreignByCustomer = [];
+        foreach (ForeignCustomer::query()->whereNull('archived_at')->orderBy('name')->get(['id', 'name', 'customer_id']) as $foreign) {
+            $foreignByCustomer[Sqid::encode(Customer::class, (int) $foreign->customer_id)][] = ['sqid' => $foreign->sqid, 'name' => (string) $foreign->name];
+        }
+
+        return [
+            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            'foreignByCustomer' => $foreignByCustomer,
+        ];
     }
 
     /**
      * @param  array<string, mixed>  $prefill
      */
     private function dialog(?ResaleSubscription $subscription, array $prefill): View {
+        $subscription?->loadMissing('parent');
+
         return view('finance.resale._form_dialog', [
             'subscription' => $subscription,
             'prefill' => $prefill,
-            'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
-            'foreignByCustomer' => $this->foreignCustomersByCustomer(),
+            'locked' => SaveResaleSubscriptionRequest::lockedFieldsFor($subscription),
             'articles' => Article::query()->where('sellable', true)->orderBy('name')->get(['id', 'number', 'name']),
             'lexofficeArticles' => LexofficeArticle::query()->active()->orderBy('name')->get(['id', 'article_number', 'name', 'unit_name', 'net_unit_price', 'currency']),
             'kinds' => SubscriptionKind::cases(),
-            'providers' => SubscriptionProvider::cases(),
+            // Domains führt der Domain-Sync; von Hand ist der Anbieter nie wählbar (B7).
+            'providers' => array_values(array_filter(SubscriptionProvider::cases(), static fn(SubscriptionProvider $p): bool => $p !== SubscriptionProvider::DomainReselling)),
             'statuses' => SubscriptionStatus::cases(),
             'intervals' => BillingFrequency::cases(),
             'renewals' => RenewalMode::cases(),
-        ]);
+        ] + $this->holderPicker());
     }
 }

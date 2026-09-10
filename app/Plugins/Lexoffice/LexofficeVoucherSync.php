@@ -34,25 +34,36 @@ use RuntimeException;
 class LexofficeVoucherSync {
     private ?PluginApiClient $api = null;
 
+    private float $requestInterval;
+
     /** Rechnungen, deren Positionen je Sync-Lauf nachgeladen werden (Ratenlimit). */
     private const LINES_PER_RUN = 100;
 
+    /**
+     * @param  float|null  $requestInterval  Anfrageabstand in Sekunden; null = Einstellung der gebundenen Organisation.
+     *                                       Die Konsole bindet keinen Org-Kontext und reicht den Wert deshalb explizit durch.
+     */
     public function __construct(
         private readonly ?string $apiKey,
         private readonly string $baseUrl = 'https://api.lexoffice.io/v1',
-    ) {}
+        ?float $requestInterval = null,
+    ) {
+        $this->requestInterval = $requestInterval ?? LexofficeConfig::requestInterval();
+    }
 
     private function api(): PluginApiClient {
         if ($this->api === null) {
-            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl, LexofficeConfig::requestInterval());
+            $this->api = app(PluginHttpFactory::class)->client(LexofficePlugin::ID, $this->baseUrl, $this->requestInterval);
             $this->api->setAuthentication(new BearerAuthentication((string) $this->apiKey));
+            // 429/5xx wiederholt der Client selbst (Retry-After/Backoff) — keine eigene Schleife.
+            $this->api->setMaxRetries(LexofficeVoucherLineSync::MAX_RETRIES);
         }
 
         return $this->api;
     }
 
     /**
-     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, frozen?: bool}
+     * @return array{contacts: int, created: int, updated: int, archived: int, paid_dates: int, lines: int, frozen?: bool, lines_error?: string}
      */
     public function sync(Organization $organization): array {
         // G3 (MVP-690): Nach abgeschlossenem Buchhaltungswechsel mit Quelle
@@ -94,16 +105,26 @@ class LexofficeVoucherSync {
 
         $archived = $this->archiveMissing($organization, $seen);
 
-        return [
+        $result = [
             'contacts' => count($contactMap),
             'created' => $created,
             'updated' => $updated,
             'archived' => (int) $archived,
             'paid_dates' => $this->enrichPaidDates($organization->id),
-            // Feature 152 (MVP-760): Positionen der neuen Rechnungen nachladen —
-            // je Lauf begrenzt, der Backfill läuft über lexoffice:sync-voucher-lines.
-            'lines' => (new LexofficeVoucherLineSync((string) $this->apiKey, $this->baseUrl))->syncMissing($organization, self::LINES_PER_RUN)['synced'],
+            'lines' => 0,
         ];
+        // Feature 152 (MVP-760): Positionen der neuen Rechnungen nachladen —
+        // je Lauf begrenzt, der Backfill läuft über lexoffice:sync-voucher-lines.
+        // Ein Fehler hier darf den Belegsync nicht als gescheitert melden
+        // (Review 2026-09-10, C8): nur melden, der Rest des Laufs steht.
+        try {
+            $result['lines'] = (new LexofficeVoucherLineSync((string) $this->apiKey, $this->baseUrl, $this->requestInterval))->syncMissing($organization, self::LINES_PER_RUN)['synced'];
+        } catch (\Throwable $e) {
+            $result['lines_error'] = class_basename($e) . ': ' . mb_substr($e->getMessage(), 0, 200);
+            \Illuminate\Support\Facades\Log::warning('LexofficeVoucherSync: Positions-Sync abgebrochen.', ['organization_id' => $organization->id, 'error' => $result['lines_error']]);
+        }
+
+        return $result;
     }
 
     /**
@@ -265,7 +286,16 @@ class LexofficeVoucherSync {
             return 'created';
         }
 
-        $existing->fill($attrs)->save();
+        $previousUpdatedDate = $existing->payload['updatedDate'] ?? null;
+        $existing->fill($attrs);
+        // Review 2026-09-10 (B20): Status/Betrag/updatedDate geändert (z. B.
+        // Entwurf finalisiert) → Positionen neu laden, sonst bleibt der
+        // Spiegel auf dem Entwurfsstand. Der Positions-Sync aktualisiert in place.
+        if ($existing->lines_synced_at !== null
+            && ($existing->isDirty(['voucher_status', 'total_amount']) || $previousUpdatedDate !== ($item['updatedDate'] ?? null))) {
+            $existing->lines_synced_at = null;
+        }
+        $existing->save();
 
         return 'updated';
     }
@@ -358,39 +388,25 @@ class LexofficeVoucherSync {
     }
 
     /**
-     * Führt eine voucherlist-Anfrage aus und behandelt das Lexoffice-Ratelimit
-     * (HTTP 429) mit Backoff. Drosselt zusätzlich auf < 2 Requests/Sekunde.
+     * Führt eine voucherlist-Anfrage aus. Drosselung und 429-Wiederholung
+     * (Retry-After/Backoff) übernimmt der Client; was danach noch scheitert,
+     * ist ein regulärer API-Fehler.
      */
     private function requestVoucherlist(string $contactExternalId, int $page, int $pageSize): \Illuminate\Http\Client\Response {
-        $attempts = 0;
-        do {
-            // Drosselung übernimmt der Client (LexofficeConfig::requestInterval);
-            // hier bleibt nur die Wiederholung nach 429 mit Retry-After.
-            $response = $this->api()
-                ->getResponse($this->baseUrl . '/voucherlist', [
-                    'voucherType' => 'any',
-                    'voucherStatus' => 'any',
-                    'contactId' => $contactExternalId,
-                    'page' => $page,
-                    'size' => $pageSize,
-                ]);
+        $response = $this->api()
+            ->getResponse($this->baseUrl . '/voucherlist', [
+                'voucherType' => 'any',
+                'voucherStatus' => 'any',
+                'contactId' => $contactExternalId,
+                'page' => $page,
+                'size' => $pageSize,
+            ]);
 
-            if ($response->status() === 429 && $attempts < 5) {
-                $retryAfter = (int) ($response->header('Retry-After') ?: 0);
-                usleep(max($retryAfter, 1) * 1_000_000);
-                $attempts++;
+        if (! $response->successful()) {
+            throw LexofficeApiException::fromResponse($response, __('Belege'), __('Belegliste filtern und abrufen'));
+        }
 
-                continue;
-            }
-
-            if (! $response->successful()) {
-                throw LexofficeApiException::fromResponse($response, __('Belege'), __('Belegliste filtern und abrufen'));
-            }
-
-            return $response;
-        } while ($attempts <= 5);
-
-        throw new RuntimeException('Lexoffice voucherlist request failed after retries (rate limit).');
+        return $response;
     }
 
     /**

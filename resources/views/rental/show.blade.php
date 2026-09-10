@@ -43,7 +43,7 @@
                         </form>
                     @endif
                     @if ($case->status->isOpen())
-                        <form method="POST" action="{{ route('rental.cancel', $case) }}" data-confirm="{{ __('Verleihakte wirklich stornieren?') }}">@csrf
+                        <form method="POST" action="{{ route('rental.cancel', $case) }}" data-confirm-dialog data-confirm-message="{{ __('Verleihakte wirklich stornieren?') }}" data-confirm-tone="error">@csrf
                             <button type="submit" class="btn btn-sm btn-ghost text-error">{{ __('Stornieren') }}</button>
                         </form>
                     @endif

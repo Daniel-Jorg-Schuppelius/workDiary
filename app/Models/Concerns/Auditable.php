@@ -57,7 +57,7 @@ trait Auditable {
         $fields = [];
 
         foreach ($this->getCasts() as $column => $cast) {
-            if (is_string($cast) && str_starts_with($cast, 'encrypted')) {
+            if (str_starts_with($cast, 'encrypted')) {
                 $fields[] = $column;
             }
         }

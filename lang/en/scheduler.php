@@ -120,6 +120,8 @@ return [
             'sync_domains' => 'Resale subscriptions: adopt domains from domain management',
             'sync_purchases' => 'Resale subscriptions: adopt domain accounting entries as purchases',
             'sync_periods' => 'Resale subscriptions: roll billing periods forward',
+            'digest' => 'Resale subscriptions: weekly digest to the subscription managers',
+            'prune_imports' => 'Resale subscriptions: delete stored import files after the retention period',
         ],
         'lexoffice' => [
             'sync_articles' => 'Sync Lexoffice articles',

@@ -19,6 +19,7 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Exportación de informe: contabilidad',
+    'ResaleReportController' => 'Exportación de informe: reventa de suscripciones',
     'AccountingBudgetController' => 'Exportación de informe: presupuesto',
     'AbsenceCalendarReportController' => 'Exportación de informe: calendario de ausencias',
     'AbsencesReportController' => 'Exportación de informe: ausencias',
@@ -526,4 +527,10 @@ return [
     'FixedAsset' => 'Activo fijo',
     'AccountingVatExtension' => 'Prórroga permanente',
     'AccountingFilingObligation' => 'Obligación de declaración',
+    // Registro de reventa (función 152, revisión 2026-09-10 A2).
+    'ResaleSubscription' => 'Suscripción de reventa',
+    'ResalePeriod' => 'Periodo de facturación de reventa',
+    'ResalePeriodLink' => 'Referencia de factura de reventa',
+    'ResalePurchaseEntry' => 'Asiento de compra de reventa',
+    'CompanyMapping' => 'Asignación de empresa (reventa)',
 ];

@@ -15,6 +15,7 @@ return [
             'customer' => 'Direkt: die Firma ist der Kunde',
             'partner' => 'Über einen Partner (Fremdkunde)',
             'contact' => 'Lexoffice-Kontakt',
+            'own' => 'Eigener Bestand (wird nicht berechnet)',
         ],
     ],
 ];

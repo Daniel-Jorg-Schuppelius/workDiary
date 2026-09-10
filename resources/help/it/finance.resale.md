@@ -1,7 +1,7 @@
 ---
 title: "Abbonamenti e licenze"
 topic: finance.resale
-version: 1
+version: 2
 audience: []
 modules:
     - module.reselling
@@ -91,3 +91,121 @@ rimosso le cessioni. Anche un cambio di titolare nel tempo — un’azienda si
 scinde e la nuova rileva i contratti — è una cessione: tutte le licenze del
 vecchio periodo al titolare precedente; la riconciliazione lo propone su una
 fattura dell’altro cliente come «Cedere il periodo a …», precompilato.
+
+**Posta in arrivo:** gli abbonamenti importati la cui azienda il registro
+non riesce ancora ad assegnare a un titolare finiscono nella posta in
+arrivo. Per azienda decidi una volta: cliente, cliente finale di un partner
+oppure parco proprio — il suggerimento viene dal confronto dei nomi con
+clienti e clienti finali. La decisione viene memorizzata; l’import
+successivo assegna subito la stessa azienda. Le righe che l’import non ha
+potuto elaborare (data illeggibile, quantità senza numero, identificativo
+duplicato) restano come rilievi sull’import: il numero nel messaggio, i
+dettagli espandibili nell’elenco.
+
+**Periodi:** la pagina dei periodi mostra i periodi scaduti di tutti gli
+abbonamenti con riquadri di stato (aperto, fatturato, parziale, rinunciato,
+contestato). «Calcola proposte» confronta i periodi aperti con le righe di
+licenza delle fatture rispecchiate e crea proposte; tu le confermi, colleghi
+a mano una riga (solo fatture dello stesso destinatario, solo mesi di
+licenza liberi) oppure rinunci con un motivo («cortesia»). I periodi decisi
+non vengono più toccati dalla pianificazione; «riapri» li riapre. Se una
+fattura collegata viene poi stornata in Lexoffice, l’esecuzione successiva
+azzera i mesi del collegamento, annota lo storno e riapre il periodo, così
+la fattura sostitutiva può essere collegata.
+
+**Bozza di fattura:** da tutti i periodi aperti di un destinatario fattura
+nasce con un clic una bozza — con fatturazione Lexoffice come bozza in
+Lexoffice (nulla viene finalizzato; verifichi ed emetti lì), con
+fatturazione locale come bozza di fattura locale con righe e collegamenti
+proposti. Una riga per abbonamento e periodo, cliente finale nella
+descrizione, quantità in mesi per gli articoli mensili. I periodi ricordano
+la bozza: un secondo clic non ne crea una seconda ma indica quella in
+sospeso con numero e data; solo quando la bozza è diventata fattura o il
+periodo è deciso tornano liberi. La finestra elenca solo destinatari con
+periodi aperti e prezzo di vendita e indica sotto ciò che è già in una
+bozza. La creazione richiede il diritto *Creare bozze di fattura dai
+periodi*.
+
+**Documenti di acquisto:** l’acquisto effettivo per abbonamento e periodo
+proviene da tre fonti: (1) fatture e note di credito del fornitore in PDF
+(Quality Hosting, layout tedesco e inglese) — ogni riga indica contratto,
+cliente finale e durata, l’importo va esattamente al periodo; le righe di
+nota di credito senza contratto valgono per l’azienda. (2) Documenti in
+entrata dallo specchio documenti pro rata: per fatture cumulative senza
+righe (Telekom) indichi la quota del fornitore e il mese di prestazione,
+l’importo viene ripartito su tutti i periodi del mese, ponderato con il loro
+acquisto previsto mensile. (3) Registrazioni di dominio dalla gestione
+domini, automaticamente. All’import PDF il registro verifica il totale: se
+la somma delle righe differisce dal totale del documento (per esempio una
+pagina non letta), l’import avviene comunque e la differenza viene
+segnalata. La pagina acquisti filtra per fornitore, fonte, periodo e testo
+di ricerca; un’assegnazione si scioglie sempre per intero per documento.
+
+**Report margine:** per prodotto e per destinatario fattura compaiono i
+periodi scaduti dell’intervallo con vendita prevista (quantità × prezzo di
+vendita), fatturato (importi netti dei collegamenti fattura, proposte
+incluse), acquisto previsto (prezzo fornitore × quantità) e acquisto
+effettivo dai documenti di acquisto. Margine = fatturato − acquisto;
+l’acquisto effettivo conta non appena ogni periodo della riga ne ha uno,
+altrimenti l’acquisto previsto. Gli importi non vengono mai sommati tra
+valute — con più valute c’è una riga per valuta e un avviso. Esportazione
+in CSV, XLSX o PDF; la proposta di fattura (periodi aperti con mesi di
+licenza aperti e importo) in CSV o XLSX.
+
+**Verifica prezzi:** per prodotto l’acquisto secondo contratto, il prezzo di
+listino e il prezzo consigliato dell’ultimo listino importato a confronto
+con i prezzi di vendita degli abbonamenti (minimo, mediana, massimo).
+Avvisi: «vendita sotto acquisto», «vendita sotto prezzo consigliato»,
+«contratto più caro del listino», «nessun prezzo di vendita».
+
+**Classificazione prodotti:** quali articoli Lexoffice siano prodotti in
+abbonamento il registro lo riconosce dal nome. Per articolo puoi forzare:
+«prodotto in abbonamento» impone il riconoscimento, «mai riga di
+abbonamento» tiene fuori da proposte, elenchi fatture e «righe senza
+abbonamento» i servizi con un nome di prodotto nel testo (manutenzione su
+Exchange).
+
+**Domini:** ogni dominio della gestione domini diventa ogni giorno un
+abbonamento «Dominio» con intervallo annuale dalla registrazione, acquisto =
+prezzo di rinnovo e titolare dalla gestione domini finché il registro non
+ne ha deciso uno. Il prezzo di vendita per estensione viene dal listino
+prezzi (fornitore rivendita domini, prodotto ad es. «.de»), l’articolo
+dall’articolo Lexoffice dell’estensione; prezzi, articoli e titolari
+inseriti a mano sopravvivono a ogni esecuzione. I domini scomparsi
+terminano al giorno di riferimento; se l’elenco domini di un’esecuzione è
+vuoto, nulla viene terminato. Gli abbonamenti di dominio e i loro
+documenti di acquisto non si creano a mano — arrivano solo tramite la
+sincronizzazione.
+
+**Rinnovi e abbonamenti senza fattura:** il report «Rinnovi» mostra quali
+abbonamenti si rinnovano o terminano nel periodo (riquadri 30, 60, 90
+giorni): il rinnovo è l’inizio del prossimo periodo pianificato, per gli
+abbonamenti disdetti conta la fine. «Senza fattura» elenca gli abbonamenti
+il cui periodo scaduto aperto più vecchio risale a più di N giorni fa
+(predefinito 60), con periodi aperti e importo aperto. Entrambi in CSV o
+XLSX.
+
+**Riquadro dashboard:** il riquadro «Periodi di abbonamento aperti» (gruppo
+Finanze, disattivato per impostazione predefinita) mostra periodi aperti
+con importo aperto, proposte non confermate e abbonamenti senza titolare e
+porta alla pagina corrispondente.
+
+**Rilievi di import:** ogni import (Telekom, Quality Hosting, listino,
+elenco generico) registra contatori e rilievi per riga. Le date devono
+essere date (le celle data di Excel vengono lette; «3.2026» o «2026» da
+soli no), le quantità numeri, gli identificativi univoci all’interno di un
+file — altrimenti la riga viene saltata e il motivo indicato.
+
+**Conservazione dei file di import:** i file di import caricati (possono
+contenere nomi di clienti finali) restano 90 giorni nella cartella di
+archiviazione e vengono poi eliminati dalla pianificazione; il record di
+import con i suoi contatori resta. A mano: `resale:prune-imports` (--days
+modifica il termine).
+
+**Riparazione dei collegamenti fattura:** se lo specchio documenti è stato
+ricostruito in passato con nuovi ID di riga, i collegamenti confermati
+puntano nel vuoto (collegamento senza testo di riga, periodo considerato
+non coperto). Il comando `lexoffice:repair-resale-links` riaggancia tali
+collegamenti tramite numero fattura e riga di licenza; ciò che non è
+univoco viene solo elencato (--dry-run mostra in anticipo cosa
+accadrebbe).

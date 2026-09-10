@@ -19,6 +19,7 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Report export: accounting',
+    'ResaleReportController' => 'Report export: subscription reselling',
     'AccountingBudgetController' => 'Report export: budget',
     'AbsenceCalendarReportController' => 'Report export: absence calendar',
     'AbsencesReportController' => 'Report export: absences',
@@ -526,4 +527,10 @@ return [
     'FixedAsset' => 'Fixed asset',
     'AccountingVatExtension' => 'Deadline extension',
     'AccountingFilingObligation' => 'Filing obligation',
+    // Resale register (feature 152, review 2026-09-10 A2).
+    'ResaleSubscription' => 'Resale subscription',
+    'ResalePeriod' => 'Resale billing period',
+    'ResalePeriodLink' => 'Resale invoice reference',
+    'ResalePurchaseEntry' => 'Resale purchase entry',
+    'CompanyMapping' => 'Resale company mapping',
 ];

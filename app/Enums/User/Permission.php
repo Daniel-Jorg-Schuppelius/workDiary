@@ -263,9 +263,11 @@ enum Permission: string implements HasLabel {
         // ── Finanzschnittstelle (Feature 045) ──────────────────────────────
     case FinanceViewAny = 'finance.viewAny';
         // Reselling-Register (Feature 152): Abos, Halter, Perioden sehen bzw.
-        // pflegen. Sehen für Vertrieb/Buchhaltung, pflegen für Buchhaltung.
+        // pflegen. Sehen für Vertrieb/Buchhaltung, pflegen für Buchhaltung;
+        // Rechnungsentwürfe aus Perioden (Lexoffice/lokal) nur Buchhaltung.
     case ResellingView = 'reselling.view';
     case ResellingManage = 'reselling.manage';
+    case ResellingInvoice = 'reselling.invoice';
     case FinanceConfig = 'finance.config';
 
     /** Buchhaltungswechsel planen, umschalten und abschließen (MVP-653). */

@@ -120,6 +120,8 @@ return [
             'sync_domains' => 'Suscripciones de reventa: adoptar dominios de la gestión de dominios',
             'sync_purchases' => 'Suscripciones de reventa: adoptar asientos de dominios como compras',
             'sync_periods' => 'Suscripciones de reventa: generar los periodos de facturación',
+            'digest' => 'Suscripciones de reventa: resumen semanal a los responsables',
+            'prune_imports' => 'Suscripciones de reventa: eliminar los archivos de importación tras el periodo de retención',
         ],
         'lexoffice' => [
             'sync_articles' => 'Sincronizar artículos de Lexoffice',

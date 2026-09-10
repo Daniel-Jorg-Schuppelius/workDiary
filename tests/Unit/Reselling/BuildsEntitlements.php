@@ -21,7 +21,7 @@ use CommonToolkit\ValueObjects\Money;
 trait BuildsEntitlements {
     private static int $sequence = 0;
 
-    private function entitlement(string $edition, string $fee, string $startsOn = '2024-08-02', ?string $endsOn = '2026-08-02', BillingFrequency $frequency = BillingFrequency::Yearly, string $company = 'Muster Bau GmbH', string $source = MarketplaceEntitlement::SOURCE_TELEKOM, ?int $quantity = null): MarketplaceEntitlement {
+    private function entitlement(string $edition, string $fee, string $startsOn = '2024-08-02', ?string $endsOn = '2026-08-02', BillingFrequency $frequency = BillingFrequency::Yearly, string $company = 'Muster Bau GmbH', string $source = MarketplaceEntitlement::SOURCE_TELEKOM, ?int $quantity = null, CurrencyCode $currency = CurrencyCode::Euro): MarketplaceEntitlement {
         self::$sequence++;
 
         return new MarketplaceEntitlement(
@@ -30,7 +30,7 @@ trait BuildsEntitlements {
             orderId: 'order-' . self::$sequence,
             application: 'Microsoft 365 Business',
             edition: $edition,
-            fee: Money::of($fee, CurrencyCode::Euro),
+            fee: Money::of($fee, $currency),
             frequency: $frequency,
             startsOn: CarbonImmutable::parse($startsOn),
             endsOn: $endsOn === null ? null : CarbonImmutable::parse($endsOn),
@@ -39,7 +39,7 @@ trait BuildsEntitlements {
             sourceLine: self::$sequence + 1,
             source: $source,
             quantity: $quantity,
-            unitFee: $quantity !== null && $quantity > 0 ? Money::of($fee, CurrencyCode::Euro)->dividedBy($quantity) : null,
+            unitFee: $quantity !== null && $quantity > 0 ? Money::of($fee, $currency)->dividedBy($quantity) : null,
         );
     }
 }

@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Models\LexofficeVoucherLine;
-use Carbon\CarbonImmutable;
+use Carbon\{CarbonImmutable, CarbonInterface};
 
 /**
  * Lizenzen und Monate einer Rechnungsposition (Feature 152). Der Reseller
@@ -75,10 +75,26 @@ final class LicenseMonths {
         return ! self::isMonthly($line);
     }
 
+    /** Monatsartikel? Einheit „Monat"/„Monate"/„month"/„months", Groß-/Kleinschreibung egal. */
+    public static function isMonthUnit(?string $unit): bool {
+        return in_array(mb_strtolower(trim((string) $unit)), self::MONTH_UNITS, true);
+    }
+
+    /**
+     * Ganze Monate zwischen zwei Inklusiv-Daten (31.01.–28.02. = 1, 01.01.–31.12. = 12),
+     * gerundet — für Periodenlänge und Leistungszeitraum. Kann 0 sein.
+     */
+    public static function monthsBetween(CarbonInterface $from, CarbonInterface $toInclusive): int {
+        $start = CarbonImmutable::instance($from)->startOfDay();
+        $end = CarbonImmutable::instance($toInclusive)->startOfDay()->addDay();
+
+        return (int) round($start->diffInMonths($end));
+    }
+
     /** Monatsposition: Einheit Monat, oder ohne Einheit ein Stückpreis unter dem Monatslimit. */
     public static function isMonthly(LexofficeVoucherLine $line): bool {
         $unit = self::unit($line);
-        if (in_array($unit, self::MONTH_UNITS, true)) {
+        if (self::isMonthUnit($unit)) {
             return true;
         }
         if ($unit !== '') {

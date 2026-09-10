@@ -1015,4 +1015,16 @@ return [
     'learning' => [
         'dossierDisclosed' => 'Fascicolo delle qualifiche rilasciato con i nomi',
     ],
+    // Registro rivendita (funzionalità 152, revisione 2026-09-10 A2): decisioni dell’utente.
+    'resale_period' => [
+        'confirmed' => 'Riferimento fattura confermato',
+        'waived' => 'Rinuncia alla fatturazione del periodo',
+        'disputed' => 'Periodo contrassegnato come contestato',
+        'reopened' => 'Decisione sul periodo ritirata',
+        'linked' => 'Riga fattura assegnata manualmente',
+        'link_removed' => 'Riferimento fattura rimosso',
+    ],
+    'resale_subscription' => [
+        'rehomed' => 'Titolare dell’abbonamento cambiato',
+    ],
 ];

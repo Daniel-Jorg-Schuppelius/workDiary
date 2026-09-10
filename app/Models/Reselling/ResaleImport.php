@@ -18,10 +18,13 @@ use App\Models\{Organization, User};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Support\Facades\Storage;
 
 /**
  * Ein Import-Lauf des Reselling-Registers (Feature 152): eine Anbieterdatei
- * (Telekom-Käufe, Quality-Hosting-Verträge, Preisliste) mit Zählern.
+ * (Telekom-Käufe, Quality-Hosting-Verträge, Preisliste) mit Zählern und
+ * Zeilenbefunden. Die abgelegte Datei (Endkunden-PII) hängt am Datensatz:
+ * `resale:prune-imports` räumt sie nach der Frist, Löschen nimmt sie mit.
  *
  * @property int $id
  * @property int $organization_id
@@ -84,6 +87,12 @@ class ResaleImport extends Model {
         'updated_at' => 'immutable_datetime',
     ];
 
+    protected static function booted(): void {
+        static::deleting(static function (self $import): void {
+            $import->removeStoredFile();
+        });
+    }
+
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo {
         return $this->belongsTo(Organization::class);
@@ -101,5 +110,52 @@ class ResaleImport extends Model {
 
     public function kindLabel(): string {
         return (string) __('resale.import.kind.' . $this->kind);
+    }
+
+    /** Zeilenbefunde (unlesbare oder abgelehnte Zeilen) — importiert wurde trotzdem. */
+    public function issueCount(): int {
+        return count($this->issues ?? []);
+    }
+
+    /**
+     * Die ersten Befunde für Flash, Liste und Konsole.
+     *
+     * @return list<string>
+     */
+    public function issuesPreview(int $max = 5): array {
+        return array_slice(array_map('strval', $this->issues ?? []), 0, max(0, $max));
+    }
+
+    /**
+     * Abgelegte Importdatei löschen und den Pfad leeren; der Datensatz mit
+     * seinen Zählern bleibt. Liefert true, wenn eine Datei entfernt wurde.
+     */
+    public function deleteFile(): bool {
+        $existed = $this->removeStoredFile();
+        if ($this->file_path !== null) {
+            $this->forceFill(['file_path' => null])->save();
+        }
+
+        return $existed;
+    }
+
+    /** Datei vom Datenträger nehmen, ohne den Datensatz zu schreiben. */
+    private function removeStoredFile(): bool {
+        $path = $this->file_path;
+        if ($path === null || $path === '') {
+            return false;
+        }
+        $disk = Storage::disk(self::DISK);
+        if (! $disk->exists($path)) {
+            return false;
+        }
+        $deleted = $disk->delete($path);
+        // Ein Upload legt je Datei einen Ordner `resale/{org}/{uuid}` an — leer wieder weg.
+        $directory = dirname($path);
+        if ($deleted && $directory !== '.' && $disk->files($directory) === [] && $disk->directories($directory) === []) {
+            $disk->deleteDirectory($directory);
+        }
+
+        return $deleted;
     }
 }

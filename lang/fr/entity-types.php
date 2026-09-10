@@ -19,6 +19,7 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Export de rapport : comptabilité',
+    'ResaleReportController' => 'Export de rapport : revente d’abonnements',
     'AccountingBudgetController' => 'Export de rapport : budget',
     'AbsenceCalendarReportController' => 'Export de rapport : calendrier des absences',
     'AbsencesReportController' => 'Export de rapport : absences',
@@ -526,4 +527,10 @@ return [
     'FixedAsset' => 'Immobilisation',
     'AccountingVatExtension' => 'Prorogation permanente',
     'AccountingFilingObligation' => 'Obligation déclarative',
+    // Registre de revente (fonctionnalité 152, revue 2026-09-10 A2).
+    'ResaleSubscription' => 'Abonnement de revente',
+    'ResalePeriod' => 'Période de facturation de revente',
+    'ResalePeriodLink' => 'Référence de facture de revente',
+    'ResalePurchaseEntry' => 'Écriture d’achat de revente',
+    'CompanyMapping' => 'Affectation de société (revente)',
 ];

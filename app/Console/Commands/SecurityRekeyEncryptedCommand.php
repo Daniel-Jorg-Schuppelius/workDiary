@@ -107,7 +107,7 @@ class SecurityRekeyEncryptedCommand extends Command {
         foreach (self::modelClasses() as $class) {
             $fields = [];
             foreach ((new $class)->getCasts() as $field => $cast) {
-                if (is_string($cast) && str_starts_with($cast, 'encrypted')) {
+                if (str_starts_with($cast, 'encrypted')) {
                     $fields[$field] = [];
                 }
             }

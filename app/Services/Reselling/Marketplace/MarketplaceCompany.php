@@ -27,12 +27,23 @@ final readonly class MarketplaceCompany {
         public ?string $partnerCustomerNumber = null,
     ) {}
 
-    public static function normalizeName(string $name): string {
-        $text = mb_strtolower(trim($name));
+    /**
+     * Matching-Schlüssel für Firmen- und Produktnamen (Review 2026-09-10, E):
+     * klein, Umlaute ausgeschrieben, alles außer a-z0-9 wird zum Leerzeichen.
+     * Bewusst NICHT `StringHelper::toAscii` — das faltet „é" zu „e", die alte
+     * Regel verwirft es; `company_mappings.normalized_name` wurde mit der
+     * alten Regel gebildet und muss weiter treffen.
+     */
+    public static function matchKey(string $text): string {
+        $text = mb_strtolower(trim($text));
         $text = str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $text);
         $text = preg_replace('/[^a-z0-9]+/u', ' ', $text) ?? '';
 
         return trim(preg_replace('/\s+/', ' ', $text) ?? '');
+    }
+
+    public static function normalizeName(string $name): string {
+        return self::matchKey($name);
     }
 
     public function normalizedName(): string {

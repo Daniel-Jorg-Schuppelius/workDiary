@@ -16,7 +16,7 @@
 @section('main-class', 'min-h-0 flex flex-col lg:overflow-clip')
 
 @php
-    $fmt = static fn(float $v): string => rtrim(rtrim(number_format($v, 2, ',', '.'), '0'), ',');
+    $compact = \App\View\Components\Resale\LicenceMonths::class;
 @endphp
 
 @section('content')
@@ -36,9 +36,9 @@
             <x-kpi-tile :label="__('resale.reconcile.kpi.open')" :value="$totals['open']" :tone="$totals['open'] > 0 ? 'error' : 'success'" />
             <x-kpi-tile :label="__('resale.reconcile.kpi.partial')" :value="$totals['partial']" :tone="$totals['partial'] > 0 ? 'warning' : 'neutral'" />
             <x-kpi-tile :label="__('resale.reconcile.kpi.proposed')" :value="$totals['proposed']" :tone="$totals['proposed'] > 0 ? 'info' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.free')" :value="$fmt($totals['free'])" :tone="$totals['free'] > 0.001 ? 'warning' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.missing')" :value="$fmt($totals['missing'])" :tone="$totals['missing'] > 0.001 ? 'error' : 'neutral'" />
-            <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$fmt($totals['surplus'])" :tone="$totals['surplus'] > 0.001 ? 'info' : 'neutral'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.free')" :value="$compact::compact($totals['free'])" format="raw" :tone="$totals['free'] > 0.001 ? 'warning' : 'neutral'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.missing')" :value="$compact::compact($totals['missing'])" format="raw" :tone="$totals['missing'] > 0.001 ? 'error' : 'neutral'" />
+            <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($totals['surplus'])" format="raw" :tone="$totals['surplus'] > 0.001 ? 'info' : 'neutral'" />
         </div>
         <p class="text-xs text-muted mb-3">{{ __('resale.reconcile.legend') }}</p>
 
@@ -80,9 +80,9 @@
                     <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['open'] > 0])>{{ $row['open'] }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['partial'] > 0])>{{ $row['partial'] }}</span></td>
                     <td class="text-right tabular-nums"><span @class(['text-info' => $row['proposed'] > 0])>{{ $row['proposed'] }}</span></td>
-                    <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['free'] > 0.001])>{{ $fmt($row['free']) }}</span></td>
-                    <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['missing'] > 0.001])>{{ $fmt($row['missing']) }}</span></td>
-                    <td class="text-right tabular-nums"><span @class(['text-info font-medium' => $row['surplus'] > 0.001])>{{ $fmt($row['surplus']) }}</span></td>
+                    <td class="text-right tabular-nums"><span @class(['text-warning font-medium' => $row['free'] > 0.001])><x-resale.licence-months :value="$row['free']" /></span></td>
+                    <td class="text-right tabular-nums"><span @class(['text-error font-medium' => $row['missing'] > 0.001])><x-resale.licence-months :value="$row['missing']" /></span></td>
+                    <td class="text-right tabular-nums"><span @class(['text-info font-medium' => $row['surplus'] > 0.001])><x-resale.licence-months :value="$row['surplus']" /></span></td>
                     <td class="text-right">
                         @if ($row['customer'] !== null)
                             <x-icon-btn icon="compare_arrows" size="xs" tone="ghost" :href="route('finance.resale.reconcile.show', $row['customer'])" :title="__('resale.reconcile.action.open')" />

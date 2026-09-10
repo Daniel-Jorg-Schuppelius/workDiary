@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Reselling;
 
 use App\Enums\Reselling\CompanyMappingMode;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{Customer, Organization, User};
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
 use Illuminate\Database\Eloquent\Model;
@@ -34,6 +34,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $created_by_user_id
  */
 class CompanyMapping extends Model {
+    use Auditable;
     use BelongsToOrganization;
     use HasSqid;
 
@@ -81,14 +82,18 @@ class CompanyMapping extends Model {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
+    /** Ziel einer Zuordnung „eigener Bestand" ({@see target()}). */
+    public const TARGET_OWN = 'own';
+
     /**
-     * Ziel im Format der Zuordnungsdatei (`customer:<Sqid>`, `partner:<Sqid>`, UUID).
+     * Ziel im Format der Zuordnungsdatei (`customer:<Sqid>`, `partner:<Sqid>`, UUID, `own`).
      */
     public function target(): ?string {
         return match ($this->mode) {
             CompanyMappingMode::Customer => $this->customer instanceof Customer ? 'customer:' . $this->customer->sqid : null,
             CompanyMappingMode::Partner => $this->customer instanceof Customer ? 'partner:' . $this->customer->sqid : null,
             CompanyMappingMode::Contact => $this->contact_external_id !== null && $this->contact_external_id !== '' ? $this->contact_external_id : null,
+            CompanyMappingMode::Own => self::TARGET_OWN,
         };
     }
 

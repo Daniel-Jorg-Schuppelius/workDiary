@@ -15,6 +15,7 @@ return [
             'customer' => 'Directement : la société est le client',
             'partner' => 'Via un partenaire (client tiers)',
             'contact' => 'Contact Lexoffice',
+            'own' => 'Propre stock (jamais facturé)',
         ],
     ],
 ];

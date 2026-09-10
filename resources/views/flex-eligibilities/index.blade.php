@@ -94,7 +94,7 @@
                     <form method="POST" action="{{ route('users.flex-eligibility.destroy', [$member, $period]) }}" class="inline">
                         @csrf @method('DELETE')
                         <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
-                                    data-confirm="{{ __('flex.eligibility.confirm_delete') }}" />
+                                    data-confirm-dialog data-confirm-message="{{ __('flex.eligibility.confirm_delete') }}" data-confirm-tone="error" />
                     </form>
                 </td>
             </tr>

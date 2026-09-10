@@ -1,7 +1,7 @@
 ---
 title: "Abonnements & licences"
 topic: finance.resale
-version: 1
+version: 2
 audience: []
 modules:
     - module.reselling
@@ -96,3 +96,124 @@ et la nouvelle reprend les contrats — est aussi une cession : toutes les
 licences de l’ancienne période à l’ancien détenteur ; le rapprochement le
 propose sur une facture de l’autre client sous « Céder la période à … »,
 prérempli.
+
+**Boîte de réception :** les abonnements importés dont le registre ne peut
+pas encore rattacher la société à un titulaire arrivent dans la boîte de
+réception. Par société, vous décidez une fois : client, client final d’un
+partenaire ou parc propre — la suggestion vient de la comparaison des noms
+avec les clients et clients finaux. La décision est mémorisée ; l’import
+suivant rattache aussitôt la même société. Les lignes que l’import n’a pas
+pu traiter (date illisible, quantité sans nombre, identifiant en double)
+restent comme constats sur l’import : le nombre dans le message, le détail
+dépliable dans la liste.
+
+**Périodes :** la page des périodes montre les périodes échues de tous les
+abonnements avec des tuiles de statut (ouverte, facturée, partielle,
+abandonnée, contestée). « Calculer les propositions » rapproche les périodes
+ouvertes des lignes de licences des factures miroir et crée des
+propositions ; vous les confirmez, rattachez une ligne à la main (uniquement
+des factures du même destinataire, uniquement des mois de licence libres)
+ou renoncez avec un motif (« geste commercial »). Les périodes décidées ne
+sont plus touchées par la planification ; « rouvrir » les rouvre. Si une
+facture rattachée est annulée plus tard dans Lexoffice, le prochain calcul
+met le lien à zéro mois, note l’annulation et rouvre la période pour que la
+facture de remplacement puisse être rattachée.
+
+**Brouillon de facture :** à partir de toutes les périodes ouvertes d’un
+destinataire de facture, un clic crée un brouillon — avec la facturation
+Lexoffice comme brouillon dans Lexoffice (rien n’est finalisé ; vous
+vérifiez et émettez là-bas), avec la facturation locale comme brouillon de
+facture local avec lignes et liens proposés. Une ligne par abonnement et
+période, client final dans la description, quantité en mois pour les
+articles mensuels. Les périodes mémorisent le brouillon : un second clic
+n’en crée pas un deuxième mais nomme le brouillon en attente avec numéro et
+date ; ce n’est que lorsque le brouillon est devenu facture ou que la
+période est décidée qu’elles sont de nouveau libres. Le dialogue ne liste
+que les destinataires avec périodes ouvertes et prix de vente et indique en
+dessous ce qui est déjà dans un brouillon. La création requiert le droit
+*Créer des brouillons de facture à partir des périodes*.
+
+**Pièces d’achat :** l’achat réel par abonnement et période provient de
+trois sources : (1) factures et avoirs fournisseur en PDF (Quality Hosting,
+mise en page allemande et anglaise) — chaque ligne nomme le contrat, le
+client final et la durée, le montant va exactement à la période ; les lignes
+d’avoir sans contrat appartiennent à la société. (2) Pièces reçues du miroir
+des pièces au prorata : pour les factures groupées sans lignes (Telekom),
+vous indiquez la part du fournisseur et le mois de prestation, le montant
+est réparti sur toutes les périodes du mois, pondéré par leur achat prévu
+mensuel. (3) Écritures de domaines de la gestion des domaines,
+automatiquement. À l’import PDF, le registre vérifie le total : si la somme
+des lignes diffère du total de la pièce (par exemple une page non lue),
+l’import a quand même lieu et l’écart est signalé. La page d’achat filtre
+par fournisseur, source, période et terme de recherche ; une affectation se
+libère toujours en bloc par pièce.
+
+**Rapport de marge :** par produit et par destinataire de facture figurent
+les périodes échues de la plage avec la vente prévue (quantité × prix de
+vente), le facturé (montants HT des liens de facture, propositions
+incluses), l’achat prévu (prix fournisseur × quantité) et l’achat réel issu
+des pièces d’achat. Marge = facturé − achat ; l’achat réel compte dès que
+chaque période de la ligne en a un, sinon l’achat prévu. Les montants ne
+sont jamais additionnés entre devises — avec plusieurs devises, il y a une
+ligne par devise et un avertissement. Export en CSV, XLSX ou PDF ; la
+proposition de facture (périodes ouvertes avec mois de licence ouverts et
+montant) en CSV ou XLSX.
+
+**Contrôle des prix :** par produit, l’achat selon le contrat, le prix
+catalogue et le prix conseillé de la dernière liste de prix importée face
+aux prix de vente des abonnements (minimum, médiane, maximum). Indications :
+« vente sous l’achat », « vente sous le prix conseillé », « contrat plus
+cher que le catalogue », « pas de prix de vente ».
+
+**Classification des produits :** le registre reconnaît au nom quels
+articles Lexoffice sont des produits d’abonnement. Par article, vous pouvez
+forcer : « produit d’abonnement » impose la reconnaissance, « jamais une
+ligne d’abonnement » écarte les prestations dont le texte contient un nom de
+produit (maintenance sur Exchange) des propositions, listes de factures et
+« lignes sans abonnement ».
+
+**Domaines :** chaque domaine de la gestion des domaines devient
+quotidiennement un abonnement « Domaine » avec intervalle annuel depuis
+l’enregistrement, achat = prix de renouvellement et titulaire issu de la
+gestion des domaines tant que le registre n’en a pas décidé un. Le prix de
+vente par extension vient du catalogue de prix (fournisseur revente de
+domaines, produit p. ex. « .de »), l’article de l’article Lexoffice de
+l’extension ; les prix, articles et titulaires saisis à la main survivent à
+chaque exécution. Les domaines disparus prennent fin au jour de référence ;
+si la liste des domaines d’une exécution est vide, rien n’est terminé. Les
+abonnements de domaines et leurs pièces d’achat ne se créent pas à la main —
+ils n’arrivent que par la synchronisation.
+
+**Renouvellements et abonnements sans facture :** le rapport
+« Renouvellements » montre quels abonnements se renouvellent ou prennent fin
+sur la période (tuiles 30, 60, 90 jours) : le renouvellement est le début de
+la prochaine période planifiée, pour les abonnements résiliés c’est la fin
+qui compte. « Sans facture » liste les abonnements dont la plus ancienne
+période échue ouverte remonte à plus de N jours (60 par défaut), avec
+périodes ouvertes et montant ouvert. Les deux en CSV ou XLSX.
+
+**Tuile du tableau de bord :** la tuile « Périodes d’abonnement ouvertes »
+(groupe Finances, désactivée par défaut) montre les périodes ouvertes avec
+montant ouvert, les propositions non confirmées et les abonnements sans
+titulaire et mène à la page correspondante.
+
+**Constats d’import :** chaque import (Telekom, Quality Hosting, liste de
+prix, liste générique) journalise compteurs et constats par ligne. Les
+dates doivent être des dates (les cellules de date Excel sont lues ;
+« 3.2026 » ou « 2026 » seuls ne le sont pas), les quantités des nombres,
+les identifiants uniques dans un fichier — sinon la ligne est ignorée et
+la raison est indiquée.
+
+**Conservation des fichiers d’import :** les fichiers d’import téléversés
+(ils peuvent contenir des noms de clients finaux) restent 90 jours dans le
+dossier de stockage puis sont supprimés par le planificateur ; la fiche
+d’import avec ses compteurs reste. À la main : `resale:prune-imports`
+(--days modifie le délai).
+
+**Réparation des liens de facture :** si le miroir des pièces a été
+reconstruit auparavant avec de nouveaux identifiants de lignes, les liens
+confirmés pointent dans le vide (lien sans texte de ligne, période
+considérée comme non couverte). La commande `lexoffice:repair-resale-links`
+rattache ces liens via numéro de facture et ligne de licence ; ce qui n’est
+pas univoque est seulement listé (--dry-run montre à l’avance ce qui se
+passerait).

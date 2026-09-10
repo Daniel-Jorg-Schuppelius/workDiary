@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Reselling;
 
-use App\Services\Reselling\Marketplace\ProductNameMatcher;
+use App\Services\Reselling\Marketplace\{MarketplaceCompany, ProductNameMatcher};
 use PHPUnit\Framework\Attributes\DataProvider;
 use Tests\TestCase;
 
@@ -62,5 +62,16 @@ class ProductNameMatcherTest extends TestCase {
         $this->assertFalse($matcher->looksLikeMicrosoftProduct('Business Basic Paket'));
         $this->assertFalse($matcher->looksLikeMicrosoftProduct('[SGIT-IT-DSBB-01PRE] - Business Support Premium'));
         $this->assertTrue($matcher->looksLikeMicrosoftProduct('Microsoft 365 Business Premium'));
+    }
+
+    public function test_normalize_is_the_company_match_key(): void {
+        // Eine Regel für Firmen- und Produktnamen (Review 2026-09-10, E); die alte
+        // Faltung bleibt, weil company_mappings.normalized_name damit gebildet wurde.
+        foreach (['Müller & Söhne GmbH', 'Exchange Online (Plan 1)', 'Straße  Café', '  M365   Business/Premium  '] as $text) {
+            $this->assertSame(MarketplaceCompany::matchKey($text), ProductNameMatcher::normalize($text));
+            $this->assertSame(MarketplaceCompany::matchKey($text), MarketplaceCompany::normalizeName($text));
+        }
+        $this->assertSame('mueller soehne gmbh', MarketplaceCompany::matchKey('Müller & Söhne GmbH'));
+        $this->assertSame('strasse caf', MarketplaceCompany::matchKey('Straße Café'), 'Akzente werden verworfen, nicht gefaltet (gespeicherte Schlüssel)');
     }
 }

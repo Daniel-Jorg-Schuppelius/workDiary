@@ -770,6 +770,25 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        // Review 2026-09-10 (A5): wöchentlicher Reselling-Digest an die Nutzer
+        // mit reselling.manage — fällige Perioden, Vorschläge, Halterlücken,
+        // Verlängerungen; ohne Befund wird nichts verschickt.
+        'resale.digest' => [
+            'command' => 'resale:digest',
+            'cadence' => ['type' => 'weeklyOn', 'day' => 1, 'time' => '06:45'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 3,
+        ],
+        // Review 2026-09-10 (A8): abgelegte Anbieter-Exporte (Endkunden-PII)
+        // nach 90 Tagen löschen; der Import-Datensatz bleibt als Historie.
+        'resale.prune_imports' => [
+            'command' => 'resale:prune-imports',
+            'cadence' => ['type' => 'dailyAt', 'time' => '05:30'],
+            'allowed' => ['dailyAt', 'weeklyOn'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 1,
+        ],
         'lexoffice.sync_articles' => [
             'command' => 'lexoffice:sync-articles',
             'plugin' => 'lexoffice',

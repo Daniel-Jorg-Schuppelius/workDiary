@@ -14,13 +14,14 @@ namespace App\Http\Controllers\Finance;
 
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, LexofficeVoucherLine};
-use App\Models\Reselling\ResalePeriod;
-use App\Services\Reselling\Register\{PeriodLinker, RecipientReconciler};
-use App\Support\Sqid;
-use Carbon\CarbonImmutable;
+use App\Http\Requests\Finance\Resale\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
+use App\Models\Customer;
+use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * Abgleich je Rechnungsempfänger (Feature 152): Perioden aller Abos eines
@@ -33,10 +34,7 @@ class ResaleReconcileController extends Controller {
     public function __construct(private readonly RecipientReconciler $reconciler, private readonly PeriodLinker $linker) {}
 
     public function index(Request $request): View {
-        $organization = $this->currentOrganizationOrNull();
-        if ($organization === null) {
-            abort(404);
-        }
+        $organization = $this->currentOrganizationOrAbort(404);
         $rows = $this->reconciler->overview($organization);
         $filter = (string) $request->query('show', 'problems');
         if ($filter === 'problems') {
@@ -53,13 +51,31 @@ class ResaleReconcileController extends Controller {
     }
 
     public function show(Customer $customer): View {
-        $organization = $this->currentOrganizationOrNull();
-        if ($organization === null) {
-            abort(404);
-        }
-        $today = CarbonImmutable::today();
+        $organization = $this->currentOrganizationOrAbort(404);
+        $today = ResalePeriod::today();
+        $result = $this->reconciler->forCustomer($organization, $customer, $today);
 
-        return view('finance.resale.reconcile_show', ['customer' => $customer, 'today' => $today] + $this->reconciler->forCustomer($organization, $customer, $today));
+        // Alle Perioden des Empfängers (auch gedeckte), chronologisch je Abo.
+        $allPeriods = [];
+        foreach ($result['subscriptions'] as $subscription) {
+            foreach ($subscription->periods as $period) {
+                $allPeriods[] = ['period' => $period, 'subscription' => $subscription];
+            }
+        }
+        usort($allPeriods, static fn(array $a, array $b): int => strcmp($a['period']->starts_on->toDateString(), $b['period']->starts_on->toDateString()) ?: ($a['subscription']->id <=> $b['subscription']->id));
+
+        // Ziele der Zuordnung je Produkt: gleiches Produkt zuerst, die übrigen als Gruppe.
+        $targetsByProduct = [];
+        foreach ($result['periods'] as $row) {
+            $targetsByProduct[$row['product']][] = $row;
+        }
+
+        return view('finance.resale.reconcile_show', [
+            'customer' => $customer,
+            'today' => $today,
+            'allPeriods' => $allPeriods,
+            'targetsByProduct' => $targetsByProduct,
+        ] + $result);
     }
 
     /**
@@ -67,46 +83,40 @@ class ResaleReconcileController extends Controller {
      * nachweislich dorthin (Anbieter-Konto ≠ Kunde). Danach Vorschlagslauf,
      * damit die Positionen des neuen Empfängers sofort greifen.
      */
-    public function rehome(Request $request, Customer $customer, \App\Services\Reselling\Register\LinkProposer $proposer): RedirectResponse {
-        $validated = $request->validate([
-            'period_id' => ['required', 'string'],
-            'target_id' => ['required', 'string'],
-        ]);
-        $periodId = Sqid::decode(ResalePeriod::class, (string) $validated['period_id']);
-        $period = $periodId === null ? null : ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer.customer')->find($periodId);
-        $targetId = Sqid::decode(Customer::class, (string) $validated['target_id']);
-        $target = $targetId === null ? null : Customer::query()->find($targetId);
-        if ($period === null || $target === null || $period->subscription->billedTo()?->id !== $customer->id) {
-            return redirect(route('finance.resale.reconcile.show', $customer))->with('error', __('resale.link.error.line_missing'));
+    public function rehome(RehomeResaleSubscriptionRequest $request, Customer $customer, LinkProposer $proposer): RedirectResponse {
+        $period = $request->period();
+        if ($period === null) {
+            throw ValidationException::withMessages(['period_id' => (string) __('resale.link_error.period_missing')]);
         }
-        $period->subscription->forceFill(['customer_id' => $target->id, 'foreign_customer_id' => null, 'is_own_holding' => false])->save();
-        $organization = $this->currentOrganizationOrNull();
-        if ($organization !== null) {
-            $proposer->propose($organization);
+        $target = $request->target();
+        /** @var ResaleSubscription $subscription */
+        $subscription = $period->subscription;
+        $previous = ['customer_id' => $subscription->customer_id, 'foreign_customer_id' => $subscription->foreign_customer_id, 'is_own_holding' => $subscription->is_own_holding];
+        $subscription->forceFill(['customer_id' => $target->id, 'foreign_customer_id' => null, 'is_own_holding' => false])->save();
+        $subscription->audit('resale_subscription.rehomed', ['from' => $previous, 'to' => ['customer_id' => $target->id], 'period_id' => $period->id]);
+        $redirect = redirect(route('finance.resale.reconcile.show', $target))->with('success', __('resale.reconcile.flash.rehomed', ['subscription' => $subscription->label, 'customer' => $target->name]));
+        try {
+            $proposer->propose($this->currentOrganizationOrAbort(404));
+        } catch (RuntimeException $e) {
+            // Lauf läuft schon: der Halterwechsel ist gespeichert, die Vorschläge kommen mit dem nächsten Lauf.
+            $redirect->with('warning', $e->getMessage());
         }
 
-        return redirect(route('finance.resale.reconcile.show', $target))->with('success', __('resale.reconcile.flash.rehomed', ['subscription' => $period->subscription->label, 'customer' => $target->name]));
+        return $redirect;
     }
 
     /** Position → Periode eines beliebigen Abos dieses Empfängers. */
-    public function assign(Request $request, Customer $customer): RedirectResponse {
-        $validated = $request->validate([
-            'period_id' => ['required', 'string'],
-            'line_id' => ['required', 'string'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ] + PeriodLinker::amountRules());
-        $periodId = Sqid::decode(ResalePeriod::class, (string) $validated['period_id']);
-        $period = $periodId === null ? null : ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer.customer')->find($periodId);
-        $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $validated['line_id']);
-        $line = $lineId === null ? null : LexofficeVoucherLine::query()->with('voucher')->find($lineId);
-        $target = route('finance.resale.reconcile.show', $customer);
-        if ($period === null || $line === null || $period->subscription->billedTo()?->id !== $customer->id) {
-            return redirect($target)->with('error', __('resale.link.error.line_missing'));
+    public function assign(AssignResaleLineRequest $request, Customer $customer): RedirectResponse {
+        $period = $request->period();
+        $line = $request->line();
+        if ($period === null || $line === null) {
+            throw ValidationException::withMessages(['line_id' => (string) __('resale.link.error.line_missing')]);
         }
+        $target = route('finance.resale.reconcile.show', $customer);
         try {
-            $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), $validated['note'] ?? null, $request->user()?->id);
+            $link = $this->linker->attach($period, $line, $request->months(), $request->note(), $request->user()?->id);
         } catch (\InvalidArgumentException $e) {
-            return redirect($target)->with('error', $e->getMessage());
+            throw ValidationException::withMessages(['months' => $e->getMessage()]);
         }
 
         return redirect($target)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));

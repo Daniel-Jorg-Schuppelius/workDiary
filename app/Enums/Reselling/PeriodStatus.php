@@ -42,7 +42,12 @@ enum PeriodStatus: string implements HasLabel {
         };
     }
 
-    /** Vom Nutzer oder einer Zuordnung entschieden — die Planung fasst sie nicht mehr an. */
+    /**
+     * Nicht mehr offen (berechnet, teilweise, verzichtet, strittig) — Anzeige-
+     * Semantik. Ob die Planung eine Periode anfassen darf, entscheidet
+     * `ResalePeriod::isLocked()` (Nutzerentscheidung `decided_at`, Verzicht,
+     * strittig); „berechnet" allein durch Vorschläge ist keine Entscheidung.
+     */
     public function isDecided(): bool {
         return $this !== self::Open;
     }

@@ -373,6 +373,7 @@ return [
         'commission.manage' => 'Provisionen verwalten (Regeln, Zuordnung, Abrechnungslauf)',
         'reselling.view' => 'Reselling-Register sehen (Abos, Halter, Perioden)',
         'reselling.manage' => 'Reselling-Register pflegen (Abos anlegen, ändern, Perioden entscheiden)',
+        'reselling.invoice' => 'Reselling-Register: Rechnungsentwürfe aus Perioden erzeugen (Lexoffice/lokal)',
 
         'finance.viewAny' => 'Übergabenachweise einsehen',
         'finance.config' => 'Finanzkonfiguration verwalten',

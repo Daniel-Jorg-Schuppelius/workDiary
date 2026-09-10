@@ -133,7 +133,7 @@ class RemoteSupportPlugin extends AbstractPlugin implements SlotRenderer, TimeIm
 
         $organization = $context->organization;
         $pendingCount = $organization instanceof Organization
-            ? app(RemotePendingAssignmentService::class)->openPendingGroups($organization)->sum('count')
+            ? app(RemotePendingAssignmentService::class)->openPendingGroups($organization)->sum(static fn(object $group): int => (int) $group->count)
             : 0;
 
         return view('remote-support::_panel', [

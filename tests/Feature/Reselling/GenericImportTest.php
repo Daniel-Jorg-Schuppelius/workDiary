@@ -12,16 +12,18 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reselling;
 
-use App\Enums\Reselling\{BillingFrequency, SubscriptionProvider, SubscriptionStatus};
+use App\Enums\Reselling\{BillingFrequency, ImportStatus, SubscriptionProvider, SubscriptionStatus};
 use App\Models\Customer;
 use App\Models\Reselling\{ResaleImport, ResaleSubscription};
 use App\Services\Reselling\Marketplace\GenericSubscriptionReader;
 use App\Services\Reselling\Register\MarketplaceImporter;
+use DateTimeImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
+use Tests\Unit\Reselling\BuildsXlsxFixtures;
 
 /**
  * Generische Abo-Liste (Feature 152): Spalten am Namen erkannt, deutsche
@@ -29,6 +31,7 @@ use Tests\TestCase;
  * oder Dialog, Verkaufspreis aus der Liste, Wiederholung ohne Dubletten.
  */
 class GenericImportTest extends TestCase {
+    use BuildsXlsxFixtures;
     use RefreshDatabase;
     use WithOrganization;
 
@@ -108,6 +111,35 @@ class GenericImportTest extends TestCase {
         } finally {
             @unlink($path);
         }
+    }
+
+    public function test_xlsx_with_excel_date_cells_imports_and_persists_row_issues(): void {
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Müller GmbH']);
+        $path = self::xlsxFixture([['Abos', [
+            ['Contract ID', 'Customer', 'Product', 'Qty', 'Start date', 'End date', 'Interval', 'Purchase price (EUR)', 'Sale price'],
+            ['C-1', 'Müller GmbH', 'Hosted Exchange Postfach', 3, new DateTimeImmutable('2026-02-01'), null, 'yearly', 3.0325, 4.5],
+            ['C-2', 'Beispiel AG', 'Backup', '4 Stück', new DateTimeImmutable('2026-03-01'), null, 'monthly', 1.2, null],
+            ['C-1', 'Müller GmbH', 'Hosted Exchange Postfach', 1, new DateTimeImmutable('2026-02-01'), null, 'yearly', 3.0325, null],
+        ]]], 'generic');
+        try {
+            $records = app(MarketplaceImporter::class)->import($this->organization, null, [ResaleImport::KIND_GENERIC => ['name' => 'liste.xlsx', 'path' => $path]], null, SubscriptionProvider::Manual);
+        } finally {
+            @unlink($path);
+        }
+
+        $this->assertCount(1, $records);
+        $this->assertSame(ImportStatus::Done, $records[0]->status, 'Datumszelle kippt den Lauf nicht mehr (C3)');
+        $this->assertSame(1, $records[0]->rows_created);
+        $this->assertCount(2, $records[0]->issues ?? [], 'Menge „4 Stück" und doppelte Kennung sind Befunde');
+        $this->assertStringContainsString('"4 Stück"', $records[0]->issues[0]);
+        $this->assertStringContainsString('"C-1"', $records[0]->issues[1]);
+
+        $subscription = ResaleSubscription::query()->where('external_id', 'C-1')->firstOrFail();
+        $this->assertSame('2026-02-01', $subscription->starts_on->toDateString());
+        $this->assertSame(3, $subscription->quantity, 'erste Zeile gewinnt');
+        $this->assertSame('3.0325', $subscription->purchase_unit_price?->getAmount(), 'Stückpreis mit vier Nachkommastellen (B19)');
+        $this->assertSame('4.5000', $subscription->sale_unit_price?->getAmount());
+        $this->assertNotNull($subscription->customer_id);
     }
 
     public function test_dialog_accepts_the_generic_list_and_offers_a_template(): void {

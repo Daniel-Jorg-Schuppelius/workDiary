@@ -13,12 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\BillingFrequency;
+use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, ParsesImportValues};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Entities\XLSX\{Cell, Sheet};
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Parsers\XLSXDocumentParser;
-use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
 use Throwable;
 
@@ -26,134 +25,131 @@ use Throwable;
  * Liest die Reseller-Preisliste des Quality-Hosting-Partnerportals (XLSX):
  * Blatt „Deckblatt" mit Gültigkeit, Blatt „Preisdaten" mit einer Zeile je
  * Produkttarif × Laufzeit × Zahlungsintervall (Einkaufspreis und
- * Hersteller-UVP je Monat und je Intervall, netto).
+ * Hersteller-UVP je Monat und je Intervall, netto). Gültigkeit je Zeile aus
+ * „Gültig ab", sonst vom Deckblatt; die Liste trägt das früheste Datum. Ohne
+ * beides bleibt `validFrom` null — der Importer nimmt dann das Importdatum
+ * (Review 2026-09-10, A12).
  */
 final class QualityHostingPriceListReader {
+    use NormalizesHeaders;
+    use ParsesImportValues;
+
     private const REQUIRED = ['produkttarif', 'vertragslaufzeit in monaten', 'zahlungsintervall', 'preis pro zahlungsintervall'];
 
+    /** Stückpreise (je Monat/Intervall) mit vier Nachkommastellen (B19). */
+    private const UNIT_SCALE = 4;
+
     public function read(string $file): PriceList {
+        $name = basename($file);
         if (! is_readable($file)) {
-            throw new RuntimeException("Preisliste nicht lesbar: {$file}");
+            throw new RuntimeException((string) __('resale_import.pricelist.unreadable', ['file' => $name]));
         }
 
         try {
             $document = XLSXDocumentParser::fromFile($file, true);
         } catch (Throwable $e) {
-            throw new RuntimeException("Preisliste nicht lesbar: {$file} ({$e->getMessage()})", 0, $e);
+            throw new RuntimeException((string) __('resale_import.pricelist.unreadable_reason', ['file' => $name, 'reason' => str_replace($file, $name, $e->getMessage())]), 0, $e);
         }
 
         $sheet = null;
         foreach ($document->getSheets() as $candidate) {
-            $names = array_map(static fn($name): string => self::normalizeHeader((string) $name), array_values($candidate->getHeaderNames()));
-            if (in_array('produkttarif', $names, true)) {
+            if (isset(self::headerIndex(self::sheetHeaderNames($candidate))['produkttarif'])) {
                 $sheet = $candidate;
                 break;
             }
         }
         if ($sheet === null) {
-            throw new RuntimeException('Preisliste ohne Blatt „Preisdaten" (Spalte „Produkttarif" fehlt).');
+            throw new RuntimeException((string) __('resale_import.pricelist.no_sheet'));
         }
 
-        $index = [];
-        foreach (array_values($sheet->getHeaderNames()) as $position => $name) {
-            $index[self::normalizeHeader((string) $name)] = (int) $position;
-        }
+        $index = self::headerIndex(self::sheetHeaderNames($sheet));
         $missing = array_values(array_diff(self::REQUIRED, array_keys($index)));
         if ($missing !== []) {
-            throw new RuntimeException('Pflichtspalten der Preisliste fehlen: ' . implode(', ', $missing));
+            throw new RuntimeException((string) __('resale_import.pricelist.missing_columns', ['columns' => implode(', ', $missing)]));
         }
 
+        $coverValidFrom = $this->coverValidFrom(array_values($document->getSheets()));
+        $listValidFrom = null;
         $entries = [];
         $issues = [];
-        foreach (array_values($sheet->getRows()) as $offset => $row) {
-            $line = $offset + 2;
+        foreach ($sheet->getRows() as $row) {
+            $line = $row->getRowIndex();
             $cells = array_values($row->getCells());
             $cell = static function (string $column) use ($cells, $index): ?Cell {
                 $position = $index[$column] ?? null;
 
                 return $position === null ? null : ($cells[$position] ?? null);
             };
-            $text = static fn(string $column): string => trim((string) ($cell($column)?->toCanonicalString() ?? ''));
+            $text = static fn(string $column): string => trim($cell($column)?->toCanonicalString() ?? '');
 
             $product = $text('produkttarif');
             if ($product === '') {
                 continue;
             }
             $interval = BillingFrequency::fromLabel($text('zahlungsintervall'));
-            $term = (int) round((float) ($cell('vertragslaufzeit in monaten')?->getValue() ?? 0));
-            $price = $this->money($cell('preis pro zahlungsintervall'));
-            $monthly = $this->money($cell('preis pro monat'));
-            if ($interval === null || $term <= 0 || $price === null) {
-                $issues[] = sprintf('Preisliste Zeile %d (%s): Laufzeit, Intervall oder Preis nicht lesbar - übersprungen.', $line, $product);
+            $term = self::importInteger($cell('vertragslaufzeit in monaten')?->getValue());
+            $price = self::importMoney($cell('preis pro zahlungsintervall')?->getValue(), CurrencyCode::Euro, self::UNIT_SCALE);
+            $monthly = self::importMoney($cell('preis pro monat')?->getValue(), CurrencyCode::Euro, self::UNIT_SCALE);
+            if ($interval === null || $term === null || $term <= 0 || $price === null) {
+                $issues[] = (string) __('resale_import.pricelist.row_invalid', ['line' => $line, 'product' => $product]);
 
                 continue;
+            }
+            $rowValidFrom = self::importDate($cell('gültig ab')?->getValue());
+            if ($rowValidFrom === null && $text('gültig ab') !== '') {
+                $issues[] = (string) __('resale_import.pricelist.valid_from_unreadable', ['line' => $line, 'product' => $product, 'value' => $text('gültig ab')]);
+            }
+            $validFrom = $rowValidFrom ?? $coverValidFrom;
+            if ($validFrom !== null && ($listValidFrom === null || $validFrom->lessThan($listValidFrom))) {
+                $listValidFrom = $validFrom;
             }
 
             $entries[] = new PriceListEntry(
                 product: $product,
                 termMonths: $term,
                 interval: $interval,
-                pricePerMonth: $monthly ?? $price->dividedBy(max(1, $term)),
-                uvpPerMonth: $this->money($cell('hersteller-uvp pro monat')),
+                pricePerMonth: $monthly ?? $price->dividedBy($term),
+                uvpPerMonth: self::importMoney($cell('hersteller-uvp pro monat')?->getValue(), CurrencyCode::Euro, self::UNIT_SCALE),
                 pricePerInterval: $price,
-                uvpPerInterval: $this->money($cell('hersteller-uvp pro zahlungsintervall')),
+                uvpPerInterval: self::importMoney($cell('hersteller-uvp pro zahlungsintervall')?->getValue(), CurrencyCode::Euro, self::UNIT_SCALE),
                 offerKey: $text('offer-key'),
                 sourceLine: $line,
+                validFrom: $validFrom,
             );
         }
+        if ($entries !== [] && $listValidFrom === null) {
+            $issues[] = (string) __('resale_import.pricelist.no_valid_from');
+        }
 
-        return new PriceList($entries, $this->validFrom(array_values($document->getSheets())), $issues);
+        return new PriceList($entries, $listValidFrom, $issues);
     }
 
     /**
+     * Deckblatt: die Zelle rechts neben „Gültigkeit ab" (Datumszelle oder Text).
+     *
      * @param  list<Sheet>  $sheets
      */
-    private function validFrom(array $sheets): ?CarbonImmutable {
+    private function coverValidFrom(array $sheets): ?CarbonImmutable {
         foreach ($sheets as $sheet) {
-            foreach ($sheet->toArray(true) as $row) {
-                $values = array_values(array_map(static fn($value): string => trim((string) $value), $row));
-                foreach ($values as $position => $value) {
-                    if (mb_strtolower($value) !== 'gültigkeit ab') {
+            $rows = $sheet->getRows();
+            $header = $sheet->getHeader();
+            if ($header !== null) {
+                array_unshift($rows, $header);
+            }
+            foreach ($rows as $row) {
+                $cells = array_values($row->getCells());
+                foreach ($cells as $position => $cell) {
+                    if (mb_strtolower(trim($cell->toCanonicalString())) !== 'gültigkeit ab') {
                         continue;
                     }
-                    $raw = $values[$position + 1] ?? '';
-                    foreach (['d.m.Y', 'Y-m-d'] as $format) {
-                        try {
-                            $parsed = CarbonImmutable::createFromFormat('!' . $format, $raw);
-                        } catch (Throwable) {
-                            continue;
-                        }
-                        if ($parsed instanceof CarbonImmutable && $parsed->format($format) === $raw) {
-                            return $parsed;
-                        }
+                    $date = self::importDate(($cells[$position + 1] ?? null)?->getValue());
+                    if ($date !== null) {
+                        return $date;
                     }
                 }
             }
         }
 
         return null;
-    }
-
-    private static function normalizeHeader(string $name): string {
-        return mb_strtolower(trim(preg_replace('/\s+/', ' ', $name) ?? $name));
-    }
-
-    private function money(?Cell $cell): ?Money {
-        if ($cell === null || $cell->isEmpty()) {
-            return null;
-        }
-        $value = $cell->getValue();
-        if (is_int($value) || is_float($value)) {
-            return Money::ofFloat(round((float) $value, 2), CurrencyCode::Euro);
-        }
-        $decimal = NumberHelper::normalizeDecimalStringOrNull((string) $cell->toCanonicalString());
-        if ($decimal === null) {
-            return null;
-        }
-        try {
-            return Money::of($decimal, CurrencyCode::Euro);
-        } catch (Throwable) {
-            return null;
-        }
     }
 }

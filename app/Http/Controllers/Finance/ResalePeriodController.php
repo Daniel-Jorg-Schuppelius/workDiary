@@ -15,15 +15,18 @@ namespace App\Http\Controllers\Finance;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
-use App\Models\{Customer, LexofficeVoucherLine};
+use App\Http\Requests\Finance\Resale\{LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
+use App\Models\{Customer, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
-use App\Services\Reselling\Register\{LinkProposer, PeriodLinker};
+use App\Plugins\Lexoffice\Services\LexofficeRecipientInvoiceLines;
+use App\Services\Reselling\Register\{LicenseArticleClassifier, LicenseMonths, LinkProposer, PeriodLinker};
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
-use Carbon\CarbonImmutable;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 /**
  * Abrechnungsperioden und ihre Rechnungsbezüge (Feature 152, MVP-761):
@@ -35,10 +38,13 @@ class ResalePeriodController extends Controller {
 
     private const PER_PAGE = 50;
 
-    public function __construct(private readonly PeriodLinker $linker) {}
+    /** Lizenzpositionen ohne Abo: mehr zeigt die Periodenseite nicht (C12). */
+    private const UNLINKED_LIMIT = 100;
+
+    public function __construct(private readonly PeriodLinker $linker, private readonly LexofficeRecipientInvoiceLines $invoiceLines) {}
 
     public function index(Request $request): View {
-        $today = CarbonImmutable::today();
+        $today = ResalePeriod::today();
         $filters = [
             'status' => (string) $request->query('status', 'problems'),
             'customer' => (string) $request->query('customer', ''),
@@ -73,6 +79,8 @@ class ResalePeriodController extends Controller {
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false))
             ->selectRaw('status, COUNT(*) AS n')->groupBy('status')->pluck('n', 'status')->all();
 
+        $unlinked = $this->unlinkedLicenseLines();
+
         return view('finance.resale.periods', [
             'periods' => $periods,
             'filters' => $filters,
@@ -80,43 +88,44 @@ class ResalePeriodController extends Controller {
             'counts' => $counts,
             'statuses' => PeriodStatus::cases(),
             'today' => $today,
-            'unlinked' => $this->unlinkedLicenseLines(),
+            'unlinkedTotal' => (clone $unlinked)->count(),
+            'unlinked' => $unlinked
+                ->with(['voucher:id,voucher_number,voucher_date,customer_id,voucher_text', 'voucher.customer:id,name', 'article:id,name'])
+                ->orderByDesc(LexofficeVoucher::query()->select('voucher_date')->whereColumn('lexoffice_vouchers.id', 'lexoffice_voucher_lines.voucher_id'))
+                ->orderByDesc('id')
+                ->limit(self::UNLINKED_LIMIT)
+                ->get(),
         ]);
     }
 
     /**
-     * Lizenzpositionen (Microsoft-Artikel) im Belegspiegel ohne Bezug zu einer
-     * Periode — Hinweis auf fehlende Abos oder falsche Halter.
+     * Lizenzpositionen (Abo-Artikel laut Einstufung) im Belegspiegel ohne
+     * Bezug zu einer Periode — Hinweis auf fehlende Abos oder falsche Halter.
+     * Nur die Abfrage: die Seite zählt einmal und lädt begrenzt (C12).
      *
-     * @return \Illuminate\Support\Collection<int, LexofficeVoucherLine>
+     * @return Builder<LexofficeVoucherLine>
      */
-    private function unlinkedLicenseLines(): \Illuminate\Support\Collection {
-        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
-        $articleIds = \App\Models\LexofficeArticle::query()->active()->get(['id', 'name', 'resale_role'])
-            ->filter(static fn(\App\Models\LexofficeArticle $a): bool => $classifier->isLicense($a))
+    private function unlinkedLicenseLines(): Builder {
+        $classifier = new LicenseArticleClassifier;
+        $articleIds = LexofficeArticle::query()->active()->get(['id', 'name', 'resale_role'])
+            ->filter(static fn(LexofficeArticle $a): bool => $classifier->isLicense($a))
             ->pluck('id')
             ->all();
-        if ($articleIds === []) {
-            return collect();
-        }
-        $linked = ResalePeriodLink::query()->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->pluck('linkable_id');
 
         return LexofficeVoucherLine::query()
-            ->whereIn('lexoffice_article_id', $articleIds)
-            ->whereNotIn('id', $linked)
-            ->whereHas('voucher', static fn(Builder $v) => $v->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided']))
-            ->with(['voucher:id,voucher_number,voucher_date,customer_id,voucher_text', 'voucher.customer:id,name', 'article:id,name'])
-            ->get()
-            ->sortByDesc(static fn(LexofficeVoucherLine $l) => $l->voucher->voucher_date)
-            ->values();
+            ->whereIn('lexoffice_article_id', $articleIds === [] ? [0] : $articleIds)
+            ->whereDoesntHave('periodLinks')
+            ->whereIn('voucher_id', LexofficeVoucher::query()->issuedInvoices()->select('id'));
     }
 
     public function propose(LinkProposer $proposer): RedirectResponse {
-        $organization = $this->currentOrganizationOrNull();
-        if ($organization === null) {
-            abort(404);
+        $organization = $this->currentOrganizationOrAbort(404);
+        try {
+            $result = $proposer->propose($organization);
+        } catch (RuntimeException $e) {
+            // Lauf läuft schon (Sperre je Organisation): Hinweis statt 500.
+            return back()->with('warning', $e->getMessage());
         }
-        $result = $proposer->propose($organization);
 
         return back()->with('success', __('resale.link.flash.proposed', $result));
     }
@@ -125,6 +134,7 @@ class ResalePeriodController extends Controller {
         $period->links()->where('origin', LinkOrigin::Proposed->value)->update(['origin' => LinkOrigin::Confirmed->value, 'confirmed_at' => now()]);
         $period->unsetRelation('links');
         $this->linker->settle($period, $request->user()?->id, (string) $request->input('note', ''));
+        $period->audit('resale_period.confirmed', ['status' => $period->status->value, 'vouchers' => $period->links->pluck('voucher_number')->all()]);
 
         return back()->with('success', __('resale.link.flash.confirmed'));
     }
@@ -133,26 +143,26 @@ class ResalePeriodController extends Controller {
         return view('finance.resale._waive_dialog', ['period' => $period->load('subscription')]);
     }
 
-    public function waive(Request $request, ResalePeriod $period): RedirectResponse {
-        $validated = $request->validate([
-            'decision' => ['required', 'in:waived,disputed'],
-            'reason' => ['required', 'string', 'max:255'],
-        ]);
+    public function waive(WaiveResalePeriodRequest $request, ResalePeriod $period): RedirectResponse {
         $period->forceFill([
-            'status' => $validated['decision'] === 'waived' ? PeriodStatus::Waived : PeriodStatus::Disputed,
-            'waived_reason' => $validated['reason'],
+            'status' => $request->status(),
+            'waived_reason' => $request->reason(),
             'decided_by_user_id' => $request->user()?->id,
             'decided_at' => now(),
         ])->save();
+        $event = $request->status() === PeriodStatus::Waived ? 'resale_period.waived' : 'resale_period.disputed';
+        $period->audit($event, ['reason' => $request->reason()]);
 
         return redirect(url()->previous(route('finance.resale.periods.index')))->with('success', __('resale.link.flash.waived'));
     }
 
     public function reopen(ResalePeriod $period): RedirectResponse {
+        $previous = ['status' => $period->status->value, 'reason' => $period->waived_reason];
         $period->forceFill(['status' => PeriodStatus::Open, 'waived_reason' => null, 'decided_by_user_id' => null, 'decided_at' => null])->save();
         $period->links()->where('origin', LinkOrigin::Proposed->value)->delete();
         $period->unsetRelation('links');
         $this->linker->settle($period, null, null, false);
+        $period->audit('resale_period.reopened', $previous + ['status_now' => $period->status->value]);
 
         return back()->with('success', __('resale.link.flash.reopened'));
     }
@@ -165,62 +175,46 @@ class ResalePeriodController extends Controller {
      * hier nichts verloren — sie waren die lange Liste.
      */
     public function linkCreate(ResalePeriod $period, LinkProposer $proposer): View {
+        $organization = $this->currentOrganizationOrAbort(404);
         $period->load(['subscription.customer', 'subscription.foreignCustomer.customer', 'links']);
         $contacts = $proposer->contactsFor($period->subscription);
-        $classifier = new \App\Services\Reselling\Register\LicenseArticleClassifier;
-        $lines = $contacts === [] ? collect() : LexofficeVoucherLine::query()
-            ->whereNotNull('lexoffice_article_id')
-            ->whereHas('voucher', static fn(Builder $q) => $q->whereIn('contact_external_id', $contacts)->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided'])
-                ->where('voucher_date', '>=', DateRange::day($period->starts_on->subDays(LinkProposer::WINDOW_BEFORE))))
-            ->with(['voucher:id,voucher_number,voucher_date,contact_external_id,service_starts_on,service_ends_on', 'article:id,name,unit_name,resale_role'])
-            ->get()
-            ->filter(static fn(LexofficeVoucherLine $l): bool => $classifier->isLicense($l->article))
-            // Fensterende je Position: Mehrperioden-Positionen („48 Monat") dürfen Jahre später kommen.
-            ->filter(static function (LexofficeVoucherLine $l) use ($period): bool {
-                $date = \App\Services\Reselling\Register\LicenseMonths::referenceDate($l);
-
-                return $date !== null && (! $date->greaterThan(LinkProposer::windowEnd($period->starts_on, $period->termMonths(), $l)) || \App\Services\Reselling\Register\LicenseMonths::serviceCovers($l, $period->starts_on));
-            })
-            ->sortBy([static fn(LexofficeVoucherLine $a, LexofficeVoucherLine $b): int => ($b->voucher->voucher_date <=> $a->voucher->voucher_date) ?: ($a->position <=> $b->position)])
-            ->values();
-        $consumed = [];
-        if ($lines->isNotEmpty()) {
-            foreach (ResalePeriodLink::query()->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->whereIn('linkable_id', $lines->pluck('id')->all())->get(['linkable_id', 'months']) as $link) {
-                $consumed[(int) $link->linkable_id] = ($consumed[(int) $link->linkable_id] ?? 0.0) + (float) $link->months;
-            }
-        }
+        $lines = $this->invoiceLines->forPeriod($organization, $contacts, $period);
+        // Bezüge an DIESER Periode zählen nicht: ein erneuter Bezug ersetzt sie; sie werden nur markiert.
+        $consumed = $this->invoiceLines->consumed($lines, $period);
+        $mirror = (new LexofficeVoucherLine)->getMorphClass();
+        $linkedIds = $period->links
+            ->filter(static fn(ResalePeriodLink $l): bool => $l->linkable_type === $mirror)
+            ->map(static fn(ResalePeriodLink $l): int => (int) $l->linkable_id)
+            ->all();
         $rows = [];
         foreach ($lines as $line) {
-            $split = \App\Services\Reselling\Register\LicenseMonths::split($line);
+            $split = LicenseMonths::split($line);
             $months = $split['licences'] * $split['months'];
-            $rows[] = ['line' => $line, 'licences' => $split['licences'], 'per_licence' => $split['months'], 'free' => max(0.0, $months - ($consumed[$line->id] ?? 0.0))];
+            $free = max(0.0, $months - ($consumed[$line->id]['months'] ?? 0.0));
+            $rows[] = [
+                'line' => $line,
+                'licences' => $split['licences'],
+                'per_licence' => $split['months'],
+                'free' => $free,
+                'used' => in_array($line->id, $linkedIds, true) || $free <= 0.001,
+                'partly' => $free > 0.001 && $free < $months - 0.001,
+            ];
         }
 
         return view('finance.resale._link_dialog', [
             'period' => $period,
             'rows' => $rows,
-            'linkedIds' => $period->links->pluck('linkable_id')->all(),
-            'needed' => max(0.0, $period->requiredMonths() - $period->coveredMonths()),
+            'needed' => $period->openMonths(),
             'hasContacts' => $contacts !== [],
         ]);
     }
 
-    public function linkStore(Request $request, ResalePeriod $period): RedirectResponse {
-        $validated = $request->validate([
-            'line_id' => ['required', 'string'],
-            'months' => ['required', 'numeric', 'min:0.01', 'max:100000'],
-            'note' => ['nullable', 'string', 'max:255'],
-        ]);
-        $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $validated['line_id']);
-        $line = $lineId === null ? null : LexofficeVoucherLine::query()->with('voucher')->find($lineId);
+    public function linkStore(LinkResalePeriodRequest $request, ResalePeriod $period): RedirectResponse {
+        $line = $request->line();
         if ($line === null) {
-            return back()->withErrors(['line_id' => __('resale.link.error.line_missing')]);
+            throw ValidationException::withMessages(['line_id' => (string) __('resale.link.error.line_missing')]);
         }
-        try {
-            $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), $validated['note'] ?? null, $request->user()?->id);
-        } catch (\InvalidArgumentException $e) {
-            return back()->withErrors(['months' => $e->getMessage()])->withInput();
-        }
+        $link = $this->attach($period, $line, $request->months(), $request->note(), $request->user()?->id);
 
         return redirect()->route('finance.resale.show', $period->subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
     }
@@ -228,25 +222,24 @@ class ResalePeriodController extends Controller {
     /**
      * Schnellzuordnung aus der Rechnungsliste des Abos: Position → gewählte Periode.
      */
-    public function quickLink(Request $request, ResaleSubscription $subscription): RedirectResponse {
-        $validated = $request->validate([
-            'period_id' => ['required', 'string'],
-            'line_id' => ['required', 'string'],
-        ] + PeriodLinker::amountRules());
-        $periodId = Sqid::decode(ResalePeriod::class, (string) $validated['period_id']);
-        $period = $periodId === null ? null : $subscription->periods()->whereKey($periodId)->first();
-        $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $validated['line_id']);
-        $line = $lineId === null ? null : LexofficeVoucherLine::query()->with('voucher')->find($lineId);
+    public function quickLink(QuickLinkResalePeriodRequest $request, ResaleSubscription $subscription): RedirectResponse {
+        $period = $request->period();
+        $line = $request->line();
         if ($period === null || $line === null) {
-            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', __('resale.link.error.line_missing'));
+            throw ValidationException::withMessages(['line_id' => (string) __('resale.link.error.line_missing')]);
         }
-        try {
-            $link = $this->linker->attach($period, $line, PeriodLinker::monthsFrom($validated), null, $request->user()?->id);
-        } catch (\InvalidArgumentException $e) {
-            return redirect()->route('finance.resale.show', $subscription->sqid)->with('error', $e->getMessage());
-        }
+        $link = $this->attach($period, $line, $request->months(), null, $request->user()?->id);
 
         return redirect()->route('finance.resale.show', $subscription->sqid)->with('success', __('resale.link.flash.linked', ['voucher' => (string) $link->voucher_number]));
+    }
+
+    /** Bezug schreiben; „mehr als frei" wird zum Feldfehler an `months`. */
+    private function attach(ResalePeriod $period, LexofficeVoucherLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
+        try {
+            return $this->linker->attach($period, $line, $months, $note, $userId);
+        } catch (\InvalidArgumentException $e) {
+            throw ValidationException::withMessages(['months' => $e->getMessage()]);
+        }
     }
 
     public function linkDestroy(ResalePeriodLink $link): RedirectResponse {
@@ -254,6 +247,7 @@ class ResalePeriodController extends Controller {
         $link->delete();
         $period->unsetRelation('links');
         $this->linker->settle($period, null, null, false);
+        $period->audit('resale_period.link_removed', ['voucher_number' => $link->voucher_number, 'months' => $link->months, 'origin' => $link->origin->value, 'status_now' => $period->status->value]);
 
         return back()->with('success', __('resale.link.flash.unlinked'));
     }

@@ -27,6 +27,9 @@ enum CompanyMappingMode: string implements HasLabel {
     /** Direkt ein Lexoffice-Kontakt (UUID). */
     case Contact = 'contact';
 
+    /** Eigener Bestand: wird nie fakturiert, landet nicht mehr in der Inbox (Review 2026-09-10). */
+    case Own = 'own';
+
     public function label(): string {
         return (string) __('reselling.mapping.mode.' . $this->value);
     }

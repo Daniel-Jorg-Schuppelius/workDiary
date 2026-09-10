@@ -10,9 +10,10 @@
 {{-- Kundenakte-Reiter „Abos & Lizenzen" (Feature 152, MVP-758): Abos, die der
      Kunde selbst hält, und Abos seiner Fremdkunden (Endkunden), für die er
      die Rechnung bekommt. „Abo anlegen" öffnet den Dialog mit vorbelegtem
-     Kunden. --}}
+     Kunden. Ohne Modul (resaleModuleActive, Assembler) bleibt der Reiter weg —
+     die Links endeten sonst in 423. --}}
 
-@can(\App\Enums\User\Permission::ResellingView->value)
+@if (($resaleModuleActive ?? false) && auth()->user()?->can(\App\Enums\User\Permission::ResellingView->value))
     <x-card :title="__('resale.title.menu')" padding="p-0" id="customer-resale">
         <div class="flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2">
             <span class="text-sm text-base-content/70">
@@ -48,10 +49,12 @@
                     <td><a href="{{ route('finance.resale.show', $subscription->sqid) }}" class="link link-hover">{{ $subscription->label }}</a></td>
                     <td class="text-sm">{{ $subscription->foreignCustomer?->name ?? __('resale.holder.customer') }}</td>
                     <td class="text-right tabular-nums">{{ $subscription->quantity }}</td>
-                    <td class="tabular-nums text-sm">{{ $subscription->starts_on->format('d.m.Y') }}</td>
+                    <td class="tabular-nums text-sm">{{ $subscription->starts_on->fdate() }}</td>
                     <td><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></td>
                     <td class="text-right tabular-nums">
-                        @if ($subscription->open_periods_count > 0)
+                        @if ($subscription->is_own_holding)
+                            <span class="text-muted" title="{{ __('resale.holder.own') }}">—</span>
+                        @elseif ($subscription->open_periods_count > 0)
                             <span class="badge badge-error badge-sm">{{ $subscription->open_periods_count }}</span>
                         @else
                             <span class="text-muted">0</span>
@@ -68,4 +71,4 @@
             </div>
         @endif
     </x-card>
-@endcan
+@endif

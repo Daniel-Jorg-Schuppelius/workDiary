@@ -56,11 +56,7 @@ final class ProductNameMatcher {
     ];
 
     public static function normalize(string $text): string {
-        $text = mb_strtolower($text);
-        $text = str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $text);
-        $text = preg_replace('/[^a-z0-9]+/u', ' ', $text) ?? '';
-
-        return trim(preg_replace('/\s+/', ' ', $text) ?? '');
+        return MarketplaceCompany::matchKey($text);
     }
 
     /**

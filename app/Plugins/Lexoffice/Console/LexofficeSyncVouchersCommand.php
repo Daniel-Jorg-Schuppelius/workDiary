@@ -60,13 +60,23 @@ class LexofficeSyncVouchersCommand extends Command {
             }
             $this->info("Sync Lexoffice-Belege für Organisation #{$org->id} ({$org->name})...");
             try {
-                $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url']))->sync($org);
-                $this->line("  Kontakte: {$result['contacts']}, created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}");
+                // Anfrageabstand der Organisation explizit — die Konsole bindet keinen Org-Kontext.
+                $result = (new LexofficeVoucherSync($config['api_key'], $config['base_url'], LexofficeConfig::requestInterval($org->id)))->sync($org);
+                $this->line("  Kontakte: {$result['contacts']}, created: {$result['created']}, updated: {$result['updated']}, archived: {$result['archived']}, Positionen: {$result['lines']}");
+                if (isset($result['lines_error'])) {
+                    // Positions-Sync (Feature 152) ist nur gemeldet — der Belegsync steht.
+                    $this->warn("  Positionen: {$result['lines_error']}");
+                }
+            } catch (\Throwable $e) {
+                $this->error("  Fehler: {$e->getMessage()}");
+            }
 
-                // Feature 098: Retainer-Zahlstatus in den Leistungssaldo spiegeln.
-                // Org-Kontext binden und das Service-Singleton verwerfen — der
-                // Netto-Nachschlag am Beleg löst seinen API-Key sonst über die
-                // zuletzt gebundene Organisation auf.
+            // Feature 098: Retainer-Zahlstatus in den Leistungssaldo spiegeln —
+            // unabhängig vom Belegsync (Review 2026-09-10, C8: ein Fehler dort
+            // ließ den Abgleich entfallen). Org-Kontext binden und das Service-
+            // Singleton verwerfen — der Netto-Nachschlag am Beleg löst seinen
+            // API-Key sonst über die zuletzt gebundene Organisation auf.
+            try {
                 $retainer = $this->withOrganizationContext($org, function () use ($org): array {
                     app()->forgetInstance(LexofficeInvoiceService::class);
 
@@ -74,7 +84,7 @@ class LexofficeSyncVouchersCommand extends Command {
                 });
                 $this->line("  Retainer: gebucht {$retainer['booked']}, storniert {$retainer['revoked']}, neu verknüpft {$retainer['linked']}");
             } catch (\Throwable $e) {
-                $this->error("  Fehler: {$e->getMessage()}");
+                $this->error("  Retainer-Abgleich: {$e->getMessage()}");
             } finally {
                 $lock->release();
             }

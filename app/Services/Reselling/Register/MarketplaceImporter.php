@@ -14,13 +14,13 @@ namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{BillingFrequency, ImportStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Models\{LexofficeArticle, Organization, User};
-use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePriceEntry, ResaleSubscription};
+use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{GenericSubscriptionReader, MarketplaceEntitlement, MarketplacePurchasesReader, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Log};
 use Throwable;
 
 /**
@@ -28,7 +28,9 @@ use Throwable;
  * Position ein Abo, Upsert über Anbieter und Kennung, Ablösung Telekom →
  * Quality Hosting als Nachfolger, Halter nur aus dem Datenbestand (sonst
  * Inbox), Verkaufspreis aus dem passenden Lexoffice-Artikel — nie über eine
- * manuelle Pflege hinweg. Die Preisliste füllt den Einkaufskatalog.
+ * manuelle Pflege hinweg (auch Einkaufspreis und Artikel). Domains kommen
+ * nur über den Domain-Sync, nie aus einer Datei. Die Preisliste füllt den
+ * Einkaufskatalog; Gültigkeiten schließen sich je Produkt lückenlos an.
  */
 final class MarketplaceImporter {
     public function __construct(
@@ -48,7 +50,8 @@ final class MarketplaceImporter {
      * @return list<ResaleImport>
      */
     public function import(Organization $organization, ?User $user, array $files, ?CarbonImmutable $reference = null, SubscriptionProvider $genericProvider = SubscriptionProvider::Other): array {
-        $reference ??= CarbonImmutable::today();
+        $reference ??= ResalePeriod::today();
+        $this->holders->reset();
         $records = [];
         $imports = [];
 
@@ -103,7 +106,7 @@ final class MarketplaceImporter {
             'created_by_user_id' => $user?->id,
             'provider' => $provider,
             'kind' => $kind,
-            'file_name' => $file['name'],
+            'file_name' => mb_substr((string) $file['name'], 0, 190),
             'file_path' => $file['stored'] ?? null,
             'status' => ImportStatus::Done,
         ]);
@@ -134,12 +137,20 @@ final class MarketplaceImporter {
             };
             $counters[$kind] ??= ['rows_created' => 0, 'rows_updated' => 0, 'rows_unchanged' => 0, 'rows_unassigned' => 0];
             $provider = $this->provider($entitlement);
+            if ($provider === SubscriptionProvider::DomainReselling) {
+                // Domains spiegelt nur der Domain-Sync — ein Datei-Abo würde er nachts beenden.
+                $this->addIssue($records[$kind] ?? null, (string) __('resale.import_issues.domain_provider', ['line' => $entitlement->sourceLine, 'company' => $entitlement->company->name, 'product' => $entitlement->edition]));
+
+                continue;
+            }
             $externalId = $entitlement->entitlementId;
             $quantity = $entitlement->quantity ?? $catalog->quantityOf($entitlement);
             $unitFee = $entitlement->unitFee ?? $catalog->unitPriceOf($entitlement);
             $hasSuccessor = isset($successorOf[$this->externalKey($entitlement)]);
             $status = $this->status($entitlement, $hasSuccessor, $reference);
 
+            // Einkaufspreis und Status stehen nicht im Hash: der Preis wird nur
+            // gesetzt, solange keiner gepflegt ist; der Status hängt am Stichtag.
             $attributes = [
                 'kind' => SubscriptionKind::License,
                 'label' => $entitlement->edition,
@@ -151,9 +162,7 @@ final class MarketplaceImporter {
                 'term_months' => $entitlement->termMonths(),
                 'interval' => $entitlement->frequency,
                 'renewal' => $entitlement->endsOn === null ? RenewalMode::Auto : RenewalMode::Cancel,
-                'purchase_unit_price' => $unitFee->withScale(4)->getAmount(),
                 'currency' => $unitFee->getCurrency()->value,
-                'status' => $status,
             ];
             $hash = (string) CryptoHelper::hash(json_encode($attributes, JSON_THROW_ON_ERROR));
 
@@ -163,13 +172,17 @@ final class MarketplaceImporter {
                 ->where('external_id', $externalId)
                 ->first();
 
-            DB::transaction(function () use (&$subscription, &$counters, $kind, $organization, $provider, $externalId, $attributes, $hash, $entitlement, $stored, $articles, $records, $reference): void {
+            DB::transaction(function () use (&$subscription, &$counters, $kind, $organization, $provider, $externalId, $attributes, $hash, $status, $unitFee, $entitlement, $stored, $articles, $records, $reference): void {
                 $isNew = $subscription === null;
                 $subscription ??= new ResaleSubscription(['organization_id' => $organization->id, 'provider' => $provider, 'external_id' => $externalId]);
-                $unchanged = ! $isNew && $subscription->raw_hash === $hash;
+                $unchanged = ! $isNew && $subscription->raw_hash === $hash && $subscription->status === $status;
                 if (! $unchanged) {
                     $subscription->fill($attributes);
                     $subscription->raw_hash = $hash;
+                    $subscription->status = $status;
+                }
+                if ($subscription->purchase_unit_price === null) {
+                    $subscription->purchase_unit_price = $unitFee->withScale(4);
                 }
                 $subscription->import_id = $records[$kind]->id ?? $subscription->import_id;
                 $subscription->last_seen_at = CarbonImmutable::now();
@@ -180,6 +193,7 @@ final class MarketplaceImporter {
                     if ($holder !== null) {
                         $subscription->customer_id = $holder['customer_id'];
                         $subscription->foreign_customer_id = $holder['foreign_customer_id'];
+                        $subscription->is_own_holding = $holder['is_own_holding'];
                     }
                 }
                 // Verkaufspreis aus der Liste, solange keiner gepflegt ist (generischer Import).
@@ -215,14 +229,16 @@ final class MarketplaceImporter {
             if ($predecessor === null || $successor === null || $predecessor->successor_id === $successor->id) {
                 continue;
             }
-            $predecessor->forceFill(['successor_id' => $successor->id, 'status' => SubscriptionStatus::Superseded])->save();
-            // Nachfolger erbt den Halter, wenn er selbst noch keinen hat (und umgekehrt).
-            if (! $successor->hasHolder() && $predecessor->hasHolder()) {
-                $successor->forceFill(['customer_id' => $predecessor->customer_id, 'foreign_customer_id' => $predecessor->foreign_customer_id, 'is_own_holding' => $predecessor->is_own_holding])->save();
-            } elseif ($successor->hasHolder() && ! $predecessor->hasHolder()) {
-                $predecessor->forceFill(['customer_id' => $successor->customer_id, 'foreign_customer_id' => $successor->foreign_customer_id, 'is_own_holding' => $successor->is_own_holding])->save();
-            }
-            $this->carryAssignments($predecessor, $successor, $reference);
+            DB::transaction(function () use ($predecessor, $successor, $reference): void {
+                $predecessor->forceFill(['successor_id' => $successor->id, 'status' => SubscriptionStatus::Superseded])->save();
+                // Nachfolger erbt den Halter, wenn er selbst noch keinen hat (und umgekehrt).
+                if (! $successor->hasHolder() && $predecessor->hasHolder()) {
+                    $successor->forceFill(['customer_id' => $predecessor->customer_id, 'foreign_customer_id' => $predecessor->foreign_customer_id, 'is_own_holding' => $predecessor->is_own_holding])->save();
+                } elseif ($successor->hasHolder() && ! $predecessor->hasHolder()) {
+                    $predecessor->forceFill(['customer_id' => $successor->customer_id, 'foreign_customer_id' => $successor->foreign_customer_id, 'is_own_holding' => $successor->is_own_holding])->save();
+                }
+                $this->carryAssignments($predecessor, $successor, $reference);
+            });
         }
 
         $result = [];
@@ -242,65 +258,100 @@ final class MarketplaceImporter {
      * Lizenzabtretungen laufen beim Nachfolger weiter: jede offene Abtretung
      * des Vorgängers bekommt ein Gegenstück am Nachfolger (gleicher Halter,
      * gleiche Menge, ab dessen Beginn) und endet selbst mit dem Vorgänger.
+     * Hat der Nachfolger schon eine Abtretung an diesen Halter, wächst sie um
+     * die Menge — nichts geht still verloren.
      */
     private function carryAssignments(ResaleSubscription $predecessor, ResaleSubscription $successor, CarbonImmutable $reference): void {
         $predecessor->load('assignments');
         if ($predecessor->assignments->isEmpty()) {
             return;
         }
-        $successor->load('assignments');
-        $sequence = $successor->assignments->count();
-        $handover = $successor->starts_on;
-        foreach ($predecessor->assignments as $assignment) {
-            if ($assignment->ends_on !== null && $assignment->ends_on->lessThan($handover)) {
-                continue;
+        DB::transaction(function () use ($predecessor, $successor, $reference): void {
+            $successor->load('assignments');
+            // Nur die vorab vorhandenen Abtretungen zählen als „gibt es schon";
+            // was dieser Lauf anlegt, wird nicht wieder zusammengefasst.
+            $existing = $successor->assignments->all();
+            $handover = $successor->starts_on;
+            foreach ($predecessor->assignments as $assignment) {
+                if ($assignment->ends_on !== null && $assignment->ends_on->lessThan($handover)) {
+                    continue;
+                }
+                $match = null;
+                foreach ($existing as $candidate) {
+                    if ($candidate->customer_id === $assignment->customer_id && $candidate->foreign_customer_id === $assignment->foreign_customer_id) {
+                        $match = $candidate;
+                        break;
+                    }
+                }
+                if ($match !== null) {
+                    $match->forceFill(['quantity' => $match->quantity + $assignment->quantity])->save();
+                    Log::info('MarketplaceImporter: Abtretung am Nachfolger um die Menge des Vorgängers erhöht.', [
+                        'organization_id' => $successor->organization_id,
+                        'predecessor' => $predecessor->external_id,
+                        'successor' => $successor->external_id,
+                        'assignment' => $match->external_id,
+                        'added' => $assignment->quantity,
+                        'quantity' => $match->quantity,
+                    ]);
+                    $this->planner->sync($match, $reference);
+                } else {
+                    $suffix = $successor->nextAssignmentSuffix();
+                    $carried = ResaleSubscription::query()->create([
+                        'organization_id' => $successor->organization_id,
+                        'parent_id' => $successor->id,
+                        'kind' => $successor->kind,
+                        'provider' => $successor->provider,
+                        'external_id' => $successor->external_id !== null ? $successor->external_id . '#' . $suffix : null,
+                        'label' => $successor->label,
+                        'company_name' => $assignment->company_name,
+                        'customer_id' => $assignment->customer_id,
+                        'foreign_customer_id' => $assignment->foreign_customer_id,
+                        'is_own_holding' => false,
+                        'article_id' => $successor->article_id,
+                        'lexoffice_article_id' => $successor->lexoffice_article_id,
+                        'quantity' => $assignment->quantity,
+                        'starts_on' => $handover->toDateString(),
+                        'ends_on' => $successor->ends_on?->toDateString(),
+                        'term_months' => $successor->term_months,
+                        'interval' => $successor->interval,
+                        'renewal' => $successor->renewal,
+                        'purchase_unit_price' => $successor->purchase_unit_price?->getAmount(),
+                        'sale_unit_price' => $assignment->sale_unit_price?->getAmount() ?? $successor->sale_unit_price?->getAmount(),
+                        'currency' => $successor->currency,
+                        'status' => $successor->status,
+                        'notes' => $assignment->notes,
+                    ]);
+                    $successor->assignments->push($carried); // Suffix des nächsten Gegenstücks
+                    $this->planner->sync($carried, $reference);
+                }
+                if ($assignment->ends_on === null || $assignment->ends_on->greaterThan($handover->subDay())) {
+                    $assignment->forceFill(['ends_on' => $handover->subDay()->toDateString(), 'status' => SubscriptionStatus::Superseded])->save();
+                    $this->planner->sync($assignment, $reference);
+                }
             }
-            $exists = $successor->assignments->contains(static fn(ResaleSubscription $a): bool => $a->customer_id === $assignment->customer_id && $a->foreign_customer_id === $assignment->foreign_customer_id);
-            if (! $exists) {
-                $sequence++;
-                $carried = ResaleSubscription::query()->create([
-                    'organization_id' => $successor->organization_id,
-                    'parent_id' => $successor->id,
-                    'kind' => $successor->kind,
-                    'provider' => $successor->provider,
-                    'external_id' => $successor->external_id !== null ? $successor->external_id . '#' . $sequence : null,
-                    'label' => $successor->label,
-                    'company_name' => $assignment->company_name,
-                    'customer_id' => $assignment->customer_id,
-                    'foreign_customer_id' => $assignment->foreign_customer_id,
-                    'is_own_holding' => false,
-                    'article_id' => $successor->article_id,
-                    'lexoffice_article_id' => $successor->lexoffice_article_id,
-                    'quantity' => $assignment->quantity,
-                    'starts_on' => $handover->toDateString(),
-                    'ends_on' => $successor->ends_on?->toDateString(),
-                    'term_months' => $successor->term_months,
-                    'interval' => $successor->interval,
-                    'renewal' => $successor->renewal,
-                    'purchase_unit_price' => $successor->purchase_unit_price?->getAmount(),
-                    'sale_unit_price' => $assignment->sale_unit_price?->getAmount() ?? $successor->sale_unit_price?->getAmount(),
-                    'currency' => $successor->currency,
-                    'status' => $successor->status,
-                    'notes' => $assignment->notes,
-                ]);
-                $this->planner->sync($carried, $reference);
-            }
-            if ($assignment->ends_on === null || $assignment->ends_on->greaterThan($handover->subDay())) {
-                $assignment->forceFill(['ends_on' => $handover->subDay()->toDateString(), 'status' => SubscriptionStatus::Superseded])->save();
-                $this->planner->sync($assignment, $reference);
-            }
+            $successor->unsetRelation('assignments');
+            $this->planner->sync($successor, $reference);
+        });
+    }
+
+    private function addIssue(?ResaleImport $record, string $issue): void {
+        if ($record === null) {
+            return;
         }
-        $successor->unsetRelation('assignments');
-        $this->planner->sync($successor, $reference);
+        $issues = $record->issues ?? [];
+        $issues[] = $issue;
+        $record->issues = $issues;
     }
 
     /**
      * @param  list<\App\Services\Reselling\Marketplace\PriceListEntry>  $entries
+     * @param  CarbonImmutable  $listValidFrom  Gültigkeit der Liste — Zeilen mit eigenem „Gültig ab" gehen vor
      * @return array{rows_total: int, rows_created: int, rows_updated: int, rows_unchanged: int}
      */
-    private function upsertPriceList(Organization $organization, ResaleImport $record, array $entries, CarbonImmutable $validFrom): array {
+    private function upsertPriceList(Organization $organization, ResaleImport $record, array $entries, CarbonImmutable $listValidFrom): array {
         $counters = ['rows_total' => count($entries), 'rows_created' => 0, 'rows_updated' => 0, 'rows_unchanged' => 0];
         foreach ($entries as $entry) {
+            $validFrom = $entry->validFrom ?? $listValidFrom;
             $existing = ResalePriceEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('provider', SubscriptionProvider::QualityHosting->value)
@@ -337,13 +388,28 @@ final class MarketplaceImporter {
                 $counters['rows_unchanged']++;
             }
         }
-        // Ältere Gültigkeiten dieses Anbieters enden am Vortag der neuen Liste.
-        ResalePriceEntry::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('provider', SubscriptionProvider::QualityHosting->value)
-            ->where('valid_from', '<', $validFrom->toDateString())
-            ->whereNull('valid_to')
-            ->update(['valid_to' => $validFrom->subDay()->toDateString()]);
+        // Gültigkeiten je (Produkt, Laufzeit, Intervall) lückenlos aneinanderreihen:
+        // die ältere Zeile endet am Vortag der neuen, die neue am Vortag einer
+        // jüngeren (nachgereichte Liste). Produkte, die die Liste nicht nennt,
+        // bleiben unberührt.
+        foreach ($entries as $entry) {
+            $validFrom = $entry->validFrom ?? $listValidFrom;
+            $siblings = ResalePriceEntry::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('provider', SubscriptionProvider::QualityHosting->value)
+                ->where('product', $entry->product)
+                ->where('term_months', $entry->termMonths)
+                ->where('interval', $entry->interval->value);
+            (clone $siblings)
+                ->where('valid_from', '<', DateRange::day($validFrom))
+                ->where(static fn($q) => $q->whereNull('valid_to')->orWhere('valid_to', '>=', DateRange::day($validFrom)))
+                ->update(['valid_to' => $validFrom->subDay()->toDateString()]);
+            $younger = (clone $siblings)->where('valid_from', '>=', DateRange::dayAfter($validFrom))->orderBy('valid_from')->first();
+            (clone $siblings)
+                ->where('valid_from', '>=', DateRange::day($validFrom))
+                ->where('valid_from', '<', DateRange::dayAfter($validFrom))
+                ->update(['valid_to' => $younger?->valid_from->subDay()->toDateString()]);
+        }
 
         return $counters;
     }
@@ -380,7 +446,6 @@ final class MarketplaceImporter {
     private function matchArticle(string $edition, $articles): ?LexofficeArticle {
         $wanted = ProductNameMatcher::normalize($edition);
         $hits = [];
-        $classifier = new LicenseArticleClassifier($this->matcher);
         foreach ($articles as $article) {
             if ($article->resale_role === \App\Enums\Reselling\ResaleArticleRole::Excluded) {
                 continue; // Betreiber: nie Abo-Position
@@ -402,8 +467,7 @@ final class MarketplaceImporter {
         if ($price === null) {
             return null;
         }
-        $monthly = mb_strtolower(trim((string) $article->unit_name)) === 'monat';
-        if ($monthly && $interval === BillingFrequency::Yearly) {
+        if (LicenseMonths::isMonthUnit($article->unit_name) && $interval === BillingFrequency::Yearly) {
             return $price->times(12);
         }
 

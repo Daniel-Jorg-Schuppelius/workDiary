@@ -243,5 +243,13 @@ class ResaleSubscriptionTest extends TestCase {
     public function test_permission_labels_exist(): void {
         $this->assertNotSame('reselling.view', __('access.permission.' . Permission::ResellingView->value));
         $this->assertNotSame('reselling.manage', __('access.permission.' . Permission::ResellingManage->value));
+        $this->assertNotSame('reselling.invoice', __('access.permission.' . Permission::ResellingInvoice->value));
+    }
+
+    public function test_sales_role_sees_the_register_and_accounting_may_draft_invoices(): void {
+        // Review 2026-09-10 (A9): „Sehen für Vertrieb" (Außendienst) und reselling.invoice bei der Buchhaltung.
+        $this->actingAs($this->userWithRole('aussendienst'))->get(route('finance.resale.index'))->assertOk();
+        $this->actingAs($this->userWithRole('aussendienst'))->get(route('finance.resale.periods.draft.create'))->assertForbidden();
+        $this->actingAs($this->userWithRole('buchhaltung'))->get(route('finance.resale.periods.draft.create'))->assertOk();
     }
 }

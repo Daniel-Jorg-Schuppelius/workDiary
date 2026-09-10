@@ -98,7 +98,7 @@
                                         @csrf @method('DELETE')
                                         <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
                                                     :title="__('Löschen')"
-                                                    data-confirm="{{ __('Klassifikation wirklich löschen?') }}" />
+                                                    data-confirm-dialog data-confirm-message="{{ __('Klassifikation wirklich löschen?') }}" data-confirm-tone="error" />
                                     </form>
                                 </td>
                             </tr>
@@ -153,7 +153,7 @@
                                         @csrf
                                         <x-icon-btn type="submit" icon="block" size="xs" tone="warning"
                                                     :title="__('Standard deaktivieren')"
-                                                    data-confirm="{{ __('Plattform-Default für diese Organisation deaktivieren?') }}" />
+                                                    data-confirm-dialog data-confirm-message="{{ __('Plattform-Default für diese Organisation deaktivieren?') }}" data-confirm-tone="error" />
                                     </form>
                                 </td>
                             </tr>

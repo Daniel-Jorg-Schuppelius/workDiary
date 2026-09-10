@@ -346,6 +346,7 @@ return [
         'commission.manage' => 'Gestionar comisiones (reglas, asignación, liquidación)',
         'reselling.view' => 'Ver el registro de reventa (suscripciones, titulares, periodos)',
         'reselling.manage' => 'Gestionar el registro de reventa (crear/editar suscripciones, decidir periodos)',
+        'reselling.invoice' => 'Registro de reventa: crear borradores de factura a partir de periodos (Lexoffice/local)',
 
         'finance.viewAny' => 'Consultar los justificantes de traspaso',
         'finance.config' => 'Gestionar la configuración financiera',

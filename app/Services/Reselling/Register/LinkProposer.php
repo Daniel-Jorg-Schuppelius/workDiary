@@ -13,14 +13,16 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\{Customer, ExternalReference, ForeignCustomer, LexofficeVoucherLine, Organization};
+use App\Models\{Customer, ForeignCustomer, LexofficeVoucherLine, Organization};
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
-use App\Plugins\Lexoffice\LexofficePlugin;
+use App\Plugins\Lexoffice\Services\{LexofficeContactMap, LexofficeRecipientInvoiceLines};
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProductNameMatcher};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{Cache, DB};
+use RuntimeException;
 
 /**
  * Vorschlagslauf (Feature 152, MVP-761): ordnet gespiegelte Rechnungs-
@@ -33,11 +35,16 @@ use Illuminate\Support\Facades\DB;
  * dann Reste im Fenster. Bei Partnerkontakten mit
  * mehreren Endkunden desselben Produkts zählt nur eine Position, die den
  * Endkunden nennt. Bestätigte und manuelle Bezüge werden nie angefasst;
- * alte Vorschläge werden ersetzt.
+ * alte Vorschläge werden ersetzt. Stornierte Rechnungen decken nichts mehr:
+ * ihre bestätigten Bezüge bleiben als Spur (0 Monate, Hinweis), die Periode
+ * wird aus der Restdeckung neu bewertet.
  */
 final class LinkProposer {
     public const WINDOW_BEFORE = 90;
     public const WINDOW_AFTER = 730;
+
+    /** Sperre je Organisation: Scheduler und Buttons aus vier Views dürfen nicht gleichzeitig laufen. */
+    private const LOCK_SECONDS = 300;
 
     /**
      * Partnerkontakt mit mehreren Endkunden desselben Produkts: ohne Nennung
@@ -59,13 +66,16 @@ final class LinkProposer {
     /** @var array<int, array<int, ResalePeriodLink>> Periode → Position → Vorschlag dieses Laufs (zweiter Pass erhöht statt zu doppeln). */
     private array $proposed = [];
 
+    /** @var array<int, string> Abo-ID → Produktschlüssel des laufenden Laufs */
+    private array $productKeys = [];
+
     /** @var array<int, list<int>> Position → Indizes der Perioden, deren Laufzeit das Bezugsdatum enthält. */
     private array $containing = [];
 
     /** @var array<int, float> Periodenindex → noch offene Lizenzmonate (für die Reservierung im Fenster-Pass). */
     private array $needed = [];
 
-    public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier()) {}
+    public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher(), private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier(), private readonly LexofficeRecipientInvoiceLines $lines = new LexofficeRecipientInvoiceLines()) {}
 
     /**
      * Fensterende für eine Position: 730 Tage nach Periodenbeginn — bei
@@ -80,136 +90,280 @@ final class LinkProposer {
     }
 
     /**
-     * @return array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}
+     * Liegt die Position im Fenster der Periode? Bezugsdatum (Leistungsbeginn,
+     * sonst Rechnungsdatum) zwischen −90 Tagen und dem Fensterende — oder der
+     * Leistungszeitraum deckt den Periodenbeginn (Mehrjahres-Position).
      */
-    public function propose(Organization $organization, ?CarbonImmutable $reference = null): array {
-        $reference ??= CarbonImmutable::today();
-        $result = ['periods' => 0, 'linked' => 0, 'partial' => 0, 'links' => 0, 'lines_without_subscription' => 0];
-
-        $subscriptions = ResaleSubscription::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('is_own_holding', false)
-            ->where(static fn($q) => $q->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
-            ->with(['customer', 'foreignCustomer.customer', 'lexofficeArticle'])
-            ->get();
-        if ($subscriptions->isEmpty()) {
-            return $result;
+    public static function inWindow(ResalePeriod $period, LexofficeVoucherLine $line): bool {
+        $date = LicenseMonths::referenceDate($line);
+        if ($date === null) {
+            return false;
+        }
+        $start = $period->starts_on;
+        if (! $date->lessThan($start->subDays(self::WINDOW_BEFORE)) && ! $date->greaterThan(self::windowEnd($start, $period->termMonths(), $line))) {
+            return true;
         }
 
-        DB::transaction(function () use ($organization, $subscriptions, $reference, &$result): void {
-            // Alte Vorschläge weg — bestätigte und manuelle Bezüge bleiben und zählen als Verbrauch.
-            ResalePeriodLink::query()->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->where('origin', LinkOrigin::Proposed->value)
-                ->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass()) // lokale Rechnungsentwürfe bleiben
-                ->delete();
+        return LicenseMonths::serviceCovers($line, $start);
+    }
 
-            $contactsByCustomer = $this->contactsByCustomer($organization, $subscriptions);
-            /** @var array<int, list<string>> $contactsBySubscription */
-            $contactsBySubscription = [];
-            /** @var array<string, array<string, array<string, true>>> $holdersByProduct Kontakt → Produktschlüssel → Halter */
-            $holdersByProduct = [];
-            foreach ($subscriptions as $subscription) {
-                $billedTo = $subscription->billedTo();
-                $contacts = $billedTo === null ? [] : ($contactsByCustomer[$billedTo->id] ?? []);
-                $contactsBySubscription[$subscription->id] = $contacts;
-                $product = $this->productKey($subscription);
-                $holder = $subscription->foreign_customer_id !== null ? 'f' . $subscription->foreign_customer_id : 'c' . $subscription->customer_id;
-                foreach ($contacts as $contact) {
-                    $holdersByProduct[$contact][$product][$holder] = true;
-                }
-            }
-            // Mehrere Abos desselben Halters teilen sich die Positionen; erst
-            // verschiedene Halter (Endkunden eines Partners) brauchen die Nennung.
-            /** @var array<string, array<string, int>> $productOwners */
-            $productOwners = [];
-            foreach ($holdersByProduct as $contact => $products) {
-                foreach ($products as $product => $holders) {
-                    $productOwners[$contact][$product] = count($holders);
-                }
-            }
+    /**
+     * @return array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}
+     *
+     * @throws RuntimeException wenn für die Organisation schon ein Lauf läuft
+     */
+    public function propose(Organization $organization, ?CarbonImmutable $reference = null): array {
+        $reference ??= ResalePeriod::today();
+        $result = ['periods' => 0, 'linked' => 0, 'partial' => 0, 'links' => 0, 'lines_without_subscription' => 0];
+        $lock = Cache::lock('resale:propose:' . $organization->id, self::LOCK_SECONDS);
+        if (! $lock->get()) {
+            throw new RuntimeException((string) __('resale.propose.locked'));
+        }
 
-            $periods = ResalePeriod::query()->withoutGlobalScopes()
-                ->where('organization_id', $organization->id)
-                ->whereIn('subscription_id', $subscriptions->pluck('id')->all())
-                ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Billed->value])
-                ->whereNull('decided_at')
-                ->where('starts_on', '<', DateRange::dayAfter($reference))
-                ->with('links')
-                ->orderBy('starts_on')
-                ->get();
-            if ($periods->isEmpty()) {
-                return;
-            }
-            $subscriptionsById = $subscriptions->keyBy('id');
+        try {
+            // Massenlauf ohne Modell-Events (gilt für alle Modelle im Lauf): Vorschläge
+            // sind keine Entscheidung und gehören nicht ins Audit-Protokoll (Review
+            // 2026-09-10, A2) — Bestätigen, Verzichten und manuelle Bezüge schreiben
+            // ihre Events selbst. organization_id wird hier immer explizit gesetzt.
+            Model::withoutEvents(function () use ($organization, $reference, &$result): void {
+                DB::transaction(function () use ($organization, $reference, &$result): void {
+                    $mirror = (new LexofficeVoucherLine)->getMorphClass();
+                    // Alte Vorschläge weg — bestätigte und manuelle Bezüge bleiben und zählen als
+                    // Verbrauch; lokale Rechnungsentwürfe (InvoiceItem) bleiben. Die betroffenen
+                    // Perioden merken: wer nicht mehr bewertet wird (Halter weg, eigener Bestand),
+                    // bekommt am Ende den Status aus der Restdeckung statt „berechnet" ohne Bezug.
+                    $proposals = ResalePeriodLink::query()->withoutGlobalScopes()
+                        ->where('organization_id', $organization->id)
+                        ->where('origin', LinkOrigin::Proposed->value)
+                        ->where('linkable_type', $mirror);
+                    $affected = array_map('intval', $proposals->clone()->distinct()->pluck('period_id')->all());
+                    $proposals->delete();
+                    $affected = array_values(array_unique(array_merge($affected, $this->neutralizeVoidedLinks($organization, $mirror))));
 
-            $from = $periods->min('starts_on')->subDays(self::WINDOW_BEFORE);
-            $to = $reference->addDay();
-            $contactIds = array_values(array_unique(array_merge(...array_values($contactsBySubscription) ?: [[]])));
-            $lines = $this->lines($organization, $contactIds, $from, $to);
-            /** @var array<int, float> $remaining Positions-ID → restliche Lizenzmonate */
-            $remaining = [];
-            foreach ($lines as $line) {
-                $remaining[$line->id] = LicenseMonths::ofLine($line);
-            }
-            $this->linkedSubscriptions = [];
-            $this->proposed = [];
-            foreach (ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())->get(['linkable_id', 'subscription_id', 'months']) as $existing) {
-                if (isset($remaining[(int) $existing->linkable_id])) {
-                    $remaining[(int) $existing->linkable_id] = max(0.0, $remaining[(int) $existing->linkable_id] - (float) $existing->months);
-                    $this->linkedSubscriptions[(int) $existing->linkable_id][(int) $existing->subscription_id] = true;
-                }
-            }
-
-            // Zustand je Periode: benötigte Monate abzüglich bestätigter/manueller Bezüge.
-            $states = [];
-            foreach ($periods as $period) {
-                $subscription = $subscriptionsById->get($period->subscription_id);
-                if ($subscription === null) {
-                    continue;
-                }
-                $confirmed = (float) $period->links->sum(static fn(ResalePeriodLink $l): float => $l->origin->isDecided() ? (float) $l->months : 0.0);
-                $states[] = ['period' => $period, 'subscription' => $subscription, 'needed' => max(0.0, $period->requiredMonths() - $confirmed), 'covered' => $confirmed];
-            }
-            $nearest = $this->nearestPeriods($states, $lines, $contactsBySubscription);
-            $this->needed = array_map(static fn(array $state): float => $state['needed'], $states);
-
-            // Drei Pässe: nächste Periode je Position; dann chronologisch, aber eine Position,
-            // deren Bezugsdatum in der Laufzeit einer anderen noch offenen Periode liegt, bleibt
-            // für diese reserviert (Rechnung vom Februar 2026 gehört dem Nachfolger, nicht
-            // dem alten Vertrag von 2024); zuletzt frei — Nachberechnungen über mehrere Jahre
-            // („48 Monat" im August 2025) füllen die ältesten offenen Perioden.
-            foreach ([self::PASS_NEAREST, self::PASS_RESERVED, self::PASS_FREE] as $pass) {
-                foreach ($states as $index => $state) {
-                    if ($state['needed'] <= 0.001) {
-                        continue;
-                    }
-                    $states[$index] = $this->allocate($index, $state, $lines, $remaining, $contactsBySubscription, $productOwners, $nearest, $pass, $result);
-                }
-            }
-
-            foreach ($states as $state) {
-                $result['periods']++;
-                $period = $state['period'];
-                $status = $state['needed'] <= 0.001 ? PeriodStatus::Billed : ($state['covered'] > 0.001 ? PeriodStatus::Partial : PeriodStatus::Open);
-                if ($status === PeriodStatus::Billed) {
-                    $result['linked']++;
-                } elseif ($status === PeriodStatus::Partial) {
-                    $result['partial']++;
-                }
-                if ($period->status !== $status) {
-                    $period->forceFill(['status' => $status])->save();
-                }
-            }
-
-            foreach ($lines as $line) {
-                if (($remaining[$line->id] ?? 0.0) >= LicenseMonths::ofLine($line) - 0.001 && $this->looksLikeLicense($line)) {
-                    $result['lines_without_subscription']++;
-                }
-            }
-        });
+                    $subscriptions = ResaleSubscription::query()->withoutGlobalScopes()
+                        ->where('organization_id', $organization->id)
+                        ->where('is_own_holding', false)
+                        ->where(static fn($q) => $q->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
+                        ->with(['customer', 'foreignCustomer.customer', 'lexofficeArticle'])
+                        ->get();
+                    $evaluated = $subscriptions->isEmpty() ? [] : $this->evaluate($organization, $subscriptions, $reference, $mirror, $result);
+                    $this->resettle($organization, array_values(array_diff($affected, $evaluated)));
+                });
+            });
+        } finally {
+            $lock->release();
+        }
 
         return $result;
+    }
+
+    /**
+     * Storno: Bezüge jeder Herkunft auf Positionen stornierter Rechnungen
+     * decken nichts mehr. Vorschläge sind schon weg; bestätigte/manuelle
+     * bleiben als Spur mit 0 Monaten, 0 Betrag und Hinweis (Original-Monate
+     * in der Bemerkung). Die Periode wird aus der Restdeckung neu bewertet;
+     * ist sie nicht mehr voll gedeckt, gilt die Entscheidung als aufgehoben
+     * (`decided_at` null) — der Lauf darf die Ersatzrechnung vorschlagen.
+     *
+     * @return list<int> IDs der betroffenen Perioden
+     */
+    private function neutralizeVoidedLinks(Organization $organization, string $mirror): array {
+        $links = ResalePeriodLink::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->where('linkable_type', $mirror)
+            ->where('months', '>', 0)
+            ->whereIn('linkable_id', LexofficeVoucherLine::query()->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereHas('voucher', static fn($q) => $q->where('voucher_status', 'voided'))
+                ->select('id'))
+            ->get();
+        if ($links->isEmpty()) {
+            return [];
+        }
+        $lines = LexofficeVoucherLine::query()->withoutGlobalScopes()
+            ->whereIn('id', $links->pluck('linkable_id')->all())
+            ->with('voucher')
+            ->get()
+            ->keyBy('id');
+        $periodIds = [];
+        foreach ($links as $link) {
+            $line = $lines->get((int) $link->linkable_id);
+            $months = (float) $link->months;
+            $label = $line !== null ? LicenseMonths::label($months, LicenseMonths::split($line)['months']) : LicenseMonths::label($months, 0.0);
+            $link->appendNote((string) __('resale.link.note_voided', ['months' => $label]));
+            $link->forceFill(['months' => 0, 'quantity' => 0, 'amount' => 0])->save();
+            $periodIds[(int) $link->period_id] = true;
+        }
+        $periods = ResalePeriod::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('id', array_keys($periodIds))
+            ->whereIn('status', [PeriodStatus::Billed->value, PeriodStatus::Partial->value])
+            ->with('links')
+            ->get();
+        foreach ($periods as $period) {
+            $status = $period->statusFromCoverage($period->coveredMonths());
+            $attributes = ['status' => $status];
+            if ($status !== PeriodStatus::Billed) {
+                $attributes += ['decided_at' => null, 'decided_by_user_id' => null];
+            }
+            $period->forceFill($attributes)->save();
+        }
+
+        return array_keys($periodIds);
+    }
+
+    /**
+     * Perioden, deren Vorschläge gelöscht wurden, die der Lauf aber nicht
+     * bewertet hat: Status aus der Restdeckung (bestätigte/manuelle Bezüge).
+     *
+     * @param  list<int>  $periodIds
+     */
+    private function resettle(Organization $organization, array $periodIds): void {
+        if ($periodIds === []) {
+            return;
+        }
+        $periods = ResalePeriod::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('id', $periodIds)
+            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Billed->value])
+            ->with('links')
+            ->get();
+        foreach ($periods as $period) {
+            $status = $period->statusFromCoverage($period->coveredMonths());
+            if ($period->status !== $status) {
+                $period->forceFill(['status' => $status])->save();
+            }
+        }
+    }
+
+    /**
+     * Der eigentliche Lauf über die Perioden der Abos mit Halter.
+     *
+     * @param  Collection<int, ResaleSubscription>  $subscriptions
+     * @param  array{periods: int, linked: int, partial: int, links: int, lines_without_subscription: int}  $result
+     * @return list<int> IDs der bewerteten Perioden
+     */
+    private function evaluate(Organization $organization, Collection $subscriptions, CarbonImmutable $reference, string $mirror, array &$result): array {
+        $contactMap = LexofficeContactMap::forOrganization($organization, $subscriptions);
+        /** @var array<int, list<string>> $contactsBySubscription */
+        $contactsBySubscription = [];
+        /** @var array<string, array<string, array<string, true>>> $holdersByProduct Kontakt → Produktschlüssel → Halter */
+        $holdersByProduct = [];
+        foreach ($subscriptions as $subscription) {
+            $billedTo = $subscription->billedTo();
+            $contactsBySubscription[$subscription->id] = $billedTo === null ? [] : $contactMap->byCustomer($billedTo->id);
+        }
+
+        $periods = ResalePeriod::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('subscription_id', $subscriptions->pluck('id')->all())
+            ->whereIn('status', [PeriodStatus::Open->value, PeriodStatus::Partial->value, PeriodStatus::Billed->value])
+            ->whereNull('decided_at')
+            ->where('starts_on', '<', DateRange::dayAfter($reference))
+            ->with('links')
+            ->orderBy('starts_on')
+            ->get();
+        if ($periods->isEmpty()) {
+            return [];
+        }
+        $subscriptionsById = $subscriptions->keyBy('id');
+
+        // Fenster: Belegdatum ODER Leistungsende ab 90 Tage vor der ältesten Periode
+        // (36-Monats-Rechnung von 2024 deckt die 2026er-Periode), bis morgen.
+        $from = $periods->min('starts_on')->subDays(self::WINDOW_BEFORE);
+        $to = $reference->addDay();
+        $contactIds = array_values(array_unique(array_merge(...array_values($contactsBySubscription) ?: [[]])));
+        $lines = $this->lines->for($organization, $contactIds, $from, $to);
+        /** @var array<int, float> $remaining Positions-ID → restliche Lizenzmonate */
+        $remaining = [];
+        /** @var array<int, string> $articleNames Artikel-ID → Name: Abos ohne Artikel bekommen denselben Produktschlüssel wie die Positionen */
+        $articleNames = [];
+        foreach ($lines as $line) {
+            $remaining[$line->id] = LicenseMonths::ofLine($line);
+            if ($line->article !== null) {
+                $articleNames[$line->article->id] = $line->article->name;
+            }
+        }
+        // Produktschlüssel einmal je Abo — sonst zählt die Sharing-Regel „art:…" und
+        // „name:…" desselben Produkts als zwei Produkte und die Nennungspflicht entfällt.
+        $this->productKeys = [];
+        foreach ($subscriptions as $subscription) {
+            $this->productKeys[$subscription->id] = $subscription->productKey($articleNames);
+            $holder = $subscription->foreign_customer_id !== null ? 'f' . $subscription->foreign_customer_id : 'c' . $subscription->customer_id;
+            foreach ($contactsBySubscription[$subscription->id] as $contact) {
+                $holdersByProduct[$contact][$this->productKeys[$subscription->id]][$holder] = true;
+            }
+        }
+        // Mehrere Abos desselben Halters teilen sich die Positionen; erst
+        // verschiedene Halter (Endkunden eines Partners) brauchen die Nennung.
+        /** @var array<string, array<string, int>> $productOwners */
+        $productOwners = [];
+        foreach ($holdersByProduct as $contact => $products) {
+            foreach ($products as $product => $holders) {
+                $productOwners[$contact][$product] = count($holders);
+            }
+        }
+        $this->linkedSubscriptions = [];
+        $this->proposed = [];
+        foreach (ResalePeriodLink::query()->withoutGlobalScopes()->where('organization_id', $organization->id)->where('linkable_type', $mirror)->get(['linkable_id', 'subscription_id', 'months']) as $existing) {
+            if (isset($remaining[(int) $existing->linkable_id])) {
+                $remaining[(int) $existing->linkable_id] = max(0.0, $remaining[(int) $existing->linkable_id] - (float) $existing->months);
+                $this->linkedSubscriptions[(int) $existing->linkable_id][(int) $existing->subscription_id] = true;
+            }
+        }
+
+        // Zustand je Periode: benötigte Monate abzüglich des Verbrauchs, der bleibt —
+        // entschiedene Spiegel-Bezüge und alle Nicht-Spiegel-Bezüge (lokaler
+        // Rechnungsentwurf), sonst kippt eine lokal entworfene Periode auf „offen".
+        $states = [];
+        $evaluated = [];
+        foreach ($periods as $period) {
+            $subscription = $subscriptionsById->get($period->subscription_id);
+            if ($subscription === null) {
+                continue;
+            }
+            $evaluated[] = $period->id;
+            $confirmed = (float) $period->links->sum(static fn(ResalePeriodLink $l): float => $l->linkable_type !== $mirror || $l->origin->isDecided() ? (float) $l->months : 0.0);
+            $states[] = ['period' => $period, 'subscription' => $subscription, 'needed' => max(0.0, $period->requiredMonths() - $confirmed), 'covered' => $confirmed];
+        }
+        $nearest = $this->nearestPeriods($states, $lines, $contactsBySubscription);
+        $this->needed = array_map(static fn(array $state): float => $state['needed'], $states);
+
+        // Drei Pässe: nächste Periode je Position; dann chronologisch, aber eine Position,
+        // deren Bezugsdatum in der Laufzeit einer anderen noch offenen Periode liegt, bleibt
+        // für diese reserviert (Rechnung vom Februar 2026 gehört dem Nachfolger, nicht
+        // dem alten Vertrag von 2024); zuletzt frei — Nachberechnungen über mehrere Jahre
+        // („48 Monat" im August 2025) füllen die ältesten offenen Perioden.
+        foreach ([self::PASS_NEAREST, self::PASS_RESERVED, self::PASS_FREE] as $pass) {
+            foreach ($states as $index => $state) {
+                if ($state['needed'] <= 0.001) {
+                    continue;
+                }
+                $states[$index] = $this->allocate($index, $state, $lines, $remaining, $contactsBySubscription, $productOwners, $nearest, $pass, $result);
+            }
+        }
+
+        foreach ($states as $state) {
+            $result['periods']++;
+            $period = $state['period'];
+            $status = $period->statusFromCoverage($state['covered']);
+            if ($status === PeriodStatus::Billed) {
+                $result['linked']++;
+            } elseif ($status === PeriodStatus::Partial) {
+                $result['partial']++;
+            }
+            if ($period->status !== $status) {
+                $period->forceFill(['status' => $status])->save();
+            }
+        }
+
+        foreach ($lines as $line) {
+            if (($remaining[$line->id] ?? 0.0) >= LicenseMonths::ofLine($line) - 0.001 && $this->looksLikeLicense($line)) {
+                $result['lines_without_subscription']++;
+            }
+        }
+
+        return $evaluated;
     }
 
     /**
@@ -230,9 +384,8 @@ final class LinkProposer {
         if ($contacts === []) {
             return $state;
         }
-        $windowStart = $period->starts_on->subDays(self::WINDOW_BEFORE);
         $termMonths = $period->termMonths();
-        $product = $this->productKey($subscription);
+        $product = $this->productKeys[$subscription->id] ?? $subscription->productKey();
         $mentionKeys = $subscription->foreignCustomer !== null ? $this->mentionKeys($subscription->foreignCustomer) : null;
 
         $candidates = [];
@@ -242,10 +395,7 @@ final class LinkProposer {
                 continue;
             }
             $date = LicenseMonths::referenceDate($line);
-            if ($date === null) {
-                continue;
-            }
-            if (($date->lessThan($windowStart) || $date->greaterThan(self::windowEnd($period->starts_on, $termMonths, $line))) && ! LicenseMonths::serviceCovers($line, $period->starts_on)) {
+            if ($date === null || ! self::inWindow($period, $line)) {
                 continue;
             }
             if (! $this->matchesProduct($subscription, $line)) {
@@ -473,29 +623,6 @@ final class LinkProposer {
         return $this->classifier->isLicense($line->article);
     }
 
-    private function productKey(ResaleSubscription $subscription): string {
-        return $subscription->lexoffice_article_id !== null ? 'art:' . $subscription->lexoffice_article_id : 'name:' . ProductNameMatcher::normalize($subscription->label);
-    }
-
-    /**
-     * @param  list<string>  $contactIds
-     * @return Collection<int, LexofficeVoucherLine>
-     */
-    private function lines(Organization $organization, array $contactIds, CarbonImmutable $from, CarbonImmutable $to): Collection {
-        if ($contactIds === []) {
-            return collect();
-        }
-
-        return LexofficeVoucherLine::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereHas('voucher', static fn($q) => $q->whereIn('contact_external_id', $contactIds)
-                ->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided'])
-                ->where('voucher_date', '>=', DateRange::day($from))->where('voucher_date', '<', DateRange::dayAfter($to)))
-            ->with(['voucher:id,external_id,contact_external_id,voucher_number,voucher_date,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
-            ->orderBy('id')
-            ->get();
-    }
-
     /**
      * Lexoffice-Kontakte des Rechnungsempfängers EINES Abos (Dialog).
      *
@@ -508,46 +635,11 @@ final class LinkProposer {
     }
 
     /**
+     * Lexoffice-Kontakte eines Rechnungsempfängers (Delegation an `LexofficeContactMap`).
+     *
      * @return list<string>
      */
     public function contactsForCustomer(Customer $billedTo): array {
-        $ids = [];
-        foreach (ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $billedTo->organization_id)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', (new Customer)->getMorphClass())
-            ->where('referenceable_id', $billedTo->id)
-            ->pluck('external_id') as $id) {
-            $ids[] = (string) $id;
-        }
-
-        return $ids;
-    }
-
-    /**
-     * Lexoffice-Kontakte je Rechnungsempfänger.
-     *
-     * @param  Collection<int, ResaleSubscription>  $subscriptions
-     * @return array<int, list<string>>
-     */
-    private function contactsByCustomer(Organization $organization, Collection $subscriptions): array {
-        $customerIds = $subscriptions->map(static fn(ResaleSubscription $s): ?int => $s->billedTo()?->id)->filter()->unique()->values()->all();
-        if ($customerIds === []) {
-            return [];
-        }
-        $map = [];
-        $references = ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', (new Customer)->getMorphClass())
-            ->whereIn('referenceable_id', $customerIds)
-            ->get(['referenceable_id', 'external_id']);
-        foreach ($references as $reference) {
-            $map[(int) $reference->referenceable_id][] = (string) $reference->external_id;
-        }
-
-        return $map;
+        return LexofficeContactMap::forCustomer($billedTo)->byCustomer($billedTo->id);
     }
 }

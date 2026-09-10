@@ -36,6 +36,8 @@ use Illuminate\Support\Carbon;
  * @property ?Carbon $service_starts_on
  * @property ?Carbon $service_ends_on
  * @property ?Carbon $lines_synced_at
+ * @property ?Carbon $lines_sync_failed_at
+ * @property int $lines_sync_attempts
  * @property-read \Illuminate\Database\Eloquent\Collection<int, LexofficeVoucherLine> $lines
  * @property \CommonToolkit\ValueObjects\Money|null $total_amount
  * @property \CommonToolkit\ValueObjects\Money|null $open_amount
@@ -68,6 +70,8 @@ class LexofficeVoucher extends Model {
         'service_starts_on',
         'service_ends_on',
         'lines_synced_at',
+        'lines_sync_failed_at',
+        'lines_sync_attempts',
         'total_amount',
         'open_amount',
         'net_amount',
@@ -88,6 +92,8 @@ class LexofficeVoucher extends Model {
         'service_starts_on' => 'date',
         'service_ends_on' => 'date',
         'lines_synced_at' => 'datetime',
+        'lines_sync_failed_at' => 'datetime',
+        'lines_sync_attempts' => 'integer',
         'total_amount' => MoneyCast::class . ':currency,2',
         'open_amount' => MoneyCast::class . ':currency,2',
         // Nur der Nettobetrag der voucherlist-Belege ist NICHT enthalten — er
@@ -127,7 +133,7 @@ class LexofficeVoucher extends Model {
         if ($this->service_starts_on === null || $this->service_ends_on === null) {
             return null;
         }
-        $months = (int) round($this->service_starts_on->diffInMonths($this->service_ends_on->copy()->addDay()));
+        $months = \App\Services\Reselling\Register\LicenseMonths::monthsBetween($this->service_starts_on, $this->service_ends_on);
 
         return $months > 0 ? $months : null;
     }
@@ -201,5 +207,42 @@ class LexofficeVoucher extends Model {
      */
     public function scopeActive(Builder $query): Builder {
         return $query->where('archived', false);
+    }
+
+    /**
+     * Gültige Ausgangsrechnungen (Feature 152): Typ Rechnung, nicht
+     * archiviert, weder Entwurf noch storniert — optional nur die der
+     * angegebenen Lexoffice-Kontakte. Eine Stelle für Vorschlagslauf,
+     * Abgleich, Rechnungslisten und Dialoge.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $contactExternalIds
+     * @return Builder<self>
+     */
+    public function scopeIssuedInvoices(Builder $query, array $contactExternalIds = []): Builder {
+        $query->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided']);
+        if ($contactExternalIds !== []) {
+            $query->whereIn('contact_external_id', $contactExternalIds);
+        }
+
+        return $query;
+    }
+
+    /**
+     * Gültige Gutschriften (Review 2026-09-10, A3): Typ Gutschrift, nicht
+     * archiviert, weder Entwurf noch storniert — optional nur die der
+     * angegebenen Lexoffice-Kontakte. Gegenstück zu {@see scopeIssuedInvoices()}.
+     *
+     * @param  Builder<self>  $query
+     * @param  list<string>  $contactExternalIds
+     * @return Builder<self>
+     */
+    public function scopeIssuedCreditNotes(Builder $query, array $contactExternalIds = []): Builder {
+        $query->where('voucher_type', 'creditnote')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided']);
+        if ($contactExternalIds !== []) {
+            $query->whereIn('contact_external_id', $contactExternalIds);
+        }
+
+        return $query;
     }
 }

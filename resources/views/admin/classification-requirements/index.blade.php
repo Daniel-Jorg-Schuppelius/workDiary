@@ -164,7 +164,7 @@
                             @csrf @method('DELETE')
                             <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
                                         :title="__('Löschen')"
-                                        data-confirm="{{ __('Pflichtregel wirklich löschen?') }}" />
+                                        data-confirm-dialog data-confirm-message="{{ __('Pflichtregel wirklich löschen?') }}" data-confirm-tone="error" />
                         </form>
                     </td>
                 </tr>

@@ -54,7 +54,8 @@ class LexofficeSyncVoucherLinesCommand extends Command {
                 continue;
             }
             try {
-                $sync = new LexofficeVoucherLineSync($config['api_key'], $config['base_url']);
+                // Anfrageabstand der Organisation explizit — die Konsole bindet keinen Org-Kontext.
+                $sync = new LexofficeVoucherLineSync($config['api_key'], $config['base_url'], LexofficeConfig::requestInterval($org->id));
                 if ($this->option('refresh')) {
                     $reset = $sync->resetSynced($org);
                     $this->line("Organisation #{$org->id} ({$org->name}): {$reset} Rechnungen zum Neuladen markiert");

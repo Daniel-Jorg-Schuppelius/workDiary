@@ -23,11 +23,18 @@ use CommonToolkit\ValueObjects\Money;
  * Cent je Stück, weil der Marketplace je Stück rundet), ist sie „n × Stück";
  * sonst ist sie selbst ein Stückpreis. Preisänderungen über die Jahre ergeben
  * so mehrere Stückpreise je Edition, was gewollt ist.
+ *
+ * Grenze des Verfahrens: Die kleinste Gebühr einer Edition gilt immer als
+ * Stückpreis. Bestellt niemand genau ein Stück (nur 2er- und 4er-Pakete),
+ * wird das 2er-Paket zum „Stückpreis" und die Menge halbiert sich; ebenso
+ * kippt ein einzelner Rabatt- oder Teilperiodenbetrag die Ableitung. Der
+ * Katalog gruppiert je Edition **und Währung** — Gebühren verschiedener
+ * Währungen werden nie miteinander verglichen (Review 2026-09-10, E).
  */
 final class UnitPriceCatalog {
     private const TOLERANCE_MINOR_PER_UNIT = 2;
 
-    /** @var array<string, array<int, array{quantity: int, unit: Money}>> */
+    /** @var array<string, array<int, array{quantity: int, unit: Money}>> Edition|Währung → Gebühr (Minor) → Ableitung */
     private array $resolved = [];
 
     /**
@@ -39,7 +46,7 @@ final class UnitPriceCatalog {
             if ($entitlement->quantity !== null) {
                 continue; // Quelle nennt die Menge — nichts abzuleiten.
             }
-            $byEdition[$entitlement->edition][$entitlement->fee->getMinorAmount()] = $entitlement->fee;
+            $byEdition[self::groupKey($entitlement)][$entitlement->fee->getMinorAmount()] = $entitlement->fee;
         }
 
         $catalog = new self();
@@ -84,7 +91,7 @@ final class UnitPriceCatalog {
             return max(1, $entitlement->quantity);
         }
 
-        return $this->resolved[$entitlement->edition][$entitlement->fee->getMinorAmount()]['quantity'] ?? 1;
+        return $this->resolved[self::groupKey($entitlement)][$entitlement->fee->getMinorAmount()]['quantity'] ?? 1;
     }
 
     public function unitPriceOf(MarketplaceEntitlement $entitlement): Money {
@@ -95,23 +102,33 @@ final class UnitPriceCatalog {
             return $entitlement->fee->dividedBy($entitlement->quantity);
         }
 
-        return $this->resolved[$entitlement->edition][$entitlement->fee->getMinorAmount()]['unit'] ?? $entitlement->fee;
+        return $this->resolved[self::groupKey($entitlement)][$entitlement->fee->getMinorAmount()]['unit'] ?? $entitlement->fee;
     }
 
     /**
-     * @return array<string, list<Money>> Edition → erkannte Stückpreise
+     * @return array<string, list<Money>> Edition → erkannte Stückpreise (bei mehreren Währungen „Edition|Währung")
      */
     public function unitPrices(): array {
         $out = [];
-        foreach ($this->resolved as $edition => $entries) {
+        $currencies = [];
+        foreach (array_keys($this->resolved) as $key) {
+            $currencies[substr($key, 0, (int) strrpos($key, '|'))][] = substr($key, (int) strrpos($key, '|') + 1);
+        }
+        foreach ($this->resolved as $key => $entries) {
+            $edition = substr($key, 0, (int) strrpos($key, '|'));
+            $label = count(array_unique($currencies[$edition] ?? [])) > 1 ? $key : $edition;
             $seen = [];
             foreach ($entries as $entry) {
                 $seen[$entry['unit']->getMinorAmount()] = $entry['unit'];
             }
             ksort($seen);
-            $out[$edition] = array_values($seen);
+            $out[$label] = array_values($seen);
         }
 
         return $out;
+    }
+
+    private static function groupKey(MarketplaceEntitlement $entitlement): string {
+        return $entitlement->edition . '|' . $entitlement->fee->getCurrency()->value;
     }
 }

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Lexoffice;
 
-use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
+use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
@@ -77,6 +77,7 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
                 LexofficeSyncContactsCommand::class,
                 LexofficeSyncVouchersCommand::class,
                 LexofficeSyncVoucherLinesCommand::class,
+                LexofficeRepairResaleLinksCommand::class,
                 LexofficeMaterializeVoucherFilesCommand::class,
                 LexofficeWebhooksCommand::class,
             ]);

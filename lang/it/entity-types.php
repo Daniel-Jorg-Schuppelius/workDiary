@@ -19,6 +19,7 @@ declare(strict_types=1);
  */
 return [
     'AccountingReportController' => 'Esportazione report: contabilità',
+    'ResaleReportController' => 'Esportazione report: rivendita abbonamenti',
     'AccountingBudgetController' => 'Esportazione report: budget',
     'AbsenceCalendarReportController' => 'Esportazione report: calendario assenze',
     'AbsencesReportController' => 'Esportazione report: assenze',
@@ -526,4 +527,10 @@ return [
     'FixedAsset' => 'Cespite',
     'AccountingVatExtension' => 'Proroga permanente',
     'AccountingFilingObligation' => 'Obbligo dichiarativo',
+    // Registro rivendita (funzionalità 152, revisione 2026-09-10 A2).
+    'ResaleSubscription' => 'Abbonamento in rivendita',
+    'ResalePeriod' => 'Periodo di fatturazione (rivendita)',
+    'ResalePeriodLink' => 'Riferimento fattura (rivendita)',
+    'ResalePurchaseEntry' => 'Registrazione d’acquisto (rivendita)',
+    'CompanyMapping' => 'Assegnazione azienda (rivendita)',
 ];

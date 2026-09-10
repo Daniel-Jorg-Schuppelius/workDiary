@@ -61,7 +61,6 @@ return [
         'successor' => 'Successeur',
         'predecessor' => 'Prédécesseur',
         'expected_sale' => 'Vente prévue par période',
-        'expected_purchase' => 'Achat prévu',
         'margin' => 'Marge/unité',
         'period' => 'Période',
         'note' => 'Remarque',
@@ -233,6 +232,7 @@ return [
         'voucher_only' => 'Pièce (sans ligne)',
         'needed' => 'ouvert : :amount',
         'no_contacts' => 'Le destinataire de la facture n’a pas de contact Lexoffice lié.',
+        'note_voided' => 'Facture annulée — couvrait :months', // Review 2026-09-10
         'no_lines' => 'Aucune ligne de facture miroir dans la fenêtre autour du début de période.',
         'line' => 'Ligne de facture',
         'line_hint' => 'Seulement les lignes d’abonnement du destinataire dans la fenêtre de la période. S’il manque un article, classez-le comme produit d’abonnement sous « Produits ».',
@@ -338,6 +338,7 @@ return [
             'lexoffice' => 'Lexoffice n’est pas activé pour cette organisation ou sans clé API.',
             'nothing_open' => 'Aucune période ouverte avec prix de vente pour ce destinataire.',
         ],
+        'already_drafted' => 'Un brouillon est déjà en attente pour ce destinataire (:reference du :date). Finalisez-le d’abord dans Lexoffice ou localement, ou décidez la période.', // Review 2026-09-10
     ],
     'purchase' => [
         'title' => 'Pièces d’achat',
@@ -540,5 +541,134 @@ return [
         'partial' => 'Partielle',
         'waived' => 'Abandonnée',
         'disputed' => 'Contestée',
+    ],
+    // Review 2026-09-10
+    'propose' => [
+        'locked' => 'Le calcul des propositions est déjà en cours — veuillez patienter un instant.',
+    ],
+    // Review 2026-09-10 (Import)
+    'import_issues' => [
+        'domain_provider' => 'Ligne :line (:company, :product) : le fournisseur « Revente de domaines » n’est pas importé — les domaines n’arrivent que par la synchronisation des domaines.',
+    ],
+    // Review 2026-09-10 (UI-B)
+    'report_tabs' => [
+        'margin' => 'Marge',
+        'renewals' => 'Renouvellements',
+        'unbilled' => 'Sans facture',
+    ],
+    'margin' => [
+        'subtitle' => 'Périodes échues débutant du :from au :to : vente prévue, facturé selon les liens, achat prévu/réel, marge',
+        'block' => 'Bloc',
+        'key' => 'Produit / destinataire de facture',
+        'currency' => 'Devise',
+        'mixed_currencies' => 'Périodes en plusieurs devises (:list) — les montants ne sont pas additionnés, une ligne par devise.',
+        'export_csv' => 'CSV',
+        'export_xlsx' => 'XLSX',
+        'export_pdf' => 'PDF',
+        'pdf_title' => 'Rapport de marge abonnements & licences',
+        'file' => 'abonnements-marge',
+    ],
+    'renewals' => [
+        'subtitle' => 'Abonnements qui se renouvellent ou prennent fin entre le :from et le :to',
+        'bucket' => 'Dans :days jours',
+        'date' => 'Date',
+        'mode' => 'Événement',
+        'mode_renews' => 'se renouvelle',
+        'mode_ends' => 'prend fin',
+        'today' => 'aujourd’hui',
+        'in_days' => 'dans :days jour|dans :days jours',
+        'hint' => 'Renouvellement = début de la prochaine période de facturation planifiée ; pour les abonnements résiliés et une fin connue avant la prochaine période, c’est la fin qui compte.',
+        'empty' => 'Aucun renouvellement ni fin sur la période.',
+        'file' => 'abonnements-renouvellements',
+    ],
+    'unbilled' => [
+        'subtitle' => 'Abonnements dont la plus ancienne période échue ouverte remonte à plus de :days jours',
+        'days_label' => 'Plus ancien que (jours)',
+        'oldest' => 'Plus ancienne période ouverte',
+        'days' => 'Jours ouverts',
+        'open_periods' => 'Périodes ouvertes',
+        'hint' => 'Périodes ouvertes de titulaires externes sans lien ; montant ouvert = vente prévue des mois ouverts par abonnement. Le parc propre ne compte pas.',
+        'empty' => 'Aucun abonnement sans facture depuis plus de :days jours.',
+        'file' => 'abonnements-sans-facture',
+    ],
+    'export_files' => [
+        'proposal' => 'abonnements-proposition-facture',
+        'xlsx_action' => 'Proposition de facture (XLSX)',
+    ],
+    'draft_dialog' => [
+        'drafted' => 'Déjà dans un brouillon',
+        'drafted_line' => ':count période dans le brouillon :reference du :date|:count périodes dans le brouillon :reference du :date',
+        'drafted_hint' => 'Ces destinataires ne reçoivent pas de second brouillon : finalisez-le d’abord dans Lexoffice ou localement, ou décidez la période.',
+    ],
+    'draft_flash' => [
+        'created' => 'Brouillon pour :customer créé : :lines lignes, :net HT (ID Lexoffice :id). Vérifiez et finalisez dans Lexoffice.',
+        'created_local' => 'Brouillon de facture :id pour :customer créé : :lines lignes, :net HT. Les périodes sont liées comme propositions — à confirmer à l’émission.',
+        'failed' => 'Le brouillon n’a pas pu être créé — les détails sont dans le journal.',
+    ],
+    'purchase_flash' => [
+        'allocated' => 'Pièce :voucher : :amount répartis sur :entries périodes.',
+    ],
+    'purchase_filter' => [
+        'search' => 'Recherche (abonnement, identifiant, pièce, description)',
+        'all_sources' => 'Toutes les sources',
+    ],
+    'purchase_dialog' => [
+        'search' => 'Rechercher une pièce (numéro, fournisseur)',
+        'no_match' => 'Aucune pièce ne correspond à la recherche.',
+        'domain_provider' => 'Les pièces de domaines n’arrivent que par la synchronisation des domaines.',
+    ],
+    'purchase_issues' => [
+        'count' => ':count remarque sur l’import — à vérifier.|:count remarques sur l’import — à vérifier.',
+        'line' => ':file : :issue',
+        'result' => 'Pièce :number : :matched lignes sur :lines affectées (:duplicates déjà présentes), :net HT.',
+        'failed' => ':file : import échoué — les détails sont dans le journal.',
+    ],
+    // Review 2026-09-10 (UI-A)
+    'holder_error' => [
+        'foreign_mismatch' => 'Le client final n’appartient pas au client sélectionné.',
+        'foreign_archived' => 'Ce client final est archivé et ne peut pas devenir un nouveau titulaire.',
+        'quantity_below_assigned' => ':assigned licences sont cédées à d’autres titulaires — la quantité ne peut pas être inférieure.',
+    ],
+    'link_error' => [
+        'period_missing' => 'Période introuvable.',
+        'period_foreign' => 'La période n’appartient pas à ce destinataire de facture.',
+        'line_foreign' => 'La ligne de facture n’appartient pas à :customer — les rattachements ne franchissent jamais les limites d’un client.',
+    ],
+    'edit_hint' => [
+        'imported' => 'Abonnement importé : le prochain import écrase le libellé, la quantité, la durée et le prix d’achat ; l’identifiant est verrouillé. Le titulaire et le prix de vente sont conservés.',
+        'domain' => 'Abonnement de domaine issu de la synchronisation des domaines : fournisseur et identifiant sont verrouillés.',
+        'assignment' => 'Cession issue de :contract — produit, fournisseur et périodicité viennent du contrat ; la quantité ne peut pas dépasser le reste disponible.',
+    ],
+    'delete_error' => [
+        'has_purchases' => 'Des pièces d’achat sont affectées à cet abonnement — libérez d’abord les lignes d’achat.',
+        'is_domain' => 'Les abonnements de domaine sont gérés par la synchronisation des domaines — terminez-les dans la gestion des domaines.',
+    ],
+    'general' => [
+        'failed' => 'L’opération a échoué ; les détails sont dans le journal.',
+    ],
+    'import_review' => [
+        'skipped' => 'Ignorées',
+        'issues_title' => ':count anomalie de ligne|:count anomalies de ligne',
+        'flash_skipped' => ':count ligne ignorée|:count lignes ignorées',
+        'template_filename' => 'modele-liste-abonnements.csv',
+    ],
+    'link_ui' => [
+        'position' => 'Pos. :position',
+        'licences_times' => 'Licences × :months mois',
+        'pending_hint' => 'Les lignes de ces factures ne sont pas encore reflétées — la prochaine synchronisation des pièces les récupère.',
+        'unlinked_truncated' => 'Affichage des :shown plus récentes.',
+    ],
+    // Review 2026-09-10 (Gutschriften)
+    'credit_notes' => [
+        'title' => 'Avoirs',
+        'hint' => 'Les avoirs réduisent la couverture d’une période. Affectation manuelle uniquement — la proposition automatique ne les compense pas. Saisissez les licences créditées ; un lien négatif est enregistré.',
+        'col_linked' => 'Compensé',
+        'linked_with' => ':amount sur :periods',
+        'unlinked' => 'pas encore compensé',
+        'licences_field' => 'Licences créditées',
+        'action_link' => 'Compenser comme avoir',
+        'sign_hint' => 'Enregistré comme lien négatif.',
+        'error_amount' => 'Veuillez saisir une quantité supérieure à zéro.',
+        'error_positive' => 'Les lignes de facture exigent des mois de licence positifs — les réductions passent par la ligne d’avoir.',
     ],
 ];

@@ -13,24 +13,27 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\BillingFrequency;
-use Carbon\CarbonImmutable;
+use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, ParsesImportValues};
+use CommonToolkit\Contracts\Interfaces\CSV\FieldInterface;
+use CommonToolkit\Entities\CSV\HeaderLine;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Parsers\CSVDocumentParser;
-use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
-use Throwable;
 
 /**
  * Liest den „Purchases"-Export des Telekom Cloud Marketplace (AppDirect-Format).
  *
  * Der Export kommt mit UTF-8-BOM, einer Kopfzeile mit Leerzeichen-Vorlauf
  * („ Owner Company Phone") und Gebühren wie „1.958,07 €" mit geschütztem
- * Leerzeichen — alles wird hier normalisiert, damit die Fachlogik saubere
- * Werte bekommt. Zeilen ohne verwertbare Gebühr oder Daten werden nicht
- * verworfen, sondern als Befund gemeldet.
+ * Leerzeichen — BOM und Encoding normalisiert das Toolkit beim Lesen, Beträge
+ * und Daten werden deutsch gedeutet. Zeilen ohne verwertbare Gebühr oder
+ * Daten werden nicht verworfen, sondern als Befund gemeldet; eine Zeile mit
+ * abweichender Feldzahl kippt nicht die Datei (Review 2026-09-10, C).
  */
 final class MarketplacePurchasesReader {
+    use NormalizesHeaders;
+    use ParsesImportValues;
+
     private const REQUIRED = [
         'owner company name',
         'company entitlement uuid',
@@ -42,48 +45,50 @@ final class MarketplacePurchasesReader {
         'creation date',
     ];
 
-    private const DATE_FORMATS = ['d.m.y', 'd.m.Y', 'Y-m-d', 'd/m/Y', 'm/d/y'];
-
     public function read(string $file): PurchasesImport {
+        $name = basename($file);
         if (! is_readable($file)) {
-            throw new RuntimeException("CSV-Datei nicht lesbar: {$file}");
+            throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
 
         $delimiter = CSVDocumentParser::detectDelimiter($file);
-        $document = CSVDocumentParser::fromFile($file, $delimiter, '"', true);
-        $header = $document->getHeader();
-        if ($header === null) {
-            throw new RuntimeException("CSV ohne Kopfzeile: {$file}");
-        }
-
+        /** @var array<string, int> $index */
         $index = [];
-        foreach ($header->getColumnNames() as $position => $name) {
-            $index[self::normalizeHeader((string) $name)] = (int) $position;
-        }
-
-        $missing = array_values(array_diff(self::REQUIRED, array_keys($index)));
-        if ($missing !== []) {
-            throw new RuntimeException('Pflichtspalten fehlen: ' . implode(', ', $missing));
-        }
-
+        $headerCount = 0;
         $entitlements = [];
         $issues = [];
 
-        foreach (array_values($document->getRows()) as $offset => $row) {
-            $line = $offset + 2;
-            $value = static function (string $column) use ($row, $index): string {
-                $position = $index[$column] ?? null;
-                if ($position === null) {
-                    return '';
+        foreach (CSVDocumentParser::streamAll($file, $delimiter, '"', true) as $line => $parsed) {
+            if ($parsed instanceof HeaderLine) {
+                $index = self::headerIndex($parsed->getColumnNames());
+                $headerCount = count($parsed->getColumnNames());
+                $missing = array_values(array_diff(self::REQUIRED, array_keys($index)));
+                if ($missing !== []) {
+                    throw new RuntimeException((string) __('resale_import.file.missing_columns', ['columns' => implode(', ', $missing)]));
                 }
 
-                return trim((string) ($row->getField($position)?->getValue() ?? ''));
+                continue;
+            }
+            if ($index === []) {
+                continue;
+            }
+            $fields = array_values($parsed->getFields());
+            if (count($fields) > $headerCount && trim(implode('', array_map(static fn(FieldInterface $f): string => $f->getValue(), array_slice($fields, $headerCount)))) !== '') {
+                $issues[] = (string) __('resale_import.row.too_many_fields', ['line' => $line, 'expected' => $headerCount, 'found' => count($fields)]);
+
+                continue;
+            }
+            $value = static function (string $column) use ($fields, $index): string {
+                $position = $index[$column] ?? null;
+
+                return $position === null || ! isset($fields[$position]) ? '' : trim($fields[$position]->getValue());
             };
 
             $companyName = $value('owner company name');
             $entitlementId = $value('company entitlement uuid');
+            $issue = static fn(string $key, array $params = []): string => (string) __('resale_import.row.' . $key, $params + ['line' => $line, 'company' => $companyName]);
             if ($companyName === '' || $entitlementId === '') {
-                $issues[] = sprintf('Zeile %d: Firma oder Entitlement fehlt - übersprungen.', $line);
+                $issues[] = $issue('missing_company_or_entitlement');
 
                 continue;
             }
@@ -91,37 +96,37 @@ final class MarketplacePurchasesReader {
             $frequencyLabel = $value('active order frequency');
             $frequency = BillingFrequency::fromLabel($frequencyLabel);
             if ($frequency === null) {
-                $issues[] = sprintf('Zeile %d (%s): unbekannter Rhythmus "%s" - übersprungen.', $line, $companyName, $frequencyLabel);
+                $issues[] = $issue('unknown_frequency', ['value' => $frequencyLabel]);
 
                 continue;
             }
 
             $feeRaw = $value('active order total fee');
-            $fee = $this->parseMoney($feeRaw, $value('currency'));
+            $fee = self::importMoney($feeRaw, CurrencyCode::tryFrom(strtoupper($value('currency'))) ?? CurrencyCode::Euro, 2);
             if ($fee === null) {
-                $issues[] = sprintf('Zeile %d (%s): Gebühr "%s" nicht lesbar - übersprungen.', $line, $companyName, $feeRaw);
+                $issues[] = $issue('fee_unreadable', ['value' => $feeRaw]);
 
                 continue;
             }
 
             $startRaw = $value('creation date');
             $endRaw = $value('active order contract end date');
-            $startsOn = $this->parseDate($startRaw);
-            $endsOn = $this->parseDate($endRaw);
+            $startsOn = self::importDate($startRaw);
+            $endsOn = self::importDate($endRaw);
             if ($startsOn === null || $endsOn === null) {
-                $issues[] = sprintf('Zeile %d (%s): Datum nicht lesbar ("%s" / "%s") - übersprungen.', $line, $companyName, $startRaw, $endRaw);
+                $issues[] = $issue('dates_unreadable', ['start' => $startRaw, 'end' => $endRaw]);
 
                 continue;
             }
             if ($endsOn->lessThanOrEqualTo($startsOn)) {
-                $issues[] = sprintf('Zeile %d (%s): Vertragsende liegt nicht nach dem Beginn - übersprungen.', $line, $companyName);
+                $issues[] = $issue('contract_end_before_start');
 
                 continue;
             }
 
             $companyId = $value('owner company id');
             $company = new MarketplaceCompany(
-                key: $companyId !== '' ? $companyId : MarketplaceCompany::normalizeName($companyName),
+                key: $companyId !== '' ? $companyId : MarketplaceCompany::matchKey($companyName),
                 name: $companyName,
                 email: $value('owner email') !== '' ? $value('owner email') : null,
                 phone: $value('owner company phone') !== '' ? $value('owner company phone') : null,
@@ -139,52 +144,14 @@ final class MarketplacePurchasesReader {
                 endsOn: $endsOn,
                 status: $value('status'),
                 assignedUsers: (int) $value('assigned users'),
-                sourceLine: $line,
+                sourceLine: (int) $line,
                 source: MarketplaceEntitlement::SOURCE_TELEKOM,
             );
         }
+        if ($index === []) {
+            throw new RuntimeException((string) __('resale_import.file.no_header', ['file' => $name]));
+        }
 
         return new PurchasesImport($entitlements, $issues);
-    }
-
-    private static function normalizeHeader(string $name): string {
-        $name = preg_replace('/^\xEF\xBB\xBF/', '', $name) ?? $name;
-
-        return mb_strtolower(trim(preg_replace('/\s+/', ' ', $name) ?? $name));
-    }
-
-    private function parseMoney(string $raw, string $currency): ?Money {
-        $cleaned = str_replace(["\u{00A0}", "\u{202F}"], ' ', $raw);
-        $decimal = NumberHelper::normalizeDecimalStringOrNull($cleaned);
-        if ($decimal === null) {
-            return null;
-        }
-
-        $code = CurrencyCode::tryFrom(strtoupper(trim($currency))) ?? CurrencyCode::Euro;
-
-        try {
-            return Money::of($decimal, $code);
-        } catch (Throwable) {
-            return null;
-        }
-    }
-
-    private function parseDate(string $raw): ?CarbonImmutable {
-        if ($raw === '') {
-            return null;
-        }
-
-        foreach (self::DATE_FORMATS as $format) {
-            try {
-                $parsed = CarbonImmutable::createFromFormat('!' . $format, $raw);
-            } catch (Throwable) {
-                continue;
-            }
-            if ($parsed instanceof CarbonImmutable && $parsed->format($format) === $raw) {
-                return $parsed->startOfDay();
-            }
-        }
-
-        return null;
     }
 }

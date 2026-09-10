@@ -14,7 +14,7 @@ namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\{Customer, ExternalReference, ForeignCustomer, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
-use App\Models\Reselling\{ResalePeriodLink, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\{LinkProposer, PeriodPlanner};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -341,5 +341,280 @@ class LinkProposerTest extends TestCase {
         (new LinkProposer)->propose($this->organization);
         $this->assertSame('RE/2026/1026', $qh->periods()->first()?->links()->first()?->voucher_number, 'Rechnung in der Laufzeit des Nachfolgers bleibt beim Nachfolger');
         $this->assertSame(['RE/2025/0896', 'RE/2025/0896'], $telekom->periods()->get()->map(static fn($p) => $p->links()->first()?->voucher_number)->all(), 'die 24 Monate decken beide alten Jahre');
+    }
+
+    public function test_periods_of_subscriptions_that_lost_their_holder_fall_back_to_open_after_the_run(): void {
+        // Review 2026-09-10 (B2): Vorschläge werden org-weit gelöscht, bewertet werden nur Abos mit Halter.
+        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $this->voucher('c-kl', 'RE/2025/0820', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
+        (new LinkProposer)->propose($this->organization);
+        $period = $subscription->periods()->firstOrFail();
+        $this->assertSame(PeriodStatus::Billed, $period->status);
+
+        // Halter weg (Posteingang): der nächste Lauf räumt den Vorschlag ab — und den Status.
+        $subscription->forceFill(['customer_id' => null])->save();
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(0, ResalePeriodLink::query()->count());
+        $this->assertSame(PeriodStatus::Open, $period->fresh()?->status, 'kein Bezug mehr → offen, nicht „berechnet"');
+
+        // Eigener Bestand ebenso.
+        $subscription->forceFill(['customer_id' => $customer->id])->save();
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Billed, $period->fresh()?->status);
+        $subscription->forceFill(['customer_id' => null, 'is_own_holding' => true])->save();
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Open, $period->fresh()?->status);
+    }
+
+    public function test_local_invoice_draft_link_counts_as_coverage_and_is_not_doubled(): void {
+        // Review 2026-09-10 (B3): der Bezug auf eine lokale Rechnungsposition (InvoiceItem) ist ein
+        // Vorschlag ohne Spiegelposition — er bleibt beim Lauf stehen und zählt als Deckung.
+        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $period = $subscription->periods()->firstOrFail();
+        ResalePeriodLink::query()->create([
+            'organization_id' => $this->organization->id, 'period_id' => $period->id, 'subscription_id' => $subscription->id,
+            'linkable_type' => (new \App\Models\InvoiceItem)->getMorphClass(), 'linkable_id' => 4711,
+            'voucher_number' => 'RE-2026-0001', 'voucher_date' => '2026-09-01', 'quantity' => 1, 'months' => 12, 'amount' => '247.20', 'currency' => 'EUR', 'origin' => LinkOrigin::Proposed,
+        ]);
+        $period->forceFill(['status' => PeriodStatus::Billed])->save();
+        // Eine passende Spiegelposition existiert ebenfalls — sie darf die Periode nicht ein zweites Mal decken.
+        $this->voucher('c-kl', 'RE/2025/0820', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $period->refresh();
+        $this->assertSame(PeriodStatus::Billed, $period->status, 'lokaler Entwurfsbezug deckt die Periode');
+        $this->assertSame(1, $period->links()->count(), 'kein zusätzlicher Spiegel-Bezug');
+        $this->assertSame(\App\Models\InvoiceItem::class, $period->links()->first()?->linkable_type);
+        $this->assertSame(1, $result['lines_without_subscription'], 'die Spiegelposition bleibt frei — und sichtbar');
+    }
+
+    public function test_multi_year_invoice_before_the_date_prefilter_still_covers_the_latest_period(): void {
+        // Review 2026-09-10 (B5): 36-Monats-Rechnung vom Januar 2024, die 2024er- und 2025er-Periode bestätigt,
+        // die 2026er offen — der Vorfilter nach Belegdatum (ab 90 Tage vor der ältesten offenen Periode) fand sie nie.
+        $customer = $this->customerWithContact('ReproBerlin GmbH', 'c-repro');
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2024-01-01', 'ends_on' => '2027-01-01', 'status' => 'cancelled']);
+        $this->assertSame(3, $subscription->periods()->count());
+        $this->voucher('c-repro', 'RE/2024/0001', '2024-01-01', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 36, 'net' => '20.60']], '', '2024-01-01', '2026-12-31');
+        (new LinkProposer)->propose($this->organization);
+        [$p2024, $p2025, $p2026] = $subscription->periods()->get()->all();
+        $this->assertSame([PeriodStatus::Billed, PeriodStatus::Billed, PeriodStatus::Billed], [$p2024->status, $p2025->status, $p2026->status]);
+
+        // 2024/2025 bestätigen, 2026 wieder öffnen (Bezug lösen) — der nächste Lauf muss die alte Rechnung noch sehen.
+        foreach ([$p2024, $p2025] as $decided) {
+            $decided->links()->update(['origin' => LinkOrigin::Confirmed->value]);
+            $decided->forceFill(['decided_at' => now()])->save();
+        }
+        $p2026->links()->delete();
+        $p2026->forceFill(['status' => PeriodStatus::Open])->save();
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(1, $result['links']);
+        $this->assertSame(PeriodStatus::Billed, $p2026->fresh()?->status, 'Leistungszeitraum bis Ende 2026 holt die Rechnung in den Lauf');
+        $this->assertSame('12.00', $p2026->links()->first()?->months);
+    }
+
+    public function test_voided_invoice_releases_confirmed_links_and_reopens_the_period(): void {
+        // Review 2026-09-10 (A3): Storno hebt den Bezug auf — die Spur bleibt (0 Monate, Hinweis), die Periode
+        // wird aus der Restdeckung bewertet und ist wieder offen für den Lauf (Ersatzrechnung).
+        $customer = $this->customerWithContact('EcoTec - HLSK GmbH', 'c-hlsk');
+        $subscription = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $voucher = $this->voucher('c-hlsk', 'RE/2025/0271', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
+        (new LinkProposer)->propose($this->organization);
+        $period = $subscription->periods()->firstOrFail();
+        $period->links()->update(['origin' => LinkOrigin::Confirmed->value, 'confirmed_at' => now()]);
+        $period->forceFill(['decided_at' => now(), 'note' => 'telefonisch geklärt'])->save();
+
+        $voucher->forceFill(['voucher_status' => 'voided'])->save();
+        (new LinkProposer)->propose($this->organization);
+
+        $period->refresh();
+        $this->assertSame(PeriodStatus::Open, $period->status, 'stornierte Rechnung deckt nichts');
+        $this->assertNull($period->decided_at, 'Entscheidung galt der stornierten Rechnung');
+        $this->assertSame('telefonisch geklärt', $period->note, 'Bemerkung der Periode bleibt');
+        $link = $period->links()->firstOrFail();
+        $this->assertSame(LinkOrigin::Confirmed, $link->origin, 'bestätigter Bezug bleibt als Spur');
+        $this->assertSame('0.00', $link->months);
+        $this->assertSame('0.00', $link->amount?->getAmount());
+        $this->assertStringContainsString('1 × 12 ' . __('resale.link.months_short'), (string) $link->note, 'Original-Monate im Hinweis');
+
+        // Ersatzrechnung: der nächste Lauf deckt die Periode wieder; die Spur wird nicht erneut markiert.
+        $this->voucher('c-hlsk', 'RE/2025/0272', '2025-08-20', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
+        (new LinkProposer)->propose($this->organization);
+        $this->assertSame(PeriodStatus::Billed, $period->fresh()?->status);
+        $this->assertSame('RE/2025/0272', $period->links()->where('origin', LinkOrigin::Proposed->value)->first()?->voucher_number);
+        $this->assertSame(1, substr_count((string) $link->fresh()?->note, (string) __('resale.link.note_voided', ['months' => '1 × 12 ' . __('resale.link.months_short')])));
+    }
+
+    public function test_run_is_locked_per_organization(): void {
+        $lock = \Illuminate\Support\Facades\Cache::lock('resale:propose:' . $this->organization->id, 60);
+        $this->assertTrue($lock->get());
+        try {
+            $this->expectException(\RuntimeException::class);
+            $this->expectExceptionMessage((string) __('resale.propose.locked'));
+            (new LinkProposer)->propose($this->organization);
+        } finally {
+            $lock->release();
+        }
+    }
+
+    public function test_second_run_without_changes_reproduces_the_same_links(): void {
+        // Review 2026-09-10 (G, Idempotenz): der Lauf löscht alle Vorschläge und baut sie neu — ohne Änderung
+        // am Bestand müssen Perioden, Monate, Mengen und Beträge exakt gleich herauskommen (IDs dürfen wechseln).
+        $customer = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $premium = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2024-08-05', 'quantity' => 2, 'sale_unit_price' => '247.20']);
+        $exchange = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-01-01', 'sale_unit_price' => '47.40']);
+        $this->assertSame(3, $premium->periods()->count());
+        $this->assertSame(2, $exchange->periods()->count());
+        $this->voucher('c-kl', 'RE/2024/0810', '2024-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 24, 'net' => '20.60']]);
+        $this->voucher('c-kl', 'RE/2025/0812', '2025-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 24, 'net' => '20.60']]);
+        $this->voucher('c-kl', 'RE/2026/0814', '2026-08-06', [['article' => $this->premium, 'name' => 'Microsoft 365 Business Premium', 'quantity' => 12, 'net' => '20.60']]);
+        $this->voucher('c-kl', 'RE/2025/0102', '2025-01-02', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 12, 'net' => '3.95']]);
+        $this->voucher('c-kl', 'RE/2026/0103', '2026-01-02', [['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'quantity' => 12, 'net' => '3.95']]);
+
+        $snapshot = function (): array {
+            return ResalePeriodLink::query()->with('period')
+                ->get()
+                ->map(static fn(ResalePeriodLink $l): array => [
+                    'period' => $l->period?->starts_on->toDateString(), 'subscription' => $l->subscription_id, 'voucher' => $l->voucher_number,
+                    'line' => $l->linkable_id, 'months' => $l->months, 'quantity' => $l->quantity, 'amount' => $l->amount?->getAmount(),
+                    'currency' => $l->currency->value, 'origin' => $l->origin->value,
+                ])
+                ->sortBy(static fn(array $row): string => $row['period'] . '|' . $row['subscription'] . '|' . $row['voucher'])
+                ->values()
+                ->all();
+        };
+        $statuses = static fn(): array => ResalePeriod::query()->orderBy('subscription_id')->orderBy('starts_on')->get()->map(static fn(ResalePeriod $p): array => [$p->status->value, $p->decided_at?->toDateTimeString()])->all();
+
+        $first = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(['periods' => 5, 'linked' => 4, 'partial' => 1, 'links' => 5, 'lines_without_subscription' => 0], $first);
+        $firstLinks = $snapshot();
+        $firstStatuses = $statuses();
+        $firstIds = ResalePeriodLink::query()->pluck('id')->all();
+        $this->assertCount(5, $firstLinks);
+        $this->assertSame(['2024-08-05', '2025-08-05', '2026-08-05'], array_column(array_values(array_filter($firstLinks, static fn(array $r): bool => $r['subscription'] === $premium->id)), 'period'));
+        $this->assertSame(['24.00', '24.00', '12.00'], array_column(array_values(array_filter($firstLinks, static fn(array $r): bool => $r['subscription'] === $premium->id)), 'months'));
+        $this->assertSame([PeriodStatus::Billed, PeriodStatus::Billed, PeriodStatus::Partial], $premium->periods()->get()->map(static fn(ResalePeriod $p) => $p->status)->all(), '2026: 12 von 24 Lizenzmonaten');
+
+        $second = (new LinkProposer)->propose($this->organization);
+        $this->assertSame($first, $second, 'Zähler des zweiten Laufs identisch');
+        $this->assertSame($firstLinks, $snapshot(), 'Perioden, Monate, Mengen, Beträge identisch');
+        $this->assertSame($firstStatuses, $statuses(), 'Status und (keine) Entscheidung identisch');
+        $this->assertSame([], array_intersect($firstIds, ResalePeriodLink::query()->pluck('id')->all()), 'Vorschläge werden ersetzt, nicht wiederverwendet');
+        $this->assertSame(5, ResalePeriodLink::query()->count());
+        $this->assertNull(ResalePeriod::query()->whereNotNull('decided_at')->first(), 'kein Lauf entscheidet etwas');
+
+        // Dritter Lauf mit einem anderen Stichtag im selben Bestand: ebenfalls gleich.
+        (new LinkProposer)->propose($this->organization, \Carbon\CarbonImmutable::parse('2026-09-04'));
+        $this->assertSame($firstLinks, $snapshot());
+    }
+
+    public function test_sharing_rule_applies_when_only_one_end_customer_subscription_carries_the_article(): void {
+        // Review 2026-09-10 (G, Sharing-Regel mit gemischten Produktschlüsseln): zwei Endkunden desselben
+        // Partners mit demselben Produkt — ein Abo trägt den Lexoffice-Artikel, das andere nur den Namen.
+        // `ResaleSubscription::productKey()` ist die EINE Regel für Vorschlagslauf, Abgleich und Bericht:
+        // mit den Artikelnamen der Rechnungen liefert es für beide `art:<exchange>`. Die Position ohne
+        // Endkundennennung darf deshalb nicht still beim zweiten Endkunden landen (wie in
+        // test_partner_invoice_lines_need_the_end_customer_name, nur mit gemischten Schlüsseln).
+        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
+        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik', 'company' => 'Steuerbüro Kaik', 'matchcode' => null]);
+        $ute = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Ute Mayershofer', 'company' => 'Ute Mayershofer', 'matchcode' => null]);
+        $subKaik = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01', 'quantity' => 1]);
+        $subUte = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $ute->id, 'lexoffice_article_id' => null, 'starts_on' => '2025-10-01', 'quantity' => 3]);
+        $this->assertNotSame($subKaik->productKey(), $subUte->productKey(), 'ohne Artikelnamen: art:… gegen name:…');
+        $this->assertSame($subKaik->productKey(), $subUte->productKey([$this->exchange->id => $this->exchange->name]), 'mit Artikelnamen dasselbe Produkt');
+
+        $this->voucher('c-lds', 'RE/2025/0945', '2025-10-26', [
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Endkunde Steuerbüro Kaik', 'quantity' => 12, 'net' => '3.95'],
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => 'Ute Mayershofer, 2 Postfächer', 'quantity' => 24, 'net' => '3.95'],
+            ['article' => $this->exchange, 'name' => 'Exchange Online (Plan 1)', 'description' => '', 'quantity' => 12, 'net' => '3.95'],
+        ]);
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(2, $result['links'], 'nur die beiden genannten Positionen');
+        $this->assertSame(1, $result['lines_without_subscription'], 'die Zeile ohne Endkunden bleibt liegen — auch bei gemischten Produktschlüsseln');
+        $this->assertSame(PeriodStatus::Billed, $subKaik->periods()->first()?->status);
+        $this->assertSame('RE/2025/0945', $subKaik->periods()->first()?->links()->first()?->voucher_number);
+        $this->assertSame(PeriodStatus::Partial, $subUte->periods()->first()?->status, '24 von 36 Lizenzmonaten; die ungenannte 12er-Zeile gehört nicht sicher Ute');
+        $this->assertSame(['24.00'], $subUte->periods()->first()?->links()->pluck('months')->all());
+    }
+
+    public function test_links_carry_the_currency_of_the_invoice_line_and_the_run_does_not_filter_by_currency(): void {
+        // Review 2026-09-10 (G, Währung ≠ EUR), Verhalten aus dem Code: Deckung zählt in Lizenzmonaten, der
+        // Bezug übernimmt Währung und Betrag der Position (unit_net × Einheiten) — der Lauf vergleicht keine Währungen.
+        $customer = $this->customerWithContact('Helvetia Treuhand AG', 'c-ch');
+        $chf = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05', 'currency' => 'CHF', 'sale_unit_price' => '260.40']);
+        $this->assertSame('CHF', $chf->periods()->first()?->currency->value);
+        $this->assertSame('260.40', $chf->periods()->first()?->expected_sale?->getAmount());
+
+        $voucher = LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-chf', 'contact_external_id' => 'c-ch', 'voucher_type' => 'invoice',
+            'voucher_status' => 'paid', 'voucher_number' => 'RE/2025/0700', 'voucher_date' => '2025-08-06', 'total_amount' => 260.40, 'currency' => 'CHF', 'archived' => false, 'lines_synced_at' => now(),
+        ]);
+        LexofficeVoucherLine::create([
+            'organization_id' => $this->organization->id, 'voucher_id' => $voucher->id, 'position' => 1, 'type' => 'service',
+            'external_article_id' => $this->premium->external_id, 'lexoffice_article_id' => $this->premium->id, 'name' => 'Microsoft 365 Business Premium',
+            'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '21.70', 'total_net' => '260.40', 'tax_rate' => 8.1, 'currency' => 'CHF',
+        ]);
+
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(1, $result['links']);
+        $link = $chf->periods()->first()?->links()->firstOrFail();
+        $this->assertSame(\CommonToolkit\Enums\CurrencyCode::SwissFranc, $link?->currency, 'Währung der Position');
+        $this->assertSame('260.40', $link?->amount?->getAmount(), '12 × 21,70 CHF');
+        $this->assertSame(\CommonToolkit\Enums\CurrencyCode::SwissFranc, $link?->amount?->getCurrency());
+        $this->assertSame(PeriodStatus::Billed, $chf->periods()->first()?->status);
+
+        // Abweichende Währung zwischen Abo (EUR) und Rechnung (USD): der Lauf deckt trotzdem — Monate sind
+        // währungsfrei; der Bezug trägt USD, die Periode bleibt EUR. Kein Filter, kein Fehler.
+        $eur = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $customer->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-08-05', 'sale_unit_price' => '47.40']);
+        $usd = LexofficeVoucher::create([
+            'organization_id' => $this->organization->id, 'external_id' => 'v-usd', 'contact_external_id' => 'c-ch', 'voucher_type' => 'invoice',
+            'voucher_status' => 'paid', 'voucher_number' => 'RE/2025/0701', 'voucher_date' => '2025-08-07', 'total_amount' => 51.60, 'currency' => 'USD', 'archived' => false, 'lines_synced_at' => now(),
+        ]);
+        LexofficeVoucherLine::create([
+            'organization_id' => $this->organization->id, 'voucher_id' => $usd->id, 'position' => 1, 'type' => 'service',
+            'external_article_id' => $this->exchange->external_id, 'lexoffice_article_id' => $this->exchange->id, 'name' => 'Exchange Online (Plan 1)',
+            'quantity' => 12, 'unit_name' => 'Monat', 'unit_net' => '4.30', 'total_net' => '51.60', 'tax_rate' => 0, 'currency' => 'USD',
+        ]);
+        $result = (new LinkProposer)->propose($this->organization);
+        $this->assertSame(2, $result['links']);
+        $mixed = $eur->periods()->first()?->links()->firstOrFail();
+        $this->assertSame(\CommonToolkit\Enums\CurrencyCode::USDollar, $mixed?->currency);
+        $this->assertSame('51.60', $mixed?->amount?->getAmount());
+        $this->assertSame('EUR', $eur->periods()->first()?->currency->value, 'Periode behält die Abo-Währung');
+        $this->assertSame(PeriodStatus::Billed, $eur->periods()->first()?->status);
+    }
+
+    public function test_contacts_for_returns_the_lexoffice_contacts_of_the_billed_customer(): void {
+        // Review 2026-09-10 (G): Dialog-Helfer — Kunde direkt, Partner des Fremdkunden, sonst nichts.
+        // Ein Lexoffice-Kontakt je Kunde (Unique `extref_unique` auf Plugin/Typ/Referenz).
+        $partner = $this->customerWithContact('LDS Systems GmbH', 'c-lds');
+        $direct = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
+        $withoutContact = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ohne Kontakt GmbH']);
+        $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
+        $proposer = new LinkProposer;
+
+        $viaCustomer = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $direct->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
+        $this->assertSame(['c-kl'], $proposer->contactsFor($viaCustomer));
+
+        $viaPartner = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01']);
+        $this->assertSame(['c-lds'], $proposer->contactsFor($viaPartner), 'Fremdkunde → Kontakt des Partners (Rechnungsempfänger)');
+        $this->assertSame(['c-lds'], $proposer->contactsForCustomer($partner));
+
+        $this->assertSame([], $proposer->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $withoutContact->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'Kunde ohne Lexoffice-Kontakt');
+        $this->assertSame([], $proposer->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'is_own_holding' => true, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'eigener Bestand hat keinen Rechnungsempfänger');
+        $this->assertSame([], $proposer->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'ohne Halter (Inbox)');
+
+        // Fremder Mandant mit demselben Kontaktschlüssel: jeder sieht nur seine eigene Verknüpfung.
+        $otherOrg = \App\Models\Organization::factory()->create();
+        $stranger = Customer::factory()->create(['organization_id' => $otherOrg->id, 'name' => 'Fremd GmbH']);
+        ExternalReference::create([
+            'organization_id' => $otherOrg->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
+            'external_id' => 'c-kl', 'referenceable_type' => $stranger->getMorphClass(), 'referenceable_id' => $stranger->getKey(),
+        ]);
+        $this->assertSame(['c-kl'], $proposer->contactsForCustomer($stranger));
+        $this->assertSame(['c-kl'], $proposer->contactsFor($viaCustomer));
     }
 }

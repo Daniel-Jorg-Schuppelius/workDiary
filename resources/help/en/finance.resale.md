@@ -1,7 +1,7 @@
 ---
 title: "Subscriptions & Licences"
 topic: finance.resale
-version: 1
+version: 2
 audience: []
 modules:
     - module.reselling
@@ -91,3 +91,109 @@ company splits and the new one takes over the contracts — is a transfer
 too: all licences for the old period to the former holder; the
 reconciliation offers this at an invoice of the other customer as
 "Transfer period to …", prefilled.
+
+**Inbox:** Imported subscriptions whose company the register cannot assign
+to a holder yet land in the inbox. Per company you decide once: customer,
+end customer of a partner (foreign customer) or own holding — the suggestion
+comes from a name comparison with customers and foreign customers. The
+decision is remembered; the next import assigns the same company at once.
+Lines the import could not process (unreadable date, quantity without a
+number, duplicate identifier) are kept as findings on the import: the count
+in the message, the details expandable in the list.
+
+**Periods:** The period page shows the due periods of all subscriptions with
+status tiles (open, billed, partial, waived, disputed). "Compute proposals"
+matches the open periods against the licence lines of the mirrored invoices
+and creates proposals; you confirm them, link a line by hand (only invoices
+of the same recipient, only free licence months) or waive with a reason
+("goodwill"). Decided periods are no longer touched by planning; "reopen"
+opens them again. If a linked invoice is later voided in Lexoffice, the next
+run sets the link to zero months, notes the cancellation and reopens the
+period so the replacement invoice can be linked.
+
+**Invoice draft:** From all open periods of an invoice recipient a draft is
+created with one click — with Lexoffice invoicing as a draft in Lexoffice
+(nothing is finalised; you review and issue there), with local invoicing as
+a local invoice draft with lines and proposed links. One line per
+subscription and period, end customer in the description, quantity in
+months for monthly articles. The periods remember the draft: a second click
+does not create a second one but names the pending draft with number and
+date; only when the draft became an invoice or the period is decided are
+they free again. The dialog lists only recipients with open periods and a
+sale price and names below what is already in a draft. Creating requires
+the right *Create invoice drafts from periods*.
+
+**Purchase entries:** The actual purchase per subscription and period comes
+from three sources: (1) provider invoices and credit notes as PDF (Quality
+Hosting, German and English layout) — each line names contract, end
+customer and term, the amount goes exactly to the period; credit-note lines
+without a contract belong to the company. (2) Incoming vouchers from the
+voucher mirror pro rata: for collective invoices without lines (Telekom)
+you enter the provider's share and the service month, the amount is spread
+over all periods of the month weighted by their monthly expected purchase.
+(3) Domain bookings from domain management automatically. On PDF import the
+register checks the total: if the sum of the lines differs from the
+document total (e.g. a page was not read), the import still runs and the
+difference is shown as a notice. The purchase page filters by provider,
+source, date range and search term; an allocation is always released as a
+whole per document.
+
+**Margin report:** Per product and per invoice recipient the due periods of
+the range are shown with expected sale (quantity × sale price), billed (net
+amounts of the invoice links, proposals included), expected purchase
+(provider price × quantity) and actual purchase from the purchase entries.
+Margin = billed − purchase; the actual purchase counts as soon as every
+period of the row has one, otherwise the expected purchase. Amounts are
+never summed across currencies — with several currencies there is one row
+per currency and a notice. Export as CSV, XLSX or PDF; the invoice proposal
+(open periods with open licence months and amount) as CSV or XLSX.
+
+**Price check:** Per product the purchase per contract, catalogue price and
+RRP from the last imported price list against the sale prices of the
+subscriptions (minimum, median, maximum). Flags: "sale below purchase",
+"sale below RRP", "contract above catalogue", "no sale price".
+
+**Product classification:** Which Lexoffice articles are subscription
+products, the register detects by name. Per article you can override:
+"subscription product" forces detection, "never a subscription line" keeps
+services with a product name in the text (maintenance on Exchange) out of
+proposals, invoice lists and "lines without subscription".
+
+**Domains:** Every domain from domain management becomes a "Domain"
+subscription daily, with a yearly interval from registration, purchase =
+renewal price and the holder from domain management as long as the register
+has not decided one. The sale price per TLD comes from the price catalogue
+(provider domain reselling, product e.g. ".de"), the article from the
+Lexoffice article for the TLD; manually maintained prices, articles and
+holders survive every run. Vanished domains end on the reference day; if a
+run's domain list is empty, nothing is ended. Domain subscriptions and their
+purchase entries cannot be created by hand — they only come in through the
+sync.
+
+**Renewals and subscriptions without invoice:** The "Renewals" report shows
+which subscriptions renew or end in the range (tiles 30, 60, 90 days):
+renewal is the start of the next planned period, for cancelled
+subscriptions the end counts. "Without invoice" lists subscriptions whose
+oldest open due period is older than N days (default 60), with open periods
+and open amount. Both as CSV or XLSX.
+
+**Dashboard tile:** The tile "Open subscription periods" (group Finance, off
+by default) shows open periods with open amount, unconfirmed proposals and
+subscriptions without holder and leads to the respective page.
+
+**Import findings:** Every import (Telekom, Quality Hosting, price list,
+generic list) logs counters and findings per line. Dates must be dates
+(Excel date cells are read; "3.2026" or "2026" alone are not), quantities
+numbers, identifiers unique within a file — otherwise the line is skipped
+and the reason is named.
+
+**Retention of import files:** Uploaded import files (they may contain end
+customer names) stay in the storage folder for 90 days and are then deleted
+by the schedule; the import record with its counters remains. By hand:
+`resale:prune-imports` (--days changes the period).
+
+**Repairing invoice links:** If the voucher mirror was rebuilt earlier with
+new line IDs, confirmed links point to nothing (link without line text,
+period counts as uncovered). The command `lexoffice:repair-resale-links`
+re-attaches such links via invoice number and licence line; what is not
+unambiguous is only listed (--dry-run shows beforehand what would happen).

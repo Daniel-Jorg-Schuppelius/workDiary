@@ -50,7 +50,7 @@
                                 @csrf @method('DELETE')
                                 <x-icon-btn type="submit" icon="delete" size="xs" tone="error"
                                             :title="__('access.action.delete')"
-                                            data-confirm="{{ __('access.confirm.role_delete') }}" />
+                                            data-confirm-dialog data-confirm-message="{{ __('access.confirm.role_delete') }}" data-confirm-tone="error" />
                             </form>
                         @endif
                     </td>

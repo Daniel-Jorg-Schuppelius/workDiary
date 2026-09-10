@@ -734,9 +734,11 @@ class PermissionsSeeder extends Seeder {
             // Fakturierungswegs bleibt dem Admin vorbehalten).
             PermissionEnum::FinanceViewAny,
             PermissionEnum::FinanceTransferTime,
-            // Reselling-Register (Feature 152): Abos und Perioden pflegen.
+            // Reselling-Register (Feature 152): Abos und Perioden pflegen,
+            // Rechnungsentwürfe aus Perioden erzeugen.
             PermissionEnum::ResellingView,
             PermissionEnum::ResellingManage,
+            PermissionEnum::ResellingInvoice,
             PermissionEnum::FinanceTransferMaterial,
             // Zahlungsabgleich (Feature 045, Priorität 3): Bankdatei importieren
             // und Zuordnungen bestätigen. Die Verwaltung eigener Bankkonten
@@ -929,6 +931,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::EnergyLogManage,
             PermissionEnum::VacationRequest,
             PermissionEnum::AttendanceManage,
+            // Reselling-Register (Feature 152): „Sehen für Vertrieb" — Abos und
+            // Perioden der eigenen Kunden lesen, pflegen bleibt Buchhaltung.
+            PermissionEnum::ResellingView,
             // Dienstplan-Intelligenz (Feature 007): auch der Außendienst kann
             // Schichten tauschen und eigene Verfügbarkeit pflegen.
             PermissionEnum::ShiftExchangeRequest,

@@ -15,6 +15,7 @@ return [
             'customer' => 'Directly: the company is the customer',
             'partner' => 'Via a partner (foreign customer)',
             'contact' => 'Lexoffice contact',
+            'own' => 'Own holding (never billed)',
         ],
     ],
 ];

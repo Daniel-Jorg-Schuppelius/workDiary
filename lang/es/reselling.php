@@ -15,6 +15,7 @@ return [
             'customer' => 'Directamente: la empresa es el cliente',
             'partner' => 'A través de un socio (cliente externo)',
             'contact' => 'Contacto Lexoffice',
+            'own' => 'Existencias propias (nunca facturadas)',
         ],
     ],
 ];

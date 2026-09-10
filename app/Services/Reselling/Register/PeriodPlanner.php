@@ -20,8 +20,10 @@ use Illuminate\Support\Facades\DB;
 /**
  * Plant die erwarteten Abrechnungsperioden eines Abos (Feature 152) und
  * gleicht sie idempotent mit der Tabelle ab: fehlende Perioden entstehen,
- * offene Perioden folgen Änderungen an Menge, Preis oder Ende, entschiedene
- * Perioden (berechnet, teilweise, verzichtet, strittig) bleiben unberührt.
+ * offene und nur vorgeschlagene Perioden folgen Änderungen an Menge, Preis
+ * oder Ende (Status neu aus der Deckung), vom Nutzer entschiedene Perioden
+ * (`decided_at`, verzichtet, strittig — `ResalePeriod::isLocked()`) bleiben
+ * unberührt.
  *
  * Regeln aus Feature 151: Periodenlänge = Abrechnungsintervall; ein Rest am
  * Laufzeitende unter der Mindestlänge des Intervalls ist ein Ausrichtungs-
@@ -40,7 +42,7 @@ final class PeriodPlanner {
      * @return list<array{starts_on: CarbonImmutable, ends_on: CarbonImmutable}>
      */
     public function plan(ResaleSubscription $subscription, ?CarbonImmutable $reference = null): array {
-        $reference ??= CarbonImmutable::today();
+        $reference ??= ResalePeriod::today();
         $horizon = $reference->addDays(self::HORIZON_DAYS);
         $frequency = $subscription->interval;
         $endsOn = $subscription->ends_on;
@@ -85,9 +87,12 @@ final class PeriodPlanner {
         $result = ['created' => 0, 'updated' => 0, 'removed' => 0, 'kept' => 0];
 
         DB::transaction(function () use ($subscription, $planned, &$result): void {
+            // Zeilensperre auf dem Abo: Import, Scheduler und Dialog dürfen nicht
+            // gleichzeitig planen (Unique je Abo und Beginn).
+            ResaleSubscription::query()->withoutGlobalScopes()->whereKey($subscription->getKey())->lockForUpdate()->get(['id']);
             /** @var array<string, ResalePeriod> $existing */
             $existing = [];
-            foreach ($subscription->periods()->get() as $period) {
+            foreach ($subscription->periods()->with('links')->get() as $period) {
                 $existing[$period->starts_on->toDateString()] = $period;
             }
             // Auf Cent runden: die Periode speichert zwei Nachkommastellen, der
@@ -99,7 +104,7 @@ final class PeriodPlanner {
                 // Abgetretene Lizenzen berechnet der andere Halter: Periodenmenge = Rest;
                 // ganz abgetreten = keine Periode beim Vertrag (nur bei den Abtretungen).
                 $quantity = $subscription->billableQuantityOn($slot['starts_on']);
-                if ($quantity <= 0 && ! (($existing[$key] ?? null)?->status->isDecided() ?? false)) {
+                if ($quantity <= 0 && ! (($existing[$key] ?? null)?->isLocked() ?? false)) {
                     continue;
                 }
                 $seen[$key] = true;
@@ -122,16 +127,14 @@ final class PeriodPlanner {
 
                     continue;
                 }
-                if ($period->status->isDecided()) {
+                if ($period->isLocked()) {
                     // Entschiedene Perioden bleiben — außer die Menge hat sich durch eine
                     // Abtretung geändert: die Deckung bleibt, Soll und Status folgen der
                     // neuen Menge (4 statt 9 Lizenzen → 48 von 48 = berechnet, nicht teilweise).
                     if ($subscription->assignments->isNotEmpty() && $period->quantity !== $quantity) {
                         $period->fill(['quantity' => $quantity, 'expected_purchase' => $expectedPurchase, 'expected_sale' => $expectedSale]);
                         if (in_array($period->status, [PeriodStatus::Open, PeriodStatus::Partial, PeriodStatus::Billed], true)) {
-                            $period->load('links');
-                            $covered = $period->coveredMonths();
-                            $period->status = $covered >= $period->requiredMonths() - 0.001 ? PeriodStatus::Billed : ($covered > 0.001 ? PeriodStatus::Partial : PeriodStatus::Open);
+                            $period->status = $period->statusFromCoverage($period->coveredMonths());
                         }
                         $period->save();
                         $result['updated']++;
@@ -142,6 +145,8 @@ final class PeriodPlanner {
 
                     continue;
                 }
+                // Offen oder nur vorgeschlagen: Menge, Ende und Preis folgen dem Abo, der
+                // Status ergibt sich neu aus der Deckung (mehr Lizenzen → teilweise).
                 $period->fill([
                     'ends_on' => $slot['ends_on'],
                     'quantity' => $quantity,
@@ -149,6 +154,8 @@ final class PeriodPlanner {
                     'expected_sale' => $expectedSale,
                     'currency' => $subscription->currency,
                 ]);
+                // Erst nach dem Füllen: der Status hängt an der neuen Menge.
+                $period->status = $period->statusFromCoverage($period->coveredMonths());
                 if ($period->isDirty()) {
                     $period->save();
                     $result['updated']++;
@@ -161,7 +168,7 @@ final class PeriodPlanner {
                 if (isset($seen[$key])) {
                     continue;
                 }
-                if ($period->status->isDecided()) {
+                if ($period->isLocked()) {
                     $result['kept']++; // Entscheidung bleibt, auch wenn das Abo verkürzt wurde
 
                     continue;

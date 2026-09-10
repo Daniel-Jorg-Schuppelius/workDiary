@@ -9,9 +9,13 @@
   Abo anlegen/bearbeiten (Feature 152, MVP-758). Halterwahl: Kunde,
   Fremdkunde (Endkunde eines Partners), eigener Bestand oder noch offen.
   Sqids nach außen; die Perioden plant der Controller nach dem Speichern.
+  Gesperrte Felder ($locked, Review 2026-09-10): Domain-Abos Anbieter/Kennung,
+  importierte Abos die Kennung, Abtretungen Produkt/Anbieter/Rhythmus.
 --}}
 @php
     $editing = $subscription !== null;
+    $locked = $locked ?? ['provider' => false, 'external_id' => false, 'product' => false, 'interval' => false];
+    $parent = $editing ? $subscription->parent : null;
     $holderDefault = $editing
         ? ($subscription->is_own_holding ? 'own' : ($subscription->foreign_customer_id !== null ? 'foreign' : ($subscription->customer_id !== null ? 'customer' : 'none')))
         : (string) ($prefill['holder'] ?? 'none');
@@ -34,6 +38,15 @@
     :form-data="['data-entry-form' => '']"
     :submit-label="$editing ? __('resale.dialog.submit_edit') : __('resale.dialog.submit_new')"
 >
+    @if ($editing && $subscription->isImported())
+        <div class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.imported') }}</span></div>
+    @endif
+    @if ($editing && $subscription->isDomain())
+        <div class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.domain') }}</span></div>
+    @endif
+    @if ($parent !== null)
+        <div class="alert alert-info text-sm"><span>{{ __('resale.edit_hint.assignment', ['contract' => $parent->holderLabel() . ' · ' . $parent->identityLabel()]) }}</span></div>
+    @endif
     <div class="grid grid-cols-1 md:grid-cols-6 gap-3">
         <x-input-field name="label" :label="__('resale.field.label')" :value="$value('label')" required span="4" />
         <x-select-field name="kind" :label="__('resale.field.kind')" span="2">
@@ -42,12 +55,17 @@
             @endforeach
         </x-select-field>
 
-        <x-select-field name="provider" :label="__('resale.field.provider')" span="2">
-            @foreach ($providers as $provider)
-                <option value="{{ $provider->value }}" @selected($enumValue('provider', 'manual') === $provider->value)>{{ $provider->label() }}</option>
-            @endforeach
+        {{-- Anbieter: „DomainReselling" ist nie wählbar; gesperrt zeigt die Auswahl nur den Ist-Wert. --}}
+        <x-select-field name="provider" :label="__('resale.field.provider')" span="2" :disabled="$locked['provider']">
+            @if ($locked['provider'])
+                <option value="{{ $subscription->provider->value }}" selected>{{ $subscription->provider->label() }}</option>
+            @else
+                @foreach ($providers as $provider)
+                    <option value="{{ $provider->value }}" @selected($enumValue('provider', 'manual') === $provider->value)>{{ $provider->label() }}</option>
+                @endforeach
+            @endif
         </x-select-field>
-        <x-input-field name="external_id" :label="__('resale.field.external_id')" :value="$value('external_id')" span="2" />
+        <x-input-field name="external_id" :label="__('resale.field.external_id')" :value="$value('external_id')" span="2" :readonly="$locked['external_id']" />
         <x-input-field name="external_order_id" :label="__('resale.field.external_order_id')" :value="$value('external_order_id')" span="2" />
 
         {{-- Halterwahl: Fremdkunde erscheint nur, wenn der gewählte Kunde Fremdkunden hat (resaleHolderPicker). --}}
@@ -82,14 +100,14 @@
         </div>
 
         @if ($articles->isNotEmpty())
-            <x-select-field name="article_id" :label="__('resale.field.article')" span="3" :hint="__('resale.dialog.article_hint')">
+            <x-select-field name="article_id" :label="__('resale.field.article')" span="3" :hint="__('resale.dialog.article_hint')" :disabled="$locked['product']">
                 <option value="">{{ __('resale.dialog.no_article') }}</option>
                 @foreach ($articles as $article)
                     <option value="{{ $article->sqid }}" @selected($articleSqid === $article->sqid)>{{ $article->number ? $article->number . ' · ' : '' }}{{ $article->name }}</option>
                 @endforeach
             </x-select-field>
         @endif
-        <x-select-field name="lexoffice_article_id" :label="__('resale.field.lexoffice_article')" :span="$articles->isNotEmpty() ? 3 : 4" :hint="__('resale.dialog.lexoffice_article_hint')">
+        <x-select-field name="lexoffice_article_id" :label="__('resale.field.lexoffice_article')" :span="$articles->isNotEmpty() ? 3 : 4" :hint="__('resale.dialog.lexoffice_article_hint')" :disabled="$locked['product']">
             <option value="">{{ __('resale.dialog.no_article') }}</option>
             @foreach ($lexofficeArticles as $article)
                 @php $lexSqid = \App\Support\Sqid::encode(\App\Models\LexofficeArticle::class, $article->id); @endphp
@@ -103,13 +121,13 @@
                           :from-label="__('resale.field.starts_on')"
                           :to-label="__('resale.field.ends_on')"
                           :from-required="true"
-                          :from="old('starts_on', $editing ? $subscription->starts_on->toDateString() : ($prefill['starts_on'] ?? now()->toDateString()))"
+                          :from="old('starts_on', $editing ? $subscription->starts_on->toDateString() : ($prefill['starts_on'] ?? \App\Models\Reselling\ResalePeriod::today()->toDateString()))"
                           :to="old('ends_on', $editing ? ($subscription->ends_on?->toDateString() ?? '') : '')" />
             <p class="text-xs text-muted mt-1">{{ __('resale.dialog.ends_on_hint') }}</p>
         </div>
         <x-input-field name="term_months" type="number" :label="__('resale.field.term_months')" :value="$value('term_months', 12)" required span="2" />
 
-        <x-select-field name="interval" :label="__('resale.field.interval')" span="2">
+        <x-select-field name="interval" :label="__('resale.field.interval')" span="2" :disabled="$locked['interval']">
             @foreach ($intervals as $interval)
                 <option value="{{ $interval->value }}" @selected($enumValue('interval', 'yearly') === $interval->value)>{{ $interval->label() }}</option>
             @endforeach

@@ -11183,5 +11183,8 @@
     "Auf dieser Seite": "In questa pagina",
     "Ausführliche Hilfe öffnen": "Apri la guida dettagliata",
     "Beliebte Themen": "Argomenti più letti",
-    "Taste F1 öffnet die Kontexthilfe zur aktuellen Seite.": "Il tasto F1 apre l'aiuto contestuale della pagina corrente."
+    "Taste F1 öffnet die Kontexthilfe zur aktuellen Seite.": "Il tasto F1 apre l'aiuto contestuale della pagina corrente.",
+    "Abos & Lizenzen: :count Punkte warten auf Bearbeitung": "Abbonamenti e licenze: :count punti in attesa di elaborazione",
+    ":due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen. Bitte die Periodenseite „Abos & Lizenzen\" prüfen.": ":due periodi scaduti (aperto :amount), :proposed proposte non confermate, :unassigned abbonamenti senza titolare, :renewals rinnovi o scadenze entro :renewal_days giorni, :stale abbonamenti senza fattura da oltre :stale_days giorni. Verificare la pagina dei periodi «Abbonamenti e licenze».",
+    "Abo-Perioden öffnen": "Apri i periodi degli abbonamenti"
 }

@@ -2498,6 +2498,15 @@ Route::middleware('auth')->group(function () {
             Route::post('abgleich/{customer}/halter', [\App\Http\Controllers\Finance\ResaleReconcileController::class, 'rehome'])->name('reconcile.rehome')->middleware('can:reselling.manage');
             Route::get('bericht', [\App\Http\Controllers\Finance\ResaleReportController::class, 'index'])->name('report.index')->middleware('can:reselling.view');
             Route::get('bericht/rechnungsvorschlag.csv', [\App\Http\Controllers\Finance\ResaleReportController::class, 'export'])->name('report.export')->middleware('can:reselling.view');
+            // Review 2026-09-10 (MVP-765-Rest): XLSX-Rechnungsvorschlag, Margen-Export (CSV/XLSX/PDF), Verlängerungen, Abos ohne Rechnung.
+            Route::middleware('can:reselling.view')->group(function (): void {
+                Route::get('bericht/rechnungsvorschlag.xlsx', [\App\Http\Controllers\Finance\ResaleReportController::class, 'exportXlsx'])->name('report.export.xlsx');
+                Route::get('bericht/marge.{format}', [\App\Http\Controllers\Finance\ResaleReportController::class, 'marginExport'])->where('format', 'csv|xlsx|pdf')->name('report.margin.export');
+                Route::get('bericht/verlaengerungen', [\App\Http\Controllers\Finance\ResaleReportController::class, 'renewals'])->name('report.renewals');
+                Route::get('bericht/verlaengerungen.{format}', [\App\Http\Controllers\Finance\ResaleReportController::class, 'renewalsExport'])->where('format', 'csv|xlsx')->name('report.renewals.export');
+                Route::get('bericht/ohne-rechnung', [\App\Http\Controllers\Finance\ResaleReportController::class, 'unbilled'])->name('report.unbilled');
+                Route::get('bericht/ohne-rechnung.{format}', [\App\Http\Controllers\Finance\ResaleReportController::class, 'unbilledExport'])->where('format', 'csv|xlsx')->name('report.unbilled.export');
+            });
             Route::get('preise', [\App\Http\Controllers\Finance\ResaleReportController::class, 'prices'])->name('prices')->middleware('can:reselling.view');
             Route::get('produkte', [\App\Http\Controllers\Finance\ResaleReportController::class, 'products'])->name('products')->middleware('can:reselling.view');
             Route::post('produkte', [\App\Http\Controllers\Finance\ResaleReportController::class, 'productsStore'])->name('products.store')->middleware('can:reselling.manage');
@@ -2509,8 +2518,9 @@ Route::middleware('auth')->group(function () {
                 Route::post('einkauf/import', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'importStore'])->name('purchases.import.store');
                 Route::delete('einkauf/{entry}', [\App\Http\Controllers\Finance\ResalePurchaseController::class, 'destroy'])->name('purchases.destroy');
             });
-            Route::get('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.manage');
-            Route::post('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.manage');
+            // Rechnungsentwurf aus Perioden (Lexoffice/lokal): eigenes Recht der Buchhaltung (Review 2026-09-10, A9).
+            Route::get('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftCreate'])->name('periods.draft.create')->middleware('can:reselling.invoice');
+            Route::post('perioden/entwurf', [\App\Http\Controllers\Finance\ResaleReportController::class, 'draftStore'])->name('periods.draft.store')->middleware('can:reselling.invoice');
             Route::middleware('can:reselling.view')->group(function (): void {
                 Route::get('/', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'index'])->name('index');
                 Route::get('{subscription}', [\App\Http\Controllers\Finance\ResaleSubscriptionController::class, 'show'])->name('show');

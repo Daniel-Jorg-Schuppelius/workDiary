@@ -14,7 +14,7 @@ namespace App\Models\Reselling;
 
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\SubscriptionProvider;
-use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Domain\DomainAccountingEntry;
 use App\Models\{LexofficeVoucher, Organization, User};
 use Carbon\CarbonImmutable;
@@ -44,6 +44,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $created_by_user_id
  */
 class ResalePurchaseEntry extends Model {
+    use Auditable;
     use BelongsToOrganization;
     use HasSqid;
 

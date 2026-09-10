@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\{Customer, ExternalReference, LexofficeVoucher, LexofficeVoucherLine, Organization};
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
-use App\Plugins\Lexoffice\LexofficePlugin;
-use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProductNameMatcher};
+use App\Models\{Customer, LexofficeVoucherLine, Organization};
+use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Plugins\Lexoffice\Services\{LexofficeContactMap, LexofficeRecipientInvoiceLines};
+use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher};
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -37,12 +37,13 @@ use Illuminate\Support\Collection;
  * @phpstan-type LineRow array{line: LexofficeVoucherLine, product: string, months: float, licences: float, per_licence: float, linked: float, free: float, periods: list<string>, recipient: string|null, recipient_id: int|null, contact: string, gap: bool}
  * @phpstan-type Candidate array{row: LineRow, distance: int}
  * @phpstan-type PeriodRow array{period: ResalePeriod, subscription: ResaleSubscription, required: float, covered: float, needed: float, product: string, candidates: list<Candidate>, taken: list<Candidate>, foreign: list<Candidate>, voided: list<Candidate>}
+ * @phpstan-type CreditNoteRow array{line: LexofficeVoucherLine, months: float, licences: float, per_licence: float, linked: float, periods: list<string>}
  * @phpstan-type InboxHint array{company: string, subscriptions: list<ResaleSubscription>, mentions: int}
  * @phpstan-type ProductRow array{key: string, label: string, term: int, subscriptions: int, periods: int, required: float, covered: float, invoiced: float, free: float, missing: float, surplus: float, gap_since: CarbonImmutable|null}
  * @phpstan-type OverviewRow array{customer: Customer|null, name: string, subscriptions: int, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float, lines: int}
  */
 final class RecipientReconciler {
-    public function __construct(private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier(), private readonly ProductNameMatcher $matcher = new ProductNameMatcher()) {}
+    public function __construct(private readonly LexofficeRecipientInvoiceLines $lines = new LexofficeRecipientInvoiceLines()) {}
 
     /**
      * Alle Rechnungsempfänger mit Abos oder Lizenzpositionen, Probleme zuerst.
@@ -50,9 +51,9 @@ final class RecipientReconciler {
      * @return list<OverviewRow>
      */
     public function overview(Organization $organization, ?CarbonImmutable $reference = null): array {
-        $reference ??= CarbonImmutable::today();
+        $reference ??= ResalePeriod::today();
         $subscriptions = $this->subscriptions($organization)->with('periods.links')->get();
-        $contactMap = $this->contactMap($organization);
+        $contactMap = LexofficeContactMap::forOrganization($organization);
         /** @var array<int, Collection<int, ResaleSubscription>> $byCustomer */
         $byCustomer = [];
         foreach ($subscriptions as $subscription) {
@@ -62,16 +63,16 @@ final class RecipientReconciler {
                 $byCustomer[$billedTo->id]->push($subscription);
             }
         }
-        $lines = $this->licenseLines($organization, []);
+        $lines = $this->lines->for($organization, null);
         /** @var array<int|string, Collection<int, LexofficeVoucherLine>> $linesByRecipient Kunden-ID oder Kontakt-ID */
         $linesByRecipient = [];
         foreach ($lines as $line) {
             $contact = (string) $line->voucher->contact_external_id;
-            $key = $contactMap['byContact'][$contact] ?? $line->voucher->customer_id ?? ('contact:' . $contact);
+            $key = $contactMap->byContact($contact) ?? $line->voucher->customer_id ?? ('contact:' . $contact);
             $linesByRecipient[$key] ??= collect();
             $linesByRecipient[$key]->push($line);
         }
-        $linkedMonths = $this->linkedMonths($organization, self::ids($lines));
+        $linkedMonths = $this->lines->consumed($lines);
 
         $customerIds = array_values(array_unique(array_merge(array_keys($byCustomer), array_filter(array_keys($linesByRecipient), 'is_int'))));
         $customers = Customer::query()->whereIn('id', $customerIds)->get(['id', 'name'])->keyBy('id');
@@ -108,19 +109,18 @@ final class RecipientReconciler {
      * Abgleich eines Empfängers: Bilanz je Produkt, fällige Perioden mit
      * Kandidaten, alle Lizenzpositionen mit Verbrauch.
      *
-     * @return array{subscriptions: Collection<int, ResaleSubscription>, contacts: list<string>, pending: int, inbox: list<InboxHint>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
+     * Gutschrift-Positionen des Empfängers (`credit_notes`) stehen daneben —
+     * als negative Bezüge nur von Hand, nie heuristisch (Review 2026-09-10, A3).
+     *
+     * @return array{subscriptions: Collection<int, ResaleSubscription>, contacts: list<string>, pending: int, inbox: list<InboxHint>, credit_notes: list<CreditNoteRow>, products: list<ProductRow>, periods: list<PeriodRow>, lines: list<LineRow>, open: int, partial: int, proposed: int, free: float, missing: float, surplus: float}
      */
     public function forCustomer(Organization $organization, Customer $customer, ?CarbonImmutable $reference = null): array {
-        $reference ??= CarbonImmutable::today();
+        $reference ??= ResalePeriod::today();
         $all = $this->subscriptions($organization)->with(['periods.links.linkable', 'periods.subscription'])->get();
         $subscriptions = $all->filter(static fn(ResaleSubscription $s): bool => $s->billedTo()?->id === $customer->id)->values();
-        $contactMap = $this->contactMap($organization)['byContact'];
-        $contacts = [];
-        foreach ($contactMap as $contact => $customerId) {
-            if ($customerId === $customer->id) {
-                $contacts[] = (string) $contact;
-            }
-        }
+        $map = LexofficeContactMap::forOrganization($organization);
+        $contactMap = $map->all();
+        $contacts = $map->byCustomer($customer->id);
         $own = array_flip($contacts);
         $names = $this->recipientNames($organization, $contactMap);
         $contactTokens = $this->contactTokens($names, $own);
@@ -129,22 +129,47 @@ final class RecipientReconciler {
         // zeigen Rechnungen an Schwesterfirmen, stornierte den Grund einer Lücke.
         $lines = collect();
         $others = collect();
-        foreach ($this->licenseLines($organization, []) as $line) {
+        foreach ($this->lines->for($organization, null) as $line) {
             if (isset($own[(string) $line->voucher->contact_external_id])) {
                 $lines->push($line);
             } else {
                 $others->push($line);
             }
         }
-        $voided = $this->licenseLines($organization, array_merge($contacts, $related), true);
-        $pending = $contacts === [] ? 0 : LexofficeVoucher::query()->whereIn('contact_external_id', $contacts)
-            ->where('voucher_type', 'invoice')->where('archived', false)->whereNotIn('voucher_status', ['draft', 'voided'])
-            ->whereNull('lines_synced_at')->count();
-        $linkedMonths = $this->linkedMonths($organization, array_merge(self::ids($lines), self::ids($others)));
+        $voided = $this->lines->voided($organization, array_merge($contacts, $related));
+        $pending = $this->lines->pendingCount($organization, $contacts);
+        $linkedMonths = $this->lines->consumed($lines->merge($others));
         $inbox = $this->inboxHints($organization, $lines);
 
-        return ['subscriptions' => $subscriptions, 'contacts' => $contacts, 'pending' => $pending, 'inbox' => $inbox]
+        return ['subscriptions' => $subscriptions, 'contacts' => $contacts, 'pending' => $pending, 'inbox' => $inbox, 'credit_notes' => $this->creditNoteRows($organization, $contacts)]
             + $this->analyze($subscriptions, $lines, $linkedMonths, $reference, $others, $voided, $names, $contactTokens, self::tokens($customer->name), $own, $contactMap);
+    }
+
+    /**
+     * Gutschrift-Lizenzpositionen des Empfängers mit Lizenzmonaten (Betrag)
+     * und dem, was davon schon als negativer Bezug hängt.
+     *
+     * @param  list<string>  $contacts
+     * @return list<CreditNoteRow>
+     */
+    private function creditNoteRows(Organization $organization, array $contacts): array {
+        $creditLines = $this->lines->creditNotes($organization, $contacts);
+        $consumed = $this->lines->consumed($creditLines);
+        $rows = [];
+        foreach ($creditLines as $line) {
+            $split = LicenseMonths::split($line);
+            $rows[] = [
+                'line' => $line,
+                'months' => $split['licences'] * $split['months'],
+                'licences' => $split['licences'],
+                'per_licence' => $split['months'],
+                'linked' => abs($consumed[$line->id]['months'] ?? 0.0),
+                'periods' => $consumed[$line->id]['periods'] ?? [],
+            ];
+        }
+        usort($rows, static fn(array $a, array $b): int => ($b['line']->voucher->voucher_date <=> $a['line']->voucher->voucher_date) ?: ($a['line']->position <=> $b['line']->position));
+
+        return $rows;
     }
 
     /**
@@ -308,7 +333,7 @@ final class RecipientReconciler {
         /** @var array<string, string> $labels */
         $labels = [];
         foreach ($subscriptions as $subscription) {
-            $key = $this->subscriptionProduct($subscription, $articleNames);
+            $key = $subscription->productKey($articleNames);
             $productBySubscription[$subscription->id] = $key;
             $labels[$key] ??= $subscription->lexofficeArticle !== null ? $subscription->lexofficeArticle->name : $subscription->label;
         }
@@ -397,8 +422,6 @@ final class RecipientReconciler {
 
         foreach ($periodRows as $index => $row) {
             $start = $row['period']->starts_on;
-            $term = $row['period']->termMonths();
-            $windowStart = $start->subDays(LinkProposer::WINDOW_BEFORE);
             foreach ($lineRows as $lineRow) {
                 if ($lineRow['product'] !== $row['product']) {
                     continue;
@@ -407,7 +430,7 @@ final class RecipientReconciler {
                 // Periode (bei Mehrperioden-Positionen verlängert) — oder der Leistungszeitraum
                 // deckt den Periodenbeginn.
                 $date = LicenseMonths::referenceDate($lineRow['line']);
-                if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan(LinkProposer::windowEnd($start, $term, $lineRow['line']))) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
+                if ($date === null || ! LinkProposer::inWindow($row['period'], $lineRow['line'])) {
                     continue;
                 }
                 $distance = (int) abs($date->diffInDays($start));
@@ -442,7 +465,7 @@ final class RecipientReconciler {
                         continue;
                     }
                     $date = LicenseMonths::referenceDate($lineRow['line']);
-                    if ($date === null || (($date->lessThan($windowStart) || $date->greaterThan(LinkProposer::windowEnd($start, $term, $lineRow['line']))) && ! LicenseMonths::serviceCovers($lineRow['line'], $start))) {
+                    if ($date === null || ! LinkProposer::inWindow($row['period'], $lineRow['line'])) {
                         continue;
                     }
                     $distance = (int) abs($date->diffInDays($start));
@@ -538,25 +561,6 @@ final class RecipientReconciler {
         return ['products' => $productRows, 'periods' => $periodRows, 'lines' => $lineRows, 'open' => $open, 'partial' => $partial, 'proposed' => $proposed, 'free' => $free, 'missing' => $missing, 'surplus' => $surplus];
     }
 
-    /**
-     * Produktschlüssel eines Abos: sein Lexoffice-Artikel, sonst der Artikel
-     * des Empfängers, dessen Name zum Abo passt, sonst der Abo-Name.
-     *
-     * @param  array<int, string>  $articleNames
-     */
-    private function subscriptionProduct(ResaleSubscription $subscription, array $articleNames): string {
-        if ($subscription->lexoffice_article_id !== null) {
-            return 'art:' . $subscription->lexoffice_article_id;
-        }
-        foreach ($articleNames as $id => $name) {
-            if ($this->matcher->matches($subscription->label, $name)) {
-                return 'art:' . $id;
-            }
-        }
-
-        return 'name:' . ProductNameMatcher::normalize($subscription->label);
-    }
-
     /** @return \Illuminate\Database\Eloquent\Builder<ResaleSubscription> */
     private function subscriptions(Organization $organization): \Illuminate\Database\Eloquent\Builder {
         return ResaleSubscription::query()->withoutGlobalScopes()
@@ -565,96 +569,5 @@ final class RecipientReconciler {
             ->where(static fn($q) => $q->whereNotNull('customer_id')->orWhereNotNull('foreign_customer_id'))
             ->with(['customer:id,name', 'foreignCustomer:id,name,customer_id', 'foreignCustomer.customer:id,name', 'lexofficeArticle:id,name'])
             ->orderBy('label')->orderBy('starts_on');
-    }
-
-    /**
-     * Lexoffice-Kontakt → Kunde (Rechnungsempfänger).
-     *
-     * @return array{byContact: array<string, int>}
-     */
-    private function contactMap(Organization $organization): array {
-        $byContact = [];
-        foreach (ExternalReference::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('plugin_id', LexofficePlugin::ID)
-            ->where('external_type', LexofficePlugin::EXT_TYPE_CONTACT)
-            ->where('referenceable_type', (new Customer)->getMorphClass())
-            ->get(['referenceable_id', 'external_id']) as $reference) {
-            $byContact[(string) $reference->external_id] = (int) $reference->referenceable_id;
-        }
-
-        return ['byContact' => $byContact];
-    }
-
-    /**
-     * Lizenzpositionen (Artikel laut Einstufung) aller Rechnungen der Kontakte —
-     * ohne Kontaktliste alle Lizenzpositionen der Organisation.
-     *
-     * @param  list<string>  $contacts
-     * @return Collection<int, LexofficeVoucherLine>
-     */
-    private function licenseLines(Organization $organization, array $contacts, bool $voided = false): Collection {
-        $articleIds = \App\Models\LexofficeArticle::query()->withoutGlobalScopes()->where('organization_id', $organization->id)
-            ->get(['id', 'name', 'resale_role'])
-            ->filter(fn(\App\Models\LexofficeArticle $a): bool => $this->classifier->isLicense($a))
-            ->pluck('id')->all();
-        if ($articleIds === []) {
-            return collect();
-        }
-
-        return LexofficeVoucherLine::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->whereIn('lexoffice_article_id', $articleIds)
-            ->whereHas('voucher', static function ($q) use ($contacts, $voided): void {
-                $q->where('voucher_type', 'invoice')->where('archived', false);
-                $voided ? $q->where('voucher_status', 'voided') : $q->whereNotIn('voucher_status', ['draft', 'voided']);
-                if ($contacts !== []) {
-                    $q->whereIn('contact_external_id', $contacts);
-                }
-            })
-            ->with(['voucher:id,external_id,contact_external_id,customer_id,voucher_number,voucher_date,voucher_status,service_starts_on,service_ends_on,voucher_text,recipient_name', 'article:id,name,unit_name,resale_role'])
-            ->get();
-    }
-
-    /**
-     * Verbrauch je Position über alle Perioden (Vorschläge eingeschlossen).
-     *
-     * @param  list<int>  $lineIds
-     * @return array<int, array{months: float, periods: list<string>}>
-     */
-    private function linkedMonths(Organization $organization, array $lineIds): array {
-        if ($lineIds === []) {
-            return [];
-        }
-        $linked = [];
-        $links = ResalePeriodLink::query()->withoutGlobalScopes()
-            ->where('organization_id', $organization->id)
-            ->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())
-            ->whereIn('linkable_id', $lineIds)
-            ->with(['period:id,starts_on,ends_on', 'subscription:id,label,quantity,provider,starts_on,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name'])
-            ->get();
-        foreach ($links as $link) {
-            $id = (int) $link->linkable_id;
-            $linked[$id] ??= ['months' => 0.0, 'periods' => []];
-            $linked[$id]['months'] += (float) $link->months;
-            // Halter und Abo-Kennung statt Produkt: bei Partnern mit mehreren Endkunden fehlt der
-            // Halter, bei Kunden mit mehreren Verträgen desselben Produkts die Kennung.
-            $linked[$id]['periods'][] = ($link->subscription !== null ? $link->subscription->holderLabel() . ' · ' . $link->subscription->identityLabel() . ' · ' : '') . $link->period->label();
-        }
-
-        return $linked;
-    }
-
-    /**
-     * @param  Collection<int, LexofficeVoucherLine>  $lines
-     * @return list<int>
-     */
-    private static function ids(Collection $lines): array {
-        $ids = [];
-        foreach ($lines as $line) {
-            $ids[] = $line->id;
-        }
-
-        return $ids;
     }
 }

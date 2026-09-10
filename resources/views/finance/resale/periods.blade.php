@@ -28,9 +28,9 @@
                     <x-icon-btn icon="auto_awesome" tone="primary" size="sm" type="submit" show-label>{{ __('resale.link.action.propose') }}</x-icon-btn>
                 </form>
             @endif
-            @if ($canManage)
+            @can(\App\Enums\User\Permission::ResellingInvoice->value)
                 <x-icon-btn icon="receipt_long" tone="ghost" size="sm" data-entry-modal-trigger :href="route('finance.resale.periods.draft.create')" show-label>{{ __('resale.draft.action') }}</x-icon-btn>
-            @endif
+            @endcan
             <x-icon-btn icon="compare_arrows" tone="ghost" size="sm" :href="route('finance.resale.reconcile.index')" show-label>{{ __('resale.reconcile.title') }}</x-icon-btn>
             <x-icon-btn icon="download" tone="ghost" size="sm" :href="route('finance.resale.report.export')" show-label>{{ __('resale.export.action') }}</x-icon-btn>
             <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('finance.resale.index')" show-label>{{ __('resale.action.back') }}</x-icon-btn>
@@ -44,11 +44,11 @@
         </div>
 
         @if ($unlinked->isNotEmpty())
-            {{-- Lizenzpositionen ohne Abo: fehlende Abos oder falsche Halter finden. --}}
+            {{-- Lizenzpositionen ohne Abo: fehlende Abos oder falsche Halter finden (die neuesten 100, Gesamtzahl im Titel). --}}
             <details class="collapse collapse-arrow border border-base-300 bg-base-100 mb-4">
-                <summary class="collapse-title text-sm font-medium">{{ trans_choice('resale.unlinked.title', $unlinked->count(), ['count' => $unlinked->count()]) }}</summary>
+                <summary class="collapse-title text-sm font-medium">{{ trans_choice('resale.unlinked.title', $unlinkedTotal, ['count' => $unlinkedTotal]) }}</summary>
                 <div class="collapse-content p-0">
-                    <p class="px-4 pb-2 text-xs text-muted">{{ __('resale.unlinked.hint') }}</p>
+                    <p class="px-4 pb-2 text-xs text-muted">{{ __('resale.unlinked.hint') }}@if ($unlinkedTotal > $unlinked->count()) {{ __('resale.link_ui.unlinked_truncated', ['shown' => $unlinked->count()]) }}@endif</p>
                     <x-table bare>
                         <x-slot:head>
                             <tr>
@@ -59,9 +59,9 @@
                                 <x-table.th>{{ __('resale.unlinked.text') }}</x-table.th>
                             </tr>
                         </x-slot:head>
-                        @foreach ($unlinked->take(100) as $line)
+                        @foreach ($unlinked as $line)
                             <tr>
-                                <td class="whitespace-nowrap"><span class="font-mono text-xs">{{ $line->voucher->voucher_number }}</span> <span class="text-xs text-muted tabular-nums">{{ $line->voucher->voucher_date?->format('d.m.Y') }}</span></td>
+                                <td class="whitespace-nowrap"><span class="font-mono text-xs">{{ $line->voucher->voucher_number }}</span> <span class="text-xs text-muted tabular-nums">{{ $line->voucher->voucher_date?->fdate() }}</span></td>
                                 <td class="text-sm">
                                     @if ($line->voucher->customer !== null)
                                         <a href="{{ route('finance.resale.reconcile.show', $line->voucher->customer) }}" class="link link-hover">{{ $line->voucher->customer->name }}</a>
@@ -70,7 +70,7 @@
                                     @endif
                                 </td>
                                 <td class="text-sm">{{ $line->article?->name ?? $line->name }}</td>
-                                <td class="text-right tabular-nums whitespace-nowrap">{{ rtrim(rtrim(number_format((float) $line->quantity, 2, ',', '.'), '0'), ',') }}{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
+                                <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
                                 <td class="text-xs max-w-xs truncate" title="{{ $line->voucher->voucher_text }}">{{ $line->voucher->voucherTextHint() ?? \Illuminate\Support\Str::limit((string) $line->voucher->voucher_text, 70) }}</td>
                             </tr>
                         @endforeach

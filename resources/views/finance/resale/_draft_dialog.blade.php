@@ -6,12 +6,11 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Rechnungsentwurf nach Lexoffice (Feature 152, MVP-764): Rechnungsempfänger
-  mit offenen Perioden wählen; eine Position je Abo und Zeitraum.
+  Rechnungsvorschlag (Feature 152, MVP-764): Rechnungsempfänger mit offenen
+  Perioden wählen; eine Position je Abo und Zeitraum. Empfänger, deren
+  offene Perioden schon in einem Entwurf stehen, werden nur genannt, nicht
+  erneut angeboten (Review 2026-09-10, A4).
 --}}
-@php
-    $money = static fn(float $v): string => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true) . ' €';
-@endphp
 <x-modal
     :title="__('resale.draft.dialog_title')"
     icon="receipt_long"
@@ -30,8 +29,22 @@
         <option value="">—</option>
         @foreach ($recipients as $row)
             <option value="{{ $row['customer']->sqid }}" @selected(old('customer_id') === $row['customer']->sqid)>
-                {{ $row['customer']->name }} · {{ trans_choice('resale.periods.open_count', $row['periods'], ['count' => $row['periods']]) }} · {{ $money($row['net']) }}
+                {{ $row['customer']->name }} · {{ trans_choice('resale.periods.open_count', $row['periods'], ['count' => $row['periods']]) }} · {{ $row['net']->format() }}
             </option>
         @endforeach
     </x-select-field>
+    @if ($drafted !== [])
+        <div class="mt-3">
+            <div class="text-xs font-semibold uppercase tracking-wider text-muted mb-1">{{ __('resale.draft_dialog.drafted') }}</div>
+            <ul class="text-sm space-y-1">
+                @foreach ($drafted as $row)
+                    <li>
+                        <span class="font-medium">{{ $row['customer']->name }}</span>
+                        <span class="text-muted">· {{ trans_choice('resale.draft_dialog.drafted_line', $row['drafted'], ['count' => $row['drafted'], 'reference' => $row['draft_reference'], 'date' => $row['draft_created_at'] !== null ? \App\Support\Tz::toLocal($row['draft_created_at'])?->fdate() : '—']) }}</span>
+                    </li>
+                @endforeach
+            </ul>
+            <p class="text-xs text-muted mt-1">{{ __('resale.draft_dialog.drafted_hint') }}</p>
+        </div>
+    @endif
 </x-modal>
