@@ -15817,7 +15817,6 @@ CREATE TABLE `resale_purchase_entries` (
   `source` varchar(24) NOT NULL,
   `document_type` varchar(120) DEFAULT NULL,
   `document_id` bigint(20) unsigned DEFAULT NULL,
-  `lexoffice_voucher_id` bigint(20) unsigned DEFAULT NULL,
   `domain_accounting_entry_id` bigint(20) unsigned DEFAULT NULL,
   `document_number` varchar(64) DEFAULT NULL,
   `entry_date` date NOT NULL,
@@ -15831,7 +15830,6 @@ CREATE TABLE `resale_purchase_entries` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `resale_purchases_org_hash_uq` (`organization_id`,`raw_hash`),
   KEY `resale_purchase_entries_subscription_id_foreign` (`subscription_id`),
-  KEY `resale_purchase_entries_lexoffice_voucher_id_foreign` (`lexoffice_voucher_id`),
   KEY `resale_purchase_entries_domain_accounting_entry_id_foreign` (`domain_accounting_entry_id`),
   KEY `resale_purchase_entries_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `resale_purchases_org_prov_date_idx` (`organization_id`,`provider`,`entry_date`),
@@ -15839,7 +15837,6 @@ CREATE TABLE `resale_purchase_entries` (
   KEY `resale_purchase_doc_idx` (`organization_id`,`document_type`,`document_id`),
   CONSTRAINT `resale_purchase_entries_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_purchase_entries_domain_accounting_entry_id_foreign` FOREIGN KEY (`domain_accounting_entry_id`) REFERENCES `domain_accounting_entries` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `resale_purchase_entries_lexoffice_voucher_id_foreign` FOREIGN KEY (`lexoffice_voucher_id`) REFERENCES `lexoffice_vouchers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_purchase_entries_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `resale_purchase_entries_period_id_foreign` FOREIGN KEY (`period_id`) REFERENCES `resale_periods` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_purchase_entries_subscription_id_foreign` FOREIGN KEY (`subscription_id`) REFERENCES `resale_subscriptions` (`id`) ON DELETE CASCADE
@@ -21212,3 +21209,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (797,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',66);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (799,'2027_02_20_101300_add_resale_role_to_articles',66);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (800,'2027_02_20_101400_add_service_period_to_invoice_items',66);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',67);

@@ -16,7 +16,7 @@ use App\Casts\MoneyCast;
 use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Domain\DomainAccountingEntry;
-use App\Models\{LexofficeVoucher, Organization, User};
+use App\Models\{Organization, User};
 use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
@@ -28,8 +28,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * Einkaufsbeleg-Zeile (Feature 152, MVP-762): Ist-Einkauf einer Periode
  * aus Eingangsbeleg, Domain-Buchung oder Handeingabe. Der Eingangsbeleg
  * hängt als Morph (`document_type/document_id`, Review 2026-09-11) an einer
- * Quelle der {@see PurchaseDocuments}; `lexoffice_voucher_id` ist die
- * Altspalte der Lexoffice-Zuteilungen und bleibt für sie gefüllt.
+ * Quelle der {@see PurchaseDocuments} — Lexoffice-Spiegel, Ausgabe oder
+ * Eingangs-E-Rechnung; eine anbieterspezifische Spalte gibt es nicht mehr.
  *
  * @property int $id
  * @property int $organization_id
@@ -39,7 +39,6 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
  * @property string $source
  * @property string|null $document_type
  * @property int|null $document_id
- * @property int|null $lexoffice_voucher_id
  * @property int|null $domain_accounting_entry_id
  * @property string|null $document_number
  * @property CarbonImmutable $entry_date
@@ -69,7 +68,6 @@ class ResalePurchaseEntry extends Model {
         'source',
         'document_type',
         'document_id',
-        'lexoffice_voucher_id',
         'domain_accounting_entry_id',
         'document_number',
         'entry_date',
@@ -91,11 +89,6 @@ class ResalePurchaseEntry extends Model {
     private ?PurchaseDocument $purchaseDocument = null;
 
     private bool $purchaseDocumentResolved = false;
-
-    /** Morph-Typ der Altspalte `lexoffice_voucher_id` — Altzeilen ohne Belegbezug und Hash-Kompatibilität der Lexoffice-Zuteilungen. */
-    public static function legacyVoucherMorphClass(): string {
-        return (new LexofficeVoucher)->getMorphClass();
-    }
 
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo {
@@ -121,15 +114,6 @@ class ResalePurchaseEntry extends Model {
         return $this->morphTo('document', 'document_type', 'document_id');
     }
 
-    /**
-     * Altspalte: Lexoffice-Beleg der Zuteilung (Review 2026-09-11) — neue Zeilen tragen den Bezug im Morph.
-     *
-     * @return BelongsTo<LexofficeVoucher, $this>
-     */
-    public function voucher(): BelongsTo {
-        return $this->belongsTo(LexofficeVoucher::class, 'lexoffice_voucher_id');
-    }
-
     /** @return BelongsTo<DomainAccountingEntry, $this> */
     public function domainAccountingEntry(): BelongsTo {
         return $this->belongsTo(DomainAccountingEntry::class, 'domain_accounting_entry_id');
@@ -145,16 +129,13 @@ class ResalePurchaseEntry extends Model {
     }
 
     /**
-     * Belegbezug: Morph-Typ und ID, für Altzeilen aus `lexoffice_voucher_id`.
+     * Belegbezug: Morph-Typ und ID; [null, null] ohne Beleg (Anbieterrechnung, Domain-Buchung, Handeingabe).
      *
      * @return array{0: string|null, 1: int|null}
      */
     public function documentReference(): array {
         if ($this->document_type !== null && $this->document_id !== null) {
             return [(string) $this->document_type, (int) $this->document_id];
-        }
-        if ($this->lexoffice_voucher_id !== null) {
-            return [self::legacyVoucherMorphClass(), (int) $this->lexoffice_voucher_id];
         }
 
         return [null, null];

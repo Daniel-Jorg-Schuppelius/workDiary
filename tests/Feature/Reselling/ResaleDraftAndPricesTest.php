@@ -71,6 +71,9 @@ class ResaleDraftAndPricesTest extends TestCase {
             ->assertSee(__('resale.prices.flag.contract_above_catalog'), false)
             ->assertSee('126,00 €')
             ->assertSee(__('resale.prices.flag.article_price_differs'), false)
+            // Eigene Spalte „Artikelpreis" (Review 2026-09-11, Kleinigkeiten) — auch für Abos ohne Lexoffice-Artikel.
+            ->assertSee(__('resale.prices.col.article_price'), false)
+            ->assertSee(\CommonToolkit\ValueObjects\Money::ofFloat(60.0, \CommonToolkit\Enums\CurrencyCode::Euro, 2)->format())
             ->assertDontSee(__('resale.prices.flag.below_purchase'), false);
         $rows = app(\App\Services\Reselling\Register\ResalePriceCheck::class)->build(\App\Models\Reselling\ResalePeriod::today())['rows'];
         $row = collect($rows)->firstWhere('label', 'Exchange Online (Plan 1)');
@@ -300,7 +303,10 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertSame($invoice->number, $pricedPeriod->draft_reference);
         $this->assertSame('Kunde will Sammelrechnung · ' . __('resale.draft.local_note', ['number' => $invoice->number]), $pricedPeriod->note, 'Stempel wird angehängt (Trenner „ · ")');
         $this->assertNotNull($pricedPeriod->draft_created_at);
-        $this->assertStringStartsWith('Microsoft 365 Business Premium · ', (string) $invoice->items->first()?->description);
+        // Zeitraum steht in service_from/service_to und erscheint als eigene Zeile — nicht mehr im Text (Review 2026-09-11, Kleinigkeiten UI).
+        $this->assertSame('Microsoft 365 Business Premium', (string) $invoice->items->first()?->description, 'Beschreibung ohne Zeitraum');
+        $this->assertSame('2025-08-05', $invoice->items->first()?->service_from?->toDateString());
+        $this->assertSame('05.08.2025 – 04.08.2026', $invoice->items->first()?->servicePeriodLabel());
         $this->assertSame('2.000', $invoice->items->first()?->quantity, 'kein Monatsartikel → Stück: 2 Lizenzen × 12/12');
         $this->assertSame('247.2000', $invoice->items->first()?->unit_price?->getAmount(), 'Stückpreis = Verkaufspreis je Periode und Lizenz');
 

@@ -29,6 +29,13 @@
         <x-article-picker :articles="$articles ?? collect()" :selected="$item->article_id ?? null" />
         <x-input-field name="description" :label="__('Beschreibung')" required maxlength="1000" span="2" :value="old('description', $item->description ?? '')" />
         <x-input-field name="service_date" type="date" :label="__('Leistungsdatum')" :value="old('service_date', optional($item->service_date ?? null)->format('Y-m-d'))" :hint="__('Bei mehreren Tagen Pflicht je Position.')" />
+        {{-- Leistungszeitraum (Feature 152): optional, eigene Zeile unter der Position. --}}
+        <x-date-range layout="split" form-control grid-class="contents" size=""
+                      from-name="service_from" to-name="service_to" type="date"
+                      :from="old('service_from', optional($item->service_from ?? null)->toDateString())"
+                      :to="old('service_to', optional($item->service_to ?? null)->toDateString())"
+                      :from-label="__('invoicing.item.service_from')" :to-label="__('invoicing.item.service_to')"
+                      :from-error="$errors->first('service_from')" :to-error="$errors->first('service_to')" />
         <x-input-field name="quantity" type="number" :label="__('Menge')" required min="0" step="0.01" :value="old('quantity', (string) ($item->quantity ?? '1.00'))" />
         <x-input-field name="unit" :label="__('Einheit')" maxlength="32" :value="old('unit', $item->unit ?? __('invoicing.unit_hour'))" />
         <x-input-field name="unit_price" :label="__('Einzelpreis') . ' (' . $invoice->currency->value . ')'" type="number" required min="0" step="0.01" :value="old('unit_price', ($item->unit_price?->getAmount() ?? '0.00'))" />

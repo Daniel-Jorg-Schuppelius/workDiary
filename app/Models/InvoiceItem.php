@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasSqid};
+use App\Support\CarbonFmt;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
@@ -171,5 +172,20 @@ class InvoiceItem extends Model {
      */
     public function settledInvoice(): BelongsTo {
         return $this->belongsTo(Invoice::class, 'settled_invoice_id');
+    }
+
+    /**
+     * Leistungszeitraum „Von – Bis" in der Anzeige (Feature 152); ohne Ende
+     * nur der Beginn, ohne Zeitraum das Leistungsdatum, sonst null.
+     */
+    public function servicePeriodLabel(): ?string {
+        $from = $this->service_from ?? $this->service_date;
+        if ($from === null) {
+            return null;
+        }
+        $label = CarbonFmt::fdate($from);
+        $to = $this->service_from !== null ? $this->service_to : null;
+
+        return $to === null ? $label : $label . ' – ' . CarbonFmt::fdate($to);
     }
 }

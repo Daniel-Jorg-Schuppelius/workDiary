@@ -20,7 +20,11 @@
         </include>
     </source>
     <php>
+        <!-- Deckel gegen Speicher-Amok einzelner Tests: die CLI läuft sonst mit memory_limit=-1 (WSL2-Absturz bei 42 GB). -->
+        <ini name="memory_limit" value="1G"/>
         <env name="APP_ENV" value="testing"/>
+        <!-- Kein Dateilog im Testlauf: debug-Ausgaben der Toolkits füllten storage/logs/laravel.log auf 784 MB. -->
+        <env name="LOG_CHANNEL" value="null"/>
         <env name="APP_MAINTENANCE_DRIVER" value="file"/>
         <env name="APP_INSTALLED" value="true"/>
         <env name="BCRYPT_ROUNDS" value="4"/>

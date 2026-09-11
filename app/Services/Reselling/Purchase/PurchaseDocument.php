@@ -52,6 +52,16 @@ final readonly class PurchaseDocument {
         return $morphClass . ':' . $morphId;
     }
 
+    /** Ersatznummer `<Präfix><id>` (Quellen ohne eigene Belegnummer) — stabil je Beleg, damit die Einkaufszeile nie ohne Nummer bleibt. */
+    public static function fallbackNumber(string $prefix, int $morphId): string {
+        return $prefix . $morphId;
+    }
+
+    /** Beleg-ID aus einem Suchbegriff in Ersatznummern-Form (`<Präfix><id>`), sonst null. */
+    public static function idFromFallbackNumber(string $prefix, string $term): ?int {
+        return preg_match('/^' . preg_quote($prefix, '/') . '(\d+)$/i', trim($term), $m) === 1 ? (int) $m[1] : null;
+    }
+
     /** Kennung des Belegs: Nummer, sonst Beschreibung, sonst Lieferant. */
     public function reference(): string {
         foreach ([$this->number, $this->description, $this->vendorName] as $candidate) {

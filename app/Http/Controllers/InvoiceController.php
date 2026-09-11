@@ -637,6 +637,8 @@ class InvoiceController extends Controller {
             'organization_id' => $invoice->organization_id,
             'article_id' => $data['article_id'] ?? null,
             'service_date' => $data['service_date'] ?? null,
+            'service_from' => $data['service_from'] ?? null,
+            'service_to' => $data['service_to'] ?? null,
             'description' => $data['description'],
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? (string) __('invoicing.unit_hour'),
@@ -663,6 +665,8 @@ class InvoiceController extends Controller {
         $item->update([
             'article_id' => $data['article_id'] ?? null,
             'service_date' => $data['service_date'] ?? null,
+            'service_from' => $data['service_from'] ?? null,
+            'service_to' => $data['service_to'] ?? null,
             'description' => $data['description'],
             'quantity' => (string) $data['quantity'],
             'unit' => $data['unit'] ?? $item->unit,

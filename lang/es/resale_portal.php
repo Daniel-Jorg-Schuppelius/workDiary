@@ -57,4 +57,8 @@ return [
     'empty' => 'No hay suscripciones registradas.',
     'back' => 'Volver al resumen',
     'show' => 'Detalles',
+    // Kachel auf der Portal-Startseite (Review 2026-09-11).
+    'dashboard' => [
+        'tile' => 'Suscripciones y licencias',
+    ],
 ];

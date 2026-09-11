@@ -17,14 +17,16 @@ use App\Models\Reselling\{ResalePriceEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 
 /**
  * Preisprüfung (Feature 152, MVP-766 — aus 151 übernommen): je Produkt der
  * Einkauf laut Vertrag, der am Stichtag gültige Katalogpreis (12 Monate,
  * jährlich), die UVP und der Verkaufspreis des lokalen Artikels
- * (`articles.default_sale_price`, Review 2026-09-11) gegen die Verkaufspreise
- * der Abos; Hinweise, wo der Preis anzupassen ist.
+ * (`articles.default_sale_price`, Review 2026-09-11 — mit oder ohne
+ * Lexoffice-Artikel am Abo) gegen die Verkaufspreise der Abos; Hinweise, wo
+ * der Preis anzupassen ist.
  *
  * @phpstan-type PriceRow array{label: string, currency: CurrencyCode, subscriptions: int, quantity: int, purchase_min: float|null, purchase_max: float|null, list_price: float|null, uvp: float|null, article_sale: float|null, sale_min: float|null, sale_median: float|null, sale_max: float|null, margin: float|null, flags: list<string>}
  */
@@ -49,9 +51,11 @@ final class ResalePriceCheck {
             $entry = self::catalogEntryFor($catalog, $label, $matcher);
             $listPrice = $entry?->purchase_unit_price->toFloat();
             $uvp = $entry?->list_unit_price?->toFloat();
-            // Verkaufspreis des lokalen Artikels — nur in der Währung der Abos vergleichbar.
-            $articlePrice = $group->first(static fn(ResaleSubscription $s): bool => $s->article?->default_sale_price !== null)?->article?->default_sale_price;
-            $articleSale = $articlePrice !== null && $articlePrice->getCurrency() === $first->currency ? $articlePrice->toFloat() : null;
+            // Verkaufspreis des lokalen Artikels — erster Artikel der Gruppe mit Preis in der Währung der Abos.
+            $articleSale = $group
+                ->map(static fn(ResaleSubscription $s): ?Money => $s->article?->default_sale_price)
+                ->first(static fn(?Money $price): bool => $price !== null && $price->getCurrency() === $first->currency)
+                ?->toFloat();
             $median = $sales->isEmpty() ? null : (float) $sales->get(intdiv($sales->count(), 2));
             $rows[] = [
                 'label' => $label,

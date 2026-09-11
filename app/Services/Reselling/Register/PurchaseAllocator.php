@@ -23,7 +23,6 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -39,6 +38,9 @@ use Illuminate\Support\Facades\DB;
  * 2026-09-11): Lexoffice-Spiegel, lokale Ausgabe oder Eingangs-E-Rechnung.
  */
 final class PurchaseAllocator {
+    /** Quelle, deren Hash-Basis aus der Zeit vor der Belegregistry nur die Beleg-ID trägt — bestehende Lexoffice-Zuteilungen bleiben Dubletten. */
+    private const LEGACY_HASH_SOURCE = 'lexoffice';
+
     /** @var array<int, Collection<int, ResaleSubscription>> Organisation → alle Abos (Gutschrift-Fallback), je Lauf einmal geladen */
     private array $subscriptions = [];
 
@@ -49,10 +51,9 @@ final class PurchaseAllocator {
 
     /**
      * Eingangsbeleg pro rata auf die Perioden des Monats verteilen. Zeilen
-     * tragen den Belegbezug als Morph; Lexoffice-Belege behalten zusätzlich
-     * `lexoffice_voucher_id` und ihre bisherige Hash-Basis (Beleg-ID), damit
-     * bestehende Zuteilungen dieselbe Zuteilung bleiben — andere Quellen
-     * hashen `quelle|id`.
+     * tragen den Belegbezug als Morph; Lexoffice-Belege behalten ihre
+     * bisherige Hash-Basis (nur die Beleg-ID), damit bestehende Zuteilungen
+     * dieselbe Zuteilung bleiben — andere Quellen hashen `quelle|id`.
      *
      * @return array{entries: int, allocated: float, unallocated: float}
      */
@@ -78,20 +79,16 @@ final class PurchaseAllocator {
             $total += $monthly;
         }
         $result = ['entries' => 0, 'allocated' => 0.0, 'unallocated' => $net->toFloat()];
-        $legacyVoucherId = $document->morphClass === ResalePurchaseEntry::legacyVoucherMorphClass() ? $document->morphId : null;
-        $baseHash = ($legacyVoucherId !== null ? (string) $legacyVoucherId : $document->sourceKey . '|' . $document->morphId) . '|' . $provider->value . '|' . $month->format('Y-m');
+        $documentKey = $document->sourceKey === self::LEGACY_HASH_SOURCE ? (string) $document->morphId : $document->sourceKey . '|' . $document->morphId;
+        $baseHash = $documentKey . '|' . $provider->value . '|' . $month->format('Y-m');
 
-        DB::transaction(function () use ($organization, $document, $legacyVoucherId, $provider, $net, $month, $user, $source, $periods, $weights, $total, $baseHash, &$result): void {
-            // Alte pro-rata-Zuteilung dieses Belegs ersetzen (ein Beleg = eine Zuteilung) — Altzeilen nur über die Altspalte.
+        DB::transaction(function () use ($organization, $document, $provider, $net, $month, $user, $source, $periods, $weights, $total, $baseHash, &$result): void {
+            // Alte pro-rata-Zuteilung dieses Belegs ersetzen (ein Beleg = eine Zuteilung).
             ResalePurchaseEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('source', $source)
-                ->where(static function (Builder $w) use ($document, $legacyVoucherId): void {
-                    $w->where(static fn(Builder $m) => $m->where('document_type', $document->morphClass)->where('document_id', $document->morphId));
-                    if ($legacyVoucherId !== null) {
-                        $w->orWhere('lexoffice_voucher_id', $legacyVoucherId);
-                    }
-                })
+                ->where('document_type', $document->morphClass)
+                ->where('document_id', $document->morphId)
                 ->delete();
             $remaining = round($net->toFloat(), 2);
             $count = count($weights);
@@ -112,7 +109,6 @@ final class PurchaseAllocator {
                     'source' => $source,
                     'document_type' => $document->morphClass,
                     'document_id' => $document->morphId,
-                    'lexoffice_voucher_id' => $legacyVoucherId,
                     'document_number' => $document->number !== null ? mb_substr($document->number, 0, 64) : null,
                     'entry_date' => $document->date?->toDateString() ?? $month->toDateString(),
                     'description' => (string) __('resale.purchase.pro_rata', ['month' => $month->format('m/Y')]),

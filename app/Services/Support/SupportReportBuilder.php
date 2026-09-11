@@ -440,15 +440,13 @@ class SupportReportBuilder {
             return [];
         }
         try {
-            $content = File::get($logFile);
+            // Rückwärts lesen statt File::get(): ein großes Log darf den Support-Bericht nicht in den Speicher-Tod reißen.
+            $slice = ToolkitFile::tail($logFile, $tail);
         } catch (Throwable) {
             return [];
         }
 
-        $lines = preg_split("/\r?\n/", $content) ?: [];
-        $slice = array_slice($lines, max(0, count($lines) - $tail));
-
-        return $this->logFilter->filterMany($slice);
+        return $this->logFilter->filterMany(array_values(array_map(static fn (string $line): string => rtrim($line, "\r"), $slice)));
     }
 
     /** @return array<string, int> */

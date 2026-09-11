@@ -172,4 +172,36 @@ class ResaleDigestTest extends TestCase {
         // Rückwärtskompatibel: ohne Parameter zählt der Katalog 0.
         $this->assertSame(0, (new ResalePeriodsDigestNotification(1, '', 0, 0, 0, 0, 30, 60))->catalogChanges);
     }
+
+    /**
+     * Review 2026-09-11 (Kleinigkeiten): der Meldungstext wurde zweimal verlängert
+     * (:drafts, dann :catalog). Gespeicherte Datenbank-Benachrichtigungen tragen die
+     * älteren Schlüssel — sie müssen weiter übersetzt werden statt deutsch zu bleiben.
+     */
+    public function test_stored_digests_with_older_message_keys_are_still_translated(): void {
+        $current = (new ResalePeriodsDigestNotification(1, '10,00 €', 0, 0, 0, 0, 30, 60))->toArray($this->manager)['message_key'];
+        $older = [
+            ':due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen. Bitte die Periodenseite „Abos & Lizenzen" prüfen.',
+            ':due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen, :drafts Rechnungsentwürfe der letzten :draft_days Tage noch nicht abgeschlossen. Bitte die Periodenseite „Abos & Lizenzen" prüfen.',
+        ];
+        $params = ['due' => 2, 'amount' => '494,40 €', 'proposed' => 0, 'unassigned' => 0, 'renewals' => 0, 'renewal_days' => 30, 'stale' => 0, 'stale_days' => 60, 'drafts' => 0, 'draft_days' => 7];
+        foreach ($older as $key) {
+            $this->assertNotSame($current, $key, 'historischer Schlüssel ist nicht der aktuelle');
+            foreach (['en', 'fr', 'it', 'es'] as $locale) {
+                $this->assertTrue(app('translator')->has($key, $locale, false), "Alias fehlt in $locale");
+            }
+        }
+
+        $previous = app()->getLocale();
+        app()->setLocale('en');
+        try {
+            $rendered = NotificationText::message(['message_key' => $older[0], 'message_params' => $params, 'message' => 'deutscher Fallback']);
+            $this->assertStringContainsString('2 due periods (open 494,40 €)', $rendered);
+            $this->assertStringNotContainsString('fällige', $rendered);
+            $this->assertStringContainsString('0 invoice drafts from the last 7 days', NotificationText::message(['message_key' => $older[1], 'message_params' => $params]));
+            $this->assertStringContainsString('due periods', NotificationText::message(['message_key' => $current, 'message_params' => $params + ['catalog' => 0]]), 'aktueller Schlüssel weiterhin übersetzt');
+        } finally {
+            app()->setLocale($previous);
+        }
+    }
 }

@@ -13,6 +13,7 @@ namespace App\Http\Controllers\CustomerPortal;
 use App\Enums\CustomerPortal\PortalCapability;
 use App\Http\Controllers\Controller;
 use App\Models\{DiaryEntry, Invoice, OpenIssue, Project, TimeEntry, User};
+use App\Models\Reselling\ResaleSubscription;
 use App\Services\CustomerPortal\PortalVisibility;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\Auth;
@@ -64,6 +65,14 @@ class DashboardController extends Controller {
                                     ->select('id'));
                         });
                 })
+                ->count();
+        }
+        if ($customer !== null && $visibility->allows($customer, PortalCapability::Subscriptions)) {
+            // Bestand wie in „meine Abos": Kunde + Endkunden, Org-Grenze des Portalkontos.
+            $stats['subscriptions'] = ResaleSubscription::query()
+                ->where('organization_id', (int) $user->organization_id)
+                ->forCustomer($customer)
+                ->visibleInPortal()
                 ->count();
         }
 

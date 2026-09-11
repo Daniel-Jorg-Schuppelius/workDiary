@@ -319,6 +319,10 @@ return [
             'no_sales' => 'Pas de prix de vente',
             'article_price_differs' => 'Vente différente du prix de l’article', // Review 2026-09-11
         ],
+        // Review 2026-09-11 (Kleinigkeiten)
+        'col' => [
+            'article_price' => 'Prix de l’article',
+        ],
     ],
     'draft' => [
         'action' => 'Brouillon Lexoffice',

@@ -151,7 +151,7 @@ class ResalePurchaseController extends Controller {
     }
 
     public function destroy(ResalePurchaseEntry $entry): RedirectResponse {
-        // Zuteilung eines Belegs immer als Ganzes lösen: über den Belegbezug, für Altzeilen über die Belegnummer.
+        // Zuteilung eines Belegs immer als Ganzes lösen: über den Belegbezug, ohne Beleg (Anbieterrechnung, Handeingabe) über die Belegnummer.
         $group = ResalePurchaseEntry::query()->where('provider', $entry->provider->value)->where('source', $entry->source);
         if ($entry->source !== ResalePurchaseEntry::SOURCE_DOMAIN && $entry->document_type !== null && $entry->document_id !== null) {
             $group->where('document_type', $entry->document_type)->where('document_id', $entry->document_id)->delete();

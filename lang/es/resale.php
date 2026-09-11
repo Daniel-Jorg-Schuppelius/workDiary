@@ -319,6 +319,10 @@ return [
             'no_sales' => 'Sin precio de venta',
             'article_price_differs' => 'Venta distinta del precio del artículo', // Review 2026-09-11
         ],
+        // Review 2026-09-11 (Kleinigkeiten)
+        'col' => [
+            'article_price' => 'Precio del artículo',
+        ],
     ],
     'draft' => [
         'action' => 'Borrador Lexoffice',

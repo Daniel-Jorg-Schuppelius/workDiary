@@ -118,6 +118,48 @@ class ManualInvoiceItemTest extends TestCase {
         $this->assertSame('0.00', $invoice->total?->getAmount());
     }
 
+    public function test_service_period_is_saved_validated_and_shown_per_item(): void {
+        $invoice = $this->makeDraft();
+        $payload = ['description' => 'Microsoft 365 Business Premium', 'quantity' => '2', 'unit' => 'St.', 'unit_price' => '247.20'];
+
+        $this->actingAs($this->admin)
+            ->post(route('invoices.items.store', $invoice), $payload + ['service_from' => '2025-08-05', 'service_to' => '2026-08-04'])
+            ->assertRedirect();
+
+        $item = $invoice->items()->firstOrFail();
+        $this->assertSame('2025-08-05', $item->service_from?->toDateString());
+        $this->assertSame('2026-08-04', $item->service_to?->toDateString());
+        $this->assertNull($item->service_date, 'Leistungsdatum bleibt eigenes Feld');
+        $this->assertSame('05.08.2025 – 04.08.2026', $item->servicePeriodLabel());
+
+        $this->actingAs($this->admin)->get(route('invoices.show', $invoice))
+            ->assertOk()
+            ->assertSee(__('invoicing.item.service_period') . ': 05.08.2025 – 04.08.2026');
+
+        // Ende vor Beginn bzw. Ende ohne Beginn sind Eingabefehler.
+        $this->actingAs($this->admin)
+            ->put(route('invoices.items.update', [$invoice, $item]), $payload + ['service_from' => '2026-08-04', 'service_to' => '2025-08-05'])
+            ->assertSessionHasErrors('service_to');
+        $this->actingAs($this->admin)
+            ->put(route('invoices.items.update', [$invoice, $item]), $payload + ['service_to' => '2026-08-04'])
+            ->assertSessionHasErrors('service_from');
+
+        // Nur Beginn: Label zeigt den Beginn; ohne Zeitraum fällt es aufs Leistungsdatum zurück.
+        $this->actingAs($this->admin)
+            ->put(route('invoices.items.update', [$invoice, $item]), $payload + ['service_from' => '2025-08-05'])
+            ->assertRedirect();
+        $item->refresh();
+        $this->assertNull($item->service_to);
+        $this->assertSame('05.08.2025', $item->servicePeriodLabel());
+
+        $this->actingAs($this->admin)
+            ->put(route('invoices.items.update', [$invoice, $item]), $payload + ['service_date' => '2026-09-11'])
+            ->assertRedirect();
+        $item->refresh();
+        $this->assertNull($item->service_from);
+        $this->assertSame('11.09.2026', $item->servicePeriodLabel());
+    }
+
     public function test_cannot_add_item_to_issued_invoice(): void {
         $invoice = $this->makeDraft();
         $invoice->update(['status' => Invoice::STATUS_ISSUED]);

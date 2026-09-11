@@ -84,7 +84,7 @@ final class PurchaseDocuments {
         return $this->sourceFor($morphClass)?->byMorph($organization, $id);
     }
 
-    /** Beleg einer Einkaufszeile: über den Morph, für Altzeilen über `lexoffice_voucher_id`. */
+    /** Beleg einer Einkaufszeile über ihren Morph-Bezug; null für Zeilen ohne Beleg oder ohne registrierte Quelle. */
     public function forEntry(ResalePurchaseEntry $entry, ?Organization $organization = null): ?PurchaseDocument {
         [$morphClass, $id] = $entry->documentReference();
         if ($morphClass === null || $id === null) {

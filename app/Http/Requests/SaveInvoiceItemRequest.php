@@ -25,6 +25,9 @@ class SaveInvoiceItemRequest extends BaseFormRequest {
             'article_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization('articles')],
             'description' => ['required', 'string', 'max:1000'],
             'service_date' => ['nullable', 'date'],
+            // Leistungszeitraum (Feature 152): optional; Ende nie vor Beginn, kein Ende ohne Beginn.
+            'service_from' => ['nullable', 'date_format:Y-m-d', 'required_with:service_to'],
+            'service_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:service_from'],
             'quantity' => ['required', 'numeric', 'min:0'],
             'unit' => ['nullable', 'string', 'max:32'],
             'unit_price' => ['required', 'numeric', 'min:0'],

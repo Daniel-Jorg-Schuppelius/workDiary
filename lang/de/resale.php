@@ -319,6 +319,10 @@ return [
             'no_sales' => 'Kein Verkaufspreis',
             'article_price_differs' => 'Verkauf weicht vom Artikelpreis ab', // Review 2026-09-11
         ],
+        // Review 2026-09-11 (Kleinigkeiten)
+        'col' => [
+            'article_price' => 'Artikelpreis',
+        ],
     ],
     'draft' => [
         'action' => 'Lexoffice-Entwurf',

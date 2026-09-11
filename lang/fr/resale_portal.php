@@ -57,4 +57,8 @@ return [
     'empty' => 'Aucun abonnement enregistré.',
     'back' => 'Retour à l’aperçu',
     'show' => 'Détails',
+    // Kachel auf der Portal-Startseite (Review 2026-09-11).
+    'dashboard' => [
+        'tile' => 'Abonnements & licences',
+    ],
 ];

@@ -57,4 +57,8 @@ return [
     'empty' => 'Keine Abos hinterlegt.',
     'back' => 'Zur Übersicht',
     'show' => 'Details',
+    // Kachel auf der Portal-Startseite (Review 2026-09-11).
+    'dashboard' => [
+        'tile' => 'Abos & Lizenzen',
+    ],
 ];

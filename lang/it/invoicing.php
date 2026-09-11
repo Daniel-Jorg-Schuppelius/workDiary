@@ -121,4 +121,11 @@ return [
         'added' => 'Ritenuta registrata.',
         'released' => 'Ritenuta liberata.',
     ],
+
+    // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    'item' => [
+        'service_period' => 'Periodo di prestazione',
+        'service_from' => 'Periodo di prestazione dal',
+        'service_to' => 'Periodo di prestazione al',
+    ],
 ];

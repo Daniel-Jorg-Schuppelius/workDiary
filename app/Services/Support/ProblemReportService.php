@@ -22,6 +22,7 @@ use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Support\{Setting, UrlSafety};
+use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{File, Log, Mail};
 
@@ -198,7 +199,8 @@ class ProblemReportService {
                 '"request_id": "' . $requestId . '"',
             ];
 
-            $lines = array_slice(explode("\n", File::get($path)), -2000);
+            // Nur das Ende lesen: File::get() lädt sonst ein GB-Log komplett in den Speicher (Toolkit-Tail liest rückwärts).
+            $lines = ToolkitFile::tail($path, 2000);
             $matching = array_values(array_filter(
                 $lines,
                 static function (string $line) use ($needles): bool {

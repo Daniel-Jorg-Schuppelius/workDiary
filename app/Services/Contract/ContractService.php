@@ -21,6 +21,7 @@ use App\Models\{Organization, User};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Notification\NotificationDispatcher;
 use App\Services\Numbering\NumberSequenceService;
+use App\Support\DocumentLocale;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -171,13 +172,14 @@ class ContractService {
             return null;
         }
 
-        return $this->addObligation($contract, [
+        // Titel in der Org-Sprache: gemeinsamer Datensatz, nicht die Sicht des Auslösers (Request-Sprache oder CLI).
+        return DocumentLocale::within(null, $contract->organization, fn (): ContractObligation => $this->addObligation($contract, [
             'kind' => ContractObligationKind::NoticeDeadline->value,
             'title' => (string) __('Kündigungsfrist zum :date', ['date' => $this->nextTerminationDate($contract)->format('d.m.Y')]),
             'due_on' => $deadline->toDateString(),
             'warn_days_before' => 30,
             'responsible_user_id' => $contract->responsible_user_id,
-        ]);
+        ]));
     }
 
     /** @param array<string, mixed> $attributes */

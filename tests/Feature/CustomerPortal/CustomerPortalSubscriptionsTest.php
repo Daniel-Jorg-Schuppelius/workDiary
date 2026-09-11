@@ -130,6 +130,29 @@ final class CustomerPortalSubscriptionsTest extends TestCase {
         $this->actingAs($this->portalUser, 'customer')->get(route('customer.subscriptions.show', $this->foreign))->assertNotFound();
     }
 
+    public function test_dashboard_tile_counts_the_visible_subscriptions_only_with_capability(): void {
+        // Vor mehr als zwölf Monaten beendet: nicht im Bestand; der fremde Kunde zählt nie.
+        $this->subscription(['label' => 'Altes Backup-Abo', 'customer_id' => $this->customer->id, 'status' => SubscriptionStatus::Ended, 'starts_on' => '2022-01-01', 'ends_on' => '2024-12-31']);
+
+        $page = $this->actingAs($this->portalUser, 'customer')->get(route('customer.dashboard'))->assertOk();
+        $page->assertSee(route('customer.subscriptions.index'), false)
+            ->assertSee((string) __('resale_portal.dashboard.tile'));
+        $stats = $page->viewData('stats');
+        $this->assertIsArray($stats);
+        $this->assertSame(2, $stats['subscriptions'] ?? null, 'eigenes Abo + Abo des Endkunden');
+
+        // Ohne Freigabe (Default-Deny): keine Kachel, kein Zähler. Das Portalkonto hält die
+        // Kundenrelation aus der ersten Anfrage — neu laden, sonst greifen die alten Sichtbarkeiten.
+        $this->allowPortal($this->customer, ['diary']);
+        $this->portalUser->refresh();
+        $page = $this->actingAs($this->portalUser, 'customer')->get(route('customer.dashboard'))->assertOk();
+        $page->assertDontSee(route('customer.subscriptions.index'), false)
+            ->assertDontSee((string) __('resale_portal.dashboard.tile'));
+        $stats = $page->viewData('stats');
+        $this->assertIsArray($stats);
+        $this->assertArrayNotHasKey('subscriptions', $stats);
+    }
+
     public function test_capability_is_unavailable_without_the_reselling_module(): void {
         $visibility = app(PortalVisibility::class);
         $this->assertTrue($visibility->allows($this->customer, PortalCapability::Subscriptions));

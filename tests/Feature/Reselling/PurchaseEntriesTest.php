@@ -217,7 +217,6 @@ TXT;
         $this->assertSame($b->id, $entries[1]->subscription_id);
         $this->assertSame((new LexofficeVoucher)->getMorphClass(), $entries[0]->document_type, 'Belegbezug als Morph');
         $this->assertSame($voucher->id, $entries[0]->document_id);
-        $this->assertSame($voucher->id, $entries[0]->lexoffice_voucher_id, 'Altspalte bleibt für Lexoffice-Belege gefüllt');
         $this->assertSame((string) \CommonToolkit\Helper\Data\CryptoHelper::hash($voucher->id . '|telekom_marketplace|2026-03|' . $entries[0]->period_id), $entries[0]->raw_hash, 'Hash-Basis der Lexoffice-Belege unverändert (Altbestand bleibt Dublette)');
 
         $this->actingAs($admin)->get(route('finance.resale.purchases.index'))->assertOk()->assertSee('726 039 1495')->assertSee('300,00');
@@ -318,13 +317,12 @@ TXT;
         $this->assertSame(['100.00', '300.00'], $entries->map(static fn(ResalePurchaseEntry $e): string => $e->net_amount->getAmount())->all());
         $this->assertSame([(string) __('resale.purchase.pro_rata', ['month' => '04/2026'])], $entries->pluck('description')->unique()->values()->all());
         $this->assertNotSame($marchEntry->raw_hash, $entries[0]->raw_hash, 'Monat gehört zum Hash');
-        $this->assertSame($voucher->id, $entries[0]->lexoffice_voucher_id);
         $this->assertSame((new LexofficeVoucher)->getMorphClass(), $entries[0]->document_type);
 
         // Manuelle Einträge zum selben Beleg (andere Quelle) überleben die Umbuchung.
         $manual = ResalePurchaseEntry::query()->create([
             'organization_id' => $this->organization->id, 'subscription_id' => $a->id, 'period_id' => $a->periods()->firstOrFail()->id, 'provider' => SubscriptionProvider::TelekomMarketplace,
-            'source' => ResalePurchaseEntry::SOURCE_MANUAL, 'lexoffice_voucher_id' => $voucher->id, 'document_number' => '726 039 1495', 'entry_date' => '2026-04-01',
+            'source' => ResalePurchaseEntry::SOURCE_MANUAL, 'document_type' => (new LexofficeVoucher)->getMorphClass(), 'document_id' => $voucher->id, 'document_number' => '726 039 1495', 'entry_date' => '2026-04-01',
             'description' => 'Nachtrag von Hand', 'net_amount' => '12.34', 'currency' => 'EUR', 'raw_hash' => 'manual-1',
         ]);
         $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-04-15'));

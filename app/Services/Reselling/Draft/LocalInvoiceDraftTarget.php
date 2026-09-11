@@ -77,12 +77,14 @@ final class LocalInvoiceDraftTarget implements InvoiceDraftTarget {
                 /** @var ResalePeriod $period */
                 $period = $entry['period'];
                 $line = $entry['line'];
+                // Zeitraum steht in service_from/service_to (eigene Zeile auf Beleg und Seite) — nicht noch einmal im Text.
+                $endCustomer = $period->subscription->foreignCustomer;
                 $item = $invoice->items()->create([
                     'organization_id' => $organization->id,
                     'service_date' => $period->starts_on->toDateString(),
                     'service_from' => $period->starts_on->toDateString(),
                     'service_to' => $period->ends_on->toDateString(),
-                    'description' => trim($line['name'] . ' · ' . $line['description']),
+                    'description' => $line['name'] . ($endCustomer !== null ? ' · ' . __('resale.draft.end_customer', ['name' => $endCustomer->name]) : ''),
                     'quantity' => (string) $line['quantity'],
                     'unit' => $line['unit_name'],
                     'unit_price' => (string) $line['unit_net'],

@@ -7,8 +7,9 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
   Preisprüfung (Feature 152, MVP-766 — aus 151 übernommen): je Produkt
-  Einkauf laut Vertrag, aktueller Katalogpreis, UVP und Verkaufspreise
-  der Abos; Hinweise, wo der Preis anzupassen ist.
+  Einkauf laut Vertrag, aktueller Katalogpreis, UVP, Verkaufspreis des
+  lokalen Artikels und Verkaufspreise der Abos; Hinweise, wo der Preis
+  anzupassen ist.
 --}}
 @extends('layouts.app')
 @section('title', __('resale.prices.title'))
@@ -36,6 +37,7 @@
                     <x-table.th class="text-right">{{ __('resale.prices.purchase_contract') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('resale.prices.list_price') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('resale.prices.uvp') }}</x-table.th>
+                    <x-table.th class="text-right" sort type="number">{{ __('resale.prices.col.article_price') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('resale.prices.sale') }}</x-table.th>
                     <x-table.th class="text-right">{{ __('resale.field.margin') }}</x-table.th>
                     <x-table.th>{{ __('resale.prices.flags') }}</x-table.th>
@@ -49,6 +51,7 @@
                     <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['purchase_min'], $row['currency']) }}@if ($row['purchase_max'] !== null && $row['purchase_max'] !== $row['purchase_min']) – {{ $money($row['purchase_max'], $row['currency']) }}@endif</td>
                     <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['list_price'], $row['currency']) }}</td>
                     <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['uvp'], $row['currency']) }}</td>
+                    <td class="text-right tabular-nums whitespace-nowrap">{{ $money($row['article_sale'], $row['currency']) }}</td>
                     <td class="text-right tabular-nums whitespace-nowrap">
                         {{ $money($row['sale_median'], $row['currency']) }}
                         @if ($row['sale_min'] !== null && $row['sale_min'] !== $row['sale_max'])
@@ -63,7 +66,7 @@
                     </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="9" icon="price_check" :title="__('resale.prices.empty')" compact />
+                <x-table.empty :colspan="10" icon="price_check" :title="__('resale.prices.empty')" compact />
             @endforelse
         </x-table>
     </x-index-page>

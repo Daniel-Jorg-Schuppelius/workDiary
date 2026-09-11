@@ -30,8 +30,9 @@ use Tests\TestCase;
 /**
  * Eingangsbelege anbieterneutral (Feature 152, Review 2026-09-11, Einkauf):
  * Registry aus lokalen Quellen (Ausgaben, Eingangs-E-Rechnungen) und der
- * Lexoffice-Quelle des Plugins; pro-rata-Zuteilung mit Morph-Bezug, Altzeilen
- * über `lexoffice_voucher_id`, Dialog und Speichern mit Quellschlüssel.
+ * Lexoffice-Quelle des Plugins; pro-rata-Zuteilung mit Morph-Bezug (Zeilen aus
+ * der Zeit vor der Registry behalten ihre Hash-Basis), Ersatznummern für
+ * Belege ohne Nummer, Dialog und Speichern mit Quellschlüssel.
  */
 class PurchaseDocumentSourceTest extends TestCase {
     use RefreshDatabase;
@@ -61,11 +62,11 @@ class PurchaseDocumentSourceTest extends TestCase {
         ]);
     }
 
-    private function einvoice(string $number, string $date, string $net, string $status): IncomingEInvoice {
+    private function einvoice(?string $number, string $date, string $net, string $status): IncomingEInvoice {
         $document = Document::factory()->create(['organization_id' => $this->organization->id]);
 
         return IncomingEInvoice::query()->create([
-            'organization_id' => $this->organization->id, 'document_id' => $document->id, 'sha256' => hash('sha256', $number), 'source' => 'upload', 'received_at' => now(),
+            'organization_id' => $this->organization->id, 'document_id' => $document->id, 'sha256' => hash('sha256', $number ?? 'ohne-nummer'), 'source' => 'upload', 'received_at' => now(),
             'status' => $status, 'invoice_number' => $number, 'seller_name' => 'Lieferant GmbH', 'issue_date' => $date, 'currency' => 'EUR',
             'amount_net' => $net, 'amount_tax' => '0.00', 'amount_gross' => $net,
         ]);
@@ -140,7 +141,6 @@ class PurchaseDocumentSourceTest extends TestCase {
         $this->assertSame($a->id, $entry->subscription_id);
         $this->assertSame((new Expense)->getMorphClass(), $entry->document_type);
         $this->assertSame($expense->id, $entry->document_id);
-        $this->assertNull($entry->lexoffice_voucher_id, 'keine Altspalte für lokale Quellen');
         $this->assertSame('AUS-77', $entry->document_number);
         $this->assertSame('2026-03-30', $entry->entry_date->toDateString(), 'Belegdatum der Ausgabe');
         $this->assertSame((string) CryptoHelper::hash('expense|' . $expense->id . '|telekom_marketplace|2026-03|' . $entry->period_id), $entry->raw_hash, 'Hash-Basis quelle|id für Nicht-Lexoffice-Belege');
@@ -177,24 +177,24 @@ class PurchaseDocumentSourceTest extends TestCase {
         $entry = ResalePurchaseEntry::query()->firstOrFail();
         $this->assertSame((new IncomingEInvoice)->getMorphClass(), $entry->document_type);
         $this->assertSame($einvoice->id, $entry->document_id);
-        $this->assertNull($entry->lexoffice_voucher_id);
         $this->assertSame('ER-2026-5', $entry->document_number);
         $this->assertSame('2026-05-04', $entry->entry_date->toDateString());
         $this->assertInstanceOf(IncomingEInvoice::class, $entry->document);
     }
 
-    public function test_legacy_entry_with_only_lexoffice_voucher_id_still_resolves_its_document(): void {
+    public function test_entry_allocated_before_the_registry_keeps_its_hash_and_is_replaced_not_duplicated(): void {
+        // Vor der Belegregistry hashten Lexoffice-Zuteilungen nur die Beleg-ID; Migration 101500 hat ihre Altspalte auf den
+        // Morph übertragen. Eine neue Zuteilung desselben Belegs trifft dieselbe Hash-Basis und ersetzt die Zeile (Unique org+hash).
         $a = $this->subscription('ent-1', 'A', '2026-01-01', 1);
         $voucher = $this->purchaseVoucher('pv-9', '726 039 0009', '2026-03-30');
         $period = $a->periods()->firstOrFail();
         $entry = ResalePurchaseEntry::query()->create([
             'organization_id' => $this->organization->id, 'subscription_id' => $a->id, 'period_id' => $period->id, 'provider' => SubscriptionProvider::TelekomMarketplace,
-            'source' => ResalePurchaseEntry::SOURCE_VOUCHER, 'lexoffice_voucher_id' => $voucher->id, 'document_number' => '726 039 0009', 'entry_date' => '2026-03-30',
+            'source' => ResalePurchaseEntry::SOURCE_VOUCHER, 'document_type' => (new LexofficeVoucher)->getMorphClass(), 'document_id' => $voucher->id, 'document_number' => '726 039 0009', 'entry_date' => '2026-03-30',
             'description' => 'Zuteilung vor der Spiegel-Abstraktion', 'net_amount' => '400.00', 'currency' => 'EUR',
             'raw_hash' => (string) CryptoHelper::hash($voucher->id . '|telekom_marketplace|2026-03|' . $period->id),
         ]);
-        $this->assertNull($entry->document_type);
-        $this->assertSame([(new LexofficeVoucher)->getMorphClass(), $voucher->id], $entry->documentReference(), 'Altspalte liefert den Bezug');
+        $this->assertSame([(new LexofficeVoucher)->getMorphClass(), $voucher->id], $entry->documentReference());
 
         $registry = app(PurchaseDocuments::class);
         $document = $registry->forEntry($entry);
@@ -204,15 +204,45 @@ class PurchaseDocumentSourceTest extends TestCase {
         $this->assertSame('726 039 0009', $entry->purchaseDocument()?->number);
         $this->assertSame('726 039 0009', $entry->documentLabel());
 
-        // Neue Zuteilung desselben Belegs ersetzt die Altzeile (gleiche Hash-Basis) statt sie zu verdoppeln.
+        // Neue Zuteilung desselben Belegs ersetzt die alte Zeile (gleiche Hash-Basis) statt sie zu verdoppeln.
         $result = app(PurchaseAllocator::class)->allocateVoucher($this->organization, $this->documentFor(LexofficeVoucher::class, $voucher->id), SubscriptionProvider::TelekomMarketplace, Money::of('400.00', CurrencyCode::Euro), CarbonImmutable::parse('2026-03-01'));
         $this->assertSame(1, $result['entries']);
-        $this->assertSame(1, ResalePurchaseEntry::query()->count(), 'Altzeile ersetzt, nicht verdoppelt');
+        $this->assertSame(1, ResalePurchaseEntry::query()->count(), 'alte Zeile ersetzt, nicht verdoppelt');
         $fresh = ResalePurchaseEntry::query()->firstOrFail();
-        $this->assertSame($entry->raw_hash, $fresh->raw_hash, 'Hash-Basis der Lexoffice-Belege unverändert');
+        $this->assertSame($entry->raw_hash, $fresh->raw_hash, 'Hash-Basis der Lexoffice-Belege unverändert (Dublette bleibt Dublette)');
         $this->assertSame((new LexofficeVoucher)->getMorphClass(), $fresh->document_type);
         $this->assertSame($voucher->id, $fresh->document_id);
-        $this->assertSame($voucher->id, $fresh->lexoffice_voucher_id, 'Altspalte bleibt für Lexoffice-Belege gefüllt');
+        $this->assertSame((string) __('resale.purchase.pro_rata', ['month' => '03/2026']), $fresh->description, 'neu geschrieben');
+    }
+
+    public function test_documents_without_a_number_carry_a_stable_fallback_that_search_and_entries_use(): void {
+        // Review 2026-09-11 (Kleinigkeiten): Ausgabe ohne Erstattungsreferenz → `AUS-<id>`, E-Rechnung ohne Nummer → `ER-<id>`;
+        // die Suche findet die Ersatznummer, die Einkaufszeile trägt sie als Belegnummer — nie leer.
+        $admin = $this->orgAdmin();
+        $this->subscription('ent-1', 'A', '2026-01-01', 1);
+        $expense = $this->expense('Telekom Deutschland GmbH', '2026-03-30', '400.00', ExpenseStatus::Approved);
+        $einvoice = $this->einvoice(null, '2026-04-02', '250.00', IncomingEInvoice::STATUS_APPROVED);
+        $registry = app(PurchaseDocuments::class);
+        $numbers = static fn(\Illuminate\Support\Collection $documents): array => $documents->map(static fn(PurchaseDocument $d): ?string => $d->number)->all();
+
+        $expenseDocument = $this->documentFor(Expense::class, $expense->id);
+        $this->assertSame('AUS-' . $expense->id, $expenseDocument->number);
+        $this->assertSame('AUS-' . $expense->id, $expenseDocument->reference(), 'Ersatznummer vor Beschreibung');
+        $einvoiceDocument = $this->documentFor(IncomingEInvoice::class, $einvoice->id);
+        $this->assertSame('ER-' . $einvoice->id, $einvoiceDocument->number);
+
+        $this->assertSame(['AUS-' . $expense->id], $numbers($registry->search($this->organization, 'AUS-' . $expense->id, null, 50)), 'Suche über die Ersatznummer');
+        $this->assertSame(['ER-' . $einvoice->id], $numbers($registry->search($this->organization, 'er-' . $einvoice->id, null, 50)), 'Groß-/Kleinschreibung egal');
+        $this->assertCount(0, $registry->search($this->organization, 'AUS-' . ($expense->id + 1000), null, 50), 'fremde ID trifft nichts');
+
+        $result = app(PurchaseAllocator::class)->allocateVoucher($this->organization, $expenseDocument, SubscriptionProvider::TelekomMarketplace, Money::of('400.00', CurrencyCode::Euro), CarbonImmutable::parse('2026-03-01'));
+        $this->assertSame(1, $result['entries']);
+        $entry = ResalePurchaseEntry::query()->firstOrFail();
+        $this->assertSame('AUS-' . $expense->id, $entry->document_number, 'Belegnummer der Einkaufszeile nie leer');
+        $this->assertSame('AUS-' . $expense->id, $entry->documentLabel());
+
+        $this->actingAs($admin)->get(route('finance.resale.purchases.create', ['q' => 'ER-' . $einvoice->id]))->assertOk()->assertSee('ER-' . $einvoice->id)->assertDontSee('AUS-' . $expense->id);
+        $this->actingAs($admin)->get(route('finance.resale.purchases.index'))->assertOk()->assertSee('AUS-' . $expense->id);
     }
 
     public function test_dialog_lists_all_sources_and_store_accepts_source_keys_and_rejects_unknown_ones(): void {

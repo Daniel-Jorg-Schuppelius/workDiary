@@ -27,10 +27,13 @@ use Illuminate\Support\Facades\Route;
  * Einkauf): `incoming_einvoices` der Organisation, zuteilbar erst nach
  * fachlicher Freigabe bzw. Zahlungsfreigabe — Empfang, Rückfrage und
  * Ablehnung sind keine Belege. Belegdatum ist das Rechnungsdatum, sonst der
- * Eingang.
+ * Eingang; Belegnummer die Rechnungsnummer, sonst die Ersatznummer `ER-<id>`
+ * (auch suchbar).
  */
 final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSource {
     public const KEY = 'incoming_einvoice';
+
+    public const NUMBER_PREFIX = 'ER-';
 
     private const ACCEPTED = [IncomingEInvoice::STATUS_APPROVED, IncomingEInvoice::STATUS_PAYMENT_RELEASED];
 
@@ -50,7 +53,13 @@ final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSo
         }
         $term = trim((string) $query);
         if ($term !== '') {
-            $builder->where(static fn(Builder $w) => $w->whereLikeEscaped('invoice_number', $term)->orWhereLikeEscaped('seller_name', $term));
+            $fallbackId = PurchaseDocument::idFromFallbackNumber(self::NUMBER_PREFIX, $term);
+            $builder->where(static function (Builder $w) use ($term, $fallbackId): void {
+                $w->whereLikeEscaped('invoice_number', $term)->orWhereLikeEscaped('seller_name', $term);
+                if ($fallbackId !== null) {
+                    $w->orWhere('id', $fallbackId);
+                }
+            });
         }
 
         return $this->map($builder->orderByDesc('issue_date')->orderByDesc('id')->limit($limit)->get());
@@ -88,7 +97,7 @@ final class IncomingEInvoicePurchaseDocumentSource implements PurchaseDocumentSo
             morphClass: $invoice->getMorphClass(),
             morphId: (int) $invoice->id,
             key: Sqid::encode(IncomingEInvoice::class, $invoice->id),
-            number: $number !== '' ? $number : null,
+            number: $number !== '' ? $number : PurchaseDocument::fallbackNumber(self::NUMBER_PREFIX, (int) $invoice->id),
             date: self::date($invoice->issue_date) ?? self::date($invoice->received_at),
             vendorName: $invoice->seller_name,
             net: $invoice->amount_net ?? Money::zero($currency),

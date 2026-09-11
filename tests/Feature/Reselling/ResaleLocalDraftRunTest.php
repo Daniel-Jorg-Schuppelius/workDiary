@@ -110,7 +110,10 @@ class ResaleLocalDraftRunTest extends TestCase {
         $this->assertSame('2025-08-05', $forCustomer->items->first()?->service_from?->toDateString(), 'Leistungszeitraum je Position (Review 2026-09-11)');
         $this->assertSame('2026-08-04', $forCustomer->items->first()?->service_to?->toDateString());
         $this->assertCount(2, $forPartner->items);
-        $this->assertStringContainsString('Steuerbüro Kaik', (string) $forPartner->items->first()?->description, 'Endkunde in der Beschreibung');
+        // Zeitraum nur in den Spalten (eigene Zeile auf Beleg und Seite), Beschreibung = Name · Endkunde (Review 2026-09-11, Kleinigkeiten UI).
+        $this->assertSame('Microsoft 365 Business Premium', (string) $forCustomer->items->first()?->description, 'Artikelname ohne Zeitraum');
+        $this->assertSame('Microsoft 365 Business Basic · ' . __('resale.draft.end_customer', ['name' => 'Steuerbüro Kaik']), (string) $forPartner->items->first()?->description, 'Endkunde in der Beschreibung');
+        $this->assertSame('2025-08-05', $forPartner->items->first()?->service_from?->toDateString());
 
         foreach ([$direct, $viaPartner] as $subscription) {
             foreach ($subscription->periods()->get() as $period) {

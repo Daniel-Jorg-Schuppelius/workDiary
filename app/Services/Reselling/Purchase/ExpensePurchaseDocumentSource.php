@@ -26,10 +26,12 @@ use Illuminate\Support\Facades\{Gate, Route};
  * Lokale Ausgaben als Eingangsbelege (Feature 152, Review 2026-09-11, Einkauf):
  * `expenses` der Organisation mit Nettobetrag — Entwürfe, abgelehnte und
  * stornierte sind keine Belege. Belegnummer ist die Erstattungsreferenz,
- * sonst gilt die Beschreibung als Kennung.
+ * sonst die Ersatznummer `AUS-<id>` (auch suchbar).
  */
 final class ExpensePurchaseDocumentSource implements PurchaseDocumentSource {
     public const KEY = 'expense';
+
+    public const NUMBER_PREFIX = 'AUS-';
 
     private const EXCLUDED = [ExpenseStatus::Draft, ExpenseStatus::Rejected, ExpenseStatus::Cancelled];
 
@@ -48,7 +50,13 @@ final class ExpensePurchaseDocumentSource implements PurchaseDocumentSource {
         }
         $term = trim((string) $query);
         if ($term !== '') {
-            $builder->where(static fn(Builder $w) => $w->whereLikeEscaped('vendor', $term)->orWhereLikeEscaped('description', $term)->orWhereLikeEscaped('reimbursement_reference', $term));
+            $fallbackId = PurchaseDocument::idFromFallbackNumber(self::NUMBER_PREFIX, $term);
+            $builder->where(static function (Builder $w) use ($term, $fallbackId): void {
+                $w->whereLikeEscaped('vendor', $term)->orWhereLikeEscaped('description', $term)->orWhereLikeEscaped('reimbursement_reference', $term);
+                if ($fallbackId !== null) {
+                    $w->orWhere('id', $fallbackId);
+                }
+            });
         }
 
         return $this->map($builder->orderByDesc('date')->orderByDesc('id')->limit($limit)->get());
@@ -86,7 +94,7 @@ final class ExpensePurchaseDocumentSource implements PurchaseDocumentSource {
             morphClass: $expense->getMorphClass(),
             morphId: (int) $expense->id,
             key: Sqid::encode(Expense::class, $expense->id),
-            number: $reference !== '' ? $reference : null,
+            number: $reference !== '' ? $reference : PurchaseDocument::fallbackNumber(self::NUMBER_PREFIX, (int) $expense->id),
             date: self::date($expense->date),
             vendorName: $expense->vendor,
             net: $expense->amount_net ?? Money::zero($currency),

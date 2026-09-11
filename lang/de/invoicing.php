@@ -121,4 +121,11 @@ return [
         'added' => 'Sicherheitseinbehalt hinterlegt.',
         'released' => 'Sicherheitseinbehalt freigegeben.',
     ],
+
+    // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    'item' => [
+        'service_period' => 'Leistungszeitraum',
+        'service_from' => 'Leistungszeitraum von',
+        'service_to' => 'Leistungszeitraum bis',
+    ],
 ];

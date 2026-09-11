@@ -18,6 +18,7 @@ use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\Organization;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Services\Contract\ContractService;
+use App\Support\DocumentLocale;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Str;
 
@@ -46,7 +47,14 @@ final class ResaleContractObligationSync {
      * @return array{created: int, updated: int, closed: int}
      */
     public function sync(Organization $organization, ?CarbonImmutable $reference = null): array {
-        $reference ??= ResalePeriod::today();
+        // Titel in der Org-Sprache: die Obligation ist ein gemeinsamer Datensatz, nicht die Sicht des Auslösers (Scheduler/CLI).
+        return DocumentLocale::within(null, $organization, fn (): array => $this->run($organization, $reference ?? ResalePeriod::today()));
+    }
+
+    /**
+     * @return array{created: int, updated: int, closed: int}
+     */
+    private function run(Organization $organization, CarbonImmutable $reference): array {
         $result = ['created' => 0, 'updated' => 0, 'closed' => 0];
 
         /** @var array<int, list<ContractObligation>> $open offene Marker-Obligationen je Abo */

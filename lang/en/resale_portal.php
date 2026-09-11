@@ -57,4 +57,8 @@ return [
     'empty' => 'No subscriptions on record.',
     'back' => 'Back to overview',
     'show' => 'Details',
+    // Kachel auf der Portal-Startseite (Review 2026-09-11).
+    'dashboard' => [
+        'tile' => 'Subscriptions & licences',
+    ],
 ];

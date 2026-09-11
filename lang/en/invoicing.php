@@ -121,4 +121,11 @@ return [
         'added' => 'Retention recorded.',
         'released' => 'Retention released.',
     ],
+
+    // Leistungszeitraum je Position (Feature 152, Review 2026-09-11).
+    'item' => [
+        'service_period' => 'Service period',
+        'service_from' => 'Service period from',
+        'service_to' => 'Service period to',
+    ],
 ];

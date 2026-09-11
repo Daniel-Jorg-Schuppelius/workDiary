@@ -58,6 +58,15 @@
                     <div class="mt-2 text-sm">{{ __('open-issue.title.index') }}</div>
                 </a>
             @endisset
+            @isset($stats['subscriptions'])
+                <a href="{{ route('customer.subscriptions.index') }}" class="bg-base-100 border border-base-300 rounded p-4 hover:border-primary">
+                    <div class="flex items-center justify-between">
+                        <x-icon name="workspace_premium" />
+                        <span class="text-2xl font-semibold">{{ $stats['subscriptions'] }}</span>
+                    </div>
+                    <div class="mt-2 text-sm">{{ __('resale_portal.dashboard.tile') }}</div>
+                </a>
+            @endisset
         </div>
     @endif
 @endsection

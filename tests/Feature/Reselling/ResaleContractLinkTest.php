@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\{Customer, ForeignCustomer, Organization, User};
 use App\Models\Reselling\ResaleSubscription;
+use App\Services\Contract\ContractService;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Reselling\Register\ResaleContractObligationSync;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -277,5 +278,32 @@ class ResaleContractLinkTest extends TestCase {
             ->expectsOutputToContain('Vertragsobligationen: 0 neu, 0 aktualisiert, 0 geschlossen.')
             ->assertSuccessful();
         $this->assertSame(1, ContractObligation::query()->count());
+    }
+
+    public function test_obligation_titles_follow_the_organization_locale_and_restore_the_previous_one(): void {
+        $this->organization->forceFill(['locale' => 'en'])->save();
+        $contract = $this->contract();
+        $this->subscription(['contract_id' => $contract->id, 'renewal' => 'cancel', 'ends_on' => '2026-12-31', 'status' => 'cancelled']);
+        $previous = app()->getLocale();
+        app()->setLocale('de');
+
+        $this->assertSame(['created' => 1, 'updated' => 0, 'closed' => 0], app(ResaleContractObligationSync::class)->sync($this->organization));
+
+        $this->assertSame('de', app()->getLocale(), 'Lauf stellt die vorherige Sprache wieder her');
+        $this->assertSame(
+            'Notice deadline for subscription “Microsoft 365 Business Premium” (ends 31.12.2026)',
+            ContractObligation::query()->firstOrFail()->title,
+            'Titel in der Org-Sprache, nicht in der Sprache des Auslösers',
+        );
+
+        // Kündigungsfrist des Vertrags selbst (ContractService): dieselbe Regel, Mindestlaufzeit hält den Termin in der Zukunft.
+        $second = $this->contract(null, ['number' => 'V-2026-0012', 'min_term_months' => 24]);
+        $obligation = app(ContractService::class)->generateNoticeObligation($second);
+        $this->assertNotNull($obligation);
+        $this->assertSame('Notice period for 01.01.2027', $obligation->title);
+        $this->assertSame('2026-12-02', $obligation->due_on->toDateString());
+        $this->assertSame('de', app()->getLocale());
+
+        app()->setLocale($previous);
     }
 }

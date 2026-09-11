@@ -319,6 +319,10 @@ return [
             'no_sales' => 'No sale price',
             'article_price_differs' => 'Sale differs from article price', // Review 2026-09-11
         ],
+        // Review 2026-09-11 (Kleinigkeiten)
+        'col' => [
+            'article_price' => 'Article price',
+        ],
     ],
     'draft' => [
         'action' => 'Lexoffice draft',

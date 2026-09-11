@@ -92,7 +92,9 @@ class DraftTargetTest extends TestCase {
         $this->assertSame(['2025-08-05', '2026-08-05'], $items->map(static fn(InvoiceItem $i): ?string => $i->service_from?->toDateString())->all());
         $this->assertSame(['2026-08-04', '2027-08-04'], $items->map(static fn(InvoiceItem $i): ?string => $i->service_to?->toDateString())->all());
         $this->assertSame('2025-08-05', $items->first()?->service_date?->toDateString());
-        $this->assertStringContainsString('05.08.2025 – 04.08.2026', (string) $items->first()?->description, 'Zeitraum steht auch im Positionstext');
+        // Zeitraum nur in den Spalten — auf Beleg und Seite als eigene Zeile, nicht mehr im Positionstext (Review 2026-09-11, Kleinigkeiten UI).
+        $this->assertStringNotContainsString('05.08.2025', (string) $items->first()?->description, 'Positionstext ohne Zeitraum');
+        $this->assertSame('05.08.2025 – 04.08.2026', $items->first()?->servicePeriodLabel());
 
         // Kern stempelt und verknüpft: Bezug auf die Position, Periode „berechnet", Bemerkung ergänzt.
         $period = $subscription->periods()->orderBy('starts_on')->firstOrFail();

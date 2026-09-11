@@ -430,7 +430,8 @@
         @forelse ($invoice->items as $item)
             <tr>
                 <td>{{ $item->position }}</td>
-                <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif</td>
+                <td>{{ $item->description }}@if ($item->article) <span class="badge badge-ghost badge-xs" title="{{ __('Artikel') }}">{{ $item->article->number ?: $item->article->name }}</span>@endif
+                    @if ($item->service_from !== null)<div class="text-xs text-muted">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</div>@endif</td>
                 @if ($showServiceDates)<td data-sort-value="{{ optional($item->service_date)->toDateString() }}">{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
                 <td class="text-right" data-sort-value="{{ (float) $item->quantity }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2, withThousandsSeparator: true) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) <span class="whitespace-nowrap text-xs text-muted">({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})</span>@endif</td>
                 <td class="text-right" data-sort-value="{{ ($item->unit_price?->toFloat() ?? 0.0) }}">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($item->unit_price?->toFloat() ?? 0.0), ((int) round(($item->unit_price?->toFloat() ?? 0.0) * 10000)) % 100 !== 0 ? 4 : 2, withThousandsSeparator: true) }} {{ $invoice->currency->value }}</td>

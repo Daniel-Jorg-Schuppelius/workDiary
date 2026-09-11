@@ -266,7 +266,10 @@ class HighFindingsWave2Test extends TestCase {
         // Request-ID-Format und trafen per str_contains praktisch jede Zeile
         // des mandantenübergreifenden Logs.
         $logPath = storage_path('logs/laravel.log');
-        $vorher = is_file($logPath) ? (string) file_get_contents($logPath) : null;
+        // Vorhandenes Log beiseitelegen statt es zu kopieren: file_get_contents() eines
+        // GB-großen Dev-Logs sprengt den Speicher des Workers (Absturz 2026-09-11).
+        $aside = $logPath . '.aside-' . bin2hex(random_bytes(4));
+        $hatte = is_file($logPath) && rename($logPath, $aside);
 
         file_put_contents($logPath, implode("\n", [
             '[2026-08-23 10:00:00] production.ERROR: Fremdfehler {"request_id":"AAAAAAAA1111"}',
@@ -284,10 +287,9 @@ class HighFindingsWave2Test extends TestCase {
             $treffer->assertOk();
             $this->assertStringContainsString('Eigener Fehler', (string) $treffer->getContent());
         } finally {
-            if ($vorher === null) {
-                @unlink($logPath);
-            } else {
-                file_put_contents($logPath, $vorher);
+            @unlink($logPath);
+            if ($hatte) {
+                rename($aside, $logPath);
             }
         }
     }

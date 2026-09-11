@@ -18880,45 +18880,6 @@ CREATE INDEX "resale_links_sub_origin_idx" on "resale_period_links"(
   "subscription_id",
   "origin"
 );
-CREATE TABLE IF NOT EXISTS "resale_purchase_entries"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "subscription_id" integer,
-  "period_id" integer,
-  "provider" varchar not null,
-  "source" varchar not null,
-  "lexoffice_voucher_id" integer,
-  "domain_accounting_entry_id" integer,
-  "document_number" varchar,
-  "entry_date" date not null,
-  "description" varchar,
-  "net_amount" numeric not null,
-  "currency" varchar not null default 'EUR',
-  "raw_hash" varchar not null,
-  "created_by_user_id" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  "document_type" varchar,
-  "document_id" integer,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("subscription_id") references "resale_subscriptions"("id") on delete cascade,
-  foreign key("period_id") references "resale_periods"("id") on delete set null,
-  foreign key("lexoffice_voucher_id") references "lexoffice_vouchers"("id") on delete set null,
-  foreign key("domain_accounting_entry_id") references "domain_accounting_entries"("id") on delete set null,
-  foreign key("created_by_user_id") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "resale_purchases_org_hash_uq" on "resale_purchase_entries"(
-  "organization_id",
-  "raw_hash"
-);
-CREATE INDEX "resale_purchases_org_prov_date_idx" on "resale_purchase_entries"(
-  "organization_id",
-  "provider",
-  "entry_date"
-);
-CREATE INDEX "resale_purchases_period_idx" on "resale_purchase_entries"(
-  "period_id"
-);
 CREATE TABLE IF NOT EXISTS "resale_subscriptions"(
   "id" integer primary key autoincrement not null,
   "organization_id" integer not null,
@@ -18989,10 +18950,47 @@ CREATE INDEX "resale_periods_org_draft_idx" on "resale_periods"(
   "organization_id",
   "draft_reference"
 );
+CREATE TABLE IF NOT EXISTS "resale_purchase_entries"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "subscription_id" integer,
+  "period_id" integer,
+  "provider" varchar not null,
+  "source" varchar not null,
+  "domain_accounting_entry_id" integer,
+  "document_number" varchar,
+  "entry_date" date not null,
+  "description" varchar,
+  "net_amount" numeric not null,
+  "currency" varchar not null default('EUR'),
+  "raw_hash" varchar not null,
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  "document_type" varchar,
+  "document_id" integer,
+  foreign key("created_by_user_id") references users("id") on delete set null on update no action,
+  foreign key("domain_accounting_entry_id") references domain_accounting_entries("id") on delete set null on update no action,
+  foreign key("period_id") references resale_periods("id") on delete set null on update no action,
+  foreign key("subscription_id") references resale_subscriptions("id") on delete cascade on update no action,
+  foreign key("organization_id") references organizations("id") on delete cascade on update no action
+);
 CREATE INDEX "resale_purchase_doc_idx" on "resale_purchase_entries"(
   "organization_id",
   "document_type",
   "document_id"
+);
+CREATE UNIQUE INDEX "resale_purchases_org_hash_uq" on "resale_purchase_entries"(
+  "organization_id",
+  "raw_hash"
+);
+CREATE INDEX "resale_purchases_org_prov_date_idx" on "resale_purchase_entries"(
+  "organization_id",
+  "provider",
+  "entry_date"
+);
+CREATE INDEX "resale_purchases_period_idx" on "resale_purchase_entries"(
+  "period_id"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -19795,3 +19793,4 @@ INSERT INTO migrations VALUES(797,'2027_02_20_101100_add_draft_reference_to_resa
 INSERT INTO migrations VALUES(798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',15);
 INSERT INTO migrations VALUES(799,'2027_02_20_101300_add_resale_role_to_articles',15);
 INSERT INTO migrations VALUES(800,'2027_02_20_101400_add_service_period_to_invoice_items',15);
+INSERT INTO migrations VALUES(801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',16);

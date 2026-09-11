@@ -117,7 +117,7 @@
     @foreach ($invoice->items as $item)
         <tr>
             <td>{{ $item->position }}</td>
-            <td>{{ $item->description }}</td>
+            <td>{{ $item->description }}@if ($item->service_from !== null)<br><span style="font-size: 8pt; color: #6b7280;">{{ __('invoicing.item.service_period') }}: {{ $item->servicePeriodLabel() }}</span>@endif</td>
             @if ($showServiceDates)<td>{{ optional($item->service_date)->fdate() ?: '—' }}</td>@endif
             {{-- 3./4. NK nur zeigen, wenn signifikant: die Rechnung muss aus Menge × Preis nachrechenbar sein --}}
             <td class="num">{{ \App\Support\DocumentNumber::decimal((float) $item->quantity, ((int) round((float) $item->quantity * 1000)) % 10 !== 0 ? 3 : 2) }} {{ $item->unit }}@if ($item->unit === __('invoicing.unit_hour')) ({{ \App\Support\Formats::duration((int) round((float) $item->quantity * 60), 'clock') }})@endif</td>
