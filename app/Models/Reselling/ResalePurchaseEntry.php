@@ -17,15 +17,19 @@ use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Domain\DomainAccountingEntry;
 use App\Models\{LexofficeVoucher, Organization, User};
+use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
 /**
  * Einkaufsbeleg-Zeile (Feature 152, MVP-762): Ist-Einkauf einer Periode
- * aus Eingangsrechnung, Domain-Buchung oder Handeingabe.
+ * aus Eingangsbeleg, Domain-Buchung oder Handeingabe. Der Eingangsbeleg
+ * hängt als Morph (`document_type/document_id`, Review 2026-09-11) an einer
+ * Quelle der {@see PurchaseDocuments}; `lexoffice_voucher_id` ist die
+ * Altspalte der Lexoffice-Zuteilungen und bleibt für sie gefüllt.
  *
  * @property int $id
  * @property int $organization_id
@@ -33,6 +37,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property int|null $period_id
  * @property SubscriptionProvider $provider
  * @property string $source
+ * @property string|null $document_type
+ * @property int|null $document_id
  * @property int|null $lexoffice_voucher_id
  * @property int|null $domain_accounting_entry_id
  * @property string|null $document_number
@@ -61,6 +67,8 @@ class ResalePurchaseEntry extends Model {
         'period_id',
         'provider',
         'source',
+        'document_type',
+        'document_id',
         'lexoffice_voucher_id',
         'domain_accounting_entry_id',
         'document_number',
@@ -74,10 +82,20 @@ class ResalePurchaseEntry extends Model {
 
     protected $casts = [
         'provider' => SubscriptionProvider::class,
+        'document_id' => 'integer',
         'entry_date' => 'immutable_date',
         'currency' => CurrencyCode::class,
         'net_amount' => MoneyCast::class . ':currency,2',
     ];
+
+    private ?PurchaseDocument $purchaseDocument = null;
+
+    private bool $purchaseDocumentResolved = false;
+
+    /** Morph-Typ der Altspalte `lexoffice_voucher_id` — Altzeilen ohne Belegbezug und Hash-Kompatibilität der Lexoffice-Zuteilungen. */
+    public static function legacyVoucherMorphClass(): string {
+        return (new LexofficeVoucher)->getMorphClass();
+    }
 
     /** @return BelongsTo<Organization, $this> */
     public function organization(): BelongsTo {
@@ -94,7 +112,20 @@ class ResalePurchaseEntry extends Model {
         return $this->belongsTo(ResalePeriod::class, 'period_id');
     }
 
-    /** @return BelongsTo<LexofficeVoucher, $this> */
+    /**
+     * Eingangsbeleg der Zeile (Lexoffice-Beleg, Ausgabe, Eingangs-E-Rechnung).
+     *
+     * @return MorphTo<Model, $this>
+     */
+    public function document(): MorphTo {
+        return $this->morphTo('document', 'document_type', 'document_id');
+    }
+
+    /**
+     * Altspalte: Lexoffice-Beleg der Zuteilung (Review 2026-09-11) — neue Zeilen tragen den Bezug im Morph.
+     *
+     * @return BelongsTo<LexofficeVoucher, $this>
+     */
     public function voucher(): BelongsTo {
         return $this->belongsTo(LexofficeVoucher::class, 'lexoffice_voucher_id');
     }
@@ -111,5 +142,47 @@ class ResalePurchaseEntry extends Model {
 
     public function sourceLabel(): string {
         return (string) __('resale.purchase.source.' . $this->source);
+    }
+
+    /**
+     * Belegbezug: Morph-Typ und ID, für Altzeilen aus `lexoffice_voucher_id`.
+     *
+     * @return array{0: string|null, 1: int|null}
+     */
+    public function documentReference(): array {
+        if ($this->document_type !== null && $this->document_id !== null) {
+            return [(string) $this->document_type, (int) $this->document_id];
+        }
+        if ($this->lexoffice_voucher_id !== null) {
+            return [self::legacyVoucherMorphClass(), (int) $this->lexoffice_voucher_id];
+        }
+
+        return [null, null];
+    }
+
+    /** Vorgeladenen Beleg anhängen ({@see PurchaseDocuments::preload()}). */
+    public function attachDocument(?PurchaseDocument $document): void {
+        $this->purchaseDocument = $document;
+        $this->purchaseDocumentResolved = true;
+    }
+
+    /** Beleg aus der Quelle des Morph-Typs — vorgeladen, sonst einzeln; null ohne Quelle/Beleg. */
+    public function purchaseDocument(): ?PurchaseDocument {
+        if (! $this->purchaseDocumentResolved) {
+            $this->purchaseDocument = app(PurchaseDocuments::class)->forEntry($this);
+            $this->purchaseDocumentResolved = true;
+        }
+
+        return $this->purchaseDocument;
+    }
+
+    /** Anzeige des Belegs: Kennung laut Quelle, sonst gespeicherte Belegnummer. */
+    public function documentLabel(): ?string {
+        $document = $this->purchaseDocument();
+        if ($document !== null) {
+            return $document->reference();
+        }
+
+        return $this->document_number;
     }
 }

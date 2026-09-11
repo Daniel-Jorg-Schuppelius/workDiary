@@ -13,19 +13,20 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\ResaleArticleRole;
-use App\Models\LexofficeArticle;
+use App\Models\{Article, LexofficeArticle};
 use App\Services\Reselling\Marketplace\ProductNameMatcher;
 
 /**
- * Ist ein Lexoffice-Artikel ein Abo-Produkt? Die Einstufung des Betreibers
+ * Ist ein Artikel ein Abo-Produkt? Gilt für Lexoffice-Artikel und lokale
+ * Artikel gleichermaßen (Review 2026-09-11): die Einstufung des Betreibers
  * (`resale_role`) gewinnt; ohne Einstufung entscheidet die Produkterkennung
  * über den Artikelnamen. Einzige Stelle für diese Frage — Vorschlagslauf,
- * Import, Rechnungsliste, Preisprüfung und Positionen-ohne-Abo fragen hier.
+ * Import, Belegspiegel, Preisprüfung und Positionen-ohne-Abo fragen hier.
  */
 final class LicenseArticleClassifier {
     public function __construct(private readonly ProductNameMatcher $matcher = new ProductNameMatcher()) {}
 
-    public function isLicense(?LexofficeArticle $article): bool {
+    public function isLicense(LexofficeArticle|Article|null $article): bool {
         if ($article === null) {
             return false;
         }
@@ -40,7 +41,7 @@ final class LicenseArticleClassifier {
     }
 
     /** Automatische Einstufung ohne Betreiber-Override (für die Anzeige). */
-    public function detected(LexofficeArticle $article): ResaleArticleRole {
+    public function detected(LexofficeArticle|Article $article): ResaleArticleRole {
         return $this->matcher->looksLikeMicrosoftProduct((string) $article->name) ? ResaleArticleRole::License : ResaleArticleRole::Excluded;
     }
 }

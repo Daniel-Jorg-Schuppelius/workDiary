@@ -317,6 +317,7 @@ return [
             'below_list' => 'Sale below RRP',
             'contract_above_catalog' => 'Contract above catalog',
             'no_sales' => 'No sale price',
+            'article_price_differs' => 'Sale differs from article price', // Review 2026-09-11
         ],
     ],
     'draft' => [
@@ -339,6 +340,7 @@ return [
             'nothing_open' => 'No open periods with a sale price for this recipient.',
         ],
         'already_drafted' => 'A draft is already pending for this recipient (:reference from :date). Finish it in Lexoffice or locally first, or decide the period.', // Review 2026-09-10
+        'no_target' => 'No draft target is registered for this recipient\'s billing mode “:mode” — enable the plugin or set the customer\'s billing mode to local.', // Review 2026-09-11
     ],
     'purchase' => [
         'title' => 'Purchase entries',
@@ -670,5 +672,69 @@ return [
         'sign_hint' => 'Stored as a negative link.',
         'error_amount' => 'Please enter a quantity above zero.',
         'error_positive' => 'Invoice lines need positive licence months — reductions go through the credit note line.',
+    ],
+    // Review 2026-09-10 (Spiegel)
+    'mirror' => [
+        'source_lexoffice' => 'Lexoffice',
+        'source_local' => 'Local invoice',
+        'open_source' => 'Open document (:source)',
+        'no_source' => 'No source provides invoices for this recipient — neither a linked Lexoffice contact nor local invoicing.',
+    ],
+    // Review 2026-09-10 (Serienlauf)
+    'auto_draft' => [
+        'title' => 'Recurring invoicing (local invoicing)',
+        'description' => 'Every day (scheduled task) an invoice draft is created for each invoice recipient with local invoicing from the due periods — the same draft as by click, with one line per subscription and period and proposed links. Recipients invoiced via Lexoffice/DATEV are left untouched. You finalise the drafts in the invoice list.',
+        'enabled' => 'Recurring invoicing active',
+        'lead_days' => 'Lead time (days)',
+        'lead_days_hint' => '0 = due periods only; 7 = also draft periods starting within the next 7 days.',
+        'save' => 'Save',
+        'state_on' => 'Recurring invoicing active — lead time :days days.',
+        'state_off' => 'Recurring invoicing off — drafts are created by click only.',
+        'locked' => 'Recurring invoicing is already running for this organisation.',
+        'flash' => [
+            'enabled' => 'Recurring invoicing active: the next run drafts due periods (lead time :days days).',
+            'disabled' => 'Recurring invoicing off — invoice drafts are created by click only.',
+        ],
+    ],
+    // Review 2026-09-11 (Einkauf)
+    'purchase_document' => [
+        'field' => 'Incoming document',
+        'hint' => 'Documents of all sources from the last 36 months — Lexoffice mirror, local expenses, received e-invoices; ✓ = already allocated.',
+        'sources_hint' => 'Sources',
+        'source' => [
+            'lexoffice' => 'Lexoffice',
+            'expense' => 'Expense',
+            'incoming_einvoice' => 'Incoming e-invoice',
+        ],
+        'open' => 'Open document (:source)',
+        'preview' => 'View document image',
+        'error_unknown' => 'The selected document is unknown to every document source or can no longer be allocated.',
+    ],
+    // Review 2026-09-11 (Produkte)
+    'products_local' => [
+        'title' => 'Local articles',
+        'hint' => 'Active articles of the article master: the classification applies to the mirror of local invoices and to the price check (article sale price). Without a classification the name decides.',
+        'price' => 'Sale price',
+        'empty' => 'No active articles in the article master.',
+        'lexoffice_title' => 'Lexoffice articles',
+    ],
+    // Review 2026-09-11 (Vertrag)
+    'contract' => [
+        'field' => 'Contract',
+        'none' => 'No contract',
+        'hint' => 'Contract of the invoice recipient from contract management: the subscription’s notice deadline and renewal warning are posted to its contract calendar daily.',
+        'error' => [
+            'no_recipient' => 'A contract can only be linked when a customer or end customer is the holder.',
+            'recipient_mismatch' => 'The contract partner is not the invoice recipient of this subscription.',
+        ],
+        'panel' => [
+            'title' => 'Subscriptions & licences',
+            'empty' => 'No subscription uses this contract as its deadline frame.',
+            'open' => 'Open subscription',
+        ],
+        'obligation' => [
+            'notice' => 'Notice deadline for subscription “:label” (ends :date)',
+            'renewal' => 'Renewal of subscription “:label” on :date',
+        ],
     ],
 ];

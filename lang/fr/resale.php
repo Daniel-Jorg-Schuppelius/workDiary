@@ -317,6 +317,7 @@ return [
             'below_list' => 'Vente sous le prix conseillé',
             'contract_above_catalog' => 'Contrat plus cher que le catalogue',
             'no_sales' => 'Pas de prix de vente',
+            'article_price_differs' => 'Vente différente du prix de l’article', // Review 2026-09-11
         ],
     ],
     'draft' => [
@@ -339,6 +340,7 @@ return [
             'nothing_open' => 'Aucune période ouverte avec prix de vente pour ce destinataire.',
         ],
         'already_drafted' => 'Un brouillon est déjà en attente pour ce destinataire (:reference du :date). Finalisez-le d’abord dans Lexoffice ou localement, ou décidez la période.', // Review 2026-09-10
+        'no_target' => 'Aucune cible de brouillon n’est enregistrée pour le mode de facturation « :mode » de ce destinataire — activez le plugin ou passez le client en facturation locale.', // Review 2026-09-11
     ],
     'purchase' => [
         'title' => 'Pièces d’achat',
@@ -670,5 +672,69 @@ return [
         'sign_hint' => 'Enregistré comme lien négatif.',
         'error_amount' => 'Veuillez saisir une quantité supérieure à zéro.',
         'error_positive' => 'Les lignes de facture exigent des mois de licence positifs — les réductions passent par la ligne d’avoir.',
+    ],
+    // Review 2026-09-10 (Spiegel)
+    'mirror' => [
+        'source_lexoffice' => 'Lexoffice',
+        'source_local' => 'Facture locale',
+        'open_source' => 'Ouvrir le document (:source)',
+        'no_source' => 'Aucune source ne fournit de factures pour ce destinataire — ni contact Lexoffice lié ni facturation locale.',
+    ],
+    // Review 2026-09-10 (Serienlauf)
+    'auto_draft' => [
+        'title' => 'Facturation récurrente (facturation locale)',
+        'description' => 'Chaque jour (tâche planifiée), un brouillon de facture est créé pour chaque destinataire à facturation locale à partir des périodes échues — le même brouillon que par clic, avec une ligne par abonnement et période et des liens proposés. Les destinataires facturés via Lexoffice/DATEV ne sont pas concernés. Tu finalises les brouillons dans la liste des factures.',
+        'enabled' => 'Facturation récurrente active',
+        'lead_days' => 'Anticipation (jours)',
+        'lead_days_hint' => '0 = périodes échues uniquement ; 7 = aussi les périodes commençant dans les 7 prochains jours.',
+        'save' => 'Enregistrer',
+        'state_on' => 'Facturation récurrente active — anticipation :days jours.',
+        'state_off' => 'Facturation récurrente désactivée — les brouillons ne sont créés que par clic.',
+        'locked' => 'La facturation récurrente est déjà en cours pour cette organisation.',
+        'flash' => [
+            'enabled' => 'Facturation récurrente active : le prochain passage crée les brouillons des périodes échues (anticipation :days jours).',
+            'disabled' => 'Facturation récurrente désactivée — les brouillons de facture ne sont créés que par clic.',
+        ],
+    ],
+    // Review 2026-09-11 (Einkauf)
+    'purchase_document' => [
+        'field' => 'Pièce entrante',
+        'hint' => 'Pièces de toutes les sources des 36 derniers mois — miroir Lexoffice, dépenses locales, factures électroniques reçues ; ✓ = déjà affectée.',
+        'sources_hint' => 'Sources',
+        'source' => [
+            'lexoffice' => 'Lexoffice',
+            'expense' => 'Dépense',
+            'incoming_einvoice' => 'Facture électronique entrante',
+        ],
+        'open' => 'Ouvrir la pièce (:source)',
+        'preview' => 'Voir l’image de la pièce',
+        'error_unknown' => 'La pièce choisie n’est connue d’aucune source ou ne peut plus être affectée.',
+    ],
+    // Review 2026-09-11 (Produkte)
+    'products_local' => [
+        'title' => 'Articles locaux',
+        'hint' => 'Articles actifs du fichier articles : la classification agit sur le miroir des factures locales et sur le contrôle des prix (prix de vente de l’article). Sans classification, le nom décide.',
+        'price' => 'Prix de vente',
+        'empty' => 'Aucun article actif dans le fichier articles.',
+        'lexoffice_title' => 'Articles Lexoffice',
+    ],
+    // Review 2026-09-11 (Vertrag)
+    'contract' => [
+        'field' => 'Contrat',
+        'none' => 'Aucun contrat',
+        'hint' => 'Contrat du destinataire de la facture issu de la gestion des contrats : le délai de résiliation et l’alerte de renouvellement de l’abonnement sont inscrits chaque jour dans son calendrier contractuel.',
+        'error' => [
+            'no_recipient' => 'Un contrat ne peut être lié que si un client ou un client final est le titulaire.',
+            'recipient_mismatch' => 'Le partenaire du contrat n’est pas le destinataire de la facture de cet abonnement.',
+        ],
+        'panel' => [
+            'title' => 'Abonnements & licences',
+            'empty' => 'Aucun abonnement n’utilise ce contrat comme cadre d’échéances.',
+            'open' => 'Ouvrir l’abonnement',
+        ],
+        'obligation' => [
+            'notice' => 'Délai de résiliation abonnement « :label » (fin :date)',
+            'renewal' => 'Renouvellement abonnement « :label » le :date',
+        ],
     ],
 ];

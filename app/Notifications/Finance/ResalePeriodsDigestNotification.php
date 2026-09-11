@@ -19,13 +19,15 @@ use Illuminate\Notifications\Messages\MailMessage;
 /**
  * Reselling-Digest (Feature 152, Prozesse 6 / Review 2026-09-10 A5): geht nur
  * bei Befund raus — fällige Perioden, unbestätigte Vorschläge, Abos ohne
- * Halter, Verlängerungen in Kürze, Abos ohne Rechnung seit langem. Empfänger
- * sind die Nutzer mit `reselling.manage`.
+ * Halter, Verlängerungen in Kürze, Abos ohne Rechnung seit langem, noch nicht
+ * abgeschlossene Rechnungsentwürfe der letzten Woche (Serienlauf), Abos mit
+ * geändertem Katalog-Einkaufspreis (neue Preisliste). Empfänger sind die
+ * Nutzer mit `reselling.manage`.
  */
 class ResalePeriodsDigestNotification extends DirectNotification {
     private const TITLE_KEY = 'Abos & Lizenzen: :count Punkte warten auf Bearbeitung';
 
-    private const MESSAGE_KEY = ':due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen. Bitte die Periodenseite „Abos & Lizenzen" prüfen.';
+    private const MESSAGE_KEY = ':due fällige Perioden (offen :amount), :proposed unbestätigte Vorschläge, :unassigned Abos ohne Halter, :renewals Verlängerungen oder Enden in :renewal_days Tagen, :stale Abos ohne Rechnung seit über :stale_days Tagen, :drafts Rechnungsentwürfe der letzten :draft_days Tage noch nicht abgeschlossen, :catalog Abos mit geändertem Katalog-Einkaufspreis. Bitte die Periodenseite „Abos & Lizenzen" prüfen.';
 
     public function __construct(
         public readonly int $dueCount,
@@ -36,13 +38,16 @@ class ResalePeriodsDigestNotification extends DirectNotification {
         public readonly int $staleCount,
         public readonly int $renewalDays,
         public readonly int $staleAfterDays,
+        public readonly int $draftCount = 0,
+        public readonly int $draftDays = 7,
+        public readonly int $catalogChanges = 0,
     ) {
         parent::__construct(['mail', 'database']);
     }
 
     /** Summe der Befunde — der Betreff. */
     public function total(): int {
-        return $this->dueCount + $this->proposedCount + $this->unassignedCount + $this->renewalCount + $this->staleCount;
+        return $this->dueCount + $this->proposedCount + $this->unassignedCount + $this->renewalCount + $this->staleCount + $this->draftCount + $this->catalogChanges;
     }
 
     public function toMail(object $notifiable): MailMessage {
@@ -70,6 +75,8 @@ class ResalePeriodsDigestNotification extends DirectNotification {
             'unassigned_count' => $this->unassignedCount,
             'renewal_count' => $this->renewalCount,
             'stale_count' => $this->staleCount,
+            'draft_count' => $this->draftCount,
+            'catalog_changes' => $this->catalogChanges,
             'icon' => 'subscriptions',
             'url' => route('finance.resale.periods.index'),
         ];
@@ -91,6 +98,9 @@ class ResalePeriodsDigestNotification extends DirectNotification {
             'renewal_days' => $this->renewalDays,
             'stale' => $this->staleCount,
             'stale_days' => $this->staleAfterDays,
+            'drafts' => $this->draftCount,
+            'draft_days' => $this->draftDays,
+            'catalog' => $this->catalogChanges,
         ];
     }
 }

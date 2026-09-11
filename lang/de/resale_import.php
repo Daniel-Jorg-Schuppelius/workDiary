@@ -23,6 +23,7 @@ return [
         'xlsx_unreadable' => 'XLSX-Datei nicht lesbar: :file (:reason)',
         'no_header' => 'CSV ohne Kopfzeile: :file',
         'no_sheet' => 'XLSX ohne Tabellenblatt: :file',
+        'too_large' => ':file ist zu groß für den Import (höchstens :rows Zeilen je Blatt und :mb MB entpackt).',
         'missing_columns' => 'Pflichtspalten fehlen: :columns',
     ],
     'row' => [

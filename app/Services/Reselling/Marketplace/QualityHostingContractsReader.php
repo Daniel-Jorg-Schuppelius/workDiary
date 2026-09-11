@@ -13,13 +13,11 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\BillingFrequency;
-use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, ParsesImportValues};
+use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, OpensXlsxDocuments, ParsesImportValues};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Entities\XLSX\Cell;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Parsers\XLSXDocumentParser;
 use RuntimeException;
-use Throwable;
 
 /**
  * Liest den Vertragsexport des Quality-Hosting-Partnerportals (XLSX, eine
@@ -30,6 +28,7 @@ use Throwable;
  */
 final class QualityHostingContractsReader {
     use NormalizesHeaders;
+    use OpensXlsxDocuments;
     use ParsesImportValues;
 
     private const REQUIRED = [
@@ -44,6 +43,9 @@ final class QualityHostingContractsReader {
         'vertragsstatus',
     ];
 
+    /** @var list<string> Kannspalten (leer, wenn sie fehlen) */
+    private const OPTIONAL = ['partner-kundennummer', 'vertragslaufzeit', 'preis pro lizenz (vertragslaufzeit)'];
+
     private const END_PATTERN = '/(gek(?:ü|ue)ndigt|beendet|endet|l(?:ä|ae)uft aus|bis zum)[^0-9]*(\d{1,2}\.\d{1,2}\.\d{4})/iu';
 
     public function read(string $file): PurchasesImport {
@@ -52,17 +54,12 @@ final class QualityHostingContractsReader {
             throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
 
-        try {
-            $document = XLSXDocumentParser::fromFile($file, true);
-        } catch (Throwable $e) {
-            throw new RuntimeException((string) __('resale_import.file.xlsx_unreadable', ['file' => $name, 'reason' => str_replace($file, $name, $e->getMessage())]), 0, $e);
-        }
-        $sheet = $document->getFirstSheet();
+        $sheet = self::openXlsx($file, self::XLSX_MAX_ROWS, 'resale_import.file.xlsx_unreadable')->getFirstSheet();
         if ($sheet === null) {
             throw new RuntimeException((string) __('resale_import.file.no_sheet', ['file' => $name]));
         }
 
-        $index = self::headerIndex(self::sheetHeaderNames($sheet));
+        $index = self::columnPositions($sheet, [...self::REQUIRED, ...self::OPTIONAL]);
         $missing = array_values(array_diff(self::REQUIRED, array_keys($index)));
         if ($missing !== []) {
             throw new RuntimeException((string) __('resale_import.file.missing_columns', ['columns' => implode(', ', $missing)]));

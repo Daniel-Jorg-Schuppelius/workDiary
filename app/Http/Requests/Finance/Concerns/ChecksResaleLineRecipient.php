@@ -12,27 +12,37 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Finance\Concerns;
 
-use App\Models\{Customer, LexofficeVoucherLine};
+use App\Models\{Customer, Organization};
 use App\Models\Reselling\ResalePeriod;
-use App\Plugins\Lexoffice\Services\LexofficeContactMap;
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use Illuminate\Validation\Validator;
 
 /**
- * Rechnungsbezug nie über Kundengrenzen (Feature 152, Review B13): die
- * Position muss zu einem Lexoffice-Kontakt des Rechnungsempfängers der
- * Periode gehören. Bezugsdialog, Schnellzuordnung und Abgleich prüfen hier.
+ * Rechnungsbezug nie über Kundengrenzen (Feature 152, Review B13): der
+ * Rechnungsempfänger der Position (laut Spiegelquelle) muss der Rechnungs-
+ * empfänger der Periode sein. Bezugsdialog, Schnellzuordnung und Abgleich
+ * prüfen hier.
  */
 trait ChecksResaleLineRecipient {
-    /** Position aus der dekodierten ID (mit Beleg geladen), null wenn unbekannt. */
-    protected function lineFrom(mixed $id): ?LexofficeVoucherLine {
-        return is_numeric($id) && (int) $id > 0 ? LexofficeVoucherLine::query()->with('voucher')->find((int) $id) : null;
+    /**
+     * Position aus dem Formularschlüssel ({@see MirrorLine::$key}) — die
+     * Quelle, deren Schlüssel er ist, liefert sie; null wenn unbekannt oder
+     * nicht aus der aktiven Organisation.
+     */
+    protected function lineFrom(mixed $key): ?MirrorLine {
+        $organization = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+        if (! $organization instanceof Organization || ! is_scalar($key) || trim((string) $key) === '') {
+            return null;
+        }
+
+        return app(InvoiceMirror::class)->lineByKey($organization, trim((string) $key));
     }
 
     /**
-     * Prüft Periode und Position: Periode gehört zum Empfänger, Position zu
-     * einem seiner Kontakte. Meldet an `period_id` bzw. `line_id`.
+     * Prüft Periode und Position: Periode gehört zum Empfänger, Position an
+     * denselben Empfänger. Meldet an `period_id` bzw. `line_id`.
      */
-    protected function validateLineRecipient(Validator $validator, ?ResalePeriod $period, ?LexofficeVoucherLine $line, ?Customer $recipient = null): void {
+    protected function validateLineRecipient(Validator $validator, ?ResalePeriod $period, ?MirrorLine $line, ?Customer $recipient = null): void {
         if ($period === null) {
             $validator->errors()->add('period_id', (string) __('resale.link_error.period_missing'));
 
@@ -49,8 +59,7 @@ trait ChecksResaleLineRecipient {
 
             return;
         }
-        $contacts = LexofficeContactMap::forCustomer($billedTo)->byCustomer($billedTo->id);
-        if (! in_array((string) $line->voucher->contact_external_id, $contacts, true)) {
+        if ($line->recipientCustomerId !== $billedTo->id) {
             $validator->errors()->add('line_id', (string) __('resale.link_error.line_foreign', ['customer' => $billedTo->name]));
         }
     }

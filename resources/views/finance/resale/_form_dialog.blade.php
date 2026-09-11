@@ -22,8 +22,10 @@
     $holder = (string) old('holder', $holderDefault);
     $customerSqid = (string) old('customer_id', \App\Support\Sqid::encode(\App\Models\Customer::class, $editing ? $subscription->customer_id : ($prefill['customer_id'] ?? null)));
     $foreignSqid = (string) old('foreign_customer_id', \App\Support\Sqid::encode(\App\Models\ForeignCustomer::class, $editing ? $subscription->foreign_customer_id : ($prefill['foreign_customer_id'] ?? null)));
-    $articleSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article::class, $editing ? $subscription->article_id : null));
+    $articleSqid = (string) old('article_id', \App\Support\Sqid::encode(\App\Models\Article::class, $editing ? $subscription->article_id : ($prefill['article_id'] ?? null)));
     $lexArticleSqid = (string) old('lexoffice_article_id', \App\Support\Sqid::encode(\App\Models\LexofficeArticle::class, $editing ? $subscription->lexoffice_article_id : ($prefill['lexoffice_article_id'] ?? null)));
+    $contractSqid = (string) old('contract_id', \App\Support\Sqid::encode(\App\Models\Contract\Contract::class, $editing ? $subscription->contract_id : null));
+    $contracts = $contracts ?? collect();
     // Vorbelegung („Abo aus Rechnungsposition anlegen") greift nur beim Anlegen.
     $value = static fn(string $field, mixed $default = null): mixed => old($field, $editing ? ($subscription->{$field} ?? $default) : ($prefill[$field] ?? $default));
     $enumValue = static fn(string $field, string $default): string => (string) old($field, $editing ? $subscription->{$field}->value : ($prefill[$field] ?? $default));
@@ -98,6 +100,16 @@
                 </x-select-field>
             </div>
         </div>
+
+        {{-- Vertrag (079) als Fristenrahmen: nur Kundenverträge; der Partner muss der Rechnungsempfänger sein (422 sonst). --}}
+        @if ($contracts->isNotEmpty())
+            <x-select-field name="contract_id" :label="__('resale.contract.field')" span="6" :hint="__('resale.contract.hint')">
+                <option value="">{{ __('resale.contract.none') }}</option>
+                @foreach ($contracts as $contract)
+                    <option value="{{ $contract->sqid }}" @selected($contractSqid === $contract->sqid)>{{ $contract->number }} · {{ $contract->title }}{{ $contract->customer !== null ? ' — ' . $contract->customer->name : '' }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
 
         @if ($articles->isNotEmpty())
             <x-select-field name="article_id" :label="__('resale.field.article')" span="3" :hint="__('resale.dialog.article_hint')" :disabled="$locked['product']">

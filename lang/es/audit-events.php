@@ -229,6 +229,7 @@ return [
         'ended' => 'Contrato finalizado',
         'negotiation_opened' => 'Negociación del contrato abierta',
         'obligationAdded' => 'Obligación contractual añadida',
+        'obligationClosed' => 'Obligación contractual cerrada (fecha de suscripción sin efecto)',
         'obligationCompleted' => 'Obligación contractual cumplida',
         'obligationMissed' => 'Obligación contractual incumplida',
         'review_item_added' => 'Punto de revisión del contrato añadido',
@@ -403,6 +404,7 @@ return [
     ],
     'invoice' => [
         'metering_drafted' => 'Borrador por lectura creado',
+        'resale_auto_drafted' => 'Borrador de factura a partir de periodos de suscripción (facturación recurrente) creado',
         'retention_added' => 'Retención de garantía registrada',
         'retention_released' => 'Retención de garantía liberada',
         'retention_secured' => 'Retención sustituida por un aval',

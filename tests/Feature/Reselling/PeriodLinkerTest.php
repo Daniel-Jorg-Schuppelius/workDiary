@@ -130,16 +130,17 @@ class PeriodLinkerTest extends TestCase {
 
     public function test_consumed_months_reports_per_line_targets_and_honours_the_except_period(): void {
         $linker = new PeriodLinker;
+        $mirror = (new LexofficeVoucherLine)->getMorphClass();
         $line = $this->line('RE/2025/0100', '2025-08-06');
         $other = $this->line('RE/2025/0101', '2025-08-07');
         [$p2024, $p2025] = $this->periods();
         $linker->attach($p2024, $line, 6.0, null, null);
         $linker->attach($p2025, $line, 4.0, null, null);
 
-        $this->assertSame([], $linker->consumedMonths([]), 'ohne Positionen keine Abfrage');
-        $this->assertSame([], $linker->consumedMonths([$other->id]), 'unverbrauchte Position kommt nicht vor');
+        $this->assertSame([], $linker->consumedMonths($mirror, []), 'ohne Positionen keine Abfrage');
+        $this->assertSame([], $linker->consumedMonths($mirror, [$other->id]), 'unverbrauchte Position kommt nicht vor');
 
-        $consumed = $linker->consumedMonths([$line->id, $other->id]);
+        $consumed = $linker->consumedMonths($mirror, [$line->id, $other->id]);
         $this->assertSame([$line->id], array_keys($consumed));
         $this->assertSame(10.0, $consumed[$line->id]['months']);
         $this->assertCount(2, $consumed[$line->id]['periods']);
@@ -149,7 +150,7 @@ class PeriodLinkerTest extends TestCase {
         $this->assertSame($consumed[$line->id]['periods'][0], PeriodLinker::targetLabel(ResalePeriodLink::query()->where('period_id', $p2024->id)->firstOrFail()));
 
         // except: die Bezüge an dieser Periode zählen nicht (ein erneuter Bezug ersetzt sie).
-        $without = $linker->consumedMonths([$line->id], $p2024);
+        $without = $linker->consumedMonths($mirror, [$line->id], $p2024);
         $this->assertSame(4.0, $without[$line->id]['months']);
         $this->assertCount(1, $without[$line->id]['periods']);
         $this->assertStringContainsString('05.08.2025', $without[$line->id]['periods'][0]);
@@ -158,7 +159,7 @@ class PeriodLinkerTest extends TestCase {
 
         // Vorschläge zählen ebenso als Verbrauch wie manuelle Bezüge.
         ResalePeriodLink::query()->where('period_id', $p2025->id)->update(['origin' => LinkOrigin::Proposed->value, 'confirmed_at' => null]);
-        $this->assertSame(10.0, $linker->consumedMonths([$line->id])[$line->id]['months']);
+        $this->assertSame(10.0, $linker->consumedMonths($mirror, [$line->id])[$line->id]['months']);
     }
 
     public function test_settle_keeps_waived_and_disputed_periods_untouched(): void {

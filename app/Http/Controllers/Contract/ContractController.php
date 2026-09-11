@@ -13,12 +13,14 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Contract;
 
 use App\Enums\Contract\{ContractKind, ContractObligationKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod};
+use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\AssetFinance\AssetFinanceContract;
 use App\Models\Contract\{Contract, ContractObligation};
 use App\Models\{Customer, Document, Supplier, User};
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Contract\ContractService;
+use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -31,7 +33,7 @@ use Illuminate\Validation\Rule;
  * kalender und additive Verknüpfung eines Leasing-/Finanzierungsvertrags.
  */
 class ContractController extends Controller {
-    public function __construct(private readonly ContractService $service) {}
+    public function __construct(private readonly ContractService $service, private readonly FeatureFlagResolver $featureFlags) {}
 
     public function index(Request $request): View {
         Gate::authorize('viewAny', Contract::class);
@@ -66,6 +68,12 @@ class ContractController extends Controller {
 
         $contract->load(['customer', 'supplier', 'document', 'responsible', 'obligations.responsible', 'attachments']);
 
+        // Panel „Abos & Lizenzen" (Feature 152): nur mit Modul und Recht, sonst gar nicht gerendert.
+        $resaleSubscriptions = null;
+        if ($this->featureFlags->isEnabled('module.reselling') && Gate::allows(Permission::ResellingView->value)) {
+            $resaleSubscriptions = $contract->resaleSubscriptions()->with(['customer:id,name', 'foreignCustomer:id,name'])->get();
+        }
+
         return view('contracts.show', [
             'contract' => $contract,
             'nextTermination' => $contract->status->isOpen() ? $this->service->nextTerminationDate($contract) : null,
@@ -74,6 +82,7 @@ class ContractController extends Controller {
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
             'assetFinanceOptions' => AssetFinanceContract::query()->orderByDesc('id')->limit(200)->get(['id', 'number', 'partner_name']),
             'linkedAssetFinance' => AssetFinanceContract::query()->where('contract_id', $contract->id)->get(['id', 'number', 'partner_name']),
+            'resaleSubscriptions' => $resaleSubscriptions,
         ]);
     }
 

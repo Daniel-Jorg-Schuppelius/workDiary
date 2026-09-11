@@ -15,6 +15,7 @@ namespace App\Models\Contract;
 use App\Enums\Contract\{ContractKind, ContractPartnerType, ContractStatus, ContractTermKind, IndexationMethod};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\{Customer, Document, Supplier, User};
+use App\Models\Reselling\ResaleSubscription;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -123,5 +124,15 @@ class Contract extends Model {
     /** @return HasMany<ContractObligation, $this> */
     public function obligations(): HasMany {
         return $this->hasMany(ContractObligation::class)->orderBy('due_on');
+    }
+
+    /**
+     * Abos des Reselling-Registers (Feature 152), die diesen Vertrag als
+     * Rahmen für Fristen nutzen.
+     *
+     * @return HasMany<ResaleSubscription, $this>
+     */
+    public function resaleSubscriptions(): HasMany {
+        return $this->hasMany(ResaleSubscription::class)->orderBy('label')->orderBy('starts_on');
     }
 }

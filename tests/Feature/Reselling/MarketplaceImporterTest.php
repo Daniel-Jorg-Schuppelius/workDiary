@@ -221,7 +221,11 @@ class MarketplaceImporterTest extends TestCase {
         $this->assertSame(8, ResaleSubscription::query()->count());
         Storage::disk(ResaleImport::DISK)->assertExists((string) ResaleImport::query()->first()?->file_path);
 
-        $this->actingAs($admin)->post(route('finance.resale.import.store'), [])->assertRedirect(route('finance.resale.index'))->assertSessionHas('error');
+        // Keine Datei: Feldfehler als 422 im Dialog statt Flash-Redirect (Review 2026-09-11), kein Lauf.
+        $this->actingAs($admin)->postJson(route('finance.resale.import.store'), [])
+            ->assertStatus(422)
+            ->assertJsonPath('errors.telekom.0', __('resale.import.flash.no_files'));
+        $this->assertSame(2, ResaleImport::query()->count());
     }
 
     public function test_console_import_command(): void {

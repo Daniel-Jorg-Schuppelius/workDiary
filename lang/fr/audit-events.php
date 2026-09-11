@@ -229,6 +229,7 @@ return [
         'ended' => 'Contrat terminé',
         'negotiation_opened' => 'Négociation du contrat ouverte',
         'obligationAdded' => 'Obligation contractuelle ajoutée',
+        'obligationClosed' => 'Obligation contractuelle clôturée (échéance d\'abonnement caduque)',
         'obligationCompleted' => 'Obligation contractuelle remplie',
         'obligationMissed' => 'Obligation contractuelle manquée',
         'review_item_added' => 'Point d\'examen du contrat ajouté',
@@ -403,6 +404,7 @@ return [
     ],
     'invoice' => [
         'metering_drafted' => 'Brouillon de relevé créé',
+        'resale_auto_drafted' => 'Brouillon de facture à partir des périodes d’abonnement (facturation récurrente) créé',
         'retention_added' => 'Retenue de garantie enregistrée',
         'retention_released' => 'Retenue de garantie libérée',
         'retention_secured' => 'Retenue remplacée par une caution',

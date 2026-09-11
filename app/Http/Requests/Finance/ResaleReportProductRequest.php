@@ -15,28 +15,37 @@ namespace App\Http\Requests\Finance;
 use App\Enums\Reselling\ResaleArticleRole;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
-use App\Models\LexofficeArticle;
+use App\Models\{Article, LexofficeArticle};
 use App\Rules\ExistsInCurrentOrganization;
 use Illuminate\Validation\Rule;
 
 /**
- * Produkt-Einstufung eines Lexoffice-Artikels (Feature 152): Artikel als
- * Sqid, Rolle „auto" = Übersteuerung löschen.
+ * Produkt-Einstufung eines Artikels (Feature 152): `article_type` wählt
+ * Lexoffice-Artikel (Default) oder lokalen Artikel, `article_id` ist die
+ * Sqid des jeweiligen Modells; Rolle „auto" = Übersteuerung löschen.
  */
 class ResaleReportProductRequest extends BaseFormRequest {
     use DecodesSqidInputs;
 
+    public const TYPE_LOCAL = 'local';
+
+    public const TYPE_LEXOFFICE = 'lexoffice';
+
     /** @var array<string, class-string> */
-    protected array $sqidFields = [
-        'article_id' => LexofficeArticle::class,
-    ];
+    protected array $sqidFields = [];
+
+    /** @return array<string, class-string> */
+    protected function sqidFields(): array {
+        return ['article_id' => $this->isLocal() ? Article::class : LexofficeArticle::class];
+    }
 
     /**
      * @return array<string, list<mixed>>
      */
     public function rules(): array {
         return [
-            'article_id' => ['required', 'integer', new ExistsInCurrentOrganization('lexoffice_articles')],
+            'article_type' => ['nullable', 'string', Rule::in([self::TYPE_LOCAL, self::TYPE_LEXOFFICE])],
+            'article_id' => ['required', 'integer', new ExistsInCurrentOrganization($this->isLocal() ? 'articles' : 'lexoffice_articles')],
             'role' => ['nullable', 'string', Rule::in(array_merge(['auto'], array_map(static fn(ResaleArticleRole $r): string => $r->value, ResaleArticleRole::cases())))],
         ];
     }
@@ -51,8 +60,14 @@ class ResaleReportProductRequest extends BaseFormRequest {
         ];
     }
 
-    public function article(): LexofficeArticle {
-        return LexofficeArticle::query()->findOrFail((int) $this->validated('article_id'));
+    public function isLocal(): bool {
+        return $this->input('article_type') === self::TYPE_LOCAL;
+    }
+
+    public function article(): LexofficeArticle|Article {
+        $id = (int) $this->validated('article_id');
+
+        return $this->isLocal() ? Article::query()->findOrFail($id) : LexofficeArticle::query()->findOrFail($id);
     }
 
     public function role(): ?ResaleArticleRole {

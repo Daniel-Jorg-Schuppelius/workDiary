@@ -16,10 +16,10 @@ use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\Resale\{LinkResalePeriodRequest, QuickLinkResalePeriodRequest, WaiveResalePeriodRequest};
-use App\Models\{Customer, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\Customer;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
-use App\Plugins\Lexoffice\Services\LexofficeRecipientInvoiceLines;
-use App\Services\Reselling\Register\{LicenseArticleClassifier, LicenseMonths, LinkProposer, PeriodLinker};
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use App\Services\Reselling\Register\{LicenseMonths, LinkProposer, PeriodLinker};
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
 use Illuminate\Contracts\View\View;
@@ -41,9 +41,10 @@ class ResalePeriodController extends Controller {
     /** Lizenzpositionen ohne Abo: mehr zeigt die Periodenseite nicht (C12). */
     private const UNLINKED_LIMIT = 100;
 
-    public function __construct(private readonly PeriodLinker $linker, private readonly LexofficeRecipientInvoiceLines $invoiceLines) {}
+    public function __construct(private readonly PeriodLinker $linker, private readonly InvoiceMirror $mirror) {}
 
     public function index(Request $request): View {
+        $organization = $this->currentOrganizationOrAbort(404);
         $today = ResalePeriod::today();
         $filters = [
             'status' => (string) $request->query('status', 'problems'),
@@ -51,7 +52,7 @@ class ResalePeriodController extends Controller {
             'q' => trim((string) $request->query('q', '')),
         ];
         $query = ResalePeriod::query()
-            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links.linkable'])
+            ->with(['subscription.customer:id,name', 'subscription.foreignCustomer:id,name,customer_id', 'subscription.foreignCustomer.customer:id,name', 'links'])
             ->where('starts_on', '<', DateRange::dayAfter($today))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false));
         if ($filters['status'] === 'problems') {
@@ -74,12 +75,15 @@ class ResalePeriodController extends Controller {
                 ->orWhereHas('foreignCustomer', static fn(Builder $f) => $f->whereLikeEscaped('name', $q))));
         }
         $periods = $query->orderBy('starts_on')->orderBy('subscription_id')->paginate(self::PER_PAGE)->withQueryString();
+        $this->mirror->preload($organization, $periods->getCollection()->flatMap(static fn(ResalePeriod $p) => $p->links));
 
         $counts = ResalePeriod::query()->where('starts_on', '<', DateRange::dayAfter($today))
             ->whereHas('subscription', static fn(Builder $s) => $s->where('is_own_holding', false))
             ->selectRaw('status, COUNT(*) AS n')->groupBy('status')->pluck('n', 'status')->all();
 
-        $unlinked = $this->unlinkedLicenseLines();
+        // Lizenzpositionen ohne Bezug zu einer Periode (alle Quellen) — Hinweis auf
+        // fehlende Abos oder falsche Halter; gezählt einmal, geladen begrenzt (C12).
+        $unlinked = $this->mirror->unlinkedLines($organization, self::UNLINKED_LIMIT);
 
         return view('finance.resale.periods', [
             'periods' => $periods,
@@ -88,34 +92,9 @@ class ResalePeriodController extends Controller {
             'counts' => $counts,
             'statuses' => PeriodStatus::cases(),
             'today' => $today,
-            'unlinkedTotal' => (clone $unlinked)->count(),
-            'unlinked' => $unlinked
-                ->with(['voucher:id,voucher_number,voucher_date,customer_id,voucher_text', 'voucher.customer:id,name', 'article:id,name'])
-                ->orderByDesc(LexofficeVoucher::query()->select('voucher_date')->whereColumn('lexoffice_vouchers.id', 'lexoffice_voucher_lines.voucher_id'))
-                ->orderByDesc('id')
-                ->limit(self::UNLINKED_LIMIT)
-                ->get(),
+            'unlinkedTotal' => $unlinked['total'],
+            'unlinked' => $unlinked['lines'],
         ]);
-    }
-
-    /**
-     * Lizenzpositionen (Abo-Artikel laut Einstufung) im Belegspiegel ohne
-     * Bezug zu einer Periode — Hinweis auf fehlende Abos oder falsche Halter.
-     * Nur die Abfrage: die Seite zählt einmal und lädt begrenzt (C12).
-     *
-     * @return Builder<LexofficeVoucherLine>
-     */
-    private function unlinkedLicenseLines(): Builder {
-        $classifier = new LicenseArticleClassifier;
-        $articleIds = LexofficeArticle::query()->active()->get(['id', 'name', 'resale_role'])
-            ->filter(static fn(LexofficeArticle $a): bool => $classifier->isLicense($a))
-            ->pluck('id')
-            ->all();
-
-        return LexofficeVoucherLine::query()
-            ->whereIn('lexoffice_article_id', $articleIds === [] ? [0] : $articleIds)
-            ->whereDoesntHave('periodLinks')
-            ->whereIn('voucher_id', LexofficeVoucher::query()->issuedInvoices()->select('id'));
     }
 
     public function propose(LinkProposer $proposer): RedirectResponse {
@@ -174,29 +153,25 @@ class ResalePeriodController extends Controller {
      * bleiben sichtbar, aber gesperrt. Support-Stunden und Hardware haben
      * hier nichts verloren — sie waren die lange Liste.
      */
-    public function linkCreate(ResalePeriod $period, LinkProposer $proposer): View {
+    public function linkCreate(ResalePeriod $period): View {
         $organization = $this->currentOrganizationOrAbort(404);
         $period->load(['subscription.customer', 'subscription.foreignCustomer.customer', 'links']);
-        $contacts = $proposer->contactsFor($period->subscription);
-        $lines = $this->invoiceLines->forPeriod($organization, $contacts, $period);
+        $billedTo = $period->subscription->billedTo();
+        $lines = $billedTo === null ? collect() : $this->mirror->candidatesFor($organization, $billedTo->id, $period);
         // Bezüge an DIESER Periode zählen nicht: ein erneuter Bezug ersetzt sie; sie werden nur markiert.
-        $consumed = $this->invoiceLines->consumed($lines, $period);
-        $mirror = (new LexofficeVoucherLine)->getMorphClass();
-        $linkedIds = $period->links
-            ->filter(static fn(ResalePeriodLink $l): bool => $l->linkable_type === $mirror)
-            ->map(static fn(ResalePeriodLink $l): int => (int) $l->linkable_id)
-            ->all();
+        $consumed = $this->linker->consumed($lines, $period);
+        $linked = $period->links->map(static fn(ResalePeriodLink $l): string => $l->mirrorIdentity())->all();
         $rows = [];
         foreach ($lines as $line) {
             $split = LicenseMonths::split($line);
             $months = $split['licences'] * $split['months'];
-            $free = max(0.0, $months - ($consumed[$line->id]['months'] ?? 0.0));
+            $free = max(0.0, $months - ($consumed[$line->identity()]['months'] ?? 0.0));
             $rows[] = [
                 'line' => $line,
                 'licences' => $split['licences'],
                 'per_licence' => $split['months'],
                 'free' => $free,
-                'used' => in_array($line->id, $linkedIds, true) || $free <= 0.001,
+                'used' => in_array($line->identity(), $linked, true) || $free <= 0.001,
                 'partly' => $free > 0.001 && $free < $months - 0.001,
             ];
         }
@@ -205,7 +180,7 @@ class ResalePeriodController extends Controller {
             'period' => $period,
             'rows' => $rows,
             'needed' => $period->openMonths(),
-            'hasContacts' => $contacts !== [],
+            'hasSource' => $billedTo !== null && $this->mirror->coversRecipient($organization, $billedTo),
         ]);
     }
 
@@ -234,7 +209,7 @@ class ResalePeriodController extends Controller {
     }
 
     /** Bezug schreiben; „mehr als frei" wird zum Feldfehler an `months`. */
-    private function attach(ResalePeriod $period, LexofficeVoucherLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
+    private function attach(ResalePeriod $period, MirrorLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
         try {
             return $this->linker->attach($period, $line, $months, $note, $userId);
         } catch (\InvalidArgumentException $e) {

@@ -117,6 +117,7 @@ class DocumentDesignRenderer {
      * $payload überschreibt die Profilauflösung (z. B. eingefrorener
      * Snapshot-Stand versendeter Angebote, #83).
      *
+     * @param view-string $view
      * @param array<string, mixed> $data
      * @param array<string, mixed> $writerOptions
      * @param array<string, mixed>|null $payload

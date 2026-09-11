@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Reselling;
 
 use App\Enums\Reselling\PeriodStatus;
-use App\Models\{Customer, ExternalReference, ForeignCustomer, LexofficeArticle};
+use App\Models\{Article, Customer, ExternalReference, ForeignCustomer, LexofficeArticle};
 use App\Models\Reselling\{ResalePriceEntry, ResaleSubscription};
 use App\Plugins\Lexoffice\LexofficePlugin;
 use App\Services\Reselling\Register\PeriodPlanner;
@@ -56,6 +56,13 @@ class ResaleDraftAndPricesTest extends TestCase {
             'organization_id' => $this->organization->id, 'provider' => 'qualityhosting', 'product' => 'Microsoft 365 Business Premium', 'term_months' => 12, 'interval' => 'yearly',
             'valid_from' => '2026-09-01', 'purchase_unit_price' => '187.92', 'list_unit_price' => '228.72', 'currency' => 'EUR',
         ]);
+        // Lokaler Artikel mit Verkaufspreis (Review 2026-09-11): weicht der Abo-Preis ab, meldet die Prüfung es.
+        $exchange = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Exchange Online (Plan 1)', 'number' => 'EXO1', 'default_sale_price' => '60.00', 'currency' => 'EUR']);
+        ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'manual', 'label' => 'Exchange Online (Plan 1)', 'article_id' => $exchange->id,
+            'customer_id' => $customer->id, 'quantity' => 1, 'starts_on' => '2025-08-05', 'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'auto',
+            'purchase_unit_price' => '40.00', 'sale_unit_price' => '47.40', 'currency' => 'EUR', 'status' => 'active',
+        ]);
 
         $this->actingAs($admin)->get(route('finance.resale.prices'))
             ->assertOk()
@@ -63,7 +70,16 @@ class ResaleDraftAndPricesTest extends TestCase {
             ->assertSee('228,72 €')
             ->assertSee(__('resale.prices.flag.contract_above_catalog'), false)
             ->assertSee('126,00 €')
+            ->assertSee(__('resale.prices.flag.article_price_differs'), false)
             ->assertDontSee(__('resale.prices.flag.below_purchase'), false);
+        $rows = app(\App\Services\Reselling\Register\ResalePriceCheck::class)->build(\App\Models\Reselling\ResalePeriod::today())['rows'];
+        $row = collect($rows)->firstWhere('label', 'Exchange Online (Plan 1)');
+        $this->assertNotNull($row);
+        $this->assertSame(60.0, $row['article_sale']);
+        $this->assertContains('article_price_differs', $row['flags']);
+        $premium = collect($rows)->firstWhere('label', 'Microsoft 365 Business Premium');
+        $this->assertNull($premium['article_sale'] ?? null, 'ohne lokalen Artikel kein Artikelpreis');
+        $this->assertNotContains('article_price_differs', $premium['flags'] ?? []);
     }
 
     public function test_local_billing_creates_a_local_invoice_draft_with_proposed_links(): void {
@@ -89,6 +105,8 @@ class ResaleDraftAndPricesTest extends TestCase {
         $this->assertSame('resale', $invoice->category);
         $this->assertCount(2, $invoice->items, 'eine Position je Periode');
         $this->assertSame('24.000', $invoice->items->first()?->quantity, '2 Lizenzen × 12 Monate');
+        $this->assertSame('2025-08-05', $invoice->items->first()?->service_from?->toDateString(), 'Leistungszeitraum = Periode (Review 2026-09-11)');
+        $this->assertSame('2026-08-04', $invoice->items->first()?->service_to?->toDateString());
         $this->assertSame('98880', (string) $invoice->subtotal?->getMinorAmount(), '2 Perioden × 2 × 247,20');
         foreach ($subscription->periods()->get() as $period) {
             $this->assertSame(PeriodStatus::Billed, $period->status);
@@ -270,6 +288,7 @@ class ResaleDraftAndPricesTest extends TestCase {
 
         $result = $service->draft($this->organization, $customer, $admin);
         $this->assertTrue($result['local']);
+        $this->assertSame('local', $result['target']);
         $this->assertSame(2, $result['lines'], 'zwei Perioden des bepreisten Abos');
         $this->assertSame(2, $result['periods']);
         $this->assertSame(988.8, $result['net'], '2 × 2 × 247,20');

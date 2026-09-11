@@ -77,6 +77,16 @@
                     </dd>
                     <dt class="text-muted">{{ __('resale.field.status') }}</dt>
                     <dd><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></dd>
+                    @if ($subscription->contract !== null)
+                        <dt class="text-muted">{{ __('resale.contract.field') }}</dt>
+                        <dd>
+                            @if ($contractLink !== null)
+                                <a href="{{ $contractLink }}" class="link link-hover">{{ $subscription->contract->number }} · {{ $subscription->contract->title }}</a>
+                            @else
+                                {{ $subscription->contract->number }} · {{ $subscription->contract->title }}
+                            @endif
+                        </dd>
+                    @endif
                     @if ($subscription->company_name)
                         <dt class="text-muted">{{ __('resale.field.company_name') }}</dt>
                         <dd>{{ $subscription->company_name }}</dd>
@@ -204,8 +214,8 @@
                         @endif
                     </span>
                 </div>
-                @if ($invoices['contacts'] === [])
-                    <div class="px-4 py-3 text-sm text-warning">{{ __('resale.link.no_contacts') }}</div>
+                @if (! $invoices['has_source'])
+                    <div class="px-4 py-3 text-sm text-warning">{{ __('resale.mirror.no_source') }}</div>
                 @else
                     <x-table bare>
                         <x-slot:head>
@@ -225,19 +235,19 @@
                                 <tr @class(['opacity-60' => $row['remaining'] <= 0.001])>
                                     @if ($loop->first)
                                         <td class="whitespace-nowrap align-top" rowspan="{{ $entry['rows'] }}">
-                                            <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
-                                            <span class="block text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->fdate() }}</span>
-                                            @if ($voucher->voucherTextHint() !== null)
-                                                <span class="badge badge-info badge-outline badge-sm mt-1" title="{{ $voucher->voucher_text }}">{{ $voucher->voucherTextHint() }}</span>
-                                            @elseif ($voucher->voucher_text)
-                                                <span class="block text-xs text-muted max-w-xs truncate" title="{{ $voucher->voucher_text }}">{{ \Illuminate\Support\Str::limit($voucher->voucher_text, 60) }}</span>
+                                            <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                                            <span class="block text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}</span>
+                                            @if ($voucher->voucherTextHint !== null)
+                                                <span class="badge badge-info badge-outline badge-sm mt-1" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</span>
+                                            @elseif ($voucher->voucherText)
+                                                <span class="block text-xs text-muted max-w-xs truncate" title="{{ $voucher->voucherText }}">{{ \Illuminate\Support\Str::limit($voucher->voucherText, 60) }}</span>
                                             @endif
                                             <span class="flex gap-1 mt-1">
-                                                @can(\App\Enums\User\Permission::VoucherViewAny->value)
-                                                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $voucher)" :title="__('resale.invoices.preview')" />
-                                                @endcan
+                                                @if ($voucher->previewUrl !== null)
+                                                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$voucher->previewUrl" :title="__('resale.invoices.preview')" />
+                                                @endif
                                                 @if ($entry['permalink'] !== null)
-                                                    <a href="{{ $entry['permalink'] }}" target="_blank" rel="noopener" class="btn btn-ghost btn-xs" title="{{ __('resale.invoices.open_lexoffice') }}"><x-icon name="open_in_new" size="1rem" /></a>
+                                                    <a href="{{ $entry['permalink'] }}" target="_blank" rel="noopener" class="btn btn-ghost btn-xs" title="{{ __('resale.mirror.open_source', ['source' => __('resale.mirror.source_' . $voucher->sourceKey)]) }}"><x-icon name="open_in_new" size="1rem" /></a>
                                                 @endif
                                             </span>
                                         </td>
@@ -248,8 +258,8 @@
                                             <span class="block text-xs text-muted max-w-sm truncate" title="{{ $line->description }}">{{ \Illuminate\Support\Str::limit($line->description, 80) }}</span>
                                         @endif
                                     </td>
-                                    <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
-                                    <td class="text-right tabular-nums whitespace-nowrap">{{ $line->unit_net->withScale(2)->format() }}</td>
+                                    <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }}</td>
+                                    <td class="text-right tabular-nums whitespace-nowrap">{{ $line->unitNet->withScale(2)->format() }}</td>
                                     <td class="text-xs">
                                         <span class="block text-muted tabular-nums">= <x-resale.licence-months :value="$row['months']" :per-licence="$row['per_licence']" /></span>
                                         @if ($row['linked'] !== null)
@@ -266,10 +276,10 @@
                                         @if ($canManage && $row['remaining'] > 0.001 && $openPeriods->isNotEmpty())
                                             <form method="POST" action="{{ route('finance.resale.links.quick', $subscription->sqid) }}" class="flex items-center justify-end gap-1">
                                                 @csrf
-                                                <input type="hidden" name="line_id" value="{{ $line->sqid }}">
+                                                <input type="hidden" name="line_id" value="{{ $line->key }}">
                                                 <select name="period_id" class="select select-xs select-bordered w-44" aria-label="{{ __('resale.field.period') }}">
                                                     @foreach ($openPeriods as $period)
-                                                        <option value="{{ $period->sqid }}" @selected($period->starts_on->lessThanOrEqualTo($voucher->voucher_date ?? $today) && $period->ends_on->greaterThanOrEqualTo($voucher->voucher_date ?? $today))>{{ $period->label() }}</option>
+                                                        <option value="{{ $period->sqid }}" @selected($period->starts_on->lessThanOrEqualTo($voucher->voucherDate ?? $today) && $period->ends_on->greaterThanOrEqualTo($voucher->voucherDate ?? $today))>{{ $period->label() }}</option>
                                                     @endforeach
                                                 </select>
                                                 <input type="hidden" name="per_licence" value="{{ number_format($row['per_licence'], 2, '.', '') }}">
@@ -290,7 +300,7 @@
                                                 @foreach ($entry['other'] as $other)
                                                     <li class="flex justify-between gap-3">
                                                         <span class="truncate" title="{{ $other->description }}">{{ $other->name }}</span>
-                                                        <span class="whitespace-nowrap tabular-nums text-muted"><x-resale.licence-months :value="$other->quantity" />{{ $other->unit_name ? ' ' . $other->unit_name : '' }} × {{ $other->unit_net->withScale(2)->format() }}</span>
+                                                        <span class="whitespace-nowrap tabular-nums text-muted"><x-resale.licence-months :value="$other->quantity" />{{ $other->unitName ? ' ' . $other->unitName : '' }} × {{ $other->unitNet->withScale(2)->format() }}</span>
                                                     </li>
                                                 @endforeach
                                             </ul>

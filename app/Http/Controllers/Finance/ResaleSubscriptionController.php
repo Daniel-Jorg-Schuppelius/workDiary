@@ -12,25 +12,28 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Contract\ContractPartnerType;
 use App\Enums\Reselling\{BillingFrequency, CompanyMappingMode, ImportStatus};
 use App\Enums\Reselling\{PeriodStatus, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\Resale\{AssignResaleHolderRequest, ImportResaleFilesRequest, TransferResaleSubscriptionRequest};
 use App\Http\Requests\Finance\SaveResaleSubscriptionRequest;
-use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine};
+use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle, Organization};
+use App\Models\Contract\Contract;
 use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResaleSubscription};
-use App\Plugins\Lexoffice\Services\LexofficeRecipientInvoiceLines;
+use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Reselling\Marketplace\MarketplaceCompany;
-use App\Services\Reselling\Register\{HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodPlanner};
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine, MirrorVoucher};
+use App\Services\Reselling\Register\{HolderResolver, LicenseMonths, LinkProposer, MarketplaceImporter, PeriodLinker, PeriodPlanner};
 use App\Support\{CsvExport, Sqid};
 use Carbon\CarbonImmutable;
 use Carbon\Exceptions\InvalidFormatException;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\{Builder, Collection};
 use Illuminate\Http\{RedirectResponse, Request};
-use Illuminate\Support\{Collection, Str};
-use Illuminate\Support\Facades\{DB, Log, Storage};
+use Illuminate\Support\Facades\{DB, Gate, Log, Storage};
+use Illuminate\Support\Str;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 /**
@@ -42,7 +45,7 @@ class ResaleSubscriptionController extends Controller {
 
     private const PER_PAGE = 50;
 
-    public function __construct(private readonly LexofficeRecipientInvoiceLines $invoiceLines) {}
+    public function __construct(private readonly InvoiceMirror $mirror, private readonly PeriodLinker $linker) {}
 
     public function index(Request $request): View {
         $today = ResalePeriod::today();
@@ -108,8 +111,10 @@ class ResaleSubscriptionController extends Controller {
         ]);
     }
 
-    public function show(ResaleSubscription $subscription, LinkProposer $proposer): View {
-        $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'successor', 'predecessors', 'parent.customer', 'parent.foreignCustomer', 'assignments.customer', 'assignments.foreignCustomer', 'periods.decidedBy', 'periods.links.linkable', 'creator']);
+    public function show(ResaleSubscription $subscription): View {
+        $subscription->load(['customer', 'foreignCustomer.customer', 'article', 'lexofficeArticle', 'contract', 'successor', 'predecessors', 'parent.customer', 'parent.foreignCustomer', 'assignments.customer', 'assignments.foreignCustomer', 'periods.decidedBy', 'periods.links', 'creator']);
+        $organization = $this->currentOrganizationOrAbort(404);
+        $this->mirror->preload($organization, $subscription->periods->flatMap(static fn(ResalePeriod $p) => $p->links));
         $today = ResalePeriod::today();
         // Ziele der Schnellzuordnung: noch nicht entschieden oder teilweise gedeckt, Beginn erreicht.
         $openPeriods = $subscription->periods
@@ -121,30 +126,37 @@ class ResaleSubscriptionController extends Controller {
             'today' => $today,
             'assignedNow' => $subscription->assignments->isNotEmpty() ? $subscription->assignedQuantityOn($today) : 0,
             'openPeriods' => $openPeriods,
-            'invoices' => $this->recipientInvoices($subscription, $proposer, $openPeriods->first()),
+            'invoices' => $this->recipientInvoices($organization, $subscription, $openPeriods->first()),
+            // Vertragsakte (079) nur verlinken, wenn Modul und Recht sie öffnen können.
+            'contractLink' => $subscription->contract !== null && $this->contractsEnabled() && Gate::allows('view', $subscription->contract) ? route('contracts.show', $subscription->contract) : null,
         ]);
     }
 
     /**
-     * Rechnungen des Rechnungsempfängers aus dem Belegspiegel im Fenster des
-     * Abos (ab 90 Tage vor Beginn): je Beleg die Lizenzpositionen mit Lizenz-
-     * monaten, Verbrauch, Rest und Vorbelegung der Schnellzuordnung; die
-     * übrigen Positionen einklappbar; dazu die Zahl noch nicht gespiegelter
-     * Rechnungen.
+     * Rechnungen des Rechnungsempfängers aus dem Belegspiegel (alle Quellen)
+     * im Fenster des Abos (ab 90 Tage vor Beginn): je Beleg die Lizenz-
+     * positionen mit Lizenzmonaten, Verbrauch, Rest und Vorbelegung der
+     * Schnellzuordnung; die übrigen Positionen einklappbar; dazu die Zahl
+     * noch nicht gespiegelter Rechnungen.
      *
-     * @return array{contacts: list<string>, vouchers: list<array{voucher: LexofficeVoucher, permalink: string|null, rows: int, licence: list<array{line: LexofficeVoucherLine, months: float, per_licence: float, linked: array{months: float, periods: list<string>}|null, remaining: float, default_licences: float}>, other: list<LexofficeVoucherLine>}>, pending: int, hidden: int}
+     * @return array{has_source: bool, vouchers: list<array{voucher: MirrorVoucher, permalink: string|null, rows: int, licence: list<array{line: MirrorLine, months: float, per_licence: float, linked: array{months: float, periods: list<string>}|null, remaining: float, default_licences: float}>, other: list<MirrorLine>}>, pending: int, hidden: int}
      */
-    private function recipientInvoices(ResaleSubscription $subscription, LinkProposer $proposer, ?ResalePeriod $firstOpen): array {
-        $contacts = $subscription->is_own_holding ? [] : $proposer->contactsFor($subscription);
-        $empty = ['contacts' => $contacts, 'vouchers' => [], 'pending' => 0, 'hidden' => 0];
-        if ($contacts === []) {
-            return $empty;
+    private function recipientInvoices(Organization $organization, ResaleSubscription $subscription, ?ResalePeriod $firstOpen): array {
+        $billedTo = $subscription->is_own_holding ? null : $subscription->billedTo();
+        if ($billedTo === null) {
+            return ['has_source' => false, 'vouchers' => [], 'pending' => 0, 'hidden' => 0];
         }
-        $organization = $this->currentOrganizationOrAbort(404);
         $from = $subscription->starts_on->subDays(LinkProposer::WINDOW_BEFORE);
-        $vouchers = $this->invoiceLines->vouchers($organization, $contacts, $from);
-        $licenseLines = $vouchers->flatMap(static fn(LexofficeVoucher $v): Collection => $v->lines->filter(static fn(LexofficeVoucherLine $l): bool => (bool) $l->getAttribute('is_license')));
-        $linked = $this->invoiceLines->consumed($licenseLines);
+        $vouchers = $this->mirror->vouchersFor($organization, [$billedTo->id], $from);
+        $licenceLines = [];
+        foreach ($vouchers as $voucher) {
+            foreach ($voucher->lines as $line) {
+                if ($line->articleIsLicence) {
+                    $licenceLines[] = $line;
+                }
+            }
+        }
+        $linked = $this->linker->consumed($licenceLines);
 
         $rows = [];
         $hidden = 0;
@@ -152,7 +164,7 @@ class ResaleSubscriptionController extends Controller {
             $licence = [];
             $other = [];
             foreach ($voucher->lines as $line) {
-                if (! (bool) $line->getAttribute('is_license')) {
+                if (! $line->articleIsLicence) {
                     $other[] = $line;
                     $hidden++;
 
@@ -160,7 +172,7 @@ class ResaleSubscriptionController extends Controller {
                 }
                 $split = LicenseMonths::split($line);
                 $months = $split['licences'] * $split['months'];
-                $info = $linked[$line->id] ?? null;
+                $info = $linked[$line->identity()] ?? null;
                 $remaining = max(0.0, $months - ($info['months'] ?? 0.0));
                 $perLicence = max(0.01, $split['months']);
                 $needLicences = max(1.0, ($firstOpen?->requiredMonths() ?? 1.0) / $perLicence);
@@ -178,14 +190,14 @@ class ResaleSubscriptionController extends Controller {
             }
             $rows[] = [
                 'voucher' => $voucher,
-                'permalink' => $voucher->lexofficePermalink(),
+                'permalink' => $voucher->permalink,
                 'rows' => count($licence) + ($other !== [] ? 1 : 0),
                 'licence' => $licence,
                 'other' => $other,
             ];
         }
 
-        return ['contacts' => $contacts, 'vouchers' => $rows, 'pending' => $this->invoiceLines->pendingCount($organization, $contacts, $from), 'hidden' => $hidden];
+        return ['has_source' => $this->mirror->coversRecipient($organization, $billedTo), 'vouchers' => $rows, 'pending' => $this->mirror->pendingCount($organization, [$billedTo->id], $from), 'hidden' => $hidden];
     }
 
     public function create(Request $request): View {
@@ -197,16 +209,18 @@ class ResaleSubscriptionController extends Controller {
             'foreign_customer_id' => $foreignId,
         ];
         // „Abo aus Rechnungsposition anlegen" (Abgleich): Position liefert Produkt, Menge, Beginn und Preis.
-        $lineId = Sqid::decode(LexofficeVoucherLine::class, (string) $request->query('line', ''));
-        $line = $lineId === null ? null : LexofficeVoucherLine::query()->with(['voucher', 'article'])->find($lineId);
+        $lineKey = trim((string) $request->query('line', ''));
+        $organization = $this->currentOrganizationOrNull();
+        $line = $lineKey !== '' && $organization !== null ? $this->mirror->lineByKey($organization, $lineKey) : null;
         if ($line !== null) {
             $split = LicenseMonths::split($line);
             $start = LicenseMonths::referenceDate($line);
-            $perLicenceYear = LicenseMonths::isMonthly($line) ? $line->unit_net->times(12) : $line->unit_net;
+            $perLicenceYear = LicenseMonths::isMonthly($line) ? $line->unitNet->times(12) : $line->unitNet;
             $provider = SubscriptionProvider::tryFrom((string) $request->query('provider', '')) ?? SubscriptionProvider::Manual;
             $prefill += [
-                'label' => $line->article !== null ? $line->article->name : $line->name,
-                'lexoffice_article_id' => $line->lexoffice_article_id,
+                'label' => $line->label(),
+                'lexoffice_article_id' => $line->lexofficeArticleId(),
+                'article_id' => $line->localArticleId(),
                 'quantity' => (int) round($split['licences']),
                 'starts_on' => $start?->toDateString(),
                 'provider' => $provider === SubscriptionProvider::DomainReselling ? SubscriptionProvider::Manual->value : $provider->value,
@@ -354,10 +368,7 @@ class ResaleSubscriptionController extends Controller {
     }
 
     public function importStore(ImportResaleFilesRequest $request, MarketplaceImporter $importer): RedirectResponse {
-        $uploads = $request->uploads();
-        if ($uploads === []) {
-            return redirect()->route('finance.resale.index')->with('error', __('resale.import.flash.no_files'));
-        }
+        $uploads = $request->uploads(); // mindestens eine Datei — sonst 422 aus dem FormRequest
         $organization = $this->currentOrganizationOrAbort(404);
         $files = [];
         $directory = 'resale/' . $organization->id . '/' . Str::uuid();
@@ -527,6 +538,36 @@ class ResaleSubscriptionController extends Controller {
         ];
     }
 
+    private function contractsEnabled(): bool {
+        return app(FeatureFlagResolver::class)->isEnabled('module.contracts');
+    }
+
+    /**
+     * Verträge (079) zur Auswahl im Dialog: laufende Kundenverträge der
+     * Organisation, dazu der bereits verknüpfte (auch beendet, sonst ginge die
+     * Verknüpfung beim Speichern verloren) — ohne Modul keine Auswahl.
+     *
+     * @return Collection<int, Contract>
+     */
+    private function contractOptions(?ResaleSubscription $subscription): Collection {
+        if (! $this->contractsEnabled()) {
+            return new Collection;
+        }
+
+        return Contract::query()
+            ->with('customer:id,name')
+            ->where(function (Builder $q) use ($subscription): void {
+                $q->where(function (Builder $running): void {
+                    $running->where('partner_type', ContractPartnerType::Customer->value)->open();
+                });
+                if ($subscription?->contract_id !== null) {
+                    $q->orWhere('id', $subscription->contract_id);
+                }
+            })
+            ->orderBy('number')
+            ->get(['id', 'number', 'title', 'customer_id']);
+    }
+
     /**
      * @param  array<string, mixed>  $prefill
      */
@@ -537,6 +578,7 @@ class ResaleSubscriptionController extends Controller {
             'subscription' => $subscription,
             'prefill' => $prefill,
             'locked' => SaveResaleSubscriptionRequest::lockedFieldsFor($subscription),
+            'contracts' => $this->contractOptions($subscription),
             'articles' => Article::query()->where('sellable', true)->orderBy('name')->get(['id', 'number', 'name']),
             'lexofficeArticles' => LexofficeArticle::query()->active()->orderBy('name')->get(['id', 'article_number', 'name', 'unit_name', 'net_unit_price', 'currency']),
             'kinds' => SubscriptionKind::cases(),

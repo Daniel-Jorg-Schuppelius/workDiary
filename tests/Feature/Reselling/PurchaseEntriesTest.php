@@ -17,6 +17,7 @@ use App\Models\{Customer, LexofficeVoucher, Supplier};
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection};
 use App\Models\Reselling\{ResalePurchaseEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{ProviderInvoice, ProviderInvoiceLine, QualityHostingInvoiceReader};
+use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Register\{DomainSubscriptionSync, PeriodPlanner, PurchaseAllocator};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
@@ -27,7 +28,8 @@ use Tests\TestCase;
 
 /**
  * Einkaufsbelege (Feature 152, MVP-762): Quality-Hosting-Rechnung
- * positionsgenau, Eingangsbeleg pro rata, Domain-Buchungen, Oberfläche.
+ * positionsgenau, Eingangsbeleg pro rata (Lexoffice-Quelle über die
+ * Belegregistry, Review 2026-09-11), Domain-Buchungen, Oberfläche.
  */
 class PurchaseEntriesTest extends TestCase {
     use RefreshDatabase;
@@ -200,7 +202,7 @@ TXT;
 
         $this->actingAs($admin)->get(route('finance.resale.purchases.create'))->assertOk()->assertSee('726 039 1495');
         $response = $this->actingAs($admin)->post(route('finance.resale.purchases.store'), [
-            'voucher_id' => Sqid::encode(LexofficeVoucher::class, $voucher->id), 'provider' => 'telekom_marketplace', 'net_amount' => '400.00', 'month' => '2026-03',
+            'document' => Sqid::encode(LexofficeVoucher::class, $voucher->id), 'provider' => 'telekom_marketplace', 'net_amount' => '400.00', 'month' => '2026-03',
         ]);
         $this->assertSame([], session('errors')?->all() ?? [], json_encode(session()->all()) ?: '');
         $this->assertNull(session('error'), (string) session('error'));
@@ -213,6 +215,10 @@ TXT;
         $this->assertSame('300.00', $entries[1]->net_amount->getAmount());
         $this->assertSame($a->id, $entries[0]->subscription_id);
         $this->assertSame($b->id, $entries[1]->subscription_id);
+        $this->assertSame((new LexofficeVoucher)->getMorphClass(), $entries[0]->document_type, 'Belegbezug als Morph');
+        $this->assertSame($voucher->id, $entries[0]->document_id);
+        $this->assertSame($voucher->id, $entries[0]->lexoffice_voucher_id, 'Altspalte bleibt für Lexoffice-Belege gefüllt');
+        $this->assertSame((string) \CommonToolkit\Helper\Data\CryptoHelper::hash($voucher->id . '|telekom_marketplace|2026-03|' . $entries[0]->period_id), $entries[0]->raw_hash, 'Hash-Basis der Lexoffice-Belege unverändert (Altbestand bleibt Dublette)');
 
         $this->actingAs($admin)->get(route('finance.resale.purchases.index'))->assertOk()->assertSee('726 039 1495')->assertSee('300,00');
         $this->actingAs($admin)->delete(route('finance.resale.purchases.destroy', $entries[0]->sqid))->assertRedirect();
@@ -247,6 +253,14 @@ TXT;
         ]);
     }
 
+    /** Lexoffice-Beleg als anbieterneutraler Eingangsbeleg — über den Quellschlüssel (Sqid), wie das Formular ihn schickt. */
+    private function documentFor(LexofficeVoucher $voucher): PurchaseDocument {
+        $document = app(PurchaseDocuments::class)->byKey($this->organization, Sqid::encode(LexofficeVoucher::class, $voucher->id));
+        $this->assertNotNull($document, 'Lexoffice-Quelle löst die Beleg-Sqid auf');
+
+        return $document;
+    }
+
     public function test_pro_rata_without_weights_leaves_everything_unallocated_and_never_divides_by_zero(): void {
         // Review 2026-09-10 (G): Gewichtssumme 0 — keine Periode im Monat, oder Perioden ohne Soll-Einkauf
         // (kein Einkaufspreis): nichts wird verteilt, der Betrag bleibt komplett „nicht zugeteilt".
@@ -255,7 +269,7 @@ TXT;
         $net = \CommonToolkit\ValueObjects\Money::of('400.00', CurrencyCode::Euro);
 
         // Keine einzige Periode beim Anbieter.
-        $result = $allocator->allocateVoucher($this->organization, $voucher, SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
+        $result = $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
         $this->assertSame(['entries' => 0, 'allocated' => 0.0, 'unallocated' => 400.0], $result);
         $this->assertSame(0, ResalePurchaseEntry::query()->count());
 
@@ -266,13 +280,13 @@ TXT;
         ]);
         (new PeriodPlanner)->sync($free);
         $this->assertNull($free->periods()->first()?->expected_purchase);
-        $result = $allocator->allocateVoucher($this->organization, $voucher, SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
+        $result = $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
         $this->assertSame(['entries' => 0, 'allocated' => 0.0, 'unallocated' => 400.0], $result, 'kein Division-durch-null, nichts verteilt');
         $this->assertSame(0, ResalePurchaseEntry::query()->count());
 
         // Anderer Anbieter im selben Monat zählt nicht (Perioden des Quality-Hosting-Abos sind keine Telekom-Gewichte).
         $this->subscription('CNLCON00156', 'Microsoft 365 Business Premium', 'Klimpel Bäder GmbH', '2026-01-01');
-        $result = $allocator->allocateVoucher($this->organization, $voucher, SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
+        $result = $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
         $this->assertSame(0, $result['entries']);
         $this->assertSame(400.0, $result['unallocated']);
     }
@@ -287,7 +301,7 @@ TXT;
         $net = \CommonToolkit\ValueObjects\Money::of('400.00', CurrencyCode::Euro);
 
         // März: nur A läuft (B beginnt im April) → alles an A.
-        $march = $allocator->allocateVoucher($this->organization, $voucher, SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
+        $march = $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-03-01'));
         $this->assertSame(['entries' => 1, 'allocated' => 400.0, 'unallocated' => 0.0], $march);
         $marchEntry = ResalePurchaseEntry::query()->firstOrFail();
         $this->assertSame($a->id, $marchEntry->subscription_id);
@@ -295,7 +309,7 @@ TXT;
         $this->assertSame('2026-03-30', $marchEntry->entry_date->toDateString(), 'Belegdatum, nicht Monatsanfang');
 
         // Umbuchung auf April: A und B (1 : 3) — der März-Eintrag ist weg, die Hashes sind neu.
-        $april = $allocator->allocateVoucher($this->organization, $voucher, SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-04-15'));
+        $april = $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-04-15'));
         $this->assertSame(['entries' => 2, 'allocated' => 400.0, 'unallocated' => 0.0], $april);
         $entries = ResalePurchaseEntry::query()->orderBy('subscription_id')->get();
         $this->assertCount(2, $entries, 'ersetzt, nicht ergänzt');
@@ -305,6 +319,7 @@ TXT;
         $this->assertSame([(string) __('resale.purchase.pro_rata', ['month' => '04/2026'])], $entries->pluck('description')->unique()->values()->all());
         $this->assertNotSame($marchEntry->raw_hash, $entries[0]->raw_hash, 'Monat gehört zum Hash');
         $this->assertSame($voucher->id, $entries[0]->lexoffice_voucher_id);
+        $this->assertSame((new LexofficeVoucher)->getMorphClass(), $entries[0]->document_type);
 
         // Manuelle Einträge zum selben Beleg (andere Quelle) überleben die Umbuchung.
         $manual = ResalePurchaseEntry::query()->create([
@@ -312,7 +327,7 @@ TXT;
             'source' => ResalePurchaseEntry::SOURCE_MANUAL, 'lexoffice_voucher_id' => $voucher->id, 'document_number' => '726 039 1495', 'entry_date' => '2026-04-01',
             'description' => 'Nachtrag von Hand', 'net_amount' => '12.34', 'currency' => 'EUR', 'raw_hash' => 'manual-1',
         ]);
-        $allocator->allocateVoucher($this->organization, $voucher, SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-04-15'));
+        $allocator->allocateVoucher($this->organization, $this->documentFor($voucher), SubscriptionProvider::TelekomMarketplace, $net, CarbonImmutable::parse('2026-04-15'));
         $this->assertNotNull($manual->fresh());
         $this->assertSame(3, ResalePurchaseEntry::query()->count());
     }

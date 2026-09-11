@@ -130,6 +130,20 @@ solo destinatarios con periodos abiertos y precio de venta y nombra debajo
 lo que ya está en un borrador. Crear requiere el permiso *Crear borradores
 de factura a partir de periodos*.
 
+**Facturación recurrente:** con la facturación local el registro puede
+crear los borradores por sí mismo cada día. El interruptor está en la
+página *Clasificación de productos* (permiso *Gestionar el registro de reventa*):
+activo = la próxima ejecución crea, por cada destinatario con periodos
+vencidos aún sin borrador, el mismo borrador que el clic — posiciones por
+suscripción y periodo, periodos vinculados como propuesta y marcados. La
+*antelación* en días incluye también periodos antes de su inicio (0 = solo
+periodos vencidos). Los destinatarios facturados vía Lexoffice/DATEV no se
+tocan, los periodos sin precio de venta se omiten, el inventario propio
+nunca se factura. Los borradores se finalizan en la lista de facturas; el
+resumen semanal indica cuántos borradores de los últimos siete días siguen
+abiertos. Una vez o de prueba: `php artisan resale:draft-local
+--organization=… --dry-run` (`--force` ignora el interruptor).
+
 **Comprobantes de compra:** la compra real por suscripción y periodo
 procede de tres fuentes: (1) facturas y abonos del proveedor en PDF
 (Quality Hosting, formato alemán e inglés) — cada posición nombra contrato,
@@ -168,7 +182,25 @@ suscripción lo reconoce el registro por el nombre. Por artículo puedes
 forzar: «producto de suscripción» impone el reconocimiento, «nunca posición
 de suscripción» mantiene fuera de propuestas, listas de facturas y
 «posiciones sin suscripción» los servicios con un nombre de producto en el
-texto (mantenimiento en Exchange).
+texto (mantenimiento en Exchange). La misma clasificación existe para los
+artículos activos del maestro de artículos local (sección *Artículos locales*):
+decide qué posiciones de facturas locales trata el espejo como posiciones de
+licencia, y la comprobación de precios compara el precio de venta del artículo
+con los precios de las suscripciones.
+
+**Contratos:** una suscripción puede llevar un contrato de la gestión de
+contratos como marco de plazos (campo «Contrato» en el diálogo de la
+suscripción; solo contratos de cliente cuya contraparte es el destinatario
+de la factura de la suscripción). El expediente del contrato muestra sus
+suscripciones en el panel «Suscripciones y licencias». Sin segundo catálogo
+de plazos: la ejecución diaria anota una fecha por suscripción en el
+calendario contractual — el plazo de cancelación al final para
+suscripciones canceladas, un aviso de renovación antes del siguiente
+periodo para la renovación automática, cada una adelantada por el plazo de
+preaviso del contrato (30 días si no está indicado), con 14 días de
+antelación. Si cambia el final, la fecha se mueve con él; las fechas
+completadas siguen completadas; las suscripciones finalizadas o sin
+contrato cierran su fecha abierta.
 
 **Dominios:** cada dominio de la gestión de dominios se convierte a diario
 en una suscripción «Dominio» con intervalo anual desde el registro, compra

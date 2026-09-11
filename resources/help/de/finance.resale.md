@@ -125,6 +125,20 @@ nur Empfänger mit offenen Perioden und Verkaufspreis und nennt darunter, was
 schon im Entwurf steht. Das Anlegen braucht das Recht *Rechnungsentwürfe aus
 Perioden erzeugen*.
 
+**Serienrechnung:** Bei lokaler Rechnungshoheit kann das Register die
+Entwürfe täglich selbst anlegen. Der Schalter steht auf der Seite
+*Produkt-Einstufung* (Recht *Reselling-Register pflegen*): aktiv = der nächste Lauf
+legt je Rechnungsempfänger mit fälligen, noch nicht entworfenen Perioden
+denselben Entwurf an wie der Klick — Positionen je Abo und Zeitraum,
+Perioden als Vorschlag verknüpft und gestempelt. Der *Vorlauf* in Tagen
+nimmt Perioden schon vor ihrem Beginn mit (0 = nur fällige). Empfänger
+mit Lexoffice-/DATEV-Hoheit lässt der Lauf unberührt, Perioden ohne
+Verkaufspreis werden übersprungen, eigener Bestand nie berechnet. Die
+Entwürfe schließt du in der Rechnungsliste ab; der Wochen-Digest nennt,
+wie viele Entwürfe der letzten sieben Tage noch offen sind. Einmalig oder
+zur Probe: `php artisan resale:draft-local --organization=… --dry-run`
+(`--force` übergeht den Schalter).
+
 **Einkaufsbelege:** Der Ist-Einkauf je Abo und Periode kommt aus drei
 Quellen: (1) Anbieterrechnungen und Gutschriften als PDF (Quality Hosting,
 deutsches und englisches Layout) — jede Position nennt Vertrag, Endkunde und
@@ -160,7 +174,23 @@ unter UVP", „Vertrag teurer als Katalog", „Kein Verkaufspreis".
 das Register am Namen. Je Artikel kannst du übersteuern: „Abo-Produkt"
 erzwingt die Erkennung, „Nie Abo-Position" hält Dienstleistungen mit einem
 Produktnamen im Text (Wartung an Exchange) aus Vorschlägen, Rechnungslisten
-und „Positionen ohne Abo" heraus.
+und „Positionen ohne Abo" heraus. Dieselbe Einstufung gibt es für die
+aktiven Artikel des lokalen Artikelstamms (Abschnitt *Lokale Artikel*): sie
+entscheidet, welche Positionen lokaler Rechnungen der Belegspiegel als
+Lizenzpositionen führt, und die Preisprüfung vergleicht den Verkaufspreis des
+Artikels mit den Abo-Preisen.
+
+**Verträge:** Ein Abo kann einen Vertrag der Vertragsverwaltung als
+Fristenrahmen tragen (Feld „Vertrag" im Abo-Dialog; nur Kundenverträge,
+deren Partner der Rechnungsempfänger des Abos ist). Die Vertragsakte zeigt
+ihre Abos im Panel „Abos & Lizenzen". Kein zweiter Fristenkatalog: der
+tägliche Lauf trägt je Abo einen Termin in den Vertragskalender — bei
+gekündigten Abos die Kündigungsfrist zum Ende, bei automatischer
+Verlängerung eine Verlängerungswarnung vor der nächsten Periode, jeweils um
+die Kündigungsfrist des Vertrags (ohne Angabe 30 Tage) vorgezogen, mit 14
+Tagen Vorwarnung. Ändert sich das Ende, wandert der Termin mit; erledigte
+Termine bleiben erledigt; beendete Abos oder Abos ohne Vertrag schließen
+ihren offenen Termin.
 
 **Domains:** Jede Domain aus der Domainverwaltung wird täglich zu einem Abo
 „Domain" mit Jahresintervall ab Registrierung, Einkauf = Verlängerungspreis

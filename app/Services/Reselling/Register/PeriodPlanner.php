@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Reselling\PeriodStatus;
+use App\Enums\Reselling\{BillingFrequency, PeriodStatus};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -30,6 +31,11 @@ use Illuminate\Support\Facades\DB;
  * Stummel (Co-Term) und keine Periode. Geplant wird bis HORIZON_DAYS in die
  * Zukunft, damit die nächste Verlängerung sichtbar ist, ohne Jahre voraus
  * anzulegen.
+ *
+ * Abtretungen (`parent_id`) sind co-termed mit ihrem Vertrag: Lizenzen im
+ * selben Tenant laufen beim Anbieter im Vertragsrhythmus. Die erste Periode
+ * einer Abtretung endet daher mit der laufenden Vertragsperiode (Soll
+ * anteilig nach Monaten), danach gelten die Periodengrenzen des Vertrags.
  */
 final class PeriodPlanner {
     public const HORIZON_DAYS = 90;
@@ -37,14 +43,16 @@ final class PeriodPlanner {
     private const MAX_PERIODS = 600;
 
     /**
-     * Geplante Perioden (Beginn, Ende), ohne Datenbank.
+     * Geplante Perioden (Beginn, Ende). Eine Co-Term-Erstperiode trägt
+     * zusätzlich ihre anteiligen Monate (`months`) und die Intervallmonate
+     * (`interval_months`) für das anteilige Soll. Nur Abtretungen lesen
+     * ihren Vertrag nach; sonst läuft die Planung ohne Datenbank.
      *
-     * @return list<array{starts_on: CarbonImmutable, ends_on: CarbonImmutable}>
+     * @return list<array{starts_on: CarbonImmutable, ends_on: CarbonImmutable, months?: int, interval_months?: int}>
      */
     public function plan(ResaleSubscription $subscription, ?CarbonImmutable $reference = null): array {
         $reference ??= ResalePeriod::today();
         $horizon = $reference->addDays(self::HORIZON_DAYS);
-        $frequency = $subscription->interval;
         $endsOn = $subscription->ends_on;
         // Beendete und abgelöste Abos behalten ihre Vergangenheit — genau die
         // Perioden, deren Abrechnung zu prüfen ist. Ohne bekanntes Ende endet
@@ -52,7 +60,23 @@ final class PeriodPlanner {
         if (! $subscription->status->isPlanning() && $endsOn === null) {
             $endsOn = $reference;
         }
-        $start = $subscription->starts_on;
+        $contract = $subscription->isAssignment() ? $subscription->parent : null;
+        if ($contract !== null) {
+            $coTermed = $this->planCoTermed($subscription, $contract, $endsOn, $horizon);
+            if ($coTermed !== null) {
+                return $coTermed;
+            }
+        }
+
+        return $this->planOwnRhythm($subscription->starts_on, $subscription->interval, $endsOn, $horizon);
+    }
+
+    /**
+     * Perioden im eigenen Rhythmus ab dem Abo-Beginn (Verträge, Abtretungen ohne Vertrag).
+     *
+     * @return list<array{starts_on: CarbonImmutable, ends_on: CarbonImmutable}>
+     */
+    private function planOwnRhythm(CarbonImmutable $start, BillingFrequency $frequency, ?CarbonImmutable $endsOn, CarbonImmutable $horizon): array {
         $periods = [];
 
         while (count($periods) < self::MAX_PERIODS) {
@@ -78,6 +102,83 @@ final class PeriodPlanner {
     }
 
     /**
+     * Perioden einer Abtretung im Rhythmus ihres Vertrags: die Vertragsperioden
+     * werden mit der Laufzeit der Abtretung geschnitten. Beginnt sie mitten in
+     * einer Vertragsperiode, ist der Rest ihre Co-Term-Erstperiode (anteiliges
+     * Soll); ein Rest unter der Mindestlänge ist Stummel — die Lizenzen sind bis
+     * zum Periodenende über den Vertrag bezahlt, die Abtretung beginnt mit der
+     * nächsten Vertragsperiode. null, wenn der Vertrag keinen Rhythmus vorgibt
+     * (Abtretung beginnt vor dem Vertrag).
+     *
+     * @return list<array{starts_on: CarbonImmutable, ends_on: CarbonImmutable, months?: int, interval_months?: int}>|null
+     */
+    private function planCoTermed(ResaleSubscription $assignment, ResaleSubscription $contract, ?CarbonImmutable $endsOn, CarbonImmutable $horizon): ?array {
+        $frequency = $contract->interval;
+        $start = $assignment->starts_on;
+        if ($contract->starts_on->greaterThan($start)) {
+            return null;
+        }
+        // Vertragsperiode, in die der Abtretungsbeginn fällt — Schritt für Schritt wie die
+        // Vertragsplanung selbst, damit die Grenzen (Monatsende-Überlauf) identisch sind.
+        $gridStart = $contract->starts_on;
+        $steps = 0;
+        while (! $frequency->advance($gridStart)->greaterThan($start)) {
+            $gridStart = $frequency->advance($gridStart);
+            if (++$steps >= self::MAX_PERIODS) {
+                return null;
+            }
+        }
+        $periods = [];
+        $first = true;
+
+        while (count($periods) < self::MAX_PERIODS) {
+            if ($endsOn !== null && ! $start->lessThan($endsOn)) {
+                break;
+            }
+            if ($start->greaterThan($horizon)) {
+                break;
+            }
+            $next = $frequency->advance($gridStart);
+            $boundary = $endsOn !== null && $endsOn->addDay()->lessThan($next) ? $endsOn->addDay() : $next;
+            $end = $boundary->subDay();
+            $days = (int) $start->diffInDays($end) + 1;
+            if ($days < $frequency->minimumPeriodDays()) {
+                if ($endsOn !== null && $next->greaterThan($endsOn->addDay())) {
+                    break; // Co-Term-Stummel am Laufzeitende
+                }
+                if ($first) {
+                    // Zu kurzer Rest der laufenden Vertragsperiode: beim Vertrag bezahlt, die Abtretung beginnt mit der nächsten.
+                    $first = false;
+                    $gridStart = $next;
+                    $start = $next;
+
+                    continue;
+                }
+            }
+            $slot = ['starts_on' => $start, 'ends_on' => $end];
+            if ($first && ! $start->equalTo($gridStart)) {
+                // Co-Term-Erstperiode: Rest der laufenden Vertragsperiode, Soll anteilig nach Monaten.
+                $slot['months'] = max(1, LicenseMonths::monthsBetween($start, $end));
+                $slot['interval_months'] = $this->intervalMonths($frequency);
+            }
+            $periods[] = $slot;
+            $first = false;
+            $gridStart = $next;
+            $start = $next;
+        }
+
+        return $periods;
+    }
+
+    /** Länge eines vollen Abrechnungsintervalls in Monaten (Basis des anteiligen Solls). */
+    private function intervalMonths(BillingFrequency $frequency): int {
+        return match ($frequency) {
+            BillingFrequency::Yearly => 12,
+            BillingFrequency::Monthly => 1,
+        };
+    }
+
+    /**
      * Perioden mit der Datenbank abgleichen.
      *
      * @return array{created: int, updated: int, removed: int, kept: int}
@@ -95,8 +196,8 @@ final class PeriodPlanner {
             foreach ($subscription->periods()->with('links')->get() as $period) {
                 $existing[$period->starts_on->toDateString()] = $period;
             }
-            // Auf Cent runden: die Periode speichert zwei Nachkommastellen, der
-            // Stückpreis vier — sonst gilt jede Neuplanung als Änderung.
+            // Soll auf Cent runden (`expected()`): die Periode speichert zwei
+            // Nachkommastellen, der Stückpreis vier — sonst gilt jede Neuplanung als Änderung.
             $subscription->loadMissing('assignments');
             $seen = [];
             foreach ($planned as $slot) {
@@ -108,8 +209,8 @@ final class PeriodPlanner {
                     continue;
                 }
                 $seen[$key] = true;
-                $expectedSale = $subscription->sale_unit_price?->times($quantity)->withScale(2);
-                $expectedPurchase = $subscription->purchase_unit_price?->times($quantity)->withScale(2);
+                $expectedSale = $this->expected($subscription->sale_unit_price, $quantity, $slot);
+                $expectedPurchase = $this->expected($subscription->purchase_unit_price, $quantity, $slot);
                 $period = $existing[$key] ?? null;
                 if ($period === null) {
                     ResalePeriod::query()->create([
@@ -181,5 +282,23 @@ final class PeriodPlanner {
         $subscription->unsetRelation('periods');
 
         return $result;
+    }
+
+    /**
+     * Soll einer Periode: Stückpreis je Intervall × Menge, bei einer Co-Term-
+     * Erstperiode anteilig nach Monaten (× Monate / Intervallmonate), auf Cent.
+     *
+     * @param  array{starts_on: CarbonImmutable, ends_on: CarbonImmutable, months?: int, interval_months?: int}  $slot
+     */
+    private function expected(?Money $unitPrice, int $quantity, array $slot): ?Money {
+        if ($unitPrice === null) {
+            return null;
+        }
+        $amount = $unitPrice->times($quantity);
+        if (isset($slot['months'], $slot['interval_months']) && $slot['months'] !== $slot['interval_months']) {
+            $amount = $amount->times($slot['months'])->dividedBy($slot['interval_months']);
+        }
+
+        return $amount->withScale(2);
     }
 }

@@ -60,6 +60,11 @@ class RecipientReconcilerTest extends TestCase {
         return $customer;
     }
 
+    /** Spiegelzeile einer Lexoffice-Position (Signatur der LicenseMonths-Helfer seit der Spiegel-Abstraktion). */
+    private function mirrorLine(LexofficeVoucherLine $line): \App\Services\Reselling\Mirror\MirrorLine {
+        return (new \App\Plugins\Lexoffice\Services\LexofficeInvoiceMirrorSource)->toLine($line);
+    }
+
     /**
      * @param  array<string, mixed>  $attributes
      */
@@ -121,7 +126,7 @@ class RecipientReconcilerTest extends TestCase {
         $first = $result['periods'][0];
         $this->assertSame($five->id, $first['subscription']->id);
         $this->assertSame([], $first['candidates']);
-        $this->assertSame(['RE/2024/0630', 'RE/2025/0830'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucher->voucher_number, $first['taken']), 'im Fenster der Periode, nächste zuerst');
+        $this->assertSame(['RE/2024/0630', 'RE/2025/0830'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $first['taken']), 'im Fenster der Periode, nächste zuerst');
         $this->assertStringContainsString('EcoTec Service GmbH · ×1 · Telekom Cloud Marketplace ab 10.04.2024 · 10.04.2024 – 09.04.2025', $first['taken'][0]['row']['periods'][0]);
 
         $admin = $this->orgAdmin();
@@ -175,7 +180,7 @@ class RecipientReconcilerTest extends TestCase {
             ['article' => $this->standard, 'quantity' => 1, 'unit' => 'Jahr', 'net' => '145.56'],
         ]);
         [$lineA, $lineB] = $voucher->lines()->orderBy('position')->get()->all();
-        $this->assertSame(12.0, LicenseMonths::ofLine($lineB), '„1 Jahr" = 12 Lizenzmonate');
+        $this->assertSame(12.0, LicenseMonths::ofLine($this->mirrorLine($lineB)), '„1 Jahr" = 12 Lizenzmonate');
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $partner))->assertOk();
         $page->assertSee('Steuerbüro Kaik')->assertSee('Haus 24 GmbH')->assertSee('RE/2025/1000');
@@ -251,10 +256,10 @@ class RecipientReconcilerTest extends TestCase {
         $result = (new RecipientReconciler)->forCustomer($this->organization, $customer);
         [$first, $second] = $result['periods'];
         $this->assertSame([], $first['candidates']);
-        $this->assertSame(['RE/2024/0171'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucher->voucher_number, $first['foreign']), 'Schwesterfirma über gemeinsames Namens-Token, Delta nicht');
+        $this->assertSame(['RE/2024/0171'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $first['foreign']), 'Schwesterfirma über gemeinsames Namens-Token, Delta nicht');
         $this->assertSame('EcoTec - HLSK GmbH', $first['foreign'][0]['row']['recipient']);
         $this->assertSame([], $first['voided'], 'Storno vom Folgejahr gehört nicht zur ersten Periode');
-        $this->assertSame(['RE/2025/0271'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucher->voucher_number, $second['voided']));
+        $this->assertSame(['RE/2025/0271'], array_map(static fn(array $c): string => (string) $c['row']['line']->voucherNumber, $second['voided']));
         $this->assertSame([], $second['foreign']);
         $this->assertSame('Robert Kasch', $result['inbox'][0]['company']);
         $this->assertSame(1, $result['inbox'][0]['mentions']);
@@ -293,8 +298,8 @@ class RecipientReconcilerTest extends TestCase {
         $late = $this->voucher('c-mv', 'RE/2026/1050', '2026-03-10', [['article' => $this->exchange, 'quantity' => 24, 'net' => '3.95']], null, 'paid', '', '2024-12-31', '2025-12-30');
         $onTime = $this->voucher('c-mv', 'RE/2026/1002', '2026-01-05', [['article' => $this->exchange, 'quantity' => 2, 'unit' => 'Stück', 'net' => '47.40']], null, 'paid', '', '2025-12-31', '2026-12-30');
         $line = $late->lines()->firstOrFail()->load('voucher');
-        $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($line));
-        $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($onTime->lines()->firstOrFail()->load('voucher')), '„Stück" nimmt die Laufzeit aus dem Leistungszeitraum');
+        $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($this->mirrorLine($line)));
+        $this->assertSame(['licences' => 2.0, 'months' => 12.0], LicenseMonths::split($this->mirrorLine($onTime->lines()->firstOrFail()->load('voucher'))), '„Stück" nimmt die Laufzeit aus dem Leistungszeitraum');
 
         (new LinkProposer)->propose($this->organization);
         $this->assertSame('RE/2026/1050', $p2024->fresh()?->links()->first()?->voucher_number, 'Leistungszeitraum schlägt Rechnungsdatum');
@@ -325,14 +330,14 @@ class RecipientReconcilerTest extends TestCase {
         // erst die vom Oktober 2025 trifft keine Periode mehr — ab da fehlt der Vertrag.
         $this->assertSame('2025-10-26', $product['gap_since']?->toDateString(), 'ab der ersten Position, die keine Periode mehr trifft');
         $gaps = array_values(array_filter($result['lines'], static fn(array $l): bool => $l['gap']));
-        $this->assertSame(['RE/2025/0945'], array_map(static fn(array $l): string => (string) $l['line']->voucher->voucher_number, $gaps));
+        $this->assertSame(['RE/2025/0945'], array_map(static fn(array $l): string => (string) $l['line']->voucherNumber, $gaps));
 
         $page = $this->actingAs($admin)->get(route('finance.resale.reconcile.show', $customer))->assertOk();
         $page->assertSee('Position ohne Abo ab 26.10.2025')->assertSee('Abo aus Position anlegen');
 
         // Dialog aus der Position: Produkt, Menge (1 Lizenz — „24 Monat" ohne Zeitraum), Beginn, Jahrespreis vorbelegt.
         $line = $gaps[0]['line'];
-        $dialog = $this->actingAs($admin)->get(route('finance.resale.create', ['customer' => $customer->sqid, 'line' => Sqid::encode(LexofficeVoucherLine::class, $line->id)]))->assertOk();
+        $dialog = $this->actingAs($admin)->get(route('finance.resale.create', ['customer' => $customer->sqid, 'line' => $line->key]))->assertOk();
         $dialog->assertSee('value="Exchange Online (Plan 1)"', false)
             ->assertSee('name="quantity"', false)
             ->assertSee('value="47.40"', false)
@@ -392,7 +397,7 @@ class RecipientReconcilerTest extends TestCase {
         $this->assertNull($map->byContact('c-unknown'));
         $this->assertSame(['c-x'], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forCustomer($other)->byCustomer($other->id));
         $this->assertSame([], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forOrganization($this->organization, collect())->all(), 'ohne Abos keine Kontakte');
-        $this->assertSame(['c-kl'], (new LinkProposer)->contactsFor($subscription), 'Delegation am Proposer bleibt');
+        $this->assertSame(['c-kl'], \App\Plugins\Lexoffice\Services\LexofficeContactMap::forCustomer($subscription->billedTo() ?? $customer)->byCustomer($customer->id), 'Kontakte des Rechnungsempfängers eines Abos');
 
         // Rechnungen: eine vor dem Fenster (zählt nur über ihr Leistungsende), eine stornierte,
         // eine ohne gespiegelte Positionen, eine Support-Position, eine fremde.

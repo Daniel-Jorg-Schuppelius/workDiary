@@ -23,6 +23,7 @@ return [
         'xlsx_unreadable' => 'Fichier XLSX illisible : :file (:reason)',
         'no_header' => 'CSV sans ligne d\'en-tête : :file',
         'no_sheet' => 'XLSX sans feuille de calcul : :file',
+        'too_large' => ':file est trop volumineux pour l\'import (au plus :rows lignes par feuille et :mb Mo décompressés).',
         'missing_columns' => 'Colonnes obligatoires manquantes : :columns',
     ],
     'row' => [

@@ -13,17 +13,26 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
-use App\Models\LexofficeVoucherLine;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
 /**
  * Manuelle Bezüge (Feature 152, MVP-761): Rechnungsposition an eine Periode
  * hängen und den Periodenstatus aus der Deckung ableiten. Eine Schreibstelle
  * für Dialog, Schnellzuordnung am Abo und Abgleich je Empfänger — und die
- * eine Stelle für „wie viel einer Position ist schon vergeben".
+ * eine Stelle für „wie viel einer Position ist schon vergeben". Positionen
+ * sind {@see MirrorLine}s jeder Spiegelquelle; ein Eloquent-Modell wird über
+ * die Quelle seines Morph-Typs aufgelöst.
  */
 final class PeriodLinker {
+    private readonly InvoiceMirror $mirror;
+
+    public function __construct(?InvoiceMirror $mirror = null) {
+        $this->mirror = $mirror ?? app(InvoiceMirror::class);
+    }
+
     /**
      * Verbrauch je Position über alle Perioden (Vorschläge eingeschlossen):
      * Lizenzmonate und die Ziele als „Halter · Abo-Kennung · Zeitraum" — bei
@@ -31,15 +40,16 @@ final class PeriodLinker {
      * mehreren Verträgen desselben Produkts die Kennung. Bezüge an `$except`
      * zählen nicht (ein erneuter Bezug ersetzt sie).
      *
+     * @param  string  $morphClass  Morph-Typ der Quelle (`resale_period_links.linkable_type`)
      * @param  list<int>  $lineIds
      * @return array<int, array{months: float, periods: list<string>}>
      */
-    public function consumedMonths(array $lineIds, ?ResalePeriod $except = null, bool $forUpdate = false): array {
+    public function consumedMonths(string $morphClass, array $lineIds, ?ResalePeriod $except = null, bool $forUpdate = false): array {
         if ($lineIds === []) {
             return [];
         }
         $query = ResalePeriodLink::query()->withoutGlobalScopes()
-            ->where('linkable_type', (new LexofficeVoucherLine)->getMorphClass())
+            ->where('linkable_type', $morphClass)
             ->whereIn('linkable_id', $lineIds)
             ->with(['period:id,starts_on,ends_on', 'subscription:id,label,quantity,provider,starts_on,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name']);
         if ($except !== null) {
@@ -59,6 +69,28 @@ final class PeriodLinker {
         return $consumed;
     }
 
+    /**
+     * Verbrauch je Spiegelposition, quellübergreifend (Schlüssel: {@see MirrorLine::identity()}).
+     *
+     * @param  iterable<MirrorLine>  $lines
+     * @return array<string, array{months: float, periods: list<string>}>
+     */
+    public function consumed(iterable $lines, ?ResalePeriod $except = null): array {
+        /** @var array<string, list<int>> $byMorph */
+        $byMorph = [];
+        foreach ($lines as $line) {
+            $byMorph[$line->morphClass][] = $line->morphId;
+        }
+        $consumed = [];
+        foreach ($byMorph as $morphClass => $ids) {
+            foreach ($this->consumedMonths($morphClass, array_values(array_unique($ids)), $except) as $id => $entry) {
+                $consumed[MirrorLine::identityOf($morphClass, $id)] = $entry;
+            }
+        }
+
+        return $consumed;
+    }
+
     /** Ziel eines Bezugs: „Halter · ×Menge · Anbieter ab Datum · Zeitraum". */
     public static function targetLabel(ResalePeriodLink $link): string {
         $subscription = $link->subscription;
@@ -73,14 +105,32 @@ final class PeriodLinker {
      * darf nicht mit 48 + 12 verbucht werden. Bei Gutschriften zählt der
      * Betrag der (negativen) Bezüge — das Ergebnis ist immer ≥ 0.
      */
-    public function freeMonths(LexofficeVoucherLine $line, ?ResalePeriod $except = null, bool $forUpdate = false): float {
-        $line->loadMissing('voucher');
-        $used = $this->consumedMonths([$line->id], $except, $forUpdate)[$line->id]['months'] ?? 0.0;
-        if ($line->isCreditNote()) {
+    public function freeMonths(MirrorLine|Model $line, ?ResalePeriod $except = null, bool $forUpdate = false): float {
+        $line = $this->resolve($line);
+        $used = $this->consumedMonths($line->morphClass, [$line->morphId], $except, $forUpdate)[$line->morphId]['months'] ?? 0.0;
+        if ($line->isCreditNote) {
             $used = abs($used);
         }
 
         return max(0.0, LicenseMonths::ofLine($line) - $used);
+    }
+
+    /**
+     * Spiegelposition zu einem Modell: die Quelle seines Morph-Typs liefert sie.
+     *
+     * @throws \InvalidArgumentException wenn keine Quelle das Modell kennt
+     */
+    private function resolve(MirrorLine|Model $line): MirrorLine {
+        if ($line instanceof MirrorLine) {
+            return $line;
+        }
+        $organization = $line->getRelationValue('organization');
+        $resolved = $organization instanceof \App\Models\Organization ? $this->mirror->lineById($organization, $line->getMorphClass(), (int) $line->getKey()) : null;
+        if ($resolved === null) {
+            throw new \InvalidArgumentException((string) __('resale.link.error.line_missing'));
+        }
+
+        return $resolved;
     }
 
     /**
@@ -95,12 +145,14 @@ final class PeriodLinker {
      * die Gutschrift senkt die Deckung, der Status folgt der Summe.
      * Rechnungspositionen brauchen weiterhin `months > 0`.
      */
-    public function attach(ResalePeriod $period, LexofficeVoucherLine $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
+    public function attach(ResalePeriod $period, MirrorLine|Model $line, float $months, ?string $note, ?int $userId): ResalePeriodLink {
+        $line = $this->resolve($line);
+
         return DB::transaction(function () use ($period, $line, $months, $note, $userId): ResalePeriodLink {
             if (abs($months) < 0.001) {
                 throw new \InvalidArgumentException((string) __('resale.credit_notes.error_amount'));
             }
-            if ($line->isCreditNote()) {
+            if ($line->isCreditNote) {
                 $months = -abs($months);
             } else {
                 if ($months < 0) {
@@ -113,15 +165,15 @@ final class PeriodLinker {
             }
             $termMonths = $period->termMonths();
             $link = ResalePeriodLink::query()->updateOrCreate(
-                ['period_id' => $period->id, 'linkable_type' => $line->getMorphClass(), 'linkable_id' => $line->id],
+                ['period_id' => $period->id, 'linkable_type' => $line->morphClass, 'linkable_id' => $line->morphId],
                 [
                     'organization_id' => $period->organization_id,
                     'subscription_id' => $period->subscription_id,
-                    'voucher_number' => $line->voucher->voucher_number,
-                    'voucher_date' => $line->voucher->voucher_date,
+                    'voucher_number' => $line->voucherNumber,
+                    'voucher_date' => $line->voucherDate,
                     'quantity' => round($months / $termMonths, 3),
                     'months' => round($months, 2),
-                    'amount' => $line->unit_net->times(LicenseMonths::unitsFor($line, $months, $termMonths))->withScale(2),
+                    'amount' => $line->unitNet->times(LicenseMonths::unitsFor($line, $months, $termMonths))->withScale(2),
                     'currency' => $line->currency->value,
                     'origin' => LinkOrigin::Manual,
                     'note' => $note,

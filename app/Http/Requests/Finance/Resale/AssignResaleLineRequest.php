@@ -15,9 +15,10 @@ namespace App\Http\Requests\Finance\Resale;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\Finance\Concerns\ChecksResaleLineRecipient;
-use App\Models\{Customer, LexofficeVoucherLine};
+use App\Models\Customer;
 use App\Models\Reselling\ResalePeriod;
 use App\Rules\ExistsInCurrentOrganization;
+use App\Services\Reselling\Mirror\MirrorLine;
 use App\Services\Reselling\Register\PeriodLinker;
 use Illuminate\Validation\Validator;
 
@@ -33,7 +34,6 @@ class AssignResaleLineRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'period_id' => ResalePeriod::class,
-        'line_id' => LexofficeVoucherLine::class,
     ];
 
     /**
@@ -42,7 +42,7 @@ class AssignResaleLineRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'period_id' => ['required', 'integer', new ExistsInCurrentOrganization('resale_periods')],
-            'line_id' => ['required', 'integer', new ExistsInCurrentOrganization('lexoffice_voucher_lines')],
+            'line_id' => ['required', 'string', 'max:64'],
             'note' => ['nullable', 'string', 'max:255'],
         ] + PeriodLinker::amountRules();
     }
@@ -71,7 +71,7 @@ class AssignResaleLineRequest extends BaseFormRequest {
         return is_numeric($id) ? ResalePeriod::query()->with('subscription.customer', 'subscription.foreignCustomer.customer')->find((int) $id) : null;
     }
 
-    public function line(): ?LexofficeVoucherLine {
+    public function line(): ?MirrorLine {
         return $this->lineFrom($this->validationData()['line_id'] ?? null);
     }
 

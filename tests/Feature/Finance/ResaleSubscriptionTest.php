@@ -240,6 +240,26 @@ class ResaleSubscriptionTest extends TestCase {
         $this->assertSame(6, $subscription->periods()->count());
     }
 
+    public function test_edit_dialog_keeps_an_ended_contract_selectable(): void {
+        // Review 2026-09-11 (Vertrag): der verknüpfte Vertrag bleibt im Dialog wählbar, auch wenn er beendet ist —
+        // sonst ginge die Verknüpfung beim nächsten Speichern still verloren.
+        $admin = $this->orgAdmin();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Klimpel Bäder GmbH']);
+        $contract = \App\Models\Contract\Contract::factory()->create([
+            'organization_id' => $this->organization->id, 'number' => 'V-2026-0042', 'title' => 'Lizenzvertrag', 'status' => \App\Enums\Contract\ContractStatus::Ended,
+            'partner_type' => \App\Enums\Contract\ContractPartnerType::Customer, 'customer_id' => $customer->id,
+        ]);
+        $this->actingAs($admin)->post(route('finance.resale.store'), $this->payload(['holder' => 'customer', 'customer_id' => $customer->sqid]));
+        $subscription = ResaleSubscription::query()->firstOrFail();
+        $this->actingAs($admin)->get(route('finance.resale.create'))->assertOk()->assertDontSee('V-2026-0042');
+
+        $subscription->forceFill(['contract_id' => $contract->id])->save();
+        $this->actingAs($admin)->get(route('finance.resale.edit', $subscription->sqid))->assertOk()->assertSee('V-2026-0042 · Lizenzvertrag');
+        $this->actingAs($admin)->put(route('finance.resale.update', $subscription->sqid), $this->payload(['holder' => 'customer', 'customer_id' => $customer->sqid, 'contract_id' => $contract->sqid]))
+            ->assertSessionHasNoErrors();
+        $this->assertSame($contract->id, $subscription->fresh()?->contract_id);
+    }
+
     public function test_permission_labels_exist(): void {
         $this->assertNotSame('reselling.view', __('access.permission.' . Permission::ResellingView->value));
         $this->assertNotSame('reselling.manage', __('access.permission.' . Permission::ResellingManage->value));

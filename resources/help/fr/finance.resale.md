@@ -133,6 +133,21 @@ que les destinataires avec périodes ouvertes et prix de vente et indique en
 dessous ce qui est déjà dans un brouillon. La création requiert le droit
 *Créer des brouillons de facture à partir des périodes*.
 
+**Facturation récurrente :** avec la facturation locale, le registre peut
+créer lui-même les brouillons chaque jour. L’interrupteur se trouve sur la
+page *Classification des produits* (droit *Gérer le registre de revente*) : actif
+= le prochain passage crée, pour chaque destinataire avec des périodes
+échues pas encore en brouillon, le même brouillon que le clic — lignes par
+abonnement et période, périodes liées comme proposition et marquées.
+L’*anticipation* en jours prend aussi les périodes avant leur début (0 =
+périodes échues uniquement). Les destinataires facturés via
+Lexoffice/DATEV ne sont pas concernés, les périodes sans prix de vente
+sont ignorées, le parc propre n’est jamais facturé. Tu finalises les
+brouillons dans la liste des factures ; la synthèse hebdomadaire indique
+combien de brouillons des sept derniers jours sont encore ouverts. Une
+fois ou en essai : `php artisan resale:draft-local --organization=…
+--dry-run` (`--force` ignore l’interrupteur).
+
 **Pièces d’achat :** l’achat réel par abonnement et période provient de
 trois sources : (1) factures et avoirs fournisseur en PDF (Quality Hosting,
 mise en page allemande et anglaise) — chaque ligne nomme le contrat, le
@@ -170,7 +185,24 @@ articles Lexoffice sont des produits d’abonnement. Par article, vous pouvez
 forcer : « produit d’abonnement » impose la reconnaissance, « jamais une
 ligne d’abonnement » écarte les prestations dont le texte contient un nom de
 produit (maintenance sur Exchange) des propositions, listes de factures et
-« lignes sans abonnement ».
+« lignes sans abonnement ». La même classification existe pour les articles
+actifs du fichier articles local (section *Articles locaux*) : elle décide
+quelles lignes des factures locales le miroir traite comme lignes de licence,
+et le contrôle des prix compare le prix de vente de l’article aux prix des
+abonnements.
+
+**Contrats :** un abonnement peut porter un contrat de la gestion des
+contrats comme cadre d’échéances (champ « Contrat » du dialogue
+d’abonnement ; uniquement des contrats clients dont le partenaire est le
+destinataire de la facture de l’abonnement). Le dossier du contrat affiche
+ses abonnements dans le panneau « Abonnements & licences ». Pas de second
+catalogue d’échéances : le traitement quotidien inscrit une date par
+abonnement dans le calendrier contractuel — le délai de résiliation à la fin
+pour les abonnements résiliés, une alerte de renouvellement avant la
+période suivante en cas de renouvellement automatique, chaque fois avancée
+du préavis du contrat (30 jours à défaut), avec 14 jours de préalerte. Si
+la fin change, la date suit ; les dates traitées restent traitées ; les
+abonnements terminés ou sans contrat clôturent leur date ouverte.
 
 **Domaines :** chaque domaine de la gestion des domaines devient
 quotidiennement un abonnement « Domaine » avec intervalle annuel depuis

@@ -252,30 +252,151 @@ class PeriodPlannerTest extends TestCase {
         $this->assertSame(['created' => 0, 'updated' => 0, 'removed' => 0, 'kept' => 1], $planner->sync($contract, $reference));
     }
 
-    public function test_assignment_starting_inside_a_period_takes_effect_from_the_next_period(): void {
-        // Abtretung mitten in der Periode (Vertrag ×5 ab 05.08.2024, Kind ×2 ab 01.07.2025): die Menge einer
-        // Periode wird an ihrem BEGINN bestimmt — die laufende Vertragsperiode behält 5, erst die nächste hat 3;
-        // das Kind plant ab seinem eigenen Beginn mit 2 (aktuelles Verhalten, kein anteiliger Split).
-        $planner = new PeriodPlanner;
-        $reference = CarbonImmutable::parse('2026-09-04');
-        $contract = $this->subscription(['quantity' => 5, 'external_id' => 'ent-5']);
-        $planner->sync($contract, $reference);
-        $child = ResaleSubscription::query()->create([
+    /**
+     * @param  array<string, mixed>  $attributes
+     */
+    private function assignment(ResaleSubscription $contract, array $attributes = []): ResaleSubscription {
+        return ResaleSubscription::query()->create(array_merge([
             'organization_id' => $this->organization->id, 'parent_id' => $contract->id, 'kind' => 'license', 'provider' => 'manual', 'external_id' => 'ent-5#1',
-            'label' => 'Microsoft 365 Business Premium', 'quantity' => 2, 'starts_on' => '2025-07-01', 'term_months' => 12, 'interval' => BillingFrequency::Yearly,
-            'renewal' => 'auto', 'sale_unit_price' => '247.20', 'currency' => 'EUR', 'status' => SubscriptionStatus::Active,
-        ]);
+            'label' => 'Microsoft 365 Business Premium', 'quantity' => 2, 'starts_on' => '2026-07-01', 'term_months' => 12, 'interval' => BillingFrequency::Yearly,
+            'renewal' => 'auto', 'sale_unit_price' => '247.20', 'purchase_unit_price' => '187.92', 'currency' => 'EUR', 'status' => SubscriptionStatus::Active,
+        ], $attributes));
+    }
+
+    /** @return list<array{0: string, 1: string}> */
+    private function ranges(ResaleSubscription $subscription): array {
+        return $subscription->periods()->get()->map(static fn(ResalePeriod $p): array => [$p->starts_on->toDateString(), $p->ends_on->toDateString()])->all();
+    }
+
+    public function test_assignment_starting_inside_a_period_is_co_termed_with_the_contract(): void {
+        // Abtretung mitten in der Periode (Vertrag ×5 mit Jahresperiode 01.01.–31.12., Kind ×2 ab 01.07.): Lizenzen im
+        // selben Tenant sind co-termed — die erste Periode des Kindes endet mit der laufenden Vertragsperiode (Soll
+        // anteilig 6/12), danach läuft das Kind im Vertragsrhythmus. Der Vertrag behält in der laufenden Periode
+        // seine 5 (vom Endkunden bezahlt); ab der nächsten Vertragsperiode gilt die Menge am Periodenbeginn (3).
+        $planner = new PeriodPlanner;
+        $reference = CarbonImmutable::parse('2026-11-01'); // Horizont 30.01.2027: die Periode 2027 ist sichtbar
+        $contract = $this->subscription(['quantity' => 5, 'starts_on' => '2026-01-01', 'external_id' => 'ent-5']);
+        $planner->sync($contract, $reference);
+        $child = $this->assignment($contract);
+
+        $planned = $planner->plan($child, $reference);
+        $this->assertSame([['2026-07-01', '2026-12-31'], ['2027-01-01', '2027-12-31']], array_map(static fn(array $p): array => [$p['starts_on']->toDateString(), $p['ends_on']->toDateString()], $planned));
+        $this->assertSame([6, 12], [$planned[0]['months'] ?? null, $planned[0]['interval_months'] ?? null], 'Erstperiode trägt ihren Anteil');
+        $this->assertArrayNotHasKey('months', $planned[1], 'ab der zweiten Periode volle Vertragsperioden');
+
         $planner->sync($child, $reference);
         $contract->refresh();
         $result = $planner->sync($contract, $reference);
 
-        $this->assertSame(2, $result['updated'], '2025 und 2026 folgen der Abtretung');
-        $this->assertSame([5, 3, 3], $contract->periods()->pluck('quantity')->all());
-        $this->assertSame(['1236.00', '741.60', '741.60'], $contract->periods()->get()->map(static fn(ResalePeriod $p): ?string => $p->expected_sale?->getAmount())->all());
-        $this->assertSame(['2025-07-01', '2026-07-01'], $child->periods()->get()->map(static fn(ResalePeriod $p): string => $p->starts_on->toDateString())->all(), 'eigene Perioden ab dem Abtretungsbeginn');
-        $this->assertSame([2, 2], $child->periods()->pluck('quantity')->all());
-        $this->assertSame(5, $contract->billableQuantityOn(CarbonImmutable::parse('2025-06-30')));
-        $this->assertSame(3, $contract->billableQuantityOn(CarbonImmutable::parse('2025-07-01')));
+        $this->assertSame(['2026-07-01', '2026-12-31'], $this->ranges($child)[0]);
+        [$first, $second] = $child->periods()->get()->all();
+        $this->assertSame('247.20', $first->expected_sale?->getAmount(), '2 × 247,20 × 6/12');
+        $this->assertSame('187.92', $first->expected_purchase?->getAmount(), '2 × 187,92 × 6/12');
+        $this->assertSame(6, $first->termMonths());
+        $this->assertSame(12.0, $first->requiredMonths(), 'Menge × tatsächliche Monate');
+        $this->assertSame('494.40', $second->expected_sale?->getAmount(), 'volle Vertragsperiode 2027');
+        $this->assertSame(24.0, $second->requiredMonths());
+
+        $this->assertSame(1, $result['updated'], 'nur 2027 folgt der Abtretung');
+        $this->assertSame([5, 3], $contract->periods()->pluck('quantity')->all(), 'laufende Periode behält 5, ab 2027 Rest 3');
+        $this->assertSame(['1236.00', '741.60'], $contract->periods()->get()->map(static fn(ResalePeriod $p): ?string => $p->expected_sale?->getAmount())->all());
+        $this->assertSame(5, $contract->billableQuantityOn(CarbonImmutable::parse('2026-06-30')));
+        $this->assertSame(3, $contract->billableQuantityOn(CarbonImmutable::parse('2026-07-01')));
+
+        // Zweiter Lauf: idempotent, das anteilige Soll gilt nicht als Änderung.
+        $this->assertSame(['created' => 0, 'updated' => 0, 'removed' => 0, 'kept' => 2], $planner->sync($child, $reference));
+    }
+
+    public function test_assignment_starting_at_the_period_boundary_plans_full_contract_periods(): void {
+        // Abtretung genau am Periodenanfang: wie bisher — volle Perioden, volles Soll, der Vertrag plant ab da mit dem Rest.
+        $planner = new PeriodPlanner;
+        $reference = CarbonImmutable::parse('2026-11-01');
+        $contract = $this->subscription(['quantity' => 5, 'starts_on' => '2026-01-01', 'external_id' => 'ent-5']);
+        $planner->sync($contract, $reference);
+        $child = $this->assignment($contract, ['starts_on' => '2027-01-01']);
+
+        $planned = $planner->plan($child, $reference);
+        $this->assertSame([['2027-01-01', '2027-12-31']], array_map(static fn(array $p): array => [$p['starts_on']->toDateString(), $p['ends_on']->toDateString()], $planned));
+        $this->assertArrayNotHasKey('months', $planned[0]);
+
+        $planner->sync($child, $reference);
+        $contract->refresh();
+        $planner->sync($contract, $reference);
+        $this->assertSame('494.40', $child->periods()->first()?->expected_sale?->getAmount(), '2 × 247,20 ungekürzt');
+        $this->assertSame([5, 3], $contract->periods()->pluck('quantity')->all());
+    }
+
+    public function test_assignment_on_a_monthly_contract_follows_the_monthly_boundaries(): void {
+        // Monatsintervall: Rest des laufenden Monats ist die Erstperiode (mind. 5 Tage), danach die Monatsgrenzen des Vertrags.
+        $planner = new PeriodPlanner;
+        $reference = CarbonImmutable::parse('2026-09-04');
+        $contract = $this->subscription(['quantity' => 5, 'starts_on' => '2026-01-01', 'interval' => BillingFrequency::Monthly, 'term_months' => 1, 'external_id' => 'ent-5']);
+        $child = $this->assignment($contract, ['starts_on' => '2026-07-15', 'interval' => BillingFrequency::Monthly, 'term_months' => 1, 'sale_unit_price' => '20.60']);
+
+        $planned = $planner->plan($child, $reference);
+        $this->assertSame(['2026-07-15', '2026-08-01', '2026-09-01', '2026-10-01', '2026-11-01', '2026-12-01'], array_map(static fn(array $p): string => $p['starts_on']->toDateString(), $planned));
+        $this->assertSame('2026-07-31', $planned[0]['ends_on']->toDateString());
+        $this->assertSame([1, 1], [$planned[0]['months'] ?? null, $planned[0]['interval_months'] ?? null], 'ein angebrochener Monat zählt als Monat');
+
+        $planner->sync($child, $reference);
+        $this->assertSame('41.20', $child->periods()->first()?->expected_sale?->getAmount(), 'Monatspreis ungekürzt: 2 × 20,60');
+
+        // Rest unter der Mindestlänge (29.–31.07. = 3 Tage): beim Vertrag bezahlt, die Abtretung beginnt mit dem August.
+        $stub = $this->assignment($contract, ['starts_on' => '2026-07-29', 'interval' => BillingFrequency::Monthly, 'term_months' => 1, 'external_id' => 'ent-5#2']);
+        $planned = $planner->plan($stub, $reference);
+        $this->assertSame('2026-08-01', $planned[0]['starts_on']->toDateString());
+        $this->assertArrayNotHasKey('months', $planned[0]);
+    }
+
+    public function test_assignment_ending_before_the_contract_period_end_is_a_single_prorated_period(): void {
+        // Kind endet vor dem Vertragsperiodenende (01.07.–30.09.): eine Co-Term-Periode über drei Monate, Soll 3/12 —
+        // und der Vertrag hat ab 2027 wieder alle fünf Lizenzen.
+        $planner = new PeriodPlanner;
+        $reference = CarbonImmutable::parse('2026-11-01');
+        $contract = $this->subscription(['quantity' => 5, 'starts_on' => '2026-01-01', 'external_id' => 'ent-5']);
+        $planner->sync($contract, $reference);
+        $child = $this->assignment($contract, ['ends_on' => '2026-09-30']);
+
+        $planned = $planner->plan($child, $reference);
+        $this->assertSame([['2026-07-01', '2026-09-30']], array_map(static fn(array $p): array => [$p['starts_on']->toDateString(), $p['ends_on']->toDateString()], $planned));
+        $this->assertSame(3, $planned[0]['months'] ?? null);
+
+        $planner->sync($child, $reference);
+        $contract->refresh();
+        $planner->sync($contract, $reference);
+        $this->assertSame('123.60', $child->periods()->first()?->expected_sale?->getAmount(), '2 × 247,20 × 3/12');
+        $this->assertSame(6.0, $child->periods()->first()?->requiredMonths());
+        $this->assertSame([5, 5], $contract->periods()->pluck('quantity')->all(), 'nach dem Ende der Abtretung wieder voll');
+
+        // Kind über den Vertragsjahreswechsel, aber vor dem nächsten Periodenende (01.07.2026–30.06.2027): zwei Perioden,
+        // die zweite an der Vertragsgrenze beginnend und vom Kind-Ende gekürzt.
+        $spanning = $this->assignment($contract, ['ends_on' => '2027-06-30', 'external_id' => 'ent-5#2']);
+        $planned = $planner->plan($spanning, $reference);
+        $this->assertSame([['2026-07-01', '2026-12-31'], ['2027-01-01', '2027-06-30']], array_map(static fn(array $p): array => [$p['starts_on']->toDateString(), $p['ends_on']->toDateString()], $planned));
+    }
+
+    public function test_assignment_without_contract_keeps_its_own_rhythm(): void {
+        // Vertrag gelöscht (FK nullOnDelete) oder Vertragsbezug ins Leere: die Abtretung plant wie ein
+        // eigenständiges Abo ab ihrem Beginn — ebenso, wenn der Vertrag erst nach ihr beginnt (Datenfehler).
+        $planner = new PeriodPlanner;
+        $reference = CarbonImmutable::parse('2026-11-01');
+        $expected = [['2026-07-01', '2027-06-30']];
+        $ranges = static fn(array $planned): array => array_map(static fn(array $p): array => [$p['starts_on']->toDateString(), $p['ends_on']->toDateString()], $planned);
+
+        $contract = $this->subscription(['quantity' => 5, 'starts_on' => '2026-01-01', 'external_id' => 'ent-5']);
+        $child = $this->assignment($contract);
+        $child->setRelation('parent', null);
+        $planned = $planner->plan($child, $reference);
+        $this->assertSame($expected, $ranges($planned));
+        $this->assertArrayNotHasKey('months', $planned[0]);
+
+        $contract->delete();
+        $child->refresh();
+        $this->assertNull($child->parent_id, 'FK nullOnDelete');
+        $this->assertSame($expected, $ranges($planner->plan($child, $reference)));
+
+        $late = $this->subscription(['quantity' => 5, 'starts_on' => '2026-09-01', 'external_id' => 'ent-6']);
+        $this->assertSame($expected, $ranges($planner->plan($this->assignment($late, ['external_id' => 'ent-6#1']), $reference)), 'Vertrag beginnt nach der Abtretung: eigener Rhythmus');
     }
 
     public function test_planning_is_capped_at_max_periods(): void {

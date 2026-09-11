@@ -120,6 +120,7 @@ return [
             'sync_domains' => 'Abonnements de revente : reprendre les domaines de la gestion des domaines',
             'sync_purchases' => 'Abonnements de revente : reprendre les écritures de domaines comme achats',
             'sync_periods' => 'Abonnements de revente : générer les périodes de facturation',
+            'draft_local' => 'Abonnements de revente : facturation récurrente — brouillons de facture locaux à partir des périodes échues',
             'digest' => 'Abonnements de revente : synthèse hebdomadaire aux responsables',
             'prune_imports' => 'Abonnements de revente : supprimer les fichiers d’import après la durée de conservation',
         ],

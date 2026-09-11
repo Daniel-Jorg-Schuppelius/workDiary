@@ -185,6 +185,36 @@ class AppServiceProvider extends ServiceProvider {
             return $registry;
         });
 
+        // Belegspiegel des Reselling-Registers (Feature 152, Review 2026-09-10):
+        // Singleton mit der lokalen Rechnungsquelle; die Lexoffice-Quelle
+        // registriert das Plugin beim Booten — der Kern kennt keinen Anbieter.
+        $this->app->singleton(\App\Services\Reselling\Mirror\InvoiceMirror::class, static function (): \App\Services\Reselling\Mirror\InvoiceMirror {
+            $mirror = new \App\Services\Reselling\Mirror\InvoiceMirror;
+            $mirror->register(new \App\Services\Reselling\Mirror\LocalInvoiceMirrorSource);
+
+            return $mirror;
+        });
+
+        // Eingangsbelege des Reselling-Registers (Feature 152, Review 2026-09-11,
+        // Einkauf): Singleton mit den lokalen Quellen (Ausgaben, Eingangs-
+        // E-Rechnungen); die Lexoffice-Quelle registriert das Plugin beim Booten.
+        $this->app->singleton(\App\Services\Reselling\Purchase\PurchaseDocuments::class, static function (): \App\Services\Reselling\Purchase\PurchaseDocuments {
+            $documents = new \App\Services\Reselling\Purchase\PurchaseDocuments;
+            $documents->register(new \App\Services\Reselling\Purchase\ExpensePurchaseDocumentSource);
+            $documents->register(new \App\Services\Reselling\Purchase\IncomingEInvoicePurchaseDocumentSource);
+
+            return $documents;
+        });
+
+        // Entwurfsziele des Reselling-Registers (Review 2026-09-11): Singleton
+        // mit dem lokalen Rechnungsentwurf; externe Ziele registrieren die Plugins.
+        $this->app->singleton(\App\Services\Reselling\Draft\InvoiceDraftTargets::class, static function (Application $app): \App\Services\Reselling\Draft\InvoiceDraftTargets {
+            $targets = new \App\Services\Reselling\Draft\InvoiceDraftTargets;
+            $targets->register($app->make(\App\Services\Reselling\Draft\LocalInvoiceDraftTarget::class));
+
+            return $targets;
+        });
+
         // Auslagen-Beleg-Provider (Feature 105/106; Vollscan 2026-08, B9):
         // Singleton, damit das Buchhaltungs-Plugin beim Booten registrieren
         // kann. Ohne Registrierung greift der NullExpenseLinkProvider.

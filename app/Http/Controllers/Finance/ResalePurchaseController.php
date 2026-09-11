@@ -16,8 +16,8 @@ use App\Enums\Reselling\SubscriptionProvider;
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\{ResalePurchaseImportRequest, ResalePurchaseStoreRequest};
-use App\Models\LexofficeVoucher;
 use App\Models\Reselling\{ResalePeriod, ResalePurchaseEntry};
+use App\Services\Reselling\Purchase\{PurchaseDocument, PurchaseDocuments};
 use App\Services\Reselling\Register\{ProviderInvoiceImport, PurchaseAllocator};
 use App\Support\Query\DateRange;
 use CommonToolkit\ValueObjects\Money;
@@ -26,10 +26,11 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\{RedirectResponse, Request};
 
 /**
- * Einkaufsbelege (Feature 152, MVP-762): Anbieterrechnungen aus dem
- * Belegspiegel dem Anbieter zuweisen und pro rata auf die Perioden verteilen,
- * Anbieterrechnungen als PDF positionsgenau importieren; Domain-Buchungen
- * kommen automatisch.
+ * Einkaufsbelege (Feature 152, MVP-762; Review 2026-09-11, Einkauf):
+ * Eingangsbelege aller Quellen ({@see PurchaseDocuments} — Lexoffice-Spiegel,
+ * lokale Ausgaben, Eingangs-E-Rechnungen) dem Anbieter zuweisen und pro rata
+ * auf die Perioden verteilen, Anbieterrechnungen als PDF positionsgenau
+ * importieren; Domain-Buchungen kommen automatisch.
  */
 class ResalePurchaseController extends Controller {
     use ResolvesCurrentOrganization;
@@ -37,12 +38,15 @@ class ResalePurchaseController extends Controller {
 
     private const PER_PAGE = 50;
 
-    /** Belegspiegel im Zuteilungsdialog: Eingangsbelege der letzten 36 Monate. */
-    private const VOUCHER_MONTHS = 36;
+    /** Zuteilungsdialog: Eingangsbelege der letzten 36 Monate, höchstens 200. */
+    private const DOCUMENT_MONTHS = 36;
+
+    private const DOCUMENT_LIMIT = 200;
 
     public const SOURCES = [ResalePurchaseEntry::SOURCE_PROVIDER_INVOICE, ResalePurchaseEntry::SOURCE_VOUCHER, ResalePurchaseEntry::SOURCE_DOMAIN, ResalePurchaseEntry::SOURCE_MANUAL];
 
-    public function index(Request $request): View {
+    public function index(Request $request, PurchaseDocuments $documents): View {
+        $organization = $this->currentOrganizationOrAbort(404);
         $filters = [
             'q' => trim((string) $request->query('q', '')),
             'provider' => (string) $request->query('provider', ''),
@@ -51,7 +55,7 @@ class ResalePurchaseController extends Controller {
             'to' => trim((string) $request->query('to', '')),
         ];
         $query = ResalePurchaseEntry::query()
-            ->with(['subscription:id,label,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name', 'period:id,starts_on,ends_on', 'voucher:id,voucher_number,voucher_date,total_amount'])
+            ->with(['subscription:id,label,customer_id,foreign_customer_id,is_own_holding', 'subscription.customer:id,name', 'subscription.foreignCustomer:id,name', 'period:id,starts_on,ends_on'])
             ->orderByDesc('entry_date')->orderByDesc('id');
         if ($filters['q'] !== '') {
             $q = $filters['q'];
@@ -75,6 +79,8 @@ class ResalePurchaseController extends Controller {
             $query->where('entry_date', '>=', DateRange::day($from))->where('entry_date', '<', DateRange::dayAfter($to));
         }
         $entries = $query->paginate(self::PER_PAGE)->withQueryString();
+        // Belege je Quelle in einer Abfrage an die Zeilen hängen (Kennung, Quelle, Permalink, Vorschau).
+        $documents->preload($organization, $entries->getCollection());
         $byDocument = ResalePurchaseEntry::query()
             ->selectRaw('provider, document_number, currency, MIN(entry_date) AS entry_date, SUM(net_amount) AS net, COUNT(*) AS n')
             ->whereNotNull('document_number')
@@ -92,24 +98,20 @@ class ResalePurchaseController extends Controller {
         ]);
     }
 
-    /** Dialog „Eingangsbeleg zuteilen": Belege des Spiegels, per `q` vorgefiltert (Nummer, Lieferant). */
-    public function create(Request $request): View {
+    /** Dialog „Eingangsbeleg zuteilen": Belege aller Quellen, per `q` vorgefiltert (Nummer, Lieferant). */
+    public function create(Request $request, PurchaseDocuments $documents): View {
+        $organization = $this->currentOrganizationOrAbort(404);
         $q = trim((string) $request->query('q', ''));
-        $since = ResalePeriod::today()->subMonths(self::VOUCHER_MONTHS);
-        $vouchers = LexofficeVoucher::query()
-            ->whereIn('voucher_type', ['purchaseinvoice', 'purchasecreditnote'])
-            ->where('archived', false)
-            ->where('voucher_date', '>=', DateRange::day($since))
-            ->with('supplier:id,name')
-            ->when($q !== '', static fn($query) => $query->where(static fn($w) => $w->whereLikeEscaped('voucher_number', $q)->orWhereHas('supplier', static fn($s) => $s->whereLikeEscaped('name', $q))))
-            ->orderByDesc('voucher_date')
-            ->limit(200)
-            ->get();
-        $allocated = ResalePurchaseEntry::query()->whereNotNull('lexoffice_voucher_id')->pluck('lexoffice_voucher_id')->unique()->flip()->all();
+        $since = ResalePeriod::today()->subMonths(self::DOCUMENT_MONTHS);
+        $allocated = [];
+        foreach (ResalePurchaseEntry::query()->whereNotNull('document_type')->whereNotNull('document_id')->distinct()->get(['document_type', 'document_id']) as $entry) {
+            $allocated[PurchaseDocument::identityOf((string) $entry->document_type, (int) $entry->document_id)] = true;
+        }
 
         return view('finance.resale._purchase_dialog', [
-            'vouchers' => $vouchers,
+            'documents' => $documents->search($organization, $q !== '' ? $q : null, $since, self::DOCUMENT_LIMIT),
             'allocated' => $allocated,
+            'sources' => $documents->sources(),
             'providers' => array_values(array_filter(SubscriptionProvider::cases(), static fn(SubscriptionProvider $p): bool => $p !== SubscriptionProvider::DomainReselling)),
             'q' => $q,
         ]);
@@ -117,14 +119,14 @@ class ResalePurchaseController extends Controller {
 
     public function store(ResalePurchaseStoreRequest $request, PurchaseAllocator $allocator): RedirectResponse {
         $organization = $this->currentOrganizationOrAbort(404);
-        $voucher = $request->voucher();
-        $net = Money::ofFloat($request->netAmount(), $voucher->currency);
-        $result = $allocator->allocateVoucher($organization, $voucher, $request->provider(), $net, $request->month(), $request->user());
+        $document = $request->document();
+        $net = Money::ofFloat($request->netAmount(), $document->currency);
+        $result = $allocator->allocateVoucher($organization, $document, $request->provider(), $net, $request->month(), $request->user());
         if ($result['entries'] === 0) {
             return redirect()->route('finance.resale.purchases.index')->with('error', __('resale.purchase.flash.no_periods', ['month' => $request->month()->format('Y-m')]));
         }
 
-        return redirect()->route('finance.resale.purchases.index')->with('success', __('resale.purchase_flash.allocated', ['entries' => $result['entries'], 'amount' => Money::ofFloat($result['allocated'], $voucher->currency, 2)->format(), 'voucher' => (string) $voucher->voucher_number]));
+        return redirect()->route('finance.resale.purchases.index')->with('success', __('resale.purchase_flash.allocated', ['entries' => $result['entries'], 'amount' => Money::ofFloat($result['allocated'], $document->currency, 2)->format(), 'voucher' => $document->reference()]));
     }
 
     public function importCreate(): View {
@@ -149,9 +151,12 @@ class ResalePurchaseController extends Controller {
     }
 
     public function destroy(ResalePurchaseEntry $entry): RedirectResponse {
-        // Zuteilung eines Belegs immer als Ganzes lösen.
-        if ($entry->document_number !== null && $entry->source !== ResalePurchaseEntry::SOURCE_DOMAIN) {
-            ResalePurchaseEntry::query()->where('provider', $entry->provider->value)->where('source', $entry->source)->where('document_number', $entry->document_number)->delete();
+        // Zuteilung eines Belegs immer als Ganzes lösen: über den Belegbezug, für Altzeilen über die Belegnummer.
+        $group = ResalePurchaseEntry::query()->where('provider', $entry->provider->value)->where('source', $entry->source);
+        if ($entry->source !== ResalePurchaseEntry::SOURCE_DOMAIN && $entry->document_type !== null && $entry->document_id !== null) {
+            $group->where('document_type', $entry->document_type)->where('document_id', $entry->document_id)->delete();
+        } elseif ($entry->source !== ResalePurchaseEntry::SOURCE_DOMAIN && $entry->document_number !== null) {
+            $group->where('document_number', $entry->document_number)->delete();
         } else {
             $entry->delete();
         }

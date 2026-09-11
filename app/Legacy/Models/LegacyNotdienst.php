@@ -21,9 +21,9 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $bis
  * @property-read LegacyUser|null $mitarbeiter
  *
- * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst newModelQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst newQuery()
- * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst query()
+ * @method static \Illuminate\Database\Eloquent\Builder<static> newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static> newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder<static> query()
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst whereBis($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder<static>|LegacyNotdienst whereUser($value)

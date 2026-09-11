@@ -154,6 +154,14 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
             Route::get('/queries/{query}/attachments/{attachment}/download', [\App\Http\Controllers\CustomerPortal\QueryController::class, 'downloadAttachment'])->name('queries.attachments.download');
         });
 
+        // „Meine Abos" (Feature 152, Prozesse 6): Bestand der Abos des Kunden und
+        // seiner Endkunden — ohne Preise, Einkauf und Rechnungsbezüge; Modul-Gate
+        // module.reselling hängt an der Capability.
+        Route::middleware('portal.capability:subscriptions')->group(function (): void {
+            Route::get('/subscriptions', [\App\Http\Controllers\CustomerPortal\SubscriptionController::class, 'index'])->name('subscriptions.index');
+            Route::get('/subscriptions/{subscription}', [\App\Http\Controllers\CustomerPortal\SubscriptionController::class, 'show'])->name('subscriptions.show');
+        });
+
         Route::middleware('portal.capability:documents')->group(function (): void {
             // Freigegebene Dokumente (Welle D — Dokument-Spiegelung): NUR fürs
             // Kundenportal freigegebene Dokumente des eigenen Kunden, sicherer

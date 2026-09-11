@@ -48,9 +48,10 @@
         @forelse ($period->links as $link)
             <span class="inline-flex items-center gap-1 mr-1 mb-0.5">
                 <x-status-badge size="xs" :tone="$link->origin->tone()" :label="($link->voucher_number ?: '—') . ' · ' . \App\Services\Reselling\Register\LicenseMonths::label((float) $link->months, (float) $term)" :title="$link->origin->label() . ($link->note ? ' · ' . $link->note : '')" />
-                @php $linkedLine = $link->linkable; @endphp
-                @if ($linkedLine instanceof \App\Models\LexofficeVoucherLine && auth()->user()?->can(\App\Enums\User\Permission::VoucherViewAny->value))
-                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', \App\Support\Sqid::encode(\App\Models\LexofficeVoucher::class, $linkedLine->voucher_id))" :title="__('resale.invoices.preview')" />
+                {{-- Belegbild über die Spiegelquelle der Position (Recht prüft die Quelle). --}}
+                @php $previewUrl = $link->mirrorLine()?->previewUrl; @endphp
+                @if ($previewUrl !== null)
+                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$previewUrl" :title="__('resale.invoices.preview')" />
                 @endif
                 @if ($canManage && ! $period->status->isDecided() || $canManage && $period->status !== \App\Enums\Reselling\PeriodStatus::Waived)
                     <form method="POST" action="{{ route('finance.resale.links.destroy', $link->sqid) }}" class="inline">

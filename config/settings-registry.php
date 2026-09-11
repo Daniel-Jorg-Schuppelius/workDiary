@@ -180,6 +180,13 @@ return [
     // Schlüsselwort-Zuordnung importierter Zeiten (MVP-483)
     'project.keyword_matching.enabled' => ['type' => 'boolean', 'scopes' => ['system', 'organization'], 'fallback' => true],
 
+    // --- Reselling-Register (Feature 152, Serienlauf 2026-09-11) ---
+    // Serienrechnung bei lokaler Rechnungshoheit: resale:draft-local legt je
+    // Rechnungsempfänger einen lokalen Entwurf aus den fälligen Perioden an
+    // (Default aus); lead_days = Perioden schon so viele Tage vor Beginn entwerfen.
+    'resale.auto_local_drafts' => ['type' => 'boolean', 'scopes' => ['organization'], 'fallback' => false, 'affects' => ['resale.draft_local']],
+    'resale.auto_local_drafts_lead_days' => ['type' => 'integer', 'scopes' => ['organization'], 'rules' => 'min:0|max:90', 'fallback' => 0, 'affects' => ['resale.draft_local']],
+
     // =====================================================================
     // Org-Formular-Keys (067-P3b): jede hier org-scoped registrierte
     // Einstellung ist über formRulesForScope(Organization) validier- und

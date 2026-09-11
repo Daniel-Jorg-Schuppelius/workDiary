@@ -12,15 +12,17 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Finance;
 
+use App\Enums\Article\ArticleStatus;
 use App\Enums\Reselling\{PeriodStatus, ResaleArticleRole};
 use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Http\Requests\Finance\{ResaleReportDraftRequest, ResaleReportProductRequest};
-use App\Models\{Customer, LexofficeArticle};
+use App\Http\Requests\Finance\{ResaleAutoDraftSettingsRequest, ResaleReportDraftRequest, ResaleReportProductRequest};
+use App\Models\{Article, Customer, LexofficeArticle};
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
-use App\Services\Reselling\Register\{LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
-use App\Support\{CsvExport, XlsxExport};
+use App\Services\Reselling\Register\{LicenseArticleClassifier, ResaleInvoiceDraftService, ResaleLocalDraftRun, ResaleMarginReport, ResalePriceCheck, ResaleRenewalReport, ResaleUnbilledReport};
+use App\Settings\SettingScope;
+use App\Support\{CsvExport, Setting, XlsxExport};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\ValueObjects\Money;
@@ -154,7 +156,8 @@ class ResaleReportController extends Controller {
      * Produkt-Einstufung: welche Lexoffice-Artikel Abo-Produkte sind — erkannt
      * über den Namen, vom Betreiber übersteuerbar (nie Abo-Position / immer).
      */
-    public function products(LicenseArticleClassifier $classifier): View {
+    public function products(LicenseArticleClassifier $classifier, ResaleLocalDraftRun $autoDrafts): View {
+        $organization = $this->currentOrganizationOrNull();
         $counts = ResaleSubscription::query()->whereNotNull('lexoffice_article_id')->selectRaw('lexoffice_article_id, COUNT(*) AS n')->groupBy('lexoffice_article_id')->pluck('n', 'lexoffice_article_id')->all();
         $articles = LexofficeArticle::query()->active()->orderBy('name')->get()
             ->map(static fn(LexofficeArticle $article): array => [
@@ -164,8 +167,39 @@ class ResaleReportController extends Controller {
                 'subscriptions' => (int) ($counts[$article->id] ?? 0),
             ])
             ->sortBy(static fn(array $row): string => ($row['effective'] ? '0' : '1') . mb_strtolower((string) $row['article']->name))->values();
+        // Lokale Artikel (Review 2026-09-11): dieselbe Einstufung für den Belegspiegel lokaler Rechnungen.
+        $localCounts = ResaleSubscription::query()->whereNotNull('article_id')->selectRaw('article_id, COUNT(*) AS n')->groupBy('article_id')->pluck('n', 'article_id')->all();
+        $localArticles = Article::query()->where('status', ArticleStatus::Active->value)->orderBy('name')->get()
+            ->map(static fn(Article $article): array => [
+                'article' => $article,
+                'detected' => $classifier->detected($article),
+                'effective' => $classifier->isLicense($article),
+                'subscriptions' => (int) ($localCounts[$article->id] ?? 0),
+            ])
+            ->sortBy(static fn(array $row): string => ($row['effective'] ? '0' : '1') . mb_strtolower((string) $row['article']->name))->values();
 
-        return view('finance.resale.products', ['rows' => $articles, 'roles' => ResaleArticleRole::cases()]);
+        return view('finance.resale.products', [
+            'rows' => $articles,
+            'localRows' => $localArticles,
+            'roles' => ResaleArticleRole::cases(),
+            // Serienrechnung (lokale Rechnungshoheit): Org-Schalter + Vorlauf, Lauf = resale:draft-local.
+            'autoDrafts' => $organization !== null && $autoDrafts->enabledFor($organization),
+            'autoDraftLeadDays' => $organization !== null ? $autoDrafts->leadDaysFor($organization) : 0,
+        ]);
+    }
+
+    /**
+     * Serienrechnung (Feature 152): Schalter und Vorlauf je Organisation über
+     * die Settings-Registry (validiert, auditiert) — den Lauf macht der
+     * Zeitplan (`resale:draft-local`), nur bei lokaler Rechnungshoheit.
+     */
+    public function autoDraftSettingsStore(ResaleAutoDraftSettingsRequest $request): RedirectResponse {
+        $organization = $this->currentOrganizationOrAbort(404);
+        $userId = $request->user()?->id;
+        Setting::set(ResaleLocalDraftRun::SETTING_ENABLED, $request->enabled(), SettingScope::Organization, $organization, $userId);
+        Setting::set(ResaleLocalDraftRun::SETTING_LEAD_DAYS, $request->leadDays(), SettingScope::Organization, $organization, $userId);
+
+        return redirect()->route('finance.resale.products')->with('success', __($request->enabled() ? 'resale.auto_draft.flash.enabled' : 'resale.auto_draft.flash.disabled', ['days' => $request->leadDays()]));
     }
 
     public function productsStore(ResaleReportProductRequest $request): RedirectResponse {

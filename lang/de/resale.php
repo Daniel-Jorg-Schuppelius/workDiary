@@ -317,6 +317,7 @@ return [
             'below_list' => 'Verkauf unter UVP',
             'contract_above_catalog' => 'Vertrag teurer als Katalog',
             'no_sales' => 'Kein Verkaufspreis',
+            'article_price_differs' => 'Verkauf weicht vom Artikelpreis ab', // Review 2026-09-11
         ],
     ],
     'draft' => [
@@ -339,6 +340,7 @@ return [
             'nothing_open' => 'Keine offenen Perioden mit Verkaufspreis für diesen Empfänger.',
         ],
         'already_drafted' => 'Für diesen Empfänger steht bereits ein Entwurf aus (:reference vom :date). Erst in Lexoffice bzw. lokal abschließen oder die Periode entscheiden.', // Review 2026-09-10
+        'no_target' => 'Für die Rechnungshoheit „:mode“ dieses Empfängers ist kein Entwurfsziel registriert — Plugin aktivieren oder die Hoheit des Kunden auf lokal stellen.', // Review 2026-09-11
     ],
     'purchase' => [
         'title' => 'Einkaufsbelege',
@@ -670,5 +672,69 @@ return [
         'sign_hint' => 'Wird als negativer Bezug gespeichert.',
         'error_amount' => 'Bitte eine Menge über null angeben.',
         'error_positive' => 'Rechnungspositionen brauchen positive Lizenzmonate — Minderungen laufen über die Gutschrift-Position.',
+    ],
+    // Review 2026-09-10 (Spiegel)
+    'mirror' => [
+        'source_lexoffice' => 'Lexoffice',
+        'source_local' => 'Lokale Rechnung',
+        'open_source' => 'Beleg öffnen (:source)',
+        'no_source' => 'Für diesen Rechnungsempfänger liefert keine Quelle Rechnungen — weder ein verknüpfter Lexoffice-Kontakt noch lokale Rechnungshoheit.',
+    ],
+    // Review 2026-09-10 (Serienlauf)
+    'auto_draft' => [
+        'title' => 'Serienrechnung (lokale Rechnungshoheit)',
+        'description' => 'Täglich im Zeitplan entsteht je Rechnungsempfänger mit lokaler Rechnungshoheit ein Rechnungsentwurf aus den fälligen Perioden — derselbe Entwurf wie per Klick, mit Positionen je Abo und Zeitraum und vorgeschlagenen Bezügen. Empfänger mit Lexoffice-/DATEV-Hoheit bleiben unberührt. Entwürfe schließt du in der Rechnungsliste ab.',
+        'enabled' => 'Serienrechnung aktiv',
+        'lead_days' => 'Vorlauf (Tage)',
+        'lead_days_hint' => '0 = nur fällige Perioden; 7 = Perioden entwerfen, die in den nächsten 7 Tagen beginnen.',
+        'save' => 'Speichern',
+        'state_on' => 'Serienrechnung aktiv — Vorlauf :days Tage.',
+        'state_off' => 'Serienrechnung aus — Entwürfe entstehen nur per Klick.',
+        'locked' => 'Die Serienrechnung läuft für diese Organisation bereits.',
+        'flash' => [
+            'enabled' => 'Serienrechnung aktiv: der nächste Lauf entwirft fällige Perioden (Vorlauf :days Tage).',
+            'disabled' => 'Serienrechnung aus — Rechnungsentwürfe entstehen nur noch per Klick.',
+        ],
+    ],
+    // Review 2026-09-11 (Einkauf)
+    'purchase_document' => [
+        'field' => 'Eingangsbeleg',
+        'hint' => 'Belege aller Quellen der letzten 36 Monate — Lexoffice-Spiegel, lokale Ausgaben, eingegangene E-Rechnungen; ✓ = bereits zugeteilt.',
+        'sources_hint' => 'Quellen',
+        'source' => [
+            'lexoffice' => 'Lexoffice',
+            'expense' => 'Ausgabe',
+            'incoming_einvoice' => 'Eingangs-E-Rechnung',
+        ],
+        'open' => 'Beleg öffnen (:source)',
+        'preview' => 'Belegbild ansehen',
+        'error_unknown' => 'Der gewählte Beleg ist keiner Belegquelle bekannt oder nicht mehr zuteilbar.',
+    ],
+    // Review 2026-09-11 (Produkte)
+    'products_local' => [
+        'title' => 'Lokale Artikel',
+        'hint' => 'Aktive Artikel des Artikelstamms: die Einstufung wirkt im Belegspiegel lokaler Rechnungen und in der Preisprüfung (Verkaufspreis des Artikels). Ohne Einstufung entscheidet der Name.',
+        'price' => 'Verkaufspreis',
+        'empty' => 'Keine aktiven Artikel im Artikelstamm.',
+        'lexoffice_title' => 'Lexoffice-Artikel',
+    ],
+    // Review 2026-09-11 (Vertrag)
+    'contract' => [
+        'field' => 'Vertrag',
+        'none' => 'Kein Vertrag',
+        'hint' => 'Vertrag des Rechnungsempfängers aus der Vertragsverwaltung: Kündigungsfrist und Verlängerungswarnung des Abos landen täglich in seinem Vertragskalender.',
+        'error' => [
+            'no_recipient' => 'Ein Vertrag lässt sich nur mit einem Kunden oder Fremdkunden als Halter verknüpfen.',
+            'recipient_mismatch' => 'Der Vertragspartner ist nicht der Rechnungsempfänger dieses Abos.',
+        ],
+        'panel' => [
+            'title' => 'Abos & Lizenzen',
+            'empty' => 'Kein Abo nutzt diesen Vertrag als Fristenrahmen.',
+            'open' => 'Abo öffnen',
+        ],
+        'obligation' => [
+            'notice' => 'Kündigungsfrist Abo „:label“ (Ende :date)',
+            'renewal' => 'Verlängerung Abo „:label“ am :date',
+        ],
     ],
 ];

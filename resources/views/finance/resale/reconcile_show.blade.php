@@ -19,7 +19,6 @@
 
 @php
     $canManage = auth()->user()?->can(\App\Enums\User\Permission::ResellingManage->value) ?? false;
-    $canPreview = auth()->user()?->can(\App\Enums\User\Permission::VoucherViewAny->value) ?? false;
     $compact = \App\View\Components\Resale\LicenceMonths::class;
 @endphp
 
@@ -51,8 +50,8 @@
             <x-kpi-tile :label="__('resale.reconcile.kpi.surplus')" :value="$compact::compact($surplus)" format="raw" :tone="$surplus > 0.001 ? 'info' : 'neutral'" />
         </div>
 
-        @if ($contacts === [])
-            <div class="alert alert-warning mb-4 text-sm">{{ __('resale.link.no_contacts') }}</div>
+        @if (! $has_source)
+            <div class="alert alert-warning mb-4 text-sm">{{ __('resale.mirror.no_source') }}</div>
         @elseif ($pending > 0)
             <div class="alert alert-info mb-4 text-sm" title="{{ __('resale.link_ui.pending_hint') }}">{{ trans_choice('resale.invoices.pending', $pending, ['count' => $pending]) }}</div>
         @endif
@@ -165,19 +164,19 @@
                             @foreach (array_slice($row['foreign'], 0, 4) as $candidate)
                                 @php
                                     $line = $candidate['row']['line'];
-                                    $voucher = $line->voucher;
+                                    $voucher = $line;
                                     $recipient = $candidate['row']['recipient'] ?? '—';
                                     $targetId = $candidate['row']['recipient_id'];
                                 @endphp
                                 <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                                     <span class="flex flex-wrap items-center gap-2">
                                         <x-status-badge size="xs" tone="warning" :label="__('resale.reconcile.periods.foreign', ['recipient' => $recipient])" />
-                                        <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
-                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->fdate() }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
-                                        <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }} × {{ $line->unit_net->withScale(2)->format() }}</span>
+                                        <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
+                                        <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }} × {{ $line->unitNet->withScale(2)->format() }}</span>
                                         <span class="text-xs text-muted tabular-nums">= <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
-                                        @if ($canPreview)
-                                            <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $line->voucher)" :title="__('resale.invoices.preview')" />
+                                        @if ($line->previewUrl !== null)
+                                            <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$line->previewUrl" :title="__('resale.invoices.preview')" />
                                         @endif
                                     </span>
                                     @if ($canManage && $targetId !== null)
@@ -201,27 +200,27 @@
                             @foreach (array_slice($row['candidates'], 0, 6) as $candidate)
                                 @php
                                     $line = $candidate['row']['line'];
-                                    $voucher = $line->voucher;
+                                    $voucher = $line;
                                 @endphp
                                 <li class="flex flex-wrap items-center justify-between gap-2 text-sm">
                                     <span class="flex flex-wrap items-center gap-2">
-                                        <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
-                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->fdate() }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
-                                        <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }} × {{ $line->unit_net->withScale(2)->format() }}</span>
+                                        <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                                        <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}@if ($voucher->servicePeriodLabel() !== null) · {{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}@endif · {{ trans_choice('resale.reconcile.distance', $candidate['distance'], ['days' => $candidate['distance']]) }}</span>
+                                        <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }} × {{ $line->unitNet->withScale(2)->format() }}</span>
                                         <span class="text-xs text-muted tabular-nums">= <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
                                         <span class="text-success text-xs">{{ __('resale.invoices.remaining', ['amount' => \App\Services\Reselling\Register\LicenseMonths::label($candidate['row']['free'], $candidate['row']['per_licence'])]) }}</span>
-                                        @if ($voucher->voucherTextHint() !== null)
-                                            <span class="badge badge-info badge-outline badge-xs" title="{{ $voucher->voucher_text }}">{{ $voucher->voucherTextHint() }}</span>
+                                        @if ($voucher->voucherTextHint !== null)
+                                            <span class="badge badge-info badge-outline badge-xs" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</span>
                                         @endif
-                                        @if ($canPreview)
-                                            <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $line->voucher)" :title="__('resale.invoices.preview')" />
+                                        @if ($line->previewUrl !== null)
+                                            <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$line->previewUrl" :title="__('resale.invoices.preview')" />
                                         @endif
                                     </span>
                                     @if ($canManage)
                                         <form method="POST" action="{{ route('finance.resale.reconcile.assign', $customer) }}" class="flex items-center gap-1">
                                             @csrf
                                             <input type="hidden" name="period_id" value="{{ $period->sqid }}">
-                                            <input type="hidden" name="line_id" value="{{ $line->sqid }}">
+                                            <input type="hidden" name="line_id" value="{{ $line->key }}">
                                             <input type="hidden" name="per_licence" value="{{ number_format($candidate['row']['per_licence'], 2, '.', '') }}">
                                             <input type="number" name="licences" step="0.01" min="0.01" value="{{ number_format(min($row['needed'], $candidate['row']['free']) / max(0.01, $candidate['row']['per_licence']), 2, '.', '') }}"
                                                    class="input input-xs input-bordered w-16 text-right" aria-label="{{ __('resale.link.licences_field') }}" title="{{ __('resale.link_ui.licences_times', ['months' => $compact::compact($candidate['row']['per_licence'])]) }}">
@@ -233,9 +232,9 @@
                             @foreach (array_slice($row['taken'], 0, 4) as $candidate)
                                 @php $line = $candidate['row']['line']; @endphp
                                 <li class="flex flex-wrap items-center gap-2 text-xs text-muted">
-                                    <span class="font-mono">{{ $line->voucher->voucher_number }}</span>
-                                    <span class="tabular-nums">{{ $line->voucher->voucher_date?->fdate() }}</span>
-                                    <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</span>
+                                    <span class="font-mono">{{ $line->voucherNumber }}</span>
+                                    <span class="tabular-nums">{{ $line->voucherDate?->fdate() }}</span>
+                                    <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }}</span>
                                     <span>{{ __('resale.reconcile.periods.taken', ['periods' => implode(' · ', array_unique($candidate['row']['periods']))]) }}</span>
                                 </li>
                             @endforeach
@@ -243,11 +242,11 @@
                                 @php $line = $candidate['row']['line']; @endphp
                                 <li class="flex flex-wrap items-center gap-2 text-xs text-muted">
                                     <x-status-badge size="xs" tone="error" :label="__('resale.reconcile.periods.voided')" />
-                                    <span class="font-mono">{{ $line->voucher->voucher_number }}</span>
-                                    <span class="tabular-nums">{{ $line->voucher->voucher_date?->fdate() }}</span>
-                                    <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }} · <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
-                                    @if ($canPreview)
-                                        <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $line->voucher)" :title="__('resale.invoices.preview')" />
+                                    <span class="font-mono">{{ $line->voucherNumber }}</span>
+                                    <span class="tabular-nums">{{ $line->voucherDate?->fdate() }}</span>
+                                    <span><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }} · <x-resale.licence-months :value="$candidate['row']['months']" :per-licence="$candidate['row']['per_licence']" /></span>
+                                    @if ($line->previewUrl !== null)
+                                        <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$line->previewUrl" :title="__('resale.invoices.preview')" />
                                     @endif
                                 </li>
                             @endforeach
@@ -304,25 +303,25 @@
                 @forelse ($lines as $lineRow)
                     @php
                         $line = $lineRow['line'];
-                        $voucher = $line->voucher;
+                        $voucher = $line;
                         $sameProduct = $targetsByProduct[$lineRow['product']] ?? [];
                     @endphp
                     <tr @class(['opacity-60' => $lineRow['free'] <= 0.001])>
                         <td class="whitespace-nowrap">
-                            <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
-                            <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->fdate() }}</span>
+                            <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                            <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }}</span>
                             @if ($voucher->servicePeriodLabel() !== null)
                                 <span class="block text-xs text-muted tabular-nums">{{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}</span>
                             @endif
-                            @if ($voucher->voucherTextHint() !== null)
-                                <span class="badge badge-info badge-outline badge-xs ml-1" title="{{ $voucher->voucher_text }}">{{ $voucher->voucherTextHint() }}</span>
+                            @if ($voucher->voucherTextHint !== null)
+                                <span class="badge badge-info badge-outline badge-xs ml-1" title="{{ $voucher->voucherText }}">{{ $voucher->voucherTextHint }}</span>
                             @endif
-                            @if ($canPreview)
-                                <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $line->voucher)" :title="__('resale.invoices.preview')" />
+                            @if ($line->previewUrl !== null)
+                                <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$line->previewUrl" :title="__('resale.invoices.preview')" />
                             @endif
                         </td>
-                        <td class="text-sm">{{ $line->article?->name ?? $line->name }}</td>
-                        <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
+                        <td class="text-sm">{{ $line->label() }}</td>
+                        <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }}</td>
                         <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$lineRow['months']" :per-licence="$lineRow['per_licence']" /></td>
                         <td class="text-xs">
                             @if ($lineRow['linked'] > 0.001)
@@ -337,13 +336,13 @@
                             @if ($canManage && $lineRow['gap'])
                                 {{-- Keine Periode dieses Produkts um das Bezugsdatum: das Abo fehlt im Register (z. B. nicht im Anbieter-Export). --}}
                                 <x-icon-btn icon="add" size="xs" tone="warning" data-entry-modal-trigger
-                                            :href="route('finance.resale.create', ['customer' => $customer->sqid, 'line' => $line->sqid])"
+                                            :href="route('finance.resale.create', ['customer' => $customer->sqid, 'line' => $line->key])"
                                             show-label>{{ __('resale.reconcile.action.create_from_line') }}</x-icon-btn>
                             @endif
                             @if ($canManage && $lineRow['free'] > 0.001 && $periods !== [])
                                 <form method="POST" action="{{ route('finance.resale.reconcile.assign', $customer) }}" class="flex items-center justify-end gap-1 mt-1">
                                     @csrf
-                                    <input type="hidden" name="line_id" value="{{ $line->sqid }}">
+                                    <input type="hidden" name="line_id" value="{{ $line->key }}">
                                     <select name="period_id" class="select select-xs select-bordered w-64" aria-label="{{ __('resale.field.period') }}">
                                         @foreach ($sameProduct !== [] ? $sameProduct : $periods as $target)
                                             <option value="{{ $target['period']->sqid }}" @selected($loop->first)>{{ $target['subscription']->label }} · {{ $target['period']->label() }} ({{ \App\Services\Reselling\Register\LicenseMonths::label($target['needed'], (float) $target['period']->termMonths()) }})</option>
@@ -390,21 +389,21 @@
                     @foreach ($credit_notes as $creditRow)
                         @php
                             $line = $creditRow['line'];
-                            $voucher = $line->voucher;
+                            $voucher = $line;
                             $creditFree = max(0.0, $creditRow['months'] - $creditRow['linked']);
                         @endphp
                         <tr @class(['opacity-60' => $creditFree <= 0.001])>
                             <td class="whitespace-nowrap">
-                                <span class="font-mono text-xs">{{ $voucher->voucher_number }}</span>
-                                <span class="text-xs text-muted tabular-nums">{{ $voucher->voucher_date?->fdate() }} · {{ __('resale.link_ui.position', ['position' => $line->position]) }}</span>
+                                <span class="font-mono text-xs">{{ $voucher->voucherNumber }}</span>
+                                <span class="text-xs text-muted tabular-nums">{{ $voucher->voucherDate?->fdate() }} · {{ __('resale.link_ui.position', ['position' => $line->position]) }}</span>
                                 @if ($voucher->servicePeriodLabel() !== null)
                                     <span class="block text-xs text-muted tabular-nums">{{ __('resale.reconcile.service_period') }} {{ $voucher->servicePeriodLabel() }}</span>
                                 @endif
-                                @if ($canPreview)
-                                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="route('lexoffice.vouchers.preview', $line->voucher)" :title="__('resale.invoices.preview')" />
+                                @if ($line->previewUrl !== null)
+                                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$line->previewUrl" :title="__('resale.invoices.preview')" />
                                 @endif
                             </td>
-                            <td class="text-sm">{{ $line->article?->name ?? $line->name }}</td>
+                            <td class="text-sm">{{ $line->label() }}</td>
                             <td class="text-right tabular-nums whitespace-nowrap text-error">−<x-resale.licence-months :value="$creditRow['months']" :per-licence="$creditRow['per_licence']" /></td>
                             <td class="text-xs">
                                 @if ($creditRow['linked'] > 0.001)
@@ -417,7 +416,7 @@
                                 @if ($canManage && $creditFree > 0.001 && $allPeriods !== [])
                                     <form method="POST" action="{{ route('finance.resale.reconcile.assign', $customer) }}" class="flex items-center justify-end gap-1" title="{{ __('resale.credit_notes.sign_hint') }}">
                                         @csrf
-                                        <input type="hidden" name="line_id" value="{{ $line->sqid }}">
+                                        <input type="hidden" name="line_id" value="{{ $line->key }}">
                                         <select name="period_id" class="select select-xs select-bordered w-64" aria-label="{{ __('resale.field.period') }}">
                                             @foreach ($allPeriods as $target)
                                                 <option value="{{ $target['period']->sqid }}">{{ $target['subscription']->label }} · {{ $target['period']->label() }} ({{ $target['period']->status->label() }})</option>

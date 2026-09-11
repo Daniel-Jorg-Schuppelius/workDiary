@@ -587,6 +587,23 @@ class LinkProposerTest extends TestCase {
         $this->assertSame(PeriodStatus::Billed, $eur->periods()->first()?->status);
     }
 
+    /**
+     * Lexoffice-Kontakte des Rechnungsempfängers eines Abos — seit der Spiegel-
+     * Abstraktion Plugin-Sache (`LexofficeContactMap`), der Kern kennt nur den Kunden.
+     *
+     * @return list<string>
+     */
+    private function contactsFor(ResaleSubscription $subscription): array {
+        $billedTo = $subscription->billedTo();
+
+        return $billedTo === null ? [] : $this->contactsForCustomer($billedTo);
+    }
+
+    /** @return list<string> */
+    private function contactsForCustomer(Customer $customer): array {
+        return \App\Plugins\Lexoffice\Services\LexofficeContactMap::forCustomer($customer)->byCustomer($customer->id);
+    }
+
     public function test_contacts_for_returns_the_lexoffice_contacts_of_the_billed_customer(): void {
         // Review 2026-09-10 (G): Dialog-Helfer — Kunde direkt, Partner des Fremdkunden, sonst nichts.
         // Ein Lexoffice-Kontakt je Kunde (Unique `extref_unique` auf Plugin/Typ/Referenz).
@@ -594,18 +611,17 @@ class LinkProposerTest extends TestCase {
         $direct = $this->customerWithContact('Klimpel Bäder GmbH', 'c-kl');
         $withoutContact = Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Ohne Kontakt GmbH']);
         $kaik = ForeignCustomer::factory()->create(['organization_id' => $this->organization->id, 'customer_id' => $partner->id, 'name' => 'Steuerbüro Kaik']);
-        $proposer = new LinkProposer;
 
         $viaCustomer = $this->subscription(['label' => 'Microsoft 365 Business Premium', 'customer_id' => $direct->id, 'lexoffice_article_id' => $this->premium->id, 'starts_on' => '2025-08-05']);
-        $this->assertSame(['c-kl'], $proposer->contactsFor($viaCustomer));
+        $this->assertSame(['c-kl'], $this->contactsFor($viaCustomer));
 
         $viaPartner = $this->subscription(['label' => 'Exchange Online (Plan 1)', 'foreign_customer_id' => $kaik->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01']);
-        $this->assertSame(['c-lds'], $proposer->contactsFor($viaPartner), 'Fremdkunde → Kontakt des Partners (Rechnungsempfänger)');
-        $this->assertSame(['c-lds'], $proposer->contactsForCustomer($partner));
+        $this->assertSame(['c-lds'], $this->contactsFor($viaPartner), 'Fremdkunde → Kontakt des Partners (Rechnungsempfänger)');
+        $this->assertSame(['c-lds'], $this->contactsForCustomer($partner));
 
-        $this->assertSame([], $proposer->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $withoutContact->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'Kunde ohne Lexoffice-Kontakt');
-        $this->assertSame([], $proposer->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'is_own_holding' => true, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'eigener Bestand hat keinen Rechnungsempfänger');
-        $this->assertSame([], $proposer->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'ohne Halter (Inbox)');
+        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'customer_id' => $withoutContact->id, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'Kunde ohne Lexoffice-Kontakt');
+        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'is_own_holding' => true, 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'eigener Bestand hat keinen Rechnungsempfänger');
+        $this->assertSame([], $this->contactsFor($this->subscription(['label' => 'Exchange Online (Plan 1)', 'lexoffice_article_id' => $this->exchange->id, 'starts_on' => '2025-10-01'])), 'ohne Halter (Inbox)');
 
         // Fremder Mandant mit demselben Kontaktschlüssel: jeder sieht nur seine eigene Verknüpfung.
         $otherOrg = \App\Models\Organization::factory()->create();
@@ -614,7 +630,7 @@ class LinkProposerTest extends TestCase {
             'organization_id' => $otherOrg->id, 'plugin_id' => LexofficePlugin::ID, 'external_type' => LexofficePlugin::EXT_TYPE_CONTACT,
             'external_id' => 'c-kl', 'referenceable_type' => $stranger->getMorphClass(), 'referenceable_id' => $stranger->getKey(),
         ]);
-        $this->assertSame(['c-kl'], $proposer->contactsForCustomer($stranger));
-        $this->assertSame(['c-kl'], $proposer->contactsFor($viaCustomer));
+        $this->assertSame(['c-kl'], $this->contactsForCustomer($stranger));
+        $this->assertSame(['c-kl'], $this->contactsFor($viaCustomer));
     }
 }

@@ -229,6 +229,7 @@ return [
         'ended' => 'Vertrag beendet',
         'negotiation_opened' => 'Vertragsverhandlung eröffnet',
         'obligationAdded' => 'Vertragspflicht hinzugefügt',
+        'obligationClosed' => 'Vertragspflicht geschlossen (Abo-Termin entfallen)',
         'obligationCompleted' => 'Vertragspflicht erfüllt',
         'obligationMissed' => 'Vertragspflicht versäumt',
         'review_item_added' => 'Vertragsprüfpunkt hinzugefügt',
@@ -403,6 +404,7 @@ return [
     ],
     'invoice' => [
         'metering_drafted' => 'Zählerstands-Entwurf erzeugt',
+        'resale_auto_drafted' => 'Rechnungsentwurf aus Abo-Perioden (Serienrechnung) erzeugt',
         'retention_added' => 'Sicherheitseinbehalt hinterlegt',
         'retention_released' => 'Sicherheitseinbehalt freigegeben',
         'retention_secured' => 'Sicherheitseinbehalt durch Bürgschaft abgelöst',

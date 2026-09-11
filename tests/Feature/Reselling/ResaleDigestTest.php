@@ -15,7 +15,7 @@ namespace Tests\Feature\Reselling;
 use App\Console\Commands\Reselling\ResaleDigestCommand;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\{Customer, LexofficeVoucherLine, User};
-use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResaleSubscription};
+use App\Models\Reselling\{ResalePeriod, ResalePeriodLink, ResalePriceEntry, ResaleSubscription};
 use App\Notifications\Finance\ResalePeriodsDigestNotification;
 use App\Services\Reselling\Register\PeriodPlanner;
 use App\Support\NotificationText;
@@ -28,7 +28,7 @@ use Tests\TestCase;
  * Reselling-Digest (Feature 152, Prozesse 6 / Review 2026-09-10 A5):
  * Benachrichtigung nur bei Befund, Empfänger sind die Nutzer mit
  * `reselling.manage`; Kennzahlen fällig/Vorschläge/ohne Halter/
- * Verlängerungen/ohne Rechnung; Scheduler-Registrierung.
+ * Verlängerungen/ohne Rechnung/Katalogpreis geändert; Scheduler-Registrierung.
  */
 class ResaleDigestTest extends TestCase {
     use RefreshDatabase;
@@ -132,5 +132,44 @@ class ResaleDigestTest extends TestCase {
         foreach (['de', 'en', 'fr', 'it', 'es'] as $locale) {
             $this->assertTrue(app('translator')->has('scheduler.job.resale.digest', $locale, false), "Label fehlt: $locale");
         }
+    }
+    /**
+     * Review 2026-09-11: eine neue Preisliste (Katalogzeile der letzten 7 Tage),
+     * deren Einkaufspreis vom Vertragspreis abweicht, zählt je aktivem Abo —
+     * gleiche Laufzeit/Intervall, alte Katalogzeilen und gleiche Preise nicht.
+     */
+    public function test_catalog_price_change_counts_active_subscriptions_whose_contract_price_differs(): void {
+        Notification::fake();
+        $customer = Customer::factory()->create(['organization_id' => $this->organization->id]);
+        // Laufende Perioden entschieden, nächste erst in 58 Tagen: kein anderer Befund.
+        $changed = $this->subscription(['customer_id' => $customer->id, 'purchase_unit_price' => '187.92', 'starts_on' => '2025-11-01']);
+        $same = $this->subscription(['customer_id' => $customer->id, 'label' => 'Exchange Online (Plan 1)', 'purchase_unit_price' => '40.00', 'starts_on' => '2025-11-01']);
+        $stale = $this->subscription(['customer_id' => $customer->id, 'label' => 'Microsoft 365 Business Basic', 'purchase_unit_price' => '50.00', 'starts_on' => '2025-11-01']);
+        $ended = $this->subscription(['customer_id' => $customer->id, 'label' => 'Microsoft 365 Business Premium', 'purchase_unit_price' => '100.00', 'starts_on' => '2025-11-01', 'status' => 'ended', 'ends_on' => '2026-08-31']);
+        ResalePeriod::query()->whereIn('subscription_id', [$changed->id, $same->id, $stale->id, $ended->id])->update(['status' => PeriodStatus::Waived->value, 'decided_at' => now()]);
+        $entry = static fn(string $product, string $price, int $term = 12, string $interval = 'yearly'): ResalePriceEntry => ResalePriceEntry::create([
+            'organization_id' => $customer->organization_id, 'provider' => 'qualityhosting', 'product' => $product, 'term_months' => $term, 'interval' => $interval,
+            'valid_from' => '2026-09-01', 'purchase_unit_price' => $price, 'currency' => 'EUR',
+        ]);
+        $entry('Microsoft 365 Business Premium', '199.00');          // weicht ab, neu → zählt (nur das aktive Abo)
+        $entry('Microsoft 365 Business Premium', '20.00', 1, 'monthly'); // anderes Intervall → nicht das Abo
+        $entry('Exchange Online (Plan 1)', '40.00');                  // gleicher Preis → nein
+        $old = $entry('Microsoft 365 Business Basic', '60.00');       // weicht ab, aber alt → nein
+        ResalePriceEntry::query()->whereKey($old->id)->update(['created_at' => now()->subDays(30)]);
+
+        $this->artisan('resale:digest')->assertSuccessful()->expectsOutputToContain('Katalogpreis geändert 1');
+
+        Notification::assertSentTo($this->manager, ResalePeriodsDigestNotification::class, function (ResalePeriodsDigestNotification $n): bool {
+            $this->assertSame(1, $n->catalogChanges);
+            $this->assertSame(0, $n->dueCount);
+            $this->assertSame(1, $n->total(), 'nur der Katalog-Befund');
+            $data = $n->toArray($this->manager);
+            $this->assertSame(1, $data['catalog_changes']);
+            $this->assertSame(1, $data['message_params']['catalog']);
+
+            return true;
+        });
+        // Rückwärtskompatibel: ohne Parameter zählt der Katalog 0.
+        $this->assertSame(0, (new ResalePeriodsDigestNotification(1, '', 0, 0, 0, 0, 30, 60))->catalogChanges);
     }
 }

@@ -1643,6 +1643,7 @@ CREATE TABLE `articles` (
   `serial_scheme` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`serial_scheme`)),
   `shelf_life_required` tinyint(1) NOT NULL DEFAULT 0,
   `status` varchar(12) NOT NULL DEFAULT 'draft',
+  `resale_role` varchar(16) DEFAULT NULL,
   `default_procedure_template_version_id` bigint(20) unsigned DEFAULT NULL,
   `default_purchase_price` decimal(13,4) DEFAULT NULL,
   `default_sale_price` decimal(13,4) DEFAULT NULL,
@@ -9007,6 +9008,8 @@ CREATE TABLE `invoice_items` (
   `invoice_id` bigint(20) unsigned NOT NULL,
   `time_entry_id` bigint(20) unsigned DEFAULT NULL,
   `service_date` date DEFAULT NULL,
+  `service_from` date DEFAULT NULL,
+  `service_to` date DEFAULT NULL,
   `expense_id` bigint(20) unsigned DEFAULT NULL,
   `material_usage_id` bigint(20) unsigned DEFAULT NULL,
   `tour_id` bigint(20) unsigned DEFAULT NULL,
@@ -15812,6 +15815,8 @@ CREATE TABLE `resale_purchase_entries` (
   `period_id` bigint(20) unsigned DEFAULT NULL,
   `provider` varchar(32) NOT NULL,
   `source` varchar(24) NOT NULL,
+  `document_type` varchar(120) DEFAULT NULL,
+  `document_id` bigint(20) unsigned DEFAULT NULL,
   `lexoffice_voucher_id` bigint(20) unsigned DEFAULT NULL,
   `domain_accounting_entry_id` bigint(20) unsigned DEFAULT NULL,
   `document_number` varchar(64) DEFAULT NULL,
@@ -15831,6 +15836,7 @@ CREATE TABLE `resale_purchase_entries` (
   KEY `resale_purchase_entries_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `resale_purchases_org_prov_date_idx` (`organization_id`,`provider`,`entry_date`),
   KEY `resale_purchases_period_idx` (`period_id`),
+  KEY `resale_purchase_doc_idx` (`organization_id`,`document_type`,`document_id`),
   CONSTRAINT `resale_purchase_entries_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_purchase_entries_domain_accounting_entry_id_foreign` FOREIGN KEY (`domain_accounting_entry_id`) REFERENCES `domain_accounting_entries` (`id`) ON DELETE SET NULL,
   CONSTRAINT `resale_purchase_entries_lexoffice_voucher_id_foreign` FOREIGN KEY (`lexoffice_voucher_id`) REFERENCES `lexoffice_vouchers` (`id`) ON DELETE SET NULL,
@@ -21203,3 +21209,6 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (794,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',64);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',65);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (797,'2027_02_20_101100_add_draft_reference_to_resale_periods',65);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',66);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (799,'2027_02_20_101300_add_resale_role_to_articles',66);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (800,'2027_02_20_101400_add_service_period_to_invoice_items',66);

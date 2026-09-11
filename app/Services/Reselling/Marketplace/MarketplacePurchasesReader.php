@@ -45,6 +45,17 @@ final class MarketplacePurchasesReader {
         'creation date',
     ];
 
+    /** @var list<string> Kannspalten (leer, wenn sie fehlen) */
+    private const OPTIONAL = [
+        'owner company id',
+        'owner email',
+        'owner company phone',
+        'application name',
+        'currency',
+        'status',
+        'assigned users',
+    ];
+
     public function read(string $file): PurchasesImport {
         $name = basename($file);
         if (! is_readable($file)) {
@@ -60,7 +71,7 @@ final class MarketplacePurchasesReader {
 
         foreach (CSVDocumentParser::streamAll($file, $delimiter, '"', true) as $line => $parsed) {
             if ($parsed instanceof HeaderLine) {
-                $index = self::headerIndex($parsed->getColumnNames());
+                $index = self::columnPositions($parsed, [...self::REQUIRED, ...self::OPTIONAL]);
                 $headerCount = count($parsed->getColumnNames());
                 $missing = array_values(array_diff(self::REQUIRED, array_keys($index)));
                 if ($missing !== []) {

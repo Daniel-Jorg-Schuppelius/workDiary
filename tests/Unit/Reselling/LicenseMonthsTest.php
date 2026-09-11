@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace Tests\Unit\Reselling;
 
 use App\Models\{LexofficeVoucher, LexofficeVoucherLine};
+use App\Plugins\Lexoffice\Services\LexofficeInvoiceMirrorSource;
+use App\Services\Reselling\Mirror\MirrorLine;
 use App\Services\Reselling\Register\LicenseMonths;
 use Carbon\CarbonImmutable;
 use Tests\TestCase;
@@ -20,14 +22,15 @@ use Tests\TestCase;
 /**
  * Lizenzen × Monate einer Rechnungsposition (Feature 152): Trennung nach
  * Einheit und Leistungszeitraum, Anzeige, Mengenumrechnung, Monatsartikel,
- * Monate zwischen Inklusiv-Daten. Ohne Datenbank — Modelle im Speicher.
+ * Monate zwischen Inklusiv-Daten. Ohne Datenbank — Modelle im Speicher,
+ * über die Lexoffice-Quelle in die Spiegelzeile übersetzt.
  */
 class LicenseMonthsTest extends TestCase {
-    private function line(float $quantity, ?string $unit, string $net = '20.60', ?string $serviceFrom = null, ?string $serviceTo = null): LexofficeVoucherLine {
+    private function line(float $quantity, ?string $unit, string $net = '20.60', ?string $serviceFrom = null, ?string $serviceTo = null): MirrorLine {
         $line = new LexofficeVoucherLine(['quantity' => $quantity, 'unit_name' => $unit, 'unit_net' => $net, 'total_net' => $net, 'currency' => 'EUR', 'name' => 'Microsoft 365 Business Premium']);
         $line->setRelation('voucher', new LexofficeVoucher(['voucher_date' => '2026-01-05', 'service_starts_on' => $serviceFrom, 'service_ends_on' => $serviceTo, 'currency' => 'EUR']));
 
-        return $line;
+        return (new LexofficeInvoiceMirrorSource)->toLine($line, canPreview: false);
     }
 
     public function test_split_separates_licences_from_months(): void {
@@ -86,5 +89,10 @@ class LicenseMonthsTest extends TestCase {
         $this->assertSame(24, LicenseMonths::monthsBetween(CarbonImmutable::parse('2024-02-07'), CarbonImmutable::parse('2026-02-06')));
         $this->assertSame(0, LicenseMonths::monthsBetween(CarbonImmutable::parse('2026-03-01'), CarbonImmutable::parse('2026-03-05')), 'Einzeltage runden auf 0');
         $this->assertSame(1, LicenseMonths::monthsBetween(CarbonImmutable::parse('2026-01-01'), CarbonImmutable::parse('2026-01-31')));
+        $this->assertSame(12, LicenseMonths::monthsBetween(CarbonImmutable::parse('2025-12-15'), CarbonImmutable::parse('2026-12-14')), 'Co-Term über den Jahreswechsel');
+        $this->assertSame(0, LicenseMonths::monthsBetween(CarbonImmutable::parse('2026-01-01'), CarbonImmutable::parse('2026-01-15')), '15/31 rundet ab');
+        $this->assertSame(1, LicenseMonths::monthsBetween(CarbonImmutable::parse('2026-01-01'), CarbonImmutable::parse('2026-01-20')), '20/31 rundet auf');
+        $this->assertSame(0, LicenseMonths::monthsBetween(CarbonImmutable::parse('2026-02-01'), CarbonImmutable::parse('2026-01-01')), 'Ende vor Beginn (fremde Belegdaten) ist 0, keine Exception');
+        $this->assertSame(1, LicenseMonths::monthsBetween(CarbonImmutable::parse('2026-03-28 23:30', 'Europe/Berlin'), CarbonImmutable::parse('2026-04-27 00:15', 'Europe/Berlin')), 'nur Kalendertage zählen, nicht Uhrzeit oder Sommerzeit');
     }
 }

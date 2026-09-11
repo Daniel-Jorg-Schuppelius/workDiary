@@ -20,8 +20,9 @@ use Illuminate\Validation\Rule;
 
 /**
  * Anbieter-Exporte hochladen (Feature 152, Review C1/B7): der Anbieter der
- * generischen Liste ist nie „DomainReselling". „Keine Datei" meldet der
- * Controller als Flash (kein Feldfehler).
+ * generischen Liste ist nie „DomainReselling". Mindestens eine Datei ist
+ * Pflicht (`required_without_all` je Dateifeld) — „keine Datei" ist ein
+ * Feldfehler und landet als 422 im Dialog (Review 2026-09-11).
  */
 class ImportResaleFilesRequest extends BaseFormRequest {
     private const MAX_FILE_KB = 10240;
@@ -44,12 +45,29 @@ class ImportResaleFilesRequest extends BaseFormRequest {
         ));
 
         return [
-            'telekom' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt'],
-            'qualityhosting' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
-            'pricelist' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
-            'generic' => ['nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt,xlsx,xlsm'],
+            'telekom' => [self::atLeastOne('telekom'), 'nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt'],
+            'qualityhosting' => [self::atLeastOne('qualityhosting'), 'nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
+            'pricelist' => [self::atLeastOne('pricelist'), 'nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:xlsx,xlsm'],
+            'generic' => [self::atLeastOne('generic'), 'nullable', 'file', 'max:' . self::MAX_FILE_KB, 'extensions:csv,txt,xlsx,xlsm'],
             'generic_provider' => ['nullable', 'string', Rule::in($providers)],
         ];
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    public function messages(): array {
+        $messages = [];
+        foreach (self::FIELDS as $field) {
+            $messages[$field . '.required_without_all'] = (string) __('resale.import.flash.no_files');
+        }
+
+        return $messages;
+    }
+
+    /** `required_without_all` über die anderen Dateifelder. */
+    private static function atLeastOne(string $field): string {
+        return 'required_without_all:' . implode(',', array_values(array_filter(self::FIELDS, static fn(string $other): bool => $other !== $field)));
     }
 
     /**

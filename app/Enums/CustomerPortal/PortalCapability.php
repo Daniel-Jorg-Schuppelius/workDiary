@@ -60,6 +60,9 @@ enum PortalCapability: string implements HasLabel {
     /** Verleih-Anfrage (Feature 073, MVP-714): Zeitraum anfragen, nie direkt reservieren. */
     case RentalRequests = 'rental_requests';
 
+    /** „Meine Abos" (Feature 152): Bestand der Abos des Kunden und seiner Endkunden — ohne Preise und Belege. */
+    case Subscriptions = 'subscriptions';
+
     public function label(): string {
         return (string) match ($this) {
             self::Diary => __('Aufträge & Fallakte'),
@@ -74,6 +77,7 @@ enum PortalCapability: string implements HasLabel {
             self::Queries => __('Rückfragen & Kommentare'),
             self::Appointments => __('Online-Terminbuchung'),
             self::RentalRequests => __('Verleih-Anfrage'),
+            self::Subscriptions => __('Abos & Lizenzen'),
         };
     }
 
@@ -88,6 +92,7 @@ enum PortalCapability: string implements HasLabel {
             self::Rentals, self::RentalRequests => 'module.rental',
             self::Documents => 'module.documents',
             self::Appointments => 'module.planung',
+            self::Subscriptions => 'module.reselling',
             default => null,
         };
     }

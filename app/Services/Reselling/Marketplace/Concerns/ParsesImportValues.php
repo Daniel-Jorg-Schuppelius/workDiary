@@ -26,10 +26,11 @@ use DateTimeInterface;
  */
 trait ParsesImportValues {
     /**
-     * Datum aus Datumszelle, Excel-Seriennummer, ISO, TT.MM.JJJJ oder T/M/JJJJ
-     * (deutsch gelesen). Ein Slash-Datum, das deutsch unmöglich ist
-     * („8/15/25"), gilt als US-Reihenfolge. „2026", „3.2026" und „31.02.2026"
-     * sind kein Datum.
+     * Datum aus Datumszelle, Excel-Seriennummer (Zahl oder Text), ISO,
+     * TT.MM.JJJJ, T.M.JJJJ oder T/M/JJJJ — deutsch gelesen (Toolkit v1.32
+     * kennt ein-/zweistellige Tage und Monate). Ein Slash-Datum, das deutsch
+     * unmöglich ist („8/15/25"), gilt als US-Reihenfolge. „2026", „3.2026"
+     * und „31.02.2026" sind kein Datum.
      */
     protected static function importDate(mixed $raw): ?CarbonImmutable {
         if ($raw === null || $raw === '' || is_bool($raw)) {
@@ -38,20 +39,22 @@ trait ParsesImportValues {
         if ($raw instanceof DateTimeInterface) {
             return CarbonImmutable::instance($raw)->startOfDay();
         }
-        $german = DateHelper::excelCellToGerman(is_string($raw) ? trim($raw) : $raw);
-        if ($german === null) {
+        $text = trim(is_scalar($raw) ? (string) $raw : '');
+        if (is_numeric($text)) {
+            // Nur eine Seriennummer im Excel-Fenster ist ein Datum — „2026" liegt außerhalb.
+            $text = DateHelper::excelCellToGerman($text) ?? '';
+        }
+        if ($text === '') {
             return null;
         }
-        $parsed = DateHelper::parseDateTime($german, CountryCode::Germany); // Round-Trip-geprüft: 31.02. → null
-        if ($parsed === null && is_string($raw) && str_contains($raw, '/') && preg_match('/^(\d{2})\.(\d{2})\.(\d{4})$/', $german, $m) === 1) {
-            $parsed = DateHelper::parseDateTime($m[2] . '.' . $m[1] . '.' . $m[3], CountryCode::Germany);
-        }
+        $parsed = DateHelper::parseDateTime($text, CountryCode::Germany) // Round-Trip-geprüft: 31.02. → null
+            ?? (str_contains($text, '/') ? DateHelper::parseDateTime($text, CountryCode::UnitedStatesOfAmerica) : null);
         if ($parsed === null) {
             return null;
         }
         $date = CarbonImmutable::instance($parsed)->startOfDay();
 
-        // Dreistellige Jahre („1.2.202") überleben den Round-Trip — für Abos unplausibel.
+        // Dreistellige Jahre („0202-02-01") überleben den Round-Trip — für Abos unplausibel.
         return $date->year >= 1900 && $date->year <= 2200 ? $date : null;
     }
 

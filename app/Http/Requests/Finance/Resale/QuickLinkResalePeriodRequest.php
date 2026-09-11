@@ -15,9 +15,9 @@ namespace App\Http\Requests\Finance\Resale;
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\Finance\Concerns\ChecksResaleLineRecipient;
-use App\Models\LexofficeVoucherLine;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
 use App\Rules\ExistsInCurrentOrganization;
+use App\Services\Reselling\Mirror\MirrorLine;
 use App\Services\Reselling\Register\PeriodLinker;
 use Illuminate\Validation\Validator;
 
@@ -33,7 +33,6 @@ class QuickLinkResalePeriodRequest extends BaseFormRequest {
     /** @var array<string, class-string> */
     protected array $sqidFields = [
         'period_id' => ResalePeriod::class,
-        'line_id' => LexofficeVoucherLine::class,
     ];
 
     /**
@@ -42,7 +41,7 @@ class QuickLinkResalePeriodRequest extends BaseFormRequest {
     public function rules(): array {
         return [
             'period_id' => ['required', 'integer', new ExistsInCurrentOrganization('resale_periods')],
-            'line_id' => ['required', 'integer', new ExistsInCurrentOrganization('lexoffice_voucher_lines')],
+            'line_id' => ['required', 'string', 'max:64'],
         ] + PeriodLinker::amountRules();
     }
 
@@ -75,7 +74,7 @@ class QuickLinkResalePeriodRequest extends BaseFormRequest {
         return $period?->loadMissing('subscription.customer', 'subscription.foreignCustomer.customer');
     }
 
-    public function line(): ?LexofficeVoucherLine {
+    public function line(): ?MirrorLine {
         return $this->lineFrom($this->validationData()['line_id'] ?? null);
     }
 

@@ -229,6 +229,7 @@ return [
         'ended' => 'Contract ended',
         'negotiation_opened' => 'Contract negotiation opened',
         'obligationAdded' => 'Contract obligation added',
+        'obligationClosed' => 'Contract obligation closed (subscription date dropped)',
         'obligationCompleted' => 'Contract obligation completed',
         'obligationMissed' => 'Contract obligation missed',
         'review_item_added' => 'Contract review item added',
@@ -403,6 +404,7 @@ return [
     ],
     'invoice' => [
         'metering_drafted' => 'Meter-based draft created',
+        'resale_auto_drafted' => 'Invoice draft from subscription periods (recurring invoicing) created',
         'retention_added' => 'Retention recorded',
         'retention_released' => 'Retention released',
         'retention_secured' => 'Retention replaced by a guarantee',

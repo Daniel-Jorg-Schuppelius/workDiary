@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\Resale\{AssignResaleLineRequest, RehomeResaleSubscriptionRequest};
 use App\Models\Customer;
 use App\Models\Reselling\{ResalePeriod, ResaleSubscription};
+use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\{LinkProposer, PeriodLinker, RecipientReconciler};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -31,7 +32,7 @@ use RuntimeException;
 class ResaleReconcileController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function __construct(private readonly RecipientReconciler $reconciler, private readonly PeriodLinker $linker) {}
+    public function __construct(private readonly RecipientReconciler $reconciler, private readonly PeriodLinker $linker, private readonly InvoiceMirror $mirror) {}
 
     public function index(Request $request): View {
         $organization = $this->currentOrganizationOrAbort(404);
@@ -57,11 +58,16 @@ class ResaleReconcileController extends Controller {
 
         // Alle Perioden des Empfängers (auch gedeckte), chronologisch je Abo.
         $allPeriods = [];
+        $links = [];
         foreach ($result['subscriptions'] as $subscription) {
             foreach ($subscription->periods as $period) {
                 $allPeriods[] = ['period' => $period, 'subscription' => $subscription];
+                foreach ($period->links as $link) {
+                    $links[] = $link;
+                }
             }
         }
+        $this->mirror->preload($organization, $links);
         usort($allPeriods, static fn(array $a, array $b): int => strcmp($a['period']->starts_on->toDateString(), $b['period']->starts_on->toDateString()) ?: ($a['subscription']->id <=> $b['subscription']->id));
 
         // Ziele der Zuordnung je Produkt: gleiches Produkt zuerst, die übrigen als Gruppe.

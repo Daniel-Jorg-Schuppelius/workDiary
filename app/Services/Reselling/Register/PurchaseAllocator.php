@@ -14,14 +14,16 @@ namespace App\Services\Reselling\Register;
 
 use App\Enums\Reselling\SubscriptionProvider;
 use App\Models\Domain\DomainAccountingEntry;
-use App\Models\{LexofficeVoucher, Organization, User};
+use App\Models\{Organization, User};
 use App\Models\Reselling\{ResalePeriod, ResalePurchaseEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{MarketplaceCompany, NameTokenMatcher, ProviderInvoice};
+use App\Services\Reselling\Purchase\PurchaseDocument;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\ValueObjects\Money;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
@@ -32,7 +34,9 @@ use Illuminate\Support\Facades\DB;
  * und oft gemischt mit anderen Leistungen. Der Betreiber nennt den Anteil des
  * Anbieters (Vorgabe: Belegsumme); der Betrag wird pro rata auf die Perioden
  * verteilt, die den Rechnungsmonat berühren, gewichtet mit ihrem monatlichen
- * Soll-Einkauf. Domain-Buchungen (083) treffen ihre Domain direkt.
+ * Soll-Einkauf. Domain-Buchungen (083) treffen ihre Domain direkt. Der
+ * Eingangsbeleg ist anbieterneutral ({@see PurchaseDocument}, Review
+ * 2026-09-11): Lexoffice-Spiegel, lokale Ausgabe oder Eingangs-E-Rechnung.
  */
 final class PurchaseAllocator {
     /** @var array<int, Collection<int, ResaleSubscription>> Organisation → alle Abos (Gutschrift-Fallback), je Lauf einmal geladen */
@@ -44,9 +48,15 @@ final class PurchaseAllocator {
     }
 
     /**
+     * Eingangsbeleg pro rata auf die Perioden des Monats verteilen. Zeilen
+     * tragen den Belegbezug als Morph; Lexoffice-Belege behalten zusätzlich
+     * `lexoffice_voucher_id` und ihre bisherige Hash-Basis (Beleg-ID), damit
+     * bestehende Zuteilungen dieselbe Zuteilung bleiben — andere Quellen
+     * hashen `quelle|id`.
+     *
      * @return array{entries: int, allocated: float, unallocated: float}
      */
-    public function allocateVoucher(Organization $organization, LexofficeVoucher $voucher, SubscriptionProvider $provider, Money $net, CarbonImmutable $month, ?User $user = null, string $source = ResalePurchaseEntry::SOURCE_VOUCHER): array {
+    public function allocateVoucher(Organization $organization, PurchaseDocument $document, SubscriptionProvider $provider, Money $net, CarbonImmutable $month, ?User $user = null, string $source = ResalePurchaseEntry::SOURCE_VOUCHER): array {
         $monthStart = $month->startOfMonth();
         $monthEnd = $month->endOfMonth();
         $periods = ResalePeriod::query()->withoutGlobalScopes()
@@ -68,14 +78,20 @@ final class PurchaseAllocator {
             $total += $monthly;
         }
         $result = ['entries' => 0, 'allocated' => 0.0, 'unallocated' => $net->toFloat()];
-        $baseHash = $voucher->id . '|' . $provider->value . '|' . $month->format('Y-m');
+        $legacyVoucherId = $document->morphClass === ResalePurchaseEntry::legacyVoucherMorphClass() ? $document->morphId : null;
+        $baseHash = ($legacyVoucherId !== null ? (string) $legacyVoucherId : $document->sourceKey . '|' . $document->morphId) . '|' . $provider->value . '|' . $month->format('Y-m');
 
-        DB::transaction(function () use ($organization, $voucher, $provider, $net, $month, $user, $source, $periods, $weights, $total, $baseHash, &$result): void {
-            // Alte pro-rata-Zuteilung dieses Belegs ersetzen (ein Beleg = eine Zuteilung).
+        DB::transaction(function () use ($organization, $document, $legacyVoucherId, $provider, $net, $month, $user, $source, $periods, $weights, $total, $baseHash, &$result): void {
+            // Alte pro-rata-Zuteilung dieses Belegs ersetzen (ein Beleg = eine Zuteilung) — Altzeilen nur über die Altspalte.
             ResalePurchaseEntry::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
-                ->where('lexoffice_voucher_id', $voucher->id)
                 ->where('source', $source)
+                ->where(static function (Builder $w) use ($document, $legacyVoucherId): void {
+                    $w->where(static fn(Builder $m) => $m->where('document_type', $document->morphClass)->where('document_id', $document->morphId));
+                    if ($legacyVoucherId !== null) {
+                        $w->orWhere('lexoffice_voucher_id', $legacyVoucherId);
+                    }
+                })
                 ->delete();
             $remaining = round($net->toFloat(), 2);
             $count = count($weights);
@@ -94,9 +110,11 @@ final class PurchaseAllocator {
                     'period_id' => $period->id,
                     'provider' => $provider,
                     'source' => $source,
-                    'lexoffice_voucher_id' => $voucher->id,
-                    'document_number' => $voucher->voucher_number,
-                    'entry_date' => $voucher->voucher_date !== null ? CarbonImmutable::instance($voucher->voucher_date)->toDateString() : $month->toDateString(),
+                    'document_type' => $document->morphClass,
+                    'document_id' => $document->morphId,
+                    'lexoffice_voucher_id' => $legacyVoucherId,
+                    'document_number' => $document->number !== null ? mb_substr($document->number, 0, 64) : null,
+                    'entry_date' => $document->date?->toDateString() ?? $month->toDateString(),
                     'description' => (string) __('resale.purchase.pro_rata', ['month' => $month->format('m/Y')]),
                     'net_amount' => $share,
                     'currency' => $net->getCurrency()->value,

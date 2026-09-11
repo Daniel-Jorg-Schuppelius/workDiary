@@ -14438,6 +14438,7 @@ CREATE TABLE IF NOT EXISTS "articles"(
   "assembly_minutes" numeric,
   "copper_weight" numeric,
   "copper_base_price" numeric,
+  "resale_role" varchar,
   foreign key("product_id") references products("id") on delete set null on update no action,
   foreign key("organization_id") references organizations("id") on delete set null on update no action,
   foreign key("default_procedure_template_version_id") references procedure_template_versions("id") on delete set null on update no action,
@@ -16908,6 +16909,8 @@ CREATE TABLE IF NOT EXISTS "invoice_items"(
   "discount_percent" numeric,
   "discount_amount" numeric,
   "article_id" integer,
+  "service_from" date,
+  "service_to" date,
   foreign key("settled_invoice_id") references invoices("id") on delete set null on update no action,
   foreign key("material_usage_id") references material_usages("id") on delete set null on update no action,
   foreign key("expense_id") references expenses("id") on delete set null on update no action,
@@ -18895,6 +18898,8 @@ CREATE TABLE IF NOT EXISTS "resale_purchase_entries"(
   "created_by_user_id" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "document_type" varchar,
+  "document_id" integer,
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("subscription_id") references "resale_subscriptions"("id") on delete cascade,
   foreign key("period_id") references "resale_periods"("id") on delete set null,
@@ -18983,6 +18988,11 @@ CREATE INDEX "resale_subs_org_status_kind_idx" on "resale_subscriptions"(
 CREATE INDEX "resale_periods_org_draft_idx" on "resale_periods"(
   "organization_id",
   "draft_reference"
+);
+CREATE INDEX "resale_purchase_doc_idx" on "resale_purchase_entries"(
+  "organization_id",
+  "document_type",
+  "document_id"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -19782,3 +19792,6 @@ INSERT INTO migrations VALUES(794,'2027_02_20_100800_add_service_period_to_lexof
 INSERT INTO migrations VALUES(795,'2027_02_20_100900_add_parent_id_to_resale_subscriptions',13);
 INSERT INTO migrations VALUES(796,'2027_02_20_101000_add_lines_sync_failure_to_lexoffice_vouchers',14);
 INSERT INTO migrations VALUES(797,'2027_02_20_101100_add_draft_reference_to_resale_periods',14);
+INSERT INTO migrations VALUES(798,'2027_02_20_101200_add_document_morph_to_resale_purchase_entries',15);
+INSERT INTO migrations VALUES(799,'2027_02_20_101300_add_resale_role_to_articles',15);
+INSERT INTO migrations VALUES(800,'2027_02_20_101400_add_service_period_to_invoice_items',15);

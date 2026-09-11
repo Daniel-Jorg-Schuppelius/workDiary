@@ -23,6 +23,7 @@ return [
         'xlsx_unreadable' => 'XLSX file not readable: :file (:reason)',
         'no_header' => 'CSV without header row: :file',
         'no_sheet' => 'XLSX without worksheet: :file',
+        'too_large' => ':file is too large to import (at most :rows rows per sheet and :mb MB uncompressed).',
         'missing_columns' => 'Required columns missing: :columns',
     ],
     'row' => [

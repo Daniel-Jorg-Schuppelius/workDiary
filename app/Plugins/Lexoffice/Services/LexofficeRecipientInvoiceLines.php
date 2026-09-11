@@ -24,8 +24,8 @@ use Illuminate\Support\Collection;
  * Rechnungen und Lizenzpositionen eines Rechnungsempfängers aus dem
  * Belegspiegel (Feature 152, Review 2026-09-10): Kontakte → gültige
  * Ausgangsrechnungen im Fenster → Positionen von Abo-Artikeln (Klassifikator)
- * → Verbrauch je Position. Die eine Leseseite für Vorschlagslauf, Abgleich,
- * Rechnungsliste am Abo und Bezugsdialog — vorher viermal kopiert.
+ * → Verbrauch je Position. Plugin-intern: der Kern liest über die
+ * {@see LexofficeInvoiceMirrorSource} (Spiegel-Abstraktion).
  *
  * Fenster: eine Rechnung zählt ab `$from`, wenn ihr Belegdatum ODER das Ende
  * ihres Leistungszeitraums dort liegt (36-Monats-Rechnung von 2024 deckt 2026).
@@ -40,7 +40,11 @@ final class LexofficeRecipientInvoiceLines {
     /** @var array<int, list<int>> Organisation → IDs der Abo-Artikel (je Instanz gemerkt) */
     private array $licenseArticleIds = [];
 
-    public function __construct(private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier(), private readonly PeriodLinker $linker = new PeriodLinker()) {}
+    private readonly PeriodLinker $linker;
+
+    public function __construct(private readonly LicenseArticleClassifier $classifier = new LicenseArticleClassifier(), ?PeriodLinker $linker = null) {
+        $this->linker = $linker ?? new PeriodLinker;
+    }
 
     /**
      * Lizenzpositionen der Kontakte im Fenster, mit Beleg und Artikel geladen.
@@ -86,8 +90,10 @@ final class LexofficeRecipientInvoiceLines {
      * @return Collection<int, LexofficeVoucherLine>
      */
     public function forPeriod(Organization $organization, array $contactIds, ResalePeriod $period): Collection {
+        $source = new LexofficeInvoiceMirrorSource($this->classifier);
+
         return $this->for($organization, $contactIds, $period->starts_on->subDays(LinkProposer::WINDOW_BEFORE))
-            ->filter(static fn(LexofficeVoucherLine $line): bool => LinkProposer::inWindow($period, $line))
+            ->filter(static fn(LexofficeVoucherLine $line): bool => LinkProposer::inWindow($period, $source->toLine($line, canPreview: false)))
             ->sortBy([static fn(LexofficeVoucherLine $a, LexofficeVoucherLine $b): int => ($b->voucher->voucher_date <=> $a->voucher->voucher_date) ?: ($a->position <=> $b->position)])
             ->values();
     }
@@ -140,10 +146,26 @@ final class LexofficeRecipientInvoiceLines {
     public function consumed(Collection $lines, ?ResalePeriod $except = null): array {
         $ids = [];
         foreach ($lines as $line) {
-            $ids[] = $line->id;
+            $ids[] = (int) $line->id;
         }
 
-        return $this->linker->consumedMonths($ids, $except);
+        return $this->linker->consumedMonths((new LexofficeVoucherLine)->getMorphClass(), $ids, $except);
+    }
+
+    /**
+     * Lizenzpositionen gültiger Rechnungen ohne Bezug zu einer Periode —
+     * nur die Abfrage: die Seite zählt einmal und lädt begrenzt (C12).
+     *
+     * @return Builder<LexofficeVoucherLine>
+     */
+    public function unlinkedQuery(Organization $organization): Builder {
+        $articleIds = $this->licenseArticleIds($organization);
+
+        return LexofficeVoucherLine::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
+            ->whereIn('lexoffice_article_id', $articleIds === [] ? [0] : $articleIds)
+            ->whereDoesntHave('periodLinks')
+            ->whereIn('voucher_id', $this->voucherQuery($organization, null, null)->select('id'));
     }
 
     /**

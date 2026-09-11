@@ -32,6 +32,11 @@ class ForeignKeyCoverageTest extends TestCase {
 
     /** @var list<string> table.column ohne FK — Stand 2026-08-23 (Welle 3, F12: appointment_requests/procedure_deviations zuerst) */
     private const BASELINE = [
+        // Feature 152 (2027_02_20_101200): `document_type`/`document_id` ist ein
+        // Morph auf die Belegquelle (Lexoffice-Beleg, Ausgabe, Eingangs-E-Rechnung)
+        // — Quellen registrieren sich zur Laufzeit, ein FK auf eine Tabelle ist
+        // nicht möglich; Auflösung über `PurchaseDocuments`.
+        'resale_purchase_entries.document_id',
         // Feature 149 (MVP-743): `statement_id` ist die UUID, die der Inhalt
         // dem xAPI-Statement selbst gibt — eine Fremdkennung, kein Verweis
         // auf eine eigene Tabelle. Sie dient der Dublettenerkennung.

@@ -11,9 +11,15 @@
 namespace App\Plugins\Lexoffice;
 
 use App\Plugins\Lexoffice\Console\{LexofficeMaterializeVoucherFilesCommand, LexofficeRepairResaleLinksCommand, LexofficeSyncArticlesCommand, LexofficeSyncContactsCommand, LexofficeSyncVoucherLinesCommand, LexofficeSyncVouchersCommand, LexofficeWebhooksCommand};
+use App\Plugins\Lexoffice\Services\{LexofficeInvoiceDraftTarget, LexofficeInvoiceMirrorSource, LexofficePurchaseDocumentSource};
 use App\Plugins\Support\PluginServiceProviderBase;
 use App\Services\Billing\ExpenseLinkProviderResolver;
 use App\Services\Billing\Feed\DocumentFeedSourceRegistry;
+use App\Services\Finance\BillingModeResolver;
+use App\Services\Invoicing\TaxResolver;
+use App\Services\Reselling\Draft\InvoiceDraftTargets;
+use App\Services\Reselling\Mirror\InvoiceMirror;
+use App\Services\Reselling\Purchase\PurchaseDocuments;
 
 /**
  * Plugin-eigener ServiceProvider. Wird vom Core-{@see \App\Providers\PluginServiceProvider}
@@ -70,6 +76,21 @@ class LexofficeServiceProvider extends PluginServiceProviderBase {
         // ExpenseLinkProvider-Interface.
         $this->app->make(ExpenseLinkProviderResolver::class)
             ->register(LexofficePlugin::ID, fn (): LexofficeExpenseLinkProvider => new LexofficeExpenseLinkProvider);
+
+        // Belegspiegel des Reselling-Registers (Feature 152, Review 2026-09-10):
+        // der Kern liest Lexoffice-Positionen nur noch über diese Quelle.
+        $this->app->make(InvoiceMirror::class)
+            ->register(new LexofficeInvoiceMirrorSource);
+
+        // Eingangsbelege des Reselling-Registers (Review 2026-09-11, Einkauf):
+        // Lexoffice-Eingangsbelege erreichen den Kern nur über diese Quelle.
+        $this->app->make(PurchaseDocuments::class)
+            ->register(new LexofficePurchaseDocumentSource);
+
+        // Entwurfsziel des Reselling-Registers (Review 2026-09-11): der Kern
+        // schiebt Rechnungsvorschläge bei Lexoffice-Hoheit nur über dieses Ziel.
+        $this->app->make(InvoiceDraftTargets::class)
+            ->register(new LexofficeInvoiceDraftTarget($this->app->make(TaxResolver::class), $this->app->make(BillingModeResolver::class)));
 
         if ($this->app->runningInConsole()) {
             $this->commands([

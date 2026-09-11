@@ -123,6 +123,19 @@ they free again. The dialog lists only recipients with open periods and a
 sale price and names below what is already in a draft. Creating requires
 the right *Create invoice drafts from periods*.
 
+**Recurring invoicing:** With local invoicing the register can create the
+drafts itself every day. The switch is on the *Product classification*
+page (right *Manage resale register*): active = the next run creates, for
+each invoice recipient with due periods not yet drafted, the same draft as
+the click — lines per subscription and period, periods linked as proposals
+and stamped. The *lead time* in days also takes periods before they start
+(0 = due periods only). Recipients invoiced via Lexoffice/DATEV are left
+untouched, periods without a sale price are skipped, own holdings are
+never invoiced. You finalise the drafts in the invoice list; the weekly
+digest names how many drafts of the last seven days are still open. Once
+or as a trial: `php artisan resale:draft-local --organization=… --dry-run`
+(`--force` overrides the switch).
+
 **Purchase entries:** The actual purchase per subscription and period comes
 from three sources: (1) provider invoices and credit notes as PDF (Quality
 Hosting, German and English layout) — each line names contract, end
@@ -157,7 +170,23 @@ subscriptions (minimum, median, maximum). Flags: "sale below purchase",
 products, the register detects by name. Per article you can override:
 "subscription product" forces detection, "never a subscription line" keeps
 services with a product name in the text (maintenance on Exchange) out of
-proposals, invoice lists and "lines without subscription".
+proposals, invoice lists and "lines without subscription". The same
+classification exists for the active articles of the local article master
+(section *Local articles*): it decides which lines of local invoices the
+mirror treats as licence lines, and the price check compares the article's
+sale price with the subscription prices.
+
+**Contracts:** A subscription can carry a contract from contract management
+as its deadline frame ("Contract" field in the subscription dialog; only
+customer contracts whose partner is the subscription's invoice recipient).
+The contract file lists its subscriptions in the "Subscriptions & licences"
+panel. No second deadline catalogue: the daily run posts one date per
+subscription to the contract calendar — the notice deadline at the end for
+cancelled subscriptions, a renewal warning before the next period for
+automatic renewal, each brought forward by the contract's notice period (30
+days if none is set), with 14 days' advance warning. If the end changes, the
+date moves with it; completed dates stay completed; ended subscriptions or
+subscriptions without a contract close their open date.
 
 **Domains:** Every domain from domain management becomes a "Domain"
 subscription daily, with a yearly interval from registration, purchase =

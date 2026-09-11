@@ -13,13 +13,12 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\BillingFrequency;
-use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, ParsesImportValues};
+use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, OpensXlsxDocuments, ParsesImportValues};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Entities\XLSX\{Cell, Sheet};
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Parsers\XLSXDocumentParser;
+use CommonToolkit\Helper\Data\StringHelper;
 use RuntimeException;
-use Throwable;
 
 /**
  * Liest die Reseller-Preisliste des Quality-Hosting-Partnerportals (XLSX):
@@ -32,9 +31,13 @@ use Throwable;
  */
 final class QualityHostingPriceListReader {
     use NormalizesHeaders;
+    use OpensXlsxDocuments;
     use ParsesImportValues;
 
     private const REQUIRED = ['produkttarif', 'vertragslaufzeit in monaten', 'zahlungsintervall', 'preis pro zahlungsintervall'];
+
+    /** @var list<string> Kannspalten (leer, wenn sie fehlen) */
+    private const OPTIONAL = ['preis pro monat', 'gültig ab', 'hersteller-uvp pro monat', 'hersteller-uvp pro zahlungsintervall', 'offer-key'];
 
     /** Stückpreise (je Monat/Intervall) mit vier Nachkommastellen (B19). */
     private const UNIT_SCALE = 4;
@@ -45,15 +48,11 @@ final class QualityHostingPriceListReader {
             throw new RuntimeException((string) __('resale_import.pricelist.unreadable', ['file' => $name]));
         }
 
-        try {
-            $document = XLSXDocumentParser::fromFile($file, true);
-        } catch (Throwable $e) {
-            throw new RuntimeException((string) __('resale_import.pricelist.unreadable_reason', ['file' => $name, 'reason' => str_replace($file, $name, $e->getMessage())]), 0, $e);
-        }
+        $document = self::openXlsx($file, self::XLSX_MAX_ROWS, 'resale_import.pricelist.unreadable_reason');
 
         $sheet = null;
         foreach ($document->getSheets() as $candidate) {
-            if (isset(self::headerIndex(self::sheetHeaderNames($candidate))['produkttarif'])) {
+            if ($candidate->getColumnIndex('produkttarif', normalized: true) !== null) {
                 $sheet = $candidate;
                 break;
             }
@@ -62,7 +61,7 @@ final class QualityHostingPriceListReader {
             throw new RuntimeException((string) __('resale_import.pricelist.no_sheet'));
         }
 
-        $index = self::headerIndex(self::sheetHeaderNames($sheet));
+        $index = self::columnPositions($sheet, [...self::REQUIRED, ...self::OPTIONAL]);
         $missing = array_values(array_diff(self::REQUIRED, array_keys($index)));
         if ($missing !== []) {
             throw new RuntimeException((string) __('resale_import.pricelist.missing_columns', ['columns' => implode(', ', $missing)]));
@@ -139,7 +138,7 @@ final class QualityHostingPriceListReader {
             foreach ($rows as $row) {
                 $cells = array_values($row->getCells());
                 foreach ($cells as $position => $cell) {
-                    if (mb_strtolower(trim($cell->toCanonicalString())) !== 'gültigkeit ab') {
+                    if (StringHelper::normalizeColumnName($cell->toCanonicalString()) !== 'gültigkeit ab') {
                         continue;
                     }
                     $date = self::importDate(($cells[$position + 1] ?? null)?->getValue());

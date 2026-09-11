@@ -71,6 +71,23 @@ class GenericSubscriptionReaderTest extends TestCase {
         $this->assertSame('CHF', $c->unitFee?->getCurrency()->value);
     }
 
+    public function test_xlsx_beyond_the_row_limit_is_rejected_translated_without_path(): void {
+        $rows = [['Firma', 'Produkt', 'Beginn']];
+        foreach (['A', 'B', 'C'] as $company) {
+            $rows[] = [$company . ' GmbH', 'Prod', new DateTimeImmutable('2026-02-01')];
+        }
+        $path = self::xlsxFixture([['Abos', $rows]]);
+        try {
+            $this->assertCount(3, (new GenericSubscriptionReader(maxRows: 3))->read($path)->entitlements, 'Grenze = Zeilenzahl ist erlaubt');
+
+            $this->expectException(RuntimeException::class);
+            $this->expectExceptionMessage(__('resale_import.file.too_large', ['file' => basename($path), 'rows' => 2, 'mb' => 256]));
+            (new GenericSubscriptionReader(maxRows: 2))->read($path);
+        } finally {
+            @unlink($path);
+        }
+    }
+
     public function test_xlsx_missing_required_column_is_reported_translated(): void {
         $path = self::xlsxFixture([['Abos', [['Firma', 'Produkt'], ['A', 'B']]]]);
         try {
@@ -107,6 +124,27 @@ class GenericSubscriptionReaderTest extends TestCase {
         $this->assertStringContainsString('"31.02.2026"', $import->issues[2]);
         $this->assertStringContainsString('Zeile 5', $import->issues[3]);
         $this->assertStringContainsString(__('resale_import.row.end_before_start', ['line' => 5, 'company' => 'D GmbH']), $import->issues[3], 'Ende = Beginn ist kein Zeitraum');
+    }
+
+    public function test_single_digit_days_and_months_are_read_german_first(): void {
+        $path = $this->csv([
+            'A;A GmbH;Prod;1;3.2.2026;;;;;;;',
+            'B;B GmbH;Prod;1;1/2/2026;;;;;;;',
+            'C;C GmbH;Prod;1;8/15/25;;;;;;;',
+            'D;D GmbH;Prod;1;2/29/2025;;;;;;;',
+        ]);
+        try {
+            $import = (new GenericSubscriptionReader)->read($path);
+        } finally {
+            @unlink($path);
+        }
+
+        $this->assertCount(3, $import->entitlements);
+        $this->assertSame('2026-02-03', $import->entitlements[0]->startsOn->toDateString(), '„3.2.2026" ohne Nullfüllung');
+        $this->assertSame('2026-02-01', $import->entitlements[1]->startsOn->toDateString(), '„1/2/2026" deutsch: 1. Februar');
+        $this->assertSame('2025-08-15', $import->entitlements[2]->startsOn->toDateString(), '„8/15/25" deutsch unmöglich → US-Reihenfolge');
+        $this->assertCount(1, $import->issues);
+        $this->assertStringContainsString('"2/29/2025"', $import->issues[0], 'auch US-gelesen kein Datum');
     }
 
     public function test_quantity_with_unit_zero_or_fraction_skips_the_row(): void {

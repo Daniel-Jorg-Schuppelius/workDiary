@@ -12,15 +12,11 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Enums\Numbering\NumberScope;
 use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
 use App\Models\{Customer, Organization, User};
-use App\Models\Invoice;
 use App\Models\Reselling\{ResalePeriod, ResalePeriodLink};
-use App\Plugins\Lexoffice\{LexofficeConfig, LexofficeDraftInvoiceService};
 use App\Services\Finance\BillingModeResolver;
-use App\Services\Invoicing\TaxResolver;
-use App\Services\Numbering\NumberSequenceService;
+use App\Services\Reselling\Draft\{DraftResult, InvoiceDraftTarget, InvoiceDraftTargets, LocalInvoiceDraftTarget};
 use App\Support\Query\DateRange;
 use App\Support\Tz;
 use Carbon\CarbonImmutable;
@@ -29,20 +25,24 @@ use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
 /**
- * Rechnungsvorschlag als Lexoffice-Entwurf (Feature 152, MVP-764): alle
- * offenen Perioden eines Rechnungsempfängers werden zu Positionen — eine
- * Position je Abo und Zeitraum, bei Partnern mit Endkundennennung in der
- * Beschreibung, Menge in Monaten bei Monatsartikeln. Nichts wird lokal
- * fakturiert und nichts festgeschrieben; die Perioden merken sich den
- * Entwurf (`draft_reference`/`draft_created_at`) und kommen nicht in einen
- * zweiten, bis der Entwurf zur Rechnung wurde oder die Periode entschieden ist.
+ * Rechnungsvorschlag aus offenen Perioden (Feature 152, MVP-764 / Review
+ * 2026-09-11): alle offenen Perioden eines Rechnungsempfängers werden zu
+ * Positionen — eine je Abo und Zeitraum, bei Partnern mit Endkundennennung,
+ * Menge in Monaten bei Monatsartikeln. Wohin der Entwurf geht, entscheidet
+ * die Rechnungshoheit ({@see BillingModeResolver}): lokal das
+ * {@see LocalInvoiceDraftTarget}, extern das vom Plugin registrierte
+ * {@see InvoiceDraftTarget}. Der Kern stempelt die Perioden
+ * (`draft_reference`/`draft_created_at`) und legt Bezüge an, wenn das Ziel
+ * Positionen liefert; nichts wird festgeschrieben.
+ *
+ * @phpstan-import-type DraftEntry from InvoiceDraftTarget
+ * @phpstan-import-type DraftLine from InvoiceDraftTarget
+ * @phpstan-type DraftSummary array{draft_id: string, lines: int, net: float, periods: int, local: bool, target: string, url: string|null}
  */
 final class ResaleInvoiceDraftService {
     public function __construct(
-        private readonly LinkProposer $proposer,
-        private readonly TaxResolver $taxes,
         private readonly BillingModeResolver $billingModes,
-        private readonly NumberSequenceService $numbers,
+        private readonly InvoiceDraftTargets $targets,
     ) {}
 
     /**
@@ -83,14 +83,15 @@ final class ResaleInvoiceDraftService {
     /**
      * Positionen des Entwurfs: je offener Periode mit Verkaufspreis eine
      * Zeile. Nichts offen, aber schon etwas im Entwurf → kein zweiter Entwurf.
+     * `$reference` = Stichtag (Serienlauf mit Vorlauf); null = heute.
      *
-     * @return list<array{period: ResalePeriod, line: array{name: string, description: string, quantity: float, unit_name: string, unit_net: float}}>
+     * @return list<DraftEntry>
      *
      * @throws RuntimeException
      */
-    private function openLines(Customer $recipient): array {
+    private function openLines(Customer $recipient, ?CarbonImmutable $reference = null): array {
         $lines = [];
-        foreach ($this->openPeriodsFor($recipient) as $period) {
+        foreach ($this->openPeriodsFor($recipient, $reference) as $period) {
             $line = $this->lineFor($period);
             if ($line !== null) {
                 $lines[] = ['period' => $period, 'line' => $line];
@@ -99,7 +100,7 @@ final class ResaleInvoiceDraftService {
         if ($lines !== []) {
             return $lines;
         }
-        $drafted = $this->draftedPeriodsFor($recipient)->first();
+        $drafted = $this->draftedPeriodsFor($recipient, $reference)->first();
         if ($drafted !== null) {
             $date = $drafted->draft_created_at !== null ? (string) Tz::toLocal($drafted->draft_created_at)?->format('d.m.Y') : '';
             throw new RuntimeException((string) __('resale.draft.already_drafted', ['reference' => (string) $drafted->draft_reference, 'date' => $date]));
@@ -109,139 +110,134 @@ final class ResaleInvoiceDraftService {
     }
 
     /**
-     * Rechnungsvorschlag je nach Rechnungshoheit des Empfängers: lokal ein
-     * Rechnungsentwurf mit Positionen und vorgeschlagenen Bezügen, extern ein
-     * Lexoffice-Entwurf.
+     * Rechnungsvorschlag je nach Rechnungshoheit des Empfängers: lokal der
+     * Rechnungsentwurf, extern das registrierte Ziel des Plugins.
      *
-     * @return array{draft_id: string, lines: int, net: float, periods: int, local: bool}
+     * @return DraftSummary
+     *
+     * @throws RuntimeException nichts offen / Entwurf steht aus / kein Ziel für die externe Hoheit
      */
-    public function draft(Organization $organization, Customer $recipient, ?User $user = null, ?LexofficeDraftInvoiceService $service = null): array {
-        if (! $this->billingModes->effectiveFor($recipient)->isExternal()) {
-            return $this->draftLocal($organization, $recipient, $user) + ['local' => true];
-        }
-
-        return $this->draftLexoffice($organization, $recipient, $user, $service) + ['local' => false];
+    public function draft(Organization $organization, Customer $recipient, ?User $user = null): array {
+        return $this->draftWith($this->targetFor($recipient), $organization, $recipient, $user, null);
     }
 
     /**
-     * Lokale Rechnungshoheit: Rechnungsentwurf (Feature 152, MVP-764) mit einer
-     * Position je Abo und Zeitraum; die Perioden bekommen einen vorgeschlagenen
-     * Bezug auf die Rechnungsposition — beim Ausstellen der Rechnung bestätigt
-     * der Betreiber die Perioden wie sonst auch.
+     * Ziel des Empfängers: bei lokaler Hoheit das lokale Ziel, sonst das
+     * externe Ziel, das den Empfänger bedient.
      *
-     * @return array{draft_id: string, lines: int, net: float, periods: int}
+     * @throws RuntimeException kein registriertes Ziel
      */
-    private function draftLocal(Organization $organization, Customer $recipient, ?User $user): array {
-        $lines = $this->openLines($recipient);
+    public function targetFor(Customer $recipient): InvoiceDraftTarget {
+        $target = $this->billingModes->effectiveFor($recipient)->isExternal() ? $this->targets->externalFor($recipient) : $this->targets->local();
+        if ($target === null) {
+            throw new RuntimeException((string) __('resale.draft.no_target', ['mode' => $this->billingModes->effectiveFor($recipient)->label()]));
+        }
 
-        return DB::transaction(function () use ($organization, $recipient, $user, $lines): array {
-            $tax = $this->taxes->resolve($organization, $recipient);
-            $now = Tz::now();
-            $invoice = Invoice::create([
-                'organization_id' => $organization->id,
-                'customer_id' => $recipient->id,
-                'number' => $this->numbers->next($organization->id, NumberScope::Invoice, $now),
-                'status' => Invoice::STATUS_DRAFT,
-                'type' => Invoice::TYPE_INVOICE,
-                'category' => 'resale',
-                'currency' => $recipient->currency,
-                'tax_rate' => $tax['rate'],
-                'is_reverse_charge' => $tax['reverse_charge'],
-                'notes' => $tax['note'],
-                'created_by' => $user?->id,
-            ]);
-            $net = 0.0;
-            $position = 0;
-            foreach ($lines as $entry) {
-                $position++;
-                /** @var ResalePeriod $period */
-                $period = $entry['period'];
-                $line = $entry['line'];
-                $item = $invoice->items()->create([
-                    'organization_id' => $organization->id,
-                    'service_date' => $period->starts_on->toDateString(),
-                    'description' => trim($line['name'] . ' · ' . $line['description']),
-                    'quantity' => (string) $line['quantity'],
-                    'unit' => $line['unit_name'],
-                    'unit_price' => (string) $line['unit_net'],
-                    'tax_category' => $tax['category'],
-                    'position' => $position,
-                    'article_id' => $period->subscription->article_id,
-                ]);
-                $months = $period->openMonths();
-                ResalePeriodLink::query()->create([
-                    'organization_id' => $organization->id,
-                    'period_id' => $period->id,
-                    'subscription_id' => $period->subscription_id,
-                    'linkable_type' => $item->getMorphClass(),
-                    'linkable_id' => $item->id,
-                    'voucher_number' => $invoice->number,
-                    'voucher_date' => $now->toDateString(),
-                    'quantity' => round($months / $period->termMonths(), 3),
-                    'months' => round($months, 2),
-                    'amount' => round($line['quantity'] * $line['unit_net'], 2),
-                    'currency' => $recipient->currency->value,
-                    'origin' => LinkOrigin::Proposed,
-                    'note' => (string) __('resale.draft.local_note', ['number' => $invoice->number]),
-                    'created_by_user_id' => $user?->id,
-                ]);
-                $period->appendNote((string) __('resale.draft.local_note', ['number' => $invoice->number]));
-                $period->forceFill(['status' => PeriodStatus::Billed, 'draft_reference' => $invoice->number, 'draft_created_at' => now()])->save();
-                $net += $line['quantity'] * $line['unit_net'];
+        return $target;
+    }
+
+    /**
+     * Lokales Ziel ohne Weiche — öffentlich für den Serienlauf
+     * ({@see ResaleLocalDraftRun}): ohne Nutzer, mit Stichtag inkl. Vorlauf;
+     * die Hoheit prüft der Aufrufer, `draft()` bleibt der Weg mit Weiche.
+     *
+     * @return DraftSummary
+     *
+     * @throws RuntimeException nichts offen / Entwurf steht schon aus
+     */
+    public function draftLocal(Organization $organization, Customer $recipient, ?User $user, ?CarbonImmutable $reference = null): array {
+        $target = $this->targets->local();
+        if ($target === null) {
+            throw new RuntimeException((string) __('resale.draft.no_target', ['mode' => LocalInvoiceDraftTarget::KEY]));
+        }
+
+        return $this->draftWith($target, $organization, $recipient, $user, $reference);
+    }
+
+    /**
+     * Vorschau ohne Schreiben (Serienlauf `--dry-run`): dieselbe Auswahl und
+     * dieselben Ausnahmen wie `draftLocal()`.
+     *
+     * @return array{lines: int, net: float, periods: int}
+     *
+     * @throws RuntimeException nichts offen / Entwurf steht schon aus
+     */
+    public function previewLocal(Customer $recipient, ?CarbonImmutable $reference = null): array {
+        $lines = $this->openLines($recipient, $reference);
+        $net = 0.0;
+        foreach ($lines as $entry) {
+            $net += $entry['line']['quantity'] * $entry['line']['unit_net'];
+        }
+
+        return ['lines' => count($lines), 'net' => round($net, 2), 'periods' => count($lines)];
+    }
+
+    /**
+     * Entwurf im Ziel anlegen und die Perioden stempeln: Bemerkung um das
+     * Label ergänzt, `draft_reference` gesetzt; liefert das Ziel Positionen,
+     * bekommt jede Periode einen vorgeschlagenen Bezug und gilt als berechnet
+     * — beim Ausstellen bestätigt der Betreiber wie sonst auch.
+     *
+     * @return DraftSummary
+     */
+    private function draftWith(InvoiceDraftTarget $target, Organization $organization, Customer $recipient, ?User $user, ?CarbonImmutable $reference): array {
+        $target->ensureAvailable($organization, $recipient);
+        $entries = $this->openLines($recipient, $reference);
+        $reference ??= ResalePeriod::today();
+
+        return DB::transaction(function () use ($target, $organization, $recipient, $user, $reference, $entries): array {
+            $result = $target->draft($organization, $recipient, $entries, $user, $reference);
+            $today = Tz::now()->toDateString();
+            foreach ($entries as $entry) {
+                $this->stamp($organization, $recipient, $user, $entry, $result, $today);
             }
-            $invoice->load('items');
-            $invoice->recalculate();
-            $invoice->save();
 
-            return ['draft_id' => (string) $invoice->number, 'lines' => count($lines), 'net' => round($net, 2), 'periods' => count($lines)];
+            return [
+                'draft_id' => $result->reference,
+                'lines' => $result->lines,
+                'net' => $result->net,
+                'periods' => count($entries),
+                'local' => $target->key() === LocalInvoiceDraftTarget::KEY,
+                'target' => $target->key(),
+                'url' => $result->url,
+            ];
         });
     }
 
     /**
-     * @return array{draft_id: string, lines: int, net: float, periods: int}
+     * @param  DraftEntry  $entry
      */
-    private function draftLexoffice(Organization $organization, Customer $recipient, ?User $user, ?LexofficeDraftInvoiceService $service): array {
-        $config = LexofficeConfig::resolve($organization->id);
-        if ($config['enabled'] !== true || ! is_string($config['api_key']) || $config['api_key'] === '') {
-            throw new RuntimeException((string) __('resale.draft.error.lexoffice'));
+    private function stamp(Organization $organization, Customer $recipient, ?User $user, array $entry, DraftResult $result, string $today): void {
+        $period = $entry['period'];
+        $line = $entry['line'];
+        $attributes = ['draft_reference' => $result->reference, 'draft_created_at' => now()];
+        $morphId = $result->morphIdFor((int) $period->id);
+        if ($morphId !== null && $result->morphClass !== null) {
+            $months = $period->openMonths();
+            ResalePeriodLink::query()->create([
+                'organization_id' => $organization->id,
+                'period_id' => $period->id,
+                'subscription_id' => $period->subscription_id,
+                'linkable_type' => $result->morphClass,
+                'linkable_id' => $morphId,
+                'voucher_number' => $result->reference,
+                'voucher_date' => $today,
+                'quantity' => round($months / $period->termMonths(), 3),
+                'months' => round($months, 2),
+                'amount' => round($line['quantity'] * $line['unit_net'], 2),
+                'currency' => $recipient->currency->value,
+                'origin' => LinkOrigin::Proposed,
+                'note' => $result->label,
+                'created_by_user_id' => $user?->id,
+            ]);
+            $attributes['status'] = PeriodStatus::Billed;
         }
-        $contacts = $this->proposer->contactsForCustomer($recipient);
-        if ($contacts === []) {
-            throw new RuntimeException((string) __('resale.link.no_contacts'));
-        }
-        $entries = $this->openLines($recipient);
-        $lines = [];
-        $net = 0.0;
-        foreach ($entries as $entry) {
-            $lines[] = $entry['line'];
-            $net += $entry['line']['quantity'] * $entry['line']['unit_net'];
-        }
-
-        $tax = $this->taxes->resolve($organization, $recipient);
-        $service ??= new LexofficeDraftInvoiceService((string) $config['api_key'], (string) $config['base_url']);
-        $draftId = $service->createDraft(
-            $contacts[0],
-            $lines,
-            (string) __('resale.draft.title'),
-            (string) __('resale.draft.introduction', ['count' => count($lines)]),
-            (string) ($tax['note'] ?? ''),
-            (float) $tax['rate'],
-            $recipient->currency->value,
-            (string) $config['defaults']['default_tax_type'],
-        );
-
-        // Nur die Perioden stempeln, die im Entwurf stehen; Bemerkung bleibt und wird ergänzt.
-        $stamp = trim((string) __('resale.draft.note', ['id' => $draftId, 'date' => Tz::now()->format('d.m.Y'), 'user' => $user !== null ? $user->name : '']));
-        foreach ($entries as $entry) {
-            $entry['period']->appendNote($stamp);
-            $entry['period']->forceFill(['draft_reference' => $draftId, 'draft_created_at' => now()])->save();
-        }
-
-        return ['draft_id' => $draftId, 'lines' => count($lines), 'net' => round($net, 2), 'periods' => count($entries)];
+        $period->appendNote($result->label);
+        $period->forceFill($attributes)->save();
     }
 
     /**
-     * @return array{name: string, description: string, quantity: float, unit_name: string, unit_net: float}|null
+     * @return DraftLine|null
      */
     private function lineFor(ResalePeriod $period): ?array {
         $subscription = $period->subscription;

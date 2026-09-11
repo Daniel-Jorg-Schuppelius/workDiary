@@ -26,6 +26,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany};
  * @property int|null $tour_id
  * @property int|null $article_id
  * @property \Illuminate\Support\Carbon|null $service_date
+ * @property \Illuminate\Support\Carbon|null $service_from  Leistungszeitraum (Feature 152: Abo-Periode), sonst null
+ * @property \Illuminate\Support\Carbon|null $service_to
  * @property string $description
  * @property string $quantity
  * @property string $unit
@@ -85,6 +87,8 @@ class InvoiceItem extends Model {
         'rental_charge_id',
         'settled_invoice_id',
         'service_date',
+        'service_from',
+        'service_to',
         'description',
         'quantity',
         'unit',
@@ -98,6 +102,8 @@ class InvoiceItem extends Model {
     /** @var array<string, string> */
     protected $casts = [
         'service_date' => 'date',
+        'service_from' => 'date',
+        'service_to' => 'date',
         // Mengen-/Preispräzision der Quellposten erhalten (Material 3 NK, km-Satz 4 NK); Zeilenbetrag 2 NK.
         'quantity' => 'decimal:3',
         // Währung kommt vom Beleg — Positionen haben keine eigene Spalte.

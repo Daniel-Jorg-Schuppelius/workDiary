@@ -15,7 +15,8 @@ namespace App\Models\Reselling;
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\PeriodStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{LexofficeVoucher, LexofficeVoucherLine, Organization, User};
+use App\Models\{Organization, User};
+use App\Services\Reselling\Mirror\InvoiceMirror;
 use App\Services\Reselling\Register\LicenseMonths;
 use App\Support\Query\DateRange;
 use App\Support\Tz;
@@ -203,8 +204,9 @@ class ResalePeriod extends Model {
 
     /**
      * Ist der Rechnungsvorschlag inzwischen eine Rechnung? Ein entschiedener
-     * Bezug trägt die Nummer des lokalen Entwurfs oder der gespiegelte Beleg
-     * die Lexoffice-ID des Entwurfs (Lexoffice behält die ID beim Abschließen).
+     * Bezug trägt die Referenz des Entwurfs — oder eine Spiegelquelle meldet
+     * den Entwurf als ausgestellt ({@see InvoiceMirror::draftBecameInvoice()}:
+     * lokal die Rechnungsnummer, extern die Entwurfs-ID des gespiegelten Belegs).
      */
     public function draftIsInvoiced(): bool {
         $reference = $this->draft_reference;
@@ -212,20 +214,13 @@ class ResalePeriod extends Model {
             return false;
         }
         foreach ($this->links as $link) {
-            if (! $link->origin->isDecided()) {
-                continue;
-            }
-            if ($link->voucher_number === $reference) {
-                return true;
-            }
-            $linkable = $link->linkable;
-            $voucher = $linkable instanceof LexofficeVoucherLine ? $linkable->voucher : ($linkable instanceof LexofficeVoucher ? $linkable : null);
-            if ($voucher !== null && $voucher->external_id === $reference) {
+            if ($link->origin->isDecided() && $link->voucher_number === $reference) {
                 return true;
             }
         }
+        $organization = $this->organization;
 
-        return false;
+        return $organization !== null && app(InvoiceMirror::class)->draftBecameInvoice($organization, $reference);
     }
 
     /**

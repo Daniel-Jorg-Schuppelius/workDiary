@@ -592,6 +592,7 @@ return [
         'customer.billing.*' => 'customer-portal.billing',
         'customer.open-issues.*' => 'customer-portal.issues',
         'customer.appointments.*' => 'customer-portal.appointments',
+        'customer.subscriptions.*' => 'customer-portal.subscriptions',
         'customer.time-entries.*' => 'customer-portal.time',
         'customer.login' => 'customer-portal.access',
         'customer.2fa.*' => 'customer-portal.access',

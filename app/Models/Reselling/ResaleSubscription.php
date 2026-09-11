@@ -321,6 +321,28 @@ class ResaleSubscription extends Model {
     }
 
     /**
+     * Bestand fürs Kundenportal (Feature 152, „meine Abos"): aktive, gekündigte
+     * und abgelöste Abos immer, beendete nur mit Ende innerhalb der letzten
+     * zwölf Monate — Altbestand verschwindet, laufende Verpflichtungen bleiben.
+     *
+     * @param  Builder<ResaleSubscription>  $query
+     * @return Builder<ResaleSubscription>
+     */
+    public function scopeVisibleInPortal(Builder $query, ?CarbonImmutable $reference = null): Builder {
+        $cutoff = ($reference ?? ResalePeriod::today())->subMonthsNoOverflow(12);
+
+        return $query->where(function (Builder $q) use ($cutoff): void {
+            $q->whereIn('status', [SubscriptionStatus::Active->value, SubscriptionStatus::Cancelled->value, SubscriptionStatus::Superseded->value])
+                ->orWhere(function (Builder $ended) use ($cutoff): void {
+                    $ended->where('status', SubscriptionStatus::Ended->value)
+                        ->where(function (Builder $recent) use ($cutoff): void {
+                            $recent->whereNull('ends_on')->orWhere('ends_on', '>=', $cutoff->toDateString());
+                        });
+                });
+        });
+    }
+
+    /**
      * @param  Builder<ResaleSubscription>  $query
      * @return Builder<ResaleSubscription>
      */

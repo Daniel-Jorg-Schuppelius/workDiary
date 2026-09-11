@@ -15,7 +15,8 @@ namespace App\Models\Reselling;
 use App\Casts\MoneyCast;
 use App\Enums\Reselling\LinkOrigin;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use App\Models\{InvoiceItem, LexofficeVoucher, LexofficeVoucherLine, User};
+use App\Models\{Organization, User};
+use App\Services\Reselling\Mirror\{InvoiceMirror, MirrorLine};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -23,10 +24,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, MorphTo};
 
 /**
- * Rechnungsbezug einer Periode (Feature 152, MVP-761): Belegposition
- * (`LexofficeVoucherLine`, `InvoiceItem`) oder Belegkopf (`LexofficeVoucher`)
- * mit gedeckten Lizenzmonaten. Eine Position kann mehrere Perioden decken
- * (Mehrjahresblock), eine Periode mehrere Positionen.
+ * Rechnungsbezug einer Periode (Feature 152, MVP-761): Belegposition einer
+ * Spiegelquelle (Morph auf die Position der Quelle, z. B. `LexofficeVoucherLine`
+ * oder `InvoiceItem`) oder — Altbestand — ein Belegkopf, mit gedeckten
+ * Lizenzmonaten. Eine Position kann mehrere Perioden decken (Mehrjahresblock),
+ * eine Periode mehrere Positionen. Die Position selbst liefert der Spiegel
+ * ({@see mirrorLine()}); Listen laden sie gebündelt ({@see InvoiceMirror::preload()}).
  *
  * @property int $id
  * @property int $organization_id
@@ -72,6 +75,10 @@ class ResalePeriodLink extends Model {
         'confirmed_at',
     ];
 
+    private ?MirrorLine $mirrorLine = null;
+
+    private bool $mirrorLineResolved = false;
+
     protected $casts = [
         'voucher_date' => 'immutable_date',
         'quantity' => 'decimal:3',
@@ -107,19 +114,37 @@ class ResalePeriodLink extends Model {
         $this->note = ResalePeriod::joinNote($this->note, $text);
     }
 
-    /** Anzeigetext der verknüpften Position. */
-    public function lineLabel(): string {
-        $linkable = $this->linkable;
-        if ($linkable instanceof LexofficeVoucherLine) {
-            return $linkable->name;
-        }
-        if ($linkable instanceof InvoiceItem) {
-            return (string) $linkable->description;
-        }
-        if ($linkable instanceof LexofficeVoucher) {
-            return (string) __('resale.link.voucher_only');
+    /** Schlüssel der Position im Spiegel ({@see MirrorLine::identity()}). */
+    public function mirrorIdentity(): string {
+        return MirrorLine::identityOf((string) $this->linkable_type, (int) $this->linkable_id);
+    }
+
+    /** Gebündelt geladene Spiegelposition anhängen ({@see InvoiceMirror::preload()}). */
+    public function attachMirrorLine(?MirrorLine $line): void {
+        $this->mirrorLine = $line;
+        $this->mirrorLineResolved = true;
+    }
+
+    /** Position aus dem Spiegel — vorgeladen, sonst einzeln über die Quelle des Morph-Typs; null ohne Quelle/Position. */
+    public function mirrorLine(): ?MirrorLine {
+        if (! $this->mirrorLineResolved) {
+            $organization = $this->getRelationValue('organization');
+            $this->mirrorLine = $organization instanceof Organization
+                ? app(InvoiceMirror::class)->lineById($organization, (string) $this->linkable_type, (int) $this->linkable_id)
+                : null;
+            $this->mirrorLineResolved = true;
         }
 
-        return '';
+        return $this->mirrorLine;
+    }
+
+    /** Anzeigetext der verknüpften Position; Belegkopf ohne Position (Altbestand) als solcher. */
+    public function lineLabel(): string {
+        $line = $this->mirrorLine();
+        if ($line !== null) {
+            return $line->label();
+        }
+
+        return app(InvoiceMirror::class)->sourceFor((string) $this->linkable_type) === null ? (string) __('resale.link.voucher_only') : '';
     }
 }

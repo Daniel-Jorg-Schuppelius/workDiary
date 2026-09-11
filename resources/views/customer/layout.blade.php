@@ -77,6 +77,9 @@
                     @if ($portalAllows(PortalCapability::RentalRequests))
                         <a href="{{ route('customer.rentals.requests.index') }}" class="hover:underline">{{ __('Verleih-Anfrage') }}</a>
                     @endif
+                    @if ($portalAllows(PortalCapability::Subscriptions))
+                        <a href="{{ route('customer.subscriptions.index') }}" class="hover:underline">{{ __('resale_portal.menu') }}</a>
+                    @endif
                     @if ($portalAllows(PortalCapability::Queries))
                         <a href="{{ route('customer.queries.index') }}" class="hover:underline">{{ __('Rückfragen') }}</a>
                     @endif

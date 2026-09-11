@@ -127,6 +127,8 @@ class SchedulerRegistrationTest extends TestCase {
         'resale:sync-periods' => ['5 6 * * *', true, true],
         'resale:sync-domains' => ['10 5 * * *', true, true],
         'resale:sync-purchases' => ['20 5 * * *', true, true],
+        // Serienrechnung bei lokaler Rechnungshoheit (Feature 152, 2026-09-11).
+        'resale:draft-local' => ['20 6 * * *', true, true],
         // Review 2026-09-10 (A5): wöchentlicher Reselling-Digest.
         'resale:digest' => ['45 6 * * 1', true, true],
         // Review 2026-09-10 (A8): Aufbewahrung der Import-Dateien.

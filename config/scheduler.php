@@ -770,6 +770,16 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        // Serienrechnung bei lokaler Rechnungshoheit (Feature 152, 2026-09-11):
+        // nach dem Vorrollen lokale Rechnungsentwürfe je Empfänger; der
+        // Org-Schalter resale.auto_local_drafts entscheidet im Befehl.
+        'resale.draft_local' => [
+            'command' => 'resale:draft-local',
+            'cadence' => ['type' => 'dailyAt', 'time' => '06:20'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 3,
+        ],
         // Review 2026-09-10 (A5): wöchentlicher Reselling-Digest an die Nutzer
         // mit reselling.manage — fällige Perioden, Vorschläge, Halterlücken,
         // Verlängerungen; ohne Befund wird nichts verschickt.

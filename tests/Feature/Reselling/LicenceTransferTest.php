@@ -228,6 +228,34 @@ class LicenceTransferTest extends TestCase {
         $this->assertSame(PeriodStatus::Billed, $assignment->periods()->first()?->status, 'Märkisches fünf Positionen decken die Abtretung');
     }
 
+    public function test_transfer_inside_a_running_period_is_co_termed_with_the_contract(): void {
+        // Abtretung ab 01.04.2025 in den laufenden Vertragsjahreslauf 18.10.2024–17.10.2025: die Erstperiode der
+        // Abtretung endet mit der Vertragsperiode (7 Monate, Soll anteilig), danach läuft sie an den Vertragsgrenzen;
+        // der Vertrag behält in der laufenden Periode alle 9 (bezahlt), ab 18.10.2025 den Rest. Dialog und Controller
+        // sind unverändert — die Co-Term-Regel sitzt im PeriodPlanner.
+        $admin = $this->orgAdmin();
+        $schub = $this->customerWithContact('Schub- und Schleppreederei U. Golka GmbH & CO. KG', 'c-schub');
+        $maerkische = $this->customerWithContact('Märkische Bunker- und Service GmbH & Co. KG', 'c-mb');
+        $contract = ResaleSubscription::query()->create([
+            'organization_id' => $this->organization->id, 'kind' => 'license', 'provider' => 'telekom_marketplace', 'external_id' => 'ent-9', 'label' => 'Exchange Online (Plan 1)',
+            'customer_id' => $schub->id, 'lexoffice_article_id' => $this->exchange->id, 'quantity' => 9, 'starts_on' => '2024-10-18', 'ends_on' => '2026-10-18',
+            'term_months' => 12, 'interval' => 'yearly', 'renewal' => 'cancel', 'status' => 'cancelled', 'currency' => 'EUR', 'purchase_unit_price' => '43.98', 'sale_unit_price' => '47.40',
+        ]);
+        (new PeriodPlanner)->sync($contract);
+
+        $this->actingAs($admin)->post(route('finance.resale.transfer.store', $contract->sqid), [
+            'mode' => 'customer', 'customer_id' => $maerkische->sqid, 'quantity' => 5, 'starts_on' => '2025-04-01', 'sale_unit_price' => '47.40',
+        ])->assertRedirect(route('finance.resale.show', $contract->sqid))->assertSessionHas('success');
+
+        $assignment = ResaleSubscription::query()->where('parent_id', $contract->id)->firstOrFail();
+        $periods = $assignment->periods()->get();
+        $this->assertSame([['2025-04-01', '2025-10-17'], ['2025-10-18', '2026-10-17']], $periods->map(static fn($p): array => [$p->starts_on->toDateString(), $p->ends_on->toDateString()])->all(), 'Erstperiode endet mit der Vertragsperiode, danach Vertragsgrenzen; der 18.10.2026 ist Stummel');
+        $this->assertSame('138.25', $periods[0]->expected_sale?->getAmount(), '5 × 47,40 × 7/12');
+        $this->assertSame(35.0, $periods[0]->requiredMonths(), '5 Lizenzen × 7 Monate');
+        $this->assertSame('237.00', $periods[1]->expected_sale?->getAmount(), 'volle Vertragsperiode');
+        $this->assertSame([9, 4], $contract->fresh()?->periods()->pluck('quantity')->all(), 'laufende Periode bleibt bei 9, ab der nächsten der Rest');
+    }
+
     public function test_assignment_helpers_compute_peak_quantity_and_next_suffix(): void {
         // Review 2026-09-10 (B8/B10): Verfügbarkeit über die ganze Laufzeit statt nur am Starttag;
         // Suffix aus dem höchsten vorhandenen `#n`, nicht aus der Anzahl.

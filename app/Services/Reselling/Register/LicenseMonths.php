@@ -12,8 +12,9 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Register;
 
-use App\Models\LexofficeVoucherLine;
+use App\Services\Reselling\Mirror\MirrorLine;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\DateHelper;
 
 /**
  * Lizenzen und Monate einer Rechnungsposition (Feature 152). Der Reseller
@@ -23,13 +24,14 @@ use Carbon\{CarbonImmutable, CarbonInterface};
  * Leistung sind zwei Lizenzen, „5 Stück" bei 12 Monaten sind 5 × 12. Ohne
  * Einheit entscheidet der Stückpreis (Monatspreise liegen unter 30 €).
  * Lizenzmonate = Lizenzen × Monate — die Größe, in der Perioden gedeckt werden.
+ * Arbeitet auf der anbieterneutralen {@see MirrorLine} (Spiegel-Abstraktion).
  */
 final class LicenseMonths {
     private const MONTH_UNITS = ['monat', 'monate', 'month', 'months'];
     private const YEAR_UNITS = ['jahr', 'jahre', 'year', 'years'];
     private const MONTHLY_PRICE_LIMIT = 30.0;
 
-    public static function ofLine(LexofficeVoucherLine $line): float {
+    public static function ofLine(MirrorLine $line): float {
         $split = self::split($line);
 
         return $split['licences'] * $split['months'];
@@ -38,8 +40,8 @@ final class LicenseMonths {
     /**
      * @return array{licences: float, months: float}
      */
-    public static function split(LexofficeVoucherLine $line): array {
-        $quantity = (float) $line->quantity;
+    public static function split(MirrorLine $line): array {
+        $quantity = $line->quantity;
         $service = self::serviceMonths($line);
         if (self::isMonthly($line)) {
             // Monatsposition: Menge = Monate; mit Leistungszeitraum ergibt der Rest die Lizenzen.
@@ -67,7 +69,7 @@ final class LicenseMonths {
      * der Menge, bei Monatspositionen erst mit Leistungszeitraum — „24 Monat"
      * allein kann zwei Lizenzen für ein Jahr oder eine für zwei Jahre sein.
      */
-    public static function isLicenceCountCertain(LexofficeVoucherLine $line): bool {
+    public static function isLicenceCountCertain(MirrorLine $line): bool {
         if (self::serviceMonths($line) !== null) {
             return true;
         }
@@ -82,17 +84,19 @@ final class LicenseMonths {
 
     /**
      * Ganze Monate zwischen zwei Inklusiv-Daten (31.01.–28.02. = 1, 01.01.–31.12. = 12),
-     * gerundet — für Periodenlänge und Leistungszeitraum. Kann 0 sein.
+     * kaufmännisch gerundet — für Periodenlänge und Leistungszeitraum. Kann 0 sein;
+     * ein Ende vor dem Beginn (fremde Belegdaten) ergibt 0 statt der Toolkit-Exception.
      */
     public static function monthsBetween(CarbonInterface $from, CarbonInterface $toInclusive): int {
-        $start = CarbonImmutable::instance($from)->startOfDay();
-        $end = CarbonImmutable::instance($toInclusive)->startOfDay()->addDay();
+        if ($toInclusive->toDateString() < $from->toDateString()) {
+            return 0;
+        }
 
-        return (int) round($start->diffInMonths($end));
+        return DateHelper::monthsBetweenInclusive($from, $toInclusive);
     }
 
     /** Monatsposition: Einheit Monat, oder ohne Einheit ein Stückpreis unter dem Monatslimit. */
-    public static function isMonthly(LexofficeVoucherLine $line): bool {
+    public static function isMonthly(MirrorLine $line): bool {
         $unit = self::unit($line);
         if (self::isMonthUnit($unit)) {
             return true;
@@ -101,15 +105,15 @@ final class LicenseMonths {
             return false;
         }
 
-        return $line->unit_net->toFloat() < self::MONTHLY_PRICE_LIMIT;
+        return $line->unitNet->toFloat() < self::MONTHLY_PRICE_LIMIT;
     }
 
-    public static function isYearly(LexofficeVoucherLine $line): bool {
+    public static function isYearly(MirrorLine $line): bool {
         return in_array(self::unit($line), self::YEAR_UNITS, true);
     }
 
     /** Positionsmenge, die $months Lizenzmonaten entspricht (Monat: 1 je Monat, Jahr: 12 je Stück, sonst Laufzeit je Stück). */
-    public static function unitsFor(LexofficeVoucherLine $line, float $months, int $termMonths): float {
+    public static function unitsFor(MirrorLine $line, float $months, int $termMonths): float {
         if (self::isYearly($line)) {
             return $months / 12.0;
         }
@@ -145,17 +149,8 @@ final class LicenseMonths {
      * Bezugsdatum einer Position: Beginn des Leistungszeitraums, sonst das
      * Rechnungsdatum — danach findet die Zuordnung die Periode.
      */
-    public static function referenceDate(LexofficeVoucherLine $line): ?CarbonImmutable {
-        $voucher = $line->relationLoaded('voucher') ? $line->voucher : null;
-        if ($voucher === null) {
-            return null;
-        }
-        $start = $voucher->serviceStart();
-        if ($start !== null) {
-            return $start;
-        }
-
-        return $voucher->voucher_date === null ? null : CarbonImmutable::instance($voucher->voucher_date);
+    public static function referenceDate(MirrorLine $line): ?CarbonImmutable {
+        return $line->serviceFrom ?? $line->voucherDate;
     }
 
     /**
@@ -163,20 +158,19 @@ final class LicenseMonths {
      * Position gehört auch zu Perioden, die lange nach dem Leistungsbeginn
      * starten — das Fenster um das Bezugsdatum reicht dafür nicht.
      */
-    public static function serviceCovers(LexofficeVoucherLine $line, CarbonImmutable $day): bool {
-        $voucher = $line->relationLoaded('voucher') ? $line->voucher : null;
-        if ($voucher === null || $voucher->service_starts_on === null || $voucher->service_ends_on === null) {
+    public static function serviceCovers(MirrorLine $line, CarbonImmutable $day): bool {
+        if ($line->serviceFrom === null || $line->serviceTo === null) {
             return false;
         }
 
-        return ! $day->lessThan(CarbonImmutable::instance($voucher->service_starts_on)) && ! $day->greaterThan(CarbonImmutable::instance($voucher->service_ends_on));
+        return ! $day->lessThan($line->serviceFrom) && ! $day->greaterThan($line->serviceTo);
     }
 
-    private static function serviceMonths(LexofficeVoucherLine $line): ?int {
-        return $line->relationLoaded('voucher') ? $line->voucher->serviceMonths() : null;
+    private static function serviceMonths(MirrorLine $line): ?int {
+        return $line->serviceMonths();
     }
 
-    private static function unit(LexofficeVoucherLine $line): string {
-        return mb_strtolower(trim((string) $line->unit_name));
+    private static function unit(MirrorLine $line): string {
+        return mb_strtolower(trim((string) $line->unitName));
     }
 }

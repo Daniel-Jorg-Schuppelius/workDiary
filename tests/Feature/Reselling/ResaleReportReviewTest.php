@@ -12,12 +12,13 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reselling;
 
-use App\Enums\Reselling\{LinkOrigin, PeriodStatus};
+use App\Enums\Article\ArticleStatus;
+use App\Enums\Reselling\{LinkOrigin, PeriodStatus, ResaleArticleRole};
 use App\Enums\User\Permission;
-use App\Models\{Customer, LexofficeVoucher, LexofficeVoucherLine, Supplier, User};
+use App\Models\{Article, Customer, LexofficeVoucher, LexofficeVoucherLine, Supplier, User};
 use App\Models\Reselling\{ResalePeriodLink, ResalePurchaseEntry, ResaleSubscription};
 use App\Services\Reselling\Marketplace\{ProviderInvoice, QualityHostingInvoiceReader};
-use App\Services\Reselling\Register\{PeriodPlanner, ProviderInvoiceImport, PurchaseAllocator};
+use App\Services\Reselling\Register\{LicenseArticleClassifier, PeriodPlanner, ProviderInvoiceImport, PurchaseAllocator};
 use App\Support\{Sqid, XlsxExport};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
@@ -241,11 +242,11 @@ TXT;
         $this->actingAs($admin)->get(route('finance.resale.purchases.create', ['q' => 'Nirgends']))->assertOk()->assertDontSee('726 039 1495');
 
         $this->actingAs($admin)->postJson(route('finance.resale.purchases.store'), [
-            'voucher_id' => Sqid::encode(LexofficeVoucher::class, $voucher->id), 'provider' => 'domainreselling', 'net_amount' => '10.00', 'month' => '2026-03',
+            'document' => Sqid::encode(LexofficeVoucher::class, $voucher->id), 'provider' => 'domainreselling', 'net_amount' => '10.00', 'month' => '2026-03',
         ])->assertStatus(422)->assertJsonPath('errors.provider.0', __('resale.purchase_dialog.domain_provider'));
         $this->actingAs($admin)->postJson(route('finance.resale.purchases.store'), [
-            'voucher_id' => 'nope', 'provider' => 'telekom_marketplace', 'net_amount' => '10.00', 'month' => '2026-03',
-        ])->assertStatus(422)->assertJsonValidationErrors(['voucher_id']);
+            'document' => 'nope', 'provider' => 'telekom_marketplace', 'net_amount' => '10.00', 'month' => '2026-03',
+        ])->assertStatus(422)->assertJsonValidationErrors(['document']);
     }
 
     public function test_pdf_import_reports_line_issues_and_total_mismatch_without_aborting(): void {
@@ -311,10 +312,47 @@ TXT;
         $this->actingAs($viewer)->get(route('finance.resale.purchases.index'))->assertDontSee(route('finance.resale.purchases.destroy', $entry->sqid), false);
 
         $this->actingAs($viewer)->post(route('finance.resale.products.store'), ['article_id' => 'x', 'role' => 'license'])->assertForbidden();
-        $this->actingAs($viewer)->post(route('finance.resale.purchases.store'), ['voucher_id' => 'x', 'provider' => 'qualityhosting', 'net_amount' => '1', 'month' => '2026-03'])->assertForbidden();
+        $this->actingAs($viewer)->post(route('finance.resale.purchases.store'), ['document' => 'x', 'provider' => 'qualityhosting', 'net_amount' => '1', 'month' => '2026-03'])->assertForbidden();
         $this->actingAs($viewer)->post(route('finance.resale.purchases.import.store'), [])->assertForbidden();
         $this->actingAs($viewer)->delete(route('finance.resale.purchases.destroy', $entry->sqid))->assertForbidden();
         $this->actingAs($viewer)->get(route('finance.resale.periods.draft.create'))->assertForbidden();
         $this->assertSame(1, ResalePurchaseEntry::query()->count());
+    }
+    /**
+     * Review 2026-09-11: die Produktseite führt auch die aktiven lokalen
+     * Artikel und speichert deren Einstufung (`article_type=local`, Sqid des
+     * Artikels); ohne `article_type` bleibt Lexoffice der Default.
+     */
+    public function test_products_page_lists_active_local_articles_and_saves_their_role(): void {
+        $admin = $this->orgAdmin();
+        $cloud = Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Cloud-Arbeitsplatz Premium', 'number' => 'CAP', 'default_sale_price' => '20.60', 'currency' => 'EUR']);
+        Article::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Altes Produkt', 'status' => ArticleStatus::Retired->value]);
+        $classifier = new LicenseArticleClassifier;
+        $this->assertFalse($classifier->isLicense($cloud), 'ohne Einstufung: Name verrät kein Produkt');
+
+        $this->actingAs($admin)->get(route('finance.resale.products'))
+            ->assertOk()
+            ->assertSee(__('resale.products_local.title'))
+            ->assertSee('Cloud-Arbeitsplatz Premium')
+            ->assertSee('name="article_type" value="local"', false)
+            ->assertDontSee('Altes Produkt');
+
+        $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article_type' => 'local', 'article_id' => $cloud->sqid, 'role' => 'license'])
+            ->assertRedirect(route('finance.resale.products'))
+            ->assertSessionHas('success');
+        $cloud->refresh();
+        $this->assertSame(ResaleArticleRole::License, $cloud->resale_role);
+        $this->assertTrue($classifier->isLicense($cloud), 'Betreiber-Einstufung gewinnt');
+
+        $this->actingAs($admin)->post(route('finance.resale.products.store'), ['article_type' => 'local', 'article_id' => $cloud->sqid, 'role' => 'auto'])
+            ->assertRedirect(route('finance.resale.products'));
+        $this->assertNull($cloud->fresh()?->resale_role, '„auto" löscht die Übersteuerung');
+
+        // Unbekannte Art: Validierungsfehler, nichts gespeichert.
+        $this->actingAs($admin)->from(route('finance.resale.products'))->post(route('finance.resale.products.store'), ['article_type' => 'other', 'article_id' => $cloud->sqid, 'role' => 'license'])
+            ->assertSessionHasErrors('article_type');
+        $this->assertNull($cloud->fresh()?->resale_role);
+        // Nur sehen: 403 auch für lokale Artikel.
+        $this->actingAs($this->viewer())->post(route('finance.resale.products.store'), ['article_type' => 'local', 'article_id' => $cloud->sqid, 'role' => 'license'])->assertForbidden();
     }
 }

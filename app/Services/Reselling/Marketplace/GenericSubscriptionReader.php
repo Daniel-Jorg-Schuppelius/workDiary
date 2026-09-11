@@ -13,16 +13,15 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use App\Enums\Reselling\{BillingFrequency, SubscriptionProvider};
-use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, ParsesImportValues};
+use App\Services\Reselling\Marketplace\Concerns\{OpensXlsxDocuments, ParsesImportValues};
 use CommonToolkit\Contracts\Interfaces\CSV\FieldInterface;
 use CommonToolkit\Entities\CSV\HeaderLine;
 use CommonToolkit\Entities\XLSX\Cell;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\CryptoHelper;
-use CommonToolkit\Parsers\{CSVDocumentParser, XLSXDocumentParser};
+use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
+use CommonToolkit\Parsers\CSVDocumentParser;
 use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
-use Throwable;
 
 /**
  * Generische Abo-Liste (Feature 152): CSV oder XLSX mit frei benannten
@@ -35,7 +34,7 @@ use Throwable;
  * nie still ergänzt (Review 2026-09-10, B15/B16/C3/C4).
  */
 final class GenericSubscriptionReader {
-    use NormalizesHeaders;
+    use OpensXlsxDocuments;
     use ParsesImportValues;
 
     /** @var array<string, list<string>> Zielspalte → erkannte Überschriften (normalisiert) */
@@ -63,6 +62,14 @@ final class GenericSubscriptionReader {
     private const UNIT_SCALE = 4;
 
     private const TOTAL_SCALE = 2;
+
+    /** „Einkaufspreis (EUR)" / „Preis (netto)" → „einkaufspreis" / „preis" — das Toolkit kennt keinen Einheiten-Zusatz. */
+    private const UNIT_SUFFIX = '/\s*\((?:eur|€|netto|net)\)$/u';
+
+    /**
+     * @param  int  $maxRows  Datenzeilen je XLSX-Blatt; darüber bricht der Import ab (kein stilles Kürzen)
+     */
+    public function __construct(private readonly int $maxRows = self::XLSX_MAX_ROWS) {}
 
     public function read(string $file, SubscriptionProvider $provider = SubscriptionProvider::Other): PurchasesImport {
         $name = basename($file);
@@ -207,7 +214,8 @@ final class GenericSubscriptionReader {
      * Zeilenweise über `streamAll`, damit eine Zeile mit abweichender
      * Feldzahl (Excel lässt leere Endspalten weg, unmaskiertes Trennzeichen)
      * nicht die ganze Datei kippt: zu wenige Felder gelten als leer, zu
-     * viele als Befund.
+     * viele als Befund — nur wenn sie Inhalt tragen. `fromFile(strict: false)`
+     * kürzt überzählige Felder still, dann wäre das nicht mehr unterscheidbar.
      *
      * @param  array<int, string>  $skipped  Zeilennummer → Befund (Zeile fehlt dann als null in den Zeilen)
      * @return array{0: list<string>, 1: array<int, array<int, Cell>|null>}  Kopfzeile, Zeilennummer → Zellen
@@ -246,16 +254,11 @@ final class GenericSubscriptionReader {
      * @return array{0: list<string>, 1: array<int, array<int, Cell>|null>}  Kopfzeile, Zeilennummer → Zellen
      */
     private function readXlsx(string $file): array {
-        try {
-            $document = XLSXDocumentParser::fromFile($file, true);
-        } catch (Throwable $e) {
-            throw new RuntimeException((string) __('resale_import.file.xlsx_unreadable', ['file' => basename($file), 'reason' => str_replace($file, basename($file), $e->getMessage())]), 0, $e);
-        }
-        $sheet = $document->getFirstSheet();
+        $sheet = self::openXlsx($file, $this->maxRows, 'resale_import.file.xlsx_unreadable')->getFirstSheet();
         if ($sheet === null) {
             throw new RuntimeException((string) __('resale_import.file.no_sheet', ['file' => basename($file)]));
         }
-        $headers = self::sheetHeaderNames($sheet);
+        $headers = array_values($sheet->getHeaderNames());
         $rows = [];
         foreach ($sheet->getRows() as $row) {
             $rows[$row->getRowIndex()] = array_values($row->getCells());
@@ -265,13 +268,18 @@ final class GenericSubscriptionReader {
     }
 
     /**
+     * Frei benannte Überschriften → Zielspalten. Eigene Alias-Suche statt
+     * `getColumnIndexByAliases()`, weil die Kopfzeile aus CSV und XLSX gleich
+     * behandelt wird und der Einheiten-Zusatz vor dem Vergleich fallen muss.
+     *
      * @param  list<string>  $headers
      * @return array<string, int>
      */
     private function columnIndex(array $headers): array {
         $index = [];
         foreach ($headers as $position => $name) {
-            $normalized = self::normalizeHeader($name, stripUnitSuffix: true);
+            $normalized = StringHelper::normalizeColumnName($name);
+            $normalized = trim(preg_replace(self::UNIT_SUFFIX, '', $normalized) ?? $normalized);
             foreach (self::COLUMNS as $column => $aliases) {
                 if (! isset($index[$column]) && in_array($normalized, $aliases, true)) {
                     $index[$column] = $position;

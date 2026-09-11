@@ -1,14 +1,16 @@
 {{--
   Created on   : Fri Sep 04 2026
-  Author       : Daniel Jörg Schuppelius
+  Author       : Daniel JÃ¶rg Schuppelius
   Author Uri   : https://schuppelius.org
   Filename     : purchases.blade.php
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  Einkaufsbelege (Feature 152, MVP-762): Anbieterrechnungen positionsgenau
-  (PDF-Import), Eingangsbelege aus dem Spiegel pro rata, Domain-Buchungen
-  automatisch — je Zeile die Zuteilung auf Abo und Periode. Filter nach
+  Einkaufsbelege (Feature 152, MVP-762; Review 2026-09-11): Anbieterrechnungen
+  positionsgenau (PDF-Import), Eingangsbelege aller Quellen (Lexoffice-Spiegel,
+  Ausgaben, Eingangs-E-Rechnungen) pro rata, Domain-Buchungen automatisch â je
+  Zeile die Zuteilung auf Abo und Periode; der Beleg kommt mit Quelle,
+  Permalink und Vorschau aus der Belegregistry. Filter nach
   Anbieter, Quelle, Zeitraum und Suche; Import-Hinweise als Liste.
 --}}
 @extends('layouts.app')
@@ -48,7 +50,7 @@
         @if ($byDocument->isNotEmpty())
             <div class="flex flex-wrap gap-2 mb-3 text-xs">
                 @foreach ($byDocument as $doc)
-                    <span class="badge badge-outline">{{ $doc->document_number }} · {{ $doc->entry_date->fdate() }} · {{ \CommonToolkit\ValueObjects\Money::ofFloat((float) $doc->net, $doc->currency, 2)->format() }} · {{ $doc->n }}</span>
+                    <span class="badge badge-outline">{{ $doc->document_number }} Â· {{ $doc->entry_date->fdate() }} Â· {{ \CommonToolkit\ValueObjects\Money::ofFloat((float) $doc->net, $doc->currency, 2)->format() }} Â· {{ $doc->n }}</span>
                 @endforeach
             </div>
         @endif
@@ -90,17 +92,31 @@
             @forelse ($entries as $entry)
                 <tr class="hover">
                     <td class="whitespace-nowrap tabular-nums">{{ $entry->entry_date->fdate() }}</td>
-                    <td class="font-mono text-xs">{{ $entry->document_number ?? '—' }}</td>
+                    <td class="text-xs">
+                        @php $document = $entry->purchaseDocument(); @endphp
+                        <span class="font-mono">{{ $entry->documentLabel() ?? '—' }}</span>
+                        @if ($document !== null)
+                            <span class="flex items-center gap-1 mt-1">
+                                <x-status-badge size="xs" tone="neutral" :label="__('resale.purchase_document.source.' . $document->sourceKey)" />
+                                @if ($document->previewUrl !== null)
+                                    <x-icon-btn icon="picture_as_pdf" size="xs" tone="ghost" data-entry-modal-trigger :href="$document->previewUrl" :title="__('resale.purchase_document.preview')" />
+                                @endif
+                                @if ($document->permalink !== null)
+                                    <a href="{{ $document->permalink }}" target="_blank" rel="noopener" class="btn btn-ghost btn-xs" title="{{ __('resale.purchase_document.open', ['source' => __('resale.purchase_document.source.' . $document->sourceKey)]) }}"><x-icon name="open_in_new" size="1rem" /></a>
+                                @endif
+                            </span>
+                        @endif
+                    </td>
                     <td class="text-sm">{{ $entry->provider->label() }}</td>
                     <td>
                         @if ($entry->subscription !== null)
                             <a href="{{ route('finance.resale.show', $entry->subscription->sqid) }}" class="link link-hover">{{ $entry->subscription->label }}</a>
                         @else
-                            <span class="text-muted">—</span>
+                            <span class="text-muted">â</span>
                         @endif
                     </td>
-                    <td class="text-sm">{{ $entry->subscription?->holderLabel() ?? '—' }}</td>
-                    <td class="whitespace-nowrap tabular-nums text-sm">{{ $entry->period?->label() ?? '—' }}</td>
+                    <td class="text-sm">{{ $entry->subscription?->holderLabel() ?? 'â' }}</td>
+                    <td class="whitespace-nowrap tabular-nums text-sm">{{ $entry->period?->label() ?? 'â' }}</td>
                     <td class="text-xs text-muted max-w-xs truncate" title="{{ $entry->description }}">{{ $entry->description }}</td>
                     <td class="text-right tabular-nums whitespace-nowrap {{ $entry->net_amount->isNegative() ? 'text-success' : '' }}">{{ $entry->net_amount->format() }}</td>
                     <td><x-status-badge size="xs" tone="neutral" :label="$entry->sourceLabel()" /></td>

@@ -61,17 +61,17 @@
                         </x-slot:head>
                         @foreach ($unlinked as $line)
                             <tr>
-                                <td class="whitespace-nowrap"><span class="font-mono text-xs">{{ $line->voucher->voucher_number }}</span> <span class="text-xs text-muted tabular-nums">{{ $line->voucher->voucher_date?->fdate() }}</span></td>
+                                <td class="whitespace-nowrap"><span class="font-mono text-xs">{{ $line->voucherNumber }}</span> <span class="text-xs text-muted tabular-nums">{{ $line->voucherDate?->fdate() }}</span></td>
                                 <td class="text-sm">
-                                    @if ($line->voucher->customer !== null)
-                                        <a href="{{ route('finance.resale.reconcile.show', $line->voucher->customer) }}" class="link link-hover">{{ $line->voucher->customer->name }}</a>
+                                    @if ($line->recipientCustomerId !== null)
+                                        <a href="{{ route('finance.resale.reconcile.show', \App\Support\Sqid::encode(\App\Models\Customer::class, $line->recipientCustomerId)) }}" class="link link-hover">{{ $line->recipientName ?? '—' }}</a>
                                     @else
-                                        —
+                                        {{ $line->recipientName ?? '—' }}
                                     @endif
                                 </td>
-                                <td class="text-sm">{{ $line->article?->name ?? $line->name }}</td>
-                                <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unit_name ? ' ' . $line->unit_name : '' }}</td>
-                                <td class="text-xs max-w-xs truncate" title="{{ $line->voucher->voucher_text }}">{{ $line->voucher->voucherTextHint() ?? \Illuminate\Support\Str::limit((string) $line->voucher->voucher_text, 70) }}</td>
+                                <td class="text-sm">{{ $line->label() }}</td>
+                                <td class="text-right tabular-nums whitespace-nowrap"><x-resale.licence-months :value="$line->quantity" />{{ $line->unitName ? ' ' . $line->unitName : '' }}</td>
+                                <td class="text-xs max-w-xs truncate" title="{{ $line->voucherText }}">{{ $line->voucherTextHint ?? \Illuminate\Support\Str::limit((string) $line->voucherText, 70) }}</td>
                             </tr>
                         @endforeach
                     </x-table>

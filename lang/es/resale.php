@@ -317,6 +317,7 @@ return [
             'below_list' => 'Venta por debajo del PVP',
             'contract_above_catalog' => 'Contrato más caro que el catálogo',
             'no_sales' => 'Sin precio de venta',
+            'article_price_differs' => 'Venta distinta del precio del artículo', // Review 2026-09-11
         ],
     ],
     'draft' => [
@@ -339,6 +340,7 @@ return [
             'nothing_open' => 'No hay periodos abiertos con precio de venta para este destinatario.',
         ],
         'already_drafted' => 'Ya hay un borrador pendiente para este destinatario (:reference del :date). Termínalo primero en Lexoffice o localmente, o decide el periodo.', // Review 2026-09-10
+        'no_target' => 'Para el modo de facturación «:mode» de este destinatario no hay registrado ningún destino de borrador — activa el plugin o pon al cliente en facturación local.', // Review 2026-09-11
     ],
     'purchase' => [
         'title' => 'Documentos de compra',
@@ -670,5 +672,69 @@ return [
         'sign_hint' => 'Se guarda como vínculo negativo.',
         'error_amount' => 'Indique una cantidad mayor que cero.',
         'error_positive' => 'Las líneas de factura requieren meses de licencia positivos — las reducciones van por la línea del abono.',
+    ],
+    // Review 2026-09-10 (Spiegel)
+    'mirror' => [
+        'source_lexoffice' => 'Lexoffice',
+        'source_local' => 'Factura local',
+        'open_source' => 'Abrir el documento (:source)',
+        'no_source' => 'Ninguna fuente aporta facturas para este destinatario — ni un contacto de Lexoffice vinculado ni facturación local.',
+    ],
+    // Review 2026-09-10 (Serienlauf)
+    'auto_draft' => [
+        'title' => 'Facturación recurrente (facturación local)',
+        'description' => 'Cada día (tarea programada) se crea un borrador de factura por cada destinatario con facturación local a partir de los periodos vencidos — el mismo borrador que con un clic, con una línea por suscripción y periodo y enlaces propuestos. Los destinatarios facturados vía Lexoffice/DATEV no se tocan. Los borradores se finalizan en la lista de facturas.',
+        'enabled' => 'Facturación recurrente activa',
+        'lead_days' => 'Antelación (días)',
+        'lead_days_hint' => '0 = solo periodos vencidos; 7 = también los periodos que empiezan en los próximos 7 días.',
+        'save' => 'Guardar',
+        'state_on' => 'Facturación recurrente activa — antelación :days días.',
+        'state_off' => 'Facturación recurrente desactivada — los borradores solo se crean con un clic.',
+        'locked' => 'La facturación recurrente ya se está ejecutando para esta organización.',
+        'flash' => [
+            'enabled' => 'Facturación recurrente activa: la próxima ejecución crea los borradores de los periodos vencidos (antelación :days días).',
+            'disabled' => 'Facturación recurrente desactivada — los borradores de factura solo se crean con un clic.',
+        ],
+    ],
+    // Review 2026-09-11 (Einkauf)
+    'purchase_document' => [
+        'field' => 'Documento entrante',
+        'hint' => 'Documentos de todos los orígenes de los últimos 36 meses — espejo de Lexoffice, gastos locales, facturas electrónicas recibidas; ✓ = ya asignado.',
+        'sources_hint' => 'Orígenes',
+        'source' => [
+            'lexoffice' => 'Lexoffice',
+            'expense' => 'Gasto',
+            'incoming_einvoice' => 'Factura electrónica entrante',
+        ],
+        'open' => 'Abrir documento (:source)',
+        'preview' => 'Ver imagen del documento',
+        'error_unknown' => 'El documento elegido no es conocido por ningún origen o ya no se puede asignar.',
+    ],
+    // Review 2026-09-11 (Produkte)
+    'products_local' => [
+        'title' => 'Artículos locales',
+        'hint' => 'Artículos activos del maestro de artículos: la clasificación actúa en el espejo de facturas locales y en la comprobación de precios (precio de venta del artículo). Sin clasificación decide el nombre.',
+        'price' => 'Precio de venta',
+        'empty' => 'No hay artículos activos en el maestro de artículos.',
+        'lexoffice_title' => 'Artículos de Lexoffice',
+    ],
+    // Review 2026-09-11 (Vertrag)
+    'contract' => [
+        'field' => 'Contrato',
+        'none' => 'Sin contrato',
+        'hint' => 'Contrato del destinatario de la factura de la gestión de contratos: el plazo de cancelación y el aviso de renovación de la suscripción se anotan a diario en su calendario contractual.',
+        'error' => [
+            'no_recipient' => 'Un contrato solo puede vincularse si el titular es un cliente o un cliente final.',
+            'recipient_mismatch' => 'La contraparte del contrato no es el destinatario de la factura de esta suscripción.',
+        ],
+        'panel' => [
+            'title' => 'Suscripciones y licencias',
+            'empty' => 'Ninguna suscripción usa este contrato como marco de plazos.',
+            'open' => 'Abrir suscripción',
+        ],
+        'obligation' => [
+            'notice' => 'Plazo de cancelación suscripción «:label» (fin :date)',
+            'renewal' => 'Renovación suscripción «:label» el :date',
+        ],
     ],
 ];

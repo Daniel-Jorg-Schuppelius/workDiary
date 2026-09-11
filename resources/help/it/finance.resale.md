@@ -126,6 +126,20 @@ periodi aperti e prezzo di vendita e indica sotto ciò che è già in una
 bozza. La creazione richiede il diritto *Creare bozze di fattura dai
 periodi*.
 
+**Fatturazione ricorrente:** con la fatturazione locale il registro può
+creare da solo le bozze ogni giorno. L’interruttore si trova nella pagina
+*Classificazione prodotti* (diritto *Gestire il registro di rivendita*): attivo = la
+prossima esecuzione crea, per ogni destinatario con periodi scaduti non
+ancora in bozza, la stessa bozza del clic — righe per abbonamento e
+periodo, periodi collegati come proposta e marcati. L’*anticipo* in giorni
+include anche i periodi prima del loro inizio (0 = solo periodi scaduti).
+I destinatari fatturati tramite Lexoffice/DATEV non vengono toccati, i
+periodi senza prezzo di vendita vengono saltati, il patrimonio proprio non
+viene mai fatturato. Le bozze si finalizzano nell’elenco fatture; il
+riepilogo settimanale indica quante bozze degli ultimi sette giorni sono
+ancora aperte. Una tantum o di prova: `php artisan resale:draft-local
+--organization=… --dry-run` (`--force` ignora l’interruttore).
+
 **Documenti di acquisto:** l’acquisto effettivo per abbonamento e periodo
 proviene da tre fonti: (1) fatture e note di credito del fornitore in PDF
 (Quality Hosting, layout tedesco e inglese) — ogni riga indica contratto,
@@ -163,7 +177,24 @@ abbonamento il registro lo riconosce dal nome. Per articolo puoi forzare:
 «prodotto in abbonamento» impone il riconoscimento, «mai riga di
 abbonamento» tiene fuori da proposte, elenchi fatture e «righe senza
 abbonamento» i servizi con un nome di prodotto nel testo (manutenzione su
-Exchange).
+Exchange). La stessa classificazione esiste per gli articoli attivi
+dell’anagrafica articoli locale (sezione *Articoli locali*): decide quali righe
+delle fatture locali lo specchio tratta come righe di licenza, e il controllo
+prezzi confronta il prezzo di vendita dell’articolo con i prezzi degli
+abbonamenti.
+
+**Contratti:** un abbonamento può avere un contratto della gestione
+contratti come quadro delle scadenze (campo «Contratto» nella finestra
+dell’abbonamento; solo contratti cliente la cui controparte è il
+destinatario della fattura dell’abbonamento). La scheda del contratto mostra
+i suoi abbonamenti nel pannello «Abbonamenti e licenze». Nessun secondo
+catalogo di scadenze: l’esecuzione giornaliera inserisce una data per
+abbonamento nel calendario contrattuale — il termine di disdetta alla fine
+per gli abbonamenti disdetti, un avviso di rinnovo prima del periodo
+successivo per il rinnovo automatico, sempre anticipata del preavviso del
+contratto (30 giorni se non indicato), con 14 giorni di preavviso. Se la
+fine cambia, la data la segue; le date completate restano completate; gli
+abbonamenti terminati o senza contratto chiudono la loro data aperta.
 
 **Domini:** ogni dominio della gestione domini diventa ogni giorno un
 abbonamento «Dominio» con intervallo annuale dalla registrazione, acquisto =

@@ -317,6 +317,7 @@ return [
             'below_list' => 'Vendita sotto il prezzo consigliato',
             'contract_above_catalog' => 'Contratto più caro del listino',
             'no_sales' => 'Nessun prezzo di vendita',
+            'article_price_differs' => 'Vendita diversa dal prezzo dell’articolo', // Review 2026-09-11
         ],
     ],
     'draft' => [
@@ -339,6 +340,7 @@ return [
             'nothing_open' => 'Nessun periodo aperto con prezzo di vendita per questo destinatario.',
         ],
         'already_drafted' => 'Per questo destinatario è già in sospeso una bozza (:reference del :date). Completarla prima in Lexoffice o localmente, oppure decidere il periodo.', // Review 2026-09-10
+        'no_target' => 'Per la modalità di fatturazione «:mode» di questo destinatario non è registrata alcuna destinazione bozza — attiva il plugin o imposta il cliente sulla fatturazione locale.', // Review 2026-09-11
     ],
     'purchase' => [
         'title' => 'Documenti di acquisto',
@@ -670,5 +672,69 @@ return [
         'sign_hint' => 'Salvato come collegamento negativo.',
         'error_amount' => 'Indicare una quantità maggiore di zero.',
         'error_positive' => 'Le righe di fattura richiedono mesi di licenza positivi — le riduzioni passano dalla riga della nota di credito.',
+    ],
+    // Review 2026-09-10 (Spiegel)
+    'mirror' => [
+        'source_lexoffice' => 'Lexoffice',
+        'source_local' => 'Fattura locale',
+        'open_source' => 'Apri il documento (:source)',
+        'no_source' => 'Nessuna fonte fornisce fatture per questo destinatario — né un contatto Lexoffice collegato né la fatturazione locale.',
+    ],
+    // Review 2026-09-10 (Serienlauf)
+    'auto_draft' => [
+        'title' => 'Fatturazione ricorrente (fatturazione locale)',
+        'description' => 'Ogni giorno (attività pianificata) viene creata una bozza di fattura per ogni destinatario con fatturazione locale dai periodi scaduti — la stessa bozza del clic, con una riga per abbonamento e periodo e collegamenti proposti. I destinatari fatturati tramite Lexoffice/DATEV non vengono toccati. Le bozze si finalizzano nell’elenco fatture.',
+        'enabled' => 'Fatturazione ricorrente attiva',
+        'lead_days' => 'Anticipo (giorni)',
+        'lead_days_hint' => '0 = solo periodi scaduti; 7 = anche i periodi che iniziano nei prossimi 7 giorni.',
+        'save' => 'Salva',
+        'state_on' => 'Fatturazione ricorrente attiva — anticipo :days giorni.',
+        'state_off' => 'Fatturazione ricorrente disattivata — le bozze nascono solo con un clic.',
+        'locked' => 'La fatturazione ricorrente è già in corso per questa organizzazione.',
+        'flash' => [
+            'enabled' => 'Fatturazione ricorrente attiva: la prossima esecuzione crea le bozze dei periodi scaduti (anticipo :days giorni).',
+            'disabled' => 'Fatturazione ricorrente disattivata — le bozze di fattura nascono solo con un clic.',
+        ],
+    ],
+    // Review 2026-09-11 (Einkauf)
+    'purchase_document' => [
+        'field' => 'Documento in entrata',
+        'hint' => 'Documenti di tutte le fonti degli ultimi 36 mesi — specchio Lexoffice, spese locali, fatture elettroniche ricevute; ✓ = già assegnato.',
+        'sources_hint' => 'Fonti',
+        'source' => [
+            'lexoffice' => 'Lexoffice',
+            'expense' => 'Spesa',
+            'incoming_einvoice' => 'Fattura elettronica in entrata',
+        ],
+        'open' => 'Apri documento (:source)',
+        'preview' => 'Vedi immagine del documento',
+        'error_unknown' => 'Il documento scelto non è noto a nessuna fonte o non è più assegnabile.',
+    ],
+    // Review 2026-09-11 (Produkte)
+    'products_local' => [
+        'title' => 'Articoli locali',
+        'hint' => 'Articoli attivi dell’anagrafica articoli: la classificazione agisce sullo specchio delle fatture locali e sul controllo prezzi (prezzo di vendita dell’articolo). Senza classificazione decide il nome.',
+        'price' => 'Prezzo di vendita',
+        'empty' => 'Nessun articolo attivo nell’anagrafica articoli.',
+        'lexoffice_title' => 'Articoli Lexoffice',
+    ],
+    // Review 2026-09-11 (Vertrag)
+    'contract' => [
+        'field' => 'Contratto',
+        'none' => 'Nessun contratto',
+        'hint' => 'Contratto del destinatario della fattura dalla gestione contratti: il termine di disdetta e l’avviso di rinnovo dell’abbonamento vengono inseriti ogni giorno nel suo calendario contrattuale.',
+        'error' => [
+            'no_recipient' => 'Un contratto può essere collegato solo se il titolare è un cliente o un cliente finale.',
+            'recipient_mismatch' => 'La controparte del contratto non è il destinatario della fattura di questo abbonamento.',
+        ],
+        'panel' => [
+            'title' => 'Abbonamenti e licenze',
+            'empty' => 'Nessun abbonamento usa questo contratto come quadro delle scadenze.',
+            'open' => 'Apri abbonamento',
+        ],
+        'obligation' => [
+            'notice' => 'Termine di disdetta abbonamento «:label» (fine :date)',
+            'renewal' => 'Rinnovo abbonamento «:label» il :date',
+        ],
     ],
 ];

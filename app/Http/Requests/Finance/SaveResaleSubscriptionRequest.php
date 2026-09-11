@@ -12,11 +12,13 @@ declare(strict_types=1);
 
 namespace App\Http\Requests\Finance;
 
+use App\Enums\Contract\ContractPartnerType;
 use App\Enums\Reselling\{BillingFrequency, RenewalMode, SubscriptionKind, SubscriptionProvider, SubscriptionStatus};
 use App\Http\Requests\BaseFormRequest;
 use App\Http\Requests\Concerns\DecodesSqidInputs;
 use App\Http\Requests\Finance\Concerns\ResolvesResaleHolder;
 use App\Models\{Article, Customer, ForeignCustomer, LexofficeArticle};
+use App\Models\Contract\Contract;
 use App\Models\Reselling\ResaleSubscription;
 use App\Rules\ExistsInCurrentOrganization;
 use Carbon\CarbonImmutable;
@@ -42,6 +44,7 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
         'foreign_customer_id' => ForeignCustomer::class,
         'article_id' => Article::class,
         'lexoffice_article_id' => LexofficeArticle::class,
+        'contract_id' => Contract::class,
     ];
 
     /**
@@ -87,6 +90,7 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'foreign_customer_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('foreign_customers')],
             'article_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('articles')],
             'lexoffice_article_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('lexoffice_articles')],
+            'contract_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('contracts')],
             'quantity' => ['required', 'integer', 'min:1', 'max:100000'],
             'starts_on' => ['required', 'date_format:Y-m-d'],
             'ends_on' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:starts_on'],
@@ -111,7 +115,32 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             if ($subscription !== null && ! $validator->errors()->hasAny(['quantity', 'starts_on', 'ends_on'])) {
                 $this->validateAssignedQuantity($validator, $subscription, (int) $data['quantity'], (string) $data['starts_on'], $data['ends_on'] ?? null);
             }
+            if (is_numeric($data['contract_id'] ?? null) && ! $validator->errors()->hasAny(['contract_id', 'customer_id', 'foreign_customer_id'])) {
+                $this->validateContract($validator, (int) $data['contract_id'], (string) ($data['holder'] ?? 'none'), $data);
+            }
         });
+    }
+
+    /**
+     * Vertrag (079) als Fristenrahmen: sein Partner muss der Rechnungsempfänger
+     * des Abos sein — der Kunde selbst oder der Partner des Fremdkunden.
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function validateContract(Validator $validator, int $contractId, string $mode, array $data): void {
+        $contract = Contract::query()->find($contractId);
+        if ($contract === null) {
+            return; // ExistsInCurrentOrganization meldet das Feld
+        }
+        $billedTo = $this->resolveHolder($mode, $data)['customer'];
+        if ($billedTo === null) {
+            $validator->errors()->add('contract_id', (string) __('resale.contract.error.no_recipient'));
+
+            return;
+        }
+        if ($contract->partner_type !== ContractPartnerType::Customer || (int) $contract->customer_id !== $billedTo->id) {
+            $validator->errors()->add('contract_id', (string) __('resale.contract.error.recipient_mismatch'));
+        }
     }
 
     /**
@@ -169,6 +198,7 @@ class SaveResaleSubscriptionRequest extends BaseFormRequest {
             'is_own_holding' => $holder['own'],
             'article_id' => isset($data['article_id']) && $data['article_id'] !== '' ? (int) $data['article_id'] : null,
             'lexoffice_article_id' => isset($data['lexoffice_article_id']) && $data['lexoffice_article_id'] !== '' ? (int) $data['lexoffice_article_id'] : null,
+            'contract_id' => isset($data['contract_id']) && $data['contract_id'] !== '' ? (int) $data['contract_id'] : null,
             'quantity' => (int) $data['quantity'],
             'starts_on' => $data['starts_on'],
             'ends_on' => $this->nullable($data['ends_on'] ?? null),

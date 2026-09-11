@@ -229,6 +229,7 @@ return [
         'ended' => 'Contratto terminato',
         'negotiation_opened' => 'Negoziazione del contratto aperta',
         'obligationAdded' => 'Obbligo contrattuale aggiunto',
+        'obligationClosed' => 'Obbligo contrattuale chiuso (scadenza abbonamento decaduta)',
         'obligationCompleted' => 'Obbligo contrattuale adempiuto',
         'obligationMissed' => 'Obbligo contrattuale mancato',
         'review_item_added' => 'Punto di revisione del contratto aggiunto',
@@ -403,6 +404,7 @@ return [
     ],
     'invoice' => [
         'metering_drafted' => 'Bozza da lettura creata',
+        'resale_auto_drafted' => 'Bozza di fattura dai periodi di abbonamento (fatturazione ricorrente) creata',
         'retention_added' => 'Ritenuta a garanzia registrata',
         'retention_released' => 'Ritenuta a garanzia liberata',
         'retention_secured' => 'Ritenuta sostituita da fideiussione',

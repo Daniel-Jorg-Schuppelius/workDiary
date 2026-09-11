@@ -171,6 +171,41 @@
         @endcan
     </x-card>
 
+    {{-- Abos des Reselling-Registers (Feature 152) mit diesem Vertrag als Fristenrahmen — nur mit Modul und Recht ($resaleSubscriptions sonst null). --}}
+    @if ($resaleSubscriptions !== null)
+        <x-card :title="__('resale.contract.panel.title')" padding="p-0">
+            <x-table bare>
+                <x-slot:head>
+                    <tr>
+                        <th>{{ __('resale.field.label') }}</th>
+                        <th>{{ __('resale.field.holder') }}</th>
+                        <th class="text-right">{{ __('resale.field.quantity') }}</th>
+                        <th>{{ __('resale.section.terms') }}</th>
+                        <th>{{ __('resale.field.status') }}</th>
+                        <th></th>
+                    </tr>
+                </x-slot:head>
+                @forelse ($resaleSubscriptions as $subscription)
+                    <tr>
+                        <td>
+                            {{ $subscription->label }}
+                            <span class="block text-xs text-muted">{{ $subscription->kind->label() }} · {{ $subscription->provider->label() }}</span>
+                        </td>
+                        <td>{{ $subscription->holderLabel() }}</td>
+                        <td class="text-right tabular-nums">{{ $subscription->quantity }}</td>
+                        <td class="tabular-nums whitespace-nowrap">{{ $subscription->starts_on->fdate() }} – {{ $subscription->ends_on?->fdate() ?? __('resale.value.open_end') }}</td>
+                        <td><x-status-badge size="xs" :tone="$subscription->status->tone()" :label="$subscription->status->label()" /></td>
+                        <td class="text-right">
+                            <x-icon-btn icon="open_in_new" size="xs" tone="ghost" :href="route('finance.resale.show', $subscription->sqid)" show-label>{{ __('resale.contract.panel.open') }}</x-icon-btn>
+                        </td>
+                    </tr>
+                @empty
+                    <x-table.empty icon="subscriptions" :colspan="6" :title="__('resale.contract.panel.empty')" compact />
+                @endforelse
+            </x-table>
+        </x-card>
+    @endif
+
     <x-card :title="__('Verknüpfte Leasing-/Finanzierungsverträge')">
         <p class="text-sm text-muted">{{ __('Ein Leasing-/Finanzierungsvertrag (Feature 074) kann optional auf diesen allgemeinen Vertrag verweisen. Der Spezialfall bleibt eigenständig.') }}</p>
         @if ($linkedAssetFinance->isNotEmpty())

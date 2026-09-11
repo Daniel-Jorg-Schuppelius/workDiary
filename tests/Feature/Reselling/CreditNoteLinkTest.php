@@ -152,7 +152,7 @@ class CreditNoteLinkTest extends TestCase {
         $result = (new RecipientReconciler)->forCustomer($this->organization, $this->customer);
         $this->assertCount(1, $result['credit_notes']);
         $row = $result['credit_notes'][0];
-        $this->assertSame($creditLine->id, $row['line']->id);
+        $this->assertSame($creditLine->id, $row['line']->morphId);
         $this->assertSame(6.0, $row['months']);
         $this->assertSame(0.0, $row['linked'], 'noch nicht verrechnet');
         $this->assertSame([], $row['periods']);
