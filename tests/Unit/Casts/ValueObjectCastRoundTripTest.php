@@ -10,8 +10,9 @@
 
 namespace Tests\Unit\Casts;
 
-use App\Casts\{BicCast, DecimalCast, GermanTaxIdCast, GermanTaxNumberCast, GtinCast, IbanCast, VatNumberCast};
-use CommonToolkit\ValueObjects\{Bic, Decimal, GermanTaxNumber, Gtin, Iban};
+use App\Casts\{BicCast, DecimalCast, GermanTaxIdCast, GermanTaxNumberCast, GtinCast, IbanCast, MoneyCast, VatNumberCast};
+use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\{Bic, Decimal, GermanTaxNumber, Gtin, Iban, Money};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Crypt;
 use Tests\TestCase;
@@ -117,5 +118,39 @@ class ValueObjectCastRoundTripTest extends TestCase {
         $this->assertIsString($taxNumber['tax_number']);
         $readTax = (new GermanTaxNumberCast)->get($model, 'tax_number', $taxNumber['tax_number'], []);
         $this->assertInstanceOf(GermanTaxNumber::class, $readTax);
+    }
+
+    /**
+     * Dirty-Prüfung über Engines hinweg: SQLite liefert `decimal` als Float
+     * (741.6 / 1236.0), MariaDB als String ('741.60'). Ohne den Vergleichs-Hook
+     * gilt auf SQLite jede unveränderte Geldspalte als geändert (Sync-Läufe
+     * melden „updated" statt „kept", Audit-Diffs füllen sich mit Scheinänderungen).
+     */
+    public function test_money_cast_treats_sqlite_float_and_decimal_string_as_equal(): void {
+        $model = new class extends Model {
+            protected $guarded = [];
+
+            protected $casts = ['amount' => MoneyCast::class, 'unit_price' => MoneyCast::class . ':currency,4'];
+        };
+
+        $model->setRawAttributes(['amount' => 741.6, 'unit_price' => 187.92, 'currency' => 'EUR'], true);
+        $model->fill(['amount' => '741.60', 'unit_price' => '187.9200']);
+        $this->assertFalse($model->isDirty(), 'Float aus SQLite = Dezimalstring des Casts');
+
+        $model->setRawAttributes(['amount' => 1236.0, 'currency' => 'EUR'], true);
+        $model->fill(['amount' => Money::of('1236', CurrencyCode::Euro)]);
+        $this->assertFalse($model->isDirty('amount'), 'ganze Zahl ohne Nachkommastellen');
+
+        $model->fill(['amount' => '1236.01']);
+        $this->assertTrue($model->isDirty('amount'), 'ein Cent Unterschied ist eine Änderung');
+
+        $model->fill(['amount' => null]);
+        $this->assertTrue($model->isDirty('amount'), 'null gegen Betrag ist eine Änderung');
+
+        $cast = new MoneyCast;
+        $this->assertTrue($cast->compare($model, 'amount', null, null));
+        $this->assertFalse($cast->compare($model, 'amount', null, '0.00'));
+        $this->assertTrue($cast->compare($model, 'amount', 'kein-betrag', 'kein-betrag'), 'Fremdwert nur bei exakter Gleichheit');
+        $this->assertFalse($cast->compare($model, 'amount', 'kein-betrag', '0.00'));
     }
 }

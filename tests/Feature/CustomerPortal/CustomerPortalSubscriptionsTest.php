@@ -113,7 +113,7 @@ final class CustomerPortalSubscriptionsTest extends TestCase {
         $planner = new PeriodPlanner;
         $planner->sync($this->viaEndCustomer);
         $planner->sync($this->foreign);
-        $this->viaEndCustomer->periods()->where('starts_on', '2025-10-18')->update(['status' => PeriodStatus::Billed->value, 'decided_at' => now()]);
+        $this->viaEndCustomer->periods()->whereDate('starts_on', '2025-10-18')->update(['status' => PeriodStatus::Billed->value, 'decided_at' => now()]);
 
         $page = $this->actingAs($this->portalUser, 'customer')->get(route('customer.subscriptions.show', $this->viaEndCustomer))->assertOk();
         $page->assertSee('Exchange Online (Plan 1)')

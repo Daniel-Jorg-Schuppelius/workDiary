@@ -120,7 +120,7 @@ class PeriodPlannerTest extends TestCase {
         $this->assertSame(['created' => 0, 'updated' => 0, 'removed' => 0, 'kept' => 3], $second);
 
         // Entscheidung an der ersten Periode (bestätigt = decided_at), dann Abo verkürzen: entschiedene bleibt, offene folgen.
-        $subscription->periods()->where('starts_on', '2024-08-05')->update(['status' => PeriodStatus::Billed->value, 'decided_at' => now()]);
+        $subscription->periods()->whereDate('starts_on', '2024-08-05')->update(['status' => PeriodStatus::Billed->value, 'decided_at' => now()]);
         $subscription->forceFill(['ends_on' => '2025-08-04', 'quantity' => 5])->save();
         $third = $planner->sync($subscription->fresh(), $reference);
 

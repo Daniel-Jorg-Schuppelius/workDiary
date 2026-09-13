@@ -12,7 +12,7 @@ namespace App\Casts;
 
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
-use Illuminate\Contracts\Database\Eloquent\CastsAttributes;
+use Illuminate\Contracts\Database\Eloquent\{CastsAttributes, ComparesCastableAttributes};
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -28,7 +28,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * @implements CastsAttributes<Money|null, Money|string|float|int|null>
  */
-class MoneyCast implements CastsAttributes {
+class MoneyCast implements CastsAttributes, ComparesCastableAttributes {
     /**
      * @param  string|null  $currencyColumn  Währungsquelle: Spalte oder „relation.spalte“
      * @param  string|null  $scale  Nachkommastellen der Spalte; ohne Angabe die
@@ -66,6 +66,33 @@ class MoneyCast implements CastsAttributes {
             : Money::of((string) $value, $this->currency($model, $attributes), $this->scale());
 
         return [$key => $money->getAmount()];
+    }
+
+    /**
+     * Gleichheit für die Dirty-Prüfung (`isDirty`/`wasChanged`/Audit-Diff).
+     *
+     * SQLite liefert `decimal`-Spalten als Float (741.6), der Cast schreibt den
+     * Dezimalstring ('741.60'); Eloquent vergliche sonst die Strings und hielte
+     * jede unveränderte Zeile für geändert — MariaDB liefert Strings, deshalb
+     * fällt das nur in der CI auf. Verglichen wird der kanonische Betrag.
+     */
+    public function compare(Model $model, string $key, mixed $firstValue, mixed $secondValue): bool {
+        return $this->canonical($model, $firstValue) === $this->canonical($model, $secondValue);
+    }
+
+    /** Kanonischer Betrag der Spalte; nicht-numerischer Fremdwert bleibt, wie er ist. */
+    private function canonical(Model $model, mixed $value): ?string {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if ($value instanceof Money) {
+            return $value->getAmount();
+        }
+        if (!is_numeric($value)) {
+            return (string) $value;
+        }
+
+        return Money::of((string) $value, $this->currency($model, $model->getAttributes()), $this->scale())->getAmount();
     }
 
     /**
