@@ -85,7 +85,8 @@ class RemoteSupportSuggestionService {
 
         $wanted = $groupList
             ->map(fn (object $g): string => $g->provider . '|' . $g->remote_id)
-            ->flip();
+            ->flip()
+            ->all();
 
         /** @var Collection<string, Collection<int, RemotePendingSession>> $sessionsByKey */
         $sessionsByKey = RemotePendingSession::query()
@@ -95,7 +96,7 @@ class RemoteSupportSuggestionService {
             ->whereNull('asset_id')
             ->get()
             ->groupBy(fn (RemotePendingSession $s): string => $s->provider . '|' . $s->remote_id)
-            ->filter(fn ($rows, string $key): bool => $wanted->has($key));
+            ->filter(fn ($rows, string $key): bool => array_key_exists($key, $wanted));
 
         $customers = $this->customers($organization);
         $foreignCustomers = $this->foreignCustomers($organization);

@@ -138,23 +138,38 @@ class PublicRouteTenantTest extends TestCase {
         $this->assertStringContainsString('BEGIN:VCALENDAR', (string) $response->getContent());
     }
 
-    public function test_public_ics_is_org_agnostic_and_only_returns_public_events(): void {
-        // Public-ICS-Feed ist bewusst org-agnostisch: er liefert ausschließlich
-        // Events mit Visibility=Public über ALLE Organisationen hinweg. Test
-        // belegt nur, dass ein nicht öffentliches Event aus Org B NICHT erscheint
-        // (Default-Visibility ist nicht Public, daher reicht ein Default-Event).
-        $orgBEvent = $this->withOrg($this->orgB, fn() => \App\Models\Event::factory()->create([
+    /**
+     * Bis 2026-09-13 lief dieser Feed ohne Anmeldung und über ALLE Mandanten:
+     * Titel, Ort und Räume jedes als „öffentlich" markierten Termins lagen im
+     * offenen Netz. Er hing an keiner Oberfläche, und `Visibility=Public` wirkt
+     * sonst nirgends mandantenübergreifend. Jetzt: angemeldet und auf die
+     * eigene Organisation begrenzt (Mandanten-Review).
+     */
+    public function test_public_ics_requires_auth_and_stays_inside_the_own_tenant(): void {
+        $orgBPublic = $this->withOrg($this->orgB, fn () => \App\Models\Event::factory()->create([
             'organization_id' => $this->orgB->id,
             'responsible_user_id' => $this->userB->id,
-            'title' => 'GEHEIM-ORG-B-PRIVATEVENT',
+            'visibility' => \App\Enums\Event\EventVisibility::Public,
+            'title' => 'GEHEIM-ORG-B-PUBLICEVENT',
+        ]));
+        $orgAPublic = $this->withOrg($this->orgA, fn () => \App\Models\Event::factory()->create([
+            'organization_id' => $this->orgA->id,
+            'responsible_user_id' => $this->userA->id,
+            'visibility' => \App\Enums\Event\EventVisibility::Public,
+            'title' => 'ORG-A-OEFFENTLICH',
         ]));
 
         app()->forgetInstance('currentOrganization');
-        $response = $this->get(route('events.ics.public'));
-        $this->assertSame(200, $response->status());
+        $anonymous = $this->get(route('events.ics.public'));
+        $this->assertContains($anonymous->status(), [302, 401], 'Feed ohne Anmeldung muss 302/401 liefern, war: ' . $anonymous->status());
+        $this->assertStringNotContainsString('GEHEIM-ORG-B-PUBLICEVENT', (string) $anonymous->getContent());
+
+        app()->forgetInstance('currentOrganization');
+        $response = $this->actingAs($this->userA)->get(route('events.ics.public'));
+        $response->assertOk();
         $body = (string) $response->getContent();
-        $this->assertStringContainsString('BEGIN:VCALENDAR', $body);
-        $this->assertStringNotContainsString('GEHEIM-ORG-B-PRIVATEVENT', $body);
+        $this->assertStringContainsString('ORG-A-OEFFENTLICH', $body);
+        $this->assertStringNotContainsString('GEHEIM-ORG-B-PUBLICEVENT', $body);
     }
 
     public function test_personal_ics_feed_requires_auth_and_scopes_to_own_user(): void {

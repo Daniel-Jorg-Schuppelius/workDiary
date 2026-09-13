@@ -10,12 +10,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
-use App\Services\Event\IcsFeedService;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
+use App\Models\{Organization, User};
+use App\Services\Event\{IcsFeedService, OrganizationCalendarFeedService};
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class IcsFeedController extends Controller {
+    use ResolvesCurrentOrganization;
+
     public function __construct(
         private readonly IcsFeedService $ics,
     ) {}
@@ -30,10 +33,31 @@ class IcsFeedController extends Controller {
         ]);
     }
 
+    /** Gemeinsamer Feed der eigenen Organisation — angemeldet und mandantengebunden. */
     public function public(): Response {
-        return response($this->ics->feedPublic(), 200, [
+        return response($this->ics->feedPublic($this->currentOrganization()), 200, [
             'Content-Type' => 'text/calendar; charset=utf-8',
             'Content-Disposition' => 'inline; filename="workdiary-public-events.ics"',
+        ]);
+    }
+
+    /**
+     * Tokenisierter Feed der Organisation (Termine mit Visibility=Public).
+     * Ohne Anmeldung, weil Outlook/Google/Apple eine Abo-Adresse ohne Sitzung
+     * abrufen — Sicherheit über den zufälligen Token, dessen Abdruck die
+     * Organisation bestimmt (Mandanten-Review 2026-09-13).
+     */
+    public function organizationFeed(string $token, OrganizationCalendarFeedService $feeds): Response {
+        if (strlen($token) < 32) {
+            abort(404);
+        }
+        $organization = $feeds->resolve($token);
+        abort_unless($organization instanceof Organization, 404);
+
+        return response($this->ics->feedPublic($organization), 200, [
+            'Content-Type' => 'text/calendar; charset=utf-8',
+            'Content-Disposition' => 'inline; filename="workdiary-public-events.ics"',
+            'Cache-Control' => 'private, max-age=300',
         ]);
     }
 

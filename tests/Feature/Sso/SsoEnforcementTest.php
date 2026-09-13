@@ -61,6 +61,49 @@ final class SsoEnforcementTest extends TestCase {
         $this->assertGuest();
     }
 
+    /**
+     * Mandanten-Review 2026-09-13: Der Controller entschied die SSO-Pflicht über
+     * einen ZWEITEN, mandantenübergreifenden Lookup nach dem Anmeldenamen
+     * (`where('name', …)->orWhere('email', …)->first()`). Angemeldet wird aber
+     * das Konto, das die Passwortprüfung ergeben hat — der Provider sucht dafür
+     * ausschließlich über die (eindeutige) E-Mail. `users.name` ist NICHT
+     * eindeutig: trug ein Konto eines anderen Mandanten als Namen die E-Mail
+     * dieses Nutzers, war offen, welche der beiden Zeilen die Abfrage lieferte.
+     * Fiel die Wahl auf das fremde Konto und war dieses `sso_exempt` bzw. seine
+     * Organisation ohne Zwang, entfiel die Umleitung und der SSO-pflichtige
+     * Nutzer kam mit Passwort herein (die Provider-Sperre ist für die
+     * Passwortprüfung ausgesetzt, danach folgt direkt `Auth::login()`).
+     *
+     * Der Test bildet diese Mehrdeutigkeit nach und hält fest, dass die
+     * Entscheidung am authentifizierten Konto hängt: Beide Organisationen
+     * erzwingen SSO, umgeleitet werden muss zur EIGENEN. Er reproduziert den
+     * alten Zustand nicht zwingend — welche Zeile die Abfrage lieferte, hing am
+     * Ausführungsplan; genau diese Unbestimmtheit war der Mangel.
+     */
+    public function test_the_sso_decision_follows_the_authenticated_account(): void {
+        $this->setUpOrganization(['plan' => Organization::PLAN_ENTERPRISE]);
+        $this->enforcedConnection();
+        $enforced = $this->makeUser();
+
+        // Fremder Mandant, ebenfalls SSO-pflichtig: sein Anzeigename ist die
+        // E-Mail-Adresse des obigen Kontos (so provisionieren Verzeichnisdienste).
+        $other = Organization::factory()->create(['plan' => Organization::PLAN_ENTERPRISE]);
+        $this->enforcedConnection($other->id);
+        User::factory()->create([
+            'organization_id' => $other->id,
+            'name' => $enforced->email,
+            'password' => bcrypt('anderes-passwort'),
+            'is_new_system' => true,
+        ]);
+
+        $this->post('/login', [
+            'username' => $enforced->email,
+            'password' => 'secret-password',
+        ])->assertRedirect(route('sso.start', ['slug' => $this->organization->slug]));
+
+        $this->assertGuest();
+    }
+
     public function test_provider_blocks_password_even_without_controller_redirect(): void {
         $this->setUpOrganization(['plan' => Organization::PLAN_ENTERPRISE]);
         $this->enforcedConnection();

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AutomationRule, AutomationRuleRun, User};
 use CommonToolkit\Helper\Data\JsonHelper;
@@ -25,6 +26,7 @@ use Illuminate\View\View;
  * Form-Builder ist als Phase-2-Erweiterung vorgesehen.
  */
 class AutomationRuleController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(): View {
         $this->ensureAdmin();
 
@@ -89,7 +91,7 @@ class AutomationRuleController extends Controller {
         abort_if($conditions === null || $actions === null, 422, 'Ungültiges JSON');
 
         AutomationRule::create([
-            'organization_id' => (int) app('currentOrganization')->id,
+            'organization_id' => (int) $this->currentOrganization()->id,
             'name' => $data['name'],
             'trigger_event' => $data['trigger_event'],
             'conditions' => $conditions,
@@ -121,7 +123,7 @@ class AutomationRuleController extends Controller {
     }
 
     private function ensureOwnsRule(AutomationRule $rule): void {
-        $orgId = (int) (app('currentOrganization')->id ?? 0);
+        $orgId = (int) $this->currentOrganization()->id;
         abort_unless($rule->organization_id === $orgId, 404);
     }
 

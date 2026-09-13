@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Ai;
 
 use App\Enums\Ai\AiMemoryEntryType;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\{Customer, Invoice, InvoiceItem, ProtocolItem, Quote, QuoteItem, User};
@@ -35,6 +36,7 @@ use Illuminate\View\View;
  * enden IMMER als Flash — der Beleg-Workflow hängt nie an der KI.
  */
 class AiSuggestionController extends Controller {
+    use ResolvesCurrentOrganization;
     public function __construct(
         private readonly ItemTextSuggestionService $suggestions,
         private readonly ProtocolTextSuggestionService $protocolSuggestions,
@@ -191,7 +193,7 @@ class AiSuggestionController extends Controller {
             $customerId = null; // Mandantengrenze: fremde Kunden nie verknüpfen.
         }
 
-        $memory->rememberLearned(app('currentOrganization'), Auth::user(), [
+        $memory->rememberLearned($this->currentOrganization(), Auth::user(), [
             'customer_id' => $customerId,
             'entry_type' => AiMemoryEntryType::from($data['entry_type']),
             'term' => $data['term'] ?? null,

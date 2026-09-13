@@ -15,8 +15,8 @@ use App\Enums\User\Permission;
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{Attachment, Comment, DiaryEntry, EmergencyAssignment, Expense, OnCallShift, OpenIssue, PerDiemTrip, ScheduledShift, User, Vacation};
 use App\Services\Onboarding\OnboardingChecklistResolver;
+use App\Support\{OrganizationContext, Setting};
 use App\Support\Query\DateRange;
-use App\Support\Setting;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -288,13 +288,13 @@ class DashboardService {
     public function finance(User $user): array {
         return $this->remember('finance', $user, function () use ($user): array {
             $now = $this->now();
-            $orgId = $user->organization_id;
+            $orgId = OrganizationContext::currentId() ?? $user->organization_id;
             $monthStart = $now->startOfMonth();
             $monthEnd = $now->endOfMonth();
 
             $expenseAggregates = Expense::query()
                 ->where('user_id', $user->id)
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->whereBetween('date', DateRange::days($monthStart, $monthEnd))
                 ->selectRaw('
                     COALESCE(SUM(CASE WHEN status IN (?, ?, ?) THEN amount_gross ELSE 0 END), 0) AS submitted_gross,
@@ -313,14 +313,14 @@ class DashboardService {
 
             $tripsThisMonth = PerDiemTrip::query()
                 ->where('user_id', $user->id)
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where('started_at', '>=', $monthStart)
                 ->where('started_at', '<=', $monthEnd)
                 ->count();
 
             $tripDrafts = PerDiemTrip::query()
                 ->where('user_id', $user->id)
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where('status', PerDiemTripStatus::Draft)
                 ->count();
 
@@ -352,15 +352,15 @@ class DashboardService {
                 return null;
             }
 
-            $orgId = $user->organization_id;
+            $orgId = OrganizationContext::currentId() ?? $user->organization_id;
 
             return [
                 'expenses' => Expense::query()
-                    ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                    ->where('organization_id', $orgId)
                     ->where('status', ExpenseStatus::Pending)
                     ->count(),
                 'vacations' => Vacation::query()
-                    ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                    ->where('organization_id', $orgId)
                     ->where('status', VacationStatus::Pending)
                     ->count(),
             ];
@@ -374,11 +374,11 @@ class DashboardService {
      */
     public function vacation(User $user): array {
         return $this->remember('vacation', $user, function () use ($user): array {
-            $orgId = $user->organization_id;
+            $orgId = OrganizationContext::currentId() ?? $user->organization_id;
 
             $approvedDays = Vacation::query()
                 ->where('user_id', $user->id)
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where('status', VacationStatus::Approved)
                 ->whereYear('start_date', $this->now()->year)
                 ->get(['start_date', 'end_date'])
@@ -387,7 +387,7 @@ class DashboardService {
             return [
                 'pending' => Vacation::query()
                     ->where('user_id', $user->id)
-                    ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                    ->where('organization_id', $orgId)
                     ->where('status', VacationStatus::Pending)
                     ->count(),
                 'approved_days_this_year' => (float) $approvedDays,

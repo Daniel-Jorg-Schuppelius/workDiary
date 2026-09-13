@@ -16,7 +16,7 @@ use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDa
 use App\Models\{Customer, User};
 use App\Services\Compliance\DrivingTimeBudget;
 use App\Services\Dispatch\DispatchBoardService;
-use App\Support\Sqid;
+use App\Support\{OrganizationContext, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\Request;
@@ -330,11 +330,11 @@ class DispatchBoardController extends Controller {
     /** @return Collection<int, User> */
     private function loadSelectableUsers(): Collection {
         $authUser = auth()->user();
-        $orgId = $authUser instanceof User ? $authUser->organization_id : null;
+        $orgId = OrganizationContext::currentId() ?? ($authUser instanceof User ? $authUser->organization_id : null);
 
         /** @var Collection<int, User> $users */
         $users = User::query()
-            ->when($orgId !== null, fn ($q) => $q->where('organization_id', $orgId))
+            ->forOrganization($orgId)
             ->orderBy('name')
             ->get(['id', 'name']);
 

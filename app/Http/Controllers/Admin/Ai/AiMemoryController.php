@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Ai;
 
 use App\Enums\Ai\AiMemoryEntryType;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiMemoryEntry;
 use App\Models\Customer;
@@ -29,6 +30,7 @@ use Illuminate\View\View;
  * löschbar; gelernte Einträge sind als solche gekennzeichnet.
  */
 class AiMemoryController extends Controller {
+    use ResolvesCurrentOrganization;
     /**
      * DSGVO-Export des KI-Gedächtnisses (Vollaudit 2026-07, M9): JSON-Download,
      * optional auf einen Kunden gescopt — macht AiMemoryService::exportFor für
@@ -37,8 +39,7 @@ class AiMemoryController extends Controller {
     public function export(Request $request, \App\Services\Ai\AiMemoryService $memory): \Illuminate\Http\JsonResponse {
         Gate::authorize('viewAny', AiMemoryEntry::class);
 
-        /** @var \App\Models\Organization $org */
-        $org = app('currentOrganization');
+        $org = $this->currentOrganization();
         $customerId = $request->query('kunde') !== null ? (int) $request->query('kunde') : null;
 
         return response()

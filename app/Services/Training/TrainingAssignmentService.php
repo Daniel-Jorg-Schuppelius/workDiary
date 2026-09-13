@@ -65,7 +65,11 @@ class TrainingAssignmentService {
 
         foreach ($wanted as $userId => $courses) {
             foreach ($courses as $courseId => $requirement) {
+                // Org explizit, obwohl (Nutzer, Kurs) sie schon festlegt: nach einem
+                // Org-Wechsel des Nutzers bliebe sonst dessen alte Zuweisung stehen
+                // und unterdrückte das neue Soll (Mandanten-Review 2026-09-13).
                 $exists = TrainingAssignment::query()->withoutGlobalScopes()
+                    ->where('organization_id', $organization->id)
                     ->where('user_id', $userId)
                     ->where('training_course_id', $courseId)
                     ->exists();
@@ -113,6 +117,7 @@ class TrainingAssignmentService {
 
         /** @var TrainingAssignment $assignment */
         $assignment = TrainingAssignment::query()->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
             ->where('user_id', $user->id)
             ->where('training_course_id', $course->id)
             ->first() ?? new TrainingAssignment();

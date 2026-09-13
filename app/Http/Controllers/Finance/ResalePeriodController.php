@@ -157,6 +157,7 @@ class ResalePeriodController extends Controller {
         $organization = $this->currentOrganizationOrAbort(404);
         $period->load(['subscription.customer', 'subscription.foreignCustomer.customer', 'links']);
         $billedTo = $period->subscription->billedTo();
+        $hasSource = $billedTo !== null && $this->mirror->coversRecipient($organization, $billedTo);
         $lines = $billedTo === null ? collect() : $this->mirror->candidatesFor($organization, $billedTo->id, $period);
         // Bezüge an DIESER Periode zählen nicht: ein erneuter Bezug ersetzt sie; sie werden nur markiert.
         $consumed = $this->linker->consumed($lines, $period);
@@ -180,7 +181,7 @@ class ResalePeriodController extends Controller {
             'period' => $period,
             'rows' => $rows,
             'needed' => $period->openMonths(),
-            'hasSource' => $billedTo !== null && $this->mirror->coversRecipient($organization, $billedTo),
+            'hasSource' => $hasSource,
         ]);
     }
 

@@ -23,6 +23,19 @@ use App\Models\Organization;
  * Request-Ende stehen.
  */
 final class OrganizationContext {
+    /** Aktuell gebundene Organisation oder null (Konsole, Job ohne run(), Nutzer ohne Kontext). */
+    public static function current(): ?Organization {
+        $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
+
+        return $bound instanceof Organization ? $bound : null;
+    }
+
+    public static function currentId(): ?int {
+        $organization = self::current();
+
+        return $organization instanceof Organization ? (int) $organization->id : null;
+    }
+
     /**
      * Führt $fn mit gebundener Organisation aus und stellt die vorherige
      * Bindung im finally wieder her (bzw. entfernt sie).
@@ -33,8 +46,7 @@ final class OrganizationContext {
      * @return TReturn
      */
     public static function run(Organization $organization, callable $fn): mixed {
-        $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        $previous = $bound instanceof Organization ? $bound : null;
+        $previous = self::current();
         app()->instance('currentOrganization', $organization);
 
         try {
@@ -60,8 +72,7 @@ final class OrganizationContext {
      * @return TReturn
      */
     public static function runWithout(callable $fn): mixed {
-        $bound = app()->bound('currentOrganization') ? app('currentOrganization') : null;
-        $previous = $bound instanceof Organization ? $bound : null;
+        $previous = self::current();
         app()->forgetInstance('currentOrganization');
 
         try {

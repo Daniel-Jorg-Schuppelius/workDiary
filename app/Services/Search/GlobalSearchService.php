@@ -17,7 +17,7 @@ use App\Enums\User\Permission;
 use App\Models\{Asset, Attachment, Comment, CommunicationNote, Customer, DiaryEntry, Document, Expense, FormSubmission, KnowledgeArticle, PerDiemTrip, Project, User};
 use App\Services\Asset\AssetFormOptions;
 use App\Services\Licensing\FeatureFlagResolver;
-use App\Support\CarbonFmt;
+use App\Support\{CarbonFmt, OrganizationContext};
 use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\Gate;
 
@@ -81,7 +81,7 @@ class GlobalSearchService {
      * @return list<SearchGroup>
      */
     public function groups(User $user, string $term, array $filters = [], int $limit = 5): array {
-        $orgId = $user->organization_id;
+        $orgId = OrganizationContext::currentId() ?? $user->organization_id;
         $domain = $filters['domain'] ?? null;
         $from = $filters['from'] ?? null;
         $to = $filters['to'] ?? null;
@@ -102,7 +102,7 @@ class GlobalSearchService {
 
         if ($wants('customers') && $person === null && $customer === null) {
             $query = Customer::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where(fn($q) => $q->whereLikeEscaped('name', $term)
                     ->orWhereLikeEscaped('number', $term)
                     ->orWhereLikeEscaped('email', $term));
@@ -120,7 +120,7 @@ class GlobalSearchService {
 
         if ($wants('projects') && $person === null) {
             $query = Project::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where(fn($q) => $q->whereLikeEscaped('name', $term))
                 ->when($customer !== null, fn($q) => $q->where('customer_id', $customer))
                 ->with('customer:id,name');
@@ -142,7 +142,7 @@ class GlobalSearchService {
         // keine Treffer; Kunden-Filter über customer_id.
         if ($wants('assets') && $person === null && Gate::forUser($user)->allows('viewAny', Asset::class)) {
             $assetQuery = Asset::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where(fn($q) => $q->whereLikeEscaped('name', $term)
                     ->orWhereLikeEscaped('asset_no', $term)
                     ->orWhereLikeEscaped('inventory_no', $term)
@@ -190,7 +190,7 @@ class GlobalSearchService {
 
         if ($wants('expenses')) {
             $expenseQuery = Expense::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where(fn($q) => $q->whereLikeEscaped('vendor', $term)
                     ->orWhereLikeEscaped('description', $term)
                     ->orWhereLikeEscaped('reimbursement_reference', $term))
@@ -218,7 +218,7 @@ class GlobalSearchService {
 
         if ($wants('per_diem_trips') && $customer === null) {
             $tripQuery = PerDiemTrip::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where(fn($q) => $q->whereLikeEscaped('location', $term)
                     ->orWhereLikeEscaped('purpose', $term)
                     ->orWhereLikeEscaped('country', $term))
@@ -243,7 +243,7 @@ class GlobalSearchService {
         // Nur Admin/Org-Manager dürfen Mitarbeiter durchsuchen.
         if ($wants('users') && $customer === null && ($user->isAdmin() || Gate::forUser($user)->allows('manage-members'))) {
             $query = User::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where(fn($q) => $q->whereLikeEscaped('name', $term)->orWhereLikeEscaped('email', $term))
                 ->when($person !== null, fn($q) => $q->whereKey($person));
             $range($query, 'created_at');
@@ -388,7 +388,7 @@ class GlobalSearchService {
         // ohnehin über die AttachmentPolicy. Volltext/OCR bleibt Folge-MVP.
         if ($wants('attachments') && $customer === null) {
             $attachmentQuery = Attachment::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->whereLikeEscaped('original_name', $term)
                 ->whereNull('meta_type')
                 ->when($person !== null, fn($q) => $q->where('user_id', $person))

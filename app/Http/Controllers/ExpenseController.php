@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveExpenseRequest;
 use App\Models\{Customer, Expense, ExpenseCategory, Project, User};
 use App\Services\Billing\ExpenseLinkProviderResolver;
@@ -25,6 +25,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ExpenseController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     public function __construct(
@@ -113,8 +114,7 @@ class ExpenseController extends Controller {
         $file = $request->file('receipt');
         /** @var \App\Models\User $actor */
         $actor = Auth::user();
-        /** @var \App\Models\Organization $organization */
-        $organization = app('currentOrganization');
+        $organization = $this->currentOrganization();
 
         $result = $scanner->createDraftFromScan($file, $actor, $organization);
 

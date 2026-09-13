@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Ai;
 
 use App\Enums\Ai\{AiConnectionStatus, AiFamily, AiProviderType};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection, AiUsagePeriod};
 use App\Services\Ai\{AiCapabilityRegistry, AiConnectionTester};
@@ -28,6 +29,7 @@ use Illuminate\View\View;
  * der API-Schlüssel verlässt den Server nie.
  */
 class AiConnectionController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(AiCapabilityRegistry $registry): View {
         Gate::authorize('viewAny', AiProviderConnection::class);
 
@@ -99,7 +101,7 @@ class AiConnectionController extends Controller {
         // (Kundennamen-Verbot, Nominalstil) beim Einrichten der KI säen —
         // idempotent, editierbar wie manuelle Einträge.
         app(\App\Services\Ai\AiMemoryService::class)->seedDefaults(
-            app('currentOrganization'),
+            $this->currentOrganization(),
             Auth::id() !== null ? (int) Auth::id() : null,
         );
 

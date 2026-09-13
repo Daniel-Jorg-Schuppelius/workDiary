@@ -72,7 +72,7 @@ class LearningBookingService {
             ->where('status', LearningBookingStatus::Requested->value)
             ->when($userId !== null, fn ($q) => $q->where('user_id', $userId))
             ->when($externalId !== null, fn ($q) => $q->where('external_participant_id', $externalId))
-            ->when($booker === null && $customerId !== null, fn ($q) => $q->where('customer_id', $customerId))
+            ->when($booker === null, fn ($q) => $q->where('customer_id', $customerId))
             ->first();
 
         if ($existing !== null) {

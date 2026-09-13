@@ -50,9 +50,11 @@ class RemoteSupportPendingController extends Controller {
         $q = trim((string) $request->query('q', ''));
         $search = $q !== '' ? $q : null;
 
-        $organization = $admin->organization;
-        $groupsAll = $organization !== null ? $this->service->openPendingGroups($organization, $search) : collect();
-        $sharedAll = $organization !== null ? $this->service->openSharedSessions($organization, $search) : collect();
+        // admin() erzwingt den Org-Kontext (422); ein collect()-Fallback würde
+        // die Objekt-Formen der Sammlungen zu mixed verwässern.
+        $organization = $this->organization($admin);
+        $groupsAll = $this->service->openPendingGroups($organization, $search);
+        $sharedAll = $this->service->openSharedSessions($organization, $search);
         $sharedSessionCount = (int) $sharedAll->sum(fn (object $d): int => $d->sessions->count());
 
         $groups = $this->paginateGroups($groupsAll, (int) Setting::get('pagination.remote_pending_groups', 10), 'ids_page', $request);
@@ -61,18 +63,14 @@ class RemoteSupportPendingController extends Controller {
 
         // Zuweisungsvorschläge nur für die sichtbare Seite berechnen (Überlappung
         // mit erfassten Zeiten + Alias-Abgleich); befüllen ausschließlich vor.
-        $suggestions = [];
-        $sessionSuggestions = [];
-        if ($organization !== null) {
-            $suggestions = $this->suggester->suggestForGroups($organization, $groups->items());
-            $sessionSuggestions = $this->suggester->suggestForSharedSessions(
-                $organization,
-                collect($shared->items())->map(fn (object $d): object => (object) [
-                    'asset' => $d->asset,
-                    'sessions' => $d->sessions->take($sharedSessionLimit),
-                ]),
-            );
-        }
+        $suggestions = $this->suggester->suggestForGroups($organization, $groups->items());
+        $sessionSuggestions = $this->suggester->suggestForSharedSessions(
+            $organization,
+            collect($shared->items())->map(fn (object $d): object => (object) [
+                'asset' => $d->asset,
+                'sessions' => $d->sessions->take($sharedSessionLimit),
+            ]),
+        );
 
         // Nur fernwartbare Geräte (Arbeitsplatz/Server/Notebook) können eine ID tragen.
         $assets = Asset::query()

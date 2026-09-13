@@ -110,7 +110,7 @@ class RecapitulativeStatementService {
                 continue;
             }
 
-            $rows[$vatId] ??= ['vat_id' => $vatId, 'name' => $customer instanceof Customer ? (string) $customer->name : '', 'amount' => '0.00'];
+            $rows[$vatId] ??= ['vat_id' => $vatId, 'name' => (string) $customer->name, 'amount' => '0.00'];
             $rows[$vatId]['amount'] = NumberHelper::addPrecise($rows[$vatId]['amount'], $amount->getAmount(), 2);
         }
 

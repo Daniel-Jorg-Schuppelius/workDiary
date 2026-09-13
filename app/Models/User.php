@@ -186,9 +186,15 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
 
     /**
      * Darf der User den neuen Bereich der Anwendung nutzen?
-     * Admins haben immer Zugriff.
+     * Admins haben immer Zugriff — aber nur mit Organisation: ohne Mandanten-
+     * kontext filtert der OrganizationScope nicht (Mandanten-Review 2026-09-13);
+     * org-übergreifend arbeitet allein der Plattform-Betreiber.
      */
     public function canAccessNew(): bool {
+        if ($this->organization_id === null && ! $this->isGlobalAdmin()) {
+            return false;
+        }
+
         return $this->isAdmin() || $this->existsInNewSystem();
     }
 

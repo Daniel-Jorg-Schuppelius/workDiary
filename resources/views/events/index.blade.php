@@ -29,6 +29,11 @@
             <x-icon-btn icon="calendar_month" tone="ghost" size="sm" :href="route('events.calendar')" show-label>
                 {{ __('Kalender') }}
             </x-icon-btn>
+            @can(\App\Enums\User\Permission::OrganizationUpdate->value)
+                <x-icon-btn icon="rss_feed" tone="ghost" size="sm" :href="route('events.feed.show')" show-label>
+                    {{ __('Kalender-Abo') }}
+                </x-icon-btn>
+            @endcan
             @can('create', App\Models\Event::class)
                 <x-icon-btn icon="add" tone="primary" size="sm" data-entry-modal-trigger :href="route('events.create').'?dialog=1'" show-label>
                     {{ __('Neue Veranstaltung') }}

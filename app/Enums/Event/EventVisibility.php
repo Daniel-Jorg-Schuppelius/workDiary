@@ -17,8 +17,11 @@ use App\Enums\Contracts\HasLabel;
  * - Internal: nur Mitglieder der eigenen Organisation sehen das Event.
  * - External: zusätzlich der verknüpfte externe Verantwortliche
  *   (Customer-User, sofern später ein Portal angebunden wird).
- * - Public: jeder eingeloggte User org-übergreifend (für mandanten-
- *   übergreifende Schulungen / öffentliche Veranstaltungen).
+ * - Public: erscheint zusätzlich im gemeinsamen ICS-Feed der eigenen
+ *   Organisation ({@see \App\Services\Event\IcsFeedService::feedPublic()}).
+ *   NICHT mandantenübergreifend: der Feed lief bis 2026-09-13 anonym über alle
+ *   Mandanten, was hier als „jeder eingeloggte User org-übergreifend"
+ *   beschrieben war — umgesetzt war davon nur die anonyme Ausgabe.
  */
 enum EventVisibility: string implements HasLabel {
     use HasOptions;

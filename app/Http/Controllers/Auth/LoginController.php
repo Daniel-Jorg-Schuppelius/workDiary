@@ -72,7 +72,7 @@ class LoginController extends Controller {
             // Aufzählen gültiger Benutzernamen samt Org-Slug benutzen, ganz
             // ohne Passwort. Wer bis hierher kommt, kennt das Passwort bereits.
             // Die harte Sperre sitzt zusätzlich im LegacyUserProvider.
-            $ssoRedirect = $this->ssoEnforcedRedirect($credentials['username']);
+            $ssoRedirect = $this->ssoEnforcedRedirect($user);
             if ($ssoRedirect !== null) {
                 // Zähler weiterzählen statt leeren: eine Umleitung ist kein
                 // Login, und der Pfad darf nicht ungebremst laufen.
@@ -149,16 +149,19 @@ class LoginController extends Controller {
 
     /**
      * Erzwingt eine Organisation SSO und ist das Konto kein Break-Glass-Konto,
-     * wird der Passwort-Login gar nicht erst versucht, sondern zum SSO-Start
-     * umgeleitet. Lookup wie im Provider: Legacy-Name ODER E-Mail.
+     * wird nicht angemeldet, sondern zum SSO-Start umgeleitet.
+     *
+     * Entschieden wird über das gerade per Passwort geprüfte Konto
+     * ({@see Auth::getLastAttempted()}). Ein zweiter Lookup über den
+     * Anmeldenamen war mandantenübergreifend und traf bei mehrdeutigem
+     * `users.name` (nur `email` ist eindeutig) womöglich ein FREMDES Konto:
+     * war dieses `sso_exempt` oder seine Organisation ohne Zwang, entfiel die
+     * Umleitung und der SSO-pflichtige Nutzer kam mit Passwort herein. Die
+     * harte Sperre im {@see \App\Legacy\Auth\LegacyUserProvider} greift hier
+     * nicht: sie ist für die Passwortprüfung ausgesetzt, und angemeldet wird
+     * danach direkt über `Auth::login()` (Mandanten-Review 2026-09-13).
      */
-    private function ssoEnforcedRedirect(string $username): ?RedirectResponse {
-        $user = User::query()
-            ->withoutGlobalScopes()
-            ->whereNull('customer_id')
-            ->where(fn ($query) => $query->where('name', $username)->orWhere('email', $username))
-            ->first();
-
+    private function ssoEnforcedRedirect(?User $user): ?RedirectResponse {
         if (
             ! $user instanceof User
             || $user->sso_exempt

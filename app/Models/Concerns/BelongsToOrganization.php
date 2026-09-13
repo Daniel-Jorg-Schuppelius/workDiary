@@ -29,6 +29,14 @@ trait BelongsToOrganization {
     /** @var list<string> org-pflichtige Kerntabellen — Gegenstück zur Migration 2027_02_19_100800 (NOT NULL). */
     private const ORG_REQUIRED_TABLES = ['invoices', 'time_entries', 'customers', 'tasks', 'suppliers', 'articles', 'timesheets'];
 
+    /**
+     * @var list<string> Tabellen, die auch für einen org-losen Akteur geschrieben werden
+     *                   dürfen: das Audit-Protokoll führt dafür die Kette `:0` (MVP-722) —
+     *                   sonst könnte sich ein Nutzer ohne Organisation nicht einmal abmelden
+     *                   (das User-Update beim Logout wird auditiert).
+     */
+    private const ORG_OPTIONAL_TABLES = ['audit_logs'];
+
     public static function bootBelongsToOrganization(): void {
         static::addGlobalScope(new OrganizationScope);
 
@@ -60,6 +68,7 @@ trait BelongsToOrganization {
             if (
                 empty($model->organization_id)
                 && Auth::check()
+                && ! in_array($model->getTable(), self::ORG_OPTIONAL_TABLES, true)
             ) {
                 /** @var User|null $authUser */
                 $authUser = Auth::user();

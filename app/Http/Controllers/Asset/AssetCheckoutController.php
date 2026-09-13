@@ -14,7 +14,7 @@ use App\Exceptions\AssetValidationException;
 use App\Http\Controllers\Controller;
 use App\Models\{Asset, AssetAssignment, DiaryEntry, Team, User};
 use App\Services\Asset\AssetAssignmentService;
-use App\Support\Sqid;
+use App\Support\{OrganizationContext, Sqid};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Gate;
@@ -120,11 +120,10 @@ class AssetCheckoutController extends Controller {
         // Mandantengrenze: Ausgabe nur an Nutzer der eigenen Org — User hat keinen
         // globalen OrganizationScope (Whitebox-Befund 2026-07).
         $authUser = auth()->user();
-        $orgId = $authUser instanceof User ? $authUser->organization_id : null;
+        $orgId = OrganizationContext::currentId() ?? ($authUser instanceof User ? $authUser->organization_id : null);
 
-        return User::query()
-            ->when($orgId !== null, fn ($q) => $q->where('organization_id', $orgId))
-            ->find($id);
+        // forOrganization(null) filtert auf organization_id IS NULL — fail-closed statt ungefiltert.
+        return User::query()->forOrganization($orgId)->find($id);
     }
 
     private function resolveTeam(?string $raw): ?Team {

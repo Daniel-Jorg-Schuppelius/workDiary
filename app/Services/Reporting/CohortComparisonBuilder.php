@@ -167,9 +167,12 @@ class CohortComparisonBuilder {
             ];
         }
 
-        $aggBefore = $withDate > 0 ? round($beforeSum / $withDate, 2) : null;
-        $aggAfter = $withDate > 0 ? round($afterSum / $withDate, 2) : null;
-        $aggDelta = ($aggBefore !== null && $aggAfter !== null) ? round($aggAfter - $aggBefore, 2) : null;
+        $aggBefore = $aggAfter = $aggDelta = null;
+        if ($withDate > 0) {
+            $aggBefore = round($beforeSum / $withDate, 2);
+            $aggAfter = round($afterSum / $withDate, 2);
+            $aggDelta = round($aggAfter - $aggBefore, 2);
+        }
 
         ksort($weekTotals);
         $weekly = [];

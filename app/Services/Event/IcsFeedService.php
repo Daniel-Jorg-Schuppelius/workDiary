@@ -12,7 +12,7 @@ namespace App\Services\Event;
 
 use App\Enums\Event\EventVisibility;
 use App\Enums\Vacation\VacationStatus;
-use App\Models\{AppointmentRequest, Event, ScheduledShift, User, Vacation};
+use App\Models\{AppointmentRequest, Event, Organization, ScheduledShift, User, Vacation};
 use Carbon\CarbonImmutable;
 use DateTimeZone;
 use Spatie\IcalendarGenerator\Components\{Calendar, Event as IcsEvent};
@@ -37,12 +37,19 @@ class IcsFeedService {
         return $this->build($events->all(), 'workDiary – Persönlicher Kalender');
     }
 
-    public function feedPublic(): string {
-        // Bewusst org-agnostisch: liefert ausschließlich Events mit
-        // Visibility=Public über alle Organisationen hinweg (opt-in durch den
-        // jeweiligen Mandanten). Siehe PublicRouteTenantTest.
+    /**
+     * Gemeinsamer Feed EINER Organisation: alle Termine mit Visibility=Public.
+     *
+     * Bis 2026-09-13 lief das ohne Anmeldung und über alle Mandanten hinweg —
+     * Titel, Ort und Räume jedes als „öffentlich" markierten Termins lagen im
+     * offenen Netz, und kein Mandant konnte verhindern, neben fremden zu
+     * stehen. Der Feed hing an keiner Oberfläche; „öffentlich" wirkt sonst
+     * nirgends mandantenübergreifend (Mandanten-Review 2026-09-13).
+     */
+    public function feedPublic(Organization $organization): string {
         $events = Event::query()
             ->withoutGlobalScopes()
+            ->where('organization_id', $organization->id)
             ->with(['rooms', 'category'])
             ->whereNull('cancelled_at')
             ->where('visibility', EventVisibility::Public->value)
@@ -51,7 +58,7 @@ class IcsFeedService {
             ->orderBy('started_at')
             ->get();
 
-        return $this->build($events->all(), 'workDiary – Öffentliche Veranstaltungen');
+        return $this->build($events->all(), 'workDiary – Öffentliche Veranstaltungen: ' . $organization->name);
     }
 
     /**

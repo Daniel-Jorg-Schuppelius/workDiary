@@ -13,10 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Admin\Ai;
 
 use App\Enums\Ai\AiFamily;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\WritesReportCsv;
 use App\Models\Ai\{AiProviderConnection, AiTextSuggestion, AiUsagePeriod};
-use App\Models\Organization;
 use App\Services\Ai\AiBudgetService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Carbon;
@@ -35,6 +35,7 @@ use Symfony\Component\HttpFoundation\Response;
  * die admin.ai.*-Routen).
  */
 class AiUsageReportController extends Controller {
+    use ResolvesCurrentOrganization;
     use WritesReportCsv;
 
     private const MONTHS = 12;
@@ -42,8 +43,7 @@ class AiUsageReportController extends Controller {
     public function index(Request $request, AiBudgetService $budget): View|Response {
         Gate::authorize('viewAny', AiProviderConnection::class);
 
-        /** @var Organization $organization */
-        $organization = app('currentOrganization');
+        $organization = $this->currentOrganization();
 
         // Lückenlose Monatsachse (aktueller Monat zuerst) — auch ohne Verbrauch.
         $months = collect(range(0, self::MONTHS - 1))

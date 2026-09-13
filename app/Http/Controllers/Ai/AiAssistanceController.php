@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Ai;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\{CommunicationNote, CustomerQuery, DiaryEntry, Document, ImportRun, Organization, Project, Quote, QuoteItem, User};
@@ -38,6 +39,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * gelesen und verworfen, die Entscheidung wird auditiert.
  */
 class AiAssistanceController extends Controller {
+    use ResolvesCurrentOrganization;
     public function __construct(
         private readonly DocumentTranslationSuggestionService $documentTexts,
         private readonly PortalQuerySuggestionService $portalQueries,
@@ -324,10 +326,7 @@ class AiAssistanceController extends Controller {
     }
 
     private function organization(): Organization {
-        /** @var Organization $organization */
-        $organization = app('currentOrganization');
-
-        return $organization;
+        return $this->currentOrganization();
     }
 
     private function actor(): User {

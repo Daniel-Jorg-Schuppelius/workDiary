@@ -95,8 +95,12 @@ Route::middleware('guest')->group(function (): void {
 
 Route::post('/locale/{locale}', [LocaleController::class, 'switch'])->name('locale.switch');
 
-// Öffentlicher ICS-Feed (nur Visibility=Public Events)
-Route::get('calendar/public.ics', [IcsFeedController::class, 'public'])->name('events.ics.public');
+// Tokenisierter Feed der Organisation (Termine mit Visibility=Public).
+// Bis 2026-09-13 lag derselbe Inhalt unter der festen Adresse `calendar/public.ics`
+// — ohne Anmeldung UND über alle Mandanten hinweg (Mandanten-Review).
+Route::get('calendar/org/{token}.ics', [IcsFeedController::class, 'organizationFeed'])
+    ->middleware('throttle:120,1')
+    ->name('calendar.feed.organization');
 
 // Tokenisierter persönlicher Schedule-Feed (Urlaube + Schichten).
 // Throttle als Brute-Force-/Abuse-Schutz (Feed wird von Kalender-Clients gepollt).
@@ -1148,6 +1152,13 @@ Route::middleware('auth')->group(function () {
         // ── Veranstaltungen / Schulungen ─────────────────────────────────────────
         Route::get('events/calendar', [EventController::class, 'calendar'])->name('events.calendar');
         Route::patch('events/{event}/cancel', [EventController::class, 'cancel'])->name('events.cancel');
+        // VOR der Ressource: sonst frisst `events/{event}` die feste Adresse
+        // und das Model-Binding antwortet mit 404 (wie bei `events/calendar`).
+        // Verwaltung des Abo-Links, Recht `organization.update` wie beim Geräte-Pass.
+        Route::get('events/kalender-abo', [\App\Http\Controllers\OrganizationCalendarFeedController::class, 'show'])->name('events.feed.show');
+        Route::post('events/kalender-abo/token', [\App\Http\Controllers\OrganizationCalendarFeedController::class, 'rotate'])->name('events.feed.rotate');
+        Route::delete('events/kalender-abo/token', [\App\Http\Controllers\OrganizationCalendarFeedController::class, 'revoke'])->name('events.feed.revoke');
+
         Route::resource('events', EventController::class);
 
         Route::post('events/{event}/respond', [EventParticipantController::class, 'respond'])->name('events.respond');
@@ -1193,6 +1204,10 @@ Route::middleware('auth')->group(function () {
         Route::delete('location/devices/{device}', [\App\Http\Controllers\Location\LocationDeviceController::class, 'destroy'])->name('location.devices.destroy');
 
         Route::get('calendar/events.ics', [IcsFeedController::class, 'personal'])->name('events.ics.personal');
+        // Gemeinsamer ICS-Feed der eigenen Organisation (nur Visibility=Public).
+        // Bis 2026-09-13 ohne Anmeldung und über ALLE Mandanten hinweg erreichbar —
+        // Titel, Ort und Räume lagen damit offen im Netz (Mandanten-Review).
+        Route::get('calendar/public.ics', [IcsFeedController::class, 'public'])->name('events.ics.public');
 
         // ── Kunden (Kimai-style customers) ──────────────────────────────────────
         // Lead-Pipeline (Feature 091, MVP-654–656): Interessenten vor dem

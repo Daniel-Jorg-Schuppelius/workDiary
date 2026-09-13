@@ -13,6 +13,7 @@ namespace App\Services\Reminders;
 use App\Enums\Expense\{ExpenseStatus, PerDiemTripStatus};
 use App\Enums\Vacation\VacationStatus;
 use App\Models\{Expense, PerDiemTrip, User, Vacation};
+use App\Support\OrganizationContext;
 use App\Support\Reminders\ReminderItem;
 use Carbon\CarbonImmutable;
 
@@ -36,14 +37,14 @@ class ReminderService {
      */
     public function for(User $user): array {
         $now = CarbonImmutable::now();
-        $orgId = $user->organization_id;
+        $orgId = OrganizationContext::currentId() ?? $user->organization_id;
         /** @var list<ReminderItem> $items */
         $items = [];
 
         // ── Eigene Spesen-Drafts ────────────────────────────────────────────
         $oldDraftExpenses = Expense::query()
             ->where('user_id', $user->id)
-            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where('organization_id', $orgId)
             ->where('status', ExpenseStatus::Draft)
             ->where('created_at', '<', $now->subDays(self::DRAFT_AGE_DAYS))
             ->count();
@@ -66,7 +67,7 @@ class ReminderService {
         // ── Eigene Per-Diem-Drafts ──────────────────────────────────────────
         $oldDraftTrips = PerDiemTrip::query()
             ->where('user_id', $user->id)
-            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where('organization_id', $orgId)
             ->where('status', PerDiemTripStatus::Draft)
             ->where('created_at', '<', $now->subDays(self::DRAFT_AGE_DAYS))
             ->count();
@@ -89,7 +90,7 @@ class ReminderService {
         // ── Eigene Urlaubsanträge in Pending ────────────────────────────────
         $pendingOwnVacations = Vacation::query()
             ->where('user_id', $user->id)
-            ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+            ->where('organization_id', $orgId)
             ->where('status', VacationStatus::Pending)
             ->count();
         if ($pendingOwnVacations > 0) {
@@ -111,7 +112,7 @@ class ReminderService {
         // ── Approver-Reminder ───────────────────────────────────────────────
         if ($user->isAdmin()) {
             $oldPendingExpenses = Expense::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where('status', ExpenseStatus::Pending)
                 ->where('updated_at', '<', $now->subDays(self::PENDING_AGE_DAYS))
                 ->count();
@@ -132,7 +133,7 @@ class ReminderService {
             }
 
             $oldPendingVacations = Vacation::query()
-                ->when($orgId !== null, fn($q) => $q->where('organization_id', $orgId))
+                ->where('organization_id', $orgId)
                 ->where('status', VacationStatus::Pending)
                 ->where('created_at', '<', $now->subDays(self::PENDING_AGE_DAYS))
                 ->count();

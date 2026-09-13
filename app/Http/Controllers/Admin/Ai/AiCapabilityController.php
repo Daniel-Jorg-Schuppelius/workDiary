@@ -12,9 +12,9 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Admin\Ai;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Ai\{AiCapabilitySetting, AiProviderConnection};
-use App\Models\Organization;
 use App\Services\Ai\{AiCapabilityRegistry, AiMemoryService, AiRoutingResolver};
 use App\Services\Ai\Exceptions\AiUnavailableException;
 use App\Support\Sqid;
@@ -30,6 +30,7 @@ use Illuminate\View\View;
  * Org-Zustand gepflegt, nie die Registrierung selbst.
  */
 class AiCapabilityController extends Controller {
+    use ResolvesCurrentOrganization;
     /** Routing-Dialog je Capability (modal-first). */
     public function edit(string $capability, AiCapabilityRegistry $registry): View {
         Gate::authorize('viewAny', AiProviderConnection::class);
@@ -116,8 +117,7 @@ class AiCapabilityController extends Controller {
         abort_unless($registry->has($capability), 404);
 
         $definition = $registry->get($capability);
-        /** @var Organization $organization */
-        $organization = app('currentOrganization');
+        $organization = $this->currentOrganization();
 
         $candidates = [];
         $unavailableReason = null;

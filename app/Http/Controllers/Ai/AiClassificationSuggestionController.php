@@ -14,6 +14,7 @@ namespace App\Http\Controllers\Ai;
 
 use App\Enums\Classification\ClassificationDomain;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Ai\SuggestTagsRequest;
 use App\Models\{Classification, Customer, Tag};
@@ -29,13 +30,14 @@ use Illuminate\Support\Facades\Gate;
  * aus, Budget erschöpft, Provider gestört) enden als 422 mit Meldung.
  */
 class AiClassificationSuggestionController extends Controller {
+    use ResolvesCurrentOrganization;
     public function __construct(private readonly ClassificationSuggestionService $suggestions) {}
 
     public function tags(SuggestTagsRequest $request): JsonResponse {
         abort_unless(Gate::allows(Permission::AiUse->value), 403);
 
         $data = $request->validated();
-        $organization = app('currentOrganization');
+        $organization = $this->currentOrganization();
 
         $customer = isset($data['customer_id']) ? Customer::query()->find((int) $data['customer_id']) : null;
         $domain = isset($data['domain']) ? ClassificationDomain::from((string) $data['domain']) : null;

@@ -14,7 +14,7 @@ use App\Http\Controllers\OrganizationSwitchController;
 use App\Models\{Organization, User};
 use Closure;
 use Illuminate\Http\{JsonResponse, Request};
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\{Auth, Route};
 use Spatie\Permission\PermissionRegistrar;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
@@ -34,11 +34,20 @@ class SetOrganizationContext {
 
             $org = $this->resolveOrganization($request, $user);
 
-            if (! $org instanceof Organization && $this->belongsToBlockedOrganization($user)) {
-                $denied = $this->denyBlockedTenant($request);
+            if (! $org instanceof Organization) {
+                if ($this->belongsToBlockedOrganization($user)) {
+                    $denied = $this->denyBlockedTenant($request);
 
-                if ($denied instanceof Response) {
-                    return $denied;
+                    if ($denied instanceof Response) {
+                        return $denied;
+                    }
+                } elseif (! $user->isGlobalAdmin() && ! $this->mayProceedWithoutOrganization($request)) {
+                    // Fail-closed (Mandanten-Review 2026-09-13): ohne gebundene
+                    // Organisation filtert der OrganizationScope NICHT — ein
+                    // org-loser Nutzer sah über die globale Suche alle Mandanten.
+                    // Org-übergreifend arbeitet allein der Plattform-Betreiber,
+                    // der oben eine Fallback-Organisation erhält.
+                    return $this->denyMissingOrganization($request, $user);
                 }
             }
 
@@ -109,6 +118,35 @@ class SetOrganizationContext {
         }
 
         throw new HttpException(Response::HTTP_LOCKED, $message);
+    }
+
+    /**
+     * Ohne Organisation erreichbar: Abmelden, Installer und der Legacy-Bereich
+     * (eigene Datenbank, kein OrganizationScope).
+     */
+    private function mayProceedWithoutOrganization(Request $request): bool {
+        $name = (string) ($request->route()?->getName() ?? '');
+
+        return $name === 'logout' || str_starts_with($name, 'logout.')
+            || str_starts_with($name, 'legacy.') || str_starts_with($name, 'install.');
+    }
+
+    private function denyMissingOrganization(Request $request, User $user): Response {
+        $message = (string) __('Ihrem Konto ist keine Organisation zugeordnet. Bitte wenden Sie sich an den Betreiber.');
+        if ($request->expectsJson()) {
+            return new JsonResponse(['error' => 'organization_missing', 'message' => $message], Response::HTTP_FORBIDDEN);
+        }
+        // Schattenkonten der Legacy-Bridge haben keine Organisation und arbeiten
+        // im Legacy-Bereich — dorthin leiten statt sperren (wie EnsureNewSystemAccess).
+        if ($user->existsInLegacy() && filled(config('database.connections.legacy.database')) && Route::has('legacy.diary.index')) {
+            if ($request->hasSession()) {
+                $request->session()->put('work_mode', 'legacy');
+            }
+
+            return redirect()->route('legacy.diary.index')->with('info', __('Sie wurden in das Legacy-System geleitet.'));
+        }
+
+        throw new HttpException(Response::HTTP_FORBIDDEN, $message);
     }
 
     private function resolveOrganization(Request $request, User $user): ?Organization {
