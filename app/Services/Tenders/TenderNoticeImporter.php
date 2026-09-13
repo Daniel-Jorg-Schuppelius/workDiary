@@ -15,6 +15,7 @@ namespace App\Services\Tenders;
 use App\Models\Tenders\TenderNotice;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use Carbon\CarbonInterface;
+use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Exception;
 use Illuminate\Support\Carbon;
@@ -113,7 +114,8 @@ final class TenderNoticeImporter {
         // harter Zip-Slip-Guard und Größen-Limits inklusive.
         try {
             $entries = ZipFile::readEntries($zip, self::MAX_ENTRIES, self::MAX_UNCOMPRESSED_BYTES);
-        } catch (InvalidArgumentException $e) {
+        } catch (DocumentLimitExceededException|InvalidArgumentException $e) {
+            // Limit (typisiert, Toolkit ≥ v1.33) oder unsicherer Eintragspfad.
             throw new RuntimeException('Das Tagespaket verletzt die Archiv-Grenzen: ' . $e->getMessage(), previous: $e);
         } catch (Exception $e) {
             throw new RuntimeException('Das Tagespaket ließ sich nicht öffnen.', previous: $e);

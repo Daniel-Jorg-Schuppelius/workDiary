@@ -19,7 +19,7 @@ use App\Services\Applications\{CareerApplicationUploadService, CareerFormState, 
 use App\Support\Setting;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Http\{RedirectResponse, Request};
 
 /**
@@ -86,13 +86,10 @@ class PublicApplicationController extends Controller {
                 $privacyVersion,
                 $intakeRef,
             );
-        } catch (QueryException $e) {
+        } catch (UniqueConstraintViolationException) {
             // Doppelsendung desselben Formulars (Unique-Index auf der
             // Eingangsreferenz) → idempotent als Erfolg behandeln.
-            if ($this->isDuplicateIntake($e)) {
-                return $this->toConfirmation($organization, $posting);
-            }
-            throw $e;
+            return $this->toConfirmation($organization, $posting);
         }
 
         $files = \Illuminate\Support\Arr::wrap($request->file('documents'));
@@ -136,11 +133,6 @@ class PublicApplicationController extends Controller {
         $url = (string) Setting::get('applications.portal.privacy_notice_url', '');
 
         return substr(CryptoHelper::hash($text . '|' . $url), 0, 40);
-    }
-
-    private function isDuplicateIntake(QueryException $e): bool {
-        return str_contains($e->getMessage(), 'jap_org_intake_ref_unq')
-            || (isset($e->errorInfo[0]) && in_array((string) $e->errorInfo[0], ['23000', '23505'], true));
     }
 
     private function organization(Request $request): Organization {

@@ -38,7 +38,7 @@ class Stopwatch {
             User::query()->whereKey($user->id)->lockForUpdate()->first();
 
             if ($this->current($user)) {
-                throw new RuntimeException('A running entry already exists.');
+                throw new StopwatchAlreadyRunningException();
             }
             if ($timesheet->isSigned()) {
                 throw new RuntimeException('Timesheet is signed.');

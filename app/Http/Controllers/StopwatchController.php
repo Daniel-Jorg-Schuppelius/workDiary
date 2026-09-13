@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StartStopwatchRequest;
 use App\Models\{Project, Timesheet};
-use App\Services\Timesheet\{Stopwatch, TimesheetResolver};
+use App\Services\Timesheet\{Stopwatch, StopwatchAlreadyRunningException, TimesheetResolver};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -46,13 +46,9 @@ class StopwatchController extends Controller {
 
         try {
             $this->stopwatch->start($this->authUser(), $timesheet, $data['task_id'] ?? null, $data['description'] ?? null, $data['diary_entry_id'] ?? null);
-        } catch (\RuntimeException $e) {
+        } catch (StopwatchAlreadyRunningException) {
             // Doppel-Submit-Guard: nur den Läuft-schon-Fall in eine Flash-Meldung
             // übersetzen; andere Zustände (z. B. signierter Stundenzettel) bleiben hart.
-            if ($e->getMessage() !== 'A running entry already exists.') {
-                throw $e;
-            }
-
             return back()->with('error', __('Es läuft bereits eine Zeiterfassung.'));
         }
 

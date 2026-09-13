@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Plugins;
 
 use App\Models\{LexofficeVoucher, Organization};
-use App\Plugins\Lexoffice\{LexofficeVoucherFileService, LexofficeVoucherSync};
+use App\Plugins\Lexoffice\{LexofficeVoucherFileMissingException, LexofficeVoucherFileService, LexofficeVoucherSync};
 use App\Plugins\Support\PluginApiClient;
 use GuzzleHttp\{Client, HandlerStack};
 use GuzzleHttp\Handler\MockHandler;
@@ -85,6 +85,57 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
         $local = $service->localFile($voucher);
         $this->assertSame('%PDF-fake', $local['body'] ?? null);
         $this->assertSame('application/pdf', $local['content_type'] ?? null);
+    }
+
+    public function test_missing_file_marks_the_voucher_checked_without_local_file(): void {
+        $voucher = $this->voucher();
+        $service = $this->service(new MockHandler([
+            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['file-1']])),
+            new Response(404, ['Content-Type' => 'application/json'], '{"message":"not found"}'),
+        ]));
+
+        $this->assertFalse($service->materialize($voucher));
+        $voucher->refresh();
+        $this->assertNotNull($voucher->file_materialized_at);
+        $this->assertNull($voucher->file_path);
+    }
+
+    /**
+     * Vorher entschied ein Textvergleich („404"/„file" in der Meldung) — und
+     * „Lexoffice file fetch failed: 401" enthielt „file": Auth- und Serverfehler
+     * wurden dauerhaft als „geprüft, kein Belegbild" verbucht.
+     */
+    public function test_auth_or_server_errors_are_not_mistaken_for_a_missing_file(): void {
+        $voucher = $this->voucher();
+        $service = $this->service(new MockHandler([
+            new Response(200, ['Content-Type' => 'application/json'], (string) json_encode(['files' => ['file-1']])),
+            new Response(401, ['Content-Type' => 'application/json'], '{"message":"unauthorized"}'),
+        ]));
+
+        try {
+            $service->materialize($voucher);
+            $this->fail('401 muss nach oben, nicht als „kein Belegbild" enden');
+        } catch (\RuntimeException $e) {
+            $this->assertNotInstanceOf(LexofficeVoucherFileMissingException::class, $e);
+        }
+        $this->assertNull($voucher->fresh()?->file_materialized_at);
+    }
+
+    public function test_failed_file_reference_lookup_is_not_a_missing_file(): void {
+        // 401 bereits beim Nachschlagen der Datei-Referenz (/vouchers/{id}):
+        // vorher lief das als leere Referenz in „kein Belegbild".
+        $voucher = $this->voucher();
+        $service = $this->service(new MockHandler([
+            new Response(401, ['Content-Type' => 'application/json'], '{"message":"unauthorized"}'),
+        ]));
+
+        try {
+            $service->materialize($voucher);
+            $this->fail('401 beim Nachschlagen muss nach oben');
+        } catch (\RuntimeException $e) {
+            $this->assertNotInstanceOf(LexofficeVoucherFileMissingException::class, $e);
+        }
+        $this->assertNull($voucher->fresh()?->file_materialized_at);
     }
 
     public function test_empty_seen_list_does_not_archive_the_mirror(): void {

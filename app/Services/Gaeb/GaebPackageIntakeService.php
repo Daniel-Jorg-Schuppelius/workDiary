@@ -16,6 +16,7 @@ use App\Enums\Gaeb\{GaebImportStatus, GaebPhase};
 use App\Models\Applications\ApplicationOpportunity;
 use App\Models\{GaebImport, User};
 use App\Services\Document\DocumentService;
+use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Enums\GaebFormat;
@@ -195,12 +196,12 @@ final class GaebPackageIntakeService {
     private function unpack(string $contents): array {
         try {
             $raw = ZipFile::readEntries($contents, maxBytes: self::MAX_UNCOMPRESSED_BYTES);
+        } catch (DocumentLimitExceededException $e) {
+            // Byte-Limit — typisiert (common-toolkit ≥ v1.33), nicht über den Meldungstext.
+            throw new RuntimeException((string) __('Das Paket überschreitet die zulässige entpackte Größe.'), previous: $e);
         } catch (InvalidArgumentException $e) {
-            // Byte-Limit → bestehende Größen-Meldung; alles andere ist ein
-            // unsicherer Eintragspfad (harter Zip-Slip-Guard des Toolkits).
-            throw new RuntimeException((string) (str_contains($e->getMessage(), 'Byte-Limit')
-                ? __('Das Paket überschreitet die zulässige entpackte Größe.')
-                : __('Das Paket enthält unsichere Dateipfade.')), previous: $e);
+            // Unsicherer Eintragspfad — harter Zip-Slip-Guard des Toolkits.
+            throw new RuntimeException((string) __('Das Paket enthält unsichere Dateipfade.'), previous: $e);
         } catch (Exception $e) {
             throw new RuntimeException((string) __('Das Paket ließ sich nicht öffnen.'), previous: $e);
         }

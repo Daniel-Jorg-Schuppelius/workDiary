@@ -21,7 +21,7 @@ use App\Services\TimeApproval\{DayCloseService, TimeCorrectionService};
 use App\Support\{Setting, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\{DB, Gate, Validator};
 use Illuminate\Validation\{Rule, ValidationException};
 use RuntimeException;
@@ -116,18 +116,14 @@ class SyncCommandService {
 
                 return $this->response($clientUuid, SyncCommandStatus::Applied, $ref, null);
             });
-        } catch (QueryException $e) {
+        } catch (UniqueConstraintViolationException) {
             // Unique (user_id, client_uuid) — paralleler Doppel-Submit.
-            if ($this->isDuplicateKey($e)) {
-                $row = SyncCommand::query()
-                    ->where('user_id', $user->id)
-                    ->where('client_uuid', $clientUuid)
-                    ->first();
+            $row = SyncCommand::query()
+                ->where('user_id', $user->id)
+                ->where('client_uuid', $clientUuid)
+                ->first();
 
-                return $this->response($clientUuid, SyncCommandStatus::Duplicate, $row?->result_ref, null);
-            }
-
-            throw $e;
+            return $this->response($clientUuid, SyncCommandStatus::Duplicate, $row?->result_ref, null);
         } catch (ValidationException $e) {
             return $this->reject($user, $command, $e->errors());
         } catch (SyncConflictException $e) {
@@ -474,10 +470,7 @@ class SyncCommandService {
             DB::transaction(function () use ($user, $command, $errors): void {
                 $this->record($user, $command, SyncCommandStatus::Rejected, null, $errors);
             });
-        } catch (QueryException $e) {
-            if (! $this->isDuplicateKey($e)) {
-                throw $e;
-            }
+        } catch (UniqueConstraintViolationException) {
             // Paralleler Doppel-Submit derselben Ablehnung — Ergebnis identisch.
         }
 
@@ -498,10 +491,8 @@ class SyncCommandService {
             DB::transaction(function () use ($user, $command, $errors): void {
                 $this->record($user, $command, SyncCommandStatus::Conflict, null, $errors);
             });
-        } catch (QueryException $qe) {
-            if (! $this->isDuplicateKey($qe)) {
-                throw $qe;
-            }
+        } catch (UniqueConstraintViolationException) {
+            // Paralleler Doppel-Submit desselben Konflikts — Ergebnis identisch.
         }
 
         return $this->response($command['client_uuid'], SyncCommandStatus::Conflict, null, $errors) + [
@@ -555,14 +546,6 @@ class SyncCommandService {
             'ref' => $ref,
             'errors' => $errors,
         ];
-    }
-
-    private function isDuplicateKey(QueryException $e): bool {
-        // MySQL 1062 / SQLite 2067|1555 / Postgres 23505 — treiberneutral über
-        // die Meldung, wie im Bestand (NumberSequence) üblich.
-        return str_contains(strtolower($e->getMessage()), 'unique')
-            || str_contains($e->getMessage(), '1062')
-            || str_contains($e->getMessage(), '23505');
     }
 
     /**

@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\LexofficeVoucher;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use Illuminate\Http\Client\Response;
 use RuntimeException;
 
 /**
@@ -79,6 +80,10 @@ class LexofficeVoucherFileService {
             throw new LexofficeRateLimitException();
         }
 
+        if ($response->status() === 404) {
+            throw new LexofficeVoucherFileMissingException('Lexoffice file ' . $fileId . ' does not exist (404).');
+        }
+
         if (! $response->successful()) {
             throw new RuntimeException('Lexoffice file fetch failed: ' . $response->status());
         }
@@ -108,16 +113,13 @@ class LexofficeVoucherFileService {
 
         try {
             $file = $this->download($voucher);
-        } catch (\Throwable $e) {
+        } catch (LexofficeVoucherFileMissingException) {
             // Kein Belegbild (404/fehlende Datei-Referenz): als geprüft
-            // markieren — andere Fehler (Auth/Netz) nach oben, der Command
-            // zählt sie und der Abschluss-Blocker bleibt bestehen.
-            if (str_contains($e->getMessage(), '404') || $e instanceof \RuntimeException && str_contains($e->getMessage(), 'file')) {
-                $voucher->forceFill(['file_materialized_at' => now(), 'file_path' => null])->save();
+            // markieren. Alle anderen Fehler (Auth/Netz/Server) laufen durch —
+            // der Command zählt sie und der Abschluss-Blocker bleibt bestehen.
+            $voucher->forceFill(['file_materialized_at' => now(), 'file_path' => null])->save();
 
-                return false;
-            }
-            throw $e;
+            return false;
         }
 
         $path = sprintf('lexoffice-vouchers/%d/%d.%s', $voucher->organization_id, $voucher->id, $file['extension']);
@@ -183,7 +185,7 @@ class LexofficeVoucherFileService {
         }
 
         if ($fileId === '') {
-            throw new RuntimeException('Lexoffice voucher has no attached file.');
+            throw new LexofficeVoucherFileMissingException('Lexoffice voucher has no attached file.');
         }
 
         return $fileId;
@@ -192,7 +194,7 @@ class LexofficeVoucherFileService {
     private function fileIdFromVoucher(string $externalId): string {
         $response = $this->api()->getResponse($this->baseUrl . '/vouchers/' . $externalId);
 
-        if (! $response->successful()) {
+        if (! $this->lookupFound($response)) {
             return '';
         }
 
@@ -214,11 +216,31 @@ class LexofficeVoucherFileService {
         $response = $this->api()->getResponse($this->baseUrl . '/' . $endpoint . '/' . $externalId . '/document');
 
         // 406 = kein gerendertes Dokument (z. B. Entwurf) — kein harter Fehler, Aufrufer nutzt andere Quellen.
-        if (! $response->successful()) {
+        if (! $this->lookupFound($response)) {
             return '';
         }
 
         return (string) ($response->json('documentFileId') ?? '');
+    }
+
+    /**
+     * Fehlantworten beim Nachschlagen der Datei-Referenz: 404/406 heißen „an
+     * dieser Quelle nichts" (der Aufrufer versucht die nächste), 429 ist
+     * transient — alles andere (401/403/5xx) ist ein echter Fehler und darf
+     * nicht als „kein Belegbild" enden.
+     */
+    private function lookupFound(Response $response): bool {
+        if ($response->successful()) {
+            return true;
+        }
+        if ($response->status() === 429) {
+            throw new LexofficeRateLimitException();
+        }
+        if (in_array($response->status(), [404, 406], true)) {
+            return false;
+        }
+
+        throw new RuntimeException('Lexoffice voucher lookup failed: ' . $response->status());
     }
 
     /**

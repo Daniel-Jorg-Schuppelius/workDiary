@@ -17,6 +17,7 @@ use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
 use CommonToolkit\Helper\FileSystem\File;
+use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -327,11 +328,10 @@ class CloudIntakeRunner {
                 'imported_id' => $imported instanceof \Illuminate\Database\Eloquent\Model ? $imported->getKey() : null,
                 'imported_at' => $status === CloudIntakeItemStatus::Imported ? Carbon::now() : null,
             ]);
-        } catch (\Illuminate\Database\QueryException $e) {
-            if (! str_contains(strtolower($e->getMessage()), 'unique')) {
-                throw $e;
-            }
-
+        } catch (UniqueConstraintViolationException) {
+            // Paralleler Lauf hat den Nachweis bereits geschrieben. Die Klasse
+            // gilt treiberneutral — ein Textvergleich auf „unique" griff unter
+            // MariaDB nie (der Index heißt cdi_org_conn_itemrev_uq).
             return;
         }
 
