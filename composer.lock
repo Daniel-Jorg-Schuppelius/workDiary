@@ -62,16 +62,16 @@
         },
         {
             "name": "aws/aws-sdk-php",
-            "version": "3.395.0",
+            "version": "3.395.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/aws/aws-sdk-php.git",
-                "reference": "c8f42d03b697a61b4910d162d753b13d2de297fc"
+                "reference": "f5eda89b1f2ecd4aea56eb04d58874bad12ef02e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/c8f42d03b697a61b4910d162d753b13d2de297fc",
-                "reference": "c8f42d03b697a61b4910d162d753b13d2de297fc",
+                "url": "https://api.github.com/repos/aws/aws-sdk-php/zipball/f5eda89b1f2ecd4aea56eb04d58874bad12ef02e",
+                "reference": "f5eda89b1f2ecd4aea56eb04d58874bad12ef02e",
                 "shasum": ""
             },
             "require": {
@@ -153,9 +153,9 @@
             "support": {
                 "forum": "https://github.com/aws/aws-sdk-php/discussions",
                 "issues": "https://github.com/aws/aws-sdk-php/issues",
-                "source": "https://github.com/aws/aws-sdk-php/tree/3.395.0"
+                "source": "https://github.com/aws/aws-sdk-php/tree/3.395.1"
             },
-            "time": "2026-09-11T18:07:54+00:00"
+            "time": "2026-09-13T18:43:19+00:00"
         },
         {
             "name": "azuyalabs/yasumi",
@@ -814,6 +814,81 @@
                 "source": "https://github.com/Daniel-Jorg-Schuppelius/php-api-toolkit/tree/v2.9.3"
             },
             "time": "2026-09-01T13:38:45+00:00"
+        },
+        {
+            "name": "daniel-jorg-schuppelius/php-elearning-toolkit",
+            "version": "0.1.0",
+            "dist": {
+                "type": "path",
+                "url": "../php-elearning-toolkit",
+                "reference": "956b2f3ee251b329f5cad8fb485d072ceb91ac2e"
+            },
+            "require": {
+                "dschuppelius/php-common-toolkit": "^1.34",
+                "ext-json": "*",
+                "ext-openssl": "*",
+                "ext-simplexml": "*",
+                "ext-zip": "*",
+                "php": ">=8.2 <8.6",
+                "web-token/jwt-library": "^4.0"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.27",
+                "phpstan/phpstan": "^2.1",
+                "phpunit/phpunit": "^11.3"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "ELearningToolkit\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "format": [
+                    "vendor/bin/pint --test"
+                ],
+                "format:fix": [
+                    "vendor/bin/pint"
+                ],
+                "lint": [
+                    "vendor/bin/phpstan analyse --memory-limit=1G"
+                ],
+                "qa": [
+                    "@format",
+                    "@lint",
+                    "@test"
+                ]
+            },
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "Daniel Joerg Schuppelius",
+                    "email": "info@schuppelius.org"
+                }
+            ],
+            "description": "Framework-freie E-Learning-Standards für PHP: SCORM 1.2/2004, xAPI, cmi5 und LTI 1.3.",
+            "keywords": [
+                "cmi5",
+                "elearning",
+                "lms",
+                "lti",
+                "scorm",
+                "xapi"
+            ],
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
@@ -1669,17 +1744,11 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "v1.33",
-            "source": {
-                "type": "git",
-                "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
-                "reference": "fb168230fb94eebea8354c52b1336a8e03761360"
-            },
+            "version": "1.34.0",
             "dist": {
-                "type": "zip",
-                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/fb168230fb94eebea8354c52b1336a8e03761360",
-                "reference": "fb168230fb94eebea8354c52b1336a8e03761360",
-                "shasum": ""
+                "type": "path",
+                "url": "../php-common-toolkit",
+                "reference": "6cba5846ab67c9baf728e7e2874b46ff963955fc"
             },
             "require": {
                 "dschuppelius/php-config-toolkit": "^0.5",
@@ -1701,7 +1770,30 @@
                     "CommonToolkit\\": "src/"
                 }
             },
-            "notification-url": "https://packagist.org/downloads/",
+            "autoload-dev": {
+                "psr-4": {
+                    "Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit"
+                ],
+                "format": [
+                    "vendor/bin/pint --test"
+                ],
+                "format:fix": [
+                    "vendor/bin/pint"
+                ],
+                "lint": [
+                    "vendor/bin/phpstan analyse --memory-limit=1G"
+                ],
+                "qa": [
+                    "@format",
+                    "@lint",
+                    "@test"
+                ]
+            },
             "license": [
                 "MIT"
             ],
@@ -1712,11 +1804,10 @@
                 }
             ],
             "description": "Project description.",
-            "support": {
-                "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
-                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.33"
-            },
-            "time": "2026-09-13T08:27:51+00:00"
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "dschuppelius/php-config-toolkit",
@@ -4706,16 +4797,16 @@
         },
         {
             "name": "nikic/php-parser",
-            "version": "v5.8.0",
+            "version": "v5.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nikic/PHP-Parser.git",
-                "reference": "044a6a392ff8ad0d61f14370a5fbbd0a0107152f"
+                "reference": "9e33da9553fe7786f0962b35f4e4ecf01be89def"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/044a6a392ff8ad0d61f14370a5fbbd0a0107152f",
-                "reference": "044a6a392ff8ad0d61f14370a5fbbd0a0107152f",
+                "url": "https://api.github.com/repos/nikic/PHP-Parser/zipball/9e33da9553fe7786f0962b35f4e4ecf01be89def",
+                "reference": "9e33da9553fe7786f0962b35f4e4ecf01be89def",
                 "shasum": ""
             },
             "require": {
@@ -4757,9 +4848,9 @@
             ],
             "support": {
                 "issues": "https://github.com/nikic/PHP-Parser/issues",
-                "source": "https://github.com/nikic/PHP-Parser/tree/v5.8.0"
+                "source": "https://github.com/nikic/PHP-Parser/tree/v5.9.0"
             },
-            "time": "2026-07-04T14:30:18+00:00"
+            "time": "2026-09-13T18:51:52+00:00"
         },
         {
             "name": "nunomaduro/termwind",
@@ -11718,16 +11809,16 @@
         },
         {
             "name": "tecnickcom/tc-lib-pdf",
-            "version": "8.73.6",
+            "version": "8.74.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tecnickcom/tc-lib-pdf.git",
-                "reference": "5a1dcccbb0d34d0fe93eea956a08e3bc913135b1"
+                "reference": "0fd482028e4a79d31a1f3f454fbccdc5b09aa1c2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf/zipball/5a1dcccbb0d34d0fe93eea956a08e3bc913135b1",
-                "reference": "5a1dcccbb0d34d0fe93eea956a08e3bc913135b1",
+                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf/zipball/0fd482028e4a79d31a1f3f454fbccdc5b09aa1c2",
+                "reference": "0fd482028e4a79d31a1f3f454fbccdc5b09aa1c2",
                 "shasum": ""
             },
             "require": {
@@ -11749,7 +11840,7 @@
                 "tecnickcom/tc-lib-pdf-graph": "^2.17",
                 "tecnickcom/tc-lib-pdf-image": "^3.14",
                 "tecnickcom/tc-lib-pdf-page": "^4.16",
-                "tecnickcom/tc-lib-pdf-parser": "^3.15",
+                "tecnickcom/tc-lib-pdf-parser": "^3.16",
                 "tecnickcom/tc-lib-pdf-sign": "^2.0",
                 "tecnickcom/tc-lib-unicode": "^3.0",
                 "tecnickcom/tc-lib-unicode-data": "^3.0"
@@ -11799,7 +11890,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-07T09:51:52+00:00"
+            "time": "2026-09-13T09:40:26+00:00"
         },
         {
             "name": "tecnickcom/tc-lib-pdf-encrypt",
@@ -12197,16 +12288,16 @@
         },
         {
             "name": "tecnickcom/tc-lib-pdf-parser",
-            "version": "3.15.2",
+            "version": "3.16.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tecnickcom/tc-lib-pdf-parser.git",
-                "reference": "812608b1e534747f36d8ab907c07f5eb53bc38a7"
+                "reference": "3a3ba69111e8b3a701fb96af21884f169a2de34e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf-parser/zipball/812608b1e534747f36d8ab907c07f5eb53bc38a7",
-                "reference": "812608b1e534747f36d8ab907c07f5eb53bc38a7",
+                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf-parser/zipball/3a3ba69111e8b3a701fb96af21884f169a2de34e",
+                "reference": "3a3ba69111e8b3a701fb96af21884f169a2de34e",
                 "shasum": ""
             },
             "require": {
@@ -12254,7 +12345,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-05T07:37:01+00:00"
+            "time": "2026-09-13T09:23:18+00:00"
         },
         {
             "name": "tecnickcom/tc-lib-pdf-sign",
@@ -13328,16 +13419,16 @@
         },
         {
             "name": "zircote/swagger-php",
-            "version": "6.8.1",
+            "version": "6.9.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/zircote/swagger-php.git",
-                "reference": "08c8a2d256e8f8e4b6f86d44d3044494194df552"
+                "reference": "839d6b65c06737e4243635d6f81cbbe13022aa5a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/08c8a2d256e8f8e4b6f86d44d3044494194df552",
-                "reference": "08c8a2d256e8f8e4b6f86d44d3044494194df552",
+                "url": "https://api.github.com/repos/zircote/swagger-php/zipball/839d6b65c06737e4243635d6f81cbbe13022aa5a",
+                "reference": "839d6b65c06737e4243635d6f81cbbe13022aa5a",
                 "shasum": ""
             },
             "require": {
@@ -13405,7 +13496,7 @@
             ],
             "support": {
                 "issues": "https://github.com/zircote/swagger-php/issues",
-                "source": "https://github.com/zircote/swagger-php/tree/6.8.1"
+                "source": "https://github.com/zircote/swagger-php/tree/6.9.0"
             },
             "funding": [
                 {
@@ -13413,7 +13504,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-09T03:13:32+00:00"
+            "time": "2026-09-13T22:58:11+00:00"
         }
     ],
     "packages-dev": [
@@ -14112,16 +14203,16 @@
         },
         {
             "name": "larastan/larastan",
-            "version": "v3.12.0",
+            "version": "v3.12.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/larastan/larastan.git",
-                "reference": "ab26fdf90d84877061388109e1e251f67ca3ff7a"
+                "reference": "168fd3b955e723c51dbf81709849b0c3ac4ac5f6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/larastan/larastan/zipball/ab26fdf90d84877061388109e1e251f67ca3ff7a",
-                "reference": "ab26fdf90d84877061388109e1e251f67ca3ff7a",
+                "url": "https://api.github.com/repos/larastan/larastan/zipball/168fd3b955e723c51dbf81709849b0c3ac4ac5f6",
+                "reference": "168fd3b955e723c51dbf81709849b0c3ac4ac5f6",
                 "shasum": ""
             },
             "require": {
@@ -14134,7 +14225,7 @@
                 "illuminate/pipeline": "^11.44.2 || ^12.4.1 || ^13",
                 "illuminate/support": "^11.44.2 || ^12.4.1 || ^13",
                 "php": "^8.2",
-                "phpstan/phpstan": "^2.2.2"
+                "phpstan/phpstan": "^2.2.14"
             },
             "require-dev": {
                 "doctrine/coding-standard": "^14",
@@ -14189,7 +14280,7 @@
             ],
             "support": {
                 "issues": "https://github.com/larastan/larastan/issues",
-                "source": "https://github.com/larastan/larastan/tree/v3.12.0"
+                "source": "https://github.com/larastan/larastan/tree/v3.12.1"
             },
             "funding": [
                 {
@@ -14197,7 +14288,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-10T09:06:54+00:00"
+            "time": "2026-09-13T15:17:35+00:00"
         },
         {
             "name": "laravel/pail",
