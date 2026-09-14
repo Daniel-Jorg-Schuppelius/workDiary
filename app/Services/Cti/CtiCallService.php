@@ -18,8 +18,8 @@ use App\Models\{CtiConnection, Customer, ExternalReference, Organization, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Contacts\PhoneNumberMatcher;
-use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\{CryptoHelper, PhoneNumberHelper};
+use App\Support\Crypto\BlindIndex;
+use CommonToolkit\Helper\Data\PhoneNumberHelper;
 use Illuminate\Support\Carbon;
 
 /**
@@ -135,7 +135,9 @@ class CtiCallService {
 
         $callee = User::query()
             ->where('organization_id', $connection->organization_id)
-            ->where('cti_extension_hash', CryptoHelper::hash($dialled, HashAlgorithm::SHA256))
+            // Doppellesen bis `security:rehash-blind-indexes` gelaufen ist
+            // (Sicherheitsaudit 2026-09-13).
+            ->whereIn('cti_extension_hash', BlindIndex::candidates($dialled))
             ->first();
         if (! $callee instanceof User) {
             return; // kein Opt-in → kein Pop-up

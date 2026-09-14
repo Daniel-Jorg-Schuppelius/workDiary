@@ -37,9 +37,11 @@ class GoogleCalendarClient implements RemoteCalendarGateway {
         $this->base = GoogleCalendarConfig::resolve()['api_base'];
         $this->api = app(PluginHttpFactory::class)->client(GoogleCalendarPlugin::ID, $this->base);
 
-        // Grant nur bei vorhandener Installation-Konfiguration — ohne ihn
-        // bleibt das Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit.
-        $grant = GoogleCalendarConfig::isConfigured() ? app(GoogleCalendarOAuth::class)->grant() : null;
+        // Grant nur bei vorhandener Konfiguration — ohne ihn bleibt das
+        // Bearer-Token nutzbar, nur ohne Refresh-Möglichkeit. Org der
+        // Verbindung explizit: eigene App-Registrierung, queue-sicher.
+        $orgId = (int) $this->connection->organization_id;
+        $grant = GoogleCalendarConfig::isConfigured($orgId) ? app(GoogleCalendarOAuth::class)->grantFor($orgId) : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 

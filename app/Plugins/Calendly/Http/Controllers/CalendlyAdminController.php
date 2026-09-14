@@ -102,7 +102,7 @@ class CalendlyAdminController extends ConnectionOAuthController {
      */
     protected function flashMessage(string $name, array $replace = []): string {
         $message = match ($name) {
-            'not_configured' => __('Calendly Client-ID/Secret sind nicht konfiguriert.'),
+            'not_configured' => __('Calendly ist nicht konfiguriert: weder eine eigene App in den Plugin-Einstellungen noch die Instanz-App.'),
             'state_invalid' => __('Ungültiger oder abgelaufener OAuth-Status.'),
             'oauth_denied' => __('OAuth-Autorisierung abgebrochen.'),
             'oauth_failed' => __('OAuth fehlgeschlagen (:class).', $replace),

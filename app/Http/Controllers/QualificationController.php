@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{Qualification, User};
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class QualificationController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(Request $request): View {
         Gate::authorize('viewAny', Qualification::class);
 
@@ -50,7 +52,7 @@ class QualificationController extends Controller {
         $auth = Auth::user();
         $data = $this->validated($request);
         $data['created_by'] = $auth->id;
-        $data['organization_id'] = $auth->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
 
         Qualification::create($data);
 

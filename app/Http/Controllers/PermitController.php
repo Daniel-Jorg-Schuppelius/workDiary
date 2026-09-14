@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Permit\PermitStatus;
-use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Requests\SavePermitRequest;
 use App\Models\{Event, Permit, User};
 use App\Services\Attachments\FileAttacher;
@@ -21,6 +21,7 @@ use Illuminate\View\View;
 
 class PermitController extends Controller {
     use ParsesIndexQuery;
+    use ResolvesCurrentOrganization;
 
     private const ALLOWED_SORTS = ['title', 'authority', 'status', 'valid_until'];
 
@@ -85,7 +86,7 @@ class PermitController extends Controller {
         }
 
         $payload = $request->validated();
-        $payload['organization_id'] = (int) $user->organization_id;
+        $payload['organization_id'] = (int) $this->currentOrganization()->id;
         $payload['created_by'] = $user->id;
 
         $permit = Permit::query()->create($payload);

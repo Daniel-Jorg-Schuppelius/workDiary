@@ -16,7 +16,7 @@ use App\Plugins\Todoist\Services\TodoistImportService;
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -29,6 +29,7 @@ use Tests\TestCase;
 final class TodoistImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private TodoistConnection $connection;
     private TodoistProjectLink $link;

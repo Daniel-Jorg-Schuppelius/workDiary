@@ -65,7 +65,7 @@ class ScheduleImportController extends Controller {
         ]);
 
         $shiftTypes = ShiftType::active()->orderBy('name')->pluck('name', 'id');
-        $users = User::orderBy('name')->pluck('name', 'id');
+        $users = User::inCurrentOrganization()->orderBy('name')->pluck('name', 'id');
 
         return view('schedule.import.preview', [
             'headers' => $headers,

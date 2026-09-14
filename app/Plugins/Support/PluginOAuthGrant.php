@@ -34,6 +34,19 @@ abstract class PluginOAuthGrant {
     /** Routen-Name des OAuth-Callbacks (redirect_uri). */
     abstract protected function callbackRouteName(): string;
 
+    /**
+     * Konfiguration für eine bestimmte Organisation.
+     *
+     * Vorgabe: die installationsweite. Plugins, bei denen eine Organisation
+     * eine EIGENE App-Registrierung hinterlegen kann, überschreiben diese
+     * Methode und reichen die Organisation an ihre Config durch.
+     *
+     * @return array<string, string|int|bool>
+     */
+    protected function configFor(?int $organizationId): array {
+        return $this->config();
+    }
+
     /** Config-Schlüssel der Scopes (Intake/Backup nutzen eigene Schlüssel). */
     protected function scopesKey(): string {
         return 'scopes';
@@ -41,6 +54,15 @@ abstract class PluginOAuthGrant {
 
     public function grant(): OAuth2AuthorizationCodeGrant {
         return $this->buildGrant($this->config());
+    }
+
+    /**
+     * Grant mit EXPLIZITER Organisation — für Token-Refresh im Queue-/
+     * Konsolenkontext, wo kein Org-Kontext gebunden ist, die Verbindung ihre
+     * Organisation aber kennt.
+     */
+    public function grantFor(?int $organizationId): OAuth2AuthorizationCodeGrant {
+        return $this->buildGrant($this->configFor($organizationId));
     }
 
     /**
@@ -62,6 +84,11 @@ abstract class PluginOAuthGrant {
 
     /** @return list<string> */
     public function scopes(): array {
-        return array_values(array_filter(explode(' ', (string) ($this->config()[$this->scopesKey()] ?? ''))));
+        return $this->scopesFor(null);
+    }
+
+    /** @return list<string> */
+    public function scopesFor(?int $organizationId): array {
+        return array_values(array_filter(explode(' ', (string) ($this->configFor($organizationId)[$this->scopesKey()] ?? ''))));
     }
 }

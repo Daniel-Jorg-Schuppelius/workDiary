@@ -12,13 +12,13 @@ return [
     'title' => 'Google Agenda',
     'intro' => 'Les rendez-vous WorkDiary sont publiés via l\'API Google Calendar dans un agenda du compte Google connecté. WorkDiary reste maître ; les rendez-vous annulés y disparaissent et les exécutions répétées ne créent jamais de doublons. Les rendez-vous externes ne sont jamais lus.',
     'plugin_description' => 'Publie les rendez-vous de manière idempotente dans un agenda Google (Calendar API v3, OAuth2) — publication seule, agenda cible sélectionnable.',
-    'not_configured_hint' => 'GOOGLE_CALENDAR_CLIENT_ID/SECRET ne sont pas définis — la connexion nécessite d\'abord un client OAuth dans la Google Cloud Console (les scopes agenda sont « sensitive » : vérification de marque ou type de consentement « Internal » pour Workspace).',
+    'not_configured_hint' => 'Aucune application Google n’est enregistrée — ni dans les réglages du plugin de cette organisation, ni comme GOOGLE_CALENDAR_CLIENT_ID/SECRET de l’installation. la connexion nécessite d\'abord un client OAuth dans la Google Cloud Console (les scopes agenda sont « sensitive » : vérification de marque ou type de consentement « Internal » pour Workspace).',
 
     'health' => [
         'badge_ok' => 'Connecté',
         'badge_failing' => 'Injoignable',
         'badge_inactive' => 'Inactif',
-        'not_configured' => 'Google Agenda n\'est pas configuré (GOOGLE_CALENDAR_CLIENT_ID/SECRET manquants).',
+        'not_configured' => 'Google Agenda n\'est pas configuré : aucune application propre dans les réglages du plugin ni GOOGLE_CALENDAR_CLIENT_ID/SECRET pour l’installation.',
         'no_org_context' => 'Configuré (aucune organisation dans le contexte).',
         'no_connection' => 'Aucune connexion Google Agenda établie.',
         'inactive' => 'La connexion Google Agenda est déconnectée ou désactivée.',
@@ -51,7 +51,7 @@ return [
     ],
 
     'flash' => [
-        'not_configured' => 'Google Agenda n\'est pas configuré (GOOGLE_CALENDAR_CLIENT_ID/SECRET manquants).',
+        'not_configured' => 'Google Agenda n\'est pas configuré : aucune application propre dans les réglages du plugin ni GOOGLE_CALENDAR_CLIENT_ID/SECRET pour l’installation.',
         'state_invalid' => 'Le flux OAuth a expiré ou est invalide. Veuillez recommencer.',
         'oauth_denied' => 'La connexion a été refusée ou annulée.',
         'oauth_failed' => 'L\'échange de jetons a échoué (:class).',
@@ -62,5 +62,12 @@ return [
         'calendar_saved' => 'Agenda cible enregistré.',
         'calendar_invalid' => 'L\'agenda sélectionné est introuvable.',
         'publish_done' => 'Publication lancée.',
+    ],
+    // Enregistrement d’application par organisation (dialogue des réglages).
+    'settings' => [
+        'client_id' => 'ID client (application Google Cloud propre)',
+        'client_id_help' => 'Vide = application d’instance de l’installation. Un ID client OAuth propre doit enregistrer la même URI de redirection.',
+        'client_secret' => 'Secret client',
+        'client_secret_help' => 'Stocké chiffré ; laisser vide pour conserver la valeur enregistrée.',
     ],
 ];

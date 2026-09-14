@@ -36,7 +36,10 @@ class TerminalStampService {
 
     public const EXTERNAL_TYPE = 'stamp';
 
-    public function __construct(private readonly AttendanceClockService $clock) {}
+    public function __construct(
+        private readonly AttendanceClockService $clock,
+        private readonly StampPlausibility $plausibility,
+    ) {}
 
     /**
      * @param  string  $eventType  fachlicher Ereignistyp: `work` (Kommen/Gehen, Default),
@@ -68,6 +71,15 @@ class TerminalStampService {
             );
 
             return ['status' => 'unknown_badge', 'user' => null];
+        }
+
+        // Der Zeitstempel kommt vom Terminal, nicht vom Server. Bis zum
+        // Sicherheitsaudit 2026-09-13 wurde er ungeprueft uebernommen: Wer das
+        // Terminal-Token besass, konnte in abgeschlossene Tage zurueckstempeln
+        // und damit Arbeitszeit, Zuschlaege und Gleitzeitkonto nachtraeglich
+        // veraendern. Dieselbe Schranke wie im Offline-Sync.
+        if ($occurredAt !== null && $occurredAt !== '') {
+            $this->plausibility->assert($user, $occurredAt, 'occurred_at');
         }
 
         $normalizedType = strtolower(trim($eventType));

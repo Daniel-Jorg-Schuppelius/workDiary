@@ -17,10 +17,11 @@ use App\Models\{Customer, Invoice, InvoiceMailTemplate, Project, TimeEntry, User
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Testing\TestResponse;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\TestCase;
 
 class InvoiceTest extends TestCase {
+    use WithPluginSecrets;
     /** D12: deterministische Nummern statt random_int (Unique-Kollisionsschutz bleibt). */
     private static int $invoiceNo = 0;
 
@@ -459,9 +460,7 @@ class InvoiceTest extends TestCase {
     }
 
     public function test_publish_to_lexoffice_sends_payload_and_updates_invoice(): void {
-        config()->set('plugins.lexoffice.enabled', true);
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-
+        $this->pluginSecret('lexoffice', ['enabled' => true, 'api_key' => 'test-key']);
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -511,9 +510,7 @@ class InvoiceTest extends TestCase {
     }
 
     public function test_publish_to_lexoffice_requires_draft_status(): void {
-        config()->set('plugins.lexoffice.enabled', true);
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-
+        $this->pluginSecret('lexoffice', ['enabled' => true, 'api_key' => 'test-key']);
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,
@@ -563,8 +560,7 @@ class InvoiceTest extends TestCase {
     }
 
     public function test_plugin_pdf_route_streams_lexoffice_pdf(): void {
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-
+        $this->pluginSecret('lexoffice', ['api_key' => 'test-key']);
         $invoice = Invoice::create([
             'organization_id' => $this->organization->id,
             'customer_id' => $this->customer->id,

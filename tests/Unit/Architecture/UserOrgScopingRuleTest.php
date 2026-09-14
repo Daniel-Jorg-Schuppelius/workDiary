@@ -55,11 +55,22 @@ class UserOrgScopingRuleTest extends TestCase {
         'app/Services',
         'app/Support',
         'app/Plugins',
+        // Ansichten mitlesen (Sicherheitsaudit 2026-09-13): Das
+        // Delegations-Dropdown der Betriebsaufgaben fragte `User::query()`
+        // direkt im Blade ab — mandantenuebergreifend und ausserhalb der
+        // Reichweite dieses Gates, das nur app/ kannte.
+        'resources/views',
     ];
 
     /**
      * Einstiegs-Muster für Query-Ausdrücke auf dem User-Modell. Nur der reale
      * `App\Models\User` (Wortgrenze davor), nicht LegacyUser/CustomerUser/SsoUser.
+     *
+     * Die Liste deckt bewusst JEDEN Query-Einstieg ab, nicht nur die naheliegenden:
+     * Bis zum Sicherheitsaudit 2026-09-13 kannte sie fünf Muster, `User::orderBy(`
+     * gehörte nicht dazu — und genau so listete der Schichtplan
+     * (`User::orderBy('name')->get()`) die Namen aller Mandanten, während dieses
+     * Gate grün lief. Ein neuer Einstieg gehört hier ergänzt, nicht umgangen.
      *
      * @var array<int, string>
      */
@@ -67,8 +78,29 @@ class UserOrgScopingRuleTest extends TestCase {
         'User::query(',
         'User::where(',
         'User::whereRaw(',
+        'User::whereIn(',
+        'User::whereNotIn(',
+        'User::whereNull(',
+        'User::whereNotNull(',
+        'User::whereHas(',
         'User::pluck(',
         'User::all(',
+        'User::get(',
+        'User::orderBy(',
+        'User::orderByDesc(',
+        'User::latest(',
+        'User::oldest(',
+        'User::with(',
+        'User::withCount(',
+        'User::select(',
+        'User::count(',
+        'User::first(',
+        'User::firstWhere(',
+        'User::exists(',
+        'User::chunk(',
+        'User::cursor(',
+        'User::each(',
+        'User::when(',
     ];
 
     /**
@@ -248,6 +280,7 @@ class UserOrgScopingRuleTest extends TestCase {
     }
 
     /** @return array<int, string> */
+    /** Erfasst auch Blade-Dateien: `.blade.php` traegt die Endung `php`. */
     private function phpFiles(string $directory): array {
         $files = [];
         $iterator = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($directory));

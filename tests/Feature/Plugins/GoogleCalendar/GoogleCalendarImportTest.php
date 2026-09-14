@@ -16,7 +16,7 @@ use App\Plugins\GoogleCalendar\Services\GoogleCalendarImportService;
 use App\Plugins\Support\Calendar\RemoteCalendarPublishService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -29,6 +29,7 @@ use Tests\TestCase;
 final class GoogleCalendarImportTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private const EVENTS = 'https://www.googleapis.com/calendar/v3/calendars/primary/events*';
 

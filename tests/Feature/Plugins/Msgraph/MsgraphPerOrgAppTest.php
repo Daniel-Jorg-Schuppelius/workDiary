@@ -15,7 +15,7 @@ use App\Plugins\Msgraph\{MsgraphConfig, MsgraphPlugin};
 use App\Plugins\Sharepoint\SharepointConfig;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\TestCase;
 
 /**
@@ -28,14 +28,18 @@ use Tests\TestCase;
 final class MsgraphPerOrgAppTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private const ORG_TENANT = '11111111-2222-3333-4444-555555555555';
 
     protected function setUp(): void {
         parent::setUp();
+
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
 
+        // Instanz-Ebene: bleibt bewusst in der Konfiguration — genau die
+        // Unterscheidung, die diese Klasse prueft.
         config()->set('plugins.msgraph.client_id', 'instanz-client');
         config()->set('plugins.msgraph.client_secret', 'instanz-secret');
     }

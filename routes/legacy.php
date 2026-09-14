@@ -28,7 +28,15 @@ use Illuminate\Support\Facades\Route;
 // Öffentliche Callcenter-Login-Routen
 Route::prefix('legacy/callcenter')->name('legacy.callcenter.')->group(function (): void {
     Route::get('login', [LegacyCallcenterController::class, 'showLoginForm'])->name('login');
-    Route::post('login', [LegacyCallcenterController::class, 'login'])->name('login.submit');
+    // Reines IP-Limit (Sicherheitsaudit 2026-09-13): Der Controller drosselt
+    // bereits je Benutzername und antwortet dabei mit einer verstaendlichen
+    // Meldung. Was fehlte, war die Schranke gegen Passwort-Spraying — viele
+    // verschiedene Namen von derselben Adresse, gegen die Klartext-Passwoerter
+    // der Legacy-Datenbank. Die Schwelle liegt bewusst ueber der des
+    // Controllers, damit der normale Fehlversuch weiter freundlich antwortet.
+    Route::post('login', [LegacyCallcenterController::class, 'login'])
+        ->middleware('throttle:legacy-login')
+        ->name('login.submit');
     Route::post('logout', [LegacyCallcenterController::class, 'logout'])->name('logout');
     Route::get('notdienst', [LegacyCallcenterController::class, 'notdienstPlan'])
         ->middleware('legacy.callcenter.auth')

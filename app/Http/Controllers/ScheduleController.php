@@ -81,7 +81,7 @@ class ScheduleController extends Controller {
             'shifts' => $shifts,
             'shiftsByDate' => $shiftsByDate,
             'shiftTypes' => ShiftType::active()->orderBy('name')->get(),
-            'users' => User::orderBy('name')->get(),
+            'users' => User::inCurrentOrganization()->orderBy('name')->get(),
             'userFilter' => $userFilter,
             'userFilterSqid' => $userFilter > 0 ? Sqid::encode(User::class, $userFilter) : null,
             'holidays' => $holidays,

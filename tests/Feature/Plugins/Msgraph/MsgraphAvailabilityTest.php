@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 use App\Models\{MsgraphConnection, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -26,6 +26,7 @@ use Tests\TestCase;
 final class MsgraphAvailabilityTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
 
@@ -35,9 +36,7 @@ final class MsgraphAvailabilityTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
-        config()->set('plugins.msgraph.enabled', true);
-        config()->set('plugins.msgraph.client_id', 'test-client');
-        config()->set('plugins.msgraph.client_secret', 'test-secret');
+        $this->pluginSecret('msgraph', ['enabled' => true, 'client_id' => 'test-client', 'client_secret' => 'test-secret']);
     }
 
     private function connection(): MsgraphConnection {

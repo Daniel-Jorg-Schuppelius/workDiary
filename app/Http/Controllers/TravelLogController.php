@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Travel\{TravelLogVehicle, TripKind};
 use App\Exceptions\{LogbookViolationException, TravelLogLockedException};
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveTravelLogRequest;
 use App\Models\{Customer, Project, TravelLog, User, Vehicle};
 use App\Services\Travel\{LogbookRules, TravelLogService};
@@ -26,6 +26,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class TravelLogController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     public function __construct(
@@ -109,7 +110,7 @@ class TravelLogController extends Controller {
         $data['user_id'] = Auth::id();
         /** @var User $user */
         $user = Auth::user();
-        $data['organization_id'] = $user->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
 
         $correctsId = $data['corrects_travel_log_id'] ?? null;
         $reason = (string) ($data['correction_reason'] ?? '');

@@ -37,18 +37,19 @@ class TodoistSyncCommand extends Command {
     protected $description = 'Gleicht Todoist-Aufgaben je Organisation ab (cursor-basiertes Delta, --full erzwingt Vollabgleich).';
 
     public function handle(TodoistImportService $imports, TodoistSyncService $sync): int {
-        if (! TodoistConfig::isConfigured()) {
-            $this->warn('Todoist ist nicht konfiguriert (TODOIST_CLIENT_ID/TODOIST_CLIENT_SECRET) — übersprungen.');
-
-            return self::SUCCESS;
-        }
-
-        // Bei Abbruch bleibt der Cursor unverändert — Wiederanlauf am selben Stand.
+        // Die App-Registrierung wird JE ORGANISATION geprüft: eine Organisation
+        // mit eigener Todoist-App läuft auch dann, wenn die Installation selbst
+        // keine hinterlegt hat.
         $this->forEachOrganization(function (Organization $org) use ($imports, $sync): void {
             $connection = TodoistConnection::query()->withoutGlobalScopes()
                 ->where('organization_id', $org->id)
                 ->first();
             if (! $connection instanceof TodoistConnection || ! $connection->isActive()) {
+                return;
+            }
+            if (! TodoistConfig::isConfigured((int) $org->id)) {
+                $this->warn(sprintf('Organisation #%d (%s): keine Todoist-App hinterlegt (Client-ID/Secret) — übersprungen.', $org->id, $org->name));
+
                 return;
             }
 

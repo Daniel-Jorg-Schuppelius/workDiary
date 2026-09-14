@@ -182,6 +182,16 @@ return [
 
     'key' => env('APP_KEY'),
 
+    /*
+     * Schlüssel für die Nachschlage-Abdrücke verschlüsselter Felder (IBAN,
+     * E-Mail, Durchwahl). Leer = aus dem APP_KEY abgeleitet — dieselbe
+     * Abhängigkeit, die die verschlüsselten Spalten ohnehin haben. Ein eigener
+     * Wert trennt beide Schlüsselkreise (Sicherheitsaudit 2026-09-13).
+     * Achtung: Ein Wechsel macht bestehende Abdrücke unauffindbar, bis
+     * `security:rehash-blind-indexes` gelaufen ist.
+     */
+    'blind_index_key' => env('BLIND_INDEX_KEY', ''),
+
     'previous_keys' => [
         ...array_filter(
             explode(',', (string) env('APP_PREVIOUS_KEYS', ''))

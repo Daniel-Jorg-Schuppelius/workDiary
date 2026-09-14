@@ -33,7 +33,13 @@ class SystemSetting extends Model {
         getAuditAttributes as private auditableGetAuditAttributes;
     }
 
-    public const CACHE_KEY = 'system_settings.values';
+    // v2: Die Karte enthaelt seit dem Sicherheitsaudit 2026-09-13 KEINE
+    // Klartextwerte sensibler Einstellungen mehr; der neue Schluessel laesst
+    // Altbestaende im Cache verfallen, statt sie falsch zu lesen.
+    public const CACHE_KEY = 'system_settings.values.v2';
+
+    /** @var array<string, mixed>|null Anfrage-Memo fuer sensible Werte (nie im Cache). */
+    private static ?array $sensitiveMemo = null;
 
     protected $table = 'system_settings';
 
@@ -45,7 +51,10 @@ class SystemSetting extends Model {
     ];
 
     protected static function booted(): void {
-        $flush = static fn() => Cache::forget(self::CACHE_KEY);
+        $flush = static function (): void {
+            Cache::forget(self::CACHE_KEY);
+            self::$sensitiveMemo = null;
+        };
         static::saved($flush);
         static::deleted($flush);
     }
@@ -74,17 +83,50 @@ class SystemSetting extends Model {
      */
     public static function valueMap(): array {
         try {
-            /** @var array<string, mixed> $map */
-            $map = Cache::rememberForever(self::CACHE_KEY, static function (): array {
-                return self::query()->get()
-                    ->mapWithKeys(fn(self $row): array => [$row->key => $row->resolvedValue()])
-                    ->all();
+            /** @var array{values: array<string, mixed>, sensitive: list<string>} $cached */
+            $cached = Cache::rememberForever(self::CACHE_KEY, static function (): array {
+                $values = [];
+                $sensitive = [];
+
+                foreach (self::query()->get() as $row) {
+                    // Sensible Werte bleiben aus dem Cache: er liegt dauerhaft
+                    // in der Datenbank (und je nach Treiber auch anderswo),
+                    // waehrend die Spalte selbst verschluesselt ist — der Cache
+                    // haette den Schutz ausgehebelt (Sicherheitsaudit 2026-09-13).
+                    if ($row->is_sensitive) {
+                        $sensitive[] = (string) $row->key;
+
+                        continue;
+                    }
+                    $values[$row->key] = $row->resolvedValue();
+                }
+
+                return ['values' => $values, 'sensitive' => $sensitive];
             });
 
-            return $map;
+            $map = $cached['values'];
+            $sensitive = $cached['sensitive'];
+
+            return $sensitive === [] ? $map : $map + self::sensitiveValues($sensitive);
         } catch (\Throwable) {
             return [];
         }
+    }
+
+    /**
+     * Sensible Werte frisch aus den Zeilen — einmal je Anfrage, nicht gecacht.
+     *
+     * @param  list<string>  $keys
+     * @return array<string, mixed>
+     */
+    private static function sensitiveValues(array $keys): array {
+        if (is_array(self::$sensitiveMemo)) {
+            return self::$sensitiveMemo;
+        }
+
+        return self::$sensitiveMemo = self::query()->whereIn('key', $keys)->get()
+            ->mapWithKeys(fn (self $row): array => [$row->key => $row->resolvedValue()])
+            ->all();
     }
 
     /**

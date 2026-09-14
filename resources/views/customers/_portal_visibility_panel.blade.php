@@ -12,8 +12,6 @@
      als doppeltes Gate (documents.customer_visible & Co. bleiben verbindlich). --}}
 
 @php
-    // use-Import bewusst VOR dem @can: innerhalb der if-Struktur wäre das
-    // Statement in der kompilierten View ungültig (ParseError).
     use App\Enums\CustomerPortal\{PortalCapability, PortalTimeDetail};
     use App\Services\CustomerPortal\PortalVisibility;
 @endphp

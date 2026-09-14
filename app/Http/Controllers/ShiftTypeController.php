@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\{StoreShiftTypeRequest, UpdateShiftTypeRequest};
 use App\Models\{ShiftType, User};
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class ShiftTypeController extends Controller {
+    use ResolvesCurrentOrganization;
     // ── HTML CRUD (Verwaltungsoberfläche, Admin-only) ────────────────────────
 
     public function index(Request $request): View {
@@ -48,7 +50,7 @@ class ShiftTypeController extends Controller {
 
         $data = $request->validated();
         $data['created_by'] = $auth->id;
-        $data['organization_id'] = $auth->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
         $data['is_active'] = (bool) ($data['is_active'] ?? true);
 
         ShiftType::create($data);

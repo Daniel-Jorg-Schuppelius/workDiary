@@ -32,6 +32,13 @@ use Illuminate\View\View;
  * Rechte laufen über die Fertigungs-Policy (1:1-Spezialisierung).
  */
 class PrintOrderController extends Controller {
+    /**
+     * @var list<string> Formate der Druckvorstufe. SVG bleibt bewusst dabei
+     *                   (Vektorvorlagen), wird aber nur abgelegt und
+     *                   heruntergeladen, nie im Browser gerendert.
+     */
+    private const ALLOWED_PRINT_EXTENSIONS = ['pdf', 'tif', 'tiff', 'eps', 'ai', 'jpg', 'jpeg', 'png', 'svg', 'zip'];
+
     use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
@@ -137,7 +144,15 @@ class PrintOrderController extends Controller {
         $this->assertInOrganization($order->organization_id);
 
         $validated = $request->validate([
-            'file' => ['required', 'file', 'max:262144'], // 256 MB — Großformatdaten
+            'file' => [
+                'required',
+                'file',
+                'max:262144', // 256 MB — Großformatdaten
+                // Formatliste (Sicherheitsaudit 2026-09-13): Der Upload umging
+                // jede Prüfung und nahm alles bis 256 MB. Die Dokument-Liste
+                // passt hier nicht — Druckvorstufe braucht EPS, AI, TIFF.
+                'mimes:' . implode(',', self::ALLOWED_PRINT_EXTENSIONS),
+            ],
         ]);
         $actor = $request->user() ?? abort(401);
 

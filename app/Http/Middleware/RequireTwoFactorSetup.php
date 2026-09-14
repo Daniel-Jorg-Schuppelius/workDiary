@@ -31,8 +31,19 @@ class RequireTwoFactorSetup {
             && $user->organization?->two_factor_required
             && ! $user->hasTwoFactorEnabled()
             && ! $this->isExempt($request, $isCustomer)) {
-            return redirect()->route($setupRoute)
-                ->with('warning', __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung. Bitte richten Sie diese jetzt ein.'));
+            $message = (string) __('Ihre Organisation verlangt Zwei-Faktor-Authentifizierung. Bitte richten Sie diese jetzt ein.');
+
+            // Seit dem Sicherheitsaudit 2026-09-13 haengt die Pflicht auch am
+            // Sanctum-Stack; eine Umleitung auf eine Weboberflaeche waere dort
+            // keine brauchbare Antwort.
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'message' => $message,
+                    'reason' => 'two_factor_setup_required',
+                ], 403);
+            }
+
+            return redirect()->route($setupRoute)->with('warning', $message);
         }
 
         return $next($request);

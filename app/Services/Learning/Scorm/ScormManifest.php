@@ -47,8 +47,12 @@ class ScormManifest {
         $previous = libxml_use_internal_errors(true);
 
         try {
-            // Keine externen Entitäten: ein Manifest ist eine fremde Datei.
-            $element = simplexml_load_string($xml, SimpleXMLElement::class, LIBXML_NONET | LIBXML_NOENT);
+            // Keine Entitätenersetzung: LIBXML_NOENT ERSETZT Entitäten, statt sie zu
+            // unterbinden — mit ihm löst libxml auch <!ENTITY x SYSTEM "file:///…">
+            // auf und der Dateiinhalt landet im Manifest-Titel. LIBXML_NONET sperrt
+            // nur das Netz, nicht die Platte (Sicherheitsaudit 2026-09-13).
+            // Ein Manifest braucht keine Entitäten.
+            $element = simplexml_load_string($xml, SimpleXMLElement::class, LIBXML_NONET);
         } finally {
             libxml_clear_errors();
             libxml_use_internal_errors($previous);

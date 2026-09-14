@@ -24,6 +24,11 @@ class GoogleCalendarOAuth extends PluginOAuthGrant {
         return GoogleCalendarConfig::resolve();
     }
 
+    /** @return array<string, string|int|bool> */
+    protected function configFor(?int $organizationId): array {
+        return GoogleCalendarConfig::resolve($organizationId);
+    }
+
     protected function callbackRouteName(): string {
         return 'admin.google-calendar.oauth.callback';
     }

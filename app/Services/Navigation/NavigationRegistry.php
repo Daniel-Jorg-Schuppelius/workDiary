@@ -17,6 +17,7 @@ use App\Legacy\LegacyBridge;
 use App\Models\User;
 use App\Plugins\PluginManager;
 use App\Services\Licensing\FeatureFlagResolver;
+use App\Support\OrganizationContext;
 use Illuminate\Support\Facades\{Auth, Cache, Gate, Route};
 
 /**
@@ -1537,12 +1538,18 @@ class NavigationRegistry {
     private function dueQuoteFollowUpCount(): int {
         /** @var User|null $user */
         $user = Auth::user();
-        if ($user === null || $user->organization_id === null) {
+        // Schluessel und Abfrage muessen dieselbe Organisation meinen: Die
+        // Abfrage laeuft unter der GEBUNDENEN Organisation, der Schluessel trug
+        // die Heimat-Organisation des Nutzers. Ein Plattform-Betreiber im
+        // Org-Wechsel legte damit die Zahl der fremden Organisation unter
+        // seinem eigenen Schluessel ab (Sicherheitsaudit 2026-09-13).
+        $organizationId = OrganizationContext::currentId() ?? $user?->organization_id;
+        if ($user === null || $organizationId === null) {
             return 0;
         }
 
         return (int) Cache::remember(
-            'nav-badge:quote-followup:' . (int) $user->organization_id,
+            'nav-badge:quote-followup:' . (int) $organizationId,
             self::BADGE_TTL,
             static fn (): int => \App\Models\Quote::query()
                 ->whereIn('status', ['approved', 'sent'])

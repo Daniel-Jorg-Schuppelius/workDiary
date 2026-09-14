@@ -16,7 +16,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use RuntimeException;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -27,6 +27,7 @@ use Tests\TestCase;
 final class LexofficeDunningTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
 
@@ -35,8 +36,7 @@ final class LexofficeDunningTest extends TestCase {
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
     }
 
     private function overdueInvoice(): LexofficeVoucher {

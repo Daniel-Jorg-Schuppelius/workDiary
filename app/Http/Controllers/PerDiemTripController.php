@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Expense\PerDiemTripStatus;
-use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
+use App\Http\Controllers\Concerns\{ResolvesCurrentOrganization, ResolvesGlobalDateRange};
 use App\Http\Requests\{SavePerDiemDayRequest, SavePerDiemTripRequest};
 use App\Models\{Customer, PerDiemDay, PerDiemTrip, Project, TravelLog, User};
 use App\Services\Expense\{PerDiemEligibilityChecker, PerDiemTripService};
@@ -24,6 +24,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class PerDiemTripController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange;
 
     public function __construct(
@@ -102,7 +103,7 @@ class PerDiemTripController extends Controller {
         $data['user_id'] = Auth::id();
         /** @var User $user */
         $user = Auth::user();
-        $data['organization_id'] = $user->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
 
         $trip = $this->service->create($data);
 

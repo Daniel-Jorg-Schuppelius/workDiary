@@ -267,6 +267,9 @@ class OrganizationLifecycleService {
             'deactivated_at' => optional($org->deactivated_at)?->toIso8601String(),
         ];
 
+        // VOR dem Zeilenloeschen: sonst sind die Dateizeiger weg.
+        $fileTargets = $this->fileTargetsFor((int) $org->id);
+
         DB::transaction(function () use ($org) {
             $orgId = (int) $org->id;
             $tables = $this->organizationTables();
@@ -310,7 +313,12 @@ class OrganizationLifecycleService {
             DB::table('organizations')->where('id', $orgId)->delete();
         });
 
-        // Storage-Folders entfernen (best effort, außerhalb der Transaction).
+        // Dateien entfernen (best effort, außerhalb der Transaction).
+        $fileResult = $this->deleteFileTargets($fileTargets);
+        $snapshot['files_deleted'] = $fileResult['deleted'];
+        $snapshot['files_failed'] = $fileResult['failed'];
+
+        // Zusaetzlich die historischen Ablage-Verzeichnisse (best effort).
         foreach ($this->storageFoldersFor($org) as $relFolder) {
             $abs = storage_path('app/' . ltrim($relFolder, '/'));
             if (is_dir($abs)) {
@@ -391,6 +399,141 @@ class OrganizationLifecycleService {
     /**
      * Bekannte Storage-Ordner pro Organisation. Werden für Export und
      * Purge verwendet. Pfade sind relativ zu storage/app/.
+     *
+     * @return list<string>
+     */
+    /**
+     * Tabellen mit Zeigern auf abgelegte Dateien.
+     *
+     * Sicherheitsaudit 2026-09-13: Der Purge loeschte ausschliesslich eine
+     * Kandidatenliste von Verzeichnissen ({@see self::storageFoldersFor()}),
+     * die auf Pfade zeigte, die es nicht gibt — die Oberflaeche meldete die
+     * endgueltige Loeschung, auf der Platte blieb alles liegen: Anhaenge,
+     * Dokumentfassungen, Personalakten, Bewerbungsunterlagen, Meldeanhaenge.
+     * Deshalb werden die Pfade jetzt aus den Daten selbst gelesen, VOR dem
+     * Zeilenloeschen, und danach gezielt entfernt.
+     *
+     * `disk` = Spalte mit dem Datentraeger, sonst `default_disk`.
+     * `dir` = der Zeiger ist ein Verzeichnis, kein Einzeldokument.
+     *
+     * @var array<string, array{path: string, disk?: string, default_disk?: string, dir?: bool}>
+     */
+    private const FILE_POINTER_TABLES = [
+        'attachments' => ['path' => 'path', 'disk' => 'disk'],
+        'bank_statements' => ['path' => 'file_path'],
+        'billing_transfers' => ['path' => 'file_path'],
+        'datev_booking_batches' => ['path' => 'file_path'],
+        'export_runs' => ['path' => 'storage_path'],
+        'gobd_exports' => ['path' => 'file_path'],
+        'import_runs' => ['path' => 'storage_path'],
+        'isms_advisories' => ['path' => 'file_path'],
+        'isms_audit_packages' => ['path' => 'file_path'],
+        'job_application_uploads' => ['path' => 'storage_key'],
+        'learning_scorm_packages' => ['path' => 'storage_path', 'dir' => true],
+        'letterhead_assets' => ['path' => 'original_path', 'disk' => 'disk'],
+        'lexoffice_vouchers' => ['path' => 'file_path'],
+        'media_renditions' => ['path' => 'path', 'disk' => 'disk'],
+        'privacy_attachments' => ['path' => 'path'],
+        'resale_imports' => ['path' => 'file_path'],
+        'time_exports' => ['path' => 'file_path'],
+        'whistleblowing_attachments' => ['path' => 'storage_key', 'default_disk' => 'whistleblowing'],
+    ];
+
+    /**
+     * Alle Dateien der Organisation einsammeln — VOR dem Zeilenloeschen, sonst
+     * sind die Zeiger weg und die Dateien unauffindbar.
+     *
+     * @return list<array{disk: string, path: string, dir: bool}>
+     */
+    private function fileTargetsFor(int $orgId): array {
+        $targets = [];
+
+        foreach (self::FILE_POINTER_TABLES as $table => $spec) {
+            if (! Schema::hasTable($table) || ! Schema::hasColumn($table, $spec['path'])) {
+                continue;
+            }
+            $diskColumn = ($spec['disk'] ?? null) !== null && Schema::hasColumn($table, (string) $spec['disk'])
+                ? (string) $spec['disk']
+                : null;
+            $defaultDisk = (string) ($spec['default_disk'] ?? 'local');
+            if ($table === 'whistleblowing_attachments') {
+                $defaultDisk = (string) config('whistleblowing.disk', 'whistleblowing');
+            }
+
+            $columns = [$spec['path']];
+            if ($diskColumn !== null) {
+                $columns[] = $diskColumn;
+            }
+
+            DB::table($table)->where('organization_id', $orgId)->select($columns)->orderBy($spec['path'])
+                ->chunk(500, function ($rows) use (&$targets, $spec, $diskColumn, $defaultDisk): void {
+                    foreach ($rows as $row) {
+                        $path = (string) ($row->{$spec['path']} ?? '');
+                        if ($path === '') {
+                            continue;
+                        }
+                        $targets[] = [
+                            'disk' => $diskColumn !== null ? (string) ($row->{$diskColumn} ?: $defaultDisk) : $defaultDisk,
+                            'path' => $path,
+                            'dir' => (bool) ($spec['dir'] ?? false),
+                        ];
+                    }
+                });
+        }
+
+        // Dokumentfassungen haengen ueber `document_id` an der Organisation,
+        // sie tragen selbst keine organization_id.
+        if (Schema::hasTable('document_versions') && Schema::hasTable('documents')) {
+            DB::table('document_versions')
+                ->join('documents', 'documents.id', '=', 'document_versions.document_id')
+                ->where('documents.organization_id', $orgId)
+                ->select(['document_versions.disk', 'document_versions.path'])
+                ->orderBy('document_versions.path')
+                ->chunk(500, function ($rows) use (&$targets): void {
+                    foreach ($rows as $row) {
+                        $path = (string) ($row->path ?? '');
+                        if ($path !== '') {
+                            $targets[] = ['disk' => (string) ($row->disk ?: 'local'), 'path' => $path, 'dir' => false];
+                        }
+                    }
+                });
+        }
+
+        return $targets;
+    }
+
+    /**
+     * Eingesammelte Dateien entfernen. Best effort: ein fehlender Datentraeger
+     * oder eine bereits verschwundene Datei darf den Purge nicht aufhalten,
+     * wird aber gezaehlt und protokolliert.
+     *
+     * @param  list<array{disk: string, path: string, dir: bool}>  $targets
+     * @return array{deleted: int, failed: int}
+     */
+    private function deleteFileTargets(array $targets): array {
+        $deleted = 0;
+        $failed = 0;
+
+        foreach ($targets as $target) {
+            try {
+                $disk = Storage::disk($target['disk']);
+                $ok = $target['dir'] ? $disk->deleteDirectory($target['path']) : $disk->delete($target['path']);
+                $ok ? $deleted++ : $failed++;
+            } catch (\Throwable $e) {
+                $failed++;
+                Log::warning('organization.purge.file_delete_failed', [
+                    'disk' => $target['disk'],
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return ['deleted' => $deleted, 'failed' => $failed];
+    }
+
+    /**
+     * Historische Ablage-Verzeichnisse (Bestandsschutz). Die eigentliche
+     * Loeschung laeuft ueber {@see self::fileTargetsFor()}.
      *
      * @return list<string>
      */

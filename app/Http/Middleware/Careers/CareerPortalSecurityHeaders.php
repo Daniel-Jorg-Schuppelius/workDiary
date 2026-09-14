@@ -99,7 +99,19 @@ class CareerPortalSecurityHeaders {
             if ($parsed === false || ($parsed['scheme'] ?? '') !== 'https' || ! isset($parsed['host'])) {
                 continue;
             }
-            $origin = 'https://' . $parsed['host'] . (isset($parsed['port']) ? ':' . $parsed['port'] : '');
+            // Sicherheitsaudit 2026-09-13: parse_url gibt alles zurueck, was
+            // zwischen Schema und Pfad steht - auch "evil.test;script-src *".
+            // Der Wert landete ungeprueft in der CSP-Kopfzeile; das Semikolon
+            // beendet dort die Direktive, die naechste beginnt. Gepflegt wird
+            // die Einstellung vom Org-Admin, die Kopfzeile gilt im
+            // oeffentlichen Karriereportal.
+            $host = (string) $parsed['host'];
+            if (filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) === false) {
+                continue;
+            }
+            // parse_url liefert den Port bereits als int<1, 65535>.
+            $port = isset($parsed['port']) ? (int) $parsed['port'] : null;
+            $origin = 'https://' . $host . ($port !== null ? ':' . $port : '');
             if (! in_array($origin, $out, true)) {
                 $out[] = $origin;
             }

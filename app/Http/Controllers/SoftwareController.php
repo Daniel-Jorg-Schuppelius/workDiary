@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\Software\{SoftwareKind, SoftwareLicenseType};
-use App\Http\Controllers\Concerns\ParsesIndexQuery;
+use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
 use App\Http\Requests\SaveSoftwareRequest;
 use App\Models\{Software, User};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -20,6 +20,7 @@ use Illuminate\View\View;
 
 class SoftwareController extends Controller {
     use ParsesIndexQuery;
+    use ResolvesCurrentOrganization;
 
     private const ALLOWED_SORTS = ['name', 'vendor', 'kind', 'license_type', 'installations_count'];
 
@@ -79,7 +80,7 @@ class SoftwareController extends Controller {
         }
 
         $payload = $request->validated();
-        $payload['organization_id'] = (int) $user->organization_id;
+        $payload['organization_id'] = (int) $this->currentOrganization()->id;
         $payload['is_active'] = (bool) ($payload['is_active'] ?? true);
 
         Software::query()->create($payload);

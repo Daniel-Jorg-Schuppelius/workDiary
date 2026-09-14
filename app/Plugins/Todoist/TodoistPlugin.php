@@ -87,14 +87,19 @@ class TodoistPlugin extends AbstractPlugin implements TaskSyncer {
         ];
     }
 
-    /** Keine per-Org-Secrets: Client-ID/-Secret sind installationsweit (ENV). */
+    /** Eigene Todoist-App je Organisation; leer = Instanz-App der Installation. */
     public function settingsSchema(): array {
-        return [];
+        return [
+            \App\Plugins\Contracts\SettingsField::text('client_id', __('todoist.settings.client_id'),
+                help: __('todoist.settings.client_id_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::password('client_secret', __('todoist.settings.client_secret'),
+                help: __('todoist.settings.client_secret_help'))->toArray(),
+        ];
     }
 
     public function healthCheck(): PluginHealth {
         if (! TodoistConfig::isConfigured()) {
-            return PluginHealth::degraded(__('Todoist ist nicht konfiguriert (TODOIST_CLIENT_ID/SECRET fehlen).'));
+            return PluginHealth::degraded(__('Todoist ist nicht konfiguriert: keine eigene App in den Plugin-Einstellungen und keine TODOIST_CLIENT_ID/SECRET der Installation.'));
         }
 
         $org = PluginOrgContext::currentOrNull();

@@ -35,6 +35,7 @@ class WhistleblowingExportService {
     public function __construct(
         private readonly WhistleblowingEventService $events,
         private readonly WhistleblowingMessageService $messages,
+        private readonly WhistleblowingAttachmentService $attachments,
     ) {}
 
     /**
@@ -88,7 +89,10 @@ class WhistleblowingExportService {
                 continue;
             }
             if ($disk->exists($attachment->storage_key)) {
-                $zip->addFile($disk->path($attachment->storage_key), 'files/' . basename((string) $attachment->storage_key));
+                // Verschluesselte Anhaenge (Sicherheitsaudit 2026-09-13) muessen fuer
+                // das Paket entschluesselt werden; der Dienst kennt beide Formen.
+                $attachment->setRelation('case', $case);
+                $zip->addFromString('files/' . basename((string) $attachment->storage_key), $this->attachments->contents($attachment));
             }
         }
 

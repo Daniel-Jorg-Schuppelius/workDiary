@@ -163,6 +163,9 @@ class LearningJwtCredentialService {
             ->withoutGlobalScopes()
             ->where('algorithm', self::ALGORITHM)
             ->where('key_id', $keyId)
+            // Ein widerrufener Schluessel darf nicht mehr pruefen
+            // (Sicherheitsaudit 2026-09-13).
+            ->whereNull('revoked_at')
             ->first();
 
         if ($key === null) {

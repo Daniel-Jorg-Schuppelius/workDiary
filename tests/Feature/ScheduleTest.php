@@ -47,6 +47,33 @@ class ScheduleTest extends TestCase {
             ->assertViewHas('view', 'month');
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13: Der Schichtplan lud die Auswahlliste mit
+     * `User::orderBy('name')->get()`. Das Benutzermodell traegt bewusst keinen
+     * globalen Org-Scope, also stand dort jeder Name der gesamten Installation —
+     * in Filter, Schicht-Dialog und Wochenmatrix. Das zustaendige Gate
+     * (UserOrgScopingRuleTest) lief gruen, weil es `User::orderBy(` nicht kannte.
+     */
+    public function test_schedule_user_list_stays_inside_the_own_tenant(): void {
+        $own = User::factory()->user()->create(['name' => 'Eigene Person']);
+        $foreign = User::factory()->user()->create([
+            'organization_id' => \App\Models\Organization::factory()->create()->id,
+            'name' => 'Fremde Person',
+        ]);
+
+        app()->instance('currentOrganization', $own->organization);
+
+        $names = $this->actingAs($own)
+            ->get(route('schedule.index', ['view' => 'week']))
+            ->assertOk()
+            ->viewData('users')
+            ->pluck('name');
+
+        $this->assertTrue($names->contains('Eigene Person'));
+        $this->assertFalse($names->contains('Fremde Person'), 'Der Schichtplan darf keine fremden Mandanten listen.');
+        $this->assertNotNull($foreign->id);
+    }
+
     public function test_schedule_index_accepts_numeric_user_filter_fallback(): void {
         $admin = User::factory()->admin()->create();
         $worker = User::factory()->user()->create(['organization_id' => $admin->organization_id]);

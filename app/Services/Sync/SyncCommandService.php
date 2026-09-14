@@ -14,10 +14,10 @@ use App\Enums\Sync\SyncCommandStatus;
 use App\Http\Controllers\FormSubmissionController;
 use App\Models\{Attendance, AuditLog, Comment, DiaryEntry, FormSubmission, FormTemplate, SyncCommand, TimeCorrectionRequest, User};
 use App\Models\Learning\{LearningEnrollment, LearningUnit};
-use App\Services\Attendance\AttendanceClockService;
+use App\Services\Attendance\{AttendanceClockService, StampPlausibility};
 use App\Services\Form\FormService;
 use App\Services\Learning\LearningEnrollmentService;
-use App\Services\TimeApproval\{DayCloseService, TimeCorrectionService};
+use App\Services\TimeApproval\TimeCorrectionService;
 use App\Support\{Setting, Sqid};
 use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\Model;
@@ -42,19 +42,6 @@ use RuntimeException;
  *    zeigt die Meldung; ein blindes Endlos-Retry ist damit ausgeschlossen.
  */
 class SyncCommandService {
-    /**
-     * Wie weit darf eine offline entstandene Stempelung zurückliegen?
-     *
-     * Ein Gerät kann tagelang ohne Netz sein — beliebig lange aber nicht.
-     * Ohne Grenze war der Sync-Weg eine Hintertür an der Serverzeit vorbei
-     * (Sicherheitsscan 2026-08-23, S-09): der Online-Weg stempelt mit
-     * Serverzeit, der Offline-Weg übernahm den Zeitstempel des Clients 1:1.
-     */
-    private const MAX_OFFLINE_BACKDATE_DAYS = 14;
-
-    /** Zulässiger Vorlauf gegen Uhrenversatz auf dem Gerät. */
-    private const MAX_CLOCK_SKEW_MINUTES = 10;
-
     /** Unterstützte Befehlstypen (MVP-Scope: append-artige Daten, §3.1). */
     public const TYPES = [
         'attendance.clock-in',
@@ -559,28 +546,9 @@ class SyncCommandService {
      * Genehmigung.
      */
     private function assertPlausibleStamp(User $user, string $raw, string $field): CarbonImmutable {
-        $stamp = CarbonImmutable::parse($raw);
-        $now = CarbonImmutable::now();
-
-        if ($stamp->greaterThan($now->addMinutes(self::MAX_CLOCK_SKEW_MINUTES))) {
-            throw ValidationException::withMessages([
-                $field => (string) __('sync.error.stamp_in_future'),
-            ]);
-        }
-
-        if ($stamp->lessThan($now->subDays(self::MAX_OFFLINE_BACKDATE_DAYS))) {
-            throw ValidationException::withMessages([
-                $field => (string) __('sync.error.stamp_too_old', ['days' => self::MAX_OFFLINE_BACKDATE_DAYS]),
-            ]);
-        }
-
-        if (app(DayCloseService::class)->dayLockedFor($user, $stamp->startOfDay())) {
-            throw ValidationException::withMessages([
-                $field => (string) __('sync.error.day_locked'),
-            ]);
-        }
-
-        return $stamp;
+        // Gemeinsam mit dem Terminal-Eingang (Sicherheitsaudit 2026-09-13):
+        // dort fehlte die Pruefung, deshalb liegt sie jetzt an einer Stelle.
+        return app(StampPlausibility::class)->assert($user, $raw, $field);
     }
 
     /**

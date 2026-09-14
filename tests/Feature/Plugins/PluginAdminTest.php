@@ -14,7 +14,7 @@ use App\Models\{PluginSetting, User};
 use App\Plugins\Lexoffice\{LexofficeConfig, LexofficePlugin};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\TestCase;
 
 /**
@@ -27,6 +27,7 @@ use Tests\TestCase;
 class PluginAdminTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
 
@@ -34,6 +35,7 @@ class PluginAdminTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+
         $this->setUpOrganization();
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
@@ -118,8 +120,10 @@ class PluginAdminTest extends TestCase {
     }
 
     public function test_lexoffice_config_resolve_prefers_database_over_config(): void {
-        config()->set('plugins.lexoffice.api_key', 'env-key-loser');
+        // ENV-Ebene: bleibt in der Konfiguration, dieser Test prueft, dass die
+        // Datenbank sie schlaegt.
         config()->set('plugins.lexoffice.match_policy', 'manual_review');
+        config()->set('plugins.lexoffice.api_key', 'env-key-loser');
 
         PluginSetting::create([
             'organization_id' => $this->organization->id,
@@ -139,8 +143,14 @@ class PluginAdminTest extends TestCase {
     }
 
     public function test_lexoffice_config_resolve_falls_back_to_env_when_no_db_row(): void {
+        // Ein Lexoffice-Schluessel ist ein Zugangsgeheimnis, kein Briefkopf
+        // einer App-Registrierung: Seit dem Sicherheitsaudit 2026-09-13 faellt
+        // er in der Vorgabe NICHT mehr auf die Betreiber-Datei zurueck. Diese
+        // Klasse prueft den Rueckfall selbst und schaltet ihn dafuer hier
+        // ausdruecklich ein; dass die VORGABE greift, prueft
+        // Tests\Feature\Security\PluginSecretFallbackTest.
+        config(['plugins.allow_env_secret_fallback' => true]);
         config()->set('plugins.lexoffice.api_key', 'env-only-key');
-
         $resolved = LexofficeConfig::resolve($this->organization->id);
 
         $this->assertSame('env-only-key', $resolved['api_key']);

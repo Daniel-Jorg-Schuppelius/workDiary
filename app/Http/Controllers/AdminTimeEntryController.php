@@ -11,7 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\TimeEntry\TimeEntryKind;
-use App\Http\Controllers\Concerns\ProvidesTimeEntryTagPicker;
+use App\Http\Controllers\Concerns\{ProvidesTimeEntryTagPicker, ResolvesCurrentOrganization};
 use App\Http\Requests\SaveAdminTimeEntryRequest;
 use App\Models\{ActivityCategory, Attendance, TimeEntry, User};
 use Carbon\CarbonImmutable;
@@ -26,6 +26,7 @@ use Illuminate\View\View;
  */
 class AdminTimeEntryController extends Controller {
     use ProvidesTimeEntryTagPicker;
+    use ResolvesCurrentOrganization;
 
     public function create(Request $request): View {
         Gate::authorize('create', TimeEntry::class);
@@ -60,7 +61,7 @@ class AdminTimeEntryController extends Controller {
         if (! empty($data['activity_category_id'])) {
             $cat = ActivityCategory::find($data['activity_category_id']);
             if ($cat) {
-                $data['organization_id'] = $cat->organization_id ?? $user->organization_id;
+                $data['organization_id'] = $cat->organization_id ?? $this->currentOrganization()->id;
             }
         }
         $data['organization_id'] ??= $user->organization_id;

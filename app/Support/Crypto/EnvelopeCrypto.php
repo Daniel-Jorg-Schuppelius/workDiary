@@ -12,8 +12,6 @@ declare(strict_types=1);
 
 namespace App\Support\Crypto;
 
-use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\CryptoHelper;
 use RuntimeException;
 use SensitiveParameter;
 
@@ -102,6 +100,14 @@ class EnvelopeCrypto {
             return $configured;
         }
 
-        return CryptoHelper::hash($configured, HashAlgorithm::SHA256, true);
+        // Fail-closed (Sicherheitsaudit 2026-09-13): Vorher wurde JEDE
+        // Zeichenkette per SHA-256 auf Schluessellaenge gebracht — aus
+        // "geheim" wurde ein gueltiger Schluessel, und niemand merkte, dass
+        // der Modulschluessel keine 32 zufaelligen Bytes hatte. Das Preflight
+        // weist darauf hin, durchgesetzt hat es niemand.
+        throw new RuntimeException(
+            "{$this->keyName} muss 32 zufaellige Bytes sein (roh oder base64). "
+            . 'Erzeugen: php artisan tinker --execute="echo base64_encode(random_bytes(32));"'
+        );
     }
 }

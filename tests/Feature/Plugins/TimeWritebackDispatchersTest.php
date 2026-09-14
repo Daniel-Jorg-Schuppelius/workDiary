@@ -19,7 +19,7 @@ use Carbon\CarbonImmutable;
 use GuzzleHttp\Psr7\Response as Psr7Response;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -31,6 +31,7 @@ use Tests\TestCase;
 class TimeWritebackDispatchersTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private const START = '2026-07-01 09:00';
 
@@ -90,8 +91,8 @@ class TimeWritebackDispatchersTest extends TestCase {
             'plugins.kimai.enabled' => true,
             'plugins.kimai.writeback' => true,
             'plugins.kimai.base_url' => 'https://kimai.example.com',
-            'plugins.kimai.api_token' => 'token',
         ]);
+        $this->pluginSecret('kimai', ['api_token' => 'token']);
 
         $fingerprint = RemoteTimeFingerprint::fromParts(
             CarbonImmutable::parse(self::START),
@@ -123,8 +124,8 @@ class TimeWritebackDispatchersTest extends TestCase {
             'plugins.kimai.enabled' => true,
             'plugins.kimai.writeback' => true,
             'plugins.kimai.base_url' => 'https://kimai.example.com',
-            'plugins.kimai.api_token' => 'token',
         ]);
+        $this->pluginSecret('kimai', ['api_token' => 'token']);
 
         $entry = $this->linkedEntry('kimai', 'api:77', ['fingerprint' => 'stand-von-frueher']);
 
@@ -147,9 +148,9 @@ class TimeWritebackDispatchersTest extends TestCase {
         config([
             'plugins.clockify.enabled' => true,
             'plugins.clockify.writeback' => true,
-            'plugins.clockify.api_key' => 'key',
             'plugins.clockify.workspace_id' => 'ws1',
         ]);
+        $this->pluginSecret('clockify', ['api_key' => 'key']);
 
         $fingerprint = RemoteTimeFingerprint::fromParts(
             CarbonImmutable::parse(self::START),
@@ -193,8 +194,8 @@ class TimeWritebackDispatchersTest extends TestCase {
             'plugins.openproject.enabled' => true,
             'plugins.openproject.writeback' => true,
             'plugins.openproject.base_url' => 'https://op.example.com',
-            'plugins.openproject.api_token' => 'token',
         ]);
+        $this->pluginSecret('openproject', ['api_token' => 'token']);
 
         $entry = $this->linkedEntry('openproject', 'openproject:te:42', [
             'fingerprint' => RemoteTimeFingerprint::fromDuration(CarbonImmutable::parse(self::START), 60),
@@ -227,8 +228,8 @@ class TimeWritebackDispatchersTest extends TestCase {
             'plugins.openproject.enabled' => true,
             'plugins.openproject.writeback' => true,
             'plugins.openproject.base_url' => 'https://op.example.com',
-            'plugins.openproject.api_token' => 'token',
         ]);
+        $this->pluginSecret('openproject', ['api_token' => 'token']);
 
         $entry = $this->linkedEntry('openproject', 'openproject:te:42', [
             'fingerprint' => RemoteTimeFingerprint::fromDuration(CarbonImmutable::parse(self::START), 60),

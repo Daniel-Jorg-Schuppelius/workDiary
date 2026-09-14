@@ -1,8 +1,8 @@
 # Untranslated strings report
 
-Generated: 2026-09-10T09:56:07+00:00
+Generated: 2026-09-13T23:19:25+00:00
 
-- Blade hits: 67891
+- Blade hits: 68091
 - JS hits:    1317
 
 ## BLADE
@@ -4670,6 +4670,47 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/events/calendar.blade.php:48` — `tab-active`
 - `resources/views/events/calendar.blade.php:49` — `font-semibold`
 - `resources/views/events/calendar.blade.php:49` — `shortLabel`
+- `resources/views/events/feed.blade.php:11` — `title`
+- `resources/views/events/feed.blade.php:11` — `Kalender-Abo der Organisation`
+- `resources/views/events/feed.blade.php:12` — `nav-title`
+- `resources/views/events/feed.blade.php:12` — `Kalender-Abo der Organisation`
+- `resources/views/events/feed.blade.php:14` — `content`
+- `resources/views/events/feed.blade.php:16` — `alert`
+- `resources/views/events/feed.blade.php:16` — `alert alert-info alert-soft`
+- `resources/views/events/feed.blade.php:19` — `font-semibold`
+- `resources/views/events/feed.blade.php:19` — `Gemeinsamer Kalender-Feed`
+- `resources/views/events/feed.blade.php:20` — `text-sm`
+- `resources/views/events/feed.blade.php:26` — `card bg-base-100 border border-base-300`
+- `resources/views/events/feed.blade.php:27` — `card-body space-y-4`
+- `resources/views/events/feed.blade.php:28` — `issued`
+- `resources/views/events/feed.blade.php:32` — `token`
+- `resources/views/events/feed.blade.php:33` — `Abo-URL`
+- `resources/views/events/feed.blade.php:34` — `join w-full`
+- `resources/views/events/feed.blade.php:35` — `text`
+- `resources/views/events/feed.blade.php:35` — `input input-bordered join-item w-full font-mono text-xs`
+- `resources/views/events/feed.blade.php:36` — `button`
+- `resources/views/events/feed.blade.php:36` — `btn join-item`
+- `resources/views/events/feed.blade.php:37` — `Kopieren`
+- `resources/views/events/feed.blade.php:43` — `alert alert-info text-sm`
+- `resources/views/events/feed.blade.php:49` — `flex gap-2`
+- `resources/views/events/feed.blade.php:50` — `Kennung des Links`
+- `resources/views/events/feed.blade.php:51` — `font-mono`
+- `resources/views/events/feed.blade.php:51` — `hint`
+- `resources/views/events/feed.blade.php:53` — `flex gap-2`
+- `resources/views/events/feed.blade.php:54` — `Erzeugt am`
+- `resources/views/events/feed.blade.php:64` — `flex flex-wrap gap-2`
+- `resources/views/events/feed.blade.php:65` — `Token rotieren? Bestehende Abos brechen ab.`
+- `resources/views/events/feed.blade.php:66` — `submit`
+- `resources/views/events/feed.blade.php:66` — `warning`
+- `resources/views/events/feed.blade.php:66` — `Token rotieren`
+- `resources/views/events/feed.blade.php:68` — `Kalender-Link wirklich widerrufen?`
+- `resources/views/events/feed.blade.php:69` — `submit`
+- `resources/views/events/feed.blade.php:69` — `error`
+- `resources/views/events/feed.blade.php:69` — `Widerrufen`
+- `resources/views/events/feed.blade.php:73` — `Es ist noch kein Kalender-Link aktiv.`
+- `resources/views/events/feed.blade.php:76` — `submit`
+- `resources/views/events/feed.blade.php:76` — `primary`
+- `resources/views/events/feed.blade.php:76` — `Kalender-Link erzeugen`
 - `resources/views/events/partials/_calendar_cell.blade.php:15` — `block truncate rounded px-1 py-0.5 text-xs text-white`
 - `resources/views/events/index.blade.php:11` — `title`
 - `resources/views/events/index.blade.php:11` — `Veranstaltungen`
@@ -4682,109 +4723,111 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/events/index.blade.php:27` — `Veranstaltungen und Termine planen und verwalten.`
 - `resources/views/events/index.blade.php:29` — `ghost`
 - `resources/views/events/index.blade.php:30` — `Kalender`
-- `resources/views/events/index.blade.php:32` — `create`
-- `resources/views/events/index.blade.php:33` — `primary`
-- `resources/views/events/index.blade.php:34` — `Neue Veranstaltung`
-- `resources/views/events/index.blade.php:39` — `Suche`
-- `resources/views/events/index.blade.php:39` — `ev-q`
-- `resources/views/events/index.blade.php:39` — `flex-1 min-w-60`
-- `resources/views/events/index.blade.php:40` — `ev-q`
-- `resources/views/events/index.blade.php:40` — `search`
-- `resources/views/events/index.blade.php:42` — `input input-sm input-bordered w-full`
-- `resources/views/events/index.blade.php:44` — `ev-event-type`
-- `resources/views/events/index.blade.php:44` — `min-w-40`
-- `resources/views/events/index.blade.php:45` — `ev-event-type`
-- `resources/views/events/index.blade.php:45` — `select select-sm select-bordered w-full`
-- `resources/views/events/index.blade.php:47` — `Alle`
-- `resources/views/events/index.blade.php:53` — `Status`
-- `resources/views/events/index.blade.php:53` — `ev-status`
-- `resources/views/events/index.blade.php:53` — `min-w-40`
-- `resources/views/events/index.blade.php:54` — `ev-status`
-- `resources/views/events/index.blade.php:54` — `status`
-- `resources/views/events/index.blade.php:54` — `select select-sm select-bordered w-full`
-- `resources/views/events/index.blade.php:56` — `Alle`
-- `resources/views/events/index.blade.php:58` — `status`
-- `resources/views/events/index.blade.php:62` — `Sichtbarkeit`
-- `resources/views/events/index.blade.php:62` — `ev-visibility`
-- `resources/views/events/index.blade.php:62` — `min-w-40`
-- `resources/views/events/index.blade.php:63` — `ev-visibility`
-- `resources/views/events/index.blade.php:63` — `visibility`
-- `resources/views/events/index.blade.php:63` — `select select-sm select-bordered w-full`
-- `resources/views/events/index.blade.php:65` — `Alle`
-- `resources/views/events/index.blade.php:67` — `visibility`
-- `resources/views/events/index.blade.php:71` — `Kategorie`
-- `resources/views/events/index.blade.php:71` — `ev-category`
-- `resources/views/events/index.blade.php:71` — `min-w-44`
-- `resources/views/events/index.blade.php:72` — `ev-category`
-- `resources/views/events/index.blade.php:72` — `select select-sm select-bordered w-full`
-- `resources/views/events/index.blade.php:74` — `Alle`
-- `resources/views/events/index.blade.php:81` — `ev-only-mandatory`
-- `resources/views/events/index.blade.php:82` — `Nur Pflicht`
-- `resources/views/events/index.blade.php:87` — `Anstehend`
-- `resources/views/events/index.blade.php:87` — `upcoming`
-- `resources/views/events/index.blade.php:87` — `primary`
-- `resources/views/events/index.blade.php:88` — `Heute`
-- `resources/views/events/index.blade.php:88` — `today`
-- `resources/views/events/index.blade.php:88` — `info`
-- `resources/views/events/index.blade.php:89` — `Pflichtschulungen`
-- `resources/views/events/index.blade.php:89` — `mandatory`
-- `resources/views/events/index.blade.php:89` — `warning`
-- `resources/views/events/index.blade.php:90` — `Gesamt`
-- `resources/views/events/index.blade.php:90` — `total`
-- `resources/views/events/index.blade.php:90` — `neutral`
-- `resources/views/events/index.blade.php:93` — `flex`
-- `resources/views/events/index.blade.php:93` — `true`
-- `resources/views/events/index.blade.php:93` — `true`
-- `resources/views/events/index.blade.php:93` — `server`
-- `resources/views/events/index.blade.php:95` — `sort', 'dir', 'page`
-- `resources/views/events/index.blade.php:98` — `title`
-- `resources/views/events/index.blade.php:98` — `Titel`
-- `resources/views/events/index.blade.php:100` — `Kategorie`
-- `resources/views/events/index.blade.php:101` — `Termin`
-- `resources/views/events/index.blade.php:102` — `Räume`
-- `resources/views/events/index.blade.php:103` — `Verantwortlich`
-- `resources/views/events/index.blade.php:104` — `text-right`
-- `resources/views/events/index.blade.php:104` — `Teilnehmer`
-- `resources/views/events/index.blade.php:105` — `status`
-- `resources/views/events/index.blade.php:105` — `Status`
-- `resources/views/events/index.blade.php:106` — `w-32 text-right`
-- `resources/views/events/index.blade.php:106` — `Aktion`
-- `resources/views/events/index.blade.php:111` — `hover`
-- `resources/views/events/index.blade.php:112` — `font-semibold`
-- `resources/views/events/index.blade.php:113` — `link link-hover`
-- `resources/views/events/index.blade.php:117` — `text-xs opacity-70`
-- `resources/views/events/index.blade.php:120` — `warning`
-- `resources/views/events/index.blade.php:120` — `ml-1`
-- `resources/views/events/index.blade.php:120` — `Pflicht`
-- `resources/views/events/index.blade.php:126` — `badge badge-sm`
-- `resources/views/events/index.blade.php:131` — `whitespace-nowrap`
-- `resources/views/events/index.blade.php:132` — `text-sm`
-- `resources/views/events/index.blade.php:133` — `text-xs opacity-70`
-- `resources/views/events/index.blade.php:136` — `flex flex-wrap gap-1`
-- `resources/views/events/index.blade.php:138` — `ghost`
-- `resources/views/events/index.blade.php:143` — `text-right tabular-nums`
-- `resources/views/events/index.blade.php:147` — `text-right whitespace-nowrap`
-- `resources/views/events/index.blade.php:148` — `visibility`
-- `resources/views/events/index.blade.php:148` — `Details`
-- `resources/views/events/index.blade.php:149` — `update`
-- `resources/views/events/index.blade.php:150` — `edit`
-- `resources/views/events/index.blade.php:153` — `Bearbeiten`
-- `resources/views/events/index.blade.php:155` — `cancel`
-- `resources/views/events/index.blade.php:157` — `Veranstaltung wirklich absagen?`
-- `resources/views/events/index.blade.php:158` — `Absagen`
-- `resources/views/events/index.blade.php:159` — `submit`
-- `resources/views/events/index.blade.php:159` — `cancel`
-- `resources/views/events/index.blade.php:159` — `warning`
-- `resources/views/events/index.blade.php:159` — `Absagen`
-- `resources/views/events/index.blade.php:162` — `delete`
-- `resources/views/events/index.blade.php:164` — `Veranstaltung wirklich löschen?`
-- `resources/views/events/index.blade.php:165` — `Löschen`
-- `resources/views/events/index.blade.php:166` — `submit`
-- `resources/views/events/index.blade.php:166` — `delete`
-- `resources/views/events/index.blade.php:166` — `error`
-- `resources/views/events/index.blade.php:166` — `Löschen`
-- `resources/views/events/index.blade.php:173` — `event`
-- `resources/views/events/index.blade.php:174` — `Keine Veranstaltungen gefunden`
+- `resources/views/events/index.blade.php:33` — `ghost`
+- `resources/views/events/index.blade.php:34` — `Kalender-Abo`
+- `resources/views/events/index.blade.php:37` — `create`
+- `resources/views/events/index.blade.php:38` — `primary`
+- `resources/views/events/index.blade.php:39` — `Neue Veranstaltung`
+- `resources/views/events/index.blade.php:44` — `Suche`
+- `resources/views/events/index.blade.php:44` — `ev-q`
+- `resources/views/events/index.blade.php:44` — `flex-1 min-w-60`
+- `resources/views/events/index.blade.php:45` — `ev-q`
+- `resources/views/events/index.blade.php:45` — `search`
+- `resources/views/events/index.blade.php:47` — `input input-sm input-bordered w-full`
+- `resources/views/events/index.blade.php:49` — `ev-event-type`
+- `resources/views/events/index.blade.php:49` — `min-w-40`
+- `resources/views/events/index.blade.php:50` — `ev-event-type`
+- `resources/views/events/index.blade.php:50` — `select select-sm select-bordered w-full`
+- `resources/views/events/index.blade.php:52` — `Alle`
+- `resources/views/events/index.blade.php:58` — `Status`
+- `resources/views/events/index.blade.php:58` — `ev-status`
+- `resources/views/events/index.blade.php:58` — `min-w-40`
+- `resources/views/events/index.blade.php:59` — `ev-status`
+- `resources/views/events/index.blade.php:59` — `status`
+- `resources/views/events/index.blade.php:59` — `select select-sm select-bordered w-full`
+- `resources/views/events/index.blade.php:61` — `Alle`
+- `resources/views/events/index.blade.php:63` — `status`
+- `resources/views/events/index.blade.php:67` — `Sichtbarkeit`
+- `resources/views/events/index.blade.php:67` — `ev-visibility`
+- `resources/views/events/index.blade.php:67` — `min-w-40`
+- `resources/views/events/index.blade.php:68` — `ev-visibility`
+- `resources/views/events/index.blade.php:68` — `visibility`
+- `resources/views/events/index.blade.php:68` — `select select-sm select-bordered w-full`
+- `resources/views/events/index.blade.php:70` — `Alle`
+- `resources/views/events/index.blade.php:72` — `visibility`
+- `resources/views/events/index.blade.php:76` — `Kategorie`
+- `resources/views/events/index.blade.php:76` — `ev-category`
+- `resources/views/events/index.blade.php:76` — `min-w-44`
+- `resources/views/events/index.blade.php:77` — `ev-category`
+- `resources/views/events/index.blade.php:77` — `select select-sm select-bordered w-full`
+- `resources/views/events/index.blade.php:79` — `Alle`
+- `resources/views/events/index.blade.php:86` — `ev-only-mandatory`
+- `resources/views/events/index.blade.php:87` — `Nur Pflicht`
+- `resources/views/events/index.blade.php:92` — `Anstehend`
+- `resources/views/events/index.blade.php:92` — `upcoming`
+- `resources/views/events/index.blade.php:92` — `primary`
+- `resources/views/events/index.blade.php:93` — `Heute`
+- `resources/views/events/index.blade.php:93` — `today`
+- `resources/views/events/index.blade.php:93` — `info`
+- `resources/views/events/index.blade.php:94` — `Pflichtschulungen`
+- `resources/views/events/index.blade.php:94` — `mandatory`
+- `resources/views/events/index.blade.php:94` — `warning`
+- `resources/views/events/index.blade.php:95` — `Gesamt`
+- `resources/views/events/index.blade.php:95` — `total`
+- `resources/views/events/index.blade.php:95` — `neutral`
+- `resources/views/events/index.blade.php:98` — `flex`
+- `resources/views/events/index.blade.php:98` — `true`
+- `resources/views/events/index.blade.php:98` — `true`
+- `resources/views/events/index.blade.php:98` — `server`
+- `resources/views/events/index.blade.php:100` — `sort', 'dir', 'page`
+- `resources/views/events/index.blade.php:103` — `title`
+- `resources/views/events/index.blade.php:103` — `Titel`
+- `resources/views/events/index.blade.php:105` — `Kategorie`
+- `resources/views/events/index.blade.php:106` — `Termin`
+- `resources/views/events/index.blade.php:107` — `Räume`
+- `resources/views/events/index.blade.php:108` — `Verantwortlich`
+- `resources/views/events/index.blade.php:109` — `text-right`
+- `resources/views/events/index.blade.php:109` — `Teilnehmer`
+- `resources/views/events/index.blade.php:110` — `status`
+- `resources/views/events/index.blade.php:110` — `Status`
+- `resources/views/events/index.blade.php:111` — `w-32 text-right`
+- `resources/views/events/index.blade.php:111` — `Aktion`
+- `resources/views/events/index.blade.php:116` — `hover`
+- `resources/views/events/index.blade.php:117` — `font-semibold`
+- `resources/views/events/index.blade.php:118` — `link link-hover`
+- `resources/views/events/index.blade.php:122` — `text-xs opacity-70`
+- `resources/views/events/index.blade.php:125` — `warning`
+- `resources/views/events/index.blade.php:125` — `ml-1`
+- `resources/views/events/index.blade.php:125` — `Pflicht`
+- `resources/views/events/index.blade.php:131` — `badge badge-sm`
+- `resources/views/events/index.blade.php:136` — `whitespace-nowrap`
+- `resources/views/events/index.blade.php:137` — `text-sm`
+- `resources/views/events/index.blade.php:138` — `text-xs opacity-70`
+- `resources/views/events/index.blade.php:141` — `flex flex-wrap gap-1`
+- `resources/views/events/index.blade.php:143` — `ghost`
+- `resources/views/events/index.blade.php:148` — `text-right tabular-nums`
+- `resources/views/events/index.blade.php:152` — `text-right whitespace-nowrap`
+- `resources/views/events/index.blade.php:153` — `visibility`
+- `resources/views/events/index.blade.php:153` — `Details`
+- `resources/views/events/index.blade.php:154` — `update`
+- `resources/views/events/index.blade.php:155` — `edit`
+- `resources/views/events/index.blade.php:158` — `Bearbeiten`
+- `resources/views/events/index.blade.php:160` — `cancel`
+- `resources/views/events/index.blade.php:162` — `Veranstaltung wirklich absagen?`
+- `resources/views/events/index.blade.php:163` — `Absagen`
+- `resources/views/events/index.blade.php:164` — `submit`
+- `resources/views/events/index.blade.php:164` — `cancel`
+- `resources/views/events/index.blade.php:164` — `warning`
+- `resources/views/events/index.blade.php:164` — `Absagen`
+- `resources/views/events/index.blade.php:167` — `delete`
+- `resources/views/events/index.blade.php:169` — `Veranstaltung wirklich löschen?`
+- `resources/views/events/index.blade.php:170` — `Löschen`
+- `resources/views/events/index.blade.php:171` — `submit`
+- `resources/views/events/index.blade.php:171` — `delete`
+- `resources/views/events/index.blade.php:171` — `error`
+- `resources/views/events/index.blade.php:171` — `Löschen`
+- `resources/views/events/index.blade.php:178` — `event`
+- `resources/views/events/index.blade.php:179` — `Keine Veranstaltungen gefunden`
 - `resources/views/events/_form_dialog.blade.php:29` — `Veranstaltung bearbeiten`
 - `resources/views/events/_form_dialog.blade.php:29` — `Neue Veranstaltung`
 - `resources/views/events/_form_dialog.blade.php:35` — `rooms`
@@ -10974,7 +11017,6 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/admin/operations/index.blade.php:106` — `space-y-2`
 - `resources/views/admin/operations/index.blade.php:108` — `text-xs font-medium`
 - `resources/views/admin/operations/index.blade.php:109` — `select select-bordered select-sm w-full`
-- `resources/views/admin/operations/index.blade.php:110` — `name`
 - `resources/views/admin/operations/index.blade.php:114` — `submit`
 - `resources/views/admin/operations/index.blade.php:114` — `primary`
 - `resources/views/admin/operations/index.blade.php:114` — `w-full`
@@ -16260,55 +16302,59 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/report_pdf.blade.php:54` — `margin`
 - `resources/views/finance/resale/report_pdf.blade.php:54` — `currency`
 - `resources/views/finance/resale/report_pdf.blade.php:62` — `small`
-- `resources/views/finance/resale/prices.blade.php:14` — `title`
-- `resources/views/finance/resale/prices.blade.php:15` — `nav-title`
-- `resources/views/finance/resale/prices.blade.php:16` — `main-class', `
-- `resources/views/finance/resale/prices.blade.php:20` — `error', `
-- `resources/views/finance/resale/prices.blade.php:20` — `warning', `
-- `resources/views/finance/resale/prices.blade.php:20` — `info', `
-- `resources/views/finance/resale/prices.blade.php:20` — `neutral`
-- `resources/views/finance/resale/prices.blade.php:23` — `content`
-- `resources/views/finance/resale/prices.blade.php:24` — `date`
-- `resources/views/finance/resale/prices.blade.php:26` — `ghost`
-- `resources/views/finance/resale/prices.blade.php:29` — `text-xs text-muted mb-2`
-- `resources/views/finance/resale/prices.blade.php:30` — `flex`
-- `resources/views/finance/resale/prices.blade.php:30` — `true`
-- `resources/views/finance/resale/prices.blade.php:30` — `client`
-- `resources/views/finance/resale/prices.blade.php:33` — `string`
-- `resources/views/finance/resale/prices.blade.php:34` — `text-right`
-- `resources/views/finance/resale/prices.blade.php:34` — `number`
+- `resources/views/finance/resale/prices.blade.php:15` — `title`
+- `resources/views/finance/resale/prices.blade.php:16` — `nav-title`
+- `resources/views/finance/resale/prices.blade.php:17` — `main-class', `
+- `resources/views/finance/resale/prices.blade.php:21` — `error', `
+- `resources/views/finance/resale/prices.blade.php:21` — `warning', `
+- `resources/views/finance/resale/prices.blade.php:21` — `info', `
+- `resources/views/finance/resale/prices.blade.php:21` — `neutral`
+- `resources/views/finance/resale/prices.blade.php:24` — `content`
+- `resources/views/finance/resale/prices.blade.php:25` — `date`
+- `resources/views/finance/resale/prices.blade.php:27` — `ghost`
+- `resources/views/finance/resale/prices.blade.php:30` — `text-xs text-muted mb-2`
+- `resources/views/finance/resale/prices.blade.php:31` — `flex`
+- `resources/views/finance/resale/prices.blade.php:31` — `true`
+- `resources/views/finance/resale/prices.blade.php:31` — `client`
+- `resources/views/finance/resale/prices.blade.php:34` — `string`
 - `resources/views/finance/resale/prices.blade.php:35` — `text-right`
 - `resources/views/finance/resale/prices.blade.php:35` — `number`
 - `resources/views/finance/resale/prices.blade.php:36` — `text-right`
+- `resources/views/finance/resale/prices.blade.php:36` — `number`
 - `resources/views/finance/resale/prices.blade.php:37` — `text-right`
 - `resources/views/finance/resale/prices.blade.php:38` — `text-right`
 - `resources/views/finance/resale/prices.blade.php:39` — `text-right`
 - `resources/views/finance/resale/prices.blade.php:40` — `text-right`
-- `resources/views/finance/resale/prices.blade.php:45` — `hover`
-- `resources/views/finance/resale/prices.blade.php:46` — `font-medium`
-- `resources/views/finance/resale/prices.blade.php:46` — `label`
-- `resources/views/finance/resale/prices.blade.php:47` — `text-right tabular-nums`
-- `resources/views/finance/resale/prices.blade.php:47` — `subscriptions`
-- `resources/views/finance/resale/prices.blade.php:48` — `text-right tabular-nums`
-- `resources/views/finance/resale/prices.blade.php:48` — `quantity`
-- `resources/views/finance/resale/prices.blade.php:49` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/prices.blade.php:49` — `currency`
-- `resources/views/finance/resale/prices.blade.php:49` — `currency`
-- `resources/views/finance/resale/prices.blade.php:50` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/prices.blade.php:50` — `currency`
+- `resources/views/finance/resale/prices.blade.php:40` — `number`
+- `resources/views/finance/resale/prices.blade.php:41` — `text-right`
+- `resources/views/finance/resale/prices.blade.php:42` — `text-right`
+- `resources/views/finance/resale/prices.blade.php:47` — `hover`
+- `resources/views/finance/resale/prices.blade.php:48` — `font-medium`
+- `resources/views/finance/resale/prices.blade.php:48` — `label`
+- `resources/views/finance/resale/prices.blade.php:49` — `text-right tabular-nums`
+- `resources/views/finance/resale/prices.blade.php:49` — `subscriptions`
+- `resources/views/finance/resale/prices.blade.php:50` — `text-right tabular-nums`
+- `resources/views/finance/resale/prices.blade.php:50` — `quantity`
 - `resources/views/finance/resale/prices.blade.php:51` — `text-right tabular-nums whitespace-nowrap`
 - `resources/views/finance/resale/prices.blade.php:51` — `currency`
+- `resources/views/finance/resale/prices.blade.php:51` — `currency`
 - `resources/views/finance/resale/prices.blade.php:52` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/prices.blade.php:52` — `currency`
+- `resources/views/finance/resale/prices.blade.php:53` — `text-right tabular-nums whitespace-nowrap`
 - `resources/views/finance/resale/prices.blade.php:53` — `currency`
-- `resources/views/finance/resale/prices.blade.php:55` — `block text-xs text-muted`
-- `resources/views/finance/resale/prices.blade.php:55` — `currency`
-- `resources/views/finance/resale/prices.blade.php:55` — `currency`
-- `resources/views/finance/resale/prices.blade.php:58` — `margin`
-- `resources/views/finance/resale/prices.blade.php:58` — `text-error`
-- `resources/views/finance/resale/prices.blade.php:58` — `margin`
+- `resources/views/finance/resale/prices.blade.php:54` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/prices.blade.php:54` — `currency`
+- `resources/views/finance/resale/prices.blade.php:55` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/prices.blade.php:56` — `currency`
+- `resources/views/finance/resale/prices.blade.php:58` — `block text-xs text-muted`
 - `resources/views/finance/resale/prices.blade.php:58` — `currency`
-- `resources/views/finance/resale/prices.blade.php:60` — `flags`
-- `resources/views/finance/resale/prices.blade.php:61` — `neutral'`
+- `resources/views/finance/resale/prices.blade.php:58` — `currency`
+- `resources/views/finance/resale/prices.blade.php:61` — `margin`
+- `resources/views/finance/resale/prices.blade.php:61` — `text-error`
+- `resources/views/finance/resale/prices.blade.php:61` — `margin`
+- `resources/views/finance/resale/prices.blade.php:61` — `currency`
+- `resources/views/finance/resale/prices.blade.php:63` — `flags`
+- `resources/views/finance/resale/prices.blade.php:64` — `neutral'`
 - `resources/views/finance/resale/_link_dialog.blade.php:15` — `period`
 - `resources/views/finance/resale/_link_dialog.blade.php:17` — `primary`
 - `resources/views/finance/resale/_link_dialog.blade.php:21` — `data-entry-form`
@@ -16342,287 +16388,331 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/_import_dialog.blade.php:32` — `file`
 - `resources/views/finance/resale/_import_dialog.blade.php:35` — `other`
 - `resources/views/finance/resale/_import_dialog.blade.php:38` — `link link-hover text-xs`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:16` — `receipt`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:17` — `primary`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:21` — `data-entry-form`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:28` — `search`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:28` — `input input-sm input-bordered w-full mb-2`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:40` — `text-xs text-muted hidden`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:43` — `provider`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:45` — `provider', `
-- `resources/views/finance/resale/_purchase_dialog.blade.php:48` — `number`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:49` — `month`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:49` — `month`
-- `resources/views/finance/resale/_purchase_dialog.blade.php:49` — `month`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:18` — `receipt`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:19` — `primary`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:23` — `data-entry-form`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:28` — `document`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:30` — `search`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:30` — `input input-sm input-bordered w-full mb-2`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:35` — `document`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:38` — `text-xs text-muted hidden`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:39` — `flex flex-wrap items-center gap-1 mt-1 text-xs text-muted`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:42` — `neutral`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:47` — `provider`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:49` — `provider', `
+- `resources/views/finance/resale/_purchase_dialog.blade.php:52` — `number`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:53` — `month`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:53` — `month`
+- `resources/views/finance/resale/_purchase_dialog.blade.php:53` — `month`
 - `resources/views/finance/resale/reconcile_show.blade.php:17` — `title`
 - `resources/views/finance/resale/reconcile_show.blade.php:17` — `customer`
 - `resources/views/finance/resale/reconcile_show.blade.php:18` — `nav-title`
-- `resources/views/finance/resale/reconcile_show.blade.php:26` — `content`
-- `resources/views/finance/resale/reconcile_show.blade.php:27` — `customer`
-- `resources/views/finance/resale/reconcile_show.blade.php:32` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:32` — `submit`
-- `resources/views/finance/resale/reconcile_show.blade.php:36` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:38` — `person`
+- `resources/views/finance/resale/reconcile_show.blade.php:25` — `content`
+- `resources/views/finance/resale/reconcile_show.blade.php:26` — `customer`
+- `resources/views/finance/resale/reconcile_show.blade.php:31` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:31` — `submit`
+- `resources/views/finance/resale/reconcile_show.blade.php:35` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:37` — `person`
+- `resources/views/finance/resale/reconcile_show.blade.php:37` — `ghost`
 - `resources/views/finance/resale/reconcile_show.blade.php:38` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:39` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:43` — `mb-4`
-- `resources/views/finance/resale/reconcile_show.blade.php:46` — `error`
-- `resources/views/finance/resale/reconcile_show.blade.php:46` — `success'`
-- `resources/views/finance/resale/reconcile_show.blade.php:47` — `warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:42` — `mb-4`
+- `resources/views/finance/resale/reconcile_show.blade.php:45` — `error`
+- `resources/views/finance/resale/reconcile_show.blade.php:45` — `success'`
+- `resources/views/finance/resale/reconcile_show.blade.php:46` — `warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:46` — `neutral'`
+- `resources/views/finance/resale/reconcile_show.blade.php:47` — `info`
 - `resources/views/finance/resale/reconcile_show.blade.php:47` — `neutral'`
-- `resources/views/finance/resale/reconcile_show.blade.php:48` — `info`
+- `resources/views/finance/resale/reconcile_show.blade.php:48` — `warning`
 - `resources/views/finance/resale/reconcile_show.blade.php:48` — `neutral'`
-- `resources/views/finance/resale/reconcile_show.blade.php:49` — `warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:49` — `error`
 - `resources/views/finance/resale/reconcile_show.blade.php:49` — `neutral'`
-- `resources/views/finance/resale/reconcile_show.blade.php:50` — `error`
+- `resources/views/finance/resale/reconcile_show.blade.php:50` — `info`
 - `resources/views/finance/resale/reconcile_show.blade.php:50` — `neutral'`
-- `resources/views/finance/resale/reconcile_show.blade.php:51` — `info`
-- `resources/views/finance/resale/reconcile_show.blade.php:51` — `neutral'`
-- `resources/views/finance/resale/reconcile_show.blade.php:55` — `alert alert-warning mb-4 text-sm`
-- `resources/views/finance/resale/reconcile_show.blade.php:57` — `alert alert-info mb-4 text-sm`
-- `resources/views/finance/resale/reconcile_show.blade.php:57` — `count`
-- `resources/views/finance/resale/reconcile_show.blade.php:62` — `alert alert-warning mb-4 text-sm`
-- `resources/views/finance/resale/reconcile_show.blade.php:64` — `font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:65` — `block text-xs`
-- `resources/views/finance/resale/reconcile_show.blade.php:65` — `customer`
-- `resources/views/finance/resale/reconcile_show.blade.php:66` — `mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs`
-- `resources/views/finance/resale/reconcile_show.blade.php:69` — `font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:69` — `company`
-- `resources/views/finance/resale/reconcile_show.blade.php:70` — `subscriptions`
-- `resources/views/finance/resale/reconcile_show.blade.php:71` — `link link-hover`
-- `resources/views/finance/resale/reconcile_show.blade.php:73` — `mentions`
-- `resources/views/finance/resale/reconcile_show.blade.php:73` — `count`
-- `resources/views/finance/resale/reconcile_show.blade.php:73` — `mentions`
-- `resources/views/finance/resale/reconcile_show.blade.php:77` — `inbox`
-- `resources/views/finance/resale/reconcile_show.blade.php:77` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:77` — `mt-1`
-- `resources/views/finance/resale/reconcile_show.blade.php:83` — `mb-4`
-- `resources/views/finance/resale/reconcile_show.blade.php:84` — `px-4 py-2 text-xs text-muted border-b border-base-300`
+- `resources/views/finance/resale/reconcile_show.blade.php:54` — `alert alert-warning mb-4 text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:56` — `alert alert-info mb-4 text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:56` — `count`
+- `resources/views/finance/resale/reconcile_show.blade.php:61` — `alert alert-warning mb-4 text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:63` — `font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:64` — `block text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:64` — `customer`
+- `resources/views/finance/resale/reconcile_show.blade.php:65` — `mt-1 flex flex-wrap gap-x-4 gap-y-1 text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:68` — `font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:68` — `company`
+- `resources/views/finance/resale/reconcile_show.blade.php:69` — `subscriptions`
+- `resources/views/finance/resale/reconcile_show.blade.php:70` — `link link-hover`
+- `resources/views/finance/resale/reconcile_show.blade.php:72` — `mentions`
+- `resources/views/finance/resale/reconcile_show.blade.php:72` — `count`
+- `resources/views/finance/resale/reconcile_show.blade.php:72` — `mentions`
+- `resources/views/finance/resale/reconcile_show.blade.php:76` — `inbox`
+- `resources/views/finance/resale/reconcile_show.blade.php:76` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:76` — `mt-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:82` — `mb-4`
+- `resources/views/finance/resale/reconcile_show.blade.php:83` — `px-4 py-2 text-xs text-muted border-b border-base-300`
+- `resources/views/finance/resale/reconcile_show.blade.php:88` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:89` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:90` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:91` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:92` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:93` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:94` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:99` — `required`
-- `resources/views/finance/resale/reconcile_show.blade.php:99` — `covered`
-- `resources/views/finance/resale/reconcile_show.blade.php:101` — `text-sm font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:101` — `label`
+- `resources/views/finance/resale/reconcile_show.blade.php:98` — `required`
+- `resources/views/finance/resale/reconcile_show.blade.php:98` — `covered`
+- `resources/views/finance/resale/reconcile_show.blade.php:100` — `text-sm font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:100` — `label`
+- `resources/views/finance/resale/reconcile_show.blade.php:101` — `text-right tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:101` — `subscriptions`
 - `resources/views/finance/resale/reconcile_show.blade.php:102` — `text-right tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:102` — `subscriptions`
+- `resources/views/finance/resale/reconcile_show.blade.php:102` — `periods`
 - `resources/views/finance/resale/reconcile_show.blade.php:103` — `text-right tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:103` — `periods`
+- `resources/views/finance/resale/reconcile_show.blade.php:103` — `required`
 - `resources/views/finance/resale/reconcile_show.blade.php:104` — `text-right tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:104` — `required`
+- `resources/views/finance/resale/reconcile_show.blade.php:104` — `covered`
 - `resources/views/finance/resale/reconcile_show.blade.php:105` — `text-right tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:105` — `covered`
+- `resources/views/finance/resale/reconcile_show.blade.php:105` — `invoiced`
 - `resources/views/finance/resale/reconcile_show.blade.php:106` — `text-right tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:106` — `invoiced`
-- `resources/views/finance/resale/reconcile_show.blade.php:107` — `text-right tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:107` — `text-warning font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:107` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:107` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:108` — `text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:106` — `text-warning font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:106` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:106` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:107` — `text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:108` — `missing`
+- `resources/views/finance/resale/reconcile_show.blade.php:109` — `error`
+- `resources/views/finance/resale/reconcile_show.blade.php:109` — `amount`
 - `resources/views/finance/resale/reconcile_show.blade.php:109` — `missing`
-- `resources/views/finance/resale/reconcile_show.blade.php:110` — `error`
-- `resources/views/finance/resale/reconcile_show.blade.php:110` — `amount`
-- `resources/views/finance/resale/reconcile_show.blade.php:110` — `missing`
-- `resources/views/finance/resale/reconcile_show.blade.php:110` — `term`
-- `resources/views/finance/resale/reconcile_show.blade.php:112` — `warning`
-- `resources/views/finance/resale/reconcile_show.blade.php:112` — `amount`
-- `resources/views/finance/resale/reconcile_show.blade.php:112` — `term`
+- `resources/views/finance/resale/reconcile_show.blade.php:109` — `term`
+- `resources/views/finance/resale/reconcile_show.blade.php:111` — `warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:111` — `amount`
+- `resources/views/finance/resale/reconcile_show.blade.php:111` — `term`
+- `resources/views/finance/resale/reconcile_show.blade.php:113` — `surplus`
+- `resources/views/finance/resale/reconcile_show.blade.php:114` — `info`
+- `resources/views/finance/resale/reconcile_show.blade.php:114` — `amount`
 - `resources/views/finance/resale/reconcile_show.blade.php:114` — `surplus`
-- `resources/views/finance/resale/reconcile_show.blade.php:115` — `info`
-- `resources/views/finance/resale/reconcile_show.blade.php:115` — `amount`
-- `resources/views/finance/resale/reconcile_show.blade.php:115` — `surplus`
-- `resources/views/finance/resale/reconcile_show.blade.php:115` — `term`
-- `resources/views/finance/resale/reconcile_show.blade.php:117` — `missing`
-- `resources/views/finance/resale/reconcile_show.blade.php:117` — `surplus`
-- `resources/views/finance/resale/reconcile_show.blade.php:118` — `success`
-- `resources/views/finance/resale/reconcile_show.blade.php:121` — `block text-xs text-warning mt-0.5`
-- `resources/views/finance/resale/reconcile_show.blade.php:121` — `date`
-- `resources/views/finance/resale/reconcile_show.blade.php:132` — `mb-4`
-- `resources/views/finance/resale/reconcile_show.blade.php:133` — `px-4 py-2 text-xs text-muted border-b border-base-300`
-- `resources/views/finance/resale/reconcile_show.blade.php:136` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:137` — `subscription`
-- `resources/views/finance/resale/reconcile_show.blade.php:140` — `flex flex-wrap items-start justify-between gap-2`
-- `resources/views/finance/resale/reconcile_show.blade.php:141` — `text-sm`
-- `resources/views/finance/resale/reconcile_show.blade.php:142` — `link link-hover font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:143` — `text-muted`
-- `resources/views/finance/resale/reconcile_show.blade.php:144` — `block text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:151` — `flex items-center gap-2`
-- `resources/views/finance/resale/reconcile_show.blade.php:152` — `text-sm tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/reconcile_show.blade.php:152` — `licences`
+- `resources/views/finance/resale/reconcile_show.blade.php:114` — `term`
+- `resources/views/finance/resale/reconcile_show.blade.php:116` — `missing`
+- `resources/views/finance/resale/reconcile_show.blade.php:116` — `surplus`
+- `resources/views/finance/resale/reconcile_show.blade.php:117` — `success`
+- `resources/views/finance/resale/reconcile_show.blade.php:120` — `block text-xs text-warning mt-0.5`
+- `resources/views/finance/resale/reconcile_show.blade.php:120` — `date`
+- `resources/views/finance/resale/reconcile_show.blade.php:131` — `mb-4`
+- `resources/views/finance/resale/reconcile_show.blade.php:132` — `px-4 py-2 text-xs text-muted border-b border-base-300`
+- `resources/views/finance/resale/reconcile_show.blade.php:135` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:136` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:139` — `flex flex-wrap items-start justify-between gap-2`
+- `resources/views/finance/resale/reconcile_show.blade.php:140` — `text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:141` — `link link-hover font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:142` — `text-muted`
+- `resources/views/finance/resale/reconcile_show.blade.php:143` — `block text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:150` — `flex items-center gap-2`
+- `resources/views/finance/resale/reconcile_show.blade.php:151` — `text-sm tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/reconcile_show.blade.php:151` — `licences`
+- `resources/views/finance/resale/reconcile_show.blade.php:151` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:152` — `text-error font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:152` — `covered`
+- `resources/views/finance/resale/reconcile_show.blade.php:152` — `text-warning font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:152` — `covered`
+- `resources/views/finance/resale/reconcile_show.blade.php:152` — `covered`
+- `resources/views/finance/resale/reconcile_show.blade.php:152` — `covered`
+- `resources/views/finance/resale/reconcile_show.blade.php:152` — `quantity`
 - `resources/views/finance/resale/reconcile_show.blade.php:152` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `text-error font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `covered`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `text-warning font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `covered`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `covered`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `covered`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `quantity`
-- `resources/views/finance/resale/reconcile_show.blade.php:153` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:157` — `block`
-- `resources/views/finance/resale/reconcile_show.blade.php:157` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:161` — `candidates`
-- `resources/views/finance/resale/reconcile_show.blade.php:161` — `taken`
-- `resources/views/finance/resale/reconcile_show.blade.php:161` — `foreign`
-- `resources/views/finance/resale/reconcile_show.blade.php:161` — `voided`
-- `resources/views/finance/resale/reconcile_show.blade.php:162` — `mt-2 text-xs text-error`
-- `resources/views/finance/resale/reconcile_show.blade.php:162` — `amount`
-- `resources/views/finance/resale/reconcile_show.blade.php:162` — `needed`
-- `resources/views/finance/resale/reconcile_show.blade.php:164` — `mt-2 space-y-1`
-- `resources/views/finance/resale/reconcile_show.blade.php:165` — `foreign`
-- `resources/views/finance/resale/reconcile_show.blade.php:167` — `line`
-- `resources/views/finance/resale/reconcile_show.blade.php:169` — `recipient`
-- `resources/views/finance/resale/reconcile_show.blade.php:172` — `flex flex-wrap items-center justify-between gap-2 text-sm`
-- `resources/views/finance/resale/reconcile_show.blade.php:173` — `flex flex-wrap items-center gap-2`
-- `resources/views/finance/resale/reconcile_show.blade.php:174` — `warning`
-- `resources/views/finance/resale/reconcile_show.blade.php:174` — `recipient`
-- `resources/views/finance/resale/reconcile_show.blade.php:175` — `font-mono text-xs`
-- `resources/views/finance/resale/reconcile_show.blade.php:176` — `text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:176` — `distance`
-- `resources/views/finance/resale/reconcile_show.blade.php:176` — `days`
-- `resources/views/finance/resale/reconcile_show.blade.php:176` — `distance`
-- `resources/views/finance/resale/reconcile_show.blade.php:178` — `text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:178` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:180` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:184` — `flex flex-wrap items-center gap-1`
-- `resources/views/finance/resale/reconcile_show.blade.php:187` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:188` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:156` — `block`
+- `resources/views/finance/resale/reconcile_show.blade.php:156` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:160` — `candidates`
+- `resources/views/finance/resale/reconcile_show.blade.php:160` — `taken`
+- `resources/views/finance/resale/reconcile_show.blade.php:160` — `foreign`
+- `resources/views/finance/resale/reconcile_show.blade.php:160` — `voided`
+- `resources/views/finance/resale/reconcile_show.blade.php:161` — `mt-2 text-xs text-error`
+- `resources/views/finance/resale/reconcile_show.blade.php:161` — `amount`
+- `resources/views/finance/resale/reconcile_show.blade.php:161` — `needed`
+- `resources/views/finance/resale/reconcile_show.blade.php:163` — `mt-2 space-y-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:164` — `foreign`
+- `resources/views/finance/resale/reconcile_show.blade.php:166` — `line`
+- `resources/views/finance/resale/reconcile_show.blade.php:168` — `recipient`
+- `resources/views/finance/resale/reconcile_show.blade.php:171` — `flex flex-wrap items-center justify-between gap-2 text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:172` — `flex flex-wrap items-center gap-2`
+- `resources/views/finance/resale/reconcile_show.blade.php:173` — `warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:173` — `recipient`
+- `resources/views/finance/resale/reconcile_show.blade.php:174` — `font-mono text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:175` — `text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:175` — `distance`
+- `resources/views/finance/resale/reconcile_show.blade.php:175` — `days`
+- `resources/views/finance/resale/reconcile_show.blade.php:175` — `distance`
+- `resources/views/finance/resale/reconcile_show.blade.php:177` — `text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:177` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:179` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:183` — `flex flex-wrap items-center gap-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:186` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:187` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:187` — `customer`
+- `resources/views/finance/resale/reconcile_show.blade.php:187` — `quantity`
+- `resources/views/finance/resale/reconcile_show.blade.php:187` — `licences`
 - `resources/views/finance/resale/reconcile_show.blade.php:188` — `customer`
-- `resources/views/finance/resale/reconcile_show.blade.php:188` — `quantity`
-- `resources/views/finance/resale/reconcile_show.blade.php:188` — `licences`
-- `resources/views/finance/resale/reconcile_show.blade.php:189` — `customer`
-- `resources/views/finance/resale/reconcile_show.blade.php:191` — `subscription`
-- `resources/views/finance/resale/reconcile_show.blade.php:191` — `customer`
-- `resources/views/finance/resale/reconcile_show.blade.php:191` — `error`
+- `resources/views/finance/resale/reconcile_show.blade.php:190` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:190` — `customer`
+- `resources/views/finance/resale/reconcile_show.blade.php:190` — `error`
+- `resources/views/finance/resale/reconcile_show.blade.php:192` — `hidden`
 - `resources/views/finance/resale/reconcile_show.blade.php:193` — `hidden`
-- `resources/views/finance/resale/reconcile_show.blade.php:194` — `hidden`
-- `resources/views/finance/resale/reconcile_show.blade.php:195` — `warning`
-- `resources/views/finance/resale/reconcile_show.blade.php:195` — `submit`
-- `resources/views/finance/resale/reconcile_show.blade.php:195` — `customer`
-- `resources/views/finance/resale/reconcile_show.blade.php:201` — `candidates`
-- `resources/views/finance/resale/reconcile_show.blade.php:203` — `line`
-- `resources/views/finance/resale/reconcile_show.blade.php:206` — `flex flex-wrap items-center justify-between gap-2 text-sm`
-- `resources/views/finance/resale/reconcile_show.blade.php:207` — `flex flex-wrap items-center gap-2`
-- `resources/views/finance/resale/reconcile_show.blade.php:208` — `font-mono text-xs`
-- `resources/views/finance/resale/reconcile_show.blade.php:209` — `text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:209` — `distance`
-- `resources/views/finance/resale/reconcile_show.blade.php:209` — `days`
-- `resources/views/finance/resale/reconcile_show.blade.php:209` — `distance`
-- `resources/views/finance/resale/reconcile_show.blade.php:211` — `text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:211` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:212` — `text-success text-xs`
-- `resources/views/finance/resale/reconcile_show.blade.php:212` — `amount`
-- `resources/views/finance/resale/reconcile_show.blade.php:212` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:214` — `badge badge-info badge-outline badge-xs`
-- `resources/views/finance/resale/reconcile_show.blade.php:217` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:221` — `flex items-center gap-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:194` — `warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:194` — `submit`
+- `resources/views/finance/resale/reconcile_show.blade.php:194` — `customer`
+- `resources/views/finance/resale/reconcile_show.blade.php:200` — `candidates`
+- `resources/views/finance/resale/reconcile_show.blade.php:202` — `line`
+- `resources/views/finance/resale/reconcile_show.blade.php:205` — `flex flex-wrap items-center justify-between gap-2 text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:206` — `flex flex-wrap items-center gap-2`
+- `resources/views/finance/resale/reconcile_show.blade.php:207` — `font-mono text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:208` — `text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:208` — `distance`
+- `resources/views/finance/resale/reconcile_show.blade.php:208` — `days`
+- `resources/views/finance/resale/reconcile_show.blade.php:208` — `distance`
+- `resources/views/finance/resale/reconcile_show.blade.php:210` — `text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:210` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:211` — `text-success text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:211` — `amount`
+- `resources/views/finance/resale/reconcile_show.blade.php:211` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:213` — `badge badge-info badge-outline badge-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:216` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:220` — `flex items-center gap-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:222` — `hidden`
 - `resources/views/finance/resale/reconcile_show.blade.php:223` — `hidden`
 - `resources/views/finance/resale/reconcile_show.blade.php:224` — `hidden`
-- `resources/views/finance/resale/reconcile_show.blade.php:225` — `hidden`
-- `resources/views/finance/resale/reconcile_show.blade.php:226` — `number`
-- `resources/views/finance/resale/reconcile_show.blade.php:226` — `licences`
-- `resources/views/finance/resale/reconcile_show.blade.php:226` — `needed`
-- `resources/views/finance/resale/reconcile_show.blade.php:226` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:227` — `input input-xs input-bordered w-16 text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:227` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:228` — `primary`
-- `resources/views/finance/resale/reconcile_show.blade.php:228` — `submit`
-- `resources/views/finance/resale/reconcile_show.blade.php:233` — `taken`
-- `resources/views/finance/resale/reconcile_show.blade.php:234` — `line`
-- `resources/views/finance/resale/reconcile_show.blade.php:235` — `flex flex-wrap items-center gap-2 text-xs text-muted`
-- `resources/views/finance/resale/reconcile_show.blade.php:236` — `font-mono`
-- `resources/views/finance/resale/reconcile_show.blade.php:237` — `tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:239` — `periods`
-- `resources/views/finance/resale/reconcile_show.blade.php:239` — `periods`
-- `resources/views/finance/resale/reconcile_show.blade.php:242` — `voided`
-- `resources/views/finance/resale/reconcile_show.blade.php:243` — `line`
-- `resources/views/finance/resale/reconcile_show.blade.php:244` — `flex flex-wrap items-center gap-2 text-xs text-muted`
-- `resources/views/finance/resale/reconcile_show.blade.php:245` — `error`
-- `resources/views/finance/resale/reconcile_show.blade.php:246` — `font-mono`
-- `resources/views/finance/resale/reconcile_show.blade.php:247` — `tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:248` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:250` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:255` — `candidates`
-- `resources/views/finance/resale/reconcile_show.blade.php:255` — `foreign`
-- `resources/views/finance/resale/reconcile_show.blade.php:256` — `mt-1 text-xs text-error`
-- `resources/views/finance/resale/reconcile_show.blade.php:256` — `amount`
-- `resources/views/finance/resale/reconcile_show.blade.php:256` — `needed`
-- `resources/views/finance/resale/reconcile_show.blade.php:261` — `px-4 py-6 text-center text-sm text-muted`
-- `resources/views/finance/resale/reconcile_show.blade.php:266` — `collapse collapse-arrow border border-base-300 bg-base-100 mb-4`
-- `resources/views/finance/resale/reconcile_show.blade.php:267` — `collapse-title text-sm font-medium`
-- `resources/views/finance/resale/reconcile_show.blade.php:267` — `count`
-- `resources/views/finance/resale/reconcile_show.blade.php:268` — `collapse-content p-0`
+- `resources/views/finance/resale/reconcile_show.blade.php:225` — `number`
+- `resources/views/finance/resale/reconcile_show.blade.php:225` — `licences`
+- `resources/views/finance/resale/reconcile_show.blade.php:225` — `needed`
+- `resources/views/finance/resale/reconcile_show.blade.php:225` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:226` — `input input-xs input-bordered w-16 text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:226` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:227` — `primary`
+- `resources/views/finance/resale/reconcile_show.blade.php:227` — `submit`
+- `resources/views/finance/resale/reconcile_show.blade.php:232` — `taken`
+- `resources/views/finance/resale/reconcile_show.blade.php:233` — `line`
+- `resources/views/finance/resale/reconcile_show.blade.php:234` — `flex flex-wrap items-center gap-2 text-xs text-muted`
+- `resources/views/finance/resale/reconcile_show.blade.php:235` — `font-mono`
+- `resources/views/finance/resale/reconcile_show.blade.php:236` — `tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:238` — `periods`
+- `resources/views/finance/resale/reconcile_show.blade.php:238` — `periods`
+- `resources/views/finance/resale/reconcile_show.blade.php:241` — `voided`
+- `resources/views/finance/resale/reconcile_show.blade.php:242` — `line`
+- `resources/views/finance/resale/reconcile_show.blade.php:243` — `flex flex-wrap items-center gap-2 text-xs text-muted`
+- `resources/views/finance/resale/reconcile_show.blade.php:244` — `error`
+- `resources/views/finance/resale/reconcile_show.blade.php:245` — `font-mono`
+- `resources/views/finance/resale/reconcile_show.blade.php:246` — `tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:247` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:249` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:254` — `candidates`
+- `resources/views/finance/resale/reconcile_show.blade.php:254` — `foreign`
+- `resources/views/finance/resale/reconcile_show.blade.php:255` — `mt-1 text-xs text-error`
+- `resources/views/finance/resale/reconcile_show.blade.php:255` — `amount`
+- `resources/views/finance/resale/reconcile_show.blade.php:255` — `needed`
+- `resources/views/finance/resale/reconcile_show.blade.php:260` — `px-4 py-6 text-center text-sm text-muted`
+- `resources/views/finance/resale/reconcile_show.blade.php:265` — `collapse collapse-arrow border border-base-300 bg-base-100 mb-4`
+- `resources/views/finance/resale/reconcile_show.blade.php:266` — `collapse-title text-sm font-medium`
+- `resources/views/finance/resale/reconcile_show.blade.php:266` — `count`
+- `resources/views/finance/resale/reconcile_show.blade.php:267` — `collapse-content p-0`
+- `resources/views/finance/resale/reconcile_show.blade.php:274` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:275` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:276` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:277` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:280` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:284` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:284` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:284` — `subscription`
-- `resources/views/finance/resale/reconcile_show.blade.php:284` — `subscription`
-- `resources/views/finance/resale/reconcile_show.blade.php:284` — `showSubscription`
-- `resources/views/finance/resale/reconcile_show.blade.php:284` — `canManage`
-- `resources/views/finance/resale/reconcile_show.blade.php:284` — `today`
-- `resources/views/finance/resale/reconcile_show.blade.php:292` — `px-4 py-2 text-xs text-muted border-b border-base-300`
+- `resources/views/finance/resale/reconcile_show.blade.php:279` — `text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:283` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:283` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:283` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:283` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:283` — `showSubscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:283` — `canManage`
+- `resources/views/finance/resale/reconcile_show.blade.php:283` — `today`
+- `resources/views/finance/resale/reconcile_show.blade.php:291` — `px-4 py-2 text-xs text-muted border-b border-base-300`
+- `resources/views/finance/resale/reconcile_show.blade.php:297` — `text-right`
 - `resources/views/finance/resale/reconcile_show.blade.php:298` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:299` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:301` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:306` — `line`
-- `resources/views/finance/resale/reconcile_show.blade.php:308` — `product`
-- `resources/views/finance/resale/reconcile_show.blade.php:310` — `opacity-60`
-- `resources/views/finance/resale/reconcile_show.blade.php:310` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:311` — `whitespace-nowrap`
-- `resources/views/finance/resale/reconcile_show.blade.php:312` — `font-mono text-xs`
-- `resources/views/finance/resale/reconcile_show.blade.php:313` — `text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:315` — `block text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/reconcile_show.blade.php:318` — `badge badge-info badge-outline badge-xs ml-1`
-- `resources/views/finance/resale/reconcile_show.blade.php:321` — `ghost`
-- `resources/views/finance/resale/reconcile_show.blade.php:324` — `text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:300` — `text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:305` — `line`
+- `resources/views/finance/resale/reconcile_show.blade.php:307` — `product`
+- `resources/views/finance/resale/reconcile_show.blade.php:309` — `opacity-60`
+- `resources/views/finance/resale/reconcile_show.blade.php:309` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:310` — `whitespace-nowrap`
+- `resources/views/finance/resale/reconcile_show.blade.php:311` — `font-mono text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:312` — `text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:314` — `block text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:317` — `badge badge-info badge-outline badge-xs ml-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:320` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:323` — `text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:324` — `text-right tabular-nums whitespace-nowrap`
 - `resources/views/finance/resale/reconcile_show.blade.php:325` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/reconcile_show.blade.php:326` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/reconcile_show.blade.php:326` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:327` — `text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:325` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:326` — `text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:327` — `linked`
+- `resources/views/finance/resale/reconcile_show.blade.php:328` — `text-success`
 - `resources/views/finance/resale/reconcile_show.blade.php:328` — `linked`
-- `resources/views/finance/resale/reconcile_show.blade.php:329` — `text-success`
-- `resources/views/finance/resale/reconcile_show.blade.php:329` — `linked`
-- `resources/views/finance/resale/reconcile_show.blade.php:330` — `block text-muted`
-- `resources/views/finance/resale/reconcile_show.blade.php:330` — `periods`
+- `resources/views/finance/resale/reconcile_show.blade.php:329` — `block text-muted`
+- `resources/views/finance/resale/reconcile_show.blade.php:329` — `periods`
+- `resources/views/finance/resale/reconcile_show.blade.php:331` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:332` — `block text-warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:332` — `amount`
 - `resources/views/finance/resale/reconcile_show.blade.php:332` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:333` — `block text-warning`
-- `resources/views/finance/resale/reconcile_show.blade.php:333` — `amount`
-- `resources/views/finance/resale/reconcile_show.blade.php:333` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:336` — `text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:339` — `warning`
-- `resources/views/finance/resale/reconcile_show.blade.php:340` — `customer`
-- `resources/views/finance/resale/reconcile_show.blade.php:340` — `line`
-- `resources/views/finance/resale/reconcile_show.blade.php:343` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:344` — `flex items-center justify-end gap-1 mt-1`
-- `resources/views/finance/resale/reconcile_show.blade.php:346` — `hidden`
-- `resources/views/finance/resale/reconcile_show.blade.php:347` — `select select-xs select-bordered w-64`
-- `resources/views/finance/resale/reconcile_show.blade.php:349` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:349` — `subscription`
-- `resources/views/finance/resale/reconcile_show.blade.php:349` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:349` — `needed`
-- `resources/views/finance/resale/reconcile_show.blade.php:349` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:354` — `product`
-- `resources/views/finance/resale/reconcile_show.blade.php:354` — `product`
-- `resources/views/finance/resale/reconcile_show.blade.php:355` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:355` — `subscription`
-- `resources/views/finance/resale/reconcile_show.blade.php:355` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:355` — `needed`
-- `resources/views/finance/resale/reconcile_show.blade.php:355` — `period`
-- `resources/views/finance/resale/reconcile_show.blade.php:361` — `hidden`
-- `resources/views/finance/resale/reconcile_show.blade.php:362` — `number`
-- `resources/views/finance/resale/reconcile_show.blade.php:362` — `licences`
-- `resources/views/finance/resale/reconcile_show.blade.php:362` — `free`
-- `resources/views/finance/resale/reconcile_show.blade.php:362` — `needed`
-- `resources/views/finance/resale/reconcile_show.blade.php:363` — `input input-xs input-bordered w-16 text-right`
-- `resources/views/finance/resale/reconcile_show.blade.php:363` — `months`
-- `resources/views/finance/resale/reconcile_show.blade.php:364` — `primary`
-- `resources/views/finance/resale/reconcile_show.blade.php:364` — `submit`
+- `resources/views/finance/resale/reconcile_show.blade.php:335` — `text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:338` — `warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:339` — `customer`
+- `resources/views/finance/resale/reconcile_show.blade.php:339` — `line`
+- `resources/views/finance/resale/reconcile_show.blade.php:342` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:343` — `flex items-center justify-end gap-1 mt-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:345` — `hidden`
+- `resources/views/finance/resale/reconcile_show.blade.php:346` — `select select-xs select-bordered w-64`
+- `resources/views/finance/resale/reconcile_show.blade.php:348` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:348` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:348` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:348` — `needed`
+- `resources/views/finance/resale/reconcile_show.blade.php:348` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:353` — `product`
+- `resources/views/finance/resale/reconcile_show.blade.php:353` — `product`
+- `resources/views/finance/resale/reconcile_show.blade.php:354` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:354` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:354` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:354` — `needed`
+- `resources/views/finance/resale/reconcile_show.blade.php:354` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:360` — `hidden`
+- `resources/views/finance/resale/reconcile_show.blade.php:361` — `number`
+- `resources/views/finance/resale/reconcile_show.blade.php:361` — `licences`
+- `resources/views/finance/resale/reconcile_show.blade.php:361` — `free`
+- `resources/views/finance/resale/reconcile_show.blade.php:361` — `needed`
+- `resources/views/finance/resale/reconcile_show.blade.php:362` — `input input-xs input-bordered w-16 text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:362` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:363` — `primary`
+- `resources/views/finance/resale/reconcile_show.blade.php:363` — `submit`
+- `resources/views/finance/resale/reconcile_show.blade.php:377` — `mt-4`
+- `resources/views/finance/resale/reconcile_show.blade.php:378` — `px-4 py-2 text-xs text-muted border-b border-base-300`
+- `resources/views/finance/resale/reconcile_show.blade.php:384` — `text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:386` — `text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:391` — `line`
+- `resources/views/finance/resale/reconcile_show.blade.php:393` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:393` — `linked`
+- `resources/views/finance/resale/reconcile_show.blade.php:395` — `opacity-60`
+- `resources/views/finance/resale/reconcile_show.blade.php:396` — `whitespace-nowrap`
+- `resources/views/finance/resale/reconcile_show.blade.php:397` — `font-mono text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:398` — `text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:398` — `position`
+- `resources/views/finance/resale/reconcile_show.blade.php:400` — `block text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/reconcile_show.blade.php:403` — `ghost`
+- `resources/views/finance/resale/reconcile_show.blade.php:406` — `text-sm`
+- `resources/views/finance/resale/reconcile_show.blade.php:407` — `text-right tabular-nums whitespace-nowrap text-error`
+- `resources/views/finance/resale/reconcile_show.blade.php:407` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:408` — `text-xs`
+- `resources/views/finance/resale/reconcile_show.blade.php:409` — `linked`
+- `resources/views/finance/resale/reconcile_show.blade.php:410` — `text-success`
+- `resources/views/finance/resale/reconcile_show.blade.php:410` — `amount`
+- `resources/views/finance/resale/reconcile_show.blade.php:410` — `linked`
+- `resources/views/finance/resale/reconcile_show.blade.php:410` — `periods`
+- `resources/views/finance/resale/reconcile_show.blade.php:410` — `periods`
+- `resources/views/finance/resale/reconcile_show.blade.php:412` — `text-warning`
+- `resources/views/finance/resale/reconcile_show.blade.php:415` — `text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:417` — `flex items-center justify-end gap-1`
+- `resources/views/finance/resale/reconcile_show.blade.php:419` — `hidden`
+- `resources/views/finance/resale/reconcile_show.blade.php:420` — `select select-xs select-bordered w-64`
+- `resources/views/finance/resale/reconcile_show.blade.php:422` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:422` — `subscription`
+- `resources/views/finance/resale/reconcile_show.blade.php:422` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:422` — `period`
+- `resources/views/finance/resale/reconcile_show.blade.php:425` — `hidden`
+- `resources/views/finance/resale/reconcile_show.blade.php:426` — `number`
+- `resources/views/finance/resale/reconcile_show.blade.php:426` — `licences`
+- `resources/views/finance/resale/reconcile_show.blade.php:427` — `input input-xs input-bordered w-16 text-right`
+- `resources/views/finance/resale/reconcile_show.blade.php:427` — `months`
+- `resources/views/finance/resale/reconcile_show.blade.php:428` — `error`
+- `resources/views/finance/resale/reconcile_show.blade.php:428` — `submit`
 - `resources/views/finance/resale/report.blade.php:15` — `title`
 - `resources/views/finance/resale/report.blade.php:16` — `nav-title`
 - `resources/views/finance/resale/report.blade.php:21` — `label`
@@ -16663,32 +16753,31 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/report.blade.php:50` — `ghost`
 - `resources/views/finance/resale/report.blade.php:51` — `ghost`
 - `resources/views/finance/resale/report.blade.php:52` — `ghost`
-- `resources/views/finance/resale/report.blade.php:55` — `w-fit mb-4`
-- `resources/views/finance/resale/report.blade.php:57` — `margin`
-- `resources/views/finance/resale/report.blade.php:59` — `w-80 shrink-0`
-- `resources/views/finance/resale/report.blade.php:59` — `false`
-- `resources/views/finance/resale/report.blade.php:59` — `from`
-- `resources/views/finance/resale/report.blade.php:59` — `report-from`
-- `resources/views/finance/resale/report.blade.php:59` — `report-to`
-- `resources/views/finance/resale/report.blade.php:63` — `mixed`
-- `resources/views/finance/resale/report.blade.php:64` — `status`
-- `resources/views/finance/resale/report.blade.php:64` — `alert alert-info text-sm mb-4`
-- `resources/views/finance/resale/report.blade.php:65` — `list`
-- `resources/views/finance/resale/report.blade.php:65` — `currencies`
-- `resources/views/finance/resale/report.blade.php:69` — `title`
-- `resources/views/finance/resale/report.blade.php:69` — `rows`
-- `resources/views/finance/resale/report.blade.php:69` — `first`
-- `resources/views/finance/resale/report.blade.php:69` — `title`
-- `resources/views/finance/resale/report.blade.php:69` — `rows`
-- `resources/views/finance/resale/report.blade.php:69` — `first`
+- `resources/views/finance/resale/report.blade.php:53` — `ghost`
+- `resources/views/finance/resale/report.blade.php:56` — `w-fit mb-4`
+- `resources/views/finance/resale/report.blade.php:58` — `margin`
+- `resources/views/finance/resale/report.blade.php:60` — `w-80 shrink-0`
+- `resources/views/finance/resale/report.blade.php:60` — `false`
+- `resources/views/finance/resale/report.blade.php:60` — `from`
+- `resources/views/finance/resale/report.blade.php:60` — `report-from`
+- `resources/views/finance/resale/report.blade.php:60` — `report-to`
+- `resources/views/finance/resale/report.blade.php:64` — `mixed`
+- `resources/views/finance/resale/report.blade.php:65` — `status`
+- `resources/views/finance/resale/report.blade.php:65` — `alert alert-info text-sm mb-4`
+- `resources/views/finance/resale/report.blade.php:66` — `list`
+- `resources/views/finance/resale/report.blade.php:66` — `currencies`
 - `resources/views/finance/resale/report.blade.php:70` — `title`
-- `resources/views/finance/resale/report.blade.php:70` — `mb-4`
-- `resources/views/finance/resale/report.blade.php:71` — `client`
-- `resources/views/finance/resale/report.blade.php:74` — `string`
-- `resources/views/finance/resale/report.blade.php:74` — `first`
+- `resources/views/finance/resale/report.blade.php:70` — `rows`
+- `resources/views/finance/resale/report.blade.php:70` — `first`
+- `resources/views/finance/resale/report.blade.php:70` — `title`
+- `resources/views/finance/resale/report.blade.php:70` — `rows`
+- `resources/views/finance/resale/report.blade.php:70` — `first`
+- `resources/views/finance/resale/report.blade.php:71` — `title`
+- `resources/views/finance/resale/report.blade.php:71` — `mb-4`
+- `resources/views/finance/resale/report.blade.php:72` — `client`
 - `resources/views/finance/resale/report.blade.php:75` — `string`
-- `resources/views/finance/resale/report.blade.php:76` — `text-right`
-- `resources/views/finance/resale/report.blade.php:76` — `number`
+- `resources/views/finance/resale/report.blade.php:75` — `first`
+- `resources/views/finance/resale/report.blade.php:76` — `string`
 - `resources/views/finance/resale/report.blade.php:77` — `text-right`
 - `resources/views/finance/resale/report.blade.php:77` — `number`
 - `resources/views/finance/resale/report.blade.php:78` — `text-right`
@@ -16701,104 +16790,106 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/report.blade.php:81` — `number`
 - `resources/views/finance/resale/report.blade.php:82` — `text-right`
 - `resources/views/finance/resale/report.blade.php:82` — `number`
-- `resources/views/finance/resale/report.blade.php:85` — `rows`
-- `resources/views/finance/resale/report.blade.php:87` — `label`
-- `resources/views/finance/resale/report.blade.php:88` — `text-xs text-muted`
-- `resources/views/finance/resale/report.blade.php:88` — `currency`
-- `resources/views/finance/resale/report.blade.php:89` — `text-right tabular-nums`
-- `resources/views/finance/resale/report.blade.php:89` — `periods`
-- `resources/views/finance/resale/report.blade.php:90` — `open`
-- `resources/views/finance/resale/report.blade.php:90` — `text-error`
-- `resources/views/finance/resale/report.blade.php:90` — `open`
-- `resources/views/finance/resale/report.blade.php:91` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/report.blade.php:91` — `currency`
+- `resources/views/finance/resale/report.blade.php:83` — `text-right`
+- `resources/views/finance/resale/report.blade.php:83` — `number`
+- `resources/views/finance/resale/report.blade.php:86` — `rows`
+- `resources/views/finance/resale/report.blade.php:88` — `label`
+- `resources/views/finance/resale/report.blade.php:89` — `text-xs text-muted`
+- `resources/views/finance/resale/report.blade.php:89` — `currency`
+- `resources/views/finance/resale/report.blade.php:90` — `text-right tabular-nums`
+- `resources/views/finance/resale/report.blade.php:90` — `periods`
+- `resources/views/finance/resale/report.blade.php:91` — `open`
+- `resources/views/finance/resale/report.blade.php:91` — `text-error`
+- `resources/views/finance/resale/report.blade.php:91` — `open`
 - `resources/views/finance/resale/report.blade.php:92` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/report.blade.php:92` — `billed`
 - `resources/views/finance/resale/report.blade.php:92` — `currency`
 - `resources/views/finance/resale/report.blade.php:93` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/report.blade.php:93` — `billed`
 - `resources/views/finance/resale/report.blade.php:93` — `currency`
 - `resources/views/finance/resale/report.blade.php:94` — `text-right tabular-nums whitespace-nowrap`
 - `resources/views/finance/resale/report.blade.php:94` — `currency`
-- `resources/views/finance/resale/report.blade.php:94` — `periods`
-- `resources/views/finance/resale/report.blade.php:94` — `block text-xs text-muted`
-- `resources/views/finance/resale/report.blade.php:94` — `periods`
-- `resources/views/finance/resale/report.blade.php:95` — `margin`
-- `resources/views/finance/resale/report.blade.php:95` — `text-error`
-- `resources/views/finance/resale/report.blade.php:95` — `text-success`
-- `resources/views/finance/resale/report.blade.php:95` — `margin`
+- `resources/views/finance/resale/report.blade.php:95` — `text-right tabular-nums whitespace-nowrap`
 - `resources/views/finance/resale/report.blade.php:95` — `currency`
-- `resources/views/finance/resale/report.blade.php:103` — `text-xs text-muted`
-- `resources/views/finance/resale/report.blade.php:104` — `renewals`
-- `resources/views/finance/resale/report.blade.php:105` — `grid grid-cols-3 gap-3 mb-4`
-- `resources/views/finance/resale/report.blade.php:107` — `days`
-- `resources/views/finance/resale/report.blade.php:107` — `warning`
-- `resources/views/finance/resale/report.blade.php:107` — `neutral'`
-- `resources/views/finance/resale/report.blade.php:108` — `from`
-- `resources/views/finance/resale/report.blade.php:113` — `w-80 shrink-0`
-- `resources/views/finance/resale/report.blade.php:113` — `false`
-- `resources/views/finance/resale/report.blade.php:113` — `from`
-- `resources/views/finance/resale/report.blade.php:113` — `renewals-from`
-- `resources/views/finance/resale/report.blade.php:113` — `renewals-to`
-- `resources/views/finance/resale/report.blade.php:116` — `text-xs text-muted mb-2`
-- `resources/views/finance/resale/report.blade.php:117` — `true`
-- `resources/views/finance/resale/report.blade.php:117` — `client`
-- `resources/views/finance/resale/report.blade.php:120` — `date`
-- `resources/views/finance/resale/report.blade.php:122` — `string`
+- `resources/views/finance/resale/report.blade.php:95` — `periods`
+- `resources/views/finance/resale/report.blade.php:95` — `block text-xs text-muted`
+- `resources/views/finance/resale/report.blade.php:95` — `periods`
+- `resources/views/finance/resale/report.blade.php:96` — `margin`
+- `resources/views/finance/resale/report.blade.php:96` — `text-error`
+- `resources/views/finance/resale/report.blade.php:96` — `text-success`
+- `resources/views/finance/resale/report.blade.php:96` — `margin`
+- `resources/views/finance/resale/report.blade.php:96` — `currency`
+- `resources/views/finance/resale/report.blade.php:104` — `text-xs text-muted`
+- `resources/views/finance/resale/report.blade.php:105` — `renewals`
+- `resources/views/finance/resale/report.blade.php:106` — `grid grid-cols-3 gap-3 mb-4`
+- `resources/views/finance/resale/report.blade.php:108` — `days`
+- `resources/views/finance/resale/report.blade.php:108` — `warning`
+- `resources/views/finance/resale/report.blade.php:108` — `neutral'`
+- `resources/views/finance/resale/report.blade.php:109` — `from`
+- `resources/views/finance/resale/report.blade.php:114` — `w-80 shrink-0`
+- `resources/views/finance/resale/report.blade.php:114` — `false`
+- `resources/views/finance/resale/report.blade.php:114` — `from`
+- `resources/views/finance/resale/report.blade.php:114` — `renewals-from`
+- `resources/views/finance/resale/report.blade.php:114` — `renewals-to`
+- `resources/views/finance/resale/report.blade.php:117` — `text-xs text-muted mb-2`
+- `resources/views/finance/resale/report.blade.php:118` — `true`
+- `resources/views/finance/resale/report.blade.php:118` — `client`
+- `resources/views/finance/resale/report.blade.php:121` — `date`
 - `resources/views/finance/resale/report.blade.php:123` — `string`
 - `resources/views/finance/resale/report.blade.php:124` — `string`
-- `resources/views/finance/resale/report.blade.php:126` — `text-right`
-- `resources/views/finance/resale/report.blade.php:126` — `number`
-- `resources/views/finance/resale/report.blade.php:131` — `subscription`
-- `resources/views/finance/resale/report.blade.php:132` — `hover`
-- `resources/views/finance/resale/report.blade.php:133` — `whitespace-nowrap tabular-nums`
-- `resources/views/finance/resale/report.blade.php:133` — `date`
-- `resources/views/finance/resale/report.blade.php:133` — `block text-xs text-muted`
-- `resources/views/finance/resale/report.blade.php:133` — `days`
-- `resources/views/finance/resale/report.blade.php:133` — `days`
-- `resources/views/finance/resale/report.blade.php:133` — `days`
-- `resources/views/finance/resale/report.blade.php:133` — `days`
-- `resources/views/finance/resale/report.blade.php:134` — `mode`
-- `resources/views/finance/resale/report.blade.php:134` — `ends' ? 'error`
-- `resources/views/finance/resale/report.blade.php:134` — `info'`
-- `resources/views/finance/resale/report.blade.php:134` — `mode`
-- `resources/views/finance/resale/report.blade.php:135` — `link link-hover font-medium`
-- `resources/views/finance/resale/report.blade.php:135` — `block text-xs text-muted`
-- `resources/views/finance/resale/report.blade.php:136` — `text-sm`
+- `resources/views/finance/resale/report.blade.php:125` — `string`
+- `resources/views/finance/resale/report.blade.php:127` — `text-right`
+- `resources/views/finance/resale/report.blade.php:127` — `number`
+- `resources/views/finance/resale/report.blade.php:132` — `subscription`
+- `resources/views/finance/resale/report.blade.php:133` — `hover`
+- `resources/views/finance/resale/report.blade.php:134` — `whitespace-nowrap tabular-nums`
+- `resources/views/finance/resale/report.blade.php:134` — `date`
+- `resources/views/finance/resale/report.blade.php:134` — `block text-xs text-muted`
+- `resources/views/finance/resale/report.blade.php:134` — `days`
+- `resources/views/finance/resale/report.blade.php:134` — `days`
+- `resources/views/finance/resale/report.blade.php:134` — `days`
+- `resources/views/finance/resale/report.blade.php:134` — `days`
+- `resources/views/finance/resale/report.blade.php:135` — `mode`
+- `resources/views/finance/resale/report.blade.php:135` — `ends' ? 'error`
+- `resources/views/finance/resale/report.blade.php:135` — `info'`
+- `resources/views/finance/resale/report.blade.php:135` — `mode`
+- `resources/views/finance/resale/report.blade.php:136` — `link link-hover font-medium`
+- `resources/views/finance/resale/report.blade.php:136` — `block text-xs text-muted`
 - `resources/views/finance/resale/report.blade.php:137` — `text-sm`
 - `resources/views/finance/resale/report.blade.php:138` — `text-sm`
-- `resources/views/finance/resale/report.blade.php:139` — `text-right tabular-nums`
-- `resources/views/finance/resale/report.blade.php:140` — `text-sm`
-- `resources/views/finance/resale/report.blade.php:148` — `unbilled-days`
-- `resources/views/finance/resale/report.blade.php:149` — `number`
+- `resources/views/finance/resale/report.blade.php:139` — `text-sm`
+- `resources/views/finance/resale/report.blade.php:140` — `text-right tabular-nums`
+- `resources/views/finance/resale/report.blade.php:141` — `text-sm`
 - `resources/views/finance/resale/report.blade.php:149` — `unbilled-days`
-- `resources/views/finance/resale/report.blade.php:149` — `days`
-- `resources/views/finance/resale/report.blade.php:149` — `input input-sm input-bordered w-28 shrink-0`
-- `resources/views/finance/resale/report.blade.php:152` — `text-xs text-muted mb-2`
-- `resources/views/finance/resale/report.blade.php:153` — `true`
-- `resources/views/finance/resale/report.blade.php:153` — `client`
-- `resources/views/finance/resale/report.blade.php:156` — `string`
+- `resources/views/finance/resale/report.blade.php:150` — `number`
+- `resources/views/finance/resale/report.blade.php:150` — `unbilled-days`
+- `resources/views/finance/resale/report.blade.php:150` — `days`
+- `resources/views/finance/resale/report.blade.php:150` — `input input-sm input-bordered w-28 shrink-0`
+- `resources/views/finance/resale/report.blade.php:153` — `text-xs text-muted mb-2`
+- `resources/views/finance/resale/report.blade.php:154` — `true`
+- `resources/views/finance/resale/report.blade.php:154` — `client`
 - `resources/views/finance/resale/report.blade.php:157` — `string`
 - `resources/views/finance/resale/report.blade.php:158` — `string`
-- `resources/views/finance/resale/report.blade.php:160` — `date`
-- `resources/views/finance/resale/report.blade.php:161` — `text-right`
-- `resources/views/finance/resale/report.blade.php:161` — `number`
+- `resources/views/finance/resale/report.blade.php:159` — `string`
+- `resources/views/finance/resale/report.blade.php:161` — `date`
 - `resources/views/finance/resale/report.blade.php:162` — `text-right`
 - `resources/views/finance/resale/report.blade.php:162` — `number`
 - `resources/views/finance/resale/report.blade.php:163` — `text-right`
 - `resources/views/finance/resale/report.blade.php:163` — `number`
-- `resources/views/finance/resale/report.blade.php:167` — `subscription`
-- `resources/views/finance/resale/report.blade.php:168` — `hover`
-- `resources/views/finance/resale/report.blade.php:169` — `link link-hover font-medium`
-- `resources/views/finance/resale/report.blade.php:170` — `text-sm`
+- `resources/views/finance/resale/report.blade.php:164` — `text-right`
+- `resources/views/finance/resale/report.blade.php:164` — `number`
+- `resources/views/finance/resale/report.blade.php:168` — `subscription`
+- `resources/views/finance/resale/report.blade.php:169` — `hover`
+- `resources/views/finance/resale/report.blade.php:170` — `link link-hover font-medium`
 - `resources/views/finance/resale/report.blade.php:171` — `text-sm`
 - `resources/views/finance/resale/report.blade.php:172` — `text-sm`
-- `resources/views/finance/resale/report.blade.php:173` — `whitespace-nowrap tabular-nums text-sm`
-- `resources/views/finance/resale/report.blade.php:173` — `oldest`
-- `resources/views/finance/resale/report.blade.php:174` — `text-right tabular-nums text-error`
-- `resources/views/finance/resale/report.blade.php:174` — `days`
-- `resources/views/finance/resale/report.blade.php:175` — `text-right tabular-nums`
-- `resources/views/finance/resale/report.blade.php:176` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/report.blade.php:179` — `days`
+- `resources/views/finance/resale/report.blade.php:173` — `text-sm`
+- `resources/views/finance/resale/report.blade.php:174` — `whitespace-nowrap tabular-nums text-sm`
+- `resources/views/finance/resale/report.blade.php:174` — `oldest`
+- `resources/views/finance/resale/report.blade.php:175` — `text-right tabular-nums text-error`
+- `resources/views/finance/resale/report.blade.php:175` — `days`
+- `resources/views/finance/resale/report.blade.php:176` — `text-right tabular-nums`
+- `resources/views/finance/resale/report.blade.php:177` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/report.blade.php:180` — `days`
 - `resources/views/finance/resale/_waive_dialog.blade.php:13` — `period`
 - `resources/views/finance/resale/_waive_dialog.blade.php:15` — `warning`
 - `resources/views/finance/resale/_waive_dialog.blade.php:19` — `data-entry-form`
@@ -16811,96 +16902,147 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/_waive_dialog.blade.php:25` — `disputed`
 - `resources/views/finance/resale/_waive_dialog.blade.php:27` — `reason`
 - `resources/views/finance/resale/_waive_dialog.blade.php:27` — `reason`
-- `resources/views/finance/resale/purchases.blade.php:15` — `title`
-- `resources/views/finance/resale/purchases.blade.php:16` — `nav-title`
-- `resources/views/finance/resale/purchases.blade.php:17` — `main-class', `
-- `resources/views/finance/resale/purchases.blade.php:24` — `content`
-- `resources/views/finance/resale/purchases.blade.php:25` — `clip`
-- `resources/views/finance/resale/purchases.blade.php:28` — `primary`
-- `resources/views/finance/resale/purchases.blade.php:29` — `receipt`
-- `resources/views/finance/resale/purchases.blade.php:29` — `ghost`
+- `resources/views/finance/resale/purchases.blade.php:17` — `title`
+- `resources/views/finance/resale/purchases.blade.php:18` — `nav-title`
+- `resources/views/finance/resale/purchases.blade.php:19` — `main-class', `
+- `resources/views/finance/resale/purchases.blade.php:26` — `content`
+- `resources/views/finance/resale/purchases.blade.php:27` — `clip`
+- `resources/views/finance/resale/purchases.blade.php:30` — `primary`
+- `resources/views/finance/resale/purchases.blade.php:31` — `receipt`
 - `resources/views/finance/resale/purchases.blade.php:31` — `ghost`
-- `resources/views/finance/resale/purchases.blade.php:37` — `collapse-title text-sm font-medium`
-- `resources/views/finance/resale/purchases.blade.php:37` — `count`
-- `resources/views/finance/resale/purchases.blade.php:38` — `collapse-content`
-- `resources/views/finance/resale/purchases.blade.php:39` — `list-disc pl-5 text-sm space-y-1`
-- `resources/views/finance/resale/purchases.blade.php:49` — `flex flex-wrap gap-2 mb-3 text-xs`
-- `resources/views/finance/resale/purchases.blade.php:51` — `badge badge-outline`
-- `resources/views/finance/resale/purchases.blade.php:57` — `search`
-- `resources/views/finance/resale/purchases.blade.php:57` — `input input-sm input-bordered w-56 shrink-0`
-- `resources/views/finance/resale/purchases.blade.php:59` — `provider`
-- `resources/views/finance/resale/purchases.blade.php:59` — `select select-sm select-bordered w-44 shrink-0`
-- `resources/views/finance/resale/purchases.blade.php:62` — `provider`
-- `resources/views/finance/resale/purchases.blade.php:65` — `source`
-- `resources/views/finance/resale/purchases.blade.php:65` — `select select-sm select-bordered w-44 shrink-0`
-- `resources/views/finance/resale/purchases.blade.php:68` — `source`
-- `resources/views/finance/resale/purchases.blade.php:71` — `w-72 shrink-0`
-- `resources/views/finance/resale/purchases.blade.php:71` — `false`
-- `resources/views/finance/resale/purchases.blade.php:71` — `from`
-- `resources/views/finance/resale/purchases.blade.php:71` — `purchases-from`
-- `resources/views/finance/resale/purchases.blade.php:71` — `purchases-to`
-- `resources/views/finance/resale/purchases.blade.php:72` — `from`
-- `resources/views/finance/resale/purchases.blade.php:75` — `flex`
-- `resources/views/finance/resale/purchases.blade.php:75` — `true`
-- `resources/views/finance/resale/purchases.blade.php:75` — `client`
-- `resources/views/finance/resale/purchases.blade.php:78` — `date`
-- `resources/views/finance/resale/purchases.blade.php:79` — `string`
+- `resources/views/finance/resale/purchases.blade.php:33` — `ghost`
+- `resources/views/finance/resale/purchases.blade.php:39` — `collapse-title text-sm font-medium`
+- `resources/views/finance/resale/purchases.blade.php:39` — `count`
+- `resources/views/finance/resale/purchases.blade.php:40` — `collapse-content`
+- `resources/views/finance/resale/purchases.blade.php:41` — `list-disc pl-5 text-sm space-y-1`
+- `resources/views/finance/resale/purchases.blade.php:51` — `flex flex-wrap gap-2 mb-3 text-xs`
+- `resources/views/finance/resale/purchases.blade.php:53` — `badge badge-outline`
+- `resources/views/finance/resale/purchases.blade.php:59` — `search`
+- `resources/views/finance/resale/purchases.blade.php:59` — `input input-sm input-bordered w-56 shrink-0`
+- `resources/views/finance/resale/purchases.blade.php:61` — `provider`
+- `resources/views/finance/resale/purchases.blade.php:61` — `select select-sm select-bordered w-44 shrink-0`
+- `resources/views/finance/resale/purchases.blade.php:64` — `provider`
+- `resources/views/finance/resale/purchases.blade.php:67` — `source`
+- `resources/views/finance/resale/purchases.blade.php:67` — `select select-sm select-bordered w-44 shrink-0`
+- `resources/views/finance/resale/purchases.blade.php:70` — `source`
+- `resources/views/finance/resale/purchases.blade.php:73` — `w-72 shrink-0`
+- `resources/views/finance/resale/purchases.blade.php:73` — `false`
+- `resources/views/finance/resale/purchases.blade.php:73` — `from`
+- `resources/views/finance/resale/purchases.blade.php:73` — `purchases-from`
+- `resources/views/finance/resale/purchases.blade.php:73` — `purchases-to`
+- `resources/views/finance/resale/purchases.blade.php:74` — `from`
+- `resources/views/finance/resale/purchases.blade.php:77` — `flex`
+- `resources/views/finance/resale/purchases.blade.php:77` — `true`
+- `resources/views/finance/resale/purchases.blade.php:77` — `client`
+- `resources/views/finance/resale/purchases.blade.php:80` — `date`
 - `resources/views/finance/resale/purchases.blade.php:81` — `string`
-- `resources/views/finance/resale/purchases.blade.php:85` — `text-right`
-- `resources/views/finance/resale/purchases.blade.php:85` — `number`
+- `resources/views/finance/resale/purchases.blade.php:83` — `string`
 - `resources/views/finance/resale/purchases.blade.php:87` — `text-right`
-- `resources/views/finance/resale/purchases.blade.php:91` — `hover`
-- `resources/views/finance/resale/purchases.blade.php:92` — `whitespace-nowrap tabular-nums`
-- `resources/views/finance/resale/purchases.blade.php:93` — `font-mono text-xs`
-- `resources/views/finance/resale/purchases.blade.php:94` — `text-sm`
-- `resources/views/finance/resale/purchases.blade.php:97` — `link link-hover`
-- `resources/views/finance/resale/purchases.blade.php:99` — `text-muted`
-- `resources/views/finance/resale/purchases.blade.php:102` — `text-sm`
-- `resources/views/finance/resale/purchases.blade.php:103` — `whitespace-nowrap tabular-nums text-sm`
-- `resources/views/finance/resale/purchases.blade.php:104` — `text-xs text-muted max-w-xs truncate`
-- `resources/views/finance/resale/purchases.blade.php:105` — `text-success`
-- `resources/views/finance/resale/purchases.blade.php:106` — `neutral`
-- `resources/views/finance/resale/purchases.blade.php:107` — `text-right`
-- `resources/views/finance/resale/purchases.blade.php:109` — `inline-flex justify-end`
-- `resources/views/finance/resale/purchases.blade.php:110` — `error`
-- `resources/views/finance/resale/purchases.blade.php:110` — `delete`
-- `resources/views/finance/resale/purchases.blade.php:113` — `delete`
-- `resources/views/finance/resale/purchases.blade.php:113` — `ghost`
-- `resources/views/finance/resale/purchases.blade.php:113` — `submit`
-- `resources/views/finance/resale/products.blade.php:14` — `title`
-- `resources/views/finance/resale/products.blade.php:15` — `nav-title`
-- `resources/views/finance/resale/products.blade.php:16` — `main-class', `
-- `resources/views/finance/resale/products.blade.php:22` — `content`
-- `resources/views/finance/resale/products.blade.php:23` — `clip`
-- `resources/views/finance/resale/products.blade.php:25` — `ghost`
-- `resources/views/finance/resale/products.blade.php:27` — `text-xs text-muted mb-2`
-- `resources/views/finance/resale/products.blade.php:28` — `flex`
-- `resources/views/finance/resale/products.blade.php:28` — `true`
-- `resources/views/finance/resale/products.blade.php:28` — `client`
-- `resources/views/finance/resale/products.blade.php:31` — `string`
-- `resources/views/finance/resale/products.blade.php:32` — `string`
-- `resources/views/finance/resale/products.blade.php:34` — `text-right`
-- `resources/views/finance/resale/products.blade.php:35` — `text-right`
-- `resources/views/finance/resale/products.blade.php:35` — `number`
-- `resources/views/finance/resale/products.blade.php:41` — `article`
-- `resources/views/finance/resale/products.blade.php:42` — `hover', 'opacity-70`
-- `resources/views/finance/resale/products.blade.php:42` — `effective`
-- `resources/views/finance/resale/products.blade.php:43` — `font-medium`
-- `resources/views/finance/resale/products.blade.php:44` — `font-mono text-xs`
-- `resources/views/finance/resale/products.blade.php:45` — `text-sm`
-- `resources/views/finance/resale/products.blade.php:46` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/products.blade.php:47` — `text-right tabular-nums`
-- `resources/views/finance/resale/products.blade.php:47` — `subscriptions`
-- `resources/views/finance/resale/products.blade.php:48` — `detected`
-- `resources/views/finance/resale/products.blade.php:48` — `detected`
-- `resources/views/finance/resale/products.blade.php:51` — `flex items-center gap-1`
-- `resources/views/finance/resale/products.blade.php:53` — `hidden`
-- `resources/views/finance/resale/products.blade.php:54` — `role`
-- `resources/views/finance/resale/products.blade.php:54` — `select select-xs select-bordered w-44`
-- `resources/views/finance/resale/products.blade.php:55` — `auto`
-- `resources/views/finance/resale/products.blade.php:60` — `save`
-- `resources/views/finance/resale/products.blade.php:60` — `ghost`
-- `resources/views/finance/resale/products.blade.php:60` — `submit`
+- `resources/views/finance/resale/purchases.blade.php:87` — `number`
+- `resources/views/finance/resale/purchases.blade.php:89` — `text-right`
+- `resources/views/finance/resale/purchases.blade.php:93` — `hover`
+- `resources/views/finance/resale/purchases.blade.php:94` — `whitespace-nowrap tabular-nums`
+- `resources/views/finance/resale/purchases.blade.php:95` — `text-xs`
+- `resources/views/finance/resale/purchases.blade.php:97` — `font-mono`
+- `resources/views/finance/resale/purchases.blade.php:99` — `flex items-center gap-1 mt-1`
+- `resources/views/finance/resale/purchases.blade.php:100` — `neutral`
+- `resources/views/finance/resale/purchases.blade.php:102` — `ghost`
+- `resources/views/finance/resale/purchases.blade.php:105` — `noopener`
+- `resources/views/finance/resale/purchases.blade.php:105` — `btn btn-ghost btn-xs`
+- `resources/views/finance/resale/purchases.blade.php:105` — `source`
+- `resources/views/finance/resale/purchases.blade.php:110` — `text-sm`
+- `resources/views/finance/resale/purchases.blade.php:113` — `link link-hover`
+- `resources/views/finance/resale/purchases.blade.php:115` — `text-muted`
+- `resources/views/finance/resale/purchases.blade.php:118` — `text-sm`
+- `resources/views/finance/resale/purchases.blade.php:119` — `whitespace-nowrap tabular-nums text-sm`
+- `resources/views/finance/resale/purchases.blade.php:120` — `text-xs text-muted max-w-xs truncate`
+- `resources/views/finance/resale/purchases.blade.php:121` — `text-success`
+- `resources/views/finance/resale/purchases.blade.php:122` — `neutral`
+- `resources/views/finance/resale/purchases.blade.php:123` — `text-right`
+- `resources/views/finance/resale/purchases.blade.php:125` — `inline-flex justify-end`
+- `resources/views/finance/resale/purchases.blade.php:126` — `error`
+- `resources/views/finance/resale/purchases.blade.php:126` — `delete`
+- `resources/views/finance/resale/purchases.blade.php:129` — `delete`
+- `resources/views/finance/resale/purchases.blade.php:129` — `ghost`
+- `resources/views/finance/resale/purchases.blade.php:129` — `submit`
+- `resources/views/finance/resale/products.blade.php:15` — `title`
+- `resources/views/finance/resale/products.blade.php:16` — `nav-title`
+- `resources/views/finance/resale/products.blade.php:17` — `main-class', `
+- `resources/views/finance/resale/products.blade.php:23` — `content`
+- `resources/views/finance/resale/products.blade.php:24` — `clip`
+- `resources/views/finance/resale/products.blade.php:26` — `ghost`
+- `resources/views/finance/resale/products.blade.php:29` — `info`
+- `resources/views/finance/resale/products.blade.php:29` — `mb-3`
+- `resources/views/finance/resale/products.blade.php:32` — `finance.resale.auto-draft.store`
+- `resources/views/finance/resale/products.blade.php:32` — `flex flex-wrap items-end gap-3`
+- `resources/views/finance/resale/products.blade.php:34` — `info`
+- `resources/views/finance/resale/products.blade.php:37` — `number`
+- `resources/views/finance/resale/products.blade.php:37` — `numeric`
+- `resources/views/finance/resale/products.blade.php:41` — `save`
+- `resources/views/finance/resale/products.blade.php:41` — `primary`
+- `resources/views/finance/resale/products.blade.php:41` — `submit`
+- `resources/views/finance/resale/products.blade.php:44` — `text-sm`
+- `resources/views/finance/resale/products.blade.php:44` — `days`
+- `resources/views/finance/resale/products.blade.php:47` — `text-xs text-muted mb-2`
+- `resources/views/finance/resale/products.blade.php:49` — `mb-3`
+- `resources/views/finance/resale/products.blade.php:50` — `true`
+- `resources/views/finance/resale/products.blade.php:50` — `client`
+- `resources/views/finance/resale/products.blade.php:53` — `string`
+- `resources/views/finance/resale/products.blade.php:54` — `string`
+- `resources/views/finance/resale/products.blade.php:56` — `text-right`
+- `resources/views/finance/resale/products.blade.php:57` — `text-right`
+- `resources/views/finance/resale/products.blade.php:57` — `number`
+- `resources/views/finance/resale/products.blade.php:63` — `article`
+- `resources/views/finance/resale/products.blade.php:64` — `hover', 'opacity-70`
+- `resources/views/finance/resale/products.blade.php:64` — `effective`
+- `resources/views/finance/resale/products.blade.php:65` — `font-medium`
+- `resources/views/finance/resale/products.blade.php:66` — `font-mono text-xs`
+- `resources/views/finance/resale/products.blade.php:67` — `text-sm`
+- `resources/views/finance/resale/products.blade.php:68` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/products.blade.php:69` — `text-right tabular-nums`
+- `resources/views/finance/resale/products.blade.php:69` — `subscriptions`
+- `resources/views/finance/resale/products.blade.php:70` — `detected`
+- `resources/views/finance/resale/products.blade.php:70` — `detected`
+- `resources/views/finance/resale/products.blade.php:73` — `flex items-center gap-1`
+- `resources/views/finance/resale/products.blade.php:75` — `hidden`
+- `resources/views/finance/resale/products.blade.php:75` — `local`
+- `resources/views/finance/resale/products.blade.php:76` — `hidden`
+- `resources/views/finance/resale/products.blade.php:77` — `role`
+- `resources/views/finance/resale/products.blade.php:77` — `select select-xs select-bordered w-44`
+- `resources/views/finance/resale/products.blade.php:78` — `auto`
+- `resources/views/finance/resale/products.blade.php:83` — `save`
+- `resources/views/finance/resale/products.blade.php:83` — `ghost`
+- `resources/views/finance/resale/products.blade.php:83` — `submit`
+- `resources/views/finance/resale/products.blade.php:95` — `text-sm font-semibold mb-1`
+- `resources/views/finance/resale/products.blade.php:96` — `flex`
+- `resources/views/finance/resale/products.blade.php:96` — `true`
+- `resources/views/finance/resale/products.blade.php:96` — `client`
+- `resources/views/finance/resale/products.blade.php:99` — `string`
+- `resources/views/finance/resale/products.blade.php:100` — `string`
+- `resources/views/finance/resale/products.blade.php:102` — `text-right`
+- `resources/views/finance/resale/products.blade.php:103` — `text-right`
+- `resources/views/finance/resale/products.blade.php:103` — `number`
+- `resources/views/finance/resale/products.blade.php:109` — `article`
+- `resources/views/finance/resale/products.blade.php:110` — `hover', 'opacity-70`
+- `resources/views/finance/resale/products.blade.php:110` — `effective`
+- `resources/views/finance/resale/products.blade.php:111` — `font-medium`
+- `resources/views/finance/resale/products.blade.php:112` — `font-mono text-xs`
+- `resources/views/finance/resale/products.blade.php:113` — `text-sm`
+- `resources/views/finance/resale/products.blade.php:114` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/products.blade.php:115` — `text-right tabular-nums`
+- `resources/views/finance/resale/products.blade.php:115` — `subscriptions`
+- `resources/views/finance/resale/products.blade.php:116` — `detected`
+- `resources/views/finance/resale/products.blade.php:116` — `detected`
+- `resources/views/finance/resale/products.blade.php:119` — `flex items-center gap-1`
+- `resources/views/finance/resale/products.blade.php:121` — `hidden`
+- `resources/views/finance/resale/products.blade.php:121` — `lexoffice`
+- `resources/views/finance/resale/products.blade.php:122` — `hidden`
+- `resources/views/finance/resale/products.blade.php:123` — `role`
+- `resources/views/finance/resale/products.blade.php:123` — `select select-xs select-bordered w-44`
+- `resources/views/finance/resale/products.blade.php:124` — `auto`
+- `resources/views/finance/resale/products.blade.php:129` — `save`
+- `resources/views/finance/resale/products.blade.php:129` — `ghost`
+- `resources/views/finance/resale/products.blade.php:129` — `submit`
 - `resources/views/finance/resale/_purchase_import_dialog.blade.php:15` — `primary`
 - `resources/views/finance/resale/_purchase_import_dialog.blade.php:20` — `data-entry-form`
 - `resources/views/finance/resale/_purchase_import_dialog.blade.php:24` — `purchase-files`
@@ -17145,52 +17287,52 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/_form_dialog.blade.php:21` — `holder`
 - `resources/views/finance/resale/_form_dialog.blade.php:21` — `none`
 - `resources/views/finance/resale/_form_dialog.blade.php:22` — `holder`
-- `resources/views/finance/resale/_form_dialog.blade.php:33` — `subscriptions`
-- `resources/views/finance/resale/_form_dialog.blade.php:34` — `primary`
-- `resources/views/finance/resale/_form_dialog.blade.php:37` — `POST'`
-- `resources/views/finance/resale/_form_dialog.blade.php:38` — `data-entry-form`
-- `resources/views/finance/resale/_form_dialog.blade.php:42` — `alert alert-info text-sm`
-- `resources/views/finance/resale/_form_dialog.blade.php:45` — `alert alert-info text-sm`
-- `resources/views/finance/resale/_form_dialog.blade.php:48` — `alert alert-info text-sm`
-- `resources/views/finance/resale/_form_dialog.blade.php:48` — `contract`
-- `resources/views/finance/resale/_form_dialog.blade.php:51` — `label`
-- `resources/views/finance/resale/_form_dialog.blade.php:51` — `label`
-- `resources/views/finance/resale/_form_dialog.blade.php:52` — `kind`
-- `resources/views/finance/resale/_form_dialog.blade.php:54` — `kind', 'license`
-- `resources/views/finance/resale/_form_dialog.blade.php:59` — `provider`
-- `resources/views/finance/resale/_form_dialog.blade.php:59` — `provider`
-- `resources/views/finance/resale/_form_dialog.blade.php:60` — `provider`
-- `resources/views/finance/resale/_form_dialog.blade.php:64` — `provider', 'manual`
-- `resources/views/finance/resale/_form_dialog.blade.php:72` — `foreign' ? 'customer`
-- `resources/views/finance/resale/_form_dialog.blade.php:74` — `resaleHolderPicker`
-- `resources/views/finance/resale/_form_dialog.blade.php:79` — `holder`
-- `resources/views/finance/resale/_form_dialog.blade.php:79` — `holder`
-- `resources/views/finance/resale/_form_dialog.blade.php:80` — `none`
-- `resources/views/finance/resale/_form_dialog.blade.php:80` — `none`
-- `resources/views/finance/resale/_form_dialog.blade.php:81` — `customer`
-- `resources/views/finance/resale/_form_dialog.blade.php:81` — `customer`
-- `resources/views/finance/resale/_form_dialog.blade.php:85` — `customer`
-- `resources/views/finance/resale/_form_dialog.blade.php:93` — `foreign`
-- `resources/views/finance/resale/_form_dialog.blade.php:103` — `product`
-- `resources/views/finance/resale/_form_dialog.blade.php:110` — `product`
-- `resources/views/finance/resale/_form_dialog.blade.php:117` — `quantity`
-- `resources/views/finance/resale/_form_dialog.blade.php:117` — `number`
-- `resources/views/finance/resale/_form_dialog.blade.php:117` — `quantity`
-- `resources/views/finance/resale/_form_dialog.blade.php:120` — `split`
-- `resources/views/finance/resale/_form_dialog.blade.php:123` — `true`
-- `resources/views/finance/resale/_form_dialog.blade.php:126` — `text-xs text-muted mt-1`
-- `resources/views/finance/resale/_form_dialog.blade.php:128` — `number`
-- `resources/views/finance/resale/_form_dialog.blade.php:130` — `interval`
-- `resources/views/finance/resale/_form_dialog.blade.php:130` — `interval`
-- `resources/views/finance/resale/_form_dialog.blade.php:132` — `interval', 'yearly`
-- `resources/views/finance/resale/_form_dialog.blade.php:135` — `renewal`
-- `resources/views/finance/resale/_form_dialog.blade.php:137` — `renewal', 'auto`
-- `resources/views/finance/resale/_form_dialog.blade.php:140` — `status`
-- `resources/views/finance/resale/_form_dialog.blade.php:142` — `status', 'active`
-- `resources/views/finance/resale/_form_dialog.blade.php:146` — `number`
-- `resources/views/finance/resale/_form_dialog.blade.php:147` — `number`
-- `resources/views/finance/resale/_form_dialog.blade.php:149` — `notes`
-- `resources/views/finance/resale/_form_dialog.blade.php:149` — `notes`
+- `resources/views/finance/resale/_form_dialog.blade.php:35` — `subscriptions`
+- `resources/views/finance/resale/_form_dialog.blade.php:36` — `primary`
+- `resources/views/finance/resale/_form_dialog.blade.php:39` — `POST'`
+- `resources/views/finance/resale/_form_dialog.blade.php:40` — `data-entry-form`
+- `resources/views/finance/resale/_form_dialog.blade.php:44` — `alert alert-info text-sm`
+- `resources/views/finance/resale/_form_dialog.blade.php:47` — `alert alert-info text-sm`
+- `resources/views/finance/resale/_form_dialog.blade.php:50` — `alert alert-info text-sm`
+- `resources/views/finance/resale/_form_dialog.blade.php:50` — `contract`
+- `resources/views/finance/resale/_form_dialog.blade.php:53` — `label`
+- `resources/views/finance/resale/_form_dialog.blade.php:53` — `label`
+- `resources/views/finance/resale/_form_dialog.blade.php:54` — `kind`
+- `resources/views/finance/resale/_form_dialog.blade.php:56` — `kind', 'license`
+- `resources/views/finance/resale/_form_dialog.blade.php:61` — `provider`
+- `resources/views/finance/resale/_form_dialog.blade.php:61` — `provider`
+- `resources/views/finance/resale/_form_dialog.blade.php:62` — `provider`
+- `resources/views/finance/resale/_form_dialog.blade.php:66` — `provider', 'manual`
+- `resources/views/finance/resale/_form_dialog.blade.php:74` — `foreign' ? 'customer`
+- `resources/views/finance/resale/_form_dialog.blade.php:76` — `resaleHolderPicker`
+- `resources/views/finance/resale/_form_dialog.blade.php:81` — `holder`
+- `resources/views/finance/resale/_form_dialog.blade.php:81` — `holder`
+- `resources/views/finance/resale/_form_dialog.blade.php:82` — `none`
+- `resources/views/finance/resale/_form_dialog.blade.php:82` — `none`
+- `resources/views/finance/resale/_form_dialog.blade.php:83` — `customer`
+- `resources/views/finance/resale/_form_dialog.blade.php:83` — `customer`
+- `resources/views/finance/resale/_form_dialog.blade.php:87` — `customer`
+- `resources/views/finance/resale/_form_dialog.blade.php:95` — `foreign`
+- `resources/views/finance/resale/_form_dialog.blade.php:115` — `product`
+- `resources/views/finance/resale/_form_dialog.blade.php:122` — `product`
+- `resources/views/finance/resale/_form_dialog.blade.php:129` — `quantity`
+- `resources/views/finance/resale/_form_dialog.blade.php:129` — `number`
+- `resources/views/finance/resale/_form_dialog.blade.php:129` — `quantity`
+- `resources/views/finance/resale/_form_dialog.blade.php:132` — `split`
+- `resources/views/finance/resale/_form_dialog.blade.php:135` — `true`
+- `resources/views/finance/resale/_form_dialog.blade.php:138` — `text-xs text-muted mt-1`
+- `resources/views/finance/resale/_form_dialog.blade.php:140` — `number`
+- `resources/views/finance/resale/_form_dialog.blade.php:142` — `interval`
+- `resources/views/finance/resale/_form_dialog.blade.php:142` — `interval`
+- `resources/views/finance/resale/_form_dialog.blade.php:144` — `interval', 'yearly`
+- `resources/views/finance/resale/_form_dialog.blade.php:147` — `renewal`
+- `resources/views/finance/resale/_form_dialog.blade.php:149` — `renewal', 'auto`
+- `resources/views/finance/resale/_form_dialog.blade.php:152` — `status`
+- `resources/views/finance/resale/_form_dialog.blade.php:154` — `status', 'active`
+- `resources/views/finance/resale/_form_dialog.blade.php:158` — `number`
+- `resources/views/finance/resale/_form_dialog.blade.php:159` — `number`
+- `resources/views/finance/resale/_form_dialog.blade.php:161` — `notes`
+- `resources/views/finance/resale/_form_dialog.blade.php:161` — `notes`
 - `resources/views/finance/resale/periods.blade.php:14` — `title`
 - `resources/views/finance/resale/periods.blade.php:15` — `nav-title`
 - `resources/views/finance/resale/periods.blade.php:16` — `main-class', `
@@ -17273,136 +17415,138 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/show.blade.php:75` — `text-muted`
 - `resources/views/finance/resale/show.blade.php:78` — `text-muted`
 - `resources/views/finance/resale/show.blade.php:81` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:85` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:86` — `link link-hover`
-- `resources/views/finance/resale/show.blade.php:89` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:90` — `link link-hover`
-- `resources/views/finance/resale/show.blade.php:93` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:94` — `link link-hover`
-- `resources/views/finance/resale/show.blade.php:97` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:99` — `link link-hover`
-- `resources/views/finance/resale/show.blade.php:108` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:109` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:112` — `block text-xs text-warning`
-- `resources/views/finance/resale/show.blade.php:112` — `count`
-- `resources/views/finance/resale/show.blade.php:115` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:116` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:117` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:118` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:119` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:120` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:121` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:123` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:126` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:127` — `font-mono text-xs`
-- `resources/views/finance/resale/show.blade.php:130` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:131` — `font-mono text-xs`
-- `resources/views/finance/resale/show.blade.php:138` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:84` — `link link-hover`
+- `resources/views/finance/resale/show.blade.php:91` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:95` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:96` — `link link-hover`
+- `resources/views/finance/resale/show.blade.php:99` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:100` — `link link-hover`
+- `resources/views/finance/resale/show.blade.php:103` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:104` — `link link-hover`
+- `resources/views/finance/resale/show.blade.php:107` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:109` — `link link-hover`
+- `resources/views/finance/resale/show.blade.php:118` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:119` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:122` — `block text-xs text-warning`
+- `resources/views/finance/resale/show.blade.php:122` — `count`
+- `resources/views/finance/resale/show.blade.php:125` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:126` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:127` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:128` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:129` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:130` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:131` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:133` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:136` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:137` — `font-mono text-xs`
 - `resources/views/finance/resale/show.blade.php:140` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:141` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:142` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:143` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:144` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:145` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:147` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:148` — `tabular-nums`
-- `resources/views/finance/resale/show.blade.php:152` — `mt-3 text-sm whitespace-pre-line`
-- `resources/views/finance/resale/show.blade.php:158` — `flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm`
-- `resources/views/finance/resale/show.blade.php:159` — `count`
-- `resources/views/finance/resale/show.blade.php:161` — `badge badge-ghost badge-sm`
-- `resources/views/finance/resale/show.blade.php:163` — `badge badge-error badge-sm`
-- `resources/views/finance/resale/show.blade.php:163` — `count`
-- `resources/views/finance/resale/show.blade.php:165` — `badge badge-success badge-sm`
-- `resources/views/finance/resale/show.blade.php:172` — `text-right`
-- `resources/views/finance/resale/show.blade.php:173` — `text-right`
-- `resources/views/finance/resale/show.blade.php:174` — `text-right`
-- `resources/views/finance/resale/show.blade.php:177` — `text-right`
-- `resources/views/finance/resale/show.blade.php:181` — `period`
-- `resources/views/finance/resale/show.blade.php:181` — `subscription`
-- `resources/views/finance/resale/show.blade.php:181` — `showSubscription`
-- `resources/views/finance/resale/show.blade.php:181` — `canManage`
-- `resources/views/finance/resale/show.blade.php:181` — `today`
-- `resources/views/finance/resale/show.blade.php:190` — `mt-4`
-- `resources/views/finance/resale/show.blade.php:191` — `flex flex-wrap items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm`
-- `resources/views/finance/resale/show.blade.php:193` — `customer`
-- `resources/views/finance/resale/show.blade.php:194` — `hidden`
-- `resources/views/finance/resale/show.blade.php:195` — `hidden`
-- `resources/views/finance/resale/show.blade.php:195` — `count`
-- `resources/views/finance/resale/show.blade.php:195` — `hidden`
-- `resources/views/finance/resale/show.blade.php:198` — `flex items-center gap-2`
-- `resources/views/finance/resale/show.blade.php:199` — `pending`
-- `resources/views/finance/resale/show.blade.php:200` — `badge badge-warning badge-sm`
-- `resources/views/finance/resale/show.blade.php:200` — `pending`
-- `resources/views/finance/resale/show.blade.php:200` — `count`
-- `resources/views/finance/resale/show.blade.php:200` — `pending`
-- `resources/views/finance/resale/show.blade.php:203` — `ghost`
-- `resources/views/finance/resale/show.blade.php:207` — `contacts`
-- `resources/views/finance/resale/show.blade.php:208` — `px-4 py-3 text-sm text-warning`
-- `resources/views/finance/resale/show.blade.php:215` — `text-right`
-- `resources/views/finance/resale/show.blade.php:216` — `text-right`
-- `resources/views/finance/resale/show.blade.php:218` — `text-right`
-- `resources/views/finance/resale/show.blade.php:221` — `vouchers`
-- `resources/views/finance/resale/show.blade.php:222` — `voucher`
-- `resources/views/finance/resale/show.blade.php:223` — `licence`
-- `resources/views/finance/resale/show.blade.php:224` — `line`
-- `resources/views/finance/resale/show.blade.php:225` — `opacity-60`
-- `resources/views/finance/resale/show.blade.php:225` — `remaining`
-- `resources/views/finance/resale/show.blade.php:227` — `whitespace-nowrap align-top`
-- `resources/views/finance/resale/show.blade.php:227` — `rows`
-- `resources/views/finance/resale/show.blade.php:228` — `font-mono text-xs`
-- `resources/views/finance/resale/show.blade.php:229` — `block text-xs text-muted tabular-nums`
-- `resources/views/finance/resale/show.blade.php:231` — `badge badge-info badge-outline badge-sm mt-1`
-- `resources/views/finance/resale/show.blade.php:233` — `block text-xs text-muted max-w-xs truncate`
-- `resources/views/finance/resale/show.blade.php:235` — `flex gap-1 mt-1`
-- `resources/views/finance/resale/show.blade.php:237` — `ghost`
-- `resources/views/finance/resale/show.blade.php:239` — `permalink`
-- `resources/views/finance/resale/show.blade.php:240` — `permalink`
-- `resources/views/finance/resale/show.blade.php:240` — `noopener`
-- `resources/views/finance/resale/show.blade.php:240` — `btn btn-ghost btn-xs`
-- `resources/views/finance/resale/show.blade.php:245` — `text-sm`
-- `resources/views/finance/resale/show.blade.php:248` — `block text-xs text-muted max-w-sm truncate`
-- `resources/views/finance/resale/show.blade.php:251` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/show.blade.php:252` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/finance/resale/show.blade.php:253` — `text-xs`
-- `resources/views/finance/resale/show.blade.php:254` — `block text-muted tabular-nums`
-- `resources/views/finance/resale/show.blade.php:254` — `months`
-- `resources/views/finance/resale/show.blade.php:255` — `linked`
-- `resources/views/finance/resale/show.blade.php:256` — `text-success`
-- `resources/views/finance/resale/show.blade.php:256` — `linked`
-- `resources/views/finance/resale/show.blade.php:256` — `months`
-- `resources/views/finance/resale/show.blade.php:257` — `block text-muted`
-- `resources/views/finance/resale/show.blade.php:257` — `linked`
-- `resources/views/finance/resale/show.blade.php:257` — `periods`
-- `resources/views/finance/resale/show.blade.php:259` — `text-muted`
-- `resources/views/finance/resale/show.blade.php:261` — `remaining`
-- `resources/views/finance/resale/show.blade.php:261` — `linked`
-- `resources/views/finance/resale/show.blade.php:262` — `block text-muted`
-- `resources/views/finance/resale/show.blade.php:262` — `amount`
-- `resources/views/finance/resale/show.blade.php:262` — `remaining`
-- `resources/views/finance/resale/show.blade.php:265` — `text-right`
-- `resources/views/finance/resale/show.blade.php:266` — `remaining`
-- `resources/views/finance/resale/show.blade.php:267` — `flex items-center justify-end gap-1`
-- `resources/views/finance/resale/show.blade.php:269` — `hidden`
-- `resources/views/finance/resale/show.blade.php:270` — `select select-xs select-bordered w-44`
-- `resources/views/finance/resale/show.blade.php:275` — `hidden`
-- `resources/views/finance/resale/show.blade.php:276` — `number`
-- `resources/views/finance/resale/show.blade.php:276` — `licences`
-- `resources/views/finance/resale/show.blade.php:277` — `input input-xs input-bordered w-16 text-right`
-- `resources/views/finance/resale/show.blade.php:277` — `months`
-- `resources/views/finance/resale/show.blade.php:278` — `primary`
-- `resources/views/finance/resale/show.blade.php:278` — `submit`
-- `resources/views/finance/resale/show.blade.php:284` — `other`
-- `resources/views/finance/resale/show.blade.php:286` — `text-xs`
-- `resources/views/finance/resale/show.blade.php:288` — `cursor-pointer select-none text-muted`
-- `resources/views/finance/resale/show.blade.php:288` — `other`
-- `resources/views/finance/resale/show.blade.php:288` — `count`
-- `resources/views/finance/resale/show.blade.php:288` — `other`
-- `resources/views/finance/resale/show.blade.php:289` — `mt-1 space-y-0.5`
-- `resources/views/finance/resale/show.blade.php:290` — `other`
-- `resources/views/finance/resale/show.blade.php:291` — `flex justify-between gap-3`
-- `resources/views/finance/resale/show.blade.php:292` — `truncate`
-- `resources/views/finance/resale/show.blade.php:293` — `whitespace-nowrap tabular-nums text-muted`
-- `resources/views/finance/resale/show.blade.php:302` — `pending`
+- `resources/views/finance/resale/show.blade.php:141` — `font-mono text-xs`
+- `resources/views/finance/resale/show.blade.php:148` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:150` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:151` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:152` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:153` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:154` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:155` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:157` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:158` — `tabular-nums`
+- `resources/views/finance/resale/show.blade.php:162` — `mt-3 text-sm whitespace-pre-line`
+- `resources/views/finance/resale/show.blade.php:168` — `flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm`
+- `resources/views/finance/resale/show.blade.php:169` — `count`
+- `resources/views/finance/resale/show.blade.php:171` — `badge badge-ghost badge-sm`
+- `resources/views/finance/resale/show.blade.php:173` — `badge badge-error badge-sm`
+- `resources/views/finance/resale/show.blade.php:173` — `count`
+- `resources/views/finance/resale/show.blade.php:175` — `badge badge-success badge-sm`
+- `resources/views/finance/resale/show.blade.php:182` — `text-right`
+- `resources/views/finance/resale/show.blade.php:183` — `text-right`
+- `resources/views/finance/resale/show.blade.php:184` — `text-right`
+- `resources/views/finance/resale/show.blade.php:187` — `text-right`
+- `resources/views/finance/resale/show.blade.php:191` — `period`
+- `resources/views/finance/resale/show.blade.php:191` — `subscription`
+- `resources/views/finance/resale/show.blade.php:191` — `showSubscription`
+- `resources/views/finance/resale/show.blade.php:191` — `canManage`
+- `resources/views/finance/resale/show.blade.php:191` — `today`
+- `resources/views/finance/resale/show.blade.php:200` — `mt-4`
+- `resources/views/finance/resale/show.blade.php:201` — `flex flex-wrap items-center justify-between gap-2 border-b border-base-300 px-4 py-2 text-sm`
+- `resources/views/finance/resale/show.blade.php:203` — `customer`
+- `resources/views/finance/resale/show.blade.php:204` — `hidden`
+- `resources/views/finance/resale/show.blade.php:205` — `hidden`
+- `resources/views/finance/resale/show.blade.php:205` — `count`
+- `resources/views/finance/resale/show.blade.php:205` — `hidden`
+- `resources/views/finance/resale/show.blade.php:208` — `flex items-center gap-2`
+- `resources/views/finance/resale/show.blade.php:209` — `pending`
+- `resources/views/finance/resale/show.blade.php:210` — `badge badge-warning badge-sm`
+- `resources/views/finance/resale/show.blade.php:210` — `pending`
+- `resources/views/finance/resale/show.blade.php:210` — `count`
+- `resources/views/finance/resale/show.blade.php:210` — `pending`
+- `resources/views/finance/resale/show.blade.php:213` — `ghost`
+- `resources/views/finance/resale/show.blade.php:218` — `px-4 py-3 text-sm text-warning`
+- `resources/views/finance/resale/show.blade.php:225` — `text-right`
+- `resources/views/finance/resale/show.blade.php:226` — `text-right`
+- `resources/views/finance/resale/show.blade.php:228` — `text-right`
+- `resources/views/finance/resale/show.blade.php:231` — `vouchers`
+- `resources/views/finance/resale/show.blade.php:232` — `voucher`
+- `resources/views/finance/resale/show.blade.php:233` — `licence`
+- `resources/views/finance/resale/show.blade.php:234` — `line`
+- `resources/views/finance/resale/show.blade.php:235` — `opacity-60`
+- `resources/views/finance/resale/show.blade.php:235` — `remaining`
+- `resources/views/finance/resale/show.blade.php:237` — `whitespace-nowrap align-top`
+- `resources/views/finance/resale/show.blade.php:237` — `rows`
+- `resources/views/finance/resale/show.blade.php:238` — `font-mono text-xs`
+- `resources/views/finance/resale/show.blade.php:239` — `block text-xs text-muted tabular-nums`
+- `resources/views/finance/resale/show.blade.php:241` — `badge badge-info badge-outline badge-sm mt-1`
+- `resources/views/finance/resale/show.blade.php:243` — `block text-xs text-muted max-w-xs truncate`
+- `resources/views/finance/resale/show.blade.php:245` — `flex gap-1 mt-1`
+- `resources/views/finance/resale/show.blade.php:247` — `ghost`
+- `resources/views/finance/resale/show.blade.php:249` — `permalink`
+- `resources/views/finance/resale/show.blade.php:250` — `permalink`
+- `resources/views/finance/resale/show.blade.php:250` — `noopener`
+- `resources/views/finance/resale/show.blade.php:250` — `btn btn-ghost btn-xs`
+- `resources/views/finance/resale/show.blade.php:250` — `source`
+- `resources/views/finance/resale/show.blade.php:255` — `text-sm`
+- `resources/views/finance/resale/show.blade.php:258` — `block text-xs text-muted max-w-sm truncate`
+- `resources/views/finance/resale/show.blade.php:261` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/show.blade.php:262` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/finance/resale/show.blade.php:263` — `text-xs`
+- `resources/views/finance/resale/show.blade.php:264` — `block text-muted tabular-nums`
+- `resources/views/finance/resale/show.blade.php:264` — `months`
+- `resources/views/finance/resale/show.blade.php:265` — `linked`
+- `resources/views/finance/resale/show.blade.php:266` — `text-success`
+- `resources/views/finance/resale/show.blade.php:266` — `linked`
+- `resources/views/finance/resale/show.blade.php:266` — `months`
+- `resources/views/finance/resale/show.blade.php:267` — `block text-muted`
+- `resources/views/finance/resale/show.blade.php:267` — `linked`
+- `resources/views/finance/resale/show.blade.php:267` — `periods`
+- `resources/views/finance/resale/show.blade.php:269` — `text-muted`
+- `resources/views/finance/resale/show.blade.php:271` — `remaining`
+- `resources/views/finance/resale/show.blade.php:271` — `linked`
+- `resources/views/finance/resale/show.blade.php:272` — `block text-muted`
+- `resources/views/finance/resale/show.blade.php:272` — `amount`
+- `resources/views/finance/resale/show.blade.php:272` — `remaining`
+- `resources/views/finance/resale/show.blade.php:275` — `text-right`
+- `resources/views/finance/resale/show.blade.php:276` — `remaining`
+- `resources/views/finance/resale/show.blade.php:277` — `flex items-center justify-end gap-1`
+- `resources/views/finance/resale/show.blade.php:279` — `hidden`
+- `resources/views/finance/resale/show.blade.php:280` — `select select-xs select-bordered w-44`
+- `resources/views/finance/resale/show.blade.php:285` — `hidden`
+- `resources/views/finance/resale/show.blade.php:286` — `number`
+- `resources/views/finance/resale/show.blade.php:286` — `licences`
+- `resources/views/finance/resale/show.blade.php:287` — `input input-xs input-bordered w-16 text-right`
+- `resources/views/finance/resale/show.blade.php:287` — `months`
+- `resources/views/finance/resale/show.blade.php:288` — `primary`
+- `resources/views/finance/resale/show.blade.php:288` — `submit`
+- `resources/views/finance/resale/show.blade.php:294` — `other`
+- `resources/views/finance/resale/show.blade.php:296` — `text-xs`
+- `resources/views/finance/resale/show.blade.php:298` — `cursor-pointer select-none text-muted`
+- `resources/views/finance/resale/show.blade.php:298` — `other`
+- `resources/views/finance/resale/show.blade.php:298` — `count`
+- `resources/views/finance/resale/show.blade.php:298` — `other`
+- `resources/views/finance/resale/show.blade.php:299` — `mt-1 space-y-0.5`
+- `resources/views/finance/resale/show.blade.php:300` — `other`
+- `resources/views/finance/resale/show.blade.php:301` — `flex justify-between gap-3`
+- `resources/views/finance/resale/show.blade.php:302` — `truncate`
+- `resources/views/finance/resale/show.blade.php:303` — `whitespace-nowrap tabular-nums text-muted`
+- `resources/views/finance/resale/show.blade.php:312` — `pending`
 - `resources/views/finance/resale/_period_row.blade.php:20` — `hover', 'opacity-60`
 - `resources/views/finance/resale/_period_row.blade.php:23` — `link link-hover font-medium`
 - `resources/views/finance/resale/_period_row.blade.php:25` — `text-sm`
@@ -17421,23 +17565,23 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/finance/resale/_period_row.blade.php:44` — `months`
 - `resources/views/finance/resale/_period_row.blade.php:47` — `text-sm`
 - `resources/views/finance/resale/_period_row.blade.php:49` — `inline-flex items-center gap-1 mr-1 mb-0.5`
-- `resources/views/finance/resale/_period_row.blade.php:53` — `ghost`
-- `resources/views/finance/resale/_period_row.blade.php:56` — `inline`
-- `resources/views/finance/resale/_period_row.blade.php:59` — `ghost`
-- `resources/views/finance/resale/_period_row.blade.php:59` — `submit`
-- `resources/views/finance/resale/_period_row.blade.php:64` — `text-muted`
-- `resources/views/finance/resale/_period_row.blade.php:67` — `block text-xs text-info`
-- `resources/views/finance/resale/_period_row.blade.php:70` — `block text-xs text-muted`
-- `resources/views/finance/resale/_period_row.blade.php:76` — `block text-xs text-muted`
-- `resources/views/finance/resale/_period_row.blade.php:79` — `text-right`
-- `resources/views/finance/resale/_period_row.blade.php:81` — `flex justify-end gap-1`
-- `resources/views/finance/resale/_period_row.blade.php:85` — `success`
-- `resources/views/finance/resale/_period_row.blade.php:85` — `submit`
-- `resources/views/finance/resale/_period_row.blade.php:89` — `ghost`
-- `resources/views/finance/resale/_period_row.blade.php:92` — `ghost`
-- `resources/views/finance/resale/_period_row.blade.php:97` — `undo`
-- `resources/views/finance/resale/_period_row.blade.php:97` — `ghost`
-- `resources/views/finance/resale/_period_row.blade.php:97` — `submit`
+- `resources/views/finance/resale/_period_row.blade.php:54` — `ghost`
+- `resources/views/finance/resale/_period_row.blade.php:57` — `inline`
+- `resources/views/finance/resale/_period_row.blade.php:60` — `ghost`
+- `resources/views/finance/resale/_period_row.blade.php:60` — `submit`
+- `resources/views/finance/resale/_period_row.blade.php:65` — `text-muted`
+- `resources/views/finance/resale/_period_row.blade.php:68` — `block text-xs text-info`
+- `resources/views/finance/resale/_period_row.blade.php:71` — `block text-xs text-muted`
+- `resources/views/finance/resale/_period_row.blade.php:77` — `block text-xs text-muted`
+- `resources/views/finance/resale/_period_row.blade.php:80` — `text-right`
+- `resources/views/finance/resale/_period_row.blade.php:82` — `flex justify-end gap-1`
+- `resources/views/finance/resale/_period_row.blade.php:86` — `success`
+- `resources/views/finance/resale/_period_row.blade.php:86` — `submit`
+- `resources/views/finance/resale/_period_row.blade.php:90` — `ghost`
+- `resources/views/finance/resale/_period_row.blade.php:93` — `ghost`
+- `resources/views/finance/resale/_period_row.blade.php:98` — `undo`
+- `resources/views/finance/resale/_period_row.blade.php:98` — `ghost`
+- `resources/views/finance/resale/_period_row.blade.php:98` — `submit`
 - `resources/views/finance/resale/inbox.blade.php:14` — `title`
 - `resources/views/finance/resale/inbox.blade.php:15` — `nav-title`
 - `resources/views/finance/resale/inbox.blade.php:17` — `content`
@@ -21150,28 +21294,28 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/customers/merge-compare.blade.php:113` — `btn btn-sm btn-outline`
 - `resources/views/customers/merge-compare.blade.php:113` — `Richtung tauschen`
 - `resources/views/customers/merge-compare.blade.php:114` — `btn btn-sm btn-primary`
-- `resources/views/customers/_resale_panel.blade.php:16` — `customer-resale`
-- `resources/views/customers/_resale_panel.blade.php:17` — `flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2`
-- `resources/views/customers/_resale_panel.blade.php:19` — `count`
-- `resources/views/customers/_resale_panel.blade.php:21` — `flex items-center gap-1`
-- `resources/views/customers/_resale_panel.blade.php:22` — `list`
-- `resources/views/customers/_resale_panel.blade.php:22` — `ghost`
-- `resources/views/customers/_resale_panel.blade.php:23` — `customer`
-- `resources/views/customers/_resale_panel.blade.php:25` — `ghost`
-- `resources/views/customers/_resale_panel.blade.php:29` — `ghost`
-- `resources/views/customers/_resale_panel.blade.php:30` — `customer`
-- `resources/views/customers/_resale_panel.blade.php:40` — `text-right`
-- `resources/views/customers/_resale_panel.blade.php:43` — `text-right`
-- `resources/views/customers/_resale_panel.blade.php:48` — `link link-hover`
-- `resources/views/customers/_resale_panel.blade.php:49` — `text-sm`
-- `resources/views/customers/_resale_panel.blade.php:50` — `text-right tabular-nums`
-- `resources/views/customers/_resale_panel.blade.php:51` — `tabular-nums text-sm`
-- `resources/views/customers/_resale_panel.blade.php:53` — `text-right tabular-nums`
-- `resources/views/customers/_resale_panel.blade.php:55` — `text-muted`
-- `resources/views/customers/_resale_panel.blade.php:57` — `badge badge-error badge-sm`
-- `resources/views/customers/_resale_panel.blade.php:59` — `text-muted`
-- `resources/views/customers/_resale_panel.blade.php:68` — `border-t border-base-300 px-4 py-2 text-xs text-muted`
-- `resources/views/customers/_resale_panel.blade.php:69` — `count`
+- `resources/views/customers/_resale_panel.blade.php:17` — `customer-resale`
+- `resources/views/customers/_resale_panel.blade.php:18` — `flex items-center justify-between gap-2 border-b border-base-300 px-4 py-2`
+- `resources/views/customers/_resale_panel.blade.php:20` — `count`
+- `resources/views/customers/_resale_panel.blade.php:22` — `flex items-center gap-1`
+- `resources/views/customers/_resale_panel.blade.php:23` — `list`
+- `resources/views/customers/_resale_panel.blade.php:23` — `ghost`
+- `resources/views/customers/_resale_panel.blade.php:24` — `customer`
+- `resources/views/customers/_resale_panel.blade.php:26` — `ghost`
+- `resources/views/customers/_resale_panel.blade.php:30` — `ghost`
+- `resources/views/customers/_resale_panel.blade.php:31` — `customer`
+- `resources/views/customers/_resale_panel.blade.php:41` — `text-right`
+- `resources/views/customers/_resale_panel.blade.php:44` — `text-right`
+- `resources/views/customers/_resale_panel.blade.php:49` — `link link-hover`
+- `resources/views/customers/_resale_panel.blade.php:50` — `text-sm`
+- `resources/views/customers/_resale_panel.blade.php:51` — `text-right tabular-nums`
+- `resources/views/customers/_resale_panel.blade.php:52` — `tabular-nums text-sm`
+- `resources/views/customers/_resale_panel.blade.php:54` — `text-right tabular-nums`
+- `resources/views/customers/_resale_panel.blade.php:56` — `text-muted`
+- `resources/views/customers/_resale_panel.blade.php:58` — `badge badge-error badge-sm`
+- `resources/views/customers/_resale_panel.blade.php:60` — `text-muted`
+- `resources/views/customers/_resale_panel.blade.php:69` — `border-t border-base-300 px-4 py-2 text-xs text-muted`
+- `resources/views/customers/_resale_panel.blade.php:70` — `count`
 - `resources/views/customers/_timeline_panel.blade.php:15` — `section`
 - `resources/views/customers/_timeline_panel.blade.php:15` — `customer-timeline`
 - `resources/views/customers/_timeline_panel.blade.php:15` — `history`
@@ -27934,16 +28078,23 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/contracts/show.blade.php:169` — `submit`
 - `resources/views/contracts/show.blade.php:169` — `btn btn-sm btn-primary`
 - `resources/views/contracts/show.blade.php:169` — `Obligation ergänzen`
-- `resources/views/contracts/show.blade.php:175` — `text-sm text-muted`
-- `resources/views/contracts/show.blade.php:177` — `mt-2 list-disc pl-5 text-sm`
-- `resources/views/contracts/show.blade.php:179` — `font-mono`
-- `resources/views/contracts/show.blade.php:183` — `update`
-- `resources/views/contracts/show.blade.php:184` — `contracts.asset-finance.link`
-- `resources/views/contracts/show.blade.php:184` — `mt-3 flex flex-wrap items-end gap-2`
-- `resources/views/contracts/show.blade.php:186` — `Leasingvertrag`
-- `resources/views/contracts/show.blade.php:192` — `submit`
-- `resources/views/contracts/show.blade.php:192` — `btn btn-sm`
-- `resources/views/contracts/show.blade.php:192` — `Verknüpfen`
+- `resources/views/contracts/show.blade.php:182` — `text-right`
+- `resources/views/contracts/show.blade.php:192` — `block text-xs text-muted`
+- `resources/views/contracts/show.blade.php:195` — `text-right tabular-nums`
+- `resources/views/contracts/show.blade.php:196` — `tabular-nums whitespace-nowrap`
+- `resources/views/contracts/show.blade.php:198` — `text-right`
+- `resources/views/contracts/show.blade.php:199` — `ghost`
+- `resources/views/contracts/show.blade.php:203` — `subscriptions`
+- `resources/views/contracts/show.blade.php:210` — `text-sm text-muted`
+- `resources/views/contracts/show.blade.php:212` — `mt-2 list-disc pl-5 text-sm`
+- `resources/views/contracts/show.blade.php:214` — `font-mono`
+- `resources/views/contracts/show.blade.php:218` — `update`
+- `resources/views/contracts/show.blade.php:219` — `contracts.asset-finance.link`
+- `resources/views/contracts/show.blade.php:219` — `mt-3 flex flex-wrap items-end gap-2`
+- `resources/views/contracts/show.blade.php:221` — `Leasingvertrag`
+- `resources/views/contracts/show.blade.php:227` — `submit`
+- `resources/views/contracts/show.blade.php:227` — `btn btn-sm`
+- `resources/views/contracts/show.blade.php:227` — `Verknüpfen`
 - `resources/views/diary/_show_actions.blade.php:10` — `archive`
 - `resources/views/diary/_show_actions.blade.php:13` — `restore`
 - `resources/views/diary/_show_actions.blade.php:13` — `outline`
@@ -41725,54 +41876,55 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/invoices/show.blade.php:426` — `date`
 - `resources/views/invoices/show.blade.php:433` — `badge badge-ghost badge-xs`
 - `resources/views/invoices/show.blade.php:433` — `Artikel`
-- `resources/views/invoices/show.blade.php:435` — `text-right`
-- `resources/views/invoices/show.blade.php:435` — `whitespace-nowrap text-xs text-muted`
-- `resources/views/invoices/show.blade.php:435` — `clock`
+- `resources/views/invoices/show.blade.php:434` — `text-xs text-muted`
 - `resources/views/invoices/show.blade.php:436` — `text-right`
+- `resources/views/invoices/show.blade.php:436` — `whitespace-nowrap text-xs text-muted`
+- `resources/views/invoices/show.blade.php:436` — `clock`
 - `resources/views/invoices/show.blade.php:437` — `text-right`
-- `resources/views/invoices/show.blade.php:438` — `update`
-- `resources/views/invoices/show.blade.php:440` — `text-right whitespace-nowrap`
-- `resources/views/invoices/show.blade.php:442` — `ai.suggestions.invoice-item`
-- `resources/views/invoices/show.blade.php:443` — `info`
-- `resources/views/invoices/show.blade.php:443` — `submit`
-- `resources/views/invoices/show.blade.php:447` — `translate`
-- `resources/views/invoices/show.blade.php:447` — `ghost`
-- `resources/views/invoices/show.blade.php:449` — `ai.suggestions.invoice-item-translate-form`
-- `resources/views/invoices/show.blade.php:452` — `edit`
-- `resources/views/invoices/show.blade.php:452` — `ghost`
-- `resources/views/invoices/show.blade.php:455` — `Bearbeiten`
-- `resources/views/invoices/show.blade.php:457` — `Position wirklich entfernen?`
-- `resources/views/invoices/show.blade.php:458` — `delete`
-- `resources/views/invoices/show.blade.php:459` — `error`
-- `resources/views/invoices/show.blade.php:460` — `Entfernen`
-- `resources/views/invoices/show.blade.php:461` — `delete`
-- `resources/views/invoices/show.blade.php:461` — `error`
-- `resources/views/invoices/show.blade.php:461` — `submit`
+- `resources/views/invoices/show.blade.php:438` — `text-right`
+- `resources/views/invoices/show.blade.php:439` — `update`
+- `resources/views/invoices/show.blade.php:441` — `text-right whitespace-nowrap`
+- `resources/views/invoices/show.blade.php:443` — `ai.suggestions.invoice-item`
+- `resources/views/invoices/show.blade.php:444` — `info`
+- `resources/views/invoices/show.blade.php:444` — `submit`
+- `resources/views/invoices/show.blade.php:448` — `translate`
+- `resources/views/invoices/show.blade.php:448` — `ghost`
+- `resources/views/invoices/show.blade.php:450` — `ai.suggestions.invoice-item-translate-form`
+- `resources/views/invoices/show.blade.php:453` — `edit`
+- `resources/views/invoices/show.blade.php:453` — `ghost`
+- `resources/views/invoices/show.blade.php:456` — `Bearbeiten`
+- `resources/views/invoices/show.blade.php:458` — `Position wirklich entfernen?`
+- `resources/views/invoices/show.blade.php:459` — `delete`
+- `resources/views/invoices/show.blade.php:460` — `error`
 - `resources/views/invoices/show.blade.php:461` — `Entfernen`
-- `resources/views/invoices/show.blade.php:470` — `py-1`
-- `resources/views/invoices/show.blade.php:472` — `cursor-pointer text-xs text-muted`
-- `resources/views/invoices/show.blade.php:473` — `count`
-- `resources/views/invoices/show.blade.php:475` — `mt-1 space-y-0.5 pl-4`
-- `resources/views/invoices/show.blade.php:478` — `whitespace-nowrap`
-- `resources/views/invoices/show.blade.php:480` — `max-w-md truncate`
-- `resources/views/invoices/show.blade.php:481` — `ml-auto`
-- `resources/views/invoices/show.blade.php:500` — `text`
-- `resources/views/invoices/show.blade.php:506` — `Keine Positionen.`
-- `resources/views/invoices/show.blade.php:511` — `days`
-- `resources/views/invoices/show.blade.php:511` — `date`
-- `resources/views/invoices/show.blade.php:513` — `date`
-- `resources/views/invoices/show.blade.php:520` — `collapse collapse-arrow border border-base-300 bg-base-100`
-- `resources/views/invoices/show.blade.php:521` — `collapse-title text-sm font-medium`
-- `resources/views/invoices/show.blade.php:521` — `count`
-- `resources/views/invoices/show.blade.php:522` — `collapse-content overflow-x-auto`
-- `resources/views/invoices/show.blade.php:526` — `Zeitpunkt`
-- `resources/views/invoices/show.blade.php:527` — `Kanal`
-- `resources/views/invoices/show.blade.php:528` — `Format`
-- `resources/views/invoices/show.blade.php:529` — `Empfänger`
-- `resources/views/invoices/show.blade.php:530` — `Status`
-- `resources/views/invoices/show.blade.php:531` — `SHA-256`
-- `resources/views/invoices/show.blade.php:539` — `max-w-xs truncate`
-- `resources/views/invoices/show.blade.php:541` — `font-mono text-xs`
+- `resources/views/invoices/show.blade.php:462` — `delete`
+- `resources/views/invoices/show.blade.php:462` — `error`
+- `resources/views/invoices/show.blade.php:462` — `submit`
+- `resources/views/invoices/show.blade.php:462` — `Entfernen`
+- `resources/views/invoices/show.blade.php:471` — `py-1`
+- `resources/views/invoices/show.blade.php:473` — `cursor-pointer text-xs text-muted`
+- `resources/views/invoices/show.blade.php:474` — `count`
+- `resources/views/invoices/show.blade.php:476` — `mt-1 space-y-0.5 pl-4`
+- `resources/views/invoices/show.blade.php:479` — `whitespace-nowrap`
+- `resources/views/invoices/show.blade.php:481` — `max-w-md truncate`
+- `resources/views/invoices/show.blade.php:482` — `ml-auto`
+- `resources/views/invoices/show.blade.php:501` — `text`
+- `resources/views/invoices/show.blade.php:507` — `Keine Positionen.`
+- `resources/views/invoices/show.blade.php:512` — `days`
+- `resources/views/invoices/show.blade.php:512` — `date`
+- `resources/views/invoices/show.blade.php:514` — `date`
+- `resources/views/invoices/show.blade.php:521` — `collapse collapse-arrow border border-base-300 bg-base-100`
+- `resources/views/invoices/show.blade.php:522` — `collapse-title text-sm font-medium`
+- `resources/views/invoices/show.blade.php:522` — `count`
+- `resources/views/invoices/show.blade.php:523` — `collapse-content overflow-x-auto`
+- `resources/views/invoices/show.blade.php:527` — `Zeitpunkt`
+- `resources/views/invoices/show.blade.php:528` — `Kanal`
+- `resources/views/invoices/show.blade.php:529` — `Format`
+- `resources/views/invoices/show.blade.php:530` — `Empfänger`
+- `resources/views/invoices/show.blade.php:531` — `Status`
+- `resources/views/invoices/show.blade.php:532` — `SHA-256`
+- `resources/views/invoices/show.blade.php:540` — `max-w-xs truncate`
+- `resources/views/invoices/show.blade.php:542` — `font-mono text-xs`
 - `resources/views/invoices/_item_form_dialog.blade.php:16` — `Position bearbeiten`
 - `resources/views/invoices/_item_form_dialog.blade.php:16` — `Position hinzufügen`
 - `resources/views/invoices/_item_form_dialog.blade.php:22` — `primary`
@@ -41786,22 +41938,25 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/invoices/_item_form_dialog.blade.php:31` — `Leistungsdatum`
 - `resources/views/invoices/_item_form_dialog.blade.php:31` — `Y-m-d`
 - `resources/views/invoices/_item_form_dialog.blade.php:31` — `Bei mehreren Tagen Pflicht je Position.`
-- `resources/views/invoices/_item_form_dialog.blade.php:32` — `quantity`
-- `resources/views/invoices/_item_form_dialog.blade.php:32` — `number`
-- `resources/views/invoices/_item_form_dialog.blade.php:32` — `Menge`
-- `resources/views/invoices/_item_form_dialog.blade.php:32` — `quantity`
-- `resources/views/invoices/_item_form_dialog.blade.php:33` — `unit`
-- `resources/views/invoices/_item_form_dialog.blade.php:33` — `Einheit`
-- `resources/views/invoices/_item_form_dialog.blade.php:33` — `unit`
-- `resources/views/invoices/_item_form_dialog.blade.php:34` — `Einzelpreis`
-- `resources/views/invoices/_item_form_dialog.blade.php:34` — `number`
-- `resources/views/invoices/_item_form_dialog.blade.php:35` — `position`
-- `resources/views/invoices/_item_form_dialog.blade.php:35` — `number`
-- `resources/views/invoices/_item_form_dialog.blade.php:35` — `Position`
-- `resources/views/invoices/_item_form_dialog.blade.php:35` — `position`
-- `resources/views/invoices/_item_form_dialog.blade.php:37` — `number`
-- `resources/views/invoices/_item_form_dialog.blade.php:38` — `number`
+- `resources/views/invoices/_item_form_dialog.blade.php:33` — `split`
+- `resources/views/invoices/_item_form_dialog.blade.php:33` — `contents`
+- `resources/views/invoices/_item_form_dialog.blade.php:34` — `date`
+- `resources/views/invoices/_item_form_dialog.blade.php:39` — `quantity`
 - `resources/views/invoices/_item_form_dialog.blade.php:39` — `number`
+- `resources/views/invoices/_item_form_dialog.blade.php:39` — `Menge`
+- `resources/views/invoices/_item_form_dialog.blade.php:39` — `quantity`
+- `resources/views/invoices/_item_form_dialog.blade.php:40` — `unit`
+- `resources/views/invoices/_item_form_dialog.blade.php:40` — `Einheit`
+- `resources/views/invoices/_item_form_dialog.blade.php:40` — `unit`
+- `resources/views/invoices/_item_form_dialog.blade.php:41` — `Einzelpreis`
+- `resources/views/invoices/_item_form_dialog.blade.php:41` — `number`
+- `resources/views/invoices/_item_form_dialog.blade.php:42` — `position`
+- `resources/views/invoices/_item_form_dialog.blade.php:42` — `number`
+- `resources/views/invoices/_item_form_dialog.blade.php:42` — `Position`
+- `resources/views/invoices/_item_form_dialog.blade.php:42` — `position`
+- `resources/views/invoices/_item_form_dialog.blade.php:44` — `number`
+- `resources/views/invoices/_item_form_dialog.blade.php:45` — `number`
+- `resources/views/invoices/_item_form_dialog.blade.php:46` — `number`
 - `resources/views/travel-logs/index.blade.php:11` — `title`
 - `resources/views/travel-logs/index.blade.php:11` — `Fahrtenbuch`
 - `resources/views/travel-logs/index.blade.php:12` — `nav-title`
@@ -47018,6 +47173,47 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/customer/two-factor-challenge.blade.php:71` — `submit`
 - `resources/views/customer/two-factor-challenge.blade.php:71` — `Abbrechen`
 - `resources/views/customer/two-factor-challenge.blade.php:74` — `partials.webauthn-script`
+- `resources/views/customer/subscriptions/index.blade.php:16` — `title`
+- `resources/views/customer/subscriptions/index.blade.php:18` — `content`
+- `resources/views/customer/subscriptions/index.blade.php:19` — `space-y-4`
+- `resources/views/customer/subscriptions/index.blade.php:21` — `text-xl font-semibold`
+- `resources/views/customer/subscriptions/index.blade.php:22` — `text-sm text-muted`
+- `resources/views/customer/subscriptions/index.blade.php:30` — `text-right`
+- `resources/views/customer/subscriptions/index.blade.php:43` — `hover`
+- `resources/views/customer/subscriptions/index.blade.php:45` — `link font-medium`
+- `resources/views/customer/subscriptions/index.blade.php:46` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/index.blade.php:53` — `badge badge-ghost badge-xs`
+- `resources/views/customer/subscriptions/index.blade.php:56` — `text-right tabular-nums`
+- `resources/views/customer/subscriptions/index.blade.php:57` — `tabular-nums whitespace-nowrap`
+- `resources/views/customer/subscriptions/index.blade.php:59` — `from`
+- `resources/views/customer/subscriptions/index.blade.php:61` — `date`
+- `resources/views/customer/subscriptions/index.blade.php:66` — `tabular-nums`
+- `resources/views/customer/subscriptions/show.blade.php:15` — `title`
+- `resources/views/customer/subscriptions/show.blade.php:17` — `content`
+- `resources/views/customer/subscriptions/show.blade.php:18` — `space-y-4`
+- `resources/views/customer/subscriptions/show.blade.php:19` — `flex flex-wrap items-start justify-between gap-2`
+- `resources/views/customer/subscriptions/show.blade.php:21` — `text-xl font-semibold`
+- `resources/views/customer/subscriptions/show.blade.php:22` — `text-sm text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:29` — `btn btn-sm btn-ghost`
+- `resources/views/customer/subscriptions/show.blade.php:34` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:38` — `badge badge-ghost badge-xs`
+- `resources/views/customer/subscriptions/show.blade.php:43` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:44` — `tabular-nums`
+- `resources/views/customer/subscriptions/show.blade.php:47` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:51` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:52` — `tabular-nums`
+- `resources/views/customer/subscriptions/show.blade.php:54` — `from`
+- `resources/views/customer/subscriptions/show.blade.php:56` — `date`
+- `resources/views/customer/subscriptions/show.blade.php:61` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:65` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:66` — `tabular-nums`
+- `resources/views/customer/subscriptions/show.blade.php:71` — `text-lg font-medium`
+- `resources/views/customer/subscriptions/show.blade.php:72` — `text-xs text-muted`
+- `resources/views/customer/subscriptions/show.blade.php:78` — `text-right`
+- `resources/views/customer/subscriptions/show.blade.php:83` — `hover`
+- `resources/views/customer/subscriptions/show.blade.php:84` — `tabular-nums whitespace-nowrap`
+- `resources/views/customer/subscriptions/show.blade.php:84` — `from`
+- `resources/views/customer/subscriptions/show.blade.php:85` — `text-right tabular-nums`
 - `resources/views/customer/layout.blade.php:13` — `customer`
 - `resources/views/customer/layout.blade.php:23` — `UTF-8`
 - `resources/views/customer/layout.blade.php:24` — `viewport`
@@ -47043,39 +47239,39 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/customer/layout.blade.php:72` — `Reklamationen`
 - `resources/views/customer/layout.blade.php:75` — `Verleih`
 - `resources/views/customer/layout.blade.php:78` — `Verleih-Anfrage`
-- `resources/views/customer/layout.blade.php:81` — `Rückfragen`
-- `resources/views/customer/layout.blade.php:83` — `Profil`
-- `resources/views/customer/layout.blade.php:84` — `customer.2fa.show`
-- `resources/views/customer/layout.blade.php:84` — `Zwei-Faktor-Authentifizierung`
-- `resources/views/customer/layout.blade.php:84` — `Sicherheit`
-- `resources/views/customer/layout.blade.php:87` — `submit`
-- `resources/views/customer/layout.blade.php:87` — `ghost`
-- `resources/views/customer/layout.blade.php:87` — `logout`
-- `resources/views/customer/layout.blade.php:87` — `Abmelden`
-- `resources/views/customer/layout.blade.php:93` — `main-content`
-- `resources/views/customer/layout.blade.php:93` — `max-w-5xl mx-auto px-4 py-6`
-- `resources/views/customer/layout.blade.php:96` — `status`
-- `resources/views/customer/layout.blade.php:97` — `status`
-- `resources/views/customer/layout.blade.php:97` — `alert alert-info mb-4`
-- `resources/views/customer/layout.blade.php:97` — `status`
-- `resources/views/customer/layout.blade.php:99` — `success`
+- `resources/views/customer/layout.blade.php:84` — `Rückfragen`
+- `resources/views/customer/layout.blade.php:86` — `Profil`
+- `resources/views/customer/layout.blade.php:87` — `customer.2fa.show`
+- `resources/views/customer/layout.blade.php:87` — `Zwei-Faktor-Authentifizierung`
+- `resources/views/customer/layout.blade.php:87` — `Sicherheit`
+- `resources/views/customer/layout.blade.php:90` — `submit`
+- `resources/views/customer/layout.blade.php:90` — `ghost`
+- `resources/views/customer/layout.blade.php:90` — `logout`
+- `resources/views/customer/layout.blade.php:90` — `Abmelden`
+- `resources/views/customer/layout.blade.php:96` — `main-content`
+- `resources/views/customer/layout.blade.php:96` — `max-w-5xl mx-auto px-4 py-6`
+- `resources/views/customer/layout.blade.php:99` — `status`
 - `resources/views/customer/layout.blade.php:100` — `status`
-- `resources/views/customer/layout.blade.php:100` — `alert alert-success mb-4 text-sm`
-- `resources/views/customer/layout.blade.php:100` — `success`
-- `resources/views/customer/layout.blade.php:102` — `error`
-- `resources/views/customer/layout.blade.php:103` — `alert`
-- `resources/views/customer/layout.blade.php:103` — `alert alert-error mb-4 text-sm`
-- `resources/views/customer/layout.blade.php:103` — `error`
-- `resources/views/customer/layout.blade.php:105` — `warning`
+- `resources/views/customer/layout.blade.php:100` — `alert alert-info mb-4`
+- `resources/views/customer/layout.blade.php:100` — `status`
+- `resources/views/customer/layout.blade.php:102` — `success`
+- `resources/views/customer/layout.blade.php:103` — `status`
+- `resources/views/customer/layout.blade.php:103` — `alert alert-success mb-4 text-sm`
+- `resources/views/customer/layout.blade.php:103` — `success`
+- `resources/views/customer/layout.blade.php:105` — `error`
 - `resources/views/customer/layout.blade.php:106` — `alert`
-- `resources/views/customer/layout.blade.php:106` — `alert alert-warning mb-4 text-sm`
-- `resources/views/customer/layout.blade.php:106` — `warning`
-- `resources/views/customer/layout.blade.php:108` — `info`
-- `resources/views/customer/layout.blade.php:109` — `status`
-- `resources/views/customer/layout.blade.php:109` — `alert alert-info mb-4 text-sm`
-- `resources/views/customer/layout.blade.php:109` — `info`
-- `resources/views/customer/layout.blade.php:112` — `content`
-- `resources/views/customer/layout.blade.php:117` — `page-footer`
+- `resources/views/customer/layout.blade.php:106` — `alert alert-error mb-4 text-sm`
+- `resources/views/customer/layout.blade.php:106` — `error`
+- `resources/views/customer/layout.blade.php:108` — `warning`
+- `resources/views/customer/layout.blade.php:109` — `alert`
+- `resources/views/customer/layout.blade.php:109` — `alert alert-warning mb-4 text-sm`
+- `resources/views/customer/layout.blade.php:109` — `warning`
+- `resources/views/customer/layout.blade.php:111` — `info`
+- `resources/views/customer/layout.blade.php:112` — `status`
+- `resources/views/customer/layout.blade.php:112` — `alert alert-info mb-4 text-sm`
+- `resources/views/customer/layout.blade.php:112` — `info`
+- `resources/views/customer/layout.blade.php:115` — `content`
+- `resources/views/customer/layout.blade.php:120` — `page-footer`
 - `resources/views/customer/login.blade.php:11` — `content`
 - `resources/views/customer/login.blade.php:12` — `max-w-md mx-auto bg-base-100 border border-base-300 rounded p-6 mt-10`
 - `resources/views/customer/login.blade.php:13` — `text-xl font-semibold mb-4 flex items-center gap-2`
@@ -47515,6 +47711,11 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/customer/dashboard.blade.php:56` — `text-2xl font-semibold`
 - `resources/views/customer/dashboard.blade.php:58` — `mt-2 text-sm`
 - `resources/views/customer/dashboard.blade.php:58` — `open-issue.title.index`
+- `resources/views/customer/dashboard.blade.php:61` — `subscriptions`
+- `resources/views/customer/dashboard.blade.php:63` — `flex items-center justify-between`
+- `resources/views/customer/dashboard.blade.php:65` — `text-2xl font-semibold`
+- `resources/views/customer/dashboard.blade.php:65` — `subscriptions`
+- `resources/views/customer/dashboard.blade.php:67` — `mt-2 text-sm`
 - `resources/views/week/_grid.blade.php:22` — `start`
 - `resources/views/week/_grid.blade.php:23` — `days`
 - `resources/views/week/_grid.blade.php:24` — `shiftsByDay`
@@ -67722,16 +67923,15 @@ Generated: 2026-09-10T09:56:07+00:00
 - `resources/views/errors/423.blade.php:17` — `extraNote`
 - `resources/views/errors/423.blade.php:17` — `Für den Zugang ist ein höherer Plan erforderlich. Bitte wenden Sie sich an Ihre Administration.`
 - `resources/views/errors/423.blade.php:18` — `reportable`
-- `resources/views/errors/403.blade.php:10` — `code`
-- `resources/views/errors/403.blade.php:11` — `icon`
-- `resources/views/errors/403.blade.php:11` — `lock',
+- `resources/views/errors/403.blade.php:20` — `code`
+- `resources/views/errors/403.blade.php:21` — `icon`
+- `resources/views/errors/403.blade.php:21` — `lock',
     'tone`
-- `resources/views/errors/403.blade.php:12` — `warning',
+- `resources/views/errors/403.blade.php:22` — `warning',
     'title`
-- `resources/views/errors/403.blade.php:13` — `errors.403.title`
-- `resources/views/errors/403.blade.php:14` — `message`
-- `resources/views/errors/403.blade.php:14` — `This action is unauthorized.`
-- `resources/views/errors/403.blade.php:16` — `errors.403.message`
+- `resources/views/errors/403.blade.php:23` — `errors.403.title`
+- `resources/views/errors/403.blade.php:24` — `message`
+- `resources/views/errors/403.blade.php:24` — `errors.403.message`
 - `resources/views/guarantees/index.blade.php:15` — `title`
 - `resources/views/guarantees/index.blade.php:16` — `nav-title`
 - `resources/views/guarantees/index.blade.php:18` — `wrapper-height-class', 'wd-page-fill`

@@ -12,13 +12,13 @@ return [
     'title' => 'Google Calendar',
     'intro' => 'WorkDiary appointments are published via the Google Calendar API to a calendar of the connected Google account. WorkDiary stays authoritative; cancelled appointments disappear there and repeated runs never create duplicates. External appointments are never read.',
     'plugin_description' => 'Publishes appointments idempotently to a Google calendar (Calendar API v3, OAuth2) — publish-only, selectable target calendar.',
-    'not_configured_hint' => 'GOOGLE_CALENDAR_CLIENT_ID/SECRET are not set — the connection first needs an OAuth client in the Google Cloud Console (calendar scopes are “sensitive”: brand verification or consent type “Internal” for Workspace).',
+    'not_configured_hint' => 'No Google app is configured — neither in this organisation’s plugin settings nor as the installation’s GOOGLE_CALENDAR_CLIENT_ID/SECRET. the connection first needs an OAuth client in the Google Cloud Console (calendar scopes are “sensitive”: brand verification or consent type “Internal” for Workspace).',
 
     'health' => [
         'badge_ok' => 'Connected',
         'badge_failing' => 'Unreachable',
         'badge_inactive' => 'Inactive',
-        'not_configured' => 'Google Calendar is not configured (GOOGLE_CALENDAR_CLIENT_ID/SECRET missing).',
+        'not_configured' => 'Google Calendar is not configured: no own app in the plugin settings and no GOOGLE_CALENDAR_CLIENT_ID/SECRET for the installation.',
         'no_org_context' => 'Configured (no organization in context).',
         'no_connection' => 'No Google Calendar connection established.',
         'inactive' => 'Google Calendar connection is disconnected or disabled.',
@@ -51,7 +51,7 @@ return [
     ],
 
     'flash' => [
-        'not_configured' => 'Google Calendar is not configured (GOOGLE_CALENDAR_CLIENT_ID/SECRET missing).',
+        'not_configured' => 'Google Calendar is not configured: no own app in the plugin settings and no GOOGLE_CALENDAR_CLIENT_ID/SECRET for the installation.',
         'state_invalid' => 'The OAuth flow has expired or is invalid. Please start again.',
         'oauth_denied' => 'The connection was declined or cancelled.',
         'oauth_failed' => 'The token exchange failed (:class).',
@@ -62,5 +62,12 @@ return [
         'calendar_saved' => 'Target calendar saved.',
         'calendar_invalid' => 'The selected calendar was not found.',
         'publish_done' => 'Publish started.',
+    ],
+    // Per-organisation app registration (plugin settings dialog).
+    'settings' => [
+        'client_id' => 'Client ID (own Google Cloud app)',
+        'client_id_help' => 'Empty = the installation’s instance app. An own OAuth client ID must register the same redirect URI.',
+        'client_secret' => 'Client secret',
+        'client_secret_help' => 'Stored encrypted; leave empty to keep the stored value.',
     ],
 ];

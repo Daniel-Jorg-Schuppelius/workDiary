@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Whistleblowing;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Whistleblowing\{Attachment, WhistleblowingCase};
+use App\Services\Whistleblowing\WhistleblowingAttachmentService;
 use Illuminate\Support\Facades\{Gate, Storage};
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
@@ -25,6 +26,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * nie ueber einen direkten Webserverpfad.
  */
 class InternalAttachmentController extends Controller {
+    public function __construct(private readonly WhistleblowingAttachmentService $attachments) {}
+
     public function download(WhistleblowingCase $case, Attachment $attachment): StreamedResponse {
         Gate::authorize('view', $case);
         abort_unless((int) $attachment->case_id === (int) $case->getKey(), 404);
@@ -37,8 +40,16 @@ class InternalAttachmentController extends Controller {
 
         $filename = $this->safeFilename((string) ($attachment->original_name_ciphertext ?? 'anhang'));
 
-        return $disk->download($attachment->storage_key, $filename, [
+        // Seit dem Sicherheitsaudit 2026-09-13 liegen Anhaenge mit dem
+        // Fall-Schluessel verschluesselt; der Dienst kennt beide Formen.
+        $attachment->setRelation('case', $case);
+        $plaintext = $this->attachments->contents($attachment);
+
+        return response()->streamDownload(static function () use ($plaintext): void {
+            echo $plaintext;
+        }, $filename, [
             'Content-Type' => $attachment->mime_detected ?: 'application/octet-stream',
+            'Content-Length' => (string) strlen($plaintext),
             'X-Content-Type-Options' => 'nosniff',
             'Content-Security-Policy' => "default-src 'none'",
         ]);

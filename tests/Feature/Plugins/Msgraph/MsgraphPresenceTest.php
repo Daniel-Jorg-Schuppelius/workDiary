@@ -14,7 +14,7 @@ use App\Models\{MsgraphConnection, User};
 use App\Plugins\Msgraph\Services\MsgraphPresenceService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -27,6 +27,7 @@ use Tests\TestCase;
 final class MsgraphPresenceTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
 
@@ -39,9 +40,7 @@ final class MsgraphPresenceTest extends TestCase {
             'email' => 'admin@firma.example',
         ]);
 
-        config()->set('plugins.msgraph.enabled', true);
-        config()->set('plugins.msgraph.client_id', 'test-client');
-        config()->set('plugins.msgraph.client_secret', 'test-secret');
+        $this->pluginSecret('msgraph', ['enabled' => true, 'client_id' => 'test-client', 'client_secret' => 'test-secret']);
     }
 
     private function connection(string $scopes): MsgraphConnection {

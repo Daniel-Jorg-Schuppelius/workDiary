@@ -15,8 +15,8 @@ use App\Enums\User\{CompensationModel, UserRole};
 use App\Legacy\LegacyBridge;
 use App\Legacy\Models\LegacyUser;
 use App\Models\Concerns\{Auditable, HasAttachments, HasEffectivePermissions, HasPreferences, HasSqid, InteractsWithTwoFactor, InteractsWithWorkSchedule, Searchable};
-use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\{CryptoHelper, PhoneNumberHelper};
+use App\Support\Crypto\BlindIndex;
+use CommonToolkit\Helper\Data\PhoneNumberHelper;
 use Database\Factories\UserFactory;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Builder;
@@ -229,7 +229,7 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
         }
 
         $this->cti_extension = $e164;
-        $this->cti_extension_hash = CryptoHelper::hash($e164, HashAlgorithm::SHA256);
+        $this->cti_extension_hash = BlindIndex::of($e164);
     }
 
     /** Hat der Nutzer eine Durchwahl hinterlegt (→ Anrufer-Pop-up aktiv)? */

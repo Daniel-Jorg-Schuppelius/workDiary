@@ -108,7 +108,7 @@
             </x-slot:head>
 
             @php
-                // Kein `use` hier: Blade schiebt @php-Bloecke in den
+                // Kein `use` hier: Blade schiebt PHP-Blöcke in den
                 // Kontrollfluss der Seite, dort ist ein Import ein Parse-Fehler.
                 $dossierService = app(\App\Services\Learning\QualificationDossierService::class);
                 $covFull = \App\Services\Learning\QualificationDossierService::COVERAGE_FULL;

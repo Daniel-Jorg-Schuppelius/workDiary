@@ -55,7 +55,7 @@
 
     @unless ($configured)
         <div class="alert alert-warning text-sm">
-            {{ __('Calendly Client-ID/Secret sind nicht konfiguriert (CALENDLY_CLIENT_ID / CALENDLY_CLIENT_SECRET).') }}
+            {{ __('Es ist keine Calendly-App hinterlegt — weder in den Plugin-Einstellungen dieser Organisation noch als CALENDLY_CLIENT_ID/CALENDLY_CLIENT_SECRET der Installation.') }}
         </div>
     @endunless
 

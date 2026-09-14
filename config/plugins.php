@@ -33,7 +33,13 @@ return [
      * Nicht betroffen sind Werte ohne Geheimnischarakter (Basis-URLs,
      * Workspace-IDs, Pfade) — die fallen weiterhin zurück.
      */
-    'allow_env_secret_fallback' => (bool) env('PLUGINS_ALLOW_ENV_SECRET_FALLBACK', true),
+    // Vorgabe seit dem Sicherheitsaudit 2026-09-13 GESCHLOSSEN: Die .env gehört
+    // dem Betreiber, nicht einem Mandanten. Bei true arbeitet jede Organisation
+    // ohne eigene Zugangsdaten mit denen des Betreibers — in einer
+    // Mehrmandanten-Installation ein mandantenübergreifender Zugriff.
+    // Bestandsinstallationen, die den Rückfall brauchen, setzen ihn ausdrücklich
+    // auf true; betroffene Plugins melden ihn im `plugin:doctor`.
+    'allow_env_secret_fallback' => (bool) env('PLUGINS_ALLOW_ENV_SECRET_FALLBACK', false),
 
     /*
     |--------------------------------------------------------------------------

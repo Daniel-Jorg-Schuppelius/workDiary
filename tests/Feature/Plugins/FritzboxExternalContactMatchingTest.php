@@ -12,7 +12,7 @@ use App\Plugins\Msgraph\MsgraphPhoneContactSource;
 use App\Services\Contacts\{ExternalPhoneContactDirectory, ExternalPhoneContactSource};
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -20,6 +20,7 @@ use Tests\TestCase;
 final class FritzboxExternalContactMatchingTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $owner;
 
@@ -64,9 +65,7 @@ final class FritzboxExternalContactMatchingTest extends TestCase {
     }
 
     public function test_unlinked_microsoft_contact_enriches_inbox_without_auto_booking(): void {
-        config()->set('plugins.msgraph.enabled', true);
-        config()->set('plugins.msgraph.client_id', 'test-client');
-        config()->set('plugins.msgraph.client_secret', 'test-secret');
+        $this->pluginSecret('msgraph', ['enabled' => true, 'client_id' => 'test-client', 'client_secret' => 'test-secret']);
         MsgraphContactConnection::query()->create([
             'organization_id' => $this->organization->id,
             'access_token' => 'access-token',

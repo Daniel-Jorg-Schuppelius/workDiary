@@ -39,6 +39,37 @@ class PasswordChangeSessionInvalidationTest extends TestCase {
         return $id;
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13: Der Reset entwertete Sitzungen und
+     * Remember-Cookies, aber keine API-Token. Ein Sanctum-Token wird ohne
+     * Ablaufdatum ausgestellt und traegt im Zweifel die Wildcard-Faehigkeit —
+     * wer eine Sitzung kurz uebernommen und sich einen Token angelegt hatte,
+     * arbeitete nach dem Reset des Opfers unveraendert weiter.
+     */
+    public function test_password_reset_also_revokes_api_tokens(): void {
+        $user = User::factory()->user()->create(['email' => 'tokenreset@firma.de', 'is_new_system' => true]);
+        $stranger = User::factory()->user()->create();
+        $user->createToken('geraet', ['*']);
+        $stranger->createToken('fremd', ['*']);
+
+        $token = Str::random(64);
+        DB::table('password_reset_tokens')->insert([
+            'email' => $user->email,
+            'token' => Hash::make($token),
+            'created_at' => now(),
+        ]);
+
+        $this->post(route('password.update'), [
+            'token' => $token,
+            'email' => $user->email,
+            'password' => 'Neues-Passwort-2026!',
+            'password_confirmation' => 'Neues-Passwort-2026!',
+        ]);
+
+        $this->assertSame(0, $user->tokens()->count(), 'Der Reset muss die API-Token des Nutzers widerrufen.');
+        $this->assertSame(1, $stranger->tokens()->count(), 'Fremde Token bleiben unberuehrt.');
+    }
+
     public function test_password_reset_invalidates_all_sessions_and_rotates_remember_token(): void {
         config(['session.driver' => 'database']);
 

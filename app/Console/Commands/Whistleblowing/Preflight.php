@@ -58,7 +58,11 @@ class Preflight extends Command {
         }
         $decoded = base64_decode($key, true);
         if ($decoded === false || strlen($decoded) !== 32) {
-            $this->warn2('WHISTLEBLOWING_KEY', 'keine 32-Byte-base64; wird per SHA-256 normalisiert.');
+            $this->markFail('WHISTLEBLOWING_KEY', 'keine 32 Bytes (roh oder base64) - wird seit dem '
+                . 'Sicherheitsaudit 2026-09-13 ABGEWIESEN. Erzeugen: '
+                . 'php artisan tinker --execute="echo base64_encode(random_bytes(32));"');
+
+            return;
         }
         // Blast-Radius: NICHT der globale APP_KEY.
         $appKey = (string) config('app.key');
@@ -89,7 +93,13 @@ class Preflight extends Command {
     private function checkScanner(): void {
         $scanner = (string) config('whistleblowing.scanner', 'none');
         if ($scanner === 'none') {
-            $this->warn2('Scanner', 'kein Malware-Scanner – Anhaenge bleiben in Quarantaene (fail-safe).');
+            // Die Folge war bisher zu leise formuliert (Sicherheitsaudit
+            // 2026-09-13): "bleiben in Quarantaene" heisst, dass ein
+            // Fallbearbeiter NIE einen Anhang oeffnen kann und auch die
+            // Metadaten-Bereinigung nie laeuft — sie haengt am sauberen Befund.
+            $this->warn2('Scanner', 'kein Malware-Scanner (fail-safe): Anhaenge bleiben DAUERHAFT in '
+                . 'Quarantaene, sind fuer Fallbearbeiter nie abrufbar, und die Metadaten-Bereinigung '
+                . 'laeuft nicht. Fuer nutzbare Anhaenge WHISTLEBLOWING_SCANNER=clamav setzen.');
         } else {
             $this->ok('Scanner', "Treiber '{$scanner}' aktiv.");
         }

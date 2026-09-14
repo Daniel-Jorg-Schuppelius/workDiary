@@ -129,6 +129,10 @@ CRON_FILE="$DESTDIR/etc/cron.d/$NAME"
 BACKUP_CONF="$DESTDIR/etc/${NAME}-backup.conf"
 BACKUP_CONF_RUNTIME="/etc/${NAME}-backup.conf"
 BACKUP_LOG="/var/log/${NAME}-backup.log"
+# Root-eigene Kopie des Backup-Skripts. Der Cron-Eintrag laeuft als root; ein
+# Skript aus $APP_DIR waere vom Deploy-/Webbenutzer beschreibbar und damit eine
+# Rechteausweitung (Sicherheitsaudit 2026-09-13).
+BACKUP_BIN="$DESTDIR/usr/local/sbin/${NAME}-backup.sh"
 F2B_DIR="$DESTDIR/etc/fail2ban"
 F2B_JAIL="$F2B_DIR/jail.d/$NAME.conf"
 
@@ -152,7 +156,8 @@ render() { # $1 Template, $2 Ziel
                 -e "s|__BACKUP_MIN__|$BACKUP_MIN|g" \
                 -e "s|__BACKUP_HOUR__|$BACKUP_HOUR|g" \
                 -e "s|__BACKUP_CONF__|$BACKUP_CONF_RUNTIME|g" \
-                -e "s|__BACKUP_LOG__|$BACKUP_LOG|g" "$1")
+                -e "s|__BACKUP_LOG__|$BACKUP_LOG|g" \
+                -e "s|__BACKUP_BIN__|$BACKUP_BIN|g" "$1")
   if [[ $DRY_RUN -eq 1 ]]; then
     echo "--- würde schreiben: $2"
     echo "$content" | sed 's/^/    /'
@@ -162,6 +167,25 @@ render() { # $1 Template, $2 Ziel
     chmod 644 "$2"
     note "geschrieben: $2"
   fi
+}
+
+# Backup-Skript als root-eigene Kopie ablegen. Der Cron-Eintrag ruft NICHT das
+# Skript im Anwendungsverzeichnis auf: dort darf der Deploy-/Webbenutzer
+# schreiben, und root fuehrt es aus — wer die Anwendung aktualisieren darf,
+# haette damit root (Sicherheitsaudit 2026-09-13). Die Kopie wird bei jedem
+# Installationslauf aufgefrischt, damit sie nicht veraltet.
+install_backup_binary() {
+  local src="$APP_DIR/scripts/backup.sh"
+  if [[ ! -f "$src" ]]; then
+    fail "Backup-Skript nicht gefunden: $src"
+  fi
+  if [[ $DRY_RUN -eq 1 ]]; then
+    echo "--- würde installieren: $src -> $BACKUP_BIN (root:root, 0755)"
+    return
+  fi
+  mkdir -p "$(dirname "$BACKUP_BIN")"
+  install -o root -g root -m 0755 "$src" "$BACKUP_BIN"
+  note "installiert: $BACKUP_BIN (root:root, 0755)"
 }
 
 # Backup-Konfiguration: chmod 600 (darf den Heartbeat-Token aufnehmen), daher
@@ -279,11 +303,12 @@ install() {
 
   # 1) Cron (Herzschlag + optional Backup) + Backup-Konfiguration + Token
   if [[ $WITH_BACKUP -eq 1 ]]; then
+    install_backup_binary
     render "$APP_DIR/deploy/cron.d/workdiary.template" "$CRON_FILE"
     write_backup_conf
     ensure_heartbeat_token
   else
-    render <(grep -v 'backup.sh' "$APP_DIR/deploy/cron.d/workdiary.template") "$CRON_FILE"
+    render <(grep -v 'backup.sh\|__BACKUP_BIN__\|root-eigene' "$APP_DIR/deploy/cron.d/workdiary.template") "$CRON_FILE"
   fi
 
   # 2) systemd-Units (Template nach Rolle, Zieldatei instanz-scoped)

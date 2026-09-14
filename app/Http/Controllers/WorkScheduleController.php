@@ -47,7 +47,7 @@ class WorkScheduleController extends Controller {
             $existing->update($data);
         } else {
             $data['user_id'] = $user->id;
-            $data['organization_id'] = $user->organization_id;
+            $data['organization_id'] = $this->currentOrganization()->id;
             WorkSchedule::create($data);
         }
 

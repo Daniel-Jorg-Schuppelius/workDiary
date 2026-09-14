@@ -76,7 +76,7 @@ class UserGroupController extends Controller {
         ]);
 
         $group = UserGroup::create([
-            'organization_id' => $auth->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'color' => $data['color'] ?? null,

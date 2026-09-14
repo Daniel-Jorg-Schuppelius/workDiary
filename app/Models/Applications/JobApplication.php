@@ -14,7 +14,7 @@ namespace App\Models\Applications;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\User;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use App\Support\Crypto\BlindIndex;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, HasOne, MorphMany};
@@ -86,7 +86,7 @@ class JobApplication extends Model {
 
     /** Deterministischer Lookup-Hash für die Dublettenprüfung (MVP-190). */
     public static function hashEmail(string $email): string {
-        return CryptoHelper::hash(mb_strtolower(trim($email)));
+        return (string) BlindIndex::ofEmail($email);
     }
 
     /** @return BelongsTo<JobRequisition, $this> */
@@ -102,6 +102,15 @@ class JobApplication extends Model {
     /** @return HasMany<JobApplicationDocument, $this> */
     public function documents(): HasMany {
         return $this->hasMany(JobApplicationDocument::class, 'job_application_id');
+    }
+
+    /**
+     * Dateien aus dem Karriereportal (Lebenslauf, Zeugnisse, Lichtbild).
+     *
+     * @return HasMany<JobApplicationUpload, $this>
+     */
+    public function uploads(): HasMany {
+        return $this->hasMany(JobApplicationUpload::class, 'job_application_id');
     }
 
     /** @return HasMany<JobApplicationInterview, $this> */

@@ -12,6 +12,7 @@ namespace App\Policies;
 
 use App\Models\{Attachment, Organization, User};
 use App\Policies\Concerns\{ChecksOwnership, HasAdminBypass};
+use Illuminate\Support\Facades\Gate;
 
 class AttachmentPolicy {
     use ChecksOwnership;
@@ -38,6 +39,15 @@ class AttachmentPolicy {
                 $channel->hasMember($user)
                 || ($channel->type === 'channel' && $channel->visibility === 'public')
             );
+        }
+
+        // Das Traegerobjekt entscheidet mit, wenn es eine eigene Regel hat
+        // (Sicherheitsaudit 2026-09-13): Vorher genuegte die gemeinsame
+        // Organisation — wer eine Anhang-Kennung kannte, lud auch die Datei
+        // eines Vorgangs herunter, den er selbst nicht oeffnen darf. Nur wo es
+        // gar keine Regel gibt, bleibt es bei der Mandantengrenze.
+        if ($parent !== null && Gate::getPolicyFor($parent) !== null) {
+            return Gate::forUser($user)->allows('view', $parent);
         }
 
         return true;

@@ -11,9 +11,40 @@
 namespace App\Models\Concerns;
 
 use App\Models\Attachment;
+use Illuminate\Database\Eloquent\{Model, SoftDeletes};
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 trait HasAttachments {
+    /**
+     * Anhänge folgen dem Trägerdatensatz — aber erst beim ENDGÜLTIGEN Löschen.
+     *
+     * Sicherheitsaudit 2026-09-13: Vorher blieben Zeile und Datei beide stehen.
+     * Bei einem Soft-Delete bleibt der Anhang bewusst erhalten, sonst käme ein
+     * wiederhergestellter Datensatz ohne seine Dateien zurück. Das eigentliche
+     * Entfernen der Datei erledigt der {@see \App\Observers\AttachmentObserver}.
+     */
+    public static function bootHasAttachments(): void {
+        $purge = static function (Model $model): void {
+            foreach (Attachment::query()->withoutGlobalScopes()
+                ->where('attachable_type', $model->getMorphClass())
+                ->where('attachable_id', $model->getKey())
+                ->get() as $attachment) {
+                $attachment->delete();
+            }
+        };
+
+        // Modelle mit Soft-Delete haengen am `forceDeleted`-Ereignis, alle
+        // anderen am `deleted` — dort IST das Loeschen endgueltig. So braucht
+        // es zur Laufzeit keine Unterscheidung.
+        // registerModelEvent statt static::forceDeleted(): Letzteres gibt es
+        // nur auf Modellen mit SoftDeletes, die statische Analyse kennt den
+        // Laufzeit-Zweig aber nicht.
+        static::registerModelEvent(
+            in_array(SoftDeletes::class, class_uses_recursive(static::class), true) ? 'forceDeleted' : 'deleted',
+            $purge,
+        );
+    }
+
     /** @return MorphMany<Attachment, static> */
     public function attachments(): MorphMany {
         /** @var MorphMany<Attachment, static> $relation */

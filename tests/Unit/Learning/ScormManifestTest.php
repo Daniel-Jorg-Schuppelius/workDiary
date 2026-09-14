@@ -22,6 +22,45 @@ use RuntimeException;
  * mit `adlcp:scormType` und anderem Namespace.
  */
 class ScormManifestTest extends TestCase {
+    /**
+     * Sicherheitsaudit 2026-09-13: Der Parser lief mit `LIBXML_NOENT`, unter dem
+     * Kommentar "Keine externen Entitaeten" — das Flag ERSETZT Entitaeten, statt
+     * sie zu unterbinden, und loeste damit auch `<!ENTITY x SYSTEM "file:///...">`
+     * auf. `LIBXML_NONET` sperrt nur das Netz, nicht die Platte. Ein hochgeladenes
+     * Paket konnte so beliebige lesbare Serverdateien im Manifest-Titel
+     * zurueckliefern (auf dieser Maschine mit libxml 2.9.14 reproduziert).
+     */
+    public function test_external_file_entities_are_not_resolved(): void {
+        $secret = tempnam(sys_get_temp_dir(), 'xxe');
+        file_put_contents($secret, 'GEHEIMNIS-XXE-KANARIENVOGEL');
+
+        try {
+            $xml = <<<XML
+            <?xml version="1.0" encoding="UTF-8"?>
+            <!DOCTYPE manifest [<!ENTITY xxe SYSTEM "file://{$secret}">]>
+            <manifest identifier="M" version="1.0" xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
+                      xmlns:adlcp="http://www.adlnet.org/xsd/adlcp_rootv1p2">
+              <organizations default="O"><organization identifier="O"><title>&xxe;</title>
+                <item identifier="I" identifierref="R"><title>&xxe;</title></item>
+              </organization></organizations>
+              <resources><resource identifier="R" adlcp:scormtype="sco" href="index.html"/></resources>
+            </manifest>
+            XML;
+
+            try {
+                $manifest = ScormManifest::fromXml($xml);
+            } catch (RuntimeException) {
+                // Auch eine Ablehnung des Manifests ist ein sicheres Ergebnis.
+                return;
+            }
+
+            $this->assertStringNotContainsString('KANARIENVOGEL', $manifest->title);
+            $this->assertStringNotContainsString('KANARIENVOGEL', json_encode($manifest->items) ?: '');
+        } finally {
+            @unlink($secret);
+        }
+    }
+
     private function scorm12(): string {
         return <<<'XML'
 <?xml version="1.0" encoding="UTF-8"?>

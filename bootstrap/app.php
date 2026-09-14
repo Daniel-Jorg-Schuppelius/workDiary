@@ -48,7 +48,7 @@ return Application::configure(basePath: dirname(__DIR__))
             // läuft ohne SecurityHeaders und hatte weder HSTS noch nosniff
             // noch eine Cache-Vorgabe — über die Schnittstelle gehen
             // Verzeichnisdaten.
-            Route::middleware([\App\Http\Middleware\ScimSecurityHeaders::class, AuthenticateScim::class])
+            Route::middleware(['throttle:scim', \App\Http\Middleware\ScimSecurityHeaders::class, AuthenticateScim::class])
                 ->prefix('scim/v2')
                 ->group(__DIR__ . '/../routes/scim.php');
             // Oeffentlicher OCI-Punchout-Katalog (Feature 099, MVP-457):
@@ -138,6 +138,12 @@ return Application::configure(basePath: dirname(__DIR__))
             // lassen tokenbasierte Ingest-Routen ohne Auth-User durch.
             EnsureValidLicense::class,
             EnforceTenantStatus::class,
+            // Sicherheitsaudit 2026-09-13: Beide Pflichten galten nur im
+            // Web-Stack. Wer zum Passwortwechsel oder zur 2FA-Einrichtung
+            // gezwungen war, arbeitete ueber einen bestehenden Token
+            // unveraendert weiter — die Pflicht war eine Oberflaechen-Huerde.
+            ForcePasswordChange::class,
+            RequireTwoFactorSetup::class,
         ]);
 
         // Schlanker Stack fuer das oeffentliche Hinweisgeber-Meldeportal:

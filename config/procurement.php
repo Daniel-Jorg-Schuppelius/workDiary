@@ -15,4 +15,12 @@ return [
     // eine harte Sperre ab Werk legt Betriebe still, die ihre Nachweise noch
     // nicht erfasst haben. Sie muss eingeschaltet werden.
     'credential_blocking' => env('PROCUREMENT_CREDENTIAL_BLOCKING', false),
+
+    /*
+     * FTP ohne TLS zulassen (Vorgabe: nein). Ohne TLS gehen Benutzername und
+     * Passwort des Lieferantenkatalogs im Klartext ueber die Leitung; der
+     * Schalter existiert nur fuer Altbestaende, die kein FTPS koennen
+     * (Sicherheitsaudit 2026-09-13).
+     */
+    'ftp_allow_plaintext' => env('PROCUREMENT_FTP_ALLOW_PLAINTEXT', false),
 ];

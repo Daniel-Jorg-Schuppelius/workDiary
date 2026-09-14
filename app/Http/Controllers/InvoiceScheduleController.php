@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\Contract\Contract;
 use App\Models\{Customer, InvoiceSchedule, InvoiceScheduleItem, User};
 use App\Services\Finance\BillingModeResolver;
@@ -21,6 +22,7 @@ use Illuminate\View\View;
 
 /** Abrechnungspläne für wiederkehrende Rechnungen (MVP-415). */
 class InvoiceScheduleController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(BillingModeResolver $billingMode): View {
         Gate::authorize(Permission::InvoiceViewAny->value);
 
@@ -74,7 +76,7 @@ class InvoiceScheduleController extends Controller {
 
         $schedule = InvoiceSchedule::create([
             ...$data,
-            'organization_id' => $auth->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'status' => InvoiceSchedule::STATUS_ACTIVE,
             'created_by' => $auth->id,
         ]);

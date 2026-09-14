@@ -25,6 +25,7 @@ use App\Models\PluginSetting;
 final class PluginSettingsResolver {
     /** @param array<string, mixed> $settings */
     private function __construct(
+        private readonly string $pluginId,
         private readonly string $configPrefix,
         private readonly ?PluginSetting $row,
         private readonly array $settings,
@@ -45,7 +46,7 @@ final class PluginSettingsResolver {
         }
         $settings = $row?->settings;
 
-        return new self('plugins.' . ($configKey ?? $pluginId), $row, is_array($settings) ? $settings : []);
+        return new self($pluginId, 'plugins.' . ($configKey ?? $pluginId), $row, is_array($settings) ? $settings : []);
     }
 
     public function hasRow(): bool {
@@ -69,6 +70,33 @@ final class PluginSettingsResolver {
      */
     private const SECRET_KEY_PATTERN = '/(^|_)(api_key|api_token|api_secret|api_password|token|secret|password|key|keystring)$/';
 
+    /**
+     * Geheimnisse, die zur App-Registrierung des BETREIBERS gehören und
+     * deshalb weiter auf die Config/ENV zurückfallen dürfen.
+     *
+     * Der Unterschied zu einem Zugangsgeheimnis ist der Datenzugriff: Ein
+     * `api_key` öffnet unmittelbar das Konto des Betreibers — fällt eine
+     * Organisation darauf zurück, sieht sie fremde Daten. Eine
+     * App-Registrierung (`client_secret` eines OAuth-Flusses) öffnet gar
+     * nichts: Die Organisation meldet sich weiter mit ihrem eigenen Konto an,
+     * ihr Token liegt in ihrer eigenen Verbindungszeile. Die
+     * App-Registrierung ist nur der Briefkopf, unter dem die Anmeldung läuft.
+     * Ohne diese Ausnahme fiele in jeder Installation, die ihre Instanz-App
+     * über die .env pflegt, die Anmeldung für alle Organisationen aus.
+     *
+     * Wer eine EIGENE App-Registrierung hinterlegt, überschreibt sie ohnehin
+     * je Organisation — die Liste betrifft nur den Rückfall.
+     *
+     * @var array<string, list<string>>
+     */
+    private const INSTANCE_SECRET_KEYS = [
+        'msgraph' => ['client_secret'],
+        'sharepoint' => ['client_secret'],
+        'google_calendar' => ['client_secret'],
+        'todoist' => ['client_secret'],
+        'calendly' => ['client_secret'],
+    ];
+
     /** Nicht-leerer String: Org-Setting vor Config, sonst `$default`. */
     public function string(string $key, ?string $default = null, bool $trim = false): ?string {
         $own = $this->stringValue($this->settings[$key] ?? null, $trim);
@@ -82,19 +110,25 @@ final class PluginSettingsResolver {
         // eigene Schlüssel. Im Mehrmandantenbetrieb arbeitete ein Mandant ohne
         // eigene Zugangsdaten damit still über den Schlüssel des Betreibers
         // und sah fremde Daten.
-        if ($this->isSecretKey($key) && ! self::secretFallbackAllowed()) {
+        if (self::looksLikeSecretKey($key) && ! self::isInstanceSecretKey($this->pluginId, $key) && ! self::secretFallbackAllowed()) {
             return $default;
         }
 
         return $this->stringValue(config($this->configPrefix . '.' . $key), $trim) ?? $default;
     }
 
-    /** Darf ein Geheimnis auf Config/ENV zurückfallen? Vorgabe: ja. */
+    /** Darf ein Zugangsgeheimnis auf Config/ENV zurückfallen? Vorgabe seit dem Audit 2026-09-13: nein. */
     public static function secretFallbackAllowed(): bool {
         return (bool) config('plugins.allow_env_secret_fallback', true);
     }
 
-    private function isSecretKey(string $key): bool {
+    /** Gehört der Schlüssel zur App-Registrierung des Betreibers? */
+    public static function isInstanceSecretKey(string $pluginId, string $key): bool {
+        return in_array($key, self::INSTANCE_SECRET_KEYS[$pluginId] ?? [], true);
+    }
+
+    /** Bezeichnet der Schlüsselname ein Zugangsgeheimnis? */
+    public static function looksLikeSecretKey(string $key): bool {
         return preg_match(self::SECRET_KEY_PATTERN, $key) === 1;
     }
 

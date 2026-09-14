@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Middleware\Privacy;
 
+use App\Http\Middleware\Concerns\SetsTransportSecurity;
 use Closure;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -24,6 +25,8 @@ use Symfony\Component\HttpFoundation\Response;
  * bleibt strikt, die Seite kommt ohne JavaScript aus.
  */
 class DsarPortalSecurityHeaders {
+    use SetsTransportSecurity;
+
     public function handle(Request $request, Closure $next): Response {
         $response = $next($request);
         $h = $response->headers;
@@ -47,6 +50,9 @@ class DsarPortalSecurityHeaders {
         $h->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), interest-cohort=()');
         $h->set('Cross-Origin-Opener-Policy', 'same-origin');
         $h->set('Cross-Origin-Resource-Policy', 'same-origin');
+        // HSTS wie in den Geschwisterportalen — das Betroffenenportal war das
+        // einzige oeffentliche ohne (Sicherheitsaudit 2026-09-13).
+        $this->applyTransportSecurity($request, $response);
 
         return $response;
     }

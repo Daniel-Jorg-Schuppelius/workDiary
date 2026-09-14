@@ -225,6 +225,8 @@ Route::get('lernen/aussteller/{keyId}.json', [\App\Http\Controllers\Learning\Cer
 // eingebettete Data-Integrity-Form braucht RDF-Kanonisierung, für die es in
 // PHP keine Implementierung gibt — deshalb der zweite Standardweg.
 Route::get('zertifikat/{code}/jwt', [\App\Http\Controllers\Learning\CertificateVerificationController::class, 'credentialJwt'])
+    ->middleware('throttle:30,1')
+    ->where('code', '[A-Za-z0-9]{16,64}')
     ->name('learning.certificates.credential-jwt');
 
 // Kundenportal-Annahme eines Angebots (Feature 066, MVP-170): token-basiert

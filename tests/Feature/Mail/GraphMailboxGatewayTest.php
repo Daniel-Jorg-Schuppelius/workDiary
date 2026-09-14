@@ -13,7 +13,7 @@ namespace Tests\Feature\Mail;
 use App\Models\{EmailConnection, MsgraphMailConnection, User};
 use App\Services\Mail\{GraphMailboxGateway, MailboxGateway, TransportSelectingMailboxGateway};
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -27,12 +27,12 @@ use Tests\TestCase;
 final class GraphMailboxGatewayTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        config()->set('plugins.msgraph.client_id', 'cid');
-        config()->set('plugins.msgraph.client_secret', 'sec');
+        $this->pluginSecret('msgraph', ['client_id' => 'cid', 'client_secret' => 'sec']);
     }
 
     private function graphMailConnection(): MsgraphMailConnection {

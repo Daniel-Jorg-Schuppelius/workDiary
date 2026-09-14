@@ -23,7 +23,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
 use Psr\Http\Message\RequestInterface;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -36,6 +36,7 @@ use Tests\TestCase;
 final class MsgraphConnectionTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
 
@@ -45,8 +46,7 @@ final class MsgraphConnectionTest extends TestCase {
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
 
-        config()->set('plugins.msgraph.client_id', 'test-client');
-        config()->set('plugins.msgraph.client_secret', 'test-secret');
+        $this->pluginSecret('msgraph', ['client_id' => 'test-client', 'client_secret' => 'test-secret']);
     }
 
     /**

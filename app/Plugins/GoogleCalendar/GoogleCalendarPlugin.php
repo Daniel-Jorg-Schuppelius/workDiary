@@ -111,9 +111,14 @@ class GoogleCalendarPlugin extends AbstractPlugin implements CalendarPublisher {
         ];
     }
 
-    /** Keine per-Org-Secrets: Client-ID/-Secret sind installationsweit (ENV). */
+    /** Eigene Google-Cloud-App je Organisation; leer = Instanz-App der Installation. */
     public function settingsSchema(): array {
-        return [];
+        return [
+            \App\Plugins\Contracts\SettingsField::text('client_id', __('google_calendar.settings.client_id'),
+                help: __('google_calendar.settings.client_id_help'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::password('client_secret', __('google_calendar.settings.client_secret'),
+                help: __('google_calendar.settings.client_secret_help'))->toArray(),
+        ];
     }
 
     /** Health-Check je Organisation: billige Probe über die Kalenderliste. */

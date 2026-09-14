@@ -15,7 +15,7 @@ use App\Models\{ExternalReference, IntegrationInboxItem, Task, TodoistConnection
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -28,6 +28,7 @@ use Tests\TestCase;
 final class TodoistSyncCommandTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private TodoistConnection $connection;
     private TodoistProjectLink $link;

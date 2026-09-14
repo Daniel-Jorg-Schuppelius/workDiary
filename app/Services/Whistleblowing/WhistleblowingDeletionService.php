@@ -73,6 +73,22 @@ class WhistleblowingDeletionService {
             $locked->shredDek();
             DB::table('whistleblowing_messages')->where('case_id', $locked->getKey())->delete();
             DB::table('whistleblowing_attachments')->where('case_id', $locked->getKey())->delete();
+            // Personenbezuege rundherum (Sicherheitsaudit 2026-09-13): Beschuldigte,
+            // Konflikte, Bearbeiterzuweisungen, Fristen und Notfallfreigaben blieben
+            // stehen. Ihre Inhalte sind durch die Schluesselvernichtung zwar
+            // unlesbar, die Verknuepfung "diese Person, dieser Fall" blieb aber als
+            // Metadatum erhalten — nach einer Loeschung darf nur der Grabstein
+            // uebrig sein. Das Ereignisprotokoll bleibt bewusst: sein Hash traegt
+            // den Grabstein.
+            foreach ([
+                'whistleblowing_case_subjects',
+                'whistleblowing_case_conflicts',
+                'whistleblowing_case_assignments',
+                'whistleblowing_deadline_reminders',
+                'whistleblowing_emergency_grants',
+            ] as $table) {
+                DB::table($table)->where('case_id', $locked->getKey())->delete();
+            }
             DB::table('whistleblowing_cases')->where('id', $locked->getKey())->update([
                 'subject_ciphertext' => null,
                 'description_ciphertext' => null,

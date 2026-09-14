@@ -24,6 +24,11 @@ class CalendlyOAuth extends PluginOAuthGrant {
         return CalendlyConfig::resolve();
     }
 
+    /** @return array<string, string|int|bool> */
+    protected function configFor(?int $organizationId): array {
+        return CalendlyConfig::resolve($organizationId);
+    }
+
     protected function callbackRouteName(): string {
         return 'admin.calendly.oauth.callback';
     }

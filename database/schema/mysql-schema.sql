@@ -20082,6 +20082,7 @@ CREATE TABLE `whistleblowing_attachments` (
   `message_id` bigint(20) unsigned DEFAULT NULL,
   `uploaded_by_type` varchar(16) NOT NULL,
   `storage_key` varchar(191) NOT NULL,
+  `encrypted` tinyint(1) NOT NULL DEFAULT 0,
   `original_name_ciphertext` text NOT NULL,
   `mime_detected` varchar(191) DEFAULT NULL,
   `size` bigint(20) unsigned NOT NULL DEFAULT 0,
@@ -21210,3 +21211,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (798,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (799,'2027_02_20_101300_add_resale_role_to_articles',66);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (800,'2027_02_20_101400_add_service_period_to_invoice_items',66);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',67);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',68);

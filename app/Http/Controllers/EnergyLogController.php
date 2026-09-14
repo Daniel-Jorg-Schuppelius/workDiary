@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Concerns\{ResolvesGlobalDateRange, ResolvesRequestedUser};
 use App\Http\Requests\SaveEnergyLogRequest;
 use App\Models\{EnergyLog, User, Vehicle};
@@ -21,6 +22,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class EnergyLogController extends Controller {
+    use ResolvesCurrentOrganization;
     use ResolvesGlobalDateRange, ResolvesRequestedUser;
 
     public function __construct(private readonly EnergyLogService $service) {}
@@ -112,7 +114,7 @@ class EnergyLogController extends Controller {
         /** @var User $auth */
         $auth = Auth::user();
         $data['user_id'] = $auth->id;
-        $data['organization_id'] = $auth->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
 
         $this->service->create($data);
 

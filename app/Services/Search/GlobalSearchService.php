@@ -107,7 +107,10 @@ class GlobalSearchService {
                     ->orWhereLikeEscaped('number', $term)
                     ->orWhereLikeEscaped('email', $term));
             $range($query, 'created_at');
-            $groups[] = $this->makeGroup('customers', (string) __('Kunden'), 'badge',
+            $groups[] = $this->makeGroup(
+                'customers',
+                (string) __('Kunden'),
+                'badge',
                 $query->orderBy('name')->limit($limit)->get()
                     ->map(fn(Customer $c) => [
                         'id' => $c->id,
@@ -115,7 +118,8 @@ class GlobalSearchService {
                         'subtitle' => trim(($c->number ? '#' . $c->number : '') . ($c->email ? ' · ' . $c->email : '')) ?: null,
                         'url' => route('customers.show', $c),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         if ($wants('projects') && $person === null) {
@@ -125,7 +129,10 @@ class GlobalSearchService {
                 ->when($customer !== null, fn($q) => $q->where('customer_id', $customer))
                 ->with('customer:id,name');
             $range($query, 'created_at');
-            $groups[] = $this->makeGroup('projects', (string) __('Projekte'), 'folder_special',
+            $groups[] = $this->makeGroup(
+                'projects',
+                (string) __('Projekte'),
+                'folder_special',
                 $query->orderBy('name')->limit($limit)->get()
                     ->map(fn(Project $p) => [
                         'id' => $p->id,
@@ -133,7 +140,8 @@ class GlobalSearchService {
                         'subtitle' => $p->customer?->name,
                         'url' => route('projects.show', $p),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Objekte & Assets (Vollreview W5.2): nur mit asset.view (AssetPolicy::
@@ -151,7 +159,10 @@ class GlobalSearchService {
                 ->with('customer:id,name');
             $range($assetQuery, 'created_at');
             $statusLabels = $this->assetOptions->statusOptions();
-            $groups[] = $this->makeGroup('assets', (string) __('Objekte & Assets'), 'precision_manufacturing',
+            $groups[] = $this->makeGroup(
+                'assets',
+                (string) __('Objekte & Assets'),
+                'precision_manufacturing',
                 $assetQuery->orderBy('name')->limit($limit)->get()
                     ->map(fn(Asset $a) => [
                         'id' => $a->id,
@@ -162,7 +173,8 @@ class GlobalSearchService {
                             . ($a->customer ? ' · ' . $a->customer->name : '')),
                         'url' => route('assets.show', $a),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Aufträge / Tagebucheinträge (MVP-014): Sichtbarkeit wie der Index — ohne
@@ -175,7 +187,10 @@ class GlobalSearchService {
                 ->when($person !== null, fn($q) => $q->where(fn($p) => $p->where('user_id', $person)->orWhere('assigned_user_id', $person)))
                 ->when($customer !== null, fn($q) => $q->where('customer_id', $customer));
             $range($diaryQuery, 'start_at');
-            $groups[] = $this->makeGroup('diary', (string) __('Aufträge'), 'assignment',
+            $groups[] = $this->makeGroup(
+                'diary',
+                (string) __('Aufträge'),
+                'assignment',
                 $diaryQuery->with('customer:id,name')->orderByDesc('start_at')->limit($limit)->get()
                     ->map(fn(DiaryEntry $d) => [
                         'id' => $d->id,
@@ -185,7 +200,8 @@ class GlobalSearchService {
                             . ($d->start_at ? ' · ' . CarbonFmt::fdate(CarbonFmt::orgTz($d->start_at)) : '')),
                         'url' => route('diary.show', $d),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         if ($wants('expenses')) {
@@ -204,7 +220,10 @@ class GlobalSearchService {
                 $expenseQuery->where('user_id', $user->id);
             }
             $range($expenseQuery, 'date');
-            $groups[] = $this->makeGroup('expenses', (string) __('Spesen'), 'receipt_long',
+            $groups[] = $this->makeGroup(
+                'expenses',
+                (string) __('Spesen'),
+                'receipt_long',
                 $expenseQuery->orderByDesc('date')->limit($limit)->get()
                     ->map(fn(Expense $e) => [
                         'id' => $e->id,
@@ -213,7 +232,8 @@ class GlobalSearchService {
                             . ' · ' . NumberHelper::toGermanFormat(($e->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' €',
                         'url' => route('expenses.show', $e),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         if ($wants('per_diem_trips') && $customer === null) {
@@ -228,7 +248,10 @@ class GlobalSearchService {
                 $tripQuery->where('user_id', $user->id);
             }
             $range($tripQuery, 'started_at');
-            $groups[] = $this->makeGroup('per_diem_trips', (string) __('Reisekosten'), 'flight',
+            $groups[] = $this->makeGroup(
+                'per_diem_trips',
+                (string) __('Reisekosten'),
+                'flight',
                 $tripQuery->orderByDesc('started_at')->limit($limit)->get()
                     ->map(fn(PerDiemTrip $t) => [
                         'id' => $t->id,
@@ -237,7 +260,8 @@ class GlobalSearchService {
                             . ($t->purpose ? ' · ' . mb_strimwidth($t->purpose, 0, 60, '…') : ''),
                         'url' => route('per-diem-trips.show', $t),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Nur Admin/Org-Manager dürfen Mitarbeiter durchsuchen.
@@ -247,7 +271,10 @@ class GlobalSearchService {
                 ->where(fn($q) => $q->whereLikeEscaped('name', $term)->orWhereLikeEscaped('email', $term))
                 ->when($person !== null, fn($q) => $q->whereKey($person));
             $range($query, 'created_at');
-            $groups[] = $this->makeGroup('users', (string) __('Mitarbeiter'), 'group',
+            $groups[] = $this->makeGroup(
+                'users',
+                (string) __('Mitarbeiter'),
+                'group',
                 $query->orderBy('name')->limit($limit)->get()
                     ->map(fn(User $u) => [
                         'id' => $u->id,
@@ -255,7 +282,8 @@ class GlobalSearchService {
                         'subtitle' => $u->email,
                         'url' => Gate::forUser($user)->allows('manage-members') ? route('org.members.index') : '#',
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Kommunikationsnotizen (MVP-012): nur mit communication.viewAny; der
@@ -290,11 +318,16 @@ class GlobalSearchService {
 
         // Dokumente (MVP-031): document.viewAny UND aktives Modul (Plan/Lizenz).
         // Keine Detailseite — Link auf die vorgefilterte Liste (?q=Titel).
-        if ($wants('documents') && $person === null && $customer === null
-            && $this->featureFlags->isEnabled('module.documents') && Gate::forUser($user)->allows('viewAny', Document::class)) {
-            $query = Document::query()->whereLikeEscaped('title', $term);
+        if (
+            $wants('documents') && $person === null && $customer === null
+            && $this->featureFlags->isEnabled('module.documents') && Gate::forUser($user)->allows('viewAny', Document::class)
+        ) {
+            $query = Document::query()->visibleTo($user)->whereLikeEscaped('title', $term);
             $range($query, 'updated_at');
-            $groups[] = $this->makeGroup('documents', (string) __('document.title.index'), 'folder_open',
+            $groups[] = $this->makeGroup(
+                'documents',
+                (string) __('document.title.index'),
+                'folder_open',
                 $query->latest('updated_at')->limit($limit)->get()
                     ->map(fn(Document $d) => [
                         'id' => $d->id,
@@ -302,13 +335,16 @@ class GlobalSearchService {
                         'subtitle' => $d->document_type->label() . ' · ' . $d->effectiveStatus()->label(),
                         'url' => route('documents.index', ['q' => $d->title]),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Wissensbasis (Feature 011): Redaktion sieht alle Status, alle anderen
         // Veröffentlichtes plus EIGENE Artikel.
-        if ($wants('knowledge') && $customer === null
-            && $this->featureFlags->isEnabled('module.knowledge') && Gate::forUser($user)->allows('viewAny', KnowledgeArticle::class)) {
+        if (
+            $wants('knowledge') && $customer === null
+            && $this->featureFlags->isEnabled('module.knowledge') && Gate::forUser($user)->allows('viewAny', KnowledgeArticle::class)
+        ) {
             $knowledgeQuery = KnowledgeArticle::query()
                 ->where(fn($q) => $q->whereLikeEscaped('title', $term)
                     ->orWhereLikeEscaped('problem', $term))
@@ -318,7 +354,10 @@ class GlobalSearchService {
                     ->orWhere('created_by_user_id', $user->id));
             }
             $range($knowledgeQuery, 'created_at');
-            $groups[] = $this->makeGroup('knowledge', (string) __('knowledge.title.index'), 'school',
+            $groups[] = $this->makeGroup(
+                'knowledge',
+                (string) __('knowledge.title.index'),
+                'school',
                 $knowledgeQuery->orderByDesc('created_at')->limit($limit)->get()
                     ->map(fn(KnowledgeArticle $a) => [
                         'id' => $a->id,
@@ -326,13 +365,16 @@ class GlobalSearchService {
                         'subtitle' => trim($a->status->label() . ($a->category ? ' · ' . $a->category : '')),
                         'url' => route('knowledge.show', $a),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Formulare (Feature 032): Vorlagen-Sicht sieht alle Submissions, alle
         // anderen ausschließlich die EIGENEN (wie FormSubmissionController).
-        if ($wants('forms') && $customer === null
-            && $this->featureFlags->isEnabled('module.forms') && Gate::forUser($user)->allows('viewAny', FormSubmission::class)) {
+        if (
+            $wants('forms') && $customer === null
+            && $this->featureFlags->isEnabled('module.forms') && Gate::forUser($user)->allows('viewAny', FormSubmission::class)
+        ) {
             $submissionQuery = FormSubmission::query()
                 ->with(['template', 'submitter'])
                 ->whereHas('template', fn($q) => $q->whereLikeEscaped('name', $term))
@@ -341,7 +383,10 @@ class GlobalSearchService {
                 $submissionQuery->where('submitted_by_user_id', $user->id);
             }
             $range($submissionQuery, 'submitted_at');
-            $groups[] = $this->makeGroup('forms', (string) __('form.title.submissions'), 'edit_note',
+            $groups[] = $this->makeGroup(
+                'forms',
+                (string) __('form.title.submissions'),
+                'edit_note',
                 $submissionQuery->orderByDesc('submitted_at')->limit($limit)->get()
                     ->map(fn(FormSubmission $s) => [
                         'id' => $s->id,
@@ -350,7 +395,8 @@ class GlobalSearchService {
                             . ($s->submitter ? ' · ' . $s->submitter->name : ''),
                         'url' => route('form-submissions.show', $s),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Kommentare (MVP-014-Domäne, Vollaudit M8): Auftrags-Kommentare mit der
@@ -370,7 +416,10 @@ class GlobalSearchService {
                 })
                 ->with(['user:id,name', 'commentable']);
             $range($commentQuery, 'created_at');
-            $groups[] = $this->makeGroup('comments', (string) __('Kommentare'), 'chat_bubble',
+            $groups[] = $this->makeGroup(
+                'comments',
+                (string) __('Kommentare'),
+                'chat_bubble',
                 $commentQuery->orderByDesc('created_at')->limit($limit)->get()
                     ->map(fn(Comment $c) => [
                         'id' => $c->id,
@@ -380,7 +429,8 @@ class GlobalSearchService {
                             . ($c->commentable instanceof DiaryEntry && $c->commentable->title ? ' · ' . $c->commentable->title : ''),
                         'url' => route('diary.show', $c->commentable_id) . '#comments',
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Anhang-Metadaten (MVP-014-Domäne, Vollaudit M8): Dateiname; sichtbar
@@ -408,7 +458,10 @@ class GlobalSearchService {
                         });
                 });
             $range($attachmentQuery, 'created_at');
-            $groups[] = $this->makeGroup('attachments', (string) __('Anhänge'), 'attach_file',
+            $groups[] = $this->makeGroup(
+                'attachments',
+                (string) __('Anhänge'),
+                'attach_file',
                 $attachmentQuery->orderByDesc('created_at')->limit($limit)->get()
                     ->map(fn(Attachment $a) => [
                         'id' => $a->id,
@@ -417,7 +470,8 @@ class GlobalSearchService {
                             . ($a->mime ? ' · ' . $a->mime : ''),
                         'url' => route('attachments.download', $a),
                     ])
-                    ->all());
+                    ->all()
+            );
         }
 
         // Leere Gruppen entfernen.

@@ -19,6 +19,7 @@ use App\Settings\SettingScope;
 use App\Support\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use RuntimeException;
+use Tests\Concerns\WithPluginSecrets;
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -32,6 +33,7 @@ use Tests\TestCase;
  */
 final class AccountingSymmetryTest extends TestCase {
     use RefreshDatabase;
+    use WithPluginSecrets;
 
     private const VOUCHERS = 'https://my.sevdesk.de/api/v1/Voucher*';
 
@@ -44,8 +46,7 @@ final class AccountingSymmetryTest extends TestCase {
         $this->org = Organization::factory()->create();
         app()->instance('currentOrganization', $this->org);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->org->id]);
-        config()->set('plugins.sevdesk.enabled', true);
-        config()->set('plugins.sevdesk.api_key', 'test-token');
+        $this->pluginSecret('sevdesk', ['enabled' => true, 'api_key' => 'test-token']);
     }
 
     /** @param array<string, mixed> $overrides @return array<string, mixed> */
@@ -96,7 +97,7 @@ final class AccountingSymmetryTest extends TestCase {
     }
 
     public function test_pull_without_api_key_does_nothing(): void {
-        config()->set('plugins.sevdesk.api_key', '');
+        $this->pluginSecret('sevdesk', ['api_key' => '']);
         $fake = FakePluginHttp::fake([self::VOUCHERS => FakePluginHttp::response(['objects' => []])]);
 
         $result = app(SevDeskVoucherPullService::class)->pull($this->org->id, 1);

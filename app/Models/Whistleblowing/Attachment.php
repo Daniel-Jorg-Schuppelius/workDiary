@@ -39,6 +39,7 @@ class Attachment extends Model implements ProvidesCaseDek {
         'message_id',
         'uploaded_by_type',
         'storage_key',
+        'encrypted',
         'original_name_ciphertext',
         'mime_detected',
         'size',
@@ -51,6 +52,7 @@ class Attachment extends Model implements ProvidesCaseDek {
     protected $casts = [
         'scan_status' => AttachmentScanStatus::class,
         'metadata_scrubbed' => 'boolean',
+        'encrypted' => 'boolean',
         'size' => 'integer',
         'original_name_ciphertext' => CaseEncrypted::class,
     ];

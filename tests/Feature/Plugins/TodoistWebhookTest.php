@@ -15,7 +15,7 @@ use App\Plugins\Todoist\Jobs\TodoistWebhookSyncJob;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Testing\TestResponse;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -28,6 +28,7 @@ use Tests\TestCase;
 final class TodoistWebhookTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     protected function setUp(): void {
         parent::setUp();
@@ -144,5 +145,35 @@ final class TodoistWebhookTest extends TestCase {
 
         $this->assertSame('Per Webhook', Task::query()->firstOrFail()->title);
         $this->assertNotNull(TodoistWebhookDelivery::query()->firstOrFail()->processed_at);
+    }
+
+    public function test_a_signature_of_the_organizations_own_app_is_accepted(): void {
+        Queue::fake();
+        // Eigene Todoist-App der Organisation: Todoist signiert dann mit DEREN
+        // Client-Secret, nicht mit dem der Instanz.
+        $this->pluginSecret('todoist', ['client_secret' => 'org-sec']);
+        $raw = (string) json_encode($this->eventPayload());
+
+        $this->postWebhook($this->eventPayload(), signature: base64_encode(hash_hmac('sha256', $raw, 'org-sec', true)))
+            ->assertOk()
+            ->assertJson(['status' => 'queued']);
+
+        Queue::assertPushed(TodoistWebhookSyncJob::class);
+    }
+
+    public function test_the_secret_of_another_organization_does_not_open_this_account(): void {
+        Queue::fake();
+        $this->pluginSecret('todoist', ['client_secret' => 'org-sec']);
+
+        $fremde = \App\Models\Organization::factory()->create();
+        $this->pluginSecret('todoist', ['client_secret' => 'fremd-sec'], (int) $fremde->id);
+
+        $raw = (string) json_encode($this->eventPayload());
+
+        $this->postWebhook($this->eventPayload(), signature: base64_encode(hash_hmac('sha256', $raw, 'fremd-sec', true)))
+            ->assertStatus(401);
+
+        $this->assertSame(0, TodoistWebhookDelivery::query()->count());
+        Queue::assertNothingPushed();
     }
 }

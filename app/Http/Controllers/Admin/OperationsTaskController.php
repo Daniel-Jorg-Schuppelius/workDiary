@@ -51,6 +51,11 @@ class OperationsTaskController extends Controller {
             ->orderByDesc('last_seen_at');
 
         return view('admin.operations.index', [
+            // Kandidaten fuer die Delegation: bis zum Sicherheitsaudit 2026-09-13
+            // fragte die Ansicht selbst `User::query()` ab — ohne Mandantengrenze
+            // und ausserhalb der Reichweite des Gates, das nur app/ durchsucht.
+            'delegateCandidates' => User::query()->inCurrentOrganization()
+                ->whereNull('customer_id')->orderBy('name')->limit(100)->get(['id', 'name']),
             'tasks' => $query->paginate((int) Setting::get('pagination.notifications', 25))->withQueryString(),
             'statusFilter' => $status,
             'typeFilter' => $type,

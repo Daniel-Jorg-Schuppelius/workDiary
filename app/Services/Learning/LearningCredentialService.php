@@ -116,6 +116,10 @@ class LearningCredentialService {
         $key = LearningIssuerKey::query()
             ->withoutGlobalScopes()
             ->where('key_id', $keyId)
+            // Ein widerrufener Schluessel darf nicht mehr pruefen, sonst bleibt
+            // jeder mit ihm ausgestellte Nachweis gueltig und der Widerruf ist
+            // folgenlos (Sicherheitsaudit 2026-09-13).
+            ->whereNull('revoked_at')
             ->first();
 
         if ($key === null) {

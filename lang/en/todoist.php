@@ -95,7 +95,7 @@ return [
     ],
 
     'flash' => [
-        'not_configured' => 'Todoist is not configured (TODOIST_CLIENT_ID/SECRET missing).',
+        'not_configured' => 'Todoist is not configured: no own app in the plugin settings and no TODOIST_CLIENT_ID/SECRET for the installation.',
         'state_invalid' => 'Invalid or expired OAuth state — please connect again.',
         'oauth_denied' => 'Authorisation was cancelled.',
         'oauth_failed' => 'Token exchange failed (:class).',
@@ -111,5 +111,12 @@ return [
         'collaborator_assigned' => 'Assignee mapped.',
         'collaborator_unassigned' => 'Mapping removed.',
         'collaborator_invalid' => 'Invalid user.',
+    ],
+    // Per-organisation app registration (plugin settings dialog).
+    'settings' => [
+        'client_id' => 'Client ID (own Todoist app)',
+        'client_id_help' => 'Empty = the installation’s instance app. An own Todoist app must register the same redirect URI.',
+        'client_secret' => 'Client secret',
+        'client_secret_help' => 'Stored encrypted; leave empty to keep the stored value.',
     ],
 ];

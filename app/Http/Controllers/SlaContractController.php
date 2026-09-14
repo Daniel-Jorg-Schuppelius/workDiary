@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{SlaContract, User};
 use App\Services\ServiceTicket\SlaQuotaService;
 use Illuminate\Http\Request;
@@ -27,6 +28,7 @@ use Illuminate\View\View;
  * (`slaContract.manage`).
  */
 class SlaContractController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(Request $request): View {
         $this->authorizeView($request);
 
@@ -59,7 +61,7 @@ class SlaContractController extends Controller {
         \Illuminate\Support\Facades\Gate::authorize(\App\Enums\User\Permission::SlaContractManage->value);
 
         $data = $this->validatedContract($request);
-        $data['organization_id'] = (int) $request->user()?->organization_id;
+        $data['organization_id'] = (int) $this->currentOrganization()->id;
         $contract = SlaContract::query()->create($data);
         $this->ensureSingleDefault($contract);
 

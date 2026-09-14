@@ -13,7 +13,7 @@ namespace App\Http\Controllers\Finance;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Finance\SaveBankAccountRequest;
 use App\Models\Finance\BankAccount;
-use CommonToolkit\Helper\Data\BankHelper;
+use App\Support\Crypto\BlindIndex;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -86,13 +86,15 @@ class BankAccountController extends Controller {
     }
 
     private function ibanExists(string $iban, ?int $ignoreId = null): bool {
-        $hash = BankHelper::hashIBAN($iban);
-        if ($hash === null) {
+        // Doppellesen: neuer geschluesselter UND alter Abdruck, bis
+        // `security:rehash-blind-indexes` den Bestand umgerechnet hat.
+        $hashes = BlindIndex::ibanCandidates($iban);
+        if ($hashes === []) {
             return false;
         }
 
         return BankAccount::query()
-            ->where('iban_hash', $hash)
+            ->whereIn('iban_hash', $hashes)
             ->when($ignoreId !== null, fn($q) => $q->where('id', '!=', $ignoreId))
             ->exists();
     }

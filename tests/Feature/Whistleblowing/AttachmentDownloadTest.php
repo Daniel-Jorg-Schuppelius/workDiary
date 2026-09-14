@@ -82,6 +82,88 @@ class AttachmentDownloadTest extends TestCase {
         return route('whistleblowing.internal.attachment', ['case' => $case, 'attachment' => $a->id]);
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13: Betreff, Inhalt und Kontaktdaten eines Falls
+     * lagen laengst mit dem Fall-Schluessel verschluesselt, die hochgeladenen
+     * Beweismittel dagegen im Klartext auf der Platte. Das Crypto-Shredding beim
+     * Loeschen eines Falls wirkte damit nicht auf Dateien: In jedem Backup
+     * blieben Fotos und PDFs samt EXIF- und Autor-Metadaten lesbar, also genau
+     * der Weg, der den Hinweisgeber enttarnt.
+     */
+    public function test_attachment_is_not_readable_in_plaintext_on_disk(): void {
+        $org = Organization::factory()->create();
+        $case = $this->makeCase($org);
+
+        $attachment = app(WhistleblowingAttachmentService::class)->storeReporterUpload(
+            $case,
+            UploadedFile::fake()->createWithContent('beweis.txt', 'GEHEIMER-HINWEIS-KANARIENVOGEL'),
+        );
+
+        $this->assertTrue($attachment->encrypted, 'Neue Anhaenge muessen als verschluesselt gekennzeichnet sein.');
+
+        $raw = (string) Storage::disk((string) config('whistleblowing.disk', 'whistleblowing'))
+            ->get($attachment->storage_key);
+        $this->assertStringNotContainsString('GEHEIMER-HINWEIS-KANARIENVOGEL', $raw, 'Auf der Platte darf kein Klartext liegen.');
+
+        // Lesbar bleibt er nur ueber den Fall-Schluessel.
+        $attachment->setRelation('case', $case);
+        $this->assertSame(
+            'GEHEIMER-HINWEIS-KANARIENVOGEL',
+            app(WhistleblowingAttachmentService::class)->contents($attachment),
+        );
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-13: Ein Beweisfoto traegt Aufnahmezeit, Geraet
+     * und oft GPS-Koordinaten. Die Meldung ist anonym, das Foto war es nicht —
+     * Abschnitt 25 des Konzepts sieht die Bereinigung seit jeher vor, umgesetzt
+     * war sie nicht (`metadata_scrubbed` wurde nur auf false gesetzt).
+     */
+    public function test_image_metadata_is_removed_before_the_attachment_is_released(): void {
+        $org = Organization::factory()->create();
+        $case = $this->makeCase($org);
+
+        // JPEG mit EXIF-Kommentar als Traeger des Personenbezugs.
+        $image = imagecreatetruecolor(8, 8);
+        ob_start();
+        imagejpeg($image);
+        $jpeg = (string) ob_get_clean();
+        imagedestroy($image);
+        $withExif = substr($jpeg, 0, 2) . "\xFF\xFE" . pack('n', 34) . 'GPS 52.5200 N / KANARIENVOGEL' . substr($jpeg, 2);
+
+        $attachment = app(WhistleblowingAttachmentService::class)->storeReporterUpload(
+            $case,
+            UploadedFile::fake()->createWithContent('beweis.jpg', $withExif),
+        );
+        $attachment->forceFill(['mime_detected' => 'image/jpeg'])->save();
+
+        $attachment->setRelation('case', $case);
+        $this->assertStringContainsString(
+            'KANARIENVOGEL',
+            app(WhistleblowingAttachmentService::class)->contents($attachment),
+            'Vor dem Lauf muss der Traeger noch drin sein, sonst prueft der Test nichts.',
+        );
+
+        // Der Standard-Scanner gibt bewusst kein Urteil ab (Quarantaene bleibt);
+        // fuer die Bereinigung braucht es einen, der freigibt.
+        $this->app->bind(\App\Services\Whistleblowing\Scanning\ScanDriver::class, fn () => new class implements \App\Services\Whistleblowing\Scanning\ScanDriver {
+            public function scan(string $absolutePath, ?string $mime): ?\App\Enums\Whistleblowing\AttachmentScanStatus {
+                return \App\Enums\Whistleblowing\AttachmentScanStatus::Clean;
+            }
+        });
+
+        app(\App\Services\Whistleblowing\WhistleblowingAttachmentScanService::class)->scanPending();
+
+        $fresh = $attachment->fresh();
+        $fresh?->setRelation('case', $case);
+        $this->assertTrue((bool) $fresh?->metadata_scrubbed, 'Bilder muessen als bereinigt gelten.');
+        $this->assertStringNotContainsString(
+            'KANARIENVOGEL',
+            app(WhistleblowingAttachmentService::class)->contents($fresh),
+            'Nach der Bereinigung darf kein Metadatenrest mehr im Bild stehen.',
+        );
+    }
+
     public function test_pending_attachment_is_withheld(): void {
         $org = Organization::factory()->create();
         $handler = $this->handler($org);

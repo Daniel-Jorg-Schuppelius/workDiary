@@ -82,7 +82,18 @@ class TwoFactorController extends Controller {
     }
 
     public function enable(): RedirectResponse {
-        $this->user()->forceFill([
+        $user = $this->user();
+
+        // Sicherheitsaudit 2026-09-13: Die Weboberfläche verweigert das
+        // Neuanlegen, wenn bereits ein bestätigter Faktor besteht (S-17); im
+        // Portal fehlte die Schranke. Ein einfacher Aufruf überschrieb dort das
+        // Geheimnis und setzte `two_factor_confirmed_at` zurück — der
+        // Zweitfaktor war ohne Code und ohne Wissen des Inhabers weg.
+        if ($user->two_factor_confirmed_at !== null) {
+            return back()->withErrors(['code' => __('twofactor.error.already_active')]);
+        }
+
+        $user->forceFill([
             'two_factor_secret' => $this->twoFactor->generateSecret(),
             'two_factor_confirmed_at' => null,
         ])->save();

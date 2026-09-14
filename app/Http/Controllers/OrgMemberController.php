@@ -12,7 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Concerns\{AuditsAccessChanges, ManagesUserContactDetails};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\User;
+use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Licensing\LimitGuard;
 use App\Support\SortableQuery;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -29,6 +31,7 @@ use Spatie\Permission\Models\Role;
 class OrgMemberController extends Controller {
     use AuditsAccessChanges;
     use ManagesUserContactDetails;
+    use ResolvesCurrentOrganization;
     public function index(Request $request): View {
         /** @var User $auth */
         $auth = Auth::user();
@@ -96,7 +99,7 @@ class OrgMemberController extends Controller {
         ] + $this->payrollDetailRules($auth) + $this->contactDetailRules());
 
         $user = User::create([
-            'organization_id' => $auth->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'name' => $data['name'],
             'personnel_number' => $this->blankToNull($data['personnel_number'] ?? null),
             'email' => $data['email'],
@@ -220,7 +223,7 @@ class OrgMemberController extends Controller {
             }
 
             $user = User::create([
-                'organization_id' => $auth->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'name' => $name,
                 'personnel_number' => $personnelNumber !== '' ? $personnelNumber : null,
                 'email' => $email,
@@ -324,7 +327,8 @@ class OrgMemberController extends Controller {
         ]);
         $this->fillUserPayrollFields($member, $data, $auth);
         $this->fillUserContactFields($member, $data);
-        if (filled($data['new_password'] ?? null)) {
+        $passwordChanged = filled($data['new_password'] ?? null);
+        if ($passwordChanged) {
             // Neues Passwort gilt im Neu-System (bcrypt). is_new_system aktivieren,
             // damit der Login users.password prüft statt der Legacy-DB.
             $member->forceFill([
@@ -334,6 +338,14 @@ class OrgMemberController extends Controller {
             ]);
         }
         $member->save();
+
+        if ($passwordChanged) {
+            // Ein vom Admin gesetztes Passwort ist der Notfall-Fall (Konto
+            // übernommen, Gerät verloren). Ohne Widerruf blieben Sitzungen,
+            // Remember-Cookies und API-Token bestehen und das neue Passwort
+            // änderte nichts (Sicherheitsaudit 2026-09-13).
+            app(UserSessionInvalidator::class)->invalidateAll($member);
+        }
 
         $this->syncUserAddress($member, (array) ($data['address'] ?? []));
         $this->syncUserBankAccount($member, (array) ($data['bank'] ?? []));

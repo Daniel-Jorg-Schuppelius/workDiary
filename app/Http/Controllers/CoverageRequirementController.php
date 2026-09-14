@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\{StoreCoverageRequirementRequest, UpdateCoverageRequirementRequest};
 use App\Models\{CoverageRequirement, DutyPlan, User};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -17,6 +18,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class CoverageRequirementController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(Request $request, DutyPlan $dutyPlan): View {
         Gate::authorize('view', $dutyPlan);
         Gate::authorize('viewAny', CoverageRequirement::class);
@@ -52,7 +54,7 @@ class CoverageRequirementController extends Controller {
 
         $data = $request->validated();
         $data['duty_plan_id'] = $dutyPlan->id;
-        $data['organization_id'] = $auth->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
         $data['created_by'] = $auth->id;
         $data['updated_by'] = $auth->id;
 

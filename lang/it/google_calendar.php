@@ -12,13 +12,13 @@ return [
     'title' => 'Google Calendar',
     'intro' => 'Gli appuntamenti WorkDiary vengono pubblicati tramite l\'API Google Calendar in un calendario dell\'account Google collegato. WorkDiary resta la fonte autorevole; gli appuntamenti annullati vi scompaiono e le esecuzioni ripetute non creano mai duplicati. Gli appuntamenti esterni non vengono mai letti.',
     'plugin_description' => 'Pubblica gli appuntamenti in modo idempotente in un calendario Google (Calendar API v3, OAuth2) — solo pubblicazione, calendario di destinazione selezionabile.',
-    'not_configured_hint' => 'GOOGLE_CALENDAR_CLIENT_ID/SECRET non sono impostati — la connessione richiede prima un client OAuth nella Google Cloud Console (gli scope calendario sono “sensitive”: verifica del brand o tipo di consenso “Internal” per Workspace).',
+    'not_configured_hint' => 'Nessuna app Google configurata — né nelle impostazioni del plugin di questa organizzazione né come GOOGLE_CALENDAR_CLIENT_ID/SECRET dell’installazione. la connessione richiede prima un client OAuth nella Google Cloud Console (gli scope calendario sono “sensitive”: verifica del brand o tipo di consenso “Internal” per Workspace).',
 
     'health' => [
         'badge_ok' => 'Connesso',
         'badge_failing' => 'Non raggiungibile',
         'badge_inactive' => 'Inattivo',
-        'not_configured' => 'Google Calendar non è configurato (GOOGLE_CALENDAR_CLIENT_ID/SECRET mancanti).',
+        'not_configured' => 'Google Calendar non è configurato: nessuna app propria nelle impostazioni del plugin né GOOGLE_CALENDAR_CLIENT_ID/SECRET per l’installazione.',
         'no_org_context' => 'Configurato (nessuna organizzazione nel contesto).',
         'no_connection' => 'Nessuna connessione Google Calendar stabilita.',
         'inactive' => 'La connessione Google Calendar è disconnessa o disattivata.',
@@ -51,7 +51,7 @@ return [
     ],
 
     'flash' => [
-        'not_configured' => 'Google Calendar non è configurato (GOOGLE_CALENDAR_CLIENT_ID/SECRET mancanti).',
+        'not_configured' => 'Google Calendar non è configurato: nessuna app propria nelle impostazioni del plugin né GOOGLE_CALENDAR_CLIENT_ID/SECRET per l’installazione.',
         'state_invalid' => 'Il flusso OAuth è scaduto o non è valido. Riprovare.',
         'oauth_denied' => 'La connessione è stata rifiutata o annullata.',
         'oauth_failed' => 'Lo scambio dei token non è riuscito (:class).',
@@ -62,5 +62,12 @@ return [
         'calendar_saved' => 'Calendario di destinazione salvato.',
         'calendar_invalid' => 'Il calendario selezionato non è stato trovato.',
         'publish_done' => 'Pubblicazione avviata.',
+    ],
+    // Registrazione app per organizzazione (dialogo impostazioni plugin).
+    'settings' => [
+        'client_id' => 'ID client (app Google Cloud propria)',
+        'client_id_help' => 'Vuoto = app di istanza dell’installazione. Un ID client OAuth proprio deve registrare lo stesso URI di reindirizzamento.',
+        'client_secret' => 'Client secret',
+        'client_secret_help' => 'Memorizzato cifrato; lasciare vuoto per mantenere il valore salvato.',
     ],
 ];

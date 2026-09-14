@@ -206,6 +206,6 @@ class SepaMandateTest extends TestCase {
         $mandate = \App\Models\Finance\SepaMandate::query()->where('reference', 'MND-IBAN-OK')->firstOrFail();
         $this->assertSame('DE89370400440532013000', $mandate->iban);
         $this->assertSame('COBADEFFXXX', $mandate->bic);
-        $this->assertSame((string) \CommonToolkit\Helper\Data\BankHelper::hashIBAN('DE89370400440532013000'), $mandate->iban_hash);
+        $this->assertSame((string) \App\Support\Crypto\BlindIndex::ofIban('DE89370400440532013000'), $mandate->iban_hash);
     }
 }

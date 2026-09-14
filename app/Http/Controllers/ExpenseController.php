@@ -138,7 +138,7 @@ class ExpenseController extends Controller {
         $data['user_id'] = Auth::id();
         /** @var User $user */
         $user = Auth::user();
-        $data['organization_id'] = $user->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
 
         $expense = $this->service->create($data);
 

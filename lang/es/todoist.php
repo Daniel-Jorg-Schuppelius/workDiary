@@ -95,7 +95,7 @@ return [
     ],
 
     'flash' => [
-        'not_configured' => 'Todoist no está configurado (faltan TODOIST_CLIENT_ID/SECRET).',
+        'not_configured' => 'Todoist no está configurado: no hay app propia en los ajustes del plugin ni TODOIST_CLIENT_ID/SECRET para la instalación.',
         'state_invalid' => 'Estado OAuth no válido o caducado — vuelva a conectar.',
         'oauth_denied' => 'La autorización fue cancelada.',
         'oauth_failed' => 'Falló el intercambio de token (:class).',
@@ -111,5 +111,12 @@ return [
         'collaborator_assigned' => 'Responsable asignado.',
         'collaborator_unassigned' => 'Asignación eliminada.',
         'collaborator_invalid' => 'Usuario no válido.',
+    ],
+    // Registro de app por organización (diálogo de ajustes del plugin).
+    'settings' => [
+        'client_id' => 'ID de cliente (app propia de Todoist)',
+        'client_id_help' => 'Vacío = app de instancia de la instalación. Una app propia de Todoist debe registrar el mismo URI de redirección.',
+        'client_secret' => 'Secreto de cliente',
+        'client_secret_help' => 'Se guarda cifrado; dejar vacío para conservar el valor almacenado.',
     ],
 ];

@@ -15,7 +15,7 @@ use App\Plugins\Lexoffice\{LexofficeOrderConfirmationService, LexofficePlugin, L
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Psr\Http\Message\RequestInterface;
 use RuntimeException;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -25,16 +25,14 @@ use Tests\TestCase;
 final class LexofficeOrderConfirmationTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private Customer $customer;
 
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
-        config()->set('plugins.lexoffice.default_vat_rate', 19.0);
-        config()->set('plugins.lexoffice.default_currency', 'EUR');
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'default_vat_rate' => 19.0, 'default_currency' => 'EUR', 'api_key' => 'test-key']);
 
         $this->customer = Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',

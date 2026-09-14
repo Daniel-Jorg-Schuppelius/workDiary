@@ -15,7 +15,7 @@ use App\Plugins\Todoist\Services\TodoistPreflightService;
 use App\Plugins\Todoist\TodoistPlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -27,6 +27,7 @@ use Tests\TestCase;
 final class TodoistMappingTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
     private TodoistConnection $connection;

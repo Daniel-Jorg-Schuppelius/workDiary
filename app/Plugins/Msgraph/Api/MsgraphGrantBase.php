@@ -10,7 +10,6 @@
 
 namespace App\Plugins\Msgraph\Api;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2AuthorizationCodeGrant;
 use App\Plugins\Msgraph\MsgraphConfig;
 use App\Plugins\Support\PluginOAuthGrant;
 
@@ -20,11 +19,8 @@ use App\Plugins\Support\PluginOAuthGrant;
  * (Plugin-Settings-Overlay, {@see MsgraphConfig::resolve()}); ohne Overlay
  * gilt die Instanz-App aus der ENV.
  *
- * - `grant()`/`scopes()` (Basisklasse) lösen die Organisation aus dem
- *   Request-Kontext auf — der OAuth-Verbindungsflow der Admin-Panels.
- * - `grantFor()`/`scopesFor()` nehmen die Organisation EXPLIZIT — für
- *   Token-Refresh im Queue-/Konsolen-Kontext, wo kein Org-Kontext gebunden
- *   ist, die Verbindung ihre Organisation aber kennt.
+ * `grant()`/`scopes()` lösen die Organisation aus dem Request-Kontext auf,
+ * `grantFor()`/`scopesFor()` (Basisklasse) nehmen sie explizit.
  */
 abstract class MsgraphGrantBase extends PluginOAuthGrant {
     /** @return array<string, string|int|bool> */
@@ -32,14 +28,8 @@ abstract class MsgraphGrantBase extends PluginOAuthGrant {
         return MsgraphConfig::resolve();
     }
 
-    public function grantFor(?int $organizationId): OAuth2AuthorizationCodeGrant {
-        return $this->buildGrant(MsgraphConfig::resolve($organizationId));
-    }
-
-    /** @return list<string> */
-    public function scopesFor(?int $organizationId): array {
-        $config = MsgraphConfig::resolve($organizationId);
-
-        return array_values(array_filter(explode(' ', (string) ($config[$this->scopesKey()] ?? ''))));
+    /** @return array<string, string|int|bool> */
+    protected function configFor(?int $organizationId): array {
+        return MsgraphConfig::resolve($organizationId);
     }
 }

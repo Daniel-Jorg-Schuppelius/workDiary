@@ -6339,6 +6339,7 @@ CREATE TABLE IF NOT EXISTS "whistleblowing_attachments"(
   "scan_status" varchar not null default 'pending',
   "metadata_scrubbed" tinyint(1) not null default '0',
   "created_at" datetime,
+  "encrypted" tinyint(1) not null default '0',
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("case_id") references "whistleblowing_cases"("id") on delete cascade,
   foreign key("message_id") references "whistleblowing_messages"("id") on delete set null
@@ -19794,3 +19795,4 @@ INSERT INTO migrations VALUES(798,'2027_02_20_101200_add_document_morph_to_resal
 INSERT INTO migrations VALUES(799,'2027_02_20_101300_add_resale_role_to_articles',15);
 INSERT INTO migrations VALUES(800,'2027_02_20_101400_add_service_period_to_invoice_items',15);
 INSERT INTO migrations VALUES(801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',16);
+INSERT INTO migrations VALUES(802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',17);

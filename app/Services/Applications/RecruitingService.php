@@ -16,7 +16,8 @@ use App\Enums\Notification\NotificationEvent;
 use App\Models\Applications\{EmployeeDraft, JobApplication, JobPosting};
 use App\Models\{Organization, User};
 use App\Services\Notification\NotificationDispatcher;
-use Illuminate\Support\Facades\{DB, Hash};
+use App\Support\Crypto\BlindIndex;
+use Illuminate\Support\Facades\{DB, Hash, Log, Storage};
 use Illuminate\Support\Str;
 
 /**
@@ -40,7 +41,7 @@ class RecruitingService {
         if ($emailHash !== null) {
             $duplicates = JobApplication::query()
                 ->where('organization_id', $actor->organization_id)
-                ->where('email_hash', $emailHash)
+                ->whereIn('email_hash', BlindIndex::emailCandidates($email))
                 ->whereNull('anonymized_at')
                 ->count();
         }
@@ -84,7 +85,7 @@ class RecruitingService {
         if ($emailHash !== null) {
             $duplicates = JobApplication::query()
                 ->where('organization_id', $organization->id)
-                ->where('email_hash', $emailHash)
+                ->whereIn('email_hash', BlindIndex::emailCandidates($email))
                 ->whereNull('anonymized_at')
                 ->count();
         }
@@ -200,7 +201,23 @@ class RecruitingService {
                 'status' => 'deleted',
                 'anonymized_at' => now(),
             ]);
-            $application->audit('recruiting.application_anonymized', ['by' => $actor->id]);
+            // Die hochgeladenen Unterlagen (Lebenslauf, Zeugnisse, Lichtbild)
+            // tragen den Personenbezug, den die Anonymisierung entfernen soll.
+            // Bis zum Sicherheitsaudit 2026-09-13 blieben sie liegen: Name und
+            // Mailadresse waren aus der Datenbank verschwunden, die PDF mit
+            // Anschrift und Foto lag weiter auf der Platte.
+            $deleted = 0;
+            foreach ($application->uploads()->get() as $upload) {
+                try {
+                    Storage::disk((string) ($upload->storage_disk ?: 'local'))->delete((string) $upload->storage_key);
+                    $deleted++;
+                } catch (\Throwable $e) {
+                    Log::warning('recruiting.upload_delete_failed', ['upload' => $upload->getKey(), 'error' => $e->getMessage()]);
+                }
+                $upload->delete();
+            }
+
+            $application->audit('recruiting.application_anonymized', ['by' => $actor->id, 'uploads_deleted' => $deleted]);
         });
 
         return $application->refresh();

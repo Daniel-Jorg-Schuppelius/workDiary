@@ -218,6 +218,49 @@ class GlobalSearchControllerTest extends TestCase {
         $this->assertStringContainsString('#communication-note-' . $note->id, $group['items'][0]['url']);
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13: Die Dokumentgruppe der Suche fragte
+     * `Document::query()` ohne `visibleTo()` ab — anders als die Listenseite und
+     * anders als die Notizen-Gruppe eine Zeile darueber. Damit sah jeder
+     * Mitarbeiter mit dem in der Standardrolle enthaltenen Recht
+     * `document.viewAny` die Titel fremder Personalakten und fremder
+     * Vertraulich-Dokumente. Der Inhalt blieb geschuetzt, der sprechende Titel
+     * ist die sensible Information — genau der Kreis, den die Policy auch vor
+     * dem Org-Admin verschliesst.
+     */
+    public function test_personnel_files_and_foreign_confidential_documents_stay_out_of_the_search(): void {
+        $colleague = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $creator = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+
+        Document::factory()->personnelFile($colleague)->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Zuluwort Abmahnung Personalakte',
+            'created_by_user_id' => $creator->id,
+        ]);
+        Document::factory()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Zuluwort Vertraulich Fremd',
+            'confidential' => true,
+            'created_by_user_id' => $creator->id,
+        ]);
+        Document::factory()->create([
+            'organization_id' => $this->organization->id,
+            'title' => 'Zuluwort Normales Dokument',
+            'created_by_user_id' => $creator->id,
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
+            ->assertOk();
+
+        $titles = collect($response->json('groups'))->firstWhere('key', 'documents')['items'] ?? [];
+        $titles = array_map(static fn (array $i): string => (string) $i['title'], $titles);
+
+        $this->assertContains('Zuluwort Normales Dokument', $titles);
+        $this->assertNotContains('Zuluwort Abmahnung Personalakte', $titles, 'Personalakten duerfen nicht in der Suche stehen.');
+        $this->assertNotContains('Zuluwort Vertraulich Fremd', $titles, 'Fremde Vertraulich-Dokumente duerfen nicht in der Suche stehen.');
+    }
+
     public function test_confidential_note_is_hidden_from_third_parties(): void {
         $creator = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         CommunicationNote::factory()->confidential()->create([

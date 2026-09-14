@@ -12,6 +12,7 @@ namespace App\Console\Commands\Plugin;
 
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\PluginManager;
+use App\Plugins\Support\PluginSettingsResolver;
 use Illuminate\Console\Command;
 
 /**
@@ -48,6 +49,7 @@ class DoctorCommand extends Command {
 
             $this->checkCapabilities($plugin, $violations);
             $this->checkSettingsSchema($plugin, $violations, $warnings);
+            $this->checkSecretFallback($plugin, $warnings);
             $this->checkSchema($plugin, $violations);
             $this->checkServiceProvider($plugin, $violations);
         }
@@ -101,6 +103,40 @@ class DoctorCommand extends Command {
             if (! $normalized->isSecret() && preg_match('/(secret|token|password|api_?key)$/i', $normalized->key)) {
                 $warnings[] = "{$where}: Feld \"{$normalized->key}\" wirkt geheim, ist aber nicht als secret/password gekennzeichnet.";
             }
+        }
+    }
+
+    /**
+     * Meldet Geheimnisse, die in der Betreiber-Konfiguration stehen und über
+     * den offenen Rückfall von JEDER Organisation ohne eigenen Wert benutzt
+     * werden (Sicherheitsaudit 2026-09-13). Die App-Registrierung ist davon
+     * ausgenommen: Sie weist die Software beim Anbieter aus, nicht einen
+     * Kunden, und öffnet kein fremdes Konto.
+     *
+     * @param  list<string>  $warnings
+     */
+    private function checkSecretFallback(Plugin $plugin, array &$warnings): void {
+        if (! PluginSettingsResolver::secretFallbackAllowed()) {
+            return;
+        }
+
+        foreach ($plugin->settingsSchema() as $field) {
+            $key = (string) $field['key'];
+            if (! PluginSettingsResolver::looksLikeSecretKey($key)) {
+                continue;
+            }
+            if (PluginSettingsResolver::isInstanceSecretKey($plugin->id(), $key)) {
+                continue;
+            }
+            if (trim((string) config('plugins.' . $plugin->id() . '.' . $key, '')) === '') {
+                continue;
+            }
+
+            $warnings[] = sprintf(
+                '%s: "%s" steht in der Betreiber-Konfiguration und wird wegen PLUGINS_ALLOW_ENV_SECRET_FALLBACK=true von jeder Organisation ohne eigenen Wert mitbenutzt.',
+                $plugin->id(),
+                $key,
+            );
         }
     }
 

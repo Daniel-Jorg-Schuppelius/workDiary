@@ -15,7 +15,7 @@ namespace App\Services\Whistleblowing;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Whistleblowing\Attachment;
 use App\Services\Whistleblowing\Scanning\ScanDriver;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\{Log, Storage};
 
 /**
  * Steuert den Freigabe-/Quarantaene-Status von Anhaengen (Abschnitt 11 / 25).
@@ -26,6 +26,8 @@ class WhistleblowingAttachmentScanService {
     public function __construct(
         private readonly WhistleblowingEventService $events,
         private readonly ScanDriver $driver,
+        private readonly WhistleblowingAttachmentService $attachments,
+        private readonly WhistleblowingMetadataScrubber $scrubber,
     ) {}
 
     /**
@@ -39,16 +41,25 @@ class WhistleblowingAttachmentScanService {
 
         Attachment::withoutGlobalScopes()
             ->where('scan_status', AttachmentScanStatus::Pending->value)
-            ->chunkById(100, function ($attachments) use ($disk, &$stats): void {
+            ->chunkById(100, function ($attachments) use (&$stats): void {
                 foreach ($attachments as $attachment) {
                     $stats['processed']++;
-                    $result = $this->driver->scan($disk->path($attachment->storage_key), $attachment->mime_detected);
+                    // Der Scanner braucht eine echte Datei; verschluesselte Anhaenge
+                    // (Sicherheitsaudit 2026-09-13) werden dafuer kurz ausgepackt.
+                    $result = $this->attachments->withPlaintextFile(
+                        $attachment,
+                        fn (string $path) => $this->driver->scan($path, $attachment->mime_detected),
+                    );
 
                     if ($result === null) {
                         $stats['skipped']++; // kein Urteil → bleibt in Quarantaene
                         continue;
                     }
                     if ($result === AttachmentScanStatus::Clean) {
+                        // Erst bereinigen, dann freigeben: ein Beweisfoto traegt
+                        // Aufnahmezeit, Geraet und oft GPS — die Meldung ist anonym,
+                        // das Foto nicht (Sicherheitsaudit 2026-09-13).
+                        $this->scrubMetadata($attachment);
                         $this->markClean($attachment);
                         $stats['clean']++;
                     } else {
@@ -59,6 +70,33 @@ class WhistleblowingAttachmentScanService {
             });
 
         return $stats;
+    }
+
+    /**
+     * Metadaten entfernen, soweit der Bereiniger den Typ beherrscht. Bilder
+     * werden neu kodiert; PDF und Office bleiben als "nicht bereinigt"
+     * gekennzeichnet, damit die Luecke sichtbar bleibt.
+     */
+    private function scrubMetadata(Attachment $attachment): void {
+        if (! $this->scrubber->supports($attachment->mime_detected)) {
+            return;
+        }
+
+        try {
+            $scrubbed = $this->scrubber->scrub($this->attachments->contents($attachment), $attachment->mime_detected);
+            if ($scrubbed === null) {
+                return;
+            }
+            $this->attachments->replaceContents($attachment, $scrubbed);
+            $attachment->forceFill(['metadata_scrubbed' => true])->save();
+        } catch (\Throwable $e) {
+            // Eine fehlgeschlagene Bereinigung darf den Anhang nicht verlieren:
+            // er bleibt unveraendert und als "nicht bereinigt" gekennzeichnet.
+            Log::warning('whistleblowing.metadata_scrub_failed', [
+                'attachment_id' => (int) $attachment->getKey(),
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     public function markClean(Attachment $attachment): void {

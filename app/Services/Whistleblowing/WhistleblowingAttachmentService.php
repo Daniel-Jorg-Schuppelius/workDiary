@@ -15,6 +15,7 @@ namespace App\Services\Whistleblowing;
 use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\Whistleblowing\{Attachment, WhistleblowingCase};
 use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
@@ -33,7 +34,82 @@ use Throwable;
  * Quarantaene haelt den Anhang bis dahin zurueck.
  */
 class WhistleblowingAttachmentService {
-    public function __construct(private readonly WhistleblowingEventService $events) {}
+    public function __construct(
+        private readonly WhistleblowingEventService $events,
+        private readonly WhistleblowingCryptoService $crypto,
+    ) {}
+
+    /**
+     * Inhalt eines Anhangs im Klartext - die einzige Stelle, die den Unterschied
+     * zwischen verschluesselten und alten Klartext-Dateien kennt.
+     */
+    public function contents(Attachment $attachment): string {
+        $disk = Storage::disk((string) config('whistleblowing.disk', 'whistleblowing'));
+        $raw = (string) $disk->get($attachment->storage_key);
+
+        if (! $attachment->encrypted) {
+            return $raw; // Bestand von vor dem Sicherheitsaudit 2026-09-13.
+        }
+
+        $dek = $attachment->caseDek();
+        if (! is_string($dek) || $dek === '') {
+            throw new RuntimeException('Fall-Schluessel nicht verfuegbar - Anhang nicht lesbar.');
+        }
+
+        return $this->crypto->decryptWithDek($raw, $dek);
+    }
+
+    /**
+     * Ersetzt den Inhalt eines Anhangs (Metadaten-Bereinigung) und schreibt ihn
+     * wieder verschluesselt zurueck. Der Abdruck wandert mit, sonst beschriebe
+     * er eine Datei, die es nicht mehr gibt.
+     */
+    public function replaceContents(Attachment $attachment, string $plaintext): void {
+        $dek = $attachment->caseDek();
+        if (! is_string($dek) || $dek === '') {
+            throw new RuntimeException('Fall-Schluessel nicht verfuegbar - Anhang bleibt unveraendert.');
+        }
+
+        Storage::disk((string) config('whistleblowing.disk', 'whistleblowing'))
+            ->put($attachment->storage_key, $this->crypto->encryptWithDek($plaintext, $dek));
+
+        $attachment->forceFill([
+            'encrypted' => true,
+            'size' => strlen($plaintext),
+            'sha256' => CryptoHelper::hash($plaintext, HashAlgorithm::SHA256),
+        ])->save();
+    }
+
+    /**
+     * Fuehrt $fn mit einem Klartext-Pfad aus - fuer Verbraucher, die eine echte
+     * Datei brauchen (Virenscanner, ZIP-Export). Die Temporaerdatei verschwindet
+     * in jedem Fall wieder.
+     *
+     * @template TReturn
+     *
+     * @param  callable(string): TReturn  $fn
+     * @return TReturn
+     */
+    public function withPlaintextFile(Attachment $attachment, callable $fn): mixed {
+        $disk = Storage::disk((string) config('whistleblowing.disk', 'whistleblowing'));
+
+        if (! $attachment->encrypted) {
+            return $fn($disk->path($attachment->storage_key));
+        }
+
+        $tmp = tempnam(sys_get_temp_dir(), 'wbatt');
+        if ($tmp === false) {
+            throw new RuntimeException('Konnte keine Temporaerdatei anlegen.');
+        }
+
+        try {
+            file_put_contents($tmp, $this->contents($attachment));
+
+            return $fn($tmp);
+        } finally {
+            @unlink($tmp);
+        }
+    }
 
     public function storeReporterUpload(WhistleblowingCase $case, UploadedFile $file): Attachment {
         $this->guard($case, $file);
@@ -41,14 +117,19 @@ class WhistleblowingAttachmentService {
         $disk = (string) config('whistleblowing.disk', 'whistleblowing');
         $key = 'cases/' . $case->getKey() . '/' . Str::random(40);
 
-        $stream = fopen($file->getRealPath(), 'rb');
-        if ($stream === false) {
+        // Mit dem Fall-Schluessel verschluesseln (Sicherheitsaudit 2026-09-13):
+        // ohne das wirkt das Crypto-Shredding beim Loeschen eines Falls nur auf
+        // Text, waehrend die Beweismittel in jedem Backup im Klartext liegen
+        // bleiben - samt EXIF/Autor, also genau der Enttarnungsweg.
+        $dek = $case->caseDek();
+        if (! is_string($dek) || $dek === '') {
+            throw new RuntimeException('Fall-Schluessel nicht verfuegbar - Anhang wird nicht abgelegt.');
+        }
+        $plaintext = @file_get_contents($file->getRealPath());
+        if ($plaintext === false) {
             throw new RuntimeException('Konnte die hochgeladene Datei nicht lesen.');
         }
-        Storage::disk($disk)->put($key, $stream);
-        if (is_resource($stream)) {
-            fclose($stream);
-        }
+        Storage::disk($disk)->put($key, $this->crypto->encryptWithDek($plaintext, $dek));
 
         $attachment = new Attachment;
         $attachment->organization_id = $case->getAttribute('organization_id');
@@ -56,6 +137,7 @@ class WhistleblowingAttachmentService {
         $attachment->setRelation('case', $case); // DEK fuer den Cast verfuegbar machen
         $attachment->uploaded_by_type = 'reporter';
         $attachment->storage_key = $key;
+        $attachment->encrypted = true;
         $attachment->original_name_ciphertext = $file->getClientOriginalName();
         $attachment->mime_detected = $file->getMimeType(); // serverseitig aus Inhalt
         $attachment->size = (int) $file->getSize();

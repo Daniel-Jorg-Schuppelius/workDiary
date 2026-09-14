@@ -105,6 +105,15 @@ final class SupportAccessGrantTest extends TestCase {
         $this->get(route('account.password.edit'))->assertForbidden();
         $this->get(route('profile.api-tokens.index'))->assertForbidden();
 
+        // Sicherheitsaudit 2026-09-13: Die 2FA-Routen heissen `account.2fa.*` und
+        // enthielten den gesperrten Baustein 'two-factor' nicht. Im Support-Modus
+        // liess sich damit ein Zweitfaktor anlegen, bestaetigen und abschalten —
+        // die Uebernahme des Kontos ueber das Ende der Sitzung hinaus.
+        $this->get(route('account.2fa.show'))->assertForbidden();
+        $this->post(route('account.2fa.enable'))->assertForbidden();
+        $this->post(route('account.2fa.confirm'), ['code' => '000000'])->assertForbidden();
+        $this->delete(route('account.2fa.disable'))->assertForbidden();
+
         // Erlaubte Schreibaktion wird als support.session.action auditiert.
         $this->post(route('today.quick-book'), []);
         $this->assertGreaterThanOrEqual(1, AuditLog::query()->where('event', 'support.session.action')->count());

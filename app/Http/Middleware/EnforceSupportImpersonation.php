@@ -54,6 +54,29 @@ class EnforceSupportImpersonation {
         // übernehmen. Die Sperrliste half nur gegen den direkten Weg.
         'account.profile',
         'account.contact',
+        // Sicherheitsaudit 2026-09-13: Die 2FA-Routen heissen `account.2fa.*`
+        // und enthielten den Baustein 'two-factor' NIE — nur die WebAuthn-
+        // Varianten wurden zufaellig ueber 'webauthn' getroffen. Im Support-
+        // Modus liessen sich damit Zweitfaktor anlegen, bestaetigen und
+        // abschalten. Deshalb zusaetzlich der tatsaechlich verwendete
+        // Namensbaustein UND, unabhaengig davon, die Pfadmuster unten.
+        '2fa.',
+    ];
+
+    /**
+     * Harte Sperren auf dem PFAD, unabhaengig vom Routennamen.
+     *
+     * Namensbausteine sind zerbrechlich: eine Umbenennung entschaerft die
+     * Sperre still (genau so entstand die 2FA-Luecke). Der Pfad ist die
+     * stabilere Groesse, deshalb beide Wege.
+     */
+    private const BLOCKED_PATH_PARTS = [
+        'two-factor',
+        'zwei-faktor',
+        'password',
+        'passwort',
+        'api-tokens',
+        'webauthn',
     ];
 
     public function handle(Request $request, Closure $next): Response {
@@ -75,6 +98,13 @@ class EnforceSupportImpersonation {
 
         foreach (self::BLOCKED_ROUTE_PARTS as $part) {
             if (str_contains($routeName, $part)) {
+                abort(403, __('Diese Aktion ist im Support-Modus gesperrt.'));
+            }
+        }
+
+        $path = mb_strtolower($request->path());
+        foreach (self::BLOCKED_PATH_PARTS as $part) {
+            if (str_contains($path, $part)) {
                 abort(403, __('Diese Aktion ist im Support-Modus gesperrt.'));
             }
         }

@@ -21,7 +21,7 @@ use App\Services\Auth\Sso\{SsoLoginException, SsoLoginService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\{Queue, Route};
 use Illuminate\Testing\TestResponse;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\TestCase;
 
 /**
@@ -46,6 +46,7 @@ use Tests\TestCase;
 final class WebhookTenantTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     /**
      * Verbindliche Liste der eingehenden externen Endpunkte (Mandant wird
@@ -221,7 +222,6 @@ final class WebhookTenantTest extends TestCase {
         Queue::fake();
         config()->set('plugins.todoist.client_id', 'cid');
         config()->set('plugins.todoist.client_secret', 'sec');
-
         // u-A gehört Org A, u-B gehört Org B — beide korrekt signiert.
         TodoistConnection::query()->create([
             'organization_id' => $this->organization->id,

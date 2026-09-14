@@ -24,6 +24,11 @@ class TodoistOAuth extends PluginOAuthGrant {
         return TodoistConfig::resolve();
     }
 
+    /** @return array<string, string|int|bool> */
+    protected function configFor(?int $organizationId): array {
+        return TodoistConfig::resolve($organizationId);
+    }
+
     protected function callbackRouteName(): string {
         return 'admin.todoist.oauth.callback';
     }

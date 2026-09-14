@@ -16,7 +16,7 @@ use App\Enums\Finance\{AllocationKind, TransactionDirection};
 use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Services\Finance\Banking\ReferenceExtractor;
-use CommonToolkit\Helper\Data\BankHelper;
+use App\Support\Crypto\BlindIndex;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -498,7 +498,7 @@ class MatchingService {
         }
 
         foreach ($invoice->customer->bankAccounts as $account) {
-            if (BankHelper::hashIBAN($account->iban) === $hash) {
+            if (in_array($hash, BlindIndex::ibanCandidates($account->iban), true)) {
                 return true;
             }
         }

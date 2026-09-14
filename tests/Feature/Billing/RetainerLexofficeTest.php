@@ -22,7 +22,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -35,6 +35,7 @@ use Tests\TestCase;
 class RetainerLexofficeTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $user;
 
@@ -47,8 +48,7 @@ class RetainerLexofficeTest extends TestCase {
     protected function setUp(): void {
         parent::setUp();
         $this->setUpOrganization();
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $this->customer = Customer::factory()->create([

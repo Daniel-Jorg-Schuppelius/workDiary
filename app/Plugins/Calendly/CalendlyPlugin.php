@@ -67,16 +67,20 @@ class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
         ];
     }
 
+    /** Eigene Calendly-App je Organisation; leer = Instanz-App der Installation. */
     public function settingsSchema(): array {
-        // OAuth-Client-ID/-Secret sind installationsweit (ENV); die Verbindung
-        // wird über den OAuth-Flow im Admin-Panel hergestellt.
-        return [];
+        return [
+            \App\Plugins\Contracts\SettingsField::text('client_id', __('Client-ID (eigene Calendly-App)'),
+                help: __('Leer = Instanz-App der Installation. Eine eigene Calendly-App muss dieselbe Redirect-URI registrieren.'))->toArray(),
+            \App\Plugins\Contracts\SettingsField::password('client_secret', __('Client-Secret'),
+                help: __('Wird verschlüsselt gespeichert; leer lassen = gespeicherten Wert behalten.'))->toArray(),
+        ];
     }
 
     /** Health-Check: aktive Verbindung + /users/me-Ping. */
     public function healthCheck(): PluginHealth {
         if (! CalendlyConfig::isConfigured()) {
-            return PluginHealth::degraded(__('Calendly Client-ID/Secret nicht konfiguriert.'));
+            return PluginHealth::degraded(__('Calendly ist nicht konfiguriert: keine eigene App in den Plugin-Einstellungen und keine CALENDLY_CLIENT_ID/SECRET der Installation.'));
         }
 
         $org = PluginOrgContext::currentOrNull();

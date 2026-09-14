@@ -12,6 +12,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Console\Commands\SystemHealthCommand;
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Plugins\PluginManager;
 use App\Services\Isms\SbomGenerator;
@@ -36,6 +37,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * sbom/workdiary-latest.cdx.json — kein nutzerkontrollierter Pfad.
  */
 class ComponentsController extends Controller {
+    use RequiresPlatformOperator;
+
     private const SBOM_DIR = 'sbom';
 
     public function index(
@@ -95,6 +98,14 @@ class ComponentsController extends Controller {
     public function manifest(ReleaseManifestService $service): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
 
+        // Installationsweite Artefakte (Sicherheitsaudit 2026-09-13,
+        // entschieden 2026-09-13): Das Release-Manifest und die Stueckliste
+        // beschreiben die INSTALLATION, nicht einen Mandanten — sie verraten
+        // die Abhaengigkeitsversionen und damit die Angriffsflaeche. Die
+        // Leseansicht bleibt fuer das ISMS der Organisation offen, das
+        // Erzeugen und Herunterladen ist Betreibersache.
+        $this->assertPlatformOperator();
+
         $document = $service->build();
         $json = JsonHelper::encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         Storage::disk('local')->put(ReleaseManifestService::STORAGE_PATH, $json);
@@ -111,6 +122,14 @@ class ComponentsController extends Controller {
     /** Release-Manifest herunterladen (fester Pfad, Gate-geprüft). */
     public function manifestDownload(): StreamedResponse {
         Gate::authorize(Permission::MetricsView->value);
+
+        // Installationsweite Artefakte (Sicherheitsaudit 2026-09-13,
+        // entschieden 2026-09-13): Das Release-Manifest und die Stueckliste
+        // beschreiben die INSTALLATION, nicht einen Mandanten — sie verraten
+        // die Abhaengigkeitsversionen und damit die Angriffsflaeche. Die
+        // Leseansicht bleibt fuer das ISMS der Organisation offen, das
+        // Erzeugen und Herunterladen ist Betreibersache.
+        $this->assertPlatformOperator();
 
         abort_unless(Storage::disk('local')->exists(ReleaseManifestService::STORAGE_PATH), 404);
 
@@ -176,6 +195,14 @@ class ComponentsController extends Controller {
     public function generate(SbomGenerator $generator): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
 
+        // Installationsweite Artefakte (Sicherheitsaudit 2026-09-13,
+        // entschieden 2026-09-13): Das Release-Manifest und die Stueckliste
+        // beschreiben die INSTALLATION, nicht einen Mandanten — sie verraten
+        // die Abhaengigkeitsversionen und damit die Angriffsflaeche. Die
+        // Leseansicht bleibt fuer das ISMS der Organisation offen, das
+        // Erzeugen und Herunterladen ist Betreibersache.
+        $this->assertPlatformOperator();
+
         $json = $generator->toJson();
         $name = $generator->fileName();
 
@@ -216,6 +243,10 @@ class ComponentsController extends Controller {
     /** Letzte SBOM herunterladen (fester Alias-Pfad, Gate-geprüft). */
     public function download(): StreamedResponse {
         Gate::authorize(Permission::MetricsView->value);
+
+        // Wie beim Manifest: das Herunterladen der Stueckliste ist Betreibersache
+        // (Sicherheitsaudit 2026-09-13).
+        $this->assertPlatformOperator();
 
         $path = self::SBOM_DIR . '/' . SbomGenerator::latestAlias();
         abort_unless(Storage::disk('local')->exists($path), 404);

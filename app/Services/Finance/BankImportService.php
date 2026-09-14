@@ -17,8 +17,9 @@ use App\Models\Finance\{BankAccount, BankStatement, BankTransaction};
 use App\Models\User;
 use App\Services\Concerns\ResolvesActorId;
 use App\Services\Finance\Banking\{BankStatementParser, NormalizedStatement, NormalizedTransaction};
+use App\Support\Crypto\BlindIndex;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\{BankHelper, CryptoHelper};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
 
@@ -158,7 +159,7 @@ class BankImportService {
         string $fileHash,
         ?int $actorId,
     ): BankStatement {
-        $statementIbanHash = BankHelper::hashIBAN($normalized->accountIban);
+        $statementIbanHash = BlindIndex::ofIban($normalized->accountIban);
         $resolvedAccount = $bankAccount ?? $this->resolveAccount($organizationId, $statementIbanHash);
 
         return DB::transaction(function () use (
@@ -230,7 +231,7 @@ class BankImportService {
             'mandate_ref' => $tx->mandateRef,
             'counterparty_name' => $tx->counterpartyName,
             'counterparty_iban' => $tx->counterpartyIban,
-            'counterparty_iban_hash' => BankHelper::hashIBAN($tx->counterpartyIban),
+            'counterparty_iban_hash' => BlindIndex::ofIban($tx->counterpartyIban),
             'purpose' => $tx->purpose,
             'extracted_refs' => $tx->extractedRefs,
             'is_reversal' => $tx->isReversal,
@@ -262,7 +263,7 @@ class BankImportService {
                 'mandate_ref' => $detail->mandateRef,
                 'counterparty_name' => $detail->counterpartyName,
                 'counterparty_iban' => $detail->counterpartyIban,
-                'counterparty_iban_hash' => BankHelper::hashIBAN($detail->counterpartyIban),
+                'counterparty_iban_hash' => BlindIndex::ofIban($detail->counterpartyIban),
                 'purpose' => $detail->purpose,
                 'return_reason' => $detail->returnReason,
             ];

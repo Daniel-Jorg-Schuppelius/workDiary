@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\AssetCompliance\AssetComplianceStatus;
 use App\Enums\Vehicle\{VehicleOwnership, VehiclePropulsion, VehicleType};
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveVehicleRequest;
 use App\Models\{Asset, User, Vehicle};
 use App\Services\AssetCompliance\AssetComplianceService;
@@ -22,6 +23,7 @@ use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 
 class VehicleController extends Controller {
+    use ResolvesCurrentOrganization;
     /** Ampel-Farben je Prüfstatus (Feature 138). */
     private const INSPECTION_TONES = [
         AssetComplianceStatus::Valid->value => 'success',
@@ -107,7 +109,7 @@ class VehicleController extends Controller {
         $data = $request->validated();
         /** @var User $auth */
         $auth = Auth::user();
-        $data['organization_id'] = $auth->organization_id;
+        $data['organization_id'] = $this->currentOrganization()->id;
 
         $vehicle = $this->service->create($data);
 

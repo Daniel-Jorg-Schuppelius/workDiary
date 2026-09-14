@@ -13,7 +13,7 @@ namespace Tests\Feature\Plugins\Msgraph;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\TestCase;
 
 /**
@@ -26,11 +26,13 @@ use Tests\TestCase;
 final class MsgraphAdminConsentTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
 
     protected function setUp(): void {
         parent::setUp();
+
         $this->setUpOrganization();
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);

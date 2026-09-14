@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Helpdesk;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{ServiceQueue, SlaContract, Team};
 use Illuminate\Http\{RedirectResponse, Request};
@@ -24,6 +25,7 @@ use Illuminate\View\View;
  * keine Tickets mehr zugeordnet sind (kein stilles Umhängen).
  */
 class ServiceQueueController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(): View {
         Gate::authorize('viewAny', ServiceQueue::class);
 
@@ -132,7 +134,7 @@ class ServiceQueueController extends Controller {
         if ($queue === null) {
             /** @var \App\Models\User $user */
             $user = \Illuminate\Support\Facades\Auth::user();
-            $data['organization_id'] = (int) $user->organization_id;
+            $data['organization_id'] = (int) $this->currentOrganization()->id;
         }
 
         return $data;

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Requests\SaveTeamRequest;
 use App\Models\{Task, Team, User};
 use App\Services\UI\DateRangeContext;
@@ -25,6 +26,7 @@ use Illuminate\View\View;
  * Projektzuordnung in {@see ProjectController}) die zugewiesenen Aufträge.
  */
 class TeamController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(Request $request): View {
         Gate::authorize('viewAny', Team::class);
 
@@ -60,7 +62,7 @@ class TeamController extends Controller {
         $data = $request->validated();
 
         $team = Team::create([
-            'organization_id' => $auth->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'name' => $data['name'],
             'description' => $data['description'] ?? null,
             'color' => $data['color'] ?? null,

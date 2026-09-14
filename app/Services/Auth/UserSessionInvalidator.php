@@ -25,10 +25,20 @@ use Illuminate\Support\Str;
  * läuft treiberunabhängig und entwertet alle Remember-Cookies.
  */
 final class UserSessionInvalidator {
-    /** Alle Sitzungen des Nutzers widerrufen (Passwort-Reset: keine bleibt). */
+    /**
+     * Alle Sitzungen des Nutzers widerrufen (Passwort-Reset: keine bleibt) —
+     * einschliesslich der API-Token.
+     *
+     * Sicherheitsaudit 2026-09-13: Bis dahin blieben Sanctum-Token bestehen.
+     * Ein Token wird ohne Ablaufdatum und im Zweifel mit Wildcard-Faehigkeit
+     * ausgestellt; wer eine Sitzung kurz uebernommen und sich einen Token
+     * angelegt hatte, arbeitete nach dem Passwort-Reset des Opfers unveraendert
+     * weiter — genau das, was der Reset verhindern soll.
+     */
     public function invalidateAll(User $user): void {
         $this->purgeSessions($user, null);
         $this->rotateRememberToken($user);
+        $user->tokens()->delete();
     }
 
     /**

@@ -12,4 +12,10 @@ SHELL=/bin/sh
 PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
 
 * * * * * __RUN_USER__ __PHP_BIN__ __APP_DIR__/artisan schedule:run >> /dev/null 2>&1
-__BACKUP_MIN__ __BACKUP_HOUR__ * * * root BACKUP_CONF=__BACKUP_CONF__ __APP_DIR__/scripts/backup.sh >> __BACKUP_LOG__ 2>&1
+# Das Backup laeuft als root. Es startet deshalb aus einer root-eigenen Kopie
+# unter /usr/local/sbin und NICHT aus dem Anwendungsverzeichnis: dort darf der
+# Deploy-/Webbenutzer schreiben, und ein Cron-Eintrag, der als root ein vom
+# Webbenutzer beschreibbares Skript ausfuehrt, ist eine Rechteausweitung
+# (Sicherheitsaudit 2026-09-13). scripts/install-system.sh legt die Kopie an
+# und frischt sie bei jedem Lauf auf.
+__BACKUP_MIN__ __BACKUP_HOUR__ * * * root BACKUP_CONF=__BACKUP_CONF__ __BACKUP_BIN__ >> __BACKUP_LOG__ 2>&1

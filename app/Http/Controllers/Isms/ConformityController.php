@@ -168,6 +168,7 @@ class ConformityController extends Controller {
         return view('isms.conformity._certificate_dialog', [
             'status' => $normStatus->load('scope'),
             'documents' => Document::query()
+                ->visibleTo($this->authUser())
                 ->orderBy('title')
                 ->get(['id', 'title']),
         ]);

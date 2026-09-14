@@ -121,6 +121,30 @@ class MaintenanceReportCommandsTest extends TestCase {
             ->assertExitCode(1);
     }
 
+    public function test_plugin_doctor_reports_a_secret_that_every_organization_would_share(): void {
+        // Offener Rueckfall + Wert in der Betreiber-Konfiguration: Jede
+        // Organisation ohne eigenen Wert arbeitet ueber diesen Schluessel.
+        config(['plugins.allow_env_secret_fallback' => true, 'plugins.probe-secret.api_key' => 'betreiber-schluessel']);
+        $this->registerProbePlugin('probe-secret', [
+            \App\Plugins\Contracts\SettingsField::password('api_key', 'API-Schluessel')->toArray(),
+        ]);
+
+        $this->artisan('plugin:doctor')
+            ->expectsOutputToContain('mitbenutzt')
+            ->assertExitCode(0);
+    }
+
+    public function test_plugin_doctor_stays_quiet_when_the_fallback_is_closed(): void {
+        config(['plugins.allow_env_secret_fallback' => false, 'plugins.probe-quiet.api_key' => 'betreiber-schluessel']);
+        $this->registerProbePlugin('probe-quiet', [
+            \App\Plugins\Contracts\SettingsField::password('api_key', 'API-Schluessel')->toArray(),
+        ]);
+
+        $this->artisan('plugin:doctor')
+            ->doesntExpectOutputToContain('mitbenutzt')
+            ->assertExitCode(0);
+    }
+
     // ── app:sqids-salt ───────────────────────────────────────────────────
 
     public function test_sqids_salt_is_generated_when_missing(): void {
@@ -209,9 +233,10 @@ class MaintenanceReportCommandsTest extends TestCase {
         return $path;
     }
 
-    private function registerProbePlugin(string $id): void {
+    /** @param list<array<string, mixed>> $settings */
+    private function registerProbePlugin(string $id, array $settings = []): void {
         $manager = new PluginManager;
-        $manager->register(new ReportProbePlugin($id));
+        $manager->register(new ReportProbePlugin($id, $settings));
         $this->app->instance(PluginManager::class, $manager);
     }
 }
@@ -220,7 +245,8 @@ class MaintenanceReportCommandsTest extends TestCase {
 final class ReportProbePlugin implements Plugin {
     use PluginDefaults;
 
-    public function __construct(private readonly string $id) {}
+    /** @param list<array<string, mixed>> $settings */
+    public function __construct(private readonly string $id, private readonly array $settings = []) {}
 
     public function id(): string {
         return $this->id;
@@ -249,7 +275,7 @@ final class ReportProbePlugin implements Plugin {
         return null;
     }
     public function settingsSchema(): array {
-        return [];
+        return $this->settings;
     }
     public function migrationsPath(): ?string {
         return null;

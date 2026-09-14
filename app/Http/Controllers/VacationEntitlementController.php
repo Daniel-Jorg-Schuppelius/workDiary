@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Models\{Organization, User, VacationEntitlement};
 use App\Services\Absence\VacationBalanceService;
 use App\Support\{LookupCache, Sqid};
@@ -20,6 +21,7 @@ use Illuminate\View\View;
 
 /** Urlaubskonto (MVP-413): Jahresansprüche + Übertrag pflegen. */
 class VacationEntitlementController extends Controller {
+    use ResolvesCurrentOrganization;
     public function index(Request $request, VacationBalanceService $balanceService): View {
         Gate::authorize(Permission::VacationEntitlementsManage->value);
 
@@ -78,7 +80,7 @@ class VacationEntitlementController extends Controller {
 
         VacationEntitlement::query()->updateOrCreate(
             [
-                'organization_id' => $auth->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'user_id' => $data['user_id'],
                 'year' => $data['year'],
             ],
@@ -166,7 +168,7 @@ class VacationEntitlementController extends Controller {
 
         foreach ($missingUsers as $userId) {
             VacationEntitlement::create([
-                'organization_id' => $auth->organization_id,
+                'organization_id' => $this->currentOrganization()->id,
                 'user_id' => (int) $userId,
                 'year' => $year,
                 'entitled_days' => $defaultDays,

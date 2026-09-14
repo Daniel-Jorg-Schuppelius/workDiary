@@ -52,7 +52,7 @@ class ComponentsPageTest extends TestCase {
 
     public function test_generate_button_creates_sbom_and_download_works(): void {
         Storage::fake('local');
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->post(route('admin.components.sbom.generate'))
@@ -76,7 +76,7 @@ class ComponentsPageTest extends TestCase {
 
     public function test_download_without_sbom_returns_not_found(): void {
         Storage::fake('local');
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.components.sbom.download'))
@@ -96,7 +96,7 @@ class ComponentsPageTest extends TestCase {
 
     public function test_admin_generates_and_downloads_release_manifest(): void {
         Storage::fake('local');
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->post(route('admin.components.manifest.generate'))
@@ -116,6 +116,24 @@ class ComponentsPageTest extends TestCase {
             ->get(route('admin.components.manifest.download'))
             ->assertOk()
             ->assertDownload('release.json');
+    }
+
+    /**
+     * Entschieden 2026-09-13 (Sicherheitsaudit): Die Leseansicht bleibt fuer das
+     * ISMS der Organisation offen — Stueckliste und Release-Manifest beschreiben
+     * dagegen die INSTALLATION samt Abhaengigkeitsversionen und damit ihre
+     * Angriffsflaeche. Erzeugen und Herunterladen ist Betreibersache.
+     */
+    public function test_org_admin_may_read_but_not_generate_installation_artifacts(): void {
+        Storage::fake('local');
+        $admin = User::factory()->admin()->create();
+
+        $this->actingAs($admin)->get(route('admin.components.index'))->assertOk();
+
+        $this->actingAs($admin)->post(route('admin.components.sbom.generate'))->assertForbidden();
+        $this->actingAs($admin)->get(route('admin.components.sbom.download'))->assertForbidden();
+        $this->actingAs($admin)->post(route('admin.components.manifest.generate'))->assertForbidden();
+        $this->actingAs($admin)->get(route('admin.components.manifest.download'))->assertForbidden();
     }
 
     public function test_non_admin_cannot_generate_or_download_manifest(): void {

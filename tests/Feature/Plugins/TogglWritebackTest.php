@@ -19,7 +19,7 @@ use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Queue;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -30,6 +30,7 @@ use Tests\TestCase;
 class TogglWritebackTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private const WORKSPACE = 4711;
 
@@ -50,10 +51,10 @@ class TogglWritebackTest extends TestCase {
 
         config([
             'plugins.toggl.enabled' => true,
-            'plugins.toggl.api_token' => 'test-token',
             'plugins.toggl.workspace_id' => self::WORKSPACE,
             'plugins.toggl.writeback' => true,
         ]);
+        $this->pluginSecret('toggl', ['api_token' => 'test-token']);
     }
 
     private function linkedEntry(CarbonImmutable $start, CarbonImmutable $end, string $description): TimeEntry {

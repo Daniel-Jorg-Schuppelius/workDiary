@@ -26,6 +26,9 @@ use OpenApi\Attributes as OA;
  * der Org + ausdrückliches Per-User-Opt-in (DSGVO).
  */
 class LocationController extends Controller {
+    /** Punkte je Anfrage — der Rest wird verworfen, nicht abgelehnt (Offline-Puffer). */
+    private const MAX_POINTS_PER_REQUEST = 1000;
+
     public const MODULE = 'module.standorterfassung';
 
     public const OPT_IN_PREFERENCE = 'location_tracking_enabled';
@@ -166,6 +169,13 @@ class LocationController extends Controller {
             array_is_list($raw) && $raw !== [] => $raw,
             default => [$raw],
         };
+
+        // Obergrenze je Anfrage (Sicherheitsaudit 2026-09-13): Ohne Deckel
+        // bestimmt der Absender, wie viele Punkte ein Aufruf verarbeitet — die
+        // Drossel zaehlt Anfragen, nicht Punkte.
+        if (count($candidates) > self::MAX_POINTS_PER_REQUEST) {
+            $candidates = array_slice($candidates, 0, self::MAX_POINTS_PER_REQUEST);
+        }
 
         $points = [];
         foreach ($candidates as $candidate) {

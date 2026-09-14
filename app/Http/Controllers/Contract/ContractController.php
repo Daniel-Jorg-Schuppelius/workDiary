@@ -205,7 +205,7 @@ class ContractController extends Controller {
         return [
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
             'suppliers' => Supplier::query()->orderBy('name')->get(['id', 'name']),
-            'documents' => Document::query()->orderByDesc('id')->limit(200)->get(['id', 'title']),
+            'documents' => Document::query()->visibleTo($this->authUser())->orderByDesc('id')->limit(200)->get(['id', 'title']),
             'users' => User::inCurrentOrganization()->orderBy('name')->get(['id', 'name']),
         ];
     }

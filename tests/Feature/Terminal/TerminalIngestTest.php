@@ -13,6 +13,7 @@ namespace Tests\Feature\Terminal;
 use App\Enums\Attendance\AttendanceSource;
 use App\Models\{Attendance, AttendanceTerminal, User, UserBadge};
 use App\Services\Reporting\WorkBalanceCalculator;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Testing\TestResponse;
@@ -86,18 +87,55 @@ final class TerminalIngestTest extends TestCase {
         $this->assertSame(1, Attendance::query()->where('user_id', $this->user->id)->count());
     }
 
+    /**
+     * Tag innerhalb des Offline-Fensters. Vorher standen hier feste Juli-Daten;
+     * seit dem Sicherheitsaudit 2026-09-13 prueft der Terminal-Eingang den vom
+     * Geraet gelieferten Zeitstempel gegen dasselbe Fenster wie der
+     * Offline-Sync (kein Zurueckstempeln in abgeschlossene Tage). Die Absicht
+     * dieser Tests ist die Uebernahme der ORIGINALZEIT, nicht ein beliebig
+     * altes Datum.
+     */
+    private function dayInWindow(): string {
+        return CarbonImmutable::now()->subDays(2)->toDateString();
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-13: Der Terminal-Eingang uebernahm `occurred_at`
+     * ungeprueft. Wer das Terminal-Token besass, konnte in abgeschlossene Tage
+     * zurueckstempeln und damit Arbeitszeit, Zuschlaege und Gleitzeitkonto
+     * nachtraeglich veraendern — waehrend derselbe Weg ueber den Offline-Sync
+     * seit S-09 geprueft wird.
+     */
+    public function test_backdated_and_future_stamps_are_rejected(): void {
+        $this->scan([
+            'badge_uid' => self::BADGE,
+            'event' => 'in',
+            'occurred_at' => CarbonImmutable::now()->subDays(60)->format('Y-m-d H:i:s'),
+            'event_id' => 'evt-alt',
+        ])->assertStatus(422);
+
+        $this->scan([
+            'badge_uid' => self::BADGE,
+            'event' => 'in',
+            'occurred_at' => CarbonImmutable::now()->addHours(3)->format('Y-m-d H:i:s'),
+            'event_id' => 'evt-zukunft',
+        ])->assertStatus(422);
+
+        $this->assertSame(0, Attendance::query()->where('user_id', $this->user->id)->count());
+    }
+
     public function test_offline_event_keeps_original_timestamp(): void {
         $this->scan([
             'badge_uid' => self::BADGE,
             'event' => 'in',
-            'occurred_at' => '2026-07-01 08:00:00',
+            'occurred_at' => $this->dayInWindow() . ' 08:00:00',
             'event_id' => 'evt-2',
         ])->assertJsonPath('status', 'clocked_in');
 
         $attendance = Attendance::query()->where('user_id', $this->user->id)->firstOrFail();
         $this->assertNotNull($attendance->started_at);
         // Originalzeit übernommen (Round-Trip in der App-Zeitzone).
-        $this->assertSame('2026-07-01 08:00', $attendance->started_at->format('Y-m-d H:i'));
+        $this->assertSame($this->dayInWindow() . ' 08:00', $attendance->started_at->format('Y-m-d H:i'));
     }
 
     public function test_unknown_badge_is_rejected(): void {
@@ -113,24 +151,24 @@ final class TerminalIngestTest extends TestCase {
     }
 
     public function test_work_break_work_toggle_tracks_break_minutes(): void {
-        $this->scan(['badge_uid' => self::BADGE, 'event' => 'in', 'occurred_at' => '2026-07-01 08:00:00'])
+        $this->scan(['badge_uid' => self::BADGE, 'event' => 'in', 'occurred_at' => $this->dayInWindow() . ' 08:00:00'])
             ->assertJsonPath('status', 'clocked_in');
 
         // Pausen-Scan startet die Pause.
-        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => '2026-07-01 10:00:00'])
+        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => $this->dayInWindow() . ' 10:00:00'])
             ->assertOk()->assertJsonPath('status', 'break_started');
         $attendance = Attendance::query()->where('user_id', $this->user->id)->firstOrFail();
         $this->assertTrue($attendance->isOnBreak());
 
         // Nächster Pausen-Scan beendet sie (30 Min).
-        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => '2026-07-01 10:30:00'])
+        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => $this->dayInWindow() . ' 10:30:00'])
             ->assertJsonPath('status', 'break_ended');
         $attendance->refresh();
         $this->assertFalse($attendance->isOnBreak());
         $this->assertSame(30, $attendance->break_minutes_manual);
 
         // Gehen um 13:00 → 5h brutto − 30 Min Pause = 270 Min (unter ArbZG-Schwelle, kein Auto-Break).
-        $this->scan(['badge_uid' => self::BADGE, 'event' => 'out', 'occurred_at' => '2026-07-01 13:00:00'])
+        $this->scan(['badge_uid' => self::BADGE, 'event' => 'out', 'occurred_at' => $this->dayInWindow() . ' 13:00:00'])
             ->assertJsonPath('status', 'clocked_out');
         $attendance->refresh();
         $this->assertSame(30, $attendance->break_minutes_manual);
@@ -156,11 +194,11 @@ final class TerminalIngestTest extends TestCase {
     }
 
     public function test_clock_out_finalizes_running_break(): void {
-        $this->scan(['badge_uid' => self::BADGE, 'event' => 'in', 'occurred_at' => '2026-07-01 08:00:00'])->assertJsonPath('status', 'clocked_in');
-        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => '2026-07-01 10:00:00'])->assertJsonPath('status', 'break_started');
+        $this->scan(['badge_uid' => self::BADGE, 'event' => 'in', 'occurred_at' => $this->dayInWindow() . ' 08:00:00'])->assertJsonPath('status', 'clocked_in');
+        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => $this->dayInWindow() . ' 10:00:00'])->assertJsonPath('status', 'break_started');
 
         // Ausstempeln bei laufender Pause um 12:00 → offene Pause (120 Min) wird beendet.
-        $this->scan(['badge_uid' => self::BADGE, 'event' => 'out', 'occurred_at' => '2026-07-01 12:00:00'])->assertJsonPath('status', 'clocked_out');
+        $this->scan(['badge_uid' => self::BADGE, 'event' => 'out', 'occurred_at' => $this->dayInWindow() . ' 12:00:00'])->assertJsonPath('status', 'clocked_out');
 
         $attendance = Attendance::query()->where('user_id', $this->user->id)->firstOrFail();
         $this->assertNull($attendance->break_started_at);
@@ -175,12 +213,12 @@ final class TerminalIngestTest extends TestCase {
     }
 
     public function test_break_reduces_reported_work_time(): void {
-        $this->scan(['badge_uid' => self::BADGE, 'event' => 'in', 'occurred_at' => '2026-07-01 08:00:00'])->assertJsonPath('status', 'clocked_in');
-        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => '2026-07-01 10:00:00'])->assertJsonPath('status', 'break_started');
-        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => '2026-07-01 10:30:00'])->assertJsonPath('status', 'break_ended');
-        $this->scan(['badge_uid' => self::BADGE, 'event' => 'out', 'occurred_at' => '2026-07-01 13:00:00'])->assertJsonPath('status', 'clocked_out');
+        $this->scan(['badge_uid' => self::BADGE, 'event' => 'in', 'occurred_at' => $this->dayInWindow() . ' 08:00:00'])->assertJsonPath('status', 'clocked_in');
+        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => $this->dayInWindow() . ' 10:00:00'])->assertJsonPath('status', 'break_started');
+        $this->scan(['badge_uid' => self::BADGE, 'event_type' => 'break', 'occurred_at' => $this->dayInWindow() . ' 10:30:00'])->assertJsonPath('status', 'break_ended');
+        $this->scan(['badge_uid' => self::BADGE, 'event' => 'out', 'occurred_at' => $this->dayInWindow() . ' 13:00:00'])->assertJsonPath('status', 'clocked_out');
 
-        $balance = app(WorkBalanceCalculator::class)->daily($this->user, Carbon::parse('2026-07-01'));
+        $balance = app(WorkBalanceCalculator::class)->daily($this->user, Carbon::parse($this->dayInWindow()));
         $this->assertSame(30, $balance->breakMinutes);
     }
 }

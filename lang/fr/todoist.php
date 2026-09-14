@@ -95,7 +95,7 @@ return [
     ],
 
     'flash' => [
-        'not_configured' => 'Todoist n\'est pas configuré (TODOIST_CLIENT_ID/SECRET manquants).',
+        'not_configured' => 'Todoist n\'est pas configuré : aucune application propre dans les réglages du plugin ni TODOIST_CLIENT_ID/SECRET pour l’installation.',
         'state_invalid' => 'État OAuth non valide ou expiré — veuillez vous reconnecter.',
         'oauth_denied' => 'L\'autorisation a été annulée.',
         'oauth_failed' => 'Échec de l\'échange de jeton (:class).',
@@ -111,5 +111,12 @@ return [
         'collaborator_assigned' => 'Responsable associé.',
         'collaborator_unassigned' => 'Association supprimée.',
         'collaborator_invalid' => 'Utilisateur non valide.',
+    ],
+    // Enregistrement d’application par organisation (dialogue des réglages).
+    'settings' => [
+        'client_id' => 'ID client (application Todoist propre)',
+        'client_id_help' => 'Vide = application d’instance de l’installation. Une application Todoist propre doit enregistrer la même URI de redirection.',
+        'client_secret' => 'Secret client',
+        'client_secret_help' => 'Stocké chiffré ; laisser vide pour conserver la valeur enregistrée.',
     ],
 ];

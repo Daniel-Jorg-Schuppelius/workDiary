@@ -115,7 +115,7 @@ class CashRegisterController extends Controller {
 
         $register = CashRegister::create([
             ...$data,
-            'organization_id' => $auth->organization_id,
+            'organization_id' => $this->currentOrganization()->id,
             'currency' => 'EUR',
             'active' => true,
         ]);

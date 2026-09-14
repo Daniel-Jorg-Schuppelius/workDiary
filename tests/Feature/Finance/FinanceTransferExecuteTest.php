@@ -21,7 +21,7 @@ use App\Services\Finance\Targets\{FileTarget, LexofficeTarget};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Storage;
 use Psr\Http\Message\RequestInterface;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\Support\FakePluginHttp;
 use Tests\TestCase;
 
@@ -33,6 +33,7 @@ use Tests\TestCase;
 class FinanceTransferExecuteTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $accountant;
 
@@ -68,8 +69,7 @@ class FinanceTransferExecuteTest extends TestCase {
 
         $this->service = app(BillingTransferService::class);
 
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
     }
 
     private function makeTimeEntry(array $overrides = []): TimeEntry {
@@ -283,8 +283,7 @@ class FinanceTransferExecuteTest extends TestCase {
     public function test_execute_lexoffice_unconfigured_marks_failed_without_http(): void {
         // Kein API-Key (weder Org- noch globale Konfig) ⇒ Adapter bricht ab,
         // BEVOR ein HTTP-Call passiert; Quellen bleiben unverbraucht.
-        config()->set('plugins.lexoffice.api_key', '');
-
+        $this->pluginSecret('lexoffice', ['api_key' => '']);
         $entry = $this->makeTimeEntry();
         $transfer = $this->confirmedTransfer(TransferTarget::Lexoffice);
 

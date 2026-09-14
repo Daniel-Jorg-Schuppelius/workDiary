@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Models\Finance;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use CommonToolkit\Helper\Data\BankHelper;
+use App\Support\Crypto\BlindIndex;
 use Database\Factories\Finance\BankAccountFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
@@ -72,7 +72,9 @@ class BankAccount extends Model {
         static::saving(function (self $account): void {
             // iban_hash IMMER aus der (entschlüsselten) IBAN ableiten — nie
             // aus Klient-Eingabe übernehmen.
-            $account->iban_hash = (string) BankHelper::hashIBAN($account->iban);
+            // Geschluesselter Abdruck (Sicherheitsaudit 2026-09-13): ein
+            // ungesalzenes SHA-256 einer IBAN ist zurueckrechenbar.
+            $account->iban_hash = (string) BlindIndex::ofIban($account->iban);
         });
     }
 

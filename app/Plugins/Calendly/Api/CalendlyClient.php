@@ -33,7 +33,9 @@ class CalendlyClient {
         $this->base = CalendlyConfig::resolve()['api_base'];
         $this->api = app(PluginHttpFactory::class)->client(CalendlyPlugin::ID, $this->base);
 
-        $grant = CalendlyConfig::isConfigured() ? app(CalendlyOAuth::class)->grant() : null;
+        // Org der Verbindung explizit: eigene App-Registrierung, queue-sicher.
+        $orgId = (int) $this->connection->organization_id;
+        $grant = CalendlyConfig::isConfigured($orgId) ? app(CalendlyOAuth::class)->grantFor($orgId) : null;
         $this->api->setAuthentication(new OAuth2BearerAuthentication(new ConnectionTokenStore($this->connection), $grant));
     }
 

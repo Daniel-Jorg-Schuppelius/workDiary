@@ -79,7 +79,10 @@ class CatalogFetchService {
             'username' => (string) $source->remote_username,
             'password' => (string) $source->remote_password,
             'port' => $source->remote_port ?: 21,
-            'ssl' => false,
+            // Sicherheitsaudit 2026-09-13: Ohne TLS gehen die hinterlegten
+            // Lieferanten-Zugangsdaten im Klartext ueber die Leitung. Klartext
+            // nur noch, wenn der Betreiber ihn bewusst freischaltet.
+            'ssl' => ! (bool) config('procurement.ftp_allow_plaintext', false),
             'timeout' => 30,
             'passive' => true,
         ]));

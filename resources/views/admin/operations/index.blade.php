@@ -107,7 +107,7 @@
                                                 @csrf
                                                 <span class="text-xs font-medium">{{ __('operations.action.delegate') }}</span>
                                                 <select name="assigned_user" class="select select-bordered select-sm w-full">
-                                                    @foreach (\App\Models\User::query()->orderBy('name')->limit(100)->get() as $candidate)
+                                                    @foreach ($delegateCandidates as $candidate)
                                                         <option value="{{ $candidate->sqid }}">{{ $candidate->name }}</option>
                                                     @endforeach
                                                 </select>

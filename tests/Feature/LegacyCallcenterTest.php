@@ -38,6 +38,28 @@ class LegacyCallcenterTest extends TestCase {
         $this->assertSame('agent', session('legacy_callcenter_user'));
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13: Der Controller drosselte je Benutzername,
+     * die Route selbst gar nicht. Passwort-Spraying — ein Versuch je Name ueber
+     * viele Namen von derselben Adresse — lief damit ungebremst gegen die
+     * Klartext-Passwoerter der Legacy-Datenbank.
+     */
+    public function test_password_spraying_from_one_address_is_throttled(): void {
+        $lastStatus = 200;
+        for ($attempt = 0; $attempt < 25; $attempt++) {
+            $lastStatus = $this->from(route('legacy.callcenter.login'))
+                ->post(route('legacy.callcenter.login.submit'), [
+                    'username' => 'agent' . $attempt, // jedes Mal ein anderer Name
+                    'password' => 'wrong',
+                ])->getStatusCode();
+            if ($lastStatus === 429) {
+                break;
+            }
+        }
+
+        $this->assertSame(429, $lastStatus, 'Viele Namen von einer Adresse muessen in die Drossel laufen.');
+    }
+
     public function test_callcenter_login_is_rate_limited_after_repeated_failures(): void {
         for ($attempt = 0; $attempt < 5; $attempt++) {
             $this->from(route('legacy.callcenter.login'))->post(route('legacy.callcenter.login.submit'), [

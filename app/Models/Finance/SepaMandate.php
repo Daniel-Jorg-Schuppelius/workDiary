@@ -15,8 +15,8 @@ namespace App\Models\Finance;
 use App\Enums\Finance\{MandateKind, MandateStatus};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Customer;
+use App\Support\Crypto\BlindIndex;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\BankHelper;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -68,7 +68,7 @@ class SepaMandate extends Model {
 
     protected static function booted(): void {
         static::saving(function (self $mandate): void {
-            $mandate->iban_hash = (string) BankHelper::hashIBAN($mandate->iban);
+            $mandate->iban_hash = (string) BlindIndex::ofIban($mandate->iban);
         });
     }
 

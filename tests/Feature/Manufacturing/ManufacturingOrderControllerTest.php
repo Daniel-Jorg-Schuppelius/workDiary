@@ -15,7 +15,7 @@ use App\Models\{Article, ArticleVariant, ManufacturingOrder, ProcedureMaterialRe
 use App\Services\Manufacturing\ManufacturingOrderService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\Concerns\WithOrganization;
+use Tests\Concerns\{WithOrganization, WithPluginSecrets};
 use Tests\TestCase;
 
 /**
@@ -25,6 +25,7 @@ use Tests\TestCase;
 final class ManufacturingOrderControllerTest extends TestCase {
     use RefreshDatabase;
     use WithOrganization;
+    use WithPluginSecrets;
 
     private User $admin;
     private Warehouse $warehouse;
@@ -177,8 +178,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
     }
 
     public function test_push_delivery_note_to_lexoffice(): void {
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 
         $customer = \App\Models\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
@@ -227,8 +227,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
     }
 
     public function test_push_order_confirmation_to_lexoffice(): void {
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 
         $customer = \App\Models\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',
@@ -270,8 +269,7 @@ final class ManufacturingOrderControllerTest extends TestCase {
     }
 
     public function test_push_quotation_to_lexoffice(): void {
-        config()->set('plugins.lexoffice.api_key', 'test-key');
-        config()->set('plugins.lexoffice.base_url', 'https://api.lexoffice.io/v1');
+        $this->pluginSecret('lexoffice', ['base_url' => 'https://api.lexoffice.io/v1', 'api_key' => 'test-key']);
 
         $customer = \App\Models\Customer::factory()->create([
             'organization_id' => $this->organization->id, 'email' => 'kunde@example.com',

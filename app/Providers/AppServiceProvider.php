@@ -27,6 +27,7 @@ use App\Services\Reminders\ReminderService;
 use App\Services\Routing\{NominatimGeocoder, OsrmRouter};
 use App\Services\Timesheet\Stopwatch;
 use App\Services\UI\DateRangeContext;
+use App\Session\AnonymousStackSessionHandler;
 use App\Support\{CarbonFmt, Setting};
 use Carbon\{Carbon as CarbonMutable, CarbonImmutable};
 use CommonToolkit\Enums\HashAlgorithm;
@@ -35,6 +36,7 @@ use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Event as EventFacade, Gate, RateLimiter, View};
+use Illuminate\Support\Facades\Session;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
 
@@ -278,6 +280,18 @@ class AppServiceProvider extends ServiceProvider {
     }
 
     public function boot(): void {
+        // Sitzungen der anonymen Portale ohne Adresse und Browserkennung
+        // (Sicherheitsaudit 2026-09-13). Ersetzt den Datenbank-Treiber, weil
+        // die Ablage global konfiguriert ist und sich nicht je Route-Gruppe
+        // umschalten lässt; der Handler entscheidet selbst anhand der Gruppe.
+        Session::extend('database', function ($app): AnonymousStackSessionHandler {
+            $table = (string) $app['config']->get('session.table', 'sessions');
+            $lifetime = (int) $app['config']->get('session.lifetime', 120);
+            $connection = $app['db']->connection($app['config']->get('session.connection'));
+
+            return new AnonymousStackSessionHandler($connection, $table, $lifetime, $app);
+        });
+
         // IP-Geolokalisierung (Feature 085): lokale .mmdb aus config/geoip.php.
         // Ohne DB-Datei degradiert IpLocationHelper::lookup() sauber zu null.
         \CommonToolkit\Helper\Geo\IpLocationHelper::configure([
@@ -728,6 +742,20 @@ class AppServiceProvider extends ServiceProvider {
         ]);
         // Öffentlicher Karrierebereich (MVP-437): Ansicht großzügig, Bewerbungs-
         // eingang streng gegen Massensendungen — gehashte IP als Cache-Key.
+        // Legacy-Callcenter (Sicherheitsaudit 2026-09-13): Der Controller
+        // begrenzt je Benutzername; hier kommt die fehlende Schranke gegen
+        // Passwort-Spraying ueber viele Namen von einer Adresse dazu.
+        RateLimiter::for('legacy-login', fn (Request $request) => Limit::perMinute(20)->by('lcc:' . $request->ip()));
+
+        // SCIM (Sicherheitsaudit 2026-09-13): Der Verzeichnis-Stack lief ohne
+        // jede Drossel. Jeder fehlgeschlagene Versuch schreibt eine Zeile ins
+        // Sicherheitsprotokoll — unbegrenzte Versuche sind damit zugleich
+        // Token-Raten und ein Weg, die Datenbank vollzuschreiben.
+        RateLimiter::for('scim', fn (Request $request) => [
+            Limit::perMinute(120)->by('scim:' . $request->ip()),
+            Limit::perMinute(600)->by('scim-global'),
+        ]);
+
         RateLimiter::for('careers-view', fn(Request $request) => Limit::perMinute(30)->by('crv:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
         // Oeffentlicher OCI-Punchout-Katalog (Feature 099, MVP-457): Browse
         // grosszuegig (Katalog-Blaettern), der Credential-Einstieg streng gegen

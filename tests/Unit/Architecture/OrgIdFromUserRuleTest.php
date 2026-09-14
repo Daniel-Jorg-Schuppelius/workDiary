@@ -51,7 +51,13 @@ class OrgIdFromUserRuleTest extends TestCase {
 
             $source = $this->stripComments((string) file_get_contents($file));
 
-            if (preg_match_all('/[\'"]organization_id[\'"]\s*=>\s*(?:\(int\)\s*)?(?:\$request->user\(\)\??->|\$user->|\$actor->|\$admin->|\$this->user\(\)\??->|Auth::user\(\)\??->|auth\(\)->user\(\)\??->)organization_id/', $source, $matches, PREG_OFFSET_CAPTURE) === 0) {
+            // Zwei Schreibweisen: der Array-Literal-Eintrag (`'organization_id' => …`)
+            // UND die nachtraegliche Zuweisung (`$data['organization_id'] = …`).
+            // Die zweite fehlte bis zum Sicherheitsaudit 2026-09-13 — 14 Schreibpfade
+            // setzten die Organisation weiter aus dem Benutzer, das Gate lief gruen.
+            $pattern = '/(?:[\'"]organization_id[\'"]\s*=>|\[[\'"]organization_id[\'"]\]\s*=)\s*(?:\(int\)\s*)?(?:\$request->user\(\)\??->|\$user->|\$auth->|\$actor->|\$admin->|\$this->user\(\)\??->|Auth::user\(\)\??->|auth\(\)->user\(\)\??->)organization_id/';
+
+            if (preg_match_all($pattern, $source, $matches, PREG_OFFSET_CAPTURE) === 0) {
                 continue;
             }
 
