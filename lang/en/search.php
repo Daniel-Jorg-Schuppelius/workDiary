@@ -104,6 +104,10 @@ return [
         'project_action' => 'Search activities',
     ],
 
+    'open' => [
+        'range_set' => 'Period set to :date so the entry appears in the list.',
+    ],
+
     'palette' => [
         'placeholder' => 'Search activities, customers, projects, objects …',
     ],

@@ -41,7 +41,7 @@
                     @php
                         $tsIsSunday = $ts->work_date && \Carbon\Carbon::parse($ts->work_date)->isSunday();
                     @endphp
-                    <tr class="{{ $tsIsSunday ? 'text-error' : '' }}">
+                    <tr id="timesheet-{{ $ts->sqid }}" class="{{ $tsIsSunday ? 'text-error' : '' }}">
                         <td data-sort-value="{{ optional($ts->work_date)->format('Y-m-d') }}">{{ optional($ts->work_date)->fdate() }}</td>
                         <td>{{ $ts->user?->name }}</td>
                         <td class="text-right tabular-nums" data-sort-value="{{ (int) $ts->total_work_minutes }}">{{ \App\Support\Formats::duration((int) $ts->total_work_minutes, 'clock') }}</td>

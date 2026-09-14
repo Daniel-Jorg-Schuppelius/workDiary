@@ -68,7 +68,8 @@ final class ActivitySearchTest extends TestCase {
         $this->assertSame('Exchange-Migration', $hit->projectName);
         $this->assertSame(90, $hit->minutes);
         $this->assertSame('03.03.2026', $hit->dateLabel());
-        $this->assertStringContainsString('tab=time', (string) $hit->url);
+        // Der Projekt-Reiter folgt dem Header-Zeitraum — der Link springt über search.open.
+        $this->assertStringContainsString('/suche/treffer/time_entry/', (string) $hit->url);
         $this->assertContains(['SMTP', true], $hit->snippet);
 
         $this->assertCount(1, $result->aggregates);

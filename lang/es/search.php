@@ -104,6 +104,10 @@ return [
         'project_action' => 'Buscar en actividades',
     ],
 
+    'open' => [
+        'range_set' => 'Periodo fijado en :date para que la entrada aparezca en la lista.',
+    ],
+
     'palette' => [
         'placeholder' => 'Buscar actividades, clientes, proyectos, objetos …',
     ],

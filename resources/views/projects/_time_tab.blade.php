@@ -106,7 +106,7 @@
                     </tr>
                 </x-slot:head>
                 @foreach ($timeEntries as $entry)
-                    <tr class="hover:bg-base-200/50">
+                    <tr id="time-entry-{{ $entry->sqid }}" class="hover:bg-base-200/50">
                         @if ($canBulk)
                             @php($hardLock = $editPolicy->isHardLocked($entry))
                             {{-- Harte Sperren blocken nur die Neuzuordnung — die

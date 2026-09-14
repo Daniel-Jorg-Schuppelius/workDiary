@@ -104,6 +104,10 @@ return [
         'project_action' => 'Tätigkeiten durchsuchen',
     ],
 
+    'open' => [
+        'range_set' => 'Zeitraum auf den :date gesetzt, damit der Eintrag in der Liste steht.',
+    ],
+
     'palette' => [
         'placeholder' => 'Suche nach Tätigkeiten, Kunden, Projekten, Objekten …',
     ],

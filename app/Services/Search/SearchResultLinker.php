@@ -1,7 +1,7 @@
 <?php
 /*
  * Created on   : Mon Sep 14 2026
- * Authorent    : Daniel Jörg Schuppelius
+ * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
  * Filename     : SearchResultLinker.php
  * License      : AGPL-3.0-or-later
@@ -13,15 +13,19 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, ForeignCustomer, KnowledgeArticle, OpenIssue, Project, Protocol, SafetyEvent, SearchDocument, ServiceTicket};
+use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, ForeignCustomer, KnowledgeArticle, OpenIssue, Project, Protocol, SafetyEvent, SearchDocument, ServiceTicket, TimeEntry, Timesheet};
 use App\Support\Sqid;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
 
 /**
  * Deep-Links der Treffer auf die Originale. Zeiten und Stundenzettel haben
- * keine eigene Detailseite — sie öffnen den passenden Projekt-Reiter. Notizen
- * und offene Punkte springen auf die Seite ihres Bezugs mit Anker.
+ * keine eigene Detailseite, und ihre Projekt-Reiter folgen dem globalen
+ * Header-Zeitraum (AGENTS.md §8) — ein Direktlink auf den Reiter zeigt einen
+ * älteren Eintrag nicht. Sie laufen deshalb über `search.open`, das den
+ * Zeitraum auf den Tag des Eintrags setzt. Notizen und offene Punkte springen
+ * auf die Seite ihres Bezugs mit Anker.
  */
 final class SearchResultLinker {
     /**
@@ -36,8 +40,8 @@ final class SearchResultLinker {
         foreach ($documents as $document) {
             $id = $document->source_id;
             $urls[$document->source_type->value . ':' . $id] = match ($document->source_type) {
-                SearchSourceType::TimeEntry => $document->project_id !== null ? $this->projectTab($document->project_id, 'time') : null,
-                SearchSourceType::Timesheet => $document->project_id !== null ? $this->projectTab($document->project_id, 'timesheets') : null,
+                SearchSourceType::TimeEntry => $document->project_id !== null ? $this->jump(SearchSourceType::TimeEntry, TimeEntry::class, $id) : null,
+                SearchSourceType::Timesheet => $document->project_id !== null ? $this->jump(SearchSourceType::Timesheet, Timesheet::class, $id) : null,
                 SearchSourceType::DiaryEntry => route('diary.show', Sqid::encode(DiaryEntry::class, $id)),
                 SearchSourceType::ServiceTicket => route('service-tickets.show', Sqid::encode(ServiceTicket::class, $id)),
                 SearchSourceType::Protocol => route('protocols.show', Sqid::encode(Protocol::class, $id)),
@@ -73,8 +77,13 @@ final class SearchResultLinker {
         };
     }
 
-    private function projectTab(int $projectId, string $tab): string {
-        return route('projects.show', ['project' => Sqid::encode(Project::class, $projectId), 'tab' => $tab]);
+    /**
+     * Sprung über `search.open` (setzt den Header-Zeitraum auf den Eintragstag).
+     *
+     * @param  class-string<Model>  $class
+     */
+    private function jump(SearchSourceType $type, string $class, int $id): string {
+        return route('search.open', ['type' => $type->value, 'id' => Sqid::encode($class, $id)]);
     }
 
     private static function withAnchor(?string $url, string $anchor): ?string {
@@ -82,7 +91,7 @@ final class SearchResultLinker {
     }
 
     /**
-     * @template T of \Illuminate\Database\Eloquent\Model
+     * @template T of Model
      *
      * @param  Collection<int, SearchDocument>  $documents
      * @param  class-string<T>  $class

@@ -3729,6 +3729,11 @@ Route::middleware('auth')->group(function () {
         Route::get('api/internal/search', GlobalSearchController::class)->name('api.internal.search');
         // Vollergebnisseite der globalen Suche (globale-suche.md AK 2–3; Vollaudit 2026-07, M8).
         Route::get('suche', [\App\Http\Controllers\SearchController::class, 'index'])->name('search.index');
+        // Tätigkeitsrecherche (Feature 153): Zeit-/Stundenzettel-Treffer setzen den
+        // Header-Zeitraum auf ihren Tag und springen auf den Projekt-Reiter (AGENTS.md §8).
+        Route::get('suche/treffer/{type}/{id}', [\App\Http\Controllers\SearchHitController::class, 'open'])
+            ->where(['type' => 'time_entry|timesheet', 'id' => '[A-Za-z0-9]+'])
+            ->name('search.open');
 
         // ── Globale Zeitauswahl (Header-Widget) ─────────────────────────────────
         Route::post('ui/date-range', [DateRangeController::class, 'update'])->name('ui.date-range.update');
