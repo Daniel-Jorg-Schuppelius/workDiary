@@ -12,9 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Search;
 
-use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission;
-use App\Models\{Asset, Attachment, Comment, CommunicationNote, Customer, DiaryEntry, Document, Expense, FormSubmission, KnowledgeArticle, PerDiemTrip, Project, User};
+use App\Models\{Asset, Attachment, Customer, DiaryEntry, Document, Expense, FormSubmission, PerDiemTrip, Project, User};
 use App\Services\Asset\AssetFormOptions;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{CarbonFmt, OrganizationContext};
@@ -27,15 +26,15 @@ use Illuminate\Support\Facades\Gate;
  * (Vollaudit 2026-07, M8) nutzen exakt dieselben rechte- und org-sicheren
  * Gruppen — keine zweite Sichtbarkeitslogik.
  *
+ * Seit Feature 153 kommen Aufträge, Kommunikation, Wissen und Kommentare
+ * (plus Zeiten, Stundenzettel, Tickets, Protokolle, offene Punkte) aus dem
+ * Tätigkeitsindex ({@see ActivitySearchService}) als Gruppe „Tätigkeiten";
+ * hier bleiben die Stammdaten und Objekte.
+ *
  * Filter (M8): Domäne (Gruppen-Key), Zeitraum (domänenspezifische
  * Datumsspalte), Person und Kunde. Gruppen ohne Personen-/Kundenbezug liefern
  * bei gesetztem Personen-/Kundenfilter bewusst keine Treffer (ehrlich statt
- * still ignoriert). Status-/Tag-/Sichtbarkeits-Filter sind bewusst
- * zurückgestellt (heterogene Domänen) — in der Feature-Doku ausgewiesen.
- *
- * Neue MVP-014-Domänen (M8): Kommentare (Comment.body, Sichtbarkeit über den
- * Auftrag) und Anhang-Metadaten (Attachment.original_name; Aufträge des
- * Nutzers bzw. eigene Uploads — Volltext/OCR bleibt Folge-MVP).
+ * still ignoriert).
  *
  * Anzeige-Zeitstempel (W4.2): laufen über {@see CarbonFmt} — datetime-Spalten
  * (UTC) erst via orgTz() in die Anzeige-Zeitzone, reine date-Casts direkt fdate().
@@ -45,9 +44,12 @@ use Illuminate\Support\Facades\Gate;
  * @phpstan-type SearchFilters array{domain?: string|null, from?: string|null, to?: string|null, person?: int|null, customer?: int|null}
  */
 class GlobalSearchService {
+    public const ACTIVITIES = 'activities';
+
     public function __construct(
         private readonly FeatureFlagResolver $featureFlags,
         private readonly AssetFormOptions $assetOptions,
+        private readonly ActivitySearchService $activities,
     ) {}
 
     /**
@@ -57,30 +59,28 @@ class GlobalSearchService {
      */
     public function domains(): array {
         return [
+            self::ACTIVITIES => (string) __('search.group.activities'),
             'customers' => (string) __('Kunden'),
             'projects' => (string) __('Projekte'),
             'assets' => (string) __('Objekte & Assets'),
-            'diary' => (string) __('Aufträge'),
             'expenses' => (string) __('Spesen'),
             'per_diem_trips' => (string) __('Reisekosten'),
             'users' => (string) __('Mitarbeiter'),
-            'communication' => (string) __('communication.title.index'),
             'documents' => (string) __('document.title.index'),
-            'knowledge' => (string) __('knowledge.title.index'),
             'forms' => (string) __('form.title.submissions'),
-            'comments' => (string) __('Kommentare'),
             'attachments' => (string) __('Anhänge'),
         ];
     }
 
     /**
      * Alle sichtbaren Treffergruppen für den Begriff (leer gefilterte Gruppen
-     * werden entfernt).
+     * werden entfernt). Die Vollergebnisseite zeigt die Tätigkeiten selbst
+     * und fragt deshalb ohne sie.
      *
      * @param  SearchFilters  $filters
      * @return list<SearchGroup>
      */
-    public function groups(User $user, string $term, array $filters = [], int $limit = 5): array {
+    public function groups(User $user, string $term, array $filters = [], int $limit = 5, bool $withActivities = true): array {
         $orgId = OrganizationContext::currentId() ?? $user->organization_id;
         $domain = $filters['domain'] ?? null;
         $from = $filters['from'] ?? null;
@@ -99,6 +99,18 @@ class GlobalSearchService {
         };
 
         $groups = [];
+
+        // Tätigkeiten (Feature 153): Zeiten, Aufträge inkl. Kommentare,
+        // Stundenzettel, Tickets, Protokolle, offene Punkte, Kommunikation,
+        // Wissen — Rechte je Quelle im ActivitySearchVisibility.
+        if ($withActivities && $wants(self::ACTIVITIES)) {
+            $groups[] = $this->makeGroup(
+                self::ACTIVITIES,
+                (string) __('search.group.activities'),
+                'manage_search',
+                $this->activities->typeAhead($user, $term, ['from' => $from, 'to' => $to, 'person' => $person, 'customer' => $customer], $limit),
+            );
+        }
 
         if ($wants('customers') && $person === null && $customer === null) {
             $query = Customer::query()
@@ -172,33 +184,6 @@ class GlobalSearchService {
                             . ($a->inventory_no ? ' · ' . $a->inventory_no : ($a->serial_no ? ' · ' . $a->serial_no : ''))
                             . ($a->customer ? ' · ' . $a->customer->name : '')),
                         'url' => route('assets.show', $a),
-                    ])
-                    ->all()
-            );
-        }
-
-        // Aufträge / Tagebucheinträge (MVP-014): Sichtbarkeit wie der Index — ohne
-        // diary.viewAny (und kein Admin) nur EIGENE bzw. zugewiesene Aufträge.
-        if ($wants('diary')) {
-            $diaryQuery = $this->visibleDiaryQuery($user)
-                ->where(fn($q) => $q->whereLikeEscaped('title', $term)
-                    ->orWhereLikeEscaped('content', $term)
-                    ->orWhereLikeEscaped('response', $term))
-                ->when($person !== null, fn($q) => $q->where(fn($p) => $p->where('user_id', $person)->orWhere('assigned_user_id', $person)))
-                ->when($customer !== null, fn($q) => $q->where('customer_id', $customer));
-            $range($diaryQuery, 'start_at');
-            $groups[] = $this->makeGroup(
-                'diary',
-                (string) __('Aufträge'),
-                'assignment',
-                $diaryQuery->with('customer:id,name')->orderByDesc('start_at')->limit($limit)->get()
-                    ->map(fn(DiaryEntry $d) => [
-                        'id' => $d->id,
-                        'title' => $d->title ?: ($d->content ? mb_strimwidth($d->content, 0, 60, '…') : (string) __('Auftrag #:id', ['id' => $d->id])),
-                        'subtitle' => trim($d->status->label()
-                            . ($d->customer ? ' · ' . $d->customer->name : '')
-                            . ($d->start_at ? ' · ' . CarbonFmt::fdate(CarbonFmt::orgTz($d->start_at)) : '')),
-                        'url' => route('diary.show', $d),
                     ])
                     ->all()
             );
@@ -286,36 +271,6 @@ class GlobalSearchService {
             );
         }
 
-        // Kommunikationsnotizen (MVP-012): nur mit communication.viewAny; der
-        // visibleTo-Scope blendet vertrauliche Notizen Dritter aus.
-        if ($wants('communication') && Gate::forUser($user)->allows('viewAny', CommunicationNote::class)) {
-            $noteQuery = CommunicationNote::query()
-                ->visibleTo($user)
-                ->whereLikeEscaped('subject', $term)
-                ->when($person !== null, fn($q) => $q->where('created_by_user_id', $person))
-                ->when($customer !== null, fn($q) => $q->where(fn($p) => $p
-                    ->where('notable_type', Customer::class)->where('notable_id', $customer)))
-                ->with('notable');
-            $range($noteQuery, 'occurred_at');
-            $noteItems = [];
-            foreach ($noteQuery->orderByDesc('occurred_at')->limit($limit)->get() as $n) {
-                $url = $this->communicationNoteUrl($n);
-                if ($url === null) {
-                    continue; // Bezug fehlt (z. B. soft-deleted) → kein Deep-Link möglich.
-                }
-                $notableName = $this->notableName($n);
-                $noteItems[] = [
-                    'id' => $n->id,
-                    'title' => (string) $n->subject,
-                    'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($n->occurred_at))
-                        . ' · ' . $n->type->label()
-                        . ($notableName !== null ? ' · ' . $notableName : ''),
-                    'url' => $url,
-                ];
-            }
-            $groups[] = $this->makeGroup('communication', (string) __('communication.title.index'), 'forum', $noteItems);
-        }
-
         // Dokumente (MVP-031): document.viewAny UND aktives Modul (Plan/Lizenz).
         // Keine Detailseite — Link auf die vorgefilterte Liste (?q=Titel).
         if (
@@ -334,36 +289,6 @@ class GlobalSearchService {
                         'title' => (string) $d->title,
                         'subtitle' => $d->document_type->label() . ' · ' . $d->effectiveStatus()->label(),
                         'url' => route('documents.index', ['q' => $d->title]),
-                    ])
-                    ->all()
-            );
-        }
-
-        // Wissensbasis (Feature 011): Redaktion sieht alle Status, alle anderen
-        // Veröffentlichtes plus EIGENE Artikel.
-        if (
-            $wants('knowledge') && $customer === null
-            && $this->featureFlags->isEnabled('module.knowledge') && Gate::forUser($user)->allows('viewAny', KnowledgeArticle::class)
-        ) {
-            $knowledgeQuery = KnowledgeArticle::query()
-                ->where(fn($q) => $q->whereLikeEscaped('title', $term)
-                    ->orWhereLikeEscaped('problem', $term))
-                ->when($person !== null, fn($q) => $q->where('created_by_user_id', $person));
-            if (! ($user->isAdmin() || $user->can(Permission::KnowledgePublish->value))) {
-                $knowledgeQuery->where(fn($q) => $q->where('status', ArticleStatus::Published->value)
-                    ->orWhere('created_by_user_id', $user->id));
-            }
-            $range($knowledgeQuery, 'created_at');
-            $groups[] = $this->makeGroup(
-                'knowledge',
-                (string) __('knowledge.title.index'),
-                'school',
-                $knowledgeQuery->orderByDesc('created_at')->limit($limit)->get()
-                    ->map(fn(KnowledgeArticle $a) => [
-                        'id' => $a->id,
-                        'title' => (string) $a->title,
-                        'subtitle' => trim($a->status->label() . ($a->category ? ' · ' . $a->category : '')),
-                        'url' => route('knowledge.show', $a),
                     ])
                     ->all()
             );
@@ -394,40 +319,6 @@ class GlobalSearchService {
                         'subtitle' => CarbonFmt::fdate(CarbonFmt::orgTz($s->submitted_at))
                             . ($s->submitter ? ' · ' . $s->submitter->name : ''),
                         'url' => route('form-submissions.show', $s),
-                    ])
-                    ->all()
-            );
-        }
-
-        // Kommentare (MVP-014-Domäne, Vollaudit M8): Auftrags-Kommentare mit der
-        // Auftrags-Sichtbarkeit (Parent-Aggregat); Deep-Link auf #comments.
-        if ($wants('comments')) {
-            $commentQuery = Comment::query()
-                ->where('commentable_type', DiaryEntry::class)
-                ->whereLikeEscaped('body', $term)
-                ->when($person !== null, fn($q) => $q->where('user_id', $person))
-                ->whereHasMorph('commentable', [DiaryEntry::class], function ($q) use ($user, $customer): void {
-                    if (! ($user->isAdmin() || $user->can(Permission::DiaryViewAny->value))) {
-                        $q->where(fn($p) => $p->where('user_id', $user->id)->orWhere('assigned_user_id', $user->id));
-                    }
-                    if ($customer !== null) {
-                        $q->where('customer_id', $customer);
-                    }
-                })
-                ->with(['user:id,name', 'commentable']);
-            $range($commentQuery, 'created_at');
-            $groups[] = $this->makeGroup(
-                'comments',
-                (string) __('Kommentare'),
-                'chat_bubble',
-                $commentQuery->orderByDesc('created_at')->limit($limit)->get()
-                    ->map(fn(Comment $c) => [
-                        'id' => $c->id,
-                        'title' => mb_strimwidth((string) $c->body, 0, 80, '…'),
-                        'subtitle' => ($c->created_at !== null ? CarbonFmt::fdate(CarbonFmt::orgTz($c->created_at)) : '')
-                            . ($c->user ? ' · ' . $c->user->name : '')
-                            . ($c->commentable instanceof DiaryEntry && $c->commentable->title ? ' · ' . $c->commentable->title : ''),
-                        'url' => route('diary.show', $c->commentable_id) . '#comments',
                     ])
                     ->all()
             );
@@ -476,53 +367,6 @@ class GlobalSearchService {
 
         // Leere Gruppen entfernen.
         return array_values(array_filter($groups, static fn(array $g): bool => count($g['items']) > 0));
-    }
-
-    /**
-     * Auftrags-Query mit der Index-Sichtbarkeit (eigene/zugewiesene vs. viewAny).
-     *
-     * @return \Illuminate\Database\Eloquent\Builder<DiaryEntry>
-     */
-    private function visibleDiaryQuery(User $user): \Illuminate\Database\Eloquent\Builder {
-        $query = DiaryEntry::query()
-            ->when($user->organization_id !== null, fn($q) => $q->where('organization_id', $user->organization_id));
-        if (! ($user->isAdmin() || $user->can(Permission::DiaryViewAny->value))) {
-            $query->where(fn($q) => $q->where('user_id', $user->id)
-                ->orWhere('assigned_user_id', $user->id));
-        }
-
-        return $query;
-    }
-
-    /**
-     * Anzeigename der Bezugsseite (Auftrag/Kunde/Projekt) einer
-     * Kommunikationsnotiz — null, wenn der Bezug fehlt.
-     */
-    private function notableName(CommunicationNote $note): ?string {
-        $notable = $note->notable;
-
-        return match (true) {
-            $notable instanceof DiaryEntry => $notable->title,
-            $notable instanceof Customer, $notable instanceof Project => $notable->name,
-            default => null,
-        };
-    }
-
-    /**
-     * Deep-Link auf die Bezugsseite mit Fragment-Anker (Muster wie die
-     * Redirects des CommunicationNoteController: #communication-note-{id}).
-     * Null, wenn der Bezug fehlt (z. B. soft-deleted) — Treffer wird übersprungen.
-     */
-    private function communicationNoteUrl(CommunicationNote $note): ?string {
-        $notable = $note->notable;
-        $base = match (true) {
-            $notable instanceof DiaryEntry => route('diary.show', $notable),
-            $notable instanceof Customer => route('customers.show', $notable),
-            $notable instanceof Project => route('projects.show', $notable),
-            default => null,
-        };
-
-        return $base === null ? null : $base . '#communication-note-' . $note->id;
     }
 
     /**

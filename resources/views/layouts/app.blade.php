@@ -505,7 +505,7 @@
                                         @php
                                             // Gruppierung der System-Einträge in aufklappbare Ordner.
                                             $adminGroups = [
-                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.themes.index', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index']],
+                                                ['label' => __('Organisation'), 'icon' => 'corporate_fare', 'routes' => ['admin.organizations.index', 'admin.organizations.edit', 'admin.branding.edit', 'admin.search-synonyms.index', 'admin.themes.index', 'admin.access.index', 'admin.scope.index', 'admin.workspaces.index']],
                                                 ['label' => __('Stammdaten'), 'icon' => 'inventory_2', 'routes' => ['admin.entry-types.index', 'admin.classifications.index', 'admin.classification-requirements.index', 'admin.branch-profiles.index', 'admin.expense-categories.index', 'admin.per-diem-rates.index']],
                                                 ['label' => __('Zeitwirtschaft'), 'icon' => 'hourglass_top', 'routes' => ['admin.time-accounts.index', 'admin.time-dimensions.index', 'admin.shift-rotations.index']],
                                                 ['label' => __('Regeln & Prozesse'), 'icon' => 'account_tree', 'routes' => ['admin.automations.index', 'admin.notification-rules.index', 'admin.webhooks.index', 'form-templates.index', 'procedures.index', 'admin.report-targets.index', 'whistleblowing.portal.edit']],

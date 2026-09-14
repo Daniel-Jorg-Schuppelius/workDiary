@@ -886,6 +886,17 @@ return [
             'expected_runtime_minutes' => 5,
         ],
 
+        // --- Tätigkeitsrecherche: Suchindex abgleichen (Feature 153, MVP-770) ---
+        // Holt nach, was Observer nicht sehen (Massenänderungen, FK-Kaskaden),
+        // und räumt verwaiste Dokumente weg. Abends, im Betriebsfenster.
+        'search.reconcile' => [
+            'command' => 'search:reconcile',
+            'cadence' => ['type' => 'dailyAt', 'time' => '21:50'],
+            'allowed' => ['hourly', 'dailyAt'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 10,
+        ],
+
         // --- Sonderpläne ---
         'payroll.import_minimum_wages' => [
             'command' => 'payroll:import-minimum-wages',

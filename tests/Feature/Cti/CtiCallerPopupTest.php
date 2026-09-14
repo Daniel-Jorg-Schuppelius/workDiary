@@ -85,7 +85,9 @@ final class CtiCallerPopupTest extends TestCase {
         $this->assertSame('cti.incomingCall', $data['event']);
         $this->assertStringContainsString('Muster GmbH', (string) $data['title']);
         $this->assertIsString($data['url']);
-        $this->assertStringContainsString('/customers/', (string) $data['url']);
+        // Feature 153: Das Pop-up führt in die Tätigkeitsrecherche des Anrufers.
+        $this->assertStringContainsString('/suche', (string) $data['url']);
+        $this->assertStringContainsString('customer=', (string) $data['url']);
 
         // Der System-Actor (Owner) bekommt kein Pop-up — es geht gezielt an die
         // angerufene Durchwahl.

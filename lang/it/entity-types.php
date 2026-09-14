@@ -430,6 +430,7 @@ return [
     'ServiceTicket' => 'Ticket di assistenza',
     'SharepointConnection' => 'Connessione SharePoint',
     'ShiftExchange' => 'Scambio di turni',
+    'SearchSynonymGroup' => 'Gruppo di sinonimi di ricerca',
     'ShiftRotation' => 'Rotazione di turni',
     'ShiftRotationAssignment' => 'Assegnazione di rotazione turni',
     'ShiftType' => 'Tipo di turno',

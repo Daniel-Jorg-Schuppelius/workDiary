@@ -16672,6 +16672,70 @@ CREATE TABLE `scim_tokens` (
   CONSTRAINT `scimtok_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `search_documents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `search_documents` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_type` varchar(32) NOT NULL,
+  `source_id` bigint(20) unsigned NOT NULL,
+  `occurred_at` timestamp NULL DEFAULT NULL,
+  `date_only` tinyint(1) NOT NULL DEFAULT 0,
+  `user_id` bigint(20) unsigned DEFAULT NULL,
+  `assigned_user_id` bigint(20) unsigned DEFAULT NULL,
+  `customer_id` bigint(20) unsigned DEFAULT NULL,
+  `foreign_customer_id` bigint(20) unsigned DEFAULT NULL,
+  `project_id` bigint(20) unsigned DEFAULT NULL,
+  `minutes` int(10) unsigned DEFAULT NULL,
+  `restricted` tinyint(1) NOT NULL DEFAULT 0,
+  `title` varchar(255) NOT NULL DEFAULT '',
+  `excerpt` text DEFAULT NULL,
+  `search_text` mediumtext NOT NULL,
+  `source_updated_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sdoc_source_unique` (`source_type`,`source_id`),
+  KEY `sdoc_org_occurred_idx` (`organization_id`,`occurred_at`),
+  KEY `sdoc_org_customer_idx` (`organization_id`,`customer_id`),
+  KEY `sdoc_org_fcustomer_idx` (`organization_id`,`foreign_customer_id`),
+  KEY `sdoc_org_project_idx` (`organization_id`,`project_id`),
+  KEY `sdoc_org_type_user_idx` (`organization_id`,`source_type`,`user_id`),
+  FULLTEXT KEY `sdoc_search_ft` (`search_text`),
+  CONSTRAINT `search_documents_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `search_synonym_groups`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `search_synonym_groups` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `terms` text NOT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `search_synonym_groups_created_by_user_id_foreign` (`created_by_user_id`),
+  KEY `ssyn_org_active_idx` (`organization_id`,`active`),
+  CONSTRAINT `search_synonym_groups_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `search_synonym_groups_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `search_terms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `search_terms` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `term` varchar(40) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `sterm_org_term_unique` (`organization_id`,`term`),
+  CONSTRAINT `search_terms_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `security_advisories`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21494,3 +21558,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (801,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',68);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (803,'2027_02_20_101700_create_learning_cmi5_tables',69);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (804,'2027_02_20_101800_create_learning_lti_tables',70);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (805,'2027_02_20_101900_create_search_index_tables',71);

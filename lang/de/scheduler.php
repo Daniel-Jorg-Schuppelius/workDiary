@@ -154,6 +154,7 @@ return [
         'operations' => ['scan' => 'Betriebsaufgaben abgleichen'],
         'orgamax' => ['sync' => 'orgaMAX-Abgleich'],
         'print' => ['purge_files' => 'Druck-Produktionsdateien nach Löschfrist bereinigen'],
+        'search' => ['reconcile' => 'Suchindex abgleichen (Tätigkeitsrecherche)'],
         'payroll' => ['import_minimum_wages' => 'EU-Mindestlöhne importieren'],
         'plans' => ['purge' => 'Downgrade-Daten bereinigen'],
         'plugin' => ['healthcheck' => 'Plugin-Healthcheck', 'errors_prune' => 'Plugin-Fehler-Inbox aufräumen (Aufbewahrungsfristen)'],

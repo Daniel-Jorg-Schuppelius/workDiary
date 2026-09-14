@@ -23,6 +23,9 @@ class GlobalSearchControllerTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Aufträge, Notizen und Wissen kommen seit Feature 153 aus dem
+        // Tätigkeitsindex (Gruppe „activities").
+        config(['search.indexing' => true]);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
@@ -81,7 +84,7 @@ class GlobalSearchControllerTest extends TestCase {
             ->assertUnauthorized();
     }
 
-    // ── Aufträge / Tagebucheinträge (MVP-014) ───────────────────────────────
+    // ── Aufträge / Tagebucheinträge (MVP-014, seit Feature 153 „Tätigkeiten") ─
 
     public function test_finds_diary_entries_by_title_and_content(): void {
         $customer = Customer::factory()->create([
@@ -99,8 +102,8 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
 
-        $group = collect($response->json('groups'))->firstWhere('key', 'diary');
-        $this->assertNotNull($group, 'Aufträge-Gruppe fehlt.');
+        $group = collect($response->json('groups'))->firstWhere('key', 'activities');
+        $this->assertNotNull($group, 'Tätigkeiten-Gruppe fehlt.');
         $this->assertSame('Zuluwort Störungsbehebung Server', $group['items'][0]['title']);
         $this->assertStringContainsString('Acme Industries GmbH', $group['items'][0]['subtitle']);
         $this->assertSame(route('diary.show', $entry), $group['items'][0]['url']);
@@ -121,7 +124,7 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
         $this->assertNull(
-            collect($response->json('groups'))->firstWhere('key', 'diary'),
+            collect($response->json('groups'))->firstWhere('key', 'activities'),
             'Ohne diary.viewAny dürfen fremde Aufträge nicht erscheinen.'
         );
 
@@ -131,7 +134,7 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
         $this->assertNotNull(
-            collect($response->json('groups'))->firstWhere('key', 'diary'),
+            collect($response->json('groups'))->firstWhere('key', 'activities'),
             'Teamleitung muss alle Aufträge der Organisation finden.'
         );
     }
@@ -200,7 +203,7 @@ class GlobalSearchControllerTest extends TestCase {
         );
     }
 
-    // ── Kommunikationsnotizen (MVP-012) ─────────────────────────────────────
+    // ── Kommunikationsnotizen (MVP-012, seit Feature 153 „Tätigkeiten") ──────
 
     public function test_finds_communication_notes_by_subject(): void {
         $note = CommunicationNote::factory()->create([
@@ -212,8 +215,8 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
 
-        $group = collect($response->json('groups'))->firstWhere('key', 'communication');
-        $this->assertNotNull($group, 'Kommunikations-Gruppe fehlt.');
+        $group = collect($response->json('groups'))->firstWhere('key', 'activities');
+        $this->assertNotNull($group, 'Tätigkeiten-Gruppe fehlt.');
         $this->assertSame('Zuluwort Rückruf Angebot', $group['items'][0]['title']);
         $this->assertStringContainsString('#communication-note-' . $note->id, $group['items'][0]['url']);
     }
@@ -273,7 +276,7 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
         $this->assertNull(
-            collect($response->json('groups'))->firstWhere('key', 'communication'),
+            collect($response->json('groups'))->firstWhere('key', 'activities'),
             'Vertrauliche Notiz darf für Dritte nicht in der Suche erscheinen.'
         );
 
@@ -282,7 +285,7 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
         $this->assertNotNull(
-            collect($response->json('groups'))->firstWhere('key', 'communication'),
+            collect($response->json('groups'))->firstWhere('key', 'activities'),
             'Der Erfasser muss seine vertrauliche Notiz finden.'
         );
     }
@@ -323,7 +326,7 @@ class GlobalSearchControllerTest extends TestCase {
         );
     }
 
-    // ── Wissensbasis (Feature 011) ──────────────────────────────────────────
+    // ── Wissensbasis (Feature 011, seit Feature 153 „Tätigkeiten") ──────────
 
     public function test_finds_published_knowledge_articles_and_own_drafts(): void {
         $colleague = User::factory()->user()->create(['organization_id' => $this->organization->id]);
@@ -340,8 +343,8 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
 
-        $group = collect($response->json('groups'))->firstWhere('key', 'knowledge');
-        $this->assertNotNull($group, 'Wissensbasis-Gruppe fehlt.');
+        $group = collect($response->json('groups'))->firstWhere('key', 'activities');
+        $this->assertNotNull($group, 'Tätigkeiten-Gruppe fehlt.');
         $titles = collect($group['items'])->pluck('title')->all();
         $this->assertContains('Zuluwort Druckerstau beheben', $titles);
         $this->assertContains('Zuluwort eigener Entwurf', $titles);
@@ -359,7 +362,7 @@ class GlobalSearchControllerTest extends TestCase {
             ->assertOk();
 
         $this->assertNull(
-            collect($response->json('groups'))->firstWhere('key', 'knowledge'),
+            collect($response->json('groups'))->firstWhere('key', 'activities'),
             'Fremde Entwürfe dürfen ohne knowledge.publish nicht erscheinen.'
         );
     }
@@ -450,10 +453,13 @@ class GlobalSearchControllerTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'zuluwort']))
             ->assertOk();
 
-        $keys = collect($response->json('groups'))->pluck('key')->all();
+        $groups = collect($response->json('groups'));
+        $keys = $groups->pluck('key')->all();
         $this->assertNotContains('documents', $keys, 'Free-Plan darf keine Dokument-Treffer liefern.');
-        $this->assertNotContains('knowledge', $keys, 'Free-Plan darf keine Wissensbasis-Treffer liefern.');
         $this->assertNotContains('forms', $keys, 'Free-Plan darf keine Formular-Treffer liefern.');
-        $this->assertContains('communication', $keys, 'Kommunikationsnotizen sind nicht modul-gegatet.');
+
+        $activityTitles = collect($groups->firstWhere('key', 'activities')['items'] ?? [])->pluck('title')->all();
+        $this->assertContains('Zuluwort Notiz', $activityTitles, 'Kommunikationsnotizen sind nicht modul-gegatet.');
+        $this->assertNotContains('Zuluwort Artikel', $activityTitles, 'Free-Plan darf keine Wissensbasis-Treffer liefern.');
     }
 }

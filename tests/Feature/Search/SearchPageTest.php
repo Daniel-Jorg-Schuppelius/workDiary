@@ -16,9 +16,8 @@ use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
 
 /**
- * Vollaudit 2026-07 (M8): Vollergebnisseite /suche (globale-suche.md AK 2–3)
- * mit Domänen-/Zeitraum-/Kunden-Filter sowie die neuen MVP-014-Domänen
- * Kommentare und Anhang-Metadaten (Sichtbarkeit über den Auftrag).
+ * Suchseite /suche: Tätigkeitsrecherche (Feature 153) plus Stammdaten-Gruppen
+ * mit Domänen-Fokus (Vollaudit 2026-07, M8) und Anhang-Metadaten.
  */
 final class SearchPageTest extends TestCase {
     use RefreshDatabase;
@@ -28,11 +27,12 @@ final class SearchPageTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        config(['search.indexing' => true]);
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
     }
 
-    public function test_full_results_page_groups_hits_and_filters_by_domain(): void {
+    public function test_page_shows_activities_and_entity_groups_and_focuses_a_domain(): void {
         Customer::factory()->create([
             'organization_id' => $this->organization->id,
             'name' => 'Acme Industries GmbH',
@@ -45,18 +45,21 @@ final class SearchPageTest extends TestCase {
 
         $response = $this->actingAs($this->user)
             ->get(route('search.index', ['q' => 'acme']))
-            ->assertOk();
-        $keys = collect($response->viewData('groups'))->pluck('key')->all();
-        $this->assertContains('customers', $keys);
-        $this->assertContains('diary', $keys);
+            ->assertOk()
+            // Die Hervorhebung zerlegt den Titel in Segmente — Text ohne Tags prüfen.
+            ->assertSeeText('Acme Wartung Halle 3');
+        $this->assertContains('customers', collect($response->viewData('groups'))->pluck('key')->all());
+        $this->assertSame(1, $response->viewData('result')->hits->total());
+        $this->assertSame('Acme Wartung Halle 3', $response->viewData('result')->hits->first()->title);
 
         $filtered = $this->actingAs($this->user)
             ->get(route('search.index', ['q' => 'acme', 'domain' => 'customers']))
             ->assertOk();
         $this->assertSame(['customers'], collect($filtered->viewData('groups'))->pluck('key')->all());
+        $this->assertNull($filtered->viewData('result'));
     }
 
-    public function test_comments_domain_respects_diary_visibility(): void {
+    public function test_comments_are_found_through_their_visible_diary_entry(): void {
         $mine = DiaryEntry::factory()->create([
             'organization_id' => $this->organization->id,
             'user_id' => $this->user->id,
@@ -85,12 +88,11 @@ final class SearchPageTest extends TestCase {
         ]);
 
         $response = $this->actingAs($this->user)
-            ->get(route('search.index', ['q' => 'Spezialventil', 'domain' => 'comments']))
+            ->get(route('search.index', ['q' => 'Spezialventil']))
             ->assertOk();
-        $groups = collect($response->viewData('groups'));
-        $this->assertCount(1, $groups);
-        $this->assertCount(1, $groups->first()['items']);
-        $this->assertStringContainsString('nachbestellen', $groups->first()['items'][0]['title']);
+        $hits = $response->viewData('result')->hits;
+        $this->assertSame(1, $hits->total());
+        $this->assertSame('Eigener Auftrag', $hits->first()->title);
     }
 
     public function test_attachment_metadata_searchable_for_own_diary(): void {
@@ -125,5 +127,12 @@ final class SearchPageTest extends TestCase {
             ->getJson(route('api.internal.search', ['q' => 'acme']))
             ->assertOk()
             ->assertJsonPath('allUrl', route('search.index', ['q' => 'acme']));
+    }
+
+    public function test_page_without_scope_asks_for_a_term(): void {
+        $response = $this->actingAs($this->user)->get(route('search.index'))->assertOk();
+
+        $this->assertFalse($response->viewData('result')->searched);
+        $response->assertSee(__('search.empty.start'));
     }
 }

@@ -1,0 +1,99 @@
+<?php
+/*
+ * Created on   : Mon Sep 14 2026
+ * Authorent    : Daniel Jörg Schuppelius
+ * Author Uri   : https://schuppelius.org
+ * Filename     : SearchResultLinker.php
+ * License      : AGPL-3.0-or-later
+ * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
+ */
+
+declare(strict_types=1);
+
+namespace App\Services\Search;
+
+use App\Enums\Search\SearchSourceType;
+use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, ForeignCustomer, KnowledgeArticle, OpenIssue, Project, Protocol, SafetyEvent, SearchDocument, ServiceTicket};
+use App\Support\Sqid;
+use Illuminate\Database\Eloquent\Relations\Relation;
+use Illuminate\Support\Collection;
+
+/**
+ * Deep-Links der Treffer auf die Originale. Zeiten und Stundenzettel haben
+ * keine eigene Detailseite — sie öffnen den passenden Projekt-Reiter. Notizen
+ * und offene Punkte springen auf die Seite ihres Bezugs mit Anker.
+ */
+final class SearchResultLinker {
+    /**
+     * @param  Collection<int, SearchDocument>  $documents
+     * @return array<string, string|null> Schlüssel „typ:id"
+     */
+    public function urls(Collection $documents): array {
+        $notes = $this->load($documents, SearchSourceType::CommunicationNote, CommunicationNote::class, ['id', 'notable_type', 'notable_id']);
+        $issues = $this->load($documents, SearchSourceType::OpenIssue, OpenIssue::class, ['id', 'subject_type', 'subject_id']);
+
+        $urls = [];
+        foreach ($documents as $document) {
+            $id = $document->source_id;
+            $urls[$document->source_type->value . ':' . $id] = match ($document->source_type) {
+                SearchSourceType::TimeEntry => $document->project_id !== null ? $this->projectTab($document->project_id, 'time') : null,
+                SearchSourceType::Timesheet => $document->project_id !== null ? $this->projectTab($document->project_id, 'timesheets') : null,
+                SearchSourceType::DiaryEntry => route('diary.show', Sqid::encode(DiaryEntry::class, $id)),
+                SearchSourceType::ServiceTicket => route('service-tickets.show', Sqid::encode(ServiceTicket::class, $id)),
+                SearchSourceType::Protocol => route('protocols.show', Sqid::encode(Protocol::class, $id)),
+                SearchSourceType::KnowledgeArticle => route('knowledge.show', Sqid::encode(KnowledgeArticle::class, $id)),
+                SearchSourceType::RemoteSession => route('admin.remote-support.pending.index'),
+                SearchSourceType::OpenIssue => isset($issues[$id])
+                    ? self::withAnchor($this->subjectUrl($issues[$id]->subject_type, (int) $issues[$id]->subject_id), '#open-issues')
+                    : null,
+                SearchSourceType::CommunicationNote => isset($notes[$id])
+                    ? self::withAnchor($this->subjectUrl($notes[$id]->notable_type, (int) $notes[$id]->notable_id), '#communication-note-' . $id)
+                    : null,
+            };
+        }
+
+        return $urls;
+    }
+
+    public function subjectUrl(?string $type, ?int $id): ?string {
+        if ($type === null || $id === null) {
+            return null;
+        }
+
+        $class = Relation::getMorphedModel($type) ?? $type;
+
+        return match ($class) {
+            DiaryEntry::class => route('diary.show', Sqid::encode(DiaryEntry::class, $id)),
+            Customer::class => route('customers.show', Sqid::encode(Customer::class, $id)),
+            ForeignCustomer::class => route('foreign-customers.show', Sqid::encode(ForeignCustomer::class, $id)),
+            Project::class => route('projects.show', Sqid::encode(Project::class, $id)),
+            Asset::class => route('assets.show', Sqid::encode(Asset::class, $id)),
+            SafetyEvent::class => route('safety-events.show', Sqid::encode(SafetyEvent::class, $id)),
+            default => null,
+        };
+    }
+
+    private function projectTab(int $projectId, string $tab): string {
+        return route('projects.show', ['project' => Sqid::encode(Project::class, $projectId), 'tab' => $tab]);
+    }
+
+    private static function withAnchor(?string $url, string $anchor): ?string {
+        return $url === null ? null : $url . $anchor;
+    }
+
+    /**
+     * @template T of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  Collection<int, SearchDocument>  $documents
+     * @param  class-string<T>  $class
+     * @param  list<string>  $columns
+     * @return Collection<int, T>
+     */
+    private function load(Collection $documents, SearchSourceType $type, string $class, array $columns): Collection {
+        $ids = $documents->filter(static fn(SearchDocument $d): bool => $d->source_type === $type)->pluck('source_id')->all();
+
+        return $ids === []
+            ? collect()
+            : $class::query()->withoutGlobalScopes()->whereKey($ids)->get($columns)->keyBy('id');
+    }
+}

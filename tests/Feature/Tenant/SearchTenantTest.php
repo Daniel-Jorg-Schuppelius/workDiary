@@ -35,6 +35,8 @@ class SearchTenantTest extends TestCase {
 
     protected function setUp(): void {
         parent::setUp();
+        // Notizen und Wissen kommen seit Feature 153 aus dem Tätigkeitsindex.
+        config(['search.indexing' => true]);
 
         $this->orgA = Organization::factory()->create(['slug' => 'search-a']);
         $this->orgB = Organization::factory()->create(['slug' => 'search-b']);

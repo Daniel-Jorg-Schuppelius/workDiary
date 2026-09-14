@@ -430,6 +430,7 @@ return [
     'ServiceTicket' => 'Service ticket',
     'SharepointConnection' => 'SharePoint connection',
     'ShiftExchange' => 'Shift exchange',
+    'SearchSynonymGroup' => 'Search synonym group',
     'ShiftRotation' => 'Shift rotation',
     'ShiftRotationAssignment' => 'Shift rotation assignment',
     'ShiftType' => 'Shift type',

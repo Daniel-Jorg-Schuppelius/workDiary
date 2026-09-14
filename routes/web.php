@@ -2111,6 +2111,19 @@ Route::middleware('auth')->group(function () {
             Route::delete('{connection}', [\App\Http\Controllers\Admin\Ai\AiConnectionController::class, 'destroy'])->name('destroy');
         });
 
+        // ── Such-Synonyme (Feature 153, MVP-772; organization.update) ──
+        Route::prefix('admin/suche/synonyme')->name('admin.search-synonyms.')->group(function (): void {
+            Route::get('/', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'index'])->name('index');
+            // Statische Segmente VOR dem {group}-Wildcard.
+            Route::get('neu', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'create'])->name('create');
+            Route::post('/', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'store'])->name('store');
+            Route::post('vorlage', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'importPreset'])->name('preset');
+            Route::get('{group}/bearbeiten', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'edit'])->name('edit');
+            Route::patch('{group}', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'update'])->name('update');
+            Route::post('{group}/umschalten', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'toggle'])->name('toggle');
+            Route::delete('{group}', [\App\Http\Controllers\Admin\Search\SearchSynonymController::class, 'destroy'])->name('destroy');
+        });
+
         // ── Schreibfehler-Wörterbuch (Pflege, finance.config) ──
         Route::prefix('admin/woerterbuch')->name('admin.text-corrections.')->group(function (): void {
             Route::get('/', [\App\Http\Controllers\Admin\Invoicing\TextCorrectionController::class, 'index'])->name('index');
@@ -2160,6 +2173,8 @@ Route::middleware('auth')->group(function () {
             Route::post('auftraege/{diary}/verlauf', [\App\Http\Controllers\Ai\AiAssistanceController::class, 'caseNarrative'])->name('case-narrative');
             Route::post('projekte/{project}/plan-ist', [\App\Http\Controllers\Ai\AiAssistanceController::class, 'planActual'])->name('plan-actual');
             Route::post('support/diagnose', [\App\Http\Controllers\Ai\AiAssistanceController::class, 'supportDiagnose'])->name('support-diagnose');
+            // Tätigkeitsrecherche (Feature 153): Treffer zu einer Antwort verdichten.
+            Route::post('suche/antwort', [\App\Http\Controllers\Ai\AiAssistanceController::class, 'searchAnswer'])->name('search-answer');
             Route::post('dokumente/{document}/analysieren', [\App\Http\Controllers\Ai\AiAssistanceController::class, 'document'])->name('document');
             Route::post('importe/{import}/spaltenzuordnung', [\App\Http\Controllers\Ai\AiAssistanceController::class, 'importMapping'])->name('import-mapping');
             Route::post('{suggestion}/uebernehmen', [\App\Http\Controllers\Ai\AiAssistanceController::class, 'accept'])->name('accept');

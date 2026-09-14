@@ -53,6 +53,12 @@
 
     <x-identifier-issues :issues="$identifierIssues ?? []" />
 
+    {{-- Tätigkeitsrecherche (Feature 153): Kunde und alle seine Endkunden. --}}
+    <x-card :title="__('search.box.title')" icon="manage_search">
+        <x-activity-search-box :customer="$customer" :placeholder="__('search.box.placeholder_customer')" />
+        <p class="mt-2 text-xs text-muted">{{ __('search.box.hint_customer') }}</p>
+    </x-card>
+
     {{-- KPI — zeitbezogene Werte folgen dem globalen Header-Zeitraum (AGENTS.md §8);
          Gesamt- bzw. kalkulatorische Werte stehen als kleiner Zusatz. --}}
     @php

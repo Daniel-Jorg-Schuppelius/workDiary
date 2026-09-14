@@ -18,7 +18,8 @@ use App\Http\Controllers\Controller;
 use App\Models\Ai\AiTextSuggestion;
 use App\Models\{CommunicationNote, CustomerQuery, DiaryEntry, Document, ImportRun, Organization, Project, Quote, QuoteItem, User};
 use App\Services\Ai\Exceptions\AiException;
-use App\Services\Ai\Suggestions\{CaseNarrativeSuggestionService, CommunicationNoteSuggestionService, DocumentMetadataSuggestionService, DocumentTranslationSuggestionService, ImportMappingSuggestionService, PlanActualExplainService, PortalQuerySuggestionService, SupportDiagnosisSuggestionService};
+use App\Services\Ai\Suggestions\{CaseNarrativeSuggestionService, CommunicationNoteSuggestionService, DocumentMetadataSuggestionService, DocumentTranslationSuggestionService, ImportMappingSuggestionService, PlanActualExplainService, PortalQuerySuggestionService, SearchAnswerSuggestionService, SupportDiagnosisSuggestionService};
+use App\Services\Search\ActivitySearchCriteria;
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -49,6 +50,7 @@ class AiAssistanceController extends Controller {
         private readonly SupportDiagnosisSuggestionService $support,
         private readonly DocumentMetadataSuggestionService $documents,
         private readonly ImportMappingSuggestionService $imports,
+        private readonly SearchAnswerSuggestionService $searchAnswers,
     ) {}
 
     /** Angebotsposition in die Belegsprache des Kunden übersetzen. */
@@ -138,6 +140,23 @@ class AiAssistanceController extends Controller {
 
         return $this->guarded(function (): string {
             $this->support->explain($this->organization(), Auth::user());
+
+            return __('ai.flash.insight_created');
+        });
+    }
+
+    /**
+     * Tätigkeitsrecherche (Feature 153): die Treffer der aktuellen Suche zu
+     * „was wann bei welchem Kunden" verdichten. Rechte = die Sichtbarkeit der
+     * Suche selbst (nur eigene Treffer) plus `ai.use`.
+     */
+    public function searchAnswer(Request $request): RedirectResponse {
+        $this->authorizeAiUse();
+        $user = $this->actor();
+        $criteria = ActivitySearchCriteria::fromRequest($request, $user);
+
+        return $this->guarded(function () use ($user, $criteria): string {
+            $this->searchAnswers->answer($user, $this->organization(), $criteria);
 
             return __('ai.flash.insight_created');
         });
@@ -299,6 +318,10 @@ class AiAssistanceController extends Controller {
             $this->authorizeImport($subject);
         } elseif ($subject instanceof Organization) {
             $this->authorizeSupport($subject);
+        } elseif ($subject instanceof User) {
+            // KI-Antwort der Suche (Feature 153): gehört dem Suchenden allein.
+            abort_unless((int) $subject->getKey() === (int) Auth::id(), 404);
+            $this->authorizeAiUse();
         } else {
             abort(404);
         }

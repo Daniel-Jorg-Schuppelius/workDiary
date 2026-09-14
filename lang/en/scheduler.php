@@ -154,6 +154,7 @@ return [
         'operations' => ['scan' => 'Sync operations tasks'],
         'orgamax' => ['sync' => 'orgaMAX sync'],
         'print' => ['purge_files' => 'Purge print production files after retention'],
+        'search' => ['reconcile' => 'Reconcile search index (activity search)'],
         'payroll' => ['import_minimum_wages' => 'Import EU minimum wages'],
         'plans' => ['purge' => 'Purge downgraded module data'],
         'plugin' => ['healthcheck' => 'Plugin health check', 'errors_prune' => 'Prune plugin error inbox (retention)'],

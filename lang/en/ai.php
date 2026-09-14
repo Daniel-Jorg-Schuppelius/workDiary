@@ -118,6 +118,9 @@ return [
         'case' => [
             'timeline_narrative' => 'Case file: summarise history',
         ],
+        'search' => [
+            'answer_summarize' => 'Search: summarise results into an answer',
+        ],
         'plan_actual' => [
             'explain' => 'Costing: explain plan vs. actual',
         ],

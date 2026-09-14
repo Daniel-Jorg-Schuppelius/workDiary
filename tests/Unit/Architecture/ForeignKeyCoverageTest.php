@@ -32,6 +32,18 @@ class ForeignKeyCoverageTest extends TestCase {
 
     /** @var list<string> table.column ohne FK — Stand 2026-08-23 (Welle 3, F12: appointment_requests/procedure_deviations zuerst) */
     private const BASELINE = [
+        // Feature 153 (2027_02_20_101900): `search_documents` ist ein abgeleiteter,
+        // jederzeit neu aufbaubarer Suchindex. Die Kontextspalten tragen bewusst
+        // keinen FK: Mit nullOnDelete würde die DB beim Löschen eines Kunden/
+        // Endkunden/Projekts die Bezüge sofort leeren, der Nachzug-Job
+        // (`reindexContext` sucht per `customer_id = …`) fände die Dokumente
+        // nicht mehr, und der alte Name bliebe im Suchtext stehen. Verwaiste
+        // Bezüge räumt `search:reconcile` auf.
+        'search_documents.assigned_user_id',
+        'search_documents.customer_id',
+        'search_documents.foreign_customer_id',
+        'search_documents.project_id',
+        'search_documents.user_id',
         // Feature 152 (2027_02_20_101200): `document_type`/`document_id` ist ein
         // Morph auf die Belegquelle (Lexoffice-Beleg, Ausgabe, Eingangs-E-Rechnung)
         // — Quellen registrieren sich zur Laufzeit, ein FK auf eine Tabelle ist

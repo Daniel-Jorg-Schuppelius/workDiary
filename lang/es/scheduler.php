@@ -154,6 +154,7 @@ return [
         'operations' => ['scan' => 'Sincronizar tareas operativas'],
         'orgamax' => ['sync' => 'Sincronización orgaMAX'],
         'print' => ['purge_files' => 'Depurar archivos de producción de impresión tras la retención'],
+        'search' => ['reconcile' => 'Conciliar el índice de búsqueda (búsqueda de actividades)'],
         'payroll' => ['import_minimum_wages' => 'Importar salarios mínimos de la UE'],
         'plans' => ['purge' => 'Depurar datos de módulos degradados'],
         'plugin' => ['healthcheck' => 'Comprobación de estado de plugins', 'errors_prune' => 'Depurar la bandeja de errores de plugins (retención)'],

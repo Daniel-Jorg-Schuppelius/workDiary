@@ -171,6 +171,16 @@ return [
             'memory_scopes' => ['organization'],
             'prompt_version' => 1,
         ],
+        // Tätigkeitsrecherche (Feature 153, MVP-775): rechtegeprüfte Treffer →
+        // „was wann bei welchem Kunden". Tätigkeitstexte mit Kundenbezug → hoch;
+        // Kundenbezüge nur als Kennung, Kundennamen im Freitext maskiert.
+        'search.answer_summarize' => [
+            'verb' => 'summarize',
+            'sensitivity' => 'high',
+            'data_classes' => ['taetigkeitstexte', 'kundenkennungen'],
+            'memory_scopes' => ['organization'],
+            'prompt_version' => 1,
+        ],
         // Plan-Ist-Abweichung erklären: ausschließlich benannte Kennzahlen,
         // keine Namen, keine Datensätze → niedrig.
         'plan_actual.explain' => [

@@ -153,7 +153,10 @@ class CtiCallService {
             [
                 'title' => $title,
                 'message' => (string) __('cti.popup.message', ['number' => $callerLabel]),
-                'url' => $customer instanceof Customer ? route('customers.show', $customer) : null,
+                // Feature 153: Der Anruf öffnet die Tätigkeitsrecherche des
+                // Anrufers (inkl. seiner Endkunden) — die neuesten Tätigkeiten
+                // stehen sofort da, das Suchfeld hat den Fokus.
+                'url' => $customer instanceof Customer ? route('search.index', ['customer' => $customer->sqid, 'focus' => 1]) : null,
             ],
             ['database'],
         ));

@@ -1702,6 +1702,10 @@ class NavigationRegistry {
                     $adminNavItems[] = ['route' => 'admin.organizations.edit', 'route_params' => [$user->organization_id], 'label' => __('Organisation'), 'icon' => 'corporate_fare', 'modal' => false];
                 }
                 $adminNavItems[] = ['route' => 'admin.branding.edit', 'label' => __('Branding'), 'icon' => 'palette', 'modal' => false];
+                // Such-Synonyme (Feature 153): wirken auf die Suche der ganzen Organisation.
+                if (Gate::allows('viewAny', \App\Models\SearchSynonymGroup::class)) {
+                    $adminNavItems[] = ['route' => 'admin.search-synonyms.index', 'label' => __('search.synonyms.title'), 'icon' => 'manage_search', 'modal' => false, 'matches' => ['admin.search-synonyms.*']];
+                }
                 // PDF-Dokumentdesign/CI-Basisdesign (Feature 076, Ausbau #83): war bislang nur per Direkt-URL erreichbar.
                 $adminNavItems[] = ['route' => 'admin.document-design.index', 'label' => __('document_design.title'), 'icon' => 'design_services', 'modal' => false, 'matches' => ['admin.document-design.*']];
                 // Buchhaltungswechsel (MVP-653): nur mit ausdrücklicher Berechtigung.

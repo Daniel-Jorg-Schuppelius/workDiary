@@ -118,6 +118,9 @@ return [
         'case' => [
             'timeline_narrative' => "Dossier : résumer l'historique",
         ],
+        'search' => [
+            'answer_summarize' => 'Recherche : résumer les résultats en une réponse',
+        ],
         'plan_actual' => [
             'explain' => "Calcul : expliquer l'écart prévu/réel",
         ],

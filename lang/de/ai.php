@@ -118,6 +118,9 @@ return [
         'case' => [
             'timeline_narrative' => 'Fallakte: Verlauf zusammenfassen',
         ],
+        'search' => [
+            'answer_summarize' => 'Suche: Treffer zu einer Antwort zusammenfassen',
+        ],
         'plan_actual' => [
             'explain' => 'Nachkalkulation: Plan-Ist erklären',
         ],

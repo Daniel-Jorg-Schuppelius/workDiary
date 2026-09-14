@@ -118,6 +118,9 @@ return [
         'case' => [
             'timeline_narrative' => 'Fascicolo: riassumere lo storico',
         ],
+        'search' => [
+            'answer_summarize' => 'Ricerca: riassumere i risultati in una risposta',
+        ],
         'plan_actual' => [
             'explain' => 'Calcolo: spiegare lo scostamento piano/effettivo',
         ],

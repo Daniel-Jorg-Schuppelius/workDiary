@@ -18,7 +18,7 @@
             <input type="search"
                    data-global-search-input
                    class="grow bg-transparent outline-none text-sm placeholder:text-muted"
-                   placeholder="{{ __('Suche nach Kunden, Projekten, Spesen, Reisen, Mitarbeitern …') }}"
+                   placeholder="{{ __('search.palette.placeholder') }}"
                    autocomplete="off"
                    aria-label="{{ __('Suchbegriff') }}" />
             <kbd class="kbd kbd-xs">ESC</kbd>

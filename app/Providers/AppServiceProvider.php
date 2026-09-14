@@ -124,6 +124,14 @@ class AppServiceProvider extends ServiceProvider {
         // einmal geladen (scoped, nie static — Octane/Worker).
         $this->app->scoped(\App\Services\Invoicing\TextCorrectionService::class);
 
+        // Tätigkeitsrecherche (Feature 153): Kontext-, Wort- und Synonym-Memos
+        // leben pro Request/Job; der Indexer bündelt Änderungen bis zum Commit.
+        $this->app->singleton(\App\Services\Search\Indexing\SearchSourceRegistry::class);
+        $this->app->scoped(\App\Services\Search\Indexing\SearchContext::class);
+        $this->app->scoped(\App\Services\Search\Indexing\SearchIndexer::class);
+        $this->app->scoped(\App\Services\Search\SearchVocabulary::class);
+        $this->app->scoped(\App\Services\Search\SearchSynonyms::class);
+
         $this->app->scoped(OsrmRouter::class, function (): OsrmRouter {
             return new OsrmRouter([
                 'base_url' => Setting::get('routing.osrm.base_url'),
@@ -465,9 +473,18 @@ class AppServiceProvider extends ServiceProvider {
         Organization::observe(OrganizationObserver::class);
         Project::observe(ProjectObserver::class);
         Protocol::observe(ProtocolObserver::class);
+        // Tätigkeitsrecherche (Feature 153): Quellen und Kind-Modelle indizieren
+        // nach Commit; Stammdaten-Umbenennungen ziehen per Job nach.
+        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\KnowledgeArticle::class, \App\Models\RemotePendingSession::class, Comment::class] as $searchable) {
+            $searchable::observe(\App\Observers\SearchIndexObserver::class);
+        }
+        foreach ([Project::class, \App\Models\ForeignCustomer::class, Customer::class] as $searchContext) {
+            $searchContext::observe(\App\Observers\SearchContextObserver::class);
+        }
 
         Gate::policy(\App\Models\IdeaMap::class, \App\Policies\IdeaMapPolicy::class);
         Gate::policy(\App\Models\TextCorrection::class, \App\Policies\TextCorrectionPolicy::class);
+        Gate::policy(\App\Models\SearchSynonymGroup::class, \App\Policies\SearchSynonymGroupPolicy::class);
         // Agiles Projektmanagement (Feature 064).
         Gate::policy(\App\Models\Agile\AgileBoard::class, \App\Policies\Agile\AgileBoardPolicy::class);
         Gate::policy(\App\Models\Agile\AgileWorkItem::class, \App\Policies\Agile\AgileWorkItemPolicy::class);

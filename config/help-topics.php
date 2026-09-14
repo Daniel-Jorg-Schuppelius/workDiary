@@ -65,6 +65,8 @@ return [
         'reports.accounting.*' => 'accounting.closing',
         // Schreibfehler-Wörterbuch für Positionstexte
         'admin.text-corrections.*' => 'admin.text-corrections',
+        // Such-Synonyme der Tätigkeitsrecherche (Feature 153)
+        'admin.search-synonyms.*' => 'admin.search-synonyms',
         // orgaMAX-Buchhaltung-Plugin (Feature 077, Phase 29)
         'admin.orgamax.*' => 'admin.orgamax',
         'admin.etsy.*' => 'admin.etsy',

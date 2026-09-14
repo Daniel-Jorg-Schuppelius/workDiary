@@ -62,6 +62,12 @@
             </div>
         </x-card>
 
+        {{-- Tätigkeitsrecherche (Feature 153) beim Endkunden. --}}
+        <x-card :title="__('search.box.title')" icon="manage_search">
+            <x-activity-search-box :foreign-customer="$foreignCustomer" :placeholder="__('search.box.placeholder_foreign_customer')" />
+            <p class="mt-2 text-xs text-muted">{{ __('search.box.hint_foreign_customer') }}</p>
+        </x-card>
+
         {{-- Projekte — gleiche Darstellung wie auf der Kunden-Detailseite --}}
         <x-card :title="__('Projekte')" icon="folder" :count="$projects->count()">
             @if ($projects->isEmpty())

@@ -1,15 +1,44 @@
 ---
-title: "Globale Suche"
+title: "Suche und Tätigkeitsrecherche"
 topic: search.overview
-version: 1
+version: 2
 audience: []
 related: []
 ---
 
-Die globale Suche findet Einträge, Kunden, Projekte, Dokumente und weitere
-Objekte der eigenen Organisation. Die Trefferliste respektiert Modul- und
-Berechtigungsgrenzen — angezeigt wird nur, was die eigene Rolle auch öffnen
-darf.
+Die Suche beantwortet vor allem eine Frage: **Was wurde wann bei welchem Kunden
+gemacht?** Sie durchsucht Zeiteinträge (auch Fernwartungs-Notizen und
+Stundenzettel-Positionen), Aufträge mit Kommentaren, Stundenzettel-Notizen,
+Tickets, Protokolle, offene Punkte, Kommunikationsnotizen und Wissensartikel —
+jeweils mit Projekt, Endkunde und Kunde als Kontext. Darunter stehen die
+Stammdaten wie Kunden, Projekte, Objekte, Spesen und Dokumente.
 
-Tipp: Die Suche ist auch über die Kopfleiste erreichbar; Begriffe werden
-wortweise verknüpft, Groß-/Kleinschreibung spielt keine Rolle.
+## So wird gesucht
+
+- Alle Wörter müssen vorkommen, egal wo: „smtp exchange" findet den Zeiteintrag
+  „Sendeconnector auf SMTP umgestellt" im Projekt „Exchange-Migration".
+- Gesucht wird am Wortanfang: „exch" findet „Exchange" und „Exchangeserver".
+- Wörter in Anführungszeichen („smtp relay") müssen direkt hintereinander stehen.
+- Ein Minus schließt aus: „drucker -toner".
+- Füllwörter wie „wann haben wir … gemacht" werden ignoriert.
+- Kommt ein Wort nirgends vor, sucht die Suche ähnlich geschriebene Wörter mit
+  und zeigt das an. „Ähnliche Schreibweisen" nimmt Varianten auch für bekannte
+  Wörter mit — hilfreich bei Tippfehlern in den Notizen selbst.
+- Synonyme pflegt die Administration unter System › Organisation ›
+  Such-Synonyme.
+
+## Übersicht und Filter
+
+„Kunden & Endkunden" zeigt, bei wem es Treffer gibt und in welchem Zeitraum; ein
+Klick filtert darauf. In der Filterleiste stehen Quelle, Zeitraum, Person, Kunde
+(inklusive seiner Endkunden), Endkunde und Sortierung. Ohne Suchbegriff, aber
+mit Kunde, Endkunde oder Projekt erscheinen die neuesten Tätigkeiten.
+
+## Einstiege
+
+Kundenseite, Endkundenseite und Projekt haben ein eigenes Suchfeld bzw. einen
+Knopf. Ein erkannter Anrufer öffnet die Suche direkt mit seinem Kundenfilter.
+Mit aktivem KI-Modul fasst „KI-Antwort" die Treffer zusammen.
+
+Die Trefferliste respektiert Modul- und Berechtigungsgrenzen — angezeigt wird
+nur, was die eigene Rolle auch öffnen darf.

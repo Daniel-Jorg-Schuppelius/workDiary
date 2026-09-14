@@ -19232,6 +19232,78 @@ CREATE UNIQUE INDEX "lrn_lti_subj_uq" on "learning_lti_subjects"(
   "learning_lti_platform_id",
   "subject_hash"
 );
+CREATE TABLE IF NOT EXISTS "search_documents"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_type" varchar not null,
+  "source_id" integer not null,
+  "occurred_at" datetime,
+  "date_only" tinyint(1) not null default '0',
+  "user_id" integer,
+  "assigned_user_id" integer,
+  "customer_id" integer,
+  "foreign_customer_id" integer,
+  "project_id" integer,
+  "minutes" integer,
+  "restricted" tinyint(1) not null default '0',
+  "title" varchar not null default '',
+  "excerpt" text,
+  "search_text" text not null,
+  "source_updated_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "sdoc_source_unique" on "search_documents"(
+  "source_type",
+  "source_id"
+);
+CREATE INDEX "sdoc_org_occurred_idx" on "search_documents"(
+  "organization_id",
+  "occurred_at"
+);
+CREATE INDEX "sdoc_org_customer_idx" on "search_documents"(
+  "organization_id",
+  "customer_id"
+);
+CREATE INDEX "sdoc_org_fcustomer_idx" on "search_documents"(
+  "organization_id",
+  "foreign_customer_id"
+);
+CREATE INDEX "sdoc_org_project_idx" on "search_documents"(
+  "organization_id",
+  "project_id"
+);
+CREATE INDEX "sdoc_org_type_user_idx" on "search_documents"(
+  "organization_id",
+  "source_type",
+  "user_id"
+);
+CREATE TABLE IF NOT EXISTS "search_terms"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "term" varchar not null,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "sterm_org_term_unique" on "search_terms"(
+  "organization_id",
+  "term"
+);
+CREATE TABLE IF NOT EXISTS "search_synonym_groups"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "terms" text not null,
+  "active" tinyint(1) not null default '1',
+  "created_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by_user_id") references "users"("id") on delete set null
+);
+CREATE INDEX "ssyn_org_active_idx" on "search_synonym_groups"(
+  "organization_id",
+  "active"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -20037,3 +20109,4 @@ INSERT INTO migrations VALUES(801,'2027_02_20_101500_drop_lexoffice_voucher_id_f
 INSERT INTO migrations VALUES(802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',17);
 INSERT INTO migrations VALUES(803,'2027_02_20_101700_create_learning_cmi5_tables',18);
 INSERT INTO migrations VALUES(804,'2027_02_20_101800_create_learning_lti_tables',19);
+INSERT INTO migrations VALUES(805,'2027_02_20_101900_create_search_index_tables',20);

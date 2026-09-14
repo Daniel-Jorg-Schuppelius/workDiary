@@ -191,6 +191,12 @@ echo "→ Hilfe-Topics indexieren (resources/help/{locale} → help_topics)"
 # (Sidebar) zeigt keine Texte.
 php artisan help:reindex
 
+echo "→ Suchindex abgleichen (Tätigkeitsrecherche: fehlende/veraltete Dokumente)"
+# Beim ersten Deploy baut der Abgleich den Index vollständig auf; danach nur
+# Nachzügler. Ein Fehler bricht den Deploy nicht ab — der nächtliche Lauf
+# (search:reconcile, Zeitplan) holt es nach.
+php artisan search:reconcile || echo "  ⚠ Suchindex-Abgleich fehlgeschlagen — nachholen: php artisan search:reconcile" >&2
+
 echo "→ Production-Caches bauen (config/route/event)"
 # optimize:clear räumt alte Caches weg, dann werden Production-Caches gebaut
 # (schneller + konsistent mit scripts/install-webspace.sh). view:cache bleibt
