@@ -157,7 +157,7 @@ class LoginController extends Controller {
      * `users.name` (nur `email` ist eindeutig) womöglich ein FREMDES Konto:
      * war dieses `sso_exempt` oder seine Organisation ohne Zwang, entfiel die
      * Umleitung und der SSO-pflichtige Nutzer kam mit Passwort herein. Die
-     * harte Sperre im {@see \App\Legacy\Auth\LegacyUserProvider} greift hier
+     * harte Sperre im Legacy-User-Provider greift hier
      * nicht: sie ist für die Passwortprüfung ausgesetzt, und angemeldet wird
      * danach direkt über `Auth::login()` (Mandanten-Review 2026-09-13).
      */
