@@ -85,6 +85,16 @@ final class BlindIndex {
     }
 
     /**
+     * Kurzer Abdruck des Schlüssels. Er ändert sich genau dann, wenn der
+     * Schlüssel wechselt — so erkennt die Umrechnung, ob sie für den aktuellen
+     * Schlüssel schon gelaufen ist. Aus ihm lässt sich der Schlüssel nicht
+     * zurückgewinnen.
+     */
+    public static function keyFingerprint(): string {
+        return substr(hash_hmac('sha256', 'blind-index-fingerprint', self::key()), 0, 16);
+    }
+
+    /**
      * Der Schlüssel. Eigener Wert, wenn gesetzt; sonst aus dem APP_KEY
      * abgeleitet, damit keine zweite Geheimnisverwaltung nötig ist.
      */

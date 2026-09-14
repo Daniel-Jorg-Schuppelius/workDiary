@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Support;
 
 use App\Models\PluginSetting;
+use App\Plugins\Contracts\Plugin;
 
 /**
  * Gemeinsames Overlay der Plugin-Configs (Konsolidierung C10): lädt die
@@ -130,6 +131,30 @@ final class PluginSettingsResolver {
     /** Bezeichnet der Schlüsselname ein Zugangsgeheimnis? */
     public static function looksLikeSecretKey(string $key): bool {
         return preg_match(self::SECRET_KEY_PATTERN, $key) === 1;
+    }
+
+    /**
+     * Zugangsgeheimnisse eines Plugins, die in der Betreiber-Konfiguration
+     * stehen und keine App-Registrierung sind — genau die Werte, die der
+     * Rückfall-Schalter betrifft.
+     *
+     * @return list<string>
+     */
+    public static function operatorSecretKeys(Plugin $plugin): array {
+        $keys = [];
+        foreach ($plugin->settingsSchema() as $field) {
+            $key = (string) $field['key'];
+            if (! self::looksLikeSecretKey($key) || self::isInstanceSecretKey($plugin->id(), $key)) {
+                continue;
+            }
+            $configured = config('plugins.' . $plugin->id() . '.' . $key);
+            if (! is_string($configured) || trim($configured) === '') {
+                continue;
+            }
+            $keys[] = $key;
+        }
+
+        return $keys;
     }
 
     /** Nur aus den Org-Settings, nie Config — z. B. Webhook-Geheimnisse. */

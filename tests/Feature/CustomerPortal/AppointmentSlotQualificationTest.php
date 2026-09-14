@@ -62,7 +62,7 @@ final class AppointmentSlotQualificationTest extends TestCase {
 
         // Freie Fenster stellt der Dispositions-Dienst — hier fixiert, es geht
         // ausschließlich um den Qualifikations-Filter davor.
-        $gaps = $this->createMock(GapFillSuggester::class);
+        $gaps = $this->createStub(GapFillSuggester::class);
         $gaps->method('freeSlots')->willReturn([['start' => '08:00', 'end' => '12:00']]);
         $this->app->instance(GapFillSuggester::class, $gaps);
     }

@@ -249,4 +249,13 @@ if [ "$MAINTENANCE_ON" = "1" ]; then
     MAINTENANCE_ON=0
 fi
 
+echo "→ Blindindizes umrechnen (einmal je Schlüssel, danach übersprungen)"
+# Bewusst NACH dem Wartungsmodus: Bis der Lauf durch ist, finden die Abfragen
+# über den alten und den neuen Abdruck — die Anwendung ist währenddessen voll
+# nutzbar. Ein Fehlschlag bricht den Deploy nicht ab; system:health meldet den
+# offenen Rest beim nächsten Update.
+if ! php artisan security:rehash-blind-indexes; then
+    echo "  ⚠ security:rehash-blind-indexes FEHLGESCHLAGEN — manuell nachholen."
+fi
+
 echo "✓ Deploy abgeschlossen"

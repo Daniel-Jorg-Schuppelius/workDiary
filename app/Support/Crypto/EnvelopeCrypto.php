@@ -92,12 +92,9 @@ class EnvelopeCrypto {
             );
         }
 
-        $decoded = base64_decode($configured, true);
-        if ($decoded !== false && strlen($decoded) === self::KEY_BYTES) {
-            return $decoded;
-        }
-        if (strlen($configured) === self::KEY_BYTES) {
-            return $configured;
+        $key = self::decodeKey($configured);
+        if ($key !== null) {
+            return $key;
         }
 
         // Fail-closed (Sicherheitsaudit 2026-09-13): Vorher wurde JEDE
@@ -109,5 +106,27 @@ class EnvelopeCrypto {
             "{$this->keyName} muss 32 zufaellige Bytes sein (roh oder base64). "
             . 'Erzeugen: php artisan tinker --execute="echo base64_encode(random_bytes(32));"'
         );
+    }
+
+    /**
+     * Ist ein konfigurierter Modulschlüssel verwendbar? Dieselbe Regel, nach der
+     * {@see self::kek()} den Dienst verweigert — für Vorab-Prüfungen, die nicht
+     * erst beim ersten Ver- oder Entschlüsseln scheitern sollen.
+     */
+    public static function isUsableKey(string $configured): bool {
+        return self::decodeKey($configured) !== null;
+    }
+
+    /** 32 Bytes, roh oder base64 — sonst null. */
+    private static function decodeKey(string $configured): ?string {
+        if ($configured === '') {
+            return null;
+        }
+        $decoded = base64_decode($configured, true);
+        if ($decoded !== false && strlen($decoded) === self::KEY_BYTES) {
+            return $decoded;
+        }
+
+        return strlen($configured) === self::KEY_BYTES ? $configured : null;
     }
 }

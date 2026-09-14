@@ -37,4 +37,57 @@ class SystemHealthCommandTest extends TestCase {
         $this->artisan('system:health --json')
             ->expectsOutputToContain('"healthy":');
     }
+
+    public function test_an_unusable_module_key_warns_without_blocking_the_update(): void {
+        // Ein roter Check hielte deploy.sh im Wartungsmodus fest. Ein kaputter
+        // Modulschlüssel legt nur zwei Module still, nicht die Installation.
+        config(['whistleblowing.key' => 'zu-kurz']);
+
+        $this->artisan('system:health')
+            ->expectsOutputToContain('WHISTLEBLOWING_KEY')
+            ->assertExitCode(0);
+    }
+
+    public function test_organizations_without_own_plugin_credentials_are_reported(): void {
+        config(['plugins.allow_env_secret_fallback' => false, 'plugins.lexoffice.api_key' => 'betreiber-schluessel']);
+        $organization = \App\Models\Organization::factory()->create();
+        \App\Models\PluginSetting::query()->create([
+            'organization_id' => $organization->id,
+            'plugin_id' => 'lexoffice',
+            'enabled' => true,
+            'settings' => [],
+        ]);
+
+        $warnings = app(\App\Console\Commands\SystemHealthCommand::class)->runWarnings();
+
+        $this->assertContains('Plugin lexoffice', array_column($warnings, 0));
+    }
+
+    public function test_an_own_credential_clears_the_plugin_warning(): void {
+        config(['plugins.allow_env_secret_fallback' => false, 'plugins.lexoffice.api_key' => 'betreiber-schluessel', 'plugins.lexoffice.enabled' => false]);
+        $organization = \App\Models\Organization::factory()->create();
+        \App\Models\PluginSetting::query()->create([
+            'organization_id' => $organization->id,
+            'plugin_id' => 'lexoffice',
+            'enabled' => true,
+            'settings' => ['api_key' => 'eigener-schluessel'],
+        ]);
+
+        $warnings = app(\App\Console\Commands\SystemHealthCommand::class)->runWarnings();
+
+        $this->assertNotContains('Plugin lexoffice', array_column($warnings, 0));
+    }
+
+    public function test_the_blind_index_warning_disappears_after_the_rehash(): void {
+        $blindIndexWarnings = static fn (): array => array_values(array_filter(
+            app(\App\Console\Commands\SystemHealthCommand::class)->runWarnings(),
+            static fn (array $w): bool => $w[0] === 'Blindindizes',
+        ));
+
+        $this->assertNotSame([], $blindIndexWarnings());
+
+        $this->artisan('security:rehash-blind-indexes')->assertSuccessful();
+
+        $this->assertSame([], $blindIndexWarnings());
+    }
 }

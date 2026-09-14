@@ -39,8 +39,8 @@ final class JtlWawiScaffoldTest extends TestCase {
 
     public function test_dispatcher_registers_under_plugin_id(): void {
         $dispatcher = new JtlWawiOutboxDispatcher(
-            $this->createMock(JtlGatewayFactory::class),
-            $this->createMock(JtlMappingResolver::class),
+            $this->createStub(JtlGatewayFactory::class),
+            $this->createStub(JtlMappingResolver::class),
         );
 
         $this->assertSame('jtl_wawi', $dispatcher->pluginId());
@@ -71,8 +71,8 @@ final class JtlWawiScaffoldTest extends TestCase {
     private function makeProvider(): JtlWawiInventoryProvider {
         return new JtlWawiInventoryProvider(
             new Organization(),
-            $this->createMock(JtlStockReader::class),
-            $this->createMock(InventoryLedger::class),
+            $this->createStub(JtlStockReader::class),
+            $this->createStub(InventoryLedger::class),
         );
     }
 }

@@ -46,9 +46,9 @@ final class ExpenseScanTest extends TestCase {
 
     /** Extraktion gemockt: Es geht um den Vorschlags-Fluss, nicht um OCR. */
     private function fakeExtraction(array $extracted): void {
-        $mock = $this->createMock(InvoicePdfImportService::class);
-        $mock->method('extract')->willReturn($extracted);
-        $this->app->instance(InvoicePdfImportService::class, $mock);
+        $stub = $this->createStub(InvoicePdfImportService::class);
+        $stub->method('extract')->willReturn($extracted);
+        $this->app->instance(InvoicePdfImportService::class, $stub);
     }
 
     public function test_scan_creates_a_draft_with_extracted_values_and_attachment(): void {

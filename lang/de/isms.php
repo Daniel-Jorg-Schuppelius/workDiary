@@ -641,6 +641,7 @@ return [
             'run_after_update' => 'Nach jedem Update ausführen — entspricht „php artisan system:health". Ausstehende Migrationen werden hier prominent angezeigt.',
             'healthy' => 'Alle Checks bestanden',
             'unhealthy' => ':count Check(s) fehlgeschlagen',
+            'warnings' => 'Hinweise (blockieren das Update nicht)',
         ],
         'manifest' => [
             'title' => 'Release-Manifest',

@@ -51,6 +51,19 @@
                     </li>
                 @endforeach
             </ul>
+            @if ($health['warnings'] !== [])
+                <div class="alert alert-warning items-start text-sm">
+                    <x-icon name="warning" />
+                    <div>
+                        <p class="font-semibold">{{ __('isms.components.health.warnings') }}</p>
+                        <ul class="mt-1 list-disc ps-4">
+                            @foreach ($health['warnings'] as $warning)
+                                <li><span class="font-medium">{{ $warning['name'] }}:</span> {{ $warning['details'] }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
         </div>
     </article>
 

@@ -641,6 +641,7 @@ return [
             'run_after_update' => 'Ejecutar tras cada actualización — equivale a «php artisan system:health». Las migraciones pendientes se muestran aquí de forma destacada.',
             'healthy' => 'Todas las comprobaciones superadas',
             'unhealthy' => ':count comprobación(es) fallida(s)',
+            'warnings' => 'Avisos (no bloquean la actualización)',
         ],
         'manifest' => [
             'title' => 'Manifiesto de versión',

@@ -23,7 +23,6 @@
     Require all denied
 </FilesMatch>
 
-# Punktverzeichnisse (.git, .github) — greift auch ohne mod_rewrite.
-<DirectoryMatch "/\.">
-    Require all denied
-</DirectoryMatch>
+# Punktverzeichnisse (.git, .github) sperrt die RewriteRule oben.
+# KEIN <Directory>/<DirectoryMatch>/<Location> hier: in einer .htaccess
+# verboten, Apache liefert dann für JEDE Anfrage 500 (Ausfall 2026-09-14).

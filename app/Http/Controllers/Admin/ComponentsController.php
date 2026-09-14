@@ -142,7 +142,7 @@ class ComponentsController extends Controller {
      * Strukturierte system:health-Zusammenfassung für die UI (Hinweis „nach
      * Update ausführen", Pending-Migrationen prominent).
      *
-     * @return array{healthy: bool, failed: int, total: int, checks: list<array{name: string, ok: bool, details: string}>}
+     * @return array{healthy: bool, failed: int, total: int, checks: list<array{name: string, ok: bool, details: string}>, warnings: list<array{name: string, details: string}>}
      */
     private function healthSummary(SystemHealthCommand $health, LicenseService $licenses): array {
         $checks = $health->runChecks($licenses);
@@ -157,6 +157,10 @@ class ComponentsController extends Controller {
             'failed' => $failed,
             'total' => count($rows),
             'checks' => $rows,
+            'warnings' => array_map(
+                static fn(array $w): array => ['name' => $w[0], 'details' => $w[1]],
+                $health->runWarnings(),
+            ),
         ];
     }
 

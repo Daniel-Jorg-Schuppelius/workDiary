@@ -12,9 +12,16 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use App\Console\Commands\Security\RehashBlindIndexesCommand;
 use App\Enums\Backup\RestoreTestResult;
+use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\{BackupHeartbeat, RestoreTest};
+use App\Models\{Organization, PluginSetting};
+use App\Models\Whistleblowing\Attachment as WhistleblowingAttachment;
+use App\Plugins\PluginManager;
+use App\Plugins\Support\PluginSettingsResolver;
 use App\Services\Licensing\{LicenseService, LicenseStatus};
+use App\Support\Crypto\EnvelopeCrypto;
 use Carbon\CarbonImmutable;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
@@ -38,6 +45,7 @@ class SystemHealthCommand extends Command {
 
     public function handle(LicenseService $licenses): int {
         $checks = $this->runChecks($licenses);
+        $warnings = $this->runWarnings();
         $failed = array_values(array_filter($checks, static fn(array $c): bool => ! $c[1]));
 
         if ((bool) $this->option('json')) {
@@ -48,6 +56,10 @@ class SystemHealthCommand extends Command {
                 'checks' => array_map(
                     static fn(array $c): array => ['name' => $c[0], 'ok' => $c[1], 'details' => $c[2]],
                     $checks,
+                ),
+                'warnings' => array_map(
+                    static fn(array $w): array => ['name' => $w[0], 'details' => $w[1]],
+                    $warnings,
                 ),
             ], JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
 
@@ -64,6 +76,10 @@ class SystemHealthCommand extends Command {
             ['Check', 'Status', 'Details'],
             array_map(static fn(array $c): array => [$c[0], $c[1] ? 'OK' : 'FEHLER', $c[2]], $checks),
         );
+
+        foreach ($warnings as [$name, $details]) {
+            $this->warn(sprintf('  ⚠ %s: %s', $name, $details));
+        }
 
         if ($failed !== []) {
             $this->error(sprintf('%d von %d Checks fehlgeschlagen.', count($failed), count($checks)));
@@ -94,6 +110,92 @@ class SystemHealthCommand extends Command {
             $this->checkBackupFreshness(),
             $this->checkRestoreTest(),
         ];
+    }
+
+    /**
+     * Betriebshinweise, die das Update NICHT blockieren (Sicherheitsaudit
+     * 2026-09-13). deploy.sh bricht bei einem roten Check ab und lässt die
+     * Wartung an — diese Punkte sollen bei jedem Update sichtbar sein, aber
+     * keine Installation lahmlegen.
+     *
+     * @return list<array{0: string, 1: string}>
+     */
+    public function runWarnings(): array {
+        $warnings = [];
+
+        foreach (['whistleblowing.key' => 'WHISTLEBLOWING_KEY', 'dataprotection.key' => 'DATAPROTECTION_KEY'] as $configKey => $envName) {
+            $configured = (string) config($configKey, '');
+            if ($configured !== '' && ! EnvelopeCrypto::isUsableKey($configured)) {
+                $warnings[] = [$envName, 'keine 32 Bytes (roh oder base64) — das Modul verweigert den Dienst, bis ein gültiger Schlüssel gesetzt ist.'];
+            }
+        }
+
+        try {
+            if ((string) config('whistleblowing.scanner', 'none') === 'none') {
+                $pending = WhistleblowingAttachment::query()->withoutGlobalScopes()
+                    ->where('scan_status', AttachmentScanStatus::Pending->value)
+                    ->count();
+                if ($pending > 0) {
+                    $warnings[] = ['Meldeanhänge', sprintf('%d in Quarantäne, aber kein Virenscanner (WHISTLEBLOWING_SCANNER=none) — sie bleiben dauerhaft gesperrt.', $pending)];
+                }
+            }
+
+            if (! RehashBlindIndexesCommand::isDoneForCurrentKey()) {
+                $warnings[] = ['Blindindizes', 'noch nicht für den aktuellen Schlüssel umgerechnet — deploy.sh holt das nach der Wartung nach, sonst: php artisan security:rehash-blind-indexes'];
+            }
+
+            foreach ($this->strandedPluginCredentials() as [$plugin, $key, $organizations]) {
+                $warnings[] = ["Plugin {$plugin}", sprintf('%d Organisation(en) ohne eigenes „%s". Der Wert steht nur in der Betreiber-Konfiguration, der Rückfall ist geschlossen — die Anbindung ruht, bis die Organisation eigene Zugangsdaten hinterlegt.', $organizations, $key)];
+            }
+        } catch (Throwable) {
+            // Datenbank nicht erreichbar: meldet checkDatabase() bereits als Fehler.
+        }
+
+        return $warnings;
+    }
+
+    /**
+     * Organisationen, die ein Plugin nutzen, ihm aber kein eigenes
+     * Zugangsgeheimnis gegeben haben. Solange der Rückfall geschlossen ist,
+     * fehlt es ihnen.
+     *
+     * @return list<array{0: string, 1: string, 2: int}>
+     */
+    private function strandedPluginCredentials(): array {
+        if (PluginSettingsResolver::secretFallbackAllowed()) {
+            return [];
+        }
+
+        $found = [];
+        $organizationCount = null;
+        foreach (app(PluginManager::class)->all() as $plugin) {
+            $keys = PluginSettingsResolver::operatorSecretKeys($plugin);
+            if ($keys === []) {
+                continue;
+            }
+
+            $rows = PluginSetting::query()->withoutGlobalScopes()->where('plugin_id', $plugin->id())->get();
+            // Ohne eigene Zeile entscheidet die Konfiguration, ob das Plugin läuft.
+            $withoutRow = 0;
+            if ((bool) config('plugins.' . $plugin->id() . '.enabled', false)) {
+                $organizationCount ??= Organization::query()->count();
+                $withoutRow = max(0, $organizationCount - $rows->count());
+            }
+
+            foreach ($keys as $key) {
+                $withRow = $rows->filter(static function (PluginSetting $row) use ($key): bool {
+                    $own = $row->settings[$key] ?? null;
+
+                    return $row->enabled && (! is_string($own) || trim($own) === '');
+                })->count();
+
+                if ($withoutRow + $withRow > 0) {
+                    $found[] = [$plugin->id(), $key, $withoutRow + $withRow];
+                }
+            }
+        }
+
+        return $found;
     }
 
     /** @return array{0: string, 1: bool, 2: string} */

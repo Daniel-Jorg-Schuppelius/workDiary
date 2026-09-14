@@ -95,4 +95,30 @@ class BlindIndexTest extends TestCase {
 
         $this->assertSame($legacy, (string) DB::table('bank_accounts')->where('id', $account->id)->value('iban_hash'));
     }
+
+    public function test_a_second_run_for_the_same_key_is_skipped_unless_forced(): void {
+        $org = Organization::factory()->create();
+        app()->instance('currentOrganization', $org);
+        $account = $this->account($org, self::IBAN);
+
+        $this->artisan('security:rehash-blind-indexes')->assertSuccessful();
+        $this->assertTrue(\App\Console\Commands\Security\RehashBlindIndexesCommand::isDoneForCurrentKey());
+
+        // Das Deploy ruft den Befehl bei jedem Update auf. Für denselben
+        // Schlüssel darf er nicht erneut jede Zeile entschlüsseln.
+        $legacy = (string) BankHelper::hashIBAN(self::IBAN);
+        DB::table('bank_accounts')->where('id', $account->id)->update(['iban_hash' => $legacy]);
+
+        $this->artisan('security:rehash-blind-indexes')->expectsOutputToContain('übersprungen')->assertSuccessful();
+        $this->assertSame($legacy, (string) DB::table('bank_accounts')->where('id', $account->id)->value('iban_hash'));
+
+        $this->artisan('security:rehash-blind-indexes --force')->assertSuccessful();
+        $this->assertSame((string) BlindIndex::ofIban(self::IBAN), (string) DB::table('bank_accounts')->where('id', $account->id)->value('iban_hash'));
+    }
+
+    public function test_the_dry_run_does_not_mark_the_key_as_done(): void {
+        $this->artisan('security:rehash-blind-indexes --dry-run')->assertSuccessful();
+
+        $this->assertFalse(\App\Console\Commands\Security\RehashBlindIndexesCommand::isDoneForCurrentKey());
+    }
 }

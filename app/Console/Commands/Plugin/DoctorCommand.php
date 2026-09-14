@@ -120,18 +120,7 @@ class DoctorCommand extends Command {
             return;
         }
 
-        foreach ($plugin->settingsSchema() as $field) {
-            $key = (string) $field['key'];
-            if (! PluginSettingsResolver::looksLikeSecretKey($key)) {
-                continue;
-            }
-            if (PluginSettingsResolver::isInstanceSecretKey($plugin->id(), $key)) {
-                continue;
-            }
-            if (trim((string) config('plugins.' . $plugin->id() . '.' . $key, '')) === '') {
-                continue;
-            }
-
+        foreach (PluginSettingsResolver::operatorSecretKeys($plugin) as $key) {
             $warnings[] = sprintf(
                 '%s: "%s" steht in der Betreiber-Konfiguration und wird wegen PLUGINS_ALLOW_ENV_SECRET_FALLBACK=true von jeder Organisation ohne eigenen Wert mitbenutzt.',
                 $plugin->id(),

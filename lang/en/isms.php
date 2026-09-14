@@ -641,6 +641,7 @@ return [
             'run_after_update' => 'Run after every update — equivalent to "php artisan system:health". Pending migrations are surfaced prominently here.',
             'healthy' => 'All checks passed',
             'unhealthy' => ':count check(s) failed',
+            'warnings' => 'Notices (do not block the update)',
         ],
         'manifest' => [
             'title' => 'Release manifest',

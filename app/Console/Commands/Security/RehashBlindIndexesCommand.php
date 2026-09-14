@@ -14,7 +14,7 @@ namespace App\Console\Commands\Security;
 
 use App\Models\Applications\JobApplication;
 use App\Models\Finance\{BankAccount, BankTransaction, SepaMandate};
-use App\Models\User;
+use App\Models\{SystemSetting, User};
 use App\Support\Crypto\BlindIndex;
 use Illuminate\Console\Command;
 
@@ -33,13 +33,26 @@ use Illuminate\Console\Command;
  * deshalb auf dem alten Abdruck — dort greift das Doppellesen dauerhaft.
  */
 class RehashBlindIndexesCommand extends Command {
-    protected $signature = 'security:rehash-blind-indexes {--dry-run : Nur zählen, nichts schreiben}';
+    /** Systemeinstellung mit dem Schlüsselabdruck des letzten vollständigen Laufs. */
+    public const MARKER_KEY = 'security.blind_index_rehashed_for';
+
+    protected $signature = 'security:rehash-blind-indexes
+        {--dry-run : Nur zählen, nichts schreiben}
+        {--force : Auch laufen, wenn für den aktuellen Schlüssel schon umgerechnet wurde}';
 
     protected $description = 'Nachschlage-Abdrücke (IBAN, E-Mail, Durchwahl) auf den geschlüsselten Abdruck umrechnen';
 
     public function handle(): int {
         $dry = (bool) $this->option('dry-run');
         $total = 0;
+
+        // Einmal je Schlüssel: Das Deploy ruft den Befehl bei jedem Update auf,
+        // der volle Durchlauf entschlüsselt aber jede Zeile.
+        if (! $dry && ! (bool) $this->option('force') && self::isDoneForCurrentKey()) {
+            $this->info('Für den aktuellen Schlüssel bereits umgerechnet — übersprungen (--force erzwingt einen Lauf).');
+
+            return self::SUCCESS;
+        }
 
         $total += $this->rehash('Bankkonten', BankAccount::query()->withoutGlobalScopes(), 'iban_hash',
             static fn (BankAccount $m): ?string => BlindIndex::ofIban($m->iban), $dry);
@@ -62,7 +75,20 @@ class RehashBlindIndexesCommand extends Command {
             : sprintf('%d Abdrücke neu berechnet.', $total));
         $this->line('Hinweis: bank_statements.statement_iban_hash hat keinen Klartext daneben und bleibt auf dem alten Abdruck.');
 
+        if (! $dry) {
+            $marker = SystemSetting::query()->firstOrNew(['key' => self::MARKER_KEY]);
+            $marker->setResolvedValue(BlindIndex::keyFingerprint(), false);
+            $marker->save();
+        }
+
         return self::SUCCESS;
+    }
+
+    /** Ist die Umrechnung für den aktuell gültigen Schlüssel vollständig gelaufen? */
+    public static function isDoneForCurrentKey(): bool {
+        $marker = SystemSetting::query()->where('key', self::MARKER_KEY)->first();
+
+        return $marker instanceof SystemSetting && $marker->resolvedValue() === BlindIndex::keyFingerprint();
     }
 
     /**

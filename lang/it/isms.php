@@ -641,6 +641,7 @@ return [
             'run_after_update' => 'Da eseguire dopo ogni aggiornamento — equivale a «php artisan system:health». Le migrazioni in sospeso sono evidenziate qui.',
             'healthy' => 'Tutti i controlli superati',
             'unhealthy' => ':count controllo/i non superato/i',
+            'warnings' => 'Avvisi (non bloccano l’aggiornamento)',
         ],
         'manifest' => [
             'title' => 'Manifesto di rilascio',
