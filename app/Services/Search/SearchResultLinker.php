@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, ForeignCustomer, KnowledgeArticle, OpenIssue, Project, Protocol, SafetyEvent, SearchDocument, ServiceTicket, TimeEntry, Timesheet};
+use App\Models\{Asset, CommunicationNote, Customer, DiaryEntry, ForeignCustomer, KnowledgeArticle, Lead, OpenIssue, Project, Protocol, SafetyEvent, SearchDocument, ServiceTicket, TimeEntry, Timesheet};
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -50,9 +50,7 @@ final class SearchResultLinker {
                 SearchSourceType::OpenIssue => isset($issues[$id])
                     ? self::withAnchor($this->subjectUrl($issues[$id]->subject_type, (int) $issues[$id]->subject_id), '#open-issues')
                     : null,
-                SearchSourceType::CommunicationNote => isset($notes[$id])
-                    ? self::withAnchor($this->subjectUrl($notes[$id]->notable_type, (int) $notes[$id]->notable_id), '#communication-note-' . $id)
-                    : null,
+                SearchSourceType::CommunicationNote => isset($notes[$id]) ? $this->noteUrl($notes[$id]) : null,
             };
         }
 
@@ -73,6 +71,8 @@ final class SearchResultLinker {
             Project::class => route('projects.show', Sqid::encode(Project::class, $id)),
             Asset::class => route('assets.show', Sqid::encode(Asset::class, $id)),
             SafetyEvent::class => route('safety-events.show', Sqid::encode(SafetyEvent::class, $id)),
+            Protocol::class => route('protocols.show', Sqid::encode(Protocol::class, $id)),
+            Lead::class => route('leads.show', Sqid::encode(Lead::class, $id)),
             default => null,
         };
     }
@@ -84,6 +84,15 @@ final class SearchResultLinker {
      */
     private function jump(SearchSourceType $type, string $class, int $id): string {
         return route('search.open', ['type' => $type->value, 'id' => Sqid::encode($class, $id)]);
+    }
+
+    private function noteUrl(CommunicationNote $note): ?string {
+        // Interne Organisationsnotizen (Feature 154) haben keine Akte — die zentrale Liste öffnet sie im Lesedialog.
+        if ($note->isOrganizationNote()) {
+            return route('communication-notes.index', ['note' => Sqid::encode(CommunicationNote::class, (int) $note->id)]);
+        }
+
+        return self::withAnchor($this->subjectUrl($note->notable_type, (int) $note->notable_id), '#communication-note-' . $note->id);
     }
 
     private static function withAnchor(?string $url, string $anchor): ?string {

@@ -45,6 +45,8 @@ class NavGate {
         'asset-compliance.*' => \App\Models\AssetCompliance\AssetComplianceProfile::class,
         'investments.*' => \App\Models\Investments\InvestmentCase::class,
         'tenders.*' => \App\Models\Applications\ApplicationOpportunity::class,
+        // Nur die Liste: die Schnellerfassung hängt an communication.create, nicht an viewAny.
+        'communication-notes.index' => \App\Models\CommunicationNote::class,
         'recruiting.requisitions.*' => \App\Models\Applications\JobRequisition::class,
         'recruiting.applications.*' => \App\Models\Applications\JobApplication::class,
         'customers.*' => \App\Models\Customer::class,

@@ -3231,9 +3231,12 @@ Route::middleware('auth')->group(function () {
             ->name('learning.checkin.store');
 
         // ── Kommunikationsnotizen (MVP-012) ────────────────────────────────
+        // Feature 154: zentrale Liste, Schnellerfassung ohne Bezug, Lesedialog.
+        Route::get('communication-notes', [CommunicationNoteController::class, 'index'])->name('communication-notes.index');
         Route::get('communication-notes/create', [CommunicationNoteController::class, 'create'])->name('communication-notes.create');
         Route::post('communication-notes', [CommunicationNoteController::class, 'store'])->name('communication-notes.store');
         Route::get('communication-notes/{note}/edit', [CommunicationNoteController::class, 'edit'])->name('communication-notes.edit');
+        Route::get('communication-notes/{note}', [CommunicationNoteController::class, 'show'])->name('communication-notes.show');
         Route::put('communication-notes/{note}', [CommunicationNoteController::class, 'update'])->name('communication-notes.update');
         Route::post('communication-notes/{note}/publish', [CommunicationNoteController::class, 'publish'])->name('communication-notes.publish');
         Route::post('communication-notes/{note}/confidential', [CommunicationNoteController::class, 'confidential'])->name('communication-notes.confidential');

@@ -11,7 +11,7 @@
 namespace App\Services\Communication;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
-use App\Models\{CommunicationNote, User};
+use App\Models\{CommunicationNote, Organization, User};
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
@@ -43,11 +43,13 @@ class CommunicationNoteService {
             ? Carbon::parse((string) $attributes['next_action_due_at'])
             : null;
 
-        $this->assertConsistency($type, $direction, $visibility, $confidential, $occurredAt, $dueAt);
+        $this->assertConsistency($type, $direction, $visibility, $confidential, $occurredAt, $dueAt, $notable instanceof Organization);
 
         $note = DB::transaction(function () use ($notable, $creator, $attributes, $type, $direction, $visibility, $confidential, $occurredAt, $dueAt): CommunicationNote {
             $note = CommunicationNote::query()->create([
-                'organization_id' => $notable->getAttribute('organization_id') ?: $creator->organization_id,
+                'organization_id' => $notable instanceof Organization
+                    ? $notable->getKey()
+                    : ($notable->getAttribute('organization_id') ?: $creator->organization_id),
                 'notable_type' => $notable::class,
                 'notable_id' => $notable->getKey(),
                 'type' => $type->value,
@@ -97,7 +99,7 @@ class CommunicationNoteService {
             ? (filled($attributes['next_action_due_at']) ? Carbon::parse((string) $attributes['next_action_due_at']) : null)
             : $note->next_action_due_at;
 
-        $this->assertConsistency($type, $direction, $visibility, $confidential, $occurredAt, $dueAt);
+        $this->assertConsistency($type, $direction, $visibility, $confidential, $occurredAt, $dueAt, $note->isOrganizationNote());
 
         return DB::transaction(function () use ($note, $actor, $attributes, $type, $direction, $visibility, $confidential, $occurredAt, $dueAt): CommunicationNote {
             unset($actor);
@@ -129,6 +131,11 @@ class CommunicationNoteService {
 
     /** Gibt eine interne Notiz für das Kundenportal frei (§6). */
     public function publishToCustomer(CommunicationNote $note, User $actor): CommunicationNote {
+        if ($note->isOrganizationNote()) {
+            throw ValidationException::withMessages([
+                'visibility' => (string) __('communication.error.organization_note_not_publishable'),
+            ]);
+        }
         if ($note->confidential) {
             throw ValidationException::withMessages([
                 'visibility' => (string) __('communication.error.confidential_not_publishable'),
@@ -307,6 +314,7 @@ class CommunicationNoteService {
         bool $confidential,
         CarbonInterface $occurredAt,
         ?CarbonInterface $nextActionDueAt,
+        bool $organizationNote = false,
     ): void {
         if ($type === CommunicationNoteType::Internal && $direction !== CommunicationDirection::Internal) {
             throw ValidationException::withMessages([
@@ -323,6 +331,13 @@ class CommunicationNoteService {
         if ($confidential && $visibility !== CommunicationVisibility::Internal) {
             throw ValidationException::withMessages([
                 'visibility' => (string) __('communication.error.confidential_requires_internal_visibility'),
+            ]);
+        }
+
+        // Interne Organisationsnotizen (Feature 154) haben keinen Kunden, dem sie gezeigt werden könnten.
+        if ($organizationNote && $visibility !== CommunicationVisibility::Internal) {
+            throw ValidationException::withMessages([
+                'visibility' => (string) __('communication.error.organization_note_not_publishable'),
             ]);
         }
 

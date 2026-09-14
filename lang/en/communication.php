@@ -12,6 +12,8 @@ return [
     'title' => [
         'index' => 'Communication',
         'followups' => 'Open follow-up actions',
+        'notes' => 'Notes',
+        'note' => 'Note',
     ],
 
     'field' => [
@@ -32,6 +34,10 @@ return [
         'participant_role' => 'Role',
         'participant_party' => 'Party',
         'creator' => 'Recorded by',
+        'storage' => 'Filed under',
+        'customer' => 'Customer',
+        'actions' => 'Actions',
+        'direction_choose' => 'Please select',
     ],
 
     'action' => [
@@ -45,6 +51,7 @@ return [
         'complete_followup' => 'Follow-up done',
         'add_participant' => 'Add participant',
         'remove_participant' => 'Remove participant',
+        'show' => 'View',
     ],
 
     'flash' => [
@@ -68,6 +75,9 @@ return [
         'confidential_not_publishable' => 'Confidential notes cannot be published to customers.',
         'internal_not_publishable' => 'Internal communication cannot be published to customers.',
         'no_followup' => 'This note has no follow-up action.',
+        'organization_note_not_publishable' => 'Internal organization notes cannot be shared with customers.',
+        'call_requires_external_direction' => 'For a phone call, please state whether it was inbound or outbound.',
+        'direction_required' => 'Please choose a direction.',
     ],
 
     'badge' => [
@@ -75,7 +85,34 @@ return [
         'followup_done' => 'Done',
     ],
 
+    'subtitle' => [
+        'notes' => 'Capture notes quickly and find them again – internally or with a customer.',
+    ],
+
+    'storage' => [
+        'all' => 'All filings',
+        'internal' => 'Internal',
+        'customer' => 'Customer',
+    ],
+
+    'filter' => [
+        'search' => 'Search',
+        'search_placeholder' => 'Subject or content …',
+        'all_customers' => 'All customers',
+        'all_types' => 'All types',
+        'open_followups' => 'Open follow-ups',
+    ],
+
+    'hint' => [
+        'customer_not_published' => 'The note appears in the customer record, but not in the customer portal.',
+    ],
+
+    'section' => [
+        'more' => 'More details',
+    ],
+
     'empty' => 'No communication notes yet.',
+    'empty_filtered' => 'No notes found.',
     'confirm_delete' => 'Really delete this communication note?',
     'confirm_publish' => 'Really make this note visible to the customer?',
 ];

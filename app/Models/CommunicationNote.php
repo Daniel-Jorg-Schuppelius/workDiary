@@ -141,4 +141,36 @@ class CommunicationNote extends Model {
     public function hasOpenFollowUp(): bool {
         return $this->next_action !== null && $this->next_action_completed_at === null;
     }
+
+    /** Interne Notiz ohne Fachbezug, abgelegt bei der Organisation selbst (Feature 154). */
+    public function isOrganizationNote(): bool {
+        return $this->notable_type === Organization::class;
+    }
+
+    /** Art der Ablage für Listen: „Intern“, „Kunde“ oder der Typ der Akte. */
+    public function notableKindLabel(): string {
+        return match (true) {
+            $this->isOrganizationNote() => (string) __('communication.storage.internal'),
+            $this->notable_type === Customer::class => (string) __('communication.storage.customer'),
+            default => (string) __('entity-types.' . class_basename($this->notable_type)),
+        };
+    }
+
+    /** Name der Akte, an der die Notiz hängt; „—“, wenn es sie nicht mehr gibt. */
+    public function notableLabel(): string {
+        $notable = $this->notable;
+        if (! $notable instanceof Model) {
+            return '—';
+        }
+
+        $loaded = $notable->getAttributes();
+        foreach (['name', 'title', 'company', 'contact_name'] as $attribute) {
+            $value = array_key_exists($attribute, $loaded) ? $notable->getAttribute($attribute) : null;
+            if (is_string($value) && trim($value) !== '') {
+                return $value;
+            }
+        }
+
+        return '—';
+    }
 }

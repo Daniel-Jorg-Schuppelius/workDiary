@@ -12,6 +12,8 @@ return [
     'title' => [
         'index' => 'Comunicación',
         'followups' => 'Acciones de seguimiento abiertas',
+        'notes' => 'Notas',
+        'note' => 'Nota',
     ],
 
     'field' => [
@@ -32,6 +34,10 @@ return [
         'participant_role' => 'Rol',
         'participant_party' => 'Parte',
         'creator' => 'Registrado por',
+        'storage' => 'Ubicación',
+        'customer' => 'Cliente',
+        'actions' => 'Acciones',
+        'direction_choose' => 'Seleccione',
     ],
 
     'action' => [
@@ -45,6 +51,7 @@ return [
         'complete_followup' => 'Seguimiento completado',
         'add_participant' => 'Añadir participante',
         'remove_participant' => 'Quitar participante',
+        'show' => 'Ver',
     ],
 
     'flash' => [
@@ -68,6 +75,9 @@ return [
         'confidential_not_publishable' => 'Las notas confidenciales no se pueden publicar para los clientes.',
         'internal_not_publishable' => 'La comunicación interna no se puede publicar para los clientes.',
         'no_followup' => 'Esta nota no tiene acción de seguimiento.',
+        'organization_note_not_publishable' => 'Las notas internas de la organización no se pueden compartir con clientes.',
+        'call_requires_external_direction' => 'En una llamada, indique si fue entrante o saliente.',
+        'direction_required' => 'Elija una dirección.',
     ],
 
     'badge' => [
@@ -75,7 +85,34 @@ return [
         'followup_done' => 'Completado',
     ],
 
+    'subtitle' => [
+        'notes' => 'Tome notas rápidamente y encuéntrelas después, internas o de un cliente.',
+    ],
+
+    'storage' => [
+        'all' => 'Todas las ubicaciones',
+        'internal' => 'Interna',
+        'customer' => 'Cliente',
+    ],
+
+    'filter' => [
+        'search' => 'Buscar',
+        'search_placeholder' => 'Asunto o contenido …',
+        'all_customers' => 'Todos los clientes',
+        'all_types' => 'Todos los tipos',
+        'open_followups' => 'Seguimientos abiertos',
+    ],
+
+    'hint' => [
+        'customer_not_published' => 'La nota aparece en la ficha del cliente, pero no en el portal de clientes.',
+    ],
+
+    'section' => [
+        'more' => 'Más detalles',
+    ],
+
     'empty' => 'Aún no hay notas de comunicación.',
+    'empty_filtered' => 'No se encontraron notas.',
     'confirm_delete' => '¿Eliminar realmente esta nota de comunicación?',
     'confirm_publish' => '¿Hacer realmente visible esta nota para el cliente?',
 ];

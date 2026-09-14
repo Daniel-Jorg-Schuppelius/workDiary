@@ -1,7 +1,7 @@
 ---
 title: "Communication notes"
 topic: communication.notes
-version: 1
+version: 2
 audience: []
 related:
     - diary-entries.edit
@@ -41,3 +41,29 @@ Important rules:
 
 Next steps: recurring solutions from phone calls are worth an article
 in the **knowledge base**.
+
+## Central note list
+
+The **Notes** page in the sidebar lists all notes of the organization, newest
+first – whether they are filed internally, with a customer, on a work order or
+on a project. Filter by filing (internal or customer), customer, type and open
+follow-ups; the search covers subject and content. Confidential notes of other
+people only appear with the matching permission.
+
+## Quick capture
+
+A new note can be captured from the list and from the create menu on every
+page:
+
+1. Choose where to file it: **Internal** files the note with the organization,
+   **Customer** with exactly one customer – it then also appears in that
+   customer's record.
+2. Choose the **type**, e.g. "General", "Phone call" or "Production". For a
+   phone call, state whether it was inbound or outbound; general and
+   production notes are always internal.
+3. Enter subject and note text. Result, follow-up and confidentiality are
+   under **More details**.
+
+Filing a note with a customer does not publish anything in the customer
+portal. Sharing remains a separate step in the customer record; internal
+organization notes cannot be shared at all.

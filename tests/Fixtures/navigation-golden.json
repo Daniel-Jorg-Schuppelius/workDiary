@@ -44,6 +44,8 @@
             "/bill-of-quantities/pakete",
             "/buergschaften",
             "/buildings",
+            "/communication-notes",
+            "/communication-notes/create",
             "/compliance/isms/anforderungen",
             "/compliance/isms/auditbereitschaft",
             "/compliance/isms/auditpakete",

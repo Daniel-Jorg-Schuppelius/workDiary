@@ -1,7 +1,7 @@
 ---
 title: "Kommunikationsnotizen"
 topic: communication.notes
-version: 1
+version: 2
 audience: []
 related:
     - diary-entries.edit
@@ -40,3 +40,28 @@ Wichtige Regeln:
 
 Nächste Schritte: Wiederkehrende Lösungen aus Telefonaten lohnen sich
 als Artikel in der **Wissensbasis**.
+
+## Zentrale Notizliste
+
+In der Seitenleiste unter **Notizen** stehen alle Notizen der Organisation, die
+neuesten zuerst – egal ob sie intern, beim Kunden, am Auftrag oder am Projekt
+abgelegt sind. Filtern lässt sich nach Ablage (intern oder Kunde), Kunde, Art
+und offenen Wiedervorlagen; die Suche prüft Betreff und Inhalt. Vertrauliche
+Notizen anderer erscheinen nur mit der entsprechenden Berechtigung.
+
+## Schnellerfassung
+
+**Notiz erfassen** gibt es in der Liste und im Menü **Neu …** auf jeder Seite:
+
+1. **Ablage** wählen: **Intern** legt die Notiz bei der Organisation ab,
+   **Kunde** bei genau einem Kunden – dann erscheint sie zusätzlich in dessen
+   Kundenakte.
+2. **Art** wählen, etwa „Allgemein", „Telefonat" oder „Fertigung". Bei einem
+   Telefonat wird angegeben, ob es eingehend oder ausgehend war; allgemeine
+   Notizen und Fertigungsnotizen sind immer intern.
+3. Betreff und Notiztext eintragen. Ergebnis, Wiedervorlage und
+   Vertraulichkeit stehen unter **Weitere Angaben**.
+
+Die Zuordnung zu einem Kunden veröffentlicht nichts im Kundenportal. Die
+Freigabe bleibt ein eigener Schritt in der Kundenakte; interne Notizen der
+Organisation lassen sich gar nicht freigeben.

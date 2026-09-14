@@ -133,6 +133,10 @@ export function registerAlpineComponents(Alpine) {
         isAny(...vals) {
             return vals.includes(this.value);
         },
+        // Gegenstück zu isAny — der CSP-Evaluator kennt kein „!“.
+        isNone(...vals) {
+            return !vals.includes(this.value);
+        },
         // value === v ? a : b — für CSP-konforme :bind-Ausdrücke.
         choose(v, a, b) {
             return this.value === v ? a : b;

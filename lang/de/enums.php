@@ -745,6 +745,8 @@ return [
             'decision' => 'Entscheidung',
             'letter' => 'Brief / Fax',
             'other' => 'Sonstige',
+            'general' => 'Allgemein',
+            'production' => 'Fertigung',
         ],
         'direction' => [
             'inbound' => 'Eingehend',

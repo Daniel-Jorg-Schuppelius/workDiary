@@ -134,6 +134,10 @@
         </x-select-field>
     </x-form-group>
 
+    @php
+        // Interne Organisationsnotizen (Feature 154) haben keinen Kunden, dem sie gezeigt werden könnten.
+        $canPublishToCustomer = $canPublishToCustomer && ! ($note?->isOrganizationNote() ?? false);
+    @endphp
     @if ($canPublishToCustomer || $canManageConfidential)
         <x-form-group :legend="__('communication.field.visibility')" icon="visibility" tone="ghost" cols="2">
             @if ($canPublishToCustomer)

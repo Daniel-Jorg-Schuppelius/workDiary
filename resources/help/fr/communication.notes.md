@@ -1,7 +1,7 @@
 ---
 title: "Notes de communication"
 topic: communication.notes
-version: 1
+version: 2
 audience: []
 related:
     - diary-entries.edit
@@ -21,3 +21,30 @@ d'intervention. La visibilité est par défaut **« Interne »** ; le partage
 **confidentielles** ne sont visibles que par l'auteur et l'admin. L'auteur
 peut modifier pendant 24 heures, ensuite seul l'admin ; la **suppression**
 (soft delete) est réservée aux admins.
+
+## Liste centrale des notes
+
+La page **Notes** du menu latéral regroupe toutes les notes de l'organisation,
+les plus récentes en premier – qu'elles soient internes ou rattachées à un
+client, une intervention ou un projet. Filtres : rattachement (interne ou
+client), client, type et suivis ouverts ; la recherche porte sur l'objet et le
+contenu. Les notes confidentielles d'autres personnes n'apparaissent qu'avec
+l'autorisation correspondante.
+
+## Saisie rapide
+
+Une nouvelle note se saisit depuis la liste et depuis le menu de création de
+chaque page :
+
+1. Choisir le **rattachement** : **Interne** classe la note auprès de
+   l'organisation, **Client** auprès d'un seul client – elle apparaît alors
+   aussi dans la fiche de ce client.
+2. Choisir le **type**, par exemple « Général », « Appel téléphonique » ou
+   « Fabrication ». Pour un appel, indiquer s'il était entrant ou sortant ; les
+   notes générales et de fabrication sont toujours internes.
+3. Saisir l'objet et le texte. Résultat, suivi et confidentialité se trouvent
+   sous **Plus de détails**.
+
+Rattacher une note à un client ne publie rien dans le portail client. Le
+partage reste une étape distincte dans la fiche client ; les notes internes de
+l'organisation ne peuvent pas être partagées.

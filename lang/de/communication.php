@@ -12,6 +12,8 @@ return [
     'title' => [
         'index' => 'Kommunikation',
         'followups' => 'Offene Folgeaktionen',
+        'notes' => 'Notizen',
+        'note' => 'Notiz',
     ],
 
     'field' => [
@@ -32,6 +34,10 @@ return [
         'participant_role' => 'Rolle',
         'participant_party' => 'Partei',
         'creator' => 'Erfasst von',
+        'storage' => 'Ablage',
+        'customer' => 'Kunde',
+        'actions' => 'Aktionen',
+        'direction_choose' => 'Bitte wählen',
     ],
 
     'action' => [
@@ -45,6 +51,7 @@ return [
         'complete_followup' => 'Folgeaktion erledigt',
         'add_participant' => 'Beteiligten hinzufügen',
         'remove_participant' => 'Beteiligten entfernen',
+        'show' => 'Anzeigen',
     ],
 
     'flash' => [
@@ -68,6 +75,9 @@ return [
         'confidential_not_publishable' => 'Vertrauliche Notizen können nicht für Kunden freigegeben werden.',
         'internal_not_publishable' => 'Interne Kommunikation kann nicht für Kunden freigegeben werden.',
         'no_followup' => 'Diese Notiz hat keine Folgeaktion.',
+        'organization_note_not_publishable' => 'Interne Notizen der Organisation können nicht für Kunden freigegeben werden.',
+        'call_requires_external_direction' => 'Bei einem Telefonat bitte angeben, ob es eingehend oder ausgehend war.',
+        'direction_required' => 'Bitte eine Richtung wählen.',
     ],
 
     'badge' => [
@@ -75,7 +85,34 @@ return [
         'followup_done' => 'Erledigt',
     ],
 
+    'subtitle' => [
+        'notes' => 'Notizen schnell festhalten und wiederfinden – intern oder beim Kunden.',
+    ],
+
+    'storage' => [
+        'all' => 'Alle Ablagen',
+        'internal' => 'Intern',
+        'customer' => 'Kunde',
+    ],
+
+    'filter' => [
+        'search' => 'Suche',
+        'search_placeholder' => 'Betreff oder Inhalt …',
+        'all_customers' => 'Alle Kunden',
+        'all_types' => 'Alle Arten',
+        'open_followups' => 'Offene Wiedervorlagen',
+    ],
+
+    'hint' => [
+        'customer_not_published' => 'Die Notiz erscheint in der Kundenakte, aber nicht im Kundenportal.',
+    ],
+
+    'section' => [
+        'more' => 'Weitere Angaben',
+    ],
+
     'empty' => 'Noch keine Kommunikationsnotizen vorhanden.',
+    'empty_filtered' => 'Keine Notizen gefunden.',
     'confirm_delete' => 'Kommunikationsnotiz wirklich löschen?',
     'confirm_publish' => 'Notiz wirklich für den Kunden sichtbar machen?',
 ];

@@ -381,6 +381,8 @@ class NavigationRegistry {
                             ? ['route' => 'agile.reports.overview', 'label' => __('Agile Übersicht'), 'icon' => 'sprint', 'modal' => false, 'matches' => ['agile.*']]
                             : null,
                         ['route' => 'attendance.index', 'label' => __('Stempeluhr'), 'icon' => 'punch_clock', 'modal' => false, 'matches' => ['attendance.*']],
+                        // Feature 154: zentrale Notizen, auch ohne geöffnete Akte.
+                        ['route' => 'communication-notes.index', 'label' => __('communication.title.notes'), 'icon' => 'sticky_note_2', 'modal' => false, 'matches' => ['communication-notes.*']],
                     ]),
                 ],
                 [
@@ -1354,6 +1356,7 @@ class NavigationRegistry {
                     ['route' => 'time-entries.create', 'label' => __('Zeiteintrag'), 'icon' => 'timer'],
                     ['route' => 'timesheets.create', 'label' => __('Stundenzettel'), 'icon' => 'description'],
                     ['route' => 'admin-time-entries.create', 'label' => __('Verwaltungszeit'), 'icon' => 'schedule'],
+                    ['route' => 'communication-notes.create', 'label' => __('communication.title.note'), 'icon' => 'sticky_note_2'],
                 ],
             ],
             [
