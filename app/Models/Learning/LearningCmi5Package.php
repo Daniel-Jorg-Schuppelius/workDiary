@@ -1,9 +1,9 @@
 <?php
 /*
- * Created on   : Fri Aug 28 2026
+ * Created on   : Mon Sep 14 2026
  * Author       : Daniel Jörg Schuppelius
  * Author Uri   : https://schuppelius.org
- * Filename     : LearningScormPackage.php
+ * Filename     : LearningCmi5Package.php
  * License      : AGPL-3.0-or-later
  * License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
  */
@@ -11,26 +11,26 @@
 namespace App\Models\Learning;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
-use ELearningToolkit\Scorm\ScormVersion;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
 
 /**
- * Importiertes SCORM-Paket an einer Lerneinheit (Feature 149, MVP-743).
+ * Importierter cmi5-Kurs an einer Lerneinheit.
  *
  * @property int $id
  * @property int $organization_id
  * @property int $learning_unit_id
  * @property string $title
- * @property string $version
- * @property string $storage_path
- * @property string|null $launch_href
- * @property string $manifest_hash
+ * @property string $course_id
+ * @property string $activity_id
+ * @property list<array{publisher_id: string, activity_id: string, title: string, units: list<string>}>|null $blocks
+ * @property string|null $storage_path
+ * @property string $structure_hash
  * @property int $file_count
  * @property int $size_bytes
  */
-class LearningScormPackage extends Model {
+class LearningCmi5Package extends Model {
     use Auditable;
 
     use BelongsToOrganization;
@@ -43,10 +43,11 @@ class LearningScormPackage extends Model {
         'organization_id',
         'learning_unit_id',
         'title',
-        'version',
+        'course_id',
+        'activity_id',
+        'blocks',
         'storage_path',
-        'launch_href',
-        'manifest_hash',
+        'structure_hash',
         'file_count',
         'size_bytes',
         'uploaded_by_user_id',
@@ -54,6 +55,7 @@ class LearningScormPackage extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'blocks' => 'array',
         'file_count' => 'integer',
         'size_bytes' => 'integer',
     ];
@@ -63,17 +65,13 @@ class LearningScormPackage extends Model {
         return $this->belongsTo(LearningUnit::class, 'learning_unit_id');
     }
 
-    /** @return HasMany<LearningScormState, $this> */
-    public function states(): HasMany {
-        return $this->hasMany(LearningScormState::class, 'learning_scorm_package_id');
+    /** @return HasMany<LearningCmi5Unit, $this> */
+    public function units(): HasMany {
+        return $this->hasMany(LearningCmi5Unit::class, 'learning_cmi5_package_id')->orderBy('position');
     }
 
-    /** Runtime-Objekt, das der Inhalt im Fenster sucht. */
-    public function apiObjectName(): string {
-        return (ScormVersion::tryFrom($this->version) ?? ScormVersion::Scorm12)->apiObjectName();
-    }
-
-    public function isScorm2004(): bool {
-        return $this->version === ScormVersion::Scorm2004->value;
+    /** @return HasMany<LearningCmi5Registration, $this> */
+    public function registrations(): HasMany {
+        return $this->hasMany(LearningCmi5Registration::class, 'learning_cmi5_package_id');
     }
 }

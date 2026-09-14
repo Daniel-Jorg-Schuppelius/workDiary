@@ -16,9 +16,11 @@ use App\Enums\Learning\LearningUnitKind;
 use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit};
 use App\Models\User;
-use App\Services\Learning\{LearningScormService, LearningXapiService};
+use App\Services\Learning\{LearningScormService, LearningXapiService, ScormContentToken, ScormPackageFiles};
+use App\Support\Learning\ScormContentHost;
+use ELearningToolkit\Scorm\LaunchPath;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
-use Illuminate\Support\Facades\{Auth, File, Gate};
+use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -37,6 +39,7 @@ class LearningScormController extends Controller {
     public function __construct(
         private readonly LearningScormService $scorm,
         private readonly LearningXapiService $xapi,
+        private readonly ScormContentToken $contentTokens,
     ) {}
 
     /** Autorenseite: Paket an eine Einheit hängen. */
@@ -70,6 +73,11 @@ class LearningScormController extends Controller {
             'package' => $package,
             'state' => $state,
             'launchUrl' => $this->launchUrl($enrollment, $unit, $package),
+            // Mit eigenem Inhalts-Host bettet die Seite nur die Hülle von dort ein.
+            'contentOrigin' => ScormContentHost::origin(),
+            'contentWrapperUrl' => ScormContentHost::isConfigured()
+                ? ScormContentHost::origin() . '/scorm/' . $this->contentTokens->issue($enrollment, $unit, $package) . '/huelle'
+                : null,
         ]);
     }
 
@@ -80,28 +88,16 @@ class LearningScormController extends Controller {
      * ohne dass das Ergebnis wieder im Paketverzeichnis liegt.
      */
     public function asset(LearningEnrollment $enrollment, LearningUnit $unit, string $path = ''): BinaryFileResponse {
+        // Ist ein Inhalts-Host konfiguriert, liefert der Anwendungs-Ursprung keine
+        // Paketdateien mehr — sonst liefe der fremde Code hier weiter.
+        abort_if(ScormContentHost::isConfigured(), 404);
+
         $package = $this->packageFor($enrollment, $unit);
+        $file = ScormPackageFiles::absolutePath($package, $path);
+        abort_if($file === null, 404);
 
-        $base = storage_path('app/' . $package->storage_path);
-        $target = $path !== '' ? $base . '/' . $path : $base . '/' . (string) $package->launch_href;
-
-        $real = realpath($target);
-        $realBase = realpath($base);
-
-        abort_if($real === false || $realBase === false, 404);
-        abort_unless(str_starts_with($real, $realBase . DIRECTORY_SEPARATOR), 404);
-        abort_unless(File::isFile($real), 404);
-
-        $response = response()->file($real);
-
-        // Eigene, enge CSP: der Inhalt darf inline skripten (fast jedes
-        // Autorenwerkzeug erzeugt das), aber nichts nach außen sprechen.
-        $response->headers->set(
-            'Content-Security-Policy',
-            "default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
-            . "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; "
-            . "connect-src 'self'; frame-ancestors 'self'; form-action 'none'; base-uri 'none'"
-        );
+        $response = response()->file($file);
+        $response->headers->set('Content-Security-Policy', ScormPackageFiles::contentSecurityPolicy());
 
         return $response;
     }
@@ -169,12 +165,7 @@ class LearningScormController extends Controller {
             'unit' => $unit->sqid,
         ]), '/');
 
-        $href = ltrim((string) $package->launch_href, '/');
-        [$path, $query] = array_pad(explode('?', $href, 2), 2, null);
-
-        $encoded = implode('/', array_map('rawurlencode', explode('/', (string) $path)));
-
-        return $base . '/' . $encoded . ($query !== null && $query !== '' ? '?' . $query : '');
+        return $base . '/' . LaunchPath::encode((string) $package->launch_href);
     }
 
     /** Paket zur eigenen Einschreibung — fremde Einschreibungen gibt es nicht. */

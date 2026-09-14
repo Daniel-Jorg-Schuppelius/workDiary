@@ -18993,6 +18993,147 @@ CREATE INDEX "resale_purchases_org_prov_date_idx" on "resale_purchase_entries"(
 CREATE INDEX "resale_purchases_period_idx" on "resale_purchase_entries"(
   "period_id"
 );
+CREATE TABLE IF NOT EXISTS "learning_cmi5_packages"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_unit_id" integer not null,
+  "title" varchar not null,
+  "course_id" varchar not null,
+  "activity_id" varchar not null,
+  "blocks" text,
+  "storage_path" varchar,
+  "structure_hash" varchar not null,
+  "file_count" integer not null default '0',
+  "size_bytes" integer not null default '0',
+  "uploaded_by_user_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_unit_id") references "learning_units"("id") on delete cascade,
+  foreign key("uploaded_by_user_id") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_cmi5_pkg_unit_uq" on "learning_cmi5_packages"(
+  "learning_unit_id"
+);
+CREATE UNIQUE INDEX "lrn_cmi5_pkg_activity_uq" on "learning_cmi5_packages"(
+  "activity_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_cmi5_units"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_cmi5_package_id" integer not null,
+  "publisher_id" varchar not null,
+  "activity_id" varchar not null,
+  "title" varchar not null,
+  "url" varchar not null,
+  "move_on" varchar not null,
+  "mastery_score" numeric,
+  "launch_method" varchar not null,
+  "launch_parameters" text,
+  "entitlement_key" varchar,
+  "position" integer not null default '0',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_cmi5_package_id") references "learning_cmi5_packages"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_cmi5_au_activity_uq" on "learning_cmi5_units"(
+  "activity_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_cmi5_registrations"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_enrollment_id" integer not null,
+  "learning_cmi5_package_id" integer not null,
+  "registration" varchar not null,
+  "satisfied_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_enrollment_id") references "learning_enrollments"("id") on delete cascade,
+  foreign key("learning_cmi5_package_id") references "learning_cmi5_packages"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_cmi5_reg_uq" on "learning_cmi5_registrations"(
+  "learning_enrollment_id",
+  "learning_cmi5_package_id"
+);
+CREATE UNIQUE INDEX "lrn_cmi5_reg_id_uq" on "learning_cmi5_registrations"(
+  "registration"
+);
+CREATE TABLE IF NOT EXISTS "learning_cmi5_au_states"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_cmi5_registration_id" integer not null,
+  "learning_cmi5_unit_id" integer not null,
+  "completed_at" datetime,
+  "passed_at" datetime,
+  "failed_at" datetime,
+  "waived_at" datetime,
+  "satisfied_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_cmi5_registration_id") references "learning_cmi5_registrations"("id") on delete cascade,
+  foreign key("learning_cmi5_unit_id") references "learning_cmi5_units"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_cmi5_au_state_uq" on "learning_cmi5_au_states"(
+  "learning_cmi5_registration_id",
+  "learning_cmi5_unit_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_cmi5_sessions"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_cmi5_registration_id" integer not null,
+  "learning_cmi5_unit_id" integer not null,
+  "session_id" varchar not null,
+  "launch_mode" varchar not null,
+  "fetch_token_hash" varchar not null,
+  "fetch_used_at" datetime,
+  "auth_token_hash" varchar,
+  "launched_at" datetime not null,
+  "initialized_at" datetime,
+  "terminated_at" datetime,
+  "abandoned_at" datetime,
+  "last_statement_at" datetime,
+  "expires_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_cmi5_registration_id") references "learning_cmi5_registrations"("id") on delete cascade,
+  foreign key("learning_cmi5_unit_id") references "learning_cmi5_units"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_cmi5_sess_uq" on "learning_cmi5_sessions"(
+  "session_id"
+);
+CREATE UNIQUE INDEX "lrn_cmi5_sess_fetch_uq" on "learning_cmi5_sessions"(
+  "fetch_token_hash"
+);
+CREATE INDEX "lrn_cmi5_sess_auth_idx" on "learning_cmi5_sessions"(
+  "auth_token_hash"
+);
+CREATE INDEX "lrn_cmi5_sess_reg_idx" on "learning_cmi5_sessions"(
+  "learning_cmi5_registration_id",
+  "learning_cmi5_unit_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_xapi_documents"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "kind" varchar not null,
+  "activity_id" varchar,
+  "agent_hash" varchar not null,
+  "registration" varchar,
+  "document_id" varchar not null,
+  "lookup_hash" varchar not null,
+  "content" text not null,
+  "content_type" varchar not null,
+  "etag" varchar not null,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_xapi_doc_lookup_uq" on "learning_xapi_documents"(
+  "lookup_hash"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -19796,3 +19937,4 @@ INSERT INTO migrations VALUES(799,'2027_02_20_101300_add_resale_role_to_articles
 INSERT INTO migrations VALUES(800,'2027_02_20_101400_add_service_period_to_invoice_items',15);
 INSERT INTO migrations VALUES(801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',16);
 INSERT INTO migrations VALUES(802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',17);
+INSERT INTO migrations VALUES(803,'2027_02_20_101700_create_learning_cmi5_tables',18);

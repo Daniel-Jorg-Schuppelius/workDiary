@@ -93,6 +93,8 @@ class SecurityHeaders {
             // Origins der Plugins müssen erlaubt sein, sonst blockt der Connect.
             'form-action ' . $this->formActionSources(),
             "frame-ancestors 'self'",
+            // SCORM-Hülle vom eigenen Inhalts-Host (Sicherheitsaudit files-1).
+            "frame-src 'self'" . ((string) \App\Support\Learning\ScormContentHost::origin() !== '' ? ' ' . \App\Support\Learning\ScormContentHost::origin() : ''),
             "worker-src 'self' blob:",
             "manifest-src 'self'",
         ];
@@ -128,47 +130,8 @@ class SecurityHeaders {
      * scheme://host[:port]. Leerstring, wenn keine gültige http(s)-Origin.
      */
     private function originFromUrl(mixed $url): string {
-        if (! is_string($url) || $url === '') {
-            return '';
-        }
-
-        $parts = parse_url($url);
-        if ($parts === false || empty($parts['scheme']) || empty($parts['host'])) {
-            return '';
-        }
-
-        $scheme = strtolower((string) $parts['scheme']);
-        if (! in_array($scheme, ['http', 'https'], true)) {
-            return '';
-        }
-
-        // **Der Host geht ungeprüft in einen HTTP-Header** — das war der
-        // Befund S-05 (Sicherheitsscan 2026-08-23). `parse_url()` akzeptiert
-        // im Host-Teil Semikolons, Leerzeichen und Anführungszeichen; ein
-        // Semikolon beendet die img-src-Direktive und startet eine neue.
-        // Mit `https://x;script-src-attr 'unsafe-inline';y` als Kachel-URL
-        // erlaubte die CSP jeder Seite der Organisation wieder
-        // Inline-Event-Handler — der Kern des Nonce-Schutzes war ausgehebelt.
-        $host = (string) $parts['host'];
-        $literal = trim($host, '[]');
-
-        $isHostname = filter_var($host, FILTER_VALIDATE_DOMAIN, FILTER_FLAG_HOSTNAME) !== false;
-        $isIpLiteral = $literal !== $host && filter_var($literal, FILTER_VALIDATE_IP) !== false;
-
-        if (! $isHostname && ! $isIpLiteral) {
-            return '';
-        }
-
-        $origin = $scheme . '://' . $host;
-
-        if (! empty($parts['port'])) {
-            $port = (string) $parts['port'];
-            if (! ctype_digit($port) || (int) $port < 1 || (int) $port > 65535) {
-                return '';
-            }
-            $origin .= ':' . $port;
-        }
-
-        return $origin;
+        // Gehärtete Prüfung liegt im Toolkit (Befund S-05: Semikolon im Host beendet
+        // die CSP-Direktive) — hier nur die Leerstring-Konvention der Aufrufer.
+        return \CommonToolkit\Helper\Data\WebLinkHelper::origin(is_string($url) ? $url : null) ?? '';
     }
 }

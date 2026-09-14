@@ -413,6 +413,7 @@ return [
     'LearningSection' => 'Lernkurs-Abschnitt',
     'LearningUnit' => 'Lerneinheit',
     'LearningScormPackage' => 'SCORM-Paket',
+    'LearningCmi5Package' => 'cmi5-Kurs',
     'TrainingCourseVersion' => 'Kursversion',
     'TrainingRequirement' => 'Schulungs-Pflichtzuordnung',
     'TrainingAssignment' => 'Schulungs-Soll',

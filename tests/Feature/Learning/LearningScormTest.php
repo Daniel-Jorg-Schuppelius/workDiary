@@ -14,7 +14,7 @@ use App\Enums\Learning\{LearningProgressStatus, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackage, LearningUnit, LearningXapiStatement};
 use App\Models\User;
 use App\Services\Learning\{LearningCourseService, LearningEnrollmentService, LearningScormService};
-use App\Services\Learning\Scorm\ScormManifest;
+use ELearningToolkit\Scorm\ScormVersion;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\File;
@@ -164,7 +164,7 @@ class LearningScormTest extends TestCase {
         $package = $unit->scormPackage;
 
         $this->assertNotNull($package);
-        $this->assertSame(ScormManifest::VERSION_12, $package->version);
+        $this->assertSame(ScormVersion::Scorm12->value, $package->version);
         $this->assertSame('index.html', $package->launch_href);
         $this->assertSame('Brandschutz', $package->title);
         $this->assertSame('API', $package->apiObjectName());
@@ -176,7 +176,7 @@ class LearningScormTest extends TestCase {
         $package = $unit->scormPackage;
 
         $this->assertNotNull($package);
-        $this->assertSame(ScormManifest::VERSION_2004, $package->version);
+        $this->assertSame(ScormVersion::Scorm2004->value, $package->version);
         $this->assertSame('API_1484_11', $package->apiObjectName());
     }
 
@@ -434,5 +434,55 @@ class LearningScormTest extends TestCase {
 
         $this->assertSame(1, LearningXapiStatement::query()->count());
         $this->assertNull($enrollment->refresh()->progress()->where('learning_unit_id', $unit->id)->first());
+    }
+
+    // ── Umzug ins E-Learning-Toolkit (2026-09-14) ─────────────────────────
+
+    public function test_ein_als_ordner_gezipptes_paket_startet_aus_dem_unterordner(): void {
+        // Viele Autorenwerkzeuge zippen den Kursordner mit. Die Verweise im
+        // Manifest gelten dann relativ zu diesem Ordner, nicht zum Paketstamm.
+        $course = $this->courses()->createCourse($this->organization, null, ['title' => 'SCORM-Kurs']);
+        $unit = $this->courses()->addUnit($course, ['title' => 'Modul', 'kind' => LearningUnitKind::Scorm->value]);
+
+        $package = $this->scorm()->import($unit, $this->makeZip([
+            'brandschutz/imsmanifest.xml' => $this->manifest12(),
+            'brandschutz/index.html' => '<html><body>Inhalt</body></html>',
+            'brandschutz/js/app.js' => 'console.log(1);',
+        ]));
+        $this->extractedPaths[] = $package->storage_path;
+
+        $this->assertSame('brandschutz/index.html', $package->launch_href);
+
+        $enrollment = $this->enrolledLearner($unit->refresh());
+
+        $this->actingAs($enrollment->user)
+            ->get(route('learning.my.scorm.play', ['enrollment' => $enrollment->sqid, 'unit' => $unit->sqid]))
+            ->assertOk()
+            ->assertSee('scorm/inhalt/brandschutz/index.html', false);
+
+        $this->actingAs($enrollment->user)
+            ->get(route('learning.my.scorm.asset', ['enrollment' => $enrollment->sqid, 'unit' => $unit->sqid]) . '/brandschutz/index.html')
+            ->assertOk();
+    }
+
+    public function test_ein_unlesbares_manifest_hinterlaesst_keinen_ordner(): void {
+        $course = $this->courses()->createCourse($this->organization, null, ['title' => 'SCORM-Kurs']);
+        $unit = $this->courses()->addUnit($course, ['title' => 'Modul', 'kind' => LearningUnitKind::Scorm->value]);
+
+        $root = storage_path('app/learning/scorm/' . $this->organization->id);
+        $before = is_dir($root) ? (glob($root . '/*') ?: []) : [];
+
+        try {
+            $this->scorm()->import($unit, $this->makeZip([
+                'imsmanifest.xml' => '<manifest><nicht geschlossen>',
+                'index.html' => '<html></html>',
+            ]));
+            $this->fail('Ein unlesbares Manifest darf nicht importiert werden.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('package', $e->errors());
+        }
+
+        $after = is_dir($root) ? (glob($root . '/*') ?: []) : [];
+        $this->assertSame($before, $after, 'Der schon entpackte Inhalt muss wieder weg sein.');
     }
 }

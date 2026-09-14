@@ -10542,6 +10542,140 @@ CREATE TABLE `learning_certificates` (
   CONSTRAINT `learning_certificates_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_cmi5_au_states`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_cmi5_au_states` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_cmi5_registration_id` bigint(20) unsigned NOT NULL,
+  `learning_cmi5_unit_id` bigint(20) unsigned NOT NULL,
+  `completed_at` timestamp NULL DEFAULT NULL,
+  `passed_at` timestamp NULL DEFAULT NULL,
+  `failed_at` timestamp NULL DEFAULT NULL,
+  `waived_at` timestamp NULL DEFAULT NULL,
+  `satisfied_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_cmi5_au_state_uq` (`learning_cmi5_registration_id`,`learning_cmi5_unit_id`),
+  KEY `learning_cmi5_au_states_organization_id_foreign` (`organization_id`),
+  KEY `learning_cmi5_au_states_learning_cmi5_unit_id_foreign` (`learning_cmi5_unit_id`),
+  CONSTRAINT `learning_cmi5_au_states_learning_cmi5_registration_id_foreign` FOREIGN KEY (`learning_cmi5_registration_id`) REFERENCES `learning_cmi5_registrations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_au_states_learning_cmi5_unit_id_foreign` FOREIGN KEY (`learning_cmi5_unit_id`) REFERENCES `learning_cmi5_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_au_states_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_cmi5_packages`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_cmi5_packages` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_unit_id` bigint(20) unsigned NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `course_id` varchar(500) NOT NULL,
+  `activity_id` varchar(100) NOT NULL,
+  `blocks` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`blocks`)),
+  `storage_path` varchar(255) DEFAULT NULL,
+  `structure_hash` varchar(128) NOT NULL,
+  `file_count` int(10) unsigned NOT NULL DEFAULT 0,
+  `size_bytes` bigint(20) unsigned NOT NULL DEFAULT 0,
+  `uploaded_by_user_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_cmi5_pkg_unit_uq` (`learning_unit_id`),
+  UNIQUE KEY `lrn_cmi5_pkg_activity_uq` (`activity_id`),
+  KEY `learning_cmi5_packages_organization_id_foreign` (`organization_id`),
+  KEY `learning_cmi5_packages_uploaded_by_user_id_foreign` (`uploaded_by_user_id`),
+  CONSTRAINT `learning_cmi5_packages_learning_unit_id_foreign` FOREIGN KEY (`learning_unit_id`) REFERENCES `learning_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_packages_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_packages_uploaded_by_user_id_foreign` FOREIGN KEY (`uploaded_by_user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_cmi5_registrations`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_cmi5_registrations` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_enrollment_id` bigint(20) unsigned NOT NULL,
+  `learning_cmi5_package_id` bigint(20) unsigned NOT NULL,
+  `registration` char(36) NOT NULL,
+  `satisfied_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_cmi5_reg_uq` (`learning_enrollment_id`,`learning_cmi5_package_id`),
+  UNIQUE KEY `lrn_cmi5_reg_id_uq` (`registration`),
+  KEY `learning_cmi5_registrations_organization_id_foreign` (`organization_id`),
+  KEY `learning_cmi5_registrations_learning_cmi5_package_id_foreign` (`learning_cmi5_package_id`),
+  CONSTRAINT `learning_cmi5_registrations_learning_cmi5_package_id_foreign` FOREIGN KEY (`learning_cmi5_package_id`) REFERENCES `learning_cmi5_packages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_registrations_learning_enrollment_id_foreign` FOREIGN KEY (`learning_enrollment_id`) REFERENCES `learning_enrollments` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_registrations_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_cmi5_sessions`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_cmi5_sessions` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_cmi5_registration_id` bigint(20) unsigned NOT NULL,
+  `learning_cmi5_unit_id` bigint(20) unsigned NOT NULL,
+  `session_id` char(36) NOT NULL,
+  `launch_mode` varchar(10) NOT NULL,
+  `fetch_token_hash` varchar(64) NOT NULL,
+  `fetch_used_at` timestamp NULL DEFAULT NULL,
+  `auth_token_hash` varchar(64) DEFAULT NULL,
+  `launched_at` timestamp NOT NULL,
+  `initialized_at` timestamp NULL DEFAULT NULL,
+  `terminated_at` timestamp NULL DEFAULT NULL,
+  `abandoned_at` timestamp NULL DEFAULT NULL,
+  `last_statement_at` timestamp NULL DEFAULT NULL,
+  `expires_at` timestamp NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_cmi5_sess_uq` (`session_id`),
+  UNIQUE KEY `lrn_cmi5_sess_fetch_uq` (`fetch_token_hash`),
+  KEY `learning_cmi5_sessions_organization_id_foreign` (`organization_id`),
+  KEY `learning_cmi5_sessions_learning_cmi5_unit_id_foreign` (`learning_cmi5_unit_id`),
+  KEY `lrn_cmi5_sess_auth_idx` (`auth_token_hash`),
+  KEY `lrn_cmi5_sess_reg_idx` (`learning_cmi5_registration_id`,`learning_cmi5_unit_id`),
+  CONSTRAINT `learning_cmi5_sessions_learning_cmi5_registration_id_foreign` FOREIGN KEY (`learning_cmi5_registration_id`) REFERENCES `learning_cmi5_registrations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_sessions_learning_cmi5_unit_id_foreign` FOREIGN KEY (`learning_cmi5_unit_id`) REFERENCES `learning_cmi5_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_sessions_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_cmi5_units`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_cmi5_units` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_cmi5_package_id` bigint(20) unsigned NOT NULL,
+  `publisher_id` varchar(500) NOT NULL,
+  `activity_id` varchar(100) NOT NULL,
+  `title` varchar(255) NOT NULL,
+  `url` varchar(2000) NOT NULL,
+  `move_on` varchar(30) NOT NULL,
+  `mastery_score` decimal(5,4) DEFAULT NULL,
+  `launch_method` varchar(20) NOT NULL,
+  `launch_parameters` text DEFAULT NULL,
+  `entitlement_key` varchar(255) DEFAULT NULL,
+  `position` smallint(5) unsigned NOT NULL DEFAULT 0,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_cmi5_au_activity_uq` (`activity_id`),
+  KEY `learning_cmi5_units_organization_id_foreign` (`organization_id`),
+  KEY `learning_cmi5_units_learning_cmi5_package_id_foreign` (`learning_cmi5_package_id`),
+  CONSTRAINT `learning_cmi5_units_learning_cmi5_package_id_foreign` FOREIGN KEY (`learning_cmi5_package_id`) REFERENCES `learning_cmi5_packages` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_cmi5_units_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `learning_content_translations`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -11067,6 +11201,29 @@ CREATE TABLE `learning_units` (
   CONSTRAINT `learning_units_learning_course_id_foreign` FOREIGN KEY (`learning_course_id`) REFERENCES `learning_courses` (`id`) ON DELETE CASCADE,
   CONSTRAINT `learning_units_learning_section_id_foreign` FOREIGN KEY (`learning_section_id`) REFERENCES `learning_sections` (`id`) ON DELETE CASCADE,
   CONSTRAINT `learning_units_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_xapi_documents`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_xapi_documents` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(20) NOT NULL,
+  `activity_id` varchar(500) DEFAULT NULL,
+  `agent_hash` varchar(64) NOT NULL,
+  `registration` char(36) DEFAULT NULL,
+  `document_id` varchar(255) NOT NULL,
+  `lookup_hash` varchar(64) NOT NULL,
+  `content` longtext NOT NULL,
+  `content_type` varchar(100) NOT NULL,
+  `etag` varchar(64) NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_xapi_doc_lookup_uq` (`lookup_hash`),
+  KEY `learning_xapi_documents_organization_id_foreign` (`organization_id`),
+  CONSTRAINT `learning_xapi_documents_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `learning_xapi_statements`;
@@ -21212,3 +21369,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (799,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (800,'2027_02_20_101400_add_service_period_to_invoice_items',66);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',67);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',68);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (803,'2027_02_20_101700_create_learning_cmi5_tables',69);

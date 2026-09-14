@@ -30,6 +30,8 @@ return Application::configure(basePath: dirname(__DIR__))
             // auch bei DB-Ausfall, fehlender Installation oder Lockdown
             // erreichbar bleibt — Begründung in routes/well-known.php.
             Route::group([], __DIR__ . '/../routes/well-known.php');
+            // SCORM-Inhalts-Host: nur registriert, wenn einer konfiguriert ist.
+            \App\Support\Learning\ScormContentRoutes::register();
             Route::middleware('web')->group(__DIR__ . '/../routes/install.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/customer.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');
@@ -85,8 +87,14 @@ return Application::configure(basePath: dirname(__DIR__))
         // stellt es Schlüssel sowie datei-basierte Session/Cache bereit, bevor
         // EncryptCookies/StartSession greifen.
         $middleware->web(prepend: [
+            // Am SCORM-Inhalts-Host antwortet die Anwendung nicht — vor der Sitzung,
+            // damit dort nie ein Cookie entsteht (Sicherheitsaudit files-1).
+            \App\Http\Middleware\Learning\RejectScormContentHost::class,
             PrepareInstaller::class,
             HandleDatabaseUnavailable::class,
+        ]);
+        $middleware->api(prepend: [
+            \App\Http\Middleware\Learning\RejectScormContentHost::class,
         ]);
         $middleware->web(append: [
             RedirectIfNotInstalled::class,
@@ -191,6 +199,13 @@ return Application::configure(basePath: dirname(__DIR__))
         // (Feature 099, MVP-457): KEINE Cookies/Session/CSRF — der Einstieg ist
         // ein Cross-Site-POST des Einkaufssystems, den Browse-Zustand traegt
         // ein verschluesseltes, zeitbegrenztes Token durch den Flow.
+        // Sitzungsloser Stack des SCORM-Inhalts-Hosts: keine Cookies, keine Sitzung,
+        // kein CSRF. Autorisiert wird allein über den signierten Pfad-Token.
+        $middleware->group('scorm-content', [
+            HandleDatabaseUnavailable::class,
+            \App\Http\Middleware\Learning\ScormContentSecurityHeaders::class,
+        ]);
+
         $middleware->group('b2b-catalog', [
             HandleDatabaseUnavailable::class,
             \App\Http\Middleware\B2bCatalog\B2bCatalogSecurityHeaders::class,

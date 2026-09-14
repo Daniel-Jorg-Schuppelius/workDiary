@@ -283,6 +283,45 @@
                 </x-card>
             @endif
 
+            @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Cmi5)
+                {{-- cmi5-Kurs (Feature 149): ZIP mit cmi5.xml oder einzelne cmi5.xml
+                     mit externen AUs. Die Aktivitäts-IDs vergibt das LMS. --}}
+                <x-card>
+                    <h3 class="mb-2 text-sm font-semibold">{{ __('learning.field.cmi5_course') }}</h3>
+
+                    @if ($unit->cmi5Package)
+                        <x-detail-grid>
+                            <x-detail-grid.row :label="__('learning.field.title')">{{ $unit->cmi5Package->title }}</x-detail-grid.row>
+                            <x-detail-grid.row :label="__('learning.field.cmi5_units')">
+                                <ul class="space-y-1">
+                                    @foreach ($unit->cmi5Package->units as $au)
+                                        <li>
+                                            <span>{{ $au->title }}</span>
+                                            <span class="font-mono text-xs text-muted">· {{ __('learning.field.cmi5_move_on') }} {{ $au->move_on }}</span>
+                                        </li>
+                                    @endforeach
+                                </ul>
+                            </x-detail-grid.row>
+                            <x-detail-grid.row :label="__('learning.field.scorm_files')">{{ $unit->cmi5Package->file_count }}</x-detail-grid.row>
+                        </x-detail-grid>
+                    @else
+                        <p class="text-sm text-base-content/80">{{ __('learning.help.cmi5_empty') }}</p>
+                    @endif
+
+                    <form method="POST" action="{{ route('learning.courses.units.cmi5.import', [$course, $unit]) }}"
+                          enctype="multipart/form-data" class="mt-3">
+                        @csrf
+                        <label class="label" for="cmi5-package"><span class="label-text">{{ __('learning.field.cmi5_upload') }}</span></label>
+                        <input type="file" id="cmi5-package" name="package" required accept=".zip,.xml,application/zip,application/xml,text/xml"
+                               class="file-input file-input-bordered file-input-sm w-full">
+                        <p class="mt-1 text-xs text-muted">{{ __('learning.help.cmi5_upload') }}</p>
+                        <div class="mt-2 flex justify-end">
+                            <x-icon-btn icon="upload_file" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.import_cmi5') }}</x-icon-btn>
+                        </div>
+                    </form>
+                </x-card>
+            @endif
+
             <x-card>
                 <h3 class="mb-2 text-sm font-semibold">{{ __('learning.field.embed_hosts') }}</h3>
                 @if ($allowedHosts === [])

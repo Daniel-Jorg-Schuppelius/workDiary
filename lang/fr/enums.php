@@ -1691,6 +1691,7 @@ return [
             'procedure' => 'Procédure',
             'event' => 'Session',
             'scorm' => 'Paquet SCORM',
+            'cmi5' => 'Cours cmi5',
             'survey' => 'Enquête',
             'external' => 'Contenu externe',
         ],

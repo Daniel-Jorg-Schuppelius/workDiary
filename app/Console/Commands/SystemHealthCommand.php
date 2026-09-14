@@ -140,6 +140,10 @@ class SystemHealthCommand extends Command {
                 }
             }
 
+            if (! \App\Support\Learning\ScormContentHost::isConfigured() && \App\Models\Learning\LearningScormPackage::query()->withoutGlobalScopes()->exists()) {
+                $warnings[] = ['SCORM-Inhalte', 'laufen im Ursprung der Anwendung — LEARNING_SCORM_CONTENT_URL auf eine eigene Subdomain oder Domain setzen.'];
+            }
+
             if (! RehashBlindIndexesCommand::isDoneForCurrentKey()) {
                 $warnings[] = ['Blindindizes', 'noch nicht für den aktuellen Schlüssel umgerechnet — deploy.sh holt das nach der Wartung nach, sonst: php artisan security:rehash-blind-indexes'];
             }

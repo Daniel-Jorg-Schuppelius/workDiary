@@ -115,6 +115,11 @@ class LearningUnit extends Model {
         return $this->hasOne(LearningScormPackage::class, 'learning_unit_id');
     }
 
+    /** @return HasOne<LearningCmi5Package, $this> */
+    public function cmi5Package(): HasOne {
+        return $this->hasOne(LearningCmi5Package::class, 'learning_unit_id');
+    }
+
     /**
      * Inhaltsblöcke der Einheit.
      *

@@ -14,8 +14,9 @@ namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningEnrollment, LearningScormPackage, LearningScormState, LearningUnit};
 use App\Models\User;
-use App\Services\Learning\Scorm\{ScormManifest, ScormPackageException, ScormPackageExtractor};
 use CommonToolkit\Helper\Data\CryptoHelper;
+use ELearningToolkit\Package\{PackageException, PackageExtractor};
+use ELearningToolkit\Scorm\{CompletionRule, Manifest, ScormVersion};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, File};
 use Illuminate\Validation\ValidationException;
@@ -36,7 +37,7 @@ use Illuminate\Validation\ValidationException;
  */
 class LearningScormService {
     public function __construct(
-        private readonly ScormPackageExtractor $extractor,
+        private readonly PackageExtractor $extractor,
         private readonly LearningEnrollmentService $enrollments,
     ) {}
 
@@ -46,20 +47,29 @@ class LearningScormService {
         $absolute = storage_path('app/' . $relative);
 
         try {
-            $result = $this->extractor->extract($zipPath, $absolute);
-            $manifest = ScormManifest::fromXml($result['manifest']);
-        } catch (ScormPackageException $e) {
-            // Der Parser bleibt sprachneutral — übersetzt wird hier.
+            $extracted = $this->extractor->extract($zipPath, $absolute);
+            $manifest = Manifest::fromXml($extracted->descriptorXml);
+        } catch (PackageException $e) {
+            // Einen Fehler beim Entpacken räumt der Extractor selbst ab, ein
+            // unlesbares Manifest nach erfolgreichem Entpacken nicht.
+            File::deleteDirectory($absolute);
+
+            // Das Toolkit bleibt sprachneutral — übersetzt wird hier.
             throw ValidationException::withMessages([
                 'package' => (string) __('learning.errors.scorm.' . $e->reason),
             ]);
         }
 
         if ($manifest->launchHref === null) {
+            File::deleteDirectory($absolute);
+
             throw ValidationException::withMessages([
                 'package' => (string) __('learning.errors.scorm.without_launch'),
             ]);
         }
+
+        // Relativ zum Manifest: Viele Pakete sind als Ordner gezippt.
+        $launchHref = $extracted->resolve($manifest->launchHref);
 
         // Ein Ersatzpaket löst das alte ab — der Zustand der Lernenden bleibt
         // an der Einheit, nicht am Paket.
@@ -68,19 +78,19 @@ class LearningScormService {
             ->pluck('storage_path')
             ->all();
 
-        $package = DB::transaction(function () use ($unit, $manifest, $result, $relative, $actor): LearningScormPackage {
+        $package = DB::transaction(function () use ($unit, $manifest, $extracted, $launchHref, $relative, $actor): LearningScormPackage {
             LearningScormPackage::query()->where('learning_unit_id', $unit->id)->delete();
 
             return LearningScormPackage::query()->create([
                 'organization_id' => $unit->organization_id,
                 'learning_unit_id' => $unit->id,
                 'title' => $manifest->title !== '' ? $manifest->title : $unit->title,
-                'version' => $manifest->version,
+                'version' => $manifest->version->value,
                 'storage_path' => $relative,
-                'launch_href' => $manifest->launchHref,
-                'manifest_hash' => (string) CryptoHelper::hash($result['manifest']),
-                'file_count' => $result['files'],
-                'size_bytes' => $result['bytes'],
+                'launch_href' => $launchHref,
+                'manifest_hash' => (string) CryptoHelper::hash($extracted->descriptorXml),
+                'file_count' => $extracted->files,
+                'size_bytes' => $extracted->bytes,
                 'uploaded_by_user_id' => $actor?->id,
             ]);
         });
@@ -155,21 +165,11 @@ class LearningScormService {
      * zugleich `failed`, zählt das nicht als Nachweis.
      */
     public function isPassed(LearningScormPackage $package, LearningScormState $state): bool {
-        $success = strtolower((string) $state->success_status);
-
-        if ($success === 'failed') {
-            return false;
-        }
-
-        $lesson = strtolower((string) $state->lesson_status);
-
-        if ($package->isScorm2004()) {
-            // 2004: Abschluss aus completion_status, Bewertung aus success_status.
-            return $lesson === 'completed' && $success !== 'failed';
-        }
-
-        // 1.2: ein Wert für beides.
-        return in_array($lesson, ['passed', 'completed'], true);
+        return CompletionRule::isSatisfied(
+            ScormVersion::tryFrom($package->version) ?? ScormVersion::Scorm12,
+            $state->lesson_status,
+            $state->success_status,
+        );
     }
 
     private function stringOrNull(mixed $value): ?string {

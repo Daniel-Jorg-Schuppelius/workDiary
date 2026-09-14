@@ -429,6 +429,7 @@ class OrganizationLifecycleService {
         'isms_advisories' => ['path' => 'file_path'],
         'isms_audit_packages' => ['path' => 'file_path'],
         'job_application_uploads' => ['path' => 'storage_key'],
+        'learning_cmi5_packages' => ['path' => 'storage_path', 'dir' => true],
         'learning_scorm_packages' => ['path' => 'storage_path', 'dir' => true],
         'letterhead_assets' => ['path' => 'original_path', 'disk' => 'disk'],
         'lexoffice_vouchers' => ['path' => 'file_path'],

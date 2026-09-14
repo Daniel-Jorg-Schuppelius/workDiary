@@ -1693,6 +1693,7 @@ return [
             'procedure' => 'Prozedur',
             'event' => 'Termin',
             'scorm' => 'SCORM-Paket',
+            'cmi5' => 'cmi5-Kurs',
             'survey' => 'Umfrage',
             'external' => 'Externer Inhalt',
         ],

@@ -135,9 +135,14 @@ return [
     |
     */
 
-    'cookie' => env(
-        'SESSION_COOKIE',
-        Str::slug((string) env('APP_NAME', 'laravel')) . '-session'
+    // Mit SCORM-Inhalts-Host bekommt der Name das Präfix __Host-: Eine Subdomain
+    // könnte sonst ein Cookie für die Hauptdomain setzen und eine Sitzung
+    // unterschieben. Nur mit Secure und ohne SESSION_DOMAIN möglich.
+    'cookie' => \App\Support\Learning\ScormContentHost::sessionCookieName(
+        (string) env('SESSION_COOKIE', Str::slug((string) env('APP_NAME', 'laravel')) . '-session'),
+        (bool) env('SESSION_SECURE_COOKIE', env('APP_ENV') === 'production'),
+        env('SESSION_DOMAIN'),
+        env('LEARNING_SCORM_CONTENT_URL'),
     ),
 
     /*

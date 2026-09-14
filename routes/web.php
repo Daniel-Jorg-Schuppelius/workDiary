@@ -3053,6 +3053,8 @@ Route::middleware('auth')->group(function () {
 
             // SCORM-Import (MVP-743): Paket an eine Einheit der Art „SCORM" hängen.
             Route::post('kurse/{course}/einheiten/{unit}/scorm', [\App\Http\Controllers\Learning\LearningScormController::class, 'import'])->name('courses.units.scorm.import');
+            // cmi5-Kurs (Feature 149): ZIP mit cmi5.xml oder einzelne cmi5.xml mit externen AUs.
+            Route::post('kurse/{course}/einheiten/{unit}/cmi5', [\App\Http\Controllers\Learning\LearningCmi5Controller::class, 'import'])->name('courses.units.cmi5.import');
 
             // Aufgaben-Editor (MVP-739).
             Route::get('kurse/{course}/einheiten/{unit}/aufgabe', [\App\Http\Controllers\Learning\LearningCourseController::class, 'editAssignment'])->name('courses.units.assignment.edit');

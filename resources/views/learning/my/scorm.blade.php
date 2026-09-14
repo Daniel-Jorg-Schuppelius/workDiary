@@ -6,10 +6,12 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 
-  SCORM-Player (Feature 149, MVP-743). Der Rahmen stellt die Laufzeit als
-  window.API (1.2) bzw. window.API_1484_11 (2004) bereit — der Inhalt sucht
-  sie über window.parent. Deshalb läuft das Paket gleichursprünglich; die
-  Absicherung liegt im Extractor und in der engen CSP der Inhaltsdateien.
+  SCORM-Player (Feature 149, MVP-743). Zwei Betriebsarten:
+  - Eigener Inhalts-Host (LEARNING_SCORM_CONTENT_URL): Der Rahmen bettet die Hülle
+    von dort ein; Laufzeit und Paket laufen im fremden Ursprung, diese Seite
+    liefert den Anfangszustand und schreibt Commits per postMessage fort.
+  - Ohne Inhalts-Host: Der Rahmen stellt window.API bzw. window.API_1484_11 selbst
+    bereit, und das Paket läuft im Ursprung der Anwendung (Systemcheck warnt).
 --}}
 @extends('layouts.app')
 @section('title', $package->title)
@@ -43,8 +45,9 @@
 
     <div class="rounded-box border border-base-300 overflow-hidden bg-base-100"
          style="height: calc(100vh - 16rem); min-height: 24rem;">
-        <iframe title="{{ $package->title }}"
-                src="{{ $launchUrl }}"
+        <iframe id="scorm-frame"
+                title="{{ $package->title }}"
+                src="{{ $contentWrapperUrl ?? $launchUrl }}"
                 class="w-full h-full border-0"
                 referrerpolicy="no-referrer"></iframe>
     </div>
@@ -58,6 +61,8 @@
     const token = document.querySelector('meta[name="csrf-token"]');
     const is2004 = @json($package->isScorm2004());
     const messages = @json($messages);
+    const contentOrigin = @json($contentOrigin);
+    const frame = document.getElementById('scorm-frame');
 
     // Der Anfangszustand kommt vom Server — der Inhalt setzt dort fort, wo
     // er aufgehört hat (suspend_data/location sind sein Eigentum).
@@ -82,12 +87,6 @@
         'cmi.core.lesson_mode': 'normal',
     };
 
-    let lastError = '0';
-    // Der Server addiert, was hier ankommt — also die Zeit SEIT dem letzten
-    // Commit senden. Die verstrichene Gesamtzeit zu schicken, zählte jede
-    // Sitzung mit dem zweiten Commit doppelt.
-    let lastCommitAt = Date.now();
-
     function note(text, tone) {
         const box = document.getElementById('scorm-status');
         const label = box ? box.querySelector('[data-scorm-message]') : null;
@@ -96,18 +95,7 @@
         box.className = 'alert alert-' + (tone || 'info');
     }
 
-    function commit() {
-        const payload = {
-            lesson_status: is2004 ? data['cmi.completion_status'] : data['cmi.core.lesson_status'],
-            success_status: data['cmi.success_status'],
-            score_scaled: data['cmi.score.scaled'] === '' ? null : Number(data['cmi.score.scaled']),
-            suspend_data: data['cmi.suspend_data'],
-            location: is2004 ? data['cmi.location'] : data['cmi.core.lesson_location'],
-            session_seconds: Math.max(0, Math.round((Date.now() - lastCommitAt) / 1000)),
-        };
-
-        lastCommitAt = Date.now();
-
+    function send(payload) {
         return fetch(endpoint, {
             method: 'POST',
             credentials: 'same-origin',
@@ -129,6 +117,45 @@
             note(messages.failed, 'warning');
             return false;
         });
+    }
+
+    if (contentOrigin) {
+        // Eigener Inhalts-Host: Die Laufzeit steckt in der Hülle dort. Diese Seite
+        // liefert nur den Anfangszustand und schreibt Commits fort — Nachrichten
+        // zählen ausschließlich vom eingebetteten Rahmen mit genau diesem Ursprung.
+        window.addEventListener('message', function (event) {
+            if (event.origin !== contentOrigin || !frame || event.source !== frame.contentWindow) { return; }
+
+            const message = event.data || {};
+            if (message.type === 'scorm.ready') {
+                frame.contentWindow.postMessage({ type: 'scorm.init', values: data }, contentOrigin);
+            } else if (message.type === 'scorm.commit' && message.payload && typeof message.payload === 'object') {
+                send(message.payload);
+            }
+        });
+
+        return;
+    }
+
+    let lastError = '0';
+    // Der Server addiert, was hier ankommt — also die Zeit SEIT dem letzten
+    // Commit senden. Die verstrichene Gesamtzeit zu schicken, zählte jede
+    // Sitzung mit dem zweiten Commit doppelt.
+    let lastCommitAt = Date.now();
+
+    function commit() {
+        const payload = {
+            lesson_status: is2004 ? data['cmi.completion_status'] : data['cmi.core.lesson_status'],
+            success_status: data['cmi.success_status'],
+            score_scaled: data['cmi.score.scaled'] === '' ? null : Number(data['cmi.score.scaled']),
+            suspend_data: data['cmi.suspend_data'],
+            location: is2004 ? data['cmi.location'] : data['cmi.core.lesson_location'],
+            session_seconds: Math.max(0, Math.round((Date.now() - lastCommitAt) / 1000)),
+        };
+
+        lastCommitAt = Date.now();
+
+        return send(payload);
     }
 
     function get(key) {
