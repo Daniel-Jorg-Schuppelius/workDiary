@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "bb7170c64ff6744711bbad9a346dfdfa",
+    "content-hash": "6be8b7af037335462b121321a8f24c86",
     "packages": [
         {
             "name": "aws/aws-crt-php",
@@ -817,11 +817,17 @@
         },
         {
             "name": "daniel-jorg-schuppelius/php-elearning-toolkit",
-            "version": "0.1.0",
-            "dist": {
-                "type": "path",
-                "url": "../php-elearning-toolkit",
+            "version": "v0.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/Daniel-Jorg-Schuppelius/php-elearning-toolkit.git",
                 "reference": "746ccf5edf9da6c9158d7819dbdd3520adda6e66"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/Daniel-Jorg-Schuppelius/php-elearning-toolkit/zipball/746ccf5edf9da6c9158d7819dbdd3520adda6e66",
+                "reference": "746ccf5edf9da6c9158d7819dbdd3520adda6e66",
+                "shasum": ""
             },
             "require": {
                 "dschuppelius/php-common-toolkit": "^1.34",
@@ -843,30 +849,7 @@
                     "ELearningToolkit\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "format": [
-                    "vendor/bin/pint --test"
-                ],
-                "format:fix": [
-                    "vendor/bin/pint"
-                ],
-                "lint": [
-                    "vendor/bin/phpstan analyse --memory-limit=1G"
-                ],
-                "qa": [
-                    "@format",
-                    "@lint",
-                    "@test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "Apache-2.0"
             ],
@@ -878,17 +861,18 @@
             ],
             "description": "Framework-freie E-Learning-Standards für PHP: SCORM 1.2/2004, xAPI, cmi5 und LTI 1.3.",
             "keywords": [
+                "LTI",
                 "cmi5",
                 "elearning",
                 "lms",
-                "lti",
                 "scorm",
-                "xapi"
+                "xAPI"
             ],
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/Daniel-Jorg-Schuppelius/php-elearning-toolkit/issues",
+                "source": "https://github.com/Daniel-Jorg-Schuppelius/php-elearning-toolkit/tree/v0.1.1"
+            },
+            "time": "2026-09-14T12:57:34+00:00"
         },
         {
             "name": "daniel-jorg-schuppelius/php-erechnung-toolkit",
@@ -1744,11 +1728,17 @@
         },
         {
             "name": "dschuppelius/php-common-toolkit",
-            "version": "1.34.0",
+            "version": "v1.34",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DSchuppelius/php-common-toolkit.git",
+                "reference": "6cba5846ab67c9baf728e7e2874b46ff963955fc"
+            },
             "dist": {
-                "type": "path",
-                "url": "../php-common-toolkit",
-                "reference": "7a60e89e5badd329b695937d01dbaf5ddae9c3e9"
+                "type": "zip",
+                "url": "https://api.github.com/repos/DSchuppelius/php-common-toolkit/zipball/6cba5846ab67c9baf728e7e2874b46ff963955fc",
+                "reference": "6cba5846ab67c9baf728e7e2874b46ff963955fc",
+                "shasum": ""
             },
             "require": {
                 "dschuppelius/php-config-toolkit": "^0.5",
@@ -1770,30 +1760,7 @@
                     "CommonToolkit\\": "src/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit"
-                ],
-                "format": [
-                    "vendor/bin/pint --test"
-                ],
-                "format:fix": [
-                    "vendor/bin/pint"
-                ],
-                "lint": [
-                    "vendor/bin/phpstan analyse --memory-limit=1G"
-                ],
-                "qa": [
-                    "@format",
-                    "@lint",
-                    "@test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -1804,10 +1771,11 @@
                 }
             ],
             "description": "Project description.",
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "support": {
+                "issues": "https://github.com/DSchuppelius/php-common-toolkit/issues",
+                "source": "https://github.com/DSchuppelius/php-common-toolkit/tree/v1.34"
+            },
+            "time": "2026-09-14T09:18:00+00:00"
         },
         {
             "name": "dschuppelius/php-config-toolkit",
