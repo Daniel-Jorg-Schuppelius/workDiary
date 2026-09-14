@@ -121,6 +121,21 @@ class LearningUnit extends Model {
     }
 
     /**
+     * Meldet die Einheit ihr Ergebnis selbst (Termin, Abgabe, Prüfung, Kurspaket)?
+     * Dann gibt es kein „erledigt" per Hand — es würde genau dieses Ergebnis überspringen.
+     */
+    public function reportsOwnResult(): bool {
+        return match ($this->kind) {
+            LearningUnitKind::Event => $this->event_id !== null,
+            LearningUnitKind::Assignment => $this->assignment()->exists(),
+            LearningUnitKind::Quiz => $this->quiz()->exists(),
+            LearningUnitKind::Scorm => $this->scormPackage()->exists(),
+            LearningUnitKind::Cmi5 => $this->cmi5Package()->exists(),
+            default => false,
+        };
+    }
+
+    /**
      * Inhaltsblöcke der Einheit.
      *
      * @return list<array<string, mixed>>

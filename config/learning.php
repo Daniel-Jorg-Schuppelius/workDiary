@@ -26,4 +26,8 @@ return [
         /* Gültigkeit des signierten Pfad-Tokens in Sekunden (Vorgabe: 8 Stunden). */
         'token_ttl' => (int) env('LEARNING_SCORM_TOKEN_TTL', 28800),
     ],
+    'cmi5' => [
+        /* So lange nimmt das LRS nach dem Start Statements einer Sitzung an (Vorgabe: 8 Stunden). */
+        'session_ttl' => (int) env('LEARNING_CMI5_SESSION_TTL', 28800),
+    ],
 ];

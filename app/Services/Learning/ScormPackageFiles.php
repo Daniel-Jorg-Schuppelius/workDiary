@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
-use App\Models\Learning\LearningScormPackage;
+use App\Models\Learning\{LearningCmi5Package, LearningScormPackage};
 
 /**
  * Dateien eines entpackten SCORM-Pakets ausliefern — gemeinsam für den gleichen
@@ -25,9 +25,21 @@ final class ScormPackageFiles {
      * Der Pfad kommt aus dem Inhalt selbst. Er zählt nur, wenn das aufgelöste Ziel
      * wieder im Paketordner liegt und eine Datei ist.
      */
-    public static function absolutePath(LearningScormPackage $package, string $path): ?string {
+    public static function absolutePath(LearningScormPackage|LearningCmi5Package $package, string $path): ?string {
+        // cmi5-Kurse ohne Paket (nur externe AUs) haben keine Dateien.
+        if ($package->storage_path === null) {
+            return null;
+        }
+
         $base = storage_path('app/' . $package->storage_path);
-        $target = $path !== '' ? $base . '/' . $path : $base . '/' . (string) $package->launch_href;
+        // Ohne Pfad nur bei SCORM die Startdatei; eine cmi5-AU nennt ihre Datei immer selbst.
+        $default = $package instanceof LearningScormPackage ? (string) $package->launch_href : '';
+
+        if ($path === '' && $default === '') {
+            return null;
+        }
+
+        $target = $base . '/' . ($path !== '' ? $path : $default);
 
         $real = realpath($target);
         $realBase = realpath($base);
@@ -44,13 +56,15 @@ final class ScormPackageFiles {
      * Autorenwerkzeug erzeugt das), aber nichts nach außen sprechen.
      *
      * @param  string|null  $appOrigin  am Inhalts-Host der Ursprung der einbettenden Anwendung
+     * @param  bool  $connectToApp  cmi5: die AU spricht per fetch mit dem LRS der Anwendung
      */
-    public static function contentSecurityPolicy(?string $appOrigin = null): string {
+    public static function contentSecurityPolicy(?string $appOrigin = null, bool $connectToApp = false): string {
         $ancestors = "'self'" . ($appOrigin !== null ? ' ' . $appOrigin : '');
+        $connect = "'self'" . ($connectToApp && $appOrigin !== null ? ' ' . $appOrigin : '');
 
         return "default-src 'self' data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval'; "
             . "style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; media-src 'self' data: blob:; "
-            . "font-src 'self' data:; connect-src 'self'; frame-src 'self'; frame-ancestors {$ancestors}; "
+            . "font-src 'self' data:; connect-src {$connect}; frame-src 'self'; frame-ancestors {$ancestors}; "
             . "form-action 'none'; base-uri 'none'";
     }
 }

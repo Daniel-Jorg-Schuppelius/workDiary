@@ -140,8 +140,11 @@ class SystemHealthCommand extends Command {
                 }
             }
 
-            if (! \App\Support\Learning\ScormContentHost::isConfigured() && \App\Models\Learning\LearningScormPackage::query()->withoutGlobalScopes()->exists()) {
-                $warnings[] = ['SCORM-Inhalte', 'laufen im Ursprung der Anwendung — LEARNING_SCORM_CONTENT_URL auf eine eigene Subdomain oder Domain setzen.'];
+            // cmi5-Pakete zählen mit: Auch ihre AUs sind fremder Code aus dem Paket.
+            if (! \App\Support\Learning\ScormContentHost::isConfigured()
+                && (\App\Models\Learning\LearningScormPackage::query()->withoutGlobalScopes()->exists()
+                    || \App\Models\Learning\LearningCmi5Package::query()->withoutGlobalScopes()->whereNotNull('storage_path')->exists())) {
+                $warnings[] = ['SCORM-Inhalte', 'SCORM- und cmi5-Pakete laufen im Ursprung der Anwendung — LEARNING_SCORM_CONTENT_URL auf eine eigene Subdomain oder Domain setzen.'];
             }
 
             if (! RehashBlindIndexesCommand::isDoneForCurrentKey()) {

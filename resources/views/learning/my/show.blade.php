@@ -108,6 +108,23 @@
                                 <x-icon-btn icon="play_circle" tone="primary" size="sm"
                                             :href="route('learning.my.scorm.play', [$enrollment, $unit])"
                                             show-label>{{ __('learning.action.open_scorm') }}</x-icon-btn>
+                            @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Cmi5 && $unit->cmi5Package)
+                                {{-- cmi5 meldet Abschluss und Bestehen selbst: je AU ein Start,
+                                     kein Abhaken von Hand. --}}
+                                <ul class="w-full space-y-1">
+                                    @foreach ($unit->cmi5Package->units as $au)
+                                        <li class="flex flex-wrap items-center justify-between gap-2">
+                                            <span class="text-sm">
+                                                {{ $au->title }}
+                                                <span class="text-xs text-muted">· {{ __('learning.cmi5.status.' . ($cmi5States->get($au->id)?->statusKey() ?? 'open')) }}</span>
+                                            </span>
+                                            <form method="POST" action="{{ route('learning.my.cmi5.launch', [$enrollment, $unit, $au]) }}">
+                                                @csrf
+                                                <x-icon-btn icon="play_circle" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.open_cmi5') }}</x-icon-btn>
+                                            </form>
+                                        </li>
+                                    @endforeach
+                                </ul>
                             @else
                                 {{-- Offline abhakbar, aber NUR ohne Online-Pflicht:
                                      Prüfungen und Aufgaben tragen das Attribut

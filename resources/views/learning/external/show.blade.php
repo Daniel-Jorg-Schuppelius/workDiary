@@ -51,7 +51,8 @@
                             class="{{ $isDone ? 'text-success' : 'text-muted' }}" />
                     {{ $unit->title }}
                 </h2>
-                @unless ($isDone)
+                {{-- Einheiten mit eigener Ergebnisquelle schließt nur diese Quelle ab. --}}
+                @unless ($isDone || $unit->reportsOwnResult())
                     <form method="POST" action="{{ route('learning.external.units.complete', $unit) }}">
                         @csrf
                         <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>

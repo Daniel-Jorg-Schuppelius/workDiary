@@ -142,6 +142,35 @@ class LearningExternalAccessTest extends TestCase {
         $this->assertSame(LearningEnrollmentStatus::Completed, $enrollment->refresh()->status);
     }
 
+    public function test_einheit_mit_eigener_ergebnisquelle_hakt_niemand_von_hand_ab(): void {
+        $courses = app(LearningCourseService::class);
+        $course = $courses->createCourse($this->organization, null, ['title' => 'cmi5-Unterweisung']);
+        $unit = $courses->addUnit($course, [
+            'title' => 'Kurspaket',
+            'kind' => \App\Enums\Learning\LearningUnitKind::Cmi5->value,
+        ]);
+
+        $base = (string) tempnam(sys_get_temp_dir(), 'cmi5');
+        $path = $base . '.xml';
+        file_put_contents($path, '<?xml version="1.0" encoding="utf-8"?>'
+            . '<courseStructure xmlns="https://w3id.org/xapi/profiles/cmi5/v1/CourseStructure.xsd">'
+            . '<course id="https://example.org/kurs"><title><langstring lang="de-DE">Kurs</langstring></title></course>'
+            . '<au id="https://example.org/au" moveOn="Passed"><title><langstring lang="de-DE">Test</langstring></title>'
+            . '<url>https://content.example.org/test</url></au></courseStructure>');
+        app(\App\Services\Learning\LearningCmi5Service::class)->import($unit, $path, 'cmi5.xml');
+        @unlink($base);
+        @unlink($path);
+
+        $courses->release($course->refresh(), null);
+        $external = ExternalParticipant::factory()->create(['organization_id' => $this->organization->id]);
+        $enrollment = app(LearningEnrollmentService::class)->enroll($course->refresh(), $external);
+
+        $this->get(route('learning.external.enter', $this->service()->issue($enrollment)));
+        $this->post(route('learning.external.units.complete', $unit))->assertForbidden();
+
+        $this->assertSame(0, $enrollment->refresh()->progress()->count());
+    }
+
     public function test_fremde_einheit_wird_abgewiesen(): void {
         [$enrollment] = $this->externalEnrollment();
         [, $otherCourse] = $this->externalEnrollment();

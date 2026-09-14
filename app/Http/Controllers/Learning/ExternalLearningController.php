@@ -77,6 +77,8 @@ class ExternalLearningController extends Controller {
     public function completeUnit(Request $request, LearningUnit $unit): RedirectResponse {
         $enrollment = $this->currentEnrollment($request);
         abort_unless($unit->learning_course_id === $enrollment->learning_course_id, 404);
+        // Wie in „Meine Schulungen": Einheiten mit eigener Ergebnisquelle hakt niemand von Hand ab.
+        abort_if($unit->reportsOwnResult(), 403);
 
         $this->enrollments->completeUnit($enrollment, $unit);
 

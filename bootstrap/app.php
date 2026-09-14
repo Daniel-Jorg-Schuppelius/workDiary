@@ -32,6 +32,12 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::group([], __DIR__ . '/../routes/well-known.php');
             // SCORM-Inhalts-Host: nur registriert, wenn einer konfiguriert ist.
             \App\Support\Learning\ScormContentRoutes::register();
+            // cmi5-LRS (Feature 149): sitzungslos mit eigener CORS-Regel — die AUs
+            // laufen auf dem Inhalts-Host oder ganz extern und melden sich per Token.
+            Route::middleware('cmi5-lrs')
+                ->prefix(\App\Services\Learning\LearningCmi5Runtime::ENDPOINT_PATH)
+                ->name('learning.cmi5.lrs.')
+                ->group(__DIR__ . '/../routes/cmi5-lrs.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/install.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/customer.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');
@@ -204,6 +210,14 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->group('scorm-content', [
             HandleDatabaseUnavailable::class,
             \App\Http\Middleware\Learning\ScormContentSecurityHeaders::class,
+        ]);
+
+        // Sitzungsloser Stack des cmi5-LRS: kein Cookie, kein CSRF; die Header
+        // umschließen auch Drossel- und Anmeldefehler, damit die AU sie lesen kann.
+        $middleware->group('cmi5-lrs', [
+            HandleDatabaseUnavailable::class,
+            \App\Http\Middleware\Learning\Cmi5LrsHeaders::class,
+            'throttle:cmi5-lrs',
         ]);
 
         $middleware->group('b2b-catalog', [

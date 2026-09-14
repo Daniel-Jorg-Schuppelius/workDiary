@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
-use App\Models\Learning\{LearningEnrollment, LearningScormPackage, LearningUnit};
+use App\Models\Learning\{LearningCmi5Package, LearningEnrollment, LearningScormPackage, LearningUnit};
 use Carbon\CarbonImmutable;
 use JsonException;
 
@@ -25,10 +25,15 @@ use JsonException;
  * Wirkung, sobald das Paket ersetzt wird.
  */
 final class ScormContentToken {
+    public const KIND_SCORM = 'scorm';
+
+    /** cmi5 teilt den Inhalts-Host; der eigene Schlüsselzweck hält die Tokens getrennt. */
+    public const KIND_CMI5 = 'cmi5';
+
     /**
      * @return non-empty-string
      */
-    public function issue(LearningEnrollment $enrollment, LearningUnit $unit, LearningScormPackage $package, ?CarbonImmutable $now = null): string {
+    public function issue(LearningEnrollment $enrollment, LearningUnit $unit, LearningScormPackage|LearningCmi5Package $package, ?CarbonImmutable $now = null): string {
         $now ??= CarbonImmutable::now();
 
         $body = self::encode((string) json_encode([
@@ -38,13 +43,13 @@ final class ScormContentToken {
             'x' => $now->getTimestamp() + max(60, (int) config('learning.scorm.token_ttl', 28800)),
         ]));
 
-        return $body . '.' . self::encode(hash_hmac('sha256', $body, self::key(), true));
+        return $body . '.' . self::encode(hash_hmac('sha256', $body, self::key($package instanceof LearningCmi5Package ? self::KIND_CMI5 : self::KIND_SCORM), true));
     }
 
     /**
      * @return array{enrollment: int, unit: int, package: int}|null
      */
-    public function verify(string $token, ?CarbonImmutable $now = null): ?array {
+    public function verify(string $token, ?CarbonImmutable $now = null, string $kind = self::KIND_SCORM): ?array {
         $parts = explode('.', $token);
 
         if (count($parts) !== 2 || $parts[0] === '' || $parts[1] === '') {
@@ -53,7 +58,7 @@ final class ScormContentToken {
 
         [$body, $mac] = $parts;
 
-        if (! hash_equals(self::encode(hash_hmac('sha256', $body, self::key(), true)), $mac)) {
+        if (! hash_equals(self::encode(hash_hmac('sha256', $body, self::key($kind), true)), $mac)) {
             return null;
         }
 
@@ -76,7 +81,7 @@ final class ScormContentToken {
         return ['enrollment' => $data['e'], 'unit' => $data['u'], 'package' => $data['p']];
     }
 
-    private static function key(): string {
+    private static function key(string $kind): string {
         $appKey = (string) config('app.key', '');
         if (str_starts_with($appKey, 'base64:')) {
             $decoded = base64_decode(substr($appKey, 7), true);
@@ -84,7 +89,7 @@ final class ScormContentToken {
         }
 
         // Eigener Ableitungszweck: ein Token lässt sich nicht als anderes Signat verwenden.
-        return hash_hmac('sha256', 'scorm-content-token', $appKey, true);
+        return hash_hmac('sha256', $kind === self::KIND_CMI5 ? 'cmi5-content-token' : 'scorm-content-token', $appKey, true);
     }
 
     private static function encode(string $bytes): string {

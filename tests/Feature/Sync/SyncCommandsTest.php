@@ -348,6 +348,42 @@ class SyncCommandsTest extends TestCase {
         $this->assertSame(0, $enrollment->refresh()->progress()->count());
     }
 
+    public function test_kurspaket_laesst_sich_auch_offline_nicht_abhaken(): void {
+        $courses = app(\App\Services\Learning\LearningCourseService::class);
+        $course = $courses->createCourse($this->organization, null, ['title' => 'cmi5-Kurs']);
+        $unit = $courses->addUnit($course, [
+            'title' => 'Kurspaket',
+            'kind' => \App\Enums\Learning\LearningUnitKind::Cmi5->value,
+        ]);
+
+        $base = (string) tempnam(sys_get_temp_dir(), 'cmi5');
+        $path = $base . '.xml';
+        file_put_contents($path, '<?xml version="1.0" encoding="utf-8"?>'
+            . '<courseStructure xmlns="https://w3id.org/xapi/profiles/cmi5/v1/CourseStructure.xsd">'
+            . '<course id="https://example.org/kurs"><title><langstring lang="de-DE">Kurs</langstring></title></course>'
+            . '<au id="https://example.org/au" moveOn="Passed"><title><langstring lang="de-DE">Test</langstring></title>'
+            . '<url>https://content.example.org/test</url></au></courseStructure>');
+        app(\App\Services\Learning\LearningCmi5Service::class)->import($unit, $path, 'cmi5.xml');
+        @unlink($base);
+        @unlink($path);
+
+        $courses->release($course->refresh(), null);
+        $enrollment = app(\App\Services\Learning\LearningEnrollmentService::class)
+            ->enroll($course->refresh(), $this->user);
+
+        // Den Knopf blendet die Ansicht aus; ein selbst gebauter Befehl darf ihn
+        // nicht ersetzen — sonst wäre „bestanden" per Offline-Sync zu haben.
+        $response = $this->postCommands([[
+            'client_uuid' => (string) Str::uuid(),
+            'type' => 'learning.unit-complete',
+            'payload' => ['enrollment' => $enrollment->sqid, 'unit' => $unit->sqid],
+        ]]);
+
+        $response->assertOk()->assertJsonPath('results.0.status', 'rejected');
+
+        $this->assertSame(0, $enrollment->refresh()->progress()->count());
+    }
+
     public function test_fremde_einschreibung_wird_abgelehnt(): void {
         [$enrollment, $content] = $this->learningScenario();
 

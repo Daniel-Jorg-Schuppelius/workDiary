@@ -28,3 +28,9 @@ Route::get('scorm/{token}/inhalt/{path?}', [ScormContentController::class, 'asse
     ->where('path', '.*')
     ->middleware('throttle:1200,1')
     ->name('learning.scorm-content.asset');
+
+// cmi5 teilt den Host: paketinterne AUs laufen hier und sprechen mit dem LRS der Anwendung.
+Route::get('cmi5/{token}/inhalt/{path?}', [ScormContentController::class, 'cmi5Asset'])
+    ->where('path', '.*')
+    ->middleware('throttle:1200,1')
+    ->name('learning.cmi5-content.asset');

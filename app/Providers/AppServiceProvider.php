@@ -817,6 +817,11 @@ class AppServiceProvider extends ServiceProvider {
         // Pfad-Token gedeckelt.
         RateLimiter::for('webhook-ingest', fn(Request $request) => Limit::perMinute(240)->by('whi:' . $request->ip()));
 
+        // cmi5-LRS (Feature 149): Eine AU schickt in Spitzen viele Statements, eine
+        // Schulung hinter einem NAT viele AUs zugleich — großzügig je IP; die
+        // eigentliche Schranke ist der Sitzungstoken.
+        RateLimiter::for('cmi5-lrs', fn(Request $request) => Limit::perMinute(1200)->by('c5l:' . CryptoHelper::hash((string) $request->ip(), HashAlgorithm::SHA1)));
+
         // Stempelterminal-Ingest (MVP-516): zusätzlich zum IP-Limit ein
         // Limit je Gerätetoken — ein amoklaufendes/kopiertes Terminal drosselt
         // nur sich selbst, nicht den ganzen Standort hinter einem NAT.

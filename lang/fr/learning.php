@@ -496,9 +496,17 @@ return [
         'sync_unknown_target' => 'L’inscription ou l’unité d’apprentissage est inconnue.',
         'sync_foreign_enrollment' => 'Cette inscription appartient à une autre personne.',
         'sync_requires_online' => 'Les examens et les devoirs ne peuvent pas être terminés hors ligne.',
+        'sync_reports_own_result' => 'Cette unité transmet elle-même son résultat et ne peut pas être terminée manuellement.',
     ],
     'cmi5' => [
         'imported' => 'Cours cmi5 « :title » importé.',
+        'status' => [
+            'open' => 'ouvert',
+            'completed' => 'terminé',
+            'passed' => 'réussi',
+            'failed' => 'échoué',
+            'satisfied' => 'validé',
+        ],
     ],
     'scorm' => [
         'imported' => 'Paquet « :title » importé.',

@@ -75,7 +75,9 @@ XML;
 
     /** @param array<string, string> $entries */
     private function zip(array $entries): string {
-        $path = tempnam(sys_get_temp_dir(), 'cmi5') . '.zip';
+        $base = (string) tempnam(sys_get_temp_dir(), 'cmi5');
+        $path = $base . '.zip';
+        $this->cleanup[] = $base;
         $this->cleanup[] = $path;
         $zip = new ZipArchive();
         $zip->open($path, ZipArchive::CREATE | ZipArchive::OVERWRITE);
@@ -88,7 +90,9 @@ XML;
     }
 
     private function xmlFile(string $xml): string {
-        $path = tempnam(sys_get_temp_dir(), 'cmi5') . '.xml';
+        $base = (string) tempnam(sys_get_temp_dir(), 'cmi5');
+        $path = $base . '.xml';
+        $this->cleanup[] = $base;
         $this->cleanup[] = $path;
         file_put_contents($path, $xml);
 

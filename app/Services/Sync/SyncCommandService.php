@@ -154,6 +154,12 @@ class SyncCommandService {
             throw new RuntimeException((string) __('learning.errors.sync_requires_online'));
         }
 
+        // Kurspaket, Termin, Prüfung und Abgabe melden ihr Ergebnis selbst — ein
+        // selbst gebauter Sync-Befehl darf sie genauso wenig abhaken wie der Knopf.
+        if ($unit->reportsOwnResult()) {
+            throw new RuntimeException((string) __('learning.errors.sync_reports_own_result'));
+        }
+
         $progress = app(LearningEnrollmentService::class)->completeUnit($enrollment, $unit);
 
         return 'learning_unit_progress:' . $progress->id;

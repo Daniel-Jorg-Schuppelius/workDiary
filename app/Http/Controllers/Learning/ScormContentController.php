@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Learning;
 
 use App\Http\Controllers\Controller;
-use App\Models\Learning\{LearningEnrollment, LearningScormPackage};
+use App\Models\Learning\{LearningCmi5Package, LearningEnrollment, LearningScormPackage};
 use App\Services\Learning\{ScormContentToken, ScormPackageFiles};
 use App\Support\Learning\ScormContentHost;
 use ELearningToolkit\Scorm\LaunchPath;
@@ -68,6 +68,36 @@ final class ScormContentController extends Controller {
 
         $response = response()->file($file);
         $response->headers->set('Content-Security-Policy', ScormPackageFiles::contentSecurityPolicy(ScormContentHost::appOrigin()));
+
+        return $response;
+    }
+
+    /**
+     * Datei einer paketinternen cmi5-AU. Die AU läuft direkt hier, ohne Hülle, und
+     * spricht per fetch mit dem LRS der Anwendung.
+     */
+    public function cmi5Asset(string $token, string $path = ''): BinaryFileResponse {
+        $claims = $this->tokens->verify($token, null, ScormContentToken::KIND_CMI5);
+        abort_if($claims === null, 404);
+
+        // TENANT-BYPASS: sitzungsloser Inhalts-Host, gebunden über den signierten Token.
+        $package = LearningCmi5Package::query()->withoutGlobalScopes()
+            ->whereKey($claims['package'])
+            ->where('learning_unit_id', $claims['unit'])
+            ->first();
+        abort_if($package === null, 404);
+
+        $enrolled = LearningEnrollment::query()->withoutGlobalScopes()
+            ->whereKey($claims['enrollment'])
+            ->where('organization_id', $package->organization_id)
+            ->exists();
+        abort_unless($enrolled, 404);
+
+        $file = ScormPackageFiles::absolutePath($package, $path);
+        abort_if($file === null, 404);
+
+        $response = response()->file($file);
+        $response->headers->set('Content-Security-Policy', ScormPackageFiles::contentSecurityPolicy(ScormContentHost::appOrigin(), true));
 
         return $response;
     }

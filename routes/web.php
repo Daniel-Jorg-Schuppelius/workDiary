@@ -3136,6 +3136,10 @@ Route::middleware('auth')->group(function () {
             Route::get('{enrollment}/einheiten/{unit}/scorm', [\App\Http\Controllers\Learning\LearningScormController::class, 'play'])->name('scorm.play');
             Route::get('{enrollment}/einheiten/{unit}/scorm/inhalt/{path?}', [\App\Http\Controllers\Learning\LearningScormController::class, 'asset'])->where('path', '.*')->name('scorm.asset');
             Route::post('{enrollment}/einheiten/{unit}/scorm/commit', [\App\Http\Controllers\Learning\LearningScormController::class, 'commit'])->name('scorm.commit');
+            // cmi5-AU starten (Feature 149): POST, weil der Start Zustand schreibt und offene Sitzungen abbricht.
+            Route::post('{enrollment}/einheiten/{unit}/cmi5/{au}/start', [\App\Http\Controllers\Learning\LearningCmi5Controller::class, 'launch'])->name('cmi5.launch');
+            // Dateien paketinterner AUs am Anwendungs-Ursprung — nur ohne eigenen Inhalts-Host.
+            Route::get('{enrollment}/einheiten/{unit}/cmi5/inhalt/{path?}', [\App\Http\Controllers\Learning\LearningCmi5Controller::class, 'asset'])->where('path', '.*')->name('cmi5.asset');
             Route::post('{enrollment}/xapi', [\App\Http\Controllers\Learning\LearningScormController::class, 'xapi'])->name('xapi.store');
 
             // Bild einer Bildmarkierungsfrage (MVP-738): geprüft gegen den

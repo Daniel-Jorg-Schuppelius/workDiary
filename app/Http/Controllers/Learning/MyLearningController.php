@@ -59,7 +59,7 @@ class MyLearningController extends Controller {
     public function show(LearningEnrollment $enrollment): View {
         $this->authorizeOwn($enrollment);
 
-        $enrollment->load(['course.units.section', 'course.units.quiz', 'course.units.assignment', 'course.units.event', 'course.units.scormPackage', 'course.units.attachments', 'course.sections', 'progress']);
+        $enrollment->load(['course.units.section', 'course.units.quiz', 'course.units.assignment', 'course.units.event', 'course.units.scormPackage', 'course.units.cmi5Package.units', 'course.units.attachments', 'course.sections', 'progress']);
 
         $completedUnitIds = $enrollment->progress
             ->where('status', LearningProgressStatus::Completed)
@@ -86,6 +86,13 @@ class MyLearningController extends Controller {
             'course' => $enrollment->course,
             'completedUnitIds' => $completedUnitIds,
             'openSession' => $this->time->openSessionFor($enrollment),
+            // cmi5: Stand je AU aus der Registrierung dieser Einschreibung.
+            'cmi5States' => \App\Models\Learning\LearningCmi5AuState::query()
+                ->whereIn('learning_cmi5_registration_id', \App\Models\Learning\LearningCmi5Registration::query()
+                    ->where('learning_enrollment_id', $enrollment->id)
+                    ->select('id'))
+                ->get()
+                ->keyBy('learning_cmi5_unit_id'),
             'eventParticipations' => \App\Models\EventParticipant::query()
                 ->where('user_id', $enrollment->user_id)
                 ->whereIn('event_id', $enrollment->course?->units->pluck('event_id')->filter()->all() ?? [])
@@ -179,6 +186,9 @@ class MyLearningController extends Controller {
     /** Einheit als abgeschlossen melden (Abschlusskriterium „bestätigt"). */
     public function completeUnit(Request $request, LearningEnrollment $enrollment, LearningUnit $unit): RedirectResponse {
         $this->authorizeOwn($enrollment);
+        // Die Ansicht blendet den Knopf für diese Einheiten aus; ohne diese Sperre
+        // schlösse ein gezielter POST trotzdem eine Prüfung oder ein Kurspaket ab.
+        abort_if($unit->reportsOwnResult(), 403);
 
         $percent = (int) $request->integer('progress_percent', 100);
         $this->enrollments->completeUnit($enrollment, $unit, $percent);

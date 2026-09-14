@@ -496,9 +496,17 @@ return [
         'sync_unknown_target' => 'The enrolment or learning unit is unknown.',
         'sync_foreign_enrollment' => 'This enrolment belongs to someone else.',
         'sync_requires_online' => 'Exams and assignments cannot be completed offline.',
+        'sync_reports_own_result' => 'This unit reports its own result and cannot be completed by hand.',
     ],
     'cmi5' => [
         'imported' => 'cmi5 course “:title” imported.',
+        'status' => [
+            'open' => 'open',
+            'completed' => 'completed',
+            'passed' => 'passed',
+            'failed' => 'failed',
+            'satisfied' => 'satisfied',
+        ],
     ],
     'scorm' => [
         'imported' => 'Package “:title” imported.',

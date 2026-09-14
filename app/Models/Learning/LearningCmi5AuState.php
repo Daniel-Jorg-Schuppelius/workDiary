@@ -64,4 +64,15 @@ class LearningCmi5AuState extends Model {
     public function unit(): BelongsTo {
         return $this->belongsTo(LearningCmi5Unit::class, 'learning_cmi5_unit_id');
     }
+
+    /** Anzeige-Stand: erfüllt vor bestanden vor nicht bestanden vor abgeschlossen. */
+    public function statusKey(): string {
+        return match (true) {
+            $this->satisfied_at !== null => 'satisfied',
+            $this->passed_at !== null => 'passed',
+            $this->failed_at !== null => 'failed',
+            $this->completed_at !== null => 'completed',
+            default => 'open',
+        };
+    }
 }

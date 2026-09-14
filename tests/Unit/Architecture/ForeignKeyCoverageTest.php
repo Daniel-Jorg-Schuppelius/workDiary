@@ -41,6 +41,15 @@ class ForeignKeyCoverageTest extends TestCase {
         // dem xAPI-Statement selbst gibt — eine Fremdkennung, kein Verweis
         // auf eine eigene Tabelle. Sie dient der Dublettenerkennung.
         'learning_xapi_statements.statement_id',
+        // Feature 149, cmi5 (2027_02_20_101700): Kennungen aus xAPI und cmi5, keine
+        // Zeilen dieser Datenbank — Aktivitäts-IDs sind IRIs (vom LMS vergeben oder
+        // vom Herausgeber), `document_id` ist die Dokument-ID der xAPI-Document-API.
+        'learning_cmi5_packages.activity_id',
+        'learning_cmi5_packages.course_id',
+        'learning_cmi5_units.activity_id',
+        'learning_cmi5_units.publisher_id',
+        'learning_xapi_documents.activity_id',
+        'learning_xapi_documents.document_id',
         // F7 (2027_02_19_100600): audit_logs ist eine Hash-Kette — FKs mit
         // SET NULL hätten beim Org-Purge die Kette gebrochen; Werte bleiben.
         'audit_logs.organization_id',

@@ -496,9 +496,17 @@ return [
         'sync_unknown_target' => 'Die Einschreibung oder Lerneinheit ist nicht bekannt.',
         'sync_foreign_enrollment' => 'Diese Einschreibung gehört zu einer anderen Person.',
         'sync_requires_online' => 'Prüfungen und Aufgaben lassen sich nicht offline abschließen.',
+        'sync_reports_own_result' => 'Diese Einheit meldet ihr Ergebnis selbst und lässt sich nicht von Hand abschließen.',
     ],
     'cmi5' => [
         'imported' => 'cmi5-Kurs „:title" importiert.',
+        'status' => [
+            'open' => 'offen',
+            'completed' => 'abgeschlossen',
+            'passed' => 'bestanden',
+            'failed' => 'nicht bestanden',
+            'satisfied' => 'erfüllt',
+        ],
     ],
     'scorm' => [
         'imported' => 'Paket „:title“ importiert.',
