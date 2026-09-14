@@ -15,7 +15,9 @@
 
 # Punktdateien: `^\.$` traf nur eine Datei mit dem Namen "." — .env.backup,
 # .htpasswd und Konsorten blieben offen (Sicherheitsaudit 2026-09-13).
-<FilesMatch "^\..*$">
+# `.well-known` bleibt offen: Gibt es das Verzeichnis nicht, hält Apache den
+# Pfadteil für den Dateinamen — ohne Ausnahme liefert security.txt 403.
+<FilesMatch "^\.(?!well-known$)">
     Require all denied
 </FilesMatch>
 
