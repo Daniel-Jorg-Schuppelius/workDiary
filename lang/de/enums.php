@@ -1694,6 +1694,7 @@ return [
             'event' => 'Termin',
             'scorm' => 'SCORM-Paket',
             'cmi5' => 'cmi5-Kurs',
+            'lti' => 'LTI-Inhalt',
             'survey' => 'Umfrage',
             'external' => 'Externer Inhalt',
         ],

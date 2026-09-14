@@ -18,6 +18,11 @@
 <x-index-page overflow="clip" :subtitle="__('learning.subtitle.courses')">
     <x-slot:actions>
         <x-help-button topic="learning.overview" />
+        @can(\App\Enums\User\Permission::LearningManage->value)
+            <x-icon-btn icon="hub" tone="ghost" size="sm"
+                        :href="route('learning.lti-registrations.index')"
+                        show-label>{{ __('learning.lti_registration.title') }}</x-icon-btn>
+        @endcan
         @if ($canCreate)
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger

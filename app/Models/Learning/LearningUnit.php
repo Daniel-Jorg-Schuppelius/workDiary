@@ -120,6 +120,11 @@ class LearningUnit extends Model {
         return $this->hasOne(LearningCmi5Package::class, 'learning_unit_id');
     }
 
+    /** @return HasOne<LearningLtiLink, $this> */
+    public function ltiLink(): HasOne {
+        return $this->hasOne(LearningLtiLink::class, 'learning_unit_id');
+    }
+
     /**
      * Meldet die Einheit ihr Ergebnis selbst (Termin, Abgabe, Prüfung, Kurspaket)?
      * Dann gibt es kein „erledigt" per Hand — es würde genau dieses Ergebnis überspringen.

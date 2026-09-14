@@ -38,6 +38,8 @@ return Application::configure(basePath: dirname(__DIR__))
                 ->prefix(\App\Services\Learning\LearningCmi5Runtime::ENDPOINT_PATH)
                 ->name('learning.cmi5.lrs.')
                 ->group(__DIR__ . '/../routes/cmi5-lrs.php');
+            // LTI 1.3 (Feature 149): öffentliche Schlüsselmenge ohne Sitzung.
+            Route::middleware('lti')->prefix('lti')->name('learning.lti.')->group(__DIR__ . '/../routes/lti.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/install.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/customer.php');
             Route::middleware('web')->group(__DIR__ . '/../routes/legacy.php');
@@ -220,6 +222,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'throttle:cmi5-lrs',
         ]);
 
+        $middleware->group('lti', [
+            HandleDatabaseUnavailable::class,
+        ]);
+
         $middleware->group('b2b-catalog', [
             HandleDatabaseUnavailable::class,
             \App\Http\Middleware\B2bCatalog\B2bCatalogSecurityHeaders::class,
@@ -263,6 +269,12 @@ return Application::configure(basePath: dirname(__DIR__))
         // Token-Endpunkte ohne Session/CSRF: Backup-Heartbeat (MVP-046 §5).
         $middleware->validateCsrfTokens(except: [
             'admin/backup/heartbeat',
+            // LTI 1.3 (Feature 149): Das Tool sendet die Authentifizierungsanfrage
+            // ohne CSRF-Token; die Hinweise darin sind signiert und personengebunden.
+            'lti/plattform/auth',
+            // LTI 1.3 als Tool: Die Plattform sendet das ID-Token als fremden POST;
+            // geschützt durch den serverseitigen state, die Signatur und die Nonce.
+            'lti/tool/launch',
             // 'oci-carts/import' stand hier bis 2026-08-31 (Sicherheitsscan
             // S-43) und ist bewusst ENTFERNT: die Ausnahme half nur, wenn ein
             // Betreiber SESSION_SAME_SITE=none setzte — und genau dann war der

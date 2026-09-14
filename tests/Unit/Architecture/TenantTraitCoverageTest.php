@@ -386,6 +386,10 @@ class TenantTraitCoverageTest extends TestCase {
         // User gebunden und damit transitiv mandantenfähig — analog UserBookmark;
         // Zugriff ausschließlich über den eigenen User beim Login.
         \App\Models\UserKnownDevice::class,
+        // Feature 149 (LTI 1.3): Signaturschlüssel und verbrauchte Nonces gehören
+        // der Instanz — Aussteller ist die Anwendung, nicht die Organisation.
+        \App\Models\Learning\LearningLtiKey::class,
+        \App\Models\Learning\LearningLtiNonce::class,
     ];
 
     public function test_every_model_uses_tenant_trait_or_is_allow_listed(): void {

@@ -49,6 +49,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property LearningTimePolicy $time_policy
  * @property LearningInstructionSuitability $instruction_suitability
  * @property bool $certificate_enabled
+ * @property bool $lti_available
  * @property bool $creates_instruction_proof
  * @property int|null $access_days
  * @property bool $sequential
@@ -89,6 +90,7 @@ class LearningCourse extends Model {
         'creates_instruction_proof',
         'access_days',
         'sequential',
+        'lti_available',
     ];
 
     /** @var array<string, string> */
@@ -106,6 +108,7 @@ class LearningCourse extends Model {
         'creates_instruction_proof' => 'boolean',
         'access_days' => 'integer',
         'sequential' => 'boolean',
+        'lti_available' => 'boolean',
     ];
 
     /** @return HasMany<LearningCourseVersion, $this> */

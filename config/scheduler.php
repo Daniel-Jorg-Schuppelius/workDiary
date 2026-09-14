@@ -372,6 +372,22 @@ return [
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
         ],
+        // LTI 1.3 (Feature 149): Signaturschlüssel nach Frist tauschen; der alte
+        // bleibt veröffentlicht, bis kein damit signiertes Token mehr lebt.
+        'learning.lti_rotate_keys' => [
+            'command' => 'learning:lti-rotate-keys',
+            'cadence' => ['type' => 'dailyAt', 'time' => '03:50'],
+            'allowed' => ['dailyAt'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 1,
+        ],
+        'learning.lti_prune_nonces' => [
+            'command' => 'learning:lti-prune-nonces',
+            'cadence' => ['type' => 'dailyAt', 'time' => '04:05'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'housekeeping',
+            'expected_runtime_minutes' => 1,
+        ],
         'attendance.close_open' => [
             'command' => 'attendance:close-open',
             'cadence' => ['type' => 'everyFifteenMinutes'],

@@ -322,6 +322,60 @@
                 </x-card>
             @endif
 
+            @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Lti)
+                {{-- LTI-Einheit (Feature 149): Inhalt aus einem registrierten Tool. Ohne
+                     Ergebnisrückmeldung (AGS) bestätigen Lernende die Einheit selbst. --}}
+                <x-card>
+                    <h3 class="mb-2 text-sm font-semibold">{{ __('learning.field.lti_link') }}</h3>
+
+                    @if ($unit->ltiLink)
+                        <x-detail-grid>
+                            <x-detail-grid.row :label="__('learning.field.lti_tool')">{{ $unit->ltiLink->tool?->name }}</x-detail-grid.row>
+                            <x-detail-grid.row :label="__('learning.field.lti_title')">{{ $unit->ltiLink->title ?? '–' }}</x-detail-grid.row>
+                            <x-detail-grid.row :label="__('learning.field.lti_url')"><span class="break-all font-mono text-xs">{{ $unit->ltiLink->url ?? $unit->ltiLink->tool?->launch_url }}</span></x-detail-grid.row>
+                        </x-detail-grid>
+                        <form method="POST" action="{{ route('learning.courses.units.lti.destroy', [$course, $unit]) }}" class="mt-2 flex justify-end">
+                            @csrf
+                            @method('DELETE')
+                            <x-icon-btn icon="link_off" tone="error" size="sm" type="submit" show-label>{{ __('learning.action.lti_unlink') }}</x-icon-btn>
+                        </form>
+                    @else
+                        <p class="text-sm text-base-content/80">{{ __('learning.help.lti_empty') }}</p>
+                    @endif
+
+                    @if ($ltiTools->isEmpty())
+                        <p class="mt-3 text-sm text-muted">{{ __('learning.help.lti_no_tools') }}</p>
+                    @else
+                        <form method="POST" action="{{ route('learning.courses.units.lti.deep-linking', [$course, $unit]) }}" class="mt-3">
+                            @csrf
+                            <x-select-field name="tool" id="lti-select-tool" :label="__('learning.field.lti_tool')" :hint="__('learning.help.lti_deep_linking')" required>
+                                @foreach ($ltiTools as $ltiTool)
+                                    <option value="{{ $ltiTool->sqid }}" @selected($unit->ltiLink?->learning_lti_tool_id === $ltiTool->id)>{{ $ltiTool->name }}</option>
+                                @endforeach
+                            </x-select-field>
+                            <div class="mt-2 flex justify-end">
+                                <x-icon-btn icon="travel_explore" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.lti_select') }}</x-icon-btn>
+                            </div>
+                        </form>
+
+                        <form method="POST" action="{{ route('learning.courses.units.lti.store', [$course, $unit]) }}" class="mt-4 space-y-2">
+                            @csrf
+                            <x-select-field name="tool" id="lti-manual-tool" :label="__('learning.field.lti_tool')" required>
+                                @foreach ($ltiTools as $ltiTool)
+                                    <option value="{{ $ltiTool->sqid }}" @selected($unit->ltiLink?->learning_lti_tool_id === $ltiTool->id)>{{ $ltiTool->name }}</option>
+                                @endforeach
+                            </x-select-field>
+                            <x-input-field name="title" id="lti-manual-title" :label="__('learning.field.lti_title')" maxlength="255" :value="old('title', $unit->ltiLink?->title)" />
+                            <x-input-field name="url" id="lti-manual-url" type="url" :label="__('learning.field.lti_url')" :hint="__('learning.help.lti_manual')" maxlength="2000" :value="old('url', $unit->ltiLink?->url)" />
+                            <x-textarea-field name="custom" id="lti-manual-custom" :label="__('learning.field.lti_custom')" :hint="__('learning.help.lti_custom')" rows="3" maxlength="5000" :value="old('custom', $ltiCustom)" />
+                            <div class="flex justify-end">
+                                <x-icon-btn icon="link" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.lti_link') }}</x-icon-btn>
+                            </div>
+                        </form>
+                    @endif
+                </x-card>
+            @endif
+
             <x-card>
                 <h3 class="mb-2 text-sm font-semibold">{{ __('learning.field.embed_hosts') }}</h3>
                 @if ($allowedHosts === [])

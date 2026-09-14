@@ -68,6 +68,7 @@ class LearningCourseService {
                 'creates_instruction_proof' => (bool) ($attributes['creates_instruction_proof'] ?? false),
                 'access_days' => $attributes['access_days'] ?? null,
                 'sequential' => (bool) ($attributes['sequential'] ?? false),
+                'lti_available' => (bool) ($attributes['lti_available'] ?? false),
             ]);
 
             $this->guardTimePolicy($course);
@@ -106,6 +107,7 @@ class LearningCourseService {
             'creates_instruction_proof' => array_key_exists('creates_instruction_proof', $attributes) ? (bool) $attributes['creates_instruction_proof'] : $course->creates_instruction_proof,
             'access_days' => array_key_exists('access_days', $attributes) ? $attributes['access_days'] : $course->access_days,
             'sequential' => array_key_exists('sequential', $attributes) ? (bool) $attributes['sequential'] : $course->sequential,
+            'lti_available' => array_key_exists('lti_available', $attributes) ? (bool) $attributes['lti_available'] : $course->lti_available,
         ]);
 
         $this->guardTimePolicy($course->refresh());

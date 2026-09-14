@@ -126,6 +126,13 @@
                                     @endforeach
                                 </ul>
                             @else
+                                @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Lti && $unit->ltiLink)
+                                    {{-- LTI ohne Ergebnisrückmeldung: Start beim Tool, bestätigt wird von Hand. --}}
+                                    <form method="POST" action="{{ route('learning.my.lti.launch', [$enrollment, $unit]) }}">
+                                        @csrf
+                                        <x-icon-btn icon="play_circle" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.open_lti') }}</x-icon-btn>
+                                    </form>
+                                @endif
                                 {{-- Offline abhakbar, aber NUR ohne Online-Pflicht:
                                      Prüfungen und Aufgaben tragen das Attribut
                                      nicht, und der Server lehnt sie zusätzlich ab

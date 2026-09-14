@@ -203,6 +203,26 @@ Route::get('lernen/zugang-ungueltig', [\App\Http\Controllers\Learning\ExternalLe
     ->middleware('throttle:60,1')
     ->name('learning.external.denied');
 
+// LTI 1.3 als Plattform (Feature 149): Authentifizierungsanfrage des Tools. Ohne
+// auth-Middleware — ein fremder POST trägt kein Sitzungscookie und wird einmal über
+// eine eigene Seite weitergereicht. CSRF-frei, weil das Tool kein Token kennen kann;
+// herausgegeben wird nur an die registrierte redirect_uri und gegen signierte Hinweise.
+Route::match(['get', 'post'], 'lti/plattform/auth', [\App\Http\Controllers\Learning\LearningLtiPlatformController::class, 'auth'])
+    ->middleware('throttle:60,1')
+    ->name('learning.lti.platform.auth');
+
+// LTI 1.3 als Tool (Feature 149): Der Start ist ein fremder POST ohne Sitzung und legt
+// sie erst an; Auswahlseite und Absenden laufen danach same-site in dieser Sitzung.
+Route::post('lti/tool/launch', [\App\Http\Controllers\Learning\LearningLtiToolController::class, 'launch'])
+    ->middleware('throttle:60,1')
+    ->name('learning.lti.tool.launch');
+Route::get('lti/tool/auswahl', [\App\Http\Controllers\Learning\LearningLtiToolController::class, 'deepLinking'])
+    ->middleware('throttle:60,1')
+    ->name('learning.lti.tool.deep-linking');
+Route::post('lti/tool/auswahl', [\App\Http\Controllers\Learning\LearningLtiToolController::class, 'deepLinkingSubmit'])
+    ->middleware('throttle:60,1')
+    ->name('learning.lti.tool.deep-linking.submit');
+
 // Öffentliche Zertifikatsprüfung (Feature 149, MVP-740): wer den Code hat,
 // soll prüfen können, ob ein vorgelegtes Zertifikat echt ist. Datensparsam
 // und ratenbegrenzt — der Code ist zufällig, also nicht aufzählbar.
@@ -3055,6 +3075,10 @@ Route::middleware('auth')->group(function () {
             Route::post('kurse/{course}/einheiten/{unit}/scorm', [\App\Http\Controllers\Learning\LearningScormController::class, 'import'])->name('courses.units.scorm.import');
             // cmi5-Kurs (Feature 149): ZIP mit cmi5.xml oder einzelne cmi5.xml mit externen AUs.
             Route::post('kurse/{course}/einheiten/{unit}/cmi5', [\App\Http\Controllers\Learning\LearningCmi5Controller::class, 'import'])->name('courses.units.cmi5.import');
+            // LTI-Einheit (Feature 149): Inhalt beim Tool auswählen (Deep Linking) oder von Hand verknüpfen.
+            Route::post('kurse/{course}/einheiten/{unit}/lti/auswahl', [\App\Http\Controllers\Learning\LearningLtiLinkController::class, 'deepLinking'])->name('courses.units.lti.deep-linking');
+            Route::post('kurse/{course}/einheiten/{unit}/lti', [\App\Http\Controllers\Learning\LearningLtiLinkController::class, 'store'])->name('courses.units.lti.store');
+            Route::delete('kurse/{course}/einheiten/{unit}/lti', [\App\Http\Controllers\Learning\LearningLtiLinkController::class, 'destroy'])->name('courses.units.lti.destroy');
 
             // Aufgaben-Editor (MVP-739).
             Route::get('kurse/{course}/einheiten/{unit}/aufgabe', [\App\Http\Controllers\Learning\LearningCourseController::class, 'editAssignment'])->name('courses.units.assignment.edit');
@@ -3072,6 +3096,19 @@ Route::middleware('auth')->group(function () {
             // Lernpfade (MVP-745): Reihenfolge mit Fristen für die
             // Einarbeitung — kein zweiter Pflichtkatalog, das Soll bleibt
             // bei Feature 145.
+            // LTI 1.3 (Feature 149): Registrierungen — Tools, die WorkDiary startet, und Plattformen, die WorkDiary starten.
+            Route::get('lti', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'index'])->name('lti-registrations.index');
+            Route::get('lti/tools/create', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'createTool'])->name('lti-registrations.tools.create');
+            Route::post('lti/tools', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'storeTool'])->name('lti-registrations.tools.store');
+            Route::get('lti/tools/{tool}/edit', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'editTool'])->name('lti-registrations.tools.edit');
+            Route::put('lti/tools/{tool}', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'updateTool'])->name('lti-registrations.tools.update');
+            Route::delete('lti/tools/{tool}', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'destroyTool'])->name('lti-registrations.tools.destroy');
+            Route::get('lti/plattformen/create', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'createPlatform'])->name('lti-registrations.platforms.create');
+            Route::post('lti/plattformen', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'storePlatform'])->name('lti-registrations.platforms.store');
+            Route::get('lti/plattformen/{platform}/edit', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'editPlatform'])->name('lti-registrations.platforms.edit');
+            Route::put('lti/plattformen/{platform}', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'updatePlatform'])->name('lti-registrations.platforms.update');
+            Route::delete('lti/plattformen/{platform}', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'destroyPlatform'])->name('lti-registrations.platforms.destroy');
+
             Route::get('lernpfade', [\App\Http\Controllers\Learning\LearningPathController::class, 'index'])->name('paths.index');
             Route::post('lernpfade', [\App\Http\Controllers\Learning\LearningPathController::class, 'store'])->name('paths.store');
             Route::post('lernpfade/zuweisen', [\App\Http\Controllers\Learning\LearningPathController::class, 'assignByRole'])->name('paths.assign-by-role');
@@ -3140,6 +3177,8 @@ Route::middleware('auth')->group(function () {
             Route::post('{enrollment}/einheiten/{unit}/cmi5/{au}/start', [\App\Http\Controllers\Learning\LearningCmi5Controller::class, 'launch'])->name('cmi5.launch');
             // Dateien paketinterner AUs am Anwendungs-Ursprung — nur ohne eigenen Inhalts-Host.
             Route::get('{enrollment}/einheiten/{unit}/cmi5/inhalt/{path?}', [\App\Http\Controllers\Learning\LearningCmi5Controller::class, 'asset'])->where('path', '.*')->name('cmi5.asset');
+            // LTI-Einheit starten (Feature 149): Login-Anstoß beim Tool.
+            Route::post('{enrollment}/einheiten/{unit}/lti/start', [\App\Http\Controllers\Learning\LearningLtiPlatformController::class, 'launch'])->name('lti.launch');
             Route::post('{enrollment}/xapi', [\App\Http\Controllers\Learning\LearningScormController::class, 'xapi'])->name('xapi.store');
 
             // Bild einer Bildmarkierungsfrage (MVP-738): geprüft gegen den

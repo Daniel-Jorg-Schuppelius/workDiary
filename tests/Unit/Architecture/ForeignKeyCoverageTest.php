@@ -50,6 +50,12 @@ class ForeignKeyCoverageTest extends TestCase {
         'learning_cmi5_units.publisher_id',
         'learning_xapi_documents.activity_id',
         'learning_xapi_documents.document_id',
+        // Feature 149, LTI 1.3 (2027_02_20_101800): Kennungen des LTI-Protokolls —
+        // Client-, Deployment- und Resource-Link-ID vergibt die Plattform.
+        'learning_lti_links.resource_link_id',
+        'learning_lti_platforms.client_id',
+        'learning_lti_tools.client_id',
+        'learning_lti_tools.deployment_id',
         // F7 (2027_02_19_100600): audit_logs ist eine Hash-Kette — FKs mit
         // SET NULL hätten beim Org-Purge die Kette gebrochen; Werte bleiben.
         'audit_logs.organization_id',

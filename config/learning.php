@@ -30,4 +30,8 @@ return [
         /* So lange nimmt das LRS nach dem Start Statements einer Sitzung an (Vorgabe: 8 Stunden). */
         'session_ttl' => (int) env('LEARNING_CMI5_SESSION_TTL', 28800),
     ],
+    'lti' => [
+        /* Nach so vielen Tagen tauscht der Scheduler den Signaturschlüssel der Instanz. */
+        'key_rotation_days' => (int) env('LEARNING_LTI_KEY_ROTATION_DAYS', 90),
+    ],
 ];

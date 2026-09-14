@@ -147,6 +147,14 @@ class SystemHealthCommand extends Command {
                 $warnings[] = ['SCORM-Inhalte', 'SCORM- und cmi5-Pakete laufen im Ursprung der Anwendung — LEARNING_SCORM_CONTENT_URL auf eine eigene Subdomain oder Domain setzen.'];
             }
 
+            // LTI 1.3 (Feature 149): Aussteller und Adressen hängen an APP_URL — ohne https
+            // lehnen Plattformen und Tools Token und Weiterleitungen ab.
+            if (! str_starts_with((string) config('app.url'), 'https://')
+                && (\App\Models\Learning\LearningLtiTool::query()->withoutGlobalScopes()->where('is_active', true)->exists()
+                    || \App\Models\Learning\LearningLtiPlatform::query()->withoutGlobalScopes()->where('is_active', true)->exists())) {
+                $warnings[] = ['LTI', 'aktive LTI-Registrierungen, aber APP_URL beginnt nicht mit https:// — Aussteller und Adressen sind für Plattformen und Tools ungültig.'];
+            }
+
             if (! RehashBlindIndexesCommand::isDoneForCurrentKey()) {
                 $warnings[] = ['Blindindizes', 'noch nicht für den aktuellen Schlüssel umgerechnet — deploy.sh holt das nach der Wartung nach, sonst: php artisan security:rehash-blind-indexes'];
             }

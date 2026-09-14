@@ -73,7 +73,11 @@ return [
         'calendly' => ['backfill' => 'Sincronización de citas de Calendly'],
         'ai' => ['maintenance' => 'Mantenimiento de IA (salud de proveedores, limpieza de sugerencias)'],
         'archive' => ['run' => 'Ejecución de archivado'],
-        'learning' => ['close_stale_sessions' => 'Cerrar sesiones de aprendizaje abandonadas'],
+        'learning' => [
+            'close_stale_sessions' => 'Cerrar sesiones de aprendizaje abandonadas',
+            'lti_rotate_keys' => 'Rotar las claves de firma LTI',
+            'lti_prune_nonces' => 'Eliminar los nonces LTI caducados',
+        ],
         'attendance' => ['close_open' => 'Cerrar fichajes olvidados'],
         'audit' => ['verify' => 'Verificar la cadena de auditoría'],
         'backup' => [

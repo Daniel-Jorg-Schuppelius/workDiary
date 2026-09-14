@@ -73,7 +73,11 @@ return [
         'calendly' => ['backfill' => 'Calendly-Terminabgleich'],
         'ai' => ['maintenance' => 'KI-Wartungslauf (Provider-Health, Vorschlags-Bereinigung)'],
         'archive' => ['run' => 'Archivierungslauf'],
-        'learning' => ['close_stale_sessions' => 'Liegengebliebene Lernsitzungen schließen'],
+        'learning' => [
+            'close_stale_sessions' => 'Liegengebliebene Lernsitzungen schließen',
+            'lti_rotate_keys' => 'LTI-Signaturschlüssel tauschen',
+            'lti_prune_nonces' => 'Abgelaufene LTI-Nonces entfernen',
+        ],
         'attendance' => ['close_open' => 'Offene Stempelungen schließen'],
         'audit' => ['verify' => 'Audit-Kette prüfen'],
         'backup' => [

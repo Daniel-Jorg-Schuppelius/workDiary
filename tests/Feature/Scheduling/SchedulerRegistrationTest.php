@@ -61,6 +61,9 @@ class SchedulerRegistrationTest extends TestCase {
         // ohne diesen Kehraus liefe eine Sitzung nach geschlossenem Browser
         // weiter und würde als riesige Spanne in die Zeitkonten gebucht.
         'learning:close-stale-sessions' => ['*/15 * * * *', true, true],
+        // Feature 149 (LTI 1.3): Schlüsseltausch nach Frist, Nonce-Kehraus.
+        'learning:lti-rotate-keys' => ['50 3 * * *', true, true],
+        'learning:lti-prune-nonces' => ['5 4 * * *', true, true],
         'attendance:close-open' => ['*/15 * * * *', true, true],
         'recurrence:generate' => ['30 4 * * *', true, true],
         'events:dispatch-reminders' => ['*/5 * * * *', true, true],

@@ -10761,6 +10761,7 @@ CREATE TABLE `learning_courses` (
   `sequential` tinyint(1) NOT NULL DEFAULT 0,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `lti_available` tinyint(1) NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   UNIQUE KEY `lrn_course_org_code_uq` (`organization_id`,`code`),
   UNIQUE KEY `lrn_course_org_training_uq` (`organization_id`,`training_course_id`),
@@ -10857,6 +10858,128 @@ CREATE TABLE `learning_issuer_keys` (
   UNIQUE KEY `lrn_issuer_key_uq` (`organization_id`,`key_id`),
   KEY `lrn_issuer_key_active_idx` (`organization_id`,`revoked_at`),
   CONSTRAINT `learning_issuer_keys_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_lti_keys`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_lti_keys` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `kid` varchar(64) NOT NULL,
+  `public_jwk` text NOT NULL,
+  `private_jwk` text NOT NULL,
+  `activated_at` timestamp NULL DEFAULT NULL,
+  `retired_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_lti_key_kid_uq` (`kid`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_lti_links`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_lti_links` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_unit_id` bigint(20) unsigned NOT NULL,
+  `learning_lti_tool_id` bigint(20) unsigned NOT NULL,
+  `resource_link_id` char(36) NOT NULL,
+  `title` varchar(255) DEFAULT NULL,
+  `url` varchar(2000) DEFAULT NULL,
+  `custom` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin DEFAULT NULL CHECK (json_valid(`custom`)),
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_lti_link_unit_uq` (`learning_unit_id`),
+  UNIQUE KEY `lrn_lti_link_res_uq` (`resource_link_id`),
+  KEY `learning_lti_links_organization_id_foreign` (`organization_id`),
+  KEY `learning_lti_links_learning_lti_tool_id_foreign` (`learning_lti_tool_id`),
+  CONSTRAINT `learning_lti_links_learning_lti_tool_id_foreign` FOREIGN KEY (`learning_lti_tool_id`) REFERENCES `learning_lti_tools` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_lti_links_learning_unit_id_foreign` FOREIGN KEY (`learning_unit_id`) REFERENCES `learning_units` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_lti_links_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_lti_nonces`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_lti_nonces` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `nonce_hash` varchar(64) NOT NULL,
+  `expires_at` timestamp NOT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_lti_nonce_uq` (`nonce_hash`),
+  KEY `lrn_lti_nonce_exp_idx` (`expires_at`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_lti_platforms`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_lti_platforms` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `issuer` varchar(500) NOT NULL,
+  `client_id` varchar(255) NOT NULL,
+  `lookup_hash` varchar(64) NOT NULL,
+  `deployment_ids` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`deployment_ids`)),
+  `authorization_endpoint` varchar(2000) NOT NULL,
+  `jwks_url` varchar(2000) NOT NULL,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_lti_plat_lookup_uq` (`lookup_hash`),
+  KEY `learning_lti_platforms_organization_id_foreign` (`organization_id`),
+  CONSTRAINT `learning_lti_platforms_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_lti_subjects`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_lti_subjects` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `learning_lti_platform_id` bigint(20) unsigned NOT NULL,
+  `subject_hash` varchar(64) NOT NULL,
+  `external_participant_id` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_lti_subj_uq` (`learning_lti_platform_id`,`subject_hash`),
+  KEY `learning_lti_subjects_organization_id_foreign` (`organization_id`),
+  KEY `learning_lti_subjects_external_participant_id_foreign` (`external_participant_id`),
+  CONSTRAINT `learning_lti_subjects_external_participant_id_foreign` FOREIGN KEY (`external_participant_id`) REFERENCES `external_participants` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `learning_lti_subjects_learning_lti_platform_id_foreign` FOREIGN KEY (`learning_lti_platform_id`) REFERENCES `learning_lti_platforms` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `learning_lti_subjects_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `learning_lti_tools`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `learning_lti_tools` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(150) NOT NULL,
+  `client_id` varchar(100) NOT NULL,
+  `deployment_id` varchar(100) NOT NULL,
+  `login_url` varchar(2000) NOT NULL,
+  `launch_url` varchar(2000) NOT NULL,
+  `redirect_uris` longtext CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL CHECK (json_valid(`redirect_uris`)),
+  `deep_linking_url` varchar(2000) DEFAULT NULL,
+  `jwks_url` varchar(2000) DEFAULT NULL,
+  `public_jwks` text DEFAULT NULL,
+  `share_name` tinyint(1) NOT NULL DEFAULT 0,
+  `share_email` tinyint(1) NOT NULL DEFAULT 0,
+  `is_active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `lrn_lti_tool_client_uq` (`client_id`),
+  KEY `learning_lti_tools_organization_id_foreign` (`organization_id`),
+  CONSTRAINT `learning_lti_tools_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `learning_path_items`;
@@ -21370,3 +21493,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (800,'2027_02_20_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',67);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',68);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (803,'2027_02_20_101700_create_learning_cmi5_tables',69);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (804,'2027_02_20_101800_create_learning_lti_tables',70);

@@ -59,7 +59,7 @@ class MyLearningController extends Controller {
     public function show(LearningEnrollment $enrollment): View {
         $this->authorizeOwn($enrollment);
 
-        $enrollment->load(['course.units.section', 'course.units.quiz', 'course.units.assignment', 'course.units.event', 'course.units.scormPackage', 'course.units.cmi5Package.units', 'course.units.attachments', 'course.sections', 'progress']);
+        $enrollment->load(['course.units.section', 'course.units.quiz', 'course.units.assignment', 'course.units.event', 'course.units.scormPackage', 'course.units.cmi5Package.units', 'course.units.ltiLink', 'course.units.attachments', 'course.sections', 'progress']);
 
         $completedUnitIds = $enrollment->progress
             ->where('status', LearningProgressStatus::Completed)

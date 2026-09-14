@@ -73,7 +73,11 @@ return [
         'calendly' => ['backfill' => 'Calendly appointment backfill'],
         'ai' => ['maintenance' => 'AI maintenance run (provider health, suggestion cleanup)'],
         'archive' => ['run' => 'Archiving run'],
-        'learning' => ['close_stale_sessions' => 'Close stale learning sessions'],
+        'learning' => [
+            'close_stale_sessions' => 'Close stale learning sessions',
+            'lti_rotate_keys' => 'Rotate LTI signing keys',
+            'lti_prune_nonces' => 'Remove expired LTI nonces',
+        ],
         'attendance' => ['close_open' => 'Close forgotten clock-ins'],
         'audit' => ['verify' => 'Verify audit chain'],
         'backup' => [

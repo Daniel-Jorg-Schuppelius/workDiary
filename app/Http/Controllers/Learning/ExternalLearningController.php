@@ -32,7 +32,8 @@ use Illuminate\View\View;
  */
 class ExternalLearningController extends Controller {
     /** Session-Schlüssel der freigeschalteten Einschreibung. */
-    private const SESSION_KEY = 'learning.external_enrollment_id';
+    /** Auch der LTI-Start legt die Einschreibung hier ab. */
+    public const SESSION_KEY = 'learning.external_enrollment_id';
 
     public function __construct(
         private readonly LearningAccessService $access,

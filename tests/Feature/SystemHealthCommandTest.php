@@ -78,6 +78,28 @@ class SystemHealthCommandTest extends TestCase {
         $this->assertNotContains('Plugin lexoffice', array_column($warnings, 0));
     }
 
+    public function test_active_lti_registrations_warn_without_https(): void {
+        $organization = \App\Models\Organization::factory()->create();
+        \App\Models\Learning\LearningLtiTool::query()->create([
+            'organization_id' => $organization->id,
+            'name' => 'Brandschutz-Tool',
+            'client_id' => 'client-1',
+            'deployment_id' => 'deployment-1',
+            'login_url' => 'https://tool.example.org/lti/login',
+            'launch_url' => 'https://tool.example.org/lti/launch',
+            'redirect_uris' => ['https://tool.example.org/lti/launch'],
+            'jwks_url' => 'https://tool.example.org/lti/jwks',
+            'is_active' => true,
+        ]);
+        $warnings = static fn (): array => array_column(app(\App\Console\Commands\SystemHealthCommand::class)->runWarnings(), 0);
+
+        config(['app.url' => 'http://work.example.test']);
+        $this->assertContains('LTI', $warnings());
+
+        config(['app.url' => 'https://work.example.test']);
+        $this->assertNotContains('LTI', $warnings());
+    }
+
     public function test_the_blind_index_warning_disappears_after_the_rehash(): void {
         $blindIndexWarnings = static fn (): array => array_values(array_filter(
             app(\App\Console\Commands\SystemHealthCommand::class)->runWarnings(),

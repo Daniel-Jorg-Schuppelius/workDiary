@@ -27,6 +27,7 @@ enum LearningUnitKind: string implements HasLabel {
     case Event = 'event';
     case Scorm = 'scorm';
     case Cmi5 = 'cmi5';
+    case Lti = 'lti';
     case Survey = 'survey';
     case External = 'external';
 
@@ -40,7 +41,7 @@ enum LearningUnitKind: string implements HasLabel {
             self::Quiz => 'warning',
             self::Assignment => 'info',
             self::Procedure, self::Event => 'success',
-            self::Scorm, self::Cmi5, self::Survey, self::External => 'neutral',
+            self::Scorm, self::Cmi5, self::Lti, self::Survey, self::External => 'neutral',
         };
     }
 

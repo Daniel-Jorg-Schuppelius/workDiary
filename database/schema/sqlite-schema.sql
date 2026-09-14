@@ -18355,6 +18355,7 @@ CREATE TABLE IF NOT EXISTS "learning_courses"(
   "competency_id" integer,
   "competency_level" integer,
   "asset_id" integer,
+  "lti_available" tinyint(1) not null default '0',
   foreign key("competency_id") references competencies("id") on delete set null on update no action,
   foreign key("owner_user_id") references users("id") on delete set null on update no action,
   foreign key("article_id") references articles("id") on delete set null on update no action,
@@ -19133,6 +19134,103 @@ CREATE TABLE IF NOT EXISTS "learning_xapi_documents"(
 );
 CREATE UNIQUE INDEX "lrn_xapi_doc_lookup_uq" on "learning_xapi_documents"(
   "lookup_hash"
+);
+CREATE TABLE IF NOT EXISTS "learning_lti_keys"(
+  "id" integer primary key autoincrement not null,
+  "kid" varchar not null,
+  "public_jwk" text not null,
+  "private_jwk" text not null,
+  "activated_at" datetime,
+  "retired_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime
+);
+CREATE UNIQUE INDEX "lrn_lti_key_kid_uq" on "learning_lti_keys"("kid");
+CREATE TABLE IF NOT EXISTS "learning_lti_tools"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "client_id" varchar not null,
+  "deployment_id" varchar not null,
+  "login_url" varchar not null,
+  "launch_url" varchar not null,
+  "redirect_uris" text not null,
+  "deep_linking_url" varchar,
+  "jwks_url" varchar,
+  "public_jwks" text,
+  "share_name" tinyint(1) not null default '0',
+  "share_email" tinyint(1) not null default '0',
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_lti_tool_client_uq" on "learning_lti_tools"(
+  "client_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_lti_links"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_unit_id" integer not null,
+  "learning_lti_tool_id" integer not null,
+  "resource_link_id" varchar not null,
+  "title" varchar,
+  "url" varchar,
+  "custom" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_unit_id") references "learning_units"("id") on delete cascade,
+  foreign key("learning_lti_tool_id") references "learning_lti_tools"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_lti_link_unit_uq" on "learning_lti_links"(
+  "learning_unit_id"
+);
+CREATE UNIQUE INDEX "lrn_lti_link_res_uq" on "learning_lti_links"(
+  "resource_link_id"
+);
+CREATE TABLE IF NOT EXISTS "learning_lti_platforms"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "issuer" varchar not null,
+  "client_id" varchar not null,
+  "lookup_hash" varchar not null,
+  "deployment_ids" text not null,
+  "authorization_endpoint" varchar not null,
+  "jwks_url" varchar not null,
+  "is_active" tinyint(1) not null default '1',
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade
+);
+CREATE UNIQUE INDEX "lrn_lti_plat_lookup_uq" on "learning_lti_platforms"(
+  "lookup_hash"
+);
+CREATE TABLE IF NOT EXISTS "learning_lti_nonces"(
+  "id" integer primary key autoincrement not null,
+  "nonce_hash" varchar not null,
+  "expires_at" datetime not null,
+  "created_at" datetime,
+  "updated_at" datetime
+);
+CREATE UNIQUE INDEX "lrn_lti_nonce_uq" on "learning_lti_nonces"("nonce_hash");
+CREATE INDEX "lrn_lti_nonce_exp_idx" on "learning_lti_nonces"("expires_at");
+CREATE TABLE IF NOT EXISTS "learning_lti_subjects"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "learning_lti_platform_id" integer not null,
+  "subject_hash" varchar not null,
+  "external_participant_id" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("learning_lti_platform_id") references "learning_lti_platforms"("id") on delete cascade,
+  foreign key("external_participant_id") references "external_participants"("id") on delete set null
+);
+CREATE UNIQUE INDEX "lrn_lti_subj_uq" on "learning_lti_subjects"(
+  "learning_lti_platform_id",
+  "subject_hash"
 );
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
@@ -19938,3 +20036,4 @@ INSERT INTO migrations VALUES(800,'2027_02_20_101400_add_service_period_to_invoi
 INSERT INTO migrations VALUES(801,'2027_02_20_101500_drop_lexoffice_voucher_id_from_resale_purchase_entries',16);
 INSERT INTO migrations VALUES(802,'2027_02_20_101600_add_encrypted_flag_to_whistleblowing_attachments',17);
 INSERT INTO migrations VALUES(803,'2027_02_20_101700_create_learning_cmi5_tables',18);
+INSERT INTO migrations VALUES(804,'2027_02_20_101800_create_learning_lti_tables',19);

@@ -268,6 +268,7 @@ return [
         // Pflichtsicht „Meine Schulungen“ bleibt bewusst ungemappt (Core),
         // damit eine Unterweisung nie an der Lizenzstufe scheitert.
         'learning.courses.*' => 'module.lms',
+        'learning.lti-registrations.*' => 'module.lms',
         'agile.*' => 'module.agile_projects', // Feature 064 — eigenes Präfix (projects.* ist auf module.vertrieb gemappt!)
         // Feature 065: Tickets waren Core — module.helpdesk ist in pro UND
         // enterprise enthalten, damit das Gating keine Bestandsdaten sperrt.

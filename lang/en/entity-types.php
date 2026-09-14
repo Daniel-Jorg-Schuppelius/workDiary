@@ -414,6 +414,8 @@ return [
     'LearningUnit' => 'Learning unit',
     'LearningScormPackage' => 'SCORM package',
     'LearningCmi5Package' => 'cmi5 course',
+    'LearningLtiPlatform' => 'LTI platform',
+    'LearningLtiTool' => 'LTI tool',
     'TrainingCourseVersion' => 'Course version',
     'TrainingRequirement' => 'Training requirement',
     'TrainingAssignment' => 'Training plan entry',

@@ -1692,6 +1692,7 @@ return [
             'event' => 'Appuntamento',
             'scorm' => 'Pacchetto SCORM',
             'cmi5' => 'Corso cmi5',
+            'lti' => 'Contenuto LTI',
             'survey' => 'Sondaggio',
             'external' => 'Contenuto esterno',
         ],

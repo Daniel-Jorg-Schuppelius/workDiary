@@ -240,6 +240,14 @@ class LearningCourseController extends Controller {
             'allowedHosts' => $this->content->allowedHosts($this->currentOrganization()),
             'subtitles' => $subtitles,
             'canTranscribe' => app(VideoTranscodingService::class)->isTranscriptionAvailable(),
+            // LTI-Einheit (Feature 149): die aktiven Tools der Organisation zur Auswahl.
+            'ltiTools' => $unit->kind === \App\Enums\Learning\LearningUnitKind::Lti
+                ? \App\Models\Learning\LearningLtiTool::query()->where('is_active', true)->orderBy('name')->get()
+                : collect(),
+            // Eigene Parameter als `name=wert`-Zeilen — im View ohne @php, das dort kollidiert.
+            'ltiCustom' => collect($unit->ltiLink->custom ?? [])
+                ->map(static fn (string $value, string $name): string => $name . '=' . $value)
+                ->implode("\n"),
         ]);
     }
 
@@ -824,11 +832,14 @@ class LearningCourseController extends Controller {
             'points' => ['nullable', 'integer', 'min:0', 'max:10000'],
             'certificate_enabled' => ['nullable', 'boolean'],
             'sequential' => ['nullable', 'boolean'],
+            // LTI 1.3 (Feature 149): über eine fremde Plattform startbar.
+            'lti_available' => ['nullable', 'boolean'],
             'access_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
         ]);
 
         $data['certificate_enabled'] = (bool) ($data['certificate_enabled'] ?? false);
         $data['sequential'] = (bool) ($data['sequential'] ?? false);
+        $data['lti_available'] = (bool) ($data['lti_available'] ?? false);
         $data['audiences'] = $data['audiences'] ?? [LearningAudience::Internal->value];
 
         // Der Code wird nur beim Anlegen vergeben — er ist der Anker des Kurses.

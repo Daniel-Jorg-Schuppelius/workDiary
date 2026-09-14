@@ -414,6 +414,8 @@ return [
     'LearningUnit' => 'Unité d’apprentissage',
     'LearningScormPackage' => 'Paquet SCORM',
     'LearningCmi5Package' => 'Cours cmi5',
+    'LearningLtiPlatform' => 'Plateforme LTI',
+    'LearningLtiTool' => 'Outil LTI',
     'TrainingCourseVersion' => 'Version de formation',
     'TrainingRequirement' => 'Obligation de formation',
     'TrainingAssignment' => 'Entrée du plan de formation',

@@ -85,5 +85,6 @@
         <x-input-field name="access_days" type="number" min="1" max="3650" :label="__('learning.field.access_days')" :value="old('access_days', $course?->access_days)" />
         <x-checkbox-field name="certificate_enabled" :label="__('learning.field.certificate')" :checked="(bool) old('certificate_enabled', $course?->certificate_enabled)" />
         <x-checkbox-field name="sequential" :label="__('learning.field.sequential')" :checked="(bool) old('sequential', $course?->sequential)" />
+        <x-checkbox-field name="lti_available" :label="__('learning.field.lti_available')" :checked="(bool) old('lti_available', $course?->lti_available)" />
     </x-form-group>
 </x-modal>
