@@ -821,7 +821,7 @@
             "dist": {
                 "type": "path",
                 "url": "../php-elearning-toolkit",
-                "reference": "956b2f3ee251b329f5cad8fb485d072ceb91ac2e"
+                "reference": "746ccf5edf9da6c9158d7819dbdd3520adda6e66"
             },
             "require": {
                 "dschuppelius/php-common-toolkit": "^1.34",
@@ -1748,7 +1748,7 @@
             "dist": {
                 "type": "path",
                 "url": "../php-common-toolkit",
-                "reference": "6cba5846ab67c9baf728e7e2874b46ff963955fc"
+                "reference": "7a60e89e5badd329b695937d01dbaf5ddae9c3e9"
             },
             "require": {
                 "dschuppelius/php-config-toolkit": "^0.5",
@@ -11809,16 +11809,16 @@
         },
         {
             "name": "tecnickcom/tc-lib-pdf",
-            "version": "8.74.0",
+            "version": "8.74.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/tecnickcom/tc-lib-pdf.git",
-                "reference": "0fd482028e4a79d31a1f3f454fbccdc5b09aa1c2"
+                "reference": "dc9346a45eafe283a667cddbcb873cb486abe728"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf/zipball/0fd482028e4a79d31a1f3f454fbccdc5b09aa1c2",
-                "reference": "0fd482028e4a79d31a1f3f454fbccdc5b09aa1c2",
+                "url": "https://api.github.com/repos/tecnickcom/tc-lib-pdf/zipball/dc9346a45eafe283a667cddbcb873cb486abe728",
+                "reference": "dc9346a45eafe283a667cddbcb873cb486abe728",
                 "shasum": ""
             },
             "require": {
@@ -11890,7 +11890,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-09-13T09:40:26+00:00"
+            "time": "2026-09-14T10:27:21+00:00"
         },
         {
             "name": "tecnickcom/tc-lib-pdf-encrypt",
