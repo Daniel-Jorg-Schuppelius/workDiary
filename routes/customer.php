@@ -195,6 +195,7 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::get('/schulungen', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'index'])->name('learning.index');
         Route::post('/schulungen/{course}/einschreiben', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'enroll'])->name('learning.enroll');
         Route::post('/schulungen/{course}/buchen', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'requestBooking'])->name('learning.book');
+        Route::get('/schulungen/{course}/vorschau', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'preview'])->name('learning.preview');
         Route::get('/schulungen/{enrollment}', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'show'])->name('learning.show');
         Route::post('/schulungen/{enrollment}/einheiten/{unit}/erledigt', [\App\Http\Controllers\CustomerPortal\PortalLearningController::class, 'completeUnit'])->name('learning.units.complete');
     });

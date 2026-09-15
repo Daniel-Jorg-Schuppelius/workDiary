@@ -29,7 +29,9 @@ final class CommunicationNoteSource extends AbstractSearchSource {
     public function build(Model $model, SearchContext $context): ?SearchDocumentData {
         /** @var CommunicationNote $model */
         $organizationId = self::organizationOf($model);
-        if ($organizationId === null || $model->trashed()) {
+        // Private Notizen (MVP-789) sind persönliche Merkzettel — sie stehen in
+        // „Meine Schulungen", nicht im Organisationsindex.
+        if ($organizationId === null || $model->trashed() || $model->isPrivate()) {
             return null;
         }
 

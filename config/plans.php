@@ -384,6 +384,7 @@ return [
         'access-media.*' => 'module.fuhrpark', // Zutrittsmedien (Feature 092) sind Dienstmittel wie Schlüssel
         'vehicles.*' => 'module.fuhrpark',
         'api.vehicles.*' => 'module.fuhrpark', // MVP-718
+        'api.learning.*' => 'module.lms', // MVP-791
         'api.legacy.vehicles.*' => 'module.fuhrpark',
         'driver-license-checks.*' => 'module.fuhrpark', // MVP-417 Führerscheinkontrolle
         'vehicle-reservations.*' => 'module.fuhrpark',

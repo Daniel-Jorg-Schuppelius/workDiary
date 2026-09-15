@@ -105,6 +105,8 @@
                                        :hint="__('learning.help.block_alt')" />
                         <x-input-field name="require_percent" type="number" min="1" max="100"
                                        :label="__('learning.field.block_require_percent')" :value="old('require_percent')" />
+                        <x-checkbox-field name="autoplay" :label="__('learning.field.block_autoplay')" :hint="__('learning.help.block_autoplay')" :checked="(bool) old('autoplay')" />
+                        <x-checkbox-field name="remember_position" :label="__('learning.field.block_remember_position')" :hint="__('learning.help.block_remember_position')" :checked="(bool) old('remember_position')" />
                         <div class="sm:col-span-2">
                             {{-- Bild, Datei und Video tragen ihre Quelle als Anhang
                                  der Lerneinheit — ohne Upload bleibt der Block leer. --}}
@@ -136,7 +138,14 @@
                                        :label="__('learning.field.release_after_days')"
                                        :hint="__('learning.help.release_after_days')"
                                        :value="old('release_after_days', $unit->release_rule['after_days'] ?? null)" />
+                        <x-input-field name="release_at" type="date" :label="__('learning.field.release_at')"
+                                       :hint="__('learning.help.release_at')"
+                                       :value="old('release_at', $unit->release_rule['at'] ?? null)" />
+                        <x-input-field name="min_seconds" type="number" min="0" max="86400" :label="__('learning.field.min_seconds')"
+                                       :hint="__('learning.help.min_seconds')"
+                                       :value="old('min_seconds', $unit->minSeconds() ?: null)" />
                         <x-checkbox-field name="is_mandatory" :label="__('learning.field.is_mandatory')" :checked="(bool) old('is_mandatory', $unit->is_mandatory)" />
+                        <x-checkbox-field name="is_preview" :label="__('learning.field.is_preview')" :hint="__('learning.help.is_preview')" :checked="(bool) old('is_preview', $unit->is_preview)" />
                     </x-form-group>
                     <div class="mt-3 flex justify-end">
                         <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.save') }}</x-icon-btn>

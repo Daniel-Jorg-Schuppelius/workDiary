@@ -18,6 +18,7 @@ use App\Support\Sqid;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\{Auth, Gate};
 
 /**
  * Deep-Links der Treffer auf die Originale. Zeiten und Stundenzettel haben
@@ -35,6 +36,12 @@ final class SearchResultLinker {
     public function urls(Collection $documents): array {
         $notes = $this->load($documents, SearchSourceType::CommunicationNote, CommunicationNote::class, ['id', 'notable_type', 'notable_id']);
         $issues = $this->load($documents, SearchSourceType::OpenIssue, OpenIssue::class, ['id', 'subject_type', 'subject_id']);
+        // Lernkurse (MVP-789): die eigene Einschreibung führt in den Player,
+        // sonst in die Kursakte (nur mit learning.viewAny).
+        $courseIds = $documents->filter(static fn(SearchDocument $d): bool => $d->source_type === SearchSourceType::LearningCourse)->pluck('source_id')->all();
+        $enrollments = $courseIds !== [] && Auth::id() !== null
+            ? \App\Models\Learning\LearningEnrollment::query()->where('user_id', Auth::id())->whereIn('learning_course_id', $courseIds)->pluck('id', 'learning_course_id')
+            : collect();
 
         $urls = [];
         foreach ($documents as $document) {
@@ -51,10 +58,22 @@ final class SearchResultLinker {
                     ? self::withAnchor($this->subjectUrl($issues[$id]->subject_type, (int) $issues[$id]->subject_id), '#open-issues')
                     : null,
                 SearchSourceType::CommunicationNote => isset($notes[$id]) ? $this->noteUrl($notes[$id]) : null,
+                SearchSourceType::LearningCourse => $this->learningCourseUrl($id, $enrollments),
             };
         }
 
         return $urls;
+    }
+
+    /** @param  \Illuminate\Support\Collection<int, int>  $enrollments  Einschreibungs-ID je Kurs-ID */
+    private function learningCourseUrl(int $courseId, \Illuminate\Support\Collection $enrollments): ?string {
+        if (isset($enrollments[$courseId])) {
+            return route('learning.my.show', Sqid::encode(\App\Models\Learning\LearningEnrollment::class, (int) $enrollments[$courseId]));
+        }
+
+        return Gate::allows('viewAny', \App\Models\Learning\LearningCourse::class)
+            ? route('learning.courses.show', Sqid::encode(\App\Models\Learning\LearningCourse::class, $courseId))
+            : null;
     }
 
     public function subjectUrl(?string $type, ?int $id): ?string {
@@ -73,6 +92,7 @@ final class SearchResultLinker {
             SafetyEvent::class => route('safety-events.show', Sqid::encode(SafetyEvent::class, $id)),
             Protocol::class => route('protocols.show', Sqid::encode(Protocol::class, $id)),
             Lead::class => route('leads.show', Sqid::encode(Lead::class, $id)),
+            \App\Models\Learning\LearningEnrollment::class => route('learning.my.show', Sqid::encode(\App\Models\Learning\LearningEnrollment::class, $id)),
             default => null,
         };
     }

@@ -22,6 +22,55 @@ use App\Support\Query\DateRange;
  */
 class RetentionRegistrations {
     public static function register(RetentionRegistry $registry): void {
+        // Lernplattform (Feature 149, MVP-787): abgeschlossene Einschreibungen
+        // ohne Zertifikat samt Versuchen, Fortschritt und Lernzeit (Kaskade).
+        // Der Unterweisungsnachweis (132) lebt in einer eigenen Tabelle und
+        // bleibt; eine Einschreibung MIT Zertifikat wartet auf die längere
+        // Frist der Nachweise (learning_certificates).
+        $registry->register(new RetentionPolicy(
+            area: 'learning_records',
+            modelClass: \App\Models\Learning\LearningEnrollment::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Learning\LearningEnrollment::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->whereIn('status', [
+                    \App\Enums\Learning\LearningEnrollmentStatus::Completed->value,
+                    \App\Enums\Learning\LearningEnrollmentStatus::Failed->value,
+                    \App\Enums\Learning\LearningEnrollmentStatus::Expired->value,
+                    \App\Enums\Learning\LearningEnrollmentStatus::Cancelled->value,
+                ])
+                ->where('updated_at', '<', $cutoff),
+            exempt: fn(\App\Models\Learning\LearningEnrollment $enrollment): ?string => \App\Models\Learning\LearningCertificate::query()
+                ->withoutGlobalScopes()->where('learning_enrollment_id', $enrollment->id)->exists()
+                    ? (string) __('Zertifikat vorhanden — Nachweisfrist gilt')
+                    : null,
+            purge: function (\App\Models\Learning\LearningEnrollment $subject): void {
+                $subject->delete();
+            },
+        ));
+
+        // Zertifikate: der Nachweis bleibt prüfbar (Nummer, Code, Gültigkeit),
+        // die Person wird auf Initialen gekürzt — die Prüfseite antwortet
+        // weiter „gültig/widerrufen“, ohne den Namen preiszugeben.
+        $registry->register(new RetentionPolicy(
+            area: 'learning_certificates',
+            modelClass: \App\Models\Learning\LearningCertificate::class,
+            overdueQuery: fn($organization, $cutoff) => \App\Models\Learning\LearningCertificate::query()
+                ->withoutGlobalScopes()
+                ->where('organization_id', $organization->id)
+                ->where('issued_on', '<', $cutoff)
+                ->where(fn($q) => $q->whereNull('valid_until')->orWhere('valid_until', '<', $cutoff))
+                ->where('holder_name', 'not like', '%.')
+                ->whereNotNull('holder_name'),
+            purge: function (\App\Models\Learning\LearningCertificate $subject): void {
+                $initials = implode(' ', array_map(
+                    static fn (string $part): string => mb_substr($part, 0, 1) . '.',
+                    array_filter(preg_split('/\s+/u', trim((string) $subject->holder_name)) ?: []),
+                ));
+                $subject->forceFill(['holder_name' => $initials !== '' ? $initials : '–'])->save();
+            },
+        ));
+
         // CTI-Anrufmetadaten (Vollaudit 2026-07, M18): Rufnummer aus
         // Referenz-Payload und Notiz-Betreff anonymisieren; Richtung/
         // Zeitpunkt/Dauer bleiben als Vorgangsnachweis.

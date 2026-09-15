@@ -45,6 +45,7 @@ class LearningAnswerGrader {
         }
 
         return match ($kind) {
+            LearningQuestionKind::Assessment => $this->gradeAssessment($question, $payload, $max),
             LearningQuestionKind::Single,
             LearningQuestionKind::TrueFalse => $this->gradeSingle($question, $payload, $max),
             LearningQuestionKind::Multiple => $this->gradeMultiple($question, $payload, $max),
@@ -68,7 +69,49 @@ class LearningAnswerGrader {
 
         $isCorrect = count($chosen) === 1 && count($correct) === 1 && $chosen[0] === $correct[0];
 
+        // Punkte je Option (MVP-793): trägt die gewählte Option eigene Punkte,
+        // zählen die — auch eine „halbrichtige" Antwort kann etwas wert sein.
+        $optionPoints = $this->optionPoints($question);
+        if (count($chosen) === 1 && array_key_exists($chosen[0], $optionPoints)) {
+            return ['correct' => $isCorrect, 'points' => max(0, min($max, $optionPoints[$chosen[0]]))];
+        }
+
         return ['correct' => $isCorrect, 'points' => $isCorrect ? $max : 0];
+    }
+
+    /**
+     * Selbsteinschätzung (MVP-793): keine richtige Antwort — die gewählte
+     * Stufe ist der Punktwert (gedeckelt durch die Fragepunkte).
+     *
+     * @param  array<string, mixed>  $question
+     * @param  array<string, mixed>  $payload
+     * @return array{correct: bool|null, points: int}
+     */
+    private function gradeAssessment(array $question, array $payload, int $max): array {
+        $scale = array_values((array) ($question['settings']['scale'] ?? []));
+        $level = (int) ($payload['level'] ?? 0);
+        if ($scale === [] || $level < 1 || $level > count($scale)) {
+            return ['correct' => false, 'points' => 0];
+        }
+
+        return ['correct' => true, 'points' => min($max, $level)];
+    }
+
+    /**
+     * Punkte je Option, sofern gepflegt (Option-ID ⇒ Punkte).
+     *
+     * @param  array<string, mixed>  $question
+     * @return array<int, int>
+     */
+    private function optionPoints(array $question): array {
+        $points = [];
+        foreach ($this->options($question) as $option) {
+            if (array_key_exists('points', $option) && $option['points'] !== null) {
+                $points[(int) ($option['id'] ?? 0)] = (int) $option['points'];
+            }
+        }
+
+        return $points;
     }
 
     /**
@@ -88,6 +131,18 @@ class LearningAnswerGrader {
 
         $exact = $this->sameSet($chosen, $correct);
         $partial = (bool) ($question['settings']['partial_credit'] ?? false);
+
+        // Punkte je Option (MVP-793): Summe der gewählten Optionen, nie unter
+        // null, nie über die Fragepunkte — falsche Optionen dürfen negativ sein.
+        $optionPoints = $this->optionPoints($question);
+        if ($optionPoints !== []) {
+            $sum = 0;
+            foreach ($chosen as $id) {
+                $sum += $optionPoints[$id] ?? 0;
+            }
+
+            return ['correct' => $exact, 'points' => max(0, min($max, $sum))];
+        }
 
         if (! $partial || $correct === []) {
             return ['correct' => $exact, 'points' => $exact ? $max : 0];

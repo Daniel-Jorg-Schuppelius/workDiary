@@ -57,7 +57,7 @@ class SurveyInvitation extends Model {
     protected $hidden = ['token_hash'];
 
     protected $fillable = [
-        'organization_id', 'survey_id', 'customer_id', 'email',
+        'organization_id', 'survey_id', 'customer_id', 'learning_course_id', 'email',
         'context_kind', 'token_hash', 'expires_at', 'sent_at', 'status',
         'responded_at',
     ];

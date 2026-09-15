@@ -14,7 +14,7 @@ use App\Enums\Learning\LearningQuestionKind;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
 
 /**
  * Prüfungsfrage (Feature 149, MVP-738). `settings` trägt das
@@ -22,7 +22,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  *
  * @property int $id
  * @property int $organization_id
- * @property int $learning_quiz_id
+ * @property int|null $learning_question_category_id
+ * @property string|null $title
  * @property LearningQuestionKind $kind
  * @property string $prompt
  * @property string|null $explanation
@@ -43,7 +44,8 @@ class LearningQuestion extends Model {
 
     protected $fillable = [
         'organization_id',
-        'learning_quiz_id',
+        'learning_question_category_id',
+        'title',
         'kind',
         'prompt',
         'explanation',
@@ -61,8 +63,21 @@ class LearningQuestion extends Model {
     ];
 
     /** @return BelongsTo<LearningQuiz, $this> */
-    public function quiz(): BelongsTo {
-        return $this->belongsTo(LearningQuiz::class, 'learning_quiz_id');
+    /**
+     * Prüfungen, in denen die Frage fest gesetzt ist (MVP-782). Die
+     * Zuordnung trägt die Position je Prüfung.
+     *
+     * @return BelongsToMany<LearningQuiz, $this>
+     */
+    public function quizzes(): BelongsToMany {
+        return $this->belongsToMany(LearningQuiz::class, 'learning_quiz_question')
+            ->withPivot(['position'])
+            ->withTimestamps();
+    }
+
+    /** @return BelongsTo<LearningQuestionCategory, $this> */
+    public function category(): BelongsTo {
+        return $this->belongsTo(LearningQuestionCategory::class, 'learning_question_category_id');
     }
 
     /** @return HasMany<LearningQuestionOption, $this> */

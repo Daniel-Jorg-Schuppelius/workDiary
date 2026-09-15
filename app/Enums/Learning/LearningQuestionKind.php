@@ -36,6 +36,8 @@ enum LearningQuestionKind: string implements HasLabel {
     // `Matching` darf eine Spalte mehrfach vorkommen.
     case Matrix = 'matrix';
     case Essay = 'essay';
+    // Selbsteinschätzung (MVP-793): Skala ohne richtige Antwort, Punkte = gewählte Stufe.
+    case Assessment = 'assessment';
 
     public function label(): string {
         return (string) __('enums.learning.question-kind.' . $this->value);
@@ -49,6 +51,7 @@ enum LearningQuestionKind: string implements HasLabel {
             self::Sort, self::Matching => 'neutral',
             self::Hotspot, self::Matrix => 'info',
             self::Essay => 'error',
+            self::Assessment => 'neutral',
         };
     }
 

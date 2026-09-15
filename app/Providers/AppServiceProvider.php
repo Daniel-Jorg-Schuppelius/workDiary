@@ -475,7 +475,7 @@ class AppServiceProvider extends ServiceProvider {
         Protocol::observe(ProtocolObserver::class);
         // Tätigkeitsrecherche (Feature 153): Quellen und Kind-Modelle indizieren
         // nach Commit; Stammdaten-Umbenennungen ziehen per Job nach.
-        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\KnowledgeArticle::class, \App\Models\RemotePendingSession::class, Comment::class] as $searchable) {
+        foreach ([TimeEntry::class, DiaryEntry::class, Timesheet::class, ServiceTicket::class, \App\Models\ServiceTicketMessage::class, Protocol::class, OpenIssue::class, CommunicationNote::class, \App\Models\KnowledgeArticle::class, \App\Models\RemotePendingSession::class, Comment::class, \App\Models\Learning\LearningCourse::class] as $searchable) {
             $searchable::observe(\App\Observers\SearchIndexObserver::class);
         }
         foreach ([Project::class, \App\Models\ForeignCustomer::class, Customer::class] as $searchContext) {
@@ -1064,6 +1064,9 @@ class AppServiceProvider extends ServiceProvider {
             \App\Dashboard\Widgets\LeasingDeadlinesWidget::class,
             \App\Dashboard\Widgets\SafetyDueWidget::class,
             \App\Dashboard\Widgets\TrainingDueWidget::class,
+            // Lernplattform (Feature 149, MVP-789): eigene Schulungen, Bewertungs-Rückstand.
+            \App\Dashboard\Widgets\LearningDueWidget::class,
+            \App\Dashboard\Widgets\LearningGradingQueueWidget::class,
             \App\Dashboard\Widgets\DataProtectionWidget::class,
             \App\Dashboard\Widgets\OperationsTasksWidget::class,
             \App\Dashboard\Widgets\IntegrationInboxWidget::class,

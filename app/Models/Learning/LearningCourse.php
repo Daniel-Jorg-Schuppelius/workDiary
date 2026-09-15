@@ -10,14 +10,15 @@
 
 namespace App\Models\Learning;
 
-use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningCourseStatus, LearningInstructionSuitability, LearningTimePolicy};
-use App\Models\{Article, Qualification, User};
+use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningCourseKind, LearningCourseStatus, LearningEnrollmentStatus, LearningInstructionSuitability, LearningTimePolicy};
+use App\Models\{Article, Organization, Qualification, User};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\Training\TrainingCourse;
 use Database\Factories\Learning\LearningCourseFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
+use Illuminate\Support\Carbon;
 
 /**
  * Lernkurs (Feature 149): die Durchführungsform einer Schulung. Das Soll
@@ -53,6 +54,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property bool $creates_instruction_proof
  * @property int|null $access_days
  * @property bool $sequential
+ * @property int|null $category_id
+ * @property Carbon|null $available_from
+ * @property Carbon|null $available_until
+ * @property int|null $max_enrollments
  */
 class LearningCourse extends Model {
     use Auditable;
@@ -72,6 +77,9 @@ class LearningCourse extends Model {
         'objectives',
         'language',
         'status',
+        'kind',
+        'exam_for_course_id',
+        'prerequisite_mode',
         'audiences',
         'access_kind',
         'training_course_id',
@@ -91,11 +99,16 @@ class LearningCourse extends Model {
         'access_days',
         'sequential',
         'lti_available',
+        'category_id',
+        'available_from',
+        'available_until',
+        'max_enrollments',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'status' => LearningCourseStatus::class,
+        'kind' => LearningCourseKind::class,
         'audiences' => 'array',
         'access_kind' => LearningAccessKind::class,
         'time_policy' => LearningTimePolicy::class,
@@ -109,7 +122,72 @@ class LearningCourse extends Model {
         'access_days' => 'integer',
         'sequential' => 'boolean',
         'lti_available' => 'boolean',
+        'available_from' => 'date:Y-m-d',
+        'available_until' => 'date:Y-m-d',
+        'max_enrollments' => 'integer',
     ];
+
+    /** Org-Schalter (MVP-786): Autoren/Bewertende sehen nur eigene Kurse. */
+    public static function scopingEnabled(?Organization $organization): bool {
+        return (bool) ($organization?->settings['learning']['scope_to_courses'] ?? false);
+    }
+
+    /**
+     * Trainer und Bewertende dieses Kurses (MVP-786).
+     *
+     * @return BelongsToMany<User, $this>
+     */
+    public function trainers(): BelongsToMany {
+        return $this->belongsToMany(User::class, 'learning_course_trainers')
+            ->withPivot(['role'])
+            ->withTimestamps();
+    }
+
+    /**
+     * Einzige Filterstelle für das Trainer-Scoping: ohne Schalter oder mit
+     * `learning.manage` alles, sonst nur Kurse, die der Person gehören oder
+     * an denen sie Trainer/Bewertende ist.
+     *
+     * @param  Builder<LearningCourse>  $query
+     * @return Builder<LearningCourse>
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder {
+        if (! self::scopingEnabled($user->organization) || $user->isAdmin() || $user->can(\App\Enums\User\Permission::LearningManage->value)) {
+            return $query;
+        }
+
+        return $query->where(function (Builder $q) use ($user): void {
+            $q->where('owner_user_id', $user->id)
+                ->orWhereHas('trainers', fn (Builder $t) => $t->where('users.id', $user->id));
+        });
+    }
+
+    public function isVisibleTo(User $user): bool {
+        return static::query()->whereKey($this->id)->visibleTo($user)->exists();
+    }
+
+    public function isExam(): bool {
+        return $this->kind === LearningCourseKind::Exam;
+    }
+
+    /**
+     * Kurs, den das Bestehen dieser Prüfung anrechnet (MVP-784).
+     *
+     * @return BelongsTo<LearningCourse, $this>
+     */
+    public function examTarget(): BelongsTo {
+        return $this->belongsTo(LearningCourse::class, 'exam_for_course_id');
+    }
+
+    /**
+     * Voraussetzungskurse (MVP-784): sperren den Start, nie die Zuweisung.
+     *
+     * @return BelongsToMany<LearningCourse, $this>
+     */
+    public function prerequisites(): BelongsToMany {
+        return $this->belongsToMany(LearningCourse::class, 'learning_course_prerequisites', 'learning_course_id', 'required_course_id')
+            ->withTimestamps();
+    }
 
     /** @return HasMany<LearningCourseVersion, $this> */
     public function versions(): HasMany {
@@ -161,6 +239,58 @@ class LearningCourse extends Model {
 
     public function currentVersion(): ?LearningCourseVersion {
         return $this->versions()->where('is_current', true)->first();
+    }
+
+    /** @return BelongsTo<LearningCourseCategory, $this> */
+    public function category(): BelongsTo {
+        return $this->belongsTo(LearningCourseCategory::class, 'category_id');
+    }
+
+    /**
+     * Verfügbarkeitsfenster (MVP-788): steuert Katalogsichtbarkeit und
+     * Selbsteinschreibung — eine Zuweisung durch die Verwaltung bleibt frei.
+     */
+    public function isAvailableOn(?Carbon $day = null): bool {
+        $day = ($day ?? Carbon::now())->toDateString();
+
+        if ($this->available_from !== null && $this->available_from->toDateString() > $day) {
+            return false;
+        }
+
+        return $this->available_until === null || $this->available_until->toDateString() >= $day;
+    }
+
+    /** @return HasMany<LearningEnrollment, $this> */
+    public function enrollments(): HasMany {
+        return $this->hasMany(LearningEnrollment::class, 'learning_course_id');
+    }
+
+    /** Aktive Einschreibungen — nur sie zählen gegen die Teilnehmergrenze. */
+    public function activeEnrollmentsCount(): int {
+        return (int) $this->enrollments()
+            ->whereNotIn('status', array_map(
+                static fn (LearningEnrollmentStatus $s): string => $s->value,
+                array_filter(LearningEnrollmentStatus::cases(), static fn (LearningEnrollmentStatus $s): bool => $s->isFinal()),
+            ))
+            ->count();
+    }
+
+    public function hasCapacity(): bool {
+        return $this->max_enrollments === null || $this->activeEnrollmentsCount() < $this->max_enrollments;
+    }
+
+    /**
+     * Nur Kurse, deren Fenster heute offen ist (NULL = ohne Grenze).
+     *
+     * @param  Builder<self>  $query
+     * @return Builder<self>
+     */
+    public function scopeAvailable(Builder $query, ?Carbon $day = null): Builder {
+        $day = ($day ?? Carbon::now())->toDateString();
+
+        return $query
+            ->where(fn (Builder $q) => $q->whereNull('available_from')->orWhere('available_from', '<=', $day))
+            ->where(fn (Builder $q) => $q->whereNull('available_until')->orWhere('available_until', '>=', $day));
     }
 
     /** Zielgruppen als Enum-Liste (unbekannte Werte werden verworfen). */

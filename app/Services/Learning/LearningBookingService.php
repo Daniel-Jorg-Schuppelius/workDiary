@@ -35,6 +35,8 @@ use Illuminate\Validation\ValidationException;
 class LearningBookingService {
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
+        private readonly LearningAccessService $access,
+        private readonly LearningNotifier $notifier,
     ) {}
 
     /**
@@ -113,7 +115,7 @@ class LearningBookingService {
             ]);
         }
 
-        return DB::transaction(function () use ($booking, $course, $actor, $note, $now): LearningBooking {
+        $confirmed = DB::transaction(function () use ($booking, $course, $actor, $note, $now): LearningBooking {
             $article = $course->article;
             // `default_sale_price` ist ein Money-ValueObject — Betrag und
             // Währung kommen daraus, nicht aus getrennten Spalten.
@@ -146,6 +148,17 @@ class LearningBookingService {
 
             return $booking->refresh();
         });
+
+        // Externe ohne Konto bekommen ihren Einstiegslink mit der Zusage —
+        // erst nach dem Commit, damit keine Mail für eine zurückgerollte
+        // Buchung hinausgeht (MVP-778).
+        $enrollment = $confirmed->enrollment;
+        if ($enrollment !== null && $enrollment->external_participant_id !== null) {
+            $this->access->deliver($enrollment, $actor, null, $now);
+        }
+        $this->notifier->bookingDecided($confirmed, true);
+
+        return $confirmed;
     }
 
     public function reject(LearningBooking $booking, string $reason, ?User $actor = null, ?Carbon $now = null): LearningBooking {
@@ -168,7 +181,9 @@ class LearningBookingService {
             'decision_note' => $reason,
         ]);
 
-        return $booking->refresh();
+        $this->notifier->bookingDecided($booking->refresh(), false);
+
+        return $booking;
     }
 
     /**

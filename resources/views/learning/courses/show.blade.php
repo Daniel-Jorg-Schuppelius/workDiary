@@ -20,6 +20,12 @@
                         :badge="$course->status->label()"
                         :badgeTone="$course->status->tone()">
             <x-slot:actions>
+                @if ($aiOutline ?? false)
+                    <x-icon-btn icon="auto_awesome" tone="outline" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('learning.courses.ai-outline.create', $course)"
+                                show-label>{{ __('learning.action.ai_outline') }}</x-icon-btn>
+                @endif
                 @if ($canEditContent)
                     <x-icon-btn icon="playlist_add" tone="primary" size="sm"
                                 data-entry-modal-trigger
@@ -36,6 +42,18 @@
                                 :href="route('learning.courses.edit', $course)"
                                 show-label>{{ __('learning.action.edit') }}</x-icon-btn>
                 @endif
+                @can('create', \App\Models\Learning\LearningCourse::class)
+                    <form method="POST" action="{{ route('learning.courses.duplicate', $course) }}"
+                          data-confirm-dialog data-confirm-message="{{ __('learning.confirm.duplicate') }}">
+                        @csrf
+                        <x-icon-btn icon="content_copy" tone="outline" size="sm" type="submit" show-label>{{ __('learning.action.duplicate') }}</x-icon-btn>
+                    </form>
+                @endcan
+                @can(\App\Enums\User\Permission::LearningGrade->value)
+                    <x-icon-btn icon="grading" tone="outline" size="sm"
+                                :href="route('learning.courses.gradebook.show', $course)"
+                                show-label>{{ __('learning.action.gradebook') }}</x-icon-btn>
+                @endcan
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
                             :href="route('learning.courses.index')"
                             show-label>{{ __('learning.action.back') }}</x-icon-btn>
@@ -69,6 +87,9 @@
                                 @unless ($unit->is_mandatory)
                                     <x-status-badge tone="ghost" size="sm">{{ __('learning.field.optional') }}</x-status-badge>
                                 @endunless
+                                @if ($unit->is_preview)
+                                    <x-status-badge tone="info" size="sm" outline>{{ __('learning.badge.preview') }}</x-status-badge>
+                                @endif
                             </td>
                             <td class="text-sm">
                                 <x-status-badge :tone="$unit->kind->tone()" size="sm" outline>{{ $unit->kind->label() }}</x-status-badge>
@@ -98,6 +119,16 @@
                                         <x-icon-btn icon="edit_note" tone="ghost" size="xs"
                                                     :href="route('learning.courses.units.edit', [$course, $unit])"
                                                     :label="__('learning.action.edit_unit')" />
+                                        <form method="POST" action="{{ route('learning.courses.units.move', [$course, $unit]) }}">
+                                            @csrf
+                                            <input type="hidden" name="direction" value="up">
+                                            <x-icon-btn icon="arrow_upward" tone="ghost" size="xs" type="submit" :label="__('learning.action.move_up')" :disabled="$loop->first" />
+                                        </form>
+                                        <form method="POST" action="{{ route('learning.courses.units.move', [$course, $unit]) }}">
+                                            @csrf
+                                            <input type="hidden" name="direction" value="down">
+                                            <x-icon-btn icon="arrow_downward" tone="ghost" size="xs" type="submit" :label="__('learning.action.move_down')" :disabled="$loop->last" />
+                                        </form>
                                     </div>
                                 @endif
                             </td>
@@ -107,6 +138,33 @@
                     @endforelse
                 </x-table>
             </x-card>
+
+            @if ($canEditContent && $course->sections->isNotEmpty())
+                <x-card>
+                    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="segment" class="text-muted" /> {{ __('learning.field.sections') }}
+                    </h3>
+                    <ul class="space-y-1">
+                        @foreach ($course->sections as $section)
+                            <li class="flex items-center justify-between gap-2 rounded-box border border-base-300 px-3 py-1.5 text-sm">
+                                <span class="font-medium">{{ $section->position }}. {{ $section->title }}</span>
+                                <div class="flex items-center gap-1">
+                                    <form method="POST" action="{{ route('learning.courses.sections.move', [$course, $section]) }}">
+                                        @csrf
+                                        <input type="hidden" name="direction" value="up">
+                                        <x-icon-btn icon="arrow_upward" tone="ghost" size="xs" type="submit" :label="__('learning.action.move_up')" :disabled="$loop->first" />
+                                    </form>
+                                    <form method="POST" action="{{ route('learning.courses.sections.move', [$course, $section]) }}">
+                                        @csrf
+                                        <input type="hidden" name="direction" value="down">
+                                        <x-icon-btn icon="arrow_downward" tone="ghost" size="xs" type="submit" :label="__('learning.action.move_down')" :disabled="$loop->last" />
+                                    </form>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-card>
+            @endif
 
             <x-card>
                 <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
@@ -154,6 +212,13 @@
                 <x-detail-grid>
                     <x-detail-grid.row :label="__('learning.field.code')" :value="$course->code" />
                     <x-detail-grid.row :label="__('learning.field.status')" :value="$course->status->label()" />
+                    <x-detail-grid.row :label="__('learning.field.kind')" :value="$course->kind->label()" />
+                    @if ($course->isExam())
+                        <x-detail-grid.row :label="__('learning.field.exam_target')" :value="$course->examTarget?->title ?? '–'" />
+                    @endif
+                    @if ($course->prerequisites->isNotEmpty())
+                        <x-detail-grid.row :label="__('learning.field.prerequisites')" :value="$course->prerequisites->pluck('title')->implode(', ') . ' (' . __('learning.field.prerequisite_mode_' . $course->prerequisite_mode) . ')'" />
+                    @endif
                     <x-detail-grid.row :label="__('learning.field.time_policy')" :value="$course->time_policy->label()" />
                     <x-detail-grid.row :label="__('learning.field.instruction_suitability')" :value="$course->instruction_suitability->label()" />
                     <x-detail-grid.row :label="__('learning.field.access_kind')" :value="$course->access_kind->label()" />
@@ -162,8 +227,74 @@
                     <x-detail-grid.row :label="__('learning.field.owner')" :value="$course->owner?->name ?? '–'" />
                     <x-detail-grid.row :label="__('learning.field.validity_months')" :value="$course->validity_months ?? '–'" />
                     <x-detail-grid.row :label="__('learning.field.duration_minutes')" :value="$course->duration_minutes ?? '–'" />
+                    <x-detail-grid.row :label="__('learning.field.category')" :value="$course->category?->name ?? '–'" />
+                    <x-detail-grid.row :label="__('learning.field.availability')"
+                                       :value="($course->available_from?->translatedFormat('d.m.Y') ?? '…') . ' – ' . ($course->available_until?->translatedFormat('d.m.Y') ?? '…') . ($course->max_enrollments !== null ? ' · ' . __('learning.field.max_enrollments') . ': ' . $course->activeEnrollmentsCount() . ' / ' . $course->max_enrollments : '')" />
                 </x-detail-grid>
             </x-card>
+
+            @if ($canManageParticipants)
+                {{-- Trainer (MVP-786): mit Org-Schalter sehen Autoren und
+                     Bewertende nur Kurse, an denen sie stehen. --}}
+                <x-card>
+                    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="badge" class="text-muted" /> {{ __('learning.field.trainers') }}
+                    </h3>
+                    @if ($scopingEnabled)
+                        <p class="mb-2 text-xs text-muted">{{ __('learning.help.scoping_active') }}</p>
+                    @endif
+                    <ul class="mb-3 space-y-1 text-sm">
+                        @forelse ($trainers as $trainer)
+                            <li class="flex items-center justify-between gap-2">
+                                <span>{{ $trainer->name }} <span class="text-xs text-muted">· {{ __('learning.field.trainer_role_' . $trainer->pivot->role) }}</span></span>
+                                <form method="POST" action="{{ route('learning.courses.trainers.destroy', [$course, $trainer]) }}">
+                                    @csrf
+                                    @method('DELETE')
+                                    <x-icon-btn icon="person_remove" tone="ghost" size="xs" type="submit" :label="__('learning.action.remove_trainer')" />
+                                </form>
+                            </li>
+                        @empty
+                            <li class="text-muted">{{ __('learning.empty.trainers') }}</li>
+                        @endforelse
+                    </ul>
+                    <form method="POST" action="{{ route('learning.courses.trainers.store', $course) }}" class="flex flex-wrap items-end gap-2">
+                        @csrf
+                        <x-select-field name="user_id" :label="__('learning.field.trainer')" required class="w-48">
+                            @foreach ($trainerOptions as $option)
+                                <option value="{{ $option->sqid }}">{{ $option->name }}</option>
+                            @endforeach
+                        </x-select-field>
+                        <x-select-field name="role" :label="__('learning.field.trainer_role')" required class="w-36">
+                            <option value="trainer">{{ __('learning.field.trainer_role_trainer') }}</option>
+                            <option value="grader">{{ __('learning.field.trainer_role_grader') }}</option>
+                        </x-select-field>
+                        <x-icon-btn icon="person_add" tone="outline" size="sm" type="submit" :label="__('learning.action.add_trainer')" />
+                    </form>
+                </x-card>
+
+                <x-card>
+                    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="group" class="text-muted" /> {{ __('learning.field.participants') }}
+                    </h3>
+                    @php
+                        $participantsTotal = (int) $enrollmentCounts->sum();
+                    @endphp
+                    @if ($participantsTotal === 0)
+                        <p class="mb-3 text-sm text-base-content/70">{{ __('learning.empty.participants') }}</p>
+                    @else
+                        <div class="mb-3 flex flex-wrap gap-1">
+                            @foreach (\App\Enums\Learning\LearningEnrollmentStatus::cases() as $case)
+                                @if (($enrollmentCounts[$case->value] ?? 0) > 0)
+                                    <x-status-badge :tone="$case->tone()" size="sm">{{ $case->label() }}: {{ $enrollmentCounts[$case->value] }}</x-status-badge>
+                                @endif
+                            @endforeach
+                        </div>
+                    @endif
+                    <x-icon-btn icon="group" tone="outline" size="sm"
+                                :href="route('learning.courses.enrollments.index', $course)"
+                                show-label>{{ __('learning.action.participants') }}</x-icon-btn>
+                </x-card>
+            @endif
 
             <x-card>
                 <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">

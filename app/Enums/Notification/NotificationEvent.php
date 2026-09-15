@@ -95,6 +95,26 @@ enum NotificationEvent: string implements HasLabel {
     case SafetyCheckupDue = 'safety.checkupDue';
     /** Scanner: Pflichtschulung fällig/überfällig — Soll-Eintrag im Vorlauf des Kurses (Feature 145) */
     case TrainingDue = 'training.due';
+    /** Synchron: LearningEnrollmentService::enroll() — Zuweisung an eine Person mit Konto (Feature 149, MVP-780) */
+    case LearningEnrolled = 'learning.enrolled';
+    /** Scanner: Einschreibung mit due_at innerhalb des Vorlaufs */
+    case LearningDueSoon = 'learning.dueSoon';
+    /** Scanner: Einschreibung mit überschrittener due_at */
+    case LearningOverdue = 'learning.overdue';
+    /** Synchron: LearningAssignmentService::submit() — Abgabe wartet auf Bewertung */
+    case LearningSubmissionReceived = 'learning.submissionReceived';
+    /** Synchron: LearningAssignmentService::grade()/returnForRevision() — Rückmeldung an die lernende Person */
+    case LearningGraded = 'learning.graded';
+    /** Synchron: LearningCompletionService::issueCertificate() */
+    case LearningCertificateIssued = 'learning.certificateIssued';
+    /** Synchron: LearningEventService::promoteFromWaitlist() */
+    case LearningWaitlistPromoted = 'learning.waitlistPromoted';
+    /** Synchron: LearningBookingService::confirm()/reject() */
+    case LearningBookingDecided = 'learning.bookingDecided';
+    /** Synchron: LearningTimeService::stop() — Lernzeit außerhalb der Arbeitszeit wartet auf Freigabe */
+    case LearningTimeApprovalRequested = 'learning.timeApprovalRequested';
+    /** Synchron: LearningQuestionService::ask() — Frage einer lernenden Person an Verantwortliche/Trainer (MVP-789) */
+    case LearningQuestionAsked = 'learning.questionAsked';
     /** Scanner: Mitarbeiter-Qualifikation/Unterweisung läuft innerhalb des Vorlaufs (30 Tage) ab (Feature 013) */
     case QualificationExpiring = 'qualification.expiring';
     /** Synchron: Schichttausch beantragt (Feature 007) — an Ziel-Kollegen bzw. Teamleitung */
@@ -371,6 +391,11 @@ enum NotificationEvent: string implements HasLabel {
             self::SafetyCheckupDue,
             // Feature 145: Eskalation der Schulungspflicht an die Teamleitung.
             self::TrainingDue => [UserRole::Teamleitung->value],
+            // Lernplattform (Feature 149, MVP-780): überfällig und Lernzeit-
+            // Freigabe an die Teamleitung, Abgaben an die bewertende Rolle.
+            self::LearningOverdue,
+            self::LearningTimeApprovalRequested => [UserRole::Teamleitung->value],
+            self::LearningSubmissionReceived => [UserRole::Personalverwaltung->value],
             // Ablaufende Qualifikation/Unterweisung: primär die betroffene
             // Person (notify_affected), Default-Fallback die Teamleitung.
             self::QualificationExpiring => [UserRole::Teamleitung->value],
@@ -454,6 +479,16 @@ enum NotificationEvent: string implements HasLabel {
     /** Material-Symbols-Icon für In-App-/Push-Darstellung. */
     public function icon(): string {
         return match ($this) {
+            self::LearningEnrolled,
+            self::LearningDueSoon,
+            self::LearningOverdue,
+            self::LearningSubmissionReceived,
+            self::LearningGraded,
+            self::LearningCertificateIssued,
+            self::LearningWaitlistPromoted,
+            self::LearningBookingDecided,
+            self::LearningTimeApprovalRequested,
+            self::LearningQuestionAsked => 'school',
             self::OpenIssueAssigned,
             self::OpenIssueDueSoon,
             self::OpenIssueOverdue => 'assignment_late',
@@ -617,6 +652,8 @@ enum NotificationEvent: string implements HasLabel {
             self::AssetInspectionDue,
             // Backup-Alarm eskaliert 26 h→72 h (Feature 017, MVP-056).
             self::OperationsBackupOverdue,
+            // Überfällige Einschreibung (Feature 149, MVP-780).
+            self::LearningOverdue,
         ], true);
     }
 }

@@ -14,8 +14,8 @@ namespace App\Http\Controllers\Learning;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\{Attachment, User};
-use App\Models\Learning\{LearningAnswer, LearningSubmission, LearningTimeSession};
+use App\Models\{Attachment, AuditLog, User};
+use App\Models\Learning\{LearningAnswer, LearningQuizAttempt, LearningSubmission, LearningTimeSession};
 use App\Services\Learning\{LearningAssignmentService, LearningQuizService, LearningTimeService};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -39,13 +39,19 @@ class LearningGradingController extends Controller {
     public function index(): View {
         Gate::authorize(Permission::LearningGrade->value);
 
+        // Trainer-Scoping (MVP-786): nur Abgaben und Aufsätze eigener Kurse.
+        $visibleCourses = $this->visibleCourseIds();
+
         return view('learning.grading.index', [
-            'submissions' => $this->assignments->pendingQuery()->paginate(25),
+            'submissions' => $this->assignments->pendingQuery()
+                ->when($visibleCourses !== null, fn ($q) => $q->whereHas('enrollment', fn ($e) => $e->whereIn('learning_course_id', $visibleCourses)))
+                ->paginate(25),
             'essays' => LearningAnswer::query()
-                ->with(['attempt.enrollment.user', 'attempt.quiz', 'question'])
+                ->with(['attempt.enrollment.user', 'attempt.quiz', 'question', 'attachments'])
                 ->whereNull('is_correct')
                 ->whereNull('corrected_points')
-                ->whereHas('attempt', fn ($q) => $q->whereNotNull('submitted_at'))
+                ->whereHas('attempt', fn ($q) => $q->whereNotNull('submitted_at')
+                    ->when($visibleCourses !== null, fn ($a) => $a->whereHas('enrollment', fn ($e) => $e->whereIn('learning_course_id', $visibleCourses))))
                 ->orderBy('created_at')
                 ->limit(50)
                 ->get(),
@@ -54,6 +60,7 @@ class LearningGradingController extends Controller {
 
     public function showSubmission(LearningSubmission $submission): View {
         Gate::authorize(Permission::LearningGrade->value);
+        $this->guardCourseVisible($submission->enrollment?->course);
 
         $submission->load(['assignment.unit.course', 'enrollment.user', 'attachments']);
 
@@ -71,6 +78,41 @@ class LearningGradingController extends Controller {
      * wäre ein Eingriff in die Zeitkonten für etwas, das noch niemand
      * entschieden hat.
      */
+    /**
+     * Prüfungsakte einsehen (MVP-785): Snapshot, Antworten, Punkte, Korrekturen.
+     * Jeder Aufruf wird protokolliert — eine Einsicht in Einzelergebnisse ist
+     * selbst ein Vorgang, den ein Widerspruch später erklären können muss.
+     */
+    public function showAttempt(Request $request, LearningQuizAttempt $attempt): View {
+        Gate::authorize(Permission::LearningGrade->value);
+
+        $attempt->load(['quiz.unit.course', 'enrollment.user', 'enrollment.externalParticipant', 'answers']);
+        $enrollment = $attempt->enrollment;
+        abort_if($enrollment === null, 404);
+        $this->guardCourseVisible($enrollment->course);
+
+        AuditLog::query()->create([
+            'organization_id' => $attempt->organization_id,
+            'user_id' => Auth::id(),
+            'event' => 'learning.attemptViewed',
+            'auditable_type' => LearningQuizAttempt::class,
+            'auditable_id' => $attempt->id,
+            'changes' => [
+                'reason' => trim((string) $request->string('reason')),
+                'learner' => $enrollment->learnerName(),
+                'quiz' => (string) ($attempt->quiz->title ?? ''),
+                'attempt_no' => $attempt->attempt_no,
+            ],
+        ]);
+
+        return view('learning.grading.attempt', [
+            'attempt' => $attempt,
+            'enrollment' => $enrollment,
+            'quiz' => $attempt->quiz,
+            'answers' => $attempt->answers->keyBy('learning_question_id'),
+        ]);
+    }
+
     public function timeApprovals(): View {
         Gate::authorize(Permission::LearningManage->value);
 
@@ -113,6 +155,7 @@ class LearningGradingController extends Controller {
      */
     public function submissionFile(LearningSubmission $submission, Attachment $attachment): StreamedResponse {
         Gate::authorize(Permission::LearningGrade->value);
+        $this->guardCourseVisible($submission->enrollment?->course);
 
         // Der Anhang muss zu DIESER Abgabe gehören, sonst wäre die Route ein
         // Leseschlüssel auf jede Datei der Anwendung.
@@ -127,6 +170,7 @@ class LearningGradingController extends Controller {
 
     public function gradeSubmission(Request $request, LearningSubmission $submission): RedirectResponse {
         Gate::authorize(Permission::LearningGrade->value);
+        $this->guardCourseVisible($submission->enrollment?->course);
 
         $data = $request->validate([
             'rubric_scores' => ['nullable', 'array'],
@@ -153,6 +197,7 @@ class LearningGradingController extends Controller {
 
     public function returnSubmission(Request $request, LearningSubmission $submission): RedirectResponse {
         Gate::authorize(Permission::LearningGrade->value);
+        $this->guardCourseVisible($submission->enrollment?->course);
 
         $data = $request->validate([
             'feedback' => ['required', 'string', 'min:2', 'max:5000'],
@@ -168,6 +213,7 @@ class LearningGradingController extends Controller {
     /** Vier-Augen-Bestätigung einer Bewertung. */
     public function confirmSubmission(LearningSubmission $submission): RedirectResponse {
         Gate::authorize(Permission::LearningGrade->value);
+        $this->guardCourseVisible($submission->enrollment?->course);
 
         $this->assignments->secondOpinion($submission, $this->actor());
 
@@ -177,8 +223,21 @@ class LearningGradingController extends Controller {
     }
 
     /** Aufsatz aus einer Prüfung bewerten (der offene Rest aus MVP-738). */
+    /** Datei eines Aufsatzes (MVP-793) — nur aus der eigenen Sicht auf den Kurs. */
+    public function answerFile(LearningAnswer $answer, Attachment $attachment): \Symfony\Component\HttpFoundation\Response {
+        Gate::authorize(Permission::LearningGrade->value);
+        $this->guardCourseVisible($answer->attempt?->enrollment?->course);
+        abort_unless(
+            $attachment->attachable_type === $answer->getMorphClass() && (int) $attachment->attachable_id === (int) $answer->id,
+            404
+        );
+
+        return app(\App\Services\Media\MediaResponder::class)->attachment($attachment);
+    }
+
     public function gradeEssay(Request $request, LearningAnswer $answer): RedirectResponse {
         Gate::authorize(Permission::LearningGrade->value);
+        $this->guardCourseVisible($answer->attempt?->enrollment?->course);
 
         $data = $request->validate([
             'points' => ['required', 'integer', 'min:0', 'max:1000'],
@@ -197,5 +256,31 @@ class LearningGradingController extends Controller {
         $user = Auth::user();
 
         return $user;
+    }
+
+    /**
+     * Trainer-Scoping (MVP-786): Kurs-IDs, die die bewertende Person sehen
+     * darf — null ohne Org-Schalter oder mit `learning.manage`.
+     *
+     * @return list<int>|null
+     */
+    private function visibleCourseIds(): ?array {
+        /** @var User $user */
+        $user = Auth::user();
+        if (! \App\Models\Learning\LearningCourse::scopingEnabled($user->organization) || $user->isAdmin() || $user->can(Permission::LearningManage->value)) {
+            return null;
+        }
+
+        return array_values(array_map('intval', \App\Models\Learning\LearningCourse::query()
+            ->where('organization_id', (int) $user->organization_id)
+            ->visibleTo($user)
+            ->pluck('id')
+            ->all()));
+    }
+
+    private function guardCourseVisible(?\App\Models\Learning\LearningCourse $course): void {
+        /** @var User $user */
+        $user = Auth::user();
+        abort_unless($course !== null && $course->isVisibleTo($user), 404);
     }
 }

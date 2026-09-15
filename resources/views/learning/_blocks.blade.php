@@ -103,7 +103,11 @@
                         <span>{{ $media['failed'] ? ($media['error'] ?: __('media.errors.no_rendition')) : __('media.help.processing') }}</span>
                     </div>
                 @elseif ($media['video'] ?? $url)
+                    {{-- Autoplay nur stumm (Browser-Regel und Rücksicht); die
+                         Position merkt sich der Browser je Block lokal (MVP-788). --}}
                     <video class="w-full rounded-box border border-base-300" controls preload="metadata"
+                           @if (! empty($block['autoplay'])) autoplay muted playsinline @endif
+                           @if (! empty($block['remember_position'])) data-remember-position="{{ 'lrn-video-' . md5((string) ($media['video'] ?? $url)) }}" @endif
                            @if ($media && $media['poster']) poster="{{ $media['poster'] }}" @endif
                            src="{{ $media['video'] ?? $url }}">
                         @foreach (($media['subtitles'] ?? []) as $track)

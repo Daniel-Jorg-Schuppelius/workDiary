@@ -1016,6 +1016,7 @@ return [
     ],
     'learning' => [
         'dossierDisclosed' => 'Expediente de cualificaciones entregado con nombres',
+        'attemptViewed' => 'Expediente del intento consultado',
     ],
     // Registro de reventa (función 152, revisión 2026-09-10 A2): decisiones del usuario.
     'resale_period' => [

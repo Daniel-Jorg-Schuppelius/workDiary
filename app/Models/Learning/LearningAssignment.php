@@ -31,6 +31,10 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $pass_percent
  * @property list<array{key: string, label: string, weight: int, max_points: int}>|null $rubric
  * @property bool $requires_second_opinion
+ * @property list<string>|null $allowed_extensions
+ * @property int|null $max_files
+ * @property int|null $max_file_mb
+ * @property bool $auto_approve
  * @property-read LearningUnit|null $unit
  */
 class LearningAssignment extends Model {
@@ -53,6 +57,10 @@ class LearningAssignment extends Model {
         'pass_percent',
         'rubric',
         'requires_second_opinion',
+        'allowed_extensions',
+        'max_files',
+        'max_file_mb',
+        'auto_approve',
     ];
 
     /** @var array<string, string> */
@@ -62,6 +70,10 @@ class LearningAssignment extends Model {
         'pass_percent' => 'integer',
         'rubric' => 'array',
         'requires_second_opinion' => 'boolean',
+        'allowed_extensions' => 'array',
+        'max_files' => 'integer',
+        'max_file_mb' => 'integer',
+        'auto_approve' => 'boolean',
     ];
 
     /** @return BelongsTo<LearningUnit, $this> */
@@ -81,6 +93,30 @@ class LearningAssignment extends Model {
      */
     public function criteria(): array {
         return is_array($this->rubric) ? $this->rubric : [];
+    }
+
+    /**
+     * Dateiregeln (MVP-788) — immer ZUSÄTZLICH zu `FileAttacher::rule()`,
+     * nie lockerer: erlaubte Endungen (leer = alle des Anhangsystems),
+     * Anzahl (Standard 5) und Größe je Datei in KB (Standard = Systemgrenze).
+     *
+     * @return list<string>
+     */
+    public function allowedExtensions(): array {
+        return array_values(array_filter(array_map(
+            static fn (mixed $e): string => strtolower(ltrim(trim((string) $e), '.')),
+            $this->allowed_extensions ?? [],
+        ), static fn (string $e): bool => $e !== ''));
+    }
+
+    public function maxFiles(): int {
+        return max(1, min(5, (int) ($this->max_files ?? 5)));
+    }
+
+    public function maxFileKb(int $systemKb): int {
+        return $this->max_file_mb !== null && $this->max_file_mb > 0
+            ? min($systemKb, $this->max_file_mb * 1024)
+            : $systemKb;
     }
 
     public function requiresFile(): bool {

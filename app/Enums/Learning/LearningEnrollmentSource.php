@@ -28,6 +28,10 @@ enum LearningEnrollmentSource: string implements HasLabel {
     case Rule = 'rule';
     // Aus einem Lernpfad (MVP-745): Reihenfolge mit Fristen, kein zweites Soll.
     case Path = 'path';
+    // Anrechnung durch eine bestandene Prüfung ohne Kurs (MVP-784).
+    case Exam = 'exam';
+    // Aus einem LearnDash-Export übernommen (MVP-792): dokumentiert, nicht nachgewiesen.
+    case Import = 'import';
 
     public function label(): string {
         return (string) __('enums.learning.enrollment-source.' . $this->value);
@@ -41,6 +45,8 @@ enum LearningEnrollmentSource: string implements HasLabel {
             self::Booking => 'warning',
             self::Rule => 'ghost',
             self::Path => 'neutral',
+            self::Exam => 'accent',
+            self::Import => 'ghost',
         };
     }
 }

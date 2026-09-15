@@ -32,6 +32,8 @@ enum SearchSourceType: string implements HasLabel {
     case CommunicationNote = 'communication_note';
     case KnowledgeArticle = 'knowledge_article';
     case RemoteSession = 'remote_session';
+    /** Freigegebene Lernkurse (Feature 149, MVP-789). */
+    case LearningCourse = 'learning_course';
 
     public function label(): string {
         return (string) __('search.source.' . $this->value);
@@ -48,6 +50,7 @@ enum SearchSourceType: string implements HasLabel {
             self::CommunicationNote => 'forum',
             self::KnowledgeArticle => 'school',
             self::RemoteSession => 'screen_share',
+            self::LearningCourse => 'menu_book',
         };
     }
 
@@ -63,6 +66,7 @@ enum SearchSourceType: string implements HasLabel {
             self::CommunicationNote => CommunicationNote::class,
             self::KnowledgeArticle => KnowledgeArticle::class,
             self::RemoteSession => RemotePendingSession::class,
+            self::LearningCourse => \App\Models\Learning\LearningCourse::class,
         };
     }
 

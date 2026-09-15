@@ -141,6 +141,12 @@ class CommunicationNoteService {
                 'visibility' => (string) __('communication.error.confidential_not_publishable'),
             ]);
         }
+        // Eine private Notiz gehört ihrer Verfasserin — sie wird nie geteilt.
+        if ($note->visibility === CommunicationVisibility::Private) {
+            throw ValidationException::withMessages([
+                'visibility' => (string) __('communication.error.private_not_publishable'),
+            ]);
+        }
         if ($note->visibility === CommunicationVisibility::Customer) {
             return $note;
         }
@@ -322,20 +328,20 @@ class CommunicationNoteService {
             ]);
         }
 
-        if ($direction === CommunicationDirection::Internal && $visibility !== CommunicationVisibility::Internal) {
+        if ($direction === CommunicationDirection::Internal && ! $visibility->isInternal()) {
             throw ValidationException::withMessages([
                 'visibility' => (string) __('communication.error.internal_direction_requires_internal_visibility'),
             ]);
         }
 
-        if ($confidential && $visibility !== CommunicationVisibility::Internal) {
+        if ($confidential && ! $visibility->isInternal()) {
             throw ValidationException::withMessages([
                 'visibility' => (string) __('communication.error.confidential_requires_internal_visibility'),
             ]);
         }
 
         // Interne Organisationsnotizen (Feature 154) haben keinen Kunden, dem sie gezeigt werden könnten.
-        if ($organizationNote && $visibility !== CommunicationVisibility::Internal) {
+        if ($organizationNote && ! $visibility->isInternal()) {
             throw ValidationException::withMessages([
                 'visibility' => (string) __('communication.error.organization_note_not_publishable'),
             ]);

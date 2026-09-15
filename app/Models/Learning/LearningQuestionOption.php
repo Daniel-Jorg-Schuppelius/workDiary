@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  * @property bool $is_correct
  * @property int $position
  * @property string|null $match_key
+ * @property int|null $points
  */
 class LearningQuestionOption extends Model {
     use BelongsToOrganization;
@@ -41,12 +42,14 @@ class LearningQuestionOption extends Model {
         'is_correct',
         'position',
         'match_key',
+        'points',
     ];
 
     /** @var array<string, string> */
     protected $casts = [
         'is_correct' => 'boolean',
         'position' => 'integer',
+        'points' => 'integer',
     ];
 
     /** @return BelongsTo<LearningQuestion, $this> */

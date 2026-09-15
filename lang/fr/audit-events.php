@@ -1016,6 +1016,7 @@ return [
     ],
     'learning' => [
         'dossierDisclosed' => 'Dossier de qualification communiqué nominativement',
+        'attemptViewed' => 'Dossier de tentative consulté',
     ],
     // Registre de revente (fonctionnalité 152, revue 2026-09-10 A2) : décisions utilisateur.
     'resale_period' => [

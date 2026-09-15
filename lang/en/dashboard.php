@@ -124,6 +124,12 @@ return [
         'training_due' => [
             'description' => 'Your open training and instruction obligations.',
         ],
+        'learning_due' => [
+            'description' => 'Your open courses on the learning platform — overdue first.',
+        ],
+        'learning_grading_queue' => [
+            'description' => 'Submissions, essays and learning-time approvals waiting for grading.',
+        ],
         'open_times' => [
             'description' => 'Billable time not yet on any invoice.',
         ],

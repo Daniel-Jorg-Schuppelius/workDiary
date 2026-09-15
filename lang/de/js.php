@@ -66,4 +66,7 @@ return [
         'new_entry' => 'Neuer Eintrag',
         'then' => 'dann',
     ],
+    'quiz' => [
+        'progress' => ':answered von :total beantwortet',
+    ],
 ];

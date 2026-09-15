@@ -14,7 +14,7 @@ namespace App\Services\Search\Indexing;
 
 use App\Enums\Search\SearchSourceType;
 use App\Models\{Comment, DiaryEntry, ServiceTicketMessage};
-use App\Services\Search\Indexing\Sources\{CommunicationNoteSource, DiaryEntrySource, KnowledgeArticleSource, OpenIssueSource, ProtocolSource, RemoteSessionSource, SearchSource, ServiceTicketSource, TimeEntrySource, TimesheetSource};
+use App\Services\Search\Indexing\Sources\{CommunicationNoteSource, DiaryEntrySource, KnowledgeArticleSource, LearningCourseSource, OpenIssueSource, ProtocolSource, RemoteSessionSource, SearchSource, ServiceTicketSource, TimeEntrySource, TimesheetSource};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
 
@@ -38,6 +38,7 @@ final class SearchSourceRegistry {
             new CommunicationNoteSource,
             new KnowledgeArticleSource,
             new RemoteSessionSource,
+            new LearningCourseSource,
         ] as $source) {
             $this->sources[$source->type()->value] = $source;
         }

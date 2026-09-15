@@ -27,6 +27,7 @@ return [
         'communication_note' => 'Nota di comunicazione',
         'knowledge_article' => 'Articolo della knowledge base',
         'remote_session' => 'Teleassistenza (non assegnata)',
+        'learning_course' => 'Corso di apprendimento',
     ],
 
     'field' => [

@@ -73,6 +73,9 @@ enum ApiAbility: string implements HasLabel {
     case SuppliersRead = 'suppliers:read';
     case ProtocolsRead = 'protocols:read';
     case VehiclesRead = 'vehicles:read';
+    // Lernplattform (Feature 149, MVP-791): lesen + Selbsteinschreibung.
+    case LearningRead = 'learning:read';
+    case LearningWrite = 'learning:write';
 
     public function label(): string {
         return match ($this) {
@@ -115,6 +118,8 @@ enum ApiAbility: string implements HasLabel {
             self::SuppliersRead => (string) __('Lieferanten lesen'),
             self::ProtocolsRead => (string) __('Protokolle lesen'),
             self::VehiclesRead => (string) __('Fahrzeuge lesen'),
+            self::LearningRead => (string) __('Lernplattform lesen'),
+            self::LearningWrite => (string) __('Lernplattform: selbst einschreiben'),
         };
     }
 }

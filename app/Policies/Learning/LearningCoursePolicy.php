@@ -34,9 +34,7 @@ class LearningCoursePolicy {
     }
 
     public function view(User $user, LearningCourse $course): bool {
-        unset($course);
-
-        return $this->viewAny($user);
+        return $this->viewAny($user) && $course->isVisibleTo($user);
     }
 
     public function create(User $user): bool {
@@ -45,14 +43,12 @@ class LearningCoursePolicy {
 
     /** Inhalt ändern: Autorenrecht UND ein Kurs, der nicht eingefroren ist. */
     public function update(User $user, LearningCourse $course): bool {
-        return $user->can(P::LearningAuthor->value) && $course->isContentEditable();
+        return $user->can(P::LearningAuthor->value) && $course->isContentEditable() && $course->isVisibleTo($user);
     }
 
     /** Stammdaten (Titel, Zielgruppen, Verantwortlicher) bleiben pflegbar. */
     public function updateMeta(User $user, LearningCourse $course): bool {
-        unset($course);
-
-        return $user->can(P::LearningAuthor->value) || $user->can(P::LearningManage->value);
+        return ($user->can(P::LearningAuthor->value) || $user->can(P::LearningManage->value)) && $course->isVisibleTo($user);
     }
 
     public function release(User $user, LearningCourse $course): bool {

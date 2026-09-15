@@ -1016,6 +1016,7 @@ return [
     ],
     'learning' => [
         'dossierDisclosed' => 'Nachweismappe namentlich herausgegeben',
+        'attemptViewed' => 'Prüfungsakte eingesehen',
     ],
     // Reselling-Register (Feature 152, Review 2026-09-10 A2): Nutzerentscheidungen.
     'resale_period' => [

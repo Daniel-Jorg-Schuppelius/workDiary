@@ -12,11 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
+use App\Mail\LearningAccessLinkMail;
 use App\Models\Learning\{LearningAccessToken, LearningEnrollment};
 use App\Models\User;
 use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\{Carbon, Str};
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\{DB, Mail};
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -69,6 +70,40 @@ class LearningAccessService {
         });
 
         return $token;
+    }
+
+    /**
+     * Zugang ausstellen UND zustellen (MVP-778): der einzige Weg, auf dem der
+     * Klartext-Token die Anwendung verlässt. Ohne E-Mail-Adresse wird kein
+     * Link erzeugt — ein Token, den niemand bekommt, wäre nur ein Risiko.
+     * Läuft der Zugang der Einschreibung früher ab als die Vorgabe, gilt der
+     * Link nur bis dahin.
+     */
+    public function deliver(LearningEnrollment $enrollment, ?User $actor = null, ?int $validDays = null, ?Carbon $now = null): bool {
+        $now ??= Carbon::now();
+        $enrollment->loadMissing(['externalParticipant', 'course']);
+        $participant = $enrollment->externalParticipant;
+        $email = trim((string) ($participant->email ?? ''));
+
+        if ($participant === null || $email === '') {
+            return false;
+        }
+
+        $validDays ??= self::DEFAULT_VALID_DAYS;
+        if ($enrollment->access_until !== null) {
+            $validDays = max(1, min($validDays, (int) $now->copy()->startOfDay()->diffInDays($enrollment->access_until, false)));
+        }
+
+        $token = $this->issue($enrollment, $actor, $validDays, $now);
+
+        Mail::to($email)->queue(new LearningAccessLinkMail(
+            $participant,
+            (string) ($enrollment->course->title ?? ''),
+            route('learning.external.enter', $token),
+            $now->copy()->addDays($validDays),
+        ));
+
+        return true;
     }
 
     /**

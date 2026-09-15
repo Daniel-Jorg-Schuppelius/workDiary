@@ -81,6 +81,11 @@ class CommunicationNotePolicy {
     }
 
     private function canSeeConfidential(User $user, CommunicationNote $note): bool {
+        // Privat (MVP-789): ausschließlich die verfassende Person.
+        if ($note->isPrivate()) {
+            return (int) $note->created_by_user_id === (int) $user->id;
+        }
+
         if (! $note->confidential) {
             return true;
         }

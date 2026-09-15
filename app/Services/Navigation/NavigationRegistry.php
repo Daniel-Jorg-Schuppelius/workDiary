@@ -772,6 +772,10 @@ class NavigationRegistry {
                     $showLearning
                         ? ['route' => 'learning.courses.index', 'label' => __('learning.nav.courses'), 'icon' => 'menu_book', 'modal' => false, 'matches' => ['learning.courses.*']]
                         : null,
+                    // Fragenkatalog (MVP-782): Autorenrecht wie der Kurs-Editor.
+                    $user?->can(\App\Enums\User\Permission::LearningAuthor->value)
+                        ? ['route' => 'learning.questions.index', 'label' => __('learning.nav.questions'), 'icon' => 'quiz', 'modal' => false, 'matches' => ['learning.questions.*']]
+                        : null,
                     // Betreuer-Cockpit (MVP-739): eigenes Recht, damit
                     // Bewertende keinen Autorenzugang brauchen.
                     $user?->can(\App\Enums\User\Permission::LearningGrade->value)

@@ -124,6 +124,12 @@ return [
         'training_due' => [
             'description' => 'Deine offenen Schulungs- und Unterweisungspflichten.',
         ],
+        'learning_due' => [
+            'description' => 'Deine offenen Schulungen der Lernplattform — überfällige zuerst.',
+        ],
+        'learning_grading_queue' => [
+            'description' => 'Abgaben, Aufsätze und Lernzeit-Freigaben, die auf Bewertung warten.',
+        ],
         'open_times' => [
             'description' => 'Abrechenbare Zeiten, die noch in keiner Rechnung stecken.',
         ],

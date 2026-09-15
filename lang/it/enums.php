@@ -391,6 +391,18 @@ return [
     ],
     'notification' => [
         'event' => [
+            'learning' => [
+                'enrolled' => 'Formazione assegnata',
+                'dueSoon' => 'Formazione in scadenza',
+                'overdue' => 'Formazione scaduta',
+                'submissionReceived' => 'Consegna in attesa di valutazione',
+                'graded' => 'Valutazione disponibile',
+                'certificateIssued' => 'Certificato emesso',
+                'waitlistPromoted' => 'Promosso dalla lista d’attesa',
+                'bookingDecided' => 'Prenotazione del corso decisa',
+                'timeApprovalRequested' => 'Tempo di apprendimento in attesa di approvazione',
+                'questionAsked' => 'Domanda posta al formatore',
+            ],
             'crisis' => [
                 'alert' => 'Allarme di crisi',
             ],
@@ -756,6 +768,7 @@ return [
         'visibility' => [
             'internal' => 'Interna',
             'customer' => 'Visibile al cliente',
+            'private' => 'Privata (solo io)',
         ],
         'party' => [
             'internal' => 'Interno',
@@ -1626,6 +1639,7 @@ return [
             'essay' => 'Tema',
             'hotspot' => 'Marcatura su immagine',
             'matrix' => 'Assegnazione a matrice',
+            'assessment' => 'Autovalutazione',
         ],
         'feedback-mode' => [
             'immediate' => 'Subito',
@@ -1651,13 +1665,19 @@ return [
             'expired' => 'Scaduto',
             'cancelled' => 'Annullato',
         ],
+        'course-kind' => [
+            'course' => 'Corso',
+            'exam' => 'Esame senza corso',
+        ],
         'enrollment-source' => [
+            'exam' => 'Riconoscimento',
             'requirement' => 'Matrice obbligatoria',
             'manual' => 'Manuale',
             'self' => 'Auto-iscrizione',
             'booking' => 'Prenotazione',
             'rule' => 'Regola',
             'path' => 'Percorso',
+            'import' => 'Importato',
         ],
         'translation-status' => [
             'draft' => 'Bozza',

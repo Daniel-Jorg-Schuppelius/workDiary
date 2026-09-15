@@ -68,6 +68,7 @@ return [
         'internal_type_requires_internal_direction' => 'Las consultas internas deben usar la dirección «Interna».',
         'internal_direction_requires_internal_visibility' => 'La comunicación interna no puede ser visible para los clientes.',
         'confidential_requires_internal_visibility' => 'Las notas confidenciales deben permanecer internas.',
+        'private_not_publishable' => 'Las notas privadas quedan con quien las escribió y no pueden publicarse.',
         'occurred_at_in_future' => 'La fecha no puede estar en el futuro.',
         'due_before_occurrence' => 'La fecha límite del seguimiento debe ser posterior a la fecha de la comunicación.',
         'unknown_type' => 'Tipo de comunicación desconocido.',

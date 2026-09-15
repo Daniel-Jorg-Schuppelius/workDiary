@@ -27,6 +27,7 @@ return [
         'communication_note' => 'Note de communication',
         'knowledge_article' => 'Article de connaissances',
         'remote_session' => 'Télémaintenance (non attribuée)',
+        'learning_course' => 'Cours d’apprentissage',
     ],
 
     'field' => [

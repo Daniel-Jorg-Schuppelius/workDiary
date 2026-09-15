@@ -11,7 +11,7 @@
 namespace App\Models\Learning;
 
 use App\Enums\Learning\{LearningEnrollmentSource, LearningEnrollmentStatus};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasCommunicationNotes, HasSqid};
 use App\Models\{ExternalParticipant, User};
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -51,6 +51,8 @@ class LearningEnrollment extends Model {
     use Auditable;
 
     use BelongsToOrganization;
+    use HasCommunicationNotes;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 

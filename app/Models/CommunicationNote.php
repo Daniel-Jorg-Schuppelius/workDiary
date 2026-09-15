@@ -117,6 +117,13 @@ class CommunicationNote extends Model {
      * @return Builder<self>
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder {
+        // Private Notizen (MVP-789) sieht nur die verfassende Person — das
+        // gilt auch für Admins und Inhaber von confidential.manage.
+        $query->where(function (Builder $q) use ($user): void {
+            $q->where('visibility', '!=', CommunicationVisibility::Private->value)
+                ->orWhere('created_by_user_id', $user->id);
+        });
+
         if ($user->isAdmin() || $user->can(Permission::CommunicationConfidentialManage->value)) {
             return $query;
         }
@@ -125,6 +132,10 @@ class CommunicationNote extends Model {
             $q->where('confidential', false)
                 ->orWhere('created_by_user_id', $user->id);
         });
+    }
+
+    public function isPrivate(): bool {
+        return $this->visibility === CommunicationVisibility::Private;
     }
 
     /**

@@ -63,12 +63,12 @@ class LearningQuizTest extends TestCase {
 
         $question = LearningQuestion::query()->create([
             'organization_id' => $this->organization->id,
-            'learning_quiz_id' => $quiz->id,
             'kind' => LearningQuestionKind::Single->value,
             'prompt' => 'Welche Nummer hat die Feuerwehr?',
             'points' => 2,
             'position' => 1,
         ]);
+        app(\App\Services\Learning\LearningQuestionCatalogService::class)->attach($quiz, $question);
         $right = $question->options()->create([
             'organization_id' => $this->organization->id,
             'label' => '112',
@@ -172,12 +172,12 @@ class LearningQuizTest extends TestCase {
         [$enrollment, $quiz] = $this->scenario();
         $essay = LearningQuestion::query()->create([
             'organization_id' => $this->organization->id,
-            'learning_quiz_id' => $quiz->id,
             'kind' => LearningQuestionKind::Essay->value,
             'prompt' => 'Beschreiben Sie den Ablauf einer Evakuierung.',
             'points' => 2,
             'position' => 2,
         ]);
+        app(\App\Services\Learning\LearningQuestionCatalogService::class)->attach($quiz, $essay);
 
         $attempt = $this->quizzes()->startAttempt($enrollment, $quiz);
         $attempt = $this->quizzes()->submitAttempt($attempt, [
@@ -400,7 +400,7 @@ class LearningQuizTest extends TestCase {
             "*10,10,20,20: Wandhalterung\n60,60,20,20: Fenster",
         );
 
-        $quiz = $question->quiz;
+        $quiz = $question->quizzes()->firstOrFail();
         $unit = $quiz->unit;
         app(LearningCourseService::class)->release($unit->course->refresh(), null);
 

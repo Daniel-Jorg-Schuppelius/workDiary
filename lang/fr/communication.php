@@ -68,6 +68,7 @@ return [
         'internal_type_requires_internal_direction' => 'Les concertations internes doivent utiliser la direction « Interne ».',
         'internal_direction_requires_internal_visibility' => 'La communication interne ne peut pas être visible pour les clients.',
         'confidential_requires_internal_visibility' => 'Les notes confidentielles doivent rester internes.',
+        'private_not_publishable' => 'Les notes privées restent chez leur auteur et ne peuvent pas être publiées.',
         'occurred_at_in_future' => 'La date ne doit pas être dans le futur.',
         'due_before_occurrence' => 'L\'échéance du suivi doit être postérieure à la date de communication.',
         'unknown_type' => 'Type de communication inconnu.',

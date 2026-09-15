@@ -124,6 +124,12 @@ return [
         'training_due' => [
             'description' => 'Vos obligations de formation et d’instruction ouvertes.',
         ],
+        'learning_due' => [
+            'description' => 'Vos cours ouverts sur la plateforme d’apprentissage — en retard d’abord.',
+        ],
+        'learning_grading_queue' => [
+            'description' => 'Remises, rédactions et validations de temps d’apprentissage en attente d’évaluation.',
+        ],
         'open_times' => [
             'description' => 'Temps facturables qui ne figurent encore sur aucune facture.',
         ],

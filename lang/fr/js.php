@@ -61,4 +61,7 @@ return [
         'new_entry' => 'Nouvelle entrée',
         'then' => 'puis',
     ],
+    'quiz' => [
+        'progress' => ':answered sur :total répondues',
+    ],
 ];

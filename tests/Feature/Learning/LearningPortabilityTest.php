@@ -62,12 +62,12 @@ class LearningPortabilityTest extends TestCase {
         ]);
         $question = LearningQuestion::query()->create([
             'organization_id' => $this->organization->id,
-            'learning_quiz_id' => $quiz->id,
             'kind' => LearningQuestionKind::Single->value,
             'prompt' => 'Was gehört in den Fluchtweg?',
             'points' => 2,
             'position' => 1,
         ]);
+        app(\App\Services\Learning\LearningQuestionCatalogService::class)->attach($quiz, $question);
         $question->options()->create([
             'organization_id' => $this->organization->id,
             'label' => 'Nichts',

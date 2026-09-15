@@ -14,7 +14,7 @@ use App\Enums\Learning\LearningFeedbackMode;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, BelongsToMany, HasMany};
 
 /**
  * Prüfung (Feature 149, MVP-738) — an einer Lerneinheit oder freistehend.
@@ -29,6 +29,8 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
  * @property int $max_attempts
  * @property int $retry_wait_hours
  * @property int|null $questions_per_attempt
+ * @property int|null $questions_per_attempt_percent
+ * @property int|null $pass_points
  * @property bool $shuffle_questions
  * @property bool $shuffle_answers
  * @property LearningFeedbackMode $feedback_mode
@@ -54,10 +56,17 @@ class LearningQuiz extends Model {
         'max_attempts',
         'retry_wait_hours',
         'questions_per_attempt',
+        'questions_per_attempt_percent',
+        'pass_points',
         'shuffle_questions',
         'shuffle_answers',
         'feedback_mode',
         'show_solutions',
+        'display_mode',
+        'allow_back',
+        'allow_skip',
+        'require_all_answered',
+        'result_messages',
     ];
 
     /** @var array<string, string> */
@@ -67,10 +76,16 @@ class LearningQuiz extends Model {
         'max_attempts' => 'integer',
         'retry_wait_hours' => 'integer',
         'questions_per_attempt' => 'integer',
+        'questions_per_attempt_percent' => 'integer',
+        'pass_points' => 'integer',
         'shuffle_questions' => 'boolean',
         'shuffle_answers' => 'boolean',
         'feedback_mode' => LearningFeedbackMode::class,
         'show_solutions' => 'boolean',
+        'allow_back' => 'boolean',
+        'allow_skip' => 'boolean',
+        'require_all_answered' => 'boolean',
+        'result_messages' => 'array',
     ];
 
     /** @return BelongsTo<LearningUnit, $this> */
@@ -79,8 +94,22 @@ class LearningQuiz extends Model {
     }
 
     /** @return HasMany<LearningQuestion, $this> */
-    public function questions(): HasMany {
-        return $this->hasMany(LearningQuestion::class)->orderBy('position');
+    /**
+     * Feste Fragen in Prüfungsreihenfolge (MVP-782: Zwischentabelle, die
+     * Frage selbst gehört dem Katalog).
+     *
+     * @return BelongsToMany<LearningQuestion, $this>
+     */
+    public function questions(): BelongsToMany {
+        return $this->belongsToMany(LearningQuestion::class, 'learning_quiz_question')
+            ->withPivot(['position'])
+            ->withTimestamps()
+            ->orderByPivot('position');
+    }
+
+    /** @return HasMany<LearningQuizDrawRule, $this> */
+    public function drawRules(): HasMany {
+        return $this->hasMany(LearningQuizDrawRule::class);
     }
 
     /** @return HasMany<LearningQuizAttempt, $this> */
@@ -89,6 +118,33 @@ class LearningQuiz extends Model {
     }
 
     /** 0 = unbegrenzt. */
+    public function isSingleQuestionMode(): bool {
+        return $this->display_mode === 'single';
+    }
+
+    /**
+     * Ergebnistext zum erreichten Prozentwert (MVP-783): die Stufe mit der
+     * höchsten Untergrenze, die noch erreicht wurde.
+     */
+    public function resultMessageFor(int $percent): ?string {
+        $best = null;
+        $bestFrom = -1;
+
+        foreach ((array) ($this->result_messages ?? []) as $entry) {
+            if (! is_array($entry)) {
+                continue;
+            }
+            $from = (int) ($entry['from_percent'] ?? 0);
+            $text = trim((string) ($entry['text'] ?? ''));
+            if ($text !== '' && $from <= $percent && $from > $bestFrom) {
+                $best = $text;
+                $bestFrom = $from;
+            }
+        }
+
+        return $best;
+    }
+
     public function allowsUnlimitedAttempts(): bool {
         return $this->max_attempts === 0;
     }

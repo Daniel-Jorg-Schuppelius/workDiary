@@ -14,7 +14,8 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\{LearningCourseStatus, LearningEnrollmentSource, LearningEnrollmentStatus, LearningProgressStatus};
 use App\Models\{ExternalParticipant, User};
-use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningUnit, LearningUnitProgress};
+use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningTimeSession, LearningUnit, LearningUnitProgress};
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -32,6 +33,7 @@ use Illuminate\Validation\ValidationException;
 class LearningEnrollmentService {
     public function __construct(
         private readonly LearningCompletionService $completion,
+        private readonly LearningNotifier $notifier,
     ) {}
 
     /**
@@ -48,9 +50,20 @@ class LearningEnrollmentService {
             ]);
         }
 
+        $source = LearningEnrollmentSource::tryFrom((string) ($attributes['source'] ?? LearningEnrollmentSource::Manual->value)) ?? LearningEnrollmentSource::Manual;
+
+        // Verfügbarkeitsfenster (MVP-788) gilt für die Selbsteinschreibung;
+        // eine Zuweisung durch die Verwaltung bleibt frei.
+        if ($source === LearningEnrollmentSource::Self && ! $course->isAvailableOn()) {
+            throw ValidationException::withMessages([
+                'course' => (string) __('learning.errors.course_not_available'),
+            ]);
+        }
+
         $version = $course->currentVersion();
 
-        return DB::transaction(function () use ($course, $learner, $attributes, $version): LearningEnrollment {
+        $created = false;
+        $enrollment = DB::transaction(function () use ($course, $learner, $attributes, $version, &$created): LearningEnrollment {
             $isUser = $learner instanceof User;
 
             $existing = LearningEnrollment::query()
@@ -64,6 +77,15 @@ class LearningEnrollmentService {
             // wiederholt).
             if ($existing !== null) {
                 return $existing;
+            }
+
+            // Teilnehmergrenze (MVP-788): aktive Einschreibungen zählen; die
+            // Pflichtmatrix umgeht sie — ein Soll wartet nicht auf einen Platz.
+            $source = LearningEnrollmentSource::tryFrom((string) ($attributes['source'] ?? LearningEnrollmentSource::Manual->value));
+            if ($source !== LearningEnrollmentSource::Requirement && ! $course->hasCapacity()) {
+                throw ValidationException::withMessages([
+                    'course' => (string) __('learning.errors.course_full', ['max' => (int) $course->max_enrollments]),
+                ]);
             }
 
             $enrollment = LearningEnrollment::query()->create([
@@ -80,14 +102,24 @@ class LearningEnrollmentService {
             ]);
 
             $this->recordEvent($enrollment, null, LearningEnrollmentStatus::Assigned, $attributes['reason'] ?? null);
+            $created = true;
 
             return $enrollment;
         });
+
+        // Pflicht-Einschreibungen meldet bereits das Trainingsmanagement (145)
+        // — sonst käme dieselbe Person zweimal Post (MVP-780).
+        if ($created && $enrollment->source !== LearningEnrollmentSource::Requirement) {
+            $this->notifier->enrolled($enrollment);
+        }
+
+        return $enrollment;
     }
 
     /** Erste Interaktion: setzt die Einschreibung auf „in Bearbeitung". */
     public function start(LearningEnrollment $enrollment): LearningEnrollment {
         $this->guardOpen($enrollment);
+        $this->guardPrerequisites($enrollment);
 
         if ($enrollment->status === LearningEnrollmentStatus::Assigned) {
             $from = $enrollment->status;
@@ -111,6 +143,25 @@ class LearningEnrollmentService {
             ]);
         }
 
+        // Freischaltplan (MVP-788): die Sperre sitzt HIER, nicht in der
+        // Ansicht — Player, Externe, Portal und Offline-Sync laufen alle
+        // durch diese Methode.
+        $this->guardReleased($enrollment, $unit);
+
+        // Mindestverweildauer: gezählt wird ab dem ersten Öffnen der Einheit
+        // (markSeen) oder über die Lernzeit-Sitzungen der Einheit.
+        $minSeconds = $unit->minSeconds();
+        if ($minSeconds > 0) {
+            $spent = $this->secondsSpentOn($enrollment, $unit);
+            if ($spent < $minSeconds) {
+                throw ValidationException::withMessages([
+                    'unit' => (string) __('learning.errors.min_seconds_not_reached', [
+                        'minutes' => (int) ceil(($minSeconds - $spent) / 60),
+                    ]),
+                ]);
+            }
+        }
+
         return DB::transaction(function () use ($enrollment, $unit, $progressPercent): LearningUnitProgress {
             $this->start($enrollment);
 
@@ -132,6 +183,73 @@ class LearningEnrollmentService {
 
             return $progress->refresh();
         });
+    }
+
+    /** Freischaltplan durchsetzen — auch für Prüfungsstart und Abgabe. */
+    public function guardReleased(LearningEnrollment $enrollment, LearningUnit $unit, ?Carbon $now = null): void {
+        if ($unit->isReleasedFor($enrollment, $now)) {
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'unit' => (string) __('learning.errors.unit_not_released', [
+                'date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y') ?? '',
+            ]),
+        ]);
+    }
+
+    /**
+     * Erstes Öffnen merken (MVP-788): nur für Einheiten mit
+     * Mindestverweildauer, sonst entstünde für jeden Seitenaufruf ein
+     * Fortschrittssatz. Abgeschlossene Einheiten bleiben unberührt.
+     *
+     * @param  iterable<LearningUnit>  $units
+     */
+    public function markSeen(LearningEnrollment $enrollment, iterable $units, ?Carbon $now = null): void {
+        if ($enrollment->status->isFinal()) {
+            return;
+        }
+
+        foreach ($units as $unit) {
+            if ($unit->minSeconds() <= 0 || ! $unit->isReleasedFor($enrollment, $now)) {
+                continue;
+            }
+
+            LearningUnitProgress::query()->firstOrCreate([
+                'learning_enrollment_id' => $enrollment->id,
+                'learning_unit_id' => $unit->id,
+            ], [
+                'organization_id' => $enrollment->organization_id,
+                'status' => LearningProgressStatus::Started->value,
+                'started_at' => $now ?? now(),
+                'attempts' => 0,
+                'progress_percent' => 0,
+            ]);
+        }
+    }
+
+    /** Verweildauer auf einer Einheit: Fortschrittsbeginn oder Lernzeit, das Größere. */
+    public function secondsSpentOn(LearningEnrollment $enrollment, LearningUnit $unit, ?Carbon $now = null): int {
+        $now ??= Carbon::now();
+
+        $startedAt = LearningUnitProgress::query()
+            ->where('learning_enrollment_id', $enrollment->id)
+            ->where('learning_unit_id', $unit->id)
+            ->value('started_at');
+        $sinceOpen = $startedAt !== null ? max(0, Carbon::parse((string) $startedAt)->diffInSeconds($now, false)) : 0;
+
+        $sessions = LearningTimeSession::query()
+            ->where('learning_enrollment_id', $enrollment->id)
+            ->where('learning_unit_id', $unit->id)
+            ->get(['started_at', 'ended_at', 'active_seconds']);
+        $tracked = 0;
+        foreach ($sessions as $session) {
+            $tracked += $session->ended_at === null && $session->started_at !== null
+                ? max(0, (int) $session->started_at->diffInSeconds($now, false))
+                : (int) $session->active_seconds;
+        }
+
+        return (int) max($sinceOpen, $tracked);
     }
 
     /**
@@ -176,6 +294,41 @@ class LearningEnrollmentService {
         return true;
     }
 
+    /**
+     * Frist und Zugang nachträglich ändern (MVP-778). Die Begründung ist
+     * Pflicht und landet als Ereignis an der Einschreibung — sonst wäre eine
+     * verlängerte Pflichtfrist später nicht mehr erklärbar.
+     */
+    public function extendAccess(
+        LearningEnrollment $enrollment,
+        ?string $dueAt,
+        ?string $accessUntil,
+        ?User $actor,
+        string $reason,
+    ): LearningEnrollment {
+        if ($enrollment->status->isFinal()) {
+            throw ValidationException::withMessages([
+                'status' => (string) __('learning.errors.enrollment_closed'),
+            ]);
+        }
+
+        if ($dueAt !== null && $accessUntil !== null && $accessUntil < $dueAt) {
+            throw ValidationException::withMessages([
+                'access_until' => (string) __('learning.errors.access_before_due'),
+            ]);
+        }
+
+        return DB::transaction(function () use ($enrollment, $dueAt, $accessUntil, $actor, $reason): LearningEnrollment {
+            $enrollment->update([
+                'due_at' => $dueAt,
+                'access_until' => $accessUntil,
+            ]);
+            $this->recordEvent($enrollment, $enrollment->status, $enrollment->status, $reason, $actor);
+
+            return $enrollment->refresh();
+        });
+    }
+
     public function cancel(LearningEnrollment $enrollment, ?User $actor = null, ?string $reason = null): LearningEnrollment {
         if ($enrollment->source === LearningEnrollmentSource::Requirement) {
             // Pflicht-Einschreibungen zu stornieren würde das Soll aus
@@ -188,6 +341,104 @@ class LearningEnrollmentService {
         $from = $enrollment->status;
         $enrollment->update(['status' => LearningEnrollmentStatus::Cancelled->value]);
         $this->recordEvent($enrollment, $from, LearningEnrollmentStatus::Cancelled, $reason, $actor);
+
+        return $enrollment->refresh();
+    }
+
+    /**
+     * Voraussetzungen, die der lernenden Person noch fehlen (MVP-784).
+     * Pflicht-Einschreibungen kennen keine Voraussetzungen — ein
+     * gesetzliches Soll scheitert nicht an einer Kursoption.
+     *
+     * @return list<LearningCourse>
+     */
+    public function missingPrerequisites(LearningEnrollment $enrollment): array {
+        if ($enrollment->source === LearningEnrollmentSource::Requirement) {
+            return [];
+        }
+
+        $course = $enrollment->course;
+        if ($course === null) {
+            return [];
+        }
+        /** @var list<LearningCourse> $required */
+        $required = $course->prerequisites()->get()->all();
+        if ($required === []) {
+            return [];
+        }
+
+        $completed = LearningEnrollment::query()
+            ->whereIn('learning_course_id', array_map(static fn (LearningCourse $c): int => $c->id, $required))
+            ->where('status', LearningEnrollmentStatus::Completed->value)
+            ->when($enrollment->user_id !== null, fn ($q) => $q->where('user_id', $enrollment->user_id))
+            ->when($enrollment->user_id === null, fn ($q) => $q->where('external_participant_id', $enrollment->external_participant_id))
+            ->pluck('learning_course_id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $missing = array_values(array_filter($required, static fn (LearningCourse $c): bool => ! in_array($c->id, $completed, true)));
+
+        if ($course->prerequisite_mode === 'any' && count($missing) < count($required)) {
+            return [];
+        }
+
+        return $missing;
+    }
+
+    private function guardPrerequisites(LearningEnrollment $enrollment): void {
+        if ($enrollment->status !== LearningEnrollmentStatus::Assigned) {
+            return;
+        }
+
+        $missing = $this->missingPrerequisites($enrollment);
+        if ($missing !== []) {
+            throw ValidationException::withMessages([
+                'prerequisites' => (string) __('learning.errors.prerequisites_missing', [
+                    'courses' => implode(', ', array_map(static fn (LearningCourse $c): string => $c->title, $missing)),
+                ]),
+            ]);
+        }
+    }
+
+    /**
+     * Anrechnung (MVP-784): eine bestandene Prüfung ohne Kurs schließt den
+     * Zielkurs ab — über die reguläre Einschreibung, damit Zertifikat,
+     * Nachweis und Qualifikation an genau derselben Stelle entstehen.
+     */
+    public function creditFromExam(LearningEnrollment $examEnrollment, LearningCourse $target): ?LearningEnrollment {
+        $learner = $examEnrollment->user ?? $examEnrollment->externalParticipant;
+        if ($learner === null || $target->status !== LearningCourseStatus::Released) {
+            return null;
+        }
+
+        $enrollment = $this->enroll($target, $learner, [
+            'source' => LearningEnrollmentSource::Exam->value,
+            'reason' => $examEnrollment->course?->title,
+        ]);
+
+        if ($enrollment->status->isFinal()) {
+            return $enrollment;
+        }
+
+        // Ergebnis der Prüfung: am besten bestandenen Versuch ablesen — die
+        // Einschreibung selbst trägt keinen Prozentwert.
+        $score = $examEnrollment->score_percent
+            ?? \App\Models\Learning\LearningQuizAttempt::query()
+                ->where('learning_enrollment_id', $examEnrollment->id)
+                ->where('passed', true)
+                ->orderByDesc('score_percent')
+                ->value('score_percent');
+
+        $from = $enrollment->status;
+        $enrollment->update([
+            'status' => LearningEnrollmentStatus::Completed->value,
+            'started_at' => $enrollment->started_at ?? now(),
+            'completed_at' => now(),
+            'score_percent' => $score !== null ? (int) $score : null,
+            'points_earned' => (int) LearningUnit::query()->where('learning_course_id', $target->id)->sum('points'),
+        ]);
+        $this->recordEvent($enrollment, $from, LearningEnrollmentStatus::Completed, $examEnrollment->course?->title);
+        $this->completion->apply($enrollment->refresh());
 
         return $enrollment->refresh();
     }

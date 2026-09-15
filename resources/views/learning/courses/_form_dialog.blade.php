@@ -36,6 +36,58 @@
         <x-textarea-field name="objectives" :label="__('learning.field.objectives')" rows="2" span="2" maxlength="5000" :value="old('objectives', $course?->objectives)" />
         <x-input-field name="duration_minutes" type="number" min="1" max="10000" :label="__('learning.field.duration_minutes')" :value="old('duration_minutes', $course?->duration_minutes)" />
         <x-input-field name="validity_months" type="number" min="1" max="600" :label="__('learning.field.validity_months')" :value="old('validity_months', $course?->validity_months)" />
+        <x-select-field name="category_id" :label="__('learning.field.category')" :hint="__('learning.help.course_category')">
+            <option value="">{{ __('learning.field.no_category') }}</option>
+            @foreach ($categories as $category)
+                <option value="{{ $category->sqid }}" @selected((string) old('category_id', $course?->category?->sqid) === (string) $category->sqid)>{{ $category->name }}</option>
+            @endforeach
+        </x-select-field>
+    </x-form-group>
+
+    {{-- Verfügbarkeit (MVP-788): Fenster und Grenze gelten für Katalog und
+         Selbsteinschreibung — eine Zuweisung durch die Verwaltung bleibt frei. --}}
+    <x-form-group :legend="__('learning.field.availability')" icon="event_available" tone="success" cols="3">
+        <x-input-field name="available_from" type="date" :label="__('learning.field.available_from')" :value="old('available_from', $course?->available_from?->format('Y-m-d'))" />
+        <x-input-field name="available_until" type="date" :label="__('learning.field.available_until')" :value="old('available_until', $course?->available_until?->format('Y-m-d'))" />
+        <x-input-field name="max_enrollments" type="number" min="1" max="100000" :label="__('learning.field.max_enrollments')" :hint="__('learning.help.max_enrollments')" :value="old('max_enrollments', $course?->max_enrollments)" />
+    </x-form-group>
+
+    {{-- Prüfung ohne Kurs und Voraussetzungen (MVP-784): die Art ist nur beim
+         Anlegen wählbar; Voraussetzungen sperren den Start, nie die Zuweisung. --}}
+    <x-form-group :legend="__('learning.field.kind_and_prerequisites')" icon="rule" tone="neutral" cols="2">
+        @unless ($isEdit)
+            <x-select-field name="kind" :label="__('learning.field.kind')" :hint="__('learning.help.exam_kind')">
+                @foreach (\App\Enums\Learning\LearningCourseKind::cases() as $case)
+                    <option value="{{ $case->value }}" @selected(old('kind', 'course') === $case->value)>{{ $case->label() }}</option>
+                @endforeach
+            </x-select-field>
+        @else
+            <x-input-field name="kind_label" :label="__('learning.field.kind')" :value="$course->kind->label()" disabled />
+        @endunless
+        <x-select-field name="exam_for_course_id" :label="__('learning.field.exam_target')" :hint="__('learning.help.exam_target')">
+            <option value="">{{ __('learning.field.no_exam_target') }}</option>
+            @foreach ($courseOptions as $option)
+                <option value="{{ $option->sqid }}" @selected((string) old('exam_for_course_id', $course?->examTarget?->sqid) === (string) $option->sqid)>{{ $option->title }}</option>
+            @endforeach
+        </x-select-field>
+        <x-select-field name="prerequisite_mode" :label="__('learning.field.prerequisite_mode')">
+            <option value="all" @selected(old('prerequisite_mode', $course?->prerequisite_mode ?? 'all') === 'all')>{{ __('learning.field.prerequisite_mode_all') }}</option>
+            <option value="any" @selected(old('prerequisite_mode', $course?->prerequisite_mode ?? 'all') === 'any')>{{ __('learning.field.prerequisite_mode_any') }}</option>
+        </x-select-field>
+        @php
+            $selectedPrerequisites = collect(old('prerequisite_course_ids', $course?->prerequisites?->map(fn ($c) => $c->sqid)->all() ?? []))->map(fn ($v) => (string) $v)->all();
+        @endphp
+        <div class="sm:col-span-2">
+            <span class="label-text">{{ __('learning.field.prerequisites') }}</span>
+            <p class="mb-1 text-xs text-muted">{{ __('learning.help.prerequisites') }}</p>
+            <div class="grid gap-1 sm:grid-cols-2">
+                @foreach ($courseOptions as $option)
+                    <x-checkbox-field name="prerequisite_course_ids[]" :id="'prereq-' . $option->sqid" :value="$option->sqid"
+                                      :label="$option->title" :toggle="false" :with-hidden="false"
+                                      :checked="in_array((string) $option->sqid, $selectedPrerequisites, true)" />
+                @endforeach
+            </div>
+        </div>
     </x-form-group>
 
     <x-form-group :legend="__('learning.field.access')" icon="group" tone="info" cols="2">

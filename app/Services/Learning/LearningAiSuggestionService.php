@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
+use App\Models\Ai\AiCapabilitySetting;
 use App\Models\{KnowledgeArticle, Organization};
 use App\Models\Learning\{LearningCourse, LearningUnit};
 use App\Services\Ai\AiInvocationService;
@@ -44,6 +45,23 @@ class LearningAiSuggestionService {
     public function __construct(
         private readonly AiInvocationService $invocation,
     ) {}
+
+    /**
+     * Ist die Fähigkeit für diese Organisation freigeschaltet? Entscheidet nur
+     * über die Sichtbarkeit des Eingangs — Budget, Verbindung und Fehler
+     * prüft der Aufruf selbst.
+     */
+    public function isAvailable(?Organization $organization, string $capability): bool {
+        if ($organization === null) {
+            return false;
+        }
+
+        return AiCapabilitySetting::query()
+            ->where('organization_id', $organization->id)
+            ->where('capability', $capability)
+            ->where('enabled', true)
+            ->exists();
+    }
 
     /**
      * Kursgliederung als **Entwurf** aus Stichworten und optionalen Quellen.

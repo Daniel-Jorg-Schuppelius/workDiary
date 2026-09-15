@@ -1016,6 +1016,7 @@ return [
     ],
     'learning' => [
         'dossierDisclosed' => 'Fascicolo delle qualifiche rilasciato con i nomi',
+        'attemptViewed' => 'Atto del tentativo consultato',
     ],
     // Registro rivendita (funzionalità 152, revisione 2026-09-10 A2): decisioni dell’utente.
     'resale_period' => [

@@ -1135,9 +1135,10 @@ class DemoShowcaseSeeder {
                 'max_attempts' => 3,
             ]);
 
+            $catalog = app(\App\Services\Learning\LearningQuestionCatalogService::class);
             $question = \App\Models\Learning\LearningQuestion::query()->create([
                 'organization_id' => $organization->id,
-                'learning_quiz_id' => $quiz->id,
+                'learning_question_category_id' => $catalog->categoryByName($organization, 'Brandschutz')->id,
                 'kind' => \App\Enums\Learning\LearningQuestionKind::Single->value,
                 'prompt' => 'Was tun Sie zuerst, wenn Sie einen Entstehungsbrand entdecken?',
                 'explanation' => 'Menschenrettung geht immer vor Sachwerten.',
@@ -1153,6 +1154,7 @@ class DemoShowcaseSeeder {
                     'position' => $index + 1,
                 ]);
             }
+            $catalog->attach($quiz, $question);
 
             $courses->release($course->refresh(), $actor);
 

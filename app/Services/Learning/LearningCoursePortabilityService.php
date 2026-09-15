@@ -35,13 +35,14 @@ class LearningCoursePortabilityService {
 
     public function __construct(
         private readonly LearningCourseService $courses,
+        private readonly LearningQuestionCatalogService $catalog,
     ) {}
 
     /**
      * @return array<string, mixed>
      */
     public function export(LearningCourse $course): array {
-        $course->loadMissing(['sections', 'units.quiz.questions.options']);
+        $course->loadMissing(['sections', 'units.quiz.questions.options', 'units.quiz.questions.category']);
 
         return [
             'format' => 'workdiary.learning.course',
@@ -59,6 +60,16 @@ class LearningCoursePortabilityService {
                 'time_policy' => $course->time_policy->value,
                 'instruction_suitability' => $course->instruction_suitability->value,
                 'sequential' => $course->sequential,
+                'kind' => $course->kind->value,
+                'exam_for_code' => $course->examTarget?->code,
+                'prerequisite_mode' => $course->prerequisite_mode,
+                'prerequisite_codes' => $course->prerequisites()->pluck('code')->values()->all(),
+                // Kursoptionen (MVP-788): Kategorie nach Name, Fenster, Grenze.
+                'category' => $course->category?->name,
+                'available_from' => $course->available_from?->toDateString(),
+                'available_until' => $course->available_until?->toDateString(),
+                // Schlüsselname ohne „enrollment“: der Export trägt nie Nachweise.
+                'seat_limit' => $course->max_enrollments,
             ],
             'sections' => $course->sections->map(static fn (LearningSection $s): array => [
                 'key' => 's' . $s->id,
@@ -72,8 +83,11 @@ class LearningCoursePortabilityService {
                 'kind' => $u->kind->value,
                 'position' => $u->position,
                 'is_mandatory' => $u->is_mandatory,
+                'is_preview' => $u->is_preview,
                 'points' => $u->points,
                 'duration_minutes' => $u->duration_minutes,
+                'release_rule' => $u->release_rule,
+                'completion_rule' => $u->completion_rule,
                 'blocks' => $u->blocks(),
                 'quiz' => $this->exportQuiz($u->quiz),
             ])->values()->all(),
@@ -122,7 +136,36 @@ class LearningCoursePortabilityService {
                 'time_policy' => $courseData['time_policy'] ?? null,
                 'instruction_suitability' => $courseData['instruction_suitability'] ?? null,
                 'sequential' => $courseData['sequential'] ?? false,
+                // Prüfung ohne Kurs (MVP-784): die Einheiten kommen aus dem
+                // Export, die automatische Prüfungseinheit bliebe doppelt.
+                'kind' => in_array($courseData['kind'] ?? 'course', ['course', 'exam'], true) ? $courseData['kind'] : 'course',
+                'skip_exam_unit' => true,
+                'prerequisite_mode' => $courseData['prerequisite_mode'] ?? 'all',
+                'category_id' => is_string($courseData['category'] ?? null)
+                    ? $this->courses->categoryByName($organization, $courseData['category'], true)?->id
+                    : null,
+                'available_from' => is_string($courseData['available_from'] ?? null) ? $courseData['available_from'] : null,
+                'available_until' => is_string($courseData['available_until'] ?? null) ? $courseData['available_until'] : null,
+                'max_enrollments' => is_numeric($courseData['seat_limit'] ?? null) ? (int) $courseData['seat_limit'] : null,
             ]);
+
+            // Zielkurs und Voraussetzungen nach Code — nur innerhalb der
+            // Organisation; unbekannte Codes werden übergangen.
+            $byCode = static fn (?string $code): ?LearningCourse => $code !== null && $code !== ''
+                ? LearningCourse::query()->where('organization_id', $organization->id)->where('code', $code)->first()
+                : null;
+            $target = $byCode(is_string($courseData['exam_for_code'] ?? null) ? $courseData['exam_for_code'] : null);
+            if ($target !== null) {
+                $course->update(['exam_for_course_id' => $target->id]);
+            }
+            $prerequisiteIds = [];
+            foreach ((array) ($courseData['prerequisite_codes'] ?? []) as $code) {
+                $required = $byCode(is_string($code) ? $code : null);
+                if ($required !== null) {
+                    $prerequisiteIds[] = $required->id;
+                }
+            }
+            $this->courses->syncPrerequisites($course, $prerequisiteIds);
 
             $sectionMap = [];
             foreach ($payload['sections'] ?? [] as $section) {
@@ -148,8 +191,11 @@ class LearningCoursePortabilityService {
                     'section' => $sectionMap[(string) ($unit['section_key'] ?? '')] ?? null,
                     'position' => $unit['position'] ?? 0,
                     'is_mandatory' => $unit['is_mandatory'] ?? true,
+                    'is_preview' => (bool) ($unit['is_preview'] ?? false),
                     'points' => $unit['points'] ?? 0,
                     'duration_minutes' => $unit['duration_minutes'] ?? null,
+                    'release_rule' => is_array($unit['release_rule'] ?? null) ? $unit['release_rule'] : null,
+                    'completion_rule' => is_array($unit['completion_rule'] ?? null) ? $unit['completion_rule'] : null,
                     'content' => is_array($unit['blocks'] ?? null) ? $unit['blocks'] : null,
                 ]);
 
@@ -182,8 +228,15 @@ class LearningCoursePortabilityService {
             'shuffle_answers' => $quiz->shuffle_answers,
             'feedback_mode' => $quiz->feedback_mode->value,
             'show_solutions' => $quiz->show_solutions,
+            'display_mode' => $quiz->display_mode,
+            'allow_back' => $quiz->allow_back,
+            'allow_skip' => $quiz->allow_skip,
+            'require_all_answered' => $quiz->require_all_answered,
+            'result_messages' => $quiz->result_messages,
             'questions' => array_values($quiz->questions->map(static fn (LearningQuestion $q): array => [
                 'kind' => $q->kind->value,
+                'title' => $q->title,
+                'category' => $q->category?->name,
                 'prompt' => $q->prompt,
                 'explanation' => $q->explanation,
                 'points' => $q->points,
@@ -217,6 +270,11 @@ class LearningCoursePortabilityService {
             'shuffle_answers' => (bool) ($data['shuffle_answers'] ?? true),
             'feedback_mode' => $data['feedback_mode'] ?? 'end',
             'show_solutions' => (bool) ($data['show_solutions'] ?? false),
+            'display_mode' => in_array($data['display_mode'] ?? 'all', ['all', 'single'], true) ? $data['display_mode'] : 'all',
+            'allow_back' => (bool) ($data['allow_back'] ?? true),
+            'allow_skip' => (bool) ($data['allow_skip'] ?? true),
+            'require_all_answered' => (bool) ($data['require_all_answered'] ?? false),
+            'result_messages' => is_array($data['result_messages'] ?? null) ? $data['result_messages'] : null,
         ]);
 
         foreach ($data['questions'] ?? [] as $index => $question) {
@@ -224,10 +282,17 @@ class LearningCoursePortabilityService {
                 continue;
             }
 
+            $categoryName = trim((string) ($question['category'] ?? ''));
+            $organization = $unit->organization;
+            $category = $categoryName !== '' && $organization !== null
+                ? $this->catalog->categoryByName($organization, $categoryName)
+                : null;
+
             $created = LearningQuestion::query()->create([
                 'organization_id' => $unit->organization_id,
-                'learning_quiz_id' => $quiz->id,
+                'learning_question_category_id' => $category?->id,
                 'kind' => LearningQuestionKind::tryFrom((string) ($question['kind'] ?? ''))->value ?? LearningQuestionKind::Single->value,
+                'title' => $question['title'] ?? null,
                 'prompt' => $question['prompt'] ?? '—',
                 'explanation' => $question['explanation'] ?? null,
                 'points' => (int) ($question['points'] ?? 1),
@@ -248,6 +313,8 @@ class LearningCoursePortabilityService {
                     'match_key' => $option['match_key'] ?? null,
                 ]);
             }
+
+            $this->catalog->attach($quiz, $created);
         }
     }
 }

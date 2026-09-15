@@ -88,6 +88,19 @@ return [
     ],
 
     'message' => [
+        'learning_enrolled' => 'Se le ha asignado el curso «:course».',
+        'learning_enrolled_with_due' => 'Se le ha asignado el curso «:course» — vence el :date.',
+        'learning_due_soon' => 'El curso «:course» vence el :date.',
+        'learning_overdue' => 'El curso «:course» venció el :date y aún no está completado.',
+        'learning_submission_received' => ':name ha entregado la tarea «:assignment» del curso «:course».',
+        'learning_graded' => 'Su tarea «:assignment» del curso «:course» ha sido evaluada.',
+        'learning_returned' => 'Su tarea «:assignment» del curso «:course» ha sido devuelta para revisión.',
+        'learning_certificate_issued' => 'Su certificado :number del curso «:course» ha sido emitido.',
+        'learning_waitlist_promoted' => 'Ha quedado una plaza libre para «:title» el :date — está inscrito/a.',
+        'learning_booking_confirmed' => 'Su reserva del curso «:course» ha sido confirmada.',
+        'learning_booking_rejected' => 'Su reserva del curso «:course» ha sido rechazada.',
+        'learning_time_approval_requested' => ':name ha registrado :minutes minutos de aprendizaje para «:course» fuera del horario laboral — se necesita aprobación.',
+        'learning_question_asked' => ':name pregunta sobre «:course»: :question',
 
         // Pflichtnachweise (Feature 117, MVP-606).
 

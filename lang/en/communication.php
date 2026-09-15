@@ -68,6 +68,7 @@ return [
         'internal_type_requires_internal_direction' => 'Internal consultations must use the "Internal" direction.',
         'internal_direction_requires_internal_visibility' => 'Internal communication cannot be visible to customers.',
         'confidential_requires_internal_visibility' => 'Confidential notes must remain internal.',
+        'private_not_publishable' => 'Private notes stay with their author and cannot be published.',
         'occurred_at_in_future' => 'The date must not be in the future.',
         'due_before_occurrence' => 'The follow-up due date must be after the communication date.',
         'unknown_type' => 'Unknown communication type.',

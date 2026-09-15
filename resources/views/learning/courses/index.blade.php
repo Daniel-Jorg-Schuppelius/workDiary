@@ -19,11 +19,23 @@
     <x-slot:actions>
         <x-help-button topic="learning.overview" />
         @can(\App\Enums\User\Permission::LearningManage->value)
+            <x-icon-btn icon="settings" tone="ghost" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('learning.settings.edit')"
+                        show-label>{{ __('learning.title.settings') }}</x-icon-btn>
             <x-icon-btn icon="hub" tone="ghost" size="sm"
                         :href="route('learning.lti-registrations.index')"
                         show-label>{{ __('learning.lti_registration.title') }}</x-icon-btn>
         @endcan
+        {{-- Liste/Kacheln (MVP-794): der Umschalter merkt sich die Wahl je Person. --}}
+        <x-icon-btn :icon="$viewMode === 'tiles' ? 'view_list' : 'grid_view'" tone="ghost" size="sm"
+                    :href="route('learning.courses.index', array_merge(request()->query(), ['view' => $viewMode === 'tiles' ? 'list' : 'tiles']))"
+                    show-label>{{ $viewMode === 'tiles' ? __('learning.action.view_list') : __('learning.action.view_tiles') }}</x-icon-btn>
         @if ($canCreate)
+            <x-icon-btn icon="upload_file" tone="ghost" size="sm"
+                        data-entry-modal-trigger
+                        :href="route('learning.courses.import-learndash.create')"
+                        show-label>{{ __('learning.action.import_learndash') }}</x-icon-btn>
             <x-icon-btn icon="add" tone="primary" size="sm"
                         data-entry-modal-trigger
                         :href="route('learning.courses.create')"
@@ -35,6 +47,24 @@
         <x-filter-field :label="__('learning.kpi.released')" for="flt-released-count">
             <span id="flt-released-count" class="badge badge-ghost badge-sm">{{ $releasedCount }}</span>
         </x-filter-field>
+        <x-filter-field :label="__('learning.field.kind')" for="flt-kind">
+            <select id="flt-kind" name="kind" class="select select-sm select-bordered" data-autosubmit>
+                <option value="">{{ __('learning.filter.all_course_kinds') }}</option>
+                @foreach (\App\Enums\Learning\LearningCourseKind::cases() as $case)
+                    <option value="{{ $case->value }}" @selected($kind === $case)>{{ $case->label() }}</option>
+                @endforeach
+            </select>
+        </x-filter-field>
+        @if ($categories->isNotEmpty())
+            <x-filter-field :label="__('learning.field.category')" for="flt-category">
+                <select id="flt-category" name="category" class="select select-sm select-bordered" data-autosubmit>
+                    <option value="">{{ __('learning.filter.all_categories') }}</option>
+                    @foreach ($categories as $category)
+                        <option value="{{ $category->sqid }}" @selected($categoryId === $category->id)>{{ $category->name }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        @endif
         <x-filter-field :label="__('learning.field.status')" for="flt-status">
             <select id="flt-status" name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('learning.filter.all_status') }}</option>
@@ -45,6 +75,32 @@
         </x-filter-field>
     </x-filter-bar>
 
+    @if ($viewMode === 'tiles')
+        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+            @forelse ($courses as $course)
+                <x-card>
+                    <div class="flex items-start justify-between gap-2">
+                        <a class="link link-hover font-medium" href="{{ route('learning.courses.show', $course) }}">{{ $course->title }}</a>
+                        <x-status-badge :tone="$course->status->tone()" size="sm" outline>{{ $course->status->label() }}</x-status-badge>
+                    </div>
+                    @if ($course->subtitle)
+                        <p class="mt-1 text-sm text-muted">{{ $course->subtitle }}</p>
+                    @endif
+                    <p class="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted">
+                        <span>{{ $course->units_count }} {{ __('learning.field.units') }}</span>
+                        @if ($course->duration_minutes) <span>· {{ $course->duration_minutes }} {{ __('learning.field.minutes_short') }}</span> @endif
+                        @if ($course->category) <span>· {{ $course->category->name }}</span> @endif
+                        @if (isset($ratings[$course->id]))
+                            <span title="{{ __('learning.help.rating', ['count' => $ratings[$course->id]['count']]) }}">· ★ {{ number_format($ratings[$course->id]['average'], 1, ',', '') }}</span>
+                        @endif
+                    </p>
+                </x-card>
+            @empty
+                <x-empty-state icon="school" :title="__('learning.empty.courses')" class="sm:col-span-2 xl:col-span-3" />
+            @endforelse
+        </div>
+        <x-pagination :paginator="$courses" standing />
+    @else
     <x-table scroll="flex" table-sort="client">
         <x-slot:head>
             <tr>
@@ -63,6 +119,12 @@
                     <a class="link link-hover" href="{{ route('learning.courses.show', $course) }}">{{ $course->title }}</a>
                     @if ($course->certificate_enabled)
                         <x-status-badge tone="info" size="sm" outline>{{ __('learning.field.certificate') }}</x-status-badge>
+                    @endif
+                    @if ($course->isExam())
+                        <x-status-badge :tone="$course->kind->tone()" size="sm">{{ $course->kind->label() }}</x-status-badge>
+                    @endif
+                    @if (isset($ratings[$course->id]))
+                        <span class="ml-1 text-xs text-muted" title="{{ __('learning.help.rating', ['count' => $ratings[$course->id]['count']]) }}">★ {{ number_format($ratings[$course->id]['average'], 1, ',', '') }}</span>
                     @endif
                 </td>
                 <td class="text-sm">
@@ -85,5 +147,6 @@
         @endforelse
     </x-table>
     <x-pagination :paginator="$courses" standing />
+    @endif
 </x-index-page>
 @endsection

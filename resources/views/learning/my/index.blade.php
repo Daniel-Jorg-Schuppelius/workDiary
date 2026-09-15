@@ -18,8 +18,43 @@
 @section('content')
 <x-index-page overflow="clip" :subtitle="__('learning.subtitle.my')">
     <x-slot:actions>
+        @if (($gamification['leaderboard'] ?? false))
+            <x-icon-btn icon="emoji_events" tone="outline" size="sm" :href="route('learning.my.leaderboard')" show-label>{{ __('learning.action.leaderboard') }}</x-icon-btn>
+        @endif
         <x-help-button topic="learning.overview" />
     </x-slot:actions>
+
+    @if ($gamification)
+        {{-- Punkte und Abzeichen (MVP-781): nur bei Org-Schalter; die
+             Bestenliste zusätzlich nur mit persönlichem Opt-in. --}}
+        <div class="mb-3 flex flex-wrap items-center gap-3 rounded-box border border-base-300 px-4 py-2 text-sm">
+            <span class="flex items-center gap-1"><x-icon name="stars" class="text-warning" /> <strong>{{ $gamification['points'] }}</strong> {{ __('learning.field.points') }}</span>
+            <span class="text-base-content/70">{{ $gamification['completed'] }} {{ __('learning.field.completed_courses') }}</span>
+            @foreach ($gamification['badges'] as $badge)
+                <x-status-badge tone="success" size="sm">{{ __('learning.badge.' . $badge) }}</x-status-badge>
+            @endforeach
+        </div>
+    @endif
+
+    {{-- Meine Notizen (MVP-789): private Lernnotizen quer über alle Kurse. --}}
+    @if ($notes->isNotEmpty())
+        <x-card class="mt-4" :title="__('learning.title.my_notes')" icon="sticky_note_2" :count="$notes->count()">
+            <ul class="space-y-2 text-sm">
+                @foreach ($notes as $note)
+                    <li class="rounded-box border border-base-300 px-3 py-2">
+                        <div class="flex flex-wrap items-center justify-between gap-2">
+                            <span class="font-medium">{{ $note->subject }}</span>
+                            @if ($note->notable)
+                                <a class="link link-hover text-xs" href="{{ route('learning.my.show', $note->notable) }}#learning-notes">{{ $note->notable->course?->title }}</a>
+                            @endif
+                        </div>
+                        <p class="mt-1 whitespace-pre-line text-base-content/80">{{ $note->body }}</p>
+                        <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->translatedFormat('d.m.Y H:i') }}</p>
+                    </li>
+                @endforeach
+            </ul>
+        </x-card>
+    @endif
 
     <x-table scroll="flex" table-sort="client">
         <x-slot:head>
@@ -60,5 +95,6 @@
             <x-table.empty icon="school" :colspan="5" :title="__('learning.empty.my')" compact />
         @endforelse
     </x-table>
+
 </x-index-page>
 @endsection

@@ -48,6 +48,7 @@ class LearningTimeService {
 
     public function __construct(
         private readonly LearningWorkTimeClassifier $classifier,
+        private readonly LearningNotifier $notifier,
     ) {}
 
     /**
@@ -138,7 +139,7 @@ class LearningTimeService {
             $end = $start->copy();
         }
 
-        return DB::transaction(function () use ($session, $start, $end, $activeSeconds): LearningTimeSession {
+        $stopped = DB::transaction(function () use ($session, $start, $end, $activeSeconds): LearningTimeSession {
             $elapsed = max(0, $start->diffInSeconds($end, false));
             $active = $activeSeconds !== null ? max(0, min($activeSeconds, $elapsed)) : $elapsed;
 
@@ -163,6 +164,14 @@ class LearningTimeService {
 
             return $session->refresh();
         });
+
+        // Lernzeit außerhalb der Arbeitszeit mit Freigabepflicht: die
+        // Teamleitung erfährt es sofort, nicht erst beim Öffnen der Liste.
+        if ($stopped->approval_status === LearningTimeSession::APPROVAL_PENDING) {
+            $this->notifier->timeApprovalRequested($stopped);
+        }
+
+        return $stopped;
     }
 
     /** Offene Sitzung einer Einschreibung (höchstens eine). */

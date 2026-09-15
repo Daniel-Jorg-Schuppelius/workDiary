@@ -18,8 +18,7 @@ use App\Models\Applications\JobApplication;
 use App\Models\{Customer, Lead, Supplier, User};
 use App\Models\Privacy\{DataSubjectRequest, PrivacyAttachment};
 use App\Services\DocumentDesign\DocumentDesignRenderer;
-use App\Services\Privacy\SubjectData\{
-    ApplicationRecordsSection,
+use App\Services\Privacy\SubjectData\{ApplicationRecordsSection,
     AuditTrailSection,
     CommunicationNotesSection,
     ContactDetailsSection,
@@ -27,6 +26,7 @@ use App\Services\Privacy\SubjectData\{
     CustomerMasterDataSection,
     JobApplicationMasterDataSection,
     LeadMasterDataSection,
+    LearningRecordsSection,
     LocationPointsSection,
     PersonnelFileSection,
     PortalUserMasterDataSection,
@@ -68,10 +68,12 @@ class SubjectDataExporter {
                 new WorkTimeSummarySection,
                 new LocationPointsSection,
                 new PersonnelFileSection,
+                new LearningRecordsSection,
                 new AuditTrailSection,
             ],
             DataSubjectKind::PortalUser => [
                 new PortalUserMasterDataSection,
+                new LearningRecordsSection,
                 new AuditTrailSection,
             ],
             DataSubjectKind::Customer => [

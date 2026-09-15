@@ -1973,4 +1973,131 @@ export function registerAlpineComponents(Alpine) {
             }
         },
     }));
+
+    // Prüfungs-Player (Feature 149, MVP-783): fragenweise Anzeige, Zurück/
+    // Überspringen, Merken, Zwischenspeichern je Antwort, Countdown mit
+    // Abgabe bei 0. Ohne JavaScript bleiben alle Fragen sichtbar (x-show
+    // greift erst nach dem Start) — der Server prüft Frist und Pflicht.
+    Alpine.data("quizRunner", (options) => ({
+        total: Number(options?.total || 0),
+        single: Boolean(options?.single),
+        allowBack: options?.allowBack !== false,
+        allowSkip: options?.allowSkip !== false,
+        expiresAt: options?.expiresAt ? new Date(options.expiresAt).getTime() : null,
+        saveUrl: options?.saveUrl || "",
+        ids: Array.isArray(options?.ids) ? options.ids.map(Number) : [],
+        answered: new Set((options?.answered || []).map(Number)),
+        flagged: new Set((options?.flagged || []).map(Number)),
+        current: 0,
+        remaining: "",
+        submitted: false,
+        timer: null,
+        init() {
+            if (this.single) {
+                const firstOpen = this.ids.findIndex((id) => !this.answered.has(id));
+                this.current = firstOpen >= 0 ? firstOpen : 0;
+            }
+            if (this.expiresAt) {
+                this.tick();
+                this.timer = setInterval(() => this.tick(), 1000);
+            }
+        },
+        tick() {
+            const left = Math.max(0, Math.floor((this.expiresAt - Date.now()) / 1000));
+            const p = (n) => String(n).padStart(2, "0");
+            this.remaining = p(Math.floor(left / 60)) + ":" + p(left % 60);
+            if (left <= 0 && !this.submitted) {
+                this.submitted = true;
+                clearInterval(this.timer);
+                const form = this.$root;
+                if (form && typeof form.requestSubmit === "function") {
+                    form.requestSubmit();
+                } else if (form) {
+                    form.submit();
+                }
+            }
+        },
+        isVisible(index) {
+            return !this.single || index === this.current;
+        },
+        isCurrent(index) {
+            return this.single && index === this.current;
+        },
+        hasPrevious() {
+            return this.allowBack && this.current > 0;
+        },
+        hasNext() {
+            return this.current < this.total - 1;
+        },
+        goTo(index) {
+            if (!this.single) {
+                const card = this.$root.querySelector('[data-quiz-question="' + this.ids[index] + '"]');
+                if (card) card.scrollIntoView({ behavior: "smooth", block: "start" });
+                return;
+            }
+            if (index < this.current && !this.allowBack) return;
+            if (index >= 0 && index < this.total) this.current = index;
+        },
+        previous() {
+            if (this.hasPrevious()) this.current--;
+        },
+        next() {
+            if (this.hasNext()) this.current++;
+        },
+        skip() {
+            if (this.allowSkip) this.next();
+        },
+        progressLabel() {
+            return __("js.quiz.progress", { answered: this.answered.size, total: this.total });
+        },
+        overviewClass(id) {
+            if (this.flagged.has(id)) return "btn-warning";
+            if (this.answered.has(id)) return "btn-success";
+            return "btn-ghost";
+        },
+        // Antwort der Frage aus den Formularfeldern einsammeln — dieselbe
+        // Struktur, die der Server beim Abgeben erwartet.
+        collect(id) {
+            const prefix = "answers[" + id + "]";
+            const payload = {};
+            let hasValue = false;
+            this.$root
+                .querySelectorAll('[name^="' + prefix + '"]')
+                .forEach((field) => {
+                    if ((field.type === "radio" || field.type === "checkbox") && !field.checked) return;
+                    const value = String(field.value ?? "").trim();
+                    if (value === "") return;
+                    const path = field.name
+                        .slice(prefix.length)
+                        .replace(/\]/g, "")
+                        .split("[")
+                        .filter((p) => p !== "");
+                    const key = path[0];
+                    if (!key) return;
+                    if (field.name.endsWith("[]")) {
+                        (payload[key] ||= []).push(value);
+                    } else if (path.length > 1) {
+                        (payload[key] ||= {})[path[1]] = value;
+                    } else {
+                        payload[key] = value;
+                    }
+                    hasValue = true;
+                });
+            return hasValue ? payload : null;
+        },
+        async save(id) {
+            if (!this.saveUrl) return;
+            const payload = this.collect(id);
+            const flag = this.$root.querySelector('[data-quiz-flag="' + id + '"]');
+            const flagged = flag ? flag.checked : false;
+            try {
+                await patchJson(this.saveUrl, { question_id: id, payload, flagged });
+                if (payload) this.answered.add(id); else this.answered.delete(id);
+                if (flagged) this.flagged.add(id); else this.flagged.delete(id);
+            } catch (e) {
+                // Verbindungsabbruch: Formular behält die Eingabe, die Abgabe
+                // schickt sie erneut — deshalb kein Alarm.
+            }
+        },
+    }));
 }

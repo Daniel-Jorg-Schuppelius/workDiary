@@ -391,6 +391,18 @@ return [
     ],
     'notification' => [
         'event' => [
+            'learning' => [
+                'enrolled' => 'Formation attribuée',
+                'dueSoon' => 'Formation bientôt à échéance',
+                'overdue' => 'Formation en retard',
+                'submissionReceived' => 'Remise en attente d’évaluation',
+                'graded' => 'Évaluation disponible',
+                'certificateIssued' => 'Certificat délivré',
+                'waitlistPromoted' => 'Passé de la liste d’attente',
+                'bookingDecided' => 'Réservation de cours décidée',
+                'timeApprovalRequested' => 'Temps d’apprentissage en attente de validation',
+                'questionAsked' => 'Question posée au formateur',
+            ],
             'crisis' => [
                 'alert' => 'Alerte de crise',
             ],
@@ -756,6 +768,7 @@ return [
         'visibility' => [
             'internal' => 'Interne',
             'customer' => 'Visible client',
+            'private' => 'Privé (moi seulement)',
         ],
         'party' => [
             'internal' => 'Interne',
@@ -1626,6 +1639,7 @@ return [
             'essay' => 'Dissertation',
             'hotspot' => 'Marquage d’image',
             'matrix' => 'Affectation matricielle',
+            'assessment' => 'Auto-évaluation',
         ],
         'feedback-mode' => [
             'immediate' => 'Immédiat',
@@ -1651,13 +1665,19 @@ return [
             'expired' => 'Expiré',
             'cancelled' => 'Annulé',
         ],
+        'course-kind' => [
+            'course' => 'Cours',
+            'exam' => 'Examen sans cours',
+        ],
         'enrollment-source' => [
+            'exam' => 'Validation',
             'requirement' => 'Matrice obligatoire',
             'manual' => 'Manuel',
             'self' => 'Auto-inscription',
             'booking' => 'Réservation',
             'rule' => 'Règle',
             'path' => 'Parcours',
+            'import' => 'Importé',
         ],
         'translation-status' => [
             'draft' => 'Brouillon',

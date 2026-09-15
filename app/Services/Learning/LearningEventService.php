@@ -45,6 +45,7 @@ class LearningEventService {
 
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
+        private readonly LearningNotifier $notifier,
     ) {}
 
     /** Anmelden — oder auf die Warteliste, wenn der Termin voll ist. */
@@ -198,8 +199,9 @@ class LearningEventService {
         }
 
         $next->update(['status' => ParticipantStatus::Accepted->value]);
+        $this->notifier->waitlistPromoted($next->refresh());
 
-        return $next->refresh();
+        return $next;
     }
 
     /** Freie Plätze: ohne Obergrenze ist immer Platz. */

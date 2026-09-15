@@ -44,6 +44,14 @@
                                   :value="old('rubric', collect($assignment?->criteria() ?? [])->map(fn ($c) => ($c['key'] ?? '') . ' | ' . ($c['label'] ?? '') . ' | ' . ($c['max_points'] ?? 0))->implode(PHP_EOL))" />
                 <x-checkbox-field name="requires_second_opinion" :label="__('learning.field.requires_second_opinion')" span="2"
                                   :checked="(bool) old('requires_second_opinion', $assignment?->requires_second_opinion)" />
+                <x-input-field name="allowed_extensions" :label="__('learning.field.allowed_extensions')" maxlength="255" span="2"
+                               :hint="__('learning.help.allowed_extensions')"
+                               :value="old('allowed_extensions', implode(', ', $assignment?->allowedExtensions() ?? []))" />
+                <x-input-field name="max_files" type="number" min="1" max="5" :label="__('learning.field.max_files')" :value="old('max_files', $assignment?->max_files)" />
+                <x-input-field name="max_file_mb" type="number" min="1" max="1024" :label="__('learning.field.max_file_mb')" :value="old('max_file_mb', $assignment?->max_file_mb)" />
+                <x-checkbox-field name="auto_approve" :label="__('learning.field.auto_approve')" span="2"
+                                  :hint="__('learning.help.auto_approve')"
+                                  :checked="(bool) old('auto_approve', $assignment?->auto_approve)" />
             </x-form-group>
             <div class="mt-3 flex justify-end">
                 <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.save') }}</x-icon-btn>

@@ -1016,6 +1016,7 @@ return [
     ],
     'learning' => [
         'dossierDisclosed' => 'Qualification dossier disclosed by name',
+        'attemptViewed' => 'Attempt record viewed',
     ],
     // Resale register (feature 152, review 2026-09-10 A2): user decisions.
     'resale_period' => [

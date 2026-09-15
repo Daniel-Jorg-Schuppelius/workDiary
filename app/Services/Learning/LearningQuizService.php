@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
-use App\Models\Learning\{LearningAnswer, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttempt};
+use App\Models\Learning\{LearningAnswer, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttempt, LearningQuizAttemptWaiver};
 use App\Models\User;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -33,9 +33,13 @@ use Illuminate\Validation\ValidationException;
  *     Weg dorthin bleibt der {@see LearningEnrollmentService}).
  */
 class LearningQuizService {
+    /** Nachfrist nach Ablauf, in der eine Formularabgabe noch zählt (der Countdown löst sie aus). */
+    public const SUBMIT_GRACE_SECONDS = 30;
+
     public function __construct(
         private readonly LearningAnswerGrader $grader,
         private readonly LearningEnrollmentService $enrollments,
+        private readonly LearningQuestionCatalogService $catalog,
     ) {}
 
     /**
@@ -55,16 +59,31 @@ class LearningQuizService {
             return $open;
         }
 
+        // Freischaltplan (MVP-788): eine gesperrte Prüfungseinheit startet nicht.
+        $unit = $quiz->unit;
+        if ($unit !== null) {
+            app(LearningEnrollmentService::class)->guardReleased($enrollment, $unit, $now);
+        }
+
         $previous = $this->attemptsQuery($enrollment, $quiz)->orderByDesc('attempt_no')->first();
         $count = $this->attemptsQuery($enrollment, $quiz)->count();
 
-        if (! $quiz->allowsUnlimitedAttempts() && $count >= $quiz->max_attempts) {
+        // Versuchsfreigabe (MVP-785): genau ein weiterer Versuch trotz
+        // Grenze oder Sperrfrist — verbraucht sich mit dem Start.
+        $waiver = LearningQuizAttemptWaiver::query()
+            ->where('learning_enrollment_id', $enrollment->id)
+            ->where('learning_quiz_id', $quiz->id)
+            ->whereNull('used_at')
+            ->orderBy('id')
+            ->first();
+
+        if ($waiver === null && ! $quiz->allowsUnlimitedAttempts() && $count >= $quiz->max_attempts) {
             throw ValidationException::withMessages([
                 'attempts' => (string) __('learning.errors.attempts_exhausted'),
             ]);
         }
 
-        if ($previous !== null && $quiz->retry_wait_hours > 0) {
+        if ($waiver === null && $previous !== null && $quiz->retry_wait_hours > 0) {
             $ready = ($previous->submitted_at ?? $previous->started_at)?->copy()->addHours($quiz->retry_wait_hours);
             if ($ready !== null && $ready->greaterThan($now)) {
                 throw ValidationException::withMessages([
@@ -73,7 +92,7 @@ class LearningQuizService {
             }
         }
 
-        return DB::transaction(function () use ($enrollment, $quiz, $context, $now, $count): LearningQuizAttempt {
+        return DB::transaction(function () use ($enrollment, $quiz, $context, $now, $count, $waiver): LearningQuizAttempt {
             $snapshot = $this->buildSnapshot($quiz);
 
             if ($snapshot === []) {
@@ -81,6 +100,8 @@ class LearningQuizService {
                     'questions' => (string) __('learning.errors.quiz_without_questions'),
                 ]);
             }
+
+            $waiver?->update(['used_at' => $now]);
 
             return LearningQuizAttempt::query()->create([
                 'organization_id' => $enrollment->organization_id,
@@ -115,15 +136,58 @@ class LearningQuizService {
             ]);
         }
 
-        return DB::transaction(function () use ($attempt, $answers, $now): LearningQuizAttempt {
-            $questions = $attempt->questions();
+        // Nach Ablauf zählt nur, was rechtzeitig zwischengespeichert wurde —
+        // eine kurze Nachfrist deckt die Abgabe, die der Countdown selbst
+        // auslöst (MVP-783).
+        $expired = $attempt->isExpired($now->copy()->subSeconds(self::SUBMIT_GRACE_SECONDS));
+        $stored = $attempt->answers()->get()->keyBy('learning_question_id');
+        $quiz = $attempt->quiz;
+
+        // Antworten je Frage: Formular vor Zwischenspeicher — nach Ablauf
+        // nur der Zwischenspeicher.
+        $questions = $attempt->questions();
+        $payloads = [];
+        $missing = [];
+        foreach ($questions as $index => $question) {
+            $questionId = (int) ($question['id'] ?? 0);
+            $formPayload = $answers[$questionId] ?? null;
+            $formPayload = is_array($formPayload) && ! $expired ? $this->cleanPayload($formPayload) : null;
+            $draft = $stored->get($questionId);
+            $payload = $formPayload ?? ($draft->payload ?? null);
+            $payloads[$questionId] = is_array($payload) ? $payload : null;
+
+            if ($payloads[$questionId] === null && $quiz?->require_all_answered && ! $expired) {
+                $missing[] = $index + 1;
+            }
+        }
+
+        if ($missing !== []) {
+            // Was schon beantwortet ist, bleibt als Entwurf erhalten — sonst
+            // verlöre die Person beim Nachbessern ihre Eingaben.
+            DB::transaction(function () use ($attempt, $payloads): void {
+                foreach ($payloads as $questionId => $payload) {
+                    if ($payload === null) {
+                        continue;
+                    }
+                    LearningAnswer::query()->updateOrCreate(
+                        ['learning_quiz_attempt_id' => $attempt->id, 'learning_question_id' => $questionId],
+                        ['organization_id' => $attempt->organization_id, 'payload' => $payload, 'is_correct' => null, 'points_awarded' => 0],
+                    );
+                }
+            });
+
+            throw ValidationException::withMessages([
+                'answers' => (string) __('learning.errors.answers_required', ['numbers' => implode(', ', $missing)]),
+            ]);
+        }
+
+        return DB::transaction(function () use ($attempt, $questions, $payloads, $now, $quiz): LearningQuizAttempt {
             $score = 0;
             $needsManualGrading = false;
 
             foreach ($questions as $question) {
                 $questionId = (int) ($question['id'] ?? 0);
-                $payload = $answers[$questionId] ?? null;
-                $payload = is_array($payload) ? $payload : null;
+                $payload = $payloads[$questionId] ?? null;
 
                 $result = $this->grader->grade($question, $payload);
                 $score += $result['points'];
@@ -145,7 +209,6 @@ class LearningQuizService {
 
             $max = max(1, (int) $attempt->max_points);
             $percent = (int) round($score / $max * 100);
-            $passPercent = $attempt->quiz->pass_percent ?? 80;
 
             $attempt->update([
                 'submitted_at' => $now,
@@ -153,13 +216,88 @@ class LearningQuizService {
                 'score_percent' => $percent,
                 // Solange ein Aufsatz auf Bewertung wartet, steht das
                 // Gesamtergebnis noch nicht fest.
-                'passed' => $needsManualGrading ? null : $percent >= $passPercent,
+                'passed' => $needsManualGrading ? null : $this->passes($quiz, $score, $percent),
             ]);
 
             $this->completeUnitIfPassed($attempt->refresh());
 
             return $attempt;
         });
+    }
+
+    /**
+     * Antwort zwischenspeichern (MVP-783): der Versuch bleibt offen, bewertet
+     * wird nichts — `is_correct` bleibt null. Nach Ablauf wird nichts mehr
+     * angenommen, sonst ließe sich das Zeitlimit umgehen.
+     *
+     * @param  array<string, mixed>|null  $payload
+     */
+    public function saveAnswer(LearningQuizAttempt $attempt, int $questionId, ?array $payload, ?bool $flagged = null, ?Carbon $now = null): LearningAnswer {
+        $now ??= Carbon::now();
+
+        if (! $attempt->isOpen() || $attempt->isExpired($now)) {
+            throw ValidationException::withMessages([
+                'attempt' => (string) __('learning.errors.attempt_closed'),
+            ]);
+        }
+
+        $known = array_map(static fn (array $q): int => (int) ($q['id'] ?? 0), $attempt->questions());
+        if (! in_array($questionId, $known, true)) {
+            throw ValidationException::withMessages([
+                'question' => (string) __('learning.errors.question_foreign'),
+            ]);
+        }
+
+        $values = [
+            'organization_id' => $attempt->organization_id,
+            'payload' => $payload !== null ? $this->cleanPayload($payload) : null,
+            'is_correct' => null,
+            'points_awarded' => 0,
+        ];
+        if ($flagged !== null) {
+            $values['flagged'] = $flagged;
+        }
+
+        return LearningAnswer::query()->updateOrCreate(
+            ['learning_quiz_attempt_id' => $attempt->id, 'learning_question_id' => $questionId],
+            $values,
+        );
+    }
+
+    /**
+     * Bestanden (MVP-793): Prozentgrenze UND — falls gesetzt — Punktgrenze.
+     * Beides zusammen, damit eine kleine Prüfung nicht mit einem
+     * einzigen Treffer „bestanden" ist.
+     */
+    private function passes(?LearningQuiz $quiz, int $score, int $percent): bool {
+        $passPercent = $quiz->pass_percent ?? 80;
+        $passPoints = $quiz->pass_points ?? null;
+
+        return $percent >= $passPercent && ($passPoints === null || $score >= $passPoints);
+    }
+
+    /**
+     * Leere Eingaben zählen nicht als Antwort: ein Formular schickt auch
+     * unbeantwortete Fragen mit leeren Feldern.
+     *
+     * @param  array<string, mixed>  $payload
+     * @return array<string, mixed>|null
+     */
+    private function cleanPayload(array $payload): ?array {
+        $clean = [];
+        foreach ($payload as $key => $value) {
+            if (is_array($value)) {
+                $value = array_values(array_filter($value, static fn ($v): bool => $v !== null && $v !== ''));
+                if ($value === []) {
+                    continue;
+                }
+            } elseif ($value === null || trim((string) $value) === '') {
+                continue;
+            }
+            $clean[$key] = $value;
+        }
+
+        return $clean === [] ? null : $clean;
     }
 
     /**
@@ -204,10 +342,30 @@ class LearningQuizService {
         $attempt->update([
             'score_points' => $score,
             'score_percent' => $percent,
-            'passed' => $open ? null : $percent >= ($attempt->quiz->pass_percent ?? 80),
+            'passed' => $open ? null : $this->passes($attempt->quiz, $score, $percent),
         ]);
 
         $this->completeUnitIfPassed($attempt->refresh());
+    }
+
+    /**
+     * Versuchsfreigabe erteilen (MVP-785): Begründung und Person sind Pflicht,
+     * die Prüfung muss zum Kurs der Einschreibung gehören.
+     */
+    public function grantWaiver(LearningEnrollment $enrollment, LearningQuiz $quiz, ?User $actor, string $reason): LearningQuizAttemptWaiver {
+        if ($quiz->unit?->learning_course_id !== $enrollment->learning_course_id) {
+            throw ValidationException::withMessages([
+                'quiz' => (string) __('learning.errors.quiz_foreign'),
+            ]);
+        }
+
+        return LearningQuizAttemptWaiver::query()->create([
+            'organization_id' => $enrollment->organization_id,
+            'learning_enrollment_id' => $enrollment->id,
+            'learning_quiz_id' => $quiz->id,
+            'granted_by_user_id' => $actor?->id,
+            'reason' => trim($reason),
+        ]);
     }
 
     public function openAttempt(LearningEnrollment $enrollment, LearningQuiz $quiz): ?LearningQuizAttempt {
@@ -241,9 +399,21 @@ class LearningQuizService {
     private function buildSnapshot(LearningQuiz $quiz): array {
         $questions = $quiz->questions()->with('options')->get();
 
-        if ($quiz->questions_per_attempt !== null && $quiz->questions_per_attempt > 0) {
+        // Ziehregeln (MVP-782): je Kategorie N zufällige Katalogfragen —
+        // zusätzlich zur festen Liste, ohne Doppelung.
+        $drawn = $this->catalog->drawFor($quiz, array_values(array_map('intval', $questions->pluck('id')->all())));
+        if ($drawn !== []) {
+            $questions = $questions->concat($drawn)->values();
+        }
+
+        $subset = $quiz->questions_per_attempt;
+        // Prozent-Teilmenge (MVP-793): Anteil der verfügbaren Fragen, mindestens eine.
+        if (($subset === null || $subset <= 0) && $quiz->questions_per_attempt_percent !== null && $quiz->questions_per_attempt_percent > 0) {
+            $subset = max(1, (int) ceil($questions->count() * $quiz->questions_per_attempt_percent / 100));
+        }
+        if ($subset !== null && $subset > 0) {
             // N aus M: die Auswahl wechselt je Versuch (Rotation).
-            $questions = $questions->shuffle()->take($quiz->questions_per_attempt);
+            $questions = $questions->shuffle()->take($subset);
         }
 
         if ($quiz->shuffle_questions) {
@@ -269,6 +439,7 @@ class LearningQuizService {
                     'is_correct' => $option->is_correct,
                     'position' => $option->position,
                     'match_key' => $option->match_key,
+                    'points' => $option->points,
                 ])->all()),
             ];
         })->values()->all());

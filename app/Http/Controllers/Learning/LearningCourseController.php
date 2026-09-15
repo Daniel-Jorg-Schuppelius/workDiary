@@ -12,18 +12,18 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Learning;
 
-use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningBlockKind, LearningCourseStatus, LearningFeedbackMode, LearningInstructionSuitability, LearningQuestionKind, LearningTimePolicy, LearningUnitKind};
+use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningBlockKind, LearningCourseKind, LearningCourseStatus, LearningFeedbackMode, LearningInstructionSuitability, LearningQuestionKind, LearningTimePolicy, LearningUnitKind};
 use App\Enums\Media\MediaRenditionKind;
 use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{Attachment, User};
-use App\Models\Learning\{LearningAssignment, LearningContentTranslation, LearningCourse, LearningQuestion, LearningQuiz, LearningSection, LearningUnit};
+use App\Models\Learning\{LearningAssignment, LearningContentTranslation, LearningCourse, LearningCourseCategory, LearningEnrollment, LearningQuestion, LearningQuestionCategory, LearningQuiz, LearningQuizAttempt, LearningQuizDrawRule, LearningSection, LearningUnit};
 use App\Models\Media\MediaRendition;
 use App\Models\Training\TrainingCourse;
 use App\Rules\ExistsInCurrentOrganization;
 use App\Services\Ai\Exceptions\AiException;
 use App\Services\Attachments\FileAttacher;
-use App\Services\Learning\{LearningAttendanceListPdfRenderer, LearningContentService, LearningCoursePortabilityService, LearningCourseService, LearningTranslationService};
+use App\Services\Learning\{LearningAiSuggestionService, LearningAttendanceListPdfRenderer, LearningContentService, LearningCoursePortabilityService, LearningCourseService, LearningOutlineParser, LearningQuestionCatalogService, LearningQuestionEditorService, LearningTranslationService};
 use App\Services\Media\VideoTranscodingService;
 use App\Support\Sqid;
 use Illuminate\Http\{RedirectResponse, Request, Response, UploadedFile};
@@ -47,6 +47,9 @@ class LearningCourseController extends Controller {
         private readonly LearningCourseService $courses,
         private readonly LearningContentService $content,
         private readonly LearningCoursePortabilityService $portability,
+        private readonly LearningQuestionEditorService $questions,
+        private readonly LearningAiSuggestionService $ai,
+        private readonly LearningQuestionCatalogService $catalog,
     ) {}
 
     public function index(Request $request): View {
@@ -54,19 +57,49 @@ class LearningCourseController extends Controller {
 
         $status = $request->query('status');
         $status = is_string($status) ? LearningCourseStatus::tryFrom($status) : null;
+        $kind = LearningCourseKind::tryFrom((string) $request->query('kind', ''));
+        // Kategorie (MVP-788): Sqid aus der Auswahl, sonst kein Filter.
+        $categoryId = $request->filled('category') ? Sqid::decodeOrNumeric(LearningCourseCategory::class, (string) $request->query('category')) : null;
 
+        /** @var User $viewer */
+        $viewer = Auth::user();
         $query = LearningCourse::query()
-            ->with('trainingCourse')
+            ->with(['trainingCourse', 'category'])
             ->withCount('units')
+            // Trainer-Scoping (MVP-786): einzige Filterstelle ist der Scope.
+            ->visibleTo($viewer)
             ->orderBy('title');
 
         if ($status !== null) {
             $query->where('status', $status->value);
         }
+        if ($kind !== null) {
+            $query->where('kind', $kind->value);
+        }
+        if ($categoryId !== null) {
+            $query->where('category_id', $categoryId);
+        }
+
+        // Ansicht Liste/Kacheln (MVP-794): Umschalter speichert die Nutzerpräferenz.
+        $view = (string) $request->query('view', '');
+        if (in_array($view, ['list', 'tiles'], true)) {
+            // Verschachtelt wie die übrigen Lern-Präferenzen (setPreference() speichert flach).
+            $preferences = (array) ($viewer->preferences ?? []);
+            data_set($preferences, 'learning.catalog_view', $view);
+            $viewer->forceFill(['preferences' => $preferences])->save();
+        } else {
+            $view = (string) (($viewer->preferences['learning']['catalog_view'] ?? null) ?: 'list');
+        }
+        $courses = $query->paginate(30)->withQueryString();
 
         return view('learning.courses.index', [
-            'courses' => $query->paginate(30)->withQueryString(),
+            'courses' => $courses,
             'status' => $status,
+            'kind' => $kind,
+            'categoryId' => $categoryId,
+            'categories' => $this->categoryOptions(),
+            'viewMode' => $view,
+            'ratings' => app(\App\Services\Learning\LearningCourseRatingService::class)->ratingsFor(array_values(array_map('intval', $courses->pluck('id')->all()))),
             'releasedCount' => LearningCourse::query()->released()->count(),
             'canCreate' => Gate::allows('create', LearningCourse::class),
         ]);
@@ -78,7 +111,9 @@ class LearningCourseController extends Controller {
         return view('learning.courses._form_dialog', [
             'course' => null,
             'trainingCourses' => $this->trainingCourseOptions(),
+            'courseOptions' => $this->courseOptions(),
             'assets' => $this->assetOptions(),
+            'categories' => $this->categoryOptions(),
         ]);
     }
 
@@ -111,7 +146,23 @@ class LearningCourseController extends Controller {
             ->orderBy('locale')
             ->get();
 
+        // Teilnehmerkarte (MVP-778): Zähler je Status, die Liste liegt auf
+        // einer eigenen Seite.
+        $enrollmentCounts = LearningEnrollment::query()
+            ->where('learning_course_id', $course->id)
+            ->selectRaw('status, count(*) as total')
+            ->groupBy('status')
+            ->pluck('total', 'status');
+
         return view('learning.courses.show', [
+            'enrollmentCounts' => $enrollmentCounts,
+            'canManageParticipants' => Gate::allows('updateMeta', $course),
+            'aiOutline' => Gate::allows('update', $course) && $this->ai->isAvailable($course->organization, LearningAiSuggestionService::CAPABILITY_OUTLINE),
+            'trainers' => $course->trainers()->orderBy('name')->get(),
+            'trainerOptions' => Gate::allows('updateMeta', $course)
+                ? User::query()->inCurrentOrganization()->where('organization_id', $course->organization_id)->orderBy('name')->get(['id', 'name'])
+                : collect(),
+            'scopingEnabled' => LearningCourse::scopingEnabled($course->organization),
             'translations' => $translations,
             'sourceHash' => app(LearningTranslationService::class)->sourceHash($course),
             'locales' => array_values(array_filter((array) config('app.available_locales', ['de', 'en']))),
@@ -129,7 +180,9 @@ class LearningCourseController extends Controller {
         return view('learning.courses._form_dialog', [
             'course' => $course,
             'trainingCourses' => $this->trainingCourseOptions(),
+            'courseOptions' => $this->courseOptions($course),
             'assets' => $this->assetOptions(),
+            'categories' => $this->categoryOptions(),
         ]);
     }
 
@@ -195,6 +248,7 @@ class LearningCourseController extends Controller {
             'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'points' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'is_mandatory' => ['nullable', 'boolean'],
+            'is_preview' => ['nullable', 'boolean'],
         ]);
 
         $section = null;
@@ -211,6 +265,7 @@ class LearningCourseController extends Controller {
             'duration_minutes' => $data['duration_minutes'] ?? null,
             'points' => $data['points'] ?? 0,
             'is_mandatory' => (bool) ($data['is_mandatory'] ?? true),
+            'is_preview' => (bool) ($data['is_preview'] ?? false),
         ]);
 
         return redirect()->back()->with('success', __('learning.flash.unit_added'));
@@ -261,18 +316,33 @@ class LearningCourseController extends Controller {
             'duration_minutes' => ['nullable', 'integer', 'min:1', 'max:10000'],
             'points' => ['nullable', 'integer', 'min:0', 'max:1000'],
             'is_mandatory' => ['nullable', 'boolean'],
+            'is_preview' => ['nullable', 'boolean'],
             'release_after_days' => ['nullable', 'integer', 'min:0', 'max:3650'],
+            'release_at' => ['nullable', 'date'],
+            'min_seconds' => ['nullable', 'integer', 'min:0', 'max:86400'],
         ]);
 
-        $releaseAfter = $data['release_after_days'] ?? null;
+        // Freischaltplan (Drip, MVP-788): Tage ab Einschreibung und/oder festes
+        // Datum — es gilt das spätere; ohne beides ist die Einheit sofort offen.
+        $release = array_filter([
+            'after_days' => (int) ($data['release_after_days'] ?? 0) > 0 ? (int) $data['release_after_days'] : null,
+            'at' => ! empty($data['release_at']) ? \Illuminate\Support\Carbon::parse((string) $data['release_at'])->toDateString() : null,
+        ], static fn ($v) => $v !== null);
+        $completion = (array) ($unit->completion_rule ?? []);
+        if ((int) ($data['min_seconds'] ?? 0) > 0) {
+            $completion['min_seconds'] = (int) $data['min_seconds'];
+        } else {
+            unset($completion['min_seconds']);
+        }
 
         $unit->update([
             'title' => $data['title'],
             'duration_minutes' => $data['duration_minutes'] ?? null,
             'points' => max(0, (int) ($data['points'] ?? 0)),
             'is_mandatory' => (bool) ($data['is_mandatory'] ?? false),
-            // Freischaltplan (Drip): Tage ab Einschreibung, NULL = sofort.
-            'release_rule' => $releaseAfter !== null ? ['after_days' => (int) $releaseAfter] : null,
+            'is_preview' => (bool) ($data['is_preview'] ?? false),
+            'release_rule' => $release !== [] ? $release : null,
+            'completion_rule' => $completion !== [] ? $completion : null,
         ]);
 
         return redirect()->back()->with('success', __('learning.flash.unit_updated'));
@@ -291,6 +361,8 @@ class LearningCourseController extends Controller {
             'caption' => ['nullable', 'string', 'max:255'],
             'alt' => ['nullable', 'string', 'max:255'],
             'require_percent' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'autoplay' => ['nullable', 'boolean'],
+            'remember_position' => ['nullable', 'boolean'],
             'media' => array_merge(['nullable'], FileAttacher::rule()),
         ]);
 
@@ -368,7 +440,33 @@ class LearningCourseController extends Controller {
         return view('learning.courses.quiz_editor', [
             'course' => $course,
             'unit' => $unit,
-            'quiz' => $unit->quiz()->with('questions.options')->first(),
+            'quiz' => $unit->quiz()->with(['questions.options', 'questions.category', 'drawRules.category'])->first(),
+            'aiQuestions' => $this->ai->isAvailable($course->organization, LearningAiSuggestionService::CAPABILITY_QUESTIONS),
+            'categories' => $this->categories($course->organization_id),
+        ]);
+    }
+
+    /** Prüfungsstatistik (MVP-785): Versuche, Quoten je Frage ab n ≥ 5, Zeitbedarf. */
+    public function quizStatistics(LearningCourse $course, LearningUnit $unit): View {
+        Gate::authorize(\App\Enums\User\Permission::LearningGrade->value);
+        abort_unless($course->isVisibleTo($this->uploader()), 404);
+        $this->guardUnitBelongsToCourse($course, $unit);
+        $quiz = $unit->quiz;
+        abort_if($quiz === null, 404);
+
+        $attempts = LearningQuizAttempt::query()
+            ->with(['enrollment.user', 'enrollment.externalParticipant'])
+            ->where('learning_quiz_id', $quiz->id)
+            ->orderByDesc('started_at')
+            ->paginate(50);
+
+        return view('learning.courses.quiz_statistics', [
+            'course' => $course,
+            'unit' => $unit,
+            'quiz' => $quiz,
+            'attempts' => $attempts,
+            'stats' => app(\App\Services\Learning\LearningReportService::class)->quizStatistics($quiz),
+            'minGroup' => \App\Services\Learning\LearningReportService::MIN_GROUP,
         ]);
     }
 
@@ -385,10 +483,17 @@ class LearningCourseController extends Controller {
             'max_attempts' => ['required', 'integer', 'min:0', 'max:50'],
             'retry_wait_hours' => ['required', 'integer', 'min:0', 'max:8760'],
             'questions_per_attempt' => ['nullable', 'integer', 'min:1', 'max:500'],
+            'questions_per_attempt_percent' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'pass_points' => ['nullable', 'integer', 'min:1', 'max:100000'],
             'shuffle_questions' => ['nullable', 'boolean'],
             'shuffle_answers' => ['nullable', 'boolean'],
             'feedback_mode' => ['required', Rule::enum(LearningFeedbackMode::class)],
             'show_solutions' => ['nullable', 'boolean'],
+            'display_mode' => ['nullable', Rule::in(['all', 'single'])],
+            'allow_back' => ['nullable', 'boolean'],
+            'allow_skip' => ['nullable', 'boolean'],
+            'require_all_answered' => ['nullable', 'boolean'],
+            'result_messages' => ['nullable', 'string', 'max:5000'],
         ]);
 
         LearningQuiz::query()->updateOrCreate(
@@ -402,10 +507,17 @@ class LearningCourseController extends Controller {
                 'max_attempts' => (int) $data['max_attempts'],
                 'retry_wait_hours' => (int) $data['retry_wait_hours'],
                 'questions_per_attempt' => $data['questions_per_attempt'] ?? null,
+                'questions_per_attempt_percent' => $data['questions_per_attempt_percent'] ?? null,
+                'pass_points' => $data['pass_points'] ?? null,
                 'shuffle_questions' => (bool) ($data['shuffle_questions'] ?? false),
                 'shuffle_answers' => (bool) ($data['shuffle_answers'] ?? false),
                 'feedback_mode' => $data['feedback_mode'],
                 'show_solutions' => (bool) ($data['show_solutions'] ?? false),
+                'display_mode' => $data['display_mode'] ?? 'all',
+                'allow_back' => (bool) ($data['allow_back'] ?? false),
+                'allow_skip' => (bool) ($data['allow_skip'] ?? false),
+                'require_all_answered' => (bool) ($data['require_all_answered'] ?? false),
+                'result_messages' => $this->parseResultMessages((string) ($data['result_messages'] ?? '')),
             ]
         );
 
@@ -415,6 +527,7 @@ class LearningCourseController extends Controller {
     /**
      * Frage anlegen. Optionen kommen als Zeilenliste: eine Zeile je Option,
      * ein führendes `*` markiert die richtige — kompakt und ohne JavaScript.
+     * Die Übersetzung der Zeilen liegt im {@see LearningQuestionEditorService}.
      */
     public function storeQuestion(Request $request, LearningCourse $course, LearningUnit $unit): RedirectResponse {
         Gate::authorize('update', $course);
@@ -423,234 +536,387 @@ class LearningCourseController extends Controller {
         $quiz = $unit->quiz;
         abort_if($quiz === null, 404);
 
+        $data = $this->validatedQuestion($request, $course);
+        $image = $request->file('image');
+
+        $this->questions->create($course->organization_id, $data, $image instanceof UploadedFile ? $image : null, $this->uploader(), $quiz);
+
+        return redirect()
+            ->route('learning.courses.units.quiz.edit', [$course, $unit])
+            ->with('success', __('learning.flash.question_added'));
+    }
+
+    /** Frage bearbeiten (MVP-779): derselbe Editor, Textfeld aus der Frage zurückgefüllt. */
+    public function editQuestion(LearningCourse $course, LearningUnit $unit, LearningQuestion $question): View {
+        Gate::authorize('update', $course);
+        $this->guardQuestionBelongsToUnit($course, $unit, $question);
+
+        return view('learning.courses.quiz_editor', [
+            'course' => $course,
+            'unit' => $unit,
+            'quiz' => $unit->quiz()->with(['questions.options', 'questions.category', 'drawRules.category'])->first(),
+            'editing' => $question,
+            'editingLines' => $this->questions->toLines($question),
+            'aiQuestions' => $this->ai->isAvailable($course->organization, LearningAiSuggestionService::CAPABILITY_QUESTIONS),
+            'categories' => $this->categories($course->organization_id),
+        ]);
+    }
+
+    public function updateQuestion(Request $request, LearningCourse $course, LearningUnit $unit, LearningQuestion $question): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardQuestionBelongsToUnit($course, $unit, $question);
+
+        $data = $this->validatedQuestion($request, $course);
+        $image = $request->file('image');
+
+        $this->questions->update($question, $data, $image instanceof UploadedFile ? $image : null, $this->uploader());
+
+        return redirect()
+            ->route('learning.courses.units.quiz.edit', [$course, $unit])
+            ->with('success', __('learning.flash.question_updated'));
+    }
+
+    public function duplicateQuestion(LearningCourse $course, LearningUnit $unit, LearningQuestion $question): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardQuestionBelongsToUnit($course, $unit, $question);
+
+        $quiz = $unit->quiz;
+        abort_if($quiz === null, 404);
+        $this->questions->duplicate($question, $this->uploader(), $quiz);
+
+        return redirect()
+            ->route('learning.courses.units.quiz.edit', [$course, $unit])
+            ->with('success', __('learning.flash.question_duplicated'));
+    }
+
+    public function moveQuestion(Request $request, LearningCourse $course, LearningUnit $unit, LearningQuestion $question): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardQuestionBelongsToUnit($course, $unit, $question);
+
+        $quiz = $unit->quiz;
+        abort_if($quiz === null, 404);
+        $this->questions->move($quiz, $question, $request->input('direction') === 'up' ? -1 : 1);
+
+        return redirect()->route('learning.courses.units.quiz.edit', [$course, $unit]);
+    }
+
+    /** Aus der Prüfung nehmen — die Katalogfrage bleibt (MVP-782). */
+    public function destroyQuestion(LearningCourse $course, LearningUnit $unit, LearningQuestion $question): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardQuestionBelongsToUnit($course, $unit, $question);
+
+        $quiz = $unit->quiz;
+        abort_if($quiz === null, 404);
+        $this->catalog->detach($quiz, $question);
+
+        return redirect()->route('learning.courses.units.quiz.edit', [$course, $unit])
+            ->with('success', __('learning.flash.question_detached'));
+    }
+
+    /** Katalogfragen zur Auswahl (Dialog, MVP-782): alles, was noch nicht in der Prüfung steht. */
+    public function catalogPicker(Request $request, LearningCourse $course, LearningUnit $unit): View {
+        Gate::authorize('update', $course);
+        $this->guardUnitBelongsToCourse($course, $unit);
+        $quiz = $unit->quiz;
+        abort_if($quiz === null, 404);
+
+        $category = Sqid::decode(LearningQuestionCategory::class, (string) $request->query('category', ''));
+        $kind = LearningQuestionKind::tryFrom((string) $request->query('kind', ''));
+        $search = trim((string) $request->query('q', ''));
+
+        $questions = LearningQuestion::query()
+            ->with('category')
+            ->where('organization_id', $course->organization_id)
+            ->whereNotIn('id', $quiz->questions()->select('learning_questions.id'))
+            ->when($category !== null, fn ($q) => $q->where('learning_question_category_id', $category))
+            ->when($kind, fn ($q, LearningQuestionKind $k) => $q->where('kind', $k->value))
+            ->when($search !== '', fn ($q) => $q->where(fn ($w) => $w->whereLikeEscaped('prompt', $search)->orWhereLikeEscaped('title', $search)))
+            ->orderBy('title')
+            ->orderBy('prompt')
+            ->limit(200)
+            ->get();
+
+        return view('learning.courses._catalog_picker_dialog', [
+            'course' => $course,
+            'unit' => $unit,
+            'questions' => $questions,
+            'categories' => $this->categories($course->organization_id),
+            'category' => $category,
+            'kind' => $kind,
+            'search' => $search,
+        ]);
+    }
+
+    /** Ausgewählte Katalogfragen ans Ende der Prüfung setzen. */
+    public function attachQuestions(Request $request, LearningCourse $course, LearningUnit $unit): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardUnitBelongsToCourse($course, $unit);
+        $quiz = $unit->quiz;
+        abort_if($quiz === null, 404);
+
         $data = $request->validate([
+            'question_ids' => ['required', 'array', 'min:1', 'max:200'],
+            'question_ids.*' => ['string', 'max:64'],
+        ]);
+
+        $ids = array_values(array_filter(array_map(
+            static fn (string $raw): ?int => Sqid::decode(LearningQuestion::class, $raw),
+            $data['question_ids'],
+        )));
+        $attached = 0;
+        foreach (LearningQuestion::query()->where('organization_id', $course->organization_id)->whereIn('id', $ids)->get() as $question) {
+            $this->catalog->attach($quiz, $question);
+            $attached++;
+        }
+
+        return redirect()
+            ->route('learning.courses.units.quiz.edit', [$course, $unit])
+            ->with('success', __('learning.flash.questions_attached', ['count' => $attached]));
+    }
+
+    /** Ziehregel setzen: N Fragen einer Kategorie je Versuch (MVP-782). */
+    public function storeDrawRule(Request $request, LearningCourse $course, LearningUnit $unit): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardUnitBelongsToCourse($course, $unit);
+        $quiz = $unit->quiz;
+        abort_if($quiz === null, 404);
+
+        $data = $request->validate([
+            'category_id' => ['required', 'string', 'max:64'],
+            'count' => ['required', 'integer', 'min:1', 'max:500'],
+        ]);
+
+        $categoryId = Sqid::decode(LearningQuestionCategory::class, (string) $data['category_id']);
+        $category = $categoryId !== null
+            ? LearningQuestionCategory::query()->where('organization_id', $course->organization_id)->find($categoryId)
+            : null;
+        if ($category === null) {
+            throw ValidationException::withMessages(['category_id' => (string) __('learning.errors.category_required')]);
+        }
+
+        $this->catalog->setDrawRule($quiz, $category, (int) $data['count']);
+
+        return redirect()
+            ->route('learning.courses.units.quiz.edit', [$course, $unit])
+            ->with('success', __('learning.flash.draw_rule_saved'));
+    }
+
+    public function destroyDrawRule(LearningCourse $course, LearningUnit $unit, LearningQuizDrawRule $rule): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardUnitBelongsToCourse($course, $unit);
+        abort_unless($rule->learning_quiz_id === $unit->quiz?->id, 404);
+
+        $this->catalog->removeDrawRule($rule);
+
+        return redirect()->route('learning.courses.units.quiz.edit', [$course, $unit]);
+    }
+
+    /** Einheit in der Kursstruktur verschieben (MVP-779). */
+    public function moveUnit(Request $request, LearningCourse $course, LearningUnit $unit): RedirectResponse {
+        Gate::authorize('update', $course);
+        $this->guardUnitBelongsToCourse($course, $unit);
+
+        $this->courses->moveUnit($unit, $request->input('direction') === 'up' ? -1 : 1);
+
+        return redirect()->route('learning.courses.show', $course);
+    }
+
+    public function moveSection(Request $request, LearningCourse $course, LearningSection $section): RedirectResponse {
+        Gate::authorize('update', $course);
+        abort_unless($section->learning_course_id === $course->id, 404);
+
+        $this->courses->moveSection($section, $request->input('direction') === 'up' ? -1 : 1);
+
+        return redirect()->route('learning.courses.show', $course);
+    }
+
+    /**
+     * @return array<string, list<mixed>>
+     */
+    private function questionRules(): array {
+        return [
             'kind' => ['required', Rule::enum(LearningQuestionKind::class)],
+            'title' => ['nullable', 'string', 'max:180'],
+            'category_id' => ['nullable', 'string', 'max:64'],
             'prompt' => ['required', 'string', 'min:2', 'max:2000'],
             'explanation' => ['nullable', 'string', 'max:2000'],
+            'hint' => ['nullable', 'string', 'max:1000'],
+            'feedback_correct' => ['nullable', 'string', 'max:1000'],
+            'feedback_incorrect' => ['nullable', 'string', 'max:1000'],
             'points' => ['required', 'integer', 'min:1', 'max:100'],
             'options' => ['nullable', 'string', 'max:5000'],
             'partial_credit' => ['nullable', 'boolean'],
+            // Aufsatz (MVP-793): Text, Datei oder beides.
+            'submission_kind' => ['nullable', 'string', 'in:text,upload,both'],
             'case_sensitive' => ['nullable', 'boolean'],
             'image' => array_merge(['nullable'], FileAttacher::rule()),
+        ];
+    }
+
+    /**
+     * Ergebnistexte je Prozentbereich (MVP-783): eine Zeile je Stufe als
+     * „80: Text". Zeilen ohne Zahl werden übergangen.
+     *
+     * @return list<array{from_percent: int, text: string}>|null
+     */
+    private function parseResultMessages(string $text): ?array {
+        $messages = [];
+        foreach (LearningQuestionEditorService::linesOf($text) as $line) {
+            if (preg_match('/^(\d{1,3})\s*[:%]?\s*[:\-–]?\s*(.+)$/u', $line, $m) !== 1) {
+                continue;
+            }
+            $messages[] = ['from_percent' => max(0, min(100, (int) $m[1])), 'text' => trim($m[2])];
+        }
+        usort($messages, static fn (array $a, array $b): int => $a['from_percent'] <=> $b['from_percent']);
+
+        return $messages !== [] ? $messages : null;
+    }
+
+    private function guardQuestionBelongsToUnit(LearningCourse $course, LearningUnit $unit, LearningQuestion $question): void {
+        $this->guardUnitBelongsToCourse($course, $unit);
+        $quiz = $unit->quiz;
+        abort_unless($quiz !== null && $this->catalog->isInQuiz($quiz, $question), 404);
+    }
+
+    /**
+     * Editor-Felder prüfen; die Kategorie kommt als Sqid und muss der
+     * Organisation des Kurses gehören.
+     *
+     * @return array<string, mixed>
+     */
+    private function validatedQuestion(Request $request, LearningCourse $course): array {
+        $data = $request->validate($this->questionRules());
+        $data['category_id'] = null;
+
+        $raw = (string) $request->input('category_id', '');
+        if ($raw !== '') {
+            $id = Sqid::decode(LearningQuestionCategory::class, $raw);
+            $category = $id !== null ? LearningQuestionCategory::query()->where('organization_id', $course->organization_id)->find($id) : null;
+            if ($category === null) {
+                throw ValidationException::withMessages(['category_id' => (string) __('learning.errors.category_required')]);
+            }
+            $data['category_id'] = $category->id;
+        }
+
+        return $data;
+    }
+
+    /**
+     * @return \Illuminate\Database\Eloquent\Collection<int, LearningQuestionCategory>
+     */
+    private function categories(int $organizationId) {
+        return LearningQuestionCategory::query()->where('organization_id', $organizationId)->orderBy('position')->orderBy('name')->get();
+    }
+
+    private function uploader(): User {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $user;
+    }
+
+    /** KI-Gliederung (MVP-781): Dialog mit Thema und Zielgruppe. */
+    public function createAiOutline(LearningCourse $course): View {
+        Gate::authorize('update', $course);
+        abort_unless($this->ai->isAvailable($course->organization, LearningAiSuggestionService::CAPABILITY_OUTLINE), 404);
+
+        return view('learning.courses._ai_outline_dialog', [
+            'course' => $course,
+            'topic' => trim($course->title . ($course->objectives ? "\n" . $course->objectives : '')),
+        ]);
+    }
+
+    /**
+     * Gliederungsentwurf anlegen: Abschnitte und Einheiten ohne Inhalt. Die KI
+     * schlägt vor, der Autor füllt — nichts davon ist freigegeben oder bewertet.
+     */
+    public function storeAiOutline(Request $request, LearningCourse $course): RedirectResponse {
+        Gate::authorize('update', $course);
+        abort_unless($this->ai->isAvailable($course->organization, LearningAiSuggestionService::CAPABILITY_OUTLINE), 404);
+
+        $data = $request->validate([
+            'topic' => ['required', 'string', 'min:3', 'max:2000'],
+            'audience' => ['nullable', 'string', 'max:200'],
         ]);
 
-        $kind = LearningQuestionKind::from($data['kind']);
-        $lines = $this->linesOf($data['options'] ?? '');
-
-        $settings = [];
-        if ($kind === LearningQuestionKind::Multiple) {
-            $settings['partial_credit'] = (bool) ($data['partial_credit'] ?? false);
-        }
-        if (in_array($kind, [LearningQuestionKind::ShortText, LearningQuestionKind::Cloze], true)) {
-            $settings['case_sensitive'] = (bool) ($data['case_sensitive'] ?? false);
-        }
-        if ($kind === LearningQuestionKind::ShortText) {
-            // Freitext: jede Zeile ist eine akzeptierte Lösung.
-            $settings['answers'] = array_map(static fn (string $line): string => ltrim($line, '*'), $lines);
-        }
-        if ($kind === LearningQuestionKind::Hotspot) {
-            // Bildmarkierung: eine Zeile je Trefferfläche, „x,y,b,h" in
-            // Prozent der Bildkante. Prozent statt Pixel, sonst hinge die
-            // richtige Antwort an der Anzeigegröße.
-            $settings['hotspots'] = $this->parseHotspots($lines);
-        }
-        if ($kind === LearningQuestionKind::Matrix) {
-            // Matrix: „Zeile = Spalte" je Zeile. Anders als bei der
-            // Zuordnung darf dieselbe Spalte mehrfach vorkommen.
-            $settings = array_merge($settings, $this->parseMatrix($lines));
-        }
-        if ($kind === LearningQuestionKind::Cloze) {
-            // Lückentext: eine Zeile je Lücke, Alternativen mit „|" getrennt.
-            // Der Bewerter liest `gaps` — schrieb der Editor hier `answers`,
-            // blieben die Lücken leer und die Frage gäbe immer null Punkte.
-            $settings['gaps'] = array_map(
-                static fn (string $line): array => array_values(array_filter(
-                    array_map('trim', explode('|', $line)),
-                    static fn (string $part): bool => $part !== ''
-                )),
-                $lines
-            );
+        try {
+            $outline = $this->ai->draftOutline($this->currentOrganization(), $data['topic'], [], $data['audience'] ?? null);
+        } catch (AiException $e) {
+            throw ValidationException::withMessages(['topic' => $e->getMessage()]);
         }
 
-        $question = LearningQuestion::query()->create([
-            'organization_id' => $course->organization_id,
-            'learning_quiz_id' => $quiz->id,
-            'kind' => $kind->value,
-            'prompt' => $data['prompt'],
-            'explanation' => $data['explanation'] ?? null,
-            'points' => (int) $data['points'],
-            'position' => (int) $quiz->questions()->max('position') + 1,
-            'settings' => $settings !== [] ? $settings : null,
-        ]);
-
-        $image = $request->file('image');
-
-        if ($kind->needsImage() && $image instanceof UploadedFile) {
-            /** @var User $uploader */
-            $uploader = Auth::user();
-
-            $attachment = app(FileAttacher::class)->store(
-                $question,
-                $image,
-                $uploader->id,
-                ['organization_id' => $course->organization_id],
-                'learning-questions',
-            );
-
-            $settings['image_attachment_id'] = $attachment->id;
-            $question->forceFill(['settings' => $settings])->save();
+        $sections = app(LearningOutlineParser::class)->parse($outline);
+        if ($sections === []) {
+            throw ValidationException::withMessages(['topic' => (string) __('learning.errors.ai_outline_empty')]);
         }
 
-        if ($kind === LearningQuestionKind::Matching) {
-            // Zuordnung: eine Zeile je Paar, „links = rechts". Beide Seiten
-            // werden Optionen mit gemeinsamem `match_key` — ohne den findet
-            // der Bewerter kein einziges Paar.
-            $this->storeMatchingOptions($question, $course->organization_id, $lines);
-        } elseif ($kind->needsOptions()) {
-            foreach ($lines as $index => $line) {
-                $isCorrect = str_starts_with($line, '*');
-                $question->options()->create([
-                    'organization_id' => $course->organization_id,
-                    'label' => trim(ltrim($line, '*')),
-                    'is_correct' => $isCorrect,
-                    'position' => $index + 1,
-                ]);
+        $created = 0;
+        foreach ($sections as $entry) {
+            $section = $entry['title'] !== '' ? $this->courses->addSection($course, ['title' => $entry['title']]) : null;
+            foreach ($entry['units'] as $title) {
+                $this->courses->addUnit($course, ['title' => $title, 'section' => $section]);
+                $created++;
             }
         }
 
-        return redirect()->back()->with('success', __('learning.flash.question_added'));
+        return redirect()
+            ->route('learning.courses.show', $course)
+            ->with('success', __('learning.flash.ai_outline_created', ['sections' => count($sections), 'units' => $created]));
     }
 
-    public function destroyQuestion(LearningCourse $course, LearningUnit $unit, LearningQuestion $question): RedirectResponse {
+    /** Fragenentwurf (MVP-781): landet als Text im Editor, nie direkt als Frage. */
+    public function draftQuestions(Request $request, LearningCourse $course, LearningUnit $unit): RedirectResponse {
         Gate::authorize('update', $course);
         $this->guardUnitBelongsToCourse($course, $unit);
-        abort_unless($question->learning_quiz_id === $unit->quiz?->id, 404);
+        abort_unless($this->ai->isAvailable($course->organization, LearningAiSuggestionService::CAPABILITY_QUESTIONS), 404);
 
-        $question->delete();
+        $data = $request->validate([
+            'count' => ['nullable', 'integer', 'min:1', 'max:20'],
+        ]);
 
-        return redirect()->back();
-    }
-
-    /**
-     * Trefferflächen einer Bildmarkierung: „x,y,breite,höhe" in Prozent,
-     * ein führendes `*` markiert die **richtige** Fläche — dieselbe
-     * Konvention wie bei den Antwortoptionen.
-     *
-     * Es müssen auch falsche Flächen hinterlegt werden können: sonst wäre
-     * die Tastatur-Auswahlliste eine Liste ausschließlich richtiger
-     * Antworten und damit wertlos.
-     *
-     * Zeilen, die keine vier Zahlen ergeben, werden übergangen — eine halbe
-     * Fläche ist keine Fläche.
-     *
-     * @param  list<string>  $lines
-     * @return list<array{x: float, y: float, w: float, h: float, is_correct: bool, label: string}>
-     */
-    private function parseHotspots(array $lines): array {
-        $spots = [];
-
-        foreach ($lines as $index => $line) {
-            $correct = str_starts_with($line, '*');
-            $rest = trim(ltrim($line, '*'));
-
-            // Optionale Beschriftung nach einem Doppelpunkt: „10,20,30,15: Sicherungskasten"
-            [$coords, $label] = array_pad(explode(':', $rest, 2), 2, null);
-
-            $parts = array_map('trim', preg_split('/[,;]/', (string) $coords) ?: []);
-
-            if (count($parts) < 4) {
-                continue;
-            }
-
-            $values = array_map(static fn (string $p): float => (float) str_replace(',', '.', $p), array_slice($parts, 0, 4));
-
-            if ($values[2] <= 0 || $values[3] <= 0) {
-                continue;
-            }
-
-            $spots[] = [
-                'x' => $values[0],
-                'y' => $values[1],
-                'w' => $values[2],
-                'h' => $values[3],
-                'is_correct' => $correct,
-                'label' => trim((string) $label) !== '' ? trim((string) $label) : (string) ($index + 1),
-            ];
+        try {
+            $draft = $this->ai->draftQuestions($unit, (int) ($data['count'] ?? 5));
+        } catch (AiException $e) {
+            return redirect()
+                ->route('learning.courses.units.quiz.edit', [$course, $unit])
+                ->with('error', $e->getMessage());
         }
 
-        return $spots;
+        return redirect()
+            ->route('learning.courses.units.quiz.edit', [$course, $unit])
+            ->with('aiDraft', $draft);
     }
 
-    /**
-     * Matrix aus „Zeile = Spalte"-Zeilen. Die Spalten ergeben sich aus den
-     * rechten Seiten in der Reihenfolge ihres ersten Auftretens — dieselbe
-     * Spalte darf mehrfach genannt werden.
-     *
-     * @param  list<string>  $lines
-     * @return array{rows: list<array{label: string, column: int}>, columns: list<string>}
-     */
-    private function parseMatrix(array $lines): array {
-        $columns = [];
-        $rows = [];
+    /** Trainer zuordnen (MVP-786): nur Personen der eigenen Organisation. */
+    public function storeTrainer(Request $request, LearningCourse $course): RedirectResponse {
+        Gate::authorize('updateMeta', $course);
 
-        foreach ($lines as $line) {
-            $parts = array_map('trim', explode('=', $line, 2));
+        $data = $request->validate([
+            'user_id' => ['required', 'string', 'max:64'],
+            'role' => ['required', Rule::in(['trainer', 'grader'])],
+        ]);
 
-            if (count($parts) < 2 || $parts[0] === '' || $parts[1] === '') {
-                continue;
-            }
-
-            $index = array_search($parts[1], $columns, true);
-
-            if ($index === false) {
-                $columns[] = $parts[1];
-                $index = count($columns) - 1;
-            }
-
-            $rows[] = ['label' => $parts[0], 'column' => (int) $index];
+        $id = Sqid::decode(User::class, (string) $data['user_id']);
+        $trainer = $id !== null
+            ? User::query()->inCurrentOrganization()->where('organization_id', $course->organization_id)->find($id)
+            : null;
+        if ($trainer === null) {
+            throw ValidationException::withMessages(['user_id' => (string) __('learning.errors.learner_required')]);
         }
 
-        return ['rows' => $rows, 'columns' => $columns];
+        $course->trainers()->syncWithoutDetaching([
+            $trainer->id => ['organization_id' => $course->organization_id, 'role' => $data['role']],
+        ]);
+
+        return redirect()->route('learning.courses.show', $course)->with('success', __('learning.flash.trainer_added', ['name' => $trainer->name]));
     }
 
-    /**
-     * Zuordnungspaare anlegen: „links = rechts" je Zeile. Beide Optionen
-     * teilen sich einen `match_key`; Zeilen ohne „=" werden übergangen,
-     * weil eine halbe Zuordnung nichts zuordnet.
-     *
-     * @param  list<string>  $lines
-     */
-    private function storeMatchingOptions(LearningQuestion $question, int $organizationId, array $lines): void {
-        $position = 0;
+    public function destroyTrainer(LearningCourse $course, User $user): RedirectResponse {
+        Gate::authorize('updateMeta', $course);
 
-        foreach ($lines as $index => $line) {
-            $parts = array_map('trim', explode('=', $line, 2));
+        $course->trainers()->detach($user->id);
 
-            if (count($parts) < 2 || $parts[0] === '' || $parts[1] === '') {
-                continue;
-            }
-
-            $key = 'p' . ($index + 1);
-
-            foreach ($parts as $label) {
-                $question->options()->create([
-                    'organization_id' => $organizationId,
-                    'label' => $label,
-                    'is_correct' => true,
-                    'match_key' => $key,
-                    'position' => ++$position,
-                ]);
-            }
-        }
-    }
-
-    /**
-     * @return list<string>
-     */
-    private function linesOf(string $text): array {
-        $lines = preg_split('/\R/', $text) ?: [];
-
-        return array_values(array_filter(array_map('trim', $lines), static fn (string $l): bool => $l !== ''));
+        return redirect()->route('learning.courses.show', $course)->with('success', __('learning.flash.trainer_removed'));
     }
 
     /** Aufgabe einer Einheit pflegen (MVP-739). */
@@ -682,7 +948,21 @@ class LearningCourseController extends Controller {
             'pass_percent' => ['required', 'integer', 'min:1', 'max:100'],
             'rubric' => ['nullable', 'string', 'max:5000'],
             'requires_second_opinion' => ['nullable', 'boolean'],
+            // Dateiregeln und Auto-Freigabe (MVP-788).
+            'allowed_extensions' => ['nullable', 'string', 'max:255'],
+            'max_files' => ['nullable', 'integer', 'min:1', 'max:5'],
+            'max_file_mb' => ['nullable', 'integer', 'min:1', 'max:1024'],
+            'auto_approve' => ['nullable', 'boolean'],
         ]);
+
+        // Volle Punkte ohne Bewerter UND Vier-Augen schließen sich aus.
+        if (($data['auto_approve'] ?? false) && ($data['requires_second_opinion'] ?? false)) {
+            throw ValidationException::withMessages(['auto_approve' => (string) __('learning.errors.auto_approve_conflict')]);
+        }
+        $extensions = array_values(array_unique(array_filter(array_map(
+            static fn (string $e): string => strtolower(ltrim(trim($e), '.')),
+            preg_split('/[\s,;]+/', (string) ($data['allowed_extensions'] ?? '')) ?: [],
+        ))));
 
         LearningAssignment::query()->updateOrCreate(
             ['learning_unit_id' => $unit->id],
@@ -696,6 +976,10 @@ class LearningCourseController extends Controller {
                 'pass_percent' => (int) $data['pass_percent'],
                 'rubric' => $this->parseRubric($data['rubric'] ?? ''),
                 'requires_second_opinion' => (bool) ($data['requires_second_opinion'] ?? false),
+                'allowed_extensions' => $extensions !== [] ? $extensions : null,
+                'max_files' => $data['max_files'] ?? null,
+                'max_file_mb' => $data['max_file_mb'] ?? null,
+                'auto_approve' => (bool) ($data['auto_approve'] ?? false),
             ]
         );
 
@@ -707,7 +991,7 @@ class LearningCourseController extends Controller {
      */
     private function parseRubric(string $text): ?array {
         $rows = [];
-        foreach ($this->linesOf($text) as $index => $line) {
+        foreach (LearningQuestionEditorService::linesOf($text) as $index => $line) {
             $parts = array_map('trim', explode('|', $line));
             if (count($parts) < 2) {
                 continue;
@@ -721,6 +1005,26 @@ class LearningCourseController extends Controller {
         }
 
         return $rows !== [] ? $rows : null;
+    }
+
+    /**
+     * Kurs duplizieren (MVP-794): Export → Import in einem Schritt — ein neuer
+     * Entwurf mit neuem Code, ohne Einschreibungen oder Nachweise.
+     */
+    public function duplicate(LearningCourse $course): RedirectResponse {
+        Gate::authorize('view', $course);
+        Gate::authorize('create', LearningCourse::class);
+
+        $payload = $this->portability->export($course);
+        $payload['course']['title'] = (string) __('learning.copy_title', ['title' => $course->title]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $copy = $this->portability->import($this->currentOrganization(), $payload, $actor);
+
+        return redirect()
+            ->route('learning.courses.show', $copy->sqid)
+            ->with('success', __('learning.flash.duplicated'));
     }
 
     /** Kurs als JSON exportieren — Lehrmaterial, keine Nachweise. */
@@ -761,6 +1065,41 @@ class LearningCourseController extends Controller {
         return redirect()
             ->route('learning.courses.show', $course->sqid)
             ->with('success', __('learning.flash.imported'));
+    }
+
+    /** LearnDash-Import (MVP-792): Dialog. */
+    public function importLearnDashDialog(): View {
+        Gate::authorize('create', LearningCourse::class);
+
+        return view('learning.courses._learndash_import_dialog');
+    }
+
+    public function importLearnDash(Request $request): RedirectResponse {
+        Gate::authorize('create', LearningCourse::class);
+
+        $data = $request->validate([
+            'file' => ['required', 'file', 'mimes:zip', 'max:204800'],
+            'dry_run' => ['nullable', 'boolean'],
+        ]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        $report = app(\App\Services\Learning\LearnDashImportService::class)->import(
+            $this->currentOrganization(),
+            (string) $request->file('file')->getRealPath(),
+            $actor,
+            (bool) ($data['dry_run'] ?? false),
+        );
+
+        return redirect()
+            ->route('learning.courses.index')
+            ->with('success', __($report['dry_run'] ? 'learning.flash.learndash_dry_run' : 'learning.flash.learndash_imported', [
+                'courses' => $report['courses'],
+                'units' => $report['units'],
+                'questions' => $report['questions'],
+                'enrollments' => $report['enrollments'],
+                'skipped' => count((array) $report['skipped']),
+            ]));
     }
 
     public function submitReview(LearningCourse $course): RedirectResponse {
@@ -811,9 +1150,28 @@ class LearningCourseController extends Controller {
         if ($request->filled('asset_id')) {
             $request->merge(['asset_id' => Sqid::decodeOrNumeric(\App\Models\Asset::class, $request->input('asset_id'))]);
         }
+        if ($request->filled('exam_for_course_id')) {
+            $request->merge(['exam_for_course_id' => Sqid::decodeOrNumeric(LearningCourse::class, $request->input('exam_for_course_id'))]);
+        }
+        if ($request->filled('category_id')) {
+            $request->merge(['category_id' => Sqid::decodeOrNumeric(LearningCourseCategory::class, $request->input('category_id'))]);
+        }
+        $prerequisiteIds = $request->input('prerequisite_course_ids');
+        if (is_array($prerequisiteIds)) {
+            $request->merge(['prerequisite_course_ids' => array_values(array_map(
+                static fn ($raw) => Sqid::decodeOrNumeric(LearningCourse::class, (string) $raw),
+                $prerequisiteIds,
+            ))]);
+        }
 
         $data = $request->validate([
             'title' => ['required', 'string', 'min:2', 'max:180'],
+            // Prüfung ohne Kurs (MVP-784): nur beim Anlegen wählbar.
+            'kind' => ['nullable', Rule::enum(LearningCourseKind::class)],
+            'exam_for_course_id' => ['nullable', new ExistsInCurrentOrganization('learning_courses')],
+            'prerequisite_mode' => ['nullable', Rule::in(['all', 'any'])],
+            'prerequisite_course_ids' => ['nullable', 'array', 'max:20'],
+            'prerequisite_course_ids.*' => [new ExistsInCurrentOrganization('learning_courses')],
             'code' => ['nullable', 'string', 'max:60'],
             'subtitle' => ['nullable', 'string', 'max:255'],
             'description' => ['nullable', 'string', 'max:5000'],
@@ -835,8 +1193,17 @@ class LearningCourseController extends Controller {
             // LTI 1.3 (Feature 149): über eine fremde Plattform startbar.
             'lti_available' => ['nullable', 'boolean'],
             'access_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
+            // Kursoptionen (MVP-788): Kategorie, Verfügbarkeitsfenster, Grenze.
+            'category_id' => ['nullable', new ExistsInCurrentOrganization('learning_course_categories')],
+            'available_from' => ['nullable', 'date'],
+            'available_until' => ['nullable', 'date', 'after_or_equal:available_from'],
+            'max_enrollments' => ['nullable', 'integer', 'min:1', 'max:100000'],
         ]);
 
+        $data['category_id'] = $data['category_id'] ?? null;
+        $data['available_from'] = $data['available_from'] ?? null;
+        $data['available_until'] = $data['available_until'] ?? null;
+        $data['max_enrollments'] = $data['max_enrollments'] ?? null;
         $data['certificate_enabled'] = (bool) ($data['certificate_enabled'] ?? false);
         $data['sequential'] = (bool) ($data['sequential'] ?? false);
         $data['lti_available'] = (bool) ($data['lti_available'] ?? false);
@@ -844,10 +1211,36 @@ class LearningCourseController extends Controller {
 
         // Der Code wird nur beim Anlegen vergeben — er ist der Anker des Kurses.
         if ($course !== null) {
-            unset($data['code']);
+            unset($data['code'], $data['kind']);
+        }
+        $data['prerequisite_course_ids'] = array_values(array_map('intval', (array) ($data['prerequisite_course_ids'] ?? [])));
+        if ($course !== null && in_array($course->id, $data['prerequisite_course_ids'], true)) {
+            throw ValidationException::withMessages(['prerequisite_course_ids' => (string) __('learning.errors.prerequisite_self')]);
+        }
+        if (($data['kind'] ?? $course?->kind?->value) !== LearningCourseKind::Exam->value) {
+            $data['exam_for_course_id'] = null;
         }
 
         return $data;
+    }
+
+    /** @return \Illuminate\Support\Collection<int, LearningCourseCategory> */
+    private function categoryOptions() {
+        return LearningCourseCategory::query()->orderBy('position')->orderBy('name')->get();
+    }
+
+    /**
+     * Kurse der Organisation als Auswahl (Zielkurs, Voraussetzungen) — ohne
+     * den bearbeiteten Kurs selbst.
+     *
+     * @return \Illuminate\Support\Collection<int, LearningCourse>
+     */
+    private function courseOptions(?LearningCourse $except = null) {
+        return LearningCourse::query()
+            ->where('organization_id', $this->currentOrganization()->id)
+            ->when($except, fn ($q, LearningCourse $c) => $q->whereKeyNot($c->id))
+            ->orderBy('title')
+            ->get(['id', 'title', 'code', 'kind']);
     }
 
     /**

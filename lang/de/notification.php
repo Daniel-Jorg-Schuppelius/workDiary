@@ -88,6 +88,19 @@ return [
     ],
 
     'message' => [
+        'learning_enrolled' => 'Ihnen wurde der Kurs „:course“ zugewiesen.',
+        'learning_enrolled_with_due' => 'Ihnen wurde der Kurs „:course“ zugewiesen — fällig am :date.',
+        'learning_due_soon' => 'Der Kurs „:course“ ist am :date fällig.',
+        'learning_overdue' => 'Der Kurs „:course“ war am :date fällig und ist noch nicht abgeschlossen.',
+        'learning_submission_received' => ':name hat die Aufgabe „:assignment“ im Kurs „:course“ abgegeben.',
+        'learning_graded' => 'Ihre Aufgabe „:assignment“ im Kurs „:course“ wurde bewertet.',
+        'learning_returned' => 'Ihre Aufgabe „:assignment“ im Kurs „:course“ wurde zur Überarbeitung zurückgegeben.',
+        'learning_certificate_issued' => 'Ihr Zertifikat :number für den Kurs „:course“ ist ausgestellt.',
+        'learning_waitlist_promoted' => 'Für „:title“ am :date ist ein Platz frei geworden — Sie sind angemeldet.',
+        'learning_booking_confirmed' => 'Ihre Buchung für den Kurs „:course“ wurde bestätigt.',
+        'learning_booking_rejected' => 'Ihre Buchung für den Kurs „:course“ wurde abgelehnt.',
+        'learning_time_approval_requested' => ':name hat :minutes Minuten Lernzeit für „:course“ außerhalb der Arbeitszeit erfasst — Freigabe nötig.',
+        'learning_question_asked' => ':name fragt zu „:course“: :question',
 
         // Pflichtnachweise (Feature 117, MVP-606).
 

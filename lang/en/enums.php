@@ -391,6 +391,18 @@ return [
     ],
     'notification' => [
         'event' => [
+            'learning' => [
+                'enrolled' => 'Training assigned',
+                'dueSoon' => 'Training due soon',
+                'overdue' => 'Training overdue',
+                'submissionReceived' => 'Submission awaiting grading',
+                'graded' => 'Grading available',
+                'certificateIssued' => 'Certificate issued',
+                'waitlistPromoted' => 'Promoted from the waiting list',
+                'bookingDecided' => 'Course booking decided',
+                'timeApprovalRequested' => 'Learning time awaiting approval',
+                'questionAsked' => 'Question asked to the trainer',
+            ],
             'crisis' => [
                 'alert' => 'Crisis alert',
             ],
@@ -756,6 +768,7 @@ return [
         'visibility' => [
             'internal' => 'Internal',
             'customer' => 'Customer-visible',
+            'private' => 'Private (only me)',
         ],
         'party' => [
             'internal' => 'Internal',
@@ -1626,6 +1639,7 @@ return [
             'essay' => 'Essay',
             'hotspot' => 'Image marking',
             'matrix' => 'Matrix assignment',
+            'assessment' => 'Self-assessment',
         ],
         'feedback-mode' => [
             'immediate' => 'Immediately',
@@ -1651,13 +1665,19 @@ return [
             'expired' => 'Expired',
             'cancelled' => 'Cancelled',
         ],
+        'course-kind' => [
+            'course' => 'Course',
+            'exam' => 'Exam without course',
+        ],
         'enrollment-source' => [
+            'exam' => 'Credit',
             'requirement' => 'Mandatory matrix',
             'manual' => 'Manual',
             'self' => 'Self-enrolled',
             'booking' => 'Booking',
             'rule' => 'Rule',
             'path' => 'Learning path',
+            'import' => 'Imported',
         ],
         'translation-status' => [
             'draft' => 'Draft',

@@ -63,7 +63,10 @@ class ExternalLearningController extends Controller {
     public function show(Request $request): View {
         $enrollment = $this->currentEnrollment($request);
 
-        $enrollment->load(['course.units.section', 'progress', 'externalParticipant']);
+        $enrollment->load(['course.units.section', 'externalParticipant']);
+        // Mindestverweildauer (MVP-788): das erste Öffnen zählt ab jetzt.
+        $this->enrollments->markSeen($enrollment, $enrollment->course->units ?? []);
+        $enrollment->load('progress');
 
         return view('learning.external.show', [
             'enrollment' => $enrollment,

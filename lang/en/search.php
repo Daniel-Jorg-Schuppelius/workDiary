@@ -27,6 +27,7 @@ return [
         'communication_note' => 'Communication note',
         'knowledge_article' => 'Knowledge article',
         'remote_session' => 'Remote session (unassigned)',
+        'learning_course' => 'Learning course',
     ],
 
     'field' => [

@@ -68,6 +68,7 @@ return [
         'internal_type_requires_internal_direction' => 'Interne Rücksprachen müssen die Richtung „Intern" haben.',
         'internal_direction_requires_internal_visibility' => 'Interne Kommunikation kann nicht für Kunden sichtbar sein.',
         'confidential_requires_internal_visibility' => 'Vertrauliche Notizen müssen intern bleiben.',
+        'private_not_publishable' => 'Private Notizen bleiben bei der verfassenden Person und können nicht veröffentlicht werden.',
         'occurred_at_in_future' => 'Der Zeitpunkt darf nicht in der Zukunft liegen.',
         'due_before_occurrence' => 'Die Frist der Folgeaktion muss nach dem Kommunikationszeitpunkt liegen.',
         'unknown_type' => 'Unbekannter Kommunikationstyp.',

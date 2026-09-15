@@ -391,6 +391,18 @@ return [
     ],
     'notification' => [
         'event' => [
+            'learning' => [
+                'enrolled' => 'Formación asignada',
+                'dueSoon' => 'Formación próxima a vencer',
+                'overdue' => 'Formación vencida',
+                'submissionReceived' => 'Entrega pendiente de evaluación',
+                'graded' => 'Evaluación disponible',
+                'certificateIssued' => 'Certificado emitido',
+                'waitlistPromoted' => 'Promovido desde la lista de espera',
+                'bookingDecided' => 'Reserva de curso decidida',
+                'timeApprovalRequested' => 'Tiempo de aprendizaje pendiente de aprobación',
+                'questionAsked' => 'Pregunta planteada al formador',
+            ],
             'crisis' => [
                 'alert' => 'Alerta de crisis',
             ],
@@ -756,6 +768,7 @@ return [
         'visibility' => [
             'internal' => 'Interna',
             'customer' => 'Visible para el cliente',
+            'private' => 'Privada (solo yo)',
         ],
         'party' => [
             'internal' => 'Interno',
@@ -1626,6 +1639,7 @@ return [
             'essay' => 'Ensayo',
             'hotspot' => 'Marcado en imagen',
             'matrix' => 'Asignación matricial',
+            'assessment' => 'Autoevaluación',
         ],
         'feedback-mode' => [
             'immediate' => 'Inmediata',
@@ -1651,13 +1665,19 @@ return [
             'expired' => 'Caducado',
             'cancelled' => 'Cancelado',
         ],
+        'course-kind' => [
+            'course' => 'Curso',
+            'exam' => 'Examen sin curso',
+        ],
         'enrollment-source' => [
+            'exam' => 'Convalidación',
             'requirement' => 'Matriz obligatoria',
             'manual' => 'Manual',
             'self' => 'Autoinscripción',
             'booking' => 'Reserva',
             'rule' => 'Regla',
             'path' => 'Itinerario',
+            'import' => 'Importado',
         ],
         'translation-status' => [
             'draft' => 'Borrador',

@@ -18,6 +18,8 @@ enum CommunicationVisibility: string implements HasLabel {
 
     case Internal = 'internal';
     case Customer = 'customer';
+    /** Nur die verfassende Person — auch nicht Admins (Feature 149, MVP-789: Lernnotizen). */
+    case Private = 'private';
 
     public function label(): string {
         return (string) __('enums.communication.visibility.' . $this->value);
@@ -28,6 +30,12 @@ enum CommunicationVisibility: string implements HasLabel {
         return match ($this) {
             self::Internal => 'ghost',
             self::Customer => 'accent',
+            self::Private => 'neutral',
         };
+    }
+
+    /** Intern im Sinne der Konsistenzregeln: nie kundensichtbar. */
+    public function isInternal(): bool {
+        return $this !== self::Customer;
     }
 }

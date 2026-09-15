@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Learning;
 
-use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningTimePolicy, LearningUnitKind};
-use App\Models\Learning\{LearningCourse, LearningCourseVersion, LearningSection, LearningUnit};
+use App\Enums\Learning\{LearningAudience, LearningCourseKind, LearningCourseStatus, LearningTimePolicy, LearningUnitKind};
+use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningCourseVersion, LearningSection, LearningUnit};
 use App\Models\{Organization, User};
 use App\Services\Training\TrainingCatalogService;
 use Illuminate\Support\Facades\DB;
@@ -49,6 +49,9 @@ class LearningCourseService {
                 'objectives' => $attributes['objectives'] ?? null,
                 'language' => (string) ($attributes['language'] ?? config('app.locale', 'de')),
                 'status' => LearningCourseStatus::Draft->value,
+                'kind' => $attributes['kind'] ?? LearningCourseKind::Course->value,
+                'exam_for_course_id' => $attributes['exam_for_course_id'] ?? null,
+                'prerequisite_mode' => in_array($attributes['prerequisite_mode'] ?? 'all', ['all', 'any'], true) ? ($attributes['prerequisite_mode'] ?? 'all') : 'all',
                 'audiences' => $this->normalizeAudiences($attributes['audiences'] ?? [LearningAudience::Internal->value]),
                 'access_kind' => $attributes['access_kind'] ?? 'enrolled',
                 'training_course_id' => $attributes['training_course_id'] ?? null,
@@ -69,9 +72,21 @@ class LearningCourseService {
                 'access_days' => $attributes['access_days'] ?? null,
                 'sequential' => (bool) ($attributes['sequential'] ?? false),
                 'lti_available' => (bool) ($attributes['lti_available'] ?? false),
+                // Kursoptionen (MVP-788): Kategorie, Fenster, Teilnehmergrenze.
+                'category_id' => $attributes['category_id'] ?? null,
+                'available_from' => $attributes['available_from'] ?? null,
+                'available_until' => $attributes['available_until'] ?? null,
+                'max_enrollments' => $attributes['max_enrollments'] ?? null,
             ]);
 
             $this->guardTimePolicy($course);
+            $this->syncPrerequisites($course, $attributes['prerequisite_course_ids'] ?? null);
+
+            // Prüfung ohne Kurs (MVP-784): genau eine Prüfungseinheit, damit
+            // derselbe Versuchs- und Nachweispfad greift wie in jedem Kurs.
+            if ($course->kind === LearningCourseKind::Exam && ! ($attributes['skip_exam_unit'] ?? false)) {
+                $this->addUnit($course, ['title' => $course->title, 'kind' => LearningUnitKind::Quiz->value]);
+            }
 
             return $course->refresh();
         });
@@ -108,11 +123,100 @@ class LearningCourseService {
             'access_days' => array_key_exists('access_days', $attributes) ? $attributes['access_days'] : $course->access_days,
             'sequential' => array_key_exists('sequential', $attributes) ? (bool) $attributes['sequential'] : $course->sequential,
             'lti_available' => array_key_exists('lti_available', $attributes) ? (bool) $attributes['lti_available'] : $course->lti_available,
+            'exam_for_course_id' => array_key_exists('exam_for_course_id', $attributes) ? $attributes['exam_for_course_id'] : $course->exam_for_course_id,
+            'prerequisite_mode' => in_array($attributes['prerequisite_mode'] ?? $course->prerequisite_mode, ['all', 'any'], true) ? ($attributes['prerequisite_mode'] ?? $course->prerequisite_mode) : 'all',
+            'category_id' => array_key_exists('category_id', $attributes) ? $attributes['category_id'] : $course->category_id,
+            'available_from' => array_key_exists('available_from', $attributes) ? $attributes['available_from'] : $course->available_from,
+            'available_until' => array_key_exists('available_until', $attributes) ? $attributes['available_until'] : $course->available_until,
+            'max_enrollments' => array_key_exists('max_enrollments', $attributes) ? $attributes['max_enrollments'] : $course->max_enrollments,
         ]);
 
         $this->guardTimePolicy($course->refresh());
+        if (array_key_exists('prerequisite_course_ids', $attributes)) {
+            $this->syncPrerequisites($course, $attributes['prerequisite_course_ids']);
+        }
 
         return $course;
+    }
+
+    /**
+     * Voraussetzungen setzen (MVP-784): nur Kurse derselben Organisation,
+     * nie der Kurs selbst — sonst wäre er nie startbar.
+     *
+     * @param  list<int>|null  $ids
+     */
+    public function syncPrerequisites(LearningCourse $course, ?array $ids): void {
+        if ($ids === null) {
+            return;
+        }
+
+        $valid = LearningCourse::query()
+            ->where('organization_id', $course->organization_id)
+            ->whereKey(array_map('intval', $ids))
+            ->whereKeyNot($course->id)
+            ->pluck('id')
+            ->map(fn ($id) => (int) $id)
+            ->all();
+
+        $course->prerequisites()->sync(array_fill_keys($valid, ['organization_id' => $course->organization_id]));
+    }
+
+    /**
+     * Kurskategorie nach Name (MVP-788) — Export/Import und Einstellungen
+     * arbeiten mit Namen, nie mit IDs anderer Organisationen.
+     */
+    public function categoryByName(Organization $organization, string $name, bool $create = false): ?LearningCourseCategory {
+        $name = trim($name);
+        if ($name === '') {
+            return null;
+        }
+
+        $existing = LearningCourseCategory::query()
+            ->where('organization_id', $organization->id)
+            ->whereRaw('LOWER(name) = ?', [mb_strtolower($name)])
+            ->first();
+
+        if ($existing !== null || ! $create) {
+            return $existing;
+        }
+
+        $base = Str::slug($name) ?: 'kategorie';
+        $slug = $base;
+        $i = 2;
+        while (LearningCourseCategory::query()->where('organization_id', $organization->id)->where('slug', $slug)->exists()) {
+            $slug = $base . '-' . $i++;
+        }
+
+        return LearningCourseCategory::query()->create([
+            'organization_id' => $organization->id,
+            'name' => $name,
+            'slug' => $slug,
+            'position' => (int) LearningCourseCategory::query()->where('organization_id', $organization->id)->max('position') + 1,
+        ]);
+    }
+
+    /**
+     * Kategorienliste abgleichen: Reihenfolge = Position, fehlende werden
+     * angelegt, gestrichene gelöscht (Kurse fallen auf „ohne Kategorie").
+     *
+     * @param  list<string>  $names
+     */
+    public function syncCategories(Organization $organization, array $names): void {
+        $keep = [];
+        foreach (array_values(array_unique(array_filter(array_map('trim', $names)))) as $position => $name) {
+            $category = $this->categoryByName($organization, $name, true);
+            if ($category === null) {
+                continue;
+            }
+            $category->update(['name' => $name, 'position' => $position + 1]);
+            $keep[] = $category->id;
+        }
+
+        LearningCourseCategory::query()
+            ->where('organization_id', $organization->id)
+            ->whereKeyNot($keep)
+            ->get()
+            ->each(static fn (LearningCourseCategory $c) => $c->delete());
     }
 
     /**
@@ -127,6 +231,57 @@ class LearningCourseService {
             'description' => $attributes['description'] ?? null,
             'position' => $attributes['position'] ?? ((int) $course->sections()->max('position') + 1),
         ]);
+    }
+
+    /**
+     * Abschnitt in der Reihenfolge verschieben (MVP-779): Position mit dem
+     * Nachbarn tauschen — ohne Nachbarn passiert nichts Halbes.
+     */
+    public function moveSection(LearningSection $section, int $direction): void {
+        $this->guardEditable($section->course()->firstOrFail());
+
+        DB::transaction(function () use ($section, $direction): void {
+            $neighbour = LearningSection::query()
+                ->where('learning_course_id', $section->learning_course_id)
+                ->when($direction < 0, fn ($q) => $q->where('position', '<', $section->position)->orderByDesc('position'))
+                ->when($direction >= 0, fn ($q) => $q->where('position', '>', $section->position)->orderBy('position'))
+                ->lockForUpdate()
+                ->first();
+
+            if ($neighbour === null) {
+                throw ValidationException::withMessages([
+                    'section' => (string) __('learning.errors.neighbour_missing'),
+                ]);
+            }
+
+            $own = $section->position;
+            $section->update(['position' => $neighbour->position]);
+            $neighbour->update(['position' => $own]);
+        });
+    }
+
+    /** Einheit in der Reihenfolge verschieben (MVP-779), Regel wie beim Abschnitt. */
+    public function moveUnit(LearningUnit $unit, int $direction): void {
+        $this->guardEditable($unit->course()->firstOrFail());
+
+        DB::transaction(function () use ($unit, $direction): void {
+            $neighbour = LearningUnit::query()
+                ->where('learning_course_id', $unit->learning_course_id)
+                ->when($direction < 0, fn ($q) => $q->where('position', '<', $unit->position)->orderByDesc('position'))
+                ->when($direction >= 0, fn ($q) => $q->where('position', '>', $unit->position)->orderBy('position'))
+                ->lockForUpdate()
+                ->first();
+
+            if ($neighbour === null) {
+                throw ValidationException::withMessages([
+                    'unit' => (string) __('learning.errors.neighbour_missing'),
+                ]);
+            }
+
+            $own = $unit->position;
+            $unit->update(['position' => $neighbour->position]);
+            $neighbour->update(['position' => $own]);
+        });
     }
 
     /**
@@ -151,6 +306,7 @@ class LearningCourseService {
             'kind' => $attributes['kind'] ?? LearningUnitKind::Content->value,
             'position' => $attributes['position'] ?? ((int) $course->units()->max('position') + 1),
             'is_mandatory' => (bool) ($attributes['is_mandatory'] ?? true),
+            'is_preview' => (bool) ($attributes['is_preview'] ?? false),
             'points' => max(0, (int) ($attributes['points'] ?? 0)),
             'duration_minutes' => $attributes['duration_minutes'] ?? null,
             'content' => is_array($content) ? json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : $content,

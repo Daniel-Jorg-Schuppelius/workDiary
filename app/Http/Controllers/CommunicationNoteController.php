@@ -49,6 +49,8 @@ class CommunicationNoteController extends Controller {
         'asset' => \App\Models\Asset::class,
         // Feature 091: Qualifizierungs-Notizen an der Lead-Akte.
         'lead' => \App\Models\Lead::class,
+        // Feature 149 (MVP-789): private Lernnotizen an der Einschreibung.
+        'learning_enrollment' => \App\Models\Learning\LearningEnrollment::class,
     ];
 
     public function __construct(
@@ -116,6 +118,7 @@ class CommunicationNoteController extends Controller {
 
     public function show(CommunicationNote $note, SearchResultLinker $linker): View {
         Gate::authorize('view', $note);
+        $this->guardPrivate($note);
 
         /** @var User $viewer */
         $viewer = Auth::user();
@@ -158,6 +161,7 @@ class CommunicationNoteController extends Controller {
 
     public function edit(CommunicationNote $note): View {
         Gate::authorize('update', $note);
+        $this->guardPrivate($note);
 
         /** @var User $viewer */
         $viewer = Auth::user();
@@ -205,6 +209,7 @@ class CommunicationNoteController extends Controller {
 
     public function update(Request $request, CommunicationNote $note): RedirectResponse {
         Gate::authorize('update', $note);
+        $this->guardPrivate($note);
 
         $data = $this->validateNote($request, includeNotable: false);
 
@@ -279,6 +284,7 @@ class CommunicationNoteController extends Controller {
 
     public function destroy(Request $request, CommunicationNote $note): RedirectResponse {
         Gate::authorize('delete', $note);
+        $this->guardPrivate($note);
 
         $data = $request->validate([
             'reason' => ['nullable', 'string', 'max:2000'],
@@ -406,6 +412,17 @@ class CommunicationNoteController extends Controller {
     /**
      * @return array{0: string, 1: Model}
      */
+    /**
+     * Private Notizen (MVP-789) gehören ihrer Verfasserin — der Admin-Bypass
+     * des Gates darf sie nicht öffnen; deshalb hier ausdrücklich, nicht nur
+     * in der Policy.
+     */
+    private function guardPrivate(CommunicationNote $note): void {
+        /** @var User $user */
+        $user = Auth::user();
+        abort_if($note->isPrivate() && (int) $note->created_by_user_id !== (int) $user->id, 404);
+    }
+
     private function resolveNotableFromRequest(Request $request): array {
         $notableKind = (string) $request->query('notable_kind', '');
         if (! array_key_exists($notableKind, self::NOTABLE_MAP)) {

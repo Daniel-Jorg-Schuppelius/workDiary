@@ -39,7 +39,7 @@ class LearningContentService {
         'checklist' => ['items'],
         'image' => ['attachment_id', 'alt', 'caption'],
         'file' => ['attachment_id', 'caption'],
-        'video' => ['url', 'attachment_id', 'caption', 'require_percent'],
+        'video' => ['url', 'attachment_id', 'caption', 'require_percent', 'autoplay', 'remember_position'],
         'embed' => ['url', 'caption'],
         'knowledge' => ['knowledge_article_id', 'caption'],
     ];
@@ -138,6 +138,16 @@ class LearningContentService {
                 static fn (mixed $item): string => trim((string) $item),
                 $items
             ), static fn (string $item): bool => $item !== ''));
+        }
+
+        // Videoschalter (MVP-788) kommen als Checkbox-Werte — gespeichert
+        // wird ein echtes Bool, damit die Ansicht nicht Strings vergleicht.
+        if ($kind === LearningBlockKind::Video) {
+            foreach (['autoplay', 'remember_position'] as $flag) {
+                if (array_key_exists($flag, $block)) {
+                    $block[$flag] = filter_var($block[$flag], FILTER_VALIDATE_BOOL);
+                }
+            }
         }
 
         if ($kind->needsHostAllowlist() && isset($block['url'])) {

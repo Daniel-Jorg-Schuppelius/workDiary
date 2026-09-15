@@ -14,10 +14,11 @@ namespace App\Http\Controllers\CustomerPortal;
 
 use App\Enums\Learning\{LearningAudience, LearningCourseStatus, LearningProgressStatus};
 use App\Http\Controllers\Controller;
-use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningUnit};
+use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningEnrollment, LearningUnit};
 use App\Models\User;
 use App\Services\Learning\{LearningBookingService, LearningEnrollmentService};
-use Illuminate\Http\RedirectResponse;
+use App\Support\Sqid;
+use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
@@ -37,11 +38,22 @@ class PortalLearningController extends Controller {
         private readonly LearningBookingService $bookings,
     ) {}
 
-    public function index(): View {
+    public function index(Request $request): View {
         $user = $this->actor();
+        // Kategoriefilter (MVP-788) — Sqid aus der Auswahl.
+        $categoryId = $request->filled('category') ? Sqid::decodeOrNumeric(LearningCourseCategory::class, (string) $request->query('category')) : null;
+        $courses = $this->visibleCourses();
+
+        $visible = $categoryId !== null ? $courses->where('category_id', $categoryId)->values() : $courses;
 
         return view('customer.learning.index', [
-            'courses' => $this->visibleCourses(),
+            'courses' => $visible,
+            // Sternewert (MVP-794): erst ab fünf Antworten.
+            'ratings' => app(\App\Services\Learning\LearningCourseRatingService::class)->ratingsFor(array_values(array_map('intval', $visible->pluck('id')->all()))),
+            'categoryId' => $categoryId,
+            'categories' => LearningCourseCategory::query()
+                ->whereIn('id', $courses->pluck('category_id')->filter()->unique()->all())
+                ->orderBy('position')->orderBy('name')->get(),
             'enrollments' => LearningEnrollment::query()
                 ->where('user_id', $user->id)
                 ->get()
@@ -75,9 +87,30 @@ class PortalLearningController extends Controller {
             ->with('success', __('learning.flash.booking_requested'));
     }
 
+    /**
+     * Vorschau ohne Einschreibung (MVP-788): nur Einheiten mit
+     * Vorschau-Kennzeichen und darin nur Textblöcke — Medien und Prüfungen
+     * hängen an einer Einschreibung.
+     */
+    public function preview(LearningCourse $course): View {
+        $this->guardVisible($course);
+
+        return view('customer.learning.preview', [
+            'course' => $course,
+            'units' => $course->units()->where('is_preview', true)->orderBy('position')->get(),
+            'enrollment' => LearningEnrollment::query()
+                ->where('user_id', $this->actor()->id)
+                ->where('learning_course_id', $course->id)
+                ->first(),
+        ]);
+    }
+
     public function show(LearningEnrollment $enrollment): View {
         $this->guardOwn($enrollment);
-        $enrollment->load(['course.units', 'progress']);
+        $enrollment->load(['course.units']);
+        // Mindestverweildauer (MVP-788): das erste Öffnen zählt ab jetzt.
+        $this->enrollments->markSeen($enrollment, $enrollment->course->units ?? []);
+        $enrollment->load('progress');
 
         return view('customer.learning.show', [
             'enrollment' => $enrollment,
@@ -107,23 +140,29 @@ class PortalLearningController extends Controller {
      */
     private function visibleCourses() {
         return LearningCourse::query()
+            ->with(['category', 'article'])
+            ->withCount(['units as preview_units_count' => fn ($q) => $q->where('is_preview', true)])
             ->where('status', LearningCourseStatus::Released->value)
+            // Verfügbarkeitsfenster (MVP-788): außerhalb ist der Kurs im Katalog unsichtbar.
+            ->available()
             ->orderBy('title')
             ->get()
             ->filter(static fn (LearningCourse $course): bool => $course->servesAudience(LearningAudience::Customer))
             ->values();
     }
 
-    private function guardVisible(LearningCourse $course): void {
+    private function guardVisible(LearningCourse $course, bool $catalog = true): void {
         abort_unless(
             $course->status === LearningCourseStatus::Released && $course->servesAudience(LearningAudience::Customer),
             404
         );
+        // Eine bestehende Einschreibung überlebt das Fenster — der Katalog nicht.
+        abort_unless(! $catalog || $course->isAvailableOn(), 404);
     }
 
     private function guardOwn(LearningEnrollment $enrollment): void {
         abort_unless($enrollment->user_id === $this->actor()->id, 404);
-        $this->guardVisible($enrollment->course ?? abort(404));
+        $this->guardVisible($enrollment->course ?? abort(404), catalog: false);
     }
 
     private function actor(): User {

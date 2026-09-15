@@ -53,6 +53,8 @@ final class PdfGeneratorInventory {
         'app/Services/Construction/ConstructionNoticePdfRenderer.php' => ['construction_obstruction_notice', 'construction_concern_notice'],
         // Lernplattform (Feature 149): Teilnahmenachweis und Nachweismappe.
         'app/Services/Learning/LearningCertificatePdfRenderer.php' => ['certificate'],
+        // Zeugnis aus dem Notenbuch (MVP-790) — dieselbe Dokumentart wie das Zertifikat.
+        'app/Services/Learning/LearningReportCardPdfRenderer.php' => ['certificate'],
         'app/Services/Learning/LearningDossierPdfRenderer.php' => ['report'],
         'app/Services/Learning/LearningAttendanceListPdfRenderer.php' => ['report'],
         'app/Services/Timesheet/PdfRenderer.php' => ['timesheet'],

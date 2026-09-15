@@ -35,6 +35,7 @@ use Illuminate\Support\Facades\Gate;
  * - Notizen: `communication.viewAny`; vertrauliche nur Erfasser oder `communication.confidential.manage`.
  * - Wissen: Veröffentlichtes + eigene Entwürfe; alles mit `knowledge.publish` (Modul Wissen).
  * - Offene Fernwartung: nur Admins bei aktivem Plugin.
+ * - Lernkurse: eigene Einschreibung; alle mit `learning.viewAny` (Modul Lernplattform).
  *
  * Admins sehen alles ihrer Organisation; die Organisation filtert der Aufrufer.
  */
@@ -109,6 +110,9 @@ final class ActivitySearchVisibility {
                 ? false
                 : ($admin || $user->can(Permission::KnowledgePublish->value) ? true : self::unrestrictedOrOwn($me)),
             SearchSourceType::RemoteSession => $admin && $this->plugins->enabled()->has(RemoteSupportPlugin::ID),
+            SearchSourceType::LearningCourse => ! $this->features->isEnabled('module.lms')
+                ? false
+                : ($admin || $user->can(Permission::LearningViewAny->value) ? true : self::enrolled($me)),
         };
     }
 
@@ -138,6 +142,16 @@ final class ActivitySearchVisibility {
                     ->join('service_queues', 'service_queues.id', '=', 'service_tickets.queue_id')
                     ->join('team_user', 'team_user.team_id', '=', 'service_queues.team_id')
                     ->where('team_user.user_id', $me));
+        };
+    }
+
+    /** Kurse, in die die Person selbst eingeschrieben ist. */
+    private static function enrolled(int $me): Closure {
+        return static function (Builder $query) use ($me): void {
+            $query->whereIn('search_documents.source_id', static fn($enrollments) => $enrollments
+                ->select('learning_course_id')
+                ->from('learning_enrollments')
+                ->where('user_id', $me));
         };
     }
 

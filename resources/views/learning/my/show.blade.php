@@ -34,6 +34,12 @@
                             data-offline-course="{{ $enrollment->sqid }}"
                             data-offline-course-url="{{ route('learning.my.offline', $enrollment->sqid) }}"
                             show-label>{{ __('learning.action.save_offline') }}</x-icon-btn>
+                {{-- Fokusmodus (MVP-794): Seitenleiste aus, Präferenz je Person. --}}
+                <form method="POST" action="{{ route('learning.my.focus', $enrollment) }}">
+                    @csrf
+                    <x-icon-btn :icon="$focusMode ? 'view_sidebar' : 'center_focus_strong'" tone="ghost" size="sm" type="submit"
+                                show-label>{{ $focusMode ? __('learning.action.focus_off') : __('learning.action.focus_on') }}</x-icon-btn>
+                </form>
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
                             :href="route('learning.my.index')"
                             show-label>{{ __('learning.action.back') }}</x-icon-btn>
@@ -41,8 +47,22 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <div class="grid gap-4 lg:grid-cols-3">
-        <div class="space-y-4 lg:col-span-2">
+    <div class="grid gap-4 {{ $focusMode ? '' : 'lg:grid-cols-3' }}">
+        <div class="space-y-4 {{ $focusMode ? '' : 'lg:col-span-2' }}">
+            @if (! empty($missingPrerequisites))
+                {{-- Voraussetzungen (MVP-784): sichtbar statt still gesperrt. --}}
+                <div class="alert alert-warning text-sm" role="status">
+                    <x-icon name="lock" />
+                    <div>
+                        <p class="font-medium">{{ __('learning.field.prerequisites_missing') }}</p>
+                        <ul class="list-disc pl-5">
+                            @foreach ($missingPrerequisites as $required)
+                                <li>{{ $required->title }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                </div>
+            @endif
             @if ($course->objectives)
                 <x-card>
                     <h3 class="mb-2 text-sm font-semibold">{{ __('learning.field.objectives') }}</h3>
@@ -60,6 +80,8 @@
                 @php
                     $isDone = in_array($unit->id, $completedUnitIds, true);
                     $needsLangHint = ! isset($translated[$unit->id]) && $sourceLocale !== app()->getLocale();
+                    // Freischaltplan (MVP-788): die Sperre sitzt im Dienst; hier nur die Anzeige.
+                    $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment);
                 @endphp
                 <x-card>
                     <div class="flex flex-wrap items-start justify-between gap-3">
@@ -75,7 +97,12 @@
                             </p>
                         </div>
                         @unless ($isDone)
-                            @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Event && $unit->event)
+                            @if ($isLocked)
+                                <x-status-badge tone="neutral" size="sm" outline>
+                                    <x-icon name="lock_clock" />
+                                    {{ __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) }}
+                                </x-status-badge>
+                            @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Event && $unit->event)
                                 @php $participation = $eventParticipations[$unit->event_id] ?? null; @endphp
                                 @if ($participation?->status === \App\Enums\Event\ParticipantStatus::Waitlisted)
                                     <x-status-badge tone="neutral" size="sm">{{ __('learning.field.waitlist') }}</x-status-badge>
@@ -165,6 +192,7 @@
                         }
                     @endphp
                     <div @if ($needsLangHint) lang="{{ $sourceLocale }}" @endif>
+                    @unless ($isLocked)
                     @include('learning._blocks', [
                         'blocks' => $blocks,
                         'mediaState' => $mediaState,
@@ -172,7 +200,34 @@
                             ? route('learning.my.units.media', [$enrollment->sqid, $unit->sqid, $a->sqid])
                             : null,
                     ])
+                    @endunless
                     </div>
+
+                    {{-- Private Notiz zur Einheit (MVP-789): nur für mich. --}}
+                    @php $unitNotes = $notes->where('subject', $unit->title); @endphp
+                    @if ($unitNotes->isNotEmpty())
+                        <ul class="mt-3 space-y-1">
+                            @foreach ($unitNotes as $note)
+                                <li class="rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm">
+                                    <p class="whitespace-pre-line">{{ $note->body }}</p>
+                                    <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->translatedFormat('d.m.Y H:i') }} · {{ __('learning.badge.private_note') }}</p>
+                                </li>
+                            @endforeach
+                        </ul>
+                    @endif
+                    @unless ($isLocked)
+                        <details class="mt-2">
+                            <summary class="cursor-pointer text-xs text-muted">{{ __('learning.action.add_note') }}</summary>
+                            <form method="POST" action="{{ route('learning.my.notes.store', $enrollment) }}" class="mt-2">
+                                @csrf
+                                <input type="hidden" name="unit" value="{{ $unit->sqid }}">
+                                <x-textarea-field name="body" :label="__('learning.field.note')" required minlength="2" maxlength="8000" rows="2" />
+                                <div class="mt-2 flex justify-end">
+                                    <x-icon-btn icon="save" tone="outline" size="xs" type="submit" show-label>{{ __('learning.action.save_note') }}</x-icon-btn>
+                                </div>
+                            </form>
+                        </details>
+                    @endunless
 
                     @if ($unit->kind === \App\Enums\Learning\LearningUnitKind::Event && $unit->event)
                         <p class="mt-3 text-sm text-base-content/80">
@@ -237,7 +292,7 @@
             @endforeach
         </div>
 
-        <div class="space-y-4">
+        <div class="space-y-4" data-player-sidebar{{ $focusMode ? ' hidden' : '' }}>
             {{-- Lernzeit: außerhalb der Arbeitszeit entsteht daraus ein
                  Arbeitszeitnachweis, innerhalb wird nichts doppelt gezählt. --}}
             <x-card>
@@ -268,6 +323,83 @@
                 <p class="mt-3 text-xs text-muted">{{ __('learning.help.learning_time') }}</p>
             </x-card>
 
+            @if ($tutorEnabled ?? false)
+                {{-- Lerntutor (MVP-781): erklärt aus dem freigegebenen Inhalt,
+                     bewertet nichts, schaltet nichts frei. --}}
+                <x-card>
+                    <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="auto_awesome" class="text-muted" /> {{ __('learning.field.tutor') }}
+                    </h3>
+                    @if (session('tutorAnswer'))
+                        <div class="mb-3 rounded-box border border-base-300 p-3 text-sm">
+                            <p class="mb-1 font-medium">{{ session('tutorQuestion') }}</p>
+                            <p class="whitespace-pre-line text-base-content/80">{{ session('tutorAnswer') }}</p>
+                        </div>
+                    @endif
+                    <form method="POST" action="{{ route('learning.my.tutor', $enrollment) }}">
+                        @csrf
+                        <x-textarea-field name="question" :label="__('learning.field.tutor_question')" required minlength="3" maxlength="1000" rows="2" :value="old('question')" />
+                        <div class="mt-2 flex justify-end">
+                            <x-icon-btn icon="send" tone="outline" size="sm" type="submit" show-label>{{ __('learning.action.ask_tutor') }}</x-icon-btn>
+                        </div>
+                    </form>
+                    <p class="mt-2 text-xs text-muted">{{ __('learning.help.tutor') }}</p>
+                </x-card>
+            @endif
+
+            {{-- Frage an den Trainer (MVP-789): Ticket oder Mail, je nach Helpdesk-Modul. --}}
+            @if ($askRecipients->isNotEmpty() && ! $enrollment->status->isFinal())
+                <x-card>
+                    <h3 class="mb-2 flex items-center gap-2 text-sm font-semibold">
+                        <x-icon name="contact_support" class="text-muted" /> {{ __('learning.title.ask_trainer') }}
+                    </h3>
+                    <p class="mb-3 text-xs text-muted">{{ __('learning.help.ask_trainer') }}</p>
+                    <x-icon-btn icon="send" tone="outline" size="sm"
+                                data-entry-modal-trigger
+                                :href="route('learning.my.ask.create', $enrollment)"
+                                show-label>{{ __('learning.action.ask_trainer') }}</x-icon-btn>
+                </x-card>
+            @endif
+
+            {{-- Meine Notizen (MVP-789): privat, nur für mich. --}}
+            <x-card id="learning-notes">
+                <h3 class="mb-3 flex items-center gap-2 text-sm font-semibold">
+                    <x-icon name="sticky_note_2" class="text-muted" /> {{ __('learning.title.my_notes') }}
+                    <span class="badge badge-ghost badge-sm">{{ $notes->count() }}</span>
+                </h3>
+                @if ($notes->isEmpty())
+                    <p class="text-sm text-muted">{{ __('learning.empty.notes') }}</p>
+                @else
+                    <ul class="space-y-2">
+                        @foreach ($notes as $note)
+                            <li class="rounded-box border border-base-300 px-3 py-2 text-sm">
+                                <div class="flex flex-wrap items-start justify-between gap-2">
+                                    <div class="min-w-0">
+                                        <p class="font-medium">{{ $note->subject }}</p>
+                                        <p class="whitespace-pre-line text-base-content/80">{{ $note->body }}</p>
+                                        <p class="mt-1 text-xs text-muted">{{ $note->occurred_at?->translatedFormat('d.m.Y H:i') }}</p>
+                                    </div>
+                                    <form method="POST" action="{{ route('learning.my.notes.destroy', [$enrollment, $note]) }}"
+                                          data-confirm-dialog data-confirm-message="{{ __('learning.confirm.delete_note') }}">
+                                        @csrf
+                                        @method('DELETE')
+                                        <x-icon-btn icon="delete" tone="ghost" size="xs" type="submit" :label="__('learning.action.delete_note')" />
+                                    </form>
+                                </div>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
+                <form method="POST" action="{{ route('learning.my.notes.store', $enrollment) }}" class="mt-3">
+                    @csrf
+                    <x-textarea-field name="body" :label="__('learning.field.note')" required minlength="2" maxlength="8000" rows="2" />
+                    <div class="mt-2 flex justify-end">
+                        <x-icon-btn icon="save" tone="outline" size="sm" type="submit" show-label>{{ __('learning.action.save_note') }}</x-icon-btn>
+                    </div>
+                </form>
+                <p class="mt-2 text-xs text-muted">{{ __('learning.help.private_notes') }}</p>
+            </x-card>
+
             <x-card>
                 <h3 class="mb-3 text-sm font-semibold">{{ __('learning.field.course') }}</h3>
                 <x-detail-grid>
@@ -277,6 +409,11 @@
                     <x-detail-grid.row :label="__('learning.field.time_policy')" :value="$course->time_policy->label()" />
                 </x-detail-grid>
                 <p class="mt-3 text-xs text-muted">{{ __('learning.help.time_policy') }}</p>
+                <div class="mt-3 flex justify-end">
+                    <x-icon-btn icon="picture_as_pdf" tone="ghost" size="xs"
+                                :href="route('learning.my.report-card', $enrollment)"
+                                show-label>{{ __('learning.action.report_card') }}</x-icon-btn>
+                </div>
             </x-card>
         </div>
     </div>

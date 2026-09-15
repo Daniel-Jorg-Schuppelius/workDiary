@@ -43,7 +43,10 @@
     @endif
 
     @foreach ($course?->units ?? [] as $unit)
-        @php $isDone = in_array($unit->id, $completedUnitIds, true); @endphp
+        @php
+            $isDone = in_array($unit->id, $completedUnitIds, true);
+            $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment);
+        @endphp
         <x-card>
             <div class="flex flex-wrap items-start justify-between gap-3">
                 <h2 class="flex items-center gap-2 text-sm font-semibold">
@@ -51,8 +54,11 @@
                             class="{{ $isDone ? 'text-success' : 'text-muted' }}" />
                     {{ $unit->title }}
                 </h2>
+                @if ($isLocked)
+                    <x-status-badge tone="neutral" size="sm" outline>{{ __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) }}</x-status-badge>
+                @endif
                 {{-- Einheiten mit eigener Ergebnisquelle schließt nur diese Quelle ab. --}}
-                @unless ($isDone || $unit->reportsOwnResult())
+                @unless ($isDone || $isLocked || $unit->reportsOwnResult())
                     <form method="POST" action="{{ route('learning.external.units.complete', $unit) }}">
                         @csrf
                         <x-icon-btn icon="task_alt" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.complete_unit') }}</x-icon-btn>
@@ -60,7 +66,7 @@
                 @endunless
             </div>
 
-            @foreach ($unit->blocks() as $block)
+            @foreach ($isLocked ? [] : $unit->blocks() as $block)
                 @if (($block['type'] ?? null) === 'text' && isset($block['text']))
                     <p class="mt-3 whitespace-pre-line text-sm text-base-content/80">{{ $block['text'] }}</p>
                 @elseif (($block['type'] ?? null) === 'heading' && isset($block['text']))

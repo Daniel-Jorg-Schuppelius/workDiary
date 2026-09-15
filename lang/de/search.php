@@ -27,6 +27,7 @@ return [
         'communication_note' => 'Kommunikationsnotiz',
         'knowledge_article' => 'Wissensartikel',
         'remote_session' => 'Fernwartung (nicht zugeordnet)',
+        'learning_course' => 'Lernkurs',
     ],
 
     'field' => [

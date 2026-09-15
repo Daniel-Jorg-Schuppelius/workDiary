@@ -10,7 +10,7 @@
 
 namespace App\Models\Learning;
 
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
@@ -40,6 +40,9 @@ class LearningAnswer extends Model {
     use Auditable;
 
     use BelongsToOrganization;
+    // Aufsatz-Upload (MVP-793): die Datei hängt an der Antwort.
+    use HasAttachments;
+
     /** @use HasFactory<Factory<static>> */
     use HasFactory;
 
@@ -52,6 +55,7 @@ class LearningAnswer extends Model {
         'payload',
         'is_correct',
         'points_awarded',
+        'flagged',
         'corrected_points',
         'correction_note',
         'graded_by_user_id',
@@ -60,6 +64,7 @@ class LearningAnswer extends Model {
 
     /** @var array<string, string> */
     protected $casts = [
+        'flagged' => 'boolean',
         'payload' => 'array',
         'is_correct' => 'boolean',
         'points_awarded' => 'integer',

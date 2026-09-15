@@ -198,6 +198,16 @@ $sanctumRoutes = static function (): void {
     Route::get('vehicles', [VehicleApiController::class, 'index'])->middleware('ability:vehicles:read')->name('vehicles.index');
     Route::get('vehicles/{vehicle}', [VehicleApiController::class, 'show'])->middleware('ability:vehicles:read')->name('vehicles.show');
     Route::get('invoices/{invoice}/pdf', [\App\Http\Controllers\Api\InvoiceApiController::class, 'pdf'])->middleware('ability:invoices:read')->name('invoices.pdf');
+
+    // ── Lernplattform (Feature 149, MVP-791): lesend + Selbsteinschreibung ──
+    // Abschluss, Bewertung und Nachweis bleiben Web-Workflows; Plan-Gating
+    // über config('plans.routes') (api.learning.* → module.lms).
+    Route::get('learning/courses', [\App\Http\Controllers\Api\LearningApiController::class, 'courses'])->middleware('ability:learning:read')->name('learning.courses.index');
+    Route::get('learning/courses/{course}', [\App\Http\Controllers\Api\LearningApiController::class, 'course'])->middleware('ability:learning:read')->name('learning.courses.show');
+    Route::post('learning/courses/{course}/enroll', [\App\Http\Controllers\Api\LearningApiController::class, 'enroll'])->middleware('ability:learning:write')->name('learning.courses.enroll');
+    Route::get('learning/enrollments', [\App\Http\Controllers\Api\LearningApiController::class, 'enrollments'])->middleware('ability:learning:read')->name('learning.enrollments.index');
+    Route::get('learning/enrollments/{enrollment}', [\App\Http\Controllers\Api\LearningApiController::class, 'enrollment'])->middleware('ability:learning:read')->name('learning.enrollments.show');
+    Route::get('learning/certificates', [\App\Http\Controllers\Api\LearningApiController::class, 'certificates'])->middleware('ability:learning:read')->name('learning.certificates.index');
 };
 
 Route::middleware(['auth:sanctum', EnforcePlanModules::class])->prefix('v1')->name('api.')->group($sanctumRoutes);

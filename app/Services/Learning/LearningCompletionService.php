@@ -57,6 +57,7 @@ class LearningCompletionService {
         private readonly TrainingAssignmentService $trainingAssignments,
         private readonly LearningCompetencyService $competencies,
         private readonly LearningSurveyTrigger $survey,
+        private readonly LearningNotifier $notifier,
     ) {}
 
     /**
@@ -90,6 +91,13 @@ class LearningCompletionService {
             // Kursfeedback (MVP-747) über die vorhandene Umfrage-Engine —
             // mit deren Anonymität und Ermüdungsschutz.
             $this->survey->onCourseCompleted($enrollment);
+
+            // Prüfung ohne Kurs (MVP-784): Bestehen rechnet den Zielkurs an.
+            // Lazy aufgelöst — der Einschreibungsdienst hängt selbst an diesem.
+            $target = $course->isExam() ? $course->examTarget : null;
+            if ($target !== null) {
+                app(LearningEnrollmentService::class)->creditFromExam($enrollment, $target);
+            }
 
             return [
                 'certificate' => $certificate,
@@ -169,7 +177,7 @@ class LearningCompletionService {
 
         $validityMonths = $course->validity_months ?? $course?->trainingCourse?->validity_months;
 
-        return LearningCertificate::query()->create([
+        $certificate = LearningCertificate::query()->create([
             'organization_id' => $enrollment->organization_id,
             'learning_enrollment_id' => $enrollment->id,
             'learning_course_id' => $enrollment->learning_course_id,
@@ -187,6 +195,10 @@ class LearningCompletionService {
                 : null,
             'score_percent' => $enrollment->score_percent,
         ]);
+
+        $this->notifier->certificateIssued($certificate);
+
+        return $certificate;
     }
 
     public function revoke(LearningCertificate $certificate, string $reason, ?int $actorUserId = null, ?Carbon $now = null): LearningCertificate {

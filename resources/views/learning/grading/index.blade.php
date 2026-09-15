@@ -34,6 +34,13 @@
                         {{ __('learning.field.attempt') }} {{ $answer->attempt?->attempt_no }}
                     </p>
                     <p class="mt-2 whitespace-pre-line text-sm text-base-content/80">{{ $answer->payload['text'] ?? '' }}</p>
+                    @foreach ($answer->attachments as $attachment)
+                        <p class="mt-1 text-sm">
+                            <a class="link link-primary" href="{{ route('learning.grading.essay.file', [$answer, $attachment]) }}">
+                                <x-icon name="attach_file" /> {{ $attachment->original_name ?? $attachment->filename ?? __('learning.field.essay_file') }}
+                            </a>
+                        </p>
+                    @endforeach
 
                     <form method="POST" action="{{ route('learning.grading.essay', $answer) }}" class="mt-3 flex flex-wrap items-end gap-2">
                         @csrf

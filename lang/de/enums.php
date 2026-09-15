@@ -391,6 +391,18 @@ return [
     ],
     'notification' => [
         'event' => [
+            'learning' => [
+                'enrolled' => 'Schulung zugewiesen',
+                'dueSoon' => 'Schulung bald fällig',
+                'overdue' => 'Schulung überfällig',
+                'submissionReceived' => 'Abgabe wartet auf Bewertung',
+                'graded' => 'Bewertung liegt vor',
+                'certificateIssued' => 'Zertifikat ausgestellt',
+                'waitlistPromoted' => 'Von der Warteliste nachgerückt',
+                'bookingDecided' => 'Kursbuchung entschieden',
+                'timeApprovalRequested' => 'Lernzeit wartet auf Freigabe',
+                'questionAsked' => 'Frage an den Trainer gestellt',
+            ],
             'crisis' => [
                 'alert' => 'Krisenalarm',
             ],
@@ -756,6 +768,7 @@ return [
         'visibility' => [
             'internal' => 'Intern',
             'customer' => 'Kunden-sichtbar',
+            'private' => 'Privat (nur ich)',
         ],
         'party' => [
             'internal' => 'Intern',
@@ -1628,6 +1641,7 @@ return [
             'essay' => 'Aufsatz',
             'hotspot' => 'Bildmarkierung',
             'matrix' => 'Matrix-Zuordnung',
+            'assessment' => 'Selbsteinschätzung',
         ],
         'feedback-mode' => [
             'immediate' => 'Sofort',
@@ -1653,13 +1667,19 @@ return [
             'expired' => 'Abgelaufen',
             'cancelled' => 'Storniert',
         ],
+        'course-kind' => [
+            'course' => 'Kurs',
+            'exam' => 'Prüfung ohne Kurs',
+        ],
         'enrollment-source' => [
+            'exam' => 'Anrechnung',
             'requirement' => 'Pflichtmatrix',
             'manual' => 'Manuell',
             'self' => 'Selbst gewählt',
             'booking' => 'Buchung',
             'rule' => 'Regel',
             'path' => 'Lernpfad',
+            'import' => 'Importiert',
         ],
         'translation-status' => [
             'draft' => 'Entwurf',

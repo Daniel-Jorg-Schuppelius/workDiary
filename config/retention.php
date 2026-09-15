@@ -195,5 +195,22 @@ return [
             'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
             'basis' => ['DE' => '§195 BGB (Regelverjährung) — nur Ausweis, kein Auto-Purge', 'AT' => '§1489 ABGB', 'CH' => 'OR Art. 127/128'],
         ],
+
+        // Lernplattform (Feature 149, MVP-787): abgeschlossene Einschreibungen
+        // ohne Zertifikat (Versuche, Fortschritt, Lernzeit kaskadieren). Der
+        // Unterweisungsnachweis (132) hat seine eigene Frist.
+        'learning_records' => [
+            'label' => 'Lernplattform (Einschreibungen, Versuche, Lernzeit)',
+            'years' => ['DE' => 3, 'AT' => 3, 'CH' => 5],
+            'basis' => ['DE' => '§195 BGB (Regelverjährung); DGUV Vorschrift 1 §4 Unterweisungsnachweis separat', 'AT' => '§1489 ABGB', 'CH' => 'OR Art. 127/128'],
+        ],
+
+        // Zertifikate der Lernplattform: Nachweisfunktion — nach Frist wird
+        // die Person auf Initialen gekürzt, Nummer und Prüfcode bleiben.
+        'learning_certificates' => [
+            'label' => 'Lernplattform-Zertifikate (Pseudonymisierung)',
+            'years' => ['DE' => 10, 'AT' => 10, 'CH' => 10],
+            'basis' => ['DE' => 'Art. 17 Abs. 3 lit. b DSGVO (Nachweispflicht); Qualifikationsnachweis', 'AT' => 'Art. 17 Abs. 3 lit. b DSGVO', 'CH' => 'DSG Art. 6 (Aufbewahrung zu Nachweiszwecken)'],
+        ],
     ],
 ];

@@ -16,6 +16,7 @@ use App\Models\Event;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
+use Illuminate\Support\Carbon;
 
 /**
  * Lerneinheit (Feature 149): die kleinste abschließbare Einheit. `content`
@@ -34,6 +35,7 @@ use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasOne};
  * @property LearningUnitKind $kind
  * @property int $position
  * @property bool $is_mandatory
+ * @property bool $is_preview
  * @property int $points
  * @property int|null $duration_minutes
  * @property string|null $content
@@ -67,6 +69,7 @@ class LearningUnit extends Model {
         'content',
         'completion_rule',
         'release_rule',
+        'is_preview',
     ];
 
     /** @var array<string, string> */
@@ -74,6 +77,7 @@ class LearningUnit extends Model {
         'kind' => LearningUnitKind::class,
         'position' => 'integer',
         'is_mandatory' => 'boolean',
+        'is_preview' => 'boolean',
         'points' => 'integer',
         'duration_minutes' => 'integer',
         'registration_lead_hours' => 'integer',
@@ -138,6 +142,44 @@ class LearningUnit extends Model {
             LearningUnitKind::Cmi5 => $this->cmi5Package()->exists(),
             default => false,
         };
+    }
+
+    /**
+     * Freischaltplan (MVP-788): Tag, ab dem die Einheit für diese Einschreibung
+     * offen ist — `after_days` ab Einschreibung und/oder festes Datum `at`;
+     * es gilt das spätere. NULL = sofort.
+     */
+    public function releaseDateFor(LearningEnrollment $enrollment): ?Carbon {
+        $rule = $this->release_rule ?? [];
+        $latest = null;
+
+        $afterDays = (int) ($rule['after_days'] ?? 0);
+        if ($afterDays > 0) {
+            $latest = Carbon::parse((string) ($enrollment->created_at ?? Carbon::now()))->startOfDay()->addDays($afterDays);
+        }
+
+        $at = $rule['at'] ?? null;
+        if (is_string($at) && $at !== '') {
+            $fixed = Carbon::parse($at)->startOfDay();
+            $latest = $latest === null || $fixed->gt($latest) ? $fixed : $latest;
+        }
+
+        return $latest;
+    }
+
+    /**
+     * Die Sperre selbst — an jeder Abschlussstelle geprüft, nicht nur in der
+     * Ansicht (Player, Externe, Portal, Offline-Sync, Prüfung, Abgabe).
+     */
+    public function isReleasedFor(LearningEnrollment $enrollment, ?Carbon $now = null): bool {
+        $date = $this->releaseDateFor($enrollment);
+
+        return $date === null || $date->lte(($now ?? Carbon::now())->copy()->startOfDay());
+    }
+
+    /** Mindestverweildauer in Sekunden (`completion_rule.min_seconds`), 0 = keine. */
+    public function minSeconds(): int {
+        return max(0, (int) (($this->completion_rule ?? [])['min_seconds'] ?? 0));
     }
 
     /**

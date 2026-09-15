@@ -56,6 +56,8 @@ final class DeadlineScanRegistry {
         WeatherWarningScan::class,
         // Pflichtschulungen (Feature 145, MVP-727).
         TrainingDeadlineScan::class,
+        // Lernplattform: Einschreibungsfristen (Feature 149, MVP-780).
+        LearningDueScan::class,
     ];
 
     /** @return list<DeadlineScan> */

@@ -28,6 +28,13 @@
 
     <div class="grid gap-4 lg:grid-cols-3">
         <div class="space-y-4 lg:col-span-2">
+            @php $resultMessage = $quiz->resultMessageFor((int) ($attempt->score_percent ?? 0)); @endphp
+            @if ($resultMessage)
+                <div class="alert {{ $attempt->passed ? 'alert-success' : 'alert-info' }} text-sm" role="status">
+                    <x-icon name="{{ $attempt->passed ? 'emoji_events' : 'info' }}" />
+                    <span>{{ $resultMessage }}</span>
+                </div>
+            @endif
             @foreach ($attempt->questions() as $index => $question)
                 @php
                     $answer = $answers[$question['id']] ?? null;
@@ -46,6 +53,13 @@
                         @endif
                     </div>
 
+                    @php
+                        $feedbackKey = $answer?->is_correct === true ? 'feedback_correct' : ($answer?->is_correct === false ? 'feedback_incorrect' : null);
+                        $feedback = $feedbackKey !== null ? ($question['settings'][$feedbackKey] ?? null) : null;
+                    @endphp
+                    @if ($showSolution && $feedback)
+                        <p class="mt-2 text-sm font-medium">{{ $feedback }}</p>
+                    @endif
                     @if ($showSolution && ! empty($question['explanation']))
                         <p class="mt-2 text-sm text-base-content/80">{{ $question['explanation'] }}</p>
                     @endif

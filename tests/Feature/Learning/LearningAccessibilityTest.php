@@ -55,13 +55,13 @@ class LearningAccessibilityTest extends TestCase {
 
         $question = LearningQuestion::query()->create([
             'organization_id' => $this->organization->id,
-            'learning_quiz_id' => $quiz->id,
             'kind' => $kind->value,
             'prompt' => 'Welche Nummer hat die Feuerwehr?',
             'points' => 2,
             'position' => 1,
             'settings' => $kind === LearningQuestionKind::Cloze ? ['gaps' => [['112'], ['110']]] : null,
         ]);
+        app(\App\Services\Learning\LearningQuestionCatalogService::class)->attach($quiz, $question);
 
         if ($kind->needsOptions()) {
             foreach (['112', '110'] as $index => $label) {

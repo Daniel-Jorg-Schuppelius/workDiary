@@ -36,6 +36,7 @@ use Illuminate\Validation\ValidationException;
 class LearningAssignmentService {
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
+        private readonly LearningNotifier $notifier,
     ) {}
 
     /** Entwurf holen oder anlegen — die Abgabe gehört zur Einschreibung. */
@@ -63,6 +64,12 @@ class LearningAssignmentService {
             throw ValidationException::withMessages([
                 'status' => (string) __('learning.errors.enrollment_closed'),
             ]);
+        }
+
+        // Freischaltplan (MVP-788): keine Abgabe in eine gesperrte Einheit.
+        $unit = $assignment->unit;
+        if ($unit !== null) {
+            $this->enrollments->guardReleased($enrollment, $unit, $now);
         }
 
         $submission = $this->draftFor($enrollment, $assignment);
@@ -98,7 +105,28 @@ class LearningAssignmentService {
             'attempt_no' => $wasReturned ? (int) $submission->attempt_no + 1 : max(1, (int) $submission->attempt_no),
         ]);
 
-        return $submission->refresh();
+        // Auto-Freigabe (MVP-788): volle Punkte, ohne Bewerter — die Einheit
+        // schließt sofort. Mit Vier-Augen unvereinbar (der Editor lehnt ab).
+        if ($assignment->auto_approve && ! $assignment->requires_second_opinion) {
+            DB::transaction(function () use ($submission, $assignment, $now): void {
+                $submission->update([
+                    'status' => LearningSubmissionStatus::Graded->value,
+                    'points_awarded' => $assignment->points,
+                    'score_percent' => 100,
+                    'passed' => true,
+                    'graded_by_user_id' => null,
+                    'graded_at' => $now,
+                ]);
+                $this->completeUnitIfPassed($submission->refresh());
+            });
+            $this->notifier->graded($submission->refresh());
+
+            return $submission->refresh();
+        }
+
+        $this->notifier->submissionReceived($submission->refresh());
+
+        return $submission;
     }
 
     /** Zur Überarbeitung zurückgeben — mit Begründung, sonst hilft es niemandem. */
@@ -121,7 +149,9 @@ class LearningAssignmentService {
             'graded_by_user_id' => $actor?->id,
         ]);
 
-        return $submission->refresh();
+        $this->notifier->graded($submission->refresh(), returned: true);
+
+        return $submission;
     }
 
     /**
@@ -162,7 +192,7 @@ class LearningAssignmentService {
         $points = min($points, $assignment->points);
         $percent = (int) round($points / $max * 100);
 
-        return DB::transaction(function () use ($submission, $assignment, $criteria, $rubricScores, $points, $percent, $feedback, $actor, $now): LearningSubmission {
+        $graded = DB::transaction(function () use ($submission, $assignment, $criteria, $rubricScores, $points, $percent, $feedback, $actor, $now): LearningSubmission {
             $submission->update([
                 'status' => LearningSubmissionStatus::Graded->value,
                 'points_awarded' => $points,
@@ -180,6 +210,10 @@ class LearningAssignmentService {
 
             return $submission;
         });
+
+        $this->notifier->graded($graded);
+
+        return $graded;
     }
 
     /**

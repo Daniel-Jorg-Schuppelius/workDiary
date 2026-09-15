@@ -52,6 +52,8 @@ class LearningSurveyTrigger {
         foreach ($surveys as $survey) {
             try {
                 $issued = $this->surveys->invite($survey, $email, null, 'learning');
+                // Kursbezug für den Sternewert (MVP-794) — nur der Kurs, keine Person.
+                $issued['invitation']->forceFill(['learning_course_id' => $enrollment->learning_course_id])->save();
                 Mail::to($email)->send(new SurveyInvitationMail($survey, $issued['token']));
             } catch (RuntimeException) {
                 // Opt-out/Ermüdungsschutz: bewusst still — der Deckel ist
