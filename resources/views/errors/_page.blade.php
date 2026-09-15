@@ -60,7 +60,8 @@
     @endif
 </head>
 <body class="min-h-screen bg-linear-to-b from-base-200 to-base-300 text-base-content"
-      style="font-family: 'IBM Plex Sans', system-ui, sans-serif;">
+      style="font-family: 'IBM Plex Sans', system-ui, sans-serif;"
+      @if (! empty($autoRetry)) data-auto-retry="{{ (int) $autoRetry }}" @endif>
     <div class="flex min-h-screen items-center justify-center px-4">
         <div class="w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg">
             <img src="{{ asset('img/logo/workdiary-logo-512.png') }}" alt="WorkDiary"
@@ -77,6 +78,13 @@
             @if (! empty($extraNote))
                 <p class="mt-3 text-xs text-muted">
                     {{ $extraNote }}
+                </p>
+            @endif
+            @if (! empty($autoRetry))
+                {{-- Selbstprüfung (Skript am Seitenende): erst sichtbar, wenn JS läuft. --}}
+                @php [$retryBefore, $retryAfterText] = array_pad(explode(':seconds', __('Die Seite prüft selbst, ob die Anwendung wieder erreichbar ist, und lädt dann neu — nächste Prüfung in :seconds Sekunden.'), 2), 2, ''); @endphp
+                <p class="mt-3 text-xs text-muted" data-auto-retry-note hidden>
+                    {{ $retryBefore }}<span data-auto-retry-countdown>{{ (int) $autoRetry }}</span>{{ $retryAfterText }}
                 </p>
             @endif
             @if ($requestId !== null)
@@ -113,5 +121,48 @@
             @endif
         </div>
     </div>
+{{-- Eigenständig, ohne App-Bundle: der Erneut-laden-Knopf hatte bisher keinen
+     Handler (data-reload wurde nirgends gebunden). Mit `autoRetry` prüft die
+     Seite selbst per HEAD, ob die Anwendung wieder antwortet (Wartungsmodus,
+     Deploy), und lädt dann neu — auch beim Zurückkehren in den Tab. --}}
+<script @cspNonce>
+(function () {
+    document.querySelectorAll('[data-reload]').forEach(function (button) {
+        button.addEventListener('click', function () { window.location.reload(); });
+    });
+
+    var seconds = parseInt(document.body.getAttribute('data-auto-retry') || '0', 10);
+    if (!(seconds > 0)) return;
+    seconds = Math.max(5, seconds);
+
+    var note = document.querySelector('[data-auto-retry-note]');
+    var countdown = document.querySelector('[data-auto-retry-countdown]');
+    if (note) note.hidden = false;
+    var remaining = seconds;
+    var checking = false;
+
+    function probe() {
+        if (checking) return;
+        checking = true;
+        fetch(window.location.pathname + window.location.search, { method: 'HEAD', cache: 'no-store', credentials: 'same-origin' })
+            .then(function (response) {
+                if (response.status !== 503) { window.location.reload(); return; }
+                remaining = seconds;
+            })
+            .catch(function () { remaining = seconds; })
+            .finally(function () { checking = false; });
+    }
+
+    window.setInterval(function () {
+        remaining -= 1;
+        if (countdown) countdown.textContent = String(Math.max(0, remaining));
+        if (remaining <= 0) probe();
+    }, 1000);
+
+    document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') probe();
+    });
+})();
+</script>
 </body>
 </html>

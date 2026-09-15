@@ -31,13 +31,32 @@ class MaintenancePageTest extends TestCase {
         $this->assertStringContainsString(__('Wartungsarbeiten'), $html);
         $this->assertStringContainsString(__('Nächster Versuch empfohlen in :seconds Sekunden.', ['seconds' => 60]), $html);
         $this->assertStringNotContainsString('Service Unavailable', $html, 'Der Framework-Text hat auf der Seite nichts verloren.');
+
+        // Selbstprüfung im Rhythmus des Retry-After; der Erneut-laden-Knopf hat einen Handler.
+        $this->assertStringContainsString('data-auto-retry="60"', $html);
+        $this->assertStringContainsString('data-auto-retry-countdown', $html);
+        $this->assertStringContainsString("querySelectorAll('[data-reload]')", $html);
+        $this->assertStringContainsString("method: 'HEAD'", $html);
+    }
+
+    public function test_selbstpruefung_faellt_ohne_retry_header_auf_dreissig_sekunden(): void {
+        $html = view('errors.503')->render();
+
+        $this->assertStringContainsString('data-auto-retry="30"', $html);
+    }
+
+    public function test_andere_fehlerseiten_pruefen_nicht_selbst_haben_aber_den_knopf_handler(): void {
+        $html = view('errors.500')->render();
+
+        $this->assertStringNotContainsString('data-auto-retry=', $html);
+        $this->assertStringContainsString("querySelectorAll('[data-reload]')", $html);
     }
 
     public function test_503_seite_rendert_auch_ohne_retry_header(): void {
         $html = view('errors.503')->render();
 
         $this->assertStringContainsString(__('Wartungsarbeiten'), $html);
-        $this->assertStringNotContainsString('Sekunden', $html);
+        $this->assertStringNotContainsString('Nächster Versuch empfohlen', $html);
     }
 
     public function test_deploy_rendert_die_wartungsseite_vor(): void {

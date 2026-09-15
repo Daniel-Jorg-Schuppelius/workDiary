@@ -29,6 +29,8 @@
         : null,
     'safe' => true,
     'reportable' => false,
+    // Selbstprüfung: im Rhythmus des Retry-After (Deploy: 60 s), sonst alle 30 s.
+    'autoRetry' => $retryAfter > 0 ? $retryAfter : 30,
     'actions' => [
         ['label' => __('Erneut versuchen'), 'reload' => true, 'icon' => 'refresh'],
     ],

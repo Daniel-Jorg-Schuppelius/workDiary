@@ -145,7 +145,7 @@
                                                 <img src="{{ route('admin.document-design.assets.preview', $asset->sqid) }}" alt=""
                                                      class="h-8 w-auto rounded border border-base-300 bg-white" loading="lazy">
                                             @else
-                                                <span class="flex h-8 w-6 items-center justify-center rounded border border-dashed border-base-300 text-base-content/50">
+                                                <span class="flex h-8 w-6 items-center justify-center rounded border border-dashed border-base-300 text-muted" aria-hidden="true">
                                                     <x-icon :name="$asset->source_type === 'pdf' ? 'picture_as_pdf' : 'image'" />
                                                 </span>
                                             @endif

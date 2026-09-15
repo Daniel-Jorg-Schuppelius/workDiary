@@ -337,6 +337,7 @@
     "Client-ID (eigene Calendly-App)": "ID client (application Calendly propre)",
     "Client-Secret": "Secret client",
     "Die Anwendung wird gerade aktualisiert. Bitte versuchen Sie es in wenigen Minuten erneut.": "L’application est en cours de mise à jour. Veuillez réessayer dans quelques minutes.",
+    "Die Seite prüft selbst, ob die Anwendung wieder erreichbar ist, und lädt dann neu — nächste Prüfung in :seconds Sekunden.": "Cette page vérifie elle-même si l’application est de nouveau joignable et se recharge alors — prochaine vérification dans :seconds secondes.",
     "Einschreibungen": "Inscriptions",
     "Es ist keine Calendly-App hinterlegt — weder in den Plugin-Einstellungen dieser Organisation noch als CALENDLY_CLIENT_ID/CALENDLY_CLIENT_SECRET der Installation.": "Aucune application Calendly n’est enregistrée — ni dans les réglages du plugin de cette organisation, ni comme CALENDLY_CLIENT_ID/CALENDLY_CLIENT_SECRET de l’installation.",
     "Kennung des Links": "Identifiant du lien",
