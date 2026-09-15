@@ -26,7 +26,10 @@ class SecurityHeaders {
         $response->headers->set('Cross-Origin-Resource-Policy', 'same-origin');
 
         if (! $response->headers->has('Content-Security-Policy')) {
-            $response->headers->set('Content-Security-Policy', $this->buildCsp($request));
+            $response->headers->set(
+                'Content-Security-Policy',
+                $this->isDocumentResponse($response) ? self::DOCUMENT_CSP : $this->buildCsp($request),
+            );
         }
 
         // HSTS nur über HTTPS aktiv schalten (verhindert Bruch bei lokaler HTTP-Entwicklung)
@@ -35,6 +38,24 @@ class SecurityHeaders {
         }
 
         return $response;
+    }
+
+    /**
+     * CSP für ausgelieferte Dokumente (PDF, Bilder) statt der Seiten-CSP.
+     *
+     * Chrome und Edge wenden die CSP der PDF-Antwort auf ihren eingebauten
+     * Viewer an; der klassische Viewer bettet das PDF über ein <embed> ein,
+     * das unter object-src fällt. Mit der Seiten-CSP (`object-src 'none'`)
+     * blieb jede Inline-PDF-Anzeige leer („Dieser Inhalt ist blockiert",
+     * Chromium-Issue 40328564). Für ein Dokument ist diese Liste zugleich
+     * enger als die Seiten-CSP: keine Skripte, kein Nachladen, keine Formulare.
+     */
+    public const DOCUMENT_CSP = "default-src 'none'; object-src 'self'; frame-src 'self'; img-src 'self'; style-src 'unsafe-inline'; frame-ancestors 'self'; base-uri 'none'; form-action 'none'";
+
+    private function isDocumentResponse(Response $response): bool {
+        $type = strtolower(trim(explode(';', (string) $response->headers->get('Content-Type', ''), 2)[0]));
+
+        return $type === 'application/pdf' || str_starts_with($type, 'image/');
     }
 
     /**

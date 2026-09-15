@@ -58,11 +58,10 @@
     <div class="grid gap-4 lg:grid-cols-2">
         <x-card :title="__('invoice-import.review_original')" icon="description" padding="p-0">
             @if ($hasPreview)
-                <object data="{{ route('invoices.pdf-import.preview', $invoice) }}"
-                        type="{{ $source === 'xml' ? 'text/xml' : 'application/pdf' }}"
-                        class="h-[75vh] w-full">
-                    <p class="p-4 text-sm text-muted">{{ __('invoice-import.review_no_preview') }}</p>
-                </object>
+                {{-- iframe statt object-Element: die Seiten-CSP führt object-src 'none' (wie Belegvorschau und Dokumentdesign). --}}
+                <iframe src="{{ route('invoices.pdf-import.preview', $invoice) }}"
+                        class="h-[75vh] w-full"
+                        title="{{ __('invoice-import.review_original') }}"></iframe>
             @else
                 <div class="flex flex-col items-start gap-3 p-4">
                     <p class="text-sm text-muted">{{ __('invoice-import.review_no_preview') }}</p>
