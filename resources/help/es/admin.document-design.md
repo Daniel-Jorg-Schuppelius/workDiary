@@ -76,3 +76,21 @@ Diseño base CI y herencia:
   conscientemente en el diálogo. También nuevo: **líneas de cabecera/pie**
   por página y todos los ajustes del estilo de tabla (rejilla, espaciados,
   colores, repetición de cabecera, énfasis de totales).
+
+Primeros pasos y vista del membrete (retoque 6):
+
+- Mientras no estén hechos los cinco pasos, la vista general muestra una
+  **lista de comprobación** (subir membrete → crear perfil → diseñar en el
+  editor → activar versión → asignar tipos de documento) con salto al
+  diálogo o a la pestaña del editor correspondiente. El flujo de
+  documentos y la página de branding enlazan aquí.
+- Cada membrete tiene una **miniatura** y un diálogo **Ver** — también con
+  «revisión necesaria»: entonces se muestran el original (imagen) y las
+  notas de revisión; el **original** siempre se puede descargar (los PDF
+  solo como descarga, nunca en el visor del navegador).
+- El editor agrupa la columna derecha en las pestañas **Aspecto**
+  (membrete, estilo de tabla), **Maquetación** (zonas de impresión,
+  ventanas, zonas bloqueadas, tipografía), **Contenido** (bloques de
+  información, textos de cabecera/pie) y **Publicación** (documentos de
+  prueba, asignación, versiones). La selección del membrete aparece de
+  inmediato en la vista previa A4 y se guarda con «Guardar borrador».

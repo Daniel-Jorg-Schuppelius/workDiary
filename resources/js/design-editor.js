@@ -60,6 +60,12 @@ export function registerDesignEditor(Alpine) {
         previewKind: "invoice",
         previewScenario: "standard",
         previewTick: 0,
+        // Reiter der rechten Spalte: Aussehen | Layout | Inhalte | Freigabe.
+        tab: "appearance",
+        // Firmenbogen-Zuordnung: Auswahl wirkt sofort auf den Canvas
+        // (assetPreviews: sqid → Vorschau-URL), gespeichert mit dem Entwurf.
+        assets: { first: "", following: "" },
+        assetPreviews: {},
 
         init() {
             const cfg = JSON.parse(this.$el.dataset.config || "{}");
@@ -108,6 +114,25 @@ export function registerDesignEditor(Alpine) {
                 header_text: null,
                 footer_text: null,
             };
+            this.assets = {
+                first: cfg.assets?.first ?? "",
+                following: cfg.assets?.following ?? "",
+            };
+            this.assetPreviews = cfg.assetPreviews ?? {};
+            // Direktsprung, z. B. „#tab-release" aus der Einstiegs-Checkliste.
+            const hashTab = (window.location.hash || "").replace("#tab-", "");
+            if (["appearance", "layout", "content", "release"].includes(hashTab)) {
+                this.tab = hashTab;
+            }
+        },
+
+        setTab(name) {
+            this.tab = name;
+        },
+        // Vorschau-URL des gewählten Bogens je Seitenrolle ("" = kein Bogen).
+        assetPreviewSrc(role) {
+            const key = this.assets[role];
+            return key && this.assetPreviews[key] ? this.assetPreviews[key] : "";
         },
 
         // Sektion wirksam aus diesem Profil (nicht geerbt)?
@@ -319,6 +344,8 @@ export function registerDesignEditor(Alpine) {
                     block_rules: this.blocks,
                     table_style: this.tableStyle,
                     content_texts: this.contentTexts,
+                    first_asset: this.assets.first || "",
+                    following_asset: this.assets.following || "",
                     ...(this.canInherit
                         ? {
                               override_sections: this.inheritEnabled

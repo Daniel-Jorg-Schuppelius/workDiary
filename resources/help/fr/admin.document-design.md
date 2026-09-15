@@ -77,3 +77,24 @@ Design de base CI et héritage :
   dialogue. Nouveau également : **lignes d'en-tête/pied** par page et tous
   les réglages du style de tableau (quadrillage, espacements, couleurs,
   répétition d'en-tête, mise en valeur des totaux).
+
+Prise en main et aperçu du papier à en-tête (retouche 6) :
+
+- Tant que les cinq étapes ne sont pas terminées, la vue d'ensemble
+  affiche une **liste de contrôle** (téléverser le papier à en-tête →
+  créer un profil → concevoir dans l'éditeur → activer la version →
+  attribuer les types de document) avec accès direct au dialogue ou à
+  l'onglet d'éditeur correspondant. Le flux de documents et la page de
+  branding renvoient ici.
+- Chaque papier à en-tête a une **vignette** et un dialogue
+  **Afficher** — aussi en « contrôle requis » : l'original (image) et les
+  remarques de contrôle sont alors affichés ; l'**original** est toujours
+  téléchargeable (les PDF uniquement en téléchargement, jamais dans le
+  visualiseur du navigateur).
+- L'éditeur regroupe la colonne de droite dans les onglets **Apparence**
+  (papier à en-tête, style de tableau), **Mise en page** (zones
+  d'impression, fenêtres, zones bloquées, typographie), **Contenus**
+  (blocs d'information, textes d'en-tête/pied) et **Publication**
+  (documents de test, attribution, versions). La sélection du papier à
+  en-tête apparaît immédiatement dans l'aperçu A4 et est enregistrée avec
+  « Enregistrer le brouillon ».

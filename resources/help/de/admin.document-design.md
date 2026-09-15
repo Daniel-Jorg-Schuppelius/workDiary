@@ -72,3 +72,21 @@ CI-Basisdesign und Vererbung:
   Aktivierung, bis du sie im Dialog bewusst bestätigst. Neu sind außerdem
   per-Seite-**Kopf-/Fußzeilen** und die vollständigen Tabellenstil-Schalter
   (Raster, Abstände, Farben, Kopfzeilen-Wiederholung, Summenbetonung).
+
+Einstieg und Firmenbogen-Ansicht (Nachschnitt 6):
+
+- Solange nicht alle fünf Schritte erledigt sind, zeigt die Übersicht eine
+  **Checkliste** (Firmenbogen hochladen → Profil anlegen → im Editor
+  gestalten → Version aktivieren → Dokumentarten zuweisen) mit Sprung in
+  den passenden Dialog bzw. Editor-Reiter. Aus dem Belegfluss und dem
+  Branding führt jeweils ein Verweis hierher.
+- Jeder Firmenbogen hat ein **Thumbnail** und einen **Ansehen**-Dialog —
+  auch bei „Prüfung erforderlich": dann werden Original (Bild) und
+  Prüfhinweise gezeigt; das **Original** lässt sich immer herunterladen
+  (PDF nur als Download, nicht im Browser-Viewer).
+- Der Editor gliedert die rechte Spalte in die Reiter **Aussehen**
+  (Firmenbogen, Tabellenstil), **Layout** (Druckbereiche, Fenster,
+  Sperrflächen, Typografie), **Inhalte** (Informationsblöcke, Kopf-/
+  Fußtexte) und **Freigabe** (Testdokumente, Zuweisung, Versionen). Die
+  Firmenbogen-Auswahl erscheint sofort in der A4-Vorschau und wird mit
+  „Entwurf speichern" übernommen.

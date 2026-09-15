@@ -71,3 +71,20 @@ CI base design and inheritance:
   activation until you knowingly confirm them in the dialog. Also new:
   per-page **header/footer lines** and the complete set of table-style
   switches (grid, spacing, colors, header repetition, totals emphasis).
+
+Getting started and letterhead view (refinement 6):
+
+- Until all five steps are done, the overview shows a **checklist**
+  (upload letterhead → create profile → design in the editor → activate
+  version → assign document kinds) with jumps to the matching dialog or
+  editor tab. The document feed and branding pages link here as well.
+- Every letterhead has a **thumbnail** and a **View** dialog — also when
+  "review required": then the original (image) and the review notes are
+  shown; the **original** can always be downloaded (PDFs as download
+  only, never in the browser viewer).
+- The editor groups the right column into the tabs **Appearance**
+  (letterhead, table style), **Layout** (print areas, windows, blocked
+  areas, typography), **Content** (information blocks, header/footer
+  texts) and **Release** (test documents, assignment, versions). The
+  letterhead selection shows immediately in the A4 preview and is stored
+  with "Save draft".

@@ -1671,6 +1671,8 @@ Route::middleware('auth')->group(function () {
         Route::get('admin/document-design/assets/create', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'createAsset'])->name('admin.document-design.assets.create');
         Route::post('admin/document-design/assets', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'storeAsset'])->name('admin.document-design.assets.store');
         Route::get('admin/document-design/assets/{asset}/preview', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'assetPreview'])->name('admin.document-design.assets.preview');
+        Route::get('admin/document-design/assets/{asset}', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'showAsset'])->name('admin.document-design.assets.show');
+        Route::get('admin/document-design/assets/{asset}/original', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'assetOriginal'])->name('admin.document-design.assets.original');
         Route::post('admin/document-design/assets/{asset}/archive', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'archiveAsset'])->name('admin.document-design.assets.archive');
         Route::get('admin/document-design/profiles/create', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'createProfile'])->name('admin.document-design.profiles.create');
         Route::post('admin/document-design/profiles', [\App\Http\Controllers\Admin\DocumentDesignController::class, 'storeProfile'])->name('admin.document-design.profiles.store');

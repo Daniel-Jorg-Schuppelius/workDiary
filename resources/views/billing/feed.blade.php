@@ -101,8 +101,23 @@
 @endphp
 
 @section('content')
+@php
+    // Verweis zum Dokumentdesign (Feature 076): Plan-Gating wie im Menü, Recht wie im Controller.
+    $_designUser = auth()->user();
+    $_canDesign = $_designUser !== null
+        && ($_designUser->isAdmin()
+            || $_designUser->can(\App\Enums\User\Permission::DocumentDesignManage->value)
+            || $_designUser->can(\App\Enums\User\Permission::DocumentDesignAssign->value))
+        && app(\App\Services\Navigation\NavGate::class)->allows('admin.document-design.index');
+@endphp
 <x-index-page overflow="clip" :subtitle="__('billing.feed.subtitle', ['range' => $rangeLabel ?? ''])">
     <x-slot:actions>
+        @if ($_canDesign)
+            <x-icon-btn icon="design_services" size="sm" :href="route('admin.document-design.index')"
+                        :label="__('document_design.link.feed_title')" show-label>
+                {{ __('document_design.link.feed') }}
+            </x-icon-btn>
+        @endif
         @if ($sources['quote'] ?? false)
             <x-icon-btn icon="request_quote" size="sm" :href="route('quotes.create')" show-label>
                 {{ __('Neues Angebot') }}

@@ -10,15 +10,17 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat, RenderDocumentKind, TableStylePreset};
+use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFormat, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\{Organization, User};
 use App\Services\DocumentDesign\{LetterheadAssetService, RenderProfileService, SampleDocumentService};
 use App\Services\SqidEncoder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Storage};
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 use InvalidArgumentException;
@@ -43,21 +45,57 @@ class DocumentDesignController extends Controller {
         $user = $this->assignUser();
         $organization = $this->organization($user);
 
+        $profiles = DocumentRenderProfile::query()
+            ->where('organization_id', $organization->id)
+            ->with('activeVersion')
+            ->orderByDesc('is_default')
+            ->orderBy('name')
+            ->get();
+        $assets = LetterheadAsset::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', '!=', LetterheadAssetStatus::Archived)
+            ->orderByDesc('created_at')
+            ->get();
+
         return view('admin.document-design.index', [
-            'profiles' => DocumentRenderProfile::query()
-                ->where('organization_id', $organization->id)
-                ->with('activeVersion')
-                ->orderByDesc('is_default')
-                ->orderBy('name')
-                ->get(),
-            'assets' => LetterheadAsset::query()
-                ->where('organization_id', $organization->id)
-                ->where('status', '!=', LetterheadAssetStatus::Archived)
-                ->orderByDesc('created_at')
-                ->get(),
+            'profiles' => $profiles,
+            'assets' => $assets,
             'kinds' => RenderDocumentKind::cases(),
             'canManage' => $this->canManage($user),
+            'checklist' => $this->checklist($organization, $profiles, $assets),
         ]);
+    }
+
+    /**
+     * Einstiegs-Checkliste: welcher der fünf Schritte bis zum wirksamen
+     * Design ist erledigt. Steuert den Leerzustand der Übersicht.
+     *
+     * @param Collection<int, DocumentRenderProfile> $profiles
+     * @param Collection<int, LetterheadAsset> $assets
+     * @return array{steps: array<string, bool>, review_only: bool, complete: bool, editor_profile: DocumentRenderProfile|null}
+     */
+    private function checklist(Organization $organization, Collection $profiles, Collection $assets): array {
+        $isActive = fn (DocumentRenderProfile $p): bool => $p->status === RenderProfileStatus::Active;
+        $designed = DocumentRenderProfileVersion::query()
+            ->where('organization_id', $organization->id)
+            ->where(fn ($q) => $q->whereNotNull('first_asset_id')->orWhere('status', DocumentRenderProfileVersion::STATUS_ACTIVE))
+            ->exists();
+
+        $steps = [
+            'letterhead' => $assets->contains(fn (LetterheadAsset $a): bool => $a->isReady()),
+            'profile' => $profiles->isNotEmpty(),
+            'design' => $designed,
+            'activate' => $profiles->contains($isActive),
+            'assign' => $profiles->contains(fn (DocumentRenderProfile $p): bool => $isActive($p)
+                && ($p->is_default || $p->document_family !== null || ($p->document_kinds ?? []) !== [])),
+        ];
+
+        return [
+            'steps' => $steps,
+            'review_only' => $assets->isNotEmpty() && ! $steps['letterhead'],
+            'complete' => ! in_array(false, $steps, true),
+            'editor_profile' => $profiles->first(fn (DocumentRenderProfile $p): bool => $p->status !== RenderProfileStatus::Archived),
+        ];
     }
 
     /** Upload-Dialog (modal-first, MVP-296). */
@@ -129,17 +167,56 @@ class DocumentDesignController extends Controller {
         ]);
     }
 
+    /** Vorschau-Dialog eines Firmenbogens — auch bei „Prüfung erforderlich" einsehbar. */
+    public function showAsset(string $sqid): View {
+        $user = $this->assignUser();
+        $organization = $this->organization($user);
+        $asset = $this->asset($organization, $sqid);
+        $disk = Storage::disk($asset->disk);
+
+        return view('admin.document-design._asset_preview_dialog', [
+            'asset' => $asset,
+            'hasNormalized' => $asset->normalized_path !== null && $disk->exists($asset->normalized_path),
+            'hasOriginal' => $disk->exists($asset->original_path),
+            'inUse' => $this->assetInUse($organization, $asset),
+        ]);
+    }
+
+    /**
+     * Unverändertes Original (Nachweis). Rasterbilder inline, PDFs nur als
+     * Download: das Original kann Formulare, Skripte und Verweise tragen und
+     * wird deshalb nicht im Browser-Viewer geöffnet.
+     */
+    public function assetOriginal(string $sqid): Response {
+        $user = $this->assignUser();
+        $organization = $this->organization($user);
+        $asset = $this->asset($organization, $sqid);
+
+        $disk = Storage::disk($asset->disk);
+        abort_unless($disk->exists($asset->original_path), 404);
+
+        $isPdf = $asset->source_type === 'pdf';
+        $mime = match ($asset->source_type) {
+            'pdf' => 'application/pdf',
+            'png' => 'image/png',
+            default => 'image/jpeg',
+        };
+        $basename = Str::slug(pathinfo((string) $asset->original_name, PATHINFO_FILENAME)) ?: 'firmenbogen';
+
+        return response((string) $disk->get($asset->original_path), 200, [
+            'Content-Type' => $mime,
+            'Content-Disposition' => sprintf('%s; filename="%s.%s"', $isPdf ? 'attachment' : 'inline', $basename, $asset->source_type),
+            'X-Content-Type-Options' => 'nosniff',
+            'Cache-Control' => 'private, max-age=300',
+        ]);
+    }
+
     public function archiveAsset(string $sqid): RedirectResponse {
         $user = $this->manageUser();
         $organization = $this->organization($user);
         $asset = $this->asset($organization, $sqid);
 
-        $inUse = DocumentRenderProfileVersion::query()
-            ->where('organization_id', $organization->id)
-            ->where('status', '!=', DocumentRenderProfileVersion::STATUS_SUPERSEDED)
-            ->where(fn($q) => $q->where('first_asset_id', $asset->id)->orWhere('following_asset_id', $asset->id))
-            ->exists();
-        if ($inUse) {
+        if ($this->assetInUse($organization, $asset)) {
             return back()->with('error', __('Der Firmenbogen wird von einem aktiven Profil oder Entwurf verwendet.'));
         }
 
@@ -191,15 +268,25 @@ class DocumentDesignController extends Controller {
         $base = $this->profiles->baseProfile($organization, $profile->page_format ?? PageFormat::A4Portrait);
         $canInherit = ! $profile->is_default && $base !== null && (int) $base->id !== (int) $profile->id;
 
+        // MVP-652: nur Firmenbögen im Seitenformat des Profils.
+        $sameFormat = fn (LetterheadAsset $asset): bool => ($asset->page_format ?? PageFormat::A4Portrait) === ($profile->page_format ?? PageFormat::A4Portrait);
+        $assetsFirst = $this->readyAssets($organization, LetterheadPageRole::First)->filter($sameFormat)->values();
+        $assetsFollowing = $this->readyAssets($organization, LetterheadPageRole::Following)->filter($sameFormat)->values();
+        // Live-Vorschau: die Dropdown-Auswahl zeigt den Bogen sofort auf dem
+        // Canvas; gespeichert wird die Zuordnung mit dem Entwurf.
+        $assetPreviews = $assetsFirst->merge($assetsFollowing)
+            ->merge(array_filter([$version->firstAsset, $version->followingAsset]))
+            ->filter(fn (LetterheadAsset $asset): bool => $asset->normalized_path !== null)
+            ->mapWithKeys(fn (LetterheadAsset $asset): array => [$asset->sqid => route('admin.document-design.assets.preview', $asset->sqid)])
+            ->all();
+
         return view('admin.document-design.editor', [
             'profile' => $profile,
             'version' => $version,
             'isDraft' => $version->isDraft(),
-            // MVP-652: nur Firmenbögen im Seitenformat des Profils.
-            'assetsFirst' => $this->readyAssets($organization, LetterheadPageRole::First)
-                ->filter(fn ($asset): bool => ($asset->page_format ?? PageFormat::A4Portrait) === ($profile->page_format ?? PageFormat::A4Portrait))->values(),
-            'assetsFollowing' => $this->readyAssets($organization, LetterheadPageRole::Following)
-                ->filter(fn ($asset): bool => ($asset->page_format ?? PageFormat::A4Portrait) === ($profile->page_format ?? PageFormat::A4Portrait))->values(),
+            'assetsFirst' => $assetsFirst,
+            'assetsFollowing' => $assetsFollowing,
+            'assetPreviews' => $assetPreviews,
             'kinds' => RenderDocumentKind::cases(),
             'families' => \App\Enums\DocumentDesign\RenderDocumentFamily::cases(),
             'presets' => TableStylePreset::cases(),
@@ -452,5 +539,14 @@ class DocumentDesignController extends Controller {
             ->where('status', LetterheadAssetStatus::Ready)
             ->orderBy('name')
             ->get();
+    }
+
+    /** Von einem aktiven Profil oder Entwurf referenziert? */
+    private function assetInUse(Organization $organization, LetterheadAsset $asset): bool {
+        return DocumentRenderProfileVersion::query()
+            ->where('organization_id', $organization->id)
+            ->where('status', '!=', DocumentRenderProfileVersion::STATUS_SUPERSEDED)
+            ->where(fn ($q) => $q->where('first_asset_id', $asset->id)->orWhere('following_asset_id', $asset->id))
+            ->exists();
     }
 }

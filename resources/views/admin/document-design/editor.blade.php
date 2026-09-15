@@ -29,6 +29,9 @@
         'previewUrl' => route('admin.document-design.preview-pdf', $profile->sqid),
         'pageW' => $pageFormat->widthMm(),
         'pageH' => $pageFormat->heightMm(),
+        // Live-Vorschau der Firmenbogen-Auswahl (sqid → Vorschau-URL).
+        'assets' => ['first' => $version->firstAsset?->sqid, 'following' => $version->followingAsset?->sqid],
+        'assetPreviews' => $assetPreviews,
     ];
     $blockCases = \App\Enums\DocumentDesign\InformationBlock::cases();
     $stateCases = \App\Enums\DocumentDesign\InformationBlockState::cases();
@@ -117,15 +120,13 @@
                      class="relative mx-auto w-full max-w-105 border border-base-300 bg-white shadow-sm select-none"
                      style="aspect-ratio: {{ $pageFormat->widthMm() }} / {{ $pageFormat->heightMm() }};"
                      role="application" aria-label="{{ __('document_design.editor.preview_heading') }}">
-                    {{-- Firmenbogen-Hintergrund --}}
-                    @if ($version->firstAsset?->normalized_path)
-                        <img src="{{ route('admin.document-design.assets.preview', $version->firstAsset->sqid) }}"
-                             class="absolute inset-0 h-full w-full object-fill" alt="" x-show="page === 'first'">
-                    @endif
-                    @if ($version->followingAsset?->normalized_path)
-                        <img src="{{ route('admin.document-design.assets.preview', $version->followingAsset->sqid) }}"
-                             class="absolute inset-0 h-full w-full object-fill" alt="" x-show="page === 'following'">
-                    @endif
+                    {{-- Firmenbogen-Hintergrund: folgt live der Auswahl unter „Aussehen" --}}
+                    <template x-if="page === 'first' && assetPreviewSrc('first')">
+                        <img :src="assetPreviewSrc('first')" class="absolute inset-0 h-full w-full object-fill" alt="">
+                    </template>
+                    <template x-if="page === 'following' && assetPreviewSrc('following')">
+                        <img :src="assetPreviewSrc('following')" class="absolute inset-0 h-full w-full object-fill" alt="">
+                    </template>
 
                     {{-- Inhaltsbereich --}}
                     <div class="absolute border-2 border-primary/70 bg-primary/5 cursor-move focus:outline-2"
@@ -257,329 +258,343 @@
                         </div>
                     </x-card>
                 @endif
-                <x-card>
-                    <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.margins_heading') }}</h2>
-                    @foreach ([['content_first', __('Erste Seite')], ['content_following', __('Folgeseiten')]] as [$key, $label])
-                        <fieldset class="mb-3">
-                            <legend class="text-sm font-medium">{{ $label }} ({{ __('Ränder in mm') }})</legend>
-                            <div class="grid grid-cols-4 gap-2">
-                                @foreach (['top' => __('Oben'), 'right' => __('Rechts'), 'bottom' => __('Unten'), 'left' => __('Links')] as $side => $sideLabel)
-                                    <label class="form-control">
-                                        <span class="label-text text-xs">{{ $sideLabel }}</span>
-                                        <input type="number" step="0.5" min="0" max="297"
-                                               class="input input-bordered input-xs"
-                                               x-model.number="layout.{{ $key }}.{{ $side }}"
-                                               @change="markDirty()"
-                                               :disabled="!editable">
-                                    </label>
-                                @endforeach
-                            </div>
-                        </fieldset>
+                {{-- Reiter: Aussehen | Layout | Inhalte | Freigabe --}}
+                <div role="tablist" class="tabs tabs-box tabs-sm" aria-label="{{ __('document_design.editor.tabs_label') }}">
+                    @foreach (['appearance' => 'tab_appearance', 'layout' => 'tab_layout', 'content' => 'tab_content', 'release' => 'tab_release'] as $tabKey => $tabLabel)
+                        <button type="button" role="tab" class="tab"
+                                :class="tab === '{{ $tabKey }}' ? 'tab-active' : ''"
+                                :aria-selected="tab === '{{ $tabKey }}' ? 'true' : 'false'"
+                                @click="setTab('{{ $tabKey }}')">{{ __('document_design.editor.' . $tabLabel) }}</button>
                     @endforeach
+                </div>
 
-                    <div class="flex flex-wrap gap-2">
-                        <button type="button" class="btn btn-xs btn-outline" @click="toggleAddressWindow()" :disabled="!editable">
-                            <span x-text="layout.address_window ? '{{ __('document_design.editor.address_remove') }}' : '{{ __('document_design.editor.address_add') }}'"></span>
-                        </button>
-                        <button type="button" class="btn btn-xs btn-outline" @click="toggleSenderLine()" :disabled="!editable">
-                            <span x-text="layout.sender_line ? '{{ __('document_design.editor.sender_remove') }}' : '{{ __('document_design.editor.sender_add') }}'"></span>
-                        </button>
-                        <button type="button" class="btn btn-xs btn-outline" @click="addBlockedArea()" :disabled="!editable">{{ __('document_design.editor.blocked_add') }}</button>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" class="checkbox checkbox-xs" x-model="layout.footer.page_numbers" @change="markDirty()" :disabled="!editable">
-                            {{ __('document_design.editor.page_numbers') }}
-                        </label>
-                    </div>
-
-                    {{-- Kopf-/Fußzeilen (Feinschliff): kurze per-Seite-Zeilen im Randbereich. --}}
-                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
-                        <label class="form-control">
-                            <span class="label-text text-xs">{{ __('document_design.editor.header_note') }}</span>
-                            <input type="text" maxlength="200" class="input input-bordered input-xs"
-                                   x-model="layout.header.note" @change="markDirty()" :disabled="!editable">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-xs">{{ __('document_design.editor.footer_note') }}</span>
-                            <input type="text" maxlength="200" class="input input-bordered input-xs"
-                                   x-model="layout.footer.note" @change="markDirty()" :disabled="!editable">
-                        </label>
-                    </div>
-
-                    {{-- Typografie (#83): kuratierte, PDF-fähige Schriften --}}
-                    <div class="mt-3 grid gap-2 sm:grid-cols-2">
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.font_family') }}</span>
-                            <select class="select select-bordered select-sm" x-model="layout.typography.font_family" @change="markDirty()" :disabled="!editable">
-                                <option value="">{{ __('document_design.editor.font_default') }}</option>
-                                @foreach (\App\Services\DocumentDesign\RenderProfileService::FONT_FAMILIES as $fontKey => $fontName)
-                                    <option value="{{ $fontKey }}">{{ $fontName }}</option>
-                                @endforeach
-                            </select>
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.base_size') }}</span>
-                            <input type="number" min="8" max="14" step="0.5" class="input input-bordered input-sm"
-                                   x-model.number="layout.typography.base_size_pt" @change="markDirty()" :disabled="!editable">
-                        </label>
-                    </div>
-
-                    <template x-if="layout.blocked_areas.length">
-                        <div class="mt-3 space-y-2">
-                            <template x-for="(area, index) in layout.blocked_areas" :key="'row' + index">
-                                <div class="flex flex-wrap items-end gap-2 text-xs">
-                                    <input aria-label="{{ __('Bezeichnung') }}" type="text" class="input input-bordered input-xs w-28" x-model="area.label" @change="markDirty()" :disabled="!editable" placeholder="{{ __('Bezeichnung') }}">
-                                    <select class="select select-bordered select-xs" x-model="area.page" @change="markDirty()" :disabled="!editable">
-                                        <option value="all">{{ __('Alle Seiten') }}</option>
-                                        <option value="first">{{ __('Erste Seite') }}</option>
-                                        <option value="following">{{ __('Folgeseiten') }}</option>
-                                    </select>
-                                    <template x-for="field in ['x','y','width','height']" :key="field">
-                                        <input type="number" step="0.5" class="input input-bordered input-xs w-16"
-                                               x-model.number="area[field]" @change="markDirty()" :disabled="!editable">
-                                    </template>
-                                    <button type="button" class="btn btn-ghost btn-xs text-error" @click="removeBlockedArea(index)" :disabled="!editable">✕</button>
-                                </div>
-                            </template>
-                        </div>
-                    </template>
-                </x-card>
-
-                {{-- Firmenbogen-Zuordnung --}}
-                @if ($canManage && $isDraft)
+                <div class="space-y-4" x-show="tab === 'appearance'">
+                    {{-- Firmenbogen-Zuordnung: Auswahl wirkt sofort auf den Canvas, gespeichert mit dem Entwurf --}}
                     <x-card>
-                        <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.assets_heading') }}</h2>
-                        <form method="POST" action="{{ route('admin.document-design.draft.update', $profile->sqid) }}" class="grid gap-2 sm:grid-cols-2">
-                            @csrf
-                            @method('PUT')
-                            <label class="form-control">
-                                <span class="label-text text-sm">{{ __('Erste Seite') }}</span>
-                                <select name="first_asset" class="select select-bordered select-sm">
-                                    <option value="">{{ __('document_design.editor.no_letterhead') }}</option>
-                                    @foreach ($assetsFirst as $asset)
-                                        <option value="{{ $asset->sqid }}" @selected($version->first_asset_id === $asset->id)>{{ $asset->name }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <label class="form-control">
-                                <span class="label-text text-sm">{{ __('Folgeseiten') }}</span>
-                                <select name="following_asset" class="select select-bordered select-sm">
-                                    <option value="">{{ __('document_design.editor.no_letterhead') }}</option>
-                                    @foreach ($assetsFollowing as $asset)
-                                        <option value="{{ $asset->sqid }}" @selected($version->following_asset_id === $asset->id)>{{ $asset->name }}</option>
-                                    @endforeach
-                                </select>
-                            </label>
-                            <div class="sm:col-span-2">
-                                <button type="submit" class="btn btn-sm btn-outline">{{ __('document_design.editor.assets_save') }}</button>
-                            </div>
-                        </form>
-                    </x-card>
-                @endif
-
-                {{-- Informationsblöcke --}}
-                <x-card>
-                    <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.blocks_heading') }}</h2>
-                    <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.blocks_hint') }}</p>
-                    <div class="space-y-2">
-                        @foreach ($blockCases as $block)
-                            <div class="flex flex-wrap items-center justify-between gap-2 border-b border-base-200 pb-1 text-sm">
-                                <span>{{ $block->label() }}</span>
-                                <div class="flex items-center gap-2">
-                                    <select class="select select-bordered select-xs"
-                                            x-model="blocks['{{ $block->value }}'].state"
-                                            @change="markDirty()"
-                                            :disabled="!editable">
-                                        @foreach ($stateCases as $state)
-                                            @if ($state !== \App\Enums\DocumentDesign\InformationBlockState::ProvidedByLetterhead || ! $block->dynamicOnly())
-                                                <option value="{{ $state->value }}">{{ $state->label() }}</option>
-                                            @endif
+                        <div class="mb-1 flex flex-wrap items-center justify-between gap-2">
+                            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.assets_heading') }}</h2>
+                            <x-icon-btn icon="wallpaper" tone="ghost" size="xs" :href="route('admin.document-design.index')" show-label>{{ __('document_design.editor.manage_assets') }}</x-icon-btn>
+                        </div>
+                        <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.assets_hint') }}</p>
+                        <div class="grid gap-2 sm:grid-cols-2">
+                            @foreach ([['first', __('Erste Seite'), $assetsFirst, $version->firstAsset], ['following', __('Folgeseiten'), $assetsFollowing, $version->followingAsset]] as [$role, $roleLabel, $options, $current])
+                                <label class="form-control">
+                                    <span class="label-text text-sm">{{ $roleLabel }}</span>
+                                    <select class="select select-bordered select-sm" x-model="assets.{{ $role }}" @change="markDirty()" :disabled="!editable">
+                                        <option value="">{{ __('document_design.editor.no_letterhead') }}</option>
+                                        @foreach ($options as $asset)
+                                            <option value="{{ $asset->sqid }}">{{ $asset->name }}</option>
                                         @endforeach
+                                        @if ($current && ! $options->contains('id', $current->id))
+                                            <option value="{{ $current->sqid }}">{{ $current->name }}</option>
+                                        @endif
                                     </select>
-                                    <label class="flex items-center gap-1 text-xs"
-                                           x-show="blocks['{{ $block->value }}'].state === 'provided_by_letterhead'" x-cloak>
-                                        <input type="checkbox" class="checkbox checkbox-xs"
-                                               x-model="blocks['{{ $block->value }}'].confirmed"
-                                               @change="markDirty()"
-                                               :disabled="!editable">
-                                        {{ __('document_design.editor.block_confirmed') }}
-                                    </label>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                </x-card>
+                                </label>
+                            @endforeach
+                        </div>
+                    </x-card>
 
-                {{-- Tabellenstil --}}
-                <x-card>
-                    <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.table_heading') }}</h2>
-                    <div class="grid gap-2 sm:grid-cols-2">
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.table_preset') }}</span>
-                            <select class="select select-bordered select-sm" x-model="tableStyle.preset" @change="markDirty()" :disabled="!editable">
-                                @foreach ($presets as $preset)
-                                    <option value="{{ $preset->value }}">{{ $preset->label() }}</option>
-                                @endforeach
-                            </select>
-                        </label>
-                        <label class="flex items-center gap-2 text-sm sm:col-span-2" title="{{ __('document_design.editor.use_brand_colors_hint') }}">
-                            <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.use_brand_colors" @change="markDirty()" :disabled="!editable">
-                            {{ __('document_design.editor.use_brand_colors') }}
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.accent_color') }}</span>
-                            <input type="color" class="input input-bordered input-sm w-full"
-                                   x-model="tableStyle.overrides.accent_color" @change="markDirty()" :disabled="!editable || tableStyle.use_brand_colors">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.header_fill') }}</span>
-                            <input type="color" class="input input-bordered input-sm w-full"
-                                   x-model="tableStyle.overrides.header_fill" @change="markDirty()" :disabled="!editable || tableStyle.use_brand_colors">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.font_size') }}</span>
-                            <input type="number" min="8" max="14" class="input input-bordered input-sm w-full"
-                                   x-model.number="tableStyle.overrides.font_size" @change="markDirty()" :disabled="!editable">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.grid') }}</span>
-                            <select class="select select-bordered select-sm" x-model="tableStyle.overrides.grid" @change="markDirty()" :disabled="!editable">
-                                <option value="horizontal">{{ __('document_design.editor.grid_horizontal') }}</option>
-                                <option value="full">{{ __('document_design.editor.grid_full') }}</option>
-                                <option value="minimal">{{ __('document_design.editor.grid_minimal') }}</option>
-                            </select>
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.line_height') }}</span>
-                            <input type="number" min="1" max="1.8" step="0.05" class="input input-bordered input-sm w-full"
-                                   x-model.number="tableStyle.overrides.line_height" @change="markDirty()" :disabled="!editable">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.text_color') }}</span>
-                            <input type="color" class="input input-bordered input-sm w-full"
-                                   x-model="tableStyle.overrides.text_color" @change="markDirty()" :disabled="!editable">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.header_text_color') }}</span>
-                            <input type="color" class="input input-bordered input-sm w-full"
-                                   x-model="tableStyle.overrides.header_text_color" @change="markDirty()" :disabled="!editable">
-                        </label>
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.editor.zebra_fill') }}</span>
-                            <input type="color" class="input input-bordered input-sm w-full"
-                                   x-model="tableStyle.overrides.zebra_fill" @change="markDirty()" :disabled="!editable">
-                        </label>
-                        <div class="grid grid-cols-2 gap-2">
+                    {{-- Tabellenstil --}}
+                    <x-card>
+                        <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.table_heading') }}</h2>
+                        <div class="grid gap-2 sm:grid-cols-2">
                             <label class="form-control">
-                                <span class="label-text text-sm">{{ __('document_design.editor.cell_padding_v') }}</span>
-                                <input type="number" min="1" max="10" class="input input-bordered input-sm w-full"
-                                       x-model.number="tableStyle.overrides.cell_padding_v" @change="markDirty()" :disabled="!editable">
+                                <span class="label-text text-sm">{{ __('document_design.editor.table_preset') }}</span>
+                                <select class="select select-bordered select-sm" x-model="tableStyle.preset" @change="markDirty()" :disabled="!editable">
+                                    @foreach ($presets as $preset)
+                                        <option value="{{ $preset->value }}">{{ $preset->label() }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm sm:col-span-2" title="{{ __('document_design.editor.use_brand_colors_hint') }}">
+                                <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.use_brand_colors" @change="markDirty()" :disabled="!editable">
+                                {{ __('document_design.editor.use_brand_colors') }}
                             </label>
                             <label class="form-control">
-                                <span class="label-text text-sm">{{ __('document_design.editor.cell_padding_h') }}</span>
-                                <input type="number" min="2" max="12" class="input input-bordered input-sm w-full"
-                                       x-model.number="tableStyle.overrides.cell_padding_h" @change="markDirty()" :disabled="!editable">
+                                <span class="label-text text-sm">{{ __('document_design.editor.accent_color') }}</span>
+                                <input type="color" class="input input-bordered input-sm w-full"
+                                       x-model="tableStyle.overrides.accent_color" @change="markDirty()" :disabled="!editable || tableStyle.use_brand_colors">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.header_fill') }}</span>
+                                <input type="color" class="input input-bordered input-sm w-full"
+                                       x-model="tableStyle.overrides.header_fill" @change="markDirty()" :disabled="!editable || tableStyle.use_brand_colors">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.font_size') }}</span>
+                                <input type="number" min="8" max="14" class="input input-bordered input-sm w-full"
+                                       x-model.number="tableStyle.overrides.font_size" @change="markDirty()" :disabled="!editable">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.grid') }}</span>
+                                <select class="select select-bordered select-sm" x-model="tableStyle.overrides.grid" @change="markDirty()" :disabled="!editable">
+                                    <option value="horizontal">{{ __('document_design.editor.grid_horizontal') }}</option>
+                                    <option value="full">{{ __('document_design.editor.grid_full') }}</option>
+                                    <option value="minimal">{{ __('document_design.editor.grid_minimal') }}</option>
+                                </select>
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.line_height') }}</span>
+                                <input type="number" min="1" max="1.8" step="0.05" class="input input-bordered input-sm w-full"
+                                       x-model.number="tableStyle.overrides.line_height" @change="markDirty()" :disabled="!editable">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.text_color') }}</span>
+                                <input type="color" class="input input-bordered input-sm w-full"
+                                       x-model="tableStyle.overrides.text_color" @change="markDirty()" :disabled="!editable">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.header_text_color') }}</span>
+                                <input type="color" class="input input-bordered input-sm w-full"
+                                       x-model="tableStyle.overrides.header_text_color" @change="markDirty()" :disabled="!editable">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.zebra_fill') }}</span>
+                                <input type="color" class="input input-bordered input-sm w-full"
+                                       x-model="tableStyle.overrides.zebra_fill" @change="markDirty()" :disabled="!editable">
+                            </label>
+                            <div class="grid grid-cols-2 gap-2">
+                                <label class="form-control">
+                                    <span class="label-text text-sm">{{ __('document_design.editor.cell_padding_v') }}</span>
+                                    <input type="number" min="1" max="10" class="input input-bordered input-sm w-full"
+                                           x-model.number="tableStyle.overrides.cell_padding_v" @change="markDirty()" :disabled="!editable">
+                                </label>
+                                <label class="form-control">
+                                    <span class="label-text text-sm">{{ __('document_design.editor.cell_padding_h') }}</span>
+                                    <input type="number" min="2" max="12" class="input input-bordered input-sm w-full"
+                                           x-model.number="tableStyle.overrides.cell_padding_h" @change="markDirty()" :disabled="!editable">
+                                </label>
+                            </div>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.zebra" @change="markDirty()" :disabled="!editable">
+                                {{ __('document_design.editor.zebra') }}
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.repeat_header" @change="markDirty()" :disabled="!editable">
+                                {{ __('document_design.editor.repeat_header') }}
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.highlight_totals" @change="markDirty()" :disabled="!editable">
+                                {{ __('document_design.editor.highlight_totals') }}
                             </label>
                         </div>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.zebra" @change="markDirty()" :disabled="!editable">
-                            {{ __('document_design.editor.zebra') }}
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.repeat_header" @change="markDirty()" :disabled="!editable">
-                            {{ __('document_design.editor.repeat_header') }}
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" class="checkbox checkbox-sm" x-model="tableStyle.overrides.highlight_totals" @change="markDirty()" :disabled="!editable">
-                            {{ __('document_design.editor.highlight_totals') }}
-                        </label>
-                    </div>
-                </x-card>
+                    </x-card>
 
-                {{-- Kopf-/Fußtexte (MVP-651, vormals invoice_templates) --}}
-                <x-card>
-                    <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.texts_heading') }}</h2>
-                    <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.texts_hint') }}</p>
-                    <label class="form-control">
-                        <span class="label-text text-sm">{{ __('document_design.editor.header_text') }}</span>
-                        <textarea class="textarea textarea-bordered textarea-sm" rows="2" maxlength="2000"
-                                  x-model="contentTexts.header_text" @change="markDirty()" :disabled="!editable"></textarea>
-                    </label>
-                    <label class="form-control mt-2">
-                        <span class="label-text text-sm">{{ __('document_design.editor.footer_text') }}</span>
-                        <textarea class="textarea textarea-bordered textarea-sm" rows="3" maxlength="2000"
-                                  x-model="contentTexts.footer_text" @change="markDirty()" :disabled="!editable"></textarea>
-                    </label>
-                </x-card>
+                </div>
 
-                {{-- Testdokumente --}}
-                <x-card>
-                    <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.test_heading') }}</h2>
-                    <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.test_hint') }}</p>
-                    <div class="flex flex-wrap gap-2">
-                        @foreach ($kinds as $kind)
-                            <a class="btn btn-xs btn-outline"
-                               href="{{ route('admin.document-design.test-pdf', ['profile' => $profile->sqid, 'kind' => $kind->value]) }}">
-                                {{ $kind->label() }}
-                            </a>
+                <div class="space-y-4" x-show="tab === 'layout'" x-cloak>
+                    <x-card>
+                        <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.margins_heading') }}</h2>
+                        @foreach ([['content_first', __('Erste Seite')], ['content_following', __('Folgeseiten')]] as [$key, $label])
+                            <fieldset class="mb-3">
+                                <legend class="text-sm font-medium">{{ $label }} ({{ __('Ränder in mm') }})</legend>
+                                <div class="grid grid-cols-4 gap-2">
+                                    @foreach (['top' => __('Oben'), 'right' => __('Rechts'), 'bottom' => __('Unten'), 'left' => __('Links')] as $side => $sideLabel)
+                                        <label class="form-control">
+                                            <span class="label-text text-xs">{{ $sideLabel }}</span>
+                                            <input type="number" step="0.5" min="0" max="297"
+                                                   class="input input-bordered input-xs"
+                                                   x-model.number="layout.{{ $key }}.{{ $side }}"
+                                                   @change="markDirty()"
+                                                   :disabled="!editable">
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </fieldset>
                         @endforeach
-                    </div>
-                </x-card>
 
-                {{-- Zuweisung + Versionen --}}
-                <x-card>
-                    <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.assign_heading') }}</h2>
-                    <form method="POST" action="{{ route('admin.document-design.assign', $profile->sqid) }}" class="space-y-2">
-                        @csrf
-                        @foreach ($kinds as $kind)
+                        <div class="flex flex-wrap gap-2">
+                            <button type="button" class="btn btn-xs btn-outline" @click="toggleAddressWindow()" :disabled="!editable">
+                                <span x-text="layout.address_window ? '{{ __('document_design.editor.address_remove') }}' : '{{ __('document_design.editor.address_add') }}'"></span>
+                            </button>
+                            <button type="button" class="btn btn-xs btn-outline" @click="toggleSenderLine()" :disabled="!editable">
+                                <span x-text="layout.sender_line ? '{{ __('document_design.editor.sender_remove') }}' : '{{ __('document_design.editor.sender_add') }}'"></span>
+                            </button>
+                            <button type="button" class="btn btn-xs btn-outline" @click="addBlockedArea()" :disabled="!editable">{{ __('document_design.editor.blocked_add') }}</button>
                             <label class="flex items-center gap-2 text-sm">
-                                <input type="checkbox" name="document_kinds[]" value="{{ $kind->value }}" class="checkbox checkbox-sm"
-                                       @checked(in_array($kind->value, $profile->document_kinds ?? [], true))>
-                                {{ $kind->label() }}
+                                <input type="checkbox" class="checkbox checkbox-xs" x-model="layout.footer.page_numbers" @change="markDirty()" :disabled="!editable">
+                                {{ __('document_design.editor.page_numbers') }}
                             </label>
-                        @endforeach
-                        <label class="form-control">
-                            <span class="label-text text-sm">{{ __('document_design.profile.family') }}</span>
-                            <select name="document_family" class="select select-bordered select-sm">
-                                <option value="">{{ __('document_design.profile.family_none') }}</option>
-                                @foreach ($families as $family)
-                                    <option value="{{ $family->value }}" @selected($profile->document_family === $family)>{{ $family->label() }}</option>
-                                @endforeach
-                            </select>
-                            <span class="label-text-alt text-xs text-muted">{{ __('document_design.profile.family_hint') }}</span>
-                        </label>
-                        <label class="flex items-center gap-2 text-sm">
-                            <input type="checkbox" name="is_default" value="1" class="checkbox checkbox-sm" @checked($profile->is_default)>
-                            {{ __('document_design.profile.set_default') }}
-                        </label>
-                        <label class="flex items-center gap-2 text-sm" title="{{ __('document_design.profile.customer_specific_hint') }}">
-                            <input type="checkbox" name="is_customer_specific" value="1" class="checkbox checkbox-sm" @checked($profile->is_customer_specific)>
-                            {{ __('document_design.profile.customer_specific') }}
-                        </label>
-                        <button type="submit" class="btn btn-sm btn-outline">{{ __('document_design.editor.assign_save') }}</button>
-                    </form>
+                        </div>
 
-                    <div class="mt-4">
-                        <h3 class="text-sm font-medium">{{ __('document_design.editor.versions_heading') }}</h3>
-                        <ul class="mt-1 space-y-1 text-sm">
-                            @foreach ($versions as $v)
-                                <li class="flex items-center justify-between gap-2">
-                                    <span>
-                                        v{{ $v->version }} — {{ $v->status === 'active' ? __('Aktiv') : ($v->status === 'draft' ? __('Entwurf') : __('Abgelöst')) }}
-                                        @if ($v->activated_at) · {{ $v->activated_at->fdate() }} @endif
-                                    </span>
-                                    @if ($canManage && $v->status === 'superseded')
-                                        <x-action-form :action="route('admin.document-design.draft.new', $profile->sqid)" method="POST"
-                                              :confirm="__('document_design.editor.rollback_confirm', ['v' => $v->version])"
-                                              :confirm-label="__('document_design.editor.rollback')">
-                                            <input type="hidden" name="source" value="{{ $v->sqid }}">
-                                            <button type="submit" class="btn btn-ghost btn-xs">{{ __('document_design.editor.rollback') }}</button>
-                                        </x-action-form>
-                                    @endif
-                                </li>
+                        {{-- Kopf-/Fußzeilen (Feinschliff): kurze per-Seite-Zeilen im Randbereich. --}}
+                        <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                            <label class="form-control">
+                                <span class="label-text text-xs">{{ __('document_design.editor.header_note') }}</span>
+                                <input type="text" maxlength="200" class="input input-bordered input-xs"
+                                       x-model="layout.header.note" @change="markDirty()" :disabled="!editable">
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-xs">{{ __('document_design.editor.footer_note') }}</span>
+                                <input type="text" maxlength="200" class="input input-bordered input-xs"
+                                       x-model="layout.footer.note" @change="markDirty()" :disabled="!editable">
+                            </label>
+                        </div>
+
+                        {{-- Typografie (#83): kuratierte, PDF-fähige Schriften --}}
+                        <div class="mt-3 grid gap-2 sm:grid-cols-2">
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.font_family') }}</span>
+                                <select class="select select-bordered select-sm" x-model="layout.typography.font_family" @change="markDirty()" :disabled="!editable">
+                                    <option value="">{{ __('document_design.editor.font_default') }}</option>
+                                    @foreach (\App\Services\DocumentDesign\RenderProfileService::FONT_FAMILIES as $fontKey => $fontName)
+                                        <option value="{{ $fontKey }}">{{ $fontName }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.editor.base_size') }}</span>
+                                <input type="number" min="8" max="14" step="0.5" class="input input-bordered input-sm"
+                                       x-model.number="layout.typography.base_size_pt" @change="markDirty()" :disabled="!editable">
+                            </label>
+                        </div>
+
+                        <template x-if="layout.blocked_areas.length">
+                            <div class="mt-3 space-y-2">
+                                <template x-for="(area, index) in layout.blocked_areas" :key="'row' + index">
+                                    <div class="flex flex-wrap items-end gap-2 text-xs">
+                                        <input aria-label="{{ __('Bezeichnung') }}" type="text" class="input input-bordered input-xs w-28" x-model="area.label" @change="markDirty()" :disabled="!editable" placeholder="{{ __('Bezeichnung') }}">
+                                        <select class="select select-bordered select-xs" x-model="area.page" @change="markDirty()" :disabled="!editable">
+                                            <option value="all">{{ __('Alle Seiten') }}</option>
+                                            <option value="first">{{ __('Erste Seite') }}</option>
+                                            <option value="following">{{ __('Folgeseiten') }}</option>
+                                        </select>
+                                        <template x-for="field in ['x','y','width','height']" :key="field">
+                                            <input type="number" step="0.5" class="input input-bordered input-xs w-16"
+                                                   x-model.number="area[field]" @change="markDirty()" :disabled="!editable">
+                                        </template>
+                                        <button type="button" class="btn btn-ghost btn-xs text-error" @click="removeBlockedArea(index)" :disabled="!editable">✕</button>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                    </x-card>
+
+                </div>
+
+                <div class="space-y-4" x-show="tab === 'content'" x-cloak>
+                    {{-- Informationsblöcke --}}
+                    <x-card>
+                        <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.blocks_heading') }}</h2>
+                        <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.blocks_hint') }}</p>
+                        <div class="space-y-2">
+                            @foreach ($blockCases as $block)
+                                <div class="flex flex-wrap items-center justify-between gap-2 border-b border-base-200 pb-1 text-sm">
+                                    <span>{{ $block->label() }}</span>
+                                    <div class="flex items-center gap-2">
+                                        <select class="select select-bordered select-xs"
+                                                x-model="blocks['{{ $block->value }}'].state"
+                                                @change="markDirty()"
+                                                :disabled="!editable">
+                                            @foreach ($stateCases as $state)
+                                                @if ($state !== \App\Enums\DocumentDesign\InformationBlockState::ProvidedByLetterhead || ! $block->dynamicOnly())
+                                                    <option value="{{ $state->value }}">{{ $state->label() }}</option>
+                                                @endif
+                                            @endforeach
+                                        </select>
+                                        <label class="flex items-center gap-1 text-xs"
+                                               x-show="blocks['{{ $block->value }}'].state === 'provided_by_letterhead'" x-cloak>
+                                            <input type="checkbox" class="checkbox checkbox-xs"
+                                                   x-model="blocks['{{ $block->value }}'].confirmed"
+                                                   @change="markDirty()"
+                                                   :disabled="!editable">
+                                            {{ __('document_design.editor.block_confirmed') }}
+                                        </label>
+                                    </div>
+                                </div>
                             @endforeach
-                        </ul>
-                    </div>
-                </x-card>
+                        </div>
+                    </x-card>
+
+                    {{-- Kopf-/Fußtexte (MVP-651, vormals invoice_templates) --}}
+                    <x-card>
+                        <h2 class="mb-1 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.texts_heading') }}</h2>
+                        <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.texts_hint') }}</p>
+                        <label class="form-control">
+                            <span class="label-text text-sm">{{ __('document_design.editor.header_text') }}</span>
+                            <textarea class="textarea textarea-bordered textarea-sm" rows="2" maxlength="2000"
+                                      x-model="contentTexts.header_text" @change="markDirty()" :disabled="!editable"></textarea>
+                        </label>
+                        <label class="form-control mt-2">
+                            <span class="label-text text-sm">{{ __('document_design.editor.footer_text') }}</span>
+                            <textarea class="textarea textarea-bordered textarea-sm" rows="3" maxlength="2000"
+                                      x-model="contentTexts.footer_text" @change="markDirty()" :disabled="!editable"></textarea>
+                        </label>
+                    </x-card>
+
+                </div>
+
+                <div class="space-y-4" x-show="tab === 'release'" x-cloak>
+                    {{-- Testdokumente --}}
+                    <x-card>
+                        <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.test_heading') }}</h2>
+                        <p class="mb-2 text-xs text-muted">{{ __('document_design.editor.test_hint') }}</p>
+                        <div class="flex flex-wrap gap-2">
+                            @foreach ($kinds as $kind)
+                                <a class="btn btn-xs btn-outline"
+                                   href="{{ route('admin.document-design.test-pdf', ['profile' => $profile->sqid, 'kind' => $kind->value]) }}">
+                                    {{ $kind->label() }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </x-card>
+
+                    {{-- Zuweisung + Versionen --}}
+                    <x-card>
+                        <h2 class="mb-2 font-['Space_Grotesk'] text-base font-semibold">{{ __('document_design.editor.assign_heading') }}</h2>
+                        <form method="POST" action="{{ route('admin.document-design.assign', $profile->sqid) }}" class="space-y-2">
+                            @csrf
+                            @foreach ($kinds as $kind)
+                                <label class="flex items-center gap-2 text-sm">
+                                    <input type="checkbox" name="document_kinds[]" value="{{ $kind->value }}" class="checkbox checkbox-sm"
+                                           @checked(in_array($kind->value, $profile->document_kinds ?? [], true))>
+                                    {{ $kind->label() }}
+                                </label>
+                            @endforeach
+                            <label class="form-control">
+                                <span class="label-text text-sm">{{ __('document_design.profile.family') }}</span>
+                                <select name="document_family" class="select select-bordered select-sm">
+                                    <option value="">{{ __('document_design.profile.family_none') }}</option>
+                                    @foreach ($families as $family)
+                                        <option value="{{ $family->value }}" @selected($profile->document_family === $family)>{{ $family->label() }}</option>
+                                    @endforeach
+                                </select>
+                                <span class="label-text-alt text-xs text-muted">{{ __('document_design.profile.family_hint') }}</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm">
+                                <input type="checkbox" name="is_default" value="1" class="checkbox checkbox-sm" @checked($profile->is_default)>
+                                {{ __('document_design.profile.set_default') }}
+                            </label>
+                            <label class="flex items-center gap-2 text-sm" title="{{ __('document_design.profile.customer_specific_hint') }}">
+                                <input type="checkbox" name="is_customer_specific" value="1" class="checkbox checkbox-sm" @checked($profile->is_customer_specific)>
+                                {{ __('document_design.profile.customer_specific') }}
+                            </label>
+                            <button type="submit" class="btn btn-sm btn-outline">{{ __('document_design.editor.assign_save') }}</button>
+                        </form>
+
+                        <div class="mt-4">
+                            <h3 class="text-sm font-medium">{{ __('document_design.editor.versions_heading') }}</h3>
+                            <ul class="mt-1 space-y-1 text-sm">
+                                @foreach ($versions as $v)
+                                    <li class="flex items-center justify-between gap-2">
+                                        <span>
+                                            v{{ $v->version }} — {{ $v->status === 'active' ? __('Aktiv') : ($v->status === 'draft' ? __('Entwurf') : __('Abgelöst')) }}
+                                            @if ($v->activated_at) · {{ $v->activated_at->fdate() }} @endif
+                                        </span>
+                                        @if ($canManage && $v->status === 'superseded')
+                                            <x-action-form :action="route('admin.document-design.draft.new', $profile->sqid)" method="POST"
+                                                  :confirm="__('document_design.editor.rollback_confirm', ['v' => $v->version])"
+                                                  :confirm-label="__('document_design.editor.rollback')">
+                                                <input type="hidden" name="source" value="{{ $v->sqid }}">
+                                                <button type="submit" class="btn btn-ghost btn-xs">{{ __('document_design.editor.rollback') }}</button>
+                                            </x-action-form>
+                                        @endif
+                                    </li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    </x-card>
+                </div>
             </div>
         </div>
     </div>

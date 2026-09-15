@@ -27,6 +27,53 @@
 
         <x-validation-errors first />
 
+        {{-- Einstieg: fünf Schritte bis zum wirksamen Design (bis alle erledigt sind) --}}
+        @unless ($checklist['complete'])
+            @php
+                $editorUrl = $checklist['editor_profile'] ? route('admin.document-design.editor', $checklist['editor_profile']->sqid) : null;
+                $checklistSteps = [
+                    ['key' => 'letterhead', 'icon' => 'upload_file', 'modal' => true, 'href' => $canManage ? route('admin.document-design.assets.create') : null, 'label' => __('document_design.asset.upload')],
+                    ['key' => 'profile', 'icon' => 'add', 'modal' => true, 'href' => $canManage ? route('admin.document-design.profiles.create') : null, 'label' => __('document_design.profile.create')],
+                    ['key' => 'design', 'icon' => 'edit', 'modal' => false, 'href' => $editorUrl, 'label' => __('document_design.checklist.open_editor')],
+                    ['key' => 'activate', 'icon' => 'verified', 'modal' => false, 'href' => $editorUrl, 'label' => __('document_design.checklist.open_editor')],
+                    ['key' => 'assign', 'icon' => 'assignment_turned_in', 'modal' => false, 'href' => $editorUrl ? $editorUrl . '#tab-release' : null, 'label' => __('document_design.checklist.open_editor')],
+                ];
+            @endphp
+            <x-card :title="__('document_design.checklist.heading')" icon="checklist">
+                <p class="mb-3 text-sm text-muted">{{ __('document_design.checklist.hint') }}</p>
+                <ol class="grid gap-2 md:grid-cols-5" data-design-checklist>
+                    @foreach ($checklistSteps as $i => $step)
+                        @php
+                            $done = $checklist['steps'][$step['key']];
+                            $hint = $step['key'] === 'letterhead' && $checklist['review_only']
+                                ? __('document_design.checklist.step.letterhead_review')
+                                : __('document_design.checklist.step.' . $step['key'] . '_hint');
+                        @endphp
+                        <li class="flex flex-col gap-1 rounded-box border p-3 {{ $done ? 'border-success/40 bg-success/5' : 'border-base-300' }}">
+                            <div class="flex items-center gap-2">
+                                <span class="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold {{ $done ? 'bg-success text-success-content' : 'bg-base-200' }}"
+                                      aria-label="{{ $done ? __('document_design.checklist.done') : __('document_design.checklist.open') }}">
+                                    @if ($done)
+                                        <x-icon name="check" />
+                                    @else
+                                        {{ $i + 1 }}
+                                    @endif
+                                </span>
+                                <span class="text-sm font-medium">{{ __('document_design.checklist.step.' . $step['key']) }}</span>
+                            </div>
+                            <p class="text-xs text-muted">{{ $hint }}</p>
+                            @if (! $done && $step['href'])
+                                <div class="mt-auto pt-1">
+                                    <x-icon-btn :icon="$step['icon']" tone="outline" size="xs" :href="$step['href']"
+                                                :data-entry-modal-trigger="$step['modal'] ? true : null" show-label>{{ $step['label'] }}</x-icon-btn>
+                                </div>
+                            @endif
+                        </li>
+                    @endforeach
+                </ol>
+            </x-card>
+        @endunless
+
         {{-- Renderprofile --}}
         <x-card :title="__('document_design.profiles_heading')">
             @if ($profiles->isEmpty())
@@ -80,6 +127,7 @@
                 <x-table bare>
                     <x-slot:head>
                             <tr>
+                                <th class="w-16">{{ __('document_design.asset.thumbnail') }}</th>
                                 <th>{{ __('document_design.asset.name') }}</th>
                                 <th>{{ __('document_design.asset.page_role') }}</th>
                                 <th>{{ __('document_design.asset.type') }}</th>
@@ -90,7 +138,22 @@
                     </x-slot:head>
                             @foreach ($assets as $asset)
                                 <tr>
-                                    <td class="font-medium">{{ $asset->name }}</td>
+                                    <td>
+                                        <a href="{{ route('admin.document-design.assets.show', $asset->sqid) }}" data-entry-modal-trigger
+                                           class="inline-block" title="{{ __('document_design.asset.show') }}">
+                                            @if ($asset->normalized_path)
+                                                <img src="{{ route('admin.document-design.assets.preview', $asset->sqid) }}" alt=""
+                                                     class="h-8 w-auto rounded border border-base-300 bg-white" loading="lazy">
+                                            @else
+                                                <span class="flex h-8 w-6 items-center justify-center rounded border border-dashed border-base-300 text-base-content/50">
+                                                    <x-icon :name="$asset->source_type === 'pdf' ? 'picture_as_pdf' : 'image'" />
+                                                </span>
+                                            @endif
+                                        </a>
+                                    </td>
+                                    <td class="font-medium">
+                                        <a href="{{ route('admin.document-design.assets.show', $asset->sqid) }}" data-entry-modal-trigger class="link link-hover">{{ $asset->name }}</a>
+                                    </td>
                                     <td>{{ $asset->page_role->label() }}</td>
                                     <td class="uppercase text-sm">{{ $asset->source_type }}</td>
                                     <td>
@@ -102,12 +165,12 @@
                                     <td class="text-sm text-base-content/70">{{ $asset->created_at->fdate() }}</td>
                                     <td class="text-right">
                                         <div class="flex justify-end gap-1">
-                                            @if ($asset->normalized_path)
-                                                <x-icon-btn icon="visibility"
-                                                            :href="route('admin.document-design.assets.preview', $asset->sqid)"
-                                                            target="_blank"
-                                                            :label="__('document_design.asset.preview')" />
-                                            @endif
+                                            <x-icon-btn icon="visibility" data-entry-modal-trigger
+                                                        :href="route('admin.document-design.assets.show', $asset->sqid)"
+                                                        :label="__('document_design.asset.show')" />
+                                            <x-icon-btn icon="download" target="_blank"
+                                                        :href="route('admin.document-design.assets.original', $asset->sqid)"
+                                                        :label="__('document_design.asset.download_original')" />
                                             @if ($canManage)
                                                 <x-action-form :action="route('admin.document-design.assets.archive', $asset->sqid)" method="POST"
                                                       :confirm="__('document_design.asset.archive_confirm')"

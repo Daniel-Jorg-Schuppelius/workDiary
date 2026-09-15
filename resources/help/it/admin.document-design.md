@@ -75,3 +75,22 @@ Design base CI ed ereditarietà:
   confermati consapevolmente nel dialogo. Nuove anche le **righe di
   intestazione/piè** per pagina e tutte le opzioni dello stile tabella
   (griglia, spaziature, colori, ripetizione intestazione, enfasi totali).
+
+Primi passi e vista della carta intestata (rifinitura 6):
+
+- Finché i cinque passi non sono completati, la panoramica mostra una
+  **lista di controllo** (caricare la carta intestata → creare un profilo
+  → progettare nell'editor → attivare la versione → assegnare i tipi di
+  documento) con salto al dialogo o alla scheda dell'editor
+  corrispondente. Il flusso documenti e la pagina branding rimandano qui.
+- Ogni carta intestata ha una **miniatura** e un dialogo **Visualizza** —
+  anche con «verifica necessaria»: in tal caso vengono mostrati
+  l'originale (immagine) e le note di verifica; l'**originale** è sempre
+  scaricabile (i PDF solo come download, mai nel visualizzatore del
+  browser).
+- L'editor raggruppa la colonna destra nelle schede **Aspetto** (carta
+  intestata, stile tabella), **Layout** (aree di stampa, finestre, aree
+  bloccate, tipografia), **Contenuti** (blocchi informativi, testi di
+  intestazione/piè) e **Rilascio** (documenti di prova, assegnazione,
+  versioni). La selezione della carta intestata compare subito
+  nell'anteprima A4 e viene salvata con «Salva bozza».

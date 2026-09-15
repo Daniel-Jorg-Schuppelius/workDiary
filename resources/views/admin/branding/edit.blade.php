@@ -23,6 +23,8 @@
     $pdfTypes = array_keys((array) config('branding.pdf', []));
     $logoMaxKb = (int) config('branding.limits.logo_kb', 2048);
     $logoHelper = __('PNG, JPG oder WEBP. Max. :max KB.', ['max' => $logoMaxKb]);
+    // Layout/Firmenbogen/Tabellenstil der PDFs liegen im Dokumentdesign (Feature 076).
+    $canDesign = app(\App\Services\Navigation\NavGate::class)->allows('admin.document-design.index');
 @endphp
 
 <x-page-shell>
@@ -163,6 +165,18 @@
                         @endforeach
             </x-table>
         </x-form-group>
+
+        @if ($canDesign)
+            <div class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-info/40 bg-info/5 px-4 py-3 text-sm">
+                <span class="flex items-center gap-2">
+                    <x-icon name="design_services" />
+                    {{ __('document_design.link.branding_hint') }}
+                </span>
+                <x-icon-btn icon="arrow_forward" tone="outline" size="sm" :href="route('admin.document-design.index')" show-label>
+                    {{ __('document_design.link.open') }}
+                </x-icon-btn>
+            </div>
+        @endif
 
         <div class="flex justify-end gap-2">
             <x-button type="submit" tone="primary" size="md" icon="save">{{ __('Speichern') }}</x-button>
