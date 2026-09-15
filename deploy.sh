@@ -110,9 +110,15 @@ fi
 if [ "${DEPLOY_SKIP_MAINTENANCE:-0}" != "1" ]; then
     echo "→ Wartungsmodus (Betreiber-Bypass über den ausgegebenen Secret-Link)"
     DEPLOY_SECRET="$(php -r 'echo bin2hex(random_bytes(12));')"
-    php artisan down --retry=60 --secret="$DEPLOY_SECRET"
+    # --render: die Wartungsseite wird JETZT gerendert und von public/index.php
+    # ausgeliefert, bevor Laravel bootet — sonst zeigten Besucher, solange
+    # Composer und Vite die Anwendung umbauen, die nackte Standard-503-Seite
+    # oder einen Fatal. Der Secret-Bypass (Pfad → Cookie) gilt auch dort.
+    php artisan down --retry=60 --secret="$DEPLOY_SECRET" --render="errors::503"
     MAINTENANCE_ON=1
-    echo "  Bypass: <APP_URL>/$DEPLOY_SECRET"
+    DEPLOY_APP_URL="$(env_value APP_URL .env)"
+    echo "  Bypass: ${DEPLOY_APP_URL:-<APP_URL>}/$DEPLOY_SECRET"
+    echo "  (einmal im Browser öffnen — danach gilt das Bypass-Cookie für diese Sitzung)"
 fi
 
 echo "→ Code auf origin/main bringen (Hard-Reset – verwirft lokale Änderungen!)"
