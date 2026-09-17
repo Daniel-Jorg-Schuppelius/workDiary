@@ -68,6 +68,9 @@
             <textarea name="body" rows="4" required maxlength="8000"
                       class="textarea textarea-bordered w-full">{{ old('body', $note?->body) }}</textarea>
         </label>
+        {{-- Schlagwörter (MVP-810), kommagetrennt wie im Wissensarchiv. --}}
+        <x-input-field name="tags" span="2" maxlength="500" :label="__('communication.field.tags')" :hint="__('communication.hint.tags')"
+                       :value="old('tags', $note?->tags->pluck('name')->implode(', '))" />
         <label class="form-control sm:col-span-2">
             <span class="label-text">{{ __('communication.field.result') }}</span>
             <textarea name="result" rows="2" maxlength="8000"

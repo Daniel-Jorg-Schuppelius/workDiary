@@ -106,16 +106,26 @@ class RetentionController extends Controller {
         $actor = Auth::user();
 
         $count = 0;
+        $held = 0;
         RetentionProposal::query()
             ->where('area', $data['area'])
             ->where('status', RetentionProposal::STATUS_APPROVED)
             ->orderBy('id')
             ->get()
-            ->each(function (RetentionProposal $proposal) use ($actor, &$count): void {
-                $this->scanner->purge($proposal, $actor);
-                $count++;
+            ->each(function (RetentionProposal $proposal) use ($actor, &$count, &$held): void {
+                try {
+                    $this->scanner->purge($proposal, $actor);
+                    $count++;
+                } catch (\App\Exceptions\Privacy\LegalHoldException) {
+                    $held++;
+                }
             });
 
-        return back()->with('status', __(':count Datensatz/Datensätze endgültig gelöscht.', ['count' => $count]));
+        $message = __(':count Datensatz/Datensätze endgültig gelöscht.', ['count' => $count]);
+        if ($held > 0) {
+            $message .= ' ' . __(':count wegen Legal Hold übersprungen.', ['count' => $held]);
+        }
+
+        return back()->with('status', $message);
     }
 }

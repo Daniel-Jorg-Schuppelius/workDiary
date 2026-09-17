@@ -135,6 +135,7 @@ return [
         'no_items' => 'The file contains no line items.',
         'markup_with_cost_approach' => 'Item :ref is a markup item yet carries cost approaches — the markup is calculated on other items, so the money would be counted twice.',
         'vendor_record_type' => 'The file contains :count records of vendor-specific record type :type — their content is not evaluated (some systems keep the cost groups there).',
+        'unhandled_record_type' => 'The file contains :count records of record type :type — this record type is not read (for example lots, markups or contractual terms); its content is missing from the import.',
         'item_missing_ref' => 'Item without reference number: :text',
         'duplicate_ref' => 'Reference number :ref appears more than once.',
         'missing_quantity' => 'Item :ref has no quantity.',

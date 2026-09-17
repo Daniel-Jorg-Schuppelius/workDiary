@@ -146,6 +146,13 @@ return [
     ],
     'run' => [
         'navTitle' => 'Esecuzione procedura',
+        'deviationHint' => 'Invece di «non riuscito»: registra uno scostamento con motivo e azione successiva.',
+        'deviationType' => 'Tipo di scostamento',
+        'deviationSeverity' => 'Gravità',
+        'deviationSeverityDefault' => 'Gravità automatica',
+        'deviationAction' => 'Azione successiva',
+        'deviationReason' => 'Motivo (almeno 20 caratteri)',
+        'recordDeviation' => 'Registra scostamento',
         'open' => 'Esegui',
         'progress' => 'Avanzamento',
         'notApplicable' => 'non applicabile',

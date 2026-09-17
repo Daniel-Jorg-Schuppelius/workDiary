@@ -11,12 +11,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
+use App\Services\Navigation\StartPageResolver;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
 
 class HomeController extends Controller {
-    public function __invoke(Request $request): View|RedirectResponse {
+    public function __invoke(Request $request, StartPageResolver $startPages): View|RedirectResponse {
         $canViewSensitive = Auth::check();
         $legacyConfigured = filled(config('database.connections.legacy.database'));
 
@@ -47,7 +48,9 @@ class HomeController extends Controller {
         }
 
         if ($canViewSensitive && (! $user instanceof User || $user->canAccessNew())) {
-            return redirect()->route('dashboard');
+            $start = $user instanceof User ? $startPages->routeFor($user) : null;
+
+            return redirect()->route($start ?? 'dashboard');
         }
 
         // Ab hier nur noch Gäste: öffentliche Produkt-Landingpage.

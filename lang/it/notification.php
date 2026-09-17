@@ -186,6 +186,8 @@ return [
         'vacation_approved' => 'La tua richiesta di ferie è stata approvata. :note',
         'vacation_rejected' => 'La tua richiesta di ferie è stata respinta. :note',
         'unclear_case_title' => 'Caso da chiarire il :date',
+        'open_attendance_title' => 'Hai timbrato l\'entrata alle :time',
+        'open_attendance_body' => 'Timbra l\'uscita se hai già finito, altrimenti il sistema chiuderà la timbratura automaticamente più tardi.',
         'driving_time_violation_title' => 'Rilievo tempi di guida/riposo del :date (:driver)',
         'month_submitted_title' => 'Chiusura mensile :period inviata da :user',
         'month_approved_title' => 'Chiusura mensile :period approvata',

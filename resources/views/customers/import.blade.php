@@ -21,37 +21,35 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <div class="card border border-base-300 bg-base-100 shadow-xs">
-        <div class="card-body">
-            <form method="POST" action="{{ route('customers.import') }}" enctype="multipart/form-data" class="space-y-4">
-                @csrf
-                <div>
-                    <label class="label" for="file">
-                        <span class="label-text">{{ __('CSV-Datei') }}</span>
-                    </label>
-                    <input id="file" type="file" name="file" accept=".csv,text/csv" required
-                           class="file-input file-input-bordered w-full @error('file') file-input-error @enderror">
-                    @error('file')
-                        <p class="text-error text-sm mt-1">{{ $message }}</p>
-                    @enderror
-                </div>
+    <x-card class="shadow-xs flex flex-col gap-2">
+        <form method="POST" action="{{ route('customers.import') }}" enctype="multipart/form-data" class="space-y-4">
+            @csrf
+            <div>
+                <label class="label" for="file">
+                    <span class="label-text">{{ __('CSV-Datei') }}</span>
+                </label>
+                <input id="file" type="file" name="file" accept=".csv,text/csv" required
+                       class="file-input file-input-bordered w-full @error('file') file-input-error @enderror">
+                @error('file')
+                    <p class="text-error text-sm mt-1">{{ $message }}</p>
+                @enderror
+            </div>
 
-                <div class="text-sm text-base-content/70">
-                    <p class="font-semibold">{{ __('Hinweise zum Format:') }}</p>
-                    <ul class="list-disc ml-5 mt-2 space-y-1">
-                        <li>{{ __('Trennzeichen: Semikolon (empfohlen), Komma oder Tab.') }}</li>
-                        <li>{{ __('Kopfzeile erforderlich – passende Spalten: Nummer, Name, Firma, USt-IdNr., E-Mail, Telefon, Straße, PLZ, Ort, Land, Währung, Stundensatz, Abrechenbar.') }}</li>
-                        <li>{{ __('Existierende Kunden werden über die Spalte "Nummer" aktualisiert.') }}</li>
-                        <li>{{ __('Tipp: Der Export der Kundenliste liefert ein passendes Format als Vorlage.') }}</li>
-                    </ul>
-                </div>
+            <div class="text-sm text-base-content/70">
+                <p class="font-semibold">{{ __('Hinweise zum Format:') }}</p>
+                <ul class="list-disc ml-5 mt-2 space-y-1">
+                    <li>{{ __('Trennzeichen: Semikolon (empfohlen), Komma oder Tab.') }}</li>
+                    <li>{{ __('Kopfzeile erforderlich – passende Spalten: Nummer, Name, Firma, USt-IdNr., E-Mail, Telefon, Straße, PLZ, Ort, Land, Währung, Stundensatz, Abrechenbar.') }}</li>
+                    <li>{{ __('Existierende Kunden werden über die Spalte "Nummer" aktualisiert.') }}</li>
+                    <li>{{ __('Tipp: Der Export der Kundenliste liefert ein passendes Format als Vorlage.') }}</li>
+                </ul>
+            </div>
 
-                <div class="flex gap-2">
-                    <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Importieren') }}</x-icon-btn>
-                    <x-icon-btn icon="download" size="sm" :href="route('customers.export')" show-label>{{ __('Vorlage herunterladen') }}</x-icon-btn>
-                </div>
-            </form>
-        </div>
-    </div>
+            <div class="flex gap-2">
+                <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Importieren') }}</x-icon-btn>
+                <x-icon-btn icon="download" size="sm" :href="route('customers.export')" show-label>{{ __('Vorlage herunterladen') }}</x-icon-btn>
+            </div>
+        </form>
+    </x-card>
 </x-page-shell>
 @endsection

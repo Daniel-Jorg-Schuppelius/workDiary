@@ -82,53 +82,51 @@
                 $title = $sectionTitles[$section->code] ?? $section->code;
                 $icon = $sectionIcons[$section->code] ?? 'help';
             @endphp
-            <article class="card border border-base-300 bg-base-100 shadow-sm">
-                <div class="card-body gap-3">
-                    <header class="flex items-start justify-between gap-3">
-                        <div class="flex min-w-0 items-center gap-2">
-                            <x-icon :name="$icon" />
-                            <h2 class="font-['Space_Grotesk'] text-base font-semibold text-base-content truncate">{{ $title }}</h2>
-                        </div>
-                        <span class="badge badge-outline {{ $badge }}">{{ $label }}</span>
-                    </header>
+            <x-card as="article" class="flex flex-col gap-3">
+                <header class="flex items-start justify-between gap-3">
+                    <div class="flex min-w-0 items-center gap-2">
+                        <x-icon :name="$icon" />
+                        <h2 class="font-['Space_Grotesk'] text-base font-semibold text-base-content truncate">{{ $title }}</h2>
+                    </div>
+                    <span class="badge badge-outline {{ $badge }}">{{ $label }}</span>
+                </header>
 
-                    @if (count($section->metrics) > 0)
-                        <dl class="grid grid-cols-1 gap-1 text-sm">
-                            @foreach ($section->metrics as $key => $value)
-                                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                                    <dt class="text-muted">{{ $key }}</dt>
-                                    <dd class="text-right font-mono text-xs text-base-content/80 truncate">
-                                        @if ($value === null)
-                                            <span class="italic text-muted">—</span>
-                                        @elseif (is_bool($value))
-                                            {{ $value ? 'true' : 'false' }}
-                                        @else
-                                            {{ (string) $value }}
-                                        @endif
-                                    </dd>
-                                </div>
-                            @endforeach
-                        </dl>
-                    @endif
+                @if (count($section->metrics) > 0)
+                    <dl class="grid grid-cols-1 gap-1 text-sm">
+                        @foreach ($section->metrics as $key => $value)
+                            <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
+                                <dt class="text-muted">{{ $key }}</dt>
+                                <dd class="text-right font-mono text-xs text-base-content/80 truncate">
+                                    @if ($value === null)
+                                        <span class="italic text-muted">—</span>
+                                    @elseif (is_bool($value))
+                                        {{ $value ? 'true' : 'false' }}
+                                    @else
+                                        {{ (string) $value }}
+                                    @endif
+                                </dd>
+                            </div>
+                        @endforeach
+                    </dl>
+                @endif
 
-                    @if (count($section->messages) > 0)
-                        <ul class="space-y-1 text-xs text-base-content/70">
-                            @foreach ($section->messages as $msg)
-                                <li class="flex items-start gap-2">
-                                    <x-icon name="info" />
-                                    <span>{{ $msg }}</span>
-                                </li>
-                            @endforeach
-                        </ul>
-                    @endif
+                @if (count($section->messages) > 0)
+                    <ul class="space-y-1 text-xs text-base-content/70">
+                        @foreach ($section->messages as $msg)
+                            <li class="flex items-start gap-2">
+                                <x-icon name="info" />
+                                <span>{{ $msg }}</span>
+                            </li>
+                        @endforeach
+                    </ul>
+                @endif
 
-                    @if ($section->checkedAt)
-                        <footer class="border-t border-base-200/70 pt-2 text-xs text-muted">
-                            {{ __('Letzter Check: :at', ['at' => $section->checkedAt->translatedFormat('H:i:s')]) }}
-                        </footer>
-                    @endif
-                </div>
-            </article>
+                @if ($section->checkedAt)
+                    <footer class="border-t border-base-200/70 pt-2 text-xs text-muted">
+                        {{ __('Letzter Check: :at', ['at' => $section->checkedAt->translatedFormat('H:i:s')]) }}
+                    </footer>
+                @endif
+            </x-card>
         @endforeach
     </div>
 </x-index-page>

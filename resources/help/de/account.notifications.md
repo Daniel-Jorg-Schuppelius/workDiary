@@ -24,3 +24,10 @@ Ob du zusätzlich Benachrichtigungen per E-Mail erhältst und zu welchen
 Zeiten still bleiben soll, steuerst du über die
 Benachrichtigungseinstellungen in deinem Profil. Die Sammlung im
 Benachrichtigungszentrum bleibt davon unberührt.
+
+**Kurznachrichten (SMS):** Für wirklich kritische Meldungen — etwa Alarme aus
+der Rufbereitschaft — kann zusätzlich eine SMS zugestellt werden. Der Weg ist
+bewusst sparsam gehalten: Es gibt ein monatliches Kontingent, lange Texte
+werden gekürzt, und die Organisation wird gewarnt, bevor das Kontingent
+aufgebraucht ist. SMS ersetzen keine Benachrichtigung in der Anwendung,
+sondern begleiten sie für den Fall, dass niemand am Bildschirm sitzt.

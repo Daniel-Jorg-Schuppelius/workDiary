@@ -146,6 +146,46 @@ class IncomingEInvoiceService {
      *
      * @return array{status: 'created'|'duplicate'|'unreadable', incoming: \App\Models\IncomingEInvoice|null, document: \App\Models\Document|null}
      */
+    /**
+     * Malware-Prüfung der eingehenden Datei über den im Betrieb konfigurierten
+     * Treiber (derselbe wie für Hinweisgeber-Anhänge und Bewerbungsunterlagen —
+     * ein Scanner, ein Schalter).
+     *
+     * Nur ein ausdrückliches `Rejected` weist ab. Liefert der Treiber kein
+     * Urteil (kein Scanner konfiguriert, Zeitüberschreitung), läuft der Eingang
+     * weiter: die Rechnung landet ohnehin in der Prüfliste und wird nie
+     * automatisch gebucht. Eine Blockade ohne Urteil würde den Rechnungseingang
+     * jeder Installation ohne Scanner stilllegen.
+     */
+    private function isInfected(string $contents, ?string $mime, ?string $path, ?\Illuminate\Http\UploadedFile $file): bool {
+        $driver = app(\App\Services\Whistleblowing\Scanning\ScanDriver::class);
+
+        $absolute = $file?->getRealPath() ?: $path;
+        $temporary = null;
+        if ($absolute === null || ! is_file($absolute)) {
+            // Kanäle ohne Datei (Mail, Peppol, API) liefern nur Bytes.
+            $temporary = tempnam(sys_get_temp_dir(), 'einvoice-scan-');
+            if ($temporary === false) {
+                return false;
+            }
+            file_put_contents($temporary, $contents);
+            $absolute = $temporary;
+        }
+
+        try {
+            $verdict = $driver->scan($absolute, $mime);
+        } finally {
+            if ($temporary !== null && is_file($temporary)) {
+                @unlink($temporary);
+            }
+        }
+
+        return $verdict === \App\Enums\Whistleblowing\AttachmentScanStatus::Rejected;
+    }
+
+    /**
+     * @return array{status: string, incoming: ?\App\Models\IncomingEInvoice, document: ?\App\Models\Document}
+     */
     public function storeIncoming(
         \App\Models\User $actor,
         string $contents,
@@ -167,6 +207,14 @@ class IncomingEInvoiceService {
             ->first();
         if ($duplicate !== null) {
             return ['status' => 'duplicate', 'incoming' => $duplicate, 'document' => null];
+        }
+
+        // Dateisicherheitsprüfung (Feature 066, Eingangsverarbeitung Schritt 3):
+        // nach Hash/Dublette, vor dem Parsen. Alle fünf Kanäle (Upload, Mail,
+        // Peppol, Cloud-Eingang, PDF-Import) laufen hier durch, deshalb sitzt
+        // die Prüfung im Dienst und nicht in einem Controller.
+        if ($this->isInfected($contents, $mime, $path, $file)) {
+            return ['status' => 'infected', 'incoming' => null, 'document' => null];
         }
 
         $parsed = $this->parse($contents, $mime, $path);

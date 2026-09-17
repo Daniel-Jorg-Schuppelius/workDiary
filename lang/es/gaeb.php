@@ -135,6 +135,7 @@ return [
         'no_items' => 'El archivo no contiene partidas.',
         'markup_with_cost_approach' => 'La partida :ref es una partida de recargo y aun así lleva enfoques de coste — el recargo se calcula sobre otras partidas, el dinero se contaría dos veces.',
         'vendor_record_type' => 'El archivo contiene :count registros del tipo propietario :type: su contenido no se evalúa (algunos sistemas guardan ahí los grupos de costes).',
+        'unhandled_record_type' => 'El archivo contiene :count registros del tipo :type: este tipo de registro no se lee (por ejemplo lotes, recargos o condiciones contractuales); su contenido falta en la importación.',
         'item_missing_ref' => 'Partida sin número de orden: :text',
         'duplicate_ref' => 'El número de orden :ref aparece varias veces.',
         'missing_quantity' => 'La partida :ref no tiene cantidad.',

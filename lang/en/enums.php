@@ -250,7 +250,7 @@ return [
     ],
     'sales' => [
         'lead_status' => ['new' => 'New', 'contacted' => 'Contacted', 'qualified' => 'Qualified', 'converted' => 'Converted', 'discarded' => 'Discarded'],
-        'lead_source' => ['referral' => 'Referral', 'web' => 'Web', 'trade_fair' => 'Trade fair', 'phone' => 'Phone', 'other' => 'Other'],
+        'lead_source' => ['referral' => 'Referral', 'web' => 'Web', 'trade_fair' => 'Trade fair', 'phone' => 'Phone', 'booking' => 'Appointment booking', 'other' => 'Other'],
     ],
     // Sicherheitseinbehalte (Feature 113, MVP-602).
     // Bürgschaftsregister (Feature 114, MVP-603).
@@ -473,6 +473,7 @@ return [
             ],
             'attendance' => [
                 'unclearCase' => 'Unclear case (clock times)',
+                'openReminder' => 'Reminder: clock-in still open',
             ],
             'monthClosure' => [
                 'submitted' => 'Month closure submitted',
@@ -889,7 +890,7 @@ return [
             'photo' => 'Mandatory photo',
             'file' => 'Mandatory document',
             'defect' => 'Defect',
-            'measurement.timestamped' => 'Measurement series',
+            'measurement' => ['timestamped' => 'Measurement series'],
             'procedure_step' => 'Procedure step',
             'signoff_internal' => 'Internal approval',
         ],
@@ -1485,7 +1486,7 @@ return [
         ],
     ],
 
-    // Daily close (MVP-015, docs/tagesabschluss.md §3/§5).
+    // Daily close (MVP-015, WorkDiary-Architecture/tagesabschluss.md §3/§5).
     'dayClosure' => [
         'status' => [
             'open' => 'Open',
@@ -1656,6 +1657,14 @@ return [
             'video' => 'Video',
             'embed' => 'Embed',
             'knowledge' => 'Knowledge article',
+            'gallery' => 'Gallery',
+            'audio' => 'Audio',
+            'code' => 'Code',
+            'accordion' => 'Accordion',
+            'table' => 'Table',
+            'procedure' => 'Procedure',
+            'question' => 'Comprehension question',
+            'divider' => 'Divider',
         ],
         'enrollment-status' => [
             'assigned' => 'Assigned',

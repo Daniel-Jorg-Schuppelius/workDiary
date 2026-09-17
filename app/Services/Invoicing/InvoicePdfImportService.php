@@ -18,6 +18,8 @@ use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
 use CommonToolkit\Parsers\XLSXDocumentParser;
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
 use ERechnungToolkit\Enums\{TaxCategory, UnitCode};
+use PDFToolkit\Enums\PDFTextVariant;
+use PDFToolkit\Helper\PDFTextProvider;
 use PDFToolkit\Registries\PDFReaderRegistry;
 use Symfony\Component\Process\Process;
 use Throwable;
@@ -443,14 +445,54 @@ class InvoicePdfImportService {
         // Spaltentreuer Zweittext (bbox-basiert) als Input der Positions-
         // erkennung — Fehlschläge sind kein Importfehler, nur weniger Komfort.
         $aligned = null;
+        $provider = null;
         try {
-            $provider = new \PDFToolkit\Helper\PDFTextProvider($path);
+            $provider = new PDFTextProvider($path);
             $aligned = $ocrUsed ? $provider->ocrRowAlignedText() : $provider->rowAlignedText();
         } catch (Throwable) {
             $aligned = null;
         }
 
+        // Zeichensalat im Textlayer (MVP-808): Nachgedruckte PDFs (PDF24,
+        // Ghostscript) verlieren die ToUnicode-Tabellen — der Textlayer ist
+        // dann eine stabile Buchstabenvertauschung, OCR verliest Beträge.
+        // Das pdf-toolkit lernt die Zuordnung aus dem OCR-Text und entziffert
+        // den Originallayer mit den exakten Werten. Nur wenn die Erkennung
+        // kaum etwas findet (weniger als drei Felder) oder die Summen nicht
+        // aufgehen — der Weg kostet einen zweiten OCR-Lauf.
+        $analysis = $this->analyzeText($text);
+        if ($provider !== null && ($analysis['confidence'] < 36 || in_array('totals_mismatch', $analysis['warnings'], true))) {
+            try {
+                $decoded = $provider->decodedLayerText();
+            } catch (Throwable) {
+                $decoded = null;
+            }
+            if ($decoded !== null && $this->prefersDecodedLayer($text, $decoded)) {
+                // ocr_used bleibt wahr: der Schlüssel stammt aus der OCR.
+                return [$decoded, PDFTextVariant::DecodedLayer->value, true, [], $decoded];
+            }
+        }
+
         return [$text, $document->reader?->value, $ocrUsed, [], $aligned];
+    }
+
+    /**
+     * Abnahme des entzifferten Textlayers: Das Toolkit sortiert nur
+     * offenkundig unbrauchbare Zuordnungen aus, die fachliche Prüfung liegt
+     * hier. Übernommen wird das Dekodat nur, wenn es **mehr** Kernfelder
+     * erkennt als der bisherige Text und die Summen aufgehen
+     * (Netto + Steuer = Brutto) — sonst bliebe ein Dekodat mit falsch
+     * gelernten Ziffern unbemerkt.
+     */
+    public function prefersDecodedLayer(string $primaryText, string $decodedText): bool {
+        $primary = $this->analyzeText($primaryText);
+        $decoded = $this->analyzeText($decodedText);
+
+        if (in_array('totals_mismatch', $decoded['warnings'], true)) {
+            return false;
+        }
+
+        return $decoded['confidence'] > $primary['confidence'];
     }
 
     /**

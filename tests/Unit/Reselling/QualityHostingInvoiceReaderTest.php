@@ -159,4 +159,37 @@ TXT;
         $this->assertSame(['C-1', 'C-2', 'C-3'], array_map(static fn($l) => $l->contract, $invoice->lines));
         $this->assertTrue($invoice->isConsistent());
     }
+    // ── Textquellen (MVP-808) ─────────────────────────────────────────────
+
+    public function test_garbled_text_layer_falls_through_to_the_next_source(): void {
+        $calls = 0;
+        $invoice = (new QualityHostingInvoiceReader)->readFirstReadable([
+            // Nicht leer, aber Zeichensalat: bis MVP-808 gewann genau dieser Text.
+            static fn(): string => "Sqfgmtmdrmtoopq 4711\nMqwwn 12,00",
+            static fn(): string => self::ENGLISH_TEXT,
+            static function () use (&$calls): string {
+                $calls++;
+
+                return self::ENGLISH_TEXT;
+            },
+        ]);
+
+        $this->assertNotNull($invoice);
+        $this->assertNotSame('', $invoice->number);
+        $this->assertNotSame([], $invoice->lines);
+        // Die OCR-Quelle kostet und wird nicht mehr gefragt.
+        $this->assertSame(0, $calls);
+    }
+
+    public function test_without_a_readable_source_the_first_text_is_kept(): void {
+        $invoice = (new QualityHostingInvoiceReader)->readFirstReadable([
+            static fn(): ?string => null,
+            static fn(): string => self::MISMATCH_TEXT,
+            static fn(): string => "Sqfgmtmdrmtoopq",
+        ]);
+
+        $this->assertNotNull($invoice);
+        $this->assertFalse($invoice->isConsistent());
+        $this->assertNull((new QualityHostingInvoiceReader)->readFirstReadable([static fn(): ?string => null]));
+    }
 }

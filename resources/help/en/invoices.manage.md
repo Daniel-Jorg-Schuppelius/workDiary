@@ -1,7 +1,7 @@
 ---
 title: "Invoices & documents"
 topic: invoices.manage
-version: 3
+version: 5
 audience: []
 modules:
     - module.vertrieb
@@ -36,13 +36,22 @@ or exactly one external system — never both at once.
 2. Exclude individual time entries by checkbox if needed — they stay
    open and appear in the next run.
 3. Check and complete the draft; per position the **source time
-   entries** can be expanded (1.50 h = 1:30 h).
+   entries** can be expanded (1.50 h = 1:30 h). For an article with
+   copper weight, the **copper surcharge** checkbox in the line dialog adds
+   the surcharge at the current DEL daily price as a separate line.
 4. Issue or send — PDF, dispatch and external synchronisation are
    outputs of the same documented state.
 5. On late payment use the **dunning run**: level 1 produces a payment
    reminder as its own dunning letter PDF with claims overview,
    optional fee and payment deadline; the e-mail contains the letter
    and the original invoice. No new document is created.
+
+**E-invoice.** The XRechnung is created in UBL syntax; if a recipient
+requires CII, choose the delivery format “XRechnung (XML, CII syntax)” on the
+customer or when sending. Peppol always uses UBL. Without a VAT ID — for
+example as a small business under § 19 UStG — the tax number in the e-invoice
+master data is enough: it is also entered as the seller identifier that the
+recipient’s validation requires.
 
 ## Practical example
 

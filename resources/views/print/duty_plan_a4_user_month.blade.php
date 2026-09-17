@@ -64,7 +64,7 @@
     </colgroup>
     <thead>
         <tr>
-            <th>{{ __('Tag') }}</th>
+            <th>{{ __('Wochentag') }}</th>
             <th>{{ __('Datum') }}</th>
             <th>{{ __('Schicht') }}</th>
             <th>{{ __('Beginn') }}</th>

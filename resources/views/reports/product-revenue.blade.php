@@ -7,7 +7,8 @@
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
 {{-- Umsatz je Produkt (Feature 140, MVP-705): Menge/Nettoumsatz/Anteil je
-     Artikel aus lokalen Rechnungen; Voll-Höhe-Tabelle als letztes Element. --}}
+     Artikel aus lokalen Rechnungen und gespiegelten Lexoffice-Belegen (MVP-804),
+     dazu je Kategorie; Voll-Höhe-Tabelle als letztes Element. --}}
 
 @extends('layouts.app')
 @section('title', __('Umsatz je Produkt'))
@@ -24,7 +25,7 @@
     $withoutShare = $total > 0 ? round($withoutArticle / $total * 100, 1) : null;
 @endphp
 
-<x-index-page overflow="clip" :subtitle="__('Menge, Nettoumsatz und Anteil je Artikel aus lokal ausgestellten Rechnungen.') . ' · ' . __('Zeitraum') . ': ' . $label">
+<x-index-page overflow="clip" :subtitle="__('Menge, Nettoumsatz und Anteil je Artikel aus lokalen Rechnungen und gespiegelten Lexoffice-Rechnungen.') . ' · ' . __('Zeitraum') . ': ' . $label">
     <x-slot:actions>
         <x-icon-btn icon="download" tone="outline" size="sm"
                     :href="route('reports.product-revenue', array_merge($linkParams, ['export' => 'csv']))"
@@ -43,8 +44,10 @@
         </x-filter-field>
     </x-filter-bar>
 
-    <div class="grid gap-3 sm:grid-cols-3">
+    <div class="grid gap-3 sm:grid-cols-4">
         <x-kpi-tile :label="__('Nettoumsatz gesamt')" :value="$eur($total)" />
+        <x-kpi-tile :label="__('davon aus Lexoffice')" :value="$eur($lexofficeNet)"
+                    :hint="__('Gespiegelte Rechnungen und Gutschriften; aus lokalen Rechnungen übergebene Belege zählen nur einmal.')" />
         <x-kpi-tile :label="__('Artikel mit Umsatz')" :value="$articleCount" />
         <x-kpi-tile :label="__('Anteil ohne Artikelbezug')" :value="$withoutShare !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($withoutShare, 1) . ' %' : '–'"
                     :tone="($withoutShare ?? 0) > 50 ? 'warning' : 'neutral'"
@@ -52,7 +55,33 @@
     </div>
 
     <x-charts.bar-h :title="__('Nettoumsatz je Artikel (Top :n)', ['n' => $topN])" unit="€" :series="$series" :x-label="__('Artikel')" y-label="€"
-                    :note="__('Datenbasis: Positionen ausgestellter und bezahlter lokaler Rechnungen (Rechnung/Abschlag/Schluss); Klick öffnet den Artikel.')" />
+                    :note="__('Datenbasis: Positionen ausgestellter und bezahlter lokaler Rechnungen (Rechnung/Abschlag/Schluss) sowie gespiegelter Lexoffice-Rechnungen und -Gutschriften ohne Entwürfe und Stornos; Klick öffnet den Artikel.')" />
+
+    {{-- Umsatz nach Artikelkategorie (MVP-804) — vor der Voll-Höhe-Tabelle (Tabellen-Gate R5). --}}
+    @if (count($categories) > 0)
+        <x-card class="flex-none" :title="__('Umsatz nach Kategorie')">
+            <div class="max-h-40 overflow-y-auto">
+                <x-table :bare="true" size="xs">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('Kategorie') }}</th>
+                            <th class="text-right">{{ __('Artikel') }}</th>
+                            <th class="text-right">{{ __('Nettoumsatz') }}</th>
+                            <th class="text-right">{{ __('Anteil') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($categories as $category)
+                        <tr @class(['text-base-content/70 italic' => $category['category'] === null])>
+                            <td>{{ $category['category'] ?? __('ohne Kategorie') }}</td>
+                            <td class="text-right tabular-nums">{{ $category['articles'] }}</td>
+                            <td class="text-right tabular-nums">{{ $eur($category['net']) }}</td>
+                            <td class="text-right tabular-nums">{{ $category['share'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($category['share'], 1) . ' %' : '–' }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            </div>
+        </x-card>
+    @endif
 
     <x-table scroll="flex" :zebra="true" table-sort="client">
         <x-slot:head>
@@ -63,7 +92,8 @@
                 <x-table.th sort type="string">{{ __('Einheit') }}</x-table.th>
                 <x-table.th sort type="number" align="right">{{ __('Nettoumsatz') }}</x-table.th>
                 <x-table.th sort type="number" align="right">{{ __('Anteil') }}</x-table.th>
-                <x-table.th sort type="number" align="right">{{ __('Rechnungen') }}</x-table.th>
+                <x-table.th sort type="number" align="right">{{ __('Belege') }}</x-table.th>
+                <x-table.th sort type="string">{{ __('Quelle') }}</x-table.th>
             </tr>
         </x-slot:head>
         @forelse ($rows as $row)
@@ -81,9 +111,14 @@
                 <td class="text-right tabular-nums" data-sort-value="{{ $row['net'] }}">{{ $eur($row['net']) }}</td>
                 <td class="text-right tabular-nums" data-sort-value="{{ $row['share'] ?? 0 }}">{{ $row['share'] !== null ? \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($row['share'], 1) . ' %' : '–' }}</td>
                 <td class="text-right tabular-nums">{{ $row['invoices'] }}</td>
+                <td class="whitespace-nowrap">
+                    @foreach ($row['sources'] as $source)
+                        <x-status-badge size="xs" :tone="$source === 'lexoffice' ? 'info' : 'ghost'">{{ $source === 'lexoffice' ? 'Lexoffice' : __('lokal') }}</x-status-badge>
+                    @endforeach
+                </td>
             </tr>
         @empty
-            <x-table.empty :colspan="7" icon="inventory" :title="__('Keine Rechnungspositionen im gewählten Zeitraum.')" compact />
+            <x-table.empty :colspan="8" icon="inventory" :title="__('Keine Rechnungspositionen im gewählten Zeitraum.')" compact />
         @endforelse
     </x-table>
 </x-index-page>

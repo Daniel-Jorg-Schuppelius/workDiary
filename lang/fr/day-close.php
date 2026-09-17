@@ -9,7 +9,7 @@
  */
 
 /*
- * Clôture journalière (MVP-015, docs/tagesabschluss.md) — textes de page,
+ * Clôture journalière (MVP-015, WorkDiary-Architecture/tagesabschluss.md) — textes de page,
  * messages du validateur (§4), messages flash et erreurs. Maintenu en
  * parité de/en/fr/it/es ; les libellés d'enums se trouvent dans enums.php
  * (dayClosure.status / dayCorrection.status).

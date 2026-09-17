@@ -15,6 +15,22 @@ e-mail, telefonia, messenger di team, terminali di timbratura,
 spedizioni e SSO. Tutti i collegamenti seguono gli stessi principi di
 base.
 
+**Terminali di timbratura, chiosco e punti di check-in:** Registrando un
+terminale compaiono due indirizzi una sola volta: quello di ingest per i
+terminali hardware e quello del chiosco, che trasforma il browser di un tablet
+in un terminale. Entrambi contengono lo stesso token; se va perso, ruota il
+token o disattiva il terminale. I badge letti dal chip NFC del tablet (Chrome su
+Android) devono essere registrati come identificativo esadecimale senza
+separatori. I punti di check-in sono codici QR o adesivi NFC presso sedi e
+veicoli: la vista di stampa fornisce il codice e lo stesso indirizzo può essere
+scritto su un adesivo con un'app NFC. Un codice può essere fotografato: per
+dimostrare la presenza sul posto imposta un raggio. La posizione viene solo
+verificata, non salvata.
+
+I badge possono essere sostituiti da un **PIN del terminale**: l'amministrazione
+lo imposta per persona con matricola; viene salvato solo un hash e dopo cinque
+tentativi falliti è bloccato per 15 minuti e si può sbloccare qui.
+
 **Per organizzazione:** le integrazioni vengono attivate e configurate
 per ciascuna organizzazione. Attivazione, credenziali, stato di salute
 e cronologia degli errori valgono sempre solo per l'organizzazione
@@ -55,3 +71,25 @@ e nulla viene scritto due volte.
 verificare l'healthcheck, osservare per alcuni giorni la Inbox alla
 ricerca di conflitti inattesi e solo allora impostare processi
 automatizzati basati su di esso.
+
+## Quali integrazioni esistono
+
+L'offerta cresce; l'elenco seguente indica le integrazioni disponibili per
+scopo, così non devi indovinare dove va cosa:
+
+- **Contabilità e fatturazione:** lexoffice, orgaMAX, sevDesk, easybill,
+  BuchhaltungsButler, InvoicePlane e il punto di accesso Peppol per l'invio di
+  fatture elettroniche.
+- **Telefonia e messaggi:** sipgate e FRITZ!Box per chiamate in entrata e in
+  uscita, seven.io per SMS a destinatari critici.
+- **Spedizioni:** DHL, FedEx e UPS per etichette e tracciabilità.
+- **File e backup:** Nextcloud, WebDAV, Dropbox, Google Drive, SharePoint e S3
+  come destinazione di archiviazione o backup.
+- **Calendario, contatti e posta:** Microsoft Graph, Google Calendar, CalDAV,
+  CardDAV e Calendly per gli appuntamenti prenotati.
+- **Progetti e tempi:** Todoist, OpenProject, GitHub, GitLab, Toggl, Clockify,
+  Kimai, Zammad.
+- **Commercio e gestionale:** JTL-Wawi, Billbee, Etsy.
+
+Un'integrazione assente da questo elenco non esiste: nel dubbio chiedi, invece
+di salvare credenziali in un punto non previsto.

@@ -133,6 +133,18 @@ class QuoteController extends Controller {
             'position' => (int) $quote->items()->max('position') + 1,
             ...$data,
         ]);
+
+        // Kupferzuschlag zum Tagespreis als eigene Position (MVP-804, Feature 107).
+        $surcharge = $request->boolean('add_copper_surcharge')
+            ? app(\App\Services\Procurement\MetalSurchargeService::class)->salesSurchargeItem($data['article_id'] ?? null, (string) $data['quantity'], $data['unit'] ?? null, lumpSum: true)
+            : null;
+        if ($surcharge !== null) {
+            $quote->items()->create($surcharge + [
+                'organization_id' => $quote->organization_id,
+                'tax_rate' => $data['tax_rate'] ?? null,
+                'position' => (int) $quote->items()->max('position') + 1,
+            ]);
+        }
         $this->refreshTotals($quote);
 
         return redirect()->route('quotes.show', $quote)->with('status', __('Position hinzugefügt.'));

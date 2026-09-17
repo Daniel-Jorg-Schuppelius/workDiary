@@ -42,6 +42,9 @@
         @if ($project !== null)
             <input type="hidden" name="project" value="{{ $project->sqid }}">
         @endif
+        @if ($activeTag !== null)
+            <input type="hidden" name="tag" value="{{ $activeTag['sqid'] }}">
+        @endif
         <input type="search" name="q" value="{{ $criteria->query }}" maxlength="{{ (int) config('search.max_query_length', 200) }}"
                placeholder="{{ __('search.placeholder') }}" @if ($focus) autofocus @endif
                class="input input-sm input-bordered w-72 shrink-0" aria-label="{{ __('search.field.query') }}">
@@ -75,6 +78,14 @@
                 @endforeach
             </select>
         @endif
+        @if ($collectionOptions !== [])
+            <select name="collection" class="select select-sm select-bordered w-44 shrink-0" aria-label="{{ __('search.field.collection') }}">
+                <option value="">{{ __('search.field.all_collections') }}</option>
+                @foreach ($collectionOptions as $row)
+                    <option value="{{ $row['collection']->sqid }}" @selected($criteria->collectionId === (int) $row['collection']->id)>{{ str_repeat('– ', $row['depth'] - 1) }}{{ $row['collection']->title }}</option>
+                @endforeach
+            </select>
+        @endif
         <select name="sort" class="select select-sm select-bordered w-40 shrink-0" aria-label="{{ __('search.field.sort') }}">
             <option value="relevance" @selected($criteria->sort === 'relevance')>{{ __('search.field.sort_relevance') }}</option>
             <option value="date" @selected($criteria->sort === 'date')>{{ __('search.field.sort_date') }}</option>
@@ -82,16 +93,28 @@
         <x-filter-toggle name="similar" :label="__('search.field.similar')" :checked="$criteria->similar" />
     </x-filter-bar>
 
-    @if ($project !== null)
+    @if ($project !== null || $activeTag !== null)
         <div class="flex flex-wrap items-center gap-2">
-            <span class="badge badge-outline gap-1">
-                <x-icon name="folder_special" class="text-sm" />
-                {{ __('search.filter.project', ['name' => $project->name]) }}
-                <a href="{{ route('search.index', $criteria->toParameters(['project' => null])) }}"
-                   class="inline-flex" aria-label="{{ __('search.filter.remove') }}">
-                    <x-icon name="close" class="text-sm" />
-                </a>
-            </span>
+            @if ($project !== null)
+                <span class="badge badge-outline gap-1">
+                    <x-icon name="folder_special" class="text-sm" />
+                    {{ __('search.filter.project', ['name' => $project->name]) }}
+                    <a href="{{ route('search.index', $criteria->toParameters(['project' => null])) }}"
+                       class="inline-flex" aria-label="{{ __('search.filter.remove') }}">
+                        <x-icon name="close" class="text-sm" />
+                    </a>
+                </span>
+            @endif
+            @if ($activeTag !== null)
+                <span class="badge badge-outline gap-1">
+                    <x-icon name="sell" class="text-sm" />
+                    {{ $activeTag['name'] !== null ? __('search.filter.tag', ['name' => $activeTag['name']]) : __('search.filter.tag_without_hits') }}
+                    <a href="{{ route('search.index', $criteria->toParameters(['tag' => null])) }}"
+                       class="inline-flex" aria-label="{{ __('search.filter.remove') }}">
+                        <x-icon name="close" class="text-sm" />
+                    </a>
+                </span>
+            @endif
         </div>
     @endif
 

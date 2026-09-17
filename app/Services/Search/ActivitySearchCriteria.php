@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Search;
 
 use App\Enums\Search\SearchSourceType;
-use App\Models\{Customer, ForeignCustomer, Project, User};
+use App\Models\{ContentCollection, Customer, ForeignCustomer, Project, Tag, User};
 use App\Support\Sqid;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -22,7 +22,8 @@ use Illuminate\Validation\Rule;
 /**
  * Suchkriterien der Tätigkeitsrecherche (Feature 153). IDs kommen als Sqid
  * aus der URL; die Personenauswahl anderer ist Admins und Org-Managern
- * vorbehalten — alle anderen filtern höchstens auf sich selbst.
+ * vorbehalten — alle anderen filtern höchstens auf sich selbst. Schlagwort
+ * und Sammlung kamen mit MVP-812 (Feature 155) dazu.
  */
 final class ActivitySearchCriteria {
     public const SORT_RELEVANCE = 'relevance';
@@ -41,6 +42,8 @@ final class ActivitySearchCriteria {
         public readonly ?int $projectId = null,
         public readonly bool $similar = false,
         public readonly string $sort = self::SORT_RELEVANCE,
+        public readonly ?int $tagId = null,
+        public readonly ?int $collectionId = null,
     ) {}
 
     public static function fromRequest(Request $request, User $user): self {
@@ -57,6 +60,8 @@ final class ActivitySearchCriteria {
             'customer' => ['nullable', 'string', 'max:64'],
             'foreign_customer' => ['nullable', 'string', 'max:64'],
             'project' => ['nullable', 'string', 'max:64'],
+            'tag' => ['nullable', 'string', 'max:64'],
+            'collection' => ['nullable', 'string', 'max:64'],
             'similar' => ['nullable', 'boolean'],
             'sort' => ['nullable', Rule::in([self::SORT_RELEVANCE, self::SORT_DATE])],
         ]);
@@ -80,6 +85,8 @@ final class ActivitySearchCriteria {
             projectId: self::decode(Project::class, $data['project'] ?? null),
             similar: (bool) ($data['similar'] ?? false),
             sort: (string) ($data['sort'] ?? self::SORT_RELEVANCE),
+            tagId: self::decode(Tag::class, $data['tag'] ?? null),
+            collectionId: self::decode(ContentCollection::class, $data['collection'] ?? null),
         );
     }
 
@@ -89,7 +96,8 @@ final class ActivitySearchCriteria {
     }
 
     public function hasEntityFilter(): bool {
-        return $this->personId !== null || $this->customerId !== null || $this->foreignCustomerId !== null || $this->projectId !== null;
+        return $this->personId !== null || $this->customerId !== null || $this->foreignCustomerId !== null || $this->projectId !== null
+            || $this->tagId !== null || $this->collectionId !== null;
     }
 
     /**
@@ -108,6 +116,8 @@ final class ActivitySearchCriteria {
             'customer' => $this->customerId !== null ? Sqid::encode(Customer::class, $this->customerId) : null,
             'foreign_customer' => $this->foreignCustomerId !== null ? Sqid::encode(ForeignCustomer::class, $this->foreignCustomerId) : null,
             'project' => $this->projectId !== null ? Sqid::encode(Project::class, $this->projectId) : null,
+            'tag' => $this->tagId !== null ? Sqid::encode(Tag::class, $this->tagId) : null,
+            'collection' => $this->collectionId !== null ? Sqid::encode(ContentCollection::class, $this->collectionId) : null,
             'similar' => $this->similar ? 1 : null,
             'sort' => $this->sort !== self::SORT_RELEVANCE ? $this->sort : null,
         ], $overrides);

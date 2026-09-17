@@ -21,6 +21,12 @@
 @endphp
 <x-index-page overflow="clip" :subtitle="__('Mandanten der Plattform verwalten und konfigurieren.')">
     <x-slot:actions>
+        @if ($demoCount > 0)
+            <x-icon-btn :icon="$showDemo ? 'visibility_off' : 'visibility'" size="sm" show-label
+                        :href="route('admin.organizations.index', array_filter(['show_demo' => $showDemo ? null : 1, 'sort' => request('sort'), 'dir' => request('dir')]))">
+                {{ $showDemo ? __('Demo-Organisationen ausblenden') : __('Demo-Organisationen einblenden (:count)', ['count' => $demoCount]) }}
+            </x-icon-btn>
+        @endif
         {{-- freshDemoOrg (MVP-349): neue Demo-Org aus Musterbranche (Plattform-Admin). --}}
         <x-icon-btn icon="science" size="sm"
                     data-entry-modal-trigger
@@ -34,6 +40,7 @@
 
     <x-table scroll="flex" :pinRows="true" table-sort="server"
              :route="route('admin.organizations.index')"
+             :sort-params="$showDemo ? ['show_demo' => 1] : []"
              :current-sort="$sort ?? null"
              :current-dir="$dir ?? 'asc'">
         <x-slot:head>
@@ -55,6 +62,9 @@
                 <tr>
                     <td class="font-medium">
                         {{ $org->name }}
+                        @if ($org->is_demo)
+                            <x-status-badge tone="warning" size="sm">{{ __('Demo') }}</x-status-badge>
+                        @endif
                         @if (! $org->is_active && $deactivatedAt)
                             <div class="text-xs text-muted">
                                 {{ __('Deaktiviert am :date', ['date' => $deactivatedAt->fdatetime()]) }}

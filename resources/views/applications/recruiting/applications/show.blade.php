@@ -76,6 +76,28 @@
                     @endforeach
                 </ul>
             @endif
+
+            {{-- Über den öffentlichen Karrierebereich eingereichte Unterlagen
+                 (MVP-795): erreichbar erst nach bestandener Prüfung. --}}
+            <h4 class="mt-4 text-sm font-semibold">{{ __('Eingereichte Unterlagen') }}</h4>
+            @if ($application->uploads->isEmpty())
+                <p class="text-sm text-muted">{{ __('Keine Unterlagen eingereicht.') }}</p>
+            @else
+                <ul class="space-y-1 text-sm">
+                    @foreach ($application->uploads as $upload)
+                        <li class="flex flex-wrap items-center gap-2">
+                            @if ($upload->isReleased())
+                                <a class="link" href="{{ route('recruiting.applications.uploads.download', [$application, $upload]) }}">{{ $upload->original_name }}</a>
+                            @else
+                                <span>{{ $upload->original_name }}</span>
+                                <x-status-badge :tone="$upload->scan_status === \App\Models\Applications\JobApplicationUpload::SCAN_REJECTED ? 'error' : 'warning'">
+                                    {{ $upload->scan_status === \App\Models\Applications\JobApplicationUpload::SCAN_REJECTED ? __('Abgewiesen') : __('In Prüfung') }}
+                                </x-status-badge>
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
         </x-card>
 
         <x-card :title="__('Datenschutzstatus')">

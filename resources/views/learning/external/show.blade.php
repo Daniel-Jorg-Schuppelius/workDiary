@@ -45,7 +45,7 @@
     @foreach ($course?->units ?? [] as $unit)
         @php
             $isDone = in_array($unit->id, $completedUnitIds, true);
-            $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment);
+            $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment, null, $completedUnitIds);
         @endphp
         <x-card>
             <div class="flex flex-wrap items-start justify-between gap-3">
@@ -55,7 +55,7 @@
                     {{ $unit->title }}
                 </h2>
                 @if ($isLocked)
-                    <x-status-badge tone="neutral" size="sm" outline>{{ __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) }}</x-status-badge>
+                    <x-status-badge tone="neutral" size="sm" outline>{{ $unit->releaseDateFor($enrollment)?->isFuture() ? __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) : __('learning.badge.after_previous_unit') }}</x-status-badge>
                 @endif
                 {{-- Einheiten mit eigener Ergebnisquelle schließt nur diese Quelle ab. --}}
                 @unless ($isDone || $isLocked || $unit->reportsOwnResult())

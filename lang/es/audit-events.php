@@ -35,6 +35,10 @@ return [
     'incomingEInvoice' => [
         'ibanConfirmed' => 'IBAN de factura divergente confirmado',
     ],
+    'legal_hold' => [
+        'placed' => 'Retención legal establecida',
+        'released' => 'Retención legal levantada',
+    ],
     'paymentRun' => [
         'released' => 'Remesa aprobada',
         'exported' => 'Fichero SEPA creado',
@@ -52,6 +56,8 @@ return [
         'adopted' => 'Consumo adoptado como componente',
     ],
     'expense' => [
+        'corrected' => 'Gasto corregido con contracomprobante',
+        'created_as_correction' => 'Gasto creado como corrección',
         'scanned' => 'Gasto creado desde comprobante escaneado',
         'voucher_pushed' => 'Gasto transferido a la contabilidad como comprobante',
         'voucher_linked' => 'Gasto vinculado a un comprobante contable',
@@ -200,7 +206,13 @@ return [
         'disconnected' => 'Entrada de documentos en la nube desconectada',
         'folderSelected' => 'Carpeta de entrada en la nube seleccionada',
     ],
+    'collection' => [
+        'imported' => 'Contenidos importados en la colección',
+        'item_added' => 'Contenido añadido a la colección',
+        'item_removed' => 'Contenido quitado de la colección',
+    ],
     'communication' => [
+        'converted' => 'Nota convertida en artículo de conocimiento',
         'confidential' => [
             'set' => 'Comunicación marcada como confidencial',
             'unset' => 'Confidencialidad retirada',
@@ -220,6 +232,10 @@ return [
             'reopened' => 'Infracción reaparecida',
             'resolved' => 'Infracción resuelta',
         ],
+    ],
+    'content_reference' => [
+        'added' => 'Referencia añadida',
+        'removed' => 'Referencia quitada',
     ],
     'contract' => [
         'activated' => 'Contrato activado',
@@ -546,6 +562,10 @@ return [
         'settings_saved' => 'Configuración de correo de Microsoft 365 guardada',
         'test_sent' => 'Correo de prueba de Microsoft 365 enviado',
     ],
+    'msgraph_onenote' => [
+        'connected' => 'OneNote conectado',
+        'disconnected' => 'OneNote desconectado',
+    ],
     'msgraph_tasks' => [
         'link_removed' => 'Vínculo de lista de tareas eliminado',
         'link_saved' => 'Vínculo de lista de tareas guardado',
@@ -705,6 +725,7 @@ return [
         'posting_published' => 'Oferta de empleo publicada',
         'public_application_received' => 'Candidatura pública recibida',
         'requisition_created' => 'Requisición de puesto creada',
+        'upload_downloaded' => 'Documento de candidatura descargado',
     ],
     'render_profile_activated' => 'Perfil de renderizado activado',
     'rental' => [
@@ -895,6 +916,13 @@ return [
         'transferred' => 'Licitación transferida',
     ],
     'terminal' => [
+        'pin_set' => 'PIN de terminal establecido',
+        'pin_removed' => 'PIN de terminal eliminado',
+        'pin_unlocked' => 'PIN de terminal desbloqueado',
+        'pin_locked' => 'PIN de terminal bloqueado tras intentos fallidos',
+        'checkpoint_created' => 'Punto de check-in creado',
+        'checkpoint_enabled' => 'Punto de check-in activado',
+        'checkpoint_disabled' => 'Punto de check-in bloqueado',
         'badge_assigned' => 'Badge asignado',
         'badge_revoked' => 'Badge retirado',
         'deactivated' => 'Terminal desactivado',

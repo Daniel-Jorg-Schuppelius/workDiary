@@ -12,7 +12,7 @@ namespace App\Models\Learning;
 
 use App\Enums\Learning\{LearningAccessKind, LearningAudience, LearningCourseKind, LearningCourseStatus, LearningEnrollmentStatus, LearningInstructionSuitability, LearningTimePolicy};
 use App\Models\{Article, Organization, Qualification, User};
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid, HasTags};
 use App\Models\Training\TrainingCourse;
 use Database\Factories\Learning\LearningCourseFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -67,6 +67,8 @@ class LearningCourse extends Model {
     use HasFactory;
 
     use HasSqid;
+    // Schlagwörter (MVP-810): Querachse neben der gepflegten Kurskategorie.
+    use HasTags;
 
     protected $fillable = [
         'organization_id',

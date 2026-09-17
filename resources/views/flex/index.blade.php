@@ -178,7 +178,7 @@
     <x-table :zebra="true" table-sort="client" scroll="flex" :pinRows="true" size="xs">
         <x-slot:head>
             <tr>
-                <x-table.th sort type="date">{{ __('Tag') }}</x-table.th>
+                <x-table.th sort type="date">{{ __('Datum') }}</x-table.th>
                 @if ($tracksTarget)
                     <x-table.th sort type="duration" align="right">{{ __('Soll') }}</x-table.th>
                 @endif

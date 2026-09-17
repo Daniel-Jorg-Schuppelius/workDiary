@@ -10,7 +10,9 @@
 
 namespace Tests\Feature\Plugins\Calendly;
 
-use App\Models\{AppointmentRequest, Customer, IntegrationInboxItem};
+use App\Enums\Sales\LeadSource;
+use App\Models\{AppointmentRequest, Customer, IntegrationInboxItem, Lead, PluginSetting};
+use App\Plugins\Calendly\CalendlyPlugin;
 use App\Plugins\Calendly\Services\CalendlyIngestService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
@@ -123,5 +125,51 @@ final class CalendlyIngestTest extends TestCase {
         $this->assertSame('inv-old', $successor->rescheduled_from_uri);
         // Mapping vom Vorgänger geerbt, obwohl die neue Invitee-E-Mail nicht matcht.
         $this->assertSame($customer->id, $successor->customer_id);
+    }
+    // ── Lead aus Buchung ohne Kundenbezug (MVP-807, Entscheid P8-25) ──────
+
+    public function test_without_opt_in_no_lead_is_created(): void {
+        $request = $this->service()->handlePayload($this->organization, $this->created('inv-lead-0', 'neu@example.com'));
+
+        $this->assertNull($request?->lead_id);
+        $this->assertSame(0, Lead::query()->count());
+    }
+
+    public function test_opt_in_creates_one_lead_per_address_and_keeps_the_inbox_item(): void {
+        $this->enableLeads();
+
+        $first = $this->service()->handlePayload($this->organization, $this->created('inv-lead-1', 'Neu@Example.com'));
+        $second = $this->service()->handlePayload($this->organization, $this->created('inv-lead-2', 'neu@example.com'));
+
+        $lead = Lead::query()->sole();
+        $this->assertSame(LeadSource::Booking, $lead->source);
+        $this->assertSame('Jane Doe', $lead->contact_name);
+        $this->assertSame('Erstberatung', $lead->interest);
+        $this->assertSame($lead->id, $first?->lead_id);
+        // Erneute Buchung derselben Adresse: kein zweiter Lead.
+        $this->assertSame($lead->id, $second?->lead_id);
+        // Die Kundenzuordnung bleibt eine menschliche Entscheidung.
+        $this->assertSame(2, IntegrationInboxItem::query()->where('case_type', IntegrationInboxItem::CASE_UNMATCHED)->count());
+    }
+
+    public function test_possible_existing_customer_blocks_the_automatic_lead(): void {
+        $this->enableLeads();
+        // Kein Treffer des Matchers (andere Adresse), aber ein Namenskandidat.
+        Customer::factory()->create(['organization_id' => $this->organization->id, 'name' => 'Jane Doe Consulting', 'email' => 'buero@doe.example']);
+
+        $request = $this->service()->handlePayload($this->organization, $this->created('inv-lead-3', 'jane.privat@example.com'));
+
+        $this->assertNull($request?->customer_id);
+        $this->assertNull($request?->lead_id);
+        $this->assertSame(0, Lead::query()->count());
+    }
+
+    private function enableLeads(): void {
+        PluginSetting::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => CalendlyPlugin::ID,
+            'enabled' => true,
+            'settings' => ['create_leads' => true],
+        ]);
     }
 }

@@ -1,7 +1,7 @@
 ---
 title: "Recherche et recherche d'activités"
 topic: search.overview
-version: 2
+version: 3
 audience: []
 related: []
 ---
@@ -36,6 +36,13 @@ période ; un clic filtre dessus. La barre de filtres propose source, période,
 personne, client (y compris ses clients finaux), client final et tri. Sans terme
 de recherche mais avec un client, un client final ou un projet, les activités les
 plus récentes s'affichent.
+
+« Mots-clés dans les résultats » compte les mots-clés des entrées trouvées ; un
+clic restreint à l'un d'eux, la croix du filtre le retire. Si vous pouvez voir les
+collections, la barre de filtres propose aussi **Collection**, sous-collections
+comprises. Les deux filtres fonctionnent aussi sans terme de recherche. Seules
+les entrées que vous pouvez ouvrir sont comptées : les mots-clés de contenus
+confidentiels d'autres personnes n'apparaissent donc pas.
 
 ## Points d'entrée
 

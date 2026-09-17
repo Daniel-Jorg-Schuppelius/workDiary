@@ -49,6 +49,8 @@ return [
         'client_secret_help' => 'Stored encrypted; leave empty to keep the stored value.',
         'tenant' => 'Tenant (directory ID)',
         'tenant_help' => 'GUID of the Entra tenant; empty = the instance app’s value (default “common”).',
+        'onenote_import' => 'Allow OneNote import',
+        'onenote_import_help' => 'Unlocks the read-only OneNote connection (Notes.Read). Off: no additional permission, not even in the tenant-wide consent.',
         'tenant_invalid' => 'Tenant must be a directory GUID (or common/organizations/consumers).',
     ],
     'health' => [

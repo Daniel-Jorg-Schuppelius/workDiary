@@ -20,6 +20,7 @@ final class ActivitySearchResult {
      * @param  LengthAwarePaginator<int, ActivitySearchHit>  $hits
      * @param  list<ActivitySearchAggregate>  $aggregates
      * @param  array<string, int>  $typeCounts  Treffer je Quelle (ohne Quellen-Filter)
+     * @param  list<array{id: int, name: string, hits: int}>  $tagFacets  häufigste Schlagwörter der Treffer (MVP-812)
      */
     public function __construct(
         public readonly LengthAwarePaginator $hits,
@@ -28,5 +29,6 @@ final class ActivitySearchResult {
         public readonly ParsedSearchQuery $parsed,
         public readonly bool $searched,
         public readonly bool $relevance,
+        public readonly array $tagFacets = [],
     ) {}
 }

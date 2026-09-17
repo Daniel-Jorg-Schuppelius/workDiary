@@ -41,185 +41,181 @@
     @else
         @foreach ($connections as $connection)
             @php /** @var \App\Models\CloudIntake\CloudDocumentConnection $connection */ @endphp
-            <div class="card bg-base-100 shadow-sm">
-                <div class="card-body gap-3">
-                    <div class="flex flex-wrap items-center gap-2">
-                        <h3 class="card-title text-base">{{ $connection->provider->label() }} — {{ $connection->name }}</h3>
-                        <x-status-badge size="xs" :tone="$connection->status->tone()">{{ $connection->status->label() }}</x-status-badge>
-                        <span class="text-sm text-muted">{{ $connection->external_account_label ?? __('cloud_intake.field.account_unconfirmed') }}</span>
-                        <div class="ml-auto flex items-center gap-1.5">
-                            <form method="POST" action="{{ route('admin.cloud-intake.preview', $connection) }}" class="leading-none">
-                                @csrf
-                                <x-icon-btn icon="preview" tone="ghost" size="xs" type="submit" show-label>{{ __('cloud_intake.action.preview') }}</x-icon-btn>
-                            </form>
-                            @if ($canManage ?? false)
-                                <x-action-form :action="route('admin.cloud-intake.disconnect', $connection)"
-                                      method="DELETE"
-                                      :confirm="__('cloud_intake.action.disconnect_confirm')"
-                                      :confirm-label="__('cloud_intake.action.disconnect')">
-                                    <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" :label="__('cloud_intake.action.disconnect')" />
-                                </x-action-form>
-                            @endif
-                        </div>
-                    </div>
-
-                    @if ($connection->last_error)
-                        <div role="alert" class="alert alert-warning text-sm">
-                            <x-icon name="warning" />
-                            <span>{{ $connection->last_error }} <span class="text-muted">({{ $connection->last_error_at?->ftime() }})</span></span>
-                        </div>
-                    @endif
-
-                    {{-- Container + Stammordner (Konzept §Verbindung und Preflight) --}}
-                    @if ($canManage ?? false)
-                        @php
-                            $pickerActive = (int) ($containerConnectionId ?? 0) === (int) $connection->id;
-                            $pickerOptions = $pickerActive ? ($containerOptions ?? []) : [];
-                        @endphp
-                        @if ($connection->external_account_id !== null)
-                            {{-- Container-Picker: lädt die wählbaren Container serverseitig
-                                 (SharePoint-Muster) — bei Microsoft findet die Suche zusätzlich
-                                 SharePoint-Bibliotheken passender Sites. --}}
-                            <form method="GET" action="{{ route('admin.cloud-intake.index') }}" class="flex flex-wrap items-end gap-2">
-                                <input type="hidden" name="containers" value="{{ $connection->sqid }}">
-                                <div class="fieldset flex-1 min-w-60">
-                                    <label class="fieldset-label" for="ci-search-{{ $connection->id }}">{{ __('cloud_intake.picker.search_label') }}</label>
-                                    <input id="ci-search-{{ $connection->id }}" type="text" name="container_search" maxlength="190"
-                                           value="{{ $pickerActive ? ($containerSearch ?? '') : '' }}"
-                                           class="input input-sm input-bordered w-full" placeholder="{{ __('cloud_intake.picker.search_placeholder') }}">
-                                </div>
-                                <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" show-label>{{ __('cloud_intake.picker.load') }}</x-icon-btn>
-                            </form>
-                            @if ($pickerActive && ($containerLoadFailed ?? false))
-                                <div role="alert" class="alert alert-warning text-sm">
-                                    <x-icon name="warning" />
-                                    <span>{{ __('cloud_intake.picker.load_failed') }}</span>
-                                </div>
-                            @endif
-                        @endif
-                        <form method="POST" action="{{ route('admin.cloud-intake.folder', $connection) }}" class="flex flex-wrap items-end gap-2">
+            <x-card class="flex flex-col gap-3">
+                <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="card-title text-base">{{ $connection->provider->label() }} — {{ $connection->name }}</h3>
+                    <x-status-badge size="xs" :tone="$connection->status->tone()">{{ $connection->status->label() }}</x-status-badge>
+                    <span class="text-sm text-muted">{{ $connection->external_account_label ?? __('cloud_intake.field.account_unconfirmed') }}</span>
+                    <div class="ml-auto flex items-center gap-1.5">
+                        <form method="POST" action="{{ route('admin.cloud-intake.preview', $connection) }}" class="leading-none">
                             @csrf
-                            <div class="fieldset">
-                                <label class="fieldset-label" for="ci-container-{{ $connection->id }}">{{ __('cloud_intake.field.container') }}</label>
-                                @if ($pickerOptions !== [])
-                                    <select id="ci-container-{{ $connection->id }}" name="container_id" required
-                                            class="select select-sm select-bordered w-72">
-                                        @php $known = false; @endphp
-                                        @foreach ($pickerOptions as $option)
-                                            @php $known = $known || $option->id === $connection->container_id; @endphp
-                                            <option value="{{ $option->id }}" @selected($option->id === old('container_id', $connection->container_id))>
-                                                {{ $option->label }}@if ($option->kind) ({{ $option->kind }})@endif
-                                            </option>
-                                        @endforeach
-                                        @if (! $known && $connection->container_id)
-                                            <option value="{{ $connection->container_id }}" selected>{{ $connection->container_id }}</option>
-                                        @endif
-                                    </select>
-                                @else
-                                    <input id="ci-container-{{ $connection->id }}" type="text" name="container_id" required maxlength="512"
-                                           value="{{ old('container_id', $connection->container_id) }}"
-                                           class="input input-sm input-bordered font-mono w-52">
-                                @endif
-                            </div>
-                            <div class="fieldset">
-                                <label class="fieldset-label" for="ci-rootid-{{ $connection->id }}">{{ __('cloud_intake.field.root_folder_id') }}</label>
-                                <input id="ci-rootid-{{ $connection->id }}" type="text" name="root_folder_id" maxlength="512"
-                                       value="{{ old('root_folder_id', $connection->root_folder_id) }}"
-                                       class="input input-sm input-bordered font-mono w-52">
-                            </div>
-                            <div class="fieldset flex-1 min-w-60">
-                                <label class="fieldset-label" for="ci-rootpath-{{ $connection->id }}">{{ __('cloud_intake.field.root_folder') }}</label>
-                                <input id="ci-rootpath-{{ $connection->id }}" type="text" name="root_folder_path" required maxlength="1024"
-                                       value="{{ old('root_folder_path', $connection->root_folder_path) }}"
-                                       class="input input-sm input-bordered font-mono w-full" placeholder="/WorkDiary">
-                            </div>
-                            <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('cloud_intake.action.save_folder') }}</x-icon-btn>
+                            <x-icon-btn icon="preview" tone="ghost" size="xs" type="submit" show-label>{{ __('cloud_intake.action.preview') }}</x-icon-btn>
                         </form>
-                    @endif
-
-                    {{-- Ordnerregeln --}}
-                    <div class="flex items-center gap-2">
-                        <h4 class="font-semibold text-sm">{{ __('cloud_intake.route.heading') }}</h4>
-                        @if ($canManageRoutes ?? false)
-                            <x-icon-btn icon="add" tone="ghost" size="xs"
-                                        data-entry-modal-trigger
-                                        :href="route('admin.cloud-intake.routes.create', $connection)"
-                                        show-label>{{ __('cloud_intake.route.create') }}</x-icon-btn>
+                        @if ($canManage ?? false)
+                            <x-action-form :action="route('admin.cloud-intake.disconnect', $connection)"
+                                  method="DELETE"
+                                  :confirm="__('cloud_intake.action.disconnect_confirm')"
+                                  :confirm-label="__('cloud_intake.action.disconnect')">
+                                <x-icon-btn icon="link_off" tone="error" size="xs" type="submit" :label="__('cloud_intake.action.disconnect')" />
+                            </x-action-form>
                         @endif
                     </div>
-                    @if ($connection->routes->isEmpty())
-                        <p class="text-sm text-muted">{{ __('cloud_intake.route.empty') }}</p>
-                    @else
-                        <x-table>
-                            <x-slot:head>
-                                <tr>
-                                    <th class="text-right">{{ __('cloud_intake.route.priority') }}</th>
-                                    <th>{{ __('cloud_intake.route.pattern') }}</th>
-                                    <th>{{ __('cloud_intake.route.target') }}</th>
-                                    <th>{{ __('cloud_intake.route.active') }}</th>
-                                    <th></th>
-                                </tr>
-                            </x-slot:head>
-                            @foreach ($connection->routes as $route)
-                                <tr>
-                                    <td class="text-right tabular-nums">{{ $route->priority }}</td>
-                                    <td class="font-mono text-sm">{{ $route->path_pattern }}</td>
-                                    <td>{{ $route->target->label() }}</td>
-                                    <td>
-                                        <x-status-badge size="xs" :tone="$route->active ? 'success' : 'ghost'">
-                                            {{ $route->active ? __('cloud_intake.route.active') : __('cloud_intake.route.inactive') }}
-                                        </x-status-badge>
-                                    </td>
-                                    <td class="text-right">
-                                        @if ($canManageRoutes ?? false)
-                                            <x-icon-btn icon="edit" tone="ghost" size="xs"
-                                                        data-entry-modal-trigger
-                                                        :href="route('admin.cloud-intake.routes.edit', $route)"
-                                                        :label="__('cloud_intake.route.edit')" />
-                                        @endif
-                                    </td>
-                                </tr>
-                            @endforeach
-                        </x-table>
+                </div>
+
+                @if ($connection->last_error)
+                    <div role="alert" class="alert alert-warning text-sm">
+                        <x-icon name="warning" />
+                        <span>{{ $connection->last_error }} <span class="text-muted">({{ $connection->last_error_at?->ftime() }})</span></span>
+                    </div>
+                @endif
+
+                {{-- Container + Stammordner (Konzept §Verbindung und Preflight) --}}
+                @if ($canManage ?? false)
+                    @php
+                        $pickerActive = (int) ($containerConnectionId ?? 0) === (int) $connection->id;
+                        $pickerOptions = $pickerActive ? ($containerOptions ?? []) : [];
+                    @endphp
+                    @if ($connection->external_account_id !== null)
+                        {{-- Container-Picker: lädt die wählbaren Container serverseitig
+                             (SharePoint-Muster) — bei Microsoft findet die Suche zusätzlich
+                             SharePoint-Bibliotheken passender Sites. --}}
+                        <form method="GET" action="{{ route('admin.cloud-intake.index') }}" class="flex flex-wrap items-end gap-2">
+                            <input type="hidden" name="containers" value="{{ $connection->sqid }}">
+                            <div class="fieldset flex-1 min-w-60">
+                                <label class="fieldset-label" for="ci-search-{{ $connection->id }}">{{ __('cloud_intake.picker.search_label') }}</label>
+                                <input id="ci-search-{{ $connection->id }}" type="text" name="container_search" maxlength="190"
+                                       value="{{ $pickerActive ? ($containerSearch ?? '') : '' }}"
+                                       class="input input-sm input-bordered w-full" placeholder="{{ __('cloud_intake.picker.search_placeholder') }}">
+                            </div>
+                            <x-icon-btn icon="search" tone="ghost" size="sm" type="submit" show-label>{{ __('cloud_intake.picker.load') }}</x-icon-btn>
+                        </form>
+                        @if ($pickerActive && ($containerLoadFailed ?? false))
+                            <div role="alert" class="alert alert-warning text-sm">
+                                <x-icon name="warning" />
+                                <span>{{ __('cloud_intake.picker.load_failed') }}</span>
+                            </div>
+                        @endif
+                    @endif
+                    <form method="POST" action="{{ route('admin.cloud-intake.folder', $connection) }}" class="flex flex-wrap items-end gap-2">
+                        @csrf
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="ci-container-{{ $connection->id }}">{{ __('cloud_intake.field.container') }}</label>
+                            @if ($pickerOptions !== [])
+                                <select id="ci-container-{{ $connection->id }}" name="container_id" required
+                                        class="select select-sm select-bordered w-72">
+                                    @php $known = false; @endphp
+                                    @foreach ($pickerOptions as $option)
+                                        @php $known = $known || $option->id === $connection->container_id; @endphp
+                                        <option value="{{ $option->id }}" @selected($option->id === old('container_id', $connection->container_id))>
+                                            {{ $option->label }}@if ($option->kind) ({{ $option->kind }})@endif
+                                        </option>
+                                    @endforeach
+                                    @if (! $known && $connection->container_id)
+                                        <option value="{{ $connection->container_id }}" selected>{{ $connection->container_id }}</option>
+                                    @endif
+                                </select>
+                            @else
+                                <input id="ci-container-{{ $connection->id }}" type="text" name="container_id" required maxlength="512"
+                                       value="{{ old('container_id', $connection->container_id) }}"
+                                       class="input input-sm input-bordered font-mono w-52">
+                            @endif
+                        </div>
+                        <div class="fieldset">
+                            <label class="fieldset-label" for="ci-rootid-{{ $connection->id }}">{{ __('cloud_intake.field.root_folder_id') }}</label>
+                            <input id="ci-rootid-{{ $connection->id }}" type="text" name="root_folder_id" maxlength="512"
+                                   value="{{ old('root_folder_id', $connection->root_folder_id) }}"
+                                   class="input input-sm input-bordered font-mono w-52">
+                        </div>
+                        <div class="fieldset flex-1 min-w-60">
+                            <label class="fieldset-label" for="ci-rootpath-{{ $connection->id }}">{{ __('cloud_intake.field.root_folder') }}</label>
+                            <input id="ci-rootpath-{{ $connection->id }}" type="text" name="root_folder_path" required maxlength="1024"
+                                   value="{{ old('root_folder_path', $connection->root_folder_path) }}"
+                                   class="input input-sm input-bordered font-mono w-full" placeholder="/WorkDiary">
+                        </div>
+                        <x-icon-btn icon="save" tone="primary" size="sm" type="submit" show-label>{{ __('cloud_intake.action.save_folder') }}</x-icon-btn>
+                    </form>
+                @endif
+
+                {{-- Ordnerregeln --}}
+                <div class="flex items-center gap-2">
+                    <h4 class="font-semibold text-sm">{{ __('cloud_intake.route.heading') }}</h4>
+                    @if ($canManageRoutes ?? false)
+                        <x-icon-btn icon="add" tone="ghost" size="xs"
+                                    data-entry-modal-trigger
+                                    :href="route('admin.cloud-intake.routes.create', $connection)"
+                                    show-label>{{ __('cloud_intake.route.create') }}</x-icon-btn>
                     @endif
                 </div>
-            </div>
-        @endforeach
-
-        {{-- Importprotokoll (Übergabenachweise) --}}
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h3 class="card-title text-base">{{ __('cloud_intake.log.heading') }}</h3>
-                @if ($items->total() === 0)
-                    <p class="text-sm text-muted">{{ __('cloud_intake.log.empty') }}</p>
+                @if ($connection->routes->isEmpty())
+                    <p class="text-sm text-muted">{{ __('cloud_intake.route.empty') }}</p>
                 @else
                     <x-table>
                         <x-slot:head>
                             <tr>
-                                <th>{{ __('cloud_intake.field.provider') }}</th>
-                                <th>{{ __('cloud_intake.log.path') }}</th>
-                                <th>{{ __('cloud_intake.log.revision') }}</th>
-                                <th>{{ __('cloud_intake.field.status') }}</th>
-                                <th>{{ __('cloud_intake.log.reason') }}</th>
-                                <th>{{ __('cloud_intake.log.when') }}</th>
+                                <th class="text-right">{{ __('cloud_intake.route.priority') }}</th>
+                                <th>{{ __('cloud_intake.route.pattern') }}</th>
+                                <th>{{ __('cloud_intake.route.target') }}</th>
+                                <th>{{ __('cloud_intake.route.active') }}</th>
+                                <th></th>
                             </tr>
                         </x-slot:head>
-                        @foreach ($items as $item)
-                            @php /** @var \App\Models\CloudIntake\CloudDocumentItem $item */ @endphp
+                        @foreach ($connection->routes as $route)
                             <tr>
-                                <td>{{ $item->provider->label() }}</td>
-                                <td class="font-mono text-sm">{{ $item->source_path }}</td>
-                                <td class="font-mono text-xs">{{ $item->revision }}</td>
-                                <td><x-status-badge size="xs" :tone="$item->status->tone()">{{ $item->status->label() }}</x-status-badge></td>
-                                <td class="text-sm text-muted">{{ $item->status_reason ?? '—' }}</td>
-                                <td class="text-sm tabular-nums">{{ $item->created_at?->ftime() }}</td>
+                                <td class="text-right tabular-nums">{{ $route->priority }}</td>
+                                <td class="font-mono text-sm">{{ $route->path_pattern }}</td>
+                                <td>{{ $route->target->label() }}</td>
+                                <td>
+                                    <x-status-badge size="xs" :tone="$route->active ? 'success' : 'ghost'">
+                                        {{ $route->active ? __('cloud_intake.route.active') : __('cloud_intake.route.inactive') }}
+                                    </x-status-badge>
+                                </td>
+                                <td class="text-right">
+                                    @if ($canManageRoutes ?? false)
+                                        <x-icon-btn icon="edit" tone="ghost" size="xs"
+                                                    data-entry-modal-trigger
+                                                    :href="route('admin.cloud-intake.routes.edit', $route)"
+                                                    :label="__('cloud_intake.route.edit')" />
+                                    @endif
+                                </td>
                             </tr>
                         @endforeach
                     </x-table>
-                    <x-pagination :paginator="$items" standing />
                 @endif
-            </div>
-        </div>
+            </x-card>
+        @endforeach
+
+        {{-- Importprotokoll (Übergabenachweise) --}}
+        <x-card class="flex flex-col gap-2">
+            <h3 class="card-title text-base">{{ __('cloud_intake.log.heading') }}</h3>
+            @if ($items->total() === 0)
+                <p class="text-sm text-muted">{{ __('cloud_intake.log.empty') }}</p>
+            @else
+                <x-table>
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('cloud_intake.field.provider') }}</th>
+                            <th>{{ __('cloud_intake.log.path') }}</th>
+                            <th>{{ __('cloud_intake.log.revision') }}</th>
+                            <th>{{ __('cloud_intake.field.status') }}</th>
+                            <th>{{ __('cloud_intake.log.reason') }}</th>
+                            <th>{{ __('cloud_intake.log.when') }}</th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($items as $item)
+                        @php /** @var \App\Models\CloudIntake\CloudDocumentItem $item */ @endphp
+                        <tr>
+                            <td>{{ $item->provider->label() }}</td>
+                            <td class="font-mono text-sm">{{ $item->source_path }}</td>
+                            <td class="font-mono text-xs">{{ $item->revision }}</td>
+                            <td><x-status-badge size="xs" :tone="$item->status->tone()">{{ $item->status->label() }}</x-status-badge></td>
+                            <td class="text-sm text-muted">{{ $item->status_reason ?? '—' }}</td>
+                            <td class="text-sm tabular-nums">{{ $item->created_at?->ftime() }}</td>
+                        </tr>
+                    @endforeach
+                </x-table>
+                <x-pagination :paginator="$items" standing />
+            @endif
+        </x-card>
     @endif
 </x-index-page>
 @endsection

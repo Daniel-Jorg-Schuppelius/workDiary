@@ -22,6 +22,37 @@ return [
         'move_failed' => 'Le déplacement a échoué.',
         'suggest_failed' => 'Impossible de charger les suggestions.',
     ],
+    // Dienstplan-Oberflaeche (MVP-797): war zuvor fest verdrahtetes Deutsch.
+    'schedule_ui' => [
+        'shift_edit' => 'Modifier le poste',
+        'shift_create' => 'Créer un poste',
+        'shift_delete_confirm' => 'Supprimer vraiment ce poste ?',
+        'shift_type_edit' => 'Modifier le type de poste',
+        'shift_type_create' => 'Créer un type de poste',
+        'shift_type_delete_confirm' => 'Supprimer vraiment ce type de poste ?',
+        'save' => 'Enregistrer',
+        'delete' => 'Supprimer',
+        'close' => 'Fermer',
+        'save_failed' => 'Échec de l\'enregistrement.',
+        'delete_failed' => 'Échec de la suppression.',
+        'publish_failed' => 'Échec de la publication.',
+        'confirm_failed' => 'Échec de la confirmation.',
+        'suggestions_title' => 'Suggestions d\'affectation',
+        'col_employee' => 'Collaborateur',
+        'col_score' => 'Score',
+        'col_reason' => 'Motif',
+    ],
+    'bulk' => [
+        'select_one' => 'Sélectionne d\'abord au moins une entrée.',
+    ],
+    'design' => [
+        'inheritance' => '« :base » · :inherited/:total hérités, :own remplacés',
+    ],
+    // Chat-Oberflaeche (MVP-798): angepinnte Nachrichten werden per JSON geladen.
+    'chat' => [
+        'pinned_failed' => 'Impossible de charger les messages épinglés.',
+        'pinned_empty' => 'Aucun message épinglé.',
+    ],
     'kanban' => [
         'invalid_move' => 'Ce changement de statut n\'est pas prévu dans le flux de travail de la commande.',
         'not_allowed' => 'Vous n\'êtes pas autorisé à effectuer cette action sur la commande.',

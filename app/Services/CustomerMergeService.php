@@ -50,6 +50,8 @@ class CustomerMergeService extends AbstractEntityMergeService {
         'communication_notes' => ['notable_type', 'notable_id'],
         'attachments' => ['attachable_type', 'attachable_id'],
         'pending_external_conflicts' => ['referenceable_type', 'referenceable_id'],
+        // Legal Hold (MVP-801): Der Vermerk folgt den Daten zum Ziel, statt mit der Quelle zu verschwinden.
+        'legal_holds' => ['holdable_type', 'holdable_id'],
     ];
 
     /**

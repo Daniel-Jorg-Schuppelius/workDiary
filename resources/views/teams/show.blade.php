@@ -26,83 +26,77 @@
     </x-slot:toolbar>
 
     <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body space-y-4">
-                <h3 class="card-title">{{ __('Stammdaten') }}</h3>
-                <dl class="space-y-2 text-sm">
-                    <div class="flex justify-between"><dt class="text-muted">{{ __('Teamname') }}</dt>
-                        <dd>@if ($team->color)<span class="mr-2 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</dd></div>
-                    <div class="flex justify-between"><dt class="text-muted">{{ __('Teamleiter') }}</dt><dd>{{ $team->lead?->name ?? '—' }}</dd></div>
-                    @if ($team->description)
-                        <div><dt class="text-muted">{{ __('Beschreibung') }}</dt><dd>{{ $team->description }}</dd></div>
-                    @endif
-                </dl>
-            </div>
-        </div>
+        <x-card class="flex flex-col gap-2 space-y-4">
+            <h3 class="card-title">{{ __('Stammdaten') }}</h3>
+            <dl class="space-y-2 text-sm">
+                <div class="flex justify-between"><dt class="text-muted">{{ __('Teamname') }}</dt>
+                    <dd>@if ($team->color)<span class="mr-2 inline-block h-2 w-2 rounded-full" style="background-color: {{ $team->color }}"></span>@endif{{ $team->name }}</dd></div>
+                <div class="flex justify-between"><dt class="text-muted">{{ __('Teamleiter') }}</dt><dd>{{ $team->lead?->name ?? '—' }}</dd></div>
+                @if ($team->description)
+                    <div><dt class="text-muted">{{ __('Beschreibung') }}</dt><dd>{{ $team->description }}</dd></div>
+                @endif
+            </dl>
+        </x-card>
 
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body space-y-3">
-                <h3 class="card-title">{{ __('Zugewiesene Aufträge') }} ({{ $team->projects->count() }})</h3>
-                @forelse ($team->projects as $project)
-                    <a href="{{ route('projects.show', $project) }}" class="link link-hover block text-sm">{{ $project->name }}</a>
-                @empty
-                    <x-empty-state compact
-                        icon="folder_open"
-                        :title="__('Diesem Team sind noch keine Aufträge zugewiesen.')" />
-                @endforelse
-            </div>
-        </div>
+        <x-card class="flex flex-col gap-2 space-y-3">
+            <h3 class="card-title">{{ __('Zugewiesene Aufträge') }} ({{ $team->projects->count() }})</h3>
+            @forelse ($team->projects as $project)
+                <a href="{{ route('projects.show', $project) }}" class="link link-hover block text-sm">{{ $project->name }}</a>
+            @empty
+                <x-empty-state compact
+                    icon="folder_open"
+                    :title="__('Diesem Team sind noch keine Aufträge zugewiesen.')" />
+            @endforelse
+        </x-card>
     </div>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body space-y-4">
-            <div class="flex items-center justify-between">
-                <h3 class="card-title">{{ __('Mitglieder') }} ({{ $team->members->count() }})</h3>
-                @can('manageMembers', $team)
-                    @if ($addableUsers->isNotEmpty())
-                        <x-icon-btn icon="person_add" tone="primary" size="sm" data-entry-modal-trigger
-                                    :href="route('teams.members.attach.form', $team)"
-                                    show-label>{{ __('Mitglied hinzufügen') }}</x-icon-btn>
-                    @endif
-                @endcan
-            </div>
-
-            <x-table table-sort="client">
-                <x-slot:head>
-                    <tr>
-                        <x-table.th sort type="string">{{ __('Mitglied') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('E-Mail') }}</x-table.th>
-                        <x-table.th sort type="string">{{ __('Rolle im Team') }}</x-table.th>
-                        <th></th>
-                    </tr>
-                </x-slot:head>
-                @forelse ($team->members as $member)
-                    <tr>
-                        <td>{{ $member->name }}</td>
-                        <td class="text-sm text-base-content/70">{{ $member->email }}</td>
-                        <td class="text-sm">
-                            @if ((int) $member->id === (int) $team->lead_user_id)
-                                <x-status-badge tone="primary" size="xs">{{ __('Teamleiter') }}</x-status-badge>
-                            @else
-                                {{ __('Mitglied') }}
-                            @endif
-                        </td>
-                        <td class="text-right">
-                            @can('manageMembers', $team)
-                                <form method="POST" action="{{ route('teams.members.detach', [$team, $member]) }}" class="inline">
-                                    @csrf @method('DELETE')
-                                    <x-icon-btn type="submit" icon="person_remove" size="xs" tone="error" :title="__('Entfernen')" />
-                                </form>
-                            @endcan
-                        </td>
-                    </tr>
-                @empty
-                    <x-table.empty :colspan="4"
-                        icon="group"
-                        :title="__('Noch keine Mitglieder.')" compact />
-                @endforelse
-            </x-table>
+    <x-card class="flex flex-col gap-2 space-y-4">
+        <div class="flex items-center justify-between">
+            <h3 class="card-title">{{ __('Mitglieder') }} ({{ $team->members->count() }})</h3>
+            @can('manageMembers', $team)
+                @if ($addableUsers->isNotEmpty())
+                    <x-icon-btn icon="person_add" tone="primary" size="sm" data-entry-modal-trigger
+                                :href="route('teams.members.attach.form', $team)"
+                                show-label>{{ __('Mitglied hinzufügen') }}</x-icon-btn>
+                @endif
+            @endcan
         </div>
-    </div>
+
+        <x-table table-sort="client">
+            <x-slot:head>
+                <tr>
+                    <x-table.th sort type="string">{{ __('Mitglied') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('E-Mail') }}</x-table.th>
+                    <x-table.th sort type="string">{{ __('Rolle im Team') }}</x-table.th>
+                    <th></th>
+                </tr>
+            </x-slot:head>
+            @forelse ($team->members as $member)
+                <tr>
+                    <td>{{ $member->name }}</td>
+                    <td class="text-sm text-base-content/70">{{ $member->email }}</td>
+                    <td class="text-sm">
+                        @if ((int) $member->id === (int) $team->lead_user_id)
+                            <x-status-badge tone="primary" size="xs">{{ __('Teamleiter') }}</x-status-badge>
+                        @else
+                            {{ __('Mitglied') }}
+                        @endif
+                    </td>
+                    <td class="text-right">
+                        @can('manageMembers', $team)
+                            <form method="POST" action="{{ route('teams.members.detach', [$team, $member]) }}" class="inline">
+                                @csrf @method('DELETE')
+                                <x-icon-btn type="submit" icon="person_remove" size="xs" tone="error" :title="__('Entfernen')" />
+                            </form>
+                        @endcan
+                    </td>
+                </tr>
+            @empty
+                <x-table.empty :colspan="4"
+                    icon="group"
+                    :title="__('Noch keine Mitglieder.')" compact />
+            @endforelse
+        </x-table>
+    </x-card>
 </x-page-shell>
 @endsection

@@ -598,7 +598,12 @@ class TimeExportService {
                 'file_path' => $export->file_path,
             ]);
             if ($export->file_path !== null) {
-                Storage::disk('local')->delete((string) $export->file_path);
+                // Dieselbe Ablage wie beim Schreiben (MVP-798, Befund C2-05,
+                // Nebenbefund): stand hier hart auf 'local' — wer die Ablage
+                // umstellt, dem blieben geloeschte Lohndaten-Exporte liegen,
+                // protokolliert als geloescht.
+                Storage::disk((string) config('exports.storage.disk', 'local'))
+                    ->delete((string) $export->file_path);
             }
             $export->lines()->delete();
             $export->delete();

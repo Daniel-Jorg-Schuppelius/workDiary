@@ -381,6 +381,9 @@ class MsgraphPlugin extends AbstractPlugin implements \App\Plugins\Contracts\Con
                 help: __('msgraph.settings.client_secret_help'))->toArray(),
             \App\Plugins\Contracts\SettingsField::text('tenant', __('msgraph.settings.tenant'),
                 help: __('msgraph.settings.tenant_help'))->toArray(),
+            // OneNote-Übernahme (MVP-815): eigener Bereich Notes.Read, erst nach Einschalten verbindbar.
+            \App\Plugins\Contracts\SettingsField::boolean('onenote_import', __('msgraph.settings.onenote_import'), false,
+                help: __('msgraph.settings.onenote_import_help'))->toArray(),
         ];
     }
 

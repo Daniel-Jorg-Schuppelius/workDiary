@@ -22,7 +22,7 @@ use App\Services\Asset\{AssetService, AssetStatusMachine};
 use App\Services\Concerns\AssertsStatusTransition;
 use App\Services\Document\DocumentService;
 use App\Services\Numbering\NumberSequenceService;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
 use CommonToolkit\ValueObjects\WasteCode;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
@@ -266,7 +266,10 @@ class DisposalJobService {
             throw new RuntimeException((string) __('Die Übernahme ist bereits unterschrieben.'));
         }
 
-        $binary = $this->decodePng($base64Png);
+        $binary = DataUrlHelper::decode($base64Png, ['image/png']);
+        if ($binary === false) {
+            throw new RuntimeException((string) __('Die Unterschrift ist kein gültiges PNG.'));
+        }
         if (strlen($binary) > self::SIGNATURE_MAX_BYTES) {
             throw new RuntimeException((string) __('Die Unterschrift ist zu groß.'));
         }
@@ -467,19 +470,6 @@ class DisposalJobService {
         }
 
         return $code;
-    }
-
-    private function decodePng(string $payload): string {
-        $payload = trim($payload);
-        if (str_starts_with($payload, 'data:image/png;base64,')) {
-            $payload = substr($payload, strlen('data:image/png;base64,'));
-        }
-        $binary = base64_decode($payload, true);
-        if ($binary === false || strlen($binary) < 8 || substr($binary, 0, 8) !== "\x89PNG\r\n\x1a\n") {
-            throw new RuntimeException((string) __('Die Unterschrift ist kein gültiges PNG.'));
-        }
-
-        return $binary;
     }
 
     /** @param array<string, mixed> $payload */

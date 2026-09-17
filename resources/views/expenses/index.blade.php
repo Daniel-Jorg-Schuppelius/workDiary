@@ -109,6 +109,9 @@
                         <x-status-badge :tone="$expense->status->tone()" size="sm">
                             {{ $expense->status->label() }}
                         </x-status-badge>
+                        @if ($expense->corrects_expense_id !== null)
+                            <x-status-badge tone="warning" size="xs" class="ml-1">{{ __('Korrektur') }}</x-status-badge>
+                        @endif
                     </td>
                     <td class="text-right whitespace-nowrap">
                         {{-- MVP-550: Belegdatei — Zähler zeigt, ob die Auslage belegt ist. --}}

@@ -16,7 +16,7 @@ use Database\Factories\KnowledgeArticleFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 use Illuminate\Support\{Carbon, Str};
 
 /**
@@ -31,7 +31,6 @@ use Illuminate\Support\{Carbon, Str};
  * @property string $slug
  * @property string $problem
  * @property string $solution
- * @property string|null $category
  * @property ArticleStatus $status
  * @property ArticleVisibility $visibility
  * @property int $created_by_user_id
@@ -59,7 +58,6 @@ class KnowledgeArticle extends Model {
         'slug',
         'problem',
         'solution',
-        'category',
         'status',
         'visibility',
         'created_by_user_id',
@@ -81,9 +79,14 @@ class KnowledgeArticle extends Model {
         return $this->belongsTo(User::class, 'created_by_user_id');
     }
 
-    /** @return HasMany<KnowledgeArticleLink, $this> */
-    public function links(): HasMany {
-        return $this->hasMany(KnowledgeArticleLink::class);
+    /**
+     * Verknüpfungen „hat hier geholfen“ (Auftrag, Asset, Kunde, Protokoll,
+     * Problem) — seit MVP-811 Verweise der Art `linked`.
+     *
+     * @return MorphMany<ContentReference, $this>
+     */
+    public function links(): MorphMany {
+        return $this->morphMany(ContentReference::class, 'source')->where('kind', ContentReference::KIND_LINKED);
     }
 
     /** @return HasMany<KnowledgeArticleFeedback, $this> */

@@ -91,11 +91,9 @@
             </div>
         @endif
 
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                @yield('install-content')
-            </div>
-        </div>
+        <x-card class="flex flex-col gap-2">
+            @yield('install-content')
+        </x-card>
 
         <p class="mt-6 text-center text-xs text-muted">
             {{ __('Schritt :n von :total', ['n' => $currentIndex + 1, 'total' => count($steps ?? [])]) }}

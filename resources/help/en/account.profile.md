@@ -16,6 +16,9 @@ theme, language, time zone, date and time format, and the start page
 after sign-in. Global notification settings such as mail delivery and
 quiet hours are managed here as well.
 
+Only pages you may open are offered. Without your own choice, the start page
+your organization set for your role applies.
+
 Changing your password happens in a separate dialog. For a regular
 change you must confirm your current password; if the password is being
 set for the first time or is enforced, this prompt is skipped. Saving

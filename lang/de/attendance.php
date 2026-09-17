@@ -33,6 +33,7 @@ return [
         'terminal' => 'Terminal',
         'phone' => 'Telefon',
         'learning' => 'Lernzeit',
+        'checkin' => 'Check-in (QR/NFC)',
     ],
     'correction' => [
         'action' => [
@@ -44,5 +45,34 @@ return [
     'error' => [
         'target_day_locked' => 'Der Zieltag ist abgeschlossen oder der Monat freigegeben — bitte eine Zeitkorrektur beantragen.',
         'duration_too_long' => 'Eine Stempelung darf nicht länger als :hours Stunden dauern.',
+    ],
+    'checkpoint_kind' => [
+        'site' => 'Standort',
+        'vehicle' => 'Fahrzeug',
+    ],
+    'checkin' => [
+        'title' => 'Check-in',
+        'subtitle' => 'Kommen und Gehen über den Code am Standort oder Fahrzeug.',
+        'state' => [
+            'in' => 'Du bist seit :time Uhr eingestempelt.',
+            'out' => 'Du bist gerade nicht eingestempelt.',
+        ],
+        'action' => [
+            'in' => 'Kommen',
+            'out' => 'Gehen',
+        ],
+        'location_hint' => 'Beim Stempeln wird einmal die Position geprüft (Umkreis :radius m). Gespeichert wird sie nicht.',
+        'flash' => [
+            'in' => 'Kommen an „:name“ gebucht.',
+            'out' => 'Gehen an „:name“ gebucht.',
+        ],
+        'error' => [
+            'already_in' => 'Du bist bereits eingestempelt.',
+            'not_in' => 'Du bist nicht eingestempelt.',
+            'no_center' => 'Für diesen Punkt ist ein Umkreis, aber kein Ort hinterlegt. Bitte an die Verwaltung wenden.',
+            'location_required' => 'Für diesen Punkt wird die Position benötigt.',
+            'too_far' => 'Du bist :distance m entfernt, erlaubt sind :radius m.',
+            'location_denied' => 'Die Position konnte nicht ermittelt werden. Bitte Ortungsfreigabe erlauben.',
+        ],
     ],
 ];

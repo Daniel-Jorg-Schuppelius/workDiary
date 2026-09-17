@@ -60,7 +60,7 @@ final class DemoFreshOrgUiTest extends TestCase {
         $this->actingAs($platformAdmin)
             ->from(route('admin.organizations.index'))
             ->post(route('admin.demo.fresh-org.store'), ['industry' => 'wartung-service'])
-            ->assertRedirect(route('admin.organizations.index'));
+            ->assertRedirect(route('admin.organizations.index', ['show_demo' => 1]));
 
         $demo = Organization::query()->where('is_demo', true)->firstOrFail();
         $this->assertNotSame($ownOrgId, (int) $demo->id);
@@ -108,7 +108,7 @@ final class DemoFreshOrgUiTest extends TestCase {
                 'industry' => 'it-service',
                 'member' => $platformAdmin->sqid,
             ])
-            ->assertRedirect(route('admin.organizations.index'));
+            ->assertRedirect(route('admin.organizations.index', ['show_demo' => 1]));
 
         $demo = Organization::query()->where('is_demo', true)->firstOrFail();
         $this->assertSame((int) $demo->id, (int) $platformAdmin->refresh()->organization_id);

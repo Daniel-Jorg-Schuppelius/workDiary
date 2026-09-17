@@ -23,6 +23,8 @@ enum LeadSource: string implements HasLabel {
     case Web = 'web';
     case TradeFair = 'trade_fair';
     case Phone = 'phone';
+    /** Terminbuchung ohne Kundenbezug, z. B. aus Calendly (MVP-807). */
+    case Booking = 'booking';
     case Other = 'other';
 
     public function label(): string {

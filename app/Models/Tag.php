@@ -130,4 +130,14 @@ class Tag extends Model {
     public function timeEntries(): MorphToMany {
         return $this->morphedByMany(TimeEntry::class, 'taggable');
     }
+
+    /** @return MorphToMany<CommunicationNote, $this> */
+    public function communicationNotes(): MorphToMany {
+        return $this->morphedByMany(CommunicationNote::class, 'taggable');
+    }
+
+    /** @return MorphToMany<\App\Models\Learning\LearningCourse, $this> */
+    public function learningCourses(): MorphToMany {
+        return $this->morphedByMany(\App\Models\Learning\LearningCourse::class, 'taggable');
+    }
 }

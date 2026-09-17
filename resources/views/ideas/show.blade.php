@@ -16,6 +16,7 @@
         <x-page-toolbar :title="$map->title">
             <x-slot:actions>
                 <x-icon-btn icon="arrow_back" size="sm" :href="route('ideas.index')" show-label>{{ __('Zurück') }}</x-icon-btn>
+                <x-collection-add-button :item="$map" />
                 @can('export', $map)
                     <x-icon-btn icon="picture_as_pdf" size="sm" :href="route('ideas.export.pdf', $map)" target="_blank" show-label>PDF</x-icon-btn>
                     <x-icon-btn icon="account_tree" size="sm" :href="route('ideas.export.opml', $map)" show-label>OPML</x-icon-btn>
@@ -461,5 +462,8 @@
             @endif
         </noscript>
     </x-card>
+
+    {{-- Verweise und Rückverweise (MVP-811). --}}
+    <x-content-references :subject="$map" />
 </x-page-shell>
 @endsection

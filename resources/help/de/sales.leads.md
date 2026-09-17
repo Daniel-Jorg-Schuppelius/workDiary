@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -13,6 +13,13 @@ Ein **Lead** ist ein Interessent **vor** dem Kundenstatus — aus Empfehlung,
 Web, Messe oder Anruf. Die Lead-Akte hält Kontakt, Quelle und Bedarf; die
 Qualifizierung läuft über die **Kommunikationsnotizen** mit Wiedervorlage,
 genau wie am Kunden.
+
+**Leads aus Terminbuchungen.** Bucht jemand ohne Kundenbezug über Calendly,
+kann daraus ein Lead mit der Quelle „Terminbuchung“ entstehen. Das ist je
+Organisation in den Calendly-Einstellungen einzuschalten und standardmäßig aus.
+Kommt ein Bestandskunde infrage, entsteht kein Lead — die Buchung wartet dann
+in der Zuordnungs-Inbox. Bucht dieselbe Adresse erneut, hängt die Buchung am
+offenen Lead.
 
 ## Die Pipeline
 

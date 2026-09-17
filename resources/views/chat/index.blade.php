@@ -97,6 +97,28 @@
                     @can('manageMembers', $activeChannel)
                         <button class="btn btn-xs btn-ghost btn-square" title="{{ __('Mitglieder einladen') }}" aria-label="{{ __('Mitglieder einladen') }}" data-open-dialog="chat-invite"><x-icon name="person_add" size="1.1rem" /></button>
                     @endcan
+                    {{-- Angepinnte, Umbenennen, Löschen (MVP-798, Befund C1-03):
+                         Endpunkte gab es, Einstiege fehlten. --}}
+                    <button type="button" class="btn btn-xs btn-ghost btn-square" data-pinned-open
+                            data-open-dialog="chat-pinned"
+                            title="{{ __('Angepinnte Nachrichten') }}" aria-label="{{ __('Angepinnte Nachrichten') }}">
+                        <x-icon name="push_pin" size="1rem" />
+                    </button>
+                    @can('update', $activeChannel)
+                        <button type="button" class="btn btn-xs btn-ghost btn-square" data-open-dialog="chat-edit-channel"
+                                title="{{ __('Kanal bearbeiten') }}" aria-label="{{ __('Kanal bearbeiten') }}">
+                            <x-icon name="edit" size="1rem" />
+                        </button>
+                    @endcan
+                    @can('delete', $activeChannel)
+                        <x-action-form :action="route('chat.channels.destroy', $activeChannel)" method="DELETE"
+                              data-confirm-title="{{ __('Kanal löschen') }}"
+                              :confirm="__('Der Kanal wird mit allen Nachrichten gelöscht. Das lässt sich nicht rückgängig machen.')"
+                              :confirm-label="__('Kanal löschen')"
+                              confirm-icon="delete_forever">
+                            <button class="btn btn-xs btn-ghost btn-square text-error" title="{{ __('Kanal löschen') }}" aria-label="{{ __('Kanal löschen') }}"><x-icon name="delete_forever" size="1rem" /></button>
+                        </x-action-form>
+                    @endcan
                     @if (! $activeChannel->isDirect())
                         <x-action-form :action="route('chat.channels.leave', $activeChannel)"
                               data-confirm-title="{{ __('Kanal verlassen?') }}"
@@ -331,6 +353,33 @@
             <input type="checkbox" name="multiple" value="1" class="checkbox checkbox-sm">
             <span class="label-text">{{ __('Mehrfachauswahl') }}</span>
         </label>
+    </x-modal>
+
+    @can('update', $activeChannel)
+        {{-- Dialog: Kanal bearbeiten (MVP-798, Befund C1-03) --}}
+        <x-modal id="chat-edit-channel" :embedded="false" icon="edit" :eyebrow="__('Chat')" :title="__('Kanal bearbeiten')"
+                 :action="route('chat.channels.update', $activeChannel)" method="PUT" :submit-label="__('Speichern')">
+            <x-form-group :legend="__('Kanal')" icon="tag" tone="primary" cols="2">
+                <x-input-field span="2" name="name" :label="__('Name')" type="text" required maxlength="120"
+                               :value="$activeChannel->name" />
+                <x-textarea-field span="2" name="description" :label="__('Beschreibung (optional)')" rows="2"
+                                  maxlength="1000">{{ $activeChannel->description }}</x-textarea-field>
+                <x-select-field name="visibility" :label="__('Sichtbarkeit')">
+                    <option value="public" @selected($activeChannel->visibility === 'public')>{{ __('Öffentlich') }}</option>
+                    <option value="private" @selected($activeChannel->visibility === 'private')>{{ __('Privat') }}</option>
+                </x-select-field>
+                <x-checkbox-field name="is_archived" :label="__('Archiviert')" :checked="(bool) $activeChannel->is_archived" />
+            </x-form-group>
+        </x-modal>
+    @endcan
+
+    {{-- Dialog: Angepinnte Nachrichten (MVP-798, Befund C1-03) --}}
+    <x-modal id="chat-pinned" :embedded="false" icon="push_pin" :eyebrow="__('Chat')"
+             :title="__('Angepinnte Nachrichten')">
+        <div id="chat-pinned-list" class="flex flex-col gap-2"></div>
+        <x-slot:actions>
+            <x-button type="button" tone="ghost" size="md" data-entry-modal-close>{{ __('Schließen') }}</x-button>
+        </x-slot:actions>
     </x-modal>
 
     @can('manageMembers', $activeChannel)

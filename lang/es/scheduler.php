@@ -78,7 +78,7 @@ return [
             'lti_rotate_keys' => 'Rotar las claves de firma LTI',
             'lti_prune_nonces' => 'Eliminar los nonces LTI caducados',
         ],
-        'attendance' => ['close_open' => 'Cerrar fichajes olvidados'],
+        'attendance' => ['close_open' => 'Cerrar fichajes olvidados', 'open_reminder' => 'Recordar fichajes abiertos por la tarde'],
         'audit' => ['verify' => 'Verificar la cadena de auditoría'],
         'backup' => [
             'check_restore' => 'Comprobación de copias de seguridad',
@@ -144,6 +144,7 @@ return [
         'metering' => ['generate-invoices' => 'Generar facturas por lecturas'],
         'maintenance' => ['scan_due' => 'Comprobar planes de mantenimiento vencidos'],
         'notifications' => ['scan_deadlines' => 'Comprobar plazos y notificar'],
+        'recruiting' => ['scan_uploads' => 'Analizar documentos de candidatura en busca de malware'],
         'org' => ['offboard_due' => 'Ejecutar las bajas de empleados vencidas'],
         'travel_logs' => ['lock_due' => 'Bloquear los trayectos del libro de ruta tras el fin del día'],
         'news-feed' => ['refresh' => 'Actualizar el canal de noticias'],

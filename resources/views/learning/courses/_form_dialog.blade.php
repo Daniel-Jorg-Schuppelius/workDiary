@@ -9,6 +9,7 @@
   Kurs-Dialog (Feature 149). Variablen: $course (LearningCourse|null),
   $trainingCourses (Collection<TrainingCourse>)
   $assets (Collection<Asset>)
+  $competencies (Collection<Competency>)
 --}}
 @php
     $isEdit = $course !== null;
@@ -42,6 +43,19 @@
                 <option value="{{ $category->sqid }}" @selected((string) old('category_id', $course?->category?->sqid) === (string) $category->sqid)>{{ $category->name }}</option>
             @endforeach
         </x-select-field>
+        {{-- Schlagwörter (MVP-810): Querachse neben der Kategorie, kommagetrennt. --}}
+        <x-input-field name="tags" span="2" maxlength="500" :label="__('learning.field.tags')" :hint="__('learning.help.course_tags')"
+                       :value="old('tags', $course?->tags->pluck('name')->implode(', '))" />
+        {{-- Kompetenz (MVP-798, C3-03): der Abschluss belegt diese Stufe in der Kompetenzmatrix. --}}
+        @if ($competencies->isNotEmpty())
+            <x-select-field name="competency_id" :label="__('learning.field.competency')" :hint="__('learning.help.course_competency')">
+                <option value="">—</option>
+                @foreach ($competencies as $competency)
+                    <option value="{{ $competency->sqid }}" @selected((string) old('competency_id', \App\Support\Sqid::encodeOrNull(\App\Models\Learning\Competency::class, $course?->competency_id)) === (string) $competency->sqid)>{{ $competency->name }}</option>
+                @endforeach
+            </x-select-field>
+            <x-input-field name="competency_level" type="number" min="1" max="10" :label="__('learning.field.competency_level')" :value="old('competency_level', $course?->competency_level)" />
+        @endif
     </x-form-group>
 
     {{-- Verfügbarkeit (MVP-788): Fenster und Grenze gelten für Katalog und

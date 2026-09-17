@@ -198,6 +198,17 @@ return [
     // --- Personalisierung (Org-Default für Datums-/Zeitformat) ---
     'personalization.date_format' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Support\Formats::class, 'dateOptions']],
     'personalization.time_format' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Support\Formats::class, 'timeOptions']],
+    // Startseite je Rolle (MVP-799): nur Organisation; persönliche Wahl im Profil geht vor.
+    'personalization.startpage_roles.admin' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.geschaeftsfuehrung' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.personalverwaltung' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.teamleitung' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.buchhaltung' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.user' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.aussendienst' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.callcenter' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.support' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
+    'personalization.startpage_roles.training_manager' => ['type' => 'enum', 'scopes' => ['organization'], 'options_from' => [App\Services\Navigation\StartPageResolver::class, 'routeOptions']],
 
     // --- E-Rechnung (Feature 045): Verkäuferstammdaten für XRechnung ---
     'einvoice.seller_name' => ['type' => 'string', 'scopes' => ['organization'], 'rules' => 'max:200'],

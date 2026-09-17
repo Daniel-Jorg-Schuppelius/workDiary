@@ -9,7 +9,7 @@
  */
 
 /*
- * Daily close (MVP-015, docs/tagesabschluss.md) — page texts, validator
+ * Daily close (MVP-015, WorkDiary-Architecture/tagesabschluss.md) — page texts, validator
  * messages (§4), flash and error texts. Kept in parity across
  * de/en/fr/it/es; enum labels live in enums.php
  * (dayClosure.status / dayCorrection.status).

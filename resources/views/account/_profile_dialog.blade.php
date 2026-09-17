@@ -16,7 +16,8 @@
     $darkThemes = array_values(array_filter($builtinThemes, fn($t) => $t['scheme'] === 'dark'));
     $customThemes = array_map(fn($d) => $d->toPickerEntry(), $themeService->customDefinitions());
     $currentTheme = (string) (old('preferences.theme', data_get($user->preferences, 'theme')) ?? '');
-    $startpages = (array) config('personalization.startpages', []);
+    // Nur Seiten, die die Person öffnen darf (MVP-799); Beschriftung statt Routenname.
+    $startpages = app(\App\Services\Navigation\StartPageResolver::class)->optionsFor($user);
     $avatarMaxKb = (int) config('branding.limits.avatar_kb', 1024);
     $currentAvatar = $user->avatar();
     $avatarPreview = $currentAvatar !== null
@@ -150,8 +151,8 @@
 
         <x-select-field span="2" name="preferences[startpage]" :label="__('Startseite nach dem Login')">
             <option value="">{{ __('Standard') }}</option>
-            @foreach ($startpages as $route)
-                <option value="{{ $route }}" @selected(old('preferences.startpage', $prefs['startpage'] ?? '') === $route)>{{ $route }}</option>
+            @foreach ($startpages as $route => $label)
+                <option value="{{ $route }}" @selected(old('preferences.startpage', $prefs['startpage'] ?? '') === $route)>{{ $label }}</option>
             @endforeach
         </x-select-field>
     </x-form-group>

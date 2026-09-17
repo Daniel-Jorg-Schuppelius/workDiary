@@ -49,85 +49,79 @@
             <div role="alert" class="alert alert-success"><span>{{ session('status') }}</span></div>
         @endif
 
-        <div class="card bg-base-100 border border-base-300">
-            <div class="card-body gap-3">
-                <h2 class="card-title text-base">{{ __('Kennzahlen') }}</h2>
-                @if ($minutes)
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                        <div>
-                            <div class="text-xs opacity-70">{{ __('Soll') }}</div>
-                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['target'] / 60, 2, withThousandsSeparator: true) }} h</div>
-                        </div>
-                        <div>
-                            <div class="text-xs opacity-70">{{ __('Ist') }}</div>
-                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['actual'] / 60, 2, withThousandsSeparator: true) }} h</div>
-                        </div>
-                        <div>
-                            <div class="text-xs opacity-70">{{ __('Saldo') }}</div>
-                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['balance'] / 60, 2, withThousandsSeparator: true) }} h</div>
-                        </div>
-                        <div>
-                            <div class="text-xs opacity-70">{{ __('Anwesenheit') }}</div>
-                            <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['attendance'] / 60, 2, withThousandsSeparator: true) }} h</div>
-                        </div>
+        <x-card class="flex flex-col gap-3">
+            <h2 class="card-title text-base">{{ __('Kennzahlen') }}</h2>
+            @if ($minutes)
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div>
+                        <div class="text-xs opacity-70">{{ __('Soll') }}</div>
+                        <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['target'] / 60, 2, withThousandsSeparator: true) }} h</div>
                     </div>
-                @else
-                    <p class="text-sm opacity-70">{{ __('Noch kein Snapshot vorhanden.') }}</p>
-                @endif
+                    <div>
+                        <div class="text-xs opacity-70">{{ __('Ist') }}</div>
+                        <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['actual'] / 60, 2, withThousandsSeparator: true) }} h</div>
+                    </div>
+                    <div>
+                        <div class="text-xs opacity-70">{{ __('Saldo') }}</div>
+                        <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['balance'] / 60, 2, withThousandsSeparator: true) }} h</div>
+                    </div>
+                    <div>
+                        <div class="text-xs opacity-70">{{ __('Anwesenheit') }}</div>
+                        <div class="font-medium tabular-nums">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($minutes['attendance'] / 60, 2, withThousandsSeparator: true) }} h</div>
+                    </div>
+                </div>
+            @else
+                <p class="text-sm opacity-70">{{ __('Noch kein Snapshot vorhanden.') }}</p>
+            @endif
 
-                @if ($days)
-                    <div class="divider my-1"></div>
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
-                        <div><span class="opacity-70">{{ __('Tage gesamt') }}:</span> {{ $closure->days_total }}</div>
-                        <div><span class="opacity-70">{{ __('mit Anwesenheit') }}:</span> {{ $days['with_attendance'] }}</div>
-                        <div><span class="opacity-70">{{ __('geschlossen') }}:</span> {{ $days['closed'] }}</div>
-                        <div><span class="opacity-70">{{ __('offen') }}:</span>
-                            <span class="font-medium {{ ($days['open'] ?? 0) > 0 ? 'text-warning' : '' }}">{{ $days['open'] }}</span>
-                        </div>
+            @if ($days)
+                <div class="divider my-1"></div>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm">
+                    <div><span class="opacity-70">{{ __('Tage gesamt') }}:</span> {{ $closure->days_total }}</div>
+                    <div><span class="opacity-70">{{ __('mit Anwesenheit') }}:</span> {{ $days['with_attendance'] }}</div>
+                    <div><span class="opacity-70">{{ __('geschlossen') }}:</span> {{ $days['closed'] }}</div>
+                    <div><span class="opacity-70">{{ __('offen') }}:</span>
+                        <span class="font-medium {{ ($days['open'] ?? 0) > 0 ? 'text-warning' : '' }}">{{ $days['open'] }}</span>
                     </div>
-                @endif
-            </div>
-        </div>
+                </div>
+            @endif
+        </x-card>
 
         @if ($closure->decision_note)
-            <div class="card bg-base-100 border border-base-300">
-                <div class="card-body gap-2">
-                    <h2 class="card-title text-base">{{ __('Notiz') }}</h2>
-                    <p class="text-sm whitespace-pre-line">{{ $closure->decision_note }}</p>
-                </div>
-            </div>
+            <x-card class="flex flex-col gap-2">
+                <h2 class="card-title text-base">{{ __('Notiz') }}</h2>
+                <p class="text-sm whitespace-pre-line">{{ $closure->decision_note }}</p>
+            </x-card>
         @endif
 
-        <div class="card bg-base-100 border border-base-300">
-            <div class="card-body gap-2">
-                <h2 class="card-title text-base">{{ __('Verlauf') }}</h2>
-                @if ($closure->events->isEmpty())
-                    <p class="text-sm opacity-70">{{ __('Noch keine Ereignisse.') }}</p>
-                @else
-                    <ul class="timeline timeline-vertical timeline-compact">
-                        @foreach ($closure->events as $event)
-                            <li>
-                                <div class="timeline-start text-xs tabular-nums">{{ $event->created_at?->fdatetime() }}</div>
-                                <div class="timeline-middle">
-                                    <x-icon name="history" class="text-base" />
-                                </div>
-                                <div class="timeline-end timeline-box">
-                                    <div class="font-medium text-sm">{{ $event->event }}</div>
-                                    @if ($event->actor)
-                                        <div class="text-xs opacity-70">{{ $event->actor->name }}</div>
-                                    @endif
-                                    @if ($event->note)
-                                        <div class="text-xs mt-1">{{ $event->note }}</div>
-                                    @endif
-                                </div>
-                                @if (! $loop->last)
-                                    <hr />
+        <x-card class="flex flex-col gap-2">
+            <h2 class="card-title text-base">{{ __('Verlauf') }}</h2>
+            @if ($closure->events->isEmpty())
+                <p class="text-sm opacity-70">{{ __('Noch keine Ereignisse.') }}</p>
+            @else
+                <ul class="timeline timeline-vertical timeline-compact">
+                    @foreach ($closure->events as $event)
+                        <li>
+                            <div class="timeline-start text-xs tabular-nums">{{ $event->created_at?->fdatetime() }}</div>
+                            <div class="timeline-middle">
+                                <x-icon name="history" class="text-base" />
+                            </div>
+                            <div class="timeline-end timeline-box">
+                                <div class="font-medium text-sm">{{ $event->event }}</div>
+                                @if ($event->actor)
+                                    <div class="text-xs opacity-70">{{ $event->actor->name }}</div>
                                 @endif
-                            </li>
-                        @endforeach
-                    </ul>
-                @endif
-            </div>
-        </div>
+                                @if ($event->note)
+                                    <div class="text-xs mt-1">{{ $event->note }}</div>
+                                @endif
+                            </div>
+                            @if (! $loop->last)
+                                <hr />
+                            @endif
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+        </x-card>
     </x-index-page>
 @endsection

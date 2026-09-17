@@ -26,6 +26,15 @@ Si votre organisation a installé un profil métier, la page affiche sa
 recommandation de modules. Elle n'est jamais appliquée automatiquement —
 vous la confirmez délibérément.
 
+## Page d'accueil par rôle
+
+Sous les modules, vous définissez où un rôle arrive après la connexion – par exemple
+la pointeuse pour le personnel itinérant ou le flux de pièces pour la
+comptabilité. Le choix personnel dans le profil prime toujours. Si une personne
+a plusieurs rôles, le premier dans l'ordre affiché pour lequel une page est
+définie s'applique. Une page que la personne ne peut pas ouvrir est ignorée ;
+sans réglage, la page par défaut reste.
+
 ## Limites
 
 - Les modules non licenciés ne peuvent pas être activés ici ; cela relève de

@@ -13,7 +13,7 @@ namespace App\Services\Timesheet;
 use App\Enums\Timesheet\TimesheetStatus;
 use App\Mail\TimesheetSignedMail;
 use App\Models\{Attachment, Timesheet, User};
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\{Auth, Mail, Storage};
 use Illuminate\Support\Str;
@@ -32,7 +32,10 @@ class SignatureService {
             throw new RuntimeException('Timesheet is locked.');
         }
 
-        $binary = $this->decodePng($base64Png);
+        $binary = DataUrlHelper::decode($base64Png, ['image/png']);
+        if ($binary === false) {
+            throw new RuntimeException('Invalid PNG payload.');
+        }
         if (strlen($binary) > self::MAX_BYTES) {
             throw new RuntimeException('Signature too large.');
         }
@@ -135,22 +138,5 @@ class SignatureService {
         ])->save();
 
         return $timesheet;
-    }
-
-    private function decodePng(string $payload): string {
-        $payload = trim($payload);
-        if (str_starts_with($payload, 'data:image/png;base64,')) {
-            $payload = substr($payload, strlen('data:image/png;base64,'));
-        }
-        $binary = base64_decode($payload, true);
-        if ($binary === false || strlen($binary) < 8) {
-            throw new RuntimeException('Invalid PNG payload.');
-        }
-        // PNG-Magic prüfen
-        if (substr($binary, 0, 8) !== "\x89PNG\r\n\x1a\n") {
-            throw new RuntimeException('Payload is not a PNG.');
-        }
-
-        return $binary;
     }
 }

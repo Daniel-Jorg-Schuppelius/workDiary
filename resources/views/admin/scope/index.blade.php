@@ -122,5 +122,29 @@
                 <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
             </div>
         </form>
+
+        {{-- Startseite je Rolle (MVP-799) --}}
+        <form method="POST" action="{{ route('admin.scope.startpages') }}" class="mt-4">
+            @csrf
+            <x-card>
+                <h2 class="mb-1 text-sm font-semibold uppercase tracking-wider opacity-60">{{ __('scope.startpages.heading') }}</h2>
+                <p class="mb-3 text-sm text-base-content/70">{{ __('scope.startpages.hint') }}</p>
+                <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                    @foreach ($startPageRoles as $entry)
+                        <x-select-field :name="'startpages[' . $entry['role']->value . ']'" :id="'startpage-' . $entry['role']->value"
+                                        :label="$entry['role']->label()" :error="'startpages.' . $entry['role']->value">
+                            <option value="">{{ __('scope.startpages.default') }}</option>
+                            @foreach ($startPageLabels as $route => $label)
+                                <option value="{{ $route }}" @selected(old('startpages.' . $entry['role']->value, $entry['route']) === $route)>{{ $label }}</option>
+                            @endforeach
+                        </x-select-field>
+                    @endforeach
+                </div>
+            </x-card>
+
+            <div class="mt-4 flex justify-end">
+                <x-button type="submit" tone="primary" size="sm" icon="save">{{ __('Speichern') }}</x-button>
+            </div>
+        </form>
     </x-page-shell>
 @endsection

@@ -77,6 +77,10 @@ class IncomingInvoiceController extends Controller {
                 ]));
         }
         if ($result['status'] !== 'created' || $incoming === null || $result['document'] === null) {
+            if ($result['status'] === 'infected') {
+                return back()->with('error', __('Die Datei wurde von der Sicherheitsprüfung abgewiesen und nicht abgelegt.'));
+            }
+
             return back()->with('error', __('Die Datei ist keine lesbare E-Rechnung (XRechnung/ZUGFeRD).'));
         }
 

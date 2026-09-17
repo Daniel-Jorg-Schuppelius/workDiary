@@ -49,12 +49,12 @@
     </div>
 
     {{-- ── Column mapping form ── --}}
-    <form method="POST" action="{{ route('schedule.import.confirm') }}" class="card bg-base-100 shadow-sm border border-base-300">
+    <x-card as="form" method="POST" action="{{ route('schedule.import.confirm') }}">
         @csrf
         <input type="hidden" name="file_path" value="{{ $filePath }}">
         <input type="hidden" name="default_status" value="{{ $defaultStatus }}">
 
-        <div class="card-body">
+        <div class="flex flex-col gap-2">
             <h2 class="card-title text-base mb-4">{{ __('Welche Spalte enthält was?') }}</h2>
 
             <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -132,7 +132,7 @@
                 <x-icon-btn icon="upload" tone="primary" size="sm" type="submit" show-label>{{ __('Import durchführen') }}</x-icon-btn>
             </div>
         </div>
-    </form>
+    </x-card>
 
 </div>
 @endsection

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\User\Permission;
-use App\Models\{KnowledgeArticleLink, Organization, Problem, ServiceTicket, User};
+use App\Models\{ContentReference, Organization, Problem, ServiceTicket, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
@@ -226,9 +226,9 @@ final class HelpdeskProblemUiTest extends TestCase {
             ->post(route('servicedesk.problems.publish', $problem))
             ->assertSessionHas('success');
 
-        $this->assertSame(1, KnowledgeArticleLink::query()
-            ->where('linkable_type', $problem->getMorphClass())
-            ->where('linkable_id', $problem->id)
+        $this->assertSame(1, ContentReference::query()
+            ->where('target_type', $problem->getMorphClass())
+            ->where('target_id', $problem->id)
             ->count());
     }
 

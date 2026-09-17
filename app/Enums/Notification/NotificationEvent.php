@@ -53,6 +53,9 @@ enum NotificationEvent: string implements HasLabel {
     case VacationDecided = 'vacation.decided';
     /** Synchron: AttendancePlausibilityScanService — neuer offener Befund an die betroffene Person (MVP-538) */
     case AttendanceUnclearCase = 'attendance.unclearCase';
+
+    // Abend-Erinnerung bei offener Stempelung (MVP-803).
+    case AttendanceOpenReminder = 'attendance.openReminder';
     /** Synchron: MonthClosureService::submit() */
     case MonthClosureSubmitted = 'monthClosure.submitted';
     /** Scanner: ISMS-Zertifikat läuft innerhalb des Vorlaufs (30 Tage) ab */
@@ -295,6 +298,8 @@ enum NotificationEvent: string implements HasLabel {
             self::DiaryProblem,
             self::DiaryAttachmentAdded,
             self::EmergencyAssigned,
+            // Abend-Erinnerung: aufs Handy, nicht ins Mailpostfach vom nächsten Morgen.
+            self::AttendanceOpenReminder,
             self::TimesheetSigned => [NotificationChannel::InApp->value, NotificationChannel::Push->value],
             self::DiaryCompleted => [NotificationChannel::InApp->value],
             // Chat hat eigene Ungelesen-Zähler — kein In-App-Duplikat.
@@ -503,6 +508,7 @@ enum NotificationEvent: string implements HasLabel {
             self::VacationRequested,
             self::VacationDecided => 'beach_access',
             self::AttendanceUnclearCase => 'live_help',
+            self::AttendanceOpenReminder => 'alarm',
             self::MonthClosureSubmitted => 'event_available',
             self::IsmsCertificateExpiring => 'workspace_premium',
             self::IsmsCorrectiveActionOverdue => 'fact_check',

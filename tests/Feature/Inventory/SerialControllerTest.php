@@ -72,4 +72,16 @@ final class SerialControllerTest extends TestCase {
         $this->actingAs($this->admin)->get(route('serials.verify', ['serial' => 'NOPE-9']))
             ->assertOk()->assertSee(__('inventory.serial.verify.not_found'));
     }
+
+    /**
+     * Etikettendruck je Seriennummer (Vollscan 2026-09-15, `C1-05` / `MVP-798`):
+     * Die Route gab es, aber weder Verlinkung noch Test — geprüft wurde bis
+     * dahin nur die Variante.
+     */
+    public function test_label_pdf_renders_for_a_serial(): void {
+        $this->actingAs($this->admin)
+            ->get(route('inventory.labels.serial', $this->serial))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
 }

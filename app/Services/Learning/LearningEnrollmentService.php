@@ -191,10 +191,12 @@ class LearningEnrollmentService {
             return;
         }
 
+        $date = $unit->releaseDateFor($enrollment);
+
         throw ValidationException::withMessages([
-            'unit' => (string) __('learning.errors.unit_not_released', [
-                'date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y') ?? '',
-            ]),
+            'unit' => $date !== null && $date->gt(($now ?? Carbon::now())->copy()->startOfDay())
+                ? (string) __('learning.errors.unit_not_released', ['date' => $date->translatedFormat('d.m.Y')])
+                : (string) __('learning.errors.unit_locked_by_sequence'),
         ]);
     }
 

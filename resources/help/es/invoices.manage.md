@@ -1,7 +1,7 @@
 ---
 title: "Facturas & documentos"
 topic: invoices.manage
-version: 3
+version: 5
 audience: []
 modules:
     - module.vertrieb
@@ -38,13 +38,22 @@ WorkDiary o exactamente un sistema externo — nunca ambos a la vez.
 2. Excluir si hace falta registros sueltos con la casilla — quedan
    abiertos y vuelven en la siguiente pasada.
 3. Revisar y completar el borrador; por posición se despliegan los
-   **registros de origen** (1,50 h = 1:30 h).
+   **registros de origen** (1,50 h = 1:30 h). En un artículo con peso de
+   cobre, la casilla **recargo de cobre** del diálogo de línea añade el
+   recargo al precio DEL del día como línea propia.
 4. Emitir o enviar — PDF, envío y sincronización externa son salidas
    del mismo estado documentado.
 5. Ante impagos usar la **reclamación**: el nivel 1 crea un
    recordatorio de pago como PDF propio con resumen de deuda, cargo
    opcional y plazo; el correo lleva la carta y la factura original.
    No nace ningún documento nuevo.
+
+**Factura electrónica.** La XRechnung se genera en sintaxis UBL; si un
+destinatario exige CII, elige en el cliente o al enviar el formato de entrega
+«XRechnung (XML, sintaxis CII)». Por Peppol siempre se envía UBL. Sin número
+de IVA — por ejemplo como pequeña empresa según el § 19 UStG — basta el número
+fiscal de los datos maestros de factura electrónica: se añade también como
+identificador del vendedor, que exige la validación del destinatario.
 
 ## Ejemplo práctico
 

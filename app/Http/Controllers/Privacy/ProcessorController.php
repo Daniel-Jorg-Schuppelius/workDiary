@@ -35,6 +35,17 @@ class ProcessorController extends Controller {
         return view('privacy.processors._form_dialog', ['roles' => ProcessorRole::cases()]);
     }
 
+    /** Bearbeiten-Dialog (MVP-798, Befund C1-08): derselbe Dialog wie beim Anlegen. */
+    public function edit(Processor $processor): View {
+        Gate::authorize('update', $processor);
+
+        return view('privacy.processors._form_dialog', [
+            'roles' => ProcessorRole::cases(),
+            'processor' => $processor,
+            'isEdit' => true,
+        ]);
+    }
+
     public function store(Request $request): RedirectResponse {
         Gate::authorize('create', Processor::class);
         $user = $request->user();

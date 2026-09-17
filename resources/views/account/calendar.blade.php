@@ -23,51 +23,49 @@
         </div>
     </div>
 
-    <div class="card bg-base-100 border border-base-300">
-        <div class="card-body space-y-4">
-            @if ($user->calendar_feed_token_hash)
-                {{-- Der Klartext-Token wird nur als Hash gespeichert (S-44) und
-                     ist deshalb ausschließlich direkt nach dem Rotieren
-                     sichtbar. Danach zeigt die Seite nur noch, DASS ein Link
-                     besteht. --}}
-                @if (session('calendar_feed_token'))
-                    @php($url = route('calendar.feed.personal', ['token' => session('calendar_feed_token')]))
-                    <x-form-group :label="__('Abo-URL')" name="feed_url">
-                        <div class="join w-full">
-                            <input type="text" readonly value="{{ $url }}" class="input input-bordered join-item w-full font-mono text-xs">
-                            <button type="button" class="btn join-item" data-copy-text="{{ $url }}">
-                                {{ __('Kopieren') }}
-                            </button>
-                        </div>
-                        <x-slot:hint>{{ __('Jetzt kopieren — der Link wird nicht gespeichert und ist später nicht mehr abrufbar.') }}</x-slot:hint>
-                    </x-form-group>
-                @else
-                    <div class="alert alert-info text-sm">
-                        {{ __('Ein Kalender-Link ist aktiv. Aus Sicherheitsgründen wird er nicht gespeichert und kann nicht erneut angezeigt werden — bei Verlust einen neuen erzeugen („Token rotieren").') }}
+    <x-card class="flex flex-col gap-2 space-y-4">
+        @if ($user->calendar_feed_token_hash)
+            {{-- Der Klartext-Token wird nur als Hash gespeichert (S-44) und
+                 ist deshalb ausschließlich direkt nach dem Rotieren
+                 sichtbar. Danach zeigt die Seite nur noch, DASS ein Link
+                 besteht. --}}
+            @if (session('calendar_feed_token'))
+                @php($url = route('calendar.feed.personal', ['token' => session('calendar_feed_token')]))
+                <x-form-group :label="__('Abo-URL')" name="feed_url">
+                    <div class="join w-full">
+                        <input type="text" readonly value="{{ $url }}" class="input input-bordered join-item w-full font-mono text-xs">
+                        <button type="button" class="btn join-item" data-copy-text="{{ $url }}">
+                            {{ __('Kopieren') }}
+                        </button>
                     </div>
-                @endif
-
-                <div class="text-sm text-base-content/70">
-                    <strong>{{ __('Hinweis Google:') }}</strong> {{ __('„Andere Kalender → Per URL hinzufügen" und obigen Link einfügen.') }}<br>
-                    <strong>{{ __('Hinweis Outlook:') }}</strong> {{ __('„Kalender hinzufügen → Aus dem Internet" und obigen Link einfügen.') }}
-                </div>
-
-                <div class="flex flex-wrap gap-2">
-                    <x-action-form :action="route('account.calendar.rotate')" :confirm="__('Token rotieren? Bestehende Abos brechen ab.')">
-                        <x-button type="submit" tone="warning" size="sm">{{ __('Token rotieren') }}</x-button>
-                    </x-action-form>
-                    <x-action-form :action="route('account.calendar.revoke')" method="DELETE" :confirm="__('Kalender-Link wirklich widerrufen?')">
-                        <x-button type="submit" tone="error" size="sm">{{ __('Widerrufen') }}</x-button>
-                    </x-action-form>
-                </div>
+                    <x-slot:hint>{{ __('Jetzt kopieren — der Link wird nicht gespeichert und ist später nicht mehr abrufbar.') }}</x-slot:hint>
+                </x-form-group>
             @else
-                <p>{{ __('Es ist noch kein Kalender-Link aktiv.') }}</p>
-                <form method="POST" action="{{ route('account.calendar.rotate') }}">
-                    @csrf
-                    <x-button type="submit" tone="primary">{{ __('Kalender-Link erzeugen') }}</x-button>
-                </form>
+                <div class="alert alert-info text-sm">
+                    {{ __('Ein Kalender-Link ist aktiv. Aus Sicherheitsgründen wird er nicht gespeichert und kann nicht erneut angezeigt werden — bei Verlust einen neuen erzeugen („Token rotieren").') }}
+                </div>
             @endif
-        </div>
-    </div>
+
+            <div class="text-sm text-base-content/70">
+                <strong>{{ __('Hinweis Google:') }}</strong> {{ __('„Andere Kalender → Per URL hinzufügen" und obigen Link einfügen.') }}<br>
+                <strong>{{ __('Hinweis Outlook:') }}</strong> {{ __('„Kalender hinzufügen → Aus dem Internet" und obigen Link einfügen.') }}
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+                <x-action-form :action="route('account.calendar.rotate')" :confirm="__('Token rotieren? Bestehende Abos brechen ab.')">
+                    <x-button type="submit" tone="warning" size="sm">{{ __('Token rotieren') }}</x-button>
+                </x-action-form>
+                <x-action-form :action="route('account.calendar.revoke')" method="DELETE" :confirm="__('Kalender-Link wirklich widerrufen?')">
+                    <x-button type="submit" tone="error" size="sm">{{ __('Widerrufen') }}</x-button>
+                </x-action-form>
+            </div>
+        @else
+            <p>{{ __('Es ist noch kein Kalender-Link aktiv.') }}</p>
+            <form method="POST" action="{{ route('account.calendar.rotate') }}">
+                @csrf
+                <x-button type="submit" tone="primary">{{ __('Kalender-Link erzeugen') }}</x-button>
+            </form>
+        @endif
+    </x-card>
 </x-page-shell>
 @endsection

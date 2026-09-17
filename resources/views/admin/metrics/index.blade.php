@@ -37,133 +37,121 @@
 
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {{-- Queue --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="queue" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.queue') }}</h2>
-                </header>
-                @if (($queue['available'] ?? false) === true)
-                    <dl class="grid grid-cols-1 gap-1 text-sm">
-                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-muted">{{ __('metrics.field.queue_pending') }}</dt>
-                            <dd class="font-mono text-xs">{{ $queue['pending'] ?? '—' }}</dd>
-                        </div>
-                        <div class="flex items-baseline justify-between gap-2">
-                            <dt class="text-muted">{{ __('metrics.field.queue_failed') }}</dt>
-                            <dd class="font-mono text-xs">{{ $queue['failed'] ?? '—' }}</dd>
-                        </div>
-                    </dl>
-                @else
-                    <p class="text-sm italic text-muted">{{ __('metrics.empty.queue') }}</p>
-                @endif
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="queue" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.queue') }}</h2>
+            </header>
+            @if (($queue['available'] ?? false) === true)
+                <dl class="grid grid-cols-1 gap-1 text-sm">
+                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                        <dt class="text-muted">{{ __('metrics.field.queue_pending') }}</dt>
+                        <dd class="font-mono text-xs">{{ $queue['pending'] ?? '—' }}</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-2">
+                        <dt class="text-muted">{{ __('metrics.field.queue_failed') }}</dt>
+                        <dd class="font-mono text-xs">{{ $queue['failed'] ?? '—' }}</dd>
+                    </div>
+                </dl>
+            @else
+                <p class="text-sm italic text-muted">{{ __('metrics.empty.queue') }}</p>
+            @endif
+        </x-card>
 
         {{-- Backups --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="backup" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.backups') }}</h2>
-                </header>
-                @if (count($backups) > 0)
-                    <ul class="space-y-1 text-sm">
-                        @foreach ($backups as $hb)
-                            <li class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                                <span class="text-base-content/70">{{ $hb['occurred_at']?->translatedFormat('d.m.Y H:i') ?? '—' }}</span>
-                                <span class="font-mono text-xs text-muted">
-                                    {{ $hb['size_bytes'] !== null ? $fmtBytes((int) $hb['size_bytes']) : '—' }}
-                                    @if (!empty($hb['source'])) · {{ $hb['source'] }} @endif
-                                </span>
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <p class="text-sm italic text-muted">{{ __('metrics.empty.backups') }}</p>
-                @endif
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="backup" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.backups') }}</h2>
+            </header>
+            @if (count($backups) > 0)
+                <ul class="space-y-1 text-sm">
+                    @foreach ($backups as $hb)
+                        <li class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
+                            <span class="text-base-content/70">{{ $hb['occurred_at']?->translatedFormat('d.m.Y H:i') ?? '—' }}</span>
+                            <span class="font-mono text-xs text-muted">
+                                {{ $hb['size_bytes'] !== null ? $fmtBytes((int) $hb['size_bytes']) : '—' }}
+                                @if (!empty($hb['source'])) · {{ $hb['source'] }} @endif
+                            </span>
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="text-sm italic text-muted">{{ __('metrics.empty.backups') }}</p>
+            @endif
+        </x-card>
 
         {{-- Plugin-Fehler (7 Tage) --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center justify-between gap-2">
-                    <div class="flex items-center gap-2">
-                        <x-icon name="bug_report" />
-                        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.plugin_errors') }}</h2>
-                    </div>
-                    <span class="badge badge-outline {{ ($pluginErrors['count'] ?? 0) > 0 ? 'badge-warning' : 'badge-success' }}">{{ $pluginErrors['count'] ?? 0 }}</span>
-                </header>
-                @if (count($pluginErrors['recent'] ?? []) > 0)
-                    <ul class="space-y-1 text-xs text-base-content/70">
-                        @foreach ($pluginErrors['recent'] as $err)
-                            <li class="border-b border-base-200/70 pb-1 last:border-0">
-                                <span class="font-mono">{{ $err['plugin_id'] }}</span> ({{ $err['phase'] }})
-                                — {{ \Illuminate\Support\Str::limit($err['message'], 80) }}
-                            </li>
-                        @endforeach
-                    </ul>
-                @else
-                    <p class="text-sm italic text-muted">{{ __('metrics.empty.plugin_errors') }}</p>
-                @endif
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center justify-between gap-2">
+                <div class="flex items-center gap-2">
+                    <x-icon name="bug_report" />
+                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.plugin_errors') }}</h2>
+                </div>
+                <span class="badge badge-outline {{ ($pluginErrors['count'] ?? 0) > 0 ? 'badge-warning' : 'badge-success' }}">{{ $pluginErrors['count'] ?? 0 }}</span>
+            </header>
+            @if (count($pluginErrors['recent'] ?? []) > 0)
+                <ul class="space-y-1 text-xs text-base-content/70">
+                    @foreach ($pluginErrors['recent'] as $err)
+                        <li class="border-b border-base-200/70 pb-1 last:border-0">
+                            <span class="font-mono">{{ $err['plugin_id'] }}</span> ({{ $err['phase'] }})
+                            — {{ \Illuminate\Support\Str::limit($err['message'], 80) }}
+                        </li>
+                    @endforeach
+                </ul>
+            @else
+                <p class="text-sm italic text-muted">{{ __('metrics.empty.plugin_errors') }}</p>
+            @endif
+        </x-card>
 
         {{-- Speicher (DB-Metadaten) --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="sd_storage" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.storage') }}</h2>
-                </header>
-                <dl class="grid grid-cols-1 gap-1 text-sm">
-                    @foreach (['attachments' => __('metrics.field.attachments'), 'document_versions' => __('metrics.field.document_versions')] as $key => $label)
-                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                            <dt class="text-muted">{{ $label }}</dt>
-                            <dd class="font-mono text-xs">
-                                {{ $storage[$key]['count'] ?? 0 }} · {{ $fmtBytes((int) ($storage[$key]['bytes'] ?? 0)) }}
-                            </dd>
-                        </div>
-                    @endforeach
-                </dl>
-                <p class="text-xs text-muted">{{ __('metrics.hint.storage_db_metadata') }}</p>
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="sd_storage" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.storage') }}</h2>
+            </header>
+            <dl class="grid grid-cols-1 gap-1 text-sm">
+                @foreach (['attachments' => __('metrics.field.attachments'), 'document_versions' => __('metrics.field.document_versions')] as $key => $label)
+                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
+                        <dt class="text-muted">{{ $label }}</dt>
+                        <dd class="font-mono text-xs">
+                            {{ $storage[$key]['count'] ?? 0 }} · {{ $fmtBytes((int) ($storage[$key]['bytes'] ?? 0)) }}
+                        </dd>
+                    </div>
+                @endforeach
+            </dl>
+            <p class="text-xs text-muted">{{ __('metrics.hint.storage_db_metadata') }}</p>
+        </x-card>
 
         {{-- Aktive Benutzer --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="group" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.active_users') }}</h2>
-                </header>
-                @if (($metrics['active_users'] ?? null) !== null)
-                    <p class="text-3xl font-semibold">{{ $metrics['active_users'] }}</p>
-                    <p class="text-xs text-muted">{{ __('metrics.hint.active_users') }}</p>
-                @else
-                    <p class="text-sm italic text-muted">{{ __('metrics.empty.active_users') }}</p>
-                @endif
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="group" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.active_users') }}</h2>
+            </header>
+            @if (($metrics['active_users'] ?? null) !== null)
+                <p class="text-3xl font-semibold">{{ $metrics['active_users'] }}</p>
+                <p class="text-xs text-muted">{{ __('metrics.hint.active_users') }}</p>
+            @else
+                <p class="text-sm italic text-muted">{{ __('metrics.empty.active_users') }}</p>
+            @endif
+        </x-card>
 
         {{-- Datensätze je Kernmodul --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="database" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.module_counts') }}</h2>
-                </header>
-                <dl class="grid grid-cols-1 gap-1 text-sm">
-                    @foreach ($moduleCounts as $module => $count)
-                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
-                            <dt class="text-muted">{{ __('metrics.module.' . $module) }}</dt>
-                            <dd class="font-mono text-xs">{{ $count }}</dd>
-                        </div>
-                    @endforeach
-                </dl>
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="database" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('metrics.section.module_counts') }}</h2>
+            </header>
+            <dl class="grid grid-cols-1 gap-1 text-sm">
+                @foreach ($moduleCounts as $module => $count)
+                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1 last:border-0">
+                        <dt class="text-muted">{{ __('metrics.module.' . $module) }}</dt>
+                        <dd class="font-mono text-xs">{{ $count }}</dd>
+                    </div>
+                @endforeach
+            </dl>
+        </x-card>
     </div>
 
     {{-- Feature-Nutzung (30 Tage, aggregiert) --}}

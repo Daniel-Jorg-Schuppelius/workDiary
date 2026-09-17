@@ -479,6 +479,9 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeCreate,
             PermissionEnum::KnowledgeUpdate,
             PermissionEnum::KnowledgePublish,
+            // Sammlungen (MVP-809): ordnen, was man ohnehin sehen darf.
+            PermissionEnum::CollectionViewAny,
+            PermissionEnum::CollectionManage,
             // Ideenlandkarten (Feature 054): eigene Karten anlegen; Inhalte
             // regeln Eigentum + Freigaben (IdeaMapPolicy), nicht das Recht.
             PermissionEnum::IdeasViewAny,
@@ -855,6 +858,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeView,
             PermissionEnum::KnowledgeCreate,
             PermissionEnum::KnowledgeUpdate,
+            PermissionEnum::CollectionViewAny,
+            PermissionEnum::CollectionManage,
             // Ideenlandkarten (Feature 054): eigene Karten anlegen; Inhalte
             // regeln Eigentum + Freigaben (IdeaMapPolicy), nicht das Recht.
             PermissionEnum::IdeasViewAny,
@@ -955,6 +960,8 @@ class PermissionsSeeder extends Seeder {
             PermissionEnum::KnowledgeViewAny,
             PermissionEnum::KnowledgeView,
             PermissionEnum::KnowledgeCreate,
+            PermissionEnum::CollectionViewAny,
+            PermissionEnum::CollectionManage,
             // Ideenlandkarten (Feature 054): eigene Karten auch mobil.
             PermissionEnum::IdeasViewAny,
             PermissionEnum::IdeasCreate,

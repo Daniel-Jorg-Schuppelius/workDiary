@@ -44,11 +44,15 @@ return [
         'sort_relevance' => 'Beste Treffer zuerst',
         'sort_date' => 'Neueste zuerst',
         'similar' => 'Ähnliche Schreibweisen',
+        'collection' => 'Sammlung',
+        'all_collections' => 'Alle Sammlungen',
     ],
 
     'filter' => [
         'project' => 'Projekt: :name',
         'remove' => 'Filter entfernen',
+        'tag' => 'Schlagwort: :name',
+        'tag_without_hits' => 'Schlagwort-Filter',
     ],
 
     'notice' => [
@@ -65,6 +69,10 @@ return [
 
     'types' => [
         'title' => 'Quellen',
+    ],
+
+    'facets' => [
+        'tags' => 'Schlagwörter in den Treffern',
     ],
 
     'hits' => [

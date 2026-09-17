@@ -55,12 +55,23 @@ return [
     'date_formats' => ['d.m.Y', 'Y-m-d', 'd/m/Y', 'm/d/Y', 'd. F Y', 'j. M Y'],
     'time_formats' => ['H:i', 'h:i A'],
 
-    // Whitelist für die Auswahl auf der Profilseite.
+    // Wählbare Startseiten (Routenname → Beschriftung als Übersetzungsschlüssel).
+    // Profil und Vorgabe je Rolle (admin/scope) bieten nur an, was die Person
+    // im Menü sieht — siehe StartPageResolver (MVP-799).
     'startpages' => [
-        'dashboard',
-        'diary.index',
-        'week.index',
-        'kanban.index',
-        'duties.index',
+        'dashboard' => 'Dashboard',
+        'duties.index' => 'Arbeitsliste',
+        'diary.index' => 'Alle Einträge',
+        'week.index' => 'Wochenansicht',
+        'kanban.index' => 'Kanban',
+        'attendance.index' => 'Stempeluhr',
+        'timesheets.index' => 'Stundenzettel',
+        'learning.my.index' => 'learning.nav.my',
+        'dispatch.board' => 'Leitstelle',
+        'helpdesk.board.index' => 'Queue-Board',
+        'billing.feed' => 'billing.feed.title',
+        'customers.index' => 'Kunden',
+        'projects.index' => 'Projekte',
+        'reports.index' => 'Auswertungen',
     ],
 ];

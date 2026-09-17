@@ -24,9 +24,9 @@
                     <h2 class="font-['Space_Grotesk'] text-xl font-bold">{{ $article->title }}</h2>
                     <div class="flex flex-wrap items-center gap-2 text-sm">
                         <x-status-badge :tone="$article->status->tone()">{{ $article->status->label() }}</x-status-badge>
-                        @if ($article->category)
-                            <x-status-badge tone="ghost" outline>{{ $article->category }}</x-status-badge>
-                        @endif
+                        @foreach ($articleCollections as $articleCollection)
+                            <a href="{{ route('knowledge-hub.index', ['collection' => $articleCollection->sqid]) }}" class="badge badge-ghost badge-outline gap-1"><x-icon name="folder" class="text-sm" /> {{ $articleCollection->title }}</a>
+                        @endforeach
                         @foreach ($article->tags as $tag)
                             <x-status-badge tone="ghost" outline>{{ $tag->name }}</x-status-badge>
                         @endforeach
@@ -40,6 +40,7 @@
                     </p>
                 </div>
                 <div class="flex flex-wrap items-center gap-2">
+                    <x-collection-add-button :item="$article" />
                     @can('update', $article)
                         <x-icon-btn icon="edit" tone="outline" size="sm"
                                     data-entry-modal-trigger
@@ -142,8 +143,8 @@
                 <ul class="space-y-2">
                     @foreach ($article->links as $link)
                         @php
-                            $linkable = $link->linkable;
-                            $name = $linkable?->getAttribute('title') ?? $linkable?->getAttribute('name') ?? ('#' . $link->linkable_id);
+                            $linkTarget = $link->target;
+                            $name = $linkTarget?->getAttribute('title') ?? $linkTarget?->getAttribute('name') ?? ('#' . $link->target_id);
                         @endphp
                         <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 p-3">
                             <div class="flex min-w-0 items-center gap-2">
@@ -169,6 +170,12 @@
                 </ul>
             @endif
         </x-card>
+
+        {{-- ── Herkunft übernommener Artikel (MVP-815) ───────────────────── --}}
+        <x-import-origin :subject="$article" />
+
+        {{-- ── Verweise und Rückverweise (MVP-811) ───────────────────────── --}}
+        <x-content-references :subject="$article" />
 
         {{-- ── Anhänge (Screenshots etc.) ────────────────────────────────── --}}
         @include('attachments._panel', ['parent' => $article, 'parentType' => 'knowledge'])

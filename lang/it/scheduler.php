@@ -78,7 +78,7 @@ return [
             'lti_rotate_keys' => 'Ruotare le chiavi di firma LTI',
             'lti_prune_nonces' => 'Rimuovere i nonce LTI scaduti',
         ],
-        'attendance' => ['close_open' => 'Chiudere le timbrature dimenticate'],
+        'attendance' => ['close_open' => 'Chiudere le timbrature dimenticate', 'open_reminder' => 'Ricordare la sera le timbrature aperte'],
         'audit' => ['verify' => 'Verificare la catena di audit'],
         'backup' => [
             'check_restore' => 'Verifica dei backup',
@@ -144,6 +144,7 @@ return [
         'metering' => ['generate-invoices' => 'Genera fatture da letture contatore'],
         'maintenance' => ['scan_due' => 'Controllare i piani di manutenzione in scadenza'],
         'notifications' => ['scan_deadlines' => 'Controllare le scadenze e notificare'],
+        'recruiting' => ['scan_uploads' => 'Analizzare i documenti di candidatura alla ricerca di malware'],
         'org' => ['offboard_due' => 'Eseguire le uscite dei collaboratori scadute'],
         'travel_logs' => ['lock_due' => 'Bloccare i viaggi del libretto dopo fine giornata'],
         'news-feed' => ['refresh' => 'Aggiorna il feed di notizie'],

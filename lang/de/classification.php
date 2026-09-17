@@ -13,4 +13,9 @@ return [
         'heading' => 'Datenqualität: Pflichtklassifikationen fehlen',
         'missing' => ':domain fehlt',
     ],
+    'error' => [
+        'requirementUnmet' => 'Pflichtklassifikationen fehlen: :domains',
+        'requirementMin' => 'Pflichtklassifikation „:domain“: mindestens :min Angabe(n) nötig, vorhanden: :actual.',
+        'requirementMax' => 'Pflichtklassifikation „:domain“: höchstens :max Angabe(n) erlaubt, vorhanden: :actual.',
+    ],
 ];

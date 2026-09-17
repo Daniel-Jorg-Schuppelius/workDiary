@@ -73,7 +73,16 @@ class CatalogFetchService {
     private function ftp(SupplierCatalogSource $source): string {
         $this->requireHostPath($source);
 
-        $adapter = new FtpAdapter(FtpConnectionOptions::fromArray([
+        return $this->read(new FtpAdapter($this->ftpOptions($source)), (string) $source->remote_path);
+    }
+
+    /**
+     * Die Verbindungsvorgaben getrennt vom Verbindungsaufbau — nur so lässt
+     * sich die TLS-Vorgabe prüfen, ohne einen FTP-Server zu betreiben
+     * (Regressionsnetz zum Sicherheitsaudit 2026-09-13, `crypto-4`).
+     */
+    private function ftpOptions(SupplierCatalogSource $source): FtpConnectionOptions {
+        return FtpConnectionOptions::fromArray([
             'host' => (string) $source->remote_host,
             'root' => '/',
             'username' => (string) $source->remote_username,
@@ -85,9 +94,7 @@ class CatalogFetchService {
             'ssl' => ! (bool) config('procurement.ftp_allow_plaintext', false),
             'timeout' => 30,
             'passive' => true,
-        ]));
-
-        return $this->read($adapter, (string) $source->remote_path);
+        ]);
     }
 
     private function sftp(SupplierCatalogSource $source): string {

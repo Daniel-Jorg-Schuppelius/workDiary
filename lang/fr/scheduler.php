@@ -78,7 +78,7 @@ return [
             'lti_rotate_keys' => 'Renouveler les clés de signature LTI',
             'lti_prune_nonces' => 'Supprimer les nonces LTI expirés',
         ],
-        'attendance' => ['close_open' => 'Clôturer les pointages oubliés'],
+        'attendance' => ['close_open' => 'Clôturer les pointages oubliés', 'open_reminder' => 'Rappeler les pointages ouverts le soir'],
         'audit' => ['verify' => 'Vérifier la chaîne d\'audit'],
         'backup' => [
             'check_restore' => 'Vérification des sauvegardes',
@@ -144,6 +144,7 @@ return [
         'metering' => ['generate-invoices' => 'Générer les factures de relevés'],
         'maintenance' => ['scan_due' => 'Vérifier les plans de maintenance échus'],
         'notifications' => ['scan_deadlines' => 'Contrôler les échéances et notifier'],
+        'recruiting' => ['scan_uploads' => 'Analyser les documents de candidature à la recherche de logiciels malveillants'],
         'org' => ['offboard_due' => 'Exécuter les départs de collaborateurs échus'],
         'travel_logs' => ['lock_due' => 'Verrouiller les trajets du carnet de bord après la fin de journée'],
         'news-feed' => ['refresh' => 'Actualiser le fil d’actualités'],

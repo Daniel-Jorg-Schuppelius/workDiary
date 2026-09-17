@@ -1,7 +1,7 @@
 ---
 title: "Rechnungen & Belege"
 topic: invoices.manage
-version: 3
+version: 5
 audience: []
 modules:
     - module.vertrieb
@@ -37,7 +37,10 @@ gleichzeitig.
 2. Einzelne Zeiteinträge bei Bedarf per Häkchen **ausschließen** — sie
    bleiben offen und erscheinen im nächsten Lauf.
 3. Entwurf prüfen und ergänzen; je Position sind die
-   **Quell-Zeiteinträge** aufklappbar (1,50 h = 1:30 h).
+   **Quell-Zeiteinträge** aufklappbar (1,50 h = 1:30 h). Bei einem
+   Artikel mit Kupfergewicht fügt das Häkchen **Kupferzuschlag** im
+   Positionsdialog den Zuschlag zum aktuellen DEL-Tagespreis als eigene
+   Position an.
 4. Stellen bzw. versenden — PDF, Versand und externe Synchronisation
    sind Ausgaben desselben dokumentierten Stands.
 5. Bei Zahlungsverzug den **Mahnlauf** nutzen: Stufe 1 erzeugt eine
@@ -45,6 +48,13 @@ gleichzeitig.
    Forderungsübersicht, optionaler Mahngebühr und Zahlungsziel; die
    E-Mail enthält Mahnschreiben und Original-Rechnung. Ein neuer Beleg
    entsteht dabei nicht.
+
+**E-Rechnung.** Die XRechnung entsteht in der UBL-Syntax; verlangt ein
+Empfänger CII, wählen Sie beim Kunden oder beim Versand das Zustellformat
+„XRechnung (XML, CII-Syntax)“. Über Peppol geht immer UBL. Ohne USt-IdNr. —
+etwa als Kleinunternehmer nach § 19 UStG — genügt die Steuernummer in den
+E-Rechnungs-Stammdaten: Sie wird zusätzlich als Verkäuferkennung eingetragen,
+die die Prüfung beim Empfänger verlangt.
 
 ## Beispiel aus der Praxis
 

@@ -141,7 +141,8 @@ class DemoTenantController extends Controller {
 
         $result = $this->seeder->freshOrg(DemoIndustry::fromKey((string) $data['industry']), $actor, $member);
 
-        return redirect()->route('admin.organizations.index')
+        // Die Liste blendet Demo-Organisationen sonst aus (MVP-807).
+        return redirect()->route('admin.organizations.index', ['show_demo' => 1])
             ->with('success', __('Demo-Organisation ":name" wurde angelegt.', ['name' => $result['organization']->name]));
     }
 

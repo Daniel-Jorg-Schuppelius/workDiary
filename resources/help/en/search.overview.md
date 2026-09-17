@@ -1,7 +1,7 @@
 ---
 title: "Search and activity research"
 topic: search.overview
-version: 2
+version: 3
 audience: []
 related: []
 ---
@@ -34,6 +34,12 @@ one click filters on it. The filter bar offers source, period, person, customer
 (including its end customers), end customer and sort order. Without a search
 term but with a customer, end customer or project, the latest activities are
 shown.
+
+"Tags in the results" counts the tags of the entries found; one click narrows to
+a tag, the cross on the filter removes it again. If you may see collections, the
+filter bar also offers **Collection** — it includes its sub-collections. Both
+filters work without a search term too. Only entries you may open are counted,
+so tags of other people's confidential content do not appear.
 
 ## Entry points
 

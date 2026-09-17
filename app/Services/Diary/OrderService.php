@@ -10,15 +10,19 @@
 
 namespace App\Services\Diary;
 
+use App\Enums\Classification\ClassificationRequirementPhase;
 use App\Enums\Diary\Status;
 use App\Enums\Protocol\ProtocolStatus;
 use App\Exceptions\InvalidOrderTransitionException;
 use App\Models\{DiaryEntry, DiaryEntryEvent, Protocol, User};
+use App\Services\Classification\ClassificationRequirementValidator;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 
 class OrderService {
+    public function __construct(private readonly ClassificationRequirementValidator $requirements) {}
+
     public function accept(DiaryEntry $entry, User $actor): DiaryEntry {
         return $this->transition($entry, $actor, 'accept', Status::Accepted, [
             'accepted_at' => CarbonImmutable::now(),
@@ -134,6 +138,12 @@ class OrderService {
 
             if (! in_array($action, $from->allowedActions(), true)) {
                 throw InvalidOrderTransitionException::forAction($from, $this->actionLabel($action));
+            }
+
+            // Pflichtklassifikationen vor dem Abschluss (MVP-795): ein
+            // unvollständig klassifizierter Auftrag wird nicht fertig.
+            if ($action === 'complete') {
+                $this->requirements->assertSatisfied($locked, ClassificationRequirementPhase::BeforeComplete);
             }
 
             $locked->forceFill($attributes + ['status' => $target->value])->save();

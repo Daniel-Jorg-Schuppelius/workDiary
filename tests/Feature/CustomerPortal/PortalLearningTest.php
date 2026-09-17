@@ -11,7 +11,7 @@
 namespace Tests\Feature\CustomerPortal;
 
 use App\Enums\Learning\{LearningAudience, LearningEnrollmentStatus};
-use App\Models\{Customer, User};
+use App\Models\{Customer, Organization, User};
 use App\Models\Learning\{LearningCourse, LearningEnrollment};
 use App\Services\Learning\LearningCourseService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -59,6 +59,41 @@ class PortalLearningTest extends TestCase {
         }
 
         return $course->refresh();
+    }
+
+    /**
+     * Mandantengrenze ausdruecklich, nicht nur ueber die Middleware-Reihenfolge
+     * (Audit 2026-09, `authflow-1`): ein freigegebener Kundenkurs einer fremden
+     * Organisation darf weder im Katalog stehen noch einzeln erreichbar sein.
+     */
+    public function test_fremder_mandant_ist_im_portal_unsichtbar(): void {
+        $eigener = $this->course(['title' => 'Eigener Kundenkurs']);
+
+        // Kurs und Einheit tragen einen globalen Mandanten-Scope; ohne
+        // Kontextwechsel zaehlt die Freigabepruefung die Einheiten des fremden
+        // Kurses gegen die eigene Organisation und schlaegt fehl.
+        $fremdeOrg = Organization::factory()->create();
+        $courses = app(LearningCourseService::class);
+        app()->instance('currentOrganization', $fremdeOrg);
+        $fremder = $courses->createCourse($fremdeOrg, null, [
+            'title' => 'Fremder Kundenkurs',
+            'audiences' => [LearningAudience::Customer->value],
+        ]);
+        $courses->addUnit($fremder, ['title' => 'Bedienung']);
+        $courses->release($fremder->refresh(), null);
+        app()->instance('currentOrganization', $this->organization);
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.learning.index'))
+            ->assertOk()
+            ->assertSee($eigener->title)
+            ->assertDontSee('Fremder Kundenkurs');
+
+        // Die Detailroute erwartet eine Einschreibung; der Einzelzugriff auf
+        // einen fremden Kurs laeuft ueber die Vorschau, die `guardVisible` ruft.
+        $this->actingAs($this->portalUser, 'customer')
+            ->get(route('customer.learning.preview', $fremder->refresh()))
+            ->assertNotFound();
     }
 
     public function test_katalog_zeigt_nur_kurse_mit_kunden_zielgruppe(): void {

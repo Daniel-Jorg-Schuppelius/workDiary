@@ -484,6 +484,10 @@ enum Permission: string implements HasLabel {
     case KnowledgePublish = 'knowledge.publish';
     case KnowledgeDelete = 'knowledge.delete';
 
+    // ── Sammlungen (MVP-809, Feature 155) ──────────────────────────────
+    case CollectionViewAny = 'collection.viewAny';
+    case CollectionManage = 'collection.manage';
+
         // ── Ideenlandkarten (Feature 054, MVP-104) ─────────────────────────
         // Inhaltszugriff läuft über Eigentum + Freigaben (IdeaMapPolicy); diese
         // Rechte steuern nur Menü/Anlage bzw. Admin-Metadatenpflege.
@@ -828,6 +832,7 @@ enum Permission: string implements HasLabel {
             str_starts_with($this->value, 'communication.') => PermissionGroup::Communication,
             str_starts_with($this->value, 'document.') => PermissionGroup::Documents,
             str_starts_with($this->value, 'knowledge.') => PermissionGroup::Knowledge,
+            str_starts_with($this->value, 'collection.') => PermissionGroup::Knowledge,
             str_starts_with($this->value, 'ideas.') => PermissionGroup::Ideas,
             str_starts_with($this->value, 'isms.') => PermissionGroup::Isms,
             str_starts_with($this->value, 'formTemplate.'), str_starts_with($this->value, 'formSubmission.') => PermissionGroup::Forms,

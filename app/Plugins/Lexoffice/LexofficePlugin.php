@@ -37,6 +37,9 @@ class LexofficePlugin extends AbstractPlugin implements \App\Plugins\Contracts\S
 
     public const EXT_TYPE_VOUCHER = 'voucher';
 
+    /** Gegenbeleg zu einer gepushten Auslage (MVP-802). */
+    public const EXT_TYPE_COUNTER_VOUCHER = 'counter_voucher';
+
     public function __construct(
         private readonly LexofficeService $service,
     ) {}

@@ -19,3 +19,6 @@ ou d'un changement forcé. Le modèle de temps de travail définit vos heures
 théoriques pour les comptes de temps et les rapports ; l'abonnement au
 calendrier fournit vos rendez-vous sous forme de flux ICS, dont le lien
 d'accès peut être régénéré ou révoqué à tout moment.
+
+Seules les pages que vous pouvez ouvrir sont proposées. Sans choix personnel,
+la page d'accueil définie par votre organisation pour votre rôle s'applique.

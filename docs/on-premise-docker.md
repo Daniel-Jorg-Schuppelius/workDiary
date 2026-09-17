@@ -59,11 +59,16 @@ abhängige Funktion — die App startet trotzdem.
 | `libfcgi-bin`, `curl`, `ca-certificates`, `tzdata` | Healthcheck, HTTPS-Integrationen, Zeitzonen                       | ja       |
 | `default-jre-headless`, `pdftk-java`             | `common_executables.json` java/java-program (KoSIT-Validator, PDFBox), pdf-toolkit pdftk | `WD_WITH_JAVA=1` |
 | `libreoffice-writer/-calc/-impress`              | `office_executables.json` (Office → PDF)                            | `WD_WITH_LIBREOFFICE=1` |
-| nicht enthalten                                  | `media_executables.json` (ffmpeg, whisper, piper, espeak-ng), wkhtmltopdf (PDF-Writer-Fallback; Dompdf/TCPDF sind reine PHP), ClamAV (`WHISTLEBLOWING_SCANNER`) | — |
+| `WD_WITH_FFMPEG=1` (ffmpeg) / sonst nicht enthalten | `media_executables.json` (ffmpeg fuer Video-Transcoding, Feature 150; whisper, piper, espeak-ng bleiben aussen vor), wkhtmltopdf (PDF-Writer-Fallback; Dompdf/TCPDF sind reine PHP), ClamAV (`WHISTLEBLOWING_SCANNER`) | `WD_WITH_FFMPEG=1` |
 
 Build-Argumente: `PHP_VERSION` (8.4), `NODE_VERSION` (22), `ALPINE_CSP_BUILD`
 (true; muss zum Laufzeit-Flag passen), `WD_WITH_LIBREOFFICE`, `WD_WITH_JAVA`,
 `WD_WITH_INOTIFY`, `WD_VERSION` (wird `APP_VERSION`).
+
+> **Nachgetragen am 2026-09-16 (`MVP-796`, Befund `P12-42`):** `WD_WITH_FFMPEG`
+> fehlte in beiden Aufstellungen, obwohl `Dockerfile` und `compose.yml` das
+> Bau-Argument kennen (Standard 0). Ohne `=1` bleibt die Medien-Warteschlange
+> ohne ffmpeg und das Video-Transcoding unbrauchbar.
 
 ```bash
 docker build -t workdiary:local --build-arg WD_WITH_JAVA=1 .

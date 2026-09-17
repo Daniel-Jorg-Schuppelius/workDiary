@@ -22,6 +22,8 @@
  * enthalten (z. B. Löschen), die der Submit-Guard nicht anfasst.
  */
 
+import { __ } from "./i18n.js";
+
 const init = (root) => {
     if (!root || root.dataset.bulkInitialised === "1") return;
     root.dataset.bulkInitialised = "1";
@@ -117,7 +119,7 @@ const init = (root) => {
             if (typeof window.notifyAction === "function") {
                 window.notifyAction({
                     tone: "warning",
-                    message: "Bitte zuerst mindestens einen Eintrag auswählen.",
+                    message: __("js.bulk.select_one"),
                 });
             }
         }

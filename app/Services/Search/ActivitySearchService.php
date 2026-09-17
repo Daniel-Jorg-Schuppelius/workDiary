@@ -33,6 +33,7 @@ final class ActivitySearchService {
         private readonly SearchEngineResolver $engines,
         private readonly ActivitySearchVisibility $visibility,
         private readonly SearchResultLinker $linker,
+        private readonly ActivitySearchFacets $facets,
     ) {}
 
     public function search(User $user, ActivitySearchCriteria $criteria, ?int $perPage = null, int $page = 1): ActivitySearchResult {
@@ -67,6 +68,11 @@ final class ActivitySearchService {
             $parsed,
             true,
             $relevance,
+            $this->facets->tagCounts(
+                fn (): Builder => $this->baseQuery($user, $organizationId, $criteria, $parsed, $compiler, true),
+                $organizationId,
+                (int) config('search.tag_facet_limit', 15),
+            ),
         );
     }
 
@@ -98,7 +104,11 @@ final class ActivitySearchService {
      * @param  array{from?: string|null, to?: string|null, person?: int|null, customer?: int|null}  $filters
      * @return list<array{id: string, title: string, subtitle: string|null, url: string}>
      */
-    public function typeAhead(User $user, string $term, array $filters = [], int $limit = 5): array {
+    public function typeAhead(User $user, string $term, array $filters = [], ?int $limit = null): array {
+        // Vorgabe aus der Konfiguration (MVP-798, Befund C2-05): der
+        // Schluessel search.type_ahead_limit hatte zuvor keinen Leser,
+        // die 5 stand hart in dieser Signatur.
+        $limit ??= (int) config('search.type_ahead_limit', 5);
         $criteria = new ActivitySearchCriteria(
             query: $term,
             from: $filters['from'] ?? null,
@@ -166,6 +176,12 @@ final class ActivitySearchService {
                     ->from('projects')
                     ->where('organization_id', $organizationId)
                     ->where('parent_id', $projectId)));
+        }
+        if ($criteria->tagId !== null) {
+            $this->facets->applyTag($query, $criteria->tagId);
+        }
+        if ($criteria->collectionId !== null) {
+            $this->facets->applyCollection($query, $user, $organizationId, $criteria->collectionId);
         }
         if ($criteria->personId !== null) {
             $personId = $criteria->personId;

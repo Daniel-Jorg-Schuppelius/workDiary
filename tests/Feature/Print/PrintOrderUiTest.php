@@ -65,6 +65,36 @@ class PrintOrderUiTest extends TestCase {
         $this->actingAs($member)->get(route('print-orders.index'))->assertForbidden();
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13 (`files-6`): Die Ablage der Produktionsdatei
+     * nahm alles bis 256 MB — jede Endung, ohne Prüfung. Die Dokument-Liste
+     * passt hier nicht, die Druckvorstufe braucht EPS, AI und TIFF; eine
+     * ausführbare Datei hat dort aber nichts verloren.
+     */
+    public function test_print_file_upload_rejects_formats_outside_the_allowlist(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $this->activateProfile();
+        $article = Article::factory()->create(['organization_id' => $this->organization->id, 'manufacturable' => true]);
+
+        $this->post(route('print-orders.store'), [
+            'article_id' => $article->sqid,
+            'target_qty' => '10',
+            'unit' => 'Stk',
+            'output_kind' => 'pickup',
+            'due_at' => now()->addDays(4)->toDateString(),
+        ]);
+        $order = PrintOrder::query()->latest('id')->firstOrFail();
+
+        $this->post(route('print-orders.file', $order), [
+            'file' => UploadedFile::fake()->createWithContent('schadhaft.exe', 'MZ'),
+        ])->assertSessionHasErrors('file');
+
+        // Gegenprobe: das Vektorformat der Druckvorstufe bleibt erlaubt.
+        $this->post(route('print-orders.file', $order), [
+            'file' => UploadedFile::fake()->createWithContent('layout.pdf', "%PDF-1.7\nX"),
+        ])->assertSessionHasNoErrors();
+    }
+
     public function test_order_creation_upload_preflight_and_approval_via_web_ui(): void {
         Storage::fake('local');
         $this->activateProfile();

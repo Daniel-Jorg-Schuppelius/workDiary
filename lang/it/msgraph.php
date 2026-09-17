@@ -49,6 +49,8 @@ return [
         'client_secret_help' => 'Salvato cifrato; lasciare vuoto per mantenere il valore memorizzato.',
         'tenant' => 'Tenant (ID directory)',
         'tenant_help' => 'GUID del tenant Entra; vuoto = valore dell’app di istanza (predefinito «common»).',
+        'onenote_import' => 'Consenti importazione OneNote',
+        'onenote_import_help' => 'Abilita la connessione OneNote in sola lettura (Notes.Read). Disattivato: nessuna autorizzazione aggiuntiva, nemmeno nel consenso a livello di tenant.',
         'tenant_invalid' => 'Il tenant deve essere un GUID di directory (oppure common/organizations/consumers).',
     ],
     'health' => [

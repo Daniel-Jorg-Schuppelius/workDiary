@@ -25,6 +25,15 @@ Se la tua organizzazione ha installato un profilo di settore, la pagina
 mostra la sua raccomandazione di moduli. Non viene mai applicata
 automaticamente: la confermi tu.
 
+## Pagina iniziale per ruolo
+
+Sotto i moduli stabilisci dove arriva un ruolo dopo l'accesso – ad esempio la
+timbratrice per il personale esterno o il flusso dei documenti per la
+contabilità. La scelta personale nel profilo ha sempre la precedenza. Se una
+persona ha più ruoli, vale il primo nell'ordine mostrato per cui è impostata
+una pagina. Una pagina che la persona non può aprire viene saltata; senza
+impostazione resta quella predefinita.
+
 ## Limiti
 
 - I moduli senza licenza non si attivano qui; serve la gestione licenze.

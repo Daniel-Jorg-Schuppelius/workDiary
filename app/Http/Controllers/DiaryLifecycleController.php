@@ -10,7 +10,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Exceptions\InvalidOrderTransitionException;
+use App\Exceptions\{ClassificationRequirementException, InvalidOrderTransitionException};
 use App\Models\{DiaryEntry, Protocol, User};
 use App\Services\Diary\OrderService;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -36,7 +36,7 @@ class DiaryLifecycleController extends Controller {
                 'cancel' => $orders->cancel($diary, $actor, $this->requiredText($request, 'reason', 2000)),
                 default => abort(404),
             };
-        } catch (InvalidOrderTransitionException|InvalidArgumentException $e) {
+        } catch (ClassificationRequirementException|InvalidOrderTransitionException|InvalidArgumentException $e) {
             return back()->withErrors(['lifecycle' => $e->getMessage()]);
         }
 

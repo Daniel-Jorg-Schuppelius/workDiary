@@ -156,6 +156,17 @@ class Organization extends Model {
         });
     }
 
+    /**
+     * IDs der Demo-Organisationen (MVP-807, Entscheid P12-17): Plattformweite
+     * Zahlen und Übersichten schließen sie aus (Demo-Konzept, Abschnitt 6).
+     *
+     * @return list<int>
+     */
+    public static function demoIds(): array {
+        // TENANT-BYPASS: Organization ist Root-Tenant; gesucht wird plattformweit.
+        return array_values(array_map('intval', static::withoutGlobalScopes()->where('is_demo', true)->pluck('id')->all()));
+    }
+
     /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo {
         return $this->belongsTo(User::class, 'owner_id');

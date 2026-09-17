@@ -102,12 +102,17 @@
                     <td>{{ $variant->optionValues->pluck('label')->implode(', ') ?: '—' }}</td>
                     <td><span class="badge badge-sm {{ $variant->status->value === 'active' ? 'badge-success' : 'badge-ghost' }}">{{ $variant->status->label() }}</span></td>
                     <td class="text-right">
-                        @if ($canManage && $variant->status->value !== 'retired')
-                            <form method="POST" action="{{ route('articles.variants.retire', [$article, $variant]) }}">
-                                @csrf
-                                <x-icon-btn icon="archive" size="xs" type="submit" :title="__('article.action.retire')" />
-                            </form>
-                        @endif
+                        <div class="flex items-center justify-end gap-1">
+                            <x-icon-btn icon="label" size="xs" tone="ghost"
+                                        :href="route('inventory.labels.variant', $variant)"
+                                        target="_blank" :title="__('Etikett drucken')" />
+                            @if ($canManage && $variant->status->value !== 'retired')
+                                <form method="POST" action="{{ route('articles.variants.retire', [$article, $variant]) }}">
+                                    @csrf
+                                    <x-icon-btn icon="archive" size="xs" type="submit" :title="__('article.action.retire')" />
+                                </form>
+                            @endif
+                        </div>
                     </td>
                 </tr>
             @empty

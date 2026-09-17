@@ -107,6 +107,12 @@ return [
         'configured_at' => 'Dernière configuration : :date',
         'not_licensed_hint' => 'Non inclus dans le plan actuel — extensible via la gestion des licences.',
     ],
+    'startpages' => [
+        'heading' => 'Page d\'accueil par rôle',
+        'hint' => 'Où une personne arrive après la connexion. Son propre choix dans le profil prime. Avec plusieurs rôles, le premier de cet ordre pour lequel une page est définie s\'applique. Une page que la personne ne peut pas ouvrir est ignorée.',
+        'default' => 'Par défaut',
+        'saved' => 'Pages d\'accueil enregistrées.',
+    ],
     'flash' => [
         'saved' => 'Périmètre fonctionnel enregistré (:disabled désactivés, :enabled activés). Aucune donnée supprimée.',
         'no_recommendation' => 'Aucune recommandation de profil métier pour cette organisation.',

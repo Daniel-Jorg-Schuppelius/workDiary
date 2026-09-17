@@ -163,6 +163,22 @@ final class LexofficeVoucherMaterializationTest extends TestCase {
         $this->assertSame(0, $result['created']);
     }
 
+    /**
+     * Gate-Abdeckung fuer den Plugin-Befehl (Vollscan 2026-09-15, `C1-10`):
+     * `lexoffice:materialize-voucher-files` ist Pflichtschritt vor dem Abschluss
+     * eines Buchhaltungswechsels und war bis dahin von keinem Test beruehrt.
+     * Ohne hinterlegten Zugang fasst der Lauf keinen Beleg an und endet sauber.
+     */
+    public function test_materialize_command_skips_organizations_without_configuration(): void {
+        $voucher = $this->voucher();
+
+        $this->artisan('lexoffice:materialize-voucher-files')
+            ->expectsOutputToContain('nicht konfiguriert')
+            ->assertExitCode(0);
+
+        $this->assertNull($voucher->refresh()->file_materialized_at);
+    }
+
     public function test_completion_is_blocked_until_files_are_materialized(): void {
         $this->voucher();
         $run = \App\Models\Migration\AccountingMigrationRun::factory()->create([

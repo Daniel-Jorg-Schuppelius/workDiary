@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Reporting;
 
-use App\Models\{Article, Customer, Invoice, InvoiceItem, Organization, User};
+use App\Models\{Article, Customer, ExternalArticleMapping, ExternalReference, Invoice, InvoiceItem, LexofficeArticle, LexofficeVoucher, LexofficeVoucherLine, Organization, User};
+use App\Plugins\Lexoffice\{LexofficeInvoiceService, LexofficePlugin};
 use App\Services\Reporting\ProductRevenueReportBuilder;
 use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -138,6 +139,109 @@ class ProductRevenueReportTest extends TestCase {
         $this->assertSame(71.4, $byName['Montage']['share']);
         // Umsatzstärkster zuerst, Sammelposten zuletzt.
         $this->assertSame(['Montage', 'Schraube M8', __('ohne Artikelbezug')], array_column($result['rows'], 'name'));
+    }
+
+    // ── Lexoffice-Belegzeilen und Kategorien (MVP-804) ─────────────────
+
+    /** @param list<array{0: ?string, 1: string, 2: string, 3?: string}> $lines [external_article_id, quantity, total_net, type] */
+    private function lexofficeVoucher(string $type, string $date, array $lines, string $status = 'open', ?string $externalId = null): LexofficeVoucher {
+        $voucher = LexofficeVoucher::query()->create([
+            'organization_id' => $this->organization->id,
+            'external_id' => $externalId ?? 'lx-' . fake()->unique()->numerify('#####'),
+            'voucher_type' => $type,
+            'voucher_status' => $status,
+            'voucher_date' => $date,
+            'currency' => 'EUR',
+        ]);
+        foreach ($lines as $i => $line) {
+            LexofficeVoucherLine::query()->create([
+                'organization_id' => $this->organization->id,
+                'voucher_id' => $voucher->id,
+                'position' => $i + 1,
+                'type' => $line[3] ?? 'material',
+                'external_article_id' => $line[0],
+                'name' => 'Lexoffice-Position ' . ($i + 1),
+                'quantity' => $line[1],
+                'unit_net' => '0.00',
+                'total_net' => $line[2],
+                'currency' => 'EUR',
+            ]);
+        }
+
+        return $voucher;
+    }
+
+    public function test_mirrored_lexoffice_lines_join_the_mapped_article(): void {
+        ExternalArticleMapping::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_id' => 'lx-screw',
+            'article_id' => $this->screw->id,
+            'sync_status' => 'linked',
+        ]);
+        // Rechnung: 4 Schrauben = 8 €; Gutschrift: 1 Schraube = −2 €; Entwurf und Storno zählen nicht.
+        $this->lexofficeVoucher('invoice', '2030-06-11', [['lx-screw', '4', '8.00'], [null, '1', '0.00', 'text']]);
+        $this->lexofficeVoucher('creditnote', '2030-06-12', [['lx-screw', '1', '-2.00']]);
+        $this->lexofficeVoucher('invoice', '2030-06-13', [['lx-screw', '50', '100.00']], 'draft');
+        $this->lexofficeVoucher('invoice', '2030-06-14', [['lx-screw', '50', '100.00']], 'voided');
+
+        $result = $this->build();
+        $screw = $this->byName($result['rows'])['Schraube M8'];
+
+        $this->assertSame(36.0, $screw['net']);
+        $this->assertSame(18.0, $screw['quantity']);
+        $this->assertSame([ProductRevenueReportBuilder::SOURCE_LOCAL, ProductRevenueReportBuilder::SOURCE_LEXOFFICE], $screw['sources']);
+        $this->assertSame(286.0, $result['total']);
+        $this->assertSame(6.0, $result['lexofficeNet']);
+    }
+
+    public function test_lexoffice_article_without_mapping_gets_its_own_row(): void {
+        LexofficeArticle::query()->create([
+            'organization_id' => $this->organization->id,
+            'external_id' => 'lx-cable',
+            'name' => 'Kabel NYM (nur Lexoffice)',
+            'article_number' => 'LX-9',
+        ]);
+        $voucher = $this->lexofficeVoucher('invoice', '2030-06-11', [['lx-cable', '10', '30.00']]);
+        LexofficeVoucherLine::query()->where('voucher_id', $voucher->id)->update([
+            'lexoffice_article_id' => LexofficeArticle::query()->where('external_id', 'lx-cable')->value('id'),
+        ]);
+
+        $row = $this->byName($this->build()['rows'])['Kabel NYM (nur Lexoffice)'];
+
+        $this->assertNull($row['articleId']);
+        $this->assertSame('LX-9', $row['number']);
+        $this->assertSame([ProductRevenueReportBuilder::SOURCE_LEXOFFICE], $row['sources']);
+    }
+
+    public function test_voucher_created_from_a_local_invoice_is_not_counted_twice(): void {
+        $local = Invoice::query()->where('status', Invoice::STATUS_PAID)->firstOrFail();
+        ExternalReference::query()->create([
+            'organization_id' => $this->organization->id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficeInvoiceService::EXT_TYPE_INVOICE,
+            'referenceable_type' => $local->getMorphClass(),
+            'referenceable_id' => $local->id,
+            'external_id' => 'lx-from-local',
+        ]);
+        $this->lexofficeVoucher('invoice', '2030-06-20', [[null, '5', '10.00']], 'paid', 'lx-from-local');
+
+        $this->assertSame(280.0, $this->build()['total']);
+    }
+
+    public function test_revenue_is_summed_per_article_category(): void {
+        $this->screw->forceFill(['category' => 'Befestigung'])->save();
+        $this->service->forceFill(['category' => 'Dienstleistung'])->save();
+
+        $categories = collect($this->build()['categories'])->keyBy(fn (array $c): string => $c['category'] ?? '—');
+
+        $this->assertSame(200.0, $categories['Dienstleistung']['net']);
+        $this->assertSame(30.0, $categories['Befestigung']['net']);
+        $this->assertSame(50.0, $categories['—']['net']);
+        $this->assertSame(1, $categories['Befestigung']['articles']);
+        $this->assertNull(collect($this->build()['categories'])->last()['category']);
+
+        $this->getWithRange()->assertOk()->assertSee('Befestigung')->assertSee(__('Umsatz nach Kategorie'));
     }
 
     public function test_items_without_article_are_bundled(): void {

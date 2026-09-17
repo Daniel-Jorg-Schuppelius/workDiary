@@ -38,3 +38,14 @@ Erfasser oder eine Person mit erweiterten Dokumentrechten.
 Risiken: **Löschen entfernt das Dokument mit allen Versionen**
 (Soft-Delete, nur mit Löschberechtigung). Versionen selbst sind
 unveränderlich – Korrekturen erfolgen immer über eine neue Version.
+
+## Belege versenden
+
+Belege — Rechnungen, Angebote, Lieferscheine — lassen sich direkt aus dem
+Vorgang versenden. Jeder Versand wird mit Empfänger, Zeitpunkt und Kanal
+festgehalten, sodass später nachvollziehbar ist, **was wann an wen** ging.
+
+Die **Versandhistorie** hängt am Beleg, nicht am Postfach: Auch wer keinen
+Zugriff auf das Mailkonto hat, sieht, ob und wann versendet wurde. Ein
+erneuter Versand erzeugt einen weiteren Eintrag und überschreibt den alten
+nicht.

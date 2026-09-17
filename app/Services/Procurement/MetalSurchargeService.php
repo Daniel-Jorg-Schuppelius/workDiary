@@ -90,6 +90,45 @@ class MetalSurchargeService {
         return $difference->times((float) $article->copper_weight)->withScale(4);
     }
 
+    /**
+     * Kupferzuschlag als eigene Rechnungs- oder Angebotsposition (MVP-804) —
+     * dieselbe Rechnung wie im OCI-Warenkorb, gleiche Menge und Einheit wie die
+     * Artikelposition. Null, wenn kein Zuschlag anfällt.
+     *
+     * `$lumpSum`: Für Positionen mit Cent-Preisen (Angebote) wird der Zuschlag als
+     * Gesamtbetrag (Menge 1) angelegt — ein Stückzuschlag von 0,0215 € fiele sonst
+     * auf 0,02 € und verfälschte die Summe.
+     *
+     * @return array{description: string, quantity: string, unit: ?string, unit_price: string}|null
+     */
+    public function salesSurchargeItem(?int $articleId, string $quantity, ?string $unit, bool $lumpSum = false): ?array {
+        $article = $articleId !== null ? \App\Models\Article::query()->find($articleId) : null;
+        if ($article === null) {
+            return null;
+        }
+        $surcharge = $this->salesSurcharge($article);
+        if ($surcharge === null) {
+            return null;
+        }
+
+        $description = (string) __('b2b_catalog.copper_surcharge_position', ['number' => (string) $article->number]);
+        if ($lumpSum) {
+            return [
+                'description' => $description . ' (' . $quantity . ' ' . trim((string) $unit) . ' × ' . $surcharge->getAmount() . ')',
+                'quantity' => '1',
+                'unit' => null,
+                'unit_price' => $surcharge->times((float) $quantity)->withScale(2)->getAmount(),
+            ];
+        }
+
+        return [
+            'description' => $description,
+            'quantity' => $quantity,
+            'unit' => $unit,
+            'unit_price' => $surcharge->getAmount(),
+        ];
+    }
+
     /** Jüngste Notierung eines Metalls (CU, AL, …) der Organisation. */
     public function currentQuotation(int $organizationId, string $metal): ?MetalQuotation {
         if (trim($metal) === '') {

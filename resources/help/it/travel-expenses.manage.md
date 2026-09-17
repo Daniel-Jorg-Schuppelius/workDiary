@@ -41,3 +41,30 @@ Tre regole:
 
 I file della spesa vengono trasmessi insieme — senza file il documento non
 vale nulla per la contabilità.
+
+### Correzione con documento di storno
+
+Se qualcosa non va in una spesa già trasmessa, la correggi nella finestra del
+giustificativo **con un documento di storno**, indicando obbligatoriamente il
+motivo. Viene trasmessa una nota di credito d'acquisto dello stesso importo che
+annulla il documento originale in contabilità. Contemporaneamente nasce una nuova
+spesa in **bozza** con riferimento a quella vecchia; segue approvazione e
+trasmissione come qualsiasi altra.
+
+Se la spesa originale era approvata ma non ancora rimborsata, viene annullata:
+altrimenti verrebbero pagate entrambe. Se era già rimborsata, la bozza avvisa che
+va rimborsata solo la differenza.
+
+## Scansionare il giustificativo invece di digitarlo
+
+Invece di inserire importo, data ed esercente a mano, puoi **fotografare il
+giustificativo o caricarlo in PDF**. Il riconoscimento legge i campi consueti e
+precompila il modulo.
+
+Il risultato è una **proposta**, non una registrazione conclusa: verifica
+importo, data, aliquota ed esercente prima di salvare. Foto poco illuminate,
+carta termica e giustificativi scritti a mano sono le cause più frequenti di
+letture errate.
+
+Il giustificativo originale resta allegato invariato: il riconoscimento non lo
+sostituisce, ti risparmia solo la digitazione.

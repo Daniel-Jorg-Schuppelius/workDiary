@@ -45,11 +45,4 @@ class PdfRenderer {
         );
     }
 
-    public function store(Timesheet $timesheet): string {
-        $bytes = $this->render($timesheet);
-        $path = sprintf('timesheets/pdf/%d.pdf', $timesheet->id);
-        Storage::disk('local')->put($path, $bytes);
-
-        return $path;
-    }
 }

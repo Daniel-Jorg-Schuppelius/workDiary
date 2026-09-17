@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Location;
 
 use App\Models\Location\LocationPoint;
+use App\Services\Privacy\LegalHoldService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 
@@ -43,6 +44,8 @@ class PurgePointsCommand extends Command {
         $deleted = LocationPoint::query()
             ->whereNotNull('processed_at')
             ->where('recorded_at', '<', $cutoff)
+            // Legal Hold (MVP-801): Rohpunkte gesperrter Personen bleiben.
+            ->whereNotIn('user_id', app(LegalHoldService::class)->heldUserIds())
             ->delete();
 
         $this->info("Gelöscht: {$deleted} Standort-Rohpunkte älter als {$days} Tage.");

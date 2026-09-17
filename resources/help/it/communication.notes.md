@@ -1,7 +1,7 @@
 ---
 title: "Note di comunicazione"
 topic: communication.notes
-version: 2
+version: 3
 audience: []
 related:
     - diary-entries.edit
@@ -30,6 +30,10 @@ dalle più recenti – che siano interne o collegate a un cliente, a un interven
 o a un progetto. Filtri: collocazione (interna o cliente), cliente, tipo e
 follow-up aperti; la ricerca considera oggetto e contenuto. Le note riservate di
 altre persone compaiono solo con l'autorizzazione corrispondente.
+
+Assegna i **tag** nella finestra della nota, più tag separati da una virgola.
+L'elenco li usa come filtro e la ricerca trova una nota anche tramite il suo
+tag. Il filtro propone solo tag di note che puoi vedere.
 
 ## Inserimento rapido
 

@@ -262,4 +262,37 @@ class PrivacyIncidentTest extends TestCase {
 
         $this->actingAs($officer)->get(route('dataprotection.incidents.show', $foreign))->assertNotFound();
     }
+
+    /**
+     * Benachrichtigung der Betroffenen, Art. 34 DSGVO (Vollscan 2026-09-15,
+     * `C1-08` / `MVP-798`): `subjects_notified_at` setzte nur `markReported`, und
+     * dafür gab es keinen Einstieg. Die Behördenmeldung bleibt davon unberührt.
+     */
+    public function test_data_subject_notification_is_recorded_separately_from_the_authority_report(): void {
+        $org = Organization::factory()->create();
+        $officer = $this->officer($org);
+
+        $this->actingAs($officer)->post(route('dataprotection.incidents.store'), [
+            'type' => IncidentType::UnauthorizedAccess->value,
+            'summary' => 'Fehlversand einer Gehaltsliste',
+            'controller_role' => 'controller',
+        ])->assertRedirect();
+        $incident = Incident::query()->latest('id')->firstOrFail();
+
+        $this->actingAs($officer)->get(route('dataprotection.incidents.show', $incident))
+            ->assertOk()
+            ->assertSee(__('Benachrichtigung der Betroffenen vermerken'));
+
+        $this->actingAs($officer)
+            ->post(route('dataprotection.incidents.reported', $incident), ['subjects' => '1'])
+            ->assertRedirect();
+
+        $incident->refresh();
+        $this->assertNotNull($incident->subjects_notified_at);
+        $this->assertNull($incident->authority_notified_at);
+
+        $this->actingAs($officer)->get(route('dataprotection.incidents.show', $incident))
+            ->assertOk()
+            ->assertSee(__('Betroffene benachrichtigt'));
+    }
 }

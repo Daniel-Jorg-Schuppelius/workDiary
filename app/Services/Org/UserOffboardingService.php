@@ -83,6 +83,29 @@ class UserOffboardingService {
      * Austritt einleiten: Datum setzen; liegt es nicht in der Zukunft, wird
      * sofort vollzogen. Zukünftige Austritte vollzieht `runDue()` am Stichtag.
      */
+    /**
+     * Übergabeliste für den Austritts-Dialog (MVP-798, Befund P1-21): was die
+     * Person noch hält oder offen hat — aus dem Bestand berechnet, kein eigenes
+     * Modell. Zutrittsmedien sperren den Austritt weiterhin im Controller.
+     *
+     * @return array{media: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AccessMedium>, assets: \Illuminate\Database\Eloquent\Collection<int, \App\Models\AssetAssignment>, tasks: \Illuminate\Database\Eloquent\Collection<int, \App\Models\Task>, open_attendances: int}
+     */
+    public function handoverChecklist(User $member): array {
+        return [
+            'media' => app(\App\Services\Access\AccessMediumService::class)->openMediaFor($member),
+            'assets' => \App\Models\AssetAssignment::query()->open()
+                ->where('assigned_to_user_id', $member->id)
+                ->with('asset')
+                ->get(),
+            'tasks' => \App\Models\Task::query()
+                ->whereHas('assignees', fn ($query) => $query->whereKey($member->id))
+                ->where('status', '!=', \App\Enums\Task\TaskStatus::Done->value)
+                ->orderBy('title')
+                ->get(),
+            'open_attendances' => \App\Models\Attendance::query()->open()->where('user_id', $member->id)->count(),
+        ];
+    }
+
     public function initiate(User $member, CarbonImmutable $leftAt, User $actor): void {
         $member->forceFill(['left_at' => $leftAt->toDateString()])->save();
         $member->audit('user.offboardingScheduled', [

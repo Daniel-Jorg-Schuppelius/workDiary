@@ -107,6 +107,12 @@ return [
         'configured_at' => 'Ultima configurazione: :date',
         'not_licensed_hint' => 'Non incluso nel piano attuale; ampliabile tramite la gestione licenze.',
     ],
+    'startpages' => [
+        'heading' => 'Pagina iniziale per ruolo',
+        'hint' => 'Dove arriva una persona dopo l\'accesso. La propria scelta nel profilo ha la precedenza. Con più ruoli vale il primo in questo ordine per cui è impostata una pagina. Una pagina che la persona non può aprire viene saltata.',
+        'default' => 'Predefinita',
+        'saved' => 'Pagine iniziali salvate.',
+    ],
     'flash' => [
         'saved' => 'Ambito funzionale salvato (:disabled disattivati, :enabled attivati). Nessun dato eliminato.',
         'no_recommendation' => 'Per questa organizzazione non esiste una raccomandazione del profilo di settore.',

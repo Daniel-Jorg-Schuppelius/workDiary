@@ -34,14 +34,17 @@
                        class="input input-sm input-bordered w-full">
             </x-filter-field>
 
-            <x-filter-field :label="__('knowledge.field.category')" for="knowledge-category" class="min-w-40">
-                <select id="knowledge-category" name="category" class="select select-sm select-bordered w-full">
-                    <option value="all">{{ __('knowledge.filter.all') }}</option>
-                    @foreach ($categories as $category)
-                        <option value="{{ $category }}" @selected($filters['category'] === $category)>{{ $category }}</option>
-                    @endforeach
-                </select>
-            </x-filter-field>
+            {{-- Sammlung statt Freitext-Kategorie (MVP-814), samt Untersammlungen. --}}
+            @if ($collectionTree !== [])
+                <x-filter-field :label="__('collections.field.collection')" for="knowledge-collection" class="min-w-40">
+                    <select id="knowledge-collection" name="collection" class="select select-sm select-bordered w-full">
+                        <option value="">{{ __('knowledge.filter.all') }}</option>
+                        @foreach ($collectionTree as $row)
+                            <option value="{{ $row['collection']->sqid }}" @selected($filters['collection'] === $row['collection']->sqid)>{{ str_repeat('– ', $row['depth'] - 1) }}{{ $row['collection']->title }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+            @endif
 
             @if ($canModerate)
                 <x-filter-field :label="__('knowledge.field.status')" for="knowledge-status" class="min-w-40">
@@ -66,7 +69,7 @@
             <x-slot:head>
                 <tr>
                     <th>{{ __('knowledge.field.title') }}</th>
-                    <th>{{ __('knowledge.field.category') }}</th>
+                    <th>{{ __('collections.title.index') }}</th>
                     <th>{{ __('knowledge.field.status') }}</th>
                     <th>{{ __('knowledge.field.helpful') }}</th>
                     <th>{{ __('knowledge.field.creator') }}</th>
@@ -89,7 +92,13 @@
                             </span>
                         @endif
                     </td>
-                    <td class="text-base-content/70">{{ $article->category ?? '—' }}</td>
+                    <td class="text-base-content/70">
+                        @forelse ($articleCollections[$article->id] ?? [] as $articleCollection)
+                            <a href="{{ route('knowledge.index', ['collection' => $articleCollection->sqid]) }}" class="badge badge-ghost badge-sm">{{ $articleCollection->title }}</a>
+                        @empty
+                            —
+                        @endforelse
+                    </td>
                     <td><x-status-badge :tone="$article->status->tone()">{{ $article->status->label() }}</x-status-badge></td>
                     <td>
                         <span class="flex items-center gap-2 text-sm">

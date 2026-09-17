@@ -54,3 +54,12 @@ conserva de forma permanente y complementa el registro de auditoría.
 La exportación lee exclusivamente datos existentes — no modifica ni
 documentos ni datos maestros y puede repetirse tantas veces como se
 desee.
+
+**Documentación del procedimiento:** Además de exportar datos, la normativa
+exige describir *cómo* se generan: desde el registro y el tratamiento hasta la
+conservación. La aplicación compone esa documentación a partir del estado real
+del sistema: módulos activos, rangos de numeración, plazos de conservación,
+roles y registro de auditoría. Lo que cambia en la operación cambia también en
+la documentación, a diferencia de un texto redactado una sola vez. Revísala
+antes de cada inspección y añade las partes organizativas que ningún sistema
+puede conocer.

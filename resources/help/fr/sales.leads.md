@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -13,6 +13,13 @@ Un **lead** est un prospect **avant** le statut client — issu d’une
 recommandation, du web, d’un salon ou d’un appel. La fiche lead tient contact,
 source et besoin ; la qualification passe par les **notes de communication**
 avec relance, comme chez un client.
+
+**Leads issus de prises de rendez-vous.** Lorsqu’une personne sans fiche client
+réserve via Calendly, un lead avec la source « Prise de rendez-vous » peut être
+créé. Chaque organisation l’active dans les paramètres Calendly ; c’est désactivé
+par défaut. Si un client existant peut correspondre, aucun lead n’est créé — la
+réservation attend alors dans la boîte d’attribution. Une nouvelle réservation
+de la même adresse est rattachée au lead ouvert.
 
 ## Le pipeline
 

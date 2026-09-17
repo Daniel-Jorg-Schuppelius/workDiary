@@ -271,7 +271,9 @@ class LexofficeMapper {
             })->values()->all();
 
         return [
-            'voucherType' => 'salesinvoice',
+            // POST /vouchers erwartet `type`; `voucherType` heißt das Feld nur in der
+            // voucherlist. Die SDK-Entität verwarf den falschen Schlüssel still (MVP-802).
+            'type' => 'salesinvoice',
             'voucherNumber' => null,
             'voucherDate' => $to->format('Y-m-d') . 'T00:00:00.000+01:00',
             'totalGrossAmount' => null,
@@ -287,7 +289,7 @@ class LexofficeMapper {
 
     /**
      * Auslage → Einkaufsbeleg-Payload (Feature 106): derselbe Endpunkt wie die
-     * Faktura-Übergabe, nur `voucherType: purchaseinvoice`.
+     * Faktura-Übergabe, nur `type: purchaseinvoice`.
      *
      * Der Händler ist in aller Regel KEIN Lexoffice-Kontakt — deshalb
      * `useCollectiveContact` (Sammelkontakt) und der Händlername im Belegtext,
@@ -302,7 +304,7 @@ class LexofficeMapper {
         $taxRate = $expense->tax_rate?->getValue()->toFloat() ?? 0.0;
 
         $payload = [
-            'voucherType' => 'purchaseinvoice',
+            'type' => 'purchaseinvoice',
             'voucherNumber' => null,
             'voucherDate' => $expense->date->format('Y-m-d') . 'T00:00:00.000+01:00',
             'totalGrossAmount' => round($gross, 2),
@@ -321,6 +323,21 @@ class LexofficeMapper {
         if ($fileIds !== []) {
             $payload['files'] = $fileIds;
         }
+
+        return $payload;
+    }
+
+    /**
+     * Einkaufsgutschrift als Gegenbeleg (MVP-802): gleiche Beträge wie der
+     * ursprüngliche Beleg, Datum der Korrektur, Verweis im Vermerk.
+     *
+     * @return array<string, mixed>
+     */
+    public function expenseToCounterVoucherPayload(\App\Models\Expense $expense, string $categoryId, string $originalReference, string $reason): array {
+        $payload = $this->expenseToVoucherPayload($expense, $categoryId);
+        $payload['type'] = 'purchasecreditnote';
+        $payload['voucherDate'] = now()->format('Y-m-d') . 'T00:00:00.000+01:00';
+        $payload['remark'] = mb_substr(trim(sprintf('Gegenbeleg zu %s: %s', $originalReference, $reason)), 0, 255);
 
         return $payload;
     }

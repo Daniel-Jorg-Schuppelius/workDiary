@@ -14,7 +14,7 @@ return [
     'group_source' => 'Source document', 'group_target' => 'Target and output', 'group_invoice' => 'Invoice data', 'group_einvoice' => 'E-invoice',
     'file' => 'Invoice file', 'file_hint' => 'PDF, XML (XRechnung), DOCX, DOC, XLSX or XLS up to 20 MB. ZUGFeRD PDFs and XRechnung XML are imported structured; OCR is used for PDF scans when available.', 'delivery_format' => 'Preferred output format',
     'review_hint' => 'The original remains unchanged in the DMS. Automatically recognised data is a suggestion, not an approval.',
-    'format' => ['pdf' => 'PDF', 'xrechnung' => 'XRechnung (XML)', 'zugferd' => 'ZUGFeRD (hybrid PDF)', 'pdf_xrechnung' => 'PDF and XRechnung (XML)'],
+    'format' => ['pdf' => 'PDF', 'xrechnung' => 'XRechnung (XML)', 'xrechnung_cii' => 'XRechnung (XML, CII syntax)', 'zugferd' => 'ZUGFeRD (hybrid PDF)', 'pdf_xrechnung' => 'PDF and XRechnung (XML)'],
     'default_line' => 'Services according to original invoice :number', 'source_title' => 'Original file for invoice :number', 'source_description' => 'Unchanged source document of the invoice import.',
     'success' => 'Invoice file read and created as a draft. Please review invoice data and line items.', 'options_title' => 'Invoice and e-invoice data', 'options_action' => 'E-invoice data', 'options_saved' => 'Invoice and e-invoice data saved.',
     'invoice_number' => 'Invoice number', 'currency' => 'Currency', 'issue_date' => 'Invoice date', 'due_date' => 'Due date', 'buyer_reference' => 'Buyer reference / routing ID',

@@ -96,7 +96,8 @@
                                 <option value="{{ $tone }}" @selected(old('tone') === $tone)>{{ $tone }}</option>
                             @endforeach
                         </x-select-field>
-                        <x-textarea-field name="text" :label="__('learning.field.block_text')" rows="4" span="2" maxlength="5000" :value="old('text')" />
+                        <x-textarea-field name="text" :label="__('learning.field.block_text')" rows="4" span="2" maxlength="5000"
+                                          :hint="__('learning.help.block_text')" :value="old('text')" />
                         <x-textarea-field name="items" :label="__('learning.field.block_items')" rows="3" span="2" maxlength="5000"
                                           :hint="__('learning.help.block_items')" :value="old('items')" />
                         <x-input-field name="url" type="url" :label="__('learning.field.block_url')" maxlength="2000" :value="old('url')" />
@@ -107,6 +108,21 @@
                                        :label="__('learning.field.block_require_percent')" :value="old('require_percent')" />
                         <x-checkbox-field name="autoplay" :label="__('learning.field.block_autoplay')" :hint="__('learning.help.block_autoplay')" :checked="(bool) old('autoplay')" />
                         <x-checkbox-field name="remember_position" :label="__('learning.field.block_remember_position')" :hint="__('learning.help.block_remember_position')" :checked="(bool) old('remember_position')" />
+                        {{-- MVP-806: Felder der Blockarten Code, Akkordeon, Tabelle, Frage, Prozedur, Galerie. --}}
+                        <x-input-field name="language" :label="__('learning.field.block_language')" maxlength="40" :value="old('language')"
+                                       :hint="__('learning.help.block_language')" />
+                        <x-select-field name="procedure_template_id" :label="__('learning.field.block_procedure')">
+                            <option value="">–</option>
+                            @foreach ($procedureTemplates as $template)
+                                <option value="{{ $template->sqid }}" @selected(old('procedure_template_id') === $template->sqid)>{{ $template->name }} ({{ $template->code }})</option>
+                            @endforeach
+                        </x-select-field>
+                        <x-textarea-field name="sections" :label="__('learning.field.block_sections')" rows="4" span="2" maxlength="10000"
+                                          :hint="__('learning.help.block_sections')" :value="old('sections')" />
+                        <x-textarea-field name="rows" :label="__('learning.field.block_table')" rows="4" span="2" maxlength="10000"
+                                          :hint="__('learning.help.block_rows', ['rows' => \App\Services\Learning\LearningContentService::TABLE_MAX_ROWS, 'columns' => \App\Services\Learning\LearningContentService::TABLE_MAX_COLUMNS])" :value="old('rows')" />
+                        <x-textarea-field name="explanation" :label="__('learning.field.block_explanation')" rows="2" span="2" maxlength="2000"
+                                          :hint="__('learning.help.block_explanation')" :value="old('explanation')" />
                         <div class="sm:col-span-2">
                             {{-- Bild, Datei und Video tragen ihre Quelle als Anhang
                                  der Lerneinheit — ohne Upload bleibt der Block leer. --}}
@@ -115,6 +131,15 @@
                                    class="file-input file-input-bordered file-input-sm w-full">
                             <p class="mt-1 text-xs text-muted">{{ __('learning.help.block_media', ['mb' => \App\Services\Attachments\FileAttacher::maxMb()]) }}</p>
                         </div>
+                        <div class="sm:col-span-2">
+                            <label class="label" for="block-gallery"><span class="label-text">{{ __('learning.field.block_gallery') }}</span></label>
+                            <input type="file" id="block-gallery" name="gallery[]" multiple accept="image/*"
+                                   aria-describedby="block-gallery-hint"
+                                   class="file-input file-input-bordered file-input-sm w-full">
+                            <p id="block-gallery-hint" class="mt-1 text-xs text-muted">{{ __('learning.help.block_gallery', ['max' => \App\Services\Learning\LearningContentService::GALLERY_MAX_IMAGES]) }}</p>
+                        </div>
+                        <x-textarea-field name="alts" :label="__('learning.field.block_alts')" rows="3" span="2" maxlength="3000"
+                                          :hint="__('learning.help.block_alts')" :value="old('alts')" />
                     </x-form-group>
                     <div class="mt-3 flex justify-end">
                         <x-icon-btn icon="add" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.add_block') }}</x-icon-btn>

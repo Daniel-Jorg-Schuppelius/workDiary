@@ -2502,6 +2502,36 @@ CREATE TABLE `attachments` (
   CONSTRAINT `attachments_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `attendance_checkpoints`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `attendance_checkpoints` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `name` varchar(120) NOT NULL,
+  `kind` varchar(16) NOT NULL,
+  `site_id` bigint(20) unsigned DEFAULT NULL,
+  `vehicle_id` bigint(20) unsigned DEFAULT NULL,
+  `token` varchar(64) NOT NULL,
+  `latitude` decimal(10,7) DEFAULT NULL,
+  `longitude` decimal(10,7) DEFAULT NULL,
+  `radius_m` smallint(5) unsigned DEFAULT NULL,
+  `active` tinyint(1) NOT NULL DEFAULT 1,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `attcp_token_unique` (`token`),
+  KEY `attcp_site_fk` (`site_id`),
+  KEY `attcp_vehicle_fk` (`vehicle_id`),
+  KEY `attcp_creator_fk` (`created_by`),
+  KEY `attcp_org_active_idx` (`organization_id`,`active`),
+  CONSTRAINT `attcp_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `attcp_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `attcp_site_fk` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `attcp_vehicle_fk` FOREIGN KEY (`vehicle_id`) REFERENCES `vehicles` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `attendance_terminals`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -2554,6 +2584,8 @@ CREATE TABLE `attendances` (
   `ended_lng` decimal(10,7) DEFAULT NULL,
   `started_device` varchar(64) DEFAULT NULL,
   `ended_device` varchar(64) DEFAULT NULL,
+  `started_checkpoint_id` bigint(20) unsigned DEFAULT NULL,
+  `ended_checkpoint_id` bigint(20) unsigned DEFAULT NULL,
   `note` text DEFAULT NULL,
   `closed_by` bigint(20) unsigned DEFAULT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
@@ -2570,6 +2602,10 @@ CREATE TABLE `attendances` (
   KEY `attendances_organization_id_date_index` (`organization_id`,`date`),
   KEY `attendances_started_at_index` (`started_at`),
   KEY `attendances_status_index` (`status`),
+  KEY `att_started_cp_fk` (`started_checkpoint_id`),
+  KEY `att_ended_cp_fk` (`ended_checkpoint_id`),
+  CONSTRAINT `att_ended_cp_fk` FOREIGN KEY (`ended_checkpoint_id`) REFERENCES `attendance_checkpoints` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `att_started_cp_fk` FOREIGN KEY (`started_checkpoint_id`) REFERENCES `attendance_checkpoints` (`id`) ON DELETE SET NULL,
   CONSTRAINT `attendances_closed_by_foreign` FOREIGN KEY (`closed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `attendances_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `attendances_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL,
@@ -4795,6 +4831,53 @@ CREATE TABLE `cloud_document_routes` (
   CONSTRAINT `cloud_document_routes_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `collection_items`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `collection_items` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `collection_id` bigint(20) unsigned NOT NULL,
+  `collectable_type` varchar(120) NOT NULL,
+  `collectable_id` bigint(20) unsigned NOT NULL,
+  `position` int(10) unsigned NOT NULL DEFAULT 0,
+  `added_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `colli_unique_item` (`collection_id`,`collectable_type`,`collectable_id`),
+  KEY `colli_org_fk` (`organization_id`),
+  KEY `colli_added_by_fk` (`added_by`),
+  KEY `colli_collectable_idx` (`collectable_type`,`collectable_id`),
+  CONSTRAINT `colli_added_by_fk` FOREIGN KEY (`added_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `colli_collection_fk` FOREIGN KEY (`collection_id`) REFERENCES `collections` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `colli_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `collections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `collections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `parent_id` bigint(20) unsigned DEFAULT NULL,
+  `title` varchar(180) NOT NULL,
+  `description` text DEFAULT NULL,
+  `visibility` varchar(16) NOT NULL DEFAULT 'organization',
+  `position` int(10) unsigned NOT NULL DEFAULT 0,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `archived_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `coll_parent_fk` (`parent_id`),
+  KEY `coll_created_by_fk` (`created_by`),
+  KEY `coll_org_parent_idx` (`organization_id`,`parent_id`),
+  CONSTRAINT `coll_created_by_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `coll_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `coll_parent_fk` FOREIGN KEY (`parent_id`) REFERENCES `collections` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `comments`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -5131,6 +5214,30 @@ CREATE TABLE `contact_bank_accounts` (
   KEY `contact_bank_accounts_organization_id_index` (`organization_id`),
   KEY `contact_bank_accounts_owner_idx` (`accountable_type`,`accountable_id`),
   CONSTRAINT `contact_bank_accounts_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `content_references`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `content_references` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `source_type` varchar(120) NOT NULL,
+  `source_id` bigint(20) unsigned NOT NULL,
+  `target_type` varchar(120) NOT NULL,
+  `target_id` bigint(20) unsigned NOT NULL,
+  `kind` varchar(24) NOT NULL,
+  `created_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `cref_unique` (`source_type`,`source_id`,`target_type`,`target_id`,`kind`),
+  KEY `cref_org_fk` (`organization_id`),
+  KEY `cref_creator_fk` (`created_by`),
+  KEY `cref_source_idx` (`source_type`,`source_id`),
+  KEY `cref_target_idx` (`target_type`,`target_id`),
+  CONSTRAINT `cref_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `cref_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `contract_obligations`;
@@ -7591,10 +7698,12 @@ CREATE TABLE `expenses` (
   `reject_reason` text DEFAULT NULL,
   `reimbursed_at` timestamp NULL DEFAULT NULL,
   `reimbursement_reference` varchar(255) DEFAULT NULL,
+  `corrects_expense_id` bigint(20) unsigned DEFAULT NULL,
   `created_by` bigint(20) unsigned DEFAULT NULL,
   `updated_by` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
+  `correction_reason` varchar(500) DEFAULT NULL,
   PRIMARY KEY (`id`),
   KEY `expenses_expense_category_id_foreign` (`expense_category_id`),
   KEY `expenses_task_id_foreign` (`task_id`),
@@ -7609,7 +7718,9 @@ CREATE TABLE `expenses` (
   KEY `expenses_project_id_index` (`project_id`),
   KEY `expenses_customer_id_index` (`customer_id`),
   KEY `expenses_billable_index` (`billable`),
+  KEY `expenses_corrects_fk` (`corrects_expense_id`),
   CONSTRAINT `expenses_attendance_id_foreign` FOREIGN KEY (`attendance_id`) REFERENCES `attendances` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `expenses_corrects_fk` FOREIGN KEY (`corrects_expense_id`) REFERENCES `expenses` (`id`) ON DELETE SET NULL,
   CONSTRAINT `expenses_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `expenses_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`) ON DELETE SET NULL,
   CONSTRAINT `expenses_decided_by_foreign` FOREIGN KEY (`decided_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -8412,29 +8523,6 @@ CREATE TABLE `idea_node_links` (
   CONSTRAINT `idealink_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
   CONSTRAINT `idealink_src_fk` FOREIGN KEY (`source_node_id`) REFERENCES `idea_nodes` (`id`) ON DELETE CASCADE,
   CONSTRAINT `idealink_tgt_fk` FOREIGN KEY (`target_node_id`) REFERENCES `idea_nodes` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `idea_node_references`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `idea_node_references` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `organization_id` bigint(20) unsigned NOT NULL,
-  `idea_node_id` bigint(20) unsigned NOT NULL,
-  `target_type` varchar(255) NOT NULL,
-  `target_id` bigint(20) unsigned NOT NULL,
-  `kind` varchar(16) NOT NULL,
-  `created_by` bigint(20) unsigned DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  `updated_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `idearef_conv_unique` (`idea_node_id`,`target_type`,`kind`),
-  KEY `idearef_org_fk` (`organization_id`),
-  KEY `idearef_creator_fk` (`created_by`),
-  KEY `idearef_target_idx` (`target_type`,`target_id`),
-  CONSTRAINT `idearef_creator_fk` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
-  CONSTRAINT `idearef_node_fk` FOREIGN KEY (`idea_node_id`) REFERENCES `idea_nodes` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `idearef_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `idea_node_summaries`;
@@ -10280,24 +10368,6 @@ CREATE TABLE `knowledge_article_feedback` (
   CONSTRAINT `knowledge_article_feedback_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `knowledge_article_links`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `knowledge_article_links` (
-  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
-  `knowledge_article_id` bigint(20) unsigned NOT NULL,
-  `linkable_type` varchar(64) NOT NULL,
-  `linkable_id` bigint(20) unsigned NOT NULL,
-  `created_by_user_id` bigint(20) unsigned NOT NULL,
-  `created_at` timestamp NULL DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  UNIQUE KEY `knowledge_link_uq` (`knowledge_article_id`,`linkable_type`,`linkable_id`),
-  KEY `knowledge_article_links_created_by_user_id_foreign` (`created_by_user_id`),
-  KEY `knowledge_link_linkable_idx` (`linkable_type`,`linkable_id`),
-  CONSTRAINT `knowledge_article_links_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
-  CONSTRAINT `knowledge_article_links_knowledge_article_id_foreign` FOREIGN KEY (`knowledge_article_id`) REFERENCES `knowledge_articles` (`id`) ON DELETE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `knowledge_articles`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -10308,7 +10378,6 @@ CREATE TABLE `knowledge_articles` (
   `slug` varchar(200) NOT NULL,
   `problem` text NOT NULL,
   `solution` text NOT NULL,
-  `category` varchar(80) DEFAULT NULL,
   `status` varchar(16) NOT NULL DEFAULT 'draft',
   `visibility` varchar(16) NOT NULL DEFAULT 'internal',
   `created_by_user_id` bigint(20) unsigned NOT NULL,
@@ -10322,7 +10391,6 @@ CREATE TABLE `knowledge_articles` (
   UNIQUE KEY `knowledge_org_slug_uq` (`organization_id`,`slug`),
   KEY `knowledge_articles_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `knowledge_org_status_idx` (`organization_id`,`status`),
-  KEY `knowledge_org_category_idx` (`organization_id`,`category`),
   CONSTRAINT `knowledge_articles_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
   CONSTRAINT `knowledge_articles_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -11582,6 +11650,33 @@ CREATE TABLE `learning_xapi_statements` (
   CONSTRAINT `learning_xapi_statements_organization_id_foreign` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `legal_holds`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `legal_holds` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `holdable_type` varchar(120) NOT NULL,
+  `holdable_id` bigint(20) unsigned NOT NULL,
+  `reason` text NOT NULL,
+  `reference` varchar(120) DEFAULT NULL,
+  `placed_by` bigint(20) unsigned DEFAULT NULL,
+  `placed_at` timestamp NOT NULL,
+  `released_by` bigint(20) unsigned DEFAULT NULL,
+  `released_at` timestamp NULL DEFAULT NULL,
+  `release_reason` text DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lhold_placed_by_fk` (`placed_by`),
+  KEY `lhold_released_by_fk` (`released_by`),
+  KEY `lhold_holdable_idx` (`holdable_type`,`holdable_id`,`released_at`),
+  KEY `lhold_org_active_idx` (`organization_id`,`released_at`),
+  CONSTRAINT `lhold_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `lhold_placed_by_fk` FOREIGN KEY (`placed_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `lhold_released_by_fk` FOREIGN KEY (`released_by`) REFERENCES `users` (`id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `letterhead_assets`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -12624,6 +12719,38 @@ CREATE TABLE `msgraph_mail_connections` (
   CONSTRAINT `msgmc_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `msgmc_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
   CONSTRAINT `msgmc_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `msgraph_onenote_connections`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `msgraph_onenote_connections` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `access_token` text DEFAULT NULL,
+  `refresh_token` text DEFAULT NULL,
+  `token_expires_at` timestamp NULL DEFAULT NULL,
+  `scopes` varchar(255) DEFAULT NULL,
+  `account_label` varchar(255) DEFAULT NULL,
+  `status` varchar(16) NOT NULL DEFAULT 'active',
+  `last_import_at` timestamp NULL DEFAULT NULL,
+  `last_error` varchar(300) DEFAULT NULL,
+  `last_error_at` timestamp NULL DEFAULT NULL,
+  `consecutive_failures` int(10) unsigned NOT NULL DEFAULT 0,
+  `disabled_at` timestamp NULL DEFAULT NULL,
+  `connected_by` bigint(20) unsigned DEFAULT NULL,
+  `connected_at` timestamp NULL DEFAULT NULL,
+  `disconnected_by` bigint(20) unsigned DEFAULT NULL,
+  `disconnected_at` timestamp NULL DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `msgon_org_unique` (`organization_id`),
+  KEY `msgon_conn_by_fk` (`connected_by`),
+  KEY `msgon_disc_by_fk` (`disconnected_by`),
+  CONSTRAINT `msgon_conn_by_fk` FOREIGN KEY (`connected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `msgon_disc_by_fk` FOREIGN KEY (`disconnected_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `msgon_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `msgraph_task_connections`;
@@ -20145,6 +20272,28 @@ CREATE TABLE `user_qualifications` (
   CONSTRAINT `user_qualifications_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
+DROP TABLE IF EXISTS `user_terminal_pins`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8mb4 */;
+CREATE TABLE `user_terminal_pins` (
+  `id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
+  `organization_id` bigint(20) unsigned NOT NULL,
+  `user_id` bigint(20) unsigned NOT NULL,
+  `pin_hash` varchar(255) NOT NULL,
+  `failed_attempts` tinyint(3) unsigned NOT NULL DEFAULT 0,
+  `locked_until` timestamp NULL DEFAULT NULL,
+  `set_by` bigint(20) unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `utpin_user_unique` (`user_id`),
+  KEY `utpin_org_fk` (`organization_id`),
+  KEY `utpin_set_by_fk` (`set_by`),
+  CONSTRAINT `utpin_org_fk` FOREIGN KEY (`organization_id`) REFERENCES `organizations` (`id`) ON DELETE CASCADE,
+  CONSTRAINT `utpin_set_by_fk` FOREIGN KEY (`set_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
+  CONSTRAINT `utpin_user_fk` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_user_group`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
@@ -21783,3 +21932,11 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (811,'2027_02_21_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (812,'2027_02_21_100600_create_learning_gradebook_tables',78);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (813,'2027_02_21_100700_add_learning_question_refinements',79);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (814,'2027_02_21_100800_add_learning_course_to_survey_invitations',80);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (815,'2027_02_22_100000_create_attendance_checkpoints',81);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (816,'2027_02_22_100100_create_legal_holds',82);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (817,'2027_02_22_100200_add_correction_to_expenses',83);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (818,'2027_02_22_100300_create_user_terminal_pins',84);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (819,'2027_02_22_100400_create_collections',85);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (820,'2027_02_22_100500_create_content_references',86);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (821,'2027_02_22_100600_move_knowledge_categories_to_collections',87);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (822,'2027_02_22_100700_create_msgraph_onenote_connections',88);

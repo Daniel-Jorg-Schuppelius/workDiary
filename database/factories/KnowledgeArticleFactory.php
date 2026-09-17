@@ -29,7 +29,6 @@ class KnowledgeArticleFactory extends Factory {
             'slug' => Str::slug($title) . '-' . fake()->unique()->numberBetween(1, 999999),
             'problem' => fake()->paragraph(),
             'solution' => fake()->paragraphs(2, true),
-            'category' => null,
             'status' => ArticleStatus::Draft->value,
             'visibility' => ArticleVisibility::Internal->value,
             'created_by_user_id' => User::factory(),

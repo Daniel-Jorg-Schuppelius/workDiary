@@ -135,6 +135,7 @@ return [
         'no_items' => 'Il file non contiene voci.',
         'markup_with_cost_approach' => 'La voce :ref è una voce di maggiorazione e porta comunque approcci di costo — la maggiorazione si calcola su altre voci, il denaro verrebbe contato due volte.',
         'vendor_record_type' => 'Il file contiene :count record del tipo proprietario :type — il loro contenuto non viene valutato (alcuni sistemi vi collocano i gruppi di costo).',
+        'unhandled_record_type' => 'Il file contiene :count record del tipo :type — questo tipo di record non viene letto (ad esempio lotti, maggiorazioni o clausole contrattuali); il suo contenuto manca nell’importazione.',
         'item_missing_ref' => 'Voce senza numero d’ordine: :text',
         'duplicate_ref' => 'Il numero d’ordine :ref compare più volte.',
         'missing_quantity' => 'La voce :ref non ha quantità.',

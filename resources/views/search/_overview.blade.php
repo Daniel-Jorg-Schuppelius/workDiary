@@ -6,8 +6,8 @@
   License      : AGPL-3.0-or-later
   License Uri  : https://www.gnu.org/licenses/agpl-3.0.html
 --}}
-{{-- „Bei wem war das?" — Treffer je Kunde/Endkunde (Klick filtert) und je
-     Quelle. Erwartet: $result, $criteria, $types. --}}
+{{-- „Bei wem war das?" — Treffer je Kunde/Endkunde (Klick filtert), je
+     Quelle und je Schlagwort. Erwartet: $result, $criteria, $types. --}}
 <div class="grid gap-4 lg:grid-cols-3">
     @if ($result->aggregates !== [])
         <x-card :title="__('search.aggregate.title')" icon="groups" class="lg:col-span-2">
@@ -63,3 +63,17 @@
         </x-card>
     @endif
 </div>
+
+{{-- Schlagwörter der Treffer als Facette (MVP-812): Klick grenzt ein. --}}
+@if ($result->tagFacets !== [])
+    <x-card :title="__('search.facets.tags')" icon="sell">
+        <div class="flex flex-wrap gap-2">
+            @foreach ($result->tagFacets as $facet)
+                <a href="{{ route('search.index', $criteria->toParameters(['tag' => \App\Support\Sqid::encode(\App\Models\Tag::class, $facet['id'])])) }}"
+                   @class(['badge gap-1', 'badge-primary' => $criteria->tagId === $facet['id'], 'badge-outline' => $criteria->tagId !== $facet['id']])>
+                    {{ $facet['name'] }} <span class="opacity-70">{{ $facet['hits'] }}</span>
+                </a>
+            @endforeach
+        </div>
+    </x-card>
+@endif

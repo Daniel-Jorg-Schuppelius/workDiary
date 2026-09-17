@@ -99,6 +99,28 @@ class InternalCaseTest extends TestCase {
             ->assertForbidden();
     }
 
+    public function test_category_and_priority_are_listed_only_after_assignment(): void {
+        // MVP-802 (Entscheid P13-26): In kleinen Organisationen verraten Kategorie
+        // und Priorität sonst schon in der Liste, wer gemeldet haben könnte.
+        $org = Organization::factory()->create();
+        $assigned = $this->handler($org);
+        $other = $this->handler($org);
+        $case = $this->makeCase($org);
+        $this->assignTo($case, $assigned);
+        $category = __('whistleblowing.category.fraud');
+
+        $this->actingAs($assigned)->get(route('whistleblowing.internal.index'))
+            ->assertOk()
+            ->assertSee($case->case_number)
+            ->assertSee($category);
+
+        $this->actingAs($other)->get(route('whistleblowing.internal.index'))
+            ->assertOk()
+            ->assertSee($case->case_number)
+            ->assertDontSee($category)
+            ->assertSee(__('Sichtbar nach Zuweisung'));
+    }
+
     public function test_other_organization_gets_404(): void {
         $orgA = Organization::factory()->create();
         $orgB = Organization::factory()->create();

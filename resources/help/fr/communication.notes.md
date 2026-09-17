@@ -1,7 +1,7 @@
 ---
 title: "Notes de communication"
 topic: communication.notes
-version: 2
+version: 3
 audience: []
 related:
     - diary-entries.edit
@@ -30,6 +30,11 @@ client, une intervention ou un projet. Filtres : rattachement (interne ou
 client), client, type et suivis ouverts ; la recherche porte sur l'objet et le
 contenu. Les notes confidentielles d'autres personnes n'apparaissent qu'avec
 l'autorisation correspondante.
+
+Attribuez des **mots-clés** dans la boîte de dialogue de la note, plusieurs
+séparés par des virgules. La liste filtre sur ceux-ci et la recherche trouve
+une note aussi par son mot-clé. Le filtre ne propose que les mots-clés de notes
+que vous êtes autorisé à voir.
 
 ## Saisie rapide
 

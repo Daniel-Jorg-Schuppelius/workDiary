@@ -12,7 +12,7 @@ namespace App\Models;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility};
 use App\Enums\User\Permission;
-use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
+use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid, HasTags};
 use Database\Factories\CommunicationNoteFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -51,6 +51,8 @@ class CommunicationNote extends Model {
     /** @use HasFactory<CommunicationNoteFactory> */
     use HasFactory;
     use HasSqid;
+    // Schlagwörter (MVP-810): Notizen waren das einzige Wissensmodell ohne.
+    use HasTags;
 
     use SoftDeletes;
 

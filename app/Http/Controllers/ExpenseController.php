@@ -186,6 +186,9 @@ class ExpenseController extends Controller {
             // Feature 106: aktiver Belegpush - nur anbieten, wo er möglich ist.
             'canPush' => Gate::allows('link', $expense) && $provider->canPush($expense),
             'wasPushed' => $linked !== null && $provider->wasPushed($expense),
+            // MVP-802: Gegenbeleg und daraus entstandene Korrektur.
+            'counterVoucher' => $provider->counterVoucherFor($expense),
+            'correction' => $expense->corrections()->orderBy('id')->first(),
             // Vorschläge nur, solange nichts zugeordnet ist — sonst lädt der
             // Dialog Kandidaten, die niemand mehr braucht.
             'suggestions' => $linked === null ? $provider->suggestionsFor($expense) : collect(),
@@ -249,6 +252,30 @@ class ExpenseController extends Controller {
         $expense->audit('expense.voucher_pushed', ['external_id' => $voucher->externalId]);
 
         return back()->with('success', __('Auslage als Beleg übergeben (ID :id). Ab jetzt führt der Beleg.', ['id' => $voucher->externalId]));
+    }
+
+    /**
+     * Korrektur einer übergebenen Auslage per Gegenbeleg (MVP-802): Der Beleg im
+     * Zielsystem bleibt, eine Einkaufsgutschrift hebt ihn auf, und ein neuer
+     * Entwurf mit Bezug auf die ursprüngliche Auslage nimmt die richtigen Werte auf.
+     */
+    public function correct(Request $request, Expense $expense, \App\Services\Expense\ExpenseCorrectionService $corrections): RedirectResponse {
+        Gate::authorize('link', $expense);
+
+        $data = $request->validate(['correction_reason' => ['required', 'string', 'min:5', 'max:500']]);
+
+        try {
+            $draft = $corrections->correct($expense, (string) $data['correction_reason'], $request->user() ?? abort(401));
+        } catch (\RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('error', __('Der Gegenbeleg konnte nicht angelegt werden — es wurde nichts geändert.'));
+        }
+
+        return redirect()->route('expenses.index')
+            ->with('success', __('Gegenbeleg angelegt. Die korrigierte Auslage liegt als Entwurf bereit (#:id).', ['id' => $draft->id]));
     }
 
     public function update(SaveExpenseRequest $request, Expense $expense): RedirectResponse {

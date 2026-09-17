@@ -9,6 +9,7 @@ import {
     trustedServerHtml,
 } from "./lib/html.js";
 import { request } from "./lib/http.js";
+import { __ } from "./i18n.js";
 
 const root = document.getElementById("chat-root");
 if (root) {
@@ -963,6 +964,35 @@ function initChat(root) {
     });
 
     loadInitial();
+
+    // Angepinnte Nachrichten (MVP-798, Befund C1-03): Der Endpunkt lieferte die
+    // Liste, es gab nur keinen Aufrufer. Das Oeffnen des Dialogs uebernimmt
+    // inline-actions.js, hier wird nur nachgeladen.
+    document.addEventListener("click", async (e) => {
+        const btn = /** @type {HTMLElement | null} */ (
+            /** @type {HTMLElement} */ (e.target).closest("[data-pinned-open]")
+        );
+        if (!btn) return;
+        const target = document.getElementById("chat-pinned-list");
+        if (!target) return;
+
+        clearHtml(target);
+        const d = await getJson(`/chat/${channelId}/messages/pinned`);
+        const items = d?.messages ?? null;
+        if (items === null) {
+            setHtml(target, html`<p class="text-sm text-error">
+                ${__("js.chat.pinned_failed")}
+            </p>`);
+            return;
+        }
+        if (!items.length) {
+            setHtml(target, html`<p class="text-sm text-muted">
+                ${__("js.chat.pinned_empty")}
+            </p>`);
+            return;
+        }
+        setHtml(target, html`${items.map((m) => trustedServerHtml(m.html))}`);
+    });
 
     // ── helpers ──
     async function getJson(url) {

@@ -33,6 +33,8 @@ export default defineConfig(({ mode }) => {
                     "resources/js/calendar.js",
                     "resources/js/chat.js",
                     "resources/js/signature.js",
+                    "resources/js/kiosk.js",
+                    "resources/js/checkin.js",
                 ],
                 refresh: true,
             }),

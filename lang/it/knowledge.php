@@ -20,7 +20,6 @@ return [
 
     'field' => [
         'title' => 'Titolo',
-        'category' => 'Categoria',
         'tags' => 'Tag',
         'status' => 'Stato',
         'problem' => 'Descrizione del problema',
@@ -66,10 +65,11 @@ return [
         'asset' => 'Asset',
         'customer' => 'Cliente',
         'protocol' => 'Protocollo',
+        'problem' => 'Problema',
     ],
 
     'hint' => [
-        'category' => 'ad es. stampante, rete, riscaldamento …',
+        'collection' => 'Facoltativo. Altre raccolte in seguito con «Aggiungi alla raccolta».',
         'tags' => 'Separati da virgola, ad es. firmware, modello-x',
         'problem' => 'Quale sintomo/problema si verifica?',
         'solution' => 'Quali passaggi portano alla soluzione?',

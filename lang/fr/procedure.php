@@ -146,6 +146,13 @@ return [
     ],
     'run' => [
         'navTitle' => 'Exécution de procédure',
+        'deviationHint' => 'Au lieu de « échoué » : enregistrez un écart avec motif et action de suivi.',
+        'deviationType' => 'Type d\'écart',
+        'deviationSeverity' => 'Gravité',
+        'deviationSeverityDefault' => 'Gravité automatique',
+        'deviationAction' => 'Action de suivi',
+        'deviationReason' => 'Motif (au moins 20 caractères)',
+        'recordDeviation' => 'Enregistrer l\'écart',
         'open' => 'Exécuter',
         'progress' => 'Progression',
         'notApplicable' => 'non applicable',

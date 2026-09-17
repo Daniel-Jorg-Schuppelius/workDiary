@@ -11,7 +11,7 @@
 namespace Tests\Feature\Helpdesk;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{KnowledgeArticleLink, Organization, Problem, ServiceTicket, User};
+use App\Models\{ContentReference, Organization, Problem, ServiceTicket, User};
 use App\Services\ServiceTicket\{ProblemService, ServiceTicketService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -93,9 +93,18 @@ final class HelpdeskProblemTest extends TestCase {
         $article = $service->publishKnownError($problem, $this->agent);
         $again = $service->publishKnownError($problem, $this->agent);
 
-        $this->assertSame($article->id, $again->id, 'Idempotent über KnowledgeArticleLink.');
-        $this->assertSame(1, KnowledgeArticleLink::query()->where('linkable_type', $problem->getMorphClass())->count());
+        $this->assertSame($article->id, $again->id, 'Idempotent über den Verweis.');
+        $this->assertSame(1, ContentReference::query()->where('target_type', $problem->getMorphClass())->count());
         $this->assertStringContainsString('Druckertreiber-Konflikt', $article->title);
+
+        // Statt der Kategorie `known_error` liegt der Artikel in der Sammlung „Known Errors“ (MVP-814) — einmal.
+        $items = \App\Models\ContentCollectionItem::query()->withoutGlobalScopes()
+            ->where('collectable_type', $article->getMorphClass())
+            ->where('collectable_id', $article->id)
+            ->with('collection')
+            ->get();
+        $this->assertCount(1, $items);
+        $this->assertSame('Known Errors', $items->first()?->collection?->title);
     }
 
     public function test_cross_org_incident_link_is_blocked(): void {

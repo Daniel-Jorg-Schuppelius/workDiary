@@ -32,7 +32,7 @@ final class LearningCourseSource extends AbstractSearchSource {
 
     protected function scope(Builder $query): Builder {
         return $query
-            ->with('category:id,name')
+            ->with(['category:id,name', 'tags:id,name'])
             ->where('status', LearningCourseStatus::Released->value);
     }
 
@@ -55,6 +55,7 @@ final class LearningCourseSource extends AbstractSearchSource {
                 $model->objectives,
                 $model->code,
                 $model->category->name ?? null,
+                ...self::strings($model->tags, 'name'),
                 $context->userName(self::intOrNull($model->owner_user_id)),
             ],
             occurredAt: $model->updated_at,

@@ -526,6 +526,8 @@ return [
         'knowledge.update' => 'Wissensartikel bearbeiten',
         'knowledge.publish' => 'Wissensartikel veröffentlichen/archivieren',
         'knowledge.delete' => 'Wissensartikel löschen',
+        'collection.viewAny' => 'Sammlungen sehen',
+        'collection.manage' => 'Sammlungen und Verweise pflegen',
         'ideas.viewAny' => 'Ideenlandkarten-Bereich sehen',
         'ideas.create' => 'Eigene Ideenlandkarten anlegen',
         'ideas.manageLifecycle' => 'Ideenlandkarten-Lebenszyklus verwalten (nur Metadaten)',

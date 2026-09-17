@@ -48,3 +48,12 @@ Audit-Log.
 
 Der Export liest ausschließlich vorhandene Daten — er verändert weder
 Belege noch Stammdaten und kann beliebig oft wiederholt werden.
+
+**Verfahrensdokumentation:** Neben dem Datenexport verlangt die GoBD eine
+Beschreibung, *wie* die Daten entstehen — von der Erfassung über die
+Verarbeitung bis zur Aufbewahrung. Die Anwendung stellt diese Dokumentation
+aus dem tatsächlichen Systemzustand zusammen: eingesetzte Module, Nummernkreise,
+Aufbewahrungsfristen, Rollen und Protokollierung. Was sich im Betrieb ändert,
+ändert sich damit auch in der Dokumentation — anders als bei einem einmal
+geschriebenen Textdokument. Prüfe den Stand vor jeder Betriebsprüfung und
+ergänze die organisatorischen Teile, die kein System kennen kann.

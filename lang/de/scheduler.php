@@ -78,7 +78,7 @@ return [
             'lti_rotate_keys' => 'LTI-Signaturschlüssel tauschen',
             'lti_prune_nonces' => 'Abgelaufene LTI-Nonces entfernen',
         ],
-        'attendance' => ['close_open' => 'Offene Stempelungen schließen'],
+        'attendance' => ['close_open' => 'Offene Stempelungen schließen', 'open_reminder' => 'Offene Stempelungen am Abend erinnern'],
         'audit' => ['verify' => 'Audit-Kette prüfen'],
         'backup' => [
             'check_restore' => 'Backup-Prüfung',
@@ -144,6 +144,7 @@ return [
         'metering' => ['generate-invoices' => 'Zählerstands-Rechnungen erzeugen'],
         'maintenance' => ['scan_due' => 'Wartungspläne auf Fälligkeit prüfen'],
         'notifications' => ['scan_deadlines' => 'Fristen prüfen und erinnern'],
+        'recruiting' => ['scan_uploads' => 'Bewerbungsunterlagen auf Schadsoftware prüfen'],
         'org' => ['offboard_due' => 'Fällige Mitarbeiter-Austritte vollziehen'],
         'travel_logs' => ['lock_due' => 'Fahrtenbuch-Fahrten nach Tagesende festschreiben'],
         'news-feed' => ['refresh' => 'Neuigkeiten-Feed aktualisieren'],

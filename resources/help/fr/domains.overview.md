@@ -32,10 +32,12 @@ visibles dans l'indicateur afin de maintenir le portefeuille complet.
 DNS, factures, chronologie et actions. « Actualiser » réconcilie l'état du
 fournisseur pour ce domaine précis.
 
-**DNS :** La zone est lue à la demande ; les enregistrements peuvent être
-remplacés ou modifiés de manière ciblée. Après une écriture, le système
-détecte les écarts (conflit DNS) et les rend visibles au lieu de les
-écraser. Les enregistrements MX/SRV exigent une priorité.
+**DNS :** La zone est lue à la demande. Dans l'interface, on peut ajouter et
+supprimer des enregistrements individuels ; remplacer toute la zone n'y est
+volontairement pas proposé, car un remplacement complet erroné supprime tous les
+enregistrements du domaine. Après une écriture, le système détecte les écarts
+(conflit DNS) et les rend visibles au lieu de les écraser. Les enregistrements
+MX/SRV exigent une priorité.
 
 **Enregistrement :** La disponibilité est vérifiée avant l'enregistrement.
 Un enregistrement nécessite un client, un handle de contact propriétaire, au

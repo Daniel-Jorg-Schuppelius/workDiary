@@ -1,7 +1,7 @@
 ---
 title: "Búsqueda e investigación de actividades"
 topic: search.overview
-version: 2
+version: 3
 audience: []
 related: []
 ---
@@ -37,6 +37,13 @@ clic filtra por ello. La barra de filtros ofrece fuente, periodo, persona,
 cliente (incluidos sus clientes finales), cliente final y orden. Sin término de
 búsqueda pero con cliente, cliente final o proyecto aparecen las actividades más
 recientes.
+
+«Etiquetas en los resultados» cuenta las etiquetas de las entradas encontradas;
+un clic acota a una de ellas y la cruz del filtro lo quita. Si puedes ver
+colecciones, la barra de filtros ofrece además **Colección**, que incluye sus
+subcolecciones. Ambos filtros funcionan también sin término de búsqueda. Solo se
+cuentan las entradas que puedes abrir, así que no aparecen etiquetas de
+contenidos confidenciales de otras personas.
 
 ## Puntos de entrada
 

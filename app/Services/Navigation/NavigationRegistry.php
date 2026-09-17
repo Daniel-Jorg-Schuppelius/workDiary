@@ -401,7 +401,13 @@ class NavigationRegistry {
                             'modal' => false,
                             'matches' => ['documents.*', 'form-submissions.*'],
                         ],
+                        // Einstieg „Wissen“ (MVP-813): nur, wenn mindestens ein Inhaltstyp sichtbar ist.
+                        $user instanceof User && app(\App\Services\Collections\CollectableTypes::class)->availableKeys($user) !== []
+                            ? ['route' => 'knowledge-hub.index', 'label' => __('collections.hub.title'), 'icon' => 'hub', 'modal' => false, 'matches' => ['knowledge-hub.*']]
+                            : null,
                         ['route' => 'knowledge.index', 'label' => __('knowledge.title.index'), 'icon' => 'school', 'modal' => false, 'matches' => ['knowledge.*']],
+                        // Sammlungen (MVP-809): Ordnung über Notizen, Ideenkarten, Artikeln, Dokumenten und Lerninhalten.
+                        ['route' => 'collections.index', 'label' => __('collections.title.index'), 'icon' => 'folder_special', 'modal' => false, 'matches' => ['collections.*']],
                         ['route' => 'ideas.index', 'label' => __('ideas.title.index'), 'icon' => 'emoji_objects', 'modal' => false, 'matches' => ['ideas.*']],
                         // Sicherheitsereignisse: sichtbar für Melder (create) und Register-Berechtigte (viewAny).
                         (Gate::allows('viewAny', \App\Models\SafetyEvent::class)
@@ -798,6 +804,10 @@ class NavigationRegistry {
                     $user?->can(\App\Enums\User\Permission::LearningManage->value)
                         ? ['route' => 'learning.paths.index', 'label' => __('learning.nav.paths'), 'icon' => 'route', 'modal' => false, 'matches' => ['learning.paths.*']]
                         : null,
+                    // Kompetenzmatrix (MVP-798): Stufen, Einschätzung, Soll je Rolle.
+                    $user?->can(\App\Enums\User\Permission::LearningManage->value)
+                        ? ['route' => 'learning.competencies.index', 'label' => __('learning.nav.competencies'), 'icon' => 'psychology', 'modal' => false, 'matches' => ['learning.competencies.*']]
+                        : null,
                 ]),
             ];
         }
@@ -950,6 +960,9 @@ class NavigationRegistry {
                 ['route' => 'dataprotection.requests.index', 'label' => __('Betroffenenanfragen'), 'icon' => 'contact_mail', 'modal' => false, 'matches' => ['dataprotection.requests.*']],
                 ['route' => 'dataprotection.incidents.index', 'label' => __('Datenschutzvorfälle'), 'icon' => 'gpp_maybe', 'modal' => false, 'matches' => ['dataprotection.incidents.*']],
                 ['route' => 'dataprotection.compliance.index', 'label' => __('Lückenanalyse'), 'icon' => 'rule', 'modal' => false, 'matches' => ['dataprotection.compliance.*']],
+                // Löschkonzept (Feature 130) hatte keinen Menüeintrag; Legal Hold (MVP-801) gehört daneben.
+                ['route' => 'dataprotection.retention.index', 'label' => __('Aufbewahrung & Löschung'), 'icon' => 'auto_delete', 'modal' => false, 'matches' => ['dataprotection.retention.*']],
+                ['route' => 'dataprotection.legal-holds.index', 'label' => __('Legal Hold'), 'icon' => 'gavel', 'modal' => false, 'matches' => ['dataprotection.legal-holds.*']],
             ];
             // Betroffenenportal (G11, MVP-728) haengt an einer eigenen Permission.
             if (Gate::allows('dataprotection.portal.manage')) {

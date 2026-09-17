@@ -38,8 +38,8 @@
         <x-date-range :from="$from->toDateString()" :to="$to->toDateString()" class="w-72 shrink-0" />
         <x-filter-field :label="__('Gruppierung')" for="plan-ist-group">
             <select id="plan-ist-group" name="group" class="select select-sm select-bordered shrink-0">
-                <option value="day" @selected($group === 'day')>{{ __('Tag') }}</option>
-                <option value="week" @selected($group === 'week')>{{ __('Woche') }}</option>
+                <option value="day" @selected($group === 'day')>{{ __('Täglich') }}</option>
+                <option value="week" @selected($group === 'week')>{{ __('Wöchentlich') }}</option>
             </select>
         </x-filter-field>
     </x-filter-bar>

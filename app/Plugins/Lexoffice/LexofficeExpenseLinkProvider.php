@@ -206,6 +206,77 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
         return $reference !== null && (bool) ($reference->payload['pushed'] ?? false);
     }
 
+    /**
+     * Gegenbeleg (Einkaufsgutschrift) zu einer gepushten Auslage (MVP-802). Der
+     * ursprüngliche Beleg lässt sich im Zielsystem weder ändern noch löschen —
+     * die Gutschrift über denselben Betrag hebt ihn buchhalterisch auf.
+     */
+    public function pushCounterVoucher(Expense $expense, string $reason): ExpenseVoucherRef {
+        $existing = $this->counterVoucherModelFor($expense);
+        if ($existing instanceof LexofficeVoucher) {
+            return $this->toRef($existing);
+        }
+
+        $original = $this->voucherModelFor($expense);
+        if (! $this->wasPushed($expense) || ! $original instanceof LexofficeVoucher) {
+            throw new RuntimeException((string) __('Nur übergebene Auslagen werden per Gegenbeleg korrigiert — alles andere lässt sich direkt bearbeiten.'));
+        }
+
+        $categoryId = $expense->category?->accounting_category_id;
+        if (blank($categoryId)) {
+            throw new RuntimeException((string) __('Der Auslagenkategorie fehlt die Buchungskategorie des Buchhaltungssystems — ohne Zuordnung kein Push.'));
+        }
+
+        $result = app(LexofficeService::class)->createExpenseCounterVoucher(
+            $expense,
+            (string) $categoryId,
+            (string) ($original->voucher_number ?: $original->external_id),
+            $reason,
+        );
+
+        $voucher = LexofficeVoucher::query()->create([
+            'organization_id' => $expense->organization_id,
+            'external_id' => $result['external_id'],
+            'voucher_type' => 'purchasecreditnote',
+            'voucher_status' => 'open',
+            'voucher_date' => Carbon::today(),
+            'total_gross' => $expense->amount_gross?->getAmount(),
+            'currency' => $expense->currency->value,
+            'synced_at' => Carbon::now(),
+        ]);
+
+        ExternalReference::query()->create([
+            'organization_id' => $expense->organization_id,
+            'plugin_id' => LexofficePlugin::ID,
+            'external_type' => LexofficePlugin::EXT_TYPE_COUNTER_VOUCHER,
+            'referenceable_type' => $expense->getMorphClass(),
+            'referenceable_id' => $expense->getKey(),
+            'external_id' => (string) $voucher->external_id,
+            'synced_at' => Carbon::now(),
+        ]);
+
+        return $this->toRef($voucher);
+    }
+
+    public function counterVoucherFor(Expense $expense): ?ExpenseVoucherRef {
+        $voucher = $this->counterVoucherModelFor($expense);
+
+        return $voucher instanceof LexofficeVoucher ? $this->toRef($voucher) : null;
+    }
+
+    private function counterVoucherModelFor(Expense $expense): ?LexofficeVoucher {
+        $reference = ExternalReference::query()
+            ->where('plugin_id', LexofficePlugin::ID)
+            ->where('external_type', LexofficePlugin::EXT_TYPE_COUNTER_VOUCHER)
+            ->where('referenceable_type', $expense->getMorphClass())
+            ->where('referenceable_id', $expense->getKey())
+            ->first();
+
+        return $reference === null
+            ? null
+            : LexofficeVoucher::query()->where('external_id', $reference->external_id)->first();
+    }
+
     /** Bestätigt die Zuordnung einer Auslage zu einem Buchhaltungsbeleg. */
     private function linkVoucher(Expense $expense, LexofficeVoucher $voucher): ExternalReference {
         return ExternalReference::updateOrCreate(

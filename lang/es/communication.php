@@ -17,6 +17,8 @@ return [
     ],
 
     'field' => [
+
+        'tags' => 'Etiquetas',
         'type' => 'Tipo',
         'direction' => 'Dirección',
         'occurred_at' => 'Fecha y hora',
@@ -97,6 +99,8 @@ return [
     ],
 
     'filter' => [
+
+        'all_tags' => 'Todas las etiquetas',
         'search' => 'Buscar',
         'search_placeholder' => 'Asunto o contenido …',
         'all_customers' => 'Todos los clientes',
@@ -105,6 +109,8 @@ return [
     ],
 
     'hint' => [
+
+        'tags' => 'Separa varias con comas, p. ej. mantenimiento, calefacción.',
         'customer_not_published' => 'La nota aparece en la ficha del cliente, pero no en el portal de clientes.',
     ],
 
@@ -116,4 +122,14 @@ return [
     'empty_filtered' => 'No se encontraron notas.',
     'confirm_delete' => '¿Eliminar realmente esta nota de comunicación?',
     'confirm_publish' => '¿Hacer realmente visible esta nota para el cliente?',
+    'convert' => [
+        'action' => 'Convertir en artículo de conocimiento',
+        'error' => [
+            'confidential' => 'Las notas confidenciales no se pueden convertir en artículo de conocimiento.',
+        ],
+        'flash' => [
+            'created' => 'Artículo de conocimiento creado como borrador; remite a la nota.',
+            'existing' => 'Esta nota ya se convirtió.',
+        ],
+    ],
 ];

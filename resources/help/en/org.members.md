@@ -27,3 +27,17 @@ working-time editor. It defines target hours and the valid period and forms
 the basis for flextime and working-time evaluations. Creating and deleting
 complete members remains reserved for administration; the number is limited
 by the license's user quota.
+
+**Leaving:** When someone leaves, the account is not simply deleted. Offboarding
+runs through a dialog with an effective date and a handover list: issued access
+media, assigned equipment, open tasks and open attendance records are listed so
+that nothing is left behind. As long as access media are still issued, the
+offboarding cannot be completed — they have to be returned first. If the
+effective date lies in the future, the offboarding is scheduled and completed on
+that day. The account is then deactivated, sessions and API keys end, and the
+licence seat becomes free.
+
+The reason is simple: an immediately deleted account takes traceability with it
+— recorded times, signed protocols and approvals must remain attributable to
+their author. Personal data remains subject to the retention and deletion rules
+of the data protection area regardless.

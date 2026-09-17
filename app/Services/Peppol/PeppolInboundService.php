@@ -44,7 +44,7 @@ class PeppolInboundService {
      * @return PeppolInboundCounters
      */
     public function poll(Organization $organization, int $limit = 50): array {
-        $counters = ['fetched' => 0, 'imported' => 0, 'duplicates' => 0, 'unreadable' => 0, 'acknowledged' => 0, 'failed' => 0];
+        $counters = ['fetched' => 0, 'imported' => 0, 'duplicates' => 0, 'unreadable' => 0, 'infected' => 0, 'acknowledged' => 0, 'failed' => 0];
 
         $client = $this->client((int) $organization->id);
         if (! $client instanceof AccessPointClientInterface) {
@@ -81,6 +81,9 @@ class PeppolInboundService {
             match ((string) $result['status']) {
                 'created' => $counters['imported']++,
                 'duplicate' => $counters['duplicates']++,
+                // Von der Sicherheitsprüfung abgewiesen: getrennt zählen, sonst
+                // sieht der Betrieb eine Malware-Abweisung als Parserproblem.
+                'infected' => $counters['infected']++,
                 default => $counters['unreadable']++,
             };
 

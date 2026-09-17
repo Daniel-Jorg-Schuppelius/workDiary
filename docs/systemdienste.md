@@ -91,3 +91,23 @@ die Backup-Zeit (`--backup-time`). Details zum Backup: [backup-restore.md](backu
 > also Europe/Berlin), nicht in UTC. Vor 2026-09 wurden sie in UTC ausgewertet —
 > ein „22:10"-Job lief um 00:10 Ortszeit und fiel auf Servern mit nächtlicher
 > Abschaltung dauerhaft aus.
+
+## Manuelle Wartungsbefehle
+
+Diese Befehle laufen **nicht** im Zeitplan. Sie sind fuer einmalige
+Nachzieh- und Aufraeumarbeiten gedacht und werden von Hand aufgerufen.
+Nachgetragen am 2026-09-16 (`MVP-796`, Befund `C1-14`): Sie waren bis dahin
+nirgends dokumentiert.
+
+| Befehl | Zweck | Hinweis |
+| --- | --- | --- |
+| `attendance:backfill` | Erzeugt Anwesenheits-Sitzungen aus vorhandenen Zeiteintraegen. | Nachtrag fuer Bestandsdaten. |
+| `billing:reopen-times` | Oeffnet faelschlich als abgerechnet markierte Zeiten ab einem Leistungsdatum wieder. | Rechnungs-, Uebergabe- und saldo-gefuehrte Zeiten bleiben unangetastet. **Ohne `--apply` nur Probelauf.** |
+| `billing:sync-entry-billable` | Gleicht das Abrechenbar-Kennzeichen der Zeiteintraege ab. | — |
+| `customer:merge-duplicates` | Fuehrt doppelte Kunden zusammen (eindeutige Treffer ueber USt-IdNr. oder Lexoffice-Nummer). | **Ohne `--apply` nur Vorschau.** |
+| `project:merge-duplicates` | Fuehrt doppelte Projekte zusammen (gleicher Kunde und Name). | **Ohne `--apply` nur Vorschau.** |
+| `geocode:customers` | Traegt fehlende Koordinaten zu Kundenadressen nach (Nominatim). | Externer Dienst, Ratenlimit beachten. |
+| `whistleblowing:seed-roles` | Legt Meldestellen-Rolle und Rechte fuer bestehende Organisationen an. | Nachtrag fuer Mandanten, die vor dem Modul angelegt wurden. |
+
+> **Vor jedem Lauf mit `--apply`:** erst ohne den Schalter starten und die
+> Vorschau lesen. Zusammenfuehrungen sind nicht umkehrbar.

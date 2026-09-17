@@ -120,7 +120,7 @@
                 </x-slot:head>
                 <x-slot:foot>
                     <tr class="font-bold">
-                        <td>Σ {{ __('Tag') }}</td>
+                        <td>{{ __('Tagessumme') }}</td>
                         @foreach ($dayTotals as $m)
                             <td class="text-right">{{ $fmt($m) }}</td>
                         @endforeach

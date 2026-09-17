@@ -17,3 +17,10 @@ in WorkDiary, aprendola ci arrivi direttamente, mentre i link esterni
 non vengono seguiti per motivi di sicurezza. L'invio via e-mail e gli
 orari di silenzio si impostano nelle preferenze di notifica del tuo
 profilo.
+
+**Messaggi brevi (SMS):** Per avvisi davvero critici — per esempio le
+reperibilità — può essere recapitato anche un SMS. Questa via è volutamente
+parsimoniosa: esiste un contingente mensile, i testi lunghi vengono accorciati
+e l'organizzazione viene avvisata prima che si esaurisca. L'SMS non sostituisce
+la notifica nell'applicazione, l'accompagna per quando nessuno è davanti a uno
+schermo.

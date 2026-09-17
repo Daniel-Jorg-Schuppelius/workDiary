@@ -110,10 +110,19 @@
             <p class="mb-1 text-xs text-muted">{{ __('Bis') }}</p>
             <p class="text-base-content">{{ $diary->end_at?->fdatetime() ?? '—' }}</p>
         </div>
+        {{-- Vom Auftrag in die Auswertung (MVP-807, Entscheid P2-06): nur wer die
+             Analyse sehen darf (Tarif und Recht), bekommt den Link. Inline-Form wie im
+             Rest der Datei — ein PHP-Block daneben bringt den Blade-Compiler aus dem Tritt. --}}
+        @php($mayOpenReport = static fn (string $route): bool => app(\App\Services\Licensing\FeatureFlagResolver::class)->routeEnabled($route) && app(\App\Services\Navigation\NavGate::class)->mayAccess($route))
         @if ($diary->customer)
             <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
                 <p class="mb-1 text-xs text-muted">{{ __('Kunde') }}</p>
                 <p class="text-base-content">{{ $diary->customer->name }}@if ($diary->customer->company) — {{ $diary->customer->company }}@endif</p>
+                @if ($mayOpenReport('reports.customers'))
+                    <a href="{{ route('reports.customers', ['customer' => $diary->customer->sqid]) }}" class="link link-hover mt-1 inline-flex items-center gap-1 text-xs">
+                        <x-icon name="bar_chart" /> {{ __('Kundenanalyse') }}
+                    </a>
+                @endif
             </div>
         @endif
         {{-- Gegenstand des Auftrags (Feature 009; Vollaudit 2026-07, M5). --}}
@@ -121,6 +130,13 @@
             <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
                 <p class="mb-1 text-xs text-muted">{{ __('Objekt/Asset') }}</p>
                 <p class="text-base-content"><a href="{{ route('assets.show', $diary->asset) }}" class="link link-hover">{{ $diary->asset->name }}</a></p>
+                @if ($mayOpenReport('reports.assets'))
+                    {{-- Die Produktanalyse kennt keinen Einzel-Asset-Filter: sie zeigt das
+                         Asset neben gleichartigen (Kategorie, Hersteller). --}}
+                    <a href="{{ route('reports.assets', array_filter(['category_code' => $diary->asset->category_code, 'manufacturer' => $diary->asset->manufacturer])) }}" class="link link-hover mt-1 inline-flex items-center gap-1 text-xs">
+                        <x-icon name="inventory_2" /> {{ __('Produktanalyse') }}
+                    </a>
+                @endif
             </div>
         @endif
         <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
@@ -174,3 +190,6 @@
 
 {{-- Wissensbasis (Feature 011): verknüpfte Artikel + Vorschläge zum Auftrag --}}
 @include('knowledge._context_card', ['subject' => $diary, 'subjectKind' => 'diary', 'texts' => [(string) $diary->title, (string) $diary->content]])
+
+{{-- Rückverweise (MVP-811); Wissensverknüpfungen zeigt schon die Wissenskarte. --}}
+<x-content-references :subject="$diary" :without-knowledge-links="true" />

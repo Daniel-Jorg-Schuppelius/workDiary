@@ -21,3 +21,18 @@ identidad, rol ni contraseña. El modelo de jornada se mantiene por
 separado y es la base de las evaluaciones de horario flexible; crear y
 eliminar miembros completos queda reservado a la administración y el
 número está limitado por la licencia.
+
+**Baja:** Cuando alguien se va, la cuenta no se borra sin más. La baja se tramita
+en un diálogo con fecha efectiva y lista de traspaso: se enumeran los medios de
+acceso entregados, los equipos asignados, las tareas abiertas y los fichajes
+abiertos, para que nada quede pendiente. Mientras haya medios de acceso
+entregados, la baja no puede tramitarse: primero hay que recogerlos. Si la fecha
+efectiva es futura, la baja se programa y se tramita ese día. Entonces la cuenta
+se desactiva, las sesiones y las claves de API terminan y la licencia queda
+libre.
+
+El motivo es sencillo: una cuenta borrada de inmediato se lleva consigo la
+trazabilidad; los tiempos registrados, los protocolos firmados y las
+aprobaciones deben seguir siendo atribuibles a su autor. Los datos personales
+siguen sujetos, con independencia de ello, a las reglas de conservación y
+supresión del área de protección de datos.

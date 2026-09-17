@@ -1,7 +1,7 @@
 ---
 title: "Suche und Tätigkeitsrecherche"
 topic: search.overview
-version: 2
+version: 3
 audience: []
 related: []
 ---
@@ -33,6 +33,13 @@ Stammdaten wie Kunden, Projekte, Objekte, Spesen und Dokumente.
 Klick filtert darauf. In der Filterleiste stehen Quelle, Zeitraum, Person, Kunde
 (inklusive seiner Endkunden), Endkunde und Sortierung. Ohne Suchbegriff, aber
 mit Kunde, Endkunde oder Projekt erscheinen die neuesten Tätigkeiten.
+
+„Schlagwörter in den Treffern" zählt die Schlagwörter der gefundenen Einträge;
+ein Klick grenzt auf eines ein, das Kreuz am Filter hebt es wieder auf. Wer
+Sammlungen sehen darf, findet außerdem **Sammlung** in der Filterleiste — sie
+schließt ihre Untersammlungen ein. Beide Filter reichen auch ohne Suchbegriff.
+Gezählt werden nur Einträge, die Sie öffnen dürfen; Schlagwörter vertraulicher
+Inhalte anderer erscheinen deshalb nicht.
 
 ## Einstiege
 

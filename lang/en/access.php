@@ -526,6 +526,8 @@ return [
         'knowledge.update' => 'Edit knowledge article',
         'knowledge.publish' => 'Publish/archive knowledge article',
         'knowledge.delete' => 'Delete knowledge article',
+        'collection.viewAny' => 'See collections',
+        'collection.manage' => 'Maintain collections and references',
         'ideas.viewAny' => 'See idea maps area',
         'ideas.create' => 'Create own idea maps',
         'ideas.manageLifecycle' => 'Manage idea map lifecycle (metadata only)',

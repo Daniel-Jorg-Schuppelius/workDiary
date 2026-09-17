@@ -42,12 +42,22 @@ class InternalCaseController extends Controller {
 
         // Bewusst ohne ciphertext-Spalten: keine Inhaltsvorschau in der Liste.
         $cases = WhistleblowingCase::query()
-            ->select(['id', 'public_id', 'case_number', 'category', 'status', 'priority',
+            ->select(['id', 'organization_id', 'public_id', 'case_number', 'category', 'status', 'priority',
                 'acknowledgement_due_at', 'feedback_due_at', 'created_at'])
             ->latest()
             ->paginate(25);
 
-        return view('whistleblowing.internal.index', ['cases' => $cases]);
+        // Kategorie und Priorität erst nach Zuweisung (Entscheid P13-26, MVP-802):
+        // In kleinen Organisationen erlauben sie sonst einen Rückschluss auf die
+        // meldende Person. Maßgeblich ist dieselbe Regel wie für den Fall selbst.
+        $user = $this->user();
+        $metadataVisible = $cases->getCollection()
+            ->filter(fn (WhistleblowingCase $case): bool => $user->can('view', $case))
+            ->map(fn (WhistleblowingCase $case): int => (int) $case->id)
+            ->values()
+            ->all();
+
+        return view('whistleblowing.internal.index', ['cases' => $cases, 'metadataVisible' => $metadataVisible]);
     }
 
     public function show(WhistleblowingCase $case): View {

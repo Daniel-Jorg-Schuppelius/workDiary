@@ -135,6 +135,7 @@ class CloudIntakeRouter {
 
         return match ((string) $result['status']) {
             'duplicate' => ['status' => CloudIntakeItemStatus::Duplicate, 'imported' => $result['incoming'], 'reason' => 'invoice_duplicate'],
+            'infected' => ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'invoice_infected'],
             'unreadable' => ['status' => CloudIntakeItemStatus::Rejected, 'imported' => null, 'reason' => 'invoice_unreadable'],
             default => ['status' => CloudIntakeItemStatus::Imported, 'imported' => $result['incoming'], 'reason' => null],
         };

@@ -157,4 +157,80 @@ class ArticleItemLinkTest extends TestCase {
 
         $this->assertSame($this->article->id, (int) $quote->items()->firstOrFail()->article_id);
     }
+
+    // ── Kupferzuschlag als eigene Position (MVP-804) ───────────────────
+
+    private function copperArticle(): Article {
+        // (2,00 − 1,50) × 0,043 kg = 0,0215 €/Einheit — dieselbe Rechnung wie im OCI-Warenkorb.
+        \App\Models\MetalQuotation::query()->create([
+            'organization_id' => $this->organization->id,
+            'metal' => 'CU', 'price_per_kg' => '2', 'quoted_at' => now()->toDateString(),
+        ]);
+
+        return Article::factory()->create([
+            'organization_id' => $this->organization->id,
+            'number' => 'NYM-CU',
+            'name' => 'Kabel NYM-J 3x1,5',
+            'base_unit' => 'm',
+            'copper_weight' => '0.0430',
+            'copper_base_price' => '150.0000',
+        ]);
+    }
+
+    public function test_invoice_item_with_copper_article_adds_the_surcharge_position(): void {
+        $invoice = $this->draft();
+        $cable = $this->copperArticle();
+
+        $this->actingAs($this->admin)
+            ->post(route('invoices.items.store', $invoice), [
+                'article_id' => $cable->sqid,
+                'description' => 'Kabel NYM-J 3x1,5',
+                'quantity' => '100',
+                'unit' => 'm',
+                'unit_price' => '1.90',
+                'tax_rate' => '19',
+                'add_copper_surcharge' => '1',
+            ])
+            ->assertSessionHasNoErrors()
+            ->assertRedirect();
+
+        $items = $invoice->items()->orderBy('position')->get();
+        $this->assertCount(2, $items);
+        $this->assertSame(__('b2b_catalog.copper_surcharge_position', ['number' => 'NYM-CU']), $items[1]->description);
+        $this->assertSame('100.000', (string) $items[1]->quantity);
+        $this->assertSame('0.0215', $items[1]->unit_price?->getAmount());
+        $this->assertNull($items[1]->article_id);
+    }
+
+    public function test_surcharge_is_skipped_when_unchecked_or_without_copper_data(): void {
+        $invoice = $this->draft();
+        $cable = $this->copperArticle();
+
+        $this->actingAs($this->admin)->post(route('invoices.items.store', $invoice), [
+            'article_id' => $cable->sqid, 'description' => 'Kabel', 'quantity' => '10', 'unit' => 'm', 'unit_price' => '1.90',
+        ])->assertRedirect();
+        $this->actingAs($this->admin)->post(route('invoices.items.store', $invoice), [
+            'article_id' => $this->article->sqid, 'description' => 'Wartung', 'quantity' => '1', 'unit' => 'Psch.', 'unit_price' => '250.00', 'add_copper_surcharge' => '1',
+        ])->assertRedirect();
+
+        $this->assertSame(2, $invoice->items()->count());
+    }
+
+    public function test_quote_item_with_copper_article_adds_the_surcharge_position(): void {
+        $quote = app(QuoteService::class)->create([
+            'customer_id' => $this->customer->id,
+            'valid_until' => now()->addWeeks(2)->toDateString(),
+        ], [], $this->admin);
+        $cable = $this->copperArticle();
+
+        $this->actingAs($this->admin)->post(route('quotes.items.store', $quote), [
+            'article_id' => $cable->sqid, 'description' => 'Kabel', 'quantity' => '50', 'unit' => 'm', 'unit_price' => '1.90', 'add_copper_surcharge' => '1',
+        ])->assertSessionHasNoErrors()->assertRedirect();
+
+        // Angebotspreise haben zwei Nachkommastellen: Zuschlag als Gesamtbetrag, 50 × 0,0215 = 1,08 €.
+        $surcharge = $quote->items()->get()->sortBy('position')->last();
+        $this->assertSame(2, $quote->items()->count());
+        $this->assertSame('1.08', $surcharge?->unit_price?->getAmount());
+        $this->assertSame(1.0, (float) $surcharge?->quantity);
+    }
 }

@@ -27,6 +27,37 @@ return [
         'move_failed' => 'Fehler beim Verschieben.',
         'suggest_failed' => 'Vorschläge konnten nicht geladen werden.',
     ],
+    // Dienstplan-Oberflaeche (MVP-797): war zuvor fest verdrahtetes Deutsch.
+    'schedule_ui' => [
+        'shift_edit' => 'Schicht bearbeiten',
+        'shift_create' => 'Schicht anlegen',
+        'shift_delete_confirm' => 'Schicht wirklich löschen?',
+        'shift_type_edit' => 'Schichttyp bearbeiten',
+        'shift_type_create' => 'Neuen Schichttyp anlegen',
+        'shift_type_delete_confirm' => 'Schichttyp wirklich löschen?',
+        'save' => 'Speichern',
+        'delete' => 'Löschen',
+        'close' => 'Schließen',
+        'save_failed' => 'Fehler beim Speichern.',
+        'delete_failed' => 'Fehler beim Löschen.',
+        'publish_failed' => 'Fehler beim Veröffentlichen.',
+        'confirm_failed' => 'Fehler beim Bestätigen.',
+        'suggestions_title' => 'Besetzungsvorschläge',
+        'col_employee' => 'Mitarbeiter',
+        'col_score' => 'Score',
+        'col_reason' => 'Begründung',
+    ],
+    'bulk' => [
+        'select_one' => 'Bitte zuerst mindestens einen Eintrag auswählen.',
+    ],
+    'design' => [
+        'inheritance' => '„:base“ · :inherited/:total geerbt, :own überschrieben',
+    ],
+    // Chat-Oberflaeche (MVP-798): angepinnte Nachrichten werden per JSON geladen.
+    'chat' => [
+        'pinned_failed' => 'Angepinnte Nachrichten konnten nicht geladen werden.',
+        'pinned_empty' => 'Keine angepinnten Nachrichten.',
+    ],
     'kanban' => [
         'invalid_move' => 'Dieser Statuswechsel ist im Auftragsworkflow nicht vorgesehen.',
         'not_allowed' => 'Keine Berechtigung für diese Auftragsaktion.',

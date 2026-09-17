@@ -37,3 +37,13 @@ document permissions.
 Risks: **deleting removes the document with all its versions**
 (soft delete, only with delete permission). Versions themselves are
 immutable – corrections are always made via a new version.
+
+## Sending documents
+
+Documents — invoices, quotes, delivery notes — can be sent directly from the
+record. Every dispatch is recorded with recipient, time and channel, so it
+remains traceable **what went to whom and when**.
+
+The **dispatch history** belongs to the document, not to a mailbox: even
+someone without access to the mail account can see whether and when it was
+sent. Re-sending adds another entry instead of overwriting the previous one.

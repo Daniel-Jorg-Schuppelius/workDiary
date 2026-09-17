@@ -46,6 +46,8 @@ use Illuminate\Support\Carbon;
  * @property string|null $reject_reason
  * @property Carbon|null $reimbursed_at
  * @property string|null $reimbursement_reference
+ * @property int|null $corrects_expense_id
+ * @property string|null $correction_reason
  * @property int|null $created_by
  * @property int|null $updated_by
  * @property Carbon|null $created_at
@@ -84,6 +86,8 @@ class Expense extends Model {
         'reject_reason',
         'reimbursed_at',
         'reimbursement_reference',
+        'corrects_expense_id',
+        'correction_reason',
         'created_by',
         'updated_by',
     ];
@@ -132,6 +136,20 @@ class Expense extends Model {
         $tax = $rate->amountOf($net);
         $this->tax_amount = $tax;
         $this->amount_gross = $net->plus($tax);
+    }
+
+    /**
+     * Ursprüngliche Auslage, die diese per Gegenbeleg korrigiert (MVP-802).
+     *
+     * @return BelongsTo<self, $this>
+     */
+    public function corrects(): BelongsTo {
+        return $this->belongsTo(self::class, 'corrects_expense_id');
+    }
+
+    /** @return \Illuminate\Database\Eloquent\Relations\HasMany<self, $this> */
+    public function corrections(): \Illuminate\Database\Eloquent\Relations\HasMany {
+        return $this->hasMany(self::class, 'corrects_expense_id');
     }
 
     /** @return BelongsTo<User, $this> */

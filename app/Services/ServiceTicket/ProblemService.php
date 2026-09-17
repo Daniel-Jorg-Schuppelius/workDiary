@@ -12,13 +12,13 @@ declare(strict_types=1);
 
 namespace App\Services\ServiceTicket;
 
-use App\Models\{KnowledgeArticleLink, Problem, ServiceTicket, User};
+use App\Models\{ContentReference, Problem, ServiceTicket, User};
 use Illuminate\Support\Facades\DB;
 
 /**
  * Problem-Management (Feature 065, MVP-156): Übergangsmatrix (Muster
  * TicketStatusMachine), Eröffnung aus Incidents, Known-Error →
- * Wissensartikel (idempotent über KnowledgeArticleLink), Wirksamkeits-
+ * Wissensartikel (idempotent über den Verweis (ContentReference)), Wirksamkeits-
  * prüfung mit Frist. Incidents schließen Probleme NIE automatisch —
  * es gibt bewusst keinerlei Kopplungs-Code.
  */
@@ -104,16 +104,13 @@ class ProblemService {
 
     /**
      * Known Error → Wissensartikel über den bestehenden
-     * KnowledgeArticleService; idempotent über KnowledgeArticleLink
+     * KnowledgeArticleService; idempotent über den Verweis (ContentReference)
      * (linkable=Problem): ein zweiter Aufruf liefert den bestehenden Artikel.
      */
     public function publishKnownError(Problem $problem, User $actor): \App\Models\KnowledgeArticle {
-        $existing = KnowledgeArticleLink::query()
-            ->where('linkable_type', $problem->getMorphClass())
-            ->where('linkable_id', $problem->id)
-            ->first();
+        $existing = $this->knownErrorLink($problem);
         if ($existing !== null) {
-            return $existing->article()->firstOrFail();
+            return \App\Models\KnowledgeArticle::query()->findOrFail($existing->source_id);
         }
 
         return DB::transaction(function () use ($problem, $actor): \App\Models\KnowledgeArticle {
@@ -121,19 +118,32 @@ class ProblemService {
                 'title' => (string) __('Known Error: :title', ['title' => $problem->title]),
                 'problem' => (string) ($problem->description ?? $problem->title),
                 'solution' => trim((string) ($problem->workaround ?? '') . "\n\n" . (string) ($problem->permanent_fix ?? '')),
-                'category' => 'known_error',
             ]);
+            // Früher Kategorie `known_error`, seit MVP-814 die Sammlung „Known Errors“.
+            app(\App\Services\Collections\ContentCollectionService::class)
+                ->placeInNamedCollection((int) $article->organization_id, 'Known Errors', $article, $actor);
 
-            KnowledgeArticleLink::query()->create([
-                'knowledge_article_id' => $article->id,
-                'linkable_type' => $problem->getMorphClass(),
-                'linkable_id' => $problem->id,
-                'created_by_user_id' => $actor->id,
+            $article->links()->create([
+                'organization_id' => $article->organization_id,
+                'target_type' => $problem->getMorphClass(),
+                'target_id' => $problem->id,
+                'kind' => ContentReference::KIND_LINKED,
+                'created_by' => $actor->id,
             ]);
 
             $problem->audit('problem.known_error_published', ['article' => $article->id]);
 
             return $article;
         });
+    }
+
+    /** Verknüpfung des Known-Error-Artikels mit dem Problem, falls es sie gibt. */
+    public function knownErrorLink(Problem $problem): ?ContentReference {
+        return ContentReference::query()
+            ->where('source_type', (new \App\Models\KnowledgeArticle)->getMorphClass())
+            ->where('kind', ContentReference::KIND_LINKED)
+            ->where('target_type', $problem->getMorphClass())
+            ->where('target_id', $problem->id)
+            ->first();
     }
 }

@@ -146,6 +146,13 @@ return [
     ],
     'run' => [
         'navTitle' => 'Procedure run',
+        'deviationHint' => 'Instead of "failed": record a deviation with a reason and a follow-up action.',
+        'deviationType' => 'Type of deviation',
+        'deviationSeverity' => 'Severity',
+        'deviationSeverityDefault' => 'Severity automatic',
+        'deviationAction' => 'Follow-up action',
+        'deviationReason' => 'Reason (at least 20 characters)',
+        'recordDeviation' => 'Record deviation',
         'open' => 'Execute',
         'progress' => 'Progress',
         'notApplicable' => 'not applicable',

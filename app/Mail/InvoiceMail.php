@@ -114,7 +114,7 @@ class InvoiceMail extends Mailable implements ShouldQueue {
         }
 
         if ($this->deliveryFormat->needsXRechnung()) {
-            $xml = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class)->generate($electronicInvoice);
+            $xml = app(\App\Services\Invoicing\EInvoice\XRechnungGenerator::class)->generate($electronicInvoice, $this->deliveryFormat->xrechnungSyntax());
             $attachments[] = Attachment::fromData(static fn(): string => $xml, 'XRechnung_' . $number . '.xml')
                 ->withMime('application/xml');
             $payloads[] = $xml;

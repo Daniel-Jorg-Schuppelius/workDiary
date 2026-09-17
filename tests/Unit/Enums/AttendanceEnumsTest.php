@@ -33,10 +33,11 @@ final class AttendanceEnumsTest extends TestCase {
             // `learning` kam mit der Lernplattform dazu (Feature 149, MVP-749):
             // Lernzeit außerhalb der Arbeitszeit wird als Anwesenheit
             // nachgewiesen, damit die ArbZG-Prüfungen greifen.
-            ['clock', 'manual', 'import', 'auto_close', 'terminal', 'phone', 'learning'],
+            // `checkin` kam mit QR-/NFC-Check-in-Punkten (MVP-800).
+            ['clock', 'manual', 'import', 'auto_close', 'terminal', 'phone', 'learning', 'checkin'],
             AttendanceSource::values()
         );
         $this->assertNotEmpty(AttendanceSource::Clock->label());
-        $this->assertCount(7, AttendanceSource::options());
+        $this->assertCount(8, AttendanceSource::options());
     }
 }

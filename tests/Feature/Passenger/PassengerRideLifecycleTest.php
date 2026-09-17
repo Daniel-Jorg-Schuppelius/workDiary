@@ -278,6 +278,76 @@ class PassengerRideLifecycleTest extends TestCase {
         $this->assertSame('3.20', $ride->fareDeviation());
     }
 
+    /**
+     * Steuerentscheidung nachvollziehbar (Vollscan 2026-09-15, `C2-04`): bis zur
+     * konfigurierten Streckengrenze schlaegt der Abschluss den ermaessigten Satz
+     * vor; wer abweicht, muss begruenden. Die Entscheidung haengt am Beleg.
+     */
+    public function test_completion_suggests_reduced_rate_and_requires_a_reason_for_deviation(): void {
+        $this->qualifyDriver();
+        $this->concession();
+        $this->vehicleProfile();
+        $ride = $this->occupiedRide();
+
+        // Kurze Fahrt: Vorschlag ist der ermaessigte Satz. Regelsatz ohne
+        // Begruendung wird abgewiesen.
+        try {
+            $this->service()->complete($ride, [
+                'meter_net' => '50.00',
+                'tax_rate' => '19',
+                'payment_method' => 'cash',
+                'occupied_km' => '12.0',
+            ], $this->dispatcher);
+            $this->fail('Abweichung ohne Begruendung wurde nicht abgewiesen.');
+        } catch (ValidationException $e) {
+            $this->assertArrayHasKey('tax_reason', $e->errors());
+        }
+
+        $ride = $this->service()->complete($ride, [
+            'meter_net' => '50.00',
+            'tax_rate' => '19',
+            'payment_method' => 'cash',
+            'occupied_km' => '12.0',
+            'tax_reason' => 'Mietwagenfahrt ohne Taxikonzession.',
+        ], $this->dispatcher);
+
+        $this->assertSame('7.00', (string) data_get($ride->tax_context, 'suggestion.rate'));
+        $this->assertTrue((bool) data_get($ride->tax_context, 'deviates'));
+        $this->assertSame('Mietwagenfahrt ohne Taxikonzession.', data_get($ride->tax_context, 'reason'));
+    }
+
+    public function test_completion_without_distance_keeps_the_manual_rate(): void {
+        $this->qualifyDriver();
+        $this->concession();
+        $this->vehicleProfile();
+        $ride = $this->occupiedRide();
+
+        // Ohne erfasste Strecke gibt es keinen Vorschlag und damit keine
+        // Begruendungspflicht — eine Entscheidung aus fehlenden Daten waere geraten.
+        $ride = $this->service()->complete($ride, [
+            'meter_net' => '30.00',
+            'tax_rate' => '19',
+            'payment_method' => 'cash',
+        ], $this->dispatcher);
+
+        $this->assertSame(RideStatus::Completed, $ride->status);
+        $this->assertNull(data_get($ride->tax_context, 'suggestion'));
+    }
+
+    private function occupiedRide(): PassengerRide {
+        $ride = $this->acceptTaxiRide();
+        $ride = $this->service()->assign($ride, $this->driver, $this->vehicle, $this->dispatcher);
+        $ride = $this->service()->start($ride, [
+            'price_kind' => 'tariff',
+            'tariff' => $this->tariff(),
+            'estimated_km' => '20',
+            'estimated_minutes' => 30,
+        ], $this->dispatcher);
+        $ride = $this->service()->transition($ride, RideStatus::Waiting, $this->dispatcher);
+
+        return $this->service()->transition($ride, RideStatus::Occupied, $this->dispatcher);
+    }
+
     public function test_status_machine_rejects_backward_and_skip_transitions(): void {
         $ride = $this->acceptTaxiRide();
 

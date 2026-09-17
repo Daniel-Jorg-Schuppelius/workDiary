@@ -38,7 +38,7 @@ class DataQualityInspector {
         DiaryEntry $entry,
         ClassificationRequirementPhase $phase = ClassificationRequirementPhase::OnCreate,
     ): array {
-        $results = $this->validator->validate($entry, $phase, $this->persistedValues($entry), audit: false);
+        $results = $this->validator->validate($entry, $phase, $this->validator->valuesFor($entry), audit: false);
 
         $gaps = [];
         foreach ($results as $result) {
@@ -131,39 +131,8 @@ class DataQualityInspector {
      *
      * @return array<string, list<string>>
      */
-    private function persistedValues(DiaryEntry $entry): array {
-        $values = [];
-
-        $entryTypeSlug = $entry->entryType?->slug;
-        if (is_string($entryTypeSlug) && $entryTypeSlug !== '') {
-            $values[ClassificationDomain::EntryType->value] = [$entryTypeSlug];
-        }
-
-        $priority = $entry->priority;
-        if ($priority !== null) {
-            $values[ClassificationDomain::Priority->value] = [$priority->value];
-        }
-
-        return $values;
-    }
-
+    /** Beschriftung kommt vom Enum — hier keine zweite Tabelle pflegen. */
     private function domainLabel(string $domain): string {
-        return match (ClassificationDomain::tryFrom($domain)) {
-            ClassificationDomain::EntryType => (string) __('Auftragstypen'),
-            ClassificationDomain::Activity => (string) __('Tätigkeiten'),
-            ClassificationDomain::DefectType => (string) __('Fehlertypen'),
-            ClassificationDomain::RootCause => (string) __('Ursachen'),
-            ClassificationDomain::Result => (string) __('Ergebnisse'),
-            ClassificationDomain::Priority => (string) __('Prioritäten'),
-            ClassificationDomain::GoodwillReason => (string) __('Kulanzgründe'),
-            ClassificationDomain::ReworkReason => (string) __('Nacharbeitsgründe'),
-            ClassificationDomain::ProductGroup => (string) __('Produktgruppen'),
-            ClassificationDomain::DienstmittelType => (string) __('Dienstmitteltypen'),
-            ClassificationDomain::Allergen => (string) __('Allergene'),
-            ClassificationDomain::Trade => (string) __('Gewerke'),
-            ClassificationDomain::PermitType => (string) __('Genehmigungsarten'),
-            ClassificationDomain::WasteCode => (string) __('Abfallschlüssel (AVV)'),
-            null => $domain,
-        };
+        return ClassificationDomain::tryFrom($domain)?->label() ?? $domain;
     }
 }

@@ -1,11 +1,13 @@
 ---
 title: "Plataforma de aprendizaje"
 topic: learning.overview
-version: 1
+version: 3
 audience: []
 related:
     - training.overview
     - safety.overview
+    - learning.standards
+    - learning.subtitles
 ---
 
 La plataforma responde a **cómo se aprende y cómo se evalúa**. *Qué* debe
@@ -16,8 +18,18 @@ ambos encajan sin duplicarse.
 
 Un curso se compone de secciones y unidades. Una unidad es contenido, un
 examen, una tarea, una sesión presencial o material externo. El contenido se
-construye con bloques (texto, aviso, lista de control, vídeo, inserción); el
-HTML libre no está disponible a propósito.
+construye con bloques (texto, título, aviso, lista de control, imagen,
+galería, archivo, vídeo, audio, inserción, código, acordeón, tabla, artículo de
+conocimiento, procedimiento, pregunta de comprensión, separador); el HTML libre
+no está disponible a propósito.
+
+**Cada bloque se puede usar sin ver, sin oír y sin ratón.** Las imágenes y cada
+imagen de una galería necesitan un texto alternativo, el audio una
+transcripción y las columnas de una tabla un encabezado. El acordeón y la
+solución de una pregunta de comprensión se abren con el teclado. Una pregunta
+de comprensión no se califica: en el editor, las respuestas correctas empiezan
+con `*`. El bloque de procedimiento muestra la versión vigente; el
+procedimiento se inicia desde una entrada del diario.
 
 **Las inserciones requieren un host permitido.** De lo contrario la política
 de seguridad bloquearía la página en silencio dentro del curso; por eso el
@@ -29,6 +41,10 @@ el inicio, no la asignación — las inscripciones obligatorias están exentas. 
 **examen sin curso** es un curso de tipo «examen» con exactamente una unidad de
 prueba; quien aprueba obtiene la convalidación del curso de destino configurado —
 con el mismo retorno a certificado, constancia de instrucción y cualificación.
+
+Con **Orden fijo**, un curso libera cada unidad solo cuando la anterior está
+completada; las unidades bloqueadas muestran «Tras la unidad anterior». La fecha
+de publicación de la unidad se aplica además.
 
 Quien viene de LearnDash adopta el **ZIP de exportación** (catálogo → «Importación de LearnDash»): cursos, lecciones, temas y exámenes se crean como borradores, las preguntas van al catálogo con su categoría. Imágenes y medios no se copian (marcadores para completar), los vídeos de lección solo de hosts permitidos. Los cursos finalizados se anotan como inscripciones «importadas» para personas con correo coincidente — sin certificado ni registro de instrucción, porque una finalización importada no es prueba propia. La prueba muestra de antemano lo que se crearía.
 
@@ -50,7 +66,8 @@ acceso externo y sincronización sin conexión —, no solo en la vista. Una
 **permanencia mínima** cuenta desde la primera apertura de la unidad o por el
 tiempo de aprendizaje. Las **unidades de vista previa** se leen en el portal
 sin inscripción (solo texto). Las **categorías** de los ajustes ordenan el
-catálogo; la **ventana de disponibilidad** y el **límite de participantes**
+catálogo, las **etiquetas** añaden un eje transversal y se pueden cambiar tras
+la publicación; la **ventana de disponibilidad** y el **límite de participantes**
 rigen la autoinscripción — la administración puede seguir asignando y las
 inscripciones obligatorias omiten el límite. Las tareas llevan **reglas de
 archivos** (extensiones, número, tamaño — nunca más laxas que el sistema) y,
@@ -127,6 +144,19 @@ conservación** propone borrar las inscripciones finalizadas sin certificado una
 vez vencido el plazo regional (intentos y tiempo de aprendizaje van con ellas);
 los certificados permanecen más tiempo como prueba y luego se reducen a
 iniciales — el enlace de verificación sigue respondiendo.
+
+## Competencias
+
+La **matriz de competencias** (Aprendizaje → Competencias) muestra
+el nivel alcanzado por cada persona en cada competencia. Los niveles surgen de
+dos formas: un curso vinculado a una competencia acredita su nivel al
+completarse — repetirlo nunca lo rebaja y, en cursos con periodo de validez, el
+nivel solo vale durante ese periodo. Una **evaluación** de la gestión de
+aprendizaje, en cambio, también puede rebajar un nivel.
+
+Por rol se puede fijar un **nivel requerido**. Si una persona queda por debajo,
+la matriz marca la brecha; los niveles caducados no cuentan. Las competencias no
+bloquean nada: el bloqueo sigue en las cualificaciones.
 
 ## Quién aprende
 

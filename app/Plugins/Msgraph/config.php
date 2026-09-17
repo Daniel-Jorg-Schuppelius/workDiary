@@ -50,4 +50,8 @@ return [
     // To-Do-Sync (Feature 102, Schnitt E): eigene Verbindung je Organisation,
     // delegated Tasks.ReadWrite (nur die To-Do-Listen des verbundenen Kontos).
     'tasks_scopes' => env('MSGRAPH_TASKS_SCOPES', 'offline_access User.Read Tasks.ReadWrite'),
+    // OneNote-Übernahme (Feature 155, MVP-815): eigene Verbindung je Organisation,
+    // delegated Notes.Read (nur lesend, nur die Notizbücher des verbundenen Kontos).
+    // Abschaltbar über die Plugin-Einstellung `onenote_import` (Standard: aus).
+    'onenote_scopes' => env('MSGRAPH_ONENOTE_SCOPES', 'offline_access User.Read Notes.Read'),
 ];

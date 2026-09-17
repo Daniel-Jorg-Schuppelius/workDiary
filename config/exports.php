@@ -24,7 +24,10 @@ use App\Services\TimeExport\Profiles\{DatevLodasProfile, GenericCsvProfile, Lexw
  *    Lohnartennummer im Mapping-UI (Format des Zielsystems)
  *  - storage.disk:         Filesystem-Disk für die Export-Dateien
  *  - storage.path_pattern: relativer Pfad-Bauplan
- *  - retention_years:      gesetzlich vorgehaltene Aufbewahrungsdauer
+ *  Aufbewahrung: uebergebene Exporte sind gar nicht loeschbar
+ *  (TimeExportService::delete wirft 'alreadyDelivered'). Der frühere
+ *  Schluessel retention_years nannte eine Frist, die nirgends galt —
+ *  entfernt mit MVP-798 (Befund C2-05).
  */
 return [
     'default' => 'generic',
@@ -77,6 +80,4 @@ return [
         'disk' => env('TIME_EXPORT_DISK', 'local'),
         'path_pattern' => 'exports/{org}/{year}-{month}/{profile}-{hash}.{ext}',
     ],
-
-    'retention_years' => 10,
 ];

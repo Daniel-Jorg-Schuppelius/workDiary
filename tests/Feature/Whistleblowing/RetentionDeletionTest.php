@@ -62,6 +62,50 @@ class RetentionDeletionTest extends TestCase {
         return $case;
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13 (`privacy-3`): Die Schlüsselvernichtung macht
+     * die Inhalte unlesbar, die Nebentabellen blieben aber stehen. Die
+     * Verknüpfung „diese Person, dieser Fall" ist selbst das Datum — nach einer
+     * Löschung darf nur der Grabstein übrig sein.
+     */
+    public function test_deletion_clears_the_linked_person_records(): void {
+        $case = $this->makeCase('retention_review');
+        $actor = User::factory()->create(['organization_id' => $case->organization_id]);
+        $db = \Illuminate\Support\Facades\DB::class;
+
+        $db::table('whistleblowing_case_subjects')->insert([
+            'organization_id' => $case->organization_id, 'case_id' => $case->getKey(),
+            'user_id' => $actor->id, 'created_at' => now(),
+        ]);
+        $db::table('whistleblowing_case_conflicts')->insert([
+            'organization_id' => $case->organization_id, 'case_id' => $case->getKey(),
+            'user_id' => $actor->id, 'declared_at' => now(),
+        ]);
+        $db::table('whistleblowing_case_assignments')->insert([
+            'organization_id' => $case->organization_id, 'case_id' => $case->getKey(),
+            'user_id' => $actor->id, 'role' => 'handler', 'assigned_at' => now(),
+        ]);
+        $db::table('whistleblowing_deadline_reminders')->insert([
+            'case_id' => $case->getKey(), 'kind' => 'feedback',
+            'reminder_date' => now()->toDateString(), 'created_at' => now(),
+        ]);
+
+        app(WhistleblowingDeletionService::class)->delete($case, $actor);
+
+        foreach ([
+            'whistleblowing_case_subjects',
+            'whistleblowing_case_conflicts',
+            'whistleblowing_case_assignments',
+            'whistleblowing_deadline_reminders',
+        ] as $table) {
+            $this->assertSame(
+                0,
+                $db::table($table)->where('case_id', $case->getKey())->count(),
+                "Nach der Löschung stehen noch Zeilen in {$table}.",
+            );
+        }
+    }
+
     public function test_retention_command_moves_due_closed_cases(): void {
         $case = $this->makeCase('closed_substantiated');
 

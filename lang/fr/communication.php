@@ -17,6 +17,8 @@ return [
     ],
 
     'field' => [
+
+        'tags' => 'Mots-clés',
         'type' => 'Type',
         'direction' => 'Direction',
         'occurred_at' => 'Date et heure',
@@ -97,6 +99,8 @@ return [
     ],
 
     'filter' => [
+
+        'all_tags' => 'Tous les mots-clés',
         'search' => 'Recherche',
         'search_placeholder' => 'Objet ou contenu …',
         'all_customers' => 'Tous les clients',
@@ -105,6 +109,8 @@ return [
     ],
 
     'hint' => [
+
+        'tags' => 'Séparez-en plusieurs par des virgules, p. ex. maintenance, chauffage.',
         'customer_not_published' => 'La note apparaît dans la fiche client, mais pas dans le portail client.',
     ],
 
@@ -116,4 +122,14 @@ return [
     'empty_filtered' => 'Aucune note trouvée.',
     'confirm_delete' => 'Supprimer vraiment cette note de communication ?',
     'confirm_publish' => 'Rendre vraiment cette note visible pour le client ?',
+    'convert' => [
+        'action' => 'Convertir en article de connaissances',
+        'error' => [
+            'confidential' => 'Les notes confidentielles ne peuvent pas être converties en article de connaissances.',
+        ],
+        'flash' => [
+            'created' => 'Article de connaissances créé en brouillon ; il renvoie à la note.',
+            'existing' => 'Cette note a déjà été convertie.',
+        ],
+    ],
 ];

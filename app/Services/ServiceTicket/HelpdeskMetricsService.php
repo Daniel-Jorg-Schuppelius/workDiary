@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\ServiceTicket;
 
 use App\Enums\ServiceTicket\ServiceTicketStatus;
-use App\Models\{AuditLog, Change, KnowledgeArticle, KnowledgeArticleLink, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
+use App\Models\{AuditLog, Change, ContentReference, KnowledgeArticle, Problem, ServiceRequest, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -212,23 +212,25 @@ class HelpdeskMetricsService {
 
         // Problem-Verknüpfungen veröffentlichter Artikel — Mandantengrenze
         // transitiv über den org-gescopten Artikel (Allow-List Tenant-Audit).
-        $links = KnowledgeArticleLink::query()
-            ->where('linkable_type', $problemMorph)
-            ->whereIn('knowledge_article_id', KnowledgeArticle::query()
+        $links = ContentReference::query()
+            ->where('source_type', (new KnowledgeArticle())->getMorphClass())
+            ->where('kind', ContentReference::KIND_LINKED)
+            ->where('target_type', $problemMorph)
+            ->whereIn('source_id', KnowledgeArticle::query()
                 ->published()
                 ->whereNotNull('published_at')
                 ->select('id'))
-            ->get(['knowledge_article_id', 'linkable_id']);
+            ->get(['source_id', 'target_id']);
         if ($links->isEmpty()) {
             return [];
         }
 
         $articles = KnowledgeArticle::query()
-            ->whereIn('id', $links->pluck('knowledge_article_id')->unique())
+            ->whereIn('id', $links->pluck('source_id')->unique())
             ->get()
             ->keyBy('id');
         $problems = Problem::query()
-            ->whereIn('id', $links->pluck('linkable_id')->unique())
+            ->whereIn('id', $links->pluck('target_id')->unique())
             ->get(['id', 'title'])
             ->keyBy('id');
 
@@ -247,14 +249,14 @@ class HelpdeskMetricsService {
         $mid = $from->copy()->addSeconds((int) ($from->diffInSeconds($to) / 2));
 
         $rows = [];
-        foreach ($links->groupBy('knowledge_article_id') as $articleId => $group) {
+        foreach ($links->groupBy('source_id') as $articleId => $group) {
             /** @var KnowledgeArticle|null $article */
             $article = $articles->get($articleId);
             if ($article === null || $article->published_at === null) {
                 continue;
             }
 
-            $problemIds = $group->pluck('linkable_id')->map(fn($id): int => (int) $id)->all();
+            $problemIds = $group->pluck('target_id')->map(fn($id): int => (int) $id)->all();
             $ticketIds = $pivot
                 ->whereIn('problem_id', $problemIds)
                 ->pluck('service_ticket_id')

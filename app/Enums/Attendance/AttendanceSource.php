@@ -27,6 +27,9 @@ enum AttendanceSource: string implements HasLabel {
     // Kommen/Gehen, sondern ein nachgelagerter Nachweis für einen
     // abgeschlossenen Zeitraum — damit greifen die ArbZG-Prüfungen.
     case Learning = 'learning';
+    // Check-in über QR-Code oder NFC-Aufkleber mit dem eigenen Gerät (MVP-800):
+    // die Person ist angemeldet, der Punkt belegt Ort oder Fahrzeug.
+    case Checkin = 'checkin';
 
     public function label(): string {
         return (string) __('attendance.source.' . $this->value);

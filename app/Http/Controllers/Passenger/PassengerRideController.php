@@ -197,6 +197,9 @@ class PassengerRideController extends Controller {
         $validated = $request->validate([
             'meter_net' => ['required', 'numeric', 'min:0'],
             'tax_rate' => ['required', 'numeric', 'min:0', 'max:100'],
+            // Pflicht wird im Dienst erzwungen, sobald der Satz vom Vorschlag
+            // abweicht — dort liegt die Streckengrenze.
+            'tax_reason' => ['nullable', 'string', 'max:200'],
             'payment_method' => ['required', 'string', 'max:24'],
             'occupied_km' => ['nullable', 'numeric', 'min:0'],
             'empty_km' => ['nullable', 'numeric', 'min:0'],

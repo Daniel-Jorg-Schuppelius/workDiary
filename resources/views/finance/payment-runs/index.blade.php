@@ -34,6 +34,36 @@
             </div>
         @endunless
 
+        {{-- Lastschrifteinzug (MVP-795): Dienst und Dateibauer waren gebaut,
+             aber ohne Einstieg in der Oberfläche. --}}
+        @if ($mandates->isNotEmpty() && $accounts->isNotEmpty())
+            <x-card :title="__('sepa.direct_debit_title')" class="mb-4">
+                <p class="mb-2 text-sm text-muted">{{ __('sepa.direct_debit_hint') }}</p>
+                <form method="POST" action="{{ route('finance.payment-runs.direct-debit.store') }}" class="flex flex-wrap items-end gap-2">
+                    @csrf
+                    <select name="bank_account" required aria-label="{{ __('sepa.column.account') }}" class="select select-bordered select-sm">
+                        @foreach ($accounts as $account)
+                            <option value="{{ $account->sqid }}">{{ $account->label }}</option>
+                        @endforeach
+                    </select>
+                    <select name="mandate" required aria-label="{{ __('sepa.direct_debit_mandate') }}" class="select select-bordered select-sm">
+                        @foreach ($mandates as $mandate)
+                            <option value="{{ $mandate->sqid }}">{{ $mandate->reference }} · {{ $mandate->customer?->name }}</option>
+                        @endforeach
+                    </select>
+                    <input type="number" step="0.01" min="0.01" name="amount" required
+                           aria-label="{{ __('sepa.direct_debit_amount') }}"
+                           placeholder="{{ __('sepa.direct_debit_amount') }}" class="input input-sm input-bordered">
+                    <input type="text" name="reference" required maxlength="140"
+                           aria-label="{{ __('sepa.direct_debit_reference') }}"
+                           placeholder="{{ __('sepa.direct_debit_reference') }}" class="input input-sm input-bordered">
+                    <input type="date" name="execution_date"
+                           aria-label="{{ __('sepa.column.execution_date') }}" class="input input-sm input-bordered">
+                    <x-icon-btn icon="bolt" tone="primary" size="sm" type="submit" show-label>{{ __('sepa.direct_debit_submit') }}</x-icon-btn>
+                </form>
+            </x-card>
+        @endif
+
         <x-table scroll="flex" :pin-rows="true" :zebra="true" table-sort="client">
             <x-slot:head>
                 <tr>

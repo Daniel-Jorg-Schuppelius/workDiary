@@ -17,38 +17,34 @@
 </head>
 <body class="min-h-screen bg-base-200">
 <div class="max-w-md mx-auto p-4 flex flex-col gap-4">
-    <div class="card bg-base-100 shadow">
-        <div class="card-body">
-            <h1 class="card-title">{{ __('inventory.serial.verify.title') }}</h1>
-            <p class="text-sm opacity-70">{{ $orgName }}</p>
-            <form method="GET" action="{{ route('serials.public-passport', $token) }}" class="flex items-end gap-2 mt-2">
-                <input aria-label="{{ __('inventory.serial.verify.placeholder') }}" name="serial" value="{{ $query }}" autofocus
-                       placeholder="{{ __('inventory.serial.verify.placeholder') }}"
-                       class="input input-bordered w-full font-mono">
-                <x-button type="submit" tone="primary">{{ __('inventory.serial.action.search') }}</x-button>
-            </form>
-        </div>
-    </div>
+    <x-card class="flex flex-col gap-2">
+        <h1 class="card-title">{{ __('inventory.serial.verify.title') }}</h1>
+        <p class="text-sm opacity-70">{{ $orgName }}</p>
+        <form method="GET" action="{{ route('serials.public-passport', $token) }}" class="flex items-end gap-2 mt-2">
+            <input aria-label="{{ __('inventory.serial.verify.placeholder') }}" name="serial" value="{{ $query }}" autofocus
+                   placeholder="{{ __('inventory.serial.verify.placeholder') }}"
+                   class="input input-bordered w-full font-mono">
+            <x-button type="submit" tone="primary">{{ __('inventory.serial.action.search') }}</x-button>
+        </form>
+    </x-card>
 
     @if ($searched)
         @if ($serial === null)
             <div class="alert alert-error">{{ __('inventory.serial.verify.not_found') }}</div>
         @else
-            <div class="card bg-base-100 shadow">
-                <div class="card-body">
-                    <div class="flex items-center gap-2">
-                        <span class="font-mono">{{ $serial->serial_no }}</span>
-                        <span class="badge">{{ $serial->status->label() }}</span>
-                    </div>
-                    {{-- Bewusst ohne personenbezogene Daten (kein Kunde). --}}
-                    <dl class="grid grid-cols-2 gap-y-1 text-sm mt-2">
-                        <dt class="opacity-60">{{ __('inventory.serial.field.article') }}</dt>
-                        <dd>{{ $serial->article?->name }}</dd>
-                        <dt class="opacity-60">{{ __('inventory.serial.field.source') }}</dt>
-                        <dd>{{ $serial->source->label() }}</dd>
-                    </dl>
+            <x-card class="flex flex-col gap-2">
+                <div class="flex items-center gap-2">
+                    <span class="font-mono">{{ $serial->serial_no }}</span>
+                    <span class="badge">{{ $serial->status->label() }}</span>
                 </div>
-            </div>
+                {{-- Bewusst ohne personenbezogene Daten (kein Kunde). --}}
+                <dl class="grid grid-cols-2 gap-y-1 text-sm mt-2">
+                    <dt class="opacity-60">{{ __('inventory.serial.field.article') }}</dt>
+                    <dd>{{ $serial->article?->name }}</dd>
+                    <dt class="opacity-60">{{ __('inventory.serial.field.source') }}</dt>
+                    <dd>{{ $serial->source->label() }}</dd>
+                </dl>
+            </x-card>
         @endif
     @endif
 </div>

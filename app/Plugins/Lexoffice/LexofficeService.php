@@ -285,4 +285,22 @@ class LexofficeService {
 
         return ['external_id' => $id, 'payload' => $payload];
     }
+
+    /**
+     * Gegenbeleg zu einer gepushten Auslage (MVP-802): Einkaufsgutschrift über
+     * denselben Betrag mit Verweis auf den ursprünglichen Beleg.
+     *
+     * @return array{external_id: string, payload: array<string, mixed>}
+     */
+    public function createExpenseCounterVoucher(\App\Models\Expense $expense, string $categoryId, string $originalReference, string $reason): array {
+        $payload = $this->mapper->expenseToCounterVoucherPayload($expense, $categoryId, $originalReference, $reason);
+
+        $resource = (new VouchersEndpoint($this->client()))->create(Voucher::fromJson(JsonHelper::encode($payload)));
+        $id = $resource->getId()->toString();
+        if ($id === '') {
+            throw new RuntimeException('Lexoffice voucher create returned no id.');
+        }
+
+        return ['external_id' => $id, 'payload' => $payload];
+    }
 }

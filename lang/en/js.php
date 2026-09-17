@@ -27,6 +27,37 @@ return [
         'move_failed' => 'Move failed.',
         'suggest_failed' => 'Could not load suggestions.',
     ],
+    // Dienstplan-Oberflaeche (MVP-797): war zuvor fest verdrahtetes Deutsch.
+    'schedule_ui' => [
+        'shift_edit' => 'Edit shift',
+        'shift_create' => 'Create shift',
+        'shift_delete_confirm' => 'Really delete this shift?',
+        'shift_type_edit' => 'Edit shift type',
+        'shift_type_create' => 'Create shift type',
+        'shift_type_delete_confirm' => 'Really delete this shift type?',
+        'save' => 'Save',
+        'delete' => 'Delete',
+        'close' => 'Close',
+        'save_failed' => 'Saving failed.',
+        'delete_failed' => 'Deleting failed.',
+        'publish_failed' => 'Publishing failed.',
+        'confirm_failed' => 'Confirmation failed.',
+        'suggestions_title' => 'Staffing suggestions',
+        'col_employee' => 'Employee',
+        'col_score' => 'Score',
+        'col_reason' => 'Reason',
+    ],
+    'bulk' => [
+        'select_one' => 'Please select at least one entry first.',
+    ],
+    'design' => [
+        'inheritance' => '":base" · :inherited/:total inherited, :own overridden',
+    ],
+    // Chat-Oberflaeche (MVP-798): angepinnte Nachrichten werden per JSON geladen.
+    'chat' => [
+        'pinned_failed' => 'Pinned messages could not be loaded.',
+        'pinned_empty' => 'No pinned messages.',
+    ],
     'kanban' => [
         'invalid_move' => 'This status change is not part of the order workflow.',
         'not_allowed' => 'You are not authorised to perform this order action.',

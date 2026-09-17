@@ -23,6 +23,8 @@ return [
     'per_page' => 25,
     'type_ahead_limit' => 5,
     'aggregate_limit' => 12,
+    // Häufigste Schlagwörter der Treffer als Facette (MVP-812).
+    'tag_facet_limit' => 15,
 
     // Anzeige-Auszug je Dokument und Obergrenze des kodierten Suchtexts.
     'excerpt_length' => 2000,

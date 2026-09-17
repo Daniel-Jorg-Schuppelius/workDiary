@@ -198,6 +198,26 @@ class PublicCareerTest extends TestCase {
         $this->assertSame('techniker-2', $fresh->ensurePublicSlug('Techniker'));
     }
 
+    /**
+     * Gegenstueck zum Veroeffentlichen (Vollscan 2026-09-15, `C1-07` /
+     * `MVP-798`): Der Pause-Endpunkt war gebaut, hatte aber weder einen
+     * Einstieg in der Oberflaeche noch einen Test. Eine pausierte Stelle
+     * verschwindet aus dem oeffentlichen Bereich, die Veroeffentlichung
+     * bleibt als Datensatz erhalten.
+     */
+    public function test_admin_can_pause_a_published_career_posting(): void {
+        $posting = $this->publishPosting();
+
+        $this->actingAs($this->orgAdmin())
+            ->post(route('recruiting.requisitions.career.pause', $posting->requisition))
+            ->assertRedirect();
+
+        $this->assertDatabaseHas('job_postings', [
+            'id' => $posting->id,
+            'status' => 'paused',
+        ]);
+    }
+
     public function test_admin_can_publish_posting_to_career_area(): void {
         $admin = $this->orgAdmin();
         $requisition = JobRequisition::query()->create([
@@ -217,6 +237,36 @@ class PublicCareerTest extends TestCase {
             'status' => 'published',
             'public_slug' => 'monteur-mwd',
         ]);
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-13 (`config-1`): `parse_url` gibt alles zurück,
+     * was zwischen Schema und Pfad steht — auch `evil.test;script-src *`. Der
+     * Wert landete ungeprüft in der Kopfzeile, wo das Semikolon die Direktive
+     * beendet und die nächste beginnt. Gepflegt wird die Einstellung vom
+     * Org-Admin, die Kopfzeile gilt im öffentlichen Karriereportal.
+     */
+    public function test_embed_origin_cannot_inject_a_csp_directive(): void {
+        $this->enablePortal();
+        Setting::set(
+            'applications.portal.embed_origins',
+            "https://evil.example;script-src 'unsafe-inline'\nhttps://kunde.example",
+            SettingScope::Organization,
+            $this->organization,
+        );
+        $this->publishPosting();
+
+        $csp = (string) $this->get('/karriere/' . $this->organization->slug . '/stellen/servicetechniker/embed')
+            ->assertOk()
+            ->headers->get('Content-Security-Policy');
+
+        // `script-src 'self'` steht hier legitim — gemeint ist die
+        // eingeschleuste Direktive, nicht der Direktivname.
+        $this->assertStringNotContainsString("script-src 'unsafe-inline'", $csp);
+        $this->assertStringContainsString("script-src 'self'", $csp);
+        $this->assertStringNotContainsString('evil.example', $csp);
+        // Gegenprobe: die saubere Herkunft derselben Einstellung bleibt gültig.
+        $this->assertStringContainsString('frame-ancestors https://kunde.example', $csp);
     }
 
     public function test_embed_response_allows_configured_origin_but_canonical_does_not(): void {

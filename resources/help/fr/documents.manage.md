@@ -25,3 +25,13 @@ signaler les documents arrivant à échéance. Attention : **la
 suppression retire le document avec toutes ses versions** (soft delete,
 droit de suppression requis) ; les versions sont immuables, toute
 correction passe par une nouvelle version.
+
+## Envoyer des documents
+
+Les documents — factures, devis, bons de livraison — peuvent être envoyés
+directement depuis le dossier. Chaque envoi est consigné avec destinataire,
+horodatage et canal, afin de retracer **ce qui est parti, à qui et quand**.
+
+L'**historique d'envoi** est attaché au document, pas à une boîte aux lettres :
+même sans accès au compte de messagerie, on voit si et quand l'envoi a eu lieu.
+Un nouvel envoi ajoute une entrée au lieu d'écraser la précédente.

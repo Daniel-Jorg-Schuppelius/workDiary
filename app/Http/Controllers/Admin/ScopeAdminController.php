@@ -10,10 +10,13 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Enums\User\Permission;
+use App\Enums\User\{Permission, UserRole};
 use App\Http\Controllers\Controller;
 use App\Models\{Organization, User};
 use App\Services\Licensing\{ModuleCatalog, ModuleScopeService, ModuleStatusResolver};
+use App\Services\Navigation\StartPageResolver;
+use App\Settings\SettingScope;
+use App\Support\Setting;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -32,6 +35,7 @@ class ScopeAdminController extends Controller {
         private readonly ModuleScopeService $scope,
         private readonly ModuleStatusResolver $status,
         private readonly ModuleCatalog $catalog,
+        private readonly StartPageResolver $startPages,
     ) {}
 
     public function index(Request $request): View {
@@ -46,6 +50,11 @@ class ScopeAdminController extends Controller {
             'scopeConfiguredAt' => is_array($organization->settings)
                 ? ($organization->settings['scope_configured_at'] ?? null)
                 : null,
+            'startPageLabels' => StartPageResolver::labels(),
+            'startPageRoles' => array_map(
+                fn (UserRole $role): array => ['role' => $role, 'route' => $this->startPages->roleDefault($organization, $role)],
+                StartPageResolver::CONFIGURABLE_ROLES,
+            ),
         ]);
     }
 
@@ -84,6 +93,32 @@ class ScopeAdminController extends Controller {
         $result = $this->scope->setActiveModules($organization, $active, $user);
 
         return back()->with('success', $this->summary($result));
+    }
+
+    /**
+     * Startseite je Rolle (MVP-799). Leere Auswahl entfernt die Vorgabe; geschrieben
+     * wird über die Settings-Registry, die den Routennamen gegen die Liste prüft.
+     */
+    public function saveStartPages(Request $request): RedirectResponse {
+        Gate::authorize(Permission::OrganizationScopeManage->value);
+
+        $organization = $this->organization($request);
+        $data = $request->validate([
+            'startpages' => ['nullable', 'array'],
+            'startpages.*' => ['nullable', 'string', Rule::in(StartPageResolver::routeOptions())],
+        ]);
+
+        foreach (StartPageResolver::CONFIGURABLE_ROLES as $role) {
+            $route = $data['startpages'][$role->value] ?? null;
+            $key = StartPageResolver::settingKey($role);
+            if (is_string($route) && $route !== '') {
+                Setting::set($key, $route, SettingScope::Organization, $organization, $request->user()?->id);
+            } else {
+                Setting::reset($key, SettingScope::Organization, $organization);
+            }
+        }
+
+        return back()->with('success', __('scope.startpages.saved'));
     }
 
     private function organization(Request $request): Organization {

@@ -72,7 +72,7 @@
         <table class="table table-sm">
             <thead>
                 <tr>
-                    <th>{{ __('Tag') }}</th>
+                    <th>{{ __('Wochentag') }}</th>
                     <th>{{ __('Erfassung') }}</th>
                     <th>{{ __('Vorgabe') }}</th>
                     <th class="text-right">{{ __('Tagessoll') }}</th>

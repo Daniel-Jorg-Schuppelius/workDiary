@@ -29,23 +29,21 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <article class="card border border-base-300 bg-base-100 shadow-sm">
-        <div class="card-body gap-3">
-            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Inhalts-Übersicht') }}</h2>
-            <p class="text-sm text-base-content/70">
-                {{ __('Geschätzte Bundle-Größe vor ZIP-Kompression: :kb KB.', ['kb' => $preview['total_estimated_kb']]) }}
-            </p>
+    <x-card as="article" class="flex flex-col gap-3">
+        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Inhalts-Übersicht') }}</h2>
+        <p class="text-sm text-base-content/70">
+            {{ __('Geschätzte Bundle-Größe vor ZIP-Kompression: :kb KB.', ['kb' => $preview['total_estimated_kb']]) }}
+        </p>
 
-            <ul class="space-y-1 text-sm">
-                @foreach ($preview['top_sections'] as $section)
-                    <li class="flex items-center justify-between gap-3 border-b border-base-200/70 pb-1 last:border-0">
-                        <span class="font-mono text-xs text-base-content/80">{{ $section['key'] }}</span>
-                        <span class="text-xs text-muted">{{ $section['kb'] }} KB</span>
-                    </li>
-                @endforeach
-            </ul>
-        </div>
-    </article>
+        <ul class="space-y-1 text-sm">
+            @foreach ($preview['top_sections'] as $section)
+                <li class="flex items-center justify-between gap-3 border-b border-base-200/70 pb-1 last:border-0">
+                    <span class="font-mono text-xs text-base-content/80">{{ $section['key'] }}</span>
+                    <span class="text-xs text-muted">{{ $section['kb'] }} KB</span>
+                </li>
+            @endforeach
+        </ul>
+    </x-card>
 
     {{-- Diagnose erklären (Feature 148, MVP-732): PII-freie Kennwerte des
          Health-Blocks; Lesehilfe, ändert nichts an der Installation. --}}
@@ -61,71 +59,67 @@
             : null;
     @endphp
     @if ($aiDiagnoseUsable)
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('ai.assist.insight_title') }}</h2>
-                @if ($aiDiagnose === null)
-                    <x-action-form :action="route('ai.assist.support-diagnose')">
-                        <x-icon-btn icon="psychology" tone="info" size="sm" type="submit" show-label
-                                    :title="__('ai.assist.explain_support')">{{ __('ai.assist.explain_support') }}</x-icon-btn>
-                    </x-action-form>
-                @else
-                    @include('ai._insight', ['suggestion' => $aiDiagnose])
-                @endif
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('ai.assist.insight_title') }}</h2>
+            @if ($aiDiagnose === null)
+                <x-action-form :action="route('ai.assist.support-diagnose')">
+                    <x-icon-btn icon="psychology" tone="info" size="sm" type="submit" show-label
+                                :title="__('ai.assist.explain_support')">{{ __('ai.assist.explain_support') }}</x-icon-btn>
+                </x-action-form>
+            @else
+                @include('ai._insight', ['suggestion' => $aiDiagnose])
+            @endif
+        </x-card>
     @endif
 
-    <article class="card border border-base-300 bg-base-100 shadow-sm">
-        <div class="card-body gap-3">
-            <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Bericht generieren') }}</h2>
+    <x-card as="article" class="flex flex-col gap-3">
+        <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('Bericht generieren') }}</h2>
 
-            <x-validation-errors />
+        <x-validation-errors />
 
-            <form method="POST" action="{{ route('admin.support.report.generate') }}" class="space-y-3">
-                @csrf
+        <form method="POST" action="{{ route('admin.support.report.generate') }}" class="space-y-3">
+            @csrf
 
-                <label class="flex items-start gap-2">
-                    <input type="checkbox" name="include_schema" value="1" class="checkbox checkbox-sm">
-                    <span class="text-sm">{{ __('Schema-Dump (DDL ohne Daten) einbeziehen') }}</span>
-                </label>
+            <label class="flex items-start gap-2">
+                <input type="checkbox" name="include_schema" value="1" class="checkbox checkbox-sm">
+                <span class="text-sm">{{ __('Schema-Dump (DDL ohne Daten) einbeziehen') }}</span>
+            </label>
 
-                <label class="flex items-start gap-2 {{ $canExportWithSamples ? '' : 'opacity-50' }}">
-                    <input type="checkbox" name="include_samples" value="1" class="checkbox checkbox-sm"
-                           {{ $canExportWithSamples ? '' : 'disabled' }}>
-                    <span class="text-sm">
-                        {{ __('Anonymisierte Sample-Aufträge (10 Stück) einbeziehen') }}
-                        @unless ($canExportWithSamples)
-                            <span class="block text-xs text-muted">{{ __('Erfordert Plattform-Admin-Berechtigung.') }}</span>
-                        @endunless
-                    </span>
-                </label>
+            <label class="flex items-start gap-2 {{ $canExportWithSamples ? '' : 'opacity-50' }}">
+                <input type="checkbox" name="include_samples" value="1" class="checkbox checkbox-sm"
+                       {{ $canExportWithSamples ? '' : 'disabled' }}>
+                <span class="text-sm">
+                    {{ __('Anonymisierte Sample-Aufträge (10 Stück) einbeziehen') }}
+                    @unless ($canExportWithSamples)
+                        <span class="block text-xs text-muted">{{ __('Erfordert Plattform-Admin-Berechtigung.') }}</span>
+                    @endunless
+                </span>
+            </label>
 
-                <div>
-                    <label for="report-password" class="text-sm font-medium">{{ __('ZIP-Passwort (optional)') }}</label>
-                    <input id="report-password" type="password" name="password" autocomplete="new-password"
-                           class="input input-bordered input-sm w-full max-w-sm">
-                    <p class="mt-1 text-xs text-muted">
-                        {{ __('Wird auf das ZIP-Archiv angewendet. Out-of-Band an den Support weitergeben (nicht in derselben E-Mail).') }}
-                    </p>
-                </div>
-
-                <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
-                    <x-button type="submit" tone="primary" size="sm" icon="archive">{{ __('Bericht generieren und herunterladen') }}</x-button>
-                    <span class="text-xs text-muted">
-                        {{ __('Der Bericht wird erst beim Klick erzeugt. Vorher werden keine Daten geschrieben.') }}
-                    </span>
-                </div>
-            </form>
+            <div>
+                <label for="report-password" class="text-sm font-medium">{{ __('ZIP-Passwort (optional)') }}</label>
+                <input id="report-password" type="password" name="password" autocomplete="new-password"
+                       class="input input-bordered input-sm w-full max-w-sm">
+                <p class="mt-1 text-xs text-muted">
+                    {{ __('Wird auf das ZIP-Archiv angewendet. Out-of-Band an den Support weitergeben (nicht in derselben E-Mail).') }}
+                </p>
+            </div>
 
             <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
-                <x-button :href="route('admin.support.report.download')" tone="outline" size="sm" icon="download">{{ __('Als JSON-Datei herunterladen') }}</x-button>
-                <x-button :href="route('admin.support.report.preview')" target="_blank" rel="noopener" tone="ghost" size="sm" icon="visibility">{{ __('Im Browser anzeigen') }}</x-button>
+                <x-button type="submit" tone="primary" size="sm" icon="archive">{{ __('Bericht generieren und herunterladen') }}</x-button>
                 <span class="text-xs text-muted">
-                    {{ __('Reine JSON-Variante ohne ZIP — gleiche datensparsame Felder.') }}
+                    {{ __('Der Bericht wird erst beim Klick erzeugt. Vorher werden keine Daten geschrieben.') }}
                 </span>
             </div>
+        </form>
+
+        <div class="flex flex-wrap items-center gap-2 border-t border-base-200/70 pt-3">
+            <x-button :href="route('admin.support.report.download')" tone="outline" size="sm" icon="download">{{ __('Als JSON-Datei herunterladen') }}</x-button>
+            <x-button :href="route('admin.support.report.preview')" target="_blank" rel="noopener" tone="ghost" size="sm" icon="visibility">{{ __('Im Browser anzeigen') }}</x-button>
+            <span class="text-xs text-muted">
+                {{ __('Reine JSON-Variante ohne ZIP — gleiche datensparsame Felder.') }}
+            </span>
         </div>
-    </article>
+    </x-card>
 </x-page-shell>
 @endsection

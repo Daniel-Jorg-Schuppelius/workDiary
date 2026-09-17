@@ -491,6 +491,8 @@ return [
         'knowledge.update' => 'Editar artículo de conocimiento',
         'knowledge.publish' => 'Publicar/archivar artículo de conocimiento',
         'knowledge.delete' => 'Eliminar artículo de conocimiento',
+        'collection.viewAny' => 'Ver colecciones',
+        'collection.manage' => 'Gestionar colecciones y referencias',
         'ideas.viewAny' => 'Ver el área de mapas de ideas',
         'ideas.create' => 'Crear mapas de ideas propios',
         'ideas.manageLifecycle' => 'Gestionar el ciclo de vida de los mapas (solo metadatos)',

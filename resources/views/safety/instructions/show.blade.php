@@ -75,6 +75,7 @@
                                                    :confirm-label="__('safety.register.action.sign')">
                                         <x-icon-btn icon="draw" tone="primary" size="xs" type="submit" show-label>{{ __('safety.register.action.sign') }}</x-icon-btn>
                                     </x-action-form>
+                                    <x-icon-btn icon="gesture" tone="outline" size="xs" type="button" data-open-dialog="safety-sign-drawn" show-label>{{ __('safety.register.action.sign_drawn') }}</x-icon-btn>
                                 @endcan
                             </td>
                         </tr>
@@ -82,6 +83,29 @@
                         <x-table.empty :colspan="6" :title="__('safety.register.empty.participants')" compact />
                     @endforelse
                 </x-table>
+
+                {{-- Gezeichnete Unterschrift (MVP-798, Befund P10-14): nur für die eigene Zeile. --}}
+                @php $signable = $instruction->participants->first(fn ($p) => auth()->user()?->can('sign', $p)); @endphp
+                @if ($signable)
+                    @once @push('scripts') @vite('resources/js/signature.js') @endpush @endonce
+                    <x-modal id="safety-sign-drawn" :embedded="false" icon="gesture" :title="__('safety.register.action.sign_drawn')">
+                        <div x-data="signaturePad" class="flex flex-col gap-3">
+                            <p class="text-sm text-muted">{{ __('safety.register.confirm.sign_drawn_hint') }}</p>
+                            <div class="rounded-box border border-base-300 bg-white p-2">
+                                <canvas x-ref="canvas" class="block h-32 w-full touch-none rounded bg-white"></canvas>
+                            </div>
+                            <button type="button" class="btn btn-ghost btn-xs self-start" @click="clear()">{{ __('Leeren') }}</button>
+                            <form method="POST" action="{{ route('safety.instructions.participants.sign', [$instruction, $signable]) }}" @submit="prepare($event)" class="flex">
+                                @csrf
+                                <input type="hidden" name="signature" x-ref="sigInput">
+                                <button class="btn btn-primary btn-sm w-full" :disabled="isEmpty">{{ __('safety.register.action.sign_drawn') }}</button>
+                            </form>
+                        </div>
+                        <x-slot:actions>
+                            <x-button type="button" tone="ghost" size="md" data-entry-modal-close>{{ __('Schließen') }}</x-button>
+                        </x-slot:actions>
+                    </x-modal>
+                @endif
                 @if ($ownParticipant !== null && ! $ownParticipant->isSigned())
                     <p class="mt-3 text-xs text-muted">{{ __('safety.register.hint.sign_self') }}</p>
                 @endif

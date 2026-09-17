@@ -81,6 +81,9 @@ class LearningCourseService {
 
             $this->guardTimePolicy($course);
             $this->syncPrerequisites($course, $attributes['prerequisite_course_ids'] ?? null);
+            if (array_key_exists('tags', $attributes)) {
+                $course->syncTagNames((string) $attributes['tags']);
+            }
 
             // Prüfung ohne Kurs (MVP-784): genau eine Prüfungseinheit, damit
             // derselbe Versuchs- und Nachweispfad greift wie in jedem Kurs.
@@ -134,6 +137,11 @@ class LearningCourseService {
         $this->guardTimePolicy($course->refresh());
         if (array_key_exists('prerequisite_course_ids', $attributes)) {
             $this->syncPrerequisites($course, $attributes['prerequisite_course_ids']);
+        }
+        // Schlagwörter (MVP-810) ordnen, sie ändern keinen Inhalt — auch nach der Freigabe pflegbar.
+        if (array_key_exists('tags', $attributes)) {
+            $course->syncTagNames((string) $attributes['tags']);
+            app(\App\Services\Search\Indexing\SearchIndexer::class)->schedule($course);
         }
 
         return $course;

@@ -46,3 +46,11 @@ kept permanently and complements the audit log.
 
 The export only reads existing data — it changes neither documents nor
 master data and can be repeated as often as needed.
+
+**Procedural documentation:** Besides exporting data, the German GoBD rules
+require a description of *how* the data comes about — from capture through
+processing to retention. The application assembles this documentation from the
+actual system state: active modules, number ranges, retention periods, roles
+and logging. Whatever changes in operation therefore changes in the
+documentation too — unlike a text document written once. Review it before any
+tax audit and add the organisational parts no system can know.

@@ -146,6 +146,13 @@ return [
     ],
     'run' => [
         'navTitle' => 'Ejecución del procedimiento',
+        'deviationHint' => 'En lugar de «fallido»: registre una desviación con motivo y acción posterior.',
+        'deviationType' => 'Tipo de desviación',
+        'deviationSeverity' => 'Gravedad',
+        'deviationSeverityDefault' => 'Gravedad automática',
+        'deviationAction' => 'Acción posterior',
+        'deviationReason' => 'Motivo (mínimo 20 caracteres)',
+        'recordDeviation' => 'Registrar desviación',
         'open' => 'Ejecutar',
         'progress' => 'Progreso',
         'notApplicable' => 'no aplicable',

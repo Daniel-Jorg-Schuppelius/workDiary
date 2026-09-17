@@ -36,9 +36,11 @@ trait ResolvesWorkMode {
         }
         $request->session()->put('work_mode', $sessionMode);
 
+        // Neues System: über /start, weil erst dort Organisation und Rechte gebunden
+        // sind und die Startseite je Person/Rolle aufgelöst werden kann (MVP-799).
         $defaultRoute = ($sessionMode === 'legacy' && $canLegacy)
             ? route('legacy.diary.index')
-            : ($canNew ? route('diary.index') : route('home'));
+            : ($canNew ? route('start') : route('home'));
 
         return redirect()->intended($defaultRoute);
     }

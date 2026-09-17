@@ -14,6 +14,7 @@ namespace App\Services\Privacy\Retention;
 
 use App\Models\{Organization, User};
 use App\Models\Privacy\RetentionProposal;
+use App\Services\Privacy\LegalHoldService;
 use Illuminate\Database\Eloquent\Model;
 use RuntimeException;
 
@@ -24,7 +25,10 @@ use RuntimeException;
  * (approve → purge), jede Entscheidung auditiert.
  */
 class RetentionScanService {
-    public function __construct(private readonly RetentionRegistry $registry) {}
+    public function __construct(
+        private readonly RetentionRegistry $registry,
+        private readonly LegalHoldService $legalHolds,
+    ) {}
 
     /**
      * @return array{proposed: int, exempt: int}
@@ -43,6 +47,13 @@ class RetentionScanService {
             $query = ($policy->overdueQuery)($organization, $cutoff);
 
             foreach ($query->get() as $model) {
+                // Legal Hold (MVP-801): gesperrte Personen/Kunden bekommen keinen Vorschlag.
+                if ($this->legalHolds->activeHoldFor($model) !== null) {
+                    $exempt++;
+
+                    continue;
+                }
+
                 $exemptReason = $policy->exempt !== null ? ($policy->exempt)($model) : null;
                 if ($exemptReason !== null) {
                     $exempt++;
@@ -76,6 +87,7 @@ class RetentionScanService {
     /** Erste Stufe: Vorschlag bestätigen (noch keine Löschung). */
     public function approve(RetentionProposal $proposal, User $actor): RetentionProposal {
         $this->assertStatus($proposal, RetentionProposal::STATUS_PENDING);
+        $this->assertSubjectNotHeld($proposal);
 
         $proposal->update([
             'status' => RetentionProposal::STATUS_APPROVED,
@@ -113,6 +125,8 @@ class RetentionScanService {
         /** @var Model|null $subject */
         $subject = $proposal->subject()->first();
         if ($subject !== null) {
+            // Der Vermerk kann nach dem Vorschlag gesetzt worden sein — vor dem Löschen erneut prüfen.
+            $this->legalHolds->assertNotHeld($subject);
             if ($policy?->purge !== null) {
                 // Actor als zweites Argument (Feature 130): Anonymisierungs-
                 // Policies auditieren den Bestätiger; Ein-Parameter-Closures
@@ -135,6 +149,13 @@ class RetentionScanService {
         ]);
 
         return $proposal;
+    }
+
+    private function assertSubjectNotHeld(RetentionProposal $proposal): void {
+        $subject = $proposal->subject()->first();
+        if ($subject instanceof Model) {
+            $this->legalHolds->assertNotHeld($subject);
+        }
     }
 
     private function assertStatus(RetentionProposal $proposal, string $expected): void {

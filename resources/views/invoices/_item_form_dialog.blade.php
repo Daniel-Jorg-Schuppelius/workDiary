@@ -27,6 +27,12 @@
 
     <x-form-group :legend="__('Position')" icon="receipt_long" tone="primary" cols="2">
         <x-article-picker :articles="$articles ?? collect()" :selected="$item->article_id ?? null" />
+        {{-- Kupferzuschlag zum Tagespreis als eigene Position (MVP-804) — nur beim Anlegen. --}}
+        @unless ($item->exists)
+            <x-checkbox-field name="add_copper_surcharge" span="2" :checked="(bool) old('add_copper_surcharge', true)"
+                              :label="__('Kupferzuschlag (Tagespreis) als eigene Position anfügen')"
+                              :hint="__('Nur bei Artikeln mit Kupfergewicht und -basis und einer gepflegten DEL-Notierung; sonst entsteht keine Position.')" />
+        @endunless
         <x-input-field name="description" :label="__('Beschreibung')" required maxlength="1000" span="2" :value="old('description', $item->description ?? '')" />
         <x-input-field name="service_date" type="date" :label="__('Leistungsdatum')" :value="old('service_date', optional($item->service_date ?? null)->format('Y-m-d'))" :hint="__('Bei mehreren Tagen Pflicht je Position.')" />
         {{-- Leistungszeitraum (Feature 152): optional, eigene Zeile unter der Position. --}}

@@ -37,15 +37,22 @@ use Illuminate\Validation\ValidationException;
  * sie entscheidet nichts (EU-KI-VO Anhang III Nr. 3).
  *
  * Übersetzt werden nur **Texte**: Titel, Untertitel, Überschriften,
- * Absätze, Hinweise und Checklisten. Medien, Einbettungen und die
+ * Absätze, Hinweise, Checklisten, Audio-Transkripte, Akkordeons, Tabellen und
+ * Verständnisfragen (ohne Bewertung, MVP-806). Code, Medien, Einbettungen und die
  * Prüfungsfragen bleiben unberührt — eine übersetzte Prüfungsfrage wäre
  * eine andere Frage und würde die Prüfungsakte verfälschen.
  */
 class LearningTranslationService {
     public const CAPABILITY = 'documents.item_translate';
 
-    /** Blockarten mit übersetzbarem Text. */
-    private const TRANSLATABLE_BLOCKS = ['heading', 'text', 'callout', 'checklist'];
+    /** Blockarten mit übersetzbarem Text. Code bleibt Code (MVP-806). */
+    private const TRANSLATABLE_BLOCKS = ['heading', 'text', 'callout', 'checklist', 'audio', 'accordion', 'table', 'question'];
+
+    /**
+     * Schlüssel, die eine freigegebene Übersetzung im Block ersetzt — Player
+     * und Offline-Paket lesen dieselbe Liste.
+     */
+    public const TRANSLATED_BLOCK_KEYS = ['text' => 1, 'items' => 1, 'sections' => 1, 'rows' => 1, 'options' => 1, 'explanation' => 1];
 
     public function __construct(
         private readonly AiInvocationService $invocation,
@@ -156,6 +163,41 @@ class LearningTranslationService {
                     fn (mixed $item): string => $this->text($organization, (string) $item, $locale, $connectionId),
                     array_values($block['items'])
                 );
+            }
+
+            // MVP-806: strukturierte Blöcke behalten ihre Form, nur die Texte wechseln.
+            if (isset($block['sections']) && is_array($block['sections'])) {
+                $entry['sections'] = array_map(
+                    fn (mixed $section): array => [
+                        'title' => $this->text($organization, (string) (is_array($section) ? ($section['title'] ?? '') : ''), $locale, $connectionId),
+                        'body' => $this->text($organization, (string) (is_array($section) ? ($section['body'] ?? '') : ''), $locale, $connectionId),
+                    ],
+                    array_values($block['sections'])
+                );
+            }
+
+            if (isset($block['rows']) && is_array($block['rows'])) {
+                $entry['rows'] = array_map(
+                    fn (mixed $row): array => array_map(
+                        fn (mixed $cell): string => $this->text($organization, (string) $cell, $locale, $connectionId),
+                        array_values((array) $row)
+                    ),
+                    array_values($block['rows'])
+                );
+            }
+
+            if (isset($block['options']) && is_array($block['options'])) {
+                $entry['options'] = array_map(
+                    fn (mixed $option): array => [
+                        'text' => $this->text($organization, (string) (is_array($option) ? ($option['text'] ?? '') : ''), $locale, $connectionId),
+                        'correct' => is_array($option) && (bool) ($option['correct'] ?? false),
+                    ],
+                    array_values($block['options'])
+                );
+            }
+
+            if (isset($block['explanation']) && trim((string) $block['explanation']) !== '') {
+                $entry['explanation'] = $this->text($organization, (string) $block['explanation'], $locale, $connectionId);
             }
 
             $out[] = $entry;

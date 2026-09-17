@@ -21,11 +21,14 @@
 @if ($featuresKnowledge && \Illuminate\Support\Facades\Gate::allows('viewAny', \App\Models\KnowledgeArticle::class))
     @php
         $subjectSqid = \App\Support\Sqid::encode(get_class($subject), (int) $subject->getKey());
-        $knowledgeLinks = \App\Models\KnowledgeArticleLink::query()
-            ->where('linkable_type', $subject->getMorphClass())
-            ->where('linkable_id', $subject->getKey())
-            ->whereHas('article')
-            ->with('article')
+        // Verknüpfungen seit MVP-811 als Verweise: Quelle Artikel, Art `linked`.
+        $knowledgeLinks = \App\Models\ContentReference::query()
+            ->where('source_type', (new \App\Models\KnowledgeArticle)->getMorphClass())
+            ->where('kind', \App\Models\ContentReference::KIND_LINKED)
+            ->where('target_type', $subject->getMorphClass())
+            ->where('target_id', $subject->getKey())
+            ->whereHasMorph('source', [\App\Models\KnowledgeArticle::class])
+            ->with('source')
             ->get();
         $knowledgeSuggestions = app(\App\Services\Knowledge\KnowledgeArticleService::class)
             ->suggestFor($subject, $texts);
@@ -52,7 +55,7 @@
             <h3 class="mb-2 text-xs font-semibold uppercase tracking-wide text-muted">{{ __('knowledge.title.linked') }}</h3>
             <ul class="mb-4 space-y-2">
                 @foreach ($knowledgeLinks as $link)
-                    @php $linkedArticle = $link->article; @endphp
+                    @php $linkedArticle = $link->source; @endphp
                     <li class="flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 p-3">
                         <div class="min-w-0">
                             <a href="{{ route('knowledge.show', $linkedArticle) }}" class="link link-hover text-sm font-medium">{{ $linkedArticle->title }}</a>

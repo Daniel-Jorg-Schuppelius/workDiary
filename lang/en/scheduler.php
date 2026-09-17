@@ -78,7 +78,7 @@ return [
             'lti_rotate_keys' => 'Rotate LTI signing keys',
             'lti_prune_nonces' => 'Remove expired LTI nonces',
         ],
-        'attendance' => ['close_open' => 'Close forgotten clock-ins'],
+        'attendance' => ['close_open' => 'Close forgotten clock-ins', 'open_reminder' => 'Remind about open clock-ins in the evening'],
         'audit' => ['verify' => 'Verify audit chain'],
         'backup' => [
             'check_restore' => 'Backup check',
@@ -144,6 +144,7 @@ return [
         'metering' => ['generate-invoices' => 'Generate meter-based invoices'],
         'maintenance' => ['scan_due' => 'Check maintenance plans for due work'],
         'notifications' => ['scan_deadlines' => 'Scan deadlines and notify'],
+        'recruiting' => ['scan_uploads' => 'Scan application documents for malware'],
         'org' => ['offboard_due' => 'Process due employee offboardings'],
         'travel_logs' => ['lock_due' => 'Lock logbook trips after end of day'],
         'news-feed' => ['refresh' => 'Refresh news feed'],

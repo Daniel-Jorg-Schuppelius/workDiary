@@ -250,7 +250,7 @@ return [
     ],
     'sales' => [
         'lead_status' => ['new' => 'Nuevo', 'contacted' => 'Contactado', 'qualified' => 'Cualificado', 'converted' => 'Convertido', 'discarded' => 'Descartado'],
-        'lead_source' => ['referral' => 'Recomendación', 'web' => 'Web', 'trade_fair' => 'Feria', 'phone' => 'Teléfono', 'other' => 'Otro'],
+        'lead_source' => ['referral' => 'Recomendación', 'web' => 'Web', 'trade_fair' => 'Feria', 'phone' => 'Teléfono', 'booking' => 'Reserva de cita', 'other' => 'Otro'],
     ],
     // Sicherheitseinbehalte (Feature 113, MVP-602).
     // Bürgschaftsregister (Feature 114, MVP-603).
@@ -473,6 +473,7 @@ return [
             ],
             'attendance' => [
                 'unclearCase' => 'Caso por aclarar (fichajes)',
+                'openReminder' => 'Recordatorio: fichaje aún abierto',
             ],
             'monthClosure' => [
                 'submitted' => 'Cierre mensual enviado',
@@ -889,7 +890,7 @@ return [
             'photo' => 'Foto obligatoria',
             'file' => 'Documento obligatorio',
             'defect' => 'Defecto',
-            'measurement.timestamped' => 'Serie de mediciones',
+            'measurement' => ['timestamped' => 'Serie de mediciones'],
             'procedure_step' => 'Paso de procedimiento',
             'signoff_internal' => 'Aprobación interna',
         ],
@@ -1485,7 +1486,7 @@ return [
         ],
     ],
 
-    // Cierre diario (MVP-015, docs/tagesabschluss.md §3/§5).
+    // Cierre diario (MVP-015, WorkDiary-Architecture/tagesabschluss.md §3/§5).
     'dayClosure' => [
         'status' => [
             'open' => 'Abierto',
@@ -1656,6 +1657,14 @@ return [
             'video' => 'Vídeo',
             'embed' => 'Inserción',
             'knowledge' => 'Artículo de conocimiento',
+            'gallery' => 'Galería',
+            'audio' => 'Audio',
+            'code' => 'Código',
+            'accordion' => 'Acordeón',
+            'table' => 'Tabla',
+            'procedure' => 'Procedimiento',
+            'question' => 'Pregunta de comprensión',
+            'divider' => 'Separador',
         ],
         'enrollment-status' => [
             'assigned' => 'Asignado',

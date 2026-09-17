@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -13,6 +13,13 @@ Un **lead** es un interesado **antes** del estado de cliente — por
 recomendación, web, feria o llamada. La ficha del lead guarda contacto, fuente
 y necesidad; la cualificación pasa por las **notas de comunicación** con
 seguimiento, igual que en un cliente.
+
+**Leads a partir de reservas de citas.** Si alguien sin ficha de cliente reserva
+por Calendly, puede crearse un lead con la fuente «Reserva de cita». Cada
+organización lo activa en los ajustes de Calendly; por defecto está desactivado.
+Si puede tratarse de un cliente existente, no se crea ningún lead y la reserva
+espera en la bandeja de asignación. Una nueva reserva de la misma dirección se
+vincula al lead abierto.
 
 ## El pipeline
 

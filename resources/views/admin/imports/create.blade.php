@@ -19,9 +19,9 @@
         </x-icon-btn>
     </x-slot:actions>
 
-    <form method="POST" action="{{ route('admin.imports.preflight') }}" enctype="multipart/form-data" class="card bg-base-100 shadow-sm">
+    <x-card as="form" method="POST" action="{{ route('admin.imports.preflight') }}" enctype="multipart/form-data">
         @csrf
-        <div class="card-body space-y-4">
+        <div class="flex flex-col gap-2 space-y-4">
             <x-select-field name="entity" :label="__('Entität')" class="select-sm w-64">
                 @foreach ($entities as $e)
                     <option value="{{ $e->value }}" @selected($entity->value === $e->value)>{{ $e->label() }}</option>
@@ -93,6 +93,6 @@
                 <x-button type="submit" tone="primary" size="sm" icon="upload">{{ __('Vorprüfung starten') }}</x-button>
             </div>
         </div>
-    </form>
+    </x-card>
 </x-index-page>
 @endsection

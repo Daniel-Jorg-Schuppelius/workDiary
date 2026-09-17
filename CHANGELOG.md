@@ -798,8 +798,222 @@ die Versionierung folgt [Semantic Versioning](https://semver.org/lang/de/)
   modul-gegatet über Plan/Lizenz, Mandantengrenzen über die
   Organization-Scopes abgesichert.
 
+#### Nachgetragen am 2026-09-16 (`MVP-796`): Features 099-156, `MVP-461`-`MVP-816`
+
+*(Vollscan 2026-09-15, Befund `C4-19`.)*
+
+Dieser Changelog endete inhaltlich bei `MVP-460` und Feature 098; der Vollscan
+2026-09-15 hat die Lücke aufgedeckt. Nachgetragen nach Themen statt je MVP —
+die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
+`WorkDiary-Architecture/features/`.
+
+- **Bau, Vergabe und Bau-Abrechnung.** GAEB-Formatfamilien und e-Vergabe
+  (Feature 108, Phase 93); Kostengruppen und Kostenermittlung nach DIN 276
+  (109, Phase 94); Sicherheitseinbehalte nach § 17 VOB/B (113),
+  Bürgschaftsregister (114), Gewährleistungsfristen (115),
+  Subunternehmer-Pflichtnachweise (117), Anlagen-Stückliste (118).
+- **Beschaffung und Kataloge.** DATANORM-Vollausbau (107, Phase 92);
+  B2B-Katalogzugang mit OCI-Punchout und openTRANS-Auftragseingang (099);
+  XLSX-Preislisten als Katalogformat (Phase 90).
+- **Buchhaltung, Zahlungsverkehr und Auswertung.** Belegfluss als eine Liste
+  statt drei Tabs (105, Phase 91); Auslagen als Beleg (106); lokale
+  Buchhaltung, Bankwesen und wiederkehrende Vorgänge (125);
+  Buchhaltungswechsel mit kontrollierter Migration (110);
+  Buchhaltungs-Symmetrie aus Beleg-Pull und Kontakt-Push (122);
+  SEPA-Zahlungsausgang mit pain.001 und pain.008 (120); Girocode auf
+  Rechnungs-PDFs (111); Zählerstands-Faktura (116); Mahnlauf (127);
+  generischer Belegversand (128); DATEV-EXTF um Kostenstelle, Fälligkeit und
+  Skonto (135); Anlagenregister mit Jahres-AfA (133);
+  13-Wochen-Liquiditätsvorschau (136); Umsatz je Produkt (140); BWA, Budget
+  und Kostenstellen (142); Angebots-Nachfassen (112); Kundenrundschreiben (119).
+- **Personal, Arbeitszeit und Arbeitsschutz.** Mitarbeiter-Austritt (126);
+  Arbeitszeit-Compliance mit MiLoG und ArbZG-Vollregelwerk (131);
+  Arbeitsschutz-Register mit Gefährdungsbeurteilung und Unterweisung (132);
+  digitale Personalakte (141); Lenk- und Ruhezeiten (144);
+  Trainingsmanagement (145); Vertiefung der Personalzeitwirtschaft (103).
+- **Datenschutz, Nachweis und Revision.** DSGVO-Auskunft mit echten
+  Betroffenendaten (129); Löschkonzept für Personendaten (130);
+  GoBD-Verfahrensdokumentation (134); steuerlich anerkanntes Fahrtenbuch (137);
+  Fahrzeug-Fristen mit Sperrwirkung (138).
+- **Vertrieb, Service und Kundenkontakt.** Leads und Akquise (091),
+  Zutritts- und Transponderverwaltung (092), Umfragen und Kundenfeedback (090),
+  Wächterrundgänge mit Checkpoints (089) — alle Phase 95;
+  Kundenportal-Terminbuchung (087); Folgeauftrag aus offenem Punkt (139);
+  Provisionen (146); SMS-Kanal für kritische Alarmierungen (147);
+  Altgeräte-Rücknahme und Entsorgungsnachweis (100).
+- **Integrationen.** Microsoft 365 mit Graph-Mail für Versand und Eingang
+  (102); Etsy-Marktplatz-Plugin (101); Rechnungsdatei-Import zur E-Rechnung
+  (104); Kalender-Rückimport aus Google und CalDAV (121); WebDAV als
+  Backupziel (123); Toggl- und Clockify-Webhooks (124).
+- **KI-Assistenz.** Welle 1 mit Protokoll-Freitexten und Tag-Vorschlägen (143);
+  Wellen 2 und 3 mit Zusammenfassen, Erklären und Übersetzen (148).
+- **Lernplattform.** Kurse, Prüfungen, Zertifikate und Kompetenzen (149);
+  Video-Transcoding mit Auslieferung und Untertiteln (150); der vollständige
+  LearnDash-Abgleich aus Phase 98 (`MVP-778`-`MVP-794`).
+- **Abo-Verwaltung und Recherche.** Abo- und Lizenz-Reselling-Register (152,
+  Phase 91) — löst den zustandslosen Abgleich aus Feature 151 ab, dessen Code
+  entfernt wurde; Tätigkeitsrecherche über erledigte Arbeit (153, Phase 92);
+  zentrale Notizen (154, Phase 97).
+- **Organisations-Kalender-Abo (156, `MVP-816`).** Die öffentlichen Termine
+  einer Organisation als tokenisiertes ICS-Abo unter `calendar/org/{token}.ics`.
+  Zuvor lag derselbe Inhalt unter einer festen Adresse — ohne Anmeldung und
+  über alle Mandanten hinweg.
+- **Korrektheit und Sicherheit (`MVP-795`, Phase 99).** Pflichtklassifikationen
+  greifen blockierend bei Anlage, Auftragsabschluss und Protokoll-Signatur;
+  Architektur-Gate für Rechteschlüssel ohne Prüfstelle; Mandantenfilter im
+  Portal-Lerncontroller; Steuerregel für Taxifahrten mit Begründungspflicht;
+  Dateiprüfung im E-Rechnungs-Eingang; Scan der Bewerbungsunterlagen;
+  Erfassung von Prozedur-Abweichungen; Oberfläche für den SEPA-Lastschriftlauf;
+  GAEB-90-Import meldet ungedeutete Satzarten, statt sie still zu verwerfen.
+- **Hilfe und Mehrsprachigkeit (`MVP-797`, Phase 99).** Sechs neue
+  Hilfe-Themen (E-Learning-Standards, Untertitel, Auskunftsportal, Calendly,
+  B2B-Katalog, Portal-Schulungen), alle Erweiterungen in der Hilfe genannt und
+  per Architektur-Gate abgesichert; das Homonym „Tag" je Stelle aufgelöst,
+  fest verdrahtetes Deutsch im Frontend übersetzt.
+- **Endpunkte mit Einstieg (`MVP-798`, Phase 99).** Chat-Kanäle beitreten,
+  umbenennen, löschen und angepinnte Nachrichten; Belegungsfenster stornieren;
+  Etikettendruck für Variante, Charge und Seriennummer; Karriere-Ausschreibung
+  veröffentlichen und pausieren; Domain-Transfer sowie DNS-Einträge hinzufügen
+  und löschen; Auftragsverarbeiter bearbeiten und Benachrichtigung Betroffener
+  nach Art. 34 vermerken; Modul-Gate der Lernplattform für sieben weitere
+  Verwaltungsbereiche; lineare Kurse werden durchgesetzt; gezeichnete
+  Unterschrift in der Unterweisung; 22 ausgearbeitete Prozedurvorlagen in fünf
+  Branchenprofilen; Austritts-Dialog mit Stichtag und Übergabeliste;
+  Oberfläche für die Kompetenzmatrix samt Kompetenz am Kurs. Gezeichnete
+  Unterschriften werden über `DataUrlHelper` aus common-toolkit 1.35 geprüft
+  (vorher vier app-lokale Kopien).
+- **Startseite je Rolle (`MVP-799`, Phase 100).** Die persönliche Startseite
+  aus dem Profil wird jetzt tatsächlich angewendet — sie wurde bisher
+  gespeichert, aber nie gelesen. Organisationen legen unter „Funktionsumfang"
+  eine Startseite je Rolle fest; angeboten und angewendet werden nur Seiten,
+  die die Person im Menü sieht. Das Profil zeigt Seitennamen statt
+  Routennamen.
+- **Kiosk-Modus und QR-/NFC-Check-in (`MVP-800`, Phase 100).** Ein Tablet wird
+  über `/kiosk/{token}` zum Stempelterminal (USB-Leser oder NFC des Geräts) und
+  stempelt über den vorhandenen Terminal-Ingest. Check-in-Punkte an Standorten
+  und Fahrzeugen: QR-Code drucken oder die Adresse auf einen NFC-Aufkleber
+  schreiben; Mitarbeitende stempeln angemeldet mit dem eigenen Gerät, optional
+  nur im Umkreis — die Position wird geprüft, nicht gespeichert.
+- **Legal Hold (`MVP-801`, Phase 100).** Sperrvermerk an Person oder Kunde für
+  laufende Betroffenen- und Rechtsverfahren, mit Pflichtbegründung
+  (verschlüsselt), Aktenzeichen und Aufhebung nur mit Begründung. Solange er
+  aktiv ist, schlägt das Löschkonzept nichts vor, bestätigte Löschungen,
+  Anonymisierung und das Löschen von Konten und Kunden (auch per API) werden
+  abgewiesen, Standort-Rohpunkte bleiben, und eine Organisation mit aktivem
+  Vermerk lässt sich nicht endgültig löschen; bei der Kundenzusammenführung
+  wandert der Vermerk zum Ziel. Die Seite „Aufbewahrung & Löschung" hat dabei
+  erstmals einen Menüeintrag bekommen.
+- **Hinweisgeber-Fallliste und Auslagen-Gegenbeleg (`MVP-802`, Phase 101).**
+  Kategorie und Priorität erscheinen in der Fallliste nur noch für Fälle, die
+  die Person öffnen darf. Übergebene Auslagen lassen sich per Gegenbeleg
+  (Einkaufsgutschrift) korrigieren; die korrigierte Auslage entsteht als Entwurf
+  mit Bezug, ein genehmigtes, noch nicht erstattetes Original wird storniert.
+- **Abend-Erinnerung und Terminal-PIN (`MVP-803`, Phase 101).** Wer um 19 Uhr
+  seit mindestens acht Stunden eingestempelt ist, bekommt einmal je Stempelung
+  eine Erinnerung (In-App/Push). Ausweis vergessen: Stempeln mit Personalnummer
+  und PIN an Terminal und Kiosk; die PIN liegt nur gehasht vor und ist nach fünf
+  Fehlversuchen 15 Minuten gesperrt.
+- **Umsatz je Produkt mit Lexoffice und Kupferzuschlag (`MVP-804`, Phase 101).**
+  Der Report „Umsatz je Produkt" zählt jetzt auch gespiegelte
+  Lexoffice-Rechnungen und -Gutschriften, weist die Quelle je Zeile aus und
+  zeigt den Umsatz je Artikelkategorie; an Lexoffice übergebene lokale
+  Rechnungen zählen nur einmal. Rechnungs- und Angebotspositionen können den
+  Kupferzuschlag zum DEL-Tagespreis als eigene Position anfügen.
+- **Acht neue Blocktypen in der Lernplattform (`MVP-806`, Phase 101).** Galerie,
+  Audio, Code, Akkordeon, Tabelle, Prozedur, Verständnisfrage und Trenner.
+  Galeriebilder brauchen je einen Alternativtext, Audio ein Transkript,
+  Tabellen Spaltenköpfe; Akkordeon und Lösung der Verständnisfrage öffnen per
+  Tastatur. Freigegebene Übersetzungen ersetzen auch die Texte von Akkordeon,
+  Tabelle, Frage und Transkript.
+- **Oberfläche, Vertrieb und Demo-Daten (`MVP-807`, Phase 101).** Alle Karten
+  laufen über die Kartenkomponente (105 Stellen), ein Architektur-Gate hält das.
+  Kunden- und Asset-Kachel auf der Auftragsseite verlinken in Kunden- bzw.
+  Produktanalyse. Calendly-Buchungen ohne Kundenbezug können je Organisation
+  einen Lead mit der Quelle „Terminbuchung“ anlegen, außer ein Bestandskunde
+  kommt infrage. Betriebsmetriken ohne Organisationsbezug und die
+  Mandantenliste lassen Demo-Organisationen aus; die Liste zeigt sie per
+  Umschalter.
+- **Sammlungen (`MVP-809`, Phase 102).** Notizen, Ideenlandkarten,
+  Wissensartikel, Dokumente, Lernkurse und Lernpfade lassen sich in Sammlungen
+  ordnen — als Baum bis fünf Ebenen, ein Inhalt in mehreren Sammlungen, ohne
+  Kopie. Eine Sammlung gibt keinen Zugriff: Jeder sieht darin nur, was er auch
+  sonst sehen darf; private Sammlungen nur ihre Verfasserin. Aufnahme über „Zur
+  Sammlung hinzufügen“ auf den Detailseiten, Archivieren statt Löschen.
+- **Übernahme aus Obsidian und OneNote (`MVP-815`, Phase 102).** Im Einstieg
+  „Wissen“ übernehmen Administratoren einen Obsidian-Tresor über eine vorhandene
+  Ordner-Anbindung des Cloud-Dokumenteingangs oder ein OneNote-Notizbuch als
+  Notizen oder Wissensartikel-Entwürfe: Ordner und Abschnitte werden Sammlungen,
+  Schlagwörter wandern mit, `[[Wikilinks]]` werden Verweise, jeder Inhalt zeigt
+  seine Herkunft. Nur lesend und auf Anstoß — ein weiterer Lauf übernimmt nur
+  Neues. OneNote braucht den zusätzlichen Bereich `Notes.Read` und ist in den
+  Microsoft-365-Einstellungen standardmäßig ausgeschaltet. Neue direkte
+  Abhängigkeit `symfony/yaml` (war bereits installiert) für die YAML-Köpfe.
+- **Kategorie der Wissensartikel wird Sammlung (`MVP-814`, Phase 102).** Die
+  bisherige Freitext-Kategorie entfällt; jeder vorhandene Wert wird beim Update
+  eine gleichnamige Sammlung, in der die Artikel danach liegen (Known Errors aus
+  dem Helpdesk in „Known Errors“). Das Wissensarchiv filtert nach Sammlung, neue
+  Artikel lassen sich beim Anlegen direkt einsortieren.
+- **Einstieg „Wissen“, Sammeln und Umwandeln (`MVP-813`, Phase 102).** Neue
+  Seite „Wissen“: Notizen, Ideenlandkarten, Wissensartikel, Dokumente und
+  Lerninhalte in einer Liste oder als Kacheln, links der Sammlungsbaum, oben
+  Filter nach Titel, Art und Schlagwort. Mehrere Inhalte — auch Suchtreffer —
+  lassen sich auf einmal in eine Sammlung legen. Aus einer Notiz wird per Knopf
+  ein Wissensartikel-Entwurf, der auf die Notiz verweist; vertrauliche Notizen
+  bleiben davon ausgenommen.
+- **Schlagwort und Sammlung in der Recherche (`MVP-812`, Phase 102).** Die
+  Suche filtert nach Schlagwort und nach Sammlung (samt Untersammlungen), auch
+  ohne Suchbegriff, und zeigt die Schlagwörter der Treffer als anklickbare
+  Facette. Gezählt wird nur, was man öffnen darf.
+- **Verweise und Rückverweise (`MVP-811`, Phase 102).** Notizen,
+  Ideenlandkarten, Wissensartikel, Dokumente, Lernkurse und Lernpfade tragen
+  eine Karte „Verweise“: „Verweis setzen“ verbindet zwei Inhalte, „Hier erwähnt
+  in“ zeigt nach Art gruppiert alles, was auf die Seite zeigt — auch die
+  Verknüpfungen aus Wissensbasis und Ideenlandkarten, die dafür in ein
+  gemeinsames Verweismodell umgezogen sind. Kunden-, Projekt- und
+  Auftragsseiten zeigen ihre Rückverweise ebenfalls. Quellen erscheinen nur für
+  Personen, die sie öffnen dürfen. Beim Zusammenführen von Kunden, Projekten,
+  Assets, Lieferanten und Artikeln wandern Verweise jetzt mit; die Artikelseite
+  beschriftet Helpdesk-Probleme nicht mehr als „Auftrag“.
+- **Schlagwörter für Notizen und Lernkurse (`MVP-810`, Phase 102).** Notizen
+  und Kurse lassen sich verschlagworten; zentrale Notizliste und Kurskatalog
+  filtern danach, die Recherche findet beides über das Schlagwort. Die
+  Filterauswahl zeigt nur Schlagwörter an Inhalten, die man sehen darf.
+- **XRechnung in CII-Syntax und für Kleinunternehmer (`MVP-805`, Phase 101).**
+  Neues Zustellformat „XRechnung (XML, CII-Syntax)“ für Empfänger, die CII
+  verlangen; UBL bleibt Standard, Peppol immer UBL. Wer keine USt-IdNr. hat,
+  etwa als Kleinunternehmer, bekommt die Steuernummer zusätzlich als
+  Verkäuferkennung in die E-Rechnung — ohne sie lehnt die Prüfung beim
+  Empfänger ab. erechnung-toolkit v0.14.
+- **Belegimport liest Nachdrucke mit defektem Textlayer (`MVP-808`, Phase 101).**
+  pdf-toolkit v0.17.2 und translation-toolkit v0.6. PDFs, deren Textlayer nach
+  einem Nachdruck nur Zeichensalat liefert, werden im Rechnungsimport, im
+  Auslagen-Scan und bei Quality-Hosting-Rechnungen entziffert; übernommen wird
+  das Ergebnis nur, wenn die Summen aufgehen.
+
 ### Fixed
 
+- E-Rechnung (`MVP-805`, erechnung-toolkit v0.14): XRechnung-Gutschriften in UBL
+  waren schemaungültig (`cbc:DueDate` ist in einer CreditNote nicht erlaubt);
+  das in ZUGFeRD-PDFs eingebettete CII verletzte die Elementreihenfolge des
+  Schemas; Positionsrabatte trugen eine unzulässige Steuerkategorie. Eingehende
+  E-Rechnungen ohne USt-IdNr. zeigten die Steuernummer als USt-IdNr.
+- Lernplattform-Editor (`MVP-806`): Der Videoblock nahm keine Videos an — die
+  Uploadregel kannte nur Bild- und Dokumentendungen. Die Umrechnung aus
+  Feature 150 war damit über die Oberfläche nie auslösbar. Außerdem prüft der
+  Editor jetzt, dass eine Datei zur Blockart passt (kein PDF im Bildblock).
+- Report „Umsatz je Produkt" (`MVP-804`): Der PDF-Fuß behauptete, gespiegelte
+  Buchhaltungsbelege trügen keine Positionen; der Hilfetext versprach
+  umgekehrt eine Auswertung gespiegelter Belege, die es noch nicht gab.
+- Lexoffice-Belegübergabe (`MVP-802`): Auslagen-Push und Zeit-Beleg sendeten
+  den Belegtyp als `voucherType` statt `type`; die SDK-Entität verwarf das Feld
+  still, der Beleg ging ohne Typ hinaus.
+- Sicherheits-Header (`MVP-800`): `Referrer-Policy` und `Permissions-Policy`
+  wurden app-weit hart gesetzt und überschrieben seitenbezogene Werte; die
+  Ortsabfrage im Browser war damit auf jeder Seite gesperrt. Seiten dürfen die
+  Werte jetzt selbst setzen, die Vorgabe bleibt unverändert.
+- Export-Löschung (`MVP-798`): gelöschte Exporte wurden hart auf der Ablage
+  `local` entfernt, geschrieben aber auf der konfigurierten — bei umgestellter
+  Ablage blieben als gelöscht protokollierte Lohndaten-Exporte liegen.
 - Kunden-Sonderkonditionen, Pauschal-Modus (Feature 098): vier Lücken aus dem
   ersten Praxiseinsatz. **Bestandszeiten blieben mit 0,00 € bewertet** — Zeiten,
   die vor Anlage der Kondition erfasst wurden, tragen keinen Satz-Snapshot, und

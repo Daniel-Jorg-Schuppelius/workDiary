@@ -52,4 +52,18 @@ trait HasTags {
 
         $this->tags()->sync(array_values(array_unique($ids)));
     }
+    /**
+     * Schlagwörter aus einem kommagetrennten Eingabefeld übernehmen (Notiz,
+     * Lernkurs, Wissensartikel — MVP-810). Leere Eingabe entfernt alle.
+     *
+     * @param  string|array<int, string>  $names
+     */
+    public function syncTagNames(string|array $names): void {
+        $list = is_array($names) ? $names : explode(',', $names);
+
+        $this->syncTagsFromInput([], array_values(array_filter(
+            array_map(static fn (mixed $name): string => trim((string) $name), $list),
+            static fn (string $name): bool => $name !== '',
+        )));
+    }
 }

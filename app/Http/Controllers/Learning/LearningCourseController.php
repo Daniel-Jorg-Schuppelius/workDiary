@@ -60,11 +60,13 @@ class LearningCourseController extends Controller {
         $kind = LearningCourseKind::tryFrom((string) $request->query('kind', ''));
         // Kategorie (MVP-788): Sqid aus der Auswahl, sonst kein Filter.
         $categoryId = $request->filled('category') ? Sqid::decodeOrNumeric(LearningCourseCategory::class, (string) $request->query('category')) : null;
+        // Schlagwort (MVP-810): unbekannte Kennung filtert auf 0 statt den Filter fallen zu lassen.
+        $tagId = $request->filled('tag') ? (Sqid::decodeOrNumeric(\App\Models\Tag::class, (string) $request->query('tag')) ?? 0) : null;
 
         /** @var User $viewer */
         $viewer = Auth::user();
         $query = LearningCourse::query()
-            ->with(['trainingCourse', 'category'])
+            ->with(['trainingCourse', 'category', 'tags:id,name,color,slug'])
             ->withCount('units')
             // Trainer-Scoping (MVP-786): einzige Filterstelle ist der Scope.
             ->visibleTo($viewer)
@@ -78,6 +80,9 @@ class LearningCourseController extends Controller {
         }
         if ($categoryId !== null) {
             $query->where('category_id', $categoryId);
+        }
+        if ($tagId !== null) {
+            $query->whereHas('tags', fn ($t) => $t->whereKey($tagId));
         }
 
         // Ansicht Liste/Kacheln (MVP-794): Umschalter speichert die Nutzerpräferenz.
@@ -98,6 +103,12 @@ class LearningCourseController extends Controller {
             'kind' => $kind,
             'categoryId' => $categoryId,
             'categories' => $this->categoryOptions(),
+            'tagId' => $tagId,
+            // Nur Schlagwörter an Kursen, die die Person sehen darf (Trainer-Scoping).
+            'tags' => \App\Models\Tag::query()
+                ->whereHas('learningCourses', fn ($q) => $q->visibleTo($viewer))
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'viewMode' => $view,
             'ratings' => app(\App\Services\Learning\LearningCourseRatingService::class)->ratingsFor(array_values(array_map('intval', $courses->pluck('id')->all()))),
             'releasedCount' => LearningCourse::query()->released()->count(),
@@ -114,6 +125,7 @@ class LearningCourseController extends Controller {
             'courseOptions' => $this->courseOptions(),
             'assets' => $this->assetOptions(),
             'categories' => $this->categoryOptions(),
+            'competencies' => \App\Models\Learning\Competency::query()->where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -183,6 +195,7 @@ class LearningCourseController extends Controller {
             'courseOptions' => $this->courseOptions($course),
             'assets' => $this->assetOptions(),
             'categories' => $this->categoryOptions(),
+            'competencies' => \App\Models\Learning\Competency::query()->where('is_active', true)->orderBy('name')->get(),
         ]);
     }
 
@@ -293,6 +306,8 @@ class LearningCourseController extends Controller {
             'blocks' => $unit->blocks(),
             'sections' => $course->sections()->get(),
             'allowedHosts' => $this->content->allowedHosts($this->currentOrganization()),
+            // Prozedurblock (MVP-806): nur aktive Vorlagen der eigenen Organisation.
+            'procedureTemplates' => \App\Models\ProcedureTemplate::query()->where('active', true)->orderBy('name')->get(['id', 'name', 'code']),
             'subtitles' => $subtitles,
             'canTranscribe' => app(VideoTranscodingService::class)->isTranscriptionAvailable(),
             // LTI-Einheit (Feature 149): die aktiven Tools der Organisation zur Auswahl.
@@ -363,11 +378,49 @@ class LearningCourseController extends Controller {
             'require_percent' => ['nullable', 'integer', 'min:1', 'max:100'],
             'autoplay' => ['nullable', 'boolean'],
             'remember_position' => ['nullable', 'boolean'],
-            'media' => array_merge(['nullable'], FileAttacher::rule()),
+            'media' => array_merge(['nullable'], $this->learningMediaRule()),
+            // MVP-806
+            'language' => ['nullable', 'string', 'max:40', 'regex:/^[A-Za-z0-9+#._ -]+$/'],
+            'sections' => ['nullable', 'string', 'max:10000'],
+            'rows' => ['nullable', 'string', 'max:10000'],
+            'explanation' => ['nullable', 'string', 'max:2000'],
+            'procedure_template_id' => ['nullable', 'string', 'max:64'],
+            'alts' => ['nullable', 'string', 'max:3000'],
+            'gallery' => ['nullable', 'array', 'max:' . LearningContentService::GALLERY_MAX_IMAGES],
+            'gallery.*' => $this->learningMediaRule(),
         ]);
 
         $kind = LearningBlockKind::from($data['type']);
         $media = $request->file('media');
+        /** @var list<UploadedFile> $galleryFiles */
+        $galleryFiles = $kind === LearningBlockKind::Gallery ? array_values(array_filter((array) $request->file('gallery', []), static fn (mixed $file): bool => $file instanceof UploadedFile)) : [];
+
+        // Ein Upload muss zur Blockart passen: ein PDF im Bild- oder
+        // Audioblock bliebe im Kurs eine leere Fläche.
+        $mediaType = $kind->mediaType();
+        foreach ([...($media instanceof UploadedFile ? [$media] : []), ...$galleryFiles] as $upload) {
+            if ($mediaType !== null && ! str_starts_with((string) $upload->getMimeType(), $mediaType . '/')) {
+                throw ValidationException::withMessages([
+                    $kind === LearningBlockKind::Gallery ? 'gallery' : 'media' => (string) __('learning.errors.media_type_mismatch', ['kind' => $kind->label()]),
+                ]);
+            }
+        }
+
+        if ($kind === LearningBlockKind::Procedure) {
+            $data['procedure_template_id'] = Sqid::decode(\App\Models\ProcedureTemplate::class, (string) ($data['procedure_template_id'] ?? ''));
+        }
+
+        // Galerie: ein Alternativtext je Bild, in derselben Reihenfolge. Vor
+        // dem Speichern geprüft, damit keine verwaisten Anhänge entstehen.
+        if ($kind === LearningBlockKind::Gallery) {
+            $alts = array_values(array_filter(array_map('trim', preg_split('/\R/', (string) ($data['alts'] ?? '')) ?: []), static fn (string $alt): bool => $alt !== ''));
+            if (count($galleryFiles) < 2) {
+                throw ValidationException::withMessages(['gallery' => (string) __('learning.errors.gallery_count', ['max' => LearningContentService::GALLERY_MAX_IMAGES])]);
+            }
+            if (count($alts) !== count($galleryFiles)) {
+                throw ValidationException::withMessages(['alts' => (string) __('learning.errors.gallery_alt_required')]);
+            }
+        }
 
         // Bild-, Datei- und Videoblöcke tragen ihre Quelle als Anhang der
         // Lerneinheit — ohne Upload bliebe `attachment_id` für immer leer und
@@ -397,6 +450,16 @@ class LearningCourseController extends Controller {
             }
         }
 
+        if ($galleryFiles !== []) {
+            /** @var User $uploader */
+            $uploader = Auth::user();
+            $data['images'] = [];
+            foreach ($galleryFiles as $position => $file) {
+                $attachment = app(FileAttacher::class)->store($unit, $file, $uploader->id, ['organization_id' => $unit->organization_id], 'learning-content');
+                $data['images'][] = ['attachment_id' => $attachment->id, 'alt' => $alts[$position] ?? ''];
+            }
+        }
+
         // Ein Bild ohne Alternativtext ist für Menschen, die es nicht sehen
         // können, nicht vorhanden (BFSG/WCAG 1.1.1).
         if ($kind === LearningBlockKind::Image && trim((string) ($data['alt'] ?? '')) === '') {
@@ -408,6 +471,20 @@ class LearningCourseController extends Controller {
         $this->content->appendBlock($unit, $kind, $data);
 
         return redirect()->back()->with('success', __('learning.flash.block_added'));
+    }
+
+    /**
+     * Uploadregel für Lerninhalte: die generischen Anhangsformate plus Audio
+     * und Video. Ohne diese Endungen lehnte schon die Validierung jedes Video
+     * ab — der Upload im Videoblock und damit die Umrechnung (Feature 150)
+     * waren über die Oberfläche nie erreichbar.
+     *
+     * @return list<string>
+     */
+    private function learningMediaRule(): array {
+        $extensions = [...FileAttacher::ALLOWED_EXTENSIONS, 'mp4', 'm4v', 'webm', 'mov', 'mp3', 'm4a', 'ogg', 'oga', 'wav'];
+
+        return ['file', 'max:' . FileAttacher::maxKb(), 'mimes:' . implode(',', $extensions)];
     }
 
     public function destroyBlock(LearningCourse $course, LearningUnit $unit, int $index): RedirectResponse {
@@ -1156,6 +1233,9 @@ class LearningCourseController extends Controller {
         if ($request->filled('category_id')) {
             $request->merge(['category_id' => Sqid::decodeOrNumeric(LearningCourseCategory::class, $request->input('category_id'))]);
         }
+        if ($request->filled('competency_id')) {
+            $request->merge(['competency_id' => Sqid::decodeOrNumeric(\App\Models\Learning\Competency::class, $request->input('competency_id'))]);
+        }
         $prerequisiteIds = $request->input('prerequisite_course_ids');
         if (is_array($prerequisiteIds)) {
             $request->merge(['prerequisite_course_ids' => array_values(array_map(
@@ -1195,9 +1275,13 @@ class LearningCourseController extends Controller {
             'access_days' => ['nullable', 'integer', 'min:1', 'max:3650'],
             // Kursoptionen (MVP-788): Kategorie, Verfügbarkeitsfenster, Grenze.
             'category_id' => ['nullable', new ExistsInCurrentOrganization('learning_course_categories')],
+            'tags' => ['nullable', 'string', 'max:500'],
             'available_from' => ['nullable', 'date'],
             'available_until' => ['nullable', 'date', 'after_or_equal:available_from'],
             'max_enrollments' => ['nullable', 'integer', 'min:1', 'max:100000'],
+            // Kompetenz, die der Abschluss belegt (MVP-798, C3-03) — ohne Feld blieb grantFromCourse wirkungslos.
+            'competency_id' => ['nullable', 'integer', new ExistsInCurrentOrganization('competencies')],
+            'competency_level' => ['nullable', 'integer', 'between:1,10'],
         ]);
 
         $data['category_id'] = $data['category_id'] ?? null;

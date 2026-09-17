@@ -21,3 +21,18 @@ ou mot de passe. Le modèle de temps de travail se gère séparément et sert de
 base aux évaluations d'horaires flexibles ; la création et la suppression de
 membres complets restent réservées à l'administration, dans la limite du
 nombre d'utilisateurs de la licence.
+
+**Départ :** Lorsqu'une personne quitte l'organisation, le compte n'est pas
+simplement supprimé. Le départ passe par une boîte de dialogue avec une date
+d'effet et une liste de passation : supports d'accès remis, matériel attribué,
+tâches ouvertes et pointages ouverts y sont énumérés pour que rien ne reste en
+suspens. Tant que des supports d'accès sont encore remis, le départ ne peut pas
+être enregistré — il faut d'abord les récupérer. Si la date d'effet est dans le
+futur, le départ est planifié et effectué ce jour-là. Le compte est alors
+désactivé, les sessions et les clés d'API prennent fin et la licence est libérée.
+
+La raison est simple : un compte supprimé aussitôt emporte la traçabilité — les
+temps saisis, les protocoles signés et les validations doivent rester
+attribuables à leur auteur. Les données personnelles restent par ailleurs
+soumises aux règles de conservation et d'effacement de l'espace protection des
+données.

@@ -135,6 +135,7 @@ return [
         'no_items' => 'Die Datei enthält keine Positionen.',
         'markup_with_cost_approach' => 'Position :ref ist eine Zuschlagsposition und trägt trotzdem Kostenansätze — der Zuschlag rechnet auf andere Positionen, das Geld zählte sonst zweimal.',
         'vendor_record_type' => 'Die Datei enthält :count Sätze der herstellerfreien Zeilenart :type — ihr Inhalt wird nicht ausgewertet (dort liegen bei manchen Systemen die Kostengruppen).',
+        'unhandled_record_type' => 'Die Datei enthält :count Sätze der Zeilenart :type — diese Zeilenart wird nicht gelesen (etwa Lose, Zuschläge oder vertragliche Regelungen); ihr Inhalt fehlt im Import.',
         'item_missing_ref' => 'Position ohne Ordnungszahl: :text',
         'duplicate_ref' => 'Ordnungszahl :ref kommt mehrfach vor.',
         'missing_quantity' => 'Position :ref ohne Menge.',

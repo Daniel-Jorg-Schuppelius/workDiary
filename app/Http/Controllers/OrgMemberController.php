@@ -56,8 +56,10 @@ class OrgMemberController extends Controller {
         $roles = [UserRole::Admin->value, UserRole::User->value, UserRole::Buchhaltung->value];
         $canManageMembers = $this->canManageMembers($auth);
         $canManagePayroll = $this->canManagePayroll($auth);
+        // Legal Hold (MVP-801): sichtbar machen, warum Löschen gesperrt ist.
+        $heldUserIds = app(\App\Services\Privacy\LegalHoldService::class)->heldUserIds();
 
-        return view('org.members.index', compact('members', 'roles', 'sort', 'dir', 'canManageMembers', 'canManagePayroll'));
+        return view('org.members.index', compact('members', 'roles', 'sort', 'dir', 'canManageMembers', 'canManagePayroll', 'heldUserIds'));
     }
 
     public function create(): View {
@@ -364,6 +366,18 @@ class OrgMemberController extends Controller {
      * Mitarbeiter. Deaktiviert zum Stichtag, Nachweise bleiben stehen, der
      * Lizenzsitz wird frei. Zutrittsmedien-Guard wie beim Entfernen.
      */
+    /** Austritts-Dialog mit Stichtag und Übergabeliste (MVP-798, Befund P1-21). */
+    public function offboardDialog(User $member): View {
+        Gate::authorize('manage-members');
+        $this->ensureSameOrg($member);
+        $this->ensureMayManagePlatformAdmin($member);
+
+        return view('org.members._offboard_dialog', [
+            'member' => $member,
+            'checklist' => app(\App\Services\Org\UserOffboardingService::class)->handoverChecklist($member),
+        ]);
+    }
+
     public function offboard(\Illuminate\Http\Request $request, User $member): RedirectResponse {
         Gate::authorize('manage-members');
         $this->ensureSameOrg($member);
@@ -405,6 +419,11 @@ class OrgMemberController extends Controller {
 
         if ($member->id === $auth->id) {
             return back()->with('error', __('Sie können sich nicht selbst entfernen.'));
+        }
+
+        // Legal Hold (MVP-801): gesperrte Personen werden nicht gelöscht.
+        if (app(\App\Services\Privacy\LegalHoldService::class)->activeHoldFor($member) !== null) {
+            return back()->with('error', __(':name steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.', ['name' => $member->name]));
         }
 
         // H1/E4: Konten mit aufbewahrungspflichtigen Nachweisen (ArbZG/MiLoG/

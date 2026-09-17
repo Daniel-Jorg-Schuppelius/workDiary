@@ -221,12 +221,9 @@ class TenantTraitCoverageTest extends TestCase {
         // Mandantengrenze transitiv über das tenant-gebundene Document
         // (documents.organization_id). Siehe Allow-List im Audit-Doc.
         \App\Models\DocumentVersion::class,
-        // Wissensbasis (Feature 011): Verknüpfungen und Feedback sind
-        // Kind-Tabellen des tenant-gebundenen KnowledgeArticle —
-        // Mandantengrenze transitiv (knowledge_articles.organization_id),
-        // Controller bindet Links nur in Kombination mit dem Artikel.
-        // Siehe Allow-List im Audit-Doc.
-        \App\Models\KnowledgeArticleLink::class,
+        // Wissensbasis (Feature 011): Feedback ist Kind-Tabelle des
+        // tenant-gebundenen KnowledgeArticle — Mandantengrenze transitiv
+        // (knowledge_articles.organization_id). Siehe Allow-List im Audit-Doc.
         \App\Models\KnowledgeArticleFeedback::class,
         // Append-only Event-Hash-Ketten (Hinweisgeber-/Datenschutzmodul) —
         // analog OrganizationAuditLog: nullable organization_id BEWUSST ohne

@@ -33,7 +33,8 @@ use Throwable;
  * Mandanten-Sicht: alle org-gebundenen Modelle (DiaryEntry, Document, …,
  * FeatureUsageCounter, AuditLog, Attachment) tragen BelongsToOrganization;
  * ist `currentOrganization` gebunden (Org-Admin), sind die Zahlen damit
- * automatisch org-bezogen, beim globalen Admin ohne Org org-übergreifend.
+ * automatisch org-bezogen, beim globalen Admin ohne Org org-übergreifend —
+ * dann ohne Demo-Organisationen (MVP-807), sonst zählten Musterdaten mit.
  *
  * Datenschutz: keine Inhalte, keine Einzel-User-Auswertung, kein externes
  * Senden — alles bleibt in der lokalen Datenbank. Die Nutzungszähler sind
@@ -200,6 +201,7 @@ class OperationsMetricsService {
                 $q->where('organization_id', $org->id)->orWhereNull('organization_id');
             });
         }
+        $this->withoutDemo($query);
 
         return [
             'count' => (int) (clone $query)->count(),
@@ -227,14 +229,17 @@ class OperationsMetricsService {
         // Attachment ist org-scoped (BelongsToOrganization). DocumentVersion
         // ist ein Child von Document — whereHas('document') zieht den
         // Org-Scope des Parents transitiv mit.
+        $attachments = $this->withoutDemo(Attachment::query());
+        $versions = DocumentVersion::query()->whereHas('document', fn ($document) => $this->withoutDemo($document));
+
         return [
             'attachments' => [
-                'count' => (int) Attachment::query()->count(),
-                'bytes' => (int) Attachment::query()->sum('size'),
+                'count' => (int) (clone $attachments)->count(),
+                'bytes' => (int) $attachments->sum('size'),
             ],
             'document_versions' => [
-                'count' => (int) DocumentVersion::query()->whereHas('document')->count(),
-                'bytes' => (int) DocumentVersion::query()->whereHas('document')->sum('size'),
+                'count' => (int) (clone $versions)->count(),
+                'bytes' => (int) $versions->sum('size'),
             ],
         ];
     }
@@ -249,7 +254,7 @@ class OperationsMetricsService {
             return null;
         }
 
-        return (int) AuditLog::query()
+        return (int) $this->withoutDemo(AuditLog::query())
             ->where('event', 'auth.login')
             ->where('created_at', '>=', CarbonImmutable::now()->subDays(30))
             ->whereNotNull('user_id')
@@ -274,7 +279,7 @@ class OperationsMetricsService {
 
         $counts = [];
         foreach ($models as $key => $model) {
-            $counts[$key] = $this->safe(static fn(): int => (int) $model::query()->count(), 0);
+            $counts[$key] = $this->safe(fn(): int => (int) $this->withoutDemo($model::query())->count(), 0);
         }
 
         return $counts;
@@ -288,7 +293,7 @@ class OperationsMetricsService {
     private function featureUsage(): array {
         $since = CarbonImmutable::now()->subDays(self::USAGE_WINDOW_DAYS)->toDateString();
 
-        return array_values(FeatureUsageCounter::query()
+        return array_values($this->withoutDemo(FeatureUsageCounter::query())
             ->where('period_date', '>=', $since)
             ->groupBy('feature')
             ->orderBy('feature')
@@ -348,6 +353,34 @@ class OperationsMetricsService {
 
         return null;
     }
+
+    /**
+     * Plattformweite Sicht ohne Demo-Organisationen (MVP-807, Entscheid P12-17).
+     * Mit gebundener Organisation filtert bereits der Global Scope — auch eine
+     * Demo-Organisation sieht dann ihre eigenen Zahlen.
+     *
+     * @template TBuilder of \Illuminate\Database\Eloquent\Builder
+     * @param  TBuilder  $query
+     * @return TBuilder
+     */
+    private function withoutDemo(\Illuminate\Database\Eloquent\Builder $query): \Illuminate\Database\Eloquent\Builder {
+        if ($this->currentOrganization() !== null) {
+            return $query;
+        }
+
+        $this->demoIds ??= Organization::demoIds();
+        if ($this->demoIds === []) {
+            return $query;
+        }
+
+        $column = $query->getModel()->getTable() . '.organization_id';
+        $ids = $this->demoIds;
+
+        return $query->where(static fn ($q) => $q->whereNull($column)->orWhereNotIn($column, $ids));
+    }
+
+    /** @var list<int>|null */
+    private ?array $demoIds = null;
 
     private function currentOrganization(): ?Organization {
         if (! app()->bound('currentOrganization')) {

@@ -313,14 +313,14 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
     setHtml(
         dlg,
         html` <div class="modal-box max-w-2xl">
-                <h3 class="text-lg font-semibold mb-1">Besetzungsvorschläge</h3>
+                <h3 class="text-lg font-semibold mb-1">${escHtml(__("js.schedule_ui.suggestions_title"))}</h3>
                 <p class="text-sm opacity-70 mb-3">${typeName} · ${date}</p>
                 <table class="table table-sm table-zebra">
                     <thead>
                         <tr>
-                            <th>Mitarbeiter</th>
-                            <th class="text-right">Score</th>
-                            <th>Begründung</th>
+                            <th>${escHtml(__("js.schedule_ui.col_employee"))}</th>
+                            <th class="text-right">${escHtml(__("js.schedule_ui.col_score"))}</th>
+                            <th>${escHtml(__("js.schedule_ui.col_reason"))}</th>
                             <th></th>
                         </tr>
                     </thead>
@@ -330,7 +330,7 @@ function renderStaffingSuggestions(date, shiftTypeSqid, typeName, suggestions) {
                 </table>
                 <div class="modal-action">
                     <form method="dialog">
-                        <button class="btn btn-sm">Schließen</button>
+                        <button class="btn btn-sm">${escHtml(__("js.schedule_ui.close"))}</button>
                     </form>
                 </div>
             </div>
@@ -401,8 +401,8 @@ function openShiftDialog({
         .getElementById("shift-dialog-confirm")
         ?.classList.toggle("hidden", !showConfirm);
     document.getElementById("shift-dialog-title").textContent = isEdit
-        ? _t("Schicht bearbeiten")
-        : _t("Schicht anlegen");
+        ? __("js.schedule_ui.shift_edit")
+        : __("js.schedule_ui.shift_create");
 
     // Populate fields
     const userEl = /** @type {HTMLSelectElement | null} */ (
@@ -531,12 +531,12 @@ async function onShiftDialogSave(event) {
         if (Array.isArray(violations) && violations.length > 0) {
             showComplianceWarnings(violations, true);
         } else {
-            errEl.textContent = err.message ?? _t("Fehler beim Speichern.");
+            errEl.textContent = err.message ?? __("js.schedule_ui.save_failed");
             errEl.classList.remove("hidden");
         }
     } finally {
         saveBtn.disabled = false;
-        saveBtn.textContent = _t("Speichern");
+        saveBtn.textContent = __("js.schedule_ui.save");
     }
 }
 
@@ -565,8 +565,8 @@ async function onShiftDialogDelete() {
     if (!id) return;
     const ok = await (window.confirmAction
         ? window.confirmAction({
-              message: _t("Schicht wirklich löschen?"),
-              label: _t("Löschen"),
+              message: __("js.schedule_ui.shift_delete_confirm"),
+              label: __("js.schedule_ui.delete"),
           })
         : Promise.resolve(true));
     if (!ok) return;
@@ -578,7 +578,7 @@ async function onShiftDialogDelete() {
         ).close();
         window.location.reload();
     } catch (err) {
-        notifyError(err.message ?? _t("Fehler beim Löschen."));
+        notifyError(err.message ?? __("js.schedule_ui.delete_failed"));
     }
 }
 
@@ -594,7 +594,7 @@ async function onShiftDialogPublish() {
         ).close();
         window.location.reload();
     } catch (err) {
-        notifyError(err.message ?? _t("Fehler beim Veröffentlichen."));
+        notifyError(err.message ?? __("js.schedule_ui.publish_failed"));
     }
 }
 
@@ -610,7 +610,7 @@ async function onShiftDialogConfirm() {
         ).close();
         window.location.reload();
     } catch (err) {
-        notifyError(err.message ?? _t("Fehler beim Bestätigen."));
+        notifyError(err.message ?? __("js.schedule_ui.confirm_failed"));
     }
 }
 
@@ -643,9 +643,7 @@ function shiftTypeOpenEdit(typeId, type) {
     );
     if (active) active.checked = type.is_active ?? true;
 
-    document.getElementById("shift-type-form-title").textContent = _t(
-        "Schichttyp bearbeiten",
-    );
+    document.getElementById("shift-type-form-title").textContent = __("js.schedule_ui.shift_type_edit");
     document.getElementById("shift-type-error")?.classList.add("hidden");
 }
 
@@ -656,9 +654,7 @@ function shiftTypeResetForm() {
     /** @type {HTMLInputElement} */ (
         document.getElementById("shift-type-id")
     ).value = "";
-    document.getElementById("shift-type-form-title").textContent = _t(
-        "Neuen Schichttyp anlegen",
-    );
+    document.getElementById("shift-type-form-title").textContent = __("js.schedule_ui.shift_type_create");
     /** @type {HTMLInputElement} */ (
         document.getElementById("shift-type-color")
     ).value = "#3b82f6";
@@ -723,7 +719,7 @@ async function onShiftTypeSave(event) {
         shiftTypeResetForm();
     } catch (err) {
         if (errEl) {
-            errEl.textContent = err.message ?? _t("Fehler beim Speichern.");
+            errEl.textContent = err.message ?? __("js.schedule_ui.save_failed");
             errEl.classList.remove("hidden");
         }
     } finally {
@@ -734,8 +730,8 @@ async function onShiftTypeSave(event) {
 async function shiftTypeDelete(typeId) {
     const ok = await (window.confirmAction
         ? window.confirmAction({
-              message: _t("Schichttyp wirklich löschen?"),
-              label: _t("Löschen"),
+              message: __("js.schedule_ui.shift_type_delete_confirm"),
+              label: __("js.schedule_ui.delete"),
           })
         : Promise.resolve(true));
     if (!ok) return;
@@ -744,7 +740,7 @@ async function shiftTypeDelete(typeId) {
         document.querySelector(`[data-type-row="${typeId}"]`)?.remove();
         removeTypeOption(typeId);
     } catch (err) {
-        notifyError(err.message ?? _t("Fehler beim Löschen."));
+        notifyError(err.message ?? __("js.schedule_ui.delete_failed"));
     }
 }
 
@@ -893,10 +889,6 @@ async function apiFetch(method, url, body = null) {
     return json;
 }
 
-/** Simple translation stub — returns the key (labels are in German anyway). */
-function _t(key) {
-    return key;
-}
 
 // Escaping läuft zentral über lib/html.js (siehe Import am Dateikopf).
 // Die früheren lokalen escHtml/escAttr hatten Lücken: escHtml escapte kein

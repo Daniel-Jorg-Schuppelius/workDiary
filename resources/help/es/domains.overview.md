@@ -31,10 +31,11 @@ permanecen visibles en el indicador para mantener la cartera completa.
 nombres y DNS, facturas, cronología y acciones. «Actualizar» concilia el
 estado del proveedor para ese dominio concreto.
 
-**DNS:** La zona se lee bajo demanda; los registros pueden reemplazarse o
-modificarse de forma selectiva. Tras una escritura, el sistema detecta
-desviaciones (conflicto de DNS) y las hace visibles en lugar de
-sobrescribirlas. Los registros MX/SRV exigen una prioridad.
+**DNS:** La zona se lee bajo demanda. En la interfaz se pueden añadir y eliminar
+registros individuales; reemplazar la zona completa no se ofrece a propósito,
+porque un reemplazo total erróneo borra todos los registros del dominio. Tras
+una escritura, el sistema detecta desviaciones (conflicto de DNS) y las hace
+visibles en lugar de sobrescribirlas. Los registros MX/SRV exigen una prioridad.
 
 **Registro:** Antes de registrar se comprueba la disponibilidad. Un registro
 necesita un cliente, un handle de contacto propietario, al menos dos

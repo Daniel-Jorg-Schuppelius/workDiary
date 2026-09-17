@@ -186,6 +186,8 @@ return [
         'vacation_approved' => 'Your vacation request was approved. :note',
         'vacation_rejected' => 'Your vacation request was rejected. :note',
         'unclear_case_title' => 'Unclear case on :date',
+        'open_attendance_title' => 'You have been clocked in since :time',
+        'open_attendance_body' => 'Please clock out if you have already finished work — otherwise the system will close the clock-in automatically later.',
         'driving_time_violation_title' => 'Driving/rest time finding on :date (:driver)',
         'month_submitted_title' => 'Month closure :period submitted by :user',
         'month_approved_title' => 'Month closure :period approved',

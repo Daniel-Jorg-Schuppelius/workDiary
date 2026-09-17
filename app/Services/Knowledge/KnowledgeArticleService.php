@@ -11,9 +11,9 @@
 namespace App\Services\Knowledge;
 
 use App\Enums\Knowledge\{ArticleStatus, ArticleVisibility};
-use App\Models\{KnowledgeArticle, KnowledgeArticleFeedback, KnowledgeArticleLink, User};
+use App\Models\{ContentReference, KnowledgeArticle, KnowledgeArticleFeedback, User};
 use Illuminate\Database\Eloquent\{Builder, Model};
-use Illuminate\Support\{Collection, Str};
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -43,13 +43,12 @@ class KnowledgeArticleService {
                 'slug' => KnowledgeArticle::uniqueSlug((string) $attributes['title']),
                 'problem' => $attributes['problem'],
                 'solution' => $attributes['solution'],
-                'category' => $this->normalizeCategory($attributes['category'] ?? null),
                 'status' => ArticleStatus::Draft->value,
                 'visibility' => ArticleVisibility::Internal->value,
                 'created_by_user_id' => $creator->id,
             ]);
 
-            $this->syncTags($article, $attributes);
+            $article->syncTagNames((string) ($attributes['tags'] ?? ''));
 
             return $article;
         });
@@ -61,7 +60,7 @@ class KnowledgeArticleService {
     }
 
     /**
-     * Aktualisiert Titel/Problem/Lösung/Kategorie/Tags. Der Slug bleibt
+     * Aktualisiert Titel/Problem/Lösung/Tags (die Kategorie ist seit MVP-814 eine Sammlung). Der Slug bleibt
      * stabil (Verlinkungen/Lesezeichen), `updated`-Diff kommt automatisch
      * über den Auditable-Trait.
      *
@@ -75,13 +74,10 @@ class KnowledgeArticleService {
                 'title' => $attributes['title'] ?? $article->title,
                 'problem' => $attributes['problem'] ?? $article->problem,
                 'solution' => $attributes['solution'] ?? $article->solution,
-                'category' => array_key_exists('category', $attributes)
-                    ? $this->normalizeCategory($attributes['category'])
-                    : $article->category,
             ]);
 
             if (array_key_exists('tags', $attributes)) {
-                $this->syncTags($article, $attributes);
+                $article->syncTagNames((string) ($attributes['tags'] ?? ''));
             }
 
             return $article;
@@ -166,22 +162,22 @@ class KnowledgeArticleService {
      * Verknüpft den Artikel mit einem Auftrag/Asset/Kunden/Protokoll
      * („hat hier geholfen"). Idempotent (Unique-Index knowledge_link_uq).
      */
-    public function linkTo(KnowledgeArticle $article, Model $subject, User $actor): KnowledgeArticleLink {
-        return DB::transaction(function () use ($article, $subject, $actor): KnowledgeArticleLink {
-            /** @var KnowledgeArticleLink|null $existing */
+    public function linkTo(KnowledgeArticle $article, Model $subject, User $actor): ContentReference {
+        return DB::transaction(function () use ($article, $subject, $actor): ContentReference {
             $existing = $article->links()
-                ->where('linkable_type', $subject->getMorphClass())
-                ->where('linkable_id', $subject->getKey())
+                ->where('target_type', $subject->getMorphClass())
+                ->where('target_id', $subject->getKey())
                 ->first();
             if ($existing !== null) {
                 return $existing;
             }
 
-            /** @var KnowledgeArticleLink $link */
             $link = $article->links()->create([
-                'linkable_type' => $subject->getMorphClass(),
-                'linkable_id' => $subject->getKey(),
-                'created_by_user_id' => $actor->id,
+                'organization_id' => $article->organization_id,
+                'target_type' => $subject->getMorphClass(),
+                'target_id' => $subject->getKey(),
+                'kind' => ContentReference::KIND_LINKED,
+                'created_by' => $actor->id,
             ]);
 
             $article->audit('knowledge.linked', [
@@ -195,14 +191,13 @@ class KnowledgeArticleService {
     }
 
     /** Löst eine Verknüpfung wieder. */
-    public function unlink(KnowledgeArticleLink $link, User $actor): void {
+    public function unlink(ContentReference $link, User $actor): void {
         DB::transaction(function () use ($link, $actor): void {
-            /** @var KnowledgeArticle $article */
-            $article = $link->article()->firstOrFail();
+            $article = KnowledgeArticle::query()->findOrFail($link->source_id);
             $article->audit('knowledge.unlinked', [
                 'actor_user_id' => $actor->id,
-                'linkable_type' => $link->linkable_type,
-                'linkable_id' => $link->linkable_id,
+                'linkable_type' => $link->target_type,
+                'linkable_id' => $link->target_id,
             ]);
             $link->delete();
         });
@@ -234,8 +229,8 @@ class KnowledgeArticleService {
             ->published()
             // Bereits verknüpfte Artikel sind keine „Vorschläge" mehr.
             ->whereDoesntHave('links', function (Builder $q) use ($subject): void {
-                $q->where('linkable_type', $subject->getMorphClass())
-                    ->where('linkable_id', $subject->getKey());
+                $q->where('target_type', $subject->getMorphClass())
+                    ->where('target_id', $subject->getKey());
             })
             ->where(function (Builder $q) use ($words, $tagIds): void {
                 foreach ($words as $word) {
@@ -308,24 +303,4 @@ class KnowledgeArticleService {
         return array_slice(array_values($words), 0, 8);
     }
 
-    private function normalizeCategory(mixed $category): ?string {
-        $category = trim((string) $category);
-
-        return $category === '' ? null : Str::limit($category, 80, '');
-    }
-
-    /**
-     * Tags aus Komma-getrenntem Eingabefeld über die bestehende
-     * polymorphe Tag-Mechanik synchronisieren.
-     *
-     * @param  array<string, mixed>  $attributes
-     */
-    private function syncTags(KnowledgeArticle $article, array $attributes): void {
-        $names = array_values(array_filter(array_map(
-            static fn($name): string => trim((string) $name),
-            explode(',', (string) ($attributes['tags'] ?? '')),
-        ), static fn(string $name): bool => $name !== ''));
-
-        $article->syncTagsFromInput([], $names);
-    }
 }

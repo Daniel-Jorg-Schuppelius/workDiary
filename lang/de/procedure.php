@@ -146,6 +146,13 @@ return [
     ],
     'run' => [
         'navTitle' => 'Prozedurlauf',
+        'deviationHint' => 'Statt „Fehlgeschlagen“: Abweichung mit Begründung und Folgeaktion festhalten.',
+        'deviationType' => 'Art der Abweichung',
+        'deviationSeverity' => 'Schweregrad',
+        'deviationSeverityDefault' => 'Schweregrad automatisch',
+        'deviationAction' => 'Folgeaktion',
+        'deviationReason' => 'Begründung (mindestens 20 Zeichen)',
+        'recordDeviation' => 'Abweichung erfassen',
         'open' => 'Ausführen',
         'progress' => 'Fortschritt',
         'notApplicable' => 'nicht zutreffend',

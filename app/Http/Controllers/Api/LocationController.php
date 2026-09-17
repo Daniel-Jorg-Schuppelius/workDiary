@@ -27,7 +27,7 @@ use OpenApi\Attributes as OA;
  */
 class LocationController extends Controller {
     /** Punkte je Anfrage — der Rest wird verworfen, nicht abgelehnt (Offline-Puffer). */
-    private const MAX_POINTS_PER_REQUEST = 1000;
+    public const MAX_POINTS_PER_REQUEST = 1000;
 
     public const MODULE = 'module.standorterfassung';
 

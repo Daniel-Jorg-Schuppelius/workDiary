@@ -25,6 +25,14 @@ If your organization has a branch profile installed, the page shows its
 module recommendation. It is never applied automatically — you confirm it
 deliberately.
 
+## Start page per role
+
+Below the modules you decide where a role lands after signing in – for example
+the time clock for field staff or the receipt flow for accounting. A person's
+own choice in the profile always takes precedence. If a person has several
+roles, the first one in the displayed order that has a page set applies. A page
+the person may not open is skipped; without a setting the default stays.
+
 ## Limits
 
 - Unlicensed modules cannot be enabled here; that requires license

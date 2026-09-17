@@ -49,6 +49,8 @@ return [
         'client_secret_help' => 'Stocké chiffré ; laisser vide pour conserver la valeur enregistrée.',
         'tenant' => 'Tenant (ID d’annuaire)',
         'tenant_help' => 'GUID du tenant Entra ; vide = valeur de l’application d’instance (par défaut « common »).',
+        'onenote_import' => 'Autoriser l’import OneNote',
+        'onenote_import_help' => 'Active la connexion OneNote en lecture seule (Notes.Read). Désactivé : aucune autorisation supplémentaire, pas même dans le consentement à l’échelle du tenant.',
         'tenant_invalid' => 'Le tenant doit être un GUID d’annuaire (ou common/organizations/consumers).',
     ],
     'health' => [

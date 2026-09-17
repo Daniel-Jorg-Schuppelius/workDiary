@@ -466,14 +466,24 @@ class GaebImportService {
 
         $parser = new Gaeb90Parser;
         $decoded = $this->reader->decode($content, $format);
-        $vendor = $parser->vendorRecordTypes($decoded);
-        if ($vendor === []) {
+        $unknown = $parser->unknownRecordTypes($decoded);
+        if ($unknown === []) {
             return [];
         }
 
+        // Vollscan 2026-09-15 (`P9-10`): gemeldet wurden bisher nur die
+        // herstellerfreien Sätze 70–89. Lose (10/33), vertragliche Regelungen
+        // (T0/T1/T9), EP-Aufgliederung (06/30) und Hinweistexte (20) fielen
+        // still durch — beim Import fehlte ihr Inhalt, ohne dass es jemand
+        // erfuhr. Der Leser deutet sie weiterhin nicht; sichtbar sind sie nun.
+        $vendor = $parser->vendorRecordTypes($decoded);
+
         $warnings = [];
-        foreach ($vendor as $type => $count) {
-            $warnings[] = (string) __('gaeb.preflight.vendor_record_type', ['type' => $type, 'count' => $count]);
+        foreach ($unknown as $type => $count) {
+            $key = array_key_exists($type, $vendor)
+                ? 'gaeb.preflight.vendor_record_type'
+                : 'gaeb.preflight.unhandled_record_type';
+            $warnings[] = (string) __($key, ['type' => $type, 'count' => $count]);
         }
 
         return $warnings;

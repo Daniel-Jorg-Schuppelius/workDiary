@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Org;
 
-use App\Models\{Organization, TimeEntry, User};
+use App\Models\{Asset, AssetAssignment, Organization, Project, Task, TimeEntry, User};
 use App\Services\Org\UserOffboardingService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\DB;
@@ -115,6 +115,38 @@ final class MemberOffboardingTest extends TestCase {
             ->assertRedirect(route('org.members.index'));
 
         $this->assertNull(User::query()->find($member->id));
+    }
+
+    public function test_offboarding_dialog_lists_what_the_member_still_holds(): void {
+        // MVP-798 (P1-21): Stichtag wählbar statt fest „heute", dazu die Übergabeliste.
+        $member = $this->member();
+        $asset = Asset::factory()->create(['organization_id' => $this->org->id, 'name' => 'Bohrhammer 7']);
+        AssetAssignment::factory()->create([
+            'organization_id' => $this->org->id,
+            'asset_id' => $asset->id,
+            'assigned_to_user_id' => $member->id,
+        ]);
+        $project = Project::factory()->create(['organization_id' => $this->org->id]);
+        $open = Task::factory()->create(['project_id' => $project->id, 'created_by' => $this->admin->id, 'title' => 'Wartungsplan Halle 3']);
+        $done = Task::factory()->done()->create(['project_id' => $project->id, 'created_by' => $this->admin->id, 'title' => 'Altlast erledigt']);
+        $open->assignees()->attach($member->id);
+        $done->assignees()->attach($member->id);
+
+        $this->actingAs($this->admin)
+            ->get(route('org.members.offboard.dialog', $member))
+            ->assertOk()
+            ->assertSee('name="left_at"', false)
+            ->assertSee('Bohrhammer 7')
+            ->assertSee('Wartungsplan Halle 3')
+            ->assertDontSee('Altlast erledigt');
+    }
+
+    public function test_offboarding_dialog_requires_member_management(): void {
+        $member = $this->member();
+
+        $this->actingAs($this->member())
+            ->get(route('org.members.offboard.dialog', $member))
+            ->assertForbidden();
     }
 
     public function test_self_offboarding_is_rejected(): void {

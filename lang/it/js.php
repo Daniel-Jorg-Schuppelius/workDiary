@@ -22,6 +22,37 @@ return [
         'move_failed' => 'Spostamento non riuscito.',
         'suggest_failed' => 'Impossibile caricare i suggerimenti.',
     ],
+    // Dienstplan-Oberflaeche (MVP-797): war zuvor fest verdrahtetes Deutsch.
+    'schedule_ui' => [
+        'shift_edit' => 'Modifica turno',
+        'shift_create' => 'Crea turno',
+        'shift_delete_confirm' => 'Eliminare davvero questo turno?',
+        'shift_type_edit' => 'Modifica tipo di turno',
+        'shift_type_create' => 'Crea tipo di turno',
+        'shift_type_delete_confirm' => 'Eliminare davvero questo tipo di turno?',
+        'save' => 'Salva',
+        'delete' => 'Elimina',
+        'close' => 'Chiudi',
+        'save_failed' => 'Errore durante il salvataggio.',
+        'delete_failed' => 'Errore durante l\'eliminazione.',
+        'publish_failed' => 'Errore durante la pubblicazione.',
+        'confirm_failed' => 'Errore durante la conferma.',
+        'suggestions_title' => 'Proposte di copertura',
+        'col_employee' => 'Collaboratore',
+        'col_score' => 'Punteggio',
+        'col_reason' => 'Motivazione',
+    ],
+    'bulk' => [
+        'select_one' => 'Seleziona prima almeno una voce.',
+    ],
+    'design' => [
+        'inheritance' => '«:base» · :inherited/:total ereditati, :own sovrascritti',
+    ],
+    // Chat-Oberflaeche (MVP-798): angepinnte Nachrichten werden per JSON geladen.
+    'chat' => [
+        'pinned_failed' => 'Impossibile caricare i messaggi fissati.',
+        'pinned_empty' => 'Nessun messaggio fissato.',
+    ],
     'kanban' => [
         'invalid_move' => 'Questo cambio di stato non è previsto nel flusso di lavoro dell\'ordine.',
         'not_allowed' => 'Non sei autorizzato a eseguire questa azione sull\'ordine.',

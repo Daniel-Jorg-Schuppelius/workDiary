@@ -26,6 +26,15 @@ Hat deine Organisation ein Branchenprofil installiert, zeigt die Seite dessen
 Modul-Empfehlung an. Sie wird nie automatisch angewendet — du bestätigst sie
 bewusst.
 
+## Startseite je Rolle
+
+Unter den Modulen legst du fest, wohin eine Rolle nach dem Anmelden kommt –
+etwa die Stempeluhr für den Außendienst oder den Belegfluss für die
+Buchhaltung. Die eigene Wahl im Profil geht immer vor. Hat eine Person mehrere
+Rollen, gilt die erste in der angezeigten Reihenfolge, für die eine Seite
+festgelegt ist. Eine Seite, die die Person nicht öffnen darf, wird
+übersprungen; ohne Festlegung bleibt es beim Standard.
+
 ## Grenzen
 
 - Nicht lizenzierte Module lassen sich hier **nicht** freischalten; das geht

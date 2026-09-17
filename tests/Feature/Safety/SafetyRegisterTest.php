@@ -19,6 +19,7 @@ use App\Models\Safety\{HazardAssessment, MedicalCheckup, SafetyInstruction, Safe
 use App\Services\Safety\{HazardAssessmentService, SafetyInstructionService};
 use App\Support\Sqid;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\ValidationException;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
@@ -460,4 +461,53 @@ class SafetyRegisterTest extends TestCase {
         $this->assertSame(0, HazardAssessment::query()->count());
         $this->assertSame(0, SafetyInstruction::query()->count());
     }
+
+    /**
+     * Gezeichnete Unterschrift (Vollscan 2026-09-15, `P10-14` / `MVP-798`):
+     * Methode und Feld gab es, der Controller rief den Dienst aber nie mit Bild auf.
+     */
+    public function test_participant_signs_with_a_drawn_signature(): void {
+        Storage::fake('local');
+        $participantUser = $this->field();
+        $instruction = $this->instructions()->create($this->organization, $this->lead(), [
+            'topic' => 'Leitern und Tritte',
+            'held_on' => now()->toDateString(),
+            'repeat_interval_months' => 12,
+        ], [$participantUser->id]);
+        $participant = $instruction->participants()->firstOrFail();
+
+        $this->actingAs($participantUser)
+            ->post(route('safety.instructions.participants.sign', [$instruction, $participant]), [
+                'signature' => 'data:image/png;base64,' . self::ONE_PIXEL_PNG,
+            ])->assertRedirect();
+
+        $participant->refresh();
+        $this->assertSame(InstructionSignatureMethod::Drawn, $participant->method);
+        $this->assertNotNull($participant->signature_image_path);
+        Storage::disk('local')->assertExists((string) $participant->signature_image_path);
+    }
+
+    /** Kein PNG: abgewiesen, keine Datei abgelegt, die Teilnahme bleibt offen. */
+    public function test_invalid_drawn_signature_is_rejected_without_storing_a_file(): void {
+        Storage::fake('local');
+        $participantUser = $this->field();
+        $instruction = $this->instructions()->create($this->organization, $this->lead(), [
+            'topic' => 'Leitern und Tritte',
+            'held_on' => now()->toDateString(),
+            'repeat_interval_months' => 12,
+        ], [$participantUser->id]);
+        $participant = $instruction->participants()->firstOrFail();
+
+        $this->actingAs($participantUser)
+            ->post(route('safety.instructions.participants.sign', [$instruction, $participant]), [
+                'signature' => 'data:image/png;base64,' . base64_encode('kein Bild'),
+            ])->assertSessionHasErrors('signature');
+
+        $participant->refresh();
+        $this->assertFalse($participant->isSigned());
+        $this->assertSame([], Storage::disk('local')->allFiles());
+    }
+
+    /** Kleinstes gültiges PNG (1 × 1, transparent). */
+    private const ONE_PIXEL_PNG = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNkYPhfDwAChwGA60e6kgAAAABJRU5ErkJggg==';
 }

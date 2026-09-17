@@ -24,3 +24,11 @@ with the tax authority.
 **Handover**: the GoBD audit package contains chart of accounts, journal, entry
 lines, open items and periods; the DATEV handover is generated from posted
 entries, not derived from the documents again.
+
+**Management report, budget and liquidity:** The same posted entries feed the
+**management report** (revenue, cost and result by group), the **budget
+comparison** per account and cost centre — previous-year figures can be carried
+over as a starting point — and the **liquidity forecast**. All three are
+evaluations, not a second set of books: what you see there is what stands in
+the journal. Corrections are therefore always made to the entry, never to the
+report.

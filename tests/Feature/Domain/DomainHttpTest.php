@@ -10,10 +10,11 @@
 
 namespace Tests\Feature\Domain;
 
-use App\Enums\Domain\DomainConnectionStatus;
+use App\Enums\Domain\{DomainConnectionStatus, DomainDnsRecordType};
 use App\Enums\User\Permission;
 use App\Models\{Customer, ForeignCustomer, Organization, User};
-use App\Models\Domain\{DomainProjection, DomainProviderConnection, DomainResellerAccount};
+use App\Models\Domain\{DomainDnsRecordProjection, DomainDnsZoneProjection, DomainProjection, DomainProviderConnection, DomainResellerAccount};
+use App\Services\Domain\DomainDnsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\Concerns\WithOrganization;
 use Tests\Support\FakeDomainResellingTransport;
@@ -76,6 +77,52 @@ class DomainHttpTest extends TestCase {
             ->assertSee('meine.de')
             // Rechnungs-Reiter erklärt die API-Grenze (Blocked-State).
             ->assertSee('keine', false);
+    }
+
+    /** MVP-798 (C1-06): DNS-Einträge hinzufügen und löschen hatten Route und Dienst, aber keinen Einstieg. */
+    public function test_dns_entries_can_be_added_and_deleted_from_the_detail_page(): void {
+        $this->admin->givePermissionTo(Permission::DomainDnsManage->value);
+        $connection = DomainProviderConnection::factory()->create(['organization_id' => $this->organization->id]);
+        $domain = DomainProjection::factory()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'external_domain' => 'zone.de',
+            'domain_hash' => DomainProjection::hashFor('zone.de'),
+        ]);
+        $zone = DomainDnsZoneProjection::query()->create([
+            'organization_id' => $this->organization->id,
+            'connection_id' => $connection->id,
+            'domain_projection_id' => $domain->id,
+            'zone' => 'zone.de',
+            'zone_hash' => DomainDnsZoneProjection::hashFor('zone.de'),
+        ]);
+        DomainDnsRecordProjection::query()->create([
+            'organization_id' => $this->organization->id,
+            'zone_id' => $zone->id,
+            'type' => DomainDnsRecordType::A,
+            'name' => 'www.zone.de',
+            'ttl' => 3600,
+            'content' => '192.0.2.10',
+            'position' => 0,
+        ]);
+
+        $this->actingAs($this->admin)->get(route('domains.show', $domain))->assertOk()
+            ->assertSee('data-open-dialog="domain-dns-add"', false)
+            ->assertSee('name="add[0][content]"', false)
+            ->assertSee('name="delete[0][content]" value="192.0.2.10"', false);
+
+        $this->mock(DomainDnsService::class)
+            ->shouldReceive('modifyRecords')
+            ->once()
+            ->withArgs(fn ($connectionArg, string $zoneName, array $add, array $delete): bool => $zoneName === 'zone.de'
+                && $add === [['type' => 'TXT', 'name' => 'zone.de', 'ttl' => null, 'priority' => null, 'content' => 'v=spf1 -all']]
+                && $delete === [['type' => 'A', 'name' => 'www.zone.de', 'ttl' => 3600, 'priority' => null, 'content' => '192.0.2.10']])
+            ->andReturn([]);
+
+        $this->actingAs($this->admin)->from(route('domains.show', $domain))->post(route('domains.dns.modify', $domain), [
+            'add' => [['type' => 'TXT', 'name' => 'zone.de', 'ttl' => '', 'priority' => '', 'content' => 'v=spf1 -all']],
+            'delete' => [['type' => 'A', 'name' => 'www.zone.de', 'ttl' => '3600', 'priority' => '', 'content' => '192.0.2.10']],
+        ])->assertRedirect(route('domains.show', $domain))->assertSessionHas('success');
     }
 
     public function test_other_org_domain_is_not_visible(): void {

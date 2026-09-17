@@ -35,30 +35,28 @@
         </x-page-toolbar>
     </x-slot:toolbar>
 
-    <div class="card bg-base-100 shadow-sm">
-        <div class="card-body">
-            <h2 class="card-title text-base">{{ __('flex.eligibility.form.add_title') }}</h2>
+    <x-card class="flex flex-col gap-2">
+        <h2 class="card-title text-base">{{ __('flex.eligibility.form.add_title') }}</h2>
 
-            <form method="POST" action="{{ route('users.flex-eligibility.store', $member) }}"
-                  class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mt-2">
-                @csrf
-                <x-date-range class="md:col-span-2" layout="split" form-control size="md"
-                              from-name="valid_from" to-name="valid_to" from-required
-                              :from="old('valid_from', now()->toDateString())" :to="old('valid_to')"
-                              :from-label="__('flex.eligibility.form.valid_from')"
-                              :to-label="__('flex.eligibility.form.valid_to')" />
-                <x-form-group :label="__('flex.eligibility.form.note')" name="note" class="md:col-span-2">
-                    <input type="text" name="note" value="{{ old('note') }}" maxlength="500"
-                           class="input input-bordered w-full" />
-                </x-form-group>
-                <div class="md:col-span-4 flex justify-end">
-                    <x-button type="submit" tone="primary">
-                        {{ __('flex.eligibility.form.submit') }}
-                    </x-button>
-                </div>
-            </form>
-        </div>
-    </div>
+        <form method="POST" action="{{ route('users.flex-eligibility.store', $member) }}"
+              class="grid grid-cols-1 md:grid-cols-4 gap-3 items-end mt-2">
+            @csrf
+            <x-date-range class="md:col-span-2" layout="split" form-control size="md"
+                          from-name="valid_from" to-name="valid_to" from-required
+                          :from="old('valid_from', now()->toDateString())" :to="old('valid_to')"
+                          :from-label="__('flex.eligibility.form.valid_from')"
+                          :to-label="__('flex.eligibility.form.valid_to')" />
+            <x-form-group :label="__('flex.eligibility.form.note')" name="note" class="md:col-span-2">
+                <input type="text" name="note" value="{{ old('note') }}" maxlength="500"
+                       class="input input-bordered w-full" />
+            </x-form-group>
+            <div class="md:col-span-4 flex justify-end">
+                <x-button type="submit" tone="primary">
+                    {{ __('flex.eligibility.form.submit') }}
+                </x-button>
+            </div>
+        </form>
+    </x-card>
 
     <x-table scroll="flex" :pinRows="true" table-sort="client">
         <x-slot:head>

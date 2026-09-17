@@ -15,50 +15,42 @@
 <x-index-page :subtitle="$organization ? __('Rollen, Gruppen, Mitglieder und Berechtigungen für :org verwalten.', ['org' => $organization->name]) : __('Zugriffssteuerung & Berechtigungen.')">
 
     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <a href="{{ route('admin.access.roles.index') }}" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="card-body">
-                <div class="flex items-center gap-3">
-                    <x-icon name="shield_person" class="text-primary text-3xl" />
-                    <div>
-                        <div class="text-2xl font-semibold">{{ $rolesCount }}</div>
-                        <div class="text-sm text-muted">{{ __('access.kpi.roles') }}</div>
-                    </div>
+        <x-card as="a" href="{{ route('admin.access.roles.index') }}" class="hover:shadow-md transition-shadow flex flex-col gap-2">
+            <div class="flex items-center gap-3">
+                <x-icon name="shield_person" class="text-primary text-3xl" />
+                <div>
+                    <div class="text-2xl font-semibold">{{ $rolesCount }}</div>
+                    <div class="text-sm text-muted">{{ __('access.kpi.roles') }}</div>
                 </div>
             </div>
-        </a>
-        <a href="{{ route('admin.access.groups.index') }}" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="card-body">
-                <div class="flex items-center gap-3">
-                    <x-icon name="groups" class="text-secondary text-3xl" />
-                    <div>
-                        <div class="text-2xl font-semibold">{{ $groupsCount }}</div>
-                        <div class="text-sm text-muted">{{ __('access.kpi.groups') }}</div>
-                    </div>
+        </x-card>
+        <x-card as="a" href="{{ route('admin.access.groups.index') }}" class="hover:shadow-md transition-shadow flex flex-col gap-2">
+            <div class="flex items-center gap-3">
+                <x-icon name="groups" class="text-secondary text-3xl" />
+                <div>
+                    <div class="text-2xl font-semibold">{{ $groupsCount }}</div>
+                    <div class="text-sm text-muted">{{ __('access.kpi.groups') }}</div>
                 </div>
             </div>
-        </a>
-        <a href="{{ route('admin.access.members.index') }}" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="card-body">
-                <div class="flex items-center gap-3">
-                    <x-icon name="group" class="text-accent text-3xl" />
-                    <div>
-                        <div class="text-2xl font-semibold">{{ $membersCount }}</div>
-                        <div class="text-sm text-muted">{{ __('access.kpi.members') }}</div>
-                    </div>
+        </x-card>
+        <x-card as="a" href="{{ route('admin.access.members.index') }}" class="hover:shadow-md transition-shadow flex flex-col gap-2">
+            <div class="flex items-center gap-3">
+                <x-icon name="group" class="text-accent text-3xl" />
+                <div>
+                    <div class="text-2xl font-semibold">{{ $membersCount }}</div>
+                    <div class="text-sm text-muted">{{ __('access.kpi.members') }}</div>
                 </div>
             </div>
-        </a>
-        <a href="{{ route('admin.access.permissions.index') }}" class="card bg-base-100 shadow-sm hover:shadow-md transition-shadow">
-            <div class="card-body">
-                <div class="flex items-center gap-3">
-                    <x-icon name="key" class="text-info text-3xl" />
-                    <div>
-                        <div class="text-2xl font-semibold">{{ $permissionsCount }}</div>
-                        <div class="text-sm text-muted">{{ __('access.kpi.permissions') }}</div>
-                    </div>
+        </x-card>
+        <x-card as="a" href="{{ route('admin.access.permissions.index') }}" class="hover:shadow-md transition-shadow flex flex-col gap-2">
+            <div class="flex items-center gap-3">
+                <x-icon name="key" class="text-info text-3xl" />
+                <div>
+                    <div class="text-2xl font-semibold">{{ $permissionsCount }}</div>
+                    <div class="text-sm text-muted">{{ __('access.kpi.permissions') }}</div>
                 </div>
             </div>
-        </a>
+        </x-card>
     </div>
 
     <div class="alert">

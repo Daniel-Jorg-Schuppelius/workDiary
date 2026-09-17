@@ -13,4 +13,9 @@ return [
         'heading' => 'Data quality: required classifications missing',
         'missing' => ':domain missing',
     ],
+    'error' => [
+        'requirementUnmet' => 'Mandatory classifications missing: :domains',
+        'requirementMin' => 'Mandatory classification “:domain”: at least :min entry/entries required, present: :actual.',
+        'requirementMax' => 'Mandatory classification “:domain”: at most :max entry/entries allowed, present: :actual.',
+    ],
 ];

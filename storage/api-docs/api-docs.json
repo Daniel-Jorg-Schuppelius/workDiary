@@ -4124,13 +4124,20 @@
                     "content": {
                         "application/json": {
                             "schema": {
-                                "required": [
-                                    "badge_uid"
-                                ],
                                 "properties": {
                                     "badge_uid": {
                                         "description": "Badge-Kennung (Alias: badge, credential)",
                                         "type": "string"
+                                    },
+                                    "personnel_number": {
+                                        "description": "Personalnummer — mit pin statt badge_uid (MVP-803)",
+                                        "type": "string",
+                                        "nullable": true
+                                    },
+                                    "pin": {
+                                        "description": "Terminal-PIN (4–8 Ziffern); nach 5 Fehlversuchen 15 Minuten gesperrt",
+                                        "type": "string",
+                                        "nullable": true
                                     },
                                     "event": {
                                         "type": "string",

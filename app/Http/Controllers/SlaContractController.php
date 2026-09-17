@@ -23,9 +23,11 @@ use Illuminate\View\View;
  * Feature-010-Restpunkte — Inklusivzeit-Kontingente (Rang 44) und
  * vertragspflichtige Wartungstermine (Rang 43).
  *
- * Verträge werden heute über Branchenprofile installiert; diese Seite zeigt sie
- * nur an (Recht `slaContract.view`). Bearbeiten ist eine separate Ausbaustufe
- * (`slaContract.manage`).
+ * Verträge kommen aus den Branchenprofilen oder werden hier gepflegt: Anlegen
+ * und Ändern laufen über `store()`/`update()` (Recht `slaContract.manage`),
+ * Ansehen über `slaContract.view`. Der frühere Docblock nannte die Seite
+ * read-only und das Bearbeiten eine separate Ausbaustufe — überholt,
+ * nachgeführt am 2026-09-16 (MVP-796, Befund C2-12).
  */
 class SlaContractController extends Controller {
     use ResolvesCurrentOrganization;

@@ -108,6 +108,28 @@ class DsarPortalTest extends TestCase {
         $this->assertStringContainsString('no-store', (string) $res->headers->get('Cache-Control'));
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13 (`surface-4`): Der schlanke DSAR-Stack lief
+     * ohne HSTS. Über die Strecke gehen Auskunftsersuchen mit Namen und
+     * Anschrift — ein einziger Aufruf über http genügt, um sie mitzulesen.
+     */
+    public function test_portal_sets_strict_transport_security_over_https(): void {
+        $portal = $this->portal();
+
+        $this->get('https://localhost/datenschutz/anfrage/' . $portal->public_slug)
+            ->assertOk()
+            ->assertHeader('Strict-Transport-Security', 'max-age=31536000; includeSubDomains');
+    }
+
+    /** Gegenprobe: über http bleibt die Kopfzeile weg, sonst bricht die lokale Entwicklung. */
+    public function test_portal_omits_strict_transport_security_without_tls(): void {
+        $portal = $this->portal();
+
+        $response = $this->get('http://localhost/datenschutz/anfrage/' . $portal->public_slug)->assertOk();
+
+        $this->assertFalse($response->headers->has('Strict-Transport-Security'));
+    }
+
     // ── Anlage ──────────────────────────────────────────────────────────────
 
     public function test_submission_creates_a_portal_request_with_encrypted_identity(): void {

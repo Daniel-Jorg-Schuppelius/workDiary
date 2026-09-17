@@ -30,14 +30,26 @@ return [
         // Öffentliche Bewerber-Karriereseiten (sessionlos, externe Zielgruppe).
         'careers.index',
         'careers.show',
-        // Externer B2B-Katalogzugang (Feature 099): tokengesicherte Public-Routen.
-        'b2b-catalog.index',
-        'b2b-catalog.show',
+        // Ziel nach dem Login (MVP-799): reine Weiterleitung, rendert keine Seite.
+        'start',
+        // Kiosk-Modus (MVP-800): Tablet-Terminal ohne Anmeldung und ohne App-Layout.
+        'kiosk.show',
+        // Entfernt am 2026-09-17 (MVP-797, Befund P8-35): Hier standen
+        // 'b2b-catalog.index'/'.show' mit der Begründung "tokengesicherte
+        // Public-Routen". Das sind aber die ADMIN-Routen (admin/b2b-katalog);
+        // sie waren dadurch von der Abdeckungsprüfung ausgenommen und hatten
+        // kein Topic. Sie sind jetzt auf 'admin.b2b-catalog' gemappt. Die
+        // wirklich öffentlichen Routen heissen 'b2b-punchout.*' und brauchen
+        // keine Ausnahme: isAppPage() prüft nur Namen auf .index/.show/.board/
+        // .dashboard — 'b2b-punchout.entry|browse|transfer' fallen nicht darunter.
     ],
 
     'routes' => [
         // Hilfecenter-Vollseite (Feature 039, MVP-752): Hilfe zur Hilfe.
         'help.center.*' => 'help.center',
+        // Kundenportal-Schulungen (Feature 149, MVP-742): fehlte im Register
+        // (MVP-797, Befund C3-28) — die uebrigen customer.*-Routen sind gemappt.
+        'customer.learning.*' => 'customer-portal.learning',
         // Oberflächen-Konfiguration (Feature 081): Funktionsumfang,
         // Menüanpassung und Funktionskatalog.
         'admin.scope.*' => 'scope.overview',
@@ -96,7 +108,8 @@ return [
         // Menü-/Buffetplanung Partyservice (MVP-455)
         'recipe-menus.*' => 'recipes.menus',
         // Plugin-Admin-Seiten ohne eigenes Topic → generische Integrationen.
-        'admin.calendly.*' => 'admin.integrations',
+        // Eigenes Topic seit MVP-797 (Befund P8-22) — zuvor generisch.
+        'admin.calendly.*' => 'admin.calendly',
         'admin.fritzbox.*' => 'admin.integrations',
         // Globale Suche
         'search.*' => 'search.overview',
@@ -281,6 +294,8 @@ return [
         'admin-time-entries.*' => 'time-entries.edit',
         'projects.time-entries.*' => 'time-entries.edit',
         'attendance.*' => 'attendance.manage',
+        // QR-/NFC-Check-in (MVP-800).
+        'checkin.*' => 'attendance.manage',
         'day-close.*' => 'time-entries.day-close',
         'timesheets.*' => 'timesheets.manage',
         'projects.timesheets.*' => 'timesheets.manage',
@@ -417,6 +432,10 @@ return [
         'form-templates.*' => 'forms.templates',
         'form-submissions.*' => 'forms.fill',
         'knowledge.*' => 'knowledge.articles',
+        'collections.*' => 'knowledge.collections',
+        'references.*' => 'knowledge.collections',
+        'knowledge-hub.*' => 'knowledge.collections',
+        'knowledge-imports.*' => 'knowledge.collections',
         'communication-notes.*' => 'communication.notes',
 
         // Stammdaten und operative Fachmodule
@@ -435,7 +454,6 @@ return [
         // Kassenbuch (Phase 38, MVP-414)
         'cash-registers.*' => 'finance.cashbook',
         'invoices.*' => 'invoices.manage',
-        'invoice-templates.*' => 'invoices.manage',
         'lexoffice.vouchers.*' => 'invoices.manage',
         'events.*' => 'events.manage',
         'assets.*' => 'assets.fleet',
@@ -560,6 +578,8 @@ return [
         'admin.metrics.*' => 'admin.metrics',
         'admin.offline-sync.*' => 'admin.offline-sync',
         'admin.invoice-mail-templates.*' => 'admin.invoice-mail-templates',
+        // B2B-Katalogverwaltung (Feature 099, MVP-797).
+        'b2b-catalog.*' => 'admin.b2b-catalog',
         'admin.plugins.*' => 'admin.plugins',
         'admin.plugin-errors.*' => 'admin.plugins',
         'admin.privacy.*' => 'admin.privacy-tools',

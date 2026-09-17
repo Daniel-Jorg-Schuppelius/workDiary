@@ -47,5 +47,5 @@
             @endforeach
         </tbody>
     </table>
-    <p class="small">{{ __('Nur lokal ausgestellte Rechnungen — gespiegelte Buchhaltungsbelege tragen keine Positionen.') }}</p>
+    <p class="small">{{ __('Lokale Rechnungen und gespiegelte Lexoffice-Rechnungen/-Gutschriften; aus lokalen Rechnungen übergebene Belege zählen nur einmal.') }}</p>
 @endsection

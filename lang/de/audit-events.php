@@ -35,6 +35,10 @@ return [
     'incomingEInvoice' => [
         'ibanConfirmed' => 'Abweichende Rechnungs-IBAN bestätigt',
     ],
+    'legal_hold' => [
+        'placed' => 'Legal Hold gesetzt',
+        'released' => 'Legal Hold aufgehoben',
+    ],
     'paymentRun' => [
         'released' => 'Zahllauf freigegeben',
         'exported' => 'SEPA-Datei erzeugt',
@@ -52,6 +56,8 @@ return [
         'adopted' => 'Materialverbrauch als Komponente übernommen',
     ],
     'expense' => [
+        'corrected' => 'Auslage per Gegenbeleg korrigiert',
+        'created_as_correction' => 'Auslage als Korrektur angelegt',
         'scanned' => 'Auslage aus Scan-Beleg erzeugt',
         'voucher_pushed' => 'Auslage als Beleg an die Buchhaltung übergeben',
         'voucher_linked' => 'Auslage einem Buchungsbeleg zugeordnet',
@@ -200,7 +206,13 @@ return [
         'disconnected' => 'Cloud-Dokumenteingang getrennt',
         'folderSelected' => 'Cloud-Eingangsordner gewählt',
     ],
+    'collection' => [
+        'imported' => 'Inhalte in Sammlung übernommen',
+        'item_added' => 'Inhalt in Sammlung aufgenommen',
+        'item_removed' => 'Inhalt aus Sammlung entfernt',
+    ],
     'communication' => [
+        'converted' => 'Notiz in Wissensartikel überführt',
         'confidential' => [
             'set' => 'Kommunikation als vertraulich markiert',
             'unset' => 'Vertraulichkeit aufgehoben',
@@ -220,6 +232,10 @@ return [
             'reopened' => 'Verstoß erneut aufgetreten',
             'resolved' => 'Verstoß behoben',
         ],
+    ],
+    'content_reference' => [
+        'added' => 'Verweis gesetzt',
+        'removed' => 'Verweis gelöst',
     ],
     'contract' => [
         'activated' => 'Vertrag aktiviert',
@@ -546,6 +562,10 @@ return [
         'settings_saved' => 'Microsoft-365-Mail-Einstellungen gespeichert',
         'test_sent' => 'Microsoft-365-Testmail versendet',
     ],
+    'msgraph_onenote' => [
+        'connected' => 'OneNote verbunden',
+        'disconnected' => 'OneNote getrennt',
+    ],
     'msgraph_tasks' => [
         'link_removed' => 'Aufgabenlisten-Verknüpfung entfernt',
         'link_saved' => 'Aufgabenlisten-Verknüpfung gespeichert',
@@ -705,6 +725,7 @@ return [
         'posting_published' => 'Stellenanzeige veröffentlicht',
         'public_application_received' => 'Öffentliche Bewerbung eingegangen',
         'requisition_created' => 'Stellenanforderung angelegt',
+        'upload_downloaded' => 'Bewerbungsunterlage heruntergeladen',
     ],
     'render_profile_activated' => 'Render-Profil aktiviert',
     'rental' => [
@@ -895,6 +916,13 @@ return [
         'transferred' => 'Ausschreibung übergeben',
     ],
     'terminal' => [
+        'pin_set' => 'Terminal-PIN gesetzt',
+        'pin_removed' => 'Terminal-PIN entfernt',
+        'pin_unlocked' => 'Terminal-PIN entsperrt',
+        'pin_locked' => 'Terminal-PIN nach Fehlversuchen gesperrt',
+        'checkpoint_created' => 'Check-in-Punkt angelegt',
+        'checkpoint_enabled' => 'Check-in-Punkt freigegeben',
+        'checkpoint_disabled' => 'Check-in-Punkt gesperrt',
         'badge_assigned' => 'Badge zugewiesen',
         'badge_revoked' => 'Badge entzogen',
         'deactivated' => 'Terminal deaktiviert',

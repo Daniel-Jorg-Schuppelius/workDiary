@@ -65,6 +65,15 @@ Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class
     Route::delete('admin/msgraph/tasks/links/{link}', [\App\Plugins\Msgraph\Http\Controllers\MsgraphTasksController::class, 'destroyLink'])->name('admin.msgraph.tasks.links.destroy');
 });
 
+// ── OneNote-Übernahme (Feature 155, MVP-815) ────────────────────────────
+// Eigener, nur lesender Grant (Notes.Read); erst nach Einschalten in den
+// Plugin-Einstellungen verbindbar. Die Übernahme startet im Einstieg „Wissen“.
+Route::middleware(['web', 'auth', \App\Http\Middleware\EnforcePlanModules::class])->group(function (): void {
+    Route::post('admin/msgraph/onenote/oauth/start', [\App\Plugins\Msgraph\Http\Controllers\MsgraphOneNoteController::class, 'startOAuth'])->name('admin.msgraph.onenote.oauth.start');
+    Route::get('admin/msgraph/onenote/oauth/callback', [\App\Plugins\Msgraph\Http\Controllers\MsgraphOneNoteController::class, 'oauthCallback'])->name('admin.msgraph.onenote.oauth.callback');
+    Route::post('admin/msgraph/onenote/disconnect', [\App\Plugins\Msgraph\Http\Controllers\MsgraphOneNoteController::class, 'disconnect'])->name('admin.msgraph.onenote.disconnect');
+});
+
 // ── Graph-Mail-Versand (Feature 102) ────────────────────────────────────
 // Eigener Grant (Mail.Send), getrennt von Kalender/Intake/Backup; die
 // Verbindung wird im Msgraph-Admin-Panel verwaltet.

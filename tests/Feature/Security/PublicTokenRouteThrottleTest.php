@@ -30,6 +30,9 @@ class PublicTokenRouteThrottleTest extends TestCase {
             'protocol sign show' => ['protocols.public-sign'],
             'protocol sign submit' => ['protocols.public-sign.submit'],
             'backup heartbeat' => ['admin.backup.heartbeat'],
+            // Sicherheitsaudit 2026-09-13 (surface-1): der VC-JWT-Weg des
+            // Zertifikats lief ohne Drossel, waehrend der Zwillingsweg eine hat.
+            'certificate credential jwt' => ['learning.certificates.credential-jwt'],
         ];
     }
 

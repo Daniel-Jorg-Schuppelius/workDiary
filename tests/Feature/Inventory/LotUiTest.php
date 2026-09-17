@@ -58,4 +58,17 @@ final class LotUiTest extends TestCase {
 
         $this->assertNotNull(StockLot::query()->where('lot_no', 'L1-A')->first());
     }
+
+    /**
+     * Etikettendruck je Charge (Vollscan 2026-09-15, `C1-05` / `MVP-798`):
+     * Die Route gab es, aber weder Verlinkung in der Chargenliste noch Test.
+     */
+    public function test_label_pdf_renders_for_a_lot(): void {
+        $lot = app(LotService::class)->register($this->variant, 'L-ETIKETT');
+
+        $this->actingAs($this->admin)
+            ->get(route('inventory.labels.lot', $lot))
+            ->assertOk()
+            ->assertHeader('content-type', 'application/pdf');
+    }
 }

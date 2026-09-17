@@ -28,6 +28,10 @@
             @unless ($customer->billable)
                 <x-status-badge tone="warning">{{ __('nicht abrechenbar') }}</x-status-badge>
             @endunless
+            {{-- Legal Hold (MVP-801): Löschen und Anonymisieren sind gesperrt. --}}
+            @if (app(\App\Services\Privacy\LegalHoldService::class)->activeHoldFor($customer))
+                <x-status-badge tone="error">{{ __('Legal Hold') }}</x-status-badge>
+            @endif
         </x-slot:badges>
         <x-slot:meta>
             @if ($customer->company){{ $customer->company }} · @endif
@@ -509,5 +513,8 @@
     @include('communication-notes._panel', ['notable' => $customer, 'notableKind' => 'customer'])
 
     @include('documents._panel', ['documentable' => $customer, 'documentableKind' => 'customer'])
+
+    {{-- Rückverweise (MVP-811). --}}
+    <x-content-references :subject="$customer" />
 </x-page-shell>
 @endsection

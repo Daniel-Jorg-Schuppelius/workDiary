@@ -38,11 +38,13 @@ GEOIP_DATABASE=/pfad/zur/app/storage/app/geoip/dbip-city-lite.mmdb
 GEOIP_LOCALE=de
 ```
 
-Prüfen (`config:clear` nicht vergessen, falls Config gecacht):
+Prüfen (`config:clear` nicht vergessen, falls Config gecacht). Die Auflösung
+liegt im common-toolkit (`IpLocationHelper`), nicht in einer App-Klasse —
+nachgeführt am 2026-09-16 (`MVP-796`, Befund `P12-40`):
 
 ```bash
-php artisan tinker --execute='var_export(app(\App\Services\Security\IpGeoResolver::class)->label("8.8.8.8"));'
-# → "Mountain View, Vereinigte Staaten von Amerika"
+php artisan tinker --execute='var_export(\CommonToolkit\Helper\Geo\IpLocationHelper::lookup("8.8.8.8"));'
+# → array('country' => 'Vereinigte Staaten von Amerika', 'country_iso' => 'US', 'city' => 'Mountain View')
 ```
 
 ## Monatliche Aktualisierung

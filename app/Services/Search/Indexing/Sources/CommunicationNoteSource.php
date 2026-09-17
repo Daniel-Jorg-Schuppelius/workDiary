@@ -15,7 +15,7 @@ namespace App\Services\Search\Indexing\Sources;
 use App\Enums\Search\SearchSourceType;
 use App\Models\CommunicationNote;
 use App\Services\Search\Indexing\{SearchContext, SearchDocumentData};
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\{Builder, Model};
 
 /**
  * Kommunikationsnotizen mit Text, Ergebnis und Folgeaktion. Vertrauliche
@@ -24,6 +24,10 @@ use Illuminate\Database\Eloquent\Model;
 final class CommunicationNoteSource extends AbstractSearchSource {
     public function type(): SearchSourceType {
         return SearchSourceType::CommunicationNote;
+    }
+
+    protected function scope(Builder $query): Builder {
+        return $query->with(['tags:id,name']);
     }
 
     public function build(Model $model, SearchContext $context): ?SearchDocumentData {
@@ -48,6 +52,8 @@ final class CommunicationNoteSource extends AbstractSearchSource {
                 $model->body,
                 $model->result,
                 $model->next_action,
+                // Schlagwörter (MVP-810) finden die Notiz auch über ihr Stichwort.
+                ...self::strings($model->tags, 'name'),
                 $context->userName(self::intOrNull($model->created_by_user_id)),
                 ...$ref->texts,
             ],

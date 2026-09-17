@@ -591,7 +591,7 @@ class MyLearningController extends Controller {
                 if (isset($blocks[$index])) {
                     $blocks[$index] = array_replace(
                         $blocks[$index],
-                        array_intersect_key($translated, ['text' => 1, 'items' => 1])
+                        array_intersect_key($translated, \App\Services\Learning\LearningTranslationService::TRANSLATED_BLOCK_KEYS)
                     );
                 }
             }
@@ -604,7 +604,14 @@ class MyLearningController extends Controller {
                 // Medienblöcke tragen nur ihre Beschriftung: die Dateien
                 // selbst bleiben online, sonst läge Bildmaterial im Gerät.
                 'blocks' => array_map(
-                    static fn (array $block): array => array_diff_key($block, ['attachment_id' => 1]),
+                    static function (array $block): array {
+                        // Galerie (MVP-806): die Alternativtexte dürfen mit, die Bildverweise nicht.
+                        if (isset($block['images']) && is_array($block['images'])) {
+                            $block['images'] = array_map(static fn (mixed $image): array => ['alt' => (string) (is_array($image) ? ($image['alt'] ?? '') : '')], $block['images']);
+                        }
+
+                        return array_diff_key($block, ['attachment_id' => 1]);
+                    },
                     $blocks
                 ),
             ];

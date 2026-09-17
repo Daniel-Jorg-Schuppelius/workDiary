@@ -1,9 +1,9 @@
 # Untranslated strings report
 
-Generated: 2026-09-14T20:51:57+00:00
+Generated: 2026-09-16T22:59:51+00:00
 
-- Blade hits: 68687
-- JS hits:    1317
+- Blade hits: 69674
+- JS hits:    1318
 
 ## BLADE
 
@@ -1312,172 +1312,174 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/billing/feed.blade.php:98` — `ghost`
 - `resources/views/billing/feed.blade.php:99` — `neutral`
 - `resources/views/billing/feed.blade.php:103` — `content`
-- `resources/views/billing/feed.blade.php:104` — `clip`
-- `resources/views/billing/feed.blade.php:104` — `range`
-- `resources/views/billing/feed.blade.php:106` — `quote`
-- `resources/views/billing/feed.blade.php:108` — `Neues Angebot`
-- `resources/views/billing/feed.blade.php:111` — `invoice`
-- `resources/views/billing/feed.blade.php:112` — `secondary`
-- `resources/views/billing/feed.blade.php:113` — `invoices.pdf-import.create`
-- `resources/views/billing/feed.blade.php:114` — `invoice-import.action`
-- `resources/views/billing/feed.blade.php:116` — `primary`
-- `resources/views/billing/feed.blade.php:118` — `Neue Rechnung`
-- `resources/views/billing/feed.blade.php:128` — `flex flex-wrap items-stretch gap-2`
-- `resources/views/billing/feed.blade.php:130` — `flex items-center rounded-box border border-base-300 bg-base-200 px-3 text-sm font-semibold`
-- `resources/views/billing/feed.blade.php:131` — `currency`
-- `resources/views/billing/feed.blade.php:134` — `min-w-40 flex-1`
-- `resources/views/billing/feed.blade.php:135` — `revenue`
-- `resources/views/billing/feed.blade.php:135` — `currency`
-- `resources/views/billing/feed.blade.php:135` — `success`
-- `resources/views/billing/feed.blade.php:136` — `min-w-40 flex-1`
-- `resources/views/billing/feed.blade.php:137` — `expense`
-- `resources/views/billing/feed.blade.php:137` — `currency`
-- `resources/views/billing/feed.blade.php:137` — `warning`
-- `resources/views/billing/feed.blade.php:138` — `min-w-40 flex-1`
-- `resources/views/billing/feed.blade.php:139` — `balance`
-- `resources/views/billing/feed.blade.php:139` — `currency`
-- `resources/views/billing/feed.blade.php:140` — `balance`
-- `resources/views/billing/feed.blade.php:140` — `error`
-- `resources/views/billing/feed.blade.php:140` — `primary'`
-- `resources/views/billing/feed.blade.php:141` — `min-w-40 flex-1`
-- `resources/views/billing/feed.blade.php:143` — `internal`
-- `resources/views/billing/feed.blade.php:143` — `currency`
-- `resources/views/billing/feed.blade.php:143` — `neutral`
-- `resources/views/billing/feed.blade.php:144` — `internalPending`
-- `resources/views/billing/feed.blade.php:144` — `amount`
-- `resources/views/billing/feed.blade.php:144` — `internalPending`
-- `resources/views/billing/feed.blade.php:147` — `min-w-40 flex-1`
-- `resources/views/billing/feed.blade.php:148` — `open`
-- `resources/views/billing/feed.blade.php:148` — `currency`
-- `resources/views/billing/feed.blade.php:148` — `info`
-- `resources/views/billing/feed.blade.php:149` — `openCount`
-- `resources/views/billing/feed.blade.php:149` — `count`
-- `resources/views/billing/feed.blade.php:149` — `openCount`
-- `resources/views/billing/feed.blade.php:150` — `min-w-40 flex-1`
-- `resources/views/billing/feed.blade.php:151` — `overdue`
-- `resources/views/billing/feed.blade.php:151` — `currency`
-- `resources/views/billing/feed.blade.php:151` — `error`
-- `resources/views/billing/feed.blade.php:152` — `overdue`
-- `resources/views/billing/feed.blade.php:153` — `overdue`
-- `resources/views/billing/feed.blade.php:153` — `overdue`
-- `resources/views/billing/feed.blade.php:154` — `count`
-- `resources/views/billing/feed.blade.php:154` — `overdueCount`
-- `resources/views/billing/feed.blade.php:154` — `total`
-- `resources/views/billing/feed.blade.php:154` — `openCount`
-- `resources/views/billing/feed.blade.php:155` — `neutralCount`
+- `resources/views/billing/feed.blade.php:111` — `admin.document-design.index`
+- `resources/views/billing/feed.blade.php:113` — `clip`
+- `resources/views/billing/feed.blade.php:113` — `range`
+- `resources/views/billing/feed.blade.php:116` — `admin.document-design.index`
+- `resources/views/billing/feed.blade.php:121` — `quote`
+- `resources/views/billing/feed.blade.php:123` — `Neues Angebot`
+- `resources/views/billing/feed.blade.php:126` — `invoice`
+- `resources/views/billing/feed.blade.php:127` — `secondary`
+- `resources/views/billing/feed.blade.php:128` — `invoices.pdf-import.create`
+- `resources/views/billing/feed.blade.php:129` — `invoice-import.action`
+- `resources/views/billing/feed.blade.php:131` — `primary`
+- `resources/views/billing/feed.blade.php:133` — `Neue Rechnung`
+- `resources/views/billing/feed.blade.php:143` — `flex flex-wrap items-stretch gap-2`
+- `resources/views/billing/feed.blade.php:145` — `flex items-center rounded-box border border-base-300 bg-base-200 px-3 text-sm font-semibold`
+- `resources/views/billing/feed.blade.php:146` — `currency`
+- `resources/views/billing/feed.blade.php:149` — `min-w-40 flex-1`
+- `resources/views/billing/feed.blade.php:150` — `revenue`
+- `resources/views/billing/feed.blade.php:150` — `currency`
+- `resources/views/billing/feed.blade.php:150` — `success`
+- `resources/views/billing/feed.blade.php:151` — `min-w-40 flex-1`
+- `resources/views/billing/feed.blade.php:152` — `expense`
+- `resources/views/billing/feed.blade.php:152` — `currency`
+- `resources/views/billing/feed.blade.php:152` — `warning`
+- `resources/views/billing/feed.blade.php:153` — `min-w-40 flex-1`
+- `resources/views/billing/feed.blade.php:154` — `balance`
+- `resources/views/billing/feed.blade.php:154` — `currency`
+- `resources/views/billing/feed.blade.php:155` — `balance`
+- `resources/views/billing/feed.blade.php:155` — `error`
+- `resources/views/billing/feed.blade.php:155` — `primary'`
 - `resources/views/billing/feed.blade.php:156` — `min-w-40 flex-1`
-- `resources/views/billing/feed.blade.php:157` — `neutralCount`
-- `resources/views/billing/feed.blade.php:157` — `neutral`
-- `resources/views/billing/feed.blade.php:164` — `origin`
-- `resources/views/billing/feed.blade.php:164` — `contact`
-- `resources/views/billing/feed.blade.php:164` — `state`
-- `resources/views/billing/feed.blade.php:164` — `overdue`
-- `resources/views/billing/feed.blade.php:164` — `archived`
-- `resources/views/billing/feed.blade.php:164` — `unlinked`
-- `resources/views/billing/feed.blade.php:166` — `hidden`
-- `resources/views/billing/feed.blade.php:168` — `hidden`
-- `resources/views/billing/feed.blade.php:168` — `scope`
-- `resources/views/billing/feed.blade.php:171` — `Suche`
-- `resources/views/billing/feed.blade.php:171` — `feed-q`
-- `resources/views/billing/feed.blade.php:171` — `flex-1 min-w-60`
-- `resources/views/billing/feed.blade.php:172` — `feed-q`
-- `resources/views/billing/feed.blade.php:172` — `text`
-- `resources/views/billing/feed.blade.php:174` — `input input-sm input-bordered`
-- `resources/views/billing/feed.blade.php:178` — `all', 'credits`
-- `resources/views/billing/feed.blade.php:179` — `feed-direction`
-- `resources/views/billing/feed.blade.php:179` — `w-40 shrink-0`
-- `resources/views/billing/feed.blade.php:180` — `feed-direction`
-- `resources/views/billing/feed.blade.php:180` — `direction`
-- `resources/views/billing/feed.blade.php:180` — `select select-sm select-bordered`
-- `resources/views/billing/feed.blade.php:181` — `Alle`
-- `resources/views/billing/feed.blade.php:183` — `direction`
-- `resources/views/billing/feed.blade.php:191` — `feed-origin`
-- `resources/views/billing/feed.blade.php:191` — `w-40 shrink-0`
-- `resources/views/billing/feed.blade.php:192` — `feed-origin`
-- `resources/views/billing/feed.blade.php:192` — `origin`
-- `resources/views/billing/feed.blade.php:192` — `select select-sm select-bordered`
-- `resources/views/billing/feed.blade.php:193` — `Alle`
-- `resources/views/billing/feed.blade.php:195` — `origin`
-- `resources/views/billing/feed.blade.php:200` — `Zuordnung`
-- `resources/views/billing/feed.blade.php:200` — `feed-contact`
-- `resources/views/billing/feed.blade.php:200` — `w-40 shrink-0`
-- `resources/views/billing/feed.blade.php:201` — `feed-contact`
-- `resources/views/billing/feed.blade.php:201` — `contact`
-- `resources/views/billing/feed.blade.php:201` — `select select-sm select-bordered`
-- `resources/views/billing/feed.blade.php:202` — `Alle`
-- `resources/views/billing/feed.blade.php:203` — `customer`
-- `resources/views/billing/feed.blade.php:203` — `contact`
-- `resources/views/billing/feed.blade.php:203` — `customer`
-- `resources/views/billing/feed.blade.php:203` — `Kunde`
-- `resources/views/billing/feed.blade.php:204` — `supplier`
-- `resources/views/billing/feed.blade.php:204` — `contact`
-- `resources/views/billing/feed.blade.php:204` — `supplier`
-- `resources/views/billing/feed.blade.php:204` — `Lieferant`
-- `resources/views/billing/feed.blade.php:208` — `Status`
-- `resources/views/billing/feed.blade.php:208` — `feed-state`
-- `resources/views/billing/feed.blade.php:208` — `w-40 shrink-0`
-- `resources/views/billing/feed.blade.php:209` — `feed-state`
-- `resources/views/billing/feed.blade.php:209` — `state`
-- `resources/views/billing/feed.blade.php:209` — `select select-sm select-bordered`
-- `resources/views/billing/feed.blade.php:210` — `Alle`
-- `resources/views/billing/feed.blade.php:211` — `draft', 'open', 'paid', 'cancelled`
-- `resources/views/billing/feed.blade.php:212` — `state`
-- `resources/views/billing/feed.blade.php:217` — `expenses`
-- `resources/views/billing/feed.blade.php:218` — `unlinked`
-- `resources/views/billing/feed.blade.php:219` — `unlinked`
-- `resources/views/billing/feed.blade.php:219` — `warning`
-- `resources/views/billing/feed.blade.php:221` — `overdue`
-- `resources/views/billing/feed.blade.php:222` — `overdue`
-- `resources/views/billing/feed.blade.php:222` — `error`
-- `resources/views/billing/feed.blade.php:223` — `archived`
-- `resources/views/billing/feed.blade.php:224` — `archived`
-- `resources/views/billing/feed.blade.php:227` — `expenses`
-- `resources/views/billing/feed.blade.php:230` — `tablist`
-- `resources/views/billing/feed.blade.php:230` — `tabs tabs-box w-fit`
-- `resources/views/billing/feed.blade.php:231` — `expenses`
-- `resources/views/billing/feed.blade.php:232` — `tab', 'tab-active`
-- `resources/views/billing/feed.blade.php:233` — `expenses', 'scope`
-- `resources/views/billing/feed.blade.php:234` — `tab', 'tab-active`
-- `resources/views/billing/feed.blade.php:238` — `flex`
-- `resources/views/billing/feed.blade.php:238` — `true`
-- `resources/views/billing/feed.blade.php:238` — `server`
-- `resources/views/billing/feed.blade.php:240` — `scope`
-- `resources/views/billing/feed.blade.php:243` — `number`
-- `resources/views/billing/feed.blade.php:243` — `Nummer`
-- `resources/views/billing/feed.blade.php:244` — `date`
-- `resources/views/billing/feed.blade.php:244` — `Datum`
-- `resources/views/billing/feed.blade.php:245` — `kind`
-- `resources/views/billing/feed.blade.php:246` — `contact`
-- `resources/views/billing/feed.blade.php:246` — `Zuordnung`
-- `resources/views/billing/feed.blade.php:248` — `state`
-- `resources/views/billing/feed.blade.php:248` — `Status`
-- `resources/views/billing/feed.blade.php:250` — `amount`
-- `resources/views/billing/feed.blade.php:250` — `right`
-- `resources/views/billing/feed.blade.php:250` — `Betrag`
-- `resources/views/billing/feed.blade.php:251` — `text-right`
-- `resources/views/billing/feed.blade.php:252` — `text-right`
-- `resources/views/billing/feed.blade.php:261` — `open`
-- `resources/views/billing/feed.blade.php:267` — `font-medium tabular-nums`
-- `resources/views/billing/feed.blade.php:269` — `link link-hover`
-- `resources/views/billing/feed.blade.php:281` — `align-middle text-muted`
-- `resources/views/billing/feed.blade.php:287` — `wd-badge badge badge-sm badge-ghost`
-- `resources/views/billing/feed.blade.php:294` — `tabular-nums text-sm whitespace-nowrap`
-- `resources/views/billing/feed.blade.php:298` — `ml-1 font-semibold text-error`
-- `resources/views/billing/feed.blade.php:301` — `wd-badge badge badge-sm badge-warning ml-1`
-- `resources/views/billing/feed.blade.php:302` — `level`
-- `resources/views/billing/feed.blade.php:306` — `text-muted`
-- `resources/views/billing/feed.blade.php:309` — `text-right tabular-nums whitespace-nowrap', 'text-error`
-- `resources/views/billing/feed.blade.php:311` — `text-muted`
-- `resources/views/billing/feed.blade.php:317` — `text-right tabular-nums whitespace-nowrap`
-- `resources/views/billing/feed.blade.php:320` — `text-right`
-- `resources/views/billing/feed.blade.php:323` — `flex justify-end gap-1`
-- `resources/views/billing/feed.blade.php:324` — `invoice`
-- `resources/views/billing/feed.blade.php:325` — `campaign`
-- `resources/views/billing/feed.blade.php:325` — `warning`
-- `resources/views/billing/feed.blade.php:329` — `voucher`
-- `resources/views/billing/feed.blade.php:333` — `campaign`
-- `resources/views/billing/feed.blade.php:333` — `warning`
-- `resources/views/billing/feed.blade.php:333` — `submit`
+- `resources/views/billing/feed.blade.php:158` — `internal`
+- `resources/views/billing/feed.blade.php:158` — `currency`
+- `resources/views/billing/feed.blade.php:158` — `neutral`
+- `resources/views/billing/feed.blade.php:159` — `internalPending`
+- `resources/views/billing/feed.blade.php:159` — `amount`
+- `resources/views/billing/feed.blade.php:159` — `internalPending`
+- `resources/views/billing/feed.blade.php:162` — `min-w-40 flex-1`
+- `resources/views/billing/feed.blade.php:163` — `open`
+- `resources/views/billing/feed.blade.php:163` — `currency`
+- `resources/views/billing/feed.blade.php:163` — `info`
+- `resources/views/billing/feed.blade.php:164` — `openCount`
+- `resources/views/billing/feed.blade.php:164` — `count`
+- `resources/views/billing/feed.blade.php:164` — `openCount`
+- `resources/views/billing/feed.blade.php:165` — `min-w-40 flex-1`
+- `resources/views/billing/feed.blade.php:166` — `overdue`
+- `resources/views/billing/feed.blade.php:166` — `currency`
+- `resources/views/billing/feed.blade.php:166` — `error`
+- `resources/views/billing/feed.blade.php:167` — `overdue`
+- `resources/views/billing/feed.blade.php:168` — `overdue`
+- `resources/views/billing/feed.blade.php:168` — `overdue`
+- `resources/views/billing/feed.blade.php:169` — `count`
+- `resources/views/billing/feed.blade.php:169` — `overdueCount`
+- `resources/views/billing/feed.blade.php:169` — `total`
+- `resources/views/billing/feed.blade.php:169` — `openCount`
+- `resources/views/billing/feed.blade.php:170` — `neutralCount`
+- `resources/views/billing/feed.blade.php:171` — `min-w-40 flex-1`
+- `resources/views/billing/feed.blade.php:172` — `neutralCount`
+- `resources/views/billing/feed.blade.php:172` — `neutral`
+- `resources/views/billing/feed.blade.php:179` — `origin`
+- `resources/views/billing/feed.blade.php:179` — `contact`
+- `resources/views/billing/feed.blade.php:179` — `state`
+- `resources/views/billing/feed.blade.php:179` — `overdue`
+- `resources/views/billing/feed.blade.php:179` — `archived`
+- `resources/views/billing/feed.blade.php:179` — `unlinked`
+- `resources/views/billing/feed.blade.php:181` — `hidden`
+- `resources/views/billing/feed.blade.php:183` — `hidden`
+- `resources/views/billing/feed.blade.php:183` — `scope`
+- `resources/views/billing/feed.blade.php:186` — `Suche`
+- `resources/views/billing/feed.blade.php:186` — `feed-q`
+- `resources/views/billing/feed.blade.php:186` — `flex-1 min-w-60`
+- `resources/views/billing/feed.blade.php:187` — `feed-q`
+- `resources/views/billing/feed.blade.php:187` — `text`
+- `resources/views/billing/feed.blade.php:189` — `input input-sm input-bordered`
+- `resources/views/billing/feed.blade.php:193` — `all', 'credits`
+- `resources/views/billing/feed.blade.php:194` — `feed-direction`
+- `resources/views/billing/feed.blade.php:194` — `w-40 shrink-0`
+- `resources/views/billing/feed.blade.php:195` — `feed-direction`
+- `resources/views/billing/feed.blade.php:195` — `direction`
+- `resources/views/billing/feed.blade.php:195` — `select select-sm select-bordered`
+- `resources/views/billing/feed.blade.php:196` — `Alle`
+- `resources/views/billing/feed.blade.php:198` — `direction`
+- `resources/views/billing/feed.blade.php:206` — `feed-origin`
+- `resources/views/billing/feed.blade.php:206` — `w-40 shrink-0`
+- `resources/views/billing/feed.blade.php:207` — `feed-origin`
+- `resources/views/billing/feed.blade.php:207` — `origin`
+- `resources/views/billing/feed.blade.php:207` — `select select-sm select-bordered`
+- `resources/views/billing/feed.blade.php:208` — `Alle`
+- `resources/views/billing/feed.blade.php:210` — `origin`
+- `resources/views/billing/feed.blade.php:215` — `Zuordnung`
+- `resources/views/billing/feed.blade.php:215` — `feed-contact`
+- `resources/views/billing/feed.blade.php:215` — `w-40 shrink-0`
+- `resources/views/billing/feed.blade.php:216` — `feed-contact`
+- `resources/views/billing/feed.blade.php:216` — `contact`
+- `resources/views/billing/feed.blade.php:216` — `select select-sm select-bordered`
+- `resources/views/billing/feed.blade.php:217` — `Alle`
+- `resources/views/billing/feed.blade.php:218` — `customer`
+- `resources/views/billing/feed.blade.php:218` — `contact`
+- `resources/views/billing/feed.blade.php:218` — `customer`
+- `resources/views/billing/feed.blade.php:218` — `Kunde`
+- `resources/views/billing/feed.blade.php:219` — `supplier`
+- `resources/views/billing/feed.blade.php:219` — `contact`
+- `resources/views/billing/feed.blade.php:219` — `supplier`
+- `resources/views/billing/feed.blade.php:219` — `Lieferant`
+- `resources/views/billing/feed.blade.php:223` — `Status`
+- `resources/views/billing/feed.blade.php:223` — `feed-state`
+- `resources/views/billing/feed.blade.php:223` — `w-40 shrink-0`
+- `resources/views/billing/feed.blade.php:224` — `feed-state`
+- `resources/views/billing/feed.blade.php:224` — `state`
+- `resources/views/billing/feed.blade.php:224` — `select select-sm select-bordered`
+- `resources/views/billing/feed.blade.php:225` — `Alle`
+- `resources/views/billing/feed.blade.php:226` — `draft', 'open', 'paid', 'cancelled`
+- `resources/views/billing/feed.blade.php:227` — `state`
+- `resources/views/billing/feed.blade.php:232` — `expenses`
+- `resources/views/billing/feed.blade.php:233` — `unlinked`
+- `resources/views/billing/feed.blade.php:234` — `unlinked`
+- `resources/views/billing/feed.blade.php:234` — `warning`
+- `resources/views/billing/feed.blade.php:236` — `overdue`
+- `resources/views/billing/feed.blade.php:237` — `overdue`
+- `resources/views/billing/feed.blade.php:237` — `error`
+- `resources/views/billing/feed.blade.php:238` — `archived`
+- `resources/views/billing/feed.blade.php:239` — `archived`
+- `resources/views/billing/feed.blade.php:242` — `expenses`
+- `resources/views/billing/feed.blade.php:245` — `tablist`
+- `resources/views/billing/feed.blade.php:245` — `tabs tabs-box w-fit`
+- `resources/views/billing/feed.blade.php:246` — `expenses`
+- `resources/views/billing/feed.blade.php:247` — `tab', 'tab-active`
+- `resources/views/billing/feed.blade.php:248` — `expenses', 'scope`
+- `resources/views/billing/feed.blade.php:249` — `tab', 'tab-active`
+- `resources/views/billing/feed.blade.php:253` — `flex`
+- `resources/views/billing/feed.blade.php:253` — `true`
+- `resources/views/billing/feed.blade.php:253` — `server`
+- `resources/views/billing/feed.blade.php:255` — `scope`
+- `resources/views/billing/feed.blade.php:258` — `number`
+- `resources/views/billing/feed.blade.php:258` — `Nummer`
+- `resources/views/billing/feed.blade.php:259` — `date`
+- `resources/views/billing/feed.blade.php:259` — `Datum`
+- `resources/views/billing/feed.blade.php:260` — `kind`
+- `resources/views/billing/feed.blade.php:261` — `contact`
+- `resources/views/billing/feed.blade.php:261` — `Zuordnung`
+- `resources/views/billing/feed.blade.php:263` — `state`
+- `resources/views/billing/feed.blade.php:263` — `Status`
+- `resources/views/billing/feed.blade.php:265` — `amount`
+- `resources/views/billing/feed.blade.php:265` — `right`
+- `resources/views/billing/feed.blade.php:265` — `Betrag`
+- `resources/views/billing/feed.blade.php:266` — `text-right`
+- `resources/views/billing/feed.blade.php:267` — `text-right`
+- `resources/views/billing/feed.blade.php:276` — `open`
+- `resources/views/billing/feed.blade.php:282` — `font-medium tabular-nums`
+- `resources/views/billing/feed.blade.php:284` — `link link-hover`
+- `resources/views/billing/feed.blade.php:296` — `align-middle text-muted`
+- `resources/views/billing/feed.blade.php:302` — `wd-badge badge badge-sm badge-ghost`
+- `resources/views/billing/feed.blade.php:309` — `tabular-nums text-sm whitespace-nowrap`
+- `resources/views/billing/feed.blade.php:313` — `ml-1 font-semibold text-error`
+- `resources/views/billing/feed.blade.php:316` — `wd-badge badge badge-sm badge-warning ml-1`
+- `resources/views/billing/feed.blade.php:317` — `level`
+- `resources/views/billing/feed.blade.php:321` — `text-muted`
+- `resources/views/billing/feed.blade.php:324` — `text-right tabular-nums whitespace-nowrap', 'text-error`
+- `resources/views/billing/feed.blade.php:326` — `text-muted`
+- `resources/views/billing/feed.blade.php:332` — `text-right tabular-nums whitespace-nowrap`
+- `resources/views/billing/feed.blade.php:335` — `text-right`
+- `resources/views/billing/feed.blade.php:338` — `flex justify-end gap-1`
+- `resources/views/billing/feed.blade.php:339` — `invoice`
+- `resources/views/billing/feed.blade.php:340` — `campaign`
+- `resources/views/billing/feed.blade.php:340` — `warning`
+- `resources/views/billing/feed.blade.php:344` — `voucher`
+- `resources/views/billing/feed.blade.php:348` — `campaign`
+- `resources/views/billing/feed.blade.php:348` — `warning`
+- `resources/views/billing/feed.blade.php:348` — `submit`
 - `resources/views/claims/reports.blade.php:11` — `title`
 - `resources/views/claims/reports.blade.php:11` — `Qualitätsbericht Reklamationen`
 - `resources/views/claims/reports.blade.php:12` — `nav-title`
@@ -3822,6 +3824,7 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/flex/index.blade.php:178` — `flex`
 - `resources/views/flex/index.blade.php:178` — `true`
 - `resources/views/flex/index.blade.php:181` — `date`
+- `resources/views/flex/index.blade.php:181` — `Datum`
 - `resources/views/flex/index.blade.php:183` — `duration`
 - `resources/views/flex/index.blade.php:183` — `right`
 - `resources/views/flex/index.blade.php:183` — `Soll`
@@ -4355,24 +4358,26 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/passenger/rides/show.blade.php:180` — `input input-sm input-bordered`
 - `resources/views/passenger/rides/show.blade.php:181` — `number`
 - `resources/views/passenger/rides/show.blade.php:181` — `input input-sm input-bordered`
-- `resources/views/passenger/rides/show.blade.php:182` — `submit`
-- `resources/views/passenger/rides/show.blade.php:182` — `btn btn-sm btn-primary col-span-2`
-- `resources/views/passenger/rides/show.blade.php:191` — `passenger-rides.close`
-- `resources/views/passenger/rides/show.blade.php:191` — `mt-3 flex flex-wrap items-end gap-2 text-sm`
-- `resources/views/passenger/rides/show.blade.php:193` — `status`
-- `resources/views/passenger/rides/show.blade.php:193` — `select select-sm select-bordered`
-- `resources/views/passenger/rides/show.blade.php:193` — `Status`
-- `resources/views/passenger/rides/show.blade.php:198` — `text`
-- `resources/views/passenger/rides/show.blade.php:198` — `reason`
-- `resources/views/passenger/rides/show.blade.php:198` — `reason`
-- `resources/views/passenger/rides/show.blade.php:198` — `input input-sm input-bordered w-64`
-- `resources/views/passenger/rides/show.blade.php:199` — `submit`
-- `resources/views/passenger/rides/show.blade.php:199` — `btn btn-sm btn-outline btn-error`
-- `resources/views/passenger/rides/show.blade.php:204` — `passenger-rides.return`
-- `resources/views/passenger/rides/show.blade.php:204` — `mt-3 flex flex-wrap items-end gap-2 text-sm`
-- `resources/views/passenger/rides/show.blade.php:206` — `select select-sm select-bordered`
-- `resources/views/passenger/rides/show.blade.php:212` — `submit`
-- `resources/views/passenger/rides/show.blade.php:212` — `btn btn-sm`
+- `resources/views/passenger/rides/show.blade.php:183` — `text`
+- `resources/views/passenger/rides/show.blade.php:183` — `input input-sm input-bordered col-span-2`
+- `resources/views/passenger/rides/show.blade.php:184` — `submit`
+- `resources/views/passenger/rides/show.blade.php:184` — `btn btn-sm btn-primary col-span-2`
+- `resources/views/passenger/rides/show.blade.php:193` — `passenger-rides.close`
+- `resources/views/passenger/rides/show.blade.php:193` — `mt-3 flex flex-wrap items-end gap-2 text-sm`
+- `resources/views/passenger/rides/show.blade.php:195` — `status`
+- `resources/views/passenger/rides/show.blade.php:195` — `select select-sm select-bordered`
+- `resources/views/passenger/rides/show.blade.php:195` — `Status`
+- `resources/views/passenger/rides/show.blade.php:200` — `text`
+- `resources/views/passenger/rides/show.blade.php:200` — `reason`
+- `resources/views/passenger/rides/show.blade.php:200` — `reason`
+- `resources/views/passenger/rides/show.blade.php:200` — `input input-sm input-bordered w-64`
+- `resources/views/passenger/rides/show.blade.php:201` — `submit`
+- `resources/views/passenger/rides/show.blade.php:201` — `btn btn-sm btn-outline btn-error`
+- `resources/views/passenger/rides/show.blade.php:206` — `passenger-rides.return`
+- `resources/views/passenger/rides/show.blade.php:206` — `mt-3 flex flex-wrap items-end gap-2 text-sm`
+- `resources/views/passenger/rides/show.blade.php:208` — `select select-sm select-bordered`
+- `resources/views/passenger/rides/show.blade.php:214` — `submit`
+- `resources/views/passenger/rides/show.blade.php:214` — `btn btn-sm`
 - `resources/views/passenger/settlements/index.blade.php:11` — `title`
 - `resources/views/passenger/settlements/index.blade.php:12` — `nav-title`
 - `resources/views/passenger/settlements/index.blade.php:13` — `wrapper-height-class', 'wd-page-fill`
@@ -6066,312 +6071,337 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/admin/document-design/editor.blade.php:29` — `admin.document-design.preview-pdf`
 - `resources/views/admin/document-design/editor.blade.php:30` — `pageW`
 - `resources/views/admin/document-design/editor.blade.php:31` — `pageH`
-- `resources/views/admin/document-design/editor.blade.php:38` — `space-y-4`
-- `resources/views/admin/document-design/editor.blade.php:38` — `designEditor`
-- `resources/views/admin/document-design/editor.blade.php:43` — `flex flex-wrap items-center justify-between gap-2`
-- `resources/views/admin/document-design/editor.blade.php:47` — `badge badge-ghost badge-sm`
-- `resources/views/admin/document-design/editor.blade.php:49` — `badge badge-primary badge-sm`
-- `resources/views/admin/document-design/editor.blade.php:51` — `badge badge-info badge-sm`
-- `resources/views/admin/document-design/editor.blade.php:54` — `text-sm text-muted`
-- `resources/views/admin/document-design/editor.blade.php:55` — `status`
-- `resources/views/admin/document-design/editor.blade.php:55` — `Entwurf`
-- `resources/views/admin/document-design/editor.blade.php:55` — `Aktiv`
-- `resources/views/admin/document-design/editor.blade.php:58` — `flex flex-wrap items-center gap-2`
-- `resources/views/admin/document-design/editor.blade.php:61` — `admin.document-design.index`
-- `resources/views/admin/document-design/editor.blade.php:61` — `btn btn-sm btn-ghost`
-- `resources/views/admin/document-design/editor.blade.php:61` — `Zurück zur Übersicht`
-- `resources/views/admin/document-design/editor.blade.php:62` — `text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:62` — `dirty`
-- `resources/views/admin/document-design/editor.blade.php:63` — `error'`
-- `resources/views/admin/document-design/editor.blade.php:64` — `badge badge-error badge-sm`
-- `resources/views/admin/document-design/editor.blade.php:67` — `button`
-- `resources/views/admin/document-design/editor.blade.php:67` — `btn btn-sm btn-primary`
-- `resources/views/admin/document-design/editor.blade.php:67` — `saving`
-- `resources/views/admin/document-design/editor.blade.php:70` — `admin.document-design.activate`
-- `resources/views/admin/document-design/editor.blade.php:71` — `warnings`
-- `resources/views/admin/document-design/editor.blade.php:72` — `warnings`
+- `resources/views/admin/document-design/editor.blade.php:33` — `assets`
+- `resources/views/admin/document-design/editor.blade.php:33` — `first`
+- `resources/views/admin/document-design/editor.blade.php:33` — `following`
+- `resources/views/admin/document-design/editor.blade.php:34` — `assetPreviews`
+- `resources/views/admin/document-design/editor.blade.php:41` — `space-y-4`
+- `resources/views/admin/document-design/editor.blade.php:41` — `designEditor`
+- `resources/views/admin/document-design/editor.blade.php:46` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/admin/document-design/editor.blade.php:50` — `badge badge-ghost badge-sm`
+- `resources/views/admin/document-design/editor.blade.php:52` — `badge badge-primary badge-sm`
+- `resources/views/admin/document-design/editor.blade.php:54` — `badge badge-info badge-sm`
+- `resources/views/admin/document-design/editor.blade.php:57` — `text-sm text-muted`
+- `resources/views/admin/document-design/editor.blade.php:58` — `status`
+- `resources/views/admin/document-design/editor.blade.php:58` — `Entwurf`
+- `resources/views/admin/document-design/editor.blade.php:58` — `Aktiv`
+- `resources/views/admin/document-design/editor.blade.php:61` — `flex flex-wrap items-center gap-2`
+- `resources/views/admin/document-design/editor.blade.php:64` — `admin.document-design.index`
+- `resources/views/admin/document-design/editor.blade.php:64` — `btn btn-sm btn-ghost`
+- `resources/views/admin/document-design/editor.blade.php:64` — `Zurück zur Übersicht`
+- `resources/views/admin/document-design/editor.blade.php:65` — `text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:65` — `dirty`
+- `resources/views/admin/document-design/editor.blade.php:66` — `error'`
+- `resources/views/admin/document-design/editor.blade.php:67` — `badge badge-error badge-sm`
+- `resources/views/admin/document-design/editor.blade.php:70` — `button`
+- `resources/views/admin/document-design/editor.blade.php:70` — `btn btn-sm btn-primary`
+- `resources/views/admin/document-design/editor.blade.php:70` — `saving`
+- `resources/views/admin/document-design/editor.blade.php:73` — `admin.document-design.activate`
+- `resources/views/admin/document-design/editor.blade.php:74` — `warnings`
 - `resources/views/admin/document-design/editor.blade.php:75` — `warnings`
-- `resources/views/admin/document-design/editor.blade.php:77` — `hidden`
-- `resources/views/admin/document-design/editor.blade.php:79` — `submit`
-- `resources/views/admin/document-design/editor.blade.php:79` — `btn btn-sm btn-success`
-- `resources/views/admin/document-design/editor.blade.php:82` — `admin.document-design.draft.new`
-- `resources/views/admin/document-design/editor.blade.php:83` — `hidden`
-- `resources/views/admin/document-design/editor.blade.php:83` — `source`
-- `resources/views/admin/document-design/editor.blade.php:84` — `submit`
-- `resources/views/admin/document-design/editor.blade.php:84` — `btn btn-sm btn-primary`
-- `resources/views/admin/document-design/editor.blade.php:94` — `space-y-1 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:95` — `issue in preflight.errors`
-- `resources/views/admin/document-design/editor.blade.php:96` — `flex items-start gap-2`
-- `resources/views/admin/document-design/editor.blade.php:96` — `badge badge-error badge-xs mt-1`
-- `resources/views/admin/document-design/editor.blade.php:98` — `issue in preflight.warnings`
+- `resources/views/admin/document-design/editor.blade.php:78` — `warnings`
+- `resources/views/admin/document-design/editor.blade.php:80` — `hidden`
+- `resources/views/admin/document-design/editor.blade.php:82` — `submit`
+- `resources/views/admin/document-design/editor.blade.php:82` — `btn btn-sm btn-success`
+- `resources/views/admin/document-design/editor.blade.php:85` — `admin.document-design.draft.new`
+- `resources/views/admin/document-design/editor.blade.php:86` — `hidden`
+- `resources/views/admin/document-design/editor.blade.php:86` — `source`
+- `resources/views/admin/document-design/editor.blade.php:87` — `submit`
+- `resources/views/admin/document-design/editor.blade.php:87` — `btn btn-sm btn-primary`
+- `resources/views/admin/document-design/editor.blade.php:97` — `space-y-1 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:98` — `issue in preflight.errors`
 - `resources/views/admin/document-design/editor.blade.php:99` — `flex items-start gap-2`
-- `resources/views/admin/document-design/editor.blade.php:99` — `badge badge-warning badge-xs mt-1`
-- `resources/views/admin/document-design/editor.blade.php:107` — `mb-2 flex items-center justify-between`
-- `resources/views/admin/document-design/editor.blade.php:109` — `join`
-- `resources/views/admin/document-design/editor.blade.php:110` — `button`
-- `resources/views/admin/document-design/editor.blade.php:110` — `btn btn-xs join-item`
-- `resources/views/admin/document-design/editor.blade.php:110` — `first' ? 'btn-primary`
-- `resources/views/admin/document-design/editor.blade.php:110` — `btn-ghost'`
-- `resources/views/admin/document-design/editor.blade.php:110` — `first'`
-- `resources/views/admin/document-design/editor.blade.php:110` — `Erste Seite`
-- `resources/views/admin/document-design/editor.blade.php:111` — `button`
-- `resources/views/admin/document-design/editor.blade.php:111` — `btn btn-xs join-item`
-- `resources/views/admin/document-design/editor.blade.php:111` — `following' ? 'btn-primary`
-- `resources/views/admin/document-design/editor.blade.php:111` — `btn-ghost'`
-- `resources/views/admin/document-design/editor.blade.php:111` — `following'`
-- `resources/views/admin/document-design/editor.blade.php:111` — `Folgeseiten`
-- `resources/views/admin/document-design/editor.blade.php:114` — `mb-2 text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:117` — `relative mx-auto w-full max-w-105 border border-base-300 bg-white shadow-sm select-none`
-- `resources/views/admin/document-design/editor.blade.php:119` — `application`
-- `resources/views/admin/document-design/editor.blade.php:122` — `admin.document-design.assets.preview`
-- `resources/views/admin/document-design/editor.blade.php:123` — `absolute inset-0 h-full w-full object-fill`
-- `resources/views/admin/document-design/editor.blade.php:123` — `first'`
-- `resources/views/admin/document-design/editor.blade.php:126` — `admin.document-design.assets.preview`
-- `resources/views/admin/document-design/editor.blade.php:127` — `absolute inset-0 h-full w-full object-fill`
-- `resources/views/admin/document-design/editor.blade.php:127` — `following'`
-- `resources/views/admin/document-design/editor.blade.php:132` — `content`
+- `resources/views/admin/document-design/editor.blade.php:99` — `badge badge-error badge-xs mt-1`
+- `resources/views/admin/document-design/editor.blade.php:101` — `issue in preflight.warnings`
+- `resources/views/admin/document-design/editor.blade.php:102` — `flex items-start gap-2`
+- `resources/views/admin/document-design/editor.blade.php:102` — `badge badge-warning badge-xs mt-1`
+- `resources/views/admin/document-design/editor.blade.php:110` — `mb-2 flex items-center justify-between`
+- `resources/views/admin/document-design/editor.blade.php:112` — `join`
+- `resources/views/admin/document-design/editor.blade.php:113` — `button`
+- `resources/views/admin/document-design/editor.blade.php:113` — `btn btn-xs join-item`
+- `resources/views/admin/document-design/editor.blade.php:113` — `first' ? 'btn-primary`
+- `resources/views/admin/document-design/editor.blade.php:113` — `btn-ghost'`
+- `resources/views/admin/document-design/editor.blade.php:113` — `first'`
+- `resources/views/admin/document-design/editor.blade.php:113` — `Erste Seite`
+- `resources/views/admin/document-design/editor.blade.php:114` — `button`
+- `resources/views/admin/document-design/editor.blade.php:114` — `btn btn-xs join-item`
+- `resources/views/admin/document-design/editor.blade.php:114` — `following' ? 'btn-primary`
+- `resources/views/admin/document-design/editor.blade.php:114` — `btn-ghost'`
+- `resources/views/admin/document-design/editor.blade.php:114` — `following'`
+- `resources/views/admin/document-design/editor.blade.php:114` — `Folgeseiten`
+- `resources/views/admin/document-design/editor.blade.php:117` — `mb-2 text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:120` — `relative mx-auto w-full max-w-105 border border-base-300 bg-white shadow-sm select-none`
+- `resources/views/admin/document-design/editor.blade.php:122` — `application`
+- `resources/views/admin/document-design/editor.blade.php:124` — `first`
+- `resources/views/admin/document-design/editor.blade.php:124` — `first`
+- `resources/views/admin/document-design/editor.blade.php:125` — `first`
+- `resources/views/admin/document-design/editor.blade.php:125` — `absolute inset-0 h-full w-full object-fill`
+- `resources/views/admin/document-design/editor.blade.php:127` — `following`
+- `resources/views/admin/document-design/editor.blade.php:127` — `following`
+- `resources/views/admin/document-design/editor.blade.php:128` — `following`
+- `resources/views/admin/document-design/editor.blade.php:128` — `absolute inset-0 h-full w-full object-fill`
 - `resources/views/admin/document-design/editor.blade.php:133` — `content`
-- `resources/views/admin/document-design/editor.blade.php:133` — `ring-2 ring-primary`
-- `resources/views/admin/document-design/editor.blade.php:134` — `button`
-- `resources/views/admin/document-design/editor.blade.php:136` — `content`
+- `resources/views/admin/document-design/editor.blade.php:134` — `content`
+- `resources/views/admin/document-design/editor.blade.php:134` — `ring-2 ring-primary`
+- `resources/views/admin/document-design/editor.blade.php:135` — `button`
 - `resources/views/admin/document-design/editor.blade.php:137` — `content`
-- `resources/views/admin/document-design/editor.blade.php:140` — `content', null, 'resize`
-- `resources/views/admin/document-design/editor.blade.php:144` — `first`
-- `resources/views/admin/document-design/editor.blade.php:147` — `ring-2 ring-info`
-- `resources/views/admin/document-design/editor.blade.php:148` — `button`
-- `resources/views/admin/document-design/editor.blade.php:154` — `resize`
-- `resources/views/admin/document-design/editor.blade.php:157` — `first`
-- `resources/views/admin/document-design/editor.blade.php:160` — `ring-2 ring-info`
-- `resources/views/admin/document-design/editor.blade.php:161` — `button`
-- `resources/views/admin/document-design/editor.blade.php:170` — `index`
-- `resources/views/admin/document-design/editor.blade.php:173` — `blocked`
+- `resources/views/admin/document-design/editor.blade.php:138` — `content`
+- `resources/views/admin/document-design/editor.blade.php:141` — `content', null, 'resize`
+- `resources/views/admin/document-design/editor.blade.php:145` — `first`
+- `resources/views/admin/document-design/editor.blade.php:148` — `ring-2 ring-info`
+- `resources/views/admin/document-design/editor.blade.php:149` — `button`
+- `resources/views/admin/document-design/editor.blade.php:155` — `resize`
+- `resources/views/admin/document-design/editor.blade.php:158` — `first`
+- `resources/views/admin/document-design/editor.blade.php:161` — `ring-2 ring-info`
+- `resources/views/admin/document-design/editor.blade.php:162` — `button`
+- `resources/views/admin/document-design/editor.blade.php:171` — `index`
 - `resources/views/admin/document-design/editor.blade.php:174` — `blocked`
-- `resources/views/admin/document-design/editor.blade.php:174` — `ring-2 ring-error`
-- `resources/views/admin/document-design/editor.blade.php:175` — `button`
-- `resources/views/admin/document-design/editor.blade.php:177` — `blocked`
+- `resources/views/admin/document-design/editor.blade.php:175` — `blocked`
+- `resources/views/admin/document-design/editor.blade.php:175` — `ring-2 ring-error`
+- `resources/views/admin/document-design/editor.blade.php:176` — `button`
 - `resources/views/admin/document-design/editor.blade.php:178` — `blocked`
-- `resources/views/admin/document-design/editor.blade.php:181` — `blocked', index, 'resize`
-- `resources/views/admin/document-design/editor.blade.php:188` — `mt-4`
-- `resources/views/admin/document-design/editor.blade.php:189` — `mb-2 flex flex-wrap items-center justify-between gap-2`
-- `resources/views/admin/document-design/editor.blade.php:191` — `flex flex-wrap items-center gap-2`
-- `resources/views/admin/document-design/editor.blade.php:192` — `select select-bordered select-xs`
-- `resources/views/admin/document-design/editor.blade.php:192` — `previewKind`
-- `resources/views/admin/document-design/editor.blade.php:192` — `Dokumentart`
-- `resources/views/admin/document-design/editor.blade.php:199` — `select select-bordered select-xs`
-- `resources/views/admin/document-design/editor.blade.php:199` — `previewScenario`
-- `resources/views/admin/document-design/editor.blade.php:199` — `Beispieldaten`
-- `resources/views/admin/document-design/editor.blade.php:204` — `button`
-- `resources/views/admin/document-design/editor.blade.php:204` — `btn btn-xs btn-outline`
-- `resources/views/admin/document-design/editor.blade.php:207` — `mb-2 text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:210` — `mb-1 text-xs`
-- `resources/views/admin/document-design/editor.blade.php:210` — `inheritEnabled`
-- `resources/views/admin/document-design/editor.blade.php:211` — `badge badge-info badge-xs align-middle`
-- `resources/views/admin/document-design/editor.blade.php:215` — `mb-2 text-xs text-warning`
-- `resources/views/admin/document-design/editor.blade.php:220` — `h-160 w-full rounded border border-base-300 bg-white`
-- `resources/views/admin/document-design/editor.blade.php:225` — `space-y-4`
-- `resources/views/admin/document-design/editor.blade.php:230` — `mb-2 text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:230` — `base`
-- `resources/views/admin/document-design/editor.blade.php:231` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:232` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:232` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:232` — `inheritEnabled`
-- `resources/views/admin/document-design/editor.blade.php:233` — `base`
-- `resources/views/admin/document-design/editor.blade.php:235` — `mt-2 space-y-1`
-- `resources/views/admin/document-design/editor.blade.php:235` — `inheritEnabled`
-- `resources/views/admin/document-design/editor.blade.php:237` — `margins`
-- `resources/views/admin/document-design/editor.blade.php:238` — `address`
-- `resources/views/admin/document-design/editor.blade.php:240` — `footer`
-- `resources/views/admin/document-design/editor.blade.php:241` — `typography`
-- `resources/views/admin/document-design/editor.blade.php:242` — `assets`
-- `resources/views/admin/document-design/editor.blade.php:247` — `flex items-center justify-between gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:248` — `flex items-center gap-2`
-- `resources/views/admin/document-design/editor.blade.php:249` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:249` — `checkbox checkbox-xs`
-- `resources/views/admin/document-design/editor.blade.php:252` — `badge badge-xs`
-- `resources/views/admin/document-design/editor.blade.php:252` — `badge-warning`
-- `resources/views/admin/document-design/editor.blade.php:252` — `badge-ghost'`
-- `resources/views/admin/document-design/editor.blade.php:256` — `text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:262` — `Erste Seite`
-- `resources/views/admin/document-design/editor.blade.php:262` — `Folgeseiten`
-- `resources/views/admin/document-design/editor.blade.php:263` — `mb-3`
-- `resources/views/admin/document-design/editor.blade.php:264` — `text-sm font-medium`
-- `resources/views/admin/document-design/editor.blade.php:264` — `Ränder in mm`
-- `resources/views/admin/document-design/editor.blade.php:265` — `grid grid-cols-4 gap-2`
-- `resources/views/admin/document-design/editor.blade.php:266` — `Oben`
-- `resources/views/admin/document-design/editor.blade.php:266` — `right`
-- `resources/views/admin/document-design/editor.blade.php:266` — `Rechts`
-- `resources/views/admin/document-design/editor.blade.php:266` — `bottom`
-- `resources/views/admin/document-design/editor.blade.php:266` — `Unten`
-- `resources/views/admin/document-design/editor.blade.php:266` — `left`
-- `resources/views/admin/document-design/editor.blade.php:266` — `Links`
-- `resources/views/admin/document-design/editor.blade.php:267` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:268` — `label-text text-xs`
-- `resources/views/admin/document-design/editor.blade.php:269` — `number`
-- `resources/views/admin/document-design/editor.blade.php:270` — `input input-bordered input-xs`
-- `resources/views/admin/document-design/editor.blade.php:280` — `flex flex-wrap gap-2`
-- `resources/views/admin/document-design/editor.blade.php:281` — `button`
-- `resources/views/admin/document-design/editor.blade.php:281` — `btn btn-xs btn-outline`
-- `resources/views/admin/document-design/editor.blade.php:284` — `button`
-- `resources/views/admin/document-design/editor.blade.php:284` — `btn btn-xs btn-outline`
-- `resources/views/admin/document-design/editor.blade.php:287` — `button`
-- `resources/views/admin/document-design/editor.blade.php:287` — `btn btn-xs btn-outline`
-- `resources/views/admin/document-design/editor.blade.php:288` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:289` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:289` — `checkbox checkbox-xs`
-- `resources/views/admin/document-design/editor.blade.php:296` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:297` — `label-text text-xs`
-- `resources/views/admin/document-design/editor.blade.php:298` — `text`
-- `resources/views/admin/document-design/editor.blade.php:298` — `input input-bordered input-xs`
+- `resources/views/admin/document-design/editor.blade.php:179` — `blocked`
+- `resources/views/admin/document-design/editor.blade.php:182` — `blocked', index, 'resize`
+- `resources/views/admin/document-design/editor.blade.php:189` — `mt-4`
+- `resources/views/admin/document-design/editor.blade.php:190` — `mb-2 flex flex-wrap items-center justify-between gap-2`
+- `resources/views/admin/document-design/editor.blade.php:192` — `flex flex-wrap items-center gap-2`
+- `resources/views/admin/document-design/editor.blade.php:193` — `select select-bordered select-xs`
+- `resources/views/admin/document-design/editor.blade.php:193` — `previewKind`
+- `resources/views/admin/document-design/editor.blade.php:193` — `Dokumentart`
+- `resources/views/admin/document-design/editor.blade.php:200` — `select select-bordered select-xs`
+- `resources/views/admin/document-design/editor.blade.php:200` — `previewScenario`
+- `resources/views/admin/document-design/editor.blade.php:200` — `Beispieldaten`
+- `resources/views/admin/document-design/editor.blade.php:205` — `button`
+- `resources/views/admin/document-design/editor.blade.php:205` — `btn btn-xs btn-outline`
+- `resources/views/admin/document-design/editor.blade.php:208` — `mb-2 text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:211` — `mb-1 text-xs`
+- `resources/views/admin/document-design/editor.blade.php:211` — `inheritEnabled`
+- `resources/views/admin/document-design/editor.blade.php:212` — `badge badge-info badge-xs align-middle`
+- `resources/views/admin/document-design/editor.blade.php:216` — `mb-2 text-xs text-warning`
+- `resources/views/admin/document-design/editor.blade.php:221` — `h-160 w-full rounded border border-base-300 bg-white`
+- `resources/views/admin/document-design/editor.blade.php:226` — `space-y-4`
+- `resources/views/admin/document-design/editor.blade.php:231` — `mb-2 text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:231` — `base`
+- `resources/views/admin/document-design/editor.blade.php:232` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:233` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:233` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:233` — `inheritEnabled`
+- `resources/views/admin/document-design/editor.blade.php:234` — `base`
+- `resources/views/admin/document-design/editor.blade.php:236` — `mt-2 space-y-1`
+- `resources/views/admin/document-design/editor.blade.php:236` — `inheritEnabled`
+- `resources/views/admin/document-design/editor.blade.php:238` — `margins`
+- `resources/views/admin/document-design/editor.blade.php:239` — `address`
+- `resources/views/admin/document-design/editor.blade.php:241` — `footer`
+- `resources/views/admin/document-design/editor.blade.php:242` — `typography`
+- `resources/views/admin/document-design/editor.blade.php:243` — `assets`
+- `resources/views/admin/document-design/editor.blade.php:248` — `flex items-center justify-between gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:249` — `flex items-center gap-2`
+- `resources/views/admin/document-design/editor.blade.php:250` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:250` — `checkbox checkbox-xs`
+- `resources/views/admin/document-design/editor.blade.php:253` — `badge badge-xs`
+- `resources/views/admin/document-design/editor.blade.php:253` — `badge-warning`
+- `resources/views/admin/document-design/editor.blade.php:253` — `badge-ghost'`
+- `resources/views/admin/document-design/editor.blade.php:257` — `text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:262` — `tablist`
+- `resources/views/admin/document-design/editor.blade.php:262` — `tabs tabs-box tabs-sm`
+- `resources/views/admin/document-design/editor.blade.php:263` — `appearance`
+- `resources/views/admin/document-design/editor.blade.php:263` — `layout`
+- `resources/views/admin/document-design/editor.blade.php:263` — `content`
+- `resources/views/admin/document-design/editor.blade.php:263` — `release`
+- `resources/views/admin/document-design/editor.blade.php:264` — `button`
+- `resources/views/admin/document-design/editor.blade.php:265` — `tab-active`
+- `resources/views/admin/document-design/editor.blade.php:266` — `true`
+- `resources/views/admin/document-design/editor.blade.php:266` — `false'`
+- `resources/views/admin/document-design/editor.blade.php:271` — `space-y-4`
+- `resources/views/admin/document-design/editor.blade.php:271` — `appearance'`
+- `resources/views/admin/document-design/editor.blade.php:274` — `mb-1 flex flex-wrap items-center justify-between gap-2`
+- `resources/views/admin/document-design/editor.blade.php:276` — `wallpaper`
+- `resources/views/admin/document-design/editor.blade.php:276` — `ghost`
+- `resources/views/admin/document-design/editor.blade.php:276` — `admin.document-design.index`
+- `resources/views/admin/document-design/editor.blade.php:278` — `mb-2 text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:280` — `first`
+- `resources/views/admin/document-design/editor.blade.php:280` — `Erste Seite`
+- `resources/views/admin/document-design/editor.blade.php:280` — `following`
+- `resources/views/admin/document-design/editor.blade.php:280` — `Folgeseiten`
+- `resources/views/admin/document-design/editor.blade.php:281` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:282` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:283` — `select select-bordered select-sm`
 - `resources/views/admin/document-design/editor.blade.php:301` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:302` — `label-text text-xs`
-- `resources/views/admin/document-design/editor.blade.php:303` — `text`
-- `resources/views/admin/document-design/editor.blade.php:303` — `input input-bordered input-xs`
-- `resources/views/admin/document-design/editor.blade.php:310` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:311` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:312` — `select select-bordered select-sm`
-- `resources/views/admin/document-design/editor.blade.php:319` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:320` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:321` — `number`
-- `resources/views/admin/document-design/editor.blade.php:321` — `input input-bordered input-sm`
-- `resources/views/admin/document-design/editor.blade.php:327` — `mt-3 space-y-2`
-- `resources/views/admin/document-design/editor.blade.php:329` — `flex flex-wrap items-end gap-2 text-xs`
-- `resources/views/admin/document-design/editor.blade.php:330` — `Bezeichnung`
-- `resources/views/admin/document-design/editor.blade.php:330` — `text`
-- `resources/views/admin/document-design/editor.blade.php:330` — `input input-bordered input-xs w-28`
-- `resources/views/admin/document-design/editor.blade.php:330` — `Bezeichnung`
-- `resources/views/admin/document-design/editor.blade.php:331` — `select select-bordered select-xs`
-- `resources/views/admin/document-design/editor.blade.php:332` — `Alle Seiten`
-- `resources/views/admin/document-design/editor.blade.php:333` — `first`
-- `resources/views/admin/document-design/editor.blade.php:333` — `Erste Seite`
-- `resources/views/admin/document-design/editor.blade.php:334` — `following`
-- `resources/views/admin/document-design/editor.blade.php:334` — `Folgeseiten`
-- `resources/views/admin/document-design/editor.blade.php:336` — `x','y','width','height`
-- `resources/views/admin/document-design/editor.blade.php:336` — `field`
-- `resources/views/admin/document-design/editor.blade.php:337` — `number`
-- `resources/views/admin/document-design/editor.blade.php:337` — `input input-bordered input-xs w-16`
-- `resources/views/admin/document-design/editor.blade.php:340` — `button`
-- `resources/views/admin/document-design/editor.blade.php:340` — `btn btn-ghost btn-xs text-error`
-- `resources/views/admin/document-design/editor.blade.php:351` — `admin.document-design.draft.update`
-- `resources/views/admin/document-design/editor.blade.php:354` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:355` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:355` — `Erste Seite`
-- `resources/views/admin/document-design/editor.blade.php:356` — `select select-bordered select-sm`
-- `resources/views/admin/document-design/editor.blade.php:363` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:364` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:364` — `Folgeseiten`
-- `resources/views/admin/document-design/editor.blade.php:365` — `select select-bordered select-sm`
-- `resources/views/admin/document-design/editor.blade.php:373` — `submit`
-- `resources/views/admin/document-design/editor.blade.php:373` — `btn btn-sm btn-outline`
-- `resources/views/admin/document-design/editor.blade.php:382` — `mb-2 text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:383` — `space-y-2`
-- `resources/views/admin/document-design/editor.blade.php:385` — `flex flex-wrap items-center justify-between gap-2 border-b border-base-200 pb-1 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:387` — `flex items-center gap-2`
-- `resources/views/admin/document-design/editor.blade.php:388` — `select select-bordered select-xs`
-- `resources/views/admin/document-design/editor.blade.php:398` — `flex items-center gap-1 text-xs`
-- `resources/views/admin/document-design/editor.blade.php:400` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:400` — `checkbox checkbox-xs`
-- `resources/views/admin/document-design/editor.blade.php:416` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:417` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:418` — `select select-bordered select-sm`
-- `resources/views/admin/document-design/editor.blade.php:425` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:425` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:428` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:429` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:430` — `color`
-- `resources/views/admin/document-design/editor.blade.php:430` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:433` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:434` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:435` — `color`
-- `resources/views/admin/document-design/editor.blade.php:435` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:438` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:439` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:440` — `number`
-- `resources/views/admin/document-design/editor.blade.php:440` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:443` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:444` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:445` — `select select-bordered select-sm`
-- `resources/views/admin/document-design/editor.blade.php:446` — `horizontal`
-- `resources/views/admin/document-design/editor.blade.php:447` — `full`
-- `resources/views/admin/document-design/editor.blade.php:448` — `minimal`
-- `resources/views/admin/document-design/editor.blade.php:451` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:452` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:453` — `number`
-- `resources/views/admin/document-design/editor.blade.php:453` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:456` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:457` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:458` — `color`
-- `resources/views/admin/document-design/editor.blade.php:458` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:461` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:462` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:463` — `color`
-- `resources/views/admin/document-design/editor.blade.php:463` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:466` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:467` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:468` — `color`
-- `resources/views/admin/document-design/editor.blade.php:468` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:471` — `grid grid-cols-2 gap-2`
-- `resources/views/admin/document-design/editor.blade.php:472` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:473` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:474` — `number`
-- `resources/views/admin/document-design/editor.blade.php:474` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:477` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:478` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:479` — `number`
-- `resources/views/admin/document-design/editor.blade.php:479` — `input input-bordered input-sm w-full`
-- `resources/views/admin/document-design/editor.blade.php:483` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:484` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:484` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:487` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:488` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:488` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:491` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:492` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:492` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:501` — `mb-2 text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:502` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:503` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:504` — `textarea textarea-bordered textarea-sm`
-- `resources/views/admin/document-design/editor.blade.php:507` — `form-control mt-2`
-- `resources/views/admin/document-design/editor.blade.php:508` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:509` — `textarea textarea-bordered textarea-sm`
-- `resources/views/admin/document-design/editor.blade.php:517` — `mb-2 text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:518` — `flex flex-wrap gap-2`
-- `resources/views/admin/document-design/editor.blade.php:520` — `btn btn-xs btn-outline`
-- `resources/views/admin/document-design/editor.blade.php:521` — `admin.document-design.test-pdf`
-- `resources/views/admin/document-design/editor.blade.php:521` — `profile`
-- `resources/views/admin/document-design/editor.blade.php:521` — `kind`
-- `resources/views/admin/document-design/editor.blade.php:531` — `admin.document-design.assign`
-- `resources/views/admin/document-design/editor.blade.php:531` — `space-y-2`
-- `resources/views/admin/document-design/editor.blade.php:534` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:535` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:535` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:540` — `form-control`
-- `resources/views/admin/document-design/editor.blade.php:541` — `label-text text-sm`
-- `resources/views/admin/document-design/editor.blade.php:542` — `select select-bordered select-sm`
-- `resources/views/admin/document-design/editor.blade.php:548` — `label-text-alt text-xs text-muted`
-- `resources/views/admin/document-design/editor.blade.php:550` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:551` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:551` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:554` — `flex items-center gap-2 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:555` — `checkbox`
-- `resources/views/admin/document-design/editor.blade.php:555` — `checkbox checkbox-sm`
-- `resources/views/admin/document-design/editor.blade.php:558` — `submit`
-- `resources/views/admin/document-design/editor.blade.php:558` — `btn btn-sm btn-outline`
-- `resources/views/admin/document-design/editor.blade.php:561` — `mt-4`
-- `resources/views/admin/document-design/editor.blade.php:562` — `text-sm font-medium`
-- `resources/views/admin/document-design/editor.blade.php:563` — `mt-1 space-y-1 text-sm`
-- `resources/views/admin/document-design/editor.blade.php:565` — `flex items-center justify-between gap-2`
-- `resources/views/admin/document-design/editor.blade.php:567` — `active`
-- `resources/views/admin/document-design/editor.blade.php:567` — `Aktiv`
-- `resources/views/admin/document-design/editor.blade.php:567` — `draft`
-- `resources/views/admin/document-design/editor.blade.php:567` — `Entwurf`
-- `resources/views/admin/document-design/editor.blade.php:567` — `Abgelöst`
-- `resources/views/admin/document-design/editor.blade.php:570` — `superseded`
-- `resources/views/admin/document-design/editor.blade.php:571` — `admin.document-design.draft.new`
-- `resources/views/admin/document-design/editor.blade.php:574` — `hidden`
-- `resources/views/admin/document-design/editor.blade.php:574` — `source`
-- `resources/views/admin/document-design/editor.blade.php:575` — `submit`
-- `resources/views/admin/document-design/editor.blade.php:575` — `btn btn-ghost btn-xs`
+- `resources/views/admin/document-design/editor.blade.php:302` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:303` — `select select-bordered select-sm`
+- `resources/views/admin/document-design/editor.blade.php:310` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:310` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:313` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:314` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:315` — `color`
+- `resources/views/admin/document-design/editor.blade.php:315` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:318` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:319` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:320` — `color`
+- `resources/views/admin/document-design/editor.blade.php:320` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:323` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:324` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:325` — `number`
+- `resources/views/admin/document-design/editor.blade.php:325` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:328` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:329` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:330` — `select select-bordered select-sm`
+- `resources/views/admin/document-design/editor.blade.php:331` — `horizontal`
+- `resources/views/admin/document-design/editor.blade.php:332` — `full`
+- `resources/views/admin/document-design/editor.blade.php:333` — `minimal`
+- `resources/views/admin/document-design/editor.blade.php:336` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:337` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:338` — `number`
+- `resources/views/admin/document-design/editor.blade.php:338` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:341` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:342` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:343` — `color`
+- `resources/views/admin/document-design/editor.blade.php:343` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:346` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:347` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:348` — `color`
+- `resources/views/admin/document-design/editor.blade.php:348` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:351` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:352` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:353` — `color`
+- `resources/views/admin/document-design/editor.blade.php:353` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:356` — `grid grid-cols-2 gap-2`
+- `resources/views/admin/document-design/editor.blade.php:357` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:358` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:359` — `number`
+- `resources/views/admin/document-design/editor.blade.php:359` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:362` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:363` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:364` — `number`
+- `resources/views/admin/document-design/editor.blade.php:364` — `input input-bordered input-sm w-full`
+- `resources/views/admin/document-design/editor.blade.php:368` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:369` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:369` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:372` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:373` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:373` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:376` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:377` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:377` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:385` — `space-y-4`
+- `resources/views/admin/document-design/editor.blade.php:385` — `layout'`
+- `resources/views/admin/document-design/editor.blade.php:388` — `Erste Seite`
+- `resources/views/admin/document-design/editor.blade.php:388` — `Folgeseiten`
+- `resources/views/admin/document-design/editor.blade.php:389` — `mb-3`
+- `resources/views/admin/document-design/editor.blade.php:390` — `text-sm font-medium`
+- `resources/views/admin/document-design/editor.blade.php:390` — `Ränder in mm`
+- `resources/views/admin/document-design/editor.blade.php:391` — `grid grid-cols-4 gap-2`
+- `resources/views/admin/document-design/editor.blade.php:392` — `Oben`
+- `resources/views/admin/document-design/editor.blade.php:392` — `right`
+- `resources/views/admin/document-design/editor.blade.php:392` — `Rechts`
+- `resources/views/admin/document-design/editor.blade.php:392` — `bottom`
+- `resources/views/admin/document-design/editor.blade.php:392` — `Unten`
+- `resources/views/admin/document-design/editor.blade.php:392` — `left`
+- `resources/views/admin/document-design/editor.blade.php:392` — `Links`
+- `resources/views/admin/document-design/editor.blade.php:393` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:394` — `label-text text-xs`
+- `resources/views/admin/document-design/editor.blade.php:395` — `number`
+- `resources/views/admin/document-design/editor.blade.php:396` — `input input-bordered input-xs`
+- `resources/views/admin/document-design/editor.blade.php:406` — `flex flex-wrap gap-2`
+- `resources/views/admin/document-design/editor.blade.php:407` — `button`
+- `resources/views/admin/document-design/editor.blade.php:407` — `btn btn-xs btn-outline`
+- `resources/views/admin/document-design/editor.blade.php:410` — `button`
+- `resources/views/admin/document-design/editor.blade.php:410` — `btn btn-xs btn-outline`
+- `resources/views/admin/document-design/editor.blade.php:413` — `button`
+- `resources/views/admin/document-design/editor.blade.php:413` — `btn btn-xs btn-outline`
+- `resources/views/admin/document-design/editor.blade.php:414` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:415` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:415` — `checkbox checkbox-xs`
+- `resources/views/admin/document-design/editor.blade.php:422` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:423` — `label-text text-xs`
+- `resources/views/admin/document-design/editor.blade.php:424` — `text`
+- `resources/views/admin/document-design/editor.blade.php:424` — `input input-bordered input-xs`
+- `resources/views/admin/document-design/editor.blade.php:427` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:428` — `label-text text-xs`
+- `resources/views/admin/document-design/editor.blade.php:429` — `text`
+- `resources/views/admin/document-design/editor.blade.php:429` — `input input-bordered input-xs`
+- `resources/views/admin/document-design/editor.blade.php:436` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:437` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:438` — `select select-bordered select-sm`
+- `resources/views/admin/document-design/editor.blade.php:445` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:446` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:447` — `number`
+- `resources/views/admin/document-design/editor.blade.php:447` — `input input-bordered input-sm`
+- `resources/views/admin/document-design/editor.blade.php:453` — `mt-3 space-y-2`
+- `resources/views/admin/document-design/editor.blade.php:455` — `flex flex-wrap items-end gap-2 text-xs`
+- `resources/views/admin/document-design/editor.blade.php:456` — `Bezeichnung`
+- `resources/views/admin/document-design/editor.blade.php:456` — `text`
+- `resources/views/admin/document-design/editor.blade.php:456` — `input input-bordered input-xs w-28`
+- `resources/views/admin/document-design/editor.blade.php:456` — `Bezeichnung`
+- `resources/views/admin/document-design/editor.blade.php:457` — `select select-bordered select-xs`
+- `resources/views/admin/document-design/editor.blade.php:458` — `Alle Seiten`
+- `resources/views/admin/document-design/editor.blade.php:459` — `first`
+- `resources/views/admin/document-design/editor.blade.php:459` — `Erste Seite`
+- `resources/views/admin/document-design/editor.blade.php:460` — `following`
+- `resources/views/admin/document-design/editor.blade.php:460` — `Folgeseiten`
+- `resources/views/admin/document-design/editor.blade.php:462` — `x','y','width','height`
+- `resources/views/admin/document-design/editor.blade.php:462` — `field`
+- `resources/views/admin/document-design/editor.blade.php:463` — `number`
+- `resources/views/admin/document-design/editor.blade.php:463` — `input input-bordered input-xs w-16`
+- `resources/views/admin/document-design/editor.blade.php:466` — `button`
+- `resources/views/admin/document-design/editor.blade.php:466` — `btn btn-ghost btn-xs text-error`
+- `resources/views/admin/document-design/editor.blade.php:475` — `space-y-4`
+- `resources/views/admin/document-design/editor.blade.php:475` — `content'`
+- `resources/views/admin/document-design/editor.blade.php:479` — `mb-2 text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:480` — `space-y-2`
+- `resources/views/admin/document-design/editor.blade.php:482` — `flex flex-wrap items-center justify-between gap-2 border-b border-base-200 pb-1 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:484` — `flex items-center gap-2`
+- `resources/views/admin/document-design/editor.blade.php:485` — `select select-bordered select-xs`
+- `resources/views/admin/document-design/editor.blade.php:495` — `flex items-center gap-1 text-xs`
+- `resources/views/admin/document-design/editor.blade.php:497` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:497` — `checkbox checkbox-xs`
+- `resources/views/admin/document-design/editor.blade.php:512` — `mb-2 text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:513` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:514` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:515` — `textarea textarea-bordered textarea-sm`
+- `resources/views/admin/document-design/editor.blade.php:518` — `form-control mt-2`
+- `resources/views/admin/document-design/editor.blade.php:519` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:520` — `textarea textarea-bordered textarea-sm`
+- `resources/views/admin/document-design/editor.blade.php:527` — `space-y-4`
+- `resources/views/admin/document-design/editor.blade.php:527` — `release'`
+- `resources/views/admin/document-design/editor.blade.php:531` — `mb-2 text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:532` — `flex flex-wrap gap-2`
+- `resources/views/admin/document-design/editor.blade.php:534` — `btn btn-xs btn-outline`
+- `resources/views/admin/document-design/editor.blade.php:535` — `admin.document-design.test-pdf`
+- `resources/views/admin/document-design/editor.blade.php:535` — `profile`
+- `resources/views/admin/document-design/editor.blade.php:535` — `kind`
+- `resources/views/admin/document-design/editor.blade.php:545` — `admin.document-design.assign`
+- `resources/views/admin/document-design/editor.blade.php:545` — `space-y-2`
+- `resources/views/admin/document-design/editor.blade.php:548` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:549` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:549` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:554` — `form-control`
+- `resources/views/admin/document-design/editor.blade.php:555` — `label-text text-sm`
+- `resources/views/admin/document-design/editor.blade.php:556` — `select select-bordered select-sm`
+- `resources/views/admin/document-design/editor.blade.php:562` — `label-text-alt text-xs text-muted`
+- `resources/views/admin/document-design/editor.blade.php:564` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:565` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:565` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:568` — `flex items-center gap-2 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:569` — `checkbox`
+- `resources/views/admin/document-design/editor.blade.php:569` — `checkbox checkbox-sm`
+- `resources/views/admin/document-design/editor.blade.php:572` — `submit`
+- `resources/views/admin/document-design/editor.blade.php:572` — `btn btn-sm btn-outline`
+- `resources/views/admin/document-design/editor.blade.php:575` — `mt-4`
+- `resources/views/admin/document-design/editor.blade.php:576` — `text-sm font-medium`
+- `resources/views/admin/document-design/editor.blade.php:577` — `mt-1 space-y-1 text-sm`
+- `resources/views/admin/document-design/editor.blade.php:579` — `flex items-center justify-between gap-2`
+- `resources/views/admin/document-design/editor.blade.php:581` — `active`
+- `resources/views/admin/document-design/editor.blade.php:581` — `Aktiv`
+- `resources/views/admin/document-design/editor.blade.php:581` — `draft`
+- `resources/views/admin/document-design/editor.blade.php:581` — `Entwurf`
+- `resources/views/admin/document-design/editor.blade.php:581` — `Abgelöst`
+- `resources/views/admin/document-design/editor.blade.php:584` — `superseded`
+- `resources/views/admin/document-design/editor.blade.php:585` — `admin.document-design.draft.new`
+- `resources/views/admin/document-design/editor.blade.php:588` — `hidden`
+- `resources/views/admin/document-design/editor.blade.php:588` — `source`
+- `resources/views/admin/document-design/editor.blade.php:589` — `submit`
+- `resources/views/admin/document-design/editor.blade.php:589` — `btn btn-ghost btn-xs`
 - `resources/views/admin/document-design/_profile_form_dialog.blade.php:13` — `primary`
 - `resources/views/admin/document-design/_profile_form_dialog.blade.php:14` — `admin.document-design.profiles.store`
 - `resources/views/admin/document-design/_profile_form_dialog.blade.php:16` — `data-entry-form`
@@ -6432,34 +6462,116 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/admin/document-design/index.blade.php:19` — `admin.document-design.assets.create`
 - `resources/views/admin/document-design/index.blade.php:21` — `primary`
 - `resources/views/admin/document-design/index.blade.php:23` — `admin.document-design.profiles.create`
-- `resources/views/admin/document-design/index.blade.php:43` — `text-right`
-- `resources/views/admin/document-design/index.blade.php:48` — `font-medium`
-- `resources/views/admin/document-design/index.blade.php:49` — `success' ? 'success`
-- `resources/views/admin/document-design/index.blade.php:49` — `ghost`
-- `resources/views/admin/document-design/index.blade.php:55` — `text-right`
-- `resources/views/admin/document-design/index.blade.php:56` — `flex justify-end gap-1`
-- `resources/views/admin/document-design/index.blade.php:57` — `edit`
-- `resources/views/admin/document-design/index.blade.php:58` — `admin.document-design.editor`
-- `resources/views/admin/document-design/index.blade.php:61` — `admin.document-design.archive`
-- `resources/views/admin/document-design/index.blade.php:64` — `archive`
-- `resources/views/admin/document-design/index.blade.php:64` — `error`
-- `resources/views/admin/document-design/index.blade.php:64` — `submit`
-- `resources/views/admin/document-design/index.blade.php:78` — `wallpaper`
-- `resources/views/admin/document-design/index.blade.php:88` — `text-right`
-- `resources/views/admin/document-design/index.blade.php:93` — `font-medium`
-- `resources/views/admin/document-design/index.blade.php:95` — `uppercase text-sm`
-- `resources/views/admin/document-design/index.blade.php:97` — `success' ? 'success`
-- `resources/views/admin/document-design/index.blade.php:97` — `warning' ? 'warning`
-- `resources/views/admin/document-design/index.blade.php:97` — `ghost`
-- `resources/views/admin/document-design/index.blade.php:99` — `text-xs text-muted`
-- `resources/views/admin/document-design/index.blade.php:103` — `text-right`
-- `resources/views/admin/document-design/index.blade.php:104` — `flex justify-end gap-1`
-- `resources/views/admin/document-design/index.blade.php:106` — `visibility`
-- `resources/views/admin/document-design/index.blade.php:107` — `admin.document-design.assets.preview`
-- `resources/views/admin/document-design/index.blade.php:112` — `admin.document-design.assets.archive`
-- `resources/views/admin/document-design/index.blade.php:115` — `archive`
-- `resources/views/admin/document-design/index.blade.php:115` — `error`
-- `resources/views/admin/document-design/index.blade.php:115` — `submit`
+- `resources/views/admin/document-design/index.blade.php:31` — `complete`
+- `resources/views/admin/document-design/index.blade.php:33` — `admin.document-design.editor`
+- `resources/views/admin/document-design/index.blade.php:35` — `letterhead', 'icon`
+- `resources/views/admin/document-design/index.blade.php:35` — `modal`
+- `resources/views/admin/document-design/index.blade.php:35` — `href`
+- `resources/views/admin/document-design/index.blade.php:35` — `admin.document-design.assets.create`
+- `resources/views/admin/document-design/index.blade.php:35` — `label`
+- `resources/views/admin/document-design/index.blade.php:36` — `profile', 'icon`
+- `resources/views/admin/document-design/index.blade.php:36` — `add', 'modal`
+- `resources/views/admin/document-design/index.blade.php:36` — `href`
+- `resources/views/admin/document-design/index.blade.php:36` — `admin.document-design.profiles.create`
+- `resources/views/admin/document-design/index.blade.php:36` — `label`
+- `resources/views/admin/document-design/index.blade.php:37` — `design', 'icon`
+- `resources/views/admin/document-design/index.blade.php:37` — `edit', 'modal`
+- `resources/views/admin/document-design/index.blade.php:37` — `href`
+- `resources/views/admin/document-design/index.blade.php:37` — `label`
+- `resources/views/admin/document-design/index.blade.php:38` — `activate', 'icon`
+- `resources/views/admin/document-design/index.blade.php:38` — `verified', 'modal`
+- `resources/views/admin/document-design/index.blade.php:38` — `href`
+- `resources/views/admin/document-design/index.blade.php:38` — `label`
+- `resources/views/admin/document-design/index.blade.php:39` — `assign', 'icon`
+- `resources/views/admin/document-design/index.blade.php:39` — `modal`
+- `resources/views/admin/document-design/index.blade.php:39` — `href`
+- `resources/views/admin/document-design/index.blade.php:39` — `label`
+- `resources/views/admin/document-design/index.blade.php:42` — `checklist`
+- `resources/views/admin/document-design/index.blade.php:43` — `mb-3 text-sm text-muted`
+- `resources/views/admin/document-design/index.blade.php:47` — `steps`
+- `resources/views/admin/document-design/index.blade.php:48` — `letterhead`
+- `resources/views/admin/document-design/index.blade.php:52` — `border-base-300`
+- `resources/views/admin/document-design/index.blade.php:53` — `flex items-center gap-2`
+- `resources/views/admin/document-design/index.blade.php:54` — `bg-success text-success-content`
+- `resources/views/admin/document-design/index.blade.php:54` — `bg-base-200`
+- `resources/views/admin/document-design/index.blade.php:57` — `check`
+- `resources/views/admin/document-design/index.blade.php:62` — `text-sm font-medium`
+- `resources/views/admin/document-design/index.blade.php:64` — `text-xs text-muted`
+- `resources/views/admin/document-design/index.blade.php:65` — `href`
+- `resources/views/admin/document-design/index.blade.php:66` — `mt-auto pt-1`
+- `resources/views/admin/document-design/index.blade.php:67` — `icon`
+- `resources/views/admin/document-design/index.blade.php:67` — `outline`
+- `resources/views/admin/document-design/index.blade.php:67` — `href`
+- `resources/views/admin/document-design/index.blade.php:68` — `modal`
+- `resources/views/admin/document-design/index.blade.php:68` — `label`
+- `resources/views/admin/document-design/index.blade.php:90` — `text-right`
+- `resources/views/admin/document-design/index.blade.php:95` — `font-medium`
+- `resources/views/admin/document-design/index.blade.php:96` — `success' ? 'success`
+- `resources/views/admin/document-design/index.blade.php:96` — `ghost`
+- `resources/views/admin/document-design/index.blade.php:102` — `text-right`
+- `resources/views/admin/document-design/index.blade.php:103` — `flex justify-end gap-1`
+- `resources/views/admin/document-design/index.blade.php:104` — `edit`
+- `resources/views/admin/document-design/index.blade.php:105` — `admin.document-design.editor`
+- `resources/views/admin/document-design/index.blade.php:108` — `admin.document-design.archive`
+- `resources/views/admin/document-design/index.blade.php:111` — `archive`
+- `resources/views/admin/document-design/index.blade.php:111` — `error`
+- `resources/views/admin/document-design/index.blade.php:111` — `submit`
+- `resources/views/admin/document-design/index.blade.php:125` — `wallpaper`
+- `resources/views/admin/document-design/index.blade.php:130` — `w-16`
+- `resources/views/admin/document-design/index.blade.php:136` — `text-right`
+- `resources/views/admin/document-design/index.blade.php:142` — `admin.document-design.assets.show`
+- `resources/views/admin/document-design/index.blade.php:143` — `inline-block`
+- `resources/views/admin/document-design/index.blade.php:145` — `admin.document-design.assets.preview`
+- `resources/views/admin/document-design/index.blade.php:146` — `h-8 w-auto rounded border border-base-300 bg-white`
+- `resources/views/admin/document-design/index.blade.php:146` — `lazy`
+- `resources/views/admin/document-design/index.blade.php:148` — `flex h-8 w-6 items-center justify-center rounded border border-dashed border-base-300 text-muted`
+- `resources/views/admin/document-design/index.blade.php:148` — `true`
+- `resources/views/admin/document-design/index.blade.php:149` — `pdf' ? `
+- `resources/views/admin/document-design/index.blade.php:149` — `image'`
+- `resources/views/admin/document-design/index.blade.php:154` — `font-medium`
+- `resources/views/admin/document-design/index.blade.php:155` — `admin.document-design.assets.show`
+- `resources/views/admin/document-design/index.blade.php:155` — `link link-hover`
+- `resources/views/admin/document-design/index.blade.php:158` — `uppercase text-sm`
+- `resources/views/admin/document-design/index.blade.php:160` — `success' ? 'success`
+- `resources/views/admin/document-design/index.blade.php:160` — `warning' ? 'warning`
+- `resources/views/admin/document-design/index.blade.php:160` — `ghost`
+- `resources/views/admin/document-design/index.blade.php:162` — `text-xs text-muted`
+- `resources/views/admin/document-design/index.blade.php:166` — `text-right`
+- `resources/views/admin/document-design/index.blade.php:167` — `flex justify-end gap-1`
+- `resources/views/admin/document-design/index.blade.php:168` — `visibility`
+- `resources/views/admin/document-design/index.blade.php:169` — `admin.document-design.assets.show`
+- `resources/views/admin/document-design/index.blade.php:171` — `download`
+- `resources/views/admin/document-design/index.blade.php:172` — `admin.document-design.assets.original`
+- `resources/views/admin/document-design/index.blade.php:175` — `admin.document-design.assets.archive`
+- `resources/views/admin/document-design/index.blade.php:178` — `archive`
+- `resources/views/admin/document-design/index.blade.php:178` — `error`
+- `resources/views/admin/document-design/index.blade.php:178` — `submit`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:13` — `png', 'jpg`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:15` — `admin.document-design.assets.preview`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:16` — `admin.document-design.assets.original`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:18` — `success' ? 'success`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:18` — `warning' ? 'warning`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:18` — `ghost`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:21` — `wallpaper`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:21` — `primary`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:23` — `flex items-start justify-center rounded-box border border-base-300 bg-base-200 p-3`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:32` — `space-y-2 text-sm`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:34` — `text-xs text-muted`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:39` — `font-medium`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:40` — `mt-1 list-disc pl-4`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:48` — `text-xs text-muted`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:51` — `text-xs text-muted`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:55` — `text-xs text-muted`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:56` — `break-all`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:56` — `uppercase`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:59` — `text-xs text-muted`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:63` — `text-xs text-muted`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:66` — `flex flex-col items-start gap-1 pt-2`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:68` — `download`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:68` — `outline`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:69` — `admin.document-design.assets.original`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:74` — `ghost`
+- `resources/views/admin/document-design/_asset_preview_dialog.blade.php:75` — `admin.document-design.assets.preview`
 - `resources/views/admin/scope/index.blade.php:11` — `title`
 - `resources/views/admin/scope/index.blade.php:11` — `app.name', 'WorkDiary`
 - `resources/views/admin/scope/index.blade.php:12` — `nav-title`
@@ -12398,94 +12510,98 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/admin/branding/edit.blade.php:19` — `contact`
 - `resources/views/admin/branding/edit.blade.php:20` — `legal`
 - `resources/views/admin/branding/edit.blade.php:21` — `colors`
-- `resources/views/admin/branding/edit.blade.php:30` — `card bg-base-100 shadow`
-- `resources/views/admin/branding/edit.blade.php:31` — `card-body`
-- `resources/views/admin/branding/edit.blade.php:32` — `card-title`
-- `resources/views/admin/branding/edit.blade.php:33` — `image`
-- `resources/views/admin/branding/edit.blade.php:34` — `Logos`
-- `resources/views/admin/branding/edit.blade.php:36` — `text-sm opacity-70 mb-2`
-- `resources/views/admin/branding/edit.blade.php:37` — `Diese Logos erscheinen im Webinterface, in PDFs und auf der Login-Seite.`
-- `resources/views/admin/branding/edit.blade.php:43` — `type`
-- `resources/views/admin/branding/edit.blade.php:43` — `organization', 'id`
-- `resources/views/admin/branding/edit.blade.php:44` — `type`
-- `resources/views/admin/branding/edit.blade.php:44` — `organization', 'id`
-- `resources/views/admin/branding/edit.blade.php:44` — `meta`
-- `resources/views/admin/branding/edit.blade.php:44` — `logo`
-- `resources/views/admin/branding/edit.blade.php:52` — `type`
-- `resources/views/admin/branding/edit.blade.php:52` — `organization', 'id`
-- `resources/views/admin/branding/edit.blade.php:53` — `type`
-- `resources/views/admin/branding/edit.blade.php:53` — `organization', 'id`
-- `resources/views/admin/branding/edit.blade.php:53` — `meta`
-- `resources/views/admin/branding/edit.blade.php:64` — `space-y-6`
-- `resources/views/admin/branding/edit.blade.php:68` — `Stammdaten`
-- `resources/views/admin/branding/edit.blade.php:68` — `badge`
-- `resources/views/admin/branding/edit.blade.php:68` — `primary`
-- `resources/views/admin/branding/edit.blade.php:69` — `Anzeigename der App`
-- `resources/views/admin/branding/edit.blade.php:75` — `branding.slogan', '`
-- `resources/views/admin/branding/edit.blade.php:78` — `Kontakt`
-- `resources/views/admin/branding/edit.blade.php:78` — `ghost`
-- `resources/views/admin/branding/edit.blade.php:80` — `street`
-- `resources/views/admin/branding/edit.blade.php:80` — `Straße`
-- `resources/views/admin/branding/edit.blade.php:82` — `city`
-- `resources/views/admin/branding/edit.blade.php:82` — `Stadt`
-- `resources/views/admin/branding/edit.blade.php:83` — `country`
-- `resources/views/admin/branding/edit.blade.php:83` — `Land`
-- `resources/views/admin/branding/edit.blade.php:84` — `phone`
-- `resources/views/admin/branding/edit.blade.php:84` — `Telefon`
-- `resources/views/admin/branding/edit.blade.php:85` — `email`
-- `resources/views/admin/branding/edit.blade.php:85` — `E-Mail`
-- `resources/views/admin/branding/edit.blade.php:90` — `email' ? 'email`
-- `resources/views/admin/branding/edit.blade.php:90` — `web' ? 'url`
-- `resources/views/admin/branding/edit.blade.php:90` — `text`
-- `resources/views/admin/branding/edit.blade.php:95` — `gavel`
-- `resources/views/admin/branding/edit.blade.php:95` — `ghost`
-- `resources/views/admin/branding/edit.blade.php:97` — `USt-IdNr.`
-- `resources/views/admin/branding/edit.blade.php:98` — `Steuernummer`
-- `resources/views/admin/branding/edit.blade.php:99` — `Kontoinhaber`
-- `resources/views/admin/branding/edit.blade.php:100` — `Bank`
-- `resources/views/admin/branding/edit.blade.php:101` — `iban`
-- `resources/views/admin/branding/edit.blade.php:103` — `register`
-- `resources/views/admin/branding/edit.blade.php:103` — `Handelsregister`
-- `resources/views/admin/branding/edit.blade.php:107` — `text`
-- `resources/views/admin/branding/edit.blade.php:114` — `Farben`
-- `resources/views/admin/branding/edit.blade.php:114` — `palette`
-- `resources/views/admin/branding/edit.blade.php:114` — `ghost`
-- `resources/views/admin/branding/edit.blade.php:116` — `Primärfarbe`
-- `resources/views/admin/branding/edit.blade.php:117` — `color`
-- `resources/views/admin/branding/edit.blade.php:118` — `primary`
-- `resources/views/admin/branding/edit.blade.php:119` — `h-12 p-1`
-- `resources/views/admin/branding/edit.blade.php:121` — `Akzentfarbe`
-- `resources/views/admin/branding/edit.blade.php:122` — `color`
-- `resources/views/admin/branding/edit.blade.php:123` — `accent`
-- `resources/views/admin/branding/edit.blade.php:124` — `h-12 p-1`
-- `resources/views/admin/branding/edit.blade.php:127` — `PDF-Konfiguration je Dokumenttyp`
-- `resources/views/admin/branding/edit.blade.php:127` — `ghost`
-- `resources/views/admin/branding/edit.blade.php:131` — `Dokumenttyp`
-- `resources/views/admin/branding/edit.blade.php:132` — `Logo`
-- `resources/views/admin/branding/edit.blade.php:133` — `Kontakt im Header`
-- `resources/views/admin/branding/edit.blade.php:134` — `Fußzeile`
-- `resources/views/admin/branding/edit.blade.php:140` — `logo`
-- `resources/views/admin/branding/edit.blade.php:140` — `light`
-- `resources/views/admin/branding/edit.blade.php:145` — `font-medium`
-- `resources/views/admin/branding/edit.blade.php:148` — `select select-bordered select-sm`
-- `resources/views/admin/branding/edit.blade.php:149` — `light`
-- `resources/views/admin/branding/edit.blade.php:149` — `light`
-- `resources/views/admin/branding/edit.blade.php:149` — `Helle Variante`
-- `resources/views/admin/branding/edit.blade.php:150` — `dark`
-- `resources/views/admin/branding/edit.blade.php:150` — `dark`
-- `resources/views/admin/branding/edit.blade.php:150` — `Dunkle Variante`
-- `resources/views/admin/branding/edit.blade.php:151` — `none`
-- `resources/views/admin/branding/edit.blade.php:151` — `none`
-- `resources/views/admin/branding/edit.blade.php:151` — `Kein Logo`
-- `resources/views/admin/branding/edit.blade.php:155` — `checkbox`
-- `resources/views/admin/branding/edit.blade.php:155` — `toggle toggle-sm`
-- `resources/views/admin/branding/edit.blade.php:159` — `checkbox`
-- `resources/views/admin/branding/edit.blade.php:159` — `toggle toggle-sm`
-- `resources/views/admin/branding/edit.blade.php:167` — `flex justify-end gap-2`
-- `resources/views/admin/branding/edit.blade.php:168` — `submit`
-- `resources/views/admin/branding/edit.blade.php:168` — `primary`
-- `resources/views/admin/branding/edit.blade.php:168` — `save`
-- `resources/views/admin/branding/edit.blade.php:168` — `Speichern`
+- `resources/views/admin/branding/edit.blade.php:27` — `admin.document-design.index`
+- `resources/views/admin/branding/edit.blade.php:32` — `card bg-base-100 shadow`
+- `resources/views/admin/branding/edit.blade.php:33` — `card-body`
+- `resources/views/admin/branding/edit.blade.php:34` — `card-title`
+- `resources/views/admin/branding/edit.blade.php:35` — `image`
+- `resources/views/admin/branding/edit.blade.php:36` — `Logos`
+- `resources/views/admin/branding/edit.blade.php:38` — `text-sm opacity-70 mb-2`
+- `resources/views/admin/branding/edit.blade.php:39` — `Diese Logos erscheinen im Webinterface, in PDFs und auf der Login-Seite.`
+- `resources/views/admin/branding/edit.blade.php:45` — `type`
+- `resources/views/admin/branding/edit.blade.php:45` — `organization', 'id`
+- `resources/views/admin/branding/edit.blade.php:46` — `type`
+- `resources/views/admin/branding/edit.blade.php:46` — `organization', 'id`
+- `resources/views/admin/branding/edit.blade.php:46` — `meta`
+- `resources/views/admin/branding/edit.blade.php:46` — `logo`
+- `resources/views/admin/branding/edit.blade.php:54` — `type`
+- `resources/views/admin/branding/edit.blade.php:54` — `organization', 'id`
+- `resources/views/admin/branding/edit.blade.php:55` — `type`
+- `resources/views/admin/branding/edit.blade.php:55` — `organization', 'id`
+- `resources/views/admin/branding/edit.blade.php:55` — `meta`
+- `resources/views/admin/branding/edit.blade.php:66` — `space-y-6`
+- `resources/views/admin/branding/edit.blade.php:70` — `Stammdaten`
+- `resources/views/admin/branding/edit.blade.php:70` — `badge`
+- `resources/views/admin/branding/edit.blade.php:70` — `primary`
+- `resources/views/admin/branding/edit.blade.php:71` — `Anzeigename der App`
+- `resources/views/admin/branding/edit.blade.php:77` — `branding.slogan', '`
+- `resources/views/admin/branding/edit.blade.php:80` — `Kontakt`
+- `resources/views/admin/branding/edit.blade.php:80` — `ghost`
+- `resources/views/admin/branding/edit.blade.php:82` — `street`
+- `resources/views/admin/branding/edit.blade.php:82` — `Straße`
+- `resources/views/admin/branding/edit.blade.php:84` — `city`
+- `resources/views/admin/branding/edit.blade.php:84` — `Stadt`
+- `resources/views/admin/branding/edit.blade.php:85` — `country`
+- `resources/views/admin/branding/edit.blade.php:85` — `Land`
+- `resources/views/admin/branding/edit.blade.php:86` — `phone`
+- `resources/views/admin/branding/edit.blade.php:86` — `Telefon`
+- `resources/views/admin/branding/edit.blade.php:87` — `email`
+- `resources/views/admin/branding/edit.blade.php:87` — `E-Mail`
+- `resources/views/admin/branding/edit.blade.php:92` — `email' ? 'email`
+- `resources/views/admin/branding/edit.blade.php:92` — `web' ? 'url`
+- `resources/views/admin/branding/edit.blade.php:92` — `text`
+- `resources/views/admin/branding/edit.blade.php:97` — `gavel`
+- `resources/views/admin/branding/edit.blade.php:97` — `ghost`
+- `resources/views/admin/branding/edit.blade.php:99` — `USt-IdNr.`
+- `resources/views/admin/branding/edit.blade.php:100` — `Steuernummer`
+- `resources/views/admin/branding/edit.blade.php:101` — `Kontoinhaber`
+- `resources/views/admin/branding/edit.blade.php:102` — `Bank`
+- `resources/views/admin/branding/edit.blade.php:103` — `iban`
+- `resources/views/admin/branding/edit.blade.php:105` — `register`
+- `resources/views/admin/branding/edit.blade.php:105` — `Handelsregister`
+- `resources/views/admin/branding/edit.blade.php:109` — `text`
+- `resources/views/admin/branding/edit.blade.php:116` — `Farben`
+- `resources/views/admin/branding/edit.blade.php:116` — `palette`
+- `resources/views/admin/branding/edit.blade.php:116` — `ghost`
+- `resources/views/admin/branding/edit.blade.php:118` — `Primärfarbe`
+- `resources/views/admin/branding/edit.blade.php:119` — `color`
+- `resources/views/admin/branding/edit.blade.php:120` — `primary`
+- `resources/views/admin/branding/edit.blade.php:121` — `h-12 p-1`
+- `resources/views/admin/branding/edit.blade.php:123` — `Akzentfarbe`
+- `resources/views/admin/branding/edit.blade.php:124` — `color`
+- `resources/views/admin/branding/edit.blade.php:125` — `accent`
+- `resources/views/admin/branding/edit.blade.php:126` — `h-12 p-1`
+- `resources/views/admin/branding/edit.blade.php:129` — `PDF-Konfiguration je Dokumenttyp`
+- `resources/views/admin/branding/edit.blade.php:129` — `ghost`
+- `resources/views/admin/branding/edit.blade.php:133` — `Dokumenttyp`
+- `resources/views/admin/branding/edit.blade.php:134` — `Logo`
+- `resources/views/admin/branding/edit.blade.php:135` — `Kontakt im Header`
+- `resources/views/admin/branding/edit.blade.php:136` — `Fußzeile`
+- `resources/views/admin/branding/edit.blade.php:142` — `logo`
+- `resources/views/admin/branding/edit.blade.php:142` — `light`
+- `resources/views/admin/branding/edit.blade.php:147` — `font-medium`
+- `resources/views/admin/branding/edit.blade.php:150` — `select select-bordered select-sm`
+- `resources/views/admin/branding/edit.blade.php:151` — `light`
+- `resources/views/admin/branding/edit.blade.php:151` — `light`
+- `resources/views/admin/branding/edit.blade.php:151` — `Helle Variante`
+- `resources/views/admin/branding/edit.blade.php:152` — `dark`
+- `resources/views/admin/branding/edit.blade.php:152` — `dark`
+- `resources/views/admin/branding/edit.blade.php:152` — `Dunkle Variante`
+- `resources/views/admin/branding/edit.blade.php:153` — `none`
+- `resources/views/admin/branding/edit.blade.php:153` — `none`
+- `resources/views/admin/branding/edit.blade.php:153` — `Kein Logo`
+- `resources/views/admin/branding/edit.blade.php:157` — `checkbox`
+- `resources/views/admin/branding/edit.blade.php:157` — `toggle toggle-sm`
+- `resources/views/admin/branding/edit.blade.php:161` — `checkbox`
+- `resources/views/admin/branding/edit.blade.php:161` — `toggle toggle-sm`
+- `resources/views/admin/branding/edit.blade.php:171` — `flex items-center gap-2`
+- `resources/views/admin/branding/edit.blade.php:175` — `outline`
+- `resources/views/admin/branding/edit.blade.php:175` — `admin.document-design.index`
+- `resources/views/admin/branding/edit.blade.php:181` — `flex justify-end gap-2`
+- `resources/views/admin/branding/edit.blade.php:182` — `submit`
+- `resources/views/admin/branding/edit.blade.php:182` — `primary`
+- `resources/views/admin/branding/edit.blade.php:182` — `save`
+- `resources/views/admin/branding/edit.blade.php:182` — `Speichern`
 - `resources/views/admin/plugins/_field.blade.php:13` — `secret`
 - `resources/views/admin/plugins/_field.blade.php:13` — `type`
 - `resources/views/admin/plugins/_field.blade.php:13` — `password`
@@ -18275,33 +18391,51 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/finance/payment-runs/index.blade.php:21` — `clip`
 - `resources/views/finance/payment-runs/index.blade.php:23` — `primary`
 - `resources/views/finance/payment-runs/index.blade.php:24` — `finance.payment-runs.proposals`
-- `resources/views/finance/payment-runs/index.blade.php:37` — `flex`
-- `resources/views/finance/payment-runs/index.blade.php:37` — `true`
-- `resources/views/finance/payment-runs/index.blade.php:37` — `true`
-- `resources/views/finance/payment-runs/index.blade.php:37` — `client`
-- `resources/views/finance/payment-runs/index.blade.php:40` — `string`
-- `resources/views/finance/payment-runs/index.blade.php:41` — `string`
-- `resources/views/finance/payment-runs/index.blade.php:42` — `string`
-- `resources/views/finance/payment-runs/index.blade.php:43` — `date`
-- `resources/views/finance/payment-runs/index.blade.php:44` — `number`
-- `resources/views/finance/payment-runs/index.blade.php:44` — `right`
-- `resources/views/finance/payment-runs/index.blade.php:45` — `number`
-- `resources/views/finance/payment-runs/index.blade.php:45` — `right`
-- `resources/views/finance/payment-runs/index.blade.php:46` — `string`
-- `resources/views/finance/payment-runs/index.blade.php:47` — `text-right`
-- `resources/views/finance/payment-runs/index.blade.php:51` — `hover`
-- `resources/views/finance/payment-runs/index.blade.php:52` — `font-medium`
-- `resources/views/finance/payment-runs/index.blade.php:55` — `whitespace-nowrap`
-- `resources/views/finance/payment-runs/index.blade.php:56` — `text-right tabular-nums`
-- `resources/views/finance/payment-runs/index.blade.php:57` — `text-right tabular-nums`
-- `resources/views/finance/payment-runs/index.blade.php:58` — `success`
-- `resources/views/finance/payment-runs/index.blade.php:58` — `info`
-- `resources/views/finance/payment-runs/index.blade.php:58` — `neutral`
-- `resources/views/finance/payment-runs/index.blade.php:59` — `text-right`
-- `resources/views/finance/payment-runs/index.blade.php:60` — `flex justify-end gap-1`
-- `resources/views/finance/payment-runs/index.blade.php:61` — `visibility`
-- `resources/views/finance/payment-runs/index.blade.php:61` — `ghost`
-- `resources/views/finance/payment-runs/index.blade.php:62` — `finance.payment-runs.show`
+- `resources/views/finance/payment-runs/index.blade.php:40` — `mb-4`
+- `resources/views/finance/payment-runs/index.blade.php:41` — `mb-2 text-sm text-muted`
+- `resources/views/finance/payment-runs/index.blade.php:42` — `finance.payment-runs.direct-debit.store`
+- `resources/views/finance/payment-runs/index.blade.php:42` — `flex flex-wrap items-end gap-2`
+- `resources/views/finance/payment-runs/index.blade.php:44` — `select select-bordered select-sm`
+- `resources/views/finance/payment-runs/index.blade.php:49` — `mandate`
+- `resources/views/finance/payment-runs/index.blade.php:49` — `select select-bordered select-sm`
+- `resources/views/finance/payment-runs/index.blade.php:54` — `number`
+- `resources/views/finance/payment-runs/index.blade.php:54` — `amount`
+- `resources/views/finance/payment-runs/index.blade.php:56` — `input input-sm input-bordered`
+- `resources/views/finance/payment-runs/index.blade.php:57` — `text`
+- `resources/views/finance/payment-runs/index.blade.php:57` — `reference`
+- `resources/views/finance/payment-runs/index.blade.php:59` — `input input-sm input-bordered`
+- `resources/views/finance/payment-runs/index.blade.php:60` — `date`
+- `resources/views/finance/payment-runs/index.blade.php:61` — `input input-sm input-bordered`
+- `resources/views/finance/payment-runs/index.blade.php:62` — `bolt`
+- `resources/views/finance/payment-runs/index.blade.php:62` — `primary`
+- `resources/views/finance/payment-runs/index.blade.php:62` — `submit`
+- `resources/views/finance/payment-runs/index.blade.php:67` — `flex`
+- `resources/views/finance/payment-runs/index.blade.php:67` — `true`
+- `resources/views/finance/payment-runs/index.blade.php:67` — `true`
+- `resources/views/finance/payment-runs/index.blade.php:67` — `client`
+- `resources/views/finance/payment-runs/index.blade.php:70` — `string`
+- `resources/views/finance/payment-runs/index.blade.php:71` — `string`
+- `resources/views/finance/payment-runs/index.blade.php:72` — `string`
+- `resources/views/finance/payment-runs/index.blade.php:73` — `date`
+- `resources/views/finance/payment-runs/index.blade.php:74` — `number`
+- `resources/views/finance/payment-runs/index.blade.php:74` — `right`
+- `resources/views/finance/payment-runs/index.blade.php:75` — `number`
+- `resources/views/finance/payment-runs/index.blade.php:75` — `right`
+- `resources/views/finance/payment-runs/index.blade.php:76` — `string`
+- `resources/views/finance/payment-runs/index.blade.php:77` — `text-right`
+- `resources/views/finance/payment-runs/index.blade.php:81` — `hover`
+- `resources/views/finance/payment-runs/index.blade.php:82` — `font-medium`
+- `resources/views/finance/payment-runs/index.blade.php:85` — `whitespace-nowrap`
+- `resources/views/finance/payment-runs/index.blade.php:86` — `text-right tabular-nums`
+- `resources/views/finance/payment-runs/index.blade.php:87` — `text-right tabular-nums`
+- `resources/views/finance/payment-runs/index.blade.php:88` — `success`
+- `resources/views/finance/payment-runs/index.blade.php:88` — `info`
+- `resources/views/finance/payment-runs/index.blade.php:88` — `neutral`
+- `resources/views/finance/payment-runs/index.blade.php:89` — `text-right`
+- `resources/views/finance/payment-runs/index.blade.php:90` — `flex justify-end gap-1`
+- `resources/views/finance/payment-runs/index.blade.php:91` — `visibility`
+- `resources/views/finance/payment-runs/index.blade.php:91` — `ghost`
+- `resources/views/finance/payment-runs/index.blade.php:92` — `finance.payment-runs.show`
 - `resources/views/finance/payment-runs/show.blade.php:14` — `title`
 - `resources/views/finance/payment-runs/show.blade.php:15` — `nav-title`
 - `resources/views/finance/payment-runs/show.blade.php:17` — `content`
@@ -19007,6 +19141,7 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/work-schedules/_form_body.blade.php:69` — `primary`
 - `resources/views/work-schedules/_form_body.blade.php:71` — `overflow-x-auto`
 - `resources/views/work-schedules/_form_body.blade.php:72` — `table table-sm`
+- `resources/views/work-schedules/_form_body.blade.php:75` — `Wochentag`
 - `resources/views/work-schedules/_form_body.blade.php:76` — `Erfassung`
 - `resources/views/work-schedules/_form_body.blade.php:77` — `Vorgabe`
 - `resources/views/work-schedules/_form_body.blade.php:78` — `text-right`
@@ -19436,6 +19571,9 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/mail/timesheet-signature-requested.blade.php:10` — `Stundenzettel zur Gegenzeichnung`
 - `resources/views/mail/timesheet-signature-requested.blade.php:15` — `Stundenzettel öffnen`
 - `resources/views/mail/timesheet-signature-requested.blade.php:22` — `Danke!`
+- `resources/views/mail/learning-trainer-question.blade.php:10` — `course`
+- `resources/views/mail/learning-trainer-question.blade.php:12` — `name`
+- `resources/views/mail/learning-trainer-question.blade.php:12` — `course`
 - `resources/views/mail/portal-email-change-confirm.blade.php:10` — `Neue E-Mail-Adresse bestätigen`
 - `resources/views/mail/portal-email-change-confirm.blade.php:12` — `name`
 - `resources/views/mail/portal-email-change-confirm.blade.php:14` — `email`
@@ -19640,26 +19778,38 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/procedures/runs/show.blade.php:182` — `status`
 - `resources/views/procedures/runs/show.blade.php:182` — `failed`
 - `resources/views/procedures/runs/show.blade.php:182` — `btn btn-sm btn-outline btn-error`
-- `resources/views/procedures/runs/show.blade.php:186` — `applicable`
-- `resources/views/procedures/runs/show.blade.php:186` — `blockReason`
-- `resources/views/procedures/runs/show.blade.php:188` — `procedure-runs.steps.execute`
-- `resources/views/procedures/runs/show.blade.php:188` — `mt-3`
-- `resources/views/procedures/runs/show.blade.php:190` — `submit`
-- `resources/views/procedures/runs/show.blade.php:190` — `status`
-- `resources/views/procedures/runs/show.blade.php:190` — `btn btn-xs btn-ghost`
-- `resources/views/procedures/runs/show.blade.php:199` — `flex flex-wrap items-center justify-between gap-2 border-t border-base-300 pt-4`
-- `resources/views/procedures/runs/show.blade.php:200` — `procedure-runs.complete`
-- `resources/views/procedures/runs/show.blade.php:202` — `submit`
-- `resources/views/procedures/runs/show.blade.php:202` — `btn btn-sm btn-success`
-- `resources/views/procedures/runs/show.blade.php:207` — `dropdown dropdown-end`
-- `resources/views/procedures/runs/show.blade.php:208` — `btn btn-sm btn-ghost text-error`
-- `resources/views/procedures/runs/show.blade.php:209` — `procedure-runs.abort`
-- `resources/views/procedures/runs/show.blade.php:210` — `dropdown-content z-10 w-72 space-y-2 rounded-box border border-base-300 bg-base-100 p-3 shadow`
-- `resources/views/procedures/runs/show.blade.php:212` — `reason`
-- `resources/views/procedures/runs/show.blade.php:212` — `textarea textarea-bordered textarea-sm w-full`
-- `resources/views/procedures/runs/show.blade.php:214` — `submit`
-- `resources/views/procedures/runs/show.blade.php:214` — `btn btn-xs btn-error`
-- `resources/views/procedures/runs/show.blade.php:220` — `text-xs text-muted`
+- `resources/views/procedures/runs/show.blade.php:188` — `procedure-runs.steps.deviation`
+- `resources/views/procedures/runs/show.blade.php:188` — `mt-2 space-y-2 border-t border-base-300 pt-2`
+- `resources/views/procedures/runs/show.blade.php:190` — `text-xs text-muted`
+- `resources/views/procedures/runs/show.blade.php:191` — `flex flex-wrap gap-2`
+- `resources/views/procedures/runs/show.blade.php:192` — `select select-bordered select-sm`
+- `resources/views/procedures/runs/show.blade.php:197` — `severity`
+- `resources/views/procedures/runs/show.blade.php:197` — `select select-bordered select-sm`
+- `resources/views/procedures/runs/show.blade.php:203` — `select select-bordered select-sm`
+- `resources/views/procedures/runs/show.blade.php:211` — `textarea textarea-bordered textarea-sm w-full`
+- `resources/views/procedures/runs/show.blade.php:213` — `submit`
+- `resources/views/procedures/runs/show.blade.php:213` — `btn btn-sm btn-outline btn-warning`
+- `resources/views/procedures/runs/show.blade.php:214` — `alert`
+- `resources/views/procedures/runs/show.blade.php:218` — `applicable`
+- `resources/views/procedures/runs/show.blade.php:218` — `blockReason`
+- `resources/views/procedures/runs/show.blade.php:220` — `procedure-runs.steps.execute`
+- `resources/views/procedures/runs/show.blade.php:220` — `mt-3`
+- `resources/views/procedures/runs/show.blade.php:222` — `submit`
+- `resources/views/procedures/runs/show.blade.php:222` — `status`
+- `resources/views/procedures/runs/show.blade.php:222` — `btn btn-xs btn-ghost`
+- `resources/views/procedures/runs/show.blade.php:231` — `flex flex-wrap items-center justify-between gap-2 border-t border-base-300 pt-4`
+- `resources/views/procedures/runs/show.blade.php:232` — `procedure-runs.complete`
+- `resources/views/procedures/runs/show.blade.php:234` — `submit`
+- `resources/views/procedures/runs/show.blade.php:234` — `btn btn-sm btn-success`
+- `resources/views/procedures/runs/show.blade.php:239` — `dropdown dropdown-end`
+- `resources/views/procedures/runs/show.blade.php:240` — `btn btn-sm btn-ghost text-error`
+- `resources/views/procedures/runs/show.blade.php:241` — `procedure-runs.abort`
+- `resources/views/procedures/runs/show.blade.php:242` — `dropdown-content z-10 w-72 space-y-2 rounded-box border border-base-300 bg-base-100 p-3 shadow`
+- `resources/views/procedures/runs/show.blade.php:244` — `reason`
+- `resources/views/procedures/runs/show.blade.php:244` — `textarea textarea-bordered textarea-sm w-full`
+- `resources/views/procedures/runs/show.blade.php:246` — `submit`
+- `resources/views/procedures/runs/show.blade.php:246` — `btn btn-xs btn-error`
+- `resources/views/procedures/runs/show.blade.php:252` — `text-xs text-muted`
 - `resources/views/procedures/templates/edit.blade.php:16` — `title`
 - `resources/views/procedures/templates/edit.blade.php:17` — `nav-title`
 - `resources/views/procedures/templates/edit.blade.php:27` — `code`
@@ -34306,36 +34456,39 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/_blocks.blade.php:103` — `failed`
 - `resources/views/learning/_blocks.blade.php:103` — `error`
 - `resources/views/learning/_blocks.blade.php:105` — `video`
-- `resources/views/learning/_blocks.blade.php:106` — `w-full rounded-box border border-base-300`
-- `resources/views/learning/_blocks.blade.php:106` — `metadata`
-- `resources/views/learning/_blocks.blade.php:107` — `poster`
-- `resources/views/learning/_blocks.blade.php:107` — `poster`
-- `resources/views/learning/_blocks.blade.php:108` — `video`
-- `resources/views/learning/_blocks.blade.php:109` — `subtitles`
+- `resources/views/learning/_blocks.blade.php:108` — `w-full rounded-box border border-base-300`
+- `resources/views/learning/_blocks.blade.php:108` — `metadata`
+- `resources/views/learning/_blocks.blade.php:109` — `autoplay`
+- `resources/views/learning/_blocks.blade.php:110` — `lrn-video-`
+- `resources/views/learning/_blocks.blade.php:110` — `video`
+- `resources/views/learning/_blocks.blade.php:111` — `poster`
+- `resources/views/learning/_blocks.blade.php:111` — `poster`
+- `resources/views/learning/_blocks.blade.php:112` — `video`
 - `resources/views/learning/_blocks.blade.php:113` — `subtitles`
-- `resources/views/learning/_blocks.blade.php:113` — `locale`
-- `resources/views/learning/_blocks.blade.php:114` — `locale`
-- `resources/views/learning/_blocks.blade.php:114` — `machine`
-- `resources/views/learning/_blocks.blade.php:120` — `aspect-video w-full rounded-box border border-base-300`
-- `resources/views/learning/_blocks.blade.php:121` — `caption`
-- `resources/views/learning/_blocks.blade.php:122` — `no-referrer`
-- `resources/views/learning/_blocks.blade.php:124` — `alert alert-warning text-sm`
-- `resources/views/learning/_blocks.blade.php:124` — `status`
-- `resources/views/learning/_blocks.blade.php:125` — `movie`
-- `resources/views/learning/_blocks.blade.php:129` — `caption`
-- `resources/views/learning/_blocks.blade.php:130` — `mt-1 text-xs text-muted`
-- `resources/views/learning/_blocks.blade.php:130` — `caption`
-- `resources/views/learning/_blocks.blade.php:136` — `mt-3`
-- `resources/views/learning/_blocks.blade.php:137` — `aspect-video w-full rounded-box border border-base-300`
-- `resources/views/learning/_blocks.blade.php:138` — `caption`
-- `resources/views/learning/_blocks.blade.php:139` — `no-referrer`
-- `resources/views/learning/_blocks.blade.php:140` — `caption`
-- `resources/views/learning/_blocks.blade.php:141` — `mt-1 text-xs text-muted`
-- `resources/views/learning/_blocks.blade.php:141` — `caption`
-- `resources/views/learning/_blocks.blade.php:149` — `mt-3 text-sm`
-- `resources/views/learning/_blocks.blade.php:150` — `text-muted`
-- `resources/views/learning/_blocks.blade.php:151` — `link`
-- `resources/views/learning/_blocks.blade.php:152` — `caption`
+- `resources/views/learning/_blocks.blade.php:117` — `subtitles`
+- `resources/views/learning/_blocks.blade.php:117` — `locale`
+- `resources/views/learning/_blocks.blade.php:118` — `locale`
+- `resources/views/learning/_blocks.blade.php:118` — `machine`
+- `resources/views/learning/_blocks.blade.php:124` — `aspect-video w-full rounded-box border border-base-300`
+- `resources/views/learning/_blocks.blade.php:125` — `caption`
+- `resources/views/learning/_blocks.blade.php:126` — `no-referrer`
+- `resources/views/learning/_blocks.blade.php:128` — `alert alert-warning text-sm`
+- `resources/views/learning/_blocks.blade.php:128` — `status`
+- `resources/views/learning/_blocks.blade.php:129` — `movie`
+- `resources/views/learning/_blocks.blade.php:133` — `caption`
+- `resources/views/learning/_blocks.blade.php:134` — `mt-1 text-xs text-muted`
+- `resources/views/learning/_blocks.blade.php:134` — `caption`
+- `resources/views/learning/_blocks.blade.php:140` — `mt-3`
+- `resources/views/learning/_blocks.blade.php:141` — `aspect-video w-full rounded-box border border-base-300`
+- `resources/views/learning/_blocks.blade.php:142` — `caption`
+- `resources/views/learning/_blocks.blade.php:143` — `no-referrer`
+- `resources/views/learning/_blocks.blade.php:144` — `caption`
+- `resources/views/learning/_blocks.blade.php:145` — `mt-1 text-xs text-muted`
+- `resources/views/learning/_blocks.blade.php:145` — `caption`
+- `resources/views/learning/_blocks.blade.php:153` — `mt-3 text-sm`
+- `resources/views/learning/_blocks.blade.php:154` — `text-muted`
+- `resources/views/learning/_blocks.blade.php:155` — `link`
+- `resources/views/learning/_blocks.blade.php:156` — `caption`
 - `resources/views/learning/external/show.blade.php:14` — `title`
 - `resources/views/learning/external/show.blade.php:15` — `content`
 - `resources/views/learning/external/show.blade.php:16` — `w-full space-y-4`
@@ -34347,29 +34500,55 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/external/show.blade.php:32` — `alert alert-success text-sm`
 - `resources/views/learning/external/show.blade.php:33` — `verified`
 - `resources/views/learning/external/show.blade.php:40` — `mb-2 text-sm font-semibold`
-- `resources/views/learning/external/show.blade.php:48` — `flex flex-wrap items-start justify-between gap-3`
-- `resources/views/learning/external/show.blade.php:49` — `flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/external/show.blade.php:51` — `text-success`
-- `resources/views/learning/external/show.blade.php:51` — `text-muted`
-- `resources/views/learning/external/show.blade.php:58` — `primary`
-- `resources/views/learning/external/show.blade.php:58` — `submit`
-- `resources/views/learning/external/show.blade.php:64` — `type`
-- `resources/views/learning/external/show.blade.php:64` — `text`
-- `resources/views/learning/external/show.blade.php:64` — `text`
-- `resources/views/learning/external/show.blade.php:65` — `text`
-- `resources/views/learning/external/show.blade.php:66` — `type`
-- `resources/views/learning/external/show.blade.php:66` — `heading`
-- `resources/views/learning/external/show.blade.php:66` — `text`
-- `resources/views/learning/external/show.blade.php:67` — `mt-3 text-sm font-semibold`
-- `resources/views/learning/external/show.blade.php:67` — `text`
-- `resources/views/learning/external/show.blade.php:68` — `type`
-- `resources/views/learning/external/show.blade.php:68` — `checklist`
-- `resources/views/learning/external/show.blade.php:68` — `items`
-- `resources/views/learning/external/show.blade.php:70` — `items`
+- `resources/views/learning/external/show.blade.php:51` — `flex flex-wrap items-start justify-between gap-3`
+- `resources/views/learning/external/show.blade.php:52` — `flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/external/show.blade.php:54` — `text-success`
+- `resources/views/learning/external/show.blade.php:54` — `text-muted`
+- `resources/views/learning/external/show.blade.php:58` — `neutral`
+- `resources/views/learning/external/show.blade.php:58` — `date`
+- `resources/views/learning/external/show.blade.php:64` — `primary`
+- `resources/views/learning/external/show.blade.php:64` — `submit`
+- `resources/views/learning/external/show.blade.php:70` — `type`
+- `resources/views/learning/external/show.blade.php:70` — `text`
+- `resources/views/learning/external/show.blade.php:70` — `text`
+- `resources/views/learning/external/show.blade.php:71` — `text`
+- `resources/views/learning/external/show.blade.php:72` — `type`
+- `resources/views/learning/external/show.blade.php:72` — `heading`
+- `resources/views/learning/external/show.blade.php:72` — `text`
+- `resources/views/learning/external/show.blade.php:73` — `mt-3 text-sm font-semibold`
+- `resources/views/learning/external/show.blade.php:73` — `text`
+- `resources/views/learning/external/show.blade.php:74` — `type`
+- `resources/views/learning/external/show.blade.php:74` — `checklist`
+- `resources/views/learning/external/show.blade.php:74` — `items`
+- `resources/views/learning/external/show.blade.php:76` — `items`
 - `resources/views/learning/external/denied.blade.php:14` — `title`
 - `resources/views/learning/external/denied.blade.php:15` — `content`
 - `resources/views/learning/external/denied.blade.php:16` — `w-full`
 - `resources/views/learning/external/denied.blade.php:17` — `alert alert-warning text-sm`
+- `resources/views/learning/courses/_settings_dialog.blade.php:16` — `settings`
+- `resources/views/learning/courses/_settings_dialog.blade.php:17` — `primary`
+- `resources/views/learning/courses/_settings_dialog.blade.php:20` — `data-entry-form`
+- `resources/views/learning/courses/_settings_dialog.blade.php:23` — `badge`
+- `resources/views/learning/courses/_settings_dialog.blade.php:23` — `primary`
+- `resources/views/learning/courses/_settings_dialog.blade.php:28` — `stars`
+- `resources/views/learning/courses/_settings_dialog.blade.php:28` — `warning`
+- `resources/views/learning/courses/_settings_dialog.blade.php:35` — `category`
+- `resources/views/learning/courses/_settings_dialog.blade.php:35` — `info`
+- `resources/views/learning/courses/_settings_dialog.blade.php:36` — `categories`
+- `resources/views/learning/courses/_settings_dialog.blade.php:37` — `categories`
+- `resources/views/learning/courses/_settings_dialog.blade.php:40` — `public`
+- `resources/views/learning/courses/_settings_dialog.blade.php:40` — `neutral`
+- `resources/views/learning/courses/_question_form.blade.php:24` — `question`
+- `resources/views/learning/courses/_question_form.blade.php:24` — `lines`
+- `resources/views/learning/courses/_question_form.blade.php:24` — `categories`
+- `resources/views/learning/courses/_question_form.blade.php:25` — `mt-3 flex justify-end gap-2`
+- `resources/views/learning/courses/_question_form.blade.php:27` — `close`
+- `resources/views/learning/courses/_question_form.blade.php:27` — `ghost`
+- `resources/views/learning/courses/_question_form.blade.php:30` — `save`
+- `resources/views/learning/courses/_question_form.blade.php:30` — `primary`
+- `resources/views/learning/courses/_question_form.blade.php:30` — `submit`
+- `resources/views/learning/courses/_question_form.blade.php:32` — `primary`
+- `resources/views/learning/courses/_question_form.blade.php:32` — `submit`
 - `resources/views/learning/courses/unit_editor.blade.php:15` — `title`
 - `resources/views/learning/courses/unit_editor.blade.php:16` — `nav-title`
 - `resources/views/learning/courses/unit_editor.blade.php:17` — `content`
@@ -34414,131 +34593,147 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/courses/unit_editor.blade.php:103` — `caption`
 - `resources/views/learning/courses/unit_editor.blade.php:103` — `caption`
 - `resources/views/learning/courses/unit_editor.blade.php:106` — `number`
-- `resources/views/learning/courses/unit_editor.blade.php:111` — `label`
-- `resources/views/learning/courses/unit_editor.blade.php:111` — `block-media`
-- `resources/views/learning/courses/unit_editor.blade.php:111` — `label-text`
-- `resources/views/learning/courses/unit_editor.blade.php:112` — `file`
-- `resources/views/learning/courses/unit_editor.blade.php:112` — `block-media`
-- `resources/views/learning/courses/unit_editor.blade.php:112` — `media`
-- `resources/views/learning/courses/unit_editor.blade.php:113` — `file-input file-input-bordered file-input-sm w-full`
-- `resources/views/learning/courses/unit_editor.blade.php:114` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:117` — `mt-3 flex justify-end`
-- `resources/views/learning/courses/unit_editor.blade.php:118` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:118` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:121` — `mt-2 text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:125` — `space-y-4`
-- `resources/views/learning/courses/unit_editor.blade.php:127` — `mb-3 text-sm font-semibold`
-- `resources/views/learning/courses/unit_editor.blade.php:131` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:132` — `title`
-- `resources/views/learning/courses/unit_editor.blade.php:132` — `title`
-- `resources/views/learning/courses/unit_editor.blade.php:133` — `number`
-- `resources/views/learning/courses/unit_editor.blade.php:134` — `points`
-- `resources/views/learning/courses/unit_editor.blade.php:134` — `number`
-- `resources/views/learning/courses/unit_editor.blade.php:134` — `points`
+- `resources/views/learning/courses/unit_editor.blade.php:108` — `autoplay`
+- `resources/views/learning/courses/unit_editor.blade.php:108` — `autoplay`
+- `resources/views/learning/courses/unit_editor.blade.php:113` — `label`
+- `resources/views/learning/courses/unit_editor.blade.php:113` — `block-media`
+- `resources/views/learning/courses/unit_editor.blade.php:113` — `label-text`
+- `resources/views/learning/courses/unit_editor.blade.php:114` — `file`
+- `resources/views/learning/courses/unit_editor.blade.php:114` — `block-media`
+- `resources/views/learning/courses/unit_editor.blade.php:114` — `media`
+- `resources/views/learning/courses/unit_editor.blade.php:115` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/courses/unit_editor.blade.php:116` — `mt-1 text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:119` — `mt-3 flex justify-end`
+- `resources/views/learning/courses/unit_editor.blade.php:120` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:120` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:123` — `mt-2 text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:127` — `space-y-4`
+- `resources/views/learning/courses/unit_editor.blade.php:129` — `mb-3 text-sm font-semibold`
+- `resources/views/learning/courses/unit_editor.blade.php:133` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:134` — `title`
+- `resources/views/learning/courses/unit_editor.blade.php:134` — `title`
 - `resources/views/learning/courses/unit_editor.blade.php:135` — `number`
-- `resources/views/learning/courses/unit_editor.blade.php:141` — `mt-3 flex justify-end`
-- `resources/views/learning/courses/unit_editor.blade.php:142` — `save`
-- `resources/views/learning/courses/unit_editor.blade.php:142` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:142` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:156` — `mb-2 text-sm font-semibold`
-- `resources/views/learning/courses/unit_editor.blade.php:159` — `mb-3 rounded-box border border-base-300 p-3`
-- `resources/views/learning/courses/unit_editor.blade.php:160` — `flex flex-wrap items-center justify-between gap-2`
-- `resources/views/learning/courses/unit_editor.blade.php:161` — `truncate text-sm`
-- `resources/views/learning/courses/unit_editor.blade.php:168` — `mt-1 text-xs text-error`
-- `resources/views/learning/courses/unit_editor.blade.php:172` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:178` — `mt-2 flex flex-wrap items-end gap-2`
-- `resources/views/learning/courses/unit_editor.blade.php:182` — `label`
-- `resources/views/learning/courses/unit_editor.blade.php:182` — `label-text`
-- `resources/views/learning/courses/unit_editor.blade.php:183` — `select select-bordered select-sm`
-- `resources/views/learning/courses/unit_editor.blade.php:183` — `locale`
-- `resources/views/learning/courses/unit_editor.blade.php:189` — `grow`
-- `resources/views/learning/courses/unit_editor.blade.php:190` — `label`
-- `resources/views/learning/courses/unit_editor.blade.php:190` — `label-text`
-- `resources/views/learning/courses/unit_editor.blade.php:191` — `file`
-- `resources/views/learning/courses/unit_editor.blade.php:192` — `file-input file-input-bordered file-input-sm w-full`
-- `resources/views/learning/courses/unit_editor.blade.php:194` — `subtitles`
-- `resources/views/learning/courses/unit_editor.blade.php:194` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:194` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:197` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:203` — `mt-2 flex flex-wrap items-end gap-2`
-- `resources/views/learning/courses/unit_editor.blade.php:207` — `label`
-- `resources/views/learning/courses/unit_editor.blade.php:207` — `label-text`
-- `resources/views/learning/courses/unit_editor.blade.php:208` — `select select-bordered select-sm`
-- `resources/views/learning/courses/unit_editor.blade.php:208` — `locale`
-- `resources/views/learning/courses/unit_editor.blade.php:214` — `ghost`
-- `resources/views/learning/courses/unit_editor.blade.php:214` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:217` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:222` — `mt-3 space-y-1`
-- `resources/views/learning/courses/unit_editor.blade.php:224` — `flex flex-wrap items-center gap-2 rounded-box bg-base-200 px-2 py-1`
-- `resources/views/learning/courses/unit_editor.blade.php:225` — `font-mono text-xs`
-- `resources/views/learning/courses/unit_editor.blade.php:228` — `text-xs text-warning`
-- `resources/views/learning/courses/unit_editor.blade.php:230` — `text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:230` — `date`
-- `resources/views/learning/courses/unit_editor.blade.php:232` — `grow`
-- `resources/views/learning/courses/unit_editor.blade.php:236` — `done`
-- `resources/views/learning/courses/unit_editor.blade.php:236` — `ghost`
-- `resources/views/learning/courses/unit_editor.blade.php:236` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:243` — `delete`
-- `resources/views/learning/courses/unit_editor.blade.php:243` — `ghost`
-- `resources/views/learning/courses/unit_editor.blade.php:243` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:259` — `mb-2 text-sm font-semibold`
-- `resources/views/learning/courses/unit_editor.blade.php:265` — `font-mono text-xs`
-- `resources/views/learning/courses/unit_editor.blade.php:273` — `mt-3`
-- `resources/views/learning/courses/unit_editor.blade.php:275` — `label`
-- `resources/views/learning/courses/unit_editor.blade.php:275` — `scorm-package`
-- `resources/views/learning/courses/unit_editor.blade.php:275` — `label-text`
-- `resources/views/learning/courses/unit_editor.blade.php:276` — `file`
-- `resources/views/learning/courses/unit_editor.blade.php:276` — `scorm-package`
-- `resources/views/learning/courses/unit_editor.blade.php:276` — `package`
-- `resources/views/learning/courses/unit_editor.blade.php:277` — `file-input file-input-bordered file-input-sm w-full`
-- `resources/views/learning/courses/unit_editor.blade.php:278` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:279` — `mt-2 flex justify-end`
-- `resources/views/learning/courses/unit_editor.blade.php:280` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:280` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:290` — `mb-2 text-sm font-semibold`
-- `resources/views/learning/courses/unit_editor.blade.php:296` — `space-y-1`
-- `resources/views/learning/courses/unit_editor.blade.php:300` — `font-mono text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:312` — `mt-3`
-- `resources/views/learning/courses/unit_editor.blade.php:314` — `label`
-- `resources/views/learning/courses/unit_editor.blade.php:314` — `cmi5-package`
-- `resources/views/learning/courses/unit_editor.blade.php:314` — `label-text`
-- `resources/views/learning/courses/unit_editor.blade.php:315` — `file`
-- `resources/views/learning/courses/unit_editor.blade.php:315` — `cmi5-package`
-- `resources/views/learning/courses/unit_editor.blade.php:315` — `package`
-- `resources/views/learning/courses/unit_editor.blade.php:316` — `file-input file-input-bordered file-input-sm w-full`
-- `resources/views/learning/courses/unit_editor.blade.php:317` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:318` — `mt-2 flex justify-end`
-- `resources/views/learning/courses/unit_editor.blade.php:319` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:319` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:329` — `mb-2 text-sm font-semibold`
-- `resources/views/learning/courses/unit_editor.blade.php:335` — `break-all font-mono text-xs`
-- `resources/views/learning/courses/unit_editor.blade.php:337` — `mt-2 flex justify-end`
-- `resources/views/learning/courses/unit_editor.blade.php:340` — `error`
-- `resources/views/learning/courses/unit_editor.blade.php:340` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:347` — `mt-3 text-sm text-muted`
-- `resources/views/learning/courses/unit_editor.blade.php:349` — `learning.courses.units.lti.deep-linking`
-- `resources/views/learning/courses/unit_editor.blade.php:349` — `mt-3`
-- `resources/views/learning/courses/unit_editor.blade.php:351` — `tool`
-- `resources/views/learning/courses/unit_editor.blade.php:351` — `lti-select-tool`
-- `resources/views/learning/courses/unit_editor.blade.php:356` — `mt-2 flex justify-end`
-- `resources/views/learning/courses/unit_editor.blade.php:357` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:357` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:361` — `mt-4 space-y-2`
-- `resources/views/learning/courses/unit_editor.blade.php:363` — `tool`
-- `resources/views/learning/courses/unit_editor.blade.php:363` — `lti-manual-tool`
-- `resources/views/learning/courses/unit_editor.blade.php:368` — `title`
-- `resources/views/learning/courses/unit_editor.blade.php:368` — `lti-manual-title`
-- `resources/views/learning/courses/unit_editor.blade.php:368` — `title`
-- `resources/views/learning/courses/unit_editor.blade.php:369` — `lti-manual-url`
-- `resources/views/learning/courses/unit_editor.blade.php:370` — `custom`
-- `resources/views/learning/courses/unit_editor.blade.php:370` — `lti-manual-custom`
-- `resources/views/learning/courses/unit_editor.blade.php:370` — `custom`
-- `resources/views/learning/courses/unit_editor.blade.php:371` — `flex justify-end`
-- `resources/views/learning/courses/unit_editor.blade.php:372` — `link`
-- `resources/views/learning/courses/unit_editor.blade.php:372` — `primary`
-- `resources/views/learning/courses/unit_editor.blade.php:372` — `submit`
-- `resources/views/learning/courses/unit_editor.blade.php:380` — `mb-2 text-sm font-semibold`
-- `resources/views/learning/courses/unit_editor.blade.php:386` — `font-mono`
+- `resources/views/learning/courses/unit_editor.blade.php:136` — `points`
+- `resources/views/learning/courses/unit_editor.blade.php:136` — `number`
+- `resources/views/learning/courses/unit_editor.blade.php:136` — `points`
+- `resources/views/learning/courses/unit_editor.blade.php:137` — `number`
+- `resources/views/learning/courses/unit_editor.blade.php:141` — `date`
+- `resources/views/learning/courses/unit_editor.blade.php:144` — `number`
+- `resources/views/learning/courses/unit_editor.blade.php:150` — `mt-3 flex justify-end`
+- `resources/views/learning/courses/unit_editor.blade.php:151` — `save`
+- `resources/views/learning/courses/unit_editor.blade.php:151` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:151` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:165` — `mb-2 text-sm font-semibold`
+- `resources/views/learning/courses/unit_editor.blade.php:168` — `mb-3 rounded-box border border-base-300 p-3`
+- `resources/views/learning/courses/unit_editor.blade.php:169` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/learning/courses/unit_editor.blade.php:170` — `truncate text-sm`
+- `resources/views/learning/courses/unit_editor.blade.php:177` — `mt-1 text-xs text-error`
+- `resources/views/learning/courses/unit_editor.blade.php:181` — `mt-1 text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:187` — `mt-2 flex flex-wrap items-end gap-2`
+- `resources/views/learning/courses/unit_editor.blade.php:191` — `label`
+- `resources/views/learning/courses/unit_editor.blade.php:191` — `label-text`
+- `resources/views/learning/courses/unit_editor.blade.php:192` — `select select-bordered select-sm`
+- `resources/views/learning/courses/unit_editor.blade.php:192` — `locale`
+- `resources/views/learning/courses/unit_editor.blade.php:198` — `grow`
+- `resources/views/learning/courses/unit_editor.blade.php:199` — `label`
+- `resources/views/learning/courses/unit_editor.blade.php:199` — `label-text`
+- `resources/views/learning/courses/unit_editor.blade.php:200` — `file`
+- `resources/views/learning/courses/unit_editor.blade.php:201` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/courses/unit_editor.blade.php:203` — `subtitles`
+- `resources/views/learning/courses/unit_editor.blade.php:203` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:203` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:206` — `mt-1 text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:212` — `mt-2 flex flex-wrap items-end gap-2`
+- `resources/views/learning/courses/unit_editor.blade.php:216` — `label`
+- `resources/views/learning/courses/unit_editor.blade.php:216` — `label-text`
+- `resources/views/learning/courses/unit_editor.blade.php:217` — `select select-bordered select-sm`
+- `resources/views/learning/courses/unit_editor.blade.php:217` — `locale`
+- `resources/views/learning/courses/unit_editor.blade.php:223` — `ghost`
+- `resources/views/learning/courses/unit_editor.blade.php:223` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:226` — `mt-1 text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:231` — `mt-3 space-y-1`
+- `resources/views/learning/courses/unit_editor.blade.php:233` — `flex flex-wrap items-center gap-2 rounded-box bg-base-200 px-2 py-1`
+- `resources/views/learning/courses/unit_editor.blade.php:234` — `font-mono text-xs`
+- `resources/views/learning/courses/unit_editor.blade.php:237` — `text-xs text-warning`
+- `resources/views/learning/courses/unit_editor.blade.php:239` — `text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:239` — `date`
+- `resources/views/learning/courses/unit_editor.blade.php:241` — `grow`
+- `resources/views/learning/courses/unit_editor.blade.php:245` — `done`
+- `resources/views/learning/courses/unit_editor.blade.php:245` — `ghost`
+- `resources/views/learning/courses/unit_editor.blade.php:245` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:252` — `delete`
+- `resources/views/learning/courses/unit_editor.blade.php:252` — `ghost`
+- `resources/views/learning/courses/unit_editor.blade.php:252` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:268` — `mb-2 text-sm font-semibold`
+- `resources/views/learning/courses/unit_editor.blade.php:274` — `font-mono text-xs`
+- `resources/views/learning/courses/unit_editor.blade.php:282` — `mt-3`
+- `resources/views/learning/courses/unit_editor.blade.php:284` — `label`
+- `resources/views/learning/courses/unit_editor.blade.php:284` — `scorm-package`
+- `resources/views/learning/courses/unit_editor.blade.php:284` — `label-text`
+- `resources/views/learning/courses/unit_editor.blade.php:285` — `file`
+- `resources/views/learning/courses/unit_editor.blade.php:285` — `scorm-package`
+- `resources/views/learning/courses/unit_editor.blade.php:285` — `package`
+- `resources/views/learning/courses/unit_editor.blade.php:286` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/courses/unit_editor.blade.php:287` — `mt-1 text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:288` — `mt-2 flex justify-end`
+- `resources/views/learning/courses/unit_editor.blade.php:289` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:289` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:299` — `mb-2 text-sm font-semibold`
+- `resources/views/learning/courses/unit_editor.blade.php:305` — `space-y-1`
+- `resources/views/learning/courses/unit_editor.blade.php:309` — `font-mono text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:321` — `mt-3`
+- `resources/views/learning/courses/unit_editor.blade.php:323` — `label`
+- `resources/views/learning/courses/unit_editor.blade.php:323` — `cmi5-package`
+- `resources/views/learning/courses/unit_editor.blade.php:323` — `label-text`
+- `resources/views/learning/courses/unit_editor.blade.php:324` — `file`
+- `resources/views/learning/courses/unit_editor.blade.php:324` — `cmi5-package`
+- `resources/views/learning/courses/unit_editor.blade.php:324` — `package`
+- `resources/views/learning/courses/unit_editor.blade.php:325` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/courses/unit_editor.blade.php:326` — `mt-1 text-xs text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:327` — `mt-2 flex justify-end`
+- `resources/views/learning/courses/unit_editor.blade.php:328` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:328` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:338` — `mb-2 text-sm font-semibold`
+- `resources/views/learning/courses/unit_editor.blade.php:344` — `break-all font-mono text-xs`
+- `resources/views/learning/courses/unit_editor.blade.php:346` — `mt-2 flex justify-end`
+- `resources/views/learning/courses/unit_editor.blade.php:349` — `error`
+- `resources/views/learning/courses/unit_editor.blade.php:349` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:356` — `mt-3 text-sm text-muted`
+- `resources/views/learning/courses/unit_editor.blade.php:358` — `learning.courses.units.lti.deep-linking`
+- `resources/views/learning/courses/unit_editor.blade.php:358` — `mt-3`
+- `resources/views/learning/courses/unit_editor.blade.php:360` — `tool`
+- `resources/views/learning/courses/unit_editor.blade.php:360` — `lti-select-tool`
+- `resources/views/learning/courses/unit_editor.blade.php:365` — `mt-2 flex justify-end`
+- `resources/views/learning/courses/unit_editor.blade.php:366` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:366` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:370` — `mt-4 space-y-2`
+- `resources/views/learning/courses/unit_editor.blade.php:372` — `tool`
+- `resources/views/learning/courses/unit_editor.blade.php:372` — `lti-manual-tool`
+- `resources/views/learning/courses/unit_editor.blade.php:377` — `title`
+- `resources/views/learning/courses/unit_editor.blade.php:377` — `lti-manual-title`
+- `resources/views/learning/courses/unit_editor.blade.php:377` — `title`
+- `resources/views/learning/courses/unit_editor.blade.php:378` — `lti-manual-url`
+- `resources/views/learning/courses/unit_editor.blade.php:379` — `custom`
+- `resources/views/learning/courses/unit_editor.blade.php:379` — `lti-manual-custom`
+- `resources/views/learning/courses/unit_editor.blade.php:379` — `custom`
+- `resources/views/learning/courses/unit_editor.blade.php:380` — `flex justify-end`
+- `resources/views/learning/courses/unit_editor.blade.php:381` — `link`
+- `resources/views/learning/courses/unit_editor.blade.php:381` — `primary`
+- `resources/views/learning/courses/unit_editor.blade.php:381` — `submit`
+- `resources/views/learning/courses/unit_editor.blade.php:389` — `mb-2 text-sm font-semibold`
+- `resources/views/learning/courses/unit_editor.blade.php:395` — `font-mono`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:17` — `primary`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:18` — `wide`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:21` — `data-entry-form`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:25` — `quiz`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:27` — `mb-2 text-xs text-muted`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:28` — `max-h-96 space-y-1 overflow-y-auto`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:30` — `rounded-box border border-base-300 px-3 py-2`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:31` — `flex cursor-pointer items-start gap-2 text-sm`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:32` — `checkbox`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:32` — `checkbox checkbox-sm mt-0.5`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:34` — `font-medium`
+- `resources/views/learning/courses/_catalog_picker_dialog.blade.php:35` — `block text-xs text-muted`
 - `resources/views/learning/courses/_unit_dialog.blade.php:17` — `primary`
 - `resources/views/learning/courses/_unit_dialog.blade.php:20` — `data-entry-form`
 - `resources/views/learning/courses/_unit_dialog.blade.php:23` — `primary`
@@ -34570,11 +34765,13 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/courses/assignment_editor.blade.php:42` — `rubric`
 - `resources/views/learning/courses/assignment_editor.blade.php:44` — `rubric`
 - `resources/views/learning/courses/assignment_editor.blade.php:44` — `label`
-- `resources/views/learning/courses/assignment_editor.blade.php:48` — `mt-3 flex justify-end`
-- `resources/views/learning/courses/assignment_editor.blade.php:49` — `save`
-- `resources/views/learning/courses/assignment_editor.blade.php:49` — `primary`
-- `resources/views/learning/courses/assignment_editor.blade.php:49` — `submit`
-- `resources/views/learning/courses/assignment_editor.blade.php:52` — `mt-3 text-xs text-muted`
+- `resources/views/learning/courses/assignment_editor.blade.php:50` — `number`
+- `resources/views/learning/courses/assignment_editor.blade.php:51` — `number`
+- `resources/views/learning/courses/assignment_editor.blade.php:56` — `mt-3 flex justify-end`
+- `resources/views/learning/courses/assignment_editor.blade.php:57` — `save`
+- `resources/views/learning/courses/assignment_editor.blade.php:57` — `primary`
+- `resources/views/learning/courses/assignment_editor.blade.php:57` — `submit`
+- `resources/views/learning/courses/assignment_editor.blade.php:60` — `mt-3 text-xs text-muted`
 - `resources/views/learning/courses/_section_dialog.blade.php:14` — `segment`
 - `resources/views/learning/courses/_section_dialog.blade.php:15` — `primary`
 - `resources/views/learning/courses/_section_dialog.blade.php:18` — `data-entry-form`
@@ -34584,6 +34781,14 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/courses/_section_dialog.blade.php:22` — `title`
 - `resources/views/learning/courses/_section_dialog.blade.php:23` — `description`
 - `resources/views/learning/courses/_section_dialog.blade.php:23` — `description`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:17` — `primary`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:18` — `learning.courses.ai-outline`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:20` — `data-entry-form`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:23` — `primary`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:24` — `topic`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:25` — `topic`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:26` — `audience`
+- `resources/views/learning/courses/_ai_outline_dialog.blade.php:26` — `audience`
 - `resources/views/learning/courses/quiz_editor.blade.php:14` — `title`
 - `resources/views/learning/courses/quiz_editor.blade.php:15` — `nav-title`
 - `resources/views/learning/courses/quiz_editor.blade.php:16` — `content`
@@ -34591,98 +34796,203 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/courses/quiz_editor.blade.php:31` — `mb-3 flex items-center gap-2 text-sm font-semibold`
 - `resources/views/learning/courses/quiz_editor.blade.php:32` — `quiz`
 - `resources/views/learning/courses/quiz_editor.blade.php:32` — `text-muted`
-- `resources/views/learning/courses/quiz_editor.blade.php:36` — `mb-3 rounded-box border border-base-300 p-3`
+- `resources/views/learning/courses/quiz_editor.blade.php:36` — `border-primary`
+- `resources/views/learning/courses/quiz_editor.blade.php:36` — `border-base-300`
 - `resources/views/learning/courses/quiz_editor.blade.php:37` — `flex flex-wrap items-start justify-between gap-2`
 - `resources/views/learning/courses/quiz_editor.blade.php:39` — `text-sm font-medium`
 - `resources/views/learning/courses/quiz_editor.blade.php:40` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/quiz_editor.blade.php:47` — `delete`
-- `resources/views/learning/courses/quiz_editor.blade.php:47` — `ghost`
-- `resources/views/learning/courses/quiz_editor.blade.php:47` — `submit`
-- `resources/views/learning/courses/quiz_editor.blade.php:51` — `mt-2 space-y-1 text-sm`
-- `resources/views/learning/courses/quiz_editor.blade.php:53` — `flex items-center gap-2`
-- `resources/views/learning/courses/quiz_editor.blade.php:55` — `text-success`
-- `resources/views/learning/courses/quiz_editor.blade.php:55` — `text-muted`
-- `resources/views/learning/courses/quiz_editor.blade.php:63` — `quiz`
-- `resources/views/learning/courses/quiz_editor.blade.php:69` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/courses/quiz_editor.blade.php:70` — `text-muted`
-- `resources/views/learning/courses/quiz_editor.blade.php:75` — `help`
-- `resources/views/learning/courses/quiz_editor.blade.php:75` — `primary`
-- `resources/views/learning/courses/quiz_editor.blade.php:76` — `kind`
-- `resources/views/learning/courses/quiz_editor.blade.php:78` — `kind', 'single`
-- `resources/views/learning/courses/quiz_editor.blade.php:81` — `points`
-- `resources/views/learning/courses/quiz_editor.blade.php:81` — `number`
-- `resources/views/learning/courses/quiz_editor.blade.php:81` — `points`
-- `resources/views/learning/courses/quiz_editor.blade.php:82` — `prompt`
-- `resources/views/learning/courses/quiz_editor.blade.php:82` — `prompt`
-- `resources/views/learning/courses/quiz_editor.blade.php:83` — `options`
-- `resources/views/learning/courses/quiz_editor.blade.php:84` — `options`
-- `resources/views/learning/courses/quiz_editor.blade.php:85` — `explanation`
-- `resources/views/learning/courses/quiz_editor.blade.php:85` — `explanation`
-- `resources/views/learning/courses/quiz_editor.blade.php:91` — `label`
-- `resources/views/learning/courses/quiz_editor.blade.php:91` — `question-image`
-- `resources/views/learning/courses/quiz_editor.blade.php:91` — `label-text`
-- `resources/views/learning/courses/quiz_editor.blade.php:92` — `file`
-- `resources/views/learning/courses/quiz_editor.blade.php:92` — `question-image`
-- `resources/views/learning/courses/quiz_editor.blade.php:92` — `image`
-- `resources/views/learning/courses/quiz_editor.blade.php:93` — `file-input file-input-bordered file-input-sm w-full`
-- `resources/views/learning/courses/quiz_editor.blade.php:94` — `mt-1 text-xs text-muted`
-- `resources/views/learning/courses/quiz_editor.blade.php:97` — `mt-3 flex justify-end`
-- `resources/views/learning/courses/quiz_editor.blade.php:98` — `primary`
-- `resources/views/learning/courses/quiz_editor.blade.php:98` — `submit`
-- `resources/views/learning/courses/quiz_editor.blade.php:105` — `space-y-4`
-- `resources/views/learning/courses/quiz_editor.blade.php:107` — `mb-3 text-sm font-semibold`
-- `resources/views/learning/courses/quiz_editor.blade.php:111` — `quiz`
-- `resources/views/learning/courses/quiz_editor.blade.php:111` — `primary`
-- `resources/views/learning/courses/quiz_editor.blade.php:112` — `title`
-- `resources/views/learning/courses/quiz_editor.blade.php:112` — `title`
-- `resources/views/learning/courses/quiz_editor.blade.php:113` — `number`
-- `resources/views/learning/courses/quiz_editor.blade.php:114` — `number`
-- `resources/views/learning/courses/quiz_editor.blade.php:115` — `number`
-- `resources/views/learning/courses/quiz_editor.blade.php:116` — `number`
-- `resources/views/learning/courses/quiz_editor.blade.php:117` — `number`
-- `resources/views/learning/courses/quiz_editor.blade.php:127` — `mt-3 flex justify-end`
-- `resources/views/learning/courses/quiz_editor.blade.php:128` — `save`
-- `resources/views/learning/courses/quiz_editor.blade.php:128` — `primary`
-- `resources/views/learning/courses/quiz_editor.blade.php:128` — `submit`
-- `resources/views/learning/courses/quiz_editor.blade.php:131` — `mt-3 text-xs text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:47` — `flex items-center gap-1`
+- `resources/views/learning/courses/quiz_editor.blade.php:50` — `hidden`
+- `resources/views/learning/courses/quiz_editor.blade.php:50` — `direction`
+- `resources/views/learning/courses/quiz_editor.blade.php:51` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:51` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:55` — `hidden`
+- `resources/views/learning/courses/quiz_editor.blade.php:55` — `direction`
+- `resources/views/learning/courses/quiz_editor.blade.php:55` — `down`
+- `resources/views/learning/courses/quiz_editor.blade.php:56` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:56` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:58` — `edit`
+- `resources/views/learning/courses/quiz_editor.blade.php:58` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:63` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:63` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:69` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:69` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:74` — `mt-2 space-y-1 text-sm`
+- `resources/views/learning/courses/quiz_editor.blade.php:76` — `flex items-center gap-2`
+- `resources/views/learning/courses/quiz_editor.blade.php:78` — `text-success`
+- `resources/views/learning/courses/quiz_editor.blade.php:78` — `text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:86` — `quiz`
+- `resources/views/learning/courses/quiz_editor.blade.php:92` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/quiz_editor.blade.php:93` — `text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:95` — `flex flex-wrap items-center gap-2`
+- `resources/views/learning/courses/quiz_editor.blade.php:96` — `outline`
+- `resources/views/learning/courses/quiz_editor.blade.php:100` — `quiz`
+- `resources/views/learning/courses/quiz_editor.blade.php:100` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:104` — `insights`
+- `resources/views/learning/courses/quiz_editor.blade.php:104` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:112` — `mb-2 mt-4 text-xs font-semibold uppercase tracking-wide text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:114` — `mb-1 flex items-center justify-between gap-2 rounded-box border border-base-300 px-3 py-1.5 text-sm`
+- `resources/views/learning/courses/quiz_editor.blade.php:115` — `count`
+- `resources/views/learning/courses/quiz_editor.blade.php:115` — `category`
+- `resources/views/learning/courses/quiz_editor.blade.php:116` — `learning.courses.units.quiz.draw-rules.destroy`
+- `resources/views/learning/courses/quiz_editor.blade.php:119` — `delete`
+- `resources/views/learning/courses/quiz_editor.blade.php:119` — `ghost`
+- `resources/views/learning/courses/quiz_editor.blade.php:119` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:123` — `mb-2 text-xs text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:125` — `learning.courses.units.quiz.draw-rules.store`
+- `resources/views/learning/courses/quiz_editor.blade.php:125` — `mt-2 flex flex-wrap items-end gap-2`
+- `resources/views/learning/courses/quiz_editor.blade.php:127` — `w-48`
+- `resources/views/learning/courses/quiz_editor.blade.php:132` — `count`
+- `resources/views/learning/courses/quiz_editor.blade.php:132` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:132` — `count`
+- `resources/views/learning/courses/quiz_editor.blade.php:132` — `w-28`
+- `resources/views/learning/courses/quiz_editor.blade.php:133` — `outline`
+- `resources/views/learning/courses/quiz_editor.blade.php:133` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:140` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/quiz_editor.blade.php:141` — `text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:143` — `aiDraft`
+- `resources/views/learning/courses/quiz_editor.blade.php:144` — `label`
+- `resources/views/learning/courses/quiz_editor.blade.php:144` — `ai-draft`
+- `resources/views/learning/courses/quiz_editor.blade.php:144` — `label-text`
+- `resources/views/learning/courses/quiz_editor.blade.php:145` — `ai-draft`
+- `resources/views/learning/courses/quiz_editor.blade.php:145` — `textarea textarea-bordered w-full font-mono text-xs`
+- `resources/views/learning/courses/quiz_editor.blade.php:145` — `aiDraft`
+- `resources/views/learning/courses/quiz_editor.blade.php:147` — `learning.courses.units.quiz.ai-draft`
+- `resources/views/learning/courses/quiz_editor.blade.php:147` — `mt-3 flex flex-wrap items-end gap-2`
+- `resources/views/learning/courses/quiz_editor.blade.php:149` — `count`
+- `resources/views/learning/courses/quiz_editor.blade.php:149` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:149` — `count`
+- `resources/views/learning/courses/quiz_editor.blade.php:149` — `w-32`
+- `resources/views/learning/courses/quiz_editor.blade.php:150` — `outline`
+- `resources/views/learning/courses/quiz_editor.blade.php:150` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:152` — `mt-2 text-xs text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:161` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/quiz_editor.blade.php:162` — `edit`
+- `resources/views/learning/courses/quiz_editor.blade.php:162` — `text-muted`
+- `resources/views/learning/courses/quiz_editor.blade.php:166` — `course`
+- `resources/views/learning/courses/quiz_editor.blade.php:167` — `unit`
+- `resources/views/learning/courses/quiz_editor.blade.php:168` — `question`
+- `resources/views/learning/courses/quiz_editor.blade.php:169` — `lines`
+- `resources/views/learning/courses/quiz_editor.blade.php:170` — `categories`
+- `resources/views/learning/courses/quiz_editor.blade.php:176` — `space-y-4`
+- `resources/views/learning/courses/quiz_editor.blade.php:178` — `mb-3 text-sm font-semibold`
+- `resources/views/learning/courses/quiz_editor.blade.php:182` — `quiz`
+- `resources/views/learning/courses/quiz_editor.blade.php:182` — `primary`
+- `resources/views/learning/courses/quiz_editor.blade.php:183` — `title`
+- `resources/views/learning/courses/quiz_editor.blade.php:183` — `title`
+- `resources/views/learning/courses/quiz_editor.blade.php:184` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:185` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:186` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:187` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:188` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:189` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:190` — `number`
+- `resources/views/learning/courses/quiz_editor.blade.php:201` — `single`
+- `resources/views/learning/courses/quiz_editor.blade.php:201` — `single`
+- `resources/views/learning/courses/quiz_editor.blade.php:207` — `text`
+- `resources/views/learning/courses/quiz_editor.blade.php:212` — `mt-3 flex justify-end`
+- `resources/views/learning/courses/quiz_editor.blade.php:213` — `save`
+- `resources/views/learning/courses/quiz_editor.blade.php:213` — `primary`
+- `resources/views/learning/courses/quiz_editor.blade.php:213` — `submit`
+- `resources/views/learning/courses/quiz_editor.blade.php:216` — `mt-3 text-xs text-muted`
+- `resources/views/learning/courses/_question_fields.blade.php:18` — `help`
+- `resources/views/learning/courses/_question_fields.blade.php:18` — `primary`
+- `resources/views/learning/courses/_question_fields.blade.php:19` — `kind`
+- `resources/views/learning/courses/_question_fields.blade.php:21` — `kind`
+- `resources/views/learning/courses/_question_fields.blade.php:21` — `single`
+- `resources/views/learning/courses/_question_fields.blade.php:24` — `points`
+- `resources/views/learning/courses/_question_fields.blade.php:24` — `number`
+- `resources/views/learning/courses/_question_fields.blade.php:24` — `points`
+- `resources/views/learning/courses/_question_fields.blade.php:25` — `title`
+- `resources/views/learning/courses/_question_fields.blade.php:25` — `title`
+- `resources/views/learning/courses/_question_fields.blade.php:32` — `prompt`
+- `resources/views/learning/courses/_question_fields.blade.php:32` — `prompt`
+- `resources/views/learning/courses/_question_fields.blade.php:33` — `options`
+- `resources/views/learning/courses/_question_fields.blade.php:34` — `options`
+- `resources/views/learning/courses/_question_fields.blade.php:35` — `explanation`
+- `resources/views/learning/courses/_question_fields.blade.php:35` — `explanation`
+- `resources/views/learning/courses/_question_fields.blade.php:36` — `hint`
+- `resources/views/learning/courses/_question_fields.blade.php:36` — `hint`
+- `resources/views/learning/courses/_question_fields.blade.php:36` — `hint`
+- `resources/views/learning/courses/_question_fields.blade.php:43` — `text', 'upload', 'both`
+- `resources/views/learning/courses/_question_fields.blade.php:44` — `text`
+- `resources/views/learning/courses/_question_fields.blade.php:49` — `label`
+- `resources/views/learning/courses/_question_fields.blade.php:49` — `question-image`
+- `resources/views/learning/courses/_question_fields.blade.php:49` — `label-text`
+- `resources/views/learning/courses/_question_fields.blade.php:50` — `file`
+- `resources/views/learning/courses/_question_fields.blade.php:50` — `question-image`
+- `resources/views/learning/courses/_question_fields.blade.php:50` — `image`
+- `resources/views/learning/courses/_question_fields.blade.php:51` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/courses/_question_fields.blade.php:52` — `mt-1 text-xs text-muted`
 - `resources/views/learning/courses/index.blade.php:13` — `title`
 - `resources/views/learning/courses/index.blade.php:14` — `nav-title`
 - `resources/views/learning/courses/index.blade.php:15` — `wrapper-height-class', 'wd-page-fill`
 - `resources/views/learning/courses/index.blade.php:16` — `main-class', `
 - `resources/views/learning/courses/index.blade.php:17` — `content`
 - `resources/views/learning/courses/index.blade.php:18` — `clip`
+- `resources/views/learning/courses/index.blade.php:22` — `settings`
 - `resources/views/learning/courses/index.blade.php:22` — `ghost`
-- `resources/views/learning/courses/index.blade.php:23` — `learning.lti-registrations.index`
-- `resources/views/learning/courses/index.blade.php:27` — `primary`
-- `resources/views/learning/courses/index.blade.php:35` — `flt-released-count`
-- `resources/views/learning/courses/index.blade.php:36` — `flt-released-count`
-- `resources/views/learning/courses/index.blade.php:36` — `badge badge-ghost badge-sm`
-- `resources/views/learning/courses/index.blade.php:38` — `flt-status`
-- `resources/views/learning/courses/index.blade.php:39` — `flt-status`
-- `resources/views/learning/courses/index.blade.php:39` — `status`
-- `resources/views/learning/courses/index.blade.php:39` — `select select-sm select-bordered`
-- `resources/views/learning/courses/index.blade.php:48` — `flex`
-- `resources/views/learning/courses/index.blade.php:48` — `client`
-- `resources/views/learning/courses/index.blade.php:51` — `string`
-- `resources/views/learning/courses/index.blade.php:52` — `string`
-- `resources/views/learning/courses/index.blade.php:53` — `string`
-- `resources/views/learning/courses/index.blade.php:54` — `string`
-- `resources/views/learning/courses/index.blade.php:55` — `number`
-- `resources/views/learning/courses/index.blade.php:55` — `center`
-- `resources/views/learning/courses/index.blade.php:56` — `number`
-- `resources/views/learning/courses/index.blade.php:56` — `center`
-- `resources/views/learning/courses/index.blade.php:61` — `hover`
-- `resources/views/learning/courses/index.blade.php:62` — `font-medium`
-- `resources/views/learning/courses/index.blade.php:63` — `link link-hover`
-- `resources/views/learning/courses/index.blade.php:65` — `info`
-- `resources/views/learning/courses/index.blade.php:68` — `text-sm`
-- `resources/views/learning/courses/index.blade.php:71` — `text-sm`
-- `resources/views/learning/courses/index.blade.php:75` — `text-center text-sm`
-- `resources/views/learning/courses/index.blade.php:76` — `text-center text-sm`
-- `resources/views/learning/courses/index.blade.php:77` — `text-right`
-- `resources/views/learning/courses/index.blade.php:78` — `flex justify-end gap-1`
-- `resources/views/learning/courses/index.blade.php:79` — `visibility`
-- `resources/views/learning/courses/index.blade.php:84` — `school`
+- `resources/views/learning/courses/index.blade.php:26` — `ghost`
+- `resources/views/learning/courses/index.blade.php:27` — `learning.lti-registrations.index`
+- `resources/views/learning/courses/index.blade.php:31` — `tiles' ? `
+- `resources/views/learning/courses/index.blade.php:31` — `ghost`
+- `resources/views/learning/courses/index.blade.php:32` — `view`
+- `resources/views/learning/courses/index.blade.php:32` — `tiles' ? 'list`
+- `resources/views/learning/courses/index.blade.php:32` — `tiles`
+- `resources/views/learning/courses/index.blade.php:33` — `tiles`
+- `resources/views/learning/courses/index.blade.php:35` — `ghost`
+- `resources/views/learning/courses/index.blade.php:37` — `learning.courses.import-learndash.create`
+- `resources/views/learning/courses/index.blade.php:39` — `primary`
+- `resources/views/learning/courses/index.blade.php:47` — `flt-released-count`
+- `resources/views/learning/courses/index.blade.php:48` — `flt-released-count`
+- `resources/views/learning/courses/index.blade.php:48` — `badge badge-ghost badge-sm`
+- `resources/views/learning/courses/index.blade.php:50` — `flt-kind`
+- `resources/views/learning/courses/index.blade.php:51` — `flt-kind`
+- `resources/views/learning/courses/index.blade.php:51` — `kind`
+- `resources/views/learning/courses/index.blade.php:51` — `select select-sm select-bordered`
+- `resources/views/learning/courses/index.blade.php:59` — `flt-category`
+- `resources/views/learning/courses/index.blade.php:60` — `flt-category`
+- `resources/views/learning/courses/index.blade.php:60` — `category`
+- `resources/views/learning/courses/index.blade.php:60` — `select select-sm select-bordered`
+- `resources/views/learning/courses/index.blade.php:68` — `flt-status`
+- `resources/views/learning/courses/index.blade.php:69` — `flt-status`
+- `resources/views/learning/courses/index.blade.php:69` — `status`
+- `resources/views/learning/courses/index.blade.php:69` — `select select-sm select-bordered`
+- `resources/views/learning/courses/index.blade.php:78` — `tiles`
+- `resources/views/learning/courses/index.blade.php:82` — `flex items-start justify-between gap-2`
+- `resources/views/learning/courses/index.blade.php:83` — `link link-hover font-medium`
+- `resources/views/learning/courses/index.blade.php:87` — `mt-1 text-sm text-muted`
+- `resources/views/learning/courses/index.blade.php:89` — `mt-2 flex flex-wrap items-center gap-2 text-xs text-muted`
+- `resources/views/learning/courses/index.blade.php:94` — `count`
+- `resources/views/learning/courses/index.blade.php:94` — `count`
+- `resources/views/learning/courses/index.blade.php:94` — `average`
+- `resources/views/learning/courses/index.blade.php:99` — `school`
+- `resources/views/learning/courses/index.blade.php:104` — `flex`
+- `resources/views/learning/courses/index.blade.php:104` — `client`
+- `resources/views/learning/courses/index.blade.php:107` — `string`
+- `resources/views/learning/courses/index.blade.php:108` — `string`
+- `resources/views/learning/courses/index.blade.php:109` — `string`
+- `resources/views/learning/courses/index.blade.php:110` — `string`
+- `resources/views/learning/courses/index.blade.php:111` — `number`
+- `resources/views/learning/courses/index.blade.php:111` — `center`
+- `resources/views/learning/courses/index.blade.php:112` — `number`
+- `resources/views/learning/courses/index.blade.php:112` — `center`
+- `resources/views/learning/courses/index.blade.php:117` — `hover`
+- `resources/views/learning/courses/index.blade.php:118` — `font-medium`
+- `resources/views/learning/courses/index.blade.php:119` — `link link-hover`
+- `resources/views/learning/courses/index.blade.php:121` — `info`
+- `resources/views/learning/courses/index.blade.php:127` — `ml-1 text-xs text-muted`
+- `resources/views/learning/courses/index.blade.php:127` — `count`
+- `resources/views/learning/courses/index.blade.php:127` — `count`
+- `resources/views/learning/courses/index.blade.php:127` — `average`
+- `resources/views/learning/courses/index.blade.php:130` — `text-sm`
+- `resources/views/learning/courses/index.blade.php:133` — `text-sm`
+- `resources/views/learning/courses/index.blade.php:137` — `text-center text-sm`
+- `resources/views/learning/courses/index.blade.php:138` — `text-center text-sm`
+- `resources/views/learning/courses/index.blade.php:139` — `text-right`
+- `resources/views/learning/courses/index.blade.php:140` — `flex justify-end gap-1`
+- `resources/views/learning/courses/index.blade.php:141` — `visibility`
+- `resources/views/learning/courses/index.blade.php:146` — `school`
 - `resources/views/learning/courses/_form_dialog.blade.php:15` — `audiences`
 - `resources/views/learning/courses/_form_dialog.blade.php:21` — `school`
 - `resources/views/learning/courses/_form_dialog.blade.php:22` — `primary`
@@ -34702,108 +35012,231 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/courses/_form_dialog.blade.php:36` — `objectives`
 - `resources/views/learning/courses/_form_dialog.blade.php:37` — `number`
 - `resources/views/learning/courses/_form_dialog.blade.php:38` — `number`
-- `resources/views/learning/courses/_form_dialog.blade.php:41` — `group`
-- `resources/views/learning/courses/_form_dialog.blade.php:41` — `info`
-- `resources/views/learning/courses/_form_dialog.blade.php:44` — `enrolled`
-- `resources/views/learning/courses/_form_dialog.blade.php:65` — `audience-`
-- `resources/views/learning/courses/_form_dialog.blade.php:66` — `false`
-- `resources/views/learning/courses/_form_dialog.blade.php:66` — `false`
-- `resources/views/learning/courses/_form_dialog.blade.php:73` — `schedule`
-- `resources/views/learning/courses/_form_dialog.blade.php:73` — `warning`
-- `resources/views/learning/courses/_form_dialog.blade.php:81` — `supplementary`
-- `resources/views/learning/courses/_form_dialog.blade.php:84` — `points`
-- `resources/views/learning/courses/_form_dialog.blade.php:84` — `number`
-- `resources/views/learning/courses/_form_dialog.blade.php:84` — `points`
-- `resources/views/learning/courses/_form_dialog.blade.php:85` — `number`
-- `resources/views/learning/courses/_form_dialog.blade.php:87` — `sequential`
-- `resources/views/learning/courses/_form_dialog.blade.php:87` — `sequential`
+- `resources/views/learning/courses/_form_dialog.blade.php:49` — `success`
+- `resources/views/learning/courses/_form_dialog.blade.php:50` — `date`
+- `resources/views/learning/courses/_form_dialog.blade.php:50` — `Y-m-d`
+- `resources/views/learning/courses/_form_dialog.blade.php:51` — `date`
+- `resources/views/learning/courses/_form_dialog.blade.php:51` — `Y-m-d`
+- `resources/views/learning/courses/_form_dialog.blade.php:52` — `number`
+- `resources/views/learning/courses/_form_dialog.blade.php:57` — `rule`
+- `resources/views/learning/courses/_form_dialog.blade.php:57` — `neutral`
+- `resources/views/learning/courses/_form_dialog.blade.php:59` — `kind`
+- `resources/views/learning/courses/_form_dialog.blade.php:61` — `kind', 'course`
+- `resources/views/learning/courses/_form_dialog.blade.php:81` — `label-text`
+- `resources/views/learning/courses/_form_dialog.blade.php:82` — `mb-1 text-xs text-muted`
+- `resources/views/learning/courses/_form_dialog.blade.php:85` — `prereq-`
+- `resources/views/learning/courses/_form_dialog.blade.php:86` — `false`
+- `resources/views/learning/courses/_form_dialog.blade.php:86` — `false`
+- `resources/views/learning/courses/_form_dialog.blade.php:93` — `group`
+- `resources/views/learning/courses/_form_dialog.blade.php:93` — `info`
+- `resources/views/learning/courses/_form_dialog.blade.php:96` — `enrolled`
+- `resources/views/learning/courses/_form_dialog.blade.php:117` — `audience-`
+- `resources/views/learning/courses/_form_dialog.blade.php:118` — `false`
+- `resources/views/learning/courses/_form_dialog.blade.php:118` — `false`
+- `resources/views/learning/courses/_form_dialog.blade.php:125` — `schedule`
+- `resources/views/learning/courses/_form_dialog.blade.php:125` — `warning`
+- `resources/views/learning/courses/_form_dialog.blade.php:133` — `supplementary`
+- `resources/views/learning/courses/_form_dialog.blade.php:136` — `points`
+- `resources/views/learning/courses/_form_dialog.blade.php:136` — `number`
+- `resources/views/learning/courses/_form_dialog.blade.php:136` — `points`
+- `resources/views/learning/courses/_form_dialog.blade.php:137` — `number`
+- `resources/views/learning/courses/_form_dialog.blade.php:139` — `sequential`
+- `resources/views/learning/courses/_form_dialog.blade.php:139` — `sequential`
+- `resources/views/learning/courses/quiz_statistics.blade.php:14` — `title`
+- `resources/views/learning/courses/quiz_statistics.blade.php:15` — `nav-title`
+- `resources/views/learning/courses/quiz_statistics.blade.php:16` — `content`
+- `resources/views/learning/courses/quiz_statistics.blade.php:21` — `ghost`
+- `resources/views/learning/courses/quiz_statistics.blade.php:31` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/quiz_statistics.blade.php:32` — `history`
+- `resources/views/learning/courses/quiz_statistics.blade.php:32` — `text-muted`
+- `resources/views/learning/courses/quiz_statistics.blade.php:34` — `true`
+- `resources/views/learning/courses/quiz_statistics.blade.php:38` — `text-center`
+- `resources/views/learning/courses/quiz_statistics.blade.php:40` — `text-right`
+- `resources/views/learning/courses/quiz_statistics.blade.php:46` — `hover`
+- `resources/views/learning/courses/quiz_statistics.blade.php:48` — `text-center`
+- `resources/views/learning/courses/quiz_statistics.blade.php:49` — `text-sm`
+- `resources/views/learning/courses/quiz_statistics.blade.php:50` — `text-right font-mono text-sm`
+- `resources/views/learning/courses/quiz_statistics.blade.php:53` — `ghost`
+- `resources/views/learning/courses/quiz_statistics.blade.php:55` — `warning`
+- `resources/views/learning/courses/quiz_statistics.blade.php:57` — `success`
+- `resources/views/learning/courses/quiz_statistics.blade.php:59` — `error`
+- `resources/views/learning/courses/quiz_statistics.blade.php:62` — `text-right`
+- `resources/views/learning/courses/quiz_statistics.blade.php:63` — `visibility`
+- `resources/views/learning/courses/quiz_statistics.blade.php:63` — `ghost`
+- `resources/views/learning/courses/quiz_statistics.blade.php:69` — `history`
+- `resources/views/learning/courses/quiz_statistics.blade.php:72` — `false`
+- `resources/views/learning/courses/quiz_statistics.blade.php:76` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/quiz_statistics.blade.php:77` — `quiz`
+- `resources/views/learning/courses/quiz_statistics.blade.php:77` — `text-muted`
+- `resources/views/learning/courses/quiz_statistics.blade.php:79` — `mb-2 text-xs text-muted`
+- `resources/views/learning/courses/quiz_statistics.blade.php:79` — `count`
+- `resources/views/learning/courses/quiz_statistics.blade.php:80` — `true`
+- `resources/views/learning/courses/quiz_statistics.blade.php:84` — `text-right`
+- `resources/views/learning/courses/quiz_statistics.blade.php:85` — `text-right`
+- `resources/views/learning/courses/quiz_statistics.blade.php:88` — `questions`
+- `resources/views/learning/courses/quiz_statistics.blade.php:89` — `hover`
+- `resources/views/learning/courses/quiz_statistics.blade.php:90` — `text-sm`
+- `resources/views/learning/courses/quiz_statistics.blade.php:90` — `prompt`
+- `resources/views/learning/courses/quiz_statistics.blade.php:91` — `text-right text-sm`
+- `resources/views/learning/courses/quiz_statistics.blade.php:91` — `answered`
+- `resources/views/learning/courses/quiz_statistics.blade.php:92` — `text-right text-sm`
+- `resources/views/learning/courses/quiz_statistics.blade.php:95` — `quiz`
+- `resources/views/learning/courses/quiz_statistics.blade.php:101` — `space-y-4`
+- `resources/views/learning/courses/quiz_statistics.blade.php:103` — `mb-3 text-sm font-semibold`
+- `resources/views/learning/courses/quiz_statistics.blade.php:105` — `attempts`
+- `resources/views/learning/courses/quiz_statistics.blade.php:106` — `submitted`
 - `resources/views/learning/courses/show.blade.php:14` — `title`
 - `resources/views/learning/courses/show.blade.php:15` — `nav-title`
 - `resources/views/learning/courses/show.blade.php:16` — `content`
-- `resources/views/learning/courses/show.blade.php:24` — `primary`
-- `resources/views/learning/courses/show.blade.php:28` — `segment`
-- `resources/views/learning/courses/show.blade.php:28` — `outline`
-- `resources/views/learning/courses/show.blade.php:34` — `edit`
+- `resources/views/learning/courses/show.blade.php:24` — `outline`
+- `resources/views/learning/courses/show.blade.php:26` — `learning.courses.ai-outline.create`
+- `resources/views/learning/courses/show.blade.php:30` — `primary`
+- `resources/views/learning/courses/show.blade.php:34` — `segment`
 - `resources/views/learning/courses/show.blade.php:34` — `outline`
-- `resources/views/learning/courses/show.blade.php:39` — `ghost`
-- `resources/views/learning/courses/show.blade.php:49` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/courses/show.blade.php:50` — `list`
-- `resources/views/learning/courses/show.blade.php:50` — `text-muted`
-- `resources/views/learning/courses/show.blade.php:52` — `true`
-- `resources/views/learning/courses/show.blade.php:57` — `text-center`
-- `resources/views/learning/courses/show.blade.php:58` — `text-center`
-- `resources/views/learning/courses/show.blade.php:63` — `hover`
-- `resources/views/learning/courses/show.blade.php:64` — `font-medium`
-- `resources/views/learning/courses/show.blade.php:67` — `text-xs text-muted`
-- `resources/views/learning/courses/show.blade.php:70` — `ghost`
-- `resources/views/learning/courses/show.blade.php:73` — `text-sm`
-- `resources/views/learning/courses/show.blade.php:76` — `text-center text-sm`
-- `resources/views/learning/courses/show.blade.php:77` — `text-center text-sm`
-- `resources/views/learning/courses/show.blade.php:78` — `text-right`
-- `resources/views/learning/courses/show.blade.php:80` — `flex justify-end gap-1`
-- `resources/views/learning/courses/show.blade.php:82` — `quiz`
-- `resources/views/learning/courses/show.blade.php:82` — `ghost`
-- `resources/views/learning/courses/show.blade.php:87` — `assignment`
-- `resources/views/learning/courses/show.blade.php:87` — `ghost`
-- `resources/views/learning/courses/show.blade.php:94` — `ghost`
-- `resources/views/learning/courses/show.blade.php:95` — `learning.courses.units.attendance-list`
-- `resources/views/learning/courses/show.blade.php:98` — `ghost`
-- `resources/views/learning/courses/show.blade.php:112` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/courses/show.blade.php:113` — `text-muted`
-- `resources/views/learning/courses/show.blade.php:115` — `true`
-- `resources/views/learning/courses/show.blade.php:124` — `hover`
-- `resources/views/learning/courses/show.blade.php:125` — `font-mono text-sm`
-- `resources/views/learning/courses/show.blade.php:131` — `success`
-- `resources/views/learning/courses/show.blade.php:134` — `text-sm`
-- `resources/views/learning/courses/show.blade.php:146` — `space-y-4`
-- `resources/views/learning/courses/show.blade.php:148` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/courses/show.blade.php:149` — `info`
-- `resources/views/learning/courses/show.blade.php:149` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:40` — `edit`
+- `resources/views/learning/courses/show.blade.php:40` — `outline`
+- `resources/views/learning/courses/show.blade.php:45` — `create`
+- `resources/views/learning/courses/show.blade.php:49` — `outline`
+- `resources/views/learning/courses/show.blade.php:49` — `submit`
+- `resources/views/learning/courses/show.blade.php:53` — `grading`
+- `resources/views/learning/courses/show.blade.php:53` — `outline`
+- `resources/views/learning/courses/show.blade.php:57` — `ghost`
+- `resources/views/learning/courses/show.blade.php:67` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/show.blade.php:68` — `list`
+- `resources/views/learning/courses/show.blade.php:68` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:70` — `true`
+- `resources/views/learning/courses/show.blade.php:75` — `text-center`
+- `resources/views/learning/courses/show.blade.php:76` — `text-center`
+- `resources/views/learning/courses/show.blade.php:81` — `hover`
+- `resources/views/learning/courses/show.blade.php:82` — `font-medium`
+- `resources/views/learning/courses/show.blade.php:85` — `text-xs text-muted`
+- `resources/views/learning/courses/show.blade.php:88` — `ghost`
+- `resources/views/learning/courses/show.blade.php:91` — `info`
+- `resources/views/learning/courses/show.blade.php:94` — `text-sm`
+- `resources/views/learning/courses/show.blade.php:97` — `text-center text-sm`
+- `resources/views/learning/courses/show.blade.php:98` — `text-center text-sm`
+- `resources/views/learning/courses/show.blade.php:99` — `text-right`
+- `resources/views/learning/courses/show.blade.php:101` — `flex justify-end gap-1`
+- `resources/views/learning/courses/show.blade.php:103` — `quiz`
+- `resources/views/learning/courses/show.blade.php:103` — `ghost`
+- `resources/views/learning/courses/show.blade.php:108` — `assignment`
+- `resources/views/learning/courses/show.blade.php:108` — `ghost`
+- `resources/views/learning/courses/show.blade.php:115` — `ghost`
+- `resources/views/learning/courses/show.blade.php:116` — `learning.courses.units.attendance-list`
+- `resources/views/learning/courses/show.blade.php:119` — `ghost`
+- `resources/views/learning/courses/show.blade.php:124` — `hidden`
+- `resources/views/learning/courses/show.blade.php:124` — `direction`
+- `resources/views/learning/courses/show.blade.php:125` — `ghost`
+- `resources/views/learning/courses/show.blade.php:125` — `submit`
+- `resources/views/learning/courses/show.blade.php:129` — `hidden`
+- `resources/views/learning/courses/show.blade.php:129` — `direction`
+- `resources/views/learning/courses/show.blade.php:129` — `down`
+- `resources/views/learning/courses/show.blade.php:130` — `ghost`
+- `resources/views/learning/courses/show.blade.php:130` — `submit`
+- `resources/views/learning/courses/show.blade.php:144` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/show.blade.php:145` — `segment`
+- `resources/views/learning/courses/show.blade.php:145` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:147` — `space-y-1`
+- `resources/views/learning/courses/show.blade.php:149` — `flex items-center justify-between gap-2 rounded-box border border-base-300 px-3 py-1.5 text-sm`
+- `resources/views/learning/courses/show.blade.php:150` — `font-medium`
+- `resources/views/learning/courses/show.blade.php:151` — `flex items-center gap-1`
+- `resources/views/learning/courses/show.blade.php:154` — `hidden`
+- `resources/views/learning/courses/show.blade.php:154` — `direction`
+- `resources/views/learning/courses/show.blade.php:155` — `ghost`
+- `resources/views/learning/courses/show.blade.php:155` — `submit`
+- `resources/views/learning/courses/show.blade.php:159` — `hidden`
+- `resources/views/learning/courses/show.blade.php:159` — `direction`
+- `resources/views/learning/courses/show.blade.php:159` — `down`
+- `resources/views/learning/courses/show.blade.php:160` — `ghost`
+- `resources/views/learning/courses/show.blade.php:160` — `submit`
 - `resources/views/learning/courses/show.blade.php:170` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/courses/show.blade.php:171` — `group`
 - `resources/views/learning/courses/show.blade.php:171` — `text-muted`
-- `resources/views/learning/courses/show.blade.php:179` — `mb-3 flex flex-wrap gap-1`
-- `resources/views/learning/courses/show.blade.php:187` — `group`
-- `resources/views/learning/courses/show.blade.php:187` — `outline`
-- `resources/views/learning/courses/show.blade.php:194` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/courses/show.blade.php:195` — `publish`
-- `resources/views/learning/courses/show.blade.php:195` — `text-muted`
-- `resources/views/learning/courses/show.blade.php:198` — `flex flex-wrap gap-2`
-- `resources/views/learning/courses/show.blade.php:200` — `learning.courses.submit-review`
-- `resources/views/learning/courses/show.blade.php:202` — `outline`
-- `resources/views/learning/courses/show.blade.php:202` — `submit`
-- `resources/views/learning/courses/show.blade.php:206` — `flex items-end gap-2`
-- `resources/views/learning/courses/show.blade.php:208` — `label`
-- `resources/views/learning/courses/show.blade.php:208` — `w-40`
-- `resources/views/learning/courses/show.blade.php:209` — `publish`
-- `resources/views/learning/courses/show.blade.php:209` — `primary`
-- `resources/views/learning/courses/show.blade.php:209` — `submit`
-- `resources/views/learning/courses/show.blade.php:215` — `outline`
-- `resources/views/learning/courses/show.blade.php:215` — `submit`
-- `resources/views/learning/courses/show.blade.php:221` — `archive`
-- `resources/views/learning/courses/show.blade.php:221` — `ghost`
-- `resources/views/learning/courses/show.blade.php:221` — `submit`
-- `resources/views/learning/courses/show.blade.php:233` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/courses/show.blade.php:234` — `translate`
-- `resources/views/learning/courses/show.blade.php:234` — `text-muted`
-- `resources/views/learning/courses/show.blade.php:242` — `text-right`
-- `resources/views/learning/courses/show.blade.php:248` — `font-mono text-xs`
-- `resources/views/learning/courses/show.blade.php:253` — `warning`
-- `resources/views/learning/courses/show.blade.php:255` — `success`
-- `resources/views/learning/courses/show.blade.php:257` — `ghost`
-- `resources/views/learning/courses/show.blade.php:260` — `text-right`
-- `resources/views/learning/courses/show.blade.php:263` — `flex justify-end`
-- `resources/views/learning/courses/show.blade.php:265` — `success`
-- `resources/views/learning/courses/show.blade.php:265` — `submit`
-- `resources/views/learning/courses/show.blade.php:272` — `translate`
-- `resources/views/learning/courses/show.blade.php:276` — `mt-3`
-- `resources/views/learning/courses/show.blade.php:278` — `flex flex-wrap items-end gap-2`
-- `resources/views/learning/courses/show.blade.php:279` — `locale`
-- `resources/views/learning/courses/show.blade.php:279` — `grow`
-- `resources/views/learning/courses/show.blade.php:284` — `translate`
-- `resources/views/learning/courses/show.blade.php:284` — `primary`
-- `resources/views/learning/courses/show.blade.php:284` — `submit`
-- `resources/views/learning/courses/show.blade.php:286` — `mt-2 text-xs text-muted`
+- `resources/views/learning/courses/show.blade.php:173` — `true`
+- `resources/views/learning/courses/show.blade.php:182` — `hover`
+- `resources/views/learning/courses/show.blade.php:183` — `font-mono text-sm`
+- `resources/views/learning/courses/show.blade.php:189` — `success`
+- `resources/views/learning/courses/show.blade.php:192` — `text-sm`
+- `resources/views/learning/courses/show.blade.php:204` — `space-y-4`
+- `resources/views/learning/courses/show.blade.php:206` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/show.blade.php:207` — `info`
+- `resources/views/learning/courses/show.blade.php:207` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:220` — `title`
+- `resources/views/learning/courses/show.blade.php:240` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/show.blade.php:241` — `badge`
+- `resources/views/learning/courses/show.blade.php:241` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:244` — `mb-2 text-xs text-muted`
+- `resources/views/learning/courses/show.blade.php:246` — `mb-3 space-y-1 text-sm`
+- `resources/views/learning/courses/show.blade.php:248` — `flex items-center justify-between gap-2`
+- `resources/views/learning/courses/show.blade.php:249` — `text-xs text-muted`
+- `resources/views/learning/courses/show.blade.php:253` — `ghost`
+- `resources/views/learning/courses/show.blade.php:253` — `submit`
+- `resources/views/learning/courses/show.blade.php:257` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:260` — `flex flex-wrap items-end gap-2`
+- `resources/views/learning/courses/show.blade.php:262` — `w-48`
+- `resources/views/learning/courses/show.blade.php:267` — `role`
+- `resources/views/learning/courses/show.blade.php:267` — `w-36`
+- `resources/views/learning/courses/show.blade.php:268` — `trainer`
+- `resources/views/learning/courses/show.blade.php:269` — `grader`
+- `resources/views/learning/courses/show.blade.php:271` — `outline`
+- `resources/views/learning/courses/show.blade.php:271` — `submit`
+- `resources/views/learning/courses/show.blade.php:276` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/show.blade.php:277` — `group`
+- `resources/views/learning/courses/show.blade.php:277` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:285` — `mb-3 flex flex-wrap gap-1`
+- `resources/views/learning/courses/show.blade.php:293` — `group`
+- `resources/views/learning/courses/show.blade.php:293` — `outline`
+- `resources/views/learning/courses/show.blade.php:300` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/show.blade.php:301` — `publish`
+- `resources/views/learning/courses/show.blade.php:301` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:304` — `flex flex-wrap gap-2`
+- `resources/views/learning/courses/show.blade.php:306` — `learning.courses.submit-review`
+- `resources/views/learning/courses/show.blade.php:308` — `outline`
+- `resources/views/learning/courses/show.blade.php:308` — `submit`
+- `resources/views/learning/courses/show.blade.php:312` — `flex items-end gap-2`
+- `resources/views/learning/courses/show.blade.php:314` — `label`
+- `resources/views/learning/courses/show.blade.php:314` — `w-40`
+- `resources/views/learning/courses/show.blade.php:315` — `publish`
+- `resources/views/learning/courses/show.blade.php:315` — `primary`
+- `resources/views/learning/courses/show.blade.php:315` — `submit`
+- `resources/views/learning/courses/show.blade.php:321` — `outline`
+- `resources/views/learning/courses/show.blade.php:321` — `submit`
+- `resources/views/learning/courses/show.blade.php:327` — `archive`
+- `resources/views/learning/courses/show.blade.php:327` — `ghost`
+- `resources/views/learning/courses/show.blade.php:327` — `submit`
+- `resources/views/learning/courses/show.blade.php:339` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/courses/show.blade.php:340` — `translate`
+- `resources/views/learning/courses/show.blade.php:340` — `text-muted`
+- `resources/views/learning/courses/show.blade.php:348` — `text-right`
+- `resources/views/learning/courses/show.blade.php:354` — `font-mono text-xs`
+- `resources/views/learning/courses/show.blade.php:359` — `warning`
+- `resources/views/learning/courses/show.blade.php:361` — `success`
+- `resources/views/learning/courses/show.blade.php:363` — `ghost`
+- `resources/views/learning/courses/show.blade.php:366` — `text-right`
+- `resources/views/learning/courses/show.blade.php:369` — `flex justify-end`
+- `resources/views/learning/courses/show.blade.php:371` — `success`
+- `resources/views/learning/courses/show.blade.php:371` — `submit`
+- `resources/views/learning/courses/show.blade.php:378` — `translate`
+- `resources/views/learning/courses/show.blade.php:382` — `mt-3`
+- `resources/views/learning/courses/show.blade.php:384` — `flex flex-wrap items-end gap-2`
+- `resources/views/learning/courses/show.blade.php:385` — `locale`
+- `resources/views/learning/courses/show.blade.php:385` — `grow`
+- `resources/views/learning/courses/show.blade.php:390` — `translate`
+- `resources/views/learning/courses/show.blade.php:390` — `primary`
+- `resources/views/learning/courses/show.blade.php:390` — `submit`
+- `resources/views/learning/courses/show.blade.php:392` — `mt-2 text-xs text-muted`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:16` — `primary`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:17` — `learning.courses.import-learndash`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:20` — `data-entry-form`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:23` — `archive`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:23` — `primary`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:25` — `label`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:25` — `learndash-zip`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:25` — `label-text`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:26` — `file`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:26` — `learndash-zip`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:26` — `file`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:26` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/courses/_learndash_import_dialog.blade.php:29` — `text-xs text-muted`
 - `resources/views/learning/paths/index.blade.php:13` — `main-class', `
 - `resources/views/learning/paths/index.blade.php:14` — `title`
 - `resources/views/learning/paths/index.blade.php:15` — `nav-title`
@@ -34896,6 +35329,120 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/pdf/attendance-list.blade.php:55` — `list`
 - `resources/views/learning/pdf/attendance-list.blade.php:59` — `status`
 - `resources/views/learning/pdf/attendance-list.blade.php:76` — `note`
+- `resources/views/learning/pdf/report-card.blade.php:19` — `utf-8`
+- `resources/views/learning/pdf/report-card.blade.php:39` — `sheet`
+- `resources/views/learning/pdf/report-card.blade.php:40` — `pending`
+- `resources/views/learning/pdf/report-card.blade.php:41` — `pending`
+- `resources/views/learning/pdf/report-card.blade.php:44` — `kind`
+- `resources/views/learning/pdf/report-card.blade.php:47` — `lead`
+- `resources/views/learning/pdf/report-card.blade.php:48` — `holder`
+- `resources/views/learning/pdf/report-card.blade.php:50` — `lead`
+- `resources/views/learning/pdf/report-card.blade.php:51` — `course`
+- `resources/views/learning/pdf/report-card.blade.php:53` — `parts`
+- `resources/views/learning/pdf/report-card.blade.php:59` — `weighted`
+- `resources/views/learning/pdf/report-card.blade.php:65` — `components`
+- `resources/views/learning/pdf/report-card.blade.php:67` — `title`
+- `resources/views/learning/pdf/report-card.blade.php:68` — `pending`
+- `resources/views/learning/pdf/report-card.blade.php:68` — `points`
+- `resources/views/learning/pdf/report-card.blade.php:69` — `pending`
+- `resources/views/learning/pdf/report-card.blade.php:69` — `percent`
+- `resources/views/learning/pdf/report-card.blade.php:70` — `weighted`
+- `resources/views/learning/pdf/report-card.blade.php:71` — `weight`
+- `resources/views/learning/pdf/report-card.blade.php:78` — `total`
+- `resources/views/learning/pdf/report-card.blade.php:79` — `pending`
+- `resources/views/learning/pdf/report-card.blade.php:79` — `percent`
+- `resources/views/learning/pdf/report-card.blade.php:80` — `grade`
+- `resources/views/learning/pdf/report-card.blade.php:80` — `grade`
+- `resources/views/learning/pdf/report-card.blade.php:83` — `note`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:16` — `primary`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:19` — `data-entry-form`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:22` — `grading`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:22` — `primary`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:23` — `points`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:23` — `number`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:25` — `points`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:26` — `note`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:26` — `note`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:31` — `history`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:31` — `neutral`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:32` — `space-y-1 text-sm`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:34` — `flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 px-3 py-2`
+- `resources/views/learning/gradebook/_manual_grade_dialog.blade.php:36` — `text-xs text-muted`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:20` — `tune`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:21` — `primary`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:25` — `data-entry-form`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:28` — `checklist`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:28` — `primary`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:29` — `text-xs text-muted`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:32` — `quiz`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:32` — `assignment`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:35` — `flex flex-wrap items-end gap-3 rounded-box border border-base-300 p-3`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:36` — `hidden`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:37` — `hidden`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:38` — `comp-`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:40` — `components.`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:41` — `comp-w-`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:41` — `number`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:41` — `w-28`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:42` — `components.`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:45` — `text-sm text-muted`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:49` — `warning`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:50` — `text-xs text-muted`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:56` — `flex flex-wrap items-end gap-3 rounded-box border border-base-300 p-3`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:57` — `hidden`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:57` — `manual`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:59` — `hidden`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:61` — `manual-t-`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:61` — `w-56`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:62` — `components.`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:63` — `manual-m-`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:63` — `number`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:63` — `w-28`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:64` — `components.`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:65` — `manual-w-`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:65` — `number`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:65` — `w-28`
+- `resources/views/learning/gradebook/_components_dialog.blade.php:66` — `components.`
+- `resources/views/learning/gradebook/show.blade.php:13` — `title`
+- `resources/views/learning/gradebook/show.blade.php:14` — `nav-title`
+- `resources/views/learning/gradebook/show.blade.php:15` — `content`
+- `resources/views/learning/gradebook/show.blade.php:20` — `tune`
+- `resources/views/learning/gradebook/show.blade.php:20` — `primary`
+- `resources/views/learning/gradebook/show.blade.php:24` — `download`
+- `resources/views/learning/gradebook/show.blade.php:24` — `outline`
+- `resources/views/learning/gradebook/show.blade.php:27` — `ghost`
+- `resources/views/learning/gradebook/show.blade.php:35` — `alert alert-info mb-4 text-sm`
+- `resources/views/learning/gradebook/show.blade.php:35` — `status`
+- `resources/views/learning/gradebook/show.blade.php:36` — `info`
+- `resources/views/learning/gradebook/show.blade.php:42` — `true`
+- `resources/views/learning/gradebook/show.blade.php:48` — `text-center`
+- `resources/views/learning/gradebook/show.blade.php:51` — `block text-xs font-normal text-muted`
+- `resources/views/learning/gradebook/show.blade.php:55` — `text-right`
+- `resources/views/learning/gradebook/show.blade.php:56` — `text-center`
+- `resources/views/learning/gradebook/show.blade.php:62` — `enrollment`
+- `resources/views/learning/gradebook/show.blade.php:63` — `result`
+- `resources/views/learning/gradebook/show.blade.php:64` — `components`
+- `resources/views/learning/gradebook/show.blade.php:66` — `hover`
+- `resources/views/learning/gradebook/show.blade.php:67` — `font-medium`
+- `resources/views/learning/gradebook/show.blade.php:68` — `text-sm`
+- `resources/views/learning/gradebook/show.blade.php:71` — `text-center text-sm`
+- `resources/views/learning/gradebook/show.blade.php:72` — `pending`
+- `resources/views/learning/gradebook/show.blade.php:73` — `text-muted`
+- `resources/views/learning/gradebook/show.blade.php:75` — `points`
+- `resources/views/learning/gradebook/show.blade.php:76` — `block text-xs text-muted`
+- `resources/views/learning/gradebook/show.blade.php:76` — `percent`
+- `resources/views/learning/gradebook/show.blade.php:79` — `ghost`
+- `resources/views/learning/gradebook/show.blade.php:86` — `text-right text-sm`
+- `resources/views/learning/gradebook/show.blade.php:87` — `pending`
+- `resources/views/learning/gradebook/show.blade.php:88` — `info`
+- `resources/views/learning/gradebook/show.blade.php:90` — `percent`
+- `resources/views/learning/gradebook/show.blade.php:93` — `text-center text-sm`
+- `resources/views/learning/gradebook/show.blade.php:93` — `grade`
+- `resources/views/learning/gradebook/show.blade.php:94` — `text-right`
+- `resources/views/learning/gradebook/show.blade.php:95` — `flex justify-end gap-1`
+- `resources/views/learning/gradebook/show.blade.php:96` — `ghost`
+- `resources/views/learning/gradebook/show.blade.php:97` — `learning.courses.gradebook.report-card`
+- `resources/views/learning/gradebook/show.blade.php:103` — `grading`
 - `resources/views/learning/bookings/index.blade.php:13` — `title`
 - `resources/views/learning/bookings/index.blade.php:14` — `nav-title`
 - `resources/views/learning/bookings/index.blade.php:15` — `wrapper-height-class', 'wd-page-fill`
@@ -35002,30 +35549,73 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/grading/index.blade.php:30` — `text-sm font-medium`
 - `resources/views/learning/grading/index.blade.php:31` — `mt-1 text-xs text-muted`
 - `resources/views/learning/grading/index.blade.php:36` — `text`
-- `resources/views/learning/grading/index.blade.php:38` — `mt-3 flex flex-wrap items-end gap-2`
-- `resources/views/learning/grading/index.blade.php:40` — `points`
-- `resources/views/learning/grading/index.blade.php:40` — `number`
-- `resources/views/learning/grading/index.blade.php:40` — `w-28`
-- `resources/views/learning/grading/index.blade.php:42` — `note`
-- `resources/views/learning/grading/index.blade.php:42` — `w-64`
-- `resources/views/learning/grading/index.blade.php:43` — `check`
-- `resources/views/learning/grading/index.blade.php:43` — `primary`
-- `resources/views/learning/grading/index.blade.php:43` — `submit`
-- `resources/views/learning/grading/index.blade.php:50` — `flex`
-- `resources/views/learning/grading/index.blade.php:50` — `client`
-- `resources/views/learning/grading/index.blade.php:53` — `string`
-- `resources/views/learning/grading/index.blade.php:54` — `string`
-- `resources/views/learning/grading/index.blade.php:55` — `string`
-- `resources/views/learning/grading/index.blade.php:56` — `date`
-- `resources/views/learning/grading/index.blade.php:61` — `hover`
-- `resources/views/learning/grading/index.blade.php:62` — `font-medium`
-- `resources/views/learning/grading/index.blade.php:64` — `text-sm`
-- `resources/views/learning/grading/index.blade.php:65` — `text-sm`
-- `resources/views/learning/grading/index.blade.php:66` — `text-right`
-- `resources/views/learning/grading/index.blade.php:67` — `flex justify-end gap-1`
-- `resources/views/learning/grading/index.blade.php:68` — `grading`
-- `resources/views/learning/grading/index.blade.php:68` — `primary`
+- `resources/views/learning/grading/index.blade.php:38` — `mt-1 text-sm`
+- `resources/views/learning/grading/index.blade.php:39` — `link link-primary`
+- `resources/views/learning/grading/index.blade.php:45` — `mt-3 flex flex-wrap items-end gap-2`
+- `resources/views/learning/grading/index.blade.php:47` — `points`
+- `resources/views/learning/grading/index.blade.php:47` — `number`
+- `resources/views/learning/grading/index.blade.php:47` — `w-28`
+- `resources/views/learning/grading/index.blade.php:49` — `note`
+- `resources/views/learning/grading/index.blade.php:49` — `w-64`
+- `resources/views/learning/grading/index.blade.php:50` — `check`
+- `resources/views/learning/grading/index.blade.php:50` — `primary`
+- `resources/views/learning/grading/index.blade.php:50` — `submit`
+- `resources/views/learning/grading/index.blade.php:57` — `flex`
+- `resources/views/learning/grading/index.blade.php:57` — `client`
+- `resources/views/learning/grading/index.blade.php:60` — `string`
+- `resources/views/learning/grading/index.blade.php:61` — `string`
+- `resources/views/learning/grading/index.blade.php:62` — `string`
+- `resources/views/learning/grading/index.blade.php:63` — `date`
+- `resources/views/learning/grading/index.blade.php:68` — `hover`
+- `resources/views/learning/grading/index.blade.php:69` — `font-medium`
+- `resources/views/learning/grading/index.blade.php:71` — `text-sm`
+- `resources/views/learning/grading/index.blade.php:72` — `text-sm`
+- `resources/views/learning/grading/index.blade.php:73` — `text-right`
+- `resources/views/learning/grading/index.blade.php:74` — `flex justify-end gap-1`
 - `resources/views/learning/grading/index.blade.php:75` — `grading`
+- `resources/views/learning/grading/index.blade.php:75` — `primary`
+- `resources/views/learning/grading/index.blade.php:82` — `grading`
+- `resources/views/learning/grading/attempt.blade.php:14` — `title`
+- `resources/views/learning/grading/attempt.blade.php:15` — `nav-title`
+- `resources/views/learning/grading/attempt.blade.php:16` — `content`
+- `resources/views/learning/grading/attempt.blade.php:21` — `warning`
+- `resources/views/learning/grading/attempt.blade.php:21` — `success`
+- `resources/views/learning/grading/attempt.blade.php:21` — `error`
+- `resources/views/learning/grading/attempt.blade.php:23` — `ghost`
+- `resources/views/learning/grading/attempt.blade.php:34` — `options`
+- `resources/views/learning/grading/attempt.blade.php:37` — `label`
+- `resources/views/learning/grading/attempt.blade.php:39` — `text`
+- `resources/views/learning/grading/attempt.blade.php:39` — `text`
+- `resources/views/learning/grading/attempt.blade.php:40` — `gaps`
+- `resources/views/learning/grading/attempt.blade.php:41` — `order`
+- `resources/views/learning/grading/attempt.blade.php:41` — `label`
+- `resources/views/learning/grading/attempt.blade.php:42` — `pairs`
+- `resources/views/learning/grading/attempt.blade.php:42` — `label`
+- `resources/views/learning/grading/attempt.blade.php:42` — `label`
+- `resources/views/learning/grading/attempt.blade.php:43` — `spot`
+- `resources/views/learning/grading/attempt.blade.php:43` — `spot`
+- `resources/views/learning/grading/attempt.blade.php:45` — `matrix`
+- `resources/views/learning/grading/attempt.blade.php:45` — `settings`
+- `resources/views/learning/grading/attempt.blade.php:45` — `rows`
+- `resources/views/learning/grading/attempt.blade.php:45` — `label`
+- `resources/views/learning/grading/attempt.blade.php:45` — `settings`
+- `resources/views/learning/grading/attempt.blade.php:45` — `columns`
+- `resources/views/learning/grading/attempt.blade.php:48` — `flex items-start justify-between gap-3`
+- `resources/views/learning/grading/attempt.blade.php:49` — `text-sm font-semibold`
+- `resources/views/learning/grading/attempt.blade.php:49` — `prompt`
+- `resources/views/learning/grading/attempt.blade.php:51` — `success`
+- `resources/views/learning/grading/attempt.blade.php:51` — `points`
+- `resources/views/learning/grading/attempt.blade.php:53` — `error`
+- `resources/views/learning/grading/attempt.blade.php:53` — `points`
+- `resources/views/learning/grading/attempt.blade.php:55` — `warning`
+- `resources/views/learning/grading/attempt.blade.php:58` — `mt-2 text-sm`
+- `resources/views/learning/grading/attempt.blade.php:59` — `font-medium`
+- `resources/views/learning/grading/attempt.blade.php:63` — `mt-1 text-xs text-muted`
+- `resources/views/learning/grading/attempt.blade.php:66` — `mt-2 text-sm`
+- `resources/views/learning/grading/attempt.blade.php:66` — `font-medium`
+- `resources/views/learning/grading/attempt.blade.php:72` — `space-y-4`
+- `resources/views/learning/grading/attempt.blade.php:74` — `mb-3 text-sm font-semibold`
+- `resources/views/learning/grading/attempt.blade.php:83` — `mt-3 text-xs text-muted`
 - `resources/views/learning/grading/submission.blade.php:13` — `title`
 - `resources/views/learning/grading/submission.blade.php:14` — `nav-title`
 - `resources/views/learning/grading/submission.blade.php:15` — `content`
@@ -35086,6 +35676,91 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/grading/time-approvals.blade.php:62` — `error`
 - `resources/views/learning/grading/time-approvals.blade.php:62` — `submit`
 - `resources/views/learning/grading/time-approvals.blade.php:69` — `schedule`
+- `resources/views/learning/questions/index.blade.php:14` — `title`
+- `resources/views/learning/questions/index.blade.php:15` — `nav-title`
+- `resources/views/learning/questions/index.blade.php:16` — `wrapper-height-class', 'wd-page-fill`
+- `resources/views/learning/questions/index.blade.php:17` — `main-class', `
+- `resources/views/learning/questions/index.blade.php:18` — `content`
+- `resources/views/learning/questions/index.blade.php:19` — `clip`
+- `resources/views/learning/questions/index.blade.php:21` — `primary`
+- `resources/views/learning/questions/index.blade.php:29` — `mb-3 rounded-box border border-base-300 px-4 py-2 text-sm`
+- `resources/views/learning/questions/index.blade.php:30` — `cursor-pointer font-medium`
+- `resources/views/learning/questions/index.blade.php:31` — `mt-2 flex flex-wrap items-center gap-2`
+- `resources/views/learning/questions/index.blade.php:33` — `flex items-center gap-1`
+- `resources/views/learning/questions/index.blade.php:36` — `sr-only`
+- `resources/views/learning/questions/index.blade.php:37` — `text`
+- `resources/views/learning/questions/index.blade.php:37` — `name`
+- `resources/views/learning/questions/index.blade.php:38` — `input input-xs input-bordered w-40`
+- `resources/views/learning/questions/index.blade.php:39` — `badge badge-ghost badge-sm`
+- `resources/views/learning/questions/index.blade.php:40` — `save`
+- `resources/views/learning/questions/index.blade.php:40` — `ghost`
+- `resources/views/learning/questions/index.blade.php:40` — `submit`
+- `resources/views/learning/questions/index.blade.php:47` — `delete`
+- `resources/views/learning/questions/index.blade.php:47` — `ghost`
+- `resources/views/learning/questions/index.blade.php:47` — `submit`
+- `resources/views/learning/questions/index.blade.php:51` — `flex items-center gap-1`
+- `resources/views/learning/questions/index.blade.php:53` — `sr-only`
+- `resources/views/learning/questions/index.blade.php:53` — `cat-new`
+- `resources/views/learning/questions/index.blade.php:54` — `text`
+- `resources/views/learning/questions/index.blade.php:54` — `cat-new`
+- `resources/views/learning/questions/index.blade.php:54` — `name`
+- `resources/views/learning/questions/index.blade.php:55` — `input input-xs input-bordered w-40`
+- `resources/views/learning/questions/index.blade.php:56` — `outline`
+- `resources/views/learning/questions/index.blade.php:56` — `submit`
+- `resources/views/learning/questions/index.blade.php:62` — `flt-q-search`
+- `resources/views/learning/questions/index.blade.php:62` — `flex-1 min-w-60`
+- `resources/views/learning/questions/index.blade.php:63` — `flt-q-search`
+- `resources/views/learning/questions/index.blade.php:63` — `search`
+- `resources/views/learning/questions/index.blade.php:64` — `input input-sm input-bordered w-full`
+- `resources/views/learning/questions/index.blade.php:66` — `flt-q-category`
+- `resources/views/learning/questions/index.blade.php:67` — `flt-q-category`
+- `resources/views/learning/questions/index.blade.php:67` — `category`
+- `resources/views/learning/questions/index.blade.php:67` — `select select-sm select-bordered`
+- `resources/views/learning/questions/index.blade.php:74` — `flt-q-kind`
+- `resources/views/learning/questions/index.blade.php:75` — `flt-q-kind`
+- `resources/views/learning/questions/index.blade.php:75` — `kind`
+- `resources/views/learning/questions/index.blade.php:75` — `select select-sm select-bordered`
+- `resources/views/learning/questions/index.blade.php:82` — `flt-q-quiz`
+- `resources/views/learning/questions/index.blade.php:83` — `flt-q-quiz`
+- `resources/views/learning/questions/index.blade.php:83` — `quiz`
+- `resources/views/learning/questions/index.blade.php:83` — `select select-sm select-bordered`
+- `resources/views/learning/questions/index.blade.php:90` — `flt-q-total`
+- `resources/views/learning/questions/index.blade.php:91` — `flt-q-total`
+- `resources/views/learning/questions/index.blade.php:91` — `badge badge-ghost badge-sm`
+- `resources/views/learning/questions/index.blade.php:95` — `flex`
+- `resources/views/learning/questions/index.blade.php:95` — `client`
+- `resources/views/learning/questions/index.blade.php:98` — `string`
+- `resources/views/learning/questions/index.blade.php:99` — `string`
+- `resources/views/learning/questions/index.blade.php:100` — `string`
+- `resources/views/learning/questions/index.blade.php:101` — `number`
+- `resources/views/learning/questions/index.blade.php:101` — `center`
+- `resources/views/learning/questions/index.blade.php:102` — `string`
+- `resources/views/learning/questions/index.blade.php:107` — `hover`
+- `resources/views/learning/questions/index.blade.php:109` — `font-medium`
+- `resources/views/learning/questions/index.blade.php:111` — `block text-xs text-muted`
+- `resources/views/learning/questions/index.blade.php:114` — `text-sm`
+- `resources/views/learning/questions/index.blade.php:115` — `text-sm`
+- `resources/views/learning/questions/index.blade.php:116` — `text-center text-sm`
+- `resources/views/learning/questions/index.blade.php:117` — `text-sm`
+- `resources/views/learning/questions/index.blade.php:119` — `badge badge-ghost badge-sm`
+- `resources/views/learning/questions/index.blade.php:121` — `text-muted`
+- `resources/views/learning/questions/index.blade.php:124` — `text-right whitespace-nowrap`
+- `resources/views/learning/questions/index.blade.php:125` — `flex justify-end gap-1`
+- `resources/views/learning/questions/index.blade.php:126` — `edit`
+- `resources/views/learning/questions/index.blade.php:126` — `ghost`
+- `resources/views/learning/questions/index.blade.php:132` — `ghost`
+- `resources/views/learning/questions/index.blade.php:132` — `submit`
+- `resources/views/learning/questions/index.blade.php:139` — `delete`
+- `resources/views/learning/questions/index.blade.php:139` — `ghost`
+- `resources/views/learning/questions/index.blade.php:139` — `submit`
+- `resources/views/learning/questions/index.blade.php:146` — `quiz`
+- `resources/views/learning/questions/_form_dialog.blade.php:19` — `quiz`
+- `resources/views/learning/questions/_form_dialog.blade.php:20` — `primary`
+- `resources/views/learning/questions/_form_dialog.blade.php:22` — `POST'`
+- `resources/views/learning/questions/_form_dialog.blade.php:24` — `data-entry-form`
+- `resources/views/learning/questions/_form_dialog.blade.php:27` — `question`
+- `resources/views/learning/questions/_form_dialog.blade.php:27` — `lines`
+- `resources/views/learning/questions/_form_dialog.blade.php:27` — `categories`
 - `resources/views/learning/my/scorm.blade.php:17` — `title`
 - `resources/views/learning/my/scorm.blade.php:18` — `nav-title`
 - `resources/views/learning/my/scorm.blade.php:19` — `content`
@@ -35148,21 +35823,61 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/my/quiz_result.blade.php:20` — `success`
 - `resources/views/learning/my/quiz_result.blade.php:20` — `error`
 - `resources/views/learning/my/quiz_result.blade.php:22` — `ghost`
-- `resources/views/learning/my/quiz_result.blade.php:38` — `flex items-start justify-between gap-3`
-- `resources/views/learning/my/quiz_result.blade.php:39` — `text-sm font-semibold`
-- `resources/views/learning/my/quiz_result.blade.php:39` — `prompt`
-- `resources/views/learning/my/quiz_result.blade.php:41` — `success`
-- `resources/views/learning/my/quiz_result.blade.php:41` — `points`
-- `resources/views/learning/my/quiz_result.blade.php:43` — `error`
-- `resources/views/learning/my/quiz_result.blade.php:43` — `points`
-- `resources/views/learning/my/quiz_result.blade.php:45` — `warning`
-- `resources/views/learning/my/quiz_result.blade.php:49` — `explanation`
-- `resources/views/learning/my/quiz_result.blade.php:50` — `explanation`
-- `resources/views/learning/my/quiz_result.blade.php:53` — `mt-2 text-sm`
-- `resources/views/learning/my/quiz_result.blade.php:53` — `font-medium`
-- `resources/views/learning/my/quiz_result.blade.php:59` — `space-y-4`
-- `resources/views/learning/my/quiz_result.blade.php:61` — `mb-3 text-sm font-semibold`
-- `resources/views/learning/my/quiz_result.blade.php:67` — `mt-3 text-xs text-muted`
+- `resources/views/learning/my/quiz_result.blade.php:33` — `alert-success`
+- `resources/views/learning/my/quiz_result.blade.php:33` — `alert-info`
+- `resources/views/learning/my/quiz_result.blade.php:33` — `status`
+- `resources/views/learning/my/quiz_result.blade.php:34` — `info`
+- `resources/views/learning/my/quiz_result.blade.php:45` — `flex items-start justify-between gap-3`
+- `resources/views/learning/my/quiz_result.blade.php:46` — `text-sm font-semibold`
+- `resources/views/learning/my/quiz_result.blade.php:46` — `prompt`
+- `resources/views/learning/my/quiz_result.blade.php:48` — `success`
+- `resources/views/learning/my/quiz_result.blade.php:48` — `points`
+- `resources/views/learning/my/quiz_result.blade.php:50` — `error`
+- `resources/views/learning/my/quiz_result.blade.php:50` — `points`
+- `resources/views/learning/my/quiz_result.blade.php:52` — `warning`
+- `resources/views/learning/my/quiz_result.blade.php:58` — `settings`
+- `resources/views/learning/my/quiz_result.blade.php:61` — `mt-2 text-sm font-medium`
+- `resources/views/learning/my/quiz_result.blade.php:63` — `explanation`
+- `resources/views/learning/my/quiz_result.blade.php:64` — `explanation`
+- `resources/views/learning/my/quiz_result.blade.php:67` — `mt-2 text-sm`
+- `resources/views/learning/my/quiz_result.blade.php:67` — `font-medium`
+- `resources/views/learning/my/quiz_result.blade.php:73` — `space-y-4`
+- `resources/views/learning/my/quiz_result.blade.php:75` — `mb-3 text-sm font-semibold`
+- `resources/views/learning/my/quiz_result.blade.php:81` — `mt-3 text-xs text-muted`
+- `resources/views/learning/my/leaderboard.blade.php:14` — `title`
+- `resources/views/learning/my/leaderboard.blade.php:15` — `nav-title`
+- `resources/views/learning/my/leaderboard.blade.php:16` — `wrapper-height-class', 'wd-page-fill`
+- `resources/views/learning/my/leaderboard.blade.php:17` — `main-class', `
+- `resources/views/learning/my/leaderboard.blade.php:18` — `content`
+- `resources/views/learning/my/leaderboard.blade.php:19` — `clip`
+- `resources/views/learning/my/leaderboard.blade.php:21` — `learning.my.leaderboard.opt-in`
+- `resources/views/learning/my/leaderboard.blade.php:23` — `hidden`
+- `resources/views/learning/my/leaderboard.blade.php:24` — `visibility'`
+- `resources/views/learning/my/leaderboard.blade.php:24` — `outline`
+- `resources/views/learning/my/leaderboard.blade.php:24` — `primary'`
+- `resources/views/learning/my/leaderboard.blade.php:24` — `submit`
+- `resources/views/learning/my/leaderboard.blade.php:27` — `ghost`
+- `resources/views/learning/my/leaderboard.blade.php:30` — `alert alert-info text-sm`
+- `resources/views/learning/my/leaderboard.blade.php:30` — `status`
+- `resources/views/learning/my/leaderboard.blade.php:31` — `info`
+- `resources/views/learning/my/leaderboard.blade.php:35` — `flex`
+- `resources/views/learning/my/leaderboard.blade.php:38` — `text-center`
+- `resources/views/learning/my/leaderboard.blade.php:40` — `text-right`
+- `resources/views/learning/my/leaderboard.blade.php:44` — `user`
+- `resources/views/learning/my/leaderboard.blade.php:44` — `font-semibold`
+- `resources/views/learning/my/leaderboard.blade.php:45` — `text-center`
+- `resources/views/learning/my/leaderboard.blade.php:46` — `user`
+- `resources/views/learning/my/leaderboard.blade.php:47` — `text-right font-mono`
+- `resources/views/learning/my/leaderboard.blade.php:47` — `points`
+- `resources/views/learning/my/_ask_dialog.blade.php:16` — `primary`
+- `resources/views/learning/my/_ask_dialog.blade.php:19` — `data-entry-form`
+- `resources/views/learning/my/_ask_dialog.blade.php:22` — `help`
+- `resources/views/learning/my/_ask_dialog.blade.php:22` — `primary`
+- `resources/views/learning/my/_ask_dialog.blade.php:23` — `question`
+- `resources/views/learning/my/_ask_dialog.blade.php:23` — `question`
+- `resources/views/learning/my/_ask_dialog.blade.php:24` — `text-xs text-muted`
+- `resources/views/learning/my/_ask_dialog.blade.php:25` — `names`
+- `resources/views/learning/my/_ask_dialog.blade.php:25` — `name`
 - `resources/views/learning/my/checkin.blade.php:13` — `title`
 - `resources/views/learning/my/checkin.blade.php:14` — `nav-title`
 - `resources/views/learning/my/checkin.blade.php:15` — `content`
@@ -35181,193 +35896,345 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/my/index.blade.php:17` — `main-class', `
 - `resources/views/learning/my/index.blade.php:18` — `content`
 - `resources/views/learning/my/index.blade.php:19` — `clip`
-- `resources/views/learning/my/index.blade.php:24` — `flex`
-- `resources/views/learning/my/index.blade.php:24` — `client`
-- `resources/views/learning/my/index.blade.php:27` — `string`
-- `resources/views/learning/my/index.blade.php:28` — `string`
-- `resources/views/learning/my/index.blade.php:29` — `date`
-- `resources/views/learning/my/index.blade.php:30` — `number`
-- `resources/views/learning/my/index.blade.php:30` — `center`
-- `resources/views/learning/my/index.blade.php:37` — `status`
-- `resources/views/learning/my/index.blade.php:39` — `hover`
-- `resources/views/learning/my/index.blade.php:40` — `font-medium`
-- `resources/views/learning/my/index.blade.php:41` — `link link-hover`
-- `resources/views/learning/my/index.blade.php:43` — `warning`
-- `resources/views/learning/my/index.blade.php:46` — `text-sm`
-- `resources/views/learning/my/index.blade.php:49` — `text-sm`
-- `resources/views/learning/my/index.blade.php:50` — `text-center text-sm`
-- `resources/views/learning/my/index.blade.php:51` — `text-right`
-- `resources/views/learning/my/index.blade.php:52` — `flex justify-end gap-1`
-- `resources/views/learning/my/index.blade.php:53` — `primary`
-- `resources/views/learning/my/index.blade.php:60` — `school`
+- `resources/views/learning/my/index.blade.php:21` — `leaderboard`
+- `resources/views/learning/my/index.blade.php:22` — `outline`
+- `resources/views/learning/my/index.blade.php:30` — `mb-3 flex flex-wrap items-center gap-3 rounded-box border border-base-300 px-4 py-2 text-sm`
+- `resources/views/learning/my/index.blade.php:31` — `flex items-center gap-1`
+- `resources/views/learning/my/index.blade.php:31` — `stars`
+- `resources/views/learning/my/index.blade.php:31` — `text-warning`
+- `resources/views/learning/my/index.blade.php:31` — `points`
+- `resources/views/learning/my/index.blade.php:32` — `completed`
+- `resources/views/learning/my/index.blade.php:33` — `badges`
+- `resources/views/learning/my/index.blade.php:34` — `success`
+- `resources/views/learning/my/index.blade.php:41` — `mt-4`
+- `resources/views/learning/my/index.blade.php:42` — `space-y-2 text-sm`
+- `resources/views/learning/my/index.blade.php:44` — `rounded-box border border-base-300 px-3 py-2`
+- `resources/views/learning/my/index.blade.php:45` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/learning/my/index.blade.php:46` — `font-medium`
+- `resources/views/learning/my/index.blade.php:48` — `link link-hover text-xs`
+- `resources/views/learning/my/index.blade.php:52` — `mt-1 text-xs text-muted`
+- `resources/views/learning/my/index.blade.php:59` — `flex`
+- `resources/views/learning/my/index.blade.php:59` — `client`
+- `resources/views/learning/my/index.blade.php:62` — `string`
+- `resources/views/learning/my/index.blade.php:63` — `string`
+- `resources/views/learning/my/index.blade.php:64` — `date`
+- `resources/views/learning/my/index.blade.php:65` — `number`
+- `resources/views/learning/my/index.blade.php:65` — `center`
+- `resources/views/learning/my/index.blade.php:72` — `status`
+- `resources/views/learning/my/index.blade.php:74` — `hover`
+- `resources/views/learning/my/index.blade.php:75` — `font-medium`
+- `resources/views/learning/my/index.blade.php:76` — `link link-hover`
+- `resources/views/learning/my/index.blade.php:78` — `warning`
+- `resources/views/learning/my/index.blade.php:81` — `text-sm`
+- `resources/views/learning/my/index.blade.php:84` — `text-sm`
+- `resources/views/learning/my/index.blade.php:85` — `text-center text-sm`
+- `resources/views/learning/my/index.blade.php:86` — `text-right`
+- `resources/views/learning/my/index.blade.php:87` — `flex justify-end gap-1`
+- `resources/views/learning/my/index.blade.php:88` — `primary`
+- `resources/views/learning/my/index.blade.php:95` — `school`
 - `resources/views/learning/my/quiz_attempt.blade.php:14` — `title`
 - `resources/views/learning/my/quiz_attempt.blade.php:15` — `nav-title`
 - `resources/views/learning/my/quiz_attempt.blade.php:16` — `content`
 - `resources/views/learning/my/quiz_attempt.blade.php:22` — `ghost`
-- `resources/views/learning/my/quiz_attempt.blade.php:31` — `space-y-4`
-- `resources/views/learning/my/quiz_attempt.blade.php:36` — `alert alert-warning text-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:36` — `status`
-- `resources/views/learning/my/quiz_attempt.blade.php:37` — `timer`
-- `resources/views/learning/my/quiz_attempt.blade.php:40` — `font-mono`
-- `resources/views/learning/my/quiz_attempt.blade.php:46` — `kind`
-- `resources/views/learning/my/quiz_attempt.blade.php:53` — `mb-1 text-sm font-semibold`
-- `resources/views/learning/my/quiz_attempt.blade.php:54` — `prompt`
-- `resources/views/learning/my/quiz_attempt.blade.php:56` — `mb-3 text-xs text-muted`
-- `resources/views/learning/my/quiz_attempt.blade.php:57` — `points`
-- `resources/views/learning/my/quiz_attempt.blade.php:63` — `options`
-- `resources/views/learning/my/quiz_attempt.blade.php:64` — `mb-2 flex items-center gap-2 text-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:65` — `radio`
-- `resources/views/learning/my/quiz_attempt.blade.php:65` — `radio radio-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:68` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:74` — `options`
-- `resources/views/learning/my/quiz_attempt.blade.php:75` — `mb-2 flex items-center gap-2 text-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:76` — `checkbox`
-- `resources/views/learning/my/quiz_attempt.blade.php:76` — `checkbox checkbox-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:79` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:85` — `sr-only`
-- `resources/views/learning/my/quiz_attempt.blade.php:86` — `textarea textarea-bordered w-full`
-- `resources/views/learning/my/quiz_attempt.blade.php:89` — `mt-1 text-xs text-muted`
-- `resources/views/learning/my/quiz_attempt.blade.php:95` — `settings`
-- `resources/views/learning/my/quiz_attempt.blade.php:95` — `gaps`
-- `resources/views/learning/my/quiz_attempt.blade.php:96` — `space-y-2`
-- `resources/views/learning/my/quiz_attempt.blade.php:98` — `flex items-center gap-2 text-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:99` — `w-16 shrink-0 text-muted`
-- `resources/views/learning/my/quiz_attempt.blade.php:100` — `text`
-- `resources/views/learning/my/quiz_attempt.blade.php:100` — `input input-bordered input-sm w-full`
-- `resources/views/learning/my/quiz_attempt.blade.php:112` — `space-y-2`
-- `resources/views/learning/my/quiz_attempt.blade.php:113` — `options`
-- `resources/views/learning/my/quiz_attempt.blade.php:114` — `flex items-center gap-2 text-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:115` — `w-16 shrink-0 text-muted`
-- `resources/views/learning/my/quiz_attempt.blade.php:116` — `select select-bordered select-sm w-full`
-- `resources/views/learning/my/quiz_attempt.blade.php:117` — `rank`
-- `resources/views/learning/my/quiz_attempt.blade.php:120` — `options`
+- `resources/views/learning/my/quiz_attempt.blade.php:34` — `total`
+- `resources/views/learning/my/quiz_attempt.blade.php:35` — `single`
+- `resources/views/learning/my/quiz_attempt.blade.php:36` — `allowBack`
+- `resources/views/learning/my/quiz_attempt.blade.php:37` — `allowSkip`
+- `resources/views/learning/my/quiz_attempt.blade.php:38` — `expiresAt`
+- `resources/views/learning/my/quiz_attempt.blade.php:39` — `saveUrl`
+- `resources/views/learning/my/quiz_attempt.blade.php:40` — `answered`
+- `resources/views/learning/my/quiz_attempt.blade.php:41` — `flagged`
+- `resources/views/learning/my/quiz_attempt.blade.php:48` — `space-y-4`
+- `resources/views/learning/my/quiz_attempt.blade.php:50` — `alert alert-error text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:50` — `alert`
+- `resources/views/learning/my/quiz_attempt.blade.php:51` — `error`
+- `resources/views/learning/my/quiz_attempt.blade.php:61` — `alert alert-warning text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:61` — `status`
+- `resources/views/learning/my/quiz_attempt.blade.php:61` — `polite`
+- `resources/views/learning/my/quiz_attempt.blade.php:62` — `timer`
+- `resources/views/learning/my/quiz_attempt.blade.php:65` — `font-mono`
+- `resources/views/learning/my/quiz_attempt.blade.php:65` — `remaining`
+- `resources/views/learning/my/quiz_attempt.blade.php:71` — `flex flex-wrap gap-1`
+- `resources/views/learning/my/quiz_attempt.blade.php:73` — `button`
+- `resources/views/learning/my/quiz_attempt.blade.php:73` — `btn btn-xs`
+- `resources/views/learning/my/quiz_attempt.blade.php:75` — `step`
+- `resources/views/learning/my/quiz_attempt.blade.php:79` — `ml-2 self-center text-xs text-muted`
+- `resources/views/learning/my/quiz_attempt.blade.php:84` — `kind`
+- `resources/views/learning/my/quiz_attempt.blade.php:95` — `mb-1 text-sm font-semibold`
+- `resources/views/learning/my/quiz_attempt.blade.php:96` — `prompt`
+- `resources/views/learning/my/quiz_attempt.blade.php:98` — `mb-3 flex flex-wrap items-center gap-3 text-xs text-muted`
+- `resources/views/learning/my/quiz_attempt.blade.php:99` — `points`
+- `resources/views/learning/my/quiz_attempt.blade.php:100` — `flex items-center gap-1`
+- `resources/views/learning/my/quiz_attempt.blade.php:101` — `checkbox`
+- `resources/views/learning/my/quiz_attempt.blade.php:101` — `checkbox checkbox-xs`
+- `resources/views/learning/my/quiz_attempt.blade.php:106` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:106` — `hint`
+- `resources/views/learning/my/quiz_attempt.blade.php:107` — `mb-3 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:108` — `cursor-pointer text-primary`
+- `resources/views/learning/my/quiz_attempt.blade.php:109` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:109` — `hint`
+- `resources/views/learning/my/quiz_attempt.blade.php:116` — `options`
+- `resources/views/learning/my/quiz_attempt.blade.php:117` — `mb-2 flex items-center gap-2 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:118` — `radio`
+- `resources/views/learning/my/quiz_attempt.blade.php:118` — `radio radio-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:120` — `strval`
 - `resources/views/learning/my/quiz_attempt.blade.php:121` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:134` — `options`
-- `resources/views/learning/my/quiz_attempt.blade.php:138` — `space-y-2`
-- `resources/views/learning/my/quiz_attempt.blade.php:140` — `flex items-center gap-2 text-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:141` — `w-40 shrink-0`
-- `resources/views/learning/my/quiz_attempt.blade.php:141` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:142` — `select select-bordered select-sm w-full`
-- `resources/views/learning/my/quiz_attempt.blade.php:143` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:143` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:127` — `options`
+- `resources/views/learning/my/quiz_attempt.blade.php:128` — `mb-2 flex items-center gap-2 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:129` — `checkbox`
+- `resources/views/learning/my/quiz_attempt.blade.php:129` — `checkbox checkbox-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:131` — `strval`
+- `resources/views/learning/my/quiz_attempt.blade.php:132` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:138` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:138` — `text`
+- `resources/views/learning/my/quiz_attempt.blade.php:139` — `upload`
+- `resources/views/learning/my/quiz_attempt.blade.php:140` — `sr-only`
+- `resources/views/learning/my/quiz_attempt.blade.php:141` — `textarea textarea-bordered w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:143` — `text`
+- `resources/views/learning/my/quiz_attempt.blade.php:145` — `text`
 - `resources/views/learning/my/quiz_attempt.blade.php:147` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:162` — `settings`
-- `resources/views/learning/my/quiz_attempt.blade.php:162` — `hotspots`
-- `resources/views/learning/my/quiz_attempt.blade.php:163` — `settings`
-- `resources/views/learning/my/quiz_attempt.blade.php:165` — `prompt`
-- `resources/views/learning/my/quiz_attempt.blade.php:166` — `max-w-full rounded-box border border-base-300`
-- `resources/views/learning/my/quiz_attempt.blade.php:169` — `hidden`
-- `resources/views/learning/my/quiz_attempt.blade.php:170` — `hidden`
-- `resources/views/learning/my/quiz_attempt.blade.php:171` — `sr-only`
-- `resources/views/learning/my/quiz_attempt.blade.php:172` — `select select-bordered select-sm mt-2 w-full`
-- `resources/views/learning/my/quiz_attempt.blade.php:177` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:187` — `settings`
-- `resources/views/learning/my/quiz_attempt.blade.php:187` — `rows`
-- `resources/views/learning/my/quiz_attempt.blade.php:188` — `settings`
-- `resources/views/learning/my/quiz_attempt.blade.php:188` — `columns`
-- `resources/views/learning/my/quiz_attempt.blade.php:190` — `space-y-2`
-- `resources/views/learning/my/quiz_attempt.blade.php:192` — `flex items-center gap-2 text-sm`
-- `resources/views/learning/my/quiz_attempt.blade.php:193` — `w-48 shrink-0`
-- `resources/views/learning/my/quiz_attempt.blade.php:193` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:194` — `select select-bordered select-sm w-full`
-- `resources/views/learning/my/quiz_attempt.blade.php:195` — `label`
-- `resources/views/learning/my/quiz_attempt.blade.php:208` — `sr-only`
-- `resources/views/learning/my/quiz_attempt.blade.php:209` — `text`
-- `resources/views/learning/my/quiz_attempt.blade.php:210` — `input input-bordered w-full`
-- `resources/views/learning/my/quiz_attempt.blade.php:217` — `flex justify-end`
-- `resources/views/learning/my/quiz_attempt.blade.php:218` — `primary`
-- `resources/views/learning/my/quiz_attempt.blade.php:218` — `submit`
-- `resources/views/learning/my/quiz_attempt.blade.php:230` — `use strict`
-- `resources/views/learning/my/quiz_attempt.blade.php:233` — `data-hotspot-image`
-- `resources/views/learning/my/quiz_attempt.blade.php:239` — `crosshair`
-- `resources/views/learning/my/quiz_attempt.blade.php:241` — `click`
+- `resources/views/learning/my/quiz_attempt.blade.php:147` — `label-text`
+- `resources/views/learning/my/quiz_attempt.blade.php:148` — `file`
+- `resources/views/learning/my/quiz_attempt.blade.php:148` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:151` — `mt-1 text-xs text-muted`
+- `resources/views/learning/my/quiz_attempt.blade.php:156` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:156` — `scale`
+- `resources/views/learning/my/quiz_attempt.blade.php:157` — `mb-2 flex items-center gap-2 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:158` — `radio`
+- `resources/views/learning/my/quiz_attempt.blade.php:158` — `radio radio-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:160` — `level`
+- `resources/views/learning/my/quiz_attempt.blade.php:169` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:169` — `gaps`
+- `resources/views/learning/my/quiz_attempt.blade.php:170` — `space-y-2`
+- `resources/views/learning/my/quiz_attempt.blade.php:172` — `flex items-center gap-2 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:173` — `w-16 shrink-0 text-muted`
+- `resources/views/learning/my/quiz_attempt.blade.php:174` — `text`
+- `resources/views/learning/my/quiz_attempt.blade.php:174` — `input input-bordered input-sm w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:177` — `gaps`
+- `resources/views/learning/my/quiz_attempt.blade.php:187` — `space-y-2`
+- `resources/views/learning/my/quiz_attempt.blade.php:188` — `options`
+- `resources/views/learning/my/quiz_attempt.blade.php:189` — `flex items-center gap-2 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:190` — `w-16 shrink-0 text-muted`
+- `resources/views/learning/my/quiz_attempt.blade.php:191` — `select select-bordered select-sm w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:192` — `rank`
+- `resources/views/learning/my/quiz_attempt.blade.php:195` — `options`
+- `resources/views/learning/my/quiz_attempt.blade.php:196` — `order`
+- `resources/views/learning/my/quiz_attempt.blade.php:196` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:209` — `options`
+- `resources/views/learning/my/quiz_attempt.blade.php:213` — `space-y-2`
+- `resources/views/learning/my/quiz_attempt.blade.php:215` — `flex items-center gap-2 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:216` — `w-40 shrink-0`
+- `resources/views/learning/my/quiz_attempt.blade.php:216` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:217` — `select select-bordered select-sm w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:218` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:218` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:222` — `pairs`
+- `resources/views/learning/my/quiz_attempt.blade.php:222` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:237` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:237` — `hotspots`
+- `resources/views/learning/my/quiz_attempt.blade.php:238` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:240` — `prompt`
+- `resources/views/learning/my/quiz_attempt.blade.php:241` — `max-w-full rounded-box border border-base-300`
+- `resources/views/learning/my/quiz_attempt.blade.php:244` — `hidden`
+- `resources/views/learning/my/quiz_attempt.blade.php:245` — `hidden`
+- `resources/views/learning/my/quiz_attempt.blade.php:246` — `sr-only`
+- `resources/views/learning/my/quiz_attempt.blade.php:247` — `select select-bordered select-sm mt-2 w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:252` — `spot`
+- `resources/views/learning/my/quiz_attempt.blade.php:252` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:262` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:262` — `rows`
+- `resources/views/learning/my/quiz_attempt.blade.php:263` — `settings`
+- `resources/views/learning/my/quiz_attempt.blade.php:263` — `columns`
+- `resources/views/learning/my/quiz_attempt.blade.php:265` — `space-y-2`
+- `resources/views/learning/my/quiz_attempt.blade.php:267` — `flex items-center gap-2 text-sm`
+- `resources/views/learning/my/quiz_attempt.blade.php:268` — `w-48 shrink-0`
+- `resources/views/learning/my/quiz_attempt.blade.php:268` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:269` — `select select-bordered select-sm w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:270` — `label`
+- `resources/views/learning/my/quiz_attempt.blade.php:274` — `matrix`
+- `resources/views/learning/my/quiz_attempt.blade.php:283` — `sr-only`
+- `resources/views/learning/my/quiz_attempt.blade.php:284` — `text`
+- `resources/views/learning/my/quiz_attempt.blade.php:285` — `input input-bordered w-full`
+- `resources/views/learning/my/quiz_attempt.blade.php:287` — `text`
+- `resources/views/learning/my/quiz_attempt.blade.php:291` — `mt-3 flex flex-wrap justify-between gap-2`
+- `resources/views/learning/my/quiz_attempt.blade.php:292` — `flex gap-2`
+- `resources/views/learning/my/quiz_attempt.blade.php:294` — `ghost`
+- `resources/views/learning/my/quiz_attempt.blade.php:294` — `button`
+- `resources/views/learning/my/quiz_attempt.blade.php:297` — `flex gap-2`
+- `resources/views/learning/my/quiz_attempt.blade.php:299` — `ghost`
+- `resources/views/learning/my/quiz_attempt.blade.php:299` — `button`
+- `resources/views/learning/my/quiz_attempt.blade.php:301` — `outline`
+- `resources/views/learning/my/quiz_attempt.blade.php:301` — `button`
+- `resources/views/learning/my/quiz_attempt.blade.php:308` — `flex items-center justify-end gap-3`
+- `resources/views/learning/my/quiz_attempt.blade.php:310` — `text-xs text-muted`
+- `resources/views/learning/my/quiz_attempt.blade.php:312` — `primary`
+- `resources/views/learning/my/quiz_attempt.blade.php:312` — `submit`
+- `resources/views/learning/my/quiz_attempt.blade.php:324` — `use strict`
+- `resources/views/learning/my/quiz_attempt.blade.php:327` — `data-hotspot-image`
+- `resources/views/learning/my/quiz_attempt.blade.php:333` — `crosshair`
+- `resources/views/learning/my/quiz_attempt.blade.php:335` — `click`
 - `resources/views/learning/my/show.blade.php:14` — `title`
 - `resources/views/learning/my/show.blade.php:15` — `nav-title`
 - `resources/views/learning/my/show.blade.php:16` — `content`
 - `resources/views/learning/my/show.blade.php:26` — `primary`
 - `resources/views/learning/my/show.blade.php:33` — `ghost`
 - `resources/views/learning/my/show.blade.php:33` — `button`
-- `resources/views/learning/my/show.blade.php:37` — `ghost`
-- `resources/views/learning/my/show.blade.php:48` — `mb-2 text-sm font-semibold`
-- `resources/views/learning/my/show.blade.php:65` — `flex flex-wrap items-start justify-between gap-3`
-- `resources/views/learning/my/show.blade.php:67` — `flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/my/show.blade.php:68` — `text-success`
-- `resources/views/learning/my/show.blade.php:68` — `text-muted`
-- `resources/views/learning/my/show.blade.php:69` — `title`
-- `resources/views/learning/my/show.blade.php:71` — `mt-1 text-xs text-muted`
-- `resources/views/learning/my/show.blade.php:81` — `neutral`
-- `resources/views/learning/my/show.blade.php:85` — `ghost`
-- `resources/views/learning/my/show.blade.php:85` — `submit`
-- `resources/views/learning/my/show.blade.php:90` — `primary`
-- `resources/views/learning/my/show.blade.php:90` — `submit`
-- `resources/views/learning/my/show.blade.php:96` — `info`
-- `resources/views/learning/my/show.blade.php:103` — `quiz`
-- `resources/views/learning/my/show.blade.php:103` — `primary`
-- `resources/views/learning/my/show.blade.php:103` — `submit`
-- `resources/views/learning/my/show.blade.php:108` — `primary`
-- `resources/views/learning/my/show.blade.php:114` — `w-full space-y-1`
-- `resources/views/learning/my/show.blade.php:116` — `flex flex-wrap items-center justify-between gap-2`
-- `resources/views/learning/my/show.blade.php:117` — `text-sm`
-- `resources/views/learning/my/show.blade.php:119` — `text-xs text-muted`
-- `resources/views/learning/my/show.blade.php:119` — `open`
-- `resources/views/learning/my/show.blade.php:123` — `primary`
-- `resources/views/learning/my/show.blade.php:123` — `submit`
-- `resources/views/learning/my/show.blade.php:133` — `primary`
-- `resources/views/learning/my/show.blade.php:133` — `submit`
-- `resources/views/learning/my/show.blade.php:143` — `learning.unit-complete`
-- `resources/views/learning/my/show.blade.php:148` — `primary`
-- `resources/views/learning/my/show.blade.php:148` — `submit`
-- `resources/views/learning/my/show.blade.php:160` — `blocks`
-- `resources/views/learning/my/show.blade.php:161` — `index`
-- `resources/views/learning/my/show.blade.php:163` — `text`
-- `resources/views/learning/my/show.blade.php:163` — `items`
-- `resources/views/learning/my/show.blade.php:169` — `blocks`
-- `resources/views/learning/my/show.blade.php:170` — `mediaState`
-- `resources/views/learning/my/show.blade.php:171` — `mediaUrl`
-- `resources/views/learning/my/show.blade.php:179` — `text-muted`
-- `resources/views/learning/my/show.blade.php:183` — `mt-1 text-xs text-muted`
-- `resources/views/learning/my/show.blade.php:192` — `font-medium`
-- `resources/views/learning/my/show.blade.php:199` — `mt-3`
-- `resources/views/learning/my/show.blade.php:202` — `body`
-- `resources/views/learning/my/show.blade.php:203` — `body`
-- `resources/views/learning/my/show.blade.php:206` — `label`
-- `resources/views/learning/my/show.blade.php:207` — `label-text`
-- `resources/views/learning/my/show.blade.php:209` — `file`
-- `resources/views/learning/my/show.blade.php:210` — `file-input file-input-bordered file-input-sm w-full`
-- `resources/views/learning/my/show.blade.php:211` — `mt-1 text-xs text-muted`
-- `resources/views/learning/my/show.blade.php:214` — `mt-2 space-y-1 text-sm`
-- `resources/views/learning/my/show.blade.php:217` — `link`
-- `resources/views/learning/my/show.blade.php:224` — `mt-2 flex justify-end`
-- `resources/views/learning/my/show.blade.php:225` — `upload`
-- `resources/views/learning/my/show.blade.php:225` — `primary`
-- `resources/views/learning/my/show.blade.php:225` — `submit`
-- `resources/views/learning/my/show.blade.php:229` — `mt-3 text-sm`
-- `resources/views/learning/my/show.blade.php:231` — `font-mono`
-- `resources/views/learning/my/show.blade.php:240` — `space-y-4`
-- `resources/views/learning/my/show.blade.php:244` — `mb-3 flex items-center gap-2 text-sm font-semibold`
-- `resources/views/learning/my/show.blade.php:245` — `timer`
-- `resources/views/learning/my/show.blade.php:245` — `text-muted`
-- `resources/views/learning/my/show.blade.php:248` — `mb-3 text-sm`
-- `resources/views/learning/my/show.blade.php:250` — `font-mono`
-- `resources/views/learning/my/show.blade.php:254` — `warning`
-- `resources/views/learning/my/show.blade.php:254` — `submit`
-- `resources/views/learning/my/show.blade.php:256` — `mt-2 text-xs text-muted`
-- `resources/views/learning/my/show.blade.php:260` — `primary`
-- `resources/views/learning/my/show.blade.php:260` — `submit`
-- `resources/views/learning/my/show.blade.php:264` — `mt-3`
-- `resources/views/learning/my/show.blade.php:265` — `inside`
-- `resources/views/learning/my/show.blade.php:266` — `outside`
-- `resources/views/learning/my/show.blade.php:268` — `mt-3 text-xs text-muted`
-- `resources/views/learning/my/show.blade.php:272` — `mb-3 text-sm font-semibold`
-- `resources/views/learning/my/show.blade.php:279` — `mt-3 text-xs text-muted`
-- `resources/views/learning/my/show.blade.php:292` — `use strict`
-- `resources/views/learning/my/show.blade.php:295` — `csrf-token`
-- `resources/views/learning/my/show.blade.php:298` — `visible`
-- `resources/views/learning/my/show.blade.php:302` — `same-origin`
-- `resources/views/learning/my/show.blade.php:304` — `Accept`
-- `resources/views/learning/my/show.blade.php:305` — `X-CSRF-TOKEN`
-- `resources/views/learning/my/show.blade.php:305` — `content`
-- `resources/views/learning/my/show.blade.php:312` — `visibilitychange`
+- `resources/views/learning/my/show.blade.php:40` — `ghost`
+- `resources/views/learning/my/show.blade.php:40` — `submit`
+- `resources/views/learning/my/show.blade.php:43` — `ghost`
+- `resources/views/learning/my/show.blade.php:54` — `alert alert-warning text-sm`
+- `resources/views/learning/my/show.blade.php:54` — `status`
+- `resources/views/learning/my/show.blade.php:55` — `lock`
+- `resources/views/learning/my/show.blade.php:57` — `font-medium`
+- `resources/views/learning/my/show.blade.php:58` — `list-disc pl-5`
+- `resources/views/learning/my/show.blade.php:68` — `mb-2 text-sm font-semibold`
+- `resources/views/learning/my/show.blade.php:87` — `flex flex-wrap items-start justify-between gap-3`
+- `resources/views/learning/my/show.blade.php:89` — `flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/my/show.blade.php:90` — `text-success`
+- `resources/views/learning/my/show.blade.php:90` — `text-muted`
+- `resources/views/learning/my/show.blade.php:91` — `title`
+- `resources/views/learning/my/show.blade.php:93` — `mt-1 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:101` — `neutral`
+- `resources/views/learning/my/show.blade.php:103` — `date`
+- `resources/views/learning/my/show.blade.php:108` — `neutral`
+- `resources/views/learning/my/show.blade.php:112` — `ghost`
+- `resources/views/learning/my/show.blade.php:112` — `submit`
+- `resources/views/learning/my/show.blade.php:117` — `primary`
+- `resources/views/learning/my/show.blade.php:117` — `submit`
+- `resources/views/learning/my/show.blade.php:123` — `info`
+- `resources/views/learning/my/show.blade.php:130` — `quiz`
+- `resources/views/learning/my/show.blade.php:130` — `primary`
+- `resources/views/learning/my/show.blade.php:130` — `submit`
+- `resources/views/learning/my/show.blade.php:135` — `primary`
+- `resources/views/learning/my/show.blade.php:141` — `w-full space-y-1`
+- `resources/views/learning/my/show.blade.php:143` — `flex flex-wrap items-center justify-between gap-2`
+- `resources/views/learning/my/show.blade.php:144` — `text-sm`
+- `resources/views/learning/my/show.blade.php:146` — `text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:146` — `open`
+- `resources/views/learning/my/show.blade.php:150` — `primary`
+- `resources/views/learning/my/show.blade.php:150` — `submit`
+- `resources/views/learning/my/show.blade.php:160` — `primary`
+- `resources/views/learning/my/show.blade.php:160` — `submit`
+- `resources/views/learning/my/show.blade.php:170` — `learning.unit-complete`
+- `resources/views/learning/my/show.blade.php:175` — `primary`
+- `resources/views/learning/my/show.blade.php:175` — `submit`
+- `resources/views/learning/my/show.blade.php:187` — `blocks`
+- `resources/views/learning/my/show.blade.php:188` — `index`
+- `resources/views/learning/my/show.blade.php:190` — `text`
+- `resources/views/learning/my/show.blade.php:190` — `items`
+- `resources/views/learning/my/show.blade.php:197` — `blocks`
+- `resources/views/learning/my/show.blade.php:198` — `mediaState`
+- `resources/views/learning/my/show.blade.php:199` — `mediaUrl`
+- `resources/views/learning/my/show.blade.php:207` — `subject`
+- `resources/views/learning/my/show.blade.php:209` — `mt-3 space-y-1`
+- `resources/views/learning/my/show.blade.php:211` — `rounded-box border border-base-300 bg-base-200 px-3 py-2 text-sm`
+- `resources/views/learning/my/show.blade.php:212` — `whitespace-pre-line`
+- `resources/views/learning/my/show.blade.php:213` — `mt-1 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:219` — `mt-2`
+- `resources/views/learning/my/show.blade.php:220` — `cursor-pointer text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:221` — `mt-2`
+- `resources/views/learning/my/show.blade.php:223` — `hidden`
+- `resources/views/learning/my/show.blade.php:223` — `unit`
+- `resources/views/learning/my/show.blade.php:224` — `body`
+- `resources/views/learning/my/show.blade.php:225` — `mt-2 flex justify-end`
+- `resources/views/learning/my/show.blade.php:226` — `save`
+- `resources/views/learning/my/show.blade.php:226` — `outline`
+- `resources/views/learning/my/show.blade.php:226` — `submit`
+- `resources/views/learning/my/show.blade.php:234` — `text-muted`
+- `resources/views/learning/my/show.blade.php:238` — `mt-1 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:247` — `font-medium`
+- `resources/views/learning/my/show.blade.php:254` — `mt-3`
+- `resources/views/learning/my/show.blade.php:257` — `body`
+- `resources/views/learning/my/show.blade.php:258` — `body`
+- `resources/views/learning/my/show.blade.php:261` — `label`
+- `resources/views/learning/my/show.blade.php:262` — `label-text`
+- `resources/views/learning/my/show.blade.php:264` — `file`
+- `resources/views/learning/my/show.blade.php:265` — `file-input file-input-bordered file-input-sm w-full`
+- `resources/views/learning/my/show.blade.php:266` — `mt-1 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:269` — `mt-2 space-y-1 text-sm`
+- `resources/views/learning/my/show.blade.php:272` — `link`
+- `resources/views/learning/my/show.blade.php:279` — `mt-2 flex justify-end`
+- `resources/views/learning/my/show.blade.php:280` — `upload`
+- `resources/views/learning/my/show.blade.php:280` — `primary`
+- `resources/views/learning/my/show.blade.php:280` — `submit`
+- `resources/views/learning/my/show.blade.php:284` — `mt-3 text-sm`
+- `resources/views/learning/my/show.blade.php:286` — `font-mono`
+- `resources/views/learning/my/show.blade.php:295` — `space-y-4`
+- `resources/views/learning/my/show.blade.php:299` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/my/show.blade.php:300` — `timer`
+- `resources/views/learning/my/show.blade.php:300` — `text-muted`
+- `resources/views/learning/my/show.blade.php:303` — `mb-3 text-sm`
+- `resources/views/learning/my/show.blade.php:305` — `font-mono`
+- `resources/views/learning/my/show.blade.php:309` — `warning`
+- `resources/views/learning/my/show.blade.php:309` — `submit`
+- `resources/views/learning/my/show.blade.php:311` — `mt-2 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:315` — `primary`
+- `resources/views/learning/my/show.blade.php:315` — `submit`
+- `resources/views/learning/my/show.blade.php:319` — `mt-3`
+- `resources/views/learning/my/show.blade.php:320` — `inside`
+- `resources/views/learning/my/show.blade.php:321` — `outside`
+- `resources/views/learning/my/show.blade.php:323` — `mt-3 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:330` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/my/show.blade.php:331` — `text-muted`
+- `resources/views/learning/my/show.blade.php:333` — `tutorAnswer`
+- `resources/views/learning/my/show.blade.php:334` — `mb-3 rounded-box border border-base-300 p-3 text-sm`
+- `resources/views/learning/my/show.blade.php:335` — `mb-1 font-medium`
+- `resources/views/learning/my/show.blade.php:335` — `tutorQuestion`
+- `resources/views/learning/my/show.blade.php:336` — `tutorAnswer`
+- `resources/views/learning/my/show.blade.php:341` — `question`
+- `resources/views/learning/my/show.blade.php:341` — `question`
+- `resources/views/learning/my/show.blade.php:342` — `mt-2 flex justify-end`
+- `resources/views/learning/my/show.blade.php:343` — `send`
+- `resources/views/learning/my/show.blade.php:343` — `outline`
+- `resources/views/learning/my/show.blade.php:343` — `submit`
+- `resources/views/learning/my/show.blade.php:346` — `mt-2 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:353` — `mb-2 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/my/show.blade.php:354` — `text-muted`
+- `resources/views/learning/my/show.blade.php:356` — `mb-3 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:357` — `send`
+- `resources/views/learning/my/show.blade.php:357` — `outline`
+- `resources/views/learning/my/show.blade.php:365` — `learning-notes`
+- `resources/views/learning/my/show.blade.php:366` — `mb-3 flex items-center gap-2 text-sm font-semibold`
+- `resources/views/learning/my/show.blade.php:367` — `text-muted`
+- `resources/views/learning/my/show.blade.php:368` — `badge badge-ghost badge-sm`
+- `resources/views/learning/my/show.blade.php:371` — `text-sm text-muted`
+- `resources/views/learning/my/show.blade.php:373` — `space-y-2`
+- `resources/views/learning/my/show.blade.php:375` — `rounded-box border border-base-300 px-3 py-2 text-sm`
+- `resources/views/learning/my/show.blade.php:376` — `flex flex-wrap items-start justify-between gap-2`
+- `resources/views/learning/my/show.blade.php:377` — `min-w-0`
+- `resources/views/learning/my/show.blade.php:378` — `font-medium`
+- `resources/views/learning/my/show.blade.php:380` — `mt-1 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:386` — `delete`
+- `resources/views/learning/my/show.blade.php:386` — `ghost`
+- `resources/views/learning/my/show.blade.php:386` — `submit`
+- `resources/views/learning/my/show.blade.php:393` — `mt-3`
+- `resources/views/learning/my/show.blade.php:395` — `body`
+- `resources/views/learning/my/show.blade.php:396` — `mt-2 flex justify-end`
+- `resources/views/learning/my/show.blade.php:397` — `save`
+- `resources/views/learning/my/show.blade.php:397` — `outline`
+- `resources/views/learning/my/show.blade.php:397` — `submit`
+- `resources/views/learning/my/show.blade.php:400` — `mt-2 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:404` — `mb-3 text-sm font-semibold`
+- `resources/views/learning/my/show.blade.php:411` — `mt-3 text-xs text-muted`
+- `resources/views/learning/my/show.blade.php:412` — `mt-3 flex justify-end`
+- `resources/views/learning/my/show.blade.php:413` — `ghost`
+- `resources/views/learning/my/show.blade.php:414` — `learning.my.report-card`
+- `resources/views/learning/my/show.blade.php:429` — `use strict`
+- `resources/views/learning/my/show.blade.php:432` — `csrf-token`
+- `resources/views/learning/my/show.blade.php:435` — `visible`
+- `resources/views/learning/my/show.blade.php:439` — `same-origin`
+- `resources/views/learning/my/show.blade.php:441` — `Accept`
+- `resources/views/learning/my/show.blade.php:442` — `X-CSRF-TOKEN`
+- `resources/views/learning/my/show.blade.php:442` — `content`
+- `resources/views/learning/my/show.blade.php:449` — `visibilitychange`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:16` — `replay`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:17` — `warning`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:18` — `learning.courses.enrollments.attempt-waiver`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:20` — `data-entry-form`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:23` — `quiz`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:23` — `warning`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:29` — `reason`
+- `resources/views/learning/enrollments/_waiver_dialog.blade.php:30` — `reason`
 - `resources/views/learning/enrollments/_extend_dialog.blade.php:17` — `primary`
 - `resources/views/learning/enrollments/_extend_dialog.blade.php:20` — `data-entry-form`
 - `resources/views/learning/enrollments/_extend_dialog.blade.php:23` — `event`
@@ -35443,6 +36310,7 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/enrollments/index.blade.php:82` — `hover`
 - `resources/views/learning/enrollments/index.blade.php:83` — `font-medium`
 - `resources/views/learning/enrollments/index.blade.php:86` — `ghost`
+- `resources/views/learning/enrollments/index.blade.php:89` — `text-xs text-muted`
 - `resources/views/learning/enrollments/index.blade.php:92` — `text-sm`
 - `resources/views/learning/enrollments/index.blade.php:95` — `warning`
 - `resources/views/learning/enrollments/index.blade.php:98` — `text-sm`
@@ -35453,18 +36321,20 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/learning/enrollments/index.blade.php:107` — `text-right whitespace-nowrap`
 - `resources/views/learning/enrollments/index.blade.php:108` — `flex justify-end gap-1`
 - `resources/views/learning/enrollments/index.blade.php:110` — `outline`
-- `resources/views/learning/enrollments/index.blade.php:115` — `learning.courses.enrollments.access-link`
-- `resources/views/learning/enrollments/index.blade.php:118` — `link`
-- `resources/views/learning/enrollments/index.blade.php:118` — `outline`
-- `resources/views/learning/enrollments/index.blade.php:118` — `submit`
-- `resources/views/learning/enrollments/index.blade.php:122` — `flex items-center gap-1`
-- `resources/views/learning/enrollments/index.blade.php:125` — `sr-only`
-- `resources/views/learning/enrollments/index.blade.php:126` — `text`
-- `resources/views/learning/enrollments/index.blade.php:126` — `reason`
-- `resources/views/learning/enrollments/index.blade.php:127` — `input input-xs input-bordered w-32`
-- `resources/views/learning/enrollments/index.blade.php:129` — `ghost`
-- `resources/views/learning/enrollments/index.blade.php:129` — `submit`
-- `resources/views/learning/enrollments/index.blade.php:137` — `group`
+- `resources/views/learning/enrollments/index.blade.php:115` — `replay`
+- `resources/views/learning/enrollments/index.blade.php:115` — `outline`
+- `resources/views/learning/enrollments/index.blade.php:121` — `learning.courses.enrollments.access-link`
+- `resources/views/learning/enrollments/index.blade.php:124` — `link`
+- `resources/views/learning/enrollments/index.blade.php:124` — `outline`
+- `resources/views/learning/enrollments/index.blade.php:124` — `submit`
+- `resources/views/learning/enrollments/index.blade.php:128` — `flex items-center gap-1`
+- `resources/views/learning/enrollments/index.blade.php:131` — `sr-only`
+- `resources/views/learning/enrollments/index.blade.php:132` — `text`
+- `resources/views/learning/enrollments/index.blade.php:132` — `reason`
+- `resources/views/learning/enrollments/index.blade.php:133` — `input input-xs input-bordered w-32`
+- `resources/views/learning/enrollments/index.blade.php:135` — `ghost`
+- `resources/views/learning/enrollments/index.blade.php:135` — `submit`
+- `resources/views/learning/enrollments/index.blade.php:143` — `group`
 - `resources/views/learning/lti/auto-post.blade.php:16` — `utf-8`
 - `resources/views/learning/lti/auto-post.blade.php:17` — `robots`
 - `resources/views/learning/lti/auto-post.blade.php:17` — `noindex`
@@ -41868,81 +42738,80 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/invoices/import-review.blade.php:49` — `warning`
 - `resources/views/invoices/import-review.blade.php:50` — `list-inside list-disc text-sm`
 - `resources/views/invoices/import-review.blade.php:59` — `description`
-- `resources/views/invoices/import-review.blade.php:61` — `invoices.pdf-import.preview`
-- `resources/views/invoices/import-review.blade.php:62` — `xml' ? `
-- `resources/views/invoices/import-review.blade.php:64` — `p-4 text-sm text-muted`
-- `resources/views/invoices/import-review.blade.php:67` — `flex flex-col items-start gap-3 p-4`
-- `resources/views/invoices/import-review.blade.php:68` — `text-sm text-muted`
-- `resources/views/invoices/import-review.blade.php:69` — `download`
-- `resources/views/invoices/import-review.blade.php:69` — `primary`
-- `resources/views/invoices/import-review.blade.php:70` — `invoices.pdf-import.source`
-- `resources/views/invoices/import-review.blade.php:71` — `invoice-import.original`
-- `resources/views/invoices/import-review.blade.php:76` — `space-y-4`
-- `resources/views/invoices/import-review.blade.php:80` — `skonto`
-- `resources/views/invoices/import-review.blade.php:80` — `skonto`
+- `resources/views/invoices/import-review.blade.php:61` — `none`
+- `resources/views/invoices/import-review.blade.php:62` — `invoices.pdf-import.preview`
+- `resources/views/invoices/import-review.blade.php:66` — `flex flex-col items-start gap-3 p-4`
+- `resources/views/invoices/import-review.blade.php:67` — `text-sm text-muted`
+- `resources/views/invoices/import-review.blade.php:68` — `download`
+- `resources/views/invoices/import-review.blade.php:68` — `primary`
+- `resources/views/invoices/import-review.blade.php:69` — `invoices.pdf-import.source`
+- `resources/views/invoices/import-review.blade.php:70` — `invoice-import.original`
+- `resources/views/invoices/import-review.blade.php:75` — `space-y-4`
+- `resources/views/invoices/import-review.blade.php:79` — `skonto`
+- `resources/views/invoices/import-review.blade.php:79` — `skonto`
+- `resources/views/invoices/import-review.blade.php:81` — `label`
+- `resources/views/invoices/import-review.blade.php:81` — `detected`
+- `resources/views/invoices/import-review.blade.php:81` — `number`
+- `resources/views/invoices/import-review.blade.php:81` — `current`
 - `resources/views/invoices/import-review.blade.php:82` — `label`
 - `resources/views/invoices/import-review.blade.php:82` — `detected`
-- `resources/views/invoices/import-review.blade.php:82` — `number`
 - `resources/views/invoices/import-review.blade.php:82` — `current`
 - `resources/views/invoices/import-review.blade.php:83` — `label`
 - `resources/views/invoices/import-review.blade.php:83` — `detected`
 - `resources/views/invoices/import-review.blade.php:83` — `current`
 - `resources/views/invoices/import-review.blade.php:84` — `label`
+- `resources/views/invoices/import-review.blade.php:84` — `invoice-import.currency`
 - `resources/views/invoices/import-review.blade.php:84` — `detected`
+- `resources/views/invoices/import-review.blade.php:84` — `currency`
 - `resources/views/invoices/import-review.blade.php:84` — `current`
 - `resources/views/invoices/import-review.blade.php:85` — `label`
-- `resources/views/invoices/import-review.blade.php:85` — `invoice-import.currency`
 - `resources/views/invoices/import-review.blade.php:85` — `detected`
-- `resources/views/invoices/import-review.blade.php:85` — `currency`
 - `resources/views/invoices/import-review.blade.php:85` — `current`
 - `resources/views/invoices/import-review.blade.php:86` — `label`
 - `resources/views/invoices/import-review.blade.php:86` — `detected`
 - `resources/views/invoices/import-review.blade.php:86` — `current`
 - `resources/views/invoices/import-review.blade.php:87` — `label`
 - `resources/views/invoices/import-review.blade.php:87` — `detected`
+- `resources/views/invoices/import-review.blade.php:87` — `gross`
 - `resources/views/invoices/import-review.blade.php:87` — `current`
 - `resources/views/invoices/import-review.blade.php:88` — `label`
 - `resources/views/invoices/import-review.blade.php:88` — `detected`
-- `resources/views/invoices/import-review.blade.php:88` — `gross`
 - `resources/views/invoices/import-review.blade.php:88` — `current`
 - `resources/views/invoices/import-review.blade.php:89` — `label`
 - `resources/views/invoices/import-review.blade.php:89` — `detected`
 - `resources/views/invoices/import-review.blade.php:89` — `current`
 - `resources/views/invoices/import-review.blade.php:90` — `label`
 - `resources/views/invoices/import-review.blade.php:90` — `detected`
+- `resources/views/invoices/import-review.blade.php:90` — `percent`
+- `resources/views/invoices/import-review.blade.php:90` — `percent`
+- `resources/views/invoices/import-review.blade.php:90` — `days`
+- `resources/views/invoices/import-review.blade.php:90` — `days`
 - `resources/views/invoices/import-review.blade.php:90` — `current`
+- `resources/views/invoices/import-review.blade.php:90` — `percent`
+- `resources/views/invoices/import-review.blade.php:90` — `days`
 - `resources/views/invoices/import-review.blade.php:91` — `label`
 - `resources/views/invoices/import-review.blade.php:91` — `detected`
-- `resources/views/invoices/import-review.blade.php:91` — `percent`
-- `resources/views/invoices/import-review.blade.php:91` — `percent`
-- `resources/views/invoices/import-review.blade.php:91` — `days`
-- `resources/views/invoices/import-review.blade.php:91` — `days`
 - `resources/views/invoices/import-review.blade.php:91` — `current`
-- `resources/views/invoices/import-review.blade.php:91` — `percent`
-- `resources/views/invoices/import-review.blade.php:91` — `days`
 - `resources/views/invoices/import-review.blade.php:92` — `label`
 - `resources/views/invoices/import-review.blade.php:92` — `detected`
 - `resources/views/invoices/import-review.blade.php:92` — `current`
 - `resources/views/invoices/import-review.blade.php:93` — `label`
 - `resources/views/invoices/import-review.blade.php:93` — `detected`
 - `resources/views/invoices/import-review.blade.php:93` — `current`
-- `resources/views/invoices/import-review.blade.php:94` — `label`
-- `resources/views/invoices/import-review.blade.php:94` — `detected`
-- `resources/views/invoices/import-review.blade.php:94` — `current`
-- `resources/views/invoices/import-review.blade.php:107` — `detected`
-- `resources/views/invoices/import-review.blade.php:107` — `current`
-- `resources/views/invoices/import-review.blade.php:109` — `label`
-- `resources/views/invoices/import-review.blade.php:110` — `detected`
-- `resources/views/invoices/import-review.blade.php:111` — `current`
-- `resources/views/invoices/import-review.blade.php:122` — `w-10`
-- `resources/views/invoices/import-review.blade.php:124` — `text-right`
+- `resources/views/invoices/import-review.blade.php:106` — `detected`
+- `resources/views/invoices/import-review.blade.php:106` — `current`
+- `resources/views/invoices/import-review.blade.php:108` — `label`
+- `resources/views/invoices/import-review.blade.php:109` — `detected`
+- `resources/views/invoices/import-review.blade.php:110` — `current`
+- `resources/views/invoices/import-review.blade.php:121` — `w-10`
+- `resources/views/invoices/import-review.blade.php:123` — `text-right`
+- `resources/views/invoices/import-review.blade.php:125` — `text-right`
 - `resources/views/invoices/import-review.blade.php:126` — `text-right`
-- `resources/views/invoices/import-review.blade.php:127` — `text-right`
-- `resources/views/invoices/import-review.blade.php:134` — `whitespace-pre-line`
-- `resources/views/invoices/import-review.blade.php:135` — `text-right`
+- `resources/views/invoices/import-review.blade.php:133` — `whitespace-pre-line`
+- `resources/views/invoices/import-review.blade.php:134` — `text-right`
+- `resources/views/invoices/import-review.blade.php:136` — `text-right`
 - `resources/views/invoices/import-review.blade.php:137` — `text-right`
-- `resources/views/invoices/import-review.blade.php:138` — `text-right`
-- `resources/views/invoices/import-review.blade.php:143` — `px-4 py-3 text-xs text-muted`
+- `resources/views/invoices/import-review.blade.php:142` — `px-4 py-3 text-xs text-muted`
 - `resources/views/invoices/_pdf_import_dialog.blade.php:10` — `invoice-import.title`
 - `resources/views/invoices/_pdf_import_dialog.blade.php:11` — `invoice-import.eyebrow`
 - `resources/views/invoices/_pdf_import_dialog.blade.php:13` — `primary`
@@ -47667,14 +48536,31 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/customer/learning/index.blade.php:15` — `content`
 - `resources/views/customer/learning/index.blade.php:16` — `space-y-4`
 - `resources/views/customer/learning/index.blade.php:17` — `text-xl font-semibold`
-- `resources/views/customer/learning/index.blade.php:22` — `flex flex-wrap items-start justify-between gap-3`
-- `resources/views/customer/learning/index.blade.php:24` — `text-sm font-semibold`
-- `resources/views/customer/learning/index.blade.php:29` — `mt-2`
-- `resources/views/customer/learning/index.blade.php:33` — `primary`
-- `resources/views/customer/learning/index.blade.php:39` — `school`
-- `resources/views/customer/learning/index.blade.php:39` — `primary`
-- `resources/views/customer/learning/index.blade.php:39` — `submit`
-- `resources/views/customer/learning/index.blade.php:45` — `school`
+- `resources/views/customer/learning/index.blade.php:20` — `flex flex-wrap items-end gap-2`
+- `resources/views/customer/learning/index.blade.php:21` — `form-control`
+- `resources/views/customer/learning/index.blade.php:22` — `label py-0`
+- `resources/views/customer/learning/index.blade.php:22` — `flt-category`
+- `resources/views/customer/learning/index.blade.php:22` — `label-text text-xs`
+- `resources/views/customer/learning/index.blade.php:23` — `flt-category`
+- `resources/views/customer/learning/index.blade.php:23` — `category`
+- `resources/views/customer/learning/index.blade.php:23` — `select select-sm select-bordered`
+- `resources/views/customer/learning/index.blade.php:36` — `flex flex-wrap items-start justify-between gap-3`
+- `resources/views/customer/learning/index.blade.php:38` — `text-sm font-semibold`
+- `resources/views/customer/learning/index.blade.php:43` — `ghost`
+- `resources/views/customer/learning/index.blade.php:43` — `mt-1`
+- `resources/views/customer/learning/index.blade.php:46` — `mt-1 flex flex-wrap items-center gap-2 text-xs text-muted`
+- `resources/views/customer/learning/index.blade.php:51` — `count`
+- `resources/views/customer/learning/index.blade.php:51` — `count`
+- `resources/views/customer/learning/index.blade.php:51` — `average`
+- `resources/views/customer/learning/index.blade.php:55` — `mt-2`
+- `resources/views/customer/learning/index.blade.php:59` — `primary`
+- `resources/views/customer/learning/index.blade.php:63` — `flex flex-wrap items-center gap-2`
+- `resources/views/customer/learning/index.blade.php:65` — `visibility`
+- `resources/views/customer/learning/index.blade.php:65` — `outline`
+- `resources/views/customer/learning/index.blade.php:71` — `school`
+- `resources/views/customer/learning/index.blade.php:71` — `primary`
+- `resources/views/customer/learning/index.blade.php:71` — `submit`
+- `resources/views/customer/learning/index.blade.php:78` — `school`
 - `resources/views/customer/learning/show.blade.php:12` — `title`
 - `resources/views/customer/learning/show.blade.php:13` — `content`
 - `resources/views/customer/learning/show.blade.php:14` — `space-y-4`
@@ -47683,21 +48569,51 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/customer/learning/show.blade.php:17` — `ghost`
 - `resources/views/customer/learning/show.blade.php:23` — `alert alert-success text-sm`
 - `resources/views/customer/learning/show.blade.php:24` — `verified`
-- `resources/views/customer/learning/show.blade.php:32` — `flex flex-wrap items-start justify-between gap-3`
-- `resources/views/customer/learning/show.blade.php:33` — `flex items-center gap-2 text-sm font-semibold`
-- `resources/views/customer/learning/show.blade.php:35` — `text-success`
-- `resources/views/customer/learning/show.blade.php:35` — `text-muted`
-- `resources/views/customer/learning/show.blade.php:41` — `primary`
-- `resources/views/customer/learning/show.blade.php:41` — `submit`
-- `resources/views/customer/learning/show.blade.php:47` — `type`
-- `resources/views/customer/learning/show.blade.php:47` — `text`
-- `resources/views/customer/learning/show.blade.php:47` — `text`
-- `resources/views/customer/learning/show.blade.php:48` — `text`
-- `resources/views/customer/learning/show.blade.php:49` — `type`
-- `resources/views/customer/learning/show.blade.php:49` — `heading`
-- `resources/views/customer/learning/show.blade.php:49` — `text`
-- `resources/views/customer/learning/show.blade.php:50` — `mt-3 text-sm font-semibold`
-- `resources/views/customer/learning/show.blade.php:50` — `text`
+- `resources/views/customer/learning/show.blade.php:35` — `flex flex-wrap items-start justify-between gap-3`
+- `resources/views/customer/learning/show.blade.php:36` — `flex items-center gap-2 text-sm font-semibold`
+- `resources/views/customer/learning/show.blade.php:38` — `text-success`
+- `resources/views/customer/learning/show.blade.php:38` — `text-muted`
+- `resources/views/customer/learning/show.blade.php:42` — `neutral`
+- `resources/views/customer/learning/show.blade.php:42` — `date`
+- `resources/views/customer/learning/show.blade.php:47` — `primary`
+- `resources/views/customer/learning/show.blade.php:47` — `submit`
+- `resources/views/customer/learning/show.blade.php:53` — `type`
+- `resources/views/customer/learning/show.blade.php:53` — `text`
+- `resources/views/customer/learning/show.blade.php:53` — `text`
+- `resources/views/customer/learning/show.blade.php:54` — `text`
+- `resources/views/customer/learning/show.blade.php:55` — `type`
+- `resources/views/customer/learning/show.blade.php:55` — `heading`
+- `resources/views/customer/learning/show.blade.php:55` — `text`
+- `resources/views/customer/learning/show.blade.php:56` — `mt-3 text-sm font-semibold`
+- `resources/views/customer/learning/show.blade.php:56` — `text`
+- `resources/views/customer/learning/preview.blade.php:14` — `title`
+- `resources/views/customer/learning/preview.blade.php:15` — `content`
+- `resources/views/customer/learning/preview.blade.php:16` — `space-y-4`
+- `resources/views/customer/learning/preview.blade.php:17` — `flex flex-wrap items-start justify-between gap-3`
+- `resources/views/customer/learning/preview.blade.php:19` — `text-xl font-semibold`
+- `resources/views/customer/learning/preview.blade.php:20` — `text-sm text-muted`
+- `resources/views/customer/learning/preview.blade.php:22` — `flex flex-wrap items-center gap-2`
+- `resources/views/customer/learning/preview.blade.php:24` — `primary`
+- `resources/views/customer/learning/preview.blade.php:30` — `school`
+- `resources/views/customer/learning/preview.blade.php:30` — `primary`
+- `resources/views/customer/learning/preview.blade.php:30` — `submit`
+- `resources/views/customer/learning/preview.blade.php:33` — `ghost`
+- `resources/views/customer/learning/preview.blade.php:47` — `flex items-center gap-2 text-sm font-semibold`
+- `resources/views/customer/learning/preview.blade.php:48` — `visibility`
+- `resources/views/customer/learning/preview.blade.php:48` — `text-muted`
+- `resources/views/customer/learning/preview.blade.php:52` — `type`
+- `resources/views/customer/learning/preview.blade.php:52` — `text`
+- `resources/views/customer/learning/preview.blade.php:52` — `text`
+- `resources/views/customer/learning/preview.blade.php:53` — `text`
+- `resources/views/customer/learning/preview.blade.php:54` — `type`
+- `resources/views/customer/learning/preview.blade.php:54` — `heading`
+- `resources/views/customer/learning/preview.blade.php:54` — `text`
+- `resources/views/customer/learning/preview.blade.php:55` — `mt-3 text-sm font-semibold`
+- `resources/views/customer/learning/preview.blade.php:55` — `text`
+- `resources/views/customer/learning/preview.blade.php:56` — `type`
+- `resources/views/customer/learning/preview.blade.php:56` — `checklist`
+- `resources/views/customer/learning/preview.blade.php:56` — `items`
+- `resources/views/customer/learning/preview.blade.php:58` — `items`
 - `resources/views/customer/two-factor-challenge.blade.php:11` — `content`
 - `resources/views/customer/two-factor-challenge.blade.php:12` — `max-w-md mx-auto bg-base-100 border border-base-300 rounded p-6 mt-10`
 - `resources/views/customer/two-factor-challenge.blade.php:12` — `twoFactorChallenge`
@@ -48080,6 +48996,7 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/customer/appointments/index.blade.php:21` — `select select-bordered select-sm w-64`
 - `resources/views/customer/appointments/index.blade.php:30` — `form-control`
 - `resources/views/customer/appointments/index.blade.php:31` — `label-text`
+- `resources/views/customer/appointments/index.blade.php:31` — `Datum`
 - `resources/views/customer/appointments/index.blade.php:32` — `date`
 - `resources/views/customer/appointments/index.blade.php:32` — `Y-m-d`
 - `resources/views/customer/appointments/index.blade.php:32` — `input input-bordered input-sm`
@@ -50709,6 +51626,7 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/reports/week-by-user.blade.php:118` — `number`
 - `resources/views/reports/week-by-user.blade.php:118` — `right`
 - `resources/views/reports/week-by-user.blade.php:122` — `font-bold`
+- `resources/views/reports/week-by-user.blade.php:123` — `Tagessumme`
 - `resources/views/reports/week-by-user.blade.php:125` — `text-right`
 - `resources/views/reports/week-by-user.blade.php:127` — `text-right`
 - `resources/views/reports/week-by-user.blade.php:128` — `text-right`
@@ -56874,9 +57792,10 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/reports/plan-ist/shifts.blade.php:40` — `plan-ist-group`
 - `resources/views/reports/plan-ist/shifts.blade.php:40` — `group`
 - `resources/views/reports/plan-ist/shifts.blade.php:40` — `select select-sm select-bordered shrink-0`
+- `resources/views/reports/plan-ist/shifts.blade.php:41` — `Täglich`
 - `resources/views/reports/plan-ist/shifts.blade.php:42` — `week`
 - `resources/views/reports/plan-ist/shifts.blade.php:42` — `week`
-- `resources/views/reports/plan-ist/shifts.blade.php:42` — `Woche`
+- `resources/views/reports/plan-ist/shifts.blade.php:42` — `Wöchentlich`
 - `resources/views/reports/plan-ist/shifts.blade.php:47` — `rows`
 - `resources/views/reports/plan-ist/shifts.blade.php:50` — `Keine geplanten Schichten im Zeitraum.`
 - `resources/views/reports/plan-ist/shifts.blade.php:51` — `Soll-Werte entstehen aus veröffentlichten oder bestätigten Schichten des Schichtplans.`
@@ -59596,130 +60515,141 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/applications/recruiting/applications/show.blade.php:69` — `Keine Unterlagen abgelegt.`
 - `resources/views/applications/recruiting/applications/show.blade.php:71` — `space-y-1 text-sm`
 - `resources/views/applications/recruiting/applications/show.blade.php:74` — `link`
-- `resources/views/applications/recruiting/applications/show.blade.php:81` — `Datenschutzstatus`
-- `resources/views/applications/recruiting/applications/show.blade.php:83` — `Löschvormerkung`
-- `resources/views/applications/recruiting/applications/show.blade.php:84` — `Talentpool-Einwilligung`
-- `resources/views/applications/recruiting/applications/show.blade.php:85` — `Einwilligung läuft ab`
-- `resources/views/applications/recruiting/applications/show.blade.php:87` — `privacy`
-- `resources/views/applications/recruiting/applications/show.blade.php:88` — `mt-3 flex flex-wrap gap-2`
-- `resources/views/applications/recruiting/applications/show.blade.php:89` — `download`
-- `resources/views/applications/recruiting/applications/show.blade.php:89` — `outline`
-- `resources/views/applications/recruiting/applications/show.blade.php:90` — `Auskunft nach Art. 15 DSGVO als strukturierte Kopie`
-- `resources/views/applications/recruiting/applications/show.blade.php:93` — `Bewerberdaten unwiderruflich anonymisieren? Die Akte bleibt als anonymer Nachweis erhalten.`
-- `resources/views/applications/recruiting/applications/show.blade.php:94` — `shield`
-- `resources/views/applications/recruiting/applications/show.blade.php:94` — `error`
-- `resources/views/applications/recruiting/applications/show.blade.php:94` — `Anonymisieren`
-- `resources/views/applications/recruiting/applications/show.blade.php:95` — `shield`
-- `resources/views/applications/recruiting/applications/show.blade.php:95` — `error`
-- `resources/views/applications/recruiting/applications/show.blade.php:95` — `submit`
-- `resources/views/applications/recruiting/applications/show.blade.php:104` — `Gespräche`
-- `resources/views/applications/recruiting/applications/show.blade.php:105` — `update`
-- `resources/views/applications/recruiting/applications/show.blade.php:107` — `mb-3 flex flex-wrap items-end gap-2`
-- `resources/views/applications/recruiting/applications/show.blade.php:109` — `datetime-local`
-- `resources/views/applications/recruiting/applications/show.blade.php:109` — `input input-sm input-bordered`
-- `resources/views/applications/recruiting/applications/show.blade.php:109` — `Termin`
-- `resources/views/applications/recruiting/applications/show.blade.php:110` — `mode`
-- `resources/views/applications/recruiting/applications/show.blade.php:110` — `select select-sm select-bordered`
-- `resources/views/applications/recruiting/applications/show.blade.php:111` — `onsite`
-- `resources/views/applications/recruiting/applications/show.blade.php:111` — `Vor Ort`
-- `resources/views/applications/recruiting/applications/show.blade.php:112` — `remote`
-- `resources/views/applications/recruiting/applications/show.blade.php:112` — `Remote`
-- `resources/views/applications/recruiting/applications/show.blade.php:113` — `phone`
-- `resources/views/applications/recruiting/applications/show.blade.php:113` — `Telefon`
-- `resources/views/applications/recruiting/applications/show.blade.php:115` — `event`
-- `resources/views/applications/recruiting/applications/show.blade.php:115` — `primary`
-- `resources/views/applications/recruiting/applications/show.blade.php:115` — `submit`
-- `resources/views/applications/recruiting/applications/show.blade.php:115` — `Gespräch planen`
-- `resources/views/applications/recruiting/applications/show.blade.php:120` — `event`
-- `resources/views/applications/recruiting/applications/show.blade.php:120` — `Keine Gespräche geplant.`
-- `resources/views/applications/recruiting/applications/show.blade.php:122` — `space-y-2 text-sm`
-- `resources/views/applications/recruiting/applications/show.blade.php:124` — `flex flex-wrap items-center gap-2`
-- `resources/views/applications/recruiting/applications/show.blade.php:127` — `text-muted`
-- `resources/views/applications/recruiting/applications/show.blade.php:128` — `text-xs`
-- `resources/views/applications/recruiting/applications/show.blade.php:129` — `planned`
-- `resources/views/applications/recruiting/applications/show.blade.php:130` — `update`
-- `resources/views/applications/recruiting/applications/show.blade.php:131` — `ml-auto`
-- `resources/views/applications/recruiting/applications/show.blade.php:132` — `check`
-- `resources/views/applications/recruiting/applications/show.blade.php:132` — `success`
-- `resources/views/applications/recruiting/applications/show.blade.php:132` — `submit`
-- `resources/views/applications/recruiting/applications/show.blade.php:132` — `Als geführt dokumentieren`
-- `resources/views/applications/recruiting/applications/show.blade.php:142` — `Bewertungen`
-- `resources/views/applications/recruiting/applications/show.blade.php:143` — `update`
-- `resources/views/applications/recruiting/applications/show.blade.php:145` — `mb-3 flex flex-wrap items-end gap-2`
-- `resources/views/applications/recruiting/applications/show.blade.php:147` — `rating`
-- `resources/views/applications/recruiting/applications/show.blade.php:147` — `select select-sm select-bordered`
-- `resources/views/applications/recruiting/applications/show.blade.php:147` — `Bewertung`
-- `resources/views/applications/recruiting/applications/show.blade.php:152` — `comment`
-- `resources/views/applications/recruiting/applications/show.blade.php:152` — `input input-sm input-bordered flex-1`
-- `resources/views/applications/recruiting/applications/show.blade.php:153` — `grade`
-- `resources/views/applications/recruiting/applications/show.blade.php:153` — `primary`
-- `resources/views/applications/recruiting/applications/show.blade.php:153` — `submit`
-- `resources/views/applications/recruiting/applications/show.blade.php:153` — `Bewerten`
-- `resources/views/applications/recruiting/applications/show.blade.php:158` — `grade`
-- `resources/views/applications/recruiting/applications/show.blade.php:158` — `Keine Bewertungen.`
-- `resources/views/applications/recruiting/applications/show.blade.php:160` — `space-y-1 text-sm`
-- `resources/views/applications/recruiting/applications/show.blade.php:164` — `text-muted`
-- `resources/views/applications/recruiting/applications/show.blade.php:174` — `decide`
-- `resources/views/applications/recruiting/applications/show.blade.php:176` — `Entscheidung`
-- `resources/views/applications/recruiting/applications/show.blade.php:177` — `flex flex-wrap items-end gap-2`
-- `resources/views/applications/recruiting/applications/show.blade.php:179` — `decision`
-- `resources/views/applications/recruiting/applications/show.blade.php:179` — `select select-sm select-bordered`
-- `resources/views/applications/recruiting/applications/show.blade.php:180` — `offer`
-- `resources/views/applications/recruiting/applications/show.blade.php:180` — `Angebot`
-- `resources/views/applications/recruiting/applications/show.blade.php:181` — `accepted`
-- `resources/views/applications/recruiting/applications/show.blade.php:181` — `Zusage`
-- `resources/views/applications/recruiting/applications/show.blade.php:182` — `rejected`
-- `resources/views/applications/recruiting/applications/show.blade.php:182` — `Absage`
-- `resources/views/applications/recruiting/applications/show.blade.php:183` — `withdrawn`
-- `resources/views/applications/recruiting/applications/show.blade.php:184` — `Talentpool`
-- `resources/views/applications/recruiting/applications/show.blade.php:186` — `Anmerkung`
-- `resources/views/applications/recruiting/applications/show.blade.php:186` — `note`
-- `resources/views/applications/recruiting/applications/show.blade.php:186` — `input input-sm input-bordered flex-1`
-- `resources/views/applications/recruiting/applications/show.blade.php:186` — `Anmerkung`
-- `resources/views/applications/recruiting/applications/show.blade.php:187` — `label cursor-pointer gap-2`
-- `resources/views/applications/recruiting/applications/show.blade.php:188` — `checkbox`
-- `resources/views/applications/recruiting/applications/show.blade.php:188` — `checkbox checkbox-sm`
-- `resources/views/applications/recruiting/applications/show.blade.php:189` — `label-text text-xs`
-- `resources/views/applications/recruiting/applications/show.blade.php:189` — `Ausdrückliche Talentpool-Einwilligung liegt vor`
-- `resources/views/applications/recruiting/applications/show.blade.php:191` — `gavel`
-- `resources/views/applications/recruiting/applications/show.blade.php:191` — `primary`
-- `resources/views/applications/recruiting/applications/show.blade.php:191` — `submit`
-- `resources/views/applications/recruiting/applications/show.blade.php:191` — `Entscheiden`
-- `resources/views/applications/recruiting/applications/show.blade.php:193` — `mt-2 text-xs text-muted`
-- `resources/views/applications/recruiting/applications/show.blade.php:193` — `months`
-- `resources/views/applications/recruiting/applications/show.blade.php:199` — `accepted`
-- `resources/views/applications/recruiting/applications/show.blade.php:202` — `decide`
-- `resources/views/applications/recruiting/applications/show.blade.php:203` — `flex flex-wrap items-end gap-2`
-- `resources/views/applications/recruiting/applications/show.blade.php:205` — `qualifications`
-- `resources/views/applications/recruiting/applications/show.blade.php:205` — `textarea textarea-bordered textarea-sm flex-1`
-- `resources/views/applications/recruiting/applications/show.blade.php:206` — `badge`
-- `resources/views/applications/recruiting/applications/show.blade.php:206` — `primary`
-- `resources/views/applications/recruiting/applications/show.blade.php:206` — `submit`
-- `resources/views/applications/recruiting/applications/show.blade.php:206` — `Entwurf anlegen`
-- `resources/views/applications/recruiting/applications/show.blade.php:208` — `mt-2 text-xs text-muted`
-- `resources/views/applications/recruiting/applications/show.blade.php:213` — `Status`
-- `resources/views/applications/recruiting/applications/show.blade.php:214` — `Name`
-- `resources/views/applications/recruiting/applications/show.blade.php:215` — `E-Mail`
-- `resources/views/applications/recruiting/applications/show.blade.php:217` — `Qualifikationen`
-- `resources/views/applications/recruiting/applications/show.blade.php:221` — `mt-2 space-y-1 text-sm`
-- `resources/views/applications/recruiting/applications/show.blade.php:223` — `done`
-- `resources/views/applications/recruiting/applications/show.blade.php:223` — `label`
-- `resources/views/applications/recruiting/applications/show.blade.php:227` — `draft`
-- `resources/views/applications/recruiting/applications/show.blade.php:228` — `invite`
-- `resources/views/applications/recruiting/applications/show.blade.php:229` — `mt-3`
-- `resources/views/applications/recruiting/applications/show.blade.php:230` — `Jetzt ein Nutzerkonto anlegen? Der Kandidat muss beim ersten Login das Passwort setzen.`
-- `resources/views/applications/recruiting/applications/show.blade.php:231` — `primary`
-- `resources/views/applications/recruiting/applications/show.blade.php:231` — `Einladen`
-- `resources/views/applications/recruiting/applications/show.blade.php:232` — `primary`
-- `resources/views/applications/recruiting/applications/show.blade.php:232` — `submit`
-- `resources/views/applications/recruiting/applications/show.blade.php:232` — `Als Mitglied einladen`
-- `resources/views/applications/recruiting/applications/show.blade.php:236` — `mt-2 text-sm text-success`
-- `resources/views/applications/recruiting/applications/show.blade.php:236` — `name`
-- `resources/views/applications/recruiting/applications/show.blade.php:243` — `negotiations`
-- `resources/views/applications/recruiting/applications/show.blade.php:244` — `storeRoute`
-- `resources/views/applications/recruiting/applications/show.blade.php:245` — `canOpen`
-- `resources/views/applications/recruiting/applications/show.blade.php:245` — `offer', 'accepted`
-- `resources/views/applications/recruiting/applications/show.blade.php:245` — `decide`
+- `resources/views/applications/recruiting/applications/show.blade.php:82` — `mt-4 text-sm font-semibold`
+- `resources/views/applications/recruiting/applications/show.blade.php:82` — `Eingereichte Unterlagen`
+- `resources/views/applications/recruiting/applications/show.blade.php:84` — `text-sm text-muted`
+- `resources/views/applications/recruiting/applications/show.blade.php:84` — `Keine Unterlagen eingereicht.`
+- `resources/views/applications/recruiting/applications/show.blade.php:86` — `space-y-1 text-sm`
+- `resources/views/applications/recruiting/applications/show.blade.php:88` — `flex flex-wrap items-center gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:90` — `link`
+- `resources/views/applications/recruiting/applications/show.blade.php:93` — `error`
+- `resources/views/applications/recruiting/applications/show.blade.php:93` — `warning'`
+- `resources/views/applications/recruiting/applications/show.blade.php:94` — `Abgewiesen`
+- `resources/views/applications/recruiting/applications/show.blade.php:94` — `In Prüfung`
+- `resources/views/applications/recruiting/applications/show.blade.php:103` — `Datenschutzstatus`
+- `resources/views/applications/recruiting/applications/show.blade.php:105` — `Löschvormerkung`
+- `resources/views/applications/recruiting/applications/show.blade.php:106` — `Talentpool-Einwilligung`
+- `resources/views/applications/recruiting/applications/show.blade.php:107` — `Einwilligung läuft ab`
+- `resources/views/applications/recruiting/applications/show.blade.php:109` — `privacy`
+- `resources/views/applications/recruiting/applications/show.blade.php:110` — `mt-3 flex flex-wrap gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:111` — `download`
+- `resources/views/applications/recruiting/applications/show.blade.php:111` — `outline`
+- `resources/views/applications/recruiting/applications/show.blade.php:112` — `Auskunft nach Art. 15 DSGVO als strukturierte Kopie`
+- `resources/views/applications/recruiting/applications/show.blade.php:115` — `Bewerberdaten unwiderruflich anonymisieren? Die Akte bleibt als anonymer Nachweis erhalten.`
+- `resources/views/applications/recruiting/applications/show.blade.php:116` — `shield`
+- `resources/views/applications/recruiting/applications/show.blade.php:116` — `error`
+- `resources/views/applications/recruiting/applications/show.blade.php:116` — `Anonymisieren`
+- `resources/views/applications/recruiting/applications/show.blade.php:117` — `shield`
+- `resources/views/applications/recruiting/applications/show.blade.php:117` — `error`
+- `resources/views/applications/recruiting/applications/show.blade.php:117` — `submit`
+- `resources/views/applications/recruiting/applications/show.blade.php:126` — `Gespräche`
+- `resources/views/applications/recruiting/applications/show.blade.php:127` — `update`
+- `resources/views/applications/recruiting/applications/show.blade.php:129` — `mb-3 flex flex-wrap items-end gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:131` — `datetime-local`
+- `resources/views/applications/recruiting/applications/show.blade.php:131` — `input input-sm input-bordered`
+- `resources/views/applications/recruiting/applications/show.blade.php:131` — `Termin`
+- `resources/views/applications/recruiting/applications/show.blade.php:132` — `mode`
+- `resources/views/applications/recruiting/applications/show.blade.php:132` — `select select-sm select-bordered`
+- `resources/views/applications/recruiting/applications/show.blade.php:133` — `onsite`
+- `resources/views/applications/recruiting/applications/show.blade.php:133` — `Vor Ort`
+- `resources/views/applications/recruiting/applications/show.blade.php:134` — `remote`
+- `resources/views/applications/recruiting/applications/show.blade.php:134` — `Remote`
+- `resources/views/applications/recruiting/applications/show.blade.php:135` — `phone`
+- `resources/views/applications/recruiting/applications/show.blade.php:135` — `Telefon`
+- `resources/views/applications/recruiting/applications/show.blade.php:137` — `event`
+- `resources/views/applications/recruiting/applications/show.blade.php:137` — `primary`
+- `resources/views/applications/recruiting/applications/show.blade.php:137` — `submit`
+- `resources/views/applications/recruiting/applications/show.blade.php:137` — `Gespräch planen`
+- `resources/views/applications/recruiting/applications/show.blade.php:142` — `event`
+- `resources/views/applications/recruiting/applications/show.blade.php:142` — `Keine Gespräche geplant.`
+- `resources/views/applications/recruiting/applications/show.blade.php:144` — `space-y-2 text-sm`
+- `resources/views/applications/recruiting/applications/show.blade.php:146` — `flex flex-wrap items-center gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:149` — `text-muted`
+- `resources/views/applications/recruiting/applications/show.blade.php:150` — `text-xs`
+- `resources/views/applications/recruiting/applications/show.blade.php:151` — `planned`
+- `resources/views/applications/recruiting/applications/show.blade.php:152` — `update`
+- `resources/views/applications/recruiting/applications/show.blade.php:153` — `ml-auto`
+- `resources/views/applications/recruiting/applications/show.blade.php:154` — `check`
+- `resources/views/applications/recruiting/applications/show.blade.php:154` — `success`
+- `resources/views/applications/recruiting/applications/show.blade.php:154` — `submit`
+- `resources/views/applications/recruiting/applications/show.blade.php:154` — `Als geführt dokumentieren`
+- `resources/views/applications/recruiting/applications/show.blade.php:164` — `Bewertungen`
+- `resources/views/applications/recruiting/applications/show.blade.php:165` — `update`
+- `resources/views/applications/recruiting/applications/show.blade.php:167` — `mb-3 flex flex-wrap items-end gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:169` — `rating`
+- `resources/views/applications/recruiting/applications/show.blade.php:169` — `select select-sm select-bordered`
+- `resources/views/applications/recruiting/applications/show.blade.php:169` — `Bewertung`
+- `resources/views/applications/recruiting/applications/show.blade.php:174` — `comment`
+- `resources/views/applications/recruiting/applications/show.blade.php:174` — `input input-sm input-bordered flex-1`
+- `resources/views/applications/recruiting/applications/show.blade.php:175` — `grade`
+- `resources/views/applications/recruiting/applications/show.blade.php:175` — `primary`
+- `resources/views/applications/recruiting/applications/show.blade.php:175` — `submit`
+- `resources/views/applications/recruiting/applications/show.blade.php:175` — `Bewerten`
+- `resources/views/applications/recruiting/applications/show.blade.php:180` — `grade`
+- `resources/views/applications/recruiting/applications/show.blade.php:180` — `Keine Bewertungen.`
+- `resources/views/applications/recruiting/applications/show.blade.php:182` — `space-y-1 text-sm`
+- `resources/views/applications/recruiting/applications/show.blade.php:186` — `text-muted`
+- `resources/views/applications/recruiting/applications/show.blade.php:196` — `decide`
+- `resources/views/applications/recruiting/applications/show.blade.php:198` — `Entscheidung`
+- `resources/views/applications/recruiting/applications/show.blade.php:199` — `flex flex-wrap items-end gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:201` — `decision`
+- `resources/views/applications/recruiting/applications/show.blade.php:201` — `select select-sm select-bordered`
+- `resources/views/applications/recruiting/applications/show.blade.php:202` — `offer`
+- `resources/views/applications/recruiting/applications/show.blade.php:202` — `Angebot`
+- `resources/views/applications/recruiting/applications/show.blade.php:203` — `accepted`
+- `resources/views/applications/recruiting/applications/show.blade.php:203` — `Zusage`
+- `resources/views/applications/recruiting/applications/show.blade.php:204` — `rejected`
+- `resources/views/applications/recruiting/applications/show.blade.php:204` — `Absage`
+- `resources/views/applications/recruiting/applications/show.blade.php:205` — `withdrawn`
+- `resources/views/applications/recruiting/applications/show.blade.php:206` — `Talentpool`
+- `resources/views/applications/recruiting/applications/show.blade.php:208` — `Anmerkung`
+- `resources/views/applications/recruiting/applications/show.blade.php:208` — `note`
+- `resources/views/applications/recruiting/applications/show.blade.php:208` — `input input-sm input-bordered flex-1`
+- `resources/views/applications/recruiting/applications/show.blade.php:208` — `Anmerkung`
+- `resources/views/applications/recruiting/applications/show.blade.php:209` — `label cursor-pointer gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:210` — `checkbox`
+- `resources/views/applications/recruiting/applications/show.blade.php:210` — `checkbox checkbox-sm`
+- `resources/views/applications/recruiting/applications/show.blade.php:211` — `label-text text-xs`
+- `resources/views/applications/recruiting/applications/show.blade.php:211` — `Ausdrückliche Talentpool-Einwilligung liegt vor`
+- `resources/views/applications/recruiting/applications/show.blade.php:213` — `gavel`
+- `resources/views/applications/recruiting/applications/show.blade.php:213` — `primary`
+- `resources/views/applications/recruiting/applications/show.blade.php:213` — `submit`
+- `resources/views/applications/recruiting/applications/show.blade.php:213` — `Entscheiden`
+- `resources/views/applications/recruiting/applications/show.blade.php:215` — `mt-2 text-xs text-muted`
+- `resources/views/applications/recruiting/applications/show.blade.php:215` — `months`
+- `resources/views/applications/recruiting/applications/show.blade.php:221` — `accepted`
+- `resources/views/applications/recruiting/applications/show.blade.php:224` — `decide`
+- `resources/views/applications/recruiting/applications/show.blade.php:225` — `flex flex-wrap items-end gap-2`
+- `resources/views/applications/recruiting/applications/show.blade.php:227` — `qualifications`
+- `resources/views/applications/recruiting/applications/show.blade.php:227` — `textarea textarea-bordered textarea-sm flex-1`
+- `resources/views/applications/recruiting/applications/show.blade.php:228` — `badge`
+- `resources/views/applications/recruiting/applications/show.blade.php:228` — `primary`
+- `resources/views/applications/recruiting/applications/show.blade.php:228` — `submit`
+- `resources/views/applications/recruiting/applications/show.blade.php:228` — `Entwurf anlegen`
+- `resources/views/applications/recruiting/applications/show.blade.php:230` — `mt-2 text-xs text-muted`
+- `resources/views/applications/recruiting/applications/show.blade.php:235` — `Status`
+- `resources/views/applications/recruiting/applications/show.blade.php:236` — `Name`
+- `resources/views/applications/recruiting/applications/show.blade.php:237` — `E-Mail`
+- `resources/views/applications/recruiting/applications/show.blade.php:239` — `Qualifikationen`
+- `resources/views/applications/recruiting/applications/show.blade.php:243` — `mt-2 space-y-1 text-sm`
+- `resources/views/applications/recruiting/applications/show.blade.php:245` — `done`
+- `resources/views/applications/recruiting/applications/show.blade.php:245` — `label`
+- `resources/views/applications/recruiting/applications/show.blade.php:249` — `draft`
+- `resources/views/applications/recruiting/applications/show.blade.php:250` — `invite`
+- `resources/views/applications/recruiting/applications/show.blade.php:251` — `mt-3`
+- `resources/views/applications/recruiting/applications/show.blade.php:252` — `Jetzt ein Nutzerkonto anlegen? Der Kandidat muss beim ersten Login das Passwort setzen.`
+- `resources/views/applications/recruiting/applications/show.blade.php:253` — `primary`
+- `resources/views/applications/recruiting/applications/show.blade.php:253` — `Einladen`
+- `resources/views/applications/recruiting/applications/show.blade.php:254` — `primary`
+- `resources/views/applications/recruiting/applications/show.blade.php:254` — `submit`
+- `resources/views/applications/recruiting/applications/show.blade.php:254` — `Als Mitglied einladen`
+- `resources/views/applications/recruiting/applications/show.blade.php:258` — `mt-2 text-sm text-success`
+- `resources/views/applications/recruiting/applications/show.blade.php:258` — `name`
+- `resources/views/applications/recruiting/applications/show.blade.php:265` — `negotiations`
+- `resources/views/applications/recruiting/applications/show.blade.php:266` — `storeRoute`
+- `resources/views/applications/recruiting/applications/show.blade.php:267` — `canOpen`
+- `resources/views/applications/recruiting/applications/show.blade.php:267` — `offer', 'accepted`
+- `resources/views/applications/recruiting/applications/show.blade.php:267` — `decide`
 - `resources/views/shift-types/index.blade.php:11` — `title`
 - `resources/views/shift-types/index.blade.php:11` — `Schichttypen`
 - `resources/views/shift-types/index.blade.php:12` — `nav-title`
@@ -62214,6 +63144,16 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/dashboard/widgets/integration-inbox.blade.php:22` — `flex items-center justify-between gap-3 rounded-box border border-base-300 bg-base-200 px-3 py-2`
 - `resources/views/dashboard/widgets/integration-inbox.blade.php:23` — `min-w-0 truncate`
 - `resources/views/dashboard/widgets/integration-inbox.blade.php:24` — `badge badge-warning badge-sm tabular-nums`
+- `resources/views/dashboard/widgets/learning-due.blade.php:11` — `Meine Schulungen`
+- `resources/views/dashboard/widgets/learning-due.blade.php:11` — `school`
+- `resources/views/dashboard/widgets/learning-due.blade.php:13` — `ghost`
+- `resources/views/dashboard/widgets/learning-due.blade.php:17` — `school`
+- `resources/views/dashboard/widgets/learning-due.blade.php:18` — `Nichts offen`
+- `resources/views/dashboard/widgets/learning-due.blade.php:20` — `space-y-2 text-sm`
+- `resources/views/dashboard/widgets/learning-due.blade.php:22` — `flex flex-wrap items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/widgets/learning-due.blade.php:23` — `link link-primary min-w-0 truncate`
+- `resources/views/dashboard/widgets/learning-due.blade.php:24` — `error`
+- `resources/views/dashboard/widgets/learning-due.blade.php:24` — `ghost'`
 - `resources/views/dashboard/widgets/resale-periods.blade.php:12` — `subscriptions`
 - `resources/views/dashboard/widgets/resale-periods.blade.php:14` — `ghost`
 - `resources/views/dashboard/widgets/resale-periods.blade.php:22` — `text-xs uppercase tracking-wider text-muted`
@@ -62383,6 +63323,25 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/dashboard/widgets/asset-blocks.blade.php:20` — `space-y-2 text-sm`
 - `resources/views/dashboard/widgets/asset-blocks.blade.php:23` — `min-w-0 truncate`
 - `resources/views/dashboard/widgets/asset-blocks.blade.php:24` — `error`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:11` — `Bewertungen offen`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:11` — `grading`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:13` — `ghost`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:17` — `grading`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:18` — `Nichts offen`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:20` — `space-y-2 text-sm`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:21` — `flex items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:22` — `link link-primary`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:23` — `warning`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:23` — `ghost'`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:25` — `flex items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:26` — `link link-primary`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:27` — `warning`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:27` — `ghost'`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:29` — `flex items-center justify-between gap-2 rounded-box border border-base-300 bg-base-200 px-3 py-2`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:30` — `learning.time-approvals.index`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:30` — `link link-primary`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:31` — `warning`
+- `resources/views/dashboard/widgets/learning-grading-queue.blade.php:31` — `ghost'`
 - `resources/views/dashboard/widgets/recent-comments.blade.php:11` — `Neue Kommentare auf meinen Einträgen`
 - `resources/views/dashboard/widgets/recent-comments.blade.php:11` — `comment`
 - `resources/views/dashboard/widgets/recent-comments.blade.php:13` — `comment`
@@ -65657,6 +66616,7 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/print/duty_plan_a4_user_month.blade.php:51` — `subtitle`
 - `resources/views/print/duty_plan_a4_user_month.blade.php:53` — `extraMeta`
 - `resources/views/print/duty_plan_a4_user_month.blade.php:53` — `Summe`
+- `resources/views/print/duty_plan_a4_user_month.blade.php:67` — `Wochentag`
 - `resources/views/print/duty_plan_a4_user_month.blade.php:68` — `Datum`
 - `resources/views/print/duty_plan_a4_user_month.blade.php:69` — `Schicht`
 - `resources/views/print/duty_plan_a4_user_month.blade.php:70` — `Beginn`
@@ -68430,53 +69390,60 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/errors/_page.blade.php:54` — `FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz`
 - `resources/views/errors/_page.blade.php:62` — `min-h-screen bg-linear-to-b from-base-200 to-base-300 text-base-content`
 - `resources/views/errors/_page.blade.php:63` — `IBM Plex Sans`
-- `resources/views/errors/_page.blade.php:64` — `flex min-h-screen items-center justify-center px-4`
-- `resources/views/errors/_page.blade.php:65` — `w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg`
-- `resources/views/errors/_page.blade.php:66` — `WorkDiary`
-- `resources/views/errors/_page.blade.php:67` — `mx-auto mb-6 h-12 w-auto object-contain`
-- `resources/views/errors/_page.blade.php:68` — `primary`
-- `resources/views/errors/_page.blade.php:68` — `primary`
-- `resources/views/errors/_page.blade.php:69` — `material-symbols-outlined`
-- `resources/views/errors/_page.blade.php:69` — `FILL' 1, 'wght`
-- `resources/views/errors/_page.blade.php:71` — `mb-2 text-2xl font-semibold`
-- `resources/views/errors/_page.blade.php:71` — `Space Grotesk`
-- `resources/views/errors/_page.blade.php:78` — `mt-3 text-xs text-muted`
-- `resources/views/errors/_page.blade.php:83` — `mt-3 text-xs text-muted`
-- `resources/views/errors/_page.blade.php:84` — `font-mono select-all`
-- `resources/views/errors/_page.blade.php:88` — `mt-6`
-- `resources/views/errors/_page.blade.php:90` — `reload`
-- `resources/views/errors/_page.blade.php:91` — `button`
-- `resources/views/errors/_page.blade.php:91` — `tone`
-- `resources/views/errors/_page.blade.php:91` — `primary`
-- `resources/views/errors/_page.blade.php:91` — `gap-1`
-- `resources/views/errors/_page.blade.php:91` — `icon`
-- `resources/views/errors/_page.blade.php:91` — `refresh`
-- `resources/views/errors/_page.blade.php:91` — `label`
-- `resources/views/errors/_page.blade.php:93` — `href`
-- `resources/views/errors/_page.blade.php:93` — `tone`
-- `resources/views/errors/_page.blade.php:93` — `primary`
-- `resources/views/errors/_page.blade.php:93` — `gap-1`
-- `resources/views/errors/_page.blade.php:93` — `icon`
-- `resources/views/errors/_page.blade.php:93` — `home`
-- `resources/views/errors/_page.blade.php:93` — `label`
-- `resources/views/errors/_page.blade.php:98` — `mt-6`
-- `resources/views/errors/_page.blade.php:99` — `ghost`
+- `resources/views/errors/_page.blade.php:65` — `flex min-h-screen items-center justify-center px-4`
+- `resources/views/errors/_page.blade.php:66` — `w-full max-w-lg rounded-3xl border border-base-300 bg-base-100 p-8 text-center shadow-lg`
+- `resources/views/errors/_page.blade.php:67` — `WorkDiary`
+- `resources/views/errors/_page.blade.php:68` — `mx-auto mb-6 h-12 w-auto object-contain`
+- `resources/views/errors/_page.blade.php:69` — `primary`
+- `resources/views/errors/_page.blade.php:69` — `primary`
+- `resources/views/errors/_page.blade.php:70` — `material-symbols-outlined`
+- `resources/views/errors/_page.blade.php:70` — `FILL' 1, 'wght`
+- `resources/views/errors/_page.blade.php:72` — `mb-2 text-2xl font-semibold`
+- `resources/views/errors/_page.blade.php:72` — `Space Grotesk`
+- `resources/views/errors/_page.blade.php:79` — `mt-3 text-xs text-muted`
+- `resources/views/errors/_page.blade.php:86` — `mt-3 text-xs text-muted`
+- `resources/views/errors/_page.blade.php:91` — `mt-3 text-xs text-muted`
+- `resources/views/errors/_page.blade.php:92` — `font-mono select-all`
+- `resources/views/errors/_page.blade.php:96` — `mt-6`
+- `resources/views/errors/_page.blade.php:98` — `reload`
+- `resources/views/errors/_page.blade.php:99` — `button`
+- `resources/views/errors/_page.blade.php:99` — `tone`
+- `resources/views/errors/_page.blade.php:99` — `primary`
 - `resources/views/errors/_page.blade.php:99` — `gap-1`
-- `resources/views/errors/_page.blade.php:99` — `Zurück`
-- `resources/views/errors/_page.blade.php:100` — `primary`
-- `resources/views/errors/_page.blade.php:100` — `gap-1`
-- `resources/views/errors/_page.blade.php:100` — `home`
-- `resources/views/errors/_page.blade.php:100` — `Zur Startseite`
-- `resources/views/errors/_page.blade.php:101` — `problem-reports.create`
-- `resources/views/errors/_page.blade.php:104` — `problem-reports.create`
-- `resources/views/errors/_page.blade.php:104` — `context`
-- `resources/views/errors/_page.blade.php:104` — `error', 'code`
-- `resources/views/errors/_page.blade.php:104` — `warning`
-- `resources/views/errors/_page.blade.php:104` — `gap-1`
-- `resources/views/errors/_page.blade.php:104` — `flag`
-- `resources/views/errors/_page.blade.php:109` — `mt-6 text-left text-xs`
-- `resources/views/errors/_page.blade.php:110` — `cursor-pointer text-muted`
-- `resources/views/errors/_page.blade.php:110` — `Technische Details`
+- `resources/views/errors/_page.blade.php:99` — `icon`
+- `resources/views/errors/_page.blade.php:99` — `refresh`
+- `resources/views/errors/_page.blade.php:99` — `label`
+- `resources/views/errors/_page.blade.php:101` — `href`
+- `resources/views/errors/_page.blade.php:101` — `tone`
+- `resources/views/errors/_page.blade.php:101` — `primary`
+- `resources/views/errors/_page.blade.php:101` — `gap-1`
+- `resources/views/errors/_page.blade.php:101` — `icon`
+- `resources/views/errors/_page.blade.php:101` — `home`
+- `resources/views/errors/_page.blade.php:101` — `label`
+- `resources/views/errors/_page.blade.php:106` — `mt-6`
+- `resources/views/errors/_page.blade.php:107` — `ghost`
+- `resources/views/errors/_page.blade.php:107` — `gap-1`
+- `resources/views/errors/_page.blade.php:107` — `Zurück`
+- `resources/views/errors/_page.blade.php:108` — `primary`
+- `resources/views/errors/_page.blade.php:108` — `gap-1`
+- `resources/views/errors/_page.blade.php:108` — `home`
+- `resources/views/errors/_page.blade.php:108` — `Zur Startseite`
+- `resources/views/errors/_page.blade.php:109` — `problem-reports.create`
+- `resources/views/errors/_page.blade.php:112` — `problem-reports.create`
+- `resources/views/errors/_page.blade.php:112` — `context`
+- `resources/views/errors/_page.blade.php:112` — `error', 'code`
+- `resources/views/errors/_page.blade.php:112` — `warning`
+- `resources/views/errors/_page.blade.php:112` — `gap-1`
+- `resources/views/errors/_page.blade.php:112` — `flag`
+- `resources/views/errors/_page.blade.php:117` — `mt-6 text-left text-xs`
+- `resources/views/errors/_page.blade.php:118` — `cursor-pointer text-muted`
+- `resources/views/errors/_page.blade.php:118` — `Technische Details`
+- `resources/views/errors/_page.blade.php:131` — `click`
+- `resources/views/errors/_page.blade.php:134` — `data-auto-retry`
+- `resources/views/errors/_page.blade.php:147` — `no-store`
+- `resources/views/errors/_page.blade.php:147` — `same-origin`
+- `resources/views/errors/_page.blade.php:162` — `visibilitychange`
+- `resources/views/errors/_page.blade.php:163` — `visible`
 - `resources/views/errors/maintenance.blade.php:11` — `icon`
 - `resources/views/errors/maintenance.blade.php:11` — `engineering',
     'tone`
@@ -68528,6 +69495,28 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/views/errors/403.blade.php:23` — `errors.403.title`
 - `resources/views/errors/403.blade.php:24` — `message`
 - `resources/views/errors/403.blade.php:24` — `errors.403.message`
+- `resources/views/errors/503.blade.php:17` — `getHeaders`
+- `resources/views/errors/503.blade.php:18` — `Retry-After`
+- `resources/views/errors/503.blade.php:22` — `code`
+- `resources/views/errors/503.blade.php:23` — `icon`
+- `resources/views/errors/503.blade.php:23` — `engineering',
+    'tone`
+- `resources/views/errors/503.blade.php:24` — `warning',
+    'title`
+- `resources/views/errors/503.blade.php:25` — `Wartungsarbeiten`
+- `resources/views/errors/503.blade.php:26` — `message`
+- `resources/views/errors/503.blade.php:26` — `Die Anwendung wird gerade aktualisiert. Bitte versuchen Sie es in wenigen Minuten erneut.`
+- `resources/views/errors/503.blade.php:27` — `extraNote`
+- `resources/views/errors/503.blade.php:28` — `seconds`
+- `resources/views/errors/503.blade.php:30` — `safe`
+- `resources/views/errors/503.blade.php:31` — `reportable`
+- `resources/views/errors/503.blade.php:33` — `autoRetry`
+- `resources/views/errors/503.blade.php:34` — `actions`
+- `resources/views/errors/503.blade.php:35` — `label`
+- `resources/views/errors/503.blade.php:35` — `Erneut versuchen`
+- `resources/views/errors/503.blade.php:35` — `reload`
+- `resources/views/errors/503.blade.php:35` — `icon`
+- `resources/views/errors/503.blade.php:35` — `refresh`
 - `resources/views/guarantees/index.blade.php:15` — `title`
 - `resources/views/guarantees/index.blade.php:16` — `nav-title`
 - `resources/views/guarantees/index.blade.php:18` — `wrapper-height-class', 'wd-page-fill`
@@ -69013,132 +70002,132 @@ Generated: 2026-09-14T20:51:57+00:00
 
 - `resources/js/app.js:8` — `alpinejs`
 - `resources/js/app.js:14` — `flatpickr`
-- `resources/js/app.js:45` — `undefined`
-- `resources/js/app.js:70` — `default`
-- `resources/js/app.js:80` — `undefined`
-- `resources/js/app.js:84` — `Y-m-d`
-- `resources/js/app.js:145` — `input`
-- `resources/js/app.js:146` — `change`
-- `resources/js/app.js:149` — `input`
-- `resources/js/app.js:150` — `change`
-- `resources/js/app.js:164` — `input`
-- `resources/js/app.js:171` — `change`
-- `resources/js/app.js:172` — `keydown`
-- `resources/js/app.js:173` — `Enter`
-- `resources/js/app.js:180` — `Y-m-d`
-- `resources/js/app.js:188` — `datetime-local`
-- `resources/js/app.js:210` — `numeric`
-- `resources/js/app.js:235` — `dialog`
-- `resources/js/app.js:250` — `Y-m-d`
-- `resources/js/app.js:258` — `datetime-local`
-- `resources/js/app.js:293` — `value`
-- `resources/js/app.js:341` — `weekTableFit`
-- `resources/js/app.js:351` — `change`
-- `resources/js/app.js:365` — `undefined`
-- `resources/js/app.js:366` — `loading`
-- `resources/js/app.js:367` — `DOMContentLoaded`
-- `resources/js/app.js:375` — `change`
-- `resources/js/app.js:388` — `data-recurrence-show`
-- `resources/js/app.js:397` — `focusin`
-- `resources/js/app.js:411` — `change`
-- `resources/js/app.js:423` — `customer`
-- `resources/js/app.js:427` — `internal`
-- `resources/js/app.js:431` — `existing`
-- `resources/js/app.js:448` — `existing`
-- `resources/js/app.js:454` — `project`
-- `resources/js/app.js:462` — `option`
-- `resources/js/app.js:464` — `project`
-- `resources/js/app.js:485` — `fieldset`
-- `resources/js/app.js:488` — `existing`
-- `resources/js/app.js:514` — `change`
-- `resources/js/app.js:516` — `customer`
-- `resources/js/app.js:521` — `DOMContentLoaded`
-- `resources/js/app.js:531` — `click`
-- `resources/js/app.js:536` — `dialog`
-- `resources/js/app.js:539` — `function`
-- `resources/js/app.js:546` — `undefined`
-- `resources/js/app.js:554` — `dialog`
-- `resources/js/app.js:555` — `entry-modal`
-- `resources/js/app.js:556` — `modal`
-- `resources/js/app.js:560` — `modal-box wd-modal-box wd-modal-box--standard p-0`
-- `resources/js/app.js:561` — `entry-modal-body`
-- `resources/js/app.js:563` — `dialog`
-- `resources/js/app.js:563` — `modal-backdrop`
-- `resources/js/app.js:564` — `Close`
-- `resources/js/app.js:571` — `click`
-- `resources/js/app.js:586` — `dialog`
-- `resources/js/app.js:595` — `data-recurrence-show`
-- `resources/js/app.js:616` — `minDate`
-- `resources/js/app.js:631` — `maxDate`
-- `resources/js/app.js:637` — `change`
-- `resources/js/app.js:638` — `input`
+- `resources/js/app.js:46` — `undefined`
+- `resources/js/app.js:72` — `default`
+- `resources/js/app.js:82` — `undefined`
+- `resources/js/app.js:86` — `Y-m-d`
+- `resources/js/app.js:147` — `input`
+- `resources/js/app.js:148` — `change`
+- `resources/js/app.js:151` — `input`
+- `resources/js/app.js:152` — `change`
+- `resources/js/app.js:166` — `input`
+- `resources/js/app.js:173` — `change`
+- `resources/js/app.js:174` — `keydown`
+- `resources/js/app.js:175` — `Enter`
+- `resources/js/app.js:182` — `Y-m-d`
+- `resources/js/app.js:190` — `datetime-local`
+- `resources/js/app.js:212` — `numeric`
+- `resources/js/app.js:237` — `dialog`
+- `resources/js/app.js:252` — `Y-m-d`
+- `resources/js/app.js:260` — `datetime-local`
+- `resources/js/app.js:295` — `value`
+- `resources/js/app.js:343` — `weekTableFit`
+- `resources/js/app.js:353` — `change`
+- `resources/js/app.js:367` — `undefined`
+- `resources/js/app.js:368` — `loading`
+- `resources/js/app.js:369` — `DOMContentLoaded`
+- `resources/js/app.js:377` — `change`
+- `resources/js/app.js:390` — `data-recurrence-show`
+- `resources/js/app.js:399` — `focusin`
+- `resources/js/app.js:413` — `change`
+- `resources/js/app.js:425` — `customer`
+- `resources/js/app.js:429` — `internal`
+- `resources/js/app.js:433` — `existing`
+- `resources/js/app.js:450` — `existing`
+- `resources/js/app.js:456` — `project`
+- `resources/js/app.js:464` — `option`
+- `resources/js/app.js:466` — `project`
+- `resources/js/app.js:487` — `fieldset`
+- `resources/js/app.js:490` — `existing`
+- `resources/js/app.js:516` — `change`
+- `resources/js/app.js:518` — `customer`
+- `resources/js/app.js:523` — `DOMContentLoaded`
+- `resources/js/app.js:533` — `click`
+- `resources/js/app.js:538` — `dialog`
+- `resources/js/app.js:541` — `function`
+- `resources/js/app.js:548` — `undefined`
+- `resources/js/app.js:556` — `dialog`
+- `resources/js/app.js:557` — `entry-modal`
+- `resources/js/app.js:558` — `modal`
+- `resources/js/app.js:562` — `modal-box wd-modal-box wd-modal-box--standard p-0`
+- `resources/js/app.js:563` — `entry-modal-body`
+- `resources/js/app.js:565` — `dialog`
+- `resources/js/app.js:565` — `modal-backdrop`
+- `resources/js/app.js:566` — `Close`
+- `resources/js/app.js:573` — `click`
+- `resources/js/app.js:588` — `dialog`
+- `resources/js/app.js:597` — `data-recurrence-show`
+- `resources/js/app.js:618` — `minDate`
+- `resources/js/app.js:633` — `maxDate`
 - `resources/js/app.js:639` — `change`
 - `resources/js/app.js:640` — `input`
-- `resources/js/app.js:650` — `loading`
-- `resources/js/app.js:651` — `DOMContentLoaded`
-- `resources/js/app.js:663` — `input`
-- `resources/js/app.js:671` — `option`
-- `resources/js/app.js:673` — `optgroup`
-- `resources/js/app.js:683` — `optgroup`
-- `resources/js/app.js:710` — `option`
-- `resources/js/app.js:723` — `optgroup`
-- `resources/js/app.js:742` — `change`
+- `resources/js/app.js:641` — `change`
+- `resources/js/app.js:642` — `input`
+- `resources/js/app.js:652` — `loading`
+- `resources/js/app.js:653` — `DOMContentLoaded`
+- `resources/js/app.js:665` — `input`
+- `resources/js/app.js:673` — `option`
+- `resources/js/app.js:675` — `optgroup`
+- `resources/js/app.js:685` — `optgroup`
+- `resources/js/app.js:712` — `option`
+- `resources/js/app.js:725` — `optgroup`
 - `resources/js/app.js:744` — `change`
-- `resources/js/app.js:750` — `change`
-- `resources/js/app.js:758` — `loading`
-- `resources/js/app.js:759` — `DOMContentLoaded`
-- `resources/js/app.js:768` — `function`
-- `resources/js/app.js:770` — `datetime-local`
-- `resources/js/app.js:809` — `input, select`
-- `resources/js/app.js:816` — `change`
-- `resources/js/app.js:821` — `duration`
-- `resources/js/app.js:823` — `input`
-- `resources/js/app.js:828` — `submit`
-- `resources/js/app.js:888` — `opacity-60`
-- `resources/js/app.js:909` — `hidden`
-- `resources/js/app.js:911` — `input`
-- `resources/js/app.js:912` — `change`
-- `resources/js/app.js:925` — `checkbox`
-- `resources/js/app.js:931` — `inert`
-- `resources/js/app.js:937` — `change`
-- `resources/js/app.js:941` — `submit`
-- `resources/js/app.js:945` — `action`
-- `resources/js/app.js:947` — `method`
-- `resources/js/app.js:952` — `submit`
-- `resources/js/app.js:960` — `X-Entry-Dialog`
-- `resources/js/app.js:965` — `content-type`
-- `resources/js/app.js:984` — `function`
-- `resources/js/app.js:986` — `warning`
-- `resources/js/app.js:996` — `content-type`
-- `resources/js/app.js:999` — `function`
-- `resources/js/app.js:1001` — `error`
-- `resources/js/app.js:1020` — `function`
-- `resources/js/app.js:1022` — `error`
-- `resources/js/app.js:1046` — `loading loading-spinner loading-lg text-primary`
-- `resources/js/app.js:1049` — `text-sm`
-- `resources/js/app.js:1053` — `function`
-- `resources/js/app.js:1061` — `p-6 space-y-3`
-- `resources/js/app.js:1062` — `text-sm text-error`
-- `resources/js/app.js:1066` — `noopener`
-- `resources/js/app.js:1067` — `btn btn-sm btn-ghost`
-- `resources/js/app.js:1083` — `legacy`
-- `resources/js/app.js:1083` — `legacy`
+- `resources/js/app.js:746` — `change`
+- `resources/js/app.js:752` — `change`
+- `resources/js/app.js:760` — `loading`
+- `resources/js/app.js:761` — `DOMContentLoaded`
+- `resources/js/app.js:770` — `function`
+- `resources/js/app.js:772` — `datetime-local`
+- `resources/js/app.js:811` — `input, select`
+- `resources/js/app.js:818` — `change`
+- `resources/js/app.js:823` — `duration`
+- `resources/js/app.js:825` — `input`
+- `resources/js/app.js:830` — `submit`
+- `resources/js/app.js:890` — `opacity-60`
+- `resources/js/app.js:911` — `hidden`
+- `resources/js/app.js:913` — `input`
+- `resources/js/app.js:914` — `change`
+- `resources/js/app.js:927` — `checkbox`
+- `resources/js/app.js:933` — `inert`
+- `resources/js/app.js:939` — `change`
+- `resources/js/app.js:943` — `submit`
+- `resources/js/app.js:947` — `action`
+- `resources/js/app.js:949` — `method`
+- `resources/js/app.js:954` — `submit`
+- `resources/js/app.js:962` — `X-Entry-Dialog`
+- `resources/js/app.js:967` — `content-type`
+- `resources/js/app.js:986` — `function`
+- `resources/js/app.js:988` — `warning`
+- `resources/js/app.js:998` — `content-type`
+- `resources/js/app.js:1001` — `function`
+- `resources/js/app.js:1003` — `error`
+- `resources/js/app.js:1022` — `function`
+- `resources/js/app.js:1024` — `error`
+- `resources/js/app.js:1048` — `loading loading-spinner loading-lg text-primary`
+- `resources/js/app.js:1051` — `text-sm`
+- `resources/js/app.js:1055` — `function`
+- `resources/js/app.js:1063` — `p-6 space-y-3`
+- `resources/js/app.js:1064` — `text-sm text-error`
+- `resources/js/app.js:1068` — `noopener`
+- `resources/js/app.js:1069` — `btn btn-sm btn-ghost`
 - `resources/js/app.js:1085` — `legacy`
-- `resources/js/app.js:1093` — `p-6 space-y-3`
-- `resources/js/app.js:1094` — `text-sm text-warning`
-- `resources/js/app.js:1096` — `button`
-- `resources/js/app.js:1098` — `btn btn-sm btn-primary`
-- `resources/js/app.js:1107` — `click`
-- `resources/js/app.js:1167` — `function`
-- `resources/js/app.js:1183` — `click`
-- `resources/js/app.js:1218` — `data-entry-modal-autoopen`
-- `resources/js/app.js:1229` — `loading`
-- `resources/js/app.js:1230` — `DOMContentLoaded`
-- `resources/js/app.js:1239` — `geocode-url`
-- `resources/js/app.js:1240` — `content`
-- `resources/js/app.js:1244` — `opacity-70`
-- `resources/js/app.js:1257` — `error`
-- `resources/js/app.js:1259` — `opacity-70`
+- `resources/js/app.js:1085` — `legacy`
+- `resources/js/app.js:1087` — `legacy`
+- `resources/js/app.js:1095` — `p-6 space-y-3`
+- `resources/js/app.js:1096` — `text-sm text-warning`
+- `resources/js/app.js:1098` — `button`
+- `resources/js/app.js:1100` — `btn btn-sm btn-primary`
+- `resources/js/app.js:1109` — `click`
+- `resources/js/app.js:1169` — `function`
+- `resources/js/app.js:1185` — `click`
+- `resources/js/app.js:1220` — `data-entry-modal-autoopen`
+- `resources/js/app.js:1231` — `loading`
+- `resources/js/app.js:1232` — `DOMContentLoaded`
+- `resources/js/app.js:1241` — `geocode-url`
+- `resources/js/app.js:1242` — `content`
+- `resources/js/app.js:1246` — `opacity-70`
+- `resources/js/app.js:1259` — `error`
+- `resources/js/app.js:1261` — `opacity-70`
 - `resources/js/pwa.js:14` — `app-version`
 - `resources/js/pwa.js:18` — `serviceWorker`
 - `resources/js/pwa.js:43` — `beforeinstallprompt`
@@ -69256,8 +70245,6 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/schedule.js:401` — `shift-dialog-confirm`
 - `resources/js/schedule.js:402` — `hidden`
 - `resources/js/schedule.js:403` — `shift-dialog-title`
-- `resources/js/schedule.js:404` — `Schicht bearbeiten`
-- `resources/js/schedule.js:405` — `Schicht anlegen`
 - `resources/js/schedule.js:409` — `shift-dialog-user`
 - `resources/js/schedule.js:412` — `shift-dialog-date`
 - `resources/js/schedule.js:415` — `shift-dialog-type`
@@ -69283,9 +70270,7 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/schedule.js:497` — `shift-dialog-status`
 - `resources/js/schedule.js:518` — `shift-dialog`
 - `resources/js/schedule.js:525` — `shift-dialog`
-- `resources/js/schedule.js:534` — `Fehler beim Speichern.`
 - `resources/js/schedule.js:535` — `hidden`
-- `resources/js/schedule.js:539` — `Speichern`
 - `resources/js/schedule.js:544` — `shift-dialog-compliance`
 - `resources/js/schedule.js:545` — `shift-dialog-compliance-list`
 - `resources/js/schedule.js:546` — `shift-dialog-override-row`
@@ -69293,16 +70278,11 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/schedule.js:555` — `hidden`
 - `resources/js/schedule.js:557` — `hidden`
 - `resources/js/schedule.js:563` — `shift-dialog-id`
-- `resources/js/schedule.js:568` — `Schicht wirklich löschen?`
-- `resources/js/schedule.js:569` — `Löschen`
 - `resources/js/schedule.js:577` — `shift-dialog`
-- `resources/js/schedule.js:581` — `Fehler beim Löschen.`
 - `resources/js/schedule.js:587` — `shift-dialog-id`
 - `resources/js/schedule.js:593` — `shift-dialog`
-- `resources/js/schedule.js:597` — `Fehler beim Veröffentlichen.`
 - `resources/js/schedule.js:603` — `shift-dialog-id`
 - `resources/js/schedule.js:609` — `shift-dialog`
-- `resources/js/schedule.js:613` — `Fehler beim Bestätigen.`
 - `resources/js/schedule.js:621` — `shift-type-form`
 - `resources/js/schedule.js:624` — `shift-type-id`
 - `resources/js/schedule.js:627` — `shift-type-name`
@@ -69312,48 +70292,42 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/schedule.js:639` — `shift-type-end`
 - `resources/js/schedule.js:642` — `shift-type-active`
 - `resources/js/schedule.js:646` — `shift-type-form-title`
-- `resources/js/schedule.js:647` — `Schichttyp bearbeiten`
-- `resources/js/schedule.js:649` — `shift-type-error`
-- `resources/js/schedule.js:649` — `hidden`
-- `resources/js/schedule.js:654` — `shift-type-form`
-- `resources/js/schedule.js:657` — `shift-type-id`
-- `resources/js/schedule.js:659` — `shift-type-form-title`
-- `resources/js/schedule.js:660` — `Neuen Schichttyp anlegen`
-- `resources/js/schedule.js:663` — `shift-type-color`
-- `resources/js/schedule.js:666` — `shift-type-active`
-- `resources/js/schedule.js:668` — `shift-type-error`
-- `resources/js/schedule.js:668` — `hidden`
-- `resources/js/schedule.js:675` — `shift-type-id`
-- `resources/js/schedule.js:678` — `shift-type-error`
-- `resources/js/schedule.js:680` — `shift-type-save`
-- `resources/js/schedule.js:683` — `hidden`
-- `resources/js/schedule.js:687` — `shift-type-active`
-- `resources/js/schedule.js:691` — `shift-type-name`
-- `resources/js/schedule.js:694` — `shift-type-abbr`
-- `resources/js/schedule.js:697` — `shift-type-color`
-- `resources/js/schedule.js:701` — `shift-type-start`
-- `resources/js/schedule.js:705` — `shift-type-end`
-- `resources/js/schedule.js:726` — `Fehler beim Speichern.`
-- `resources/js/schedule.js:727` — `hidden`
-- `resources/js/schedule.js:737` — `Schichttyp wirklich löschen?`
-- `resources/js/schedule.js:738` — `Löschen`
-- `resources/js/schedule.js:747` — `Fehler beim Löschen.`
-- `resources/js/schedule.js:752` — `shift-dialog-type`
-- `resources/js/schedule.js:755` — `option`
-- `resources/js/schedule.js:765` — `shift-dialog-type`
-- `resources/js/schedule.js:783` — `shift-dialog-type`
-- `resources/js/schedule.js:797` — `span.inline-block`
-- `resources/js/schedule.js:812` — `shift-type-table-body`
-- `resources/js/schedule.js:815` — `data-type-row`
-- `resources/js/schedule.js:823` — `inline-block h-4 w-4 rounded`
-- `resources/js/schedule.js:827` — `font-mono font-bold`
-- `resources/js/schedule.js:838` — `badge-success`
-- `resources/js/schedule.js:839` — `badge-ghost`
-- `resources/js/schedule.js:843` — `text-right`
-- `resources/js/schedule.js:845` — `button`
-- `resources/js/schedule.js:848` — `btn btn-sm btn-ghost`
-- `resources/js/schedule.js:853` — `button`
-- `resources/js/schedule.js:855` — `btn btn-sm btn-ghost text-error`
+- `resources/js/schedule.js:647` — `shift-type-error`
+- `resources/js/schedule.js:647` — `hidden`
+- `resources/js/schedule.js:652` — `shift-type-form`
+- `resources/js/schedule.js:655` — `shift-type-id`
+- `resources/js/schedule.js:657` — `shift-type-form-title`
+- `resources/js/schedule.js:659` — `shift-type-color`
+- `resources/js/schedule.js:662` — `shift-type-active`
+- `resources/js/schedule.js:664` — `shift-type-error`
+- `resources/js/schedule.js:664` — `hidden`
+- `resources/js/schedule.js:671` — `shift-type-id`
+- `resources/js/schedule.js:674` — `shift-type-error`
+- `resources/js/schedule.js:676` — `shift-type-save`
+- `resources/js/schedule.js:679` — `hidden`
+- `resources/js/schedule.js:683` — `shift-type-active`
+- `resources/js/schedule.js:687` — `shift-type-name`
+- `resources/js/schedule.js:690` — `shift-type-abbr`
+- `resources/js/schedule.js:693` — `shift-type-color`
+- `resources/js/schedule.js:697` — `shift-type-start`
+- `resources/js/schedule.js:701` — `shift-type-end`
+- `resources/js/schedule.js:723` — `hidden`
+- `resources/js/schedule.js:748` — `shift-dialog-type`
+- `resources/js/schedule.js:751` — `option`
+- `resources/js/schedule.js:761` — `shift-dialog-type`
+- `resources/js/schedule.js:779` — `shift-dialog-type`
+- `resources/js/schedule.js:793` — `span.inline-block`
+- `resources/js/schedule.js:808` — `shift-type-table-body`
+- `resources/js/schedule.js:811` — `data-type-row`
+- `resources/js/schedule.js:819` — `inline-block h-4 w-4 rounded`
+- `resources/js/schedule.js:823` — `font-mono font-bold`
+- `resources/js/schedule.js:834` — `badge-success`
+- `resources/js/schedule.js:835` — `badge-ghost`
+- `resources/js/schedule.js:839` — `text-right`
+- `resources/js/schedule.js:841` — `button`
+- `resources/js/schedule.js:844` — `btn btn-sm btn-ghost`
+- `resources/js/schedule.js:849` — `button`
+- `resources/js/schedule.js:851` — `btn btn-sm btn-ghost text-error`
 - `resources/js/sortable-tables.js:8` — `string`
 - `resources/js/sortable-tables.js:9` — `number`
 - `resources/js/sortable-tables.js:13` — `data-sort-value`
@@ -69525,6 +70499,9 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/chat.js:935` — `input`
 - `resources/js/chat.js:940` — `typing`
 - `resources/js/chat.js:961` — `visibilitychange`
+- `resources/js/video-position.js:48` — `loadedmetadata`
+- `resources/js/video-position.js:55` — `timeupdate`
+- `resources/js/video-position.js:66` — `ended`
 - `resources/js/agile-backlog.js:16` — `after`
 - `resources/js/agile-backlog.js:43` — `outline`
 - `resources/js/agile-backlog.js:43` — `outline-primary`
@@ -69775,6 +70752,15 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/alpine/components.js:1961` — `function`
 - `resources/js/alpine/components.js:1967` — `matchcode`
 - `resources/js/alpine/components.js:1971` — `customer`
+- `resources/js/alpine/components.js:1981` — `quizRunner`
+- `resources/js/alpine/components.js:2013` — `function`
+- `resources/js/alpine/components.js:2035` — `smooth`
+- `resources/js/alpine/components.js:2035` — `start`
+- `resources/js/alpine/components.js:2054` — `btn-warning`
+- `resources/js/alpine/components.js:2055` — `btn-success`
+- `resources/js/alpine/components.js:2056` — `btn-ghost`
+- `resources/js/alpine/components.js:2067` — `radio`
+- `resources/js/alpine/components.js:2067` — `checkbox`
 - `resources/js/alpine/entry-bar.js:24` — `entryBar`
 - `resources/js/alpine/entry-bar.js:42` — `timer`
 - `resources/js/alpine/entry-bar.js:43` — `duration`
@@ -69954,29 +70940,34 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/global-search.js:291` — `keydown`
 - `resources/js/global-search.js:298` — `Escape`
 - `resources/js/global-search.js:304` — `DOMContentLoaded`
-- `resources/js/design-editor.js:24` — `designEditor`
-- `resources/js/design-editor.js:31` — `first`
-- `resources/js/design-editor.js:60` — `invoice`
-- `resources/js/design-editor.js:61` — `standard`
-- `resources/js/design-editor.js:89` — `layout`
-- `resources/js/design-editor.js:91` — `layout`
-- `resources/js/design-editor.js:93` — `margins`
-- `resources/js/design-editor.js:94` — `address`
-- `resources/js/design-editor.js:96` — `footer`
-- `resources/js/design-editor.js:97` — `typography`
-- `resources/js/design-editor.js:147` — `first`
-- `resources/js/design-editor.js:171` — `content`
-- `resources/js/design-editor.js:172` — `blocked`
-- `resources/js/design-editor.js:176` — `content`
-- `resources/js/design-editor.js:181` — `blocked`
-- `resources/js/design-editor.js:187` — `width`
-- `resources/js/design-editor.js:187` — `width`
-- `resources/js/design-editor.js:189` — `height`
-- `resources/js/design-editor.js:295` — `blocked`
-- `resources/js/design-editor.js:333` — `error`
-- `resources/js/design-editor.js:334` — `Fehler beim Speichern.`
-- `resources/js/design-editor.js:340` — `success`
-- `resources/js/design-editor.js:343` — `error`
+- `resources/js/design-editor.js:25` — `designEditor`
+- `resources/js/design-editor.js:32` — `first`
+- `resources/js/design-editor.js:61` — `invoice`
+- `resources/js/design-editor.js:62` — `standard`
+- `resources/js/design-editor.js:65` — `appearance`
+- `resources/js/design-editor.js:96` — `layout`
+- `resources/js/design-editor.js:98` — `layout`
+- `resources/js/design-editor.js:100` — `margins`
+- `resources/js/design-editor.js:101` — `address`
+- `resources/js/design-editor.js:103` — `footer`
+- `resources/js/design-editor.js:104` — `typography`
+- `resources/js/design-editor.js:125` — `appearance`
+- `resources/js/design-editor.js:125` — `layout`
+- `resources/js/design-editor.js:125` — `content`
+- `resources/js/design-editor.js:125` — `release`
+- `resources/js/design-editor.js:178` — `first`
+- `resources/js/design-editor.js:202` — `content`
+- `resources/js/design-editor.js:203` — `blocked`
+- `resources/js/design-editor.js:207` — `content`
+- `resources/js/design-editor.js:212` — `blocked`
+- `resources/js/design-editor.js:218` — `width`
+- `resources/js/design-editor.js:218` — `width`
+- `resources/js/design-editor.js:220` — `height`
+- `resources/js/design-editor.js:326` — `blocked`
+- `resources/js/design-editor.js:366` — `error`
+- `resources/js/design-editor.js:367` — `Fehler beim Speichern.`
+- `resources/js/design-editor.js:373` — `success`
+- `resources/js/design-editor.js:376` — `error`
 - `resources/js/kanban.js:26` — `touch-pan-y`
 - `resources/js/kanban.js:43` — `accept`
 - `resources/js/kanban.js:44` — `cancel`
@@ -70041,17 +71032,16 @@ Generated: 2026-09-14T20:51:57+00:00
 - `resources/js/calendar.js:41` — `Liste`
 - `resources/js/calendar.js:49` — `Konnte Kalender-Ereignisse nicht laden.`
 - `resources/js/bulk-selection.js:10` — `Auswahl aufheben`
-- `resources/js/bulk-selection.js:44` — `hidden`
-- `resources/js/bulk-selection.js:73` — `input`
-- `resources/js/bulk-selection.js:74` — `hidden`
-- `resources/js/bulk-selection.js:84` — `change`
-- `resources/js/bulk-selection.js:94` — `click`
-- `resources/js/bulk-selection.js:103` — `change`
-- `resources/js/bulk-selection.js:112` — `submit`
-- `resources/js/bulk-selection.js:117` — `function`
-- `resources/js/bulk-selection.js:119` — `warning`
-- `resources/js/bulk-selection.js:120` — `Bitte zuerst mindestens einen Eintrag auswählen.`
-- `resources/js/bulk-selection.js:133` — `DOMContentLoaded`
+- `resources/js/bulk-selection.js:46` — `hidden`
+- `resources/js/bulk-selection.js:75` — `input`
+- `resources/js/bulk-selection.js:76` — `hidden`
+- `resources/js/bulk-selection.js:86` — `change`
+- `resources/js/bulk-selection.js:96` — `click`
+- `resources/js/bulk-selection.js:105` — `change`
+- `resources/js/bulk-selection.js:114` — `submit`
+- `resources/js/bulk-selection.js:119` — `function`
+- `resources/js/bulk-selection.js:121` — `warning`
+- `resources/js/bulk-selection.js:135` — `DOMContentLoaded`
 - `resources/js/help-center.js:20` — `data-feedback-url`
 - `resources/js/help-center.js:21` — `data-feedback-locale`
 - `resources/js/help-center.js:26` — `click`

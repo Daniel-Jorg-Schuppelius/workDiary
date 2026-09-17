@@ -41,3 +41,30 @@ Tres reglas:
 
 Los archivos del gasto se suben también — sin archivo, el comprobante no vale
 nada para la contabilidad.
+
+### Corrección con contracomprobante
+
+Si algo no cuadra en un gasto ya transferido, lo corriges en el diálogo del
+comprobante **con un contracomprobante**, indicando obligatoriamente el motivo.
+Se transfiere una nota de abono de compra por el mismo importe que anula el
+comprobante original en contabilidad. Al mismo tiempo se crea un nuevo gasto como
+**borrador** con referencia al anterior; pasa por aprobación y transferencia como
+cualquier otro.
+
+Si el gasto original estaba aprobado pero aún no reembolsado, se anula; de lo
+contrario se pagarían ambos. Si ya estaba reembolsado, el borrador avisa de que
+solo debe reembolsarse la diferencia.
+
+## Escanear el comprobante en vez de teclearlo
+
+En lugar de introducir importe, fecha y comercio a mano, puedes **fotografiar
+el comprobante o subirlo como PDF**. El reconocimiento lee los campos
+habituales y rellena el formulario.
+
+El resultado es una **propuesta**, no un asiento terminado: comprueba importe,
+fecha, tipo impositivo y comercio antes de guardar. Las fotos mal iluminadas,
+el papel térmico y los comprobantes manuscritos son las fuentes más frecuentes
+de lecturas erróneas.
+
+El comprobante original queda adjunto sin cambios: el reconocimiento no lo
+sustituye, solo te ahorra teclear.

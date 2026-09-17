@@ -29,6 +29,13 @@ class EnvExampleRuleTest extends TestCase {
         'VITE_APP_NAME' => 'Vite-Client (import.meta.env), kein PHP-Leser',
     ];
 
+    /** @var list<string> Framework-/Paketkonfiguration — dokumentiert das jeweilige Paket. */
+    private const FRAMEWORK_CONFIGS = [
+        'app.php', 'auth.php', 'broadcasting.php', 'cache.php', 'cors.php', 'database.php',
+        'filesystems.php', 'hashing.php', 'logging.php', 'mail.php', 'queue.php', 'services.php',
+        'session.php', 'view.php', 'sanctum.php', 'reverb.php', 'l5-swagger.php',
+    ];
+
     public function test_every_example_key_has_a_reader(): void {
         $root = $this->repoRoot();
         $example = (string) file_get_contents($root . '/.env.example');
@@ -54,4 +61,45 @@ class EnvExampleRuleTest extends TestCase {
         $this->assertSame([], $orphans, ".env.example enthält Schlüssel ohne env()-Leser (falscher Name oder verwaist):\n"
             . implode("\n", $orphans) . "\n\nSchlüssel umbenennen/entfernen oder — wenn ein Paket ihn liest — in READ_ELSEWHERE eintragen.");
     }
+
+    /**
+     * Rückrichtung (Vollscan 2026-09-15, Befund `C1-13` / `MVP-796`): Jeder
+     * app-eigene `env()`-Schlüssel muss in der Vorlage stehen — auskommentiert
+     * genügt, denn dann gilt die Vorgabe und der Betreiber kennt die
+     * Stellschraube trotzdem. Vorher prüfte das Gate nur eine Richtung; 175
+     * Schlüssel waren dadurch nirgends dokumentiert.
+     *
+     * Framework- und Paketkonfigurationen bleiben aussen vor: deren Schlüssel
+     * dokumentiert das jeweilige Paket.
+     */
+    public function test_every_app_env_key_is_documented(): void {
+        $root = $this->repoRoot();
+        $example = (string) file_get_contents($root . '/.env.example');
+        preg_match_all('/^#?\s*([A-Z][A-Z0-9_]*)=/m', $example, $documented);
+        $known = array_flip($documented[1]);
+
+        $undocumented = [];
+        foreach ($this->phpFiles('config') as $file) {
+            $name = basename($file);
+            if (in_array($name, self::FRAMEWORK_CONFIGS, true)) {
+                continue;
+            }
+            preg_match_all('/env\(\s*[\'"]([A-Z][A-Z0-9_]*)[\'"]/', (string) file_get_contents($file), $found);
+            foreach ($found[1] as $key) {
+                if (! isset($known[$key])) {
+                    $undocumented[$key] = $name;
+                }
+            }
+        }
+
+        ksort($undocumented);
+
+        $this->assertSame([], array_keys($undocumented), "Diese env()-Schlüssel stehen in keiner Vorlage:\n"
+            . implode("\n", array_map(
+                static fn (string $key): string => sprintf('  %s (config/%s)', $key, $undocumented[$key]),
+                array_keys($undocumented),
+            ))
+            . "\n\nIn .env.example aufnehmen — auskommentiert mit der Vorgabe genügt.");
+    }
+
 }

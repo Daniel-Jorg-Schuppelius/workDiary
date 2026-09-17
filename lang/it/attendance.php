@@ -33,6 +33,7 @@ return [
         'terminal' => 'Terminal',
         'phone' => 'Telefono',
         'learning' => 'Tempo di apprendimento',
+        'checkin' => 'Check-in (QR/NFC)',
     ],
     'correction' => [
         'action' => [
@@ -44,5 +45,34 @@ return [
     'error' => [
         'target_day_locked' => 'Il giorno di destinazione è chiuso o il mese approvato: richieda una correzione dei tempi.',
         'duration_too_long' => 'Una timbratura non può superare le :hours ore.',
+    ],
+    'checkpoint_kind' => [
+        'site' => 'Sede',
+        'vehicle' => 'Veicolo',
+    ],
+    'checkin' => [
+        'title' => 'Check-in',
+        'subtitle' => 'Entrata e uscita con il codice presso la sede o il veicolo.',
+        'state' => [
+            'in' => 'Hai timbrato l\'entrata alle :time.',
+            'out' => 'Al momento non hai timbrato l\'entrata.',
+        ],
+        'action' => [
+            'in' => 'Entrata',
+            'out' => 'Uscita',
+        ],
+        'location_hint' => 'Alla timbratura la posizione viene verificata una volta (raggio di :radius m). Non viene salvata.',
+        'flash' => [
+            'in' => 'Entrata presso «:name» registrata.',
+            'out' => 'Uscita presso «:name» registrata.',
+        ],
+        'error' => [
+            'already_in' => 'Hai già timbrato l\'entrata.',
+            'not_in' => 'Non hai timbrato l\'entrata.',
+            'no_center' => 'Questo punto ha un raggio ma nessuna posizione. Contatta l\'amministrazione.',
+            'location_required' => 'Questo punto richiede la tua posizione.',
+            'too_far' => 'Sei a :distance m; sono consentiti :radius m.',
+            'location_denied' => 'Impossibile determinare la posizione. Consenti l\'accesso alla posizione.',
+        ],
     ],
 ];

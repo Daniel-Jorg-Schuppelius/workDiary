@@ -1,11 +1,13 @@
 ---
 title: "Piattaforma di apprendimento"
 topic: learning.overview
-version: 1
+version: 3
 audience: []
 related:
     - training.overview
     - safety.overview
+    - learning.standards
+    - learning.subtitles
 ---
 
 La piattaforma risponde a **come si impara e come si viene verificati**.
@@ -16,8 +18,18 @@ formazione — i due moduli si incastrano senza duplicarsi.
 
 Un corso si compone di sezioni e unità didattiche. Un'unità è contenuto, una
 verifica, un compito, un incontro in presenza o materiale esterno. Il
-contenuto si costruisce con blocchi (testo, nota, lista di controllo, video,
-incorporamento) — l'HTML libero non è previsto di proposito.
+contenuto si costruisce con blocchi (testo, titolo, nota, lista di controllo,
+immagine, galleria, file, video, audio, incorporamento, codice, accordion,
+tabella, articolo della knowledge base, procedura, domanda di comprensione,
+separatore) — l'HTML libero non è previsto di proposito.
+
+**Ogni blocco si usa anche senza vista, udito o mouse.** Le immagini e ogni
+immagine di una galleria richiedono un testo alternativo, l'audio una
+trascrizione e le colonne di una tabella un'intestazione. L'accordion e la
+soluzione di una domanda di comprensione si aprono da tastiera. Una domanda di
+comprensione non viene valutata: nell'editor le risposte corrette iniziano con
+`*`. Il blocco procedura mostra la versione valida; la procedura si avvia da una
+voce del diario.
 
 **Gli incorporamenti richiedono un host abilitato.** Altrimenti la policy di
 sicurezza bloccherebbe la pagina silenziosamente nel corso; l'editor rifiuta
@@ -29,6 +41,10 @@ non l’assegnazione — le iscrizioni obbligatorie sono esenti. Un **esame senz
 corso** è un corso di tipo «esame» con esattamente un’unità di prova; chi lo
 supera ottiene il riconoscimento del corso di destinazione configurato — con lo
 stesso ritorno in certificato, prova di formazione e qualifica.
+
+Con **Ordine fisso**, un corso sblocca ogni unità solo quando la precedente è
+completata; le unità bloccate mostrano «Dopo l'unità precedente». La data di
+rilascio dell'unità vale in aggiunta.
 
 Chi arriva da LearnDash importa lo **ZIP di esportazione** (catalogo → «Importazione LearnDash»): corsi, lezioni, argomenti e verifiche nascono come bozze, le domande finiscono nel catalogo con la loro categoria. Immagini e media non vengono copiati (segnaposto da completare), i video delle lezioni solo da host consentiti. I corsi completati vengono annotati come iscrizioni «importate» per le persone con e-mail corrispondente — senza certificato né attestato, perché un completamento importato non è una prova propria. La prova mostra in anticipo cosa verrebbe creato.
 
@@ -49,7 +65,8 @@ sincronizzazione offline — non solo nella visualizzazione. Una **permanenza
 minima** conta dalla prima apertura dell'unità o tramite il tempo di
 apprendimento. Le **unità di anteprima** si leggono nel portale senza
 iscrizione (solo testo). Le **categorie** delle impostazioni ordinano il
-catalogo; **finestra di disponibilità** e **limite di partecipanti** valgono
+catalogo, i **tag** aggiungono un asse trasversale e restano modificabili
+dopo la pubblicazione; **finestra di disponibilità** e **limite di partecipanti** valgono
 per l'auto-iscrizione — l'amministrazione può sempre assegnare, le iscrizioni
 obbligatorie ignorano il limite. I compiti hanno **regole sui file**
 (estensioni, numero, dimensione — mai più permissive del sistema) e, a scelta,
@@ -125,6 +142,19 @@ la cancellazione delle iscrizioni concluse senza certificato una volta scaduto
 il termine regionale (tentativi e tempo di apprendimento seguono); i certificati
 restano più a lungo come prova e vengono poi ridotti alle iniziali — il link di
 verifica continua a rispondere.
+
+## Competenze
+
+La **matrice delle competenze** (Apprendimento → Competenze)
+mostra il livello raggiunto da ogni persona per ciascuna competenza. I livelli
+nascono in due modi: un corso collegato a una competenza attesta il suo livello
+al completamento — ripeterlo non lo abbassa mai e, nei corsi con periodo di
+validità, il livello vale solo per quel periodo. Una **valutazione** da parte
+della gestione della formazione può invece anche abbassare un livello.
+
+Per ruolo si può impostare un **livello richiesto**. Se una persona è al di
+sotto, la matrice segnala la lacuna; i livelli scaduti non contano. Le
+competenze non bloccano nulla: il blocco resta alle qualifiche.
 
 ## Chi impara
 

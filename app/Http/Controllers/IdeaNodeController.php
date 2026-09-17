@@ -12,7 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Enums\Ideas\IdeaNodeColor;
 use App\Exceptions\{IdeaMapConflictException, IdeaNodeConflictException};
-use App\Models\{IdeaMap, IdeaNode, IdeaNodeReference, KnowledgeArticle, Project, Task, User};
+use App\Models\{ContentReference, IdeaMap, IdeaNode, KnowledgeArticle, Project, Task, User};
 use App\Services\Ideas\{IdeaMapSyncService, IdeaNodeService, NodeConversionService};
 use App\Services\SqidEncoder;
 use Illuminate\Http\{JsonResponse, Request};
@@ -294,7 +294,7 @@ class IdeaNodeController extends Controller {
     }
 
     /** @return array<string, mixed> */
-    private function serializeReference(IdeaNodeReference $reference): array {
+    private function serializeReference(ContentReference $reference): array {
         $target = $reference->target;
         $label = $target?->getAttribute('title') ?? $target?->getAttribute('name') ?? '—';
         $url = match (true) {
@@ -330,7 +330,7 @@ class IdeaNodeController extends Controller {
             'pos_y' => $node->pos_y,
             'sort_order' => (int) $node->sort_order,
             'lock_version' => (int) $node->lock_version,
-            'references' => $node->references->map(fn (IdeaNodeReference $r): array => $this->serializeReference($r))->values()->all(),
+            'references' => $node->references->map(fn (ContentReference $r): array => $this->serializeReference($r))->values()->all(),
         ];
     }
 

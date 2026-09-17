@@ -186,6 +186,8 @@ return [
         'vacation_approved' => 'Tu solicitud de vacaciones fue aprobada. :note',
         'vacation_rejected' => 'Tu solicitud de vacaciones fue rechazada. :note',
         'unclear_case_title' => 'Caso por aclarar el :date',
+        'open_attendance_title' => 'Tienes la entrada fichada desde las :time',
+        'open_attendance_body' => 'Ficha la salida si ya has terminado; de lo contrario, el sistema cerrará el fichaje automáticamente más tarde.',
         'driving_time_violation_title' => 'Hallazgo de tiempos de conducción/descanso del :date (:driver)',
         'month_submitted_title' => 'Cierre mensual :period enviado por :user',
         'month_approved_title' => 'Cierre mensual :period aprobado',

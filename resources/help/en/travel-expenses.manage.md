@@ -46,3 +46,28 @@ Three rules:
 
 The expense's receipt files are uploaded along — without a file the voucher is
 worthless to accounting.
+
+### Correcting with a counter voucher
+
+If something is wrong with an expense that was already pushed, correct it in the
+receipt dialog **with a counter voucher** – a reason is required. A purchase
+credit note for the same amount is pushed, cancelling the original voucher in
+accounting. At the same time a new expense is created as a **draft** that refers
+to the old one; it goes through approval and pushing like any other.
+
+If the original expense was approved but not yet reimbursed, it is cancelled –
+otherwise both would be paid out. If it was already reimbursed, the draft points
+out that only the difference must be reimbursed.
+
+## Scan a receipt instead of typing it
+
+Instead of entering amount, date and merchant by hand, you can **photograph
+the receipt or upload it as a PDF**. Recognition reads the usual fields and
+pre-fills the form.
+
+The result is a **suggestion**, not a finished entry: check amount, date, tax
+rate and merchant before saving. Poorly lit photos, thermal paper and
+handwritten receipts are the most common sources of misreadings.
+
+The original receipt stays attached to the record unchanged — recognition does
+not replace it, it only saves you the typing.

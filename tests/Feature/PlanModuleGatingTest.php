@@ -71,6 +71,26 @@ class PlanModuleGatingTest extends TestCase {
         $this->assertSame('module.finance', $resolver->moduleForRoute('finance.transfers.index'), 'Übrige finance.*-Routen bleiben Enterprise-gegatet.');
     }
 
+    /**
+     * MVP-804 (Entscheid zu P6-41, Tarifteil): Lokale Basisfakturierung samt
+     * E-Rechnung steht im kleinsten kostenpflichtigen Tarif zur Verfügung — nicht
+     * erst in Enterprise. Hält die Zuordnung fest, damit sie nicht still wandert.
+     */
+    public function test_invoicing_is_available_in_the_smallest_paid_tier(): void {
+        $tiers = (array) config('plans.tiers');
+        $paid = array_values(array_filter(Organization::$plans, static fn (string $plan): bool => $plan !== Organization::PLAN_FREE));
+        $smallestPaid = $paid[0];
+        $resolver = app(\App\Services\Licensing\FeatureFlagResolver::class);
+
+        $this->assertSame(Organization::PLAN_PRO, $smallestPaid);
+        foreach (['invoices.index', 'quotes.index', 'invoices.einvoice-options.edit', 'finance.incoming-invoices.index', 'invoice-schedules.index'] as $route) {
+            $module = $resolver->moduleForRoute($route);
+            $this->assertNotNull($module, $route);
+            $this->assertContains($module, (array) $tiers[$smallestPaid], "{$route} gehört in den kleinsten kostenpflichtigen Tarif.");
+            $this->assertNotContains($module, (array) $tiers[Organization::PLAN_FREE]);
+        }
+    }
+
     public function test_menu_hides_items_without_view_permission(): void {
         $org = Organization::factory()->enterprise()->create();
         $user = $this->userFor($org); // einfacher Nutzer ohne AssetView
@@ -146,5 +166,33 @@ class PlanModuleGatingTest extends TestCase {
         $response->assertSee(route('event-categories.index'), false);
         $response->assertSee(route('rooms.index'), false);
         $response->assertSee(route('materials.index'), false);
+    }
+
+    /**
+     * Modul-Gate der Lernplattform (Vollscan 2026-09-15, `C3-27` / `MVP-798`):
+     * Gemappt waren nur Kurskatalog und LTI-Registrierungen — Fragenkatalog,
+     * Einstellungen, Bewertung, Lernpfade, Nachweismappe, Buchungen und
+     * Lernzeit-Freigaben rutschten am Gate vorbei.
+     */
+    public function test_free_plan_blocks_learning_administration(): void {
+        $org = Organization::factory()->free()->create();
+        $user = $this->userFor($org);
+
+        foreach (['learning.questions.index', 'learning.dossier.index', 'learning.grading.index'] as $name) {
+            $this->actingAs($user)->get(route($name))
+                ->assertStatus(423, "{$name} muss ohne module.lms gesperrt sein.");
+        }
+    }
+
+    /**
+     * Gegenstueck: Die Pflichtsicht bleibt bewusst ungemappt — eine
+     * Unterweisung darf nie an der Lizenzstufe scheitern.
+     */
+    public function test_mandatory_learning_view_stays_reachable_on_free(): void {
+        $org = Organization::factory()->free()->create();
+
+        $response = $this->actingAs($this->userFor($org))->get(route('learning.my.index'));
+
+        $this->assertNotSame(423, $response->status(), 'Meine Schulungen ist Core und nie modul-gegatet.');
     }
 }

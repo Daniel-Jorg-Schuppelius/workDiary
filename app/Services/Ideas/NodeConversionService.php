@@ -12,11 +12,12 @@ declare(strict_types=1);
 
 namespace App\Services\Ideas;
 
-use App\Models\{Customer, DiaryEntry, IdeaNode, IdeaNodeReference, KnowledgeArticle, Project, Task, User};
+use App\Models\{CommunicationNote, ContentReference, Customer, DiaryEntry, IdeaNode, KnowledgeArticle, Project, Task, User};
 use App\Services\Knowledge\KnowledgeArticleService;
 use App\Services\Licensing\FeatureFlagResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{DB, Gate};
+use Illuminate\Support\Str;
 use RuntimeException;
 
 /**
@@ -28,9 +29,13 @@ use RuntimeException;
  * die Rückreferenz ist idempotent (je Knoten höchstens EIN überführtes Ziel
  * je Zieltyp). Zielmodul-Gating und Ziel-Policies werden je Aktion einzeln
  * geprüft.
+ *
+ * Seit MVP-813 (Feature 155) die allgemeine Stelle fürs Umwandeln: auch aus
+ * einer Notiz wird hier ein Wissensartikel, der Verweis Notiz → Artikel
+ * (`converted`) ist der Herkunftsvermerk.
  */
 class NodeConversionService {
-    /** @var array<string, class-string<Model>> Whitelist verlinkbarer Ziele (Muster KnowledgeArticleLink). */
+    /** @var array<string, class-string<Model>> Whitelist verlinkbarer Ziele. */
     public const LINKABLE_MAP = [
         'customer' => Customer::class,
         'project' => Project::class,
@@ -40,13 +45,13 @@ class NodeConversionService {
     public function __construct(private readonly FeatureFlagResolver $features) {}
 
     /** Überführt den Knoten als (globale) Kanban-Aufgabe. */
-    public function convertToTask(IdeaNode $node, User $actor): IdeaNodeReference {
+    public function convertToTask(IdeaNode $node, User $actor): ContentReference {
         if (! $this->features->isEnabled('module.kanban')) {
             throw new RuntimeException((string) __('ideas.convert.error.module_disabled'));
         }
         Gate::forUser($actor)->authorize('create', Task::class);
 
-        return $this->convert($node, $actor, Task::class, function () use ($node, $actor): Task {
+        return $this->convert($node, $actor, Task::class, 'idea_node.converted', function () use ($node, $actor): Task {
             $map = $node->map()->firstOrFail();
 
             return Task::query()->create([
@@ -61,10 +66,10 @@ class NodeConversionService {
     }
 
     /** Überführt den Knoten als neues Projekt (Slug/Defaults setzt Project::booted). */
-    public function convertToProject(IdeaNode $node, User $actor): IdeaNodeReference {
+    public function convertToProject(IdeaNode $node, User $actor): ContentReference {
         Gate::forUser($actor)->authorize('create', Project::class);
 
-        return $this->convert($node, $actor, Project::class, function () use ($node): Project {
+        return $this->convert($node, $actor, Project::class, 'idea_node.converted', function () use ($node): Project {
             $map = $node->map()->firstOrFail();
 
             return Project::query()->create([
@@ -77,13 +82,13 @@ class NodeConversionService {
     }
 
     /** Überführt den Knoten als Wissensartikel-ENTWURF (Status setzt der Service). */
-    public function convertToKnowledgeArticle(IdeaNode $node, User $actor): IdeaNodeReference {
+    public function convertToKnowledgeArticle(IdeaNode $node, User $actor): ContentReference {
         if (! $this->features->isEnabled('module.knowledge')) {
             throw new RuntimeException((string) __('ideas.convert.error.module_disabled'));
         }
         Gate::forUser($actor)->authorize('create', KnowledgeArticle::class);
 
-        return $this->convert($node, $actor, KnowledgeArticle::class, function () use ($node, $actor): KnowledgeArticle {
+        return $this->convert($node, $actor, KnowledgeArticle::class, 'idea_node.converted', function () use ($node, $actor): KnowledgeArticle {
             return app(KnowledgeArticleService::class)->create($actor, [
                 'title' => $node->title,
                 'problem' => $node->note ?? $node->title,
@@ -92,8 +97,37 @@ class NodeConversionService {
         });
     }
 
+    /**
+     * Überführt eine Notiz in einen Wissensartikel-Entwurf (MVP-813). Betreff
+     * wird Titel, Text wird Problembeschreibung, Schlagwörter wandern mit.
+     * Vertrauliche Notizen bleiben draußen — der Artikel wäre intern für alle
+     * lesbar.
+     */
+    public function convertNoteToKnowledgeArticle(CommunicationNote $note, User $actor): ContentReference {
+        if (! $this->features->isEnabled('module.knowledge')) {
+            throw new RuntimeException((string) __('ideas.convert.error.module_disabled'));
+        }
+        Gate::forUser($actor)->authorize('view', $note);
+        Gate::forUser($actor)->authorize('create', KnowledgeArticle::class);
+        if ($note->confidential) {
+            throw new RuntimeException((string) __('communication.convert.error.confidential'));
+        }
+
+        return $this->convert($note, $actor, KnowledgeArticle::class, 'communication.converted', function () use ($note, $actor): KnowledgeArticle {
+            $subject = trim((string) $note->subject);
+            $body = trim((string) $note->body);
+
+            return app(KnowledgeArticleService::class)->create($actor, [
+                'title' => Str::limit($subject !== '' ? $subject : Str::of($body)->before("\n")->toString(), 180, ''),
+                'problem' => Str::limit($body !== '' ? $body : $subject, 10000, ''),
+                'solution' => '',
+                'tags' => implode(', ', $note->tags->pluck('name')->all()),
+            ]);
+        });
+    }
+
     /** Verweist den Knoten auf einen bestehenden Kunden/Projekt/Auftrag (kind = linked). */
-    public function linkTo(IdeaNode $node, Model $target, User $actor): IdeaNodeReference {
+    public function linkTo(IdeaNode $node, Model $target, User $actor): ContentReference {
         if (! in_array($target::class, self::LINKABLE_MAP, true)) {
             throw new RuntimeException((string) __('ideas.convert.error.target_not_allowed'));
         }
@@ -101,10 +135,10 @@ class NodeConversionService {
             throw new RuntimeException((string) __('ideas.convert.error.target_not_allowed'));
         }
 
-        /** @var IdeaNodeReference */
+        /** @var ContentReference */
         return $node->references()->firstOrCreate([
             'target_type' => $target->getMorphClass(),
-            'kind' => IdeaNodeReference::KIND_LINKED,
+            'kind' => ContentReference::KIND_LINKED,
         ], [
             'organization_id' => $node->organization_id,
             'target_id' => $target->getKey(),
@@ -113,36 +147,40 @@ class NodeConversionService {
     }
 
     /**
-     * Gemeinsamer Überführungspfad: idempotent je (Knoten, Zieltyp) — ein
+     * Gemeinsamer Überführungspfad: idempotent je (Quelle, Zieltyp) — ein
      * zweiter Versuch liefert die bestehende Referenz mit `wasRecentlyCreated
      * === false` (der Controller zeigt dann Hinweis + Link statt Duplikat).
      *
+     * @param  IdeaNode|CommunicationNote  $source
      * @param  class-string<Model>  $targetClass
      * @param  callable(): Model  $factory
      */
-    private function convert(IdeaNode $node, User $actor, string $targetClass, callable $factory): IdeaNodeReference {
+    private function convert(Model $source, User $actor, string $targetClass, string $auditEvent, callable $factory): ContentReference {
         $morph = (new $targetClass())->getMorphClass();
 
-        $existing = $node->references()
+        $existing = ContentReference::query()
+            ->where('source_type', $source->getMorphClass())
+            ->where('source_id', $source->getKey())
             ->where('target_type', $morph)
-            ->where('kind', IdeaNodeReference::KIND_CONVERTED)
+            ->where('kind', ContentReference::KIND_CONVERTED)
             ->first();
-        if ($existing instanceof IdeaNodeReference) {
+        if ($existing instanceof ContentReference) {
             return $existing;
         }
 
-        return DB::transaction(function () use ($node, $actor, $morph, $factory): IdeaNodeReference {
+        return DB::transaction(function () use ($source, $actor, $morph, $auditEvent, $factory): ContentReference {
             $target = $factory();
 
-            /** @var IdeaNodeReference $reference */
-            $reference = $node->references()->create([
-                'organization_id' => $node->organization_id,
+            $reference = ContentReference::query()->create([
+                'organization_id' => (int) $source->getAttribute('organization_id'),
+                'source_type' => $source->getMorphClass(),
+                'source_id' => (int) $source->getKey(),
                 'target_type' => $morph,
-                'target_id' => $target->getKey(),
-                'kind' => IdeaNodeReference::KIND_CONVERTED,
+                'target_id' => (int) $target->getKey(),
+                'kind' => ContentReference::KIND_CONVERTED,
                 'created_by' => $actor->id,
             ]);
-            $node->audit('idea_node.converted', ['target_type' => $morph, 'target_id' => (int) $target->getKey()]);
+            $source->audit($auditEvent, ['target_type' => $morph, 'target_id' => (int) $target->getKey()]);
 
             return $reference;
         });

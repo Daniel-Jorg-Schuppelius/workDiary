@@ -12,8 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Communication\{CommunicationDirection, CommunicationNoteType, CommunicationVisibility, ParticipantParty};
 use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization};
-use App\Models\{CommunicationNote, Customer, DiaryEntry, Organization, Project, User};
+use App\Models\{CommunicationNote, Customer, DiaryEntry, Organization, Project, Tag, User};
 use App\Services\Communication\CommunicationNoteService;
+use App\Services\Ideas\NodeConversionService;
 use App\Services\Search\SearchResultLinker;
 use App\Support\{Sqid, Tz};
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -72,15 +73,19 @@ class CommunicationNoteController extends Controller {
         $customerId = $customerRaw !== '' ? (Sqid::decodeOrNumeric(Customer::class, $customerRaw) ?? 0) : null;
         $type = CommunicationNoteType::tryFrom((string) $request->query('type', ''));
         $openFollowUps = $request->boolean('open_followups');
+        // Schlagwort (MVP-810): unbekannte Kennung filtert auf 0 statt den Filter fallen zu lassen.
+        $tagRaw = trim((string) $request->query('tag', ''));
+        $tagId = $tagRaw !== '' ? (Sqid::decodeOrNumeric(Tag::class, $tagRaw) ?? 0) : null;
 
         $notes = CommunicationNote::query()
             ->visibleTo($user)
-            ->with(['notable', 'creator:id,name', 'nextActionUser:id,name'])
+            ->with(['notable', 'creator:id,name', 'nextActionUser:id,name', 'tags:id,name,color,slug'])
             ->when($storage === self::STORAGE_INTERNAL, fn($q) => $q->where('notable_type', Organization::class))
             ->when($storage === self::STORAGE_CUSTOMER || $customerId !== null, fn($q) => $q->where('notable_type', Customer::class))
             ->when($customerId !== null, fn($q) => $q->where('notable_id', $customerId))
             ->when($type, fn($q, CommunicationNoteType $t) => $q->where('type', $t->value))
             ->when($openFollowUps, fn($q) => $q->openFollowUps())
+            ->when($tagId !== null, fn($q) => $q->whereHas('tags', fn($t) => $t->whereKey($tagId)))
             ->when($search !== '', fn($q) => $q->where(fn(Builder $w) => $w->whereLikeEscaped('subject', $search)->orWhereLikeEscaped('body', $search)))
             ->orderBy($sort, $dir)
             ->orderByDesc('id')
@@ -100,6 +105,12 @@ class CommunicationNoteController extends Controller {
         return view('communication-notes.index', [
             'notes' => $notes,
             'customers' => Customer::query()->orderBy('name')->get(['id', 'name']),
+            // Nur Schlagwörter an Notizen, die die Person sehen darf — sonst
+            // verriete die Auswahl Stichworte aus vertraulichen Notizen.
+            'tags' => Tag::query()
+                ->whereHas('communicationNotes', fn($q) => $q->visibleTo($user))
+                ->orderBy('name')
+                ->get(['id', 'name']),
             'contextUrls' => $notes->getCollection()->mapWithKeys(static fn(CommunicationNote $note): array => [
                 $note->id => $note->isOrganizationNote() ? null : $linker->subjectUrl($note->notable_type, (int) $note->notable_id),
             ])->all(),
@@ -109,6 +120,7 @@ class CommunicationNoteController extends Controller {
                 'customer' => $customerId ? (string) Sqid::encode(Customer::class, $customerId) : '',
                 'type' => $type->value ?? '',
                 'open_followups' => $openFollowUps,
+                'tag' => $tagId ? (string) Sqid::encode(Tag::class, $tagId) : '',
             ],
             'sort' => $sort,
             'dir' => $dir,
@@ -282,6 +294,24 @@ class CommunicationNoteController extends Controller {
             ->withFragment('communication-note-' . $note->id);
     }
 
+    /** Notiz → Wissensartikel-Entwurf mit Herkunftsverweis (MVP-813). */
+    public function convertToKnowledge(CommunicationNote $note, NodeConversionService $conversions): RedirectResponse {
+        Gate::authorize('view', $note);
+        $this->guardPrivate($note);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+        try {
+            $reference = $conversions->convertNoteToKnowledgeArticle($note, $actor);
+        } catch (\RuntimeException $e) {
+            return redirect()->back()->with('error', $e->getMessage());
+        }
+
+        return redirect()
+            ->route('knowledge.show', Sqid::encode(\App\Models\KnowledgeArticle::class, $reference->target_id))
+            ->with($reference->wasRecentlyCreated ? 'success' : 'info', (string) __($reference->wasRecentlyCreated ? 'communication.convert.flash.created' : 'communication.convert.flash.existing'));
+    }
+
     public function destroy(Request $request, CommunicationNote $note): RedirectResponse {
         Gate::authorize('delete', $note);
         $this->guardPrivate($note);
@@ -363,6 +393,7 @@ class CommunicationNoteController extends Controller {
             'next_action_user_id' => ['nullable', 'integer', new \App\Rules\ExistsInCurrentOrganization()],
             'visibility' => ['nullable', 'string', 'in:' . implode(',', array_column(CommunicationVisibility::cases(), 'value'))],
             'confidential' => ['nullable', 'boolean'],
+            'tags' => ['nullable', 'string', 'max:500'],
             'participants' => ['nullable', 'array', 'max:25'],
             'participants.*.name' => ['nullable', 'string', 'max:120'],
             'participants.*.role' => ['nullable', 'string', 'max:40'],
@@ -406,6 +437,9 @@ class CommunicationNoteController extends Controller {
             'visibility' => $data['visibility'] ?? CommunicationVisibility::Internal->value,
             'confidential' => (bool) ($data['confidential'] ?? false),
             'participants' => $data['participants'] ?? [],
+            // Nur wenn das Formular das Feld trägt — sonst blieben Schlagwörter
+            // aus anderen Eingabewegen beim Speichern auf der Strecke.
+            ...(array_key_exists('tags', $data) ? ['tags' => (string) ($data['tags'] ?? '')] : []),
         ];
     }
 
@@ -423,6 +457,7 @@ class CommunicationNoteController extends Controller {
         abort_if($note->isPrivate() && (int) $note->created_by_user_id !== (int) $user->id, 404);
     }
 
+    /** @return array{string, Model} Art und aufgeloestes Zielobjekt. */
     private function resolveNotableFromRequest(Request $request): array {
         $notableKind = (string) $request->query('notable_kind', '');
         if (! array_key_exists($notableKind, self::NOTABLE_MAP)) {

@@ -199,6 +199,27 @@
                         <x-button tone="primary" type="submit" class="md:col-span-2">{{ __('Behördenmeldung dokumentieren') }}</x-button>
                     </form>
                 @endcan
+
+                {{-- Benachrichtigung der Betroffenen, Art. 34 DSGVO (MVP-798, Befund C1-08):
+                     subjects_notified_at setzte nur markReported — dafür gab es keinen Einstieg,
+                     und die Ansicht zeigte den Zeitpunkt nicht an. --}}
+                <div class="border-t border-base-300 pt-3">
+                    @if ($incident->subjects_notified_at)
+                        <div class="rounded-box bg-base-200 p-3 text-sm">
+                            <strong>{{ __('Betroffene benachrichtigt') }}:</strong>
+                            {{ $incident->subjects_notified_at->format('d.m.Y H:i') }}
+                        </div>
+                    @elseif ($incident->status !== \App\Enums\Privacy\IncidentStatus::Closed)
+                        @can('update', $incident)
+                            <x-action-form :action="route('dataprotection.incidents.reported', $incident)"
+                                           :confirm="__('Vermerkt, dass die betroffenen Personen nach Art. 34 DSGVO benachrichtigt wurden. Der Zeitpunkt wird jetzt festgehalten.')"
+                                           :confirm-label="__('Benachrichtigung vermerken')" confirm-icon="campaign">
+                                <input type="hidden" name="subjects" value="1">
+                                <x-icon-btn icon="campaign" size="sm" tone="outline" type="submit" show-label>{{ __('Benachrichtigung der Betroffenen vermerken') }}</x-icon-btn>
+                            </x-action-form>
+                        @endcan
+                    @endif
+                </div>
             </x-card>
         @endunless
 

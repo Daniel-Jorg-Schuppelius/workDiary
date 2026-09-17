@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Helpdesk;
 
-use App\Models\{KnowledgeArticle, KnowledgeArticleLink, Organization, Problem, ServiceQueue, ServiceTicket, User};
+use App\Models\{ContentReference, KnowledgeArticle, Organization, Problem, ServiceQueue, ServiceTicket, User};
 use App\Services\ServiceTicket\HelpdeskMetricsService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
@@ -59,11 +59,14 @@ final class HelpdeskKnowledgeRecurrenceTest extends TestCase {
             'title' => 'Druckerspooler hängt ' . $ticketPrefix,
             'owner_id' => $this->agent->id,
         ]);
-        KnowledgeArticleLink::query()->create([
-            'knowledge_article_id' => $article->id,
-            'linkable_type' => $problem->getMorphClass(),
-            'linkable_id' => $problem->id,
-            'created_by_user_id' => $this->agent->id,
+        ContentReference::query()->create([
+            'organization_id' => $article->organization_id,
+            'source_type' => $article->getMorphClass(),
+            'source_id' => $article->id,
+            'target_type' => $problem->getMorphClass(),
+            'target_id' => $problem->id,
+            'kind' => ContentReference::KIND_LINKED,
+            'created_by' => $this->agent->id,
         ]);
 
         $tickets = [];
@@ -116,11 +119,14 @@ final class HelpdeskKnowledgeRecurrenceTest extends TestCase {
             'title' => 'Entwurf ohne Publikation',
             'created_by_user_id' => $this->agent->id,
         ]);
-        KnowledgeArticleLink::query()->create([
-            'knowledge_article_id' => $draft->id,
-            'linkable_type' => $orphanProblem->getMorphClass(),
-            'linkable_id' => $orphanProblem->id,
-            'created_by_user_id' => $this->agent->id,
+        ContentReference::query()->create([
+            'organization_id' => $draft->organization_id,
+            'source_type' => $draft->getMorphClass(),
+            'source_id' => $draft->id,
+            'target_type' => $orphanProblem->getMorphClass(),
+            'target_id' => $orphanProblem->id,
+            'kind' => ContentReference::KIND_LINKED,
+            'created_by' => $this->agent->id,
         ]);
 
         $rows = app(HelpdeskMetricsService::class)->recurringDespiteArticle(

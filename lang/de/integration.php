@@ -113,4 +113,8 @@ return [
             'compensation_required' => 'Kompensation erforderlich',
         ],
     ],
+    'oauth_connection_status' => [
+        'active' => 'Verbunden',
+        'disconnected' => 'Getrennt',
+    ],
 ];

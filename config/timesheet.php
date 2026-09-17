@@ -40,10 +40,6 @@ return [
         'days' => (int) env('TIMESHEET_EDIT_WINDOW_DAYS', 7),
     ],
 
-    'pdf' => [
-        'disk' => env('TIMESHEET_PDF_DISK', 'local'),
-    ],
-
     // Which TimeEntry rows are considered "arbeitszeitwirksam" for the
     // Gleitzeit / WorkBalance reports. Defaults match a typical contract:
     //   - "work" and "travel" minutes count toward Ist-Arbeitszeit

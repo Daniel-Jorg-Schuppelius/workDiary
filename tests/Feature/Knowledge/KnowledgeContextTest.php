@@ -35,11 +35,13 @@ class KnowledgeContextTest extends TestCase {
             ])
             ->assertRedirect();
 
-        $this->assertDatabaseHas('knowledge_article_links', [
-            'knowledge_article_id' => $article->id,
-            'linkable_type' => DiaryEntry::class,
-            'linkable_id' => $entry->id,
-            'created_by_user_id' => $user->id,
+        $this->assertDatabaseHas('content_references', [
+            'source_type' => KnowledgeArticle::class,
+            'source_id' => $article->id,
+            'target_type' => DiaryEntry::class,
+            'target_id' => $entry->id,
+            'kind' => 'linked',
+            'created_by' => $user->id,
         ]);
 
         // Doppeltes Verknüpfen bleibt idempotent (Unique-Index).
@@ -58,7 +60,7 @@ class KnowledgeContextTest extends TestCase {
             ->delete(route('knowledge.links.destroy', [$article, $link]))
             ->assertRedirect();
 
-        $this->assertDatabaseMissing('knowledge_article_links', ['id' => $link->id]);
+        $this->assertDatabaseMissing('content_references', ['id' => $link->id]);
     }
 
     public function test_linking_cross_org_subject_is_not_found(): void {
@@ -74,7 +76,7 @@ class KnowledgeContextTest extends TestCase {
             ])
             ->assertNotFound();
 
-        $this->assertDatabaseCount('knowledge_article_links', 0);
+        $this->assertDatabaseCount('content_references', 0);
     }
 
     public function test_suggestion_query_returns_article_matching_words_from_entry(): void {
@@ -184,10 +186,11 @@ class KnowledgeContextTest extends TestCase {
 
         app()->instance('currentOrganization', $user->organization);
         $article = KnowledgeArticle::query()->firstOrFail();
-        $this->assertDatabaseHas('knowledge_article_links', [
-            'knowledge_article_id' => $article->id,
-            'linkable_type' => DiaryEntry::class,
-            'linkable_id' => $entry->id,
+        $this->assertDatabaseHas('content_references', [
+            'source_type' => KnowledgeArticle::class,
+            'source_id' => $article->id,
+            'target_type' => DiaryEntry::class,
+            'target_id' => $entry->id,
         ]);
     }
 

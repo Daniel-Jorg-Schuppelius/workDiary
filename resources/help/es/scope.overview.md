@@ -23,6 +23,15 @@ de módulos en un solo paso. Después puedes ajustar módulos individuales.
 Si tu organización tiene un perfil sectorial instalado, la página muestra su
 recomendación de módulos. Nunca se aplica automáticamente: la confirmas tú.
 
+## Página de inicio por rol
+
+Debajo de los módulos defines adónde llega un rol tras iniciar sesión, por
+ejemplo el reloj de fichaje para el personal de campo o el flujo de
+comprobantes para contabilidad. La elección propia en el perfil siempre tiene
+prioridad. Si una persona tiene varios roles, se aplica el primero del orden
+mostrado que tenga una página asignada. Una página que la persona no puede
+abrir se omite; sin asignación se mantiene la predeterminada.
+
 ## Límites
 
 - Los módulos sin licencia no se pueden activar aquí; eso requiere la

@@ -1,7 +1,7 @@
 ---
 title: "Factures & pièces"
 topic: invoices.manage
-version: 3
+version: 5
 audience: []
 modules:
     - module.vertrieb
@@ -38,13 +38,23 @@ deux à la fois.
 2. Exclure au besoin des saisies de temps par case à cocher — elles
    restent ouvertes et reviennent au prochain passage.
 3. Vérifier et compléter le brouillon ; par position, les **saisies
-   sources** sont dépliables (1,50 h = 1:30 h).
+   sources** sont dépliables (1,50 h = 1:30 h). Pour un article avec poids
+   de cuivre, la case **supplément cuivre** du dialogue de ligne ajoute le
+   supplément au cours DEL du jour comme ligne distincte.
 4. Émettre ou envoyer — PDF, envoi et synchronisation externe sont
    des sorties du même état documenté.
 5. En cas de retard de paiement, utiliser la **relance** : le niveau 1
    crée un rappel de paiement en PDF distinct avec récapitulatif des
    créances, frais optionnels et échéance ; le courriel contient la
    lettre et la facture d'origine. Aucune nouvelle pièce n'est créée.
+
+**Facture électronique.** La XRechnung est générée en syntaxe UBL ; si un
+destinataire exige CII, choisissez sur le client ou lors de l’envoi le format
+de livraison « XRechnung (XML, syntaxe CII) ». Via Peppol, c’est toujours UBL.
+Sans numéro de TVA — par exemple en tant que petite entreprise selon le § 19
+UStG — le numéro fiscal des données de facturation électronique suffit : il est
+également indiqué comme identifiant du vendeur, exigé par le contrôle du
+destinataire.
 
 ## Exemple pratique
 

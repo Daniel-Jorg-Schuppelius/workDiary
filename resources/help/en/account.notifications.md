@@ -23,3 +23,10 @@ Whether you additionally receive notifications by email, and during
 which hours you should stay quiet, is controlled through the
 notification settings in your profile. The collection in the
 notification center is unaffected by this.
+
+**Text messages (SMS):** For genuinely critical alerts — such as on-call
+notifications — a text message can be delivered in addition. This route is
+deliberately frugal: there is a monthly quota, long texts are shortened, and
+the organisation is warned before the quota runs out. Text messages do not
+replace in-app notifications; they accompany them for the case where nobody is
+at a screen.

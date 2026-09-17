@@ -33,6 +33,7 @@
                     <x-table.th>{{ __('Ort') }}</x-table.th>
                     <x-table.th>{{ __('Drittland') }}</x-table.th>
                     <x-table.th>{{ __('AVV') }}</x-table.th>
+                    <x-table.th class="text-right"></x-table.th>
                 </tr>
             </x-slot:head>
             @forelse ($processors as $p)
@@ -42,9 +43,18 @@
                     <td>{{ $p->location ?? '—' }}</td>
                     <td>{{ $p->third_country ? __('ja') : '—' }}</td>
                     <td>{{ $p->agreements_count }}</td>
+                    {{-- Bearbeiten (MVP-798, Befund C1-08): update gab es, nur keinen Einstieg. --}}
+                    <td class="text-right">
+                        @can('update', $p)
+                            <x-icon-btn icon="edit" size="xs" tone="ghost"
+                                        data-entry-modal-trigger
+                                        :href="route('dataprotection.processors.edit', $p)"
+                                        :title="__('Dienstleister bearbeiten')" />
+                        @endcan
+                    </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="5" :title="__('Keine Dienstleister erfasst.')" />
+                <x-table.empty :colspan="6" :title="__('Keine Dienstleister erfasst.')" />
             @endforelse
         </x-table>
 

@@ -9,6 +9,7 @@ related:
     - documents.manage
     - isms.overview
     - glossary.core
+    - privacy.portal
 ---
 
 Das Datenschutzmodul unterstützt die operative Datenschutzarbeit deiner
@@ -26,7 +27,8 @@ Organisation. Es wird laufend weiterentwickelt – die Grundbausteine:
   dokumentierter Entscheidung.
 - **TOM**: technische und organisatorische Maßnahmen.
 - **Datenschutzvorfälle**: Erfassung mit Blick auf die
-  72-Stunden-Meldepflicht (Art. 33/34).
+  72-Stunden-Meldepflicht (Art. 33). Die Meldung an die Behörde und die
+  Benachrichtigung der Betroffenen (Art. 34) werden getrennt vermerkt.
 
 Besonderheiten:
 
@@ -42,3 +44,14 @@ VVT-Versionen sind nicht mehr änderbar.
 
 Nächste Schritte: Nachweise (AVV-Dokumente, Zertifikate) verwaltest du
 im Modul **Dokumente**.
+
+**Aufbewahrung, Löschung und Legal Hold:** Unter **Aufbewahrung & Löschung**
+schlägt das Löschkonzept fristüberfällige Daten vor; gelöscht oder
+anonymisiert wird erst nach zweistufiger Bestätigung. Läuft ein Betroffenen-
+oder Rechtsverfahren, setzt du unter **Legal Hold** einen Sperrvermerk an die
+Person oder den Kunden – mit Pflichtbegründung und optionalem Aktenzeichen. Solange
+er aktiv ist, entstehen keine Löschvorschläge, bestätigte Löschungen,
+Anonymisierung und Löschen von Konten oder Kunden werden abgewiesen, und die
+Standort-Rohpunkte der Person bleiben erhalten. Bei einer Kundenzusammenführung
+wandert der Vermerk zum Zielkunden. Aufgehoben wird er ebenfalls nur mit
+Begründung; beides bleibt im Protokoll von Person bzw. Kunde sichtbar.

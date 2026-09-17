@@ -179,6 +179,8 @@
                         <input type="number" step="0.1" min="0" name="occupied_km" value="{{ old('occupied_km') }}" placeholder="{{ __('passenger.field.occupied_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.occupied_km') }}">
                         <input type="number" step="0.1" min="0" name="empty_km" value="{{ old('empty_km') }}" placeholder="{{ __('passenger.field.empty_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.empty_km') }}">
                         <input type="number" step="1" min="0" name="odometer_end_km" value="{{ old('odometer_end_km') }}" placeholder="{{ __('passenger.field.odometer_end_km') }}" class="input input-sm input-bordered" aria-label="{{ __('passenger.field.odometer_end_km') }}">
+                        {{-- Pflicht, sobald der Satz vom Vorschlag aus Streckengrenze und Landeskatalog abweicht (§ 12 Abs. 2 Nr. 10 UStG). --}}
+                        <input type="text" maxlength="200" name="tax_reason" value="{{ old('tax_reason') }}" placeholder="{{ __('passenger.field.tax_reason') }}" class="input input-sm input-bordered col-span-2" aria-label="{{ __('passenger.field.tax_reason') }}">
                         <button type="submit" class="btn btn-sm btn-primary col-span-2">{{ __('passenger.rides.action.complete') }}</button>
                     </form>
                 @endif

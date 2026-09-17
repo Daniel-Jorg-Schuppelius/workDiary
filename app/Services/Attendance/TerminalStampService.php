@@ -46,9 +46,39 @@ class TerminalStampService {
      *                             `break` (Pausen-Toggle) oder `homeoffice`/`errand`
      *                             (Zwischen-Status, MVP-532) — orthogonal zu $event.
      * @param  int|null  $queued  vom Terminal gemeldeter Offline-Pufferstand (MVP-516).
-     * @return array{status: 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'homeoffice_started'|'homeoffice_ended'|'errand_started'|'errand_ended'|'skipped'|'unknown_badge'|'noop'|'rejected', user: ?User}
+     * @return array{status: 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'homeoffice_started'|'homeoffice_ended'|'errand_started'|'errand_ended'|'skipped'|'unknown_badge'|'noop'|'rejected'|'invalid_pin', user: ?User}
      */
     public function stamp(AttendanceTerminal $terminal, string $badgeUid, string $event = 'toggle', ?string $occurredAt = null, ?string $eventId = null, string $eventType = 'work', ?int $queued = null): array {
+        return $this->stampFor(
+            $terminal,
+            fn (): ?User => $this->resolveUser((int) $terminal->organization_id, $badgeUid),
+            'unknown_badge',
+            $event, $occurredAt, $eventId, $eventType, $queued,
+        );
+    }
+
+    /**
+     * PIN statt Ausweis (MVP-803): Personalnummer + PIN. Unbekannte Nummer, falsche
+     * und gesperrte PIN melden denselben Status — das Terminal verrät nicht, welche
+     * Personalnummern es gibt.
+     *
+     * @return array{status: 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'homeoffice_started'|'homeoffice_ended'|'errand_started'|'errand_ended'|'skipped'|'unknown_badge'|'noop'|'rejected'|'invalid_pin', user: ?User}
+     */
+    public function stampWithPin(AttendanceTerminal $terminal, string $personnelNumber, string $pin, string $event = 'toggle', ?string $occurredAt = null, ?string $eventId = null, string $eventType = 'work', ?int $queued = null): array {
+        return $this->stampFor(
+            $terminal,
+            fn (): ?User => app(TerminalPinService::class)->resolve((int) $terminal->organization_id, $personnelNumber, $pin),
+            'invalid_pin',
+            $event, $occurredAt, $eventId, $eventType, $queued,
+        );
+    }
+
+    /**
+     * @param  \Closure(): ?User  $resolveUser
+     * @param  'unknown_badge'|'invalid_pin'  $unknownStatus
+     * @return array{status: 'clocked_in'|'clocked_out'|'break_started'|'break_ended'|'homeoffice_started'|'homeoffice_ended'|'errand_started'|'errand_ended'|'skipped'|'unknown_badge'|'noop'|'rejected'|'invalid_pin', user: ?User}
+     */
+    private function stampFor(AttendanceTerminal $terminal, \Closure $resolveUser, string $unknownStatus, string $event, ?string $occurredAt, ?string $eventId, string $eventType, ?int $queued): array {
         // Gesundheitsstatus (+ optional Pufferstand) fortschreiben — auch bei
         // abgewiesenen Ereignissen.
         $health = ['last_seen_at' => Carbon::now()];
@@ -61,16 +91,19 @@ class TerminalStampService {
             return ['status' => 'skipped', 'user' => null];
         }
 
-        $user = $this->resolveUser((int) $terminal->organization_id, $badgeUid);
+        $user = $resolveUser();
         if (! $user instanceof User) {
             // Security-Signal (Feature 096, MVP-443): unbekannte Badges nur
             // zählen — die Badge-UID selbst bleibt aus dem Log (Hash-Prinzip).
-            app(\App\Services\Security\SecurityEventLogger::class)->log(
-                \App\Enums\Security\SecurityEventType::TerminalBadgeUnknown,
-                ['terminal' => $terminal->name, 'organization_id' => (int) $terminal->organization_id],
-            );
+            // PIN-Fehlversuche zählt und sperrt der TerminalPinService selbst.
+            if ($unknownStatus === 'unknown_badge') {
+                app(\App\Services\Security\SecurityEventLogger::class)->log(
+                    \App\Enums\Security\SecurityEventType::TerminalBadgeUnknown,
+                    ['terminal' => $terminal->name, 'organization_id' => (int) $terminal->organization_id],
+                );
+            }
 
-            return ['status' => 'unknown_badge', 'user' => null];
+            return ['status' => $unknownStatus, 'user' => null];
         }
 
         // Der Zeitstempel kommt vom Terminal, nicht vom Server. Bis zum

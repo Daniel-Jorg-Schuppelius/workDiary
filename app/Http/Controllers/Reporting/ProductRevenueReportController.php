@@ -61,6 +61,8 @@ class ProductRevenueReportController extends Controller {
             'total' => $result['total'],
             'withoutArticle' => $result['withoutArticle'],
             'articleCount' => $result['articleCount'],
+            'categories' => $result['categories'],
+            'lexofficeNet' => $result['lexofficeNet'],
             'series' => $series,
             'topN' => $topN,
             'from' => $from,
@@ -73,7 +75,7 @@ class ProductRevenueReportController extends Controller {
      * Top-N-Artikel nach Nettoumsatz; der Sammelposten ohne Artikel bleibt
      * dem Chart fern (er würde jede Rangfolge dominieren).
      *
-     * @param  list<array{articleId: ?int, number: ?string, name: string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int}>  $rows
+     * @param  list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
      * @return list<array{x: string, y: float, url: string}>
      */
     private function topSeries(array $rows, int $topN): array {
@@ -89,21 +91,23 @@ class ProductRevenueReportController extends Controller {
     }
 
     /**
-     * @param  list<array{articleId: ?int, number: ?string, name: string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int}>  $rows
+     * @param  list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>  $rows
      * @param  array<string, mixed>  $filters
      */
     private function exportCsv(array $rows, string $from, string $to, array $filters, Request $request): Response {
         $filename = sprintf('umsatz_je_produkt_%s_%s.csv', $from, $to);
-        $out = [['Artikelnummer', 'Artikel', 'Einheit', 'Menge', 'NettoumsatzEUR', 'AnteilProzent', 'Rechnungen']];
+        $out = [['Artikelnummer', 'Artikel', 'Kategorie', 'Einheit', 'Menge', 'NettoumsatzEUR', 'AnteilProzent', 'Belege', 'Quelle']];
         foreach ($rows as $row) {
             $out[] = [
                 $row['number'] ?? '',
                 $row['name'],
+                $row['category'] ?? '',
                 $row['unit'] ?? '',
                 NumberHelper::toUSFormat($row['quantity'], 3),
                 NumberHelper::toUSFormat($row['net'], 2),
                 $row['share'] !== null ? NumberHelper::toUSFormat($row['share'], 1) : '',
                 $row['invoices'],
+                implode('+', $row['sources']),
             ];
         }
 
@@ -111,7 +115,7 @@ class ProductRevenueReportController extends Controller {
     }
 
     /**
-     * @param  array{rows: list<array{articleId: ?int, number: ?string, name: string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int}>, total: float, withoutArticle: float, articleCount: int}  $result
+     * @param  array{rows: list<array{articleId: ?int, number: ?string, name: string, category: ?string, unit: ?string, quantity: float, net: float, share: ?float, invoices: int, sources: list<string>}>, categories: list<array{category: ?string, net: float, share: ?float, articles: int}>, total: float, withoutArticle: float, lexofficeNet: float, articleCount: int}  $result
      * @param  list<array{x: string, y: float, url: string}>  $series
      * @param  array<string, mixed>  $filters
      */

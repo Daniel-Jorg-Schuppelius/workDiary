@@ -16,6 +16,7 @@ use App\Enums\Diary\Status;
 use App\Enums\Passenger\{RideOperationMode, RideOrderChannel, RidePriceKind, RideStatus};
 use App\Models\{DiaryEntry, Organization, User, Vehicle};
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
+use App\Services\Invoicing\TaxResolver;
 use CommonToolkit\Enums\CurrencyCode;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -299,9 +300,73 @@ class PassengerRideService {
     }
 
     /**
+     * Vorgeschlagener Steuersatz aus Streckengrenze und Landeskatalog.
+     * Ohne erfasste besetzte Strecke gibt es keinen Vorschlag: eine
+     * Steuerentscheidung aus fehlenden Daten waere geraten, nicht begruendet.
+     *
+     * @return array{rate: numeric-string, reduced: bool, max_km: float, occupied_km: string, country: string}|null
+     */
+    private function taxSuggestion(PassengerRide $ride, mixed $occupiedKm): ?array {
+        if ($occupiedKm === null || ! is_numeric((string) $occupiedKm)) {
+            return null;
+        }
+
+        $organization = $ride->organization;
+        $country = $organization instanceof Organization
+            ? app(TaxResolver::class)->sellerCountry($organization)
+            : 'DE';
+
+        $maxKm = (float) config('passenger.tax.reduced_rate_max_km', 50);
+        $reduced = (float) (string) $occupiedKm <= $maxKm;
+        $fallback = $reduced ? '7.00' : '19.00';
+        $configured = (string) config(
+            "taxation.rates.{$country}." . ($reduced ? 'reduced' : 'standard'),
+            config('taxation.rates.DE.' . ($reduced ? 'reduced' : 'standard'), $fallback)
+        );
+        // Ein unbrauchbar konfigurierter Satz faellt auf den Gesetzeswert
+        // zurueck, statt eine Rechnung mit Muell zu erzeugen.
+        $rate = is_numeric($configured) ? $configured : $fallback;
+
+        return [
+            'rate' => $rate,
+            'reduced' => $reduced,
+            'max_km' => $maxKm,
+            'occupied_km' => (string) $occupiedKm,
+            'country' => $country,
+        ];
+    }
+
+    /**
+     * Haelt die Steuerentscheidung am Beleg fest: Vorschlag, Grenze, Strecke
+     * und — bei Abweichung — die Begruendung.
+     *
+     * @param  array<string, mixed>  $closing
+     * @param  array{rate: numeric-string, reduced: bool, max_km: float, occupied_km: string, country: string}|null  $suggestion
+     * @param  numeric-string  $taxRate
+     * @return array<string, mixed>
+     */
+    private function taxContext(PassengerRide $ride, array $closing, ?array $suggestion, string $taxRate, string $reason): array {
+        $context = (array) ($closing['tax_context'] ?? $ride->tax_context ?? []);
+        if ($suggestion === null) {
+            $context['suggestion'] = null;
+            $context['applied_rate'] = $taxRate;
+
+            return $context;
+        }
+
+        $context['suggestion'] = $suggestion;
+        $context['applied_rate'] = $taxRate;
+        $context['deviates'] = bccomp($suggestion['rate'], $taxRate, 2) !== 0;
+        $context['reason'] = $reason !== '' ? $reason : null;
+
+        return $context;
+    }
+
+    /**
      * Fahrtabschluss (Gate „Fahrtabschluss"): Strecke/Gerätebezug, Steuer-
      * entscheidung und Zahlungsart sind Pflicht; der Gerätewert bleibt vom
-     * geplanten Preis getrennt.
+     * geplanten Preis getrennt. Weicht der Satz vom Vorschlag ab, ist eine
+     * Begruendung Pflicht (Branchenprofil Taxi).
      *
      * @param  array<string, mixed>  $closing
      */
@@ -309,19 +374,35 @@ class PassengerRideService {
         $this->assertTransition($ride, RideStatus::Completed);
 
         $meterNet = trim((string) ($closing['meter_net'] ?? ''));
-        $taxRate = $closing['tax_rate'] ?? null;
+        $taxRate = trim((string) ($closing['tax_rate'] ?? ''));
         $payment = trim((string) ($closing['payment_method'] ?? ''));
         if ($meterNet === '' || ! is_numeric($meterNet)) {
             throw ValidationException::withMessages(['meter_net' => (string) __('passenger.error.meter_value_required')]);
         }
-        if ($taxRate === null || ! is_numeric((string) $taxRate)) {
+        if ($taxRate === '' || ! is_numeric($taxRate)) {
             throw ValidationException::withMessages(['tax_rate' => (string) __('passenger.error.tax_decision_required')]);
         }
         if ($payment === '') {
             throw ValidationException::withMessages(['payment_method' => (string) __('passenger.error.payment_required')]);
         }
 
-        $taxAmount = bcdiv(bcmul($meterNet, (string) $taxRate, 6), '100', 2);
+        // Steuerentscheidung nachvollziehbar machen (§ 12 Abs. 2 Nr. 10 UStG,
+        // Branchenprofil Taxi): bis zur konfigurierten Streckengrenze gilt der
+        // ermaessigte Satz des Verkaeuferlandes, darueber der Regelsatz. Der
+        // `TaxResolver` traegt hier nur die Landbestimmung — seine Satzwahl
+        // verlangt einen Kunden, und eine Fahrt kennt nur einen Fahrgast.
+        $occupiedKm = $closing['occupied_km'] ?? $ride->occupied_km;
+        $suggestion = $this->taxSuggestion($ride, $occupiedKm);
+        $reason = trim((string) ($closing['tax_reason'] ?? ''));
+        if ($suggestion !== null
+            && bccomp($suggestion['rate'], $taxRate, 2) !== 0
+            && $reason === '') {
+            throw ValidationException::withMessages([
+                'tax_reason' => (string) __('passenger.error.tax_reason_required', ['rate' => $suggestion['rate']]),
+            ]);
+        }
+
+        $taxAmount = bcdiv(bcmul($meterNet, $taxRate, 6), '100', 2);
         $ride->forceFill([
             'status' => RideStatus::Completed,
             'completed_at' => now(),
@@ -330,10 +411,10 @@ class PassengerRideService {
             'empty_km' => $closing['empty_km'] ?? $ride->empty_km,
             'waiting_seconds' => (int) ($closing['waiting_seconds'] ?? $ride->waiting_seconds),
             'meter_net' => $meterNet,
-            'tax_rate' => (string) $taxRate,
+            'tax_rate' => $taxRate,
             'tax_amount' => $taxAmount,
             'gross_amount' => bcadd($meterNet, $taxAmount, 2),
-            'tax_context' => $closing['tax_context'] ?? $ride->tax_context,
+            'tax_context' => $this->taxContext($ride, $closing, $suggestion, $taxRate, $reason),
             'payment_method' => $payment,
         ])->save();
 

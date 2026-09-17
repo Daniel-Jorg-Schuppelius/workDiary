@@ -14,7 +14,7 @@ return [
     'group_source' => 'Documento de origen', 'group_target' => 'Destino y salida', 'group_invoice' => 'Datos de la factura', 'group_einvoice' => 'Factura electrónica',
     'file' => 'Archivo de factura', 'file_hint' => 'PDF, XML (XRechnung), DOCX, DOC, XLSX o XLS hasta 20 MB. Los PDF ZUGFeRD y los XML XRechnung se importan de forma estructurada; para escaneos PDF se usa OCR si está disponible.', 'delivery_format' => 'Formato de salida preferido',
     'review_hint' => 'El original permanece sin cambios en el DMS. Los datos reconocidos automáticamente son propuestas, no una aprobación.',
-    'format' => ['pdf' => 'PDF', 'xrechnung' => 'XRechnung (XML)', 'zugferd' => 'ZUGFeRD (PDF híbrido)', 'pdf_xrechnung' => 'PDF y XRechnung (XML)'],
+    'format' => ['pdf' => 'PDF', 'xrechnung' => 'XRechnung (XML)', 'xrechnung_cii' => 'XRechnung (XML, sintaxis CII)', 'zugferd' => 'ZUGFeRD (PDF híbrido)', 'pdf_xrechnung' => 'PDF y XRechnung (XML)'],
     'default_line' => 'Servicios según la factura original :number', 'source_title' => 'Archivo original de la factura :number', 'source_description' => 'Documento de origen sin cambios de la importación de la factura.',
     'success' => 'Archivo de factura leído y creado como borrador. Revise los datos y las líneas de la factura.', 'options_title' => 'Datos de factura y factura electrónica', 'options_action' => 'Datos de e-factura', 'options_saved' => 'Datos de factura y factura electrónica guardados.',
     'invoice_number' => 'Número de factura', 'currency' => 'Moneda', 'issue_date' => 'Fecha de factura', 'due_date' => 'Vencimiento', 'buyer_reference' => 'Referencia del comprador / Leitweg-ID',

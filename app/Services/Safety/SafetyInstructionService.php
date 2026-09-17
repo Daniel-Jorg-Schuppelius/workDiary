@@ -17,9 +17,9 @@ use App\Models\{Organization, User};
 use App\Models\Safety\{SafetyInstruction, SafetyInstructionParticipant};
 use App\Services\Concerns\AssignsSequentialNo;
 use App\Services\Training\TrainingAssignmentService;
-use CommonToolkit\Helper\Data\CryptoHelper;
-use Illuminate\Support\Carbon;
-use Illuminate\Support\Facades\DB;
+use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
+use Illuminate\Support\{Carbon, Str};
+use Illuminate\Support\Facades\{DB, Storage};
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -106,6 +106,30 @@ class SafetyInstructionService {
      * Bestätigungs-Klick werden IP und Zeitpunkt festgehalten; eine
      * gezeichnete Unterschrift kommt als Bildpfad (Datenmodell, kein UI im MVP).
      */
+    /** Obergrenze für das PNG der Zeichenfläche (wie Stundenzettel und Entsorgung). */
+    public const SIGNATURE_MAX_BYTES = 1_000_000;
+
+    /**
+     * Gezeichnete Unterschrift (MVP-798, Befund P10-14): Methode und Feld gab es,
+     * nur keinen Weg, das Bild zu erfassen. Geprüft wird VOR der Ablage — sonst
+     * bliebe bei „bereits bestätigt" eine verwaiste Datei. Einen Pfad vom Client
+     * nimmt der Dienst bewusst nicht an.
+     */
+    public function signDrawn(SafetyInstructionParticipant $participant, User $actor, string $base64Png, ?string $ip = null): SafetyInstructionParticipant {
+        $this->guardSignable($participant, $actor);
+
+        $binary = DataUrlHelper::decode($base64Png, ['image/png'], self::SIGNATURE_MAX_BYTES);
+        if ($binary === false) {
+            throw ValidationException::withMessages([
+                'signature' => (string) __('safety.register.error.signature_invalid'),
+            ]);
+        }
+        $path = 'safety/signatures/' . Carbon::now()->format('Y/m') . '/' . Str::uuid()->toString() . '.png';
+        Storage::disk('local')->put($path, $binary);
+
+        return $this->sign($participant, $actor, InstructionSignatureMethod::Drawn, $ip, $path);
+    }
+
     public function sign(
         SafetyInstructionParticipant $participant,
         User $actor,
@@ -113,16 +137,7 @@ class SafetyInstructionService {
         ?string $ip = null,
         ?string $signatureImagePath = null,
     ): SafetyInstructionParticipant {
-        if ((int) $participant->user_id !== (int) $actor->id) {
-            throw ValidationException::withMessages([
-                'participant' => (string) __('safety.register.error.sign_only_self'),
-            ]);
-        }
-        if ($participant->isSigned()) {
-            throw ValidationException::withMessages([
-                'participant' => (string) __('safety.register.error.already_signed'),
-            ]);
-        }
+        $this->guardSignable($participant, $actor);
 
         $instruction = $participant->instruction()->firstOrFail();
         $signedAt = Carbon::now();
@@ -195,5 +210,18 @@ class SafetyInstructionService {
             ->whereNotIn('user_id', $userIds)
             ->get()
             ->each(fn(SafetyInstructionParticipant $participant) => $participant->delete());
+    }
+
+    private function guardSignable(SafetyInstructionParticipant $participant, User $actor): void {
+        if ((int) $participant->user_id !== (int) $actor->id) {
+            throw ValidationException::withMessages([
+                'participant' => (string) __('safety.register.error.sign_only_self'),
+            ]);
+        }
+        if ($participant->isSigned()) {
+            throw ValidationException::withMessages([
+                'participant' => (string) __('safety.register.error.already_signed'),
+            ]);
+        }
     }
 }

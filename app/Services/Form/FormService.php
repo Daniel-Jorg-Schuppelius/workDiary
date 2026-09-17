@@ -13,6 +13,7 @@ namespace App\Services\Form;
 use App\Enums\Form\{FormFieldType, FormTemplateStatus};
 use App\Models\{FormSubmission, FormTemplate, User};
 use App\Services\Attachments\FileAttacher;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage, Validator};
@@ -338,8 +339,8 @@ class FormService {
 
     /** Base64-PNG einer Unterschrift → Storage + Attachment (meta_type field:<key>). */
     private function storeSignature(FormSubmission $submission, string $key, string $base64, User $user): bool {
-        $binary = $this->decodePng($base64);
-        if ($binary === null) {
+        $binary = DataUrlHelper::decode($base64, ['image/png'], 1_000_000);
+        if ($binary === false) {
             return false;
         }
 
@@ -357,16 +358,5 @@ class FormService {
         ]);
 
         return true;
-    }
-
-    /** Dekodiert und prüft ein Base64-PNG (Magic-Bytes, Größenlimit 1 MB). */
-    private function decodePng(string $base64): ?string {
-        $base64 = preg_replace('#^data:image/png;base64,#', '', trim($base64)) ?? '';
-        $binary = base64_decode($base64, true);
-        if ($binary === false || strlen($binary) > 1_000_000 || ! str_starts_with($binary, "\x89PNG\r\n\x1a\n")) {
-            return null;
-        }
-
-        return $binary;
     }
 }

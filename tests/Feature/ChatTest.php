@@ -197,4 +197,52 @@ class ChatTest extends TestCase {
         $this->actingAs($admin)->deleteJson(route('chat.messages.destroy', $msg))->assertForbidden();
         $this->assertDatabaseHas('chat_messages', ['id' => $msg->id]);
     }
+
+    /**
+     * Beitreten zu einem oeffentlichen Kanal (Vollscan 2026-09-15, `C1-03` /
+     * `MVP-798`): Der Endpunkt war gebaut, die Kanalliste zeigte oeffentliche
+     * Kanaele auch ohne Mitgliedschaft an — nur beitreten konnte man nicht.
+     */
+    public function test_non_member_can_join_a_public_channel(): void {
+        $owner = $this->member();
+        $newcomer = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
+
+        $channel = Channel::create([
+            'organization_id' => $owner->organization_id, 'name' => 'Offen', 'slug' => 'offen',
+            'type' => 'channel', 'visibility' => 'public',
+        ]);
+        $channel->members()->attach($owner->id, ['role' => 'owner', 'joined_at' => now()]);
+
+        $this->assertFalse($channel->hasMember($newcomer));
+
+        $this->actingAs($newcomer)->post(route('chat.channels.join', $channel))->assertRedirect();
+
+        $this->assertTrue($channel->fresh()?->hasMember($newcomer) ?? false);
+    }
+
+    /**
+     * Umbenennen bleibt dem Eigentuemer vorbehalten (`C1-03` / `MVP-798`):
+     * Der Einstieg im Kanalkopf haengt an derselben Pruefung wie der Endpunkt.
+     */
+    public function test_only_the_owner_can_rename_a_channel(): void {
+        $owner = $this->member();
+        $member = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
+
+        $channel = Channel::create([
+            'organization_id' => $owner->organization_id, 'name' => 'Alt', 'slug' => 'alt',
+            'type' => 'channel', 'visibility' => 'public',
+        ]);
+        $channel->members()->attach($owner->id, ['role' => 'owner', 'joined_at' => now()]);
+        $channel->members()->attach($member->id, ['role' => 'member', 'joined_at' => now()]);
+
+        $this->actingAs($member)->put(route('chat.channels.update', $channel), [
+            'name' => 'Gekapert', 'visibility' => 'public',
+        ])->assertForbidden();
+
+        $this->actingAs($owner)->put(route('chat.channels.update', $channel), [
+            'name' => 'Neu', 'visibility' => 'public',
+        ])->assertRedirect();
+
+        $this->assertDatabaseHas('chat_channels', ['id' => $channel->id, 'name' => 'Neu']);
+    }
 }

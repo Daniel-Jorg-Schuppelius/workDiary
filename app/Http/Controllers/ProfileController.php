@@ -39,7 +39,6 @@ class ProfileController extends Controller {
         $user = $this->authUser();
 
         $themeKeys = app(\App\Services\ThemeService::class)->allowedKeys();
-        $startpages = (array) config('personalization.startpages', []);
         $avatarMaxKb = (int) config('branding.limits.avatar_kb', 1024);
 
         $data = $request->validate([
@@ -51,7 +50,7 @@ class ProfileController extends Controller {
             'preferences.timezone' => ['nullable', 'timezone'],
             'preferences.date_format' => ['nullable', Rule::in(\App\Support\Formats::dateOptions())],
             'preferences.time_format' => ['nullable', Rule::in(\App\Support\Formats::timeOptions())],
-            'preferences.startpage' => ['nullable', 'string', Rule::in($startpages)],
+            'preferences.startpage' => ['nullable', 'string', Rule::in(\App\Services\Navigation\StartPageResolver::routeOptions())],
             // Benachrichtigungs-Präferenzen (MVP-018): Mail global an/aus, Ruhezeit nur für Mail/Push — In-App sammelt immer.
             'preferences.notifications' => ['sometimes', 'array'],
             'preferences.notifications.mail_enabled' => ['nullable', 'boolean'],

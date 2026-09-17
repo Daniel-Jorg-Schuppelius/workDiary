@@ -170,6 +170,7 @@ return [
             'edit_item' => 'Editar peligro',
             'create_instruction' => 'Registrar formación',
             'sign' => 'Confirmar participación',
+            'sign_drawn' => 'Confirmar con firma',
             'create_checkup' => 'Registrar reconocimiento',
         ],
         'filter' => [
@@ -204,6 +205,7 @@ return [
             'delete_instruction' => '¿Eliminar la formación?',
             'delete_checkup' => '¿Eliminar la entrada del reconocimiento?',
             'sign' => '¿Confirmar ahora la participación (vinculante)?',
+            'sign_drawn_hint' => 'Firme en el campo. Al enviar, la participación queda confirmada de forma vinculante.',
         ],
         'flash' => [
             'assessment_created' => 'Evaluación de riesgos creada.',
@@ -229,6 +231,7 @@ return [
             'after_pair_incomplete' => 'Riesgo después de la medida: indicar gravedad y probabilidad juntas.',
             'sign_only_self' => 'Solo la persona registrada puede confirmar su participación.',
             'already_signed' => 'La participación ya está confirmada.',
+            'signature_invalid' => 'No se pudo leer la firma. Vuelva a firmar.',
             'delete_with_signatures' => 'Las formaciones con justificantes confirmados no se pueden eliminar.',
         ],
         'status_summary' => ':signed de :total confirmados',

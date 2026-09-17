@@ -10,11 +10,14 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Classification\ClassificationRequirementPhase;
+use App\Exceptions\ClassificationRequirementException;
 use App\Http\Controllers\Concerns\{FiltersDiaryEntries, ResolvesGlobalDateRange};
 use App\Http\Requests\SaveDiaryEntryRequest;
 use App\Legacy\LegacyBridge;
 use App\Models\{Customer, DiaryEntry, EntryType, OpenIssue, Project, Tag, Tour, User};
 use App\Services\Archive\ArchiveService;
+use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\OpenIssue\OpenIssueService;
 use App\Services\SqidEncoder;
 use App\Services\Timeline\DiaryEntryTimelineService;
@@ -30,7 +33,10 @@ use Illuminate\View\View;
 class DiaryController extends Controller {
     use FiltersDiaryEntries, ResolvesGlobalDateRange;
 
-    public function __construct(private readonly SqidEncoder $sqids) {}
+    public function __construct(
+        private readonly SqidEncoder $sqids,
+        private readonly ClassificationRequirementValidator $requirements,
+    ) {}
 
     public function index(Request $request): View|RedirectResponse {
         // Backward-Compat: alte Bookmarks mit ?from=&to= setzen den globalen
@@ -210,6 +216,22 @@ class DiaryController extends Controller {
         $issue = $openIssueId > 0 ? OpenIssue::query()->findOrFail($openIssueId) : null;
         if ($issue !== null) {
             Gate::authorize('update', $issue);
+        }
+
+        // Pflichtklassifikationen bei der Anlage (MVP-795): blockierend VOR
+        // dem Speichern — ein abgewiesener Auftrag darf gar nicht entstehen.
+        $ownerOrganizationId = $owner->organization_id;
+        if ($ownerOrganizationId === null) {
+            // Org-los heisst fail-closed: ohne Mandant liesse sich keine
+            // Pflichtklassifikation ermitteln, die Pruefung liefe ins Leere.
+            abort(403);
+        }
+        $candidate = new DiaryEntry($data);
+        $candidate->organization_id = $ownerOrganizationId;
+        try {
+            $this->requirements->assertSatisfied($candidate, ClassificationRequirementPhase::OnCreate);
+        } catch (ClassificationRequirementException $exception) {
+            return back()->withErrors(['classification' => $exception->getMessage()])->withInput();
         }
 
         /** @var DiaryEntry $entry */

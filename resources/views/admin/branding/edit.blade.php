@@ -29,38 +29,36 @@
 
 <x-page-shell>
     {{-- ── Logos (eigene Forms, deshalb außerhalb des Settings-Forms) ── --}}
-    <div class="card bg-base-100 shadow">
-        <div class="card-body">
-            <h2 class="card-title">
-                <x-icon name="image" />
-                {{ __('Logos') }}
-            </h2>
-            <p class="text-sm opacity-70 mb-2">
-                {{ __('Diese Logos erscheinen im Webinterface, in PDFs und auf der Login-Seite.') }}
-            </p>
+    <x-card class="flex flex-col gap-2">
+        <h2 class="card-title">
+            <x-icon name="image" />
+            {{ __('Logos') }}
+        </h2>
+        <p class="text-sm opacity-70 mb-2">
+            {{ __('Diese Logos erscheinen im Webinterface, in PDFs und auf der Login-Seite.') }}
+        </p>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <x-file-upload
-                    :label="__('Logo (helle Variante)')"
-                    :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
-                    :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo'])"
-                    :current="$organization->logo()"
-                    :meta="\App\Models\Attachment::META_LOGO"
-                    :max-kb="$logoMaxKb"
-                    :helper="$logoHelper"
-                />
-                <x-file-upload
-                    :label="__('Logo (dunkle Variante, optional)')"
-                    :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
-                    :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo_dark'])"
-                    :current="$organization->logoDark()"
-                    :meta="\App\Models\Attachment::META_LOGO_DARK"
-                    :max-kb="$logoMaxKb"
-                    :helper="$logoHelper"
-                />
-            </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <x-file-upload
+                :label="__('Logo (helle Variante)')"
+                :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
+                :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo'])"
+                :current="$organization->logo()"
+                :meta="\App\Models\Attachment::META_LOGO"
+                :max-kb="$logoMaxKb"
+                :helper="$logoHelper"
+            />
+            <x-file-upload
+                :label="__('Logo (dunkle Variante, optional)')"
+                :action="route('attachments.store', ['type' => 'organization', 'id' => $organization->sqid])"
+                :delete-action="route('attachments.destroyMeta', ['type' => 'organization', 'id' => $organization->sqid, 'meta' => 'logo_dark'])"
+                :current="$organization->logoDark()"
+                :meta="\App\Models\Attachment::META_LOGO_DARK"
+                :max-kb="$logoMaxKb"
+                :helper="$logoHelper"
+            />
         </div>
-    </div>
+    </x-card>
 
     {{-- ── Restliche Settings als ein Form ───────────────────────────── --}}
     <form method="POST" action="{{ route('admin.branding.update') }}" class="space-y-6">

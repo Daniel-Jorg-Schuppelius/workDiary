@@ -37,6 +37,14 @@ class OrganizationController extends Controller {
         // diese Berechtigung erreicht der Aufruf den Controller nicht.
         $query = Organization::query()->withoutGlobalScopes()->withCount('users');
 
+        // Demo-Organisationen (MVP-807, Entscheid P12-17): standardmäßig
+        // ausgeblendet, per Umschalter sichtbar — verwaltet werden sie weiter hier.
+        $showDemo = $request->boolean('show_demo');
+        $demoCount = count(Organization::demoIds());
+        if (! $showDemo) {
+            $query->where('is_demo', false);
+        }
+
         [$sort, $dir] = SortableQuery::apply($query, $request, [
             'name' => 'name',
             'plan' => 'plan',
@@ -48,7 +56,7 @@ class OrganizationController extends Controller {
 
         $organizations = $query->paginate((int) Setting::get('pagination.organizations', 25))->withQueryString();
 
-        return view('admin.organizations.index', compact('organizations', 'sort', 'dir'));
+        return view('admin.organizations.index', compact('organizations', 'sort', 'dir', 'showDemo', 'demoCount'));
     }
 
     public function create(): View {
@@ -356,6 +364,12 @@ class OrganizationController extends Controller {
         if ($organization->is_active) {
             return redirect()->route('admin.organizations.index')
                 ->with('error', __('Aktive Organisationen können nicht endgültig gelöscht werden. Bitte zuerst deaktivieren.'));
+        }
+
+        // Legal Hold (MVP-801): Ein Vermerk darf nicht mit dem ganzen Mandanten verschwinden.
+        if (app(\App\Services\Privacy\LegalHoldService::class)->organizationHasActiveHolds($organization)) {
+            return redirect()->route('admin.organizations.index')
+                ->with('error', __('Die Organisation hat aktive Legal Holds — endgültiges Löschen ist erst nach deren Aufhebung möglich.'));
         }
 
         if (! $lifecycle->isPurgeAllowed($organization)) {

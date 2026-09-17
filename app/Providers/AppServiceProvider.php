@@ -615,6 +615,7 @@ class AppServiceProvider extends ServiceProvider {
         Gate::policy(CommunicationNote::class, CommunicationNotePolicy::class);
         Gate::policy(\App\Models\Document::class, \App\Policies\DocumentPolicy::class);
         Gate::policy(\App\Models\KnowledgeArticle::class, \App\Policies\KnowledgeArticlePolicy::class);
+        Gate::policy(\App\Models\ContentCollection::class, \App\Policies\ContentCollectionPolicy::class);
         Gate::policy(\App\Models\FormTemplate::class, \App\Policies\FormTemplatePolicy::class);
         Gate::policy(\App\Models\FormSubmission::class, \App\Policies\FormSubmissionPolicy::class);
         Gate::policy(Protocol::class, ProtocolPolicy::class);

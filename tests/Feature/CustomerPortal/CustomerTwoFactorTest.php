@@ -55,6 +55,25 @@ class CustomerTwoFactorTest extends TestCase {
         return $secret;
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13 (`authflow-3`, S-17): Die Weboberfläche
+     * verweigert das Neuanlegen, wenn bereits ein bestätigter Faktor besteht;
+     * im Portal fehlte die Schranke. Ein einfacher Aufruf überschrieb dort das
+     * Geheimnis und setzte die Bestätigung zurück — der Zweitfaktor war ohne
+     * Code und ohne Wissen des Inhabers weg.
+     */
+    public function test_ein_bestaetigter_zweitfaktor_wird_nicht_neu_angelegt(): void {
+        $secret = $this->enable2fa();
+
+        $this->actingAs($this->portalUser, 'customer')
+            ->post(route('customer.2fa.enable'))
+            ->assertSessionHasErrors('code');
+
+        $fresh = $this->portalUser->fresh();
+        $this->assertSame($secret, $fresh->two_factor_secret, 'Das Geheimnis wurde überschrieben.');
+        $this->assertNotNull($fresh->two_factor_confirmed_at, 'Die Bestätigung wurde zurückgesetzt.');
+    }
+
     public function test_login_with_2fa_parks_session_and_requires_code(): void {
         $this->enable2fa();
 

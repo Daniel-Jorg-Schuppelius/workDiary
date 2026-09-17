@@ -66,6 +66,8 @@ class SchedulerRegistrationTest extends TestCase {
         // Feature 149 (LTI 1.3): Schlüsseltausch nach Frist, Nonce-Kehraus.
         'learning:lti-rotate-keys' => ['50 3 * * *', true, true],
         'learning:lti-prune-nonces' => ['5 4 * * *', true, true],
+        // MVP-803: Abend-Erinnerung bei offener Stempelung.
+        'attendance:remind-open' => ['0 19 * * *', true, true],
         'attendance:close-open' => ['*/15 * * * *', true, true],
         'recurrence:generate' => ['30 4 * * *', true, true],
         'events:dispatch-reminders' => ['*/5 * * * *', true, true],
@@ -77,6 +79,9 @@ class SchedulerRegistrationTest extends TestCase {
         'whistleblowing:deadlines' => ['0 * * * *', true, true],
         'whistleblowing:retention-review' => ['40 4 * * *', true, true],
         'whistleblowing:scan' => ['*/5 * * * *', true, true],
+        // Neu mit MVP-795: Quarantäne-Freigabe der Bewerbungsunterlagen
+        // (Vollscan 2026-09-15, Befund P6-46).
+        'recruiting:scan-uploads' => ['*/15 * * * *', true, true],
         'zammad:sync' => ['*/15 * * * *', true, true],
         'github:sync' => ['0 * * * *', true, true],
         'gitlab:sync' => ['0 * * * *', true, true],

@@ -263,6 +263,39 @@
             @endif
         </div>
 
+        {{-- OneNote-Übernahme (Feature 155, MVP-815): nur lesend, erst nach Einschalten verbindbar --}}
+        <div class="rounded-box border border-base-300 bg-base-100 p-4 shadow-xs space-y-3">
+            <div class="flex flex-wrap items-center justify-between gap-2">
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('msgraph_onenote.heading') }}</h2>
+                @if ($oneNoteConnection && $oneNoteConnection->isActive())
+                    <span class="badge badge-success badge-sm">{{ __('msgraph_onenote.badge_connected') }}</span>
+                @elseif (! $oneNoteEnabled)
+                    <span class="badge badge-ghost badge-sm">{{ __('msgraph_onenote.badge_disabled') }}</span>
+                @endif
+            </div>
+            <p class="text-sm text-muted">{{ __('msgraph_onenote.intro') }}</p>
+
+            @if ($oneNoteConnection && $oneNoteConnection->isActive())
+                @if ($oneNoteConnection->account_label)
+                    <p class="text-sm">{{ __('msgraph_onenote.account') }}: <span class="font-mono">{{ $oneNoteConnection->account_label }}</span></p>
+                @endif
+                <div class="flex flex-wrap items-center gap-2">
+                    <x-icon-btn icon="hub" tone="primary" size="sm" :href="route('knowledge-hub.index')" show-label>{{ __('msgraph_onenote.open_hub') }}</x-icon-btn>
+                    <form method="POST" action="{{ route('admin.msgraph.onenote.disconnect') }}">
+                        @csrf
+                        <button type="submit" class="btn btn-sm btn-ghost">{{ __('msgraph_onenote.disconnect') }}</button>
+                    </form>
+                </div>
+            @elseif (! $oneNoteEnabled)
+                <p class="text-sm">{{ __('msgraph_onenote.enable_hint') }}</p>
+            @elseif ($configured)
+                <form method="POST" action="{{ route('admin.msgraph.onenote.oauth.start') }}" data-oauth-popup>
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-primary">{{ __('msgraph_onenote.connect') }}</button>
+                </form>
+            @endif
+        </div>
+
         {{-- Ziel-Kalender --}}
         @if ($connection && $connection->isActive())
             <form method="POST" action="{{ route('admin.msgraph.calendar.store') }}"

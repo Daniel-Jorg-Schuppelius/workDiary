@@ -25,6 +25,15 @@
         <span class="flex-1 truncate {{ $unread ? 'font-semibold' : '' }}">{{ $listTitle($c) }}</span>
         @if ($unread)<span class="badge badge-primary badge-sm tabular-nums">{{ $unread }}</span>@endif
     </a>
+    {{-- Beitreten (MVP-798, Befund C1-03): Öffentliche Kanäle stehen hier auch
+         ohne Mitgliedschaft — bislang gab es dafür nur stillen Lesezugriff. --}}
+    @if ($me && $c->type === 'channel' && $c->visibility === 'public' && ! $c->is_archived && ! $c->hasMember($me))
+        <x-action-form :action="route('chat.channels.join', $c)" class="px-2 pb-1">
+            <button class="btn btn-ghost btn-xs gap-1 text-primary">
+                <x-icon name="group_add" size="0.9rem" />{{ __('Beitreten') }}
+            </button>
+        </x-action-form>
+    @endif
 @empty
     <p class="px-2 py-4 text-sm text-muted">{{ __('Noch keine Kanäle.') }}</p>
 @endforelse

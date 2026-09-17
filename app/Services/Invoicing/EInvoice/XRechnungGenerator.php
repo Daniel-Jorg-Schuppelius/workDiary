@@ -10,6 +10,7 @@
 
 namespace App\Services\Invoicing\EInvoice;
 
+use App\Enums\Invoicing\XRechnungSyntax;
 use App\Models\{Invoice, InvoiceItem, Organization};
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\ValueObjects\Money;
@@ -191,12 +192,14 @@ class XRechnungGenerator {
     }
 
     /**
-     * Erzeugt das UBL-2.1-XML (XRechnung-Profil). Wirft bei Preflight-Fehlern
-     * eine ValidationException (Key `einvoice`); Warnungen blockieren nicht.
+     * Erzeugt das XRechnung-XML — UBL 2.1 (Standard) oder UN/CEFACT CII
+     * (`XRechnungSyntax::Cii`, MVP-805). Ohne Angabe gilt die Syntax aus dem
+     * Zustellformat der Rechnung. Wirft bei Preflight-Fehlern eine
+     * ValidationException (Key `einvoice`); Warnungen blockieren nicht.
      *
      * @throws ValidationException
      */
-    public function generate(Invoice $invoice): string {
+    public function generate(Invoice $invoice, ?XRechnungSyntax $syntax = null): string {
         $invoice->loadMissing(['items', 'customer']);
 
         $result = $this->preflight($invoice);
@@ -204,7 +207,19 @@ class XRechnungGenerator {
             throw ValidationException::withMessages(['einvoice' => $result['errors']]);
         }
 
-        return $this->buildDocument($invoice, ERechnungProfile::XRECHNUNG)->toUblXml();
+        $document = $this->buildDocument($invoice, ERechnungProfile::XRECHNUNG);
+
+        return ($syntax ?? $this->syntaxFor($invoice)) === XRechnungSyntax::Cii
+            ? $document->toCiiXml()
+            : $document->toUblXml();
+    }
+
+    /** Syntax aus dem Zustellformat der Rechnung; ohne Angabe UBL. */
+    public function syntaxFor(Invoice $invoice): XRechnungSyntax {
+        // Ungespeicherte Rechnungen tragen das Format mitunter noch nicht.
+        $format = $invoice->getAttribute('delivery_format');
+
+        return $format instanceof \App\Enums\Invoicing\InvoiceDeliveryFormat ? $format->xrechnungSyntax() : XRechnungSyntax::Ubl;
     }
 
     /**
@@ -277,6 +292,14 @@ class XRechnungGenerator {
             if ($precedingNumber !== '') {
                 $builder->withPrecedingInvoiceReference($precedingNumber);
             }
+        }
+
+        // BR-CO-26 verlangt BT-29, BT-30 oder die USt-IdNr. (BT-31). Ohne
+        // USt-IdNr. — typisch Kleinunternehmer nach § 19 UStG — trägt die
+        // Steuernummer zusätzlich die Verkäuferkennung BT-29; sonst lehnt die
+        // Prüfung beim Empfänger die Rechnung ab (MVP-805).
+        if ($seller['vat_id'] === '' && $seller['tax_number'] !== '') {
+            $builder->withSellerIdentifier($seller['tax_number']);
         }
 
         // BT-34: elektronische Adresse des Verkäufers (Schema EM = E-Mail).

@@ -48,7 +48,7 @@
         @endif
     </x-card>
 
-    <x-card :title="__('2. UBL-2.1-Schema (XSD)')">
+    <x-card :title="$report['syntax'] === 'cii' ? __('2. CII-D16B-Schema (XSD)') : __('2. UBL-2.1-Schema (XSD)')">
         @if (! $report['xml_generated'])
             <p class="text-sm text-muted">{{ __('Übersprungen — der Preflight hat Fehler, es wurde kein XML erzeugt.') }}</p>
         @elseif ($report['schema_errors'] === [])

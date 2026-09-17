@@ -104,6 +104,8 @@ class RetentionRegistrations {
                 ->where('deleted_at', '<', $cutoff),
             purge: function (\App\Models\IdeaMap $subject): void {
                 $subject->forceDelete();
+                // Verweise der Knoten haben keinen Fremdschlüssel mehr (MVP-811).
+                \App\Models\ContentReference::pruneOrphans((int) $subject->organization_id);
             },
         ));
 

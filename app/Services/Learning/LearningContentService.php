@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningBlockKind;
 use App\Models\Learning\LearningUnit;
-use App\Models\Organization;
+use App\Models\{Organization, ProcedureTemplate};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -42,7 +42,26 @@ class LearningContentService {
         'video' => ['url', 'attachment_id', 'caption', 'require_percent', 'autoplay', 'remember_position'],
         'embed' => ['url', 'caption'],
         'knowledge' => ['knowledge_article_id', 'caption'],
+        // MVP-806
+        'gallery' => ['images', 'caption'],
+        'audio' => ['attachment_id', 'caption', 'text'],
+        'code' => ['text', 'language'],
+        'accordion' => ['sections'],
+        'table' => ['rows', 'caption'],
+        'procedure' => ['procedure_template_id', 'caption'],
+        'question' => ['text', 'items', 'explanation'],
+        'divider' => [],
     ];
+
+    public const GALLERY_MAX_IMAGES = 12;
+
+    public const ACCORDION_MAX_SECTIONS = 20;
+
+    public const TABLE_MAX_ROWS = 50;
+
+    public const TABLE_MAX_COLUMNS = 8;
+
+    public const QUESTION_MAX_OPTIONS = 8;
 
     /**
      * Block anhängen.
@@ -154,11 +173,224 @@ class LearningContentService {
             $this->guardHost($unit, (string) $block['url']);
         }
 
+        $block = match ($kind) {
+            LearningBlockKind::Gallery => $this->normalizeGallery($block),
+            LearningBlockKind::Audio => $this->normalizeAudio($block),
+            LearningBlockKind::Accordion => $this->normalizeAccordion($block),
+            LearningBlockKind::Table => $this->normalizeTable($block),
+            LearningBlockKind::Procedure => $this->normalizeProcedure($unit, $block),
+            LearningBlockKind::Question => $this->normalizeQuestion($block),
+            default => $block,
+        };
+
+        // Der Trenner ist der einzige Block, der nichts trägt.
+        if ($kind === LearningBlockKind::Divider) {
+            return $block;
+        }
+
         // Ein Block ohne Inhalt ist ein Bedienfehler, kein leerer Platzhalter.
         if (count($block) === 1) {
             throw ValidationException::withMessages([
                 'block' => (string) __('learning.errors.block_empty'),
             ]);
+        }
+
+        return $block;
+    }
+
+    /**
+     * Galerie: jedes Bild braucht seinen eigenen Alternativtext (WCAG 1.1.1) —
+     * ein gemeinsamer Text für zwölf Bilder sagte über keines etwas.
+     *
+     * @param  array<string, mixed>  $block
+     * @return array<string, mixed>
+     */
+    private function normalizeGallery(array $block): array {
+        $images = [];
+        foreach ((array) ($block['images'] ?? []) as $image) {
+            $attachmentId = is_array($image) ? (int) ($image['attachment_id'] ?? 0) : 0;
+            $alt = is_array($image) ? trim((string) ($image['alt'] ?? '')) : '';
+            if ($attachmentId <= 0) {
+                continue;
+            }
+            if ($alt === '') {
+                throw ValidationException::withMessages(['alts' => (string) __('learning.errors.gallery_alt_required')]);
+            }
+            $images[] = ['attachment_id' => $attachmentId, 'alt' => $alt];
+        }
+
+        if (count($images) < 2 || count($images) > self::GALLERY_MAX_IMAGES) {
+            throw ValidationException::withMessages(['gallery' => (string) __('learning.errors.gallery_count', ['max' => self::GALLERY_MAX_IMAGES])]);
+        }
+
+        $block['images'] = $images;
+
+        return $block;
+    }
+
+    /**
+     * Audio ohne Transkript ist für gehörlose Menschen nicht vorhanden
+     * (WCAG 1.2.1) — deshalb Pflicht wie der Alternativtext beim Bild.
+     *
+     * @param  array<string, mixed>  $block
+     * @return array<string, mixed>
+     */
+    private function normalizeAudio(array $block): array {
+        if (trim((string) ($block['text'] ?? '')) === '') {
+            throw ValidationException::withMessages(['text' => (string) __('learning.errors.audio_transcript_required')]);
+        }
+        if (! isset($block['attachment_id'])) {
+            throw ValidationException::withMessages(['media' => (string) __('learning.errors.media_required')]);
+        }
+
+        return $block;
+    }
+
+    /**
+     * Abschnitte durch Leerzeilen getrennt; erste Zeile Überschrift, der Rest
+     * der Inhalt.
+     *
+     * @param  array<string, mixed>  $block
+     * @return array<string, mixed>
+     */
+    private function normalizeAccordion(array $block): array {
+        $raw = $block['sections'] ?? [];
+        $sections = [];
+
+        if (is_array($raw)) {
+            foreach ($raw as $section) {
+                $sections[] = [
+                    'title' => trim((string) (is_array($section) ? ($section['title'] ?? '') : '')),
+                    'body' => trim((string) (is_array($section) ? ($section['body'] ?? '') : '')),
+                ];
+            }
+        } else {
+            foreach (preg_split('/\R[ \t]*\R/', trim((string) $raw)) ?: [] as $chunk) {
+                $lines = preg_split('/\R/', trim($chunk)) ?: [];
+                $sections[] = [
+                    'title' => trim((string) array_shift($lines)),
+                    'body' => trim(implode("\n", $lines)),
+                ];
+            }
+        }
+
+        $sections = array_values(array_filter($sections, static fn (array $section): bool => $section['title'] !== '' || $section['body'] !== ''));
+        foreach ($sections as $section) {
+            if ($section['title'] === '' || $section['body'] === '') {
+                throw ValidationException::withMessages(['sections' => (string) __('learning.errors.accordion_section_incomplete')]);
+            }
+        }
+        if ($sections === [] || count($sections) > self::ACCORDION_MAX_SECTIONS) {
+            throw ValidationException::withMessages(['sections' => (string) __('learning.errors.accordion_count', ['max' => self::ACCORDION_MAX_SECTIONS])]);
+        }
+
+        $block['sections'] = $sections;
+
+        return $block;
+    }
+
+    /**
+     * Zeilen mit Tabulator (aus der Tabellenkalkulation kopiert) oder `|`
+     * getrennt; die erste Zeile sind die Spaltenköpfe. Markdown-Trennzeilen
+     * (`---|---`) fallen weg.
+     *
+     * @param  array<string, mixed>  $block
+     * @return array<string, mixed>
+     */
+    private function normalizeTable(array $block): array {
+        $raw = $block['rows'] ?? [];
+        $rows = [];
+
+        foreach (is_array($raw) ? $raw : (preg_split('/\R/', (string) $raw) ?: []) as $line) {
+            if (is_array($line)) {
+                $cells = array_map(static fn (mixed $cell): string => trim((string) $cell), $line);
+            } else {
+                $line = trim((string) $line);
+                if ($line === '' || preg_match('/^\|?\s*:?-{3,}:?\s*(\|\s*:?-{3,}:?\s*)*\|?$/', $line)) {
+                    continue;
+                }
+                $cells = array_map('trim', str_contains($line, "\t") ? explode("\t", $line) : explode('|', trim($line, '|')));
+            }
+            $rows[] = array_values($cells);
+        }
+
+        $columns = $rows === [] ? 0 : max(array_map('count', $rows));
+        if (count($rows) < 2 || count($rows) > self::TABLE_MAX_ROWS + 1 || $columns > self::TABLE_MAX_COLUMNS) {
+            throw ValidationException::withMessages(['rows' => (string) __('learning.errors.table_shape', [
+                'rows' => self::TABLE_MAX_ROWS,
+                'columns' => self::TABLE_MAX_COLUMNS,
+            ])]);
+        }
+        if (in_array('', $rows[0], true) || count($rows[0]) < $columns) {
+            throw ValidationException::withMessages(['rows' => (string) __('learning.errors.table_header_incomplete')]);
+        }
+
+        // Kurze Zeilen auffüllen: sonst verrutschen Zellen unter falsche Köpfe.
+        $block['rows'] = array_map(static fn (array $row): array => array_pad($row, $columns, ''), $rows);
+
+        return $block;
+    }
+
+    /**
+     * Prozedur aus der eigenen Organisation, und nur eine aktive — eine
+     * archivierte Anleitung im Kurs lehrte einen überholten Ablauf.
+     *
+     * @param  array<string, mixed>  $block
+     * @return array<string, mixed>
+     */
+    private function normalizeProcedure(LearningUnit $unit, array $block): array {
+        $templateId = (int) ($block['procedure_template_id'] ?? 0);
+        $exists = $templateId > 0 && ProcedureTemplate::query()->withoutGlobalScopes()
+            ->whereKey($templateId)
+            ->where('organization_id', $unit->organization_id)
+            ->where('active', true)
+            ->exists();
+
+        if (! $exists) {
+            throw ValidationException::withMessages(['procedure_template_id' => (string) __('learning.errors.procedure_invalid')]);
+        }
+
+        $block['procedure_template_id'] = $templateId;
+
+        return $block;
+    }
+
+    /**
+     * Verständnisfrage ohne Bewertung: Antwortmöglichkeiten je Zeile, richtige
+     * mit `*` markiert. Ohne Antwortmöglichkeiten trägt die Erklärung die
+     * Auflösung.
+     *
+     * @param  array<string, mixed>  $block
+     * @return array<string, mixed>
+     */
+    private function normalizeQuestion(array $block): array {
+        if (trim((string) ($block['text'] ?? '')) === '') {
+            throw ValidationException::withMessages(['text' => (string) __('learning.errors.question_text_required')]);
+        }
+
+        $options = [];
+        $raw = $block['items'] ?? [];
+        foreach (is_array($raw) ? $raw : (preg_split('/\R/', (string) $raw) ?: []) as $line) {
+            $line = trim((string) $line);
+            if ($line === '') {
+                continue;
+            }
+            $correct = str_starts_with($line, '*');
+            $text = trim($correct ? substr($line, 1) : $line);
+            if ($text !== '') {
+                $options[] = ['text' => $text, 'correct' => $correct];
+            }
+        }
+        unset($block['items']);
+
+        if ($options !== []) {
+            $correctCount = count(array_filter($options, static fn (array $option): bool => $option['correct']));
+            if (count($options) < 2 || count($options) > self::QUESTION_MAX_OPTIONS || $correctCount === 0) {
+                throw ValidationException::withMessages(['items' => (string) __('learning.errors.question_options', ['max' => self::QUESTION_MAX_OPTIONS])]);
+            }
+            $block['options'] = $options;
+        } elseif (trim((string) ($block['explanation'] ?? '')) === '') {
+            throw ValidationException::withMessages(['explanation' => (string) __('learning.errors.question_resolution_required')]);
         }
 
         return $block;

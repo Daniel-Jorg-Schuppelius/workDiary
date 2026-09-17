@@ -9,7 +9,7 @@
  */
 
 /*
- * Tagesabschluss (MVP-015, docs/tagesabschluss.md) — Seitentexte,
+ * Tagesabschluss (MVP-015, WorkDiary-Architecture/tagesabschluss.md) — Seitentexte,
  * Validator-Meldungen (§4), Flash- und Fehlertexte. Paritätisch in
  * de/en/fr/it/es gepflegt; Enum-Labels liegen in enums.php
  * (dayClosure.status / dayCorrection.status).

@@ -49,6 +49,8 @@ return [
         'client_secret_help' => 'Wird verschlüsselt gespeichert; leer lassen = gespeicherten Wert behalten.',
         'tenant' => 'Tenant (Verzeichnis-ID)',
         'tenant_help' => 'GUID des Entra-Tenants; leer = Wert der Instanz-App (Default „common").',
+        'onenote_import' => 'OneNote-Übernahme erlauben',
+        'onenote_import_help' => 'Schaltet die lesende OneNote-Verbindung (Notes.Read) frei. Aus: kein zusätzlicher Berechtigungsbereich, auch nicht in der tenantweiten Freigabe.',
         'tenant_invalid' => 'Tenant muss eine Verzeichnis-GUID sein (oder common/organizations/consumers).',
     ],
     'health' => [

@@ -105,6 +105,12 @@ class CustomerController extends Controller {
     )]
     public function destroy(Customer $customer): Response {
         Gate::authorize('delete', $customer);
+        // Legal Hold (MVP-801): auch über die API kein Löschen gesperrter Kunden.
+        abort_if(
+            app(\App\Services\Privacy\LegalHoldService::class)->activeHoldFor($customer) !== null,
+            423,
+            __('Kunde steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.'),
+        );
         $customer->delete();
 
         return response()->noContent();

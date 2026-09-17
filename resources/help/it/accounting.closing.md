@@ -23,3 +23,11 @@ cassa sono **anteprime** verificabili: l'MVP non trasmette nulla al fisco.
 **Trasferimento**: il pacchetto di verifica contiene piano dei conti, giornale,
 righe, partite aperte e periodi; il trasferimento DATEV nasce dalle
 registrazioni definitive.
+
+**Analisi di gestione, budget e liquidità:** Dalle stesse registrazioni
+definitive nascono l'**analisi di gestione** (ricavi, costi e risultato per
+gruppi), il **confronto con il budget** per conto e centro di costo — i valori
+dell'anno precedente possono essere ripresi come punto di partenza — e la
+**previsione di liquidità**. Tutte e tre sono analisi, non una seconda
+contabilità: ciò che vedi lì è quanto risulta dal giornale. Le correzioni si
+fanno perciò sempre sulla registrazione, mai sul rapporto.

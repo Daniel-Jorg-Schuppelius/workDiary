@@ -65,6 +65,14 @@ class NullExpenseLinkProvider implements ExpenseLinkProvider {
         return false;
     }
 
+    public function pushCounterVoucher(Expense $expense, string $reason): ExpenseVoucherRef {
+        throw new RuntimeException($this->message());
+    }
+
+    public function counterVoucherFor(Expense $expense): ?ExpenseVoucherRef {
+        return null;
+    }
+
     private function message(): string {
         return (string) __('expenses.receipt.no_provider_hint');
     }

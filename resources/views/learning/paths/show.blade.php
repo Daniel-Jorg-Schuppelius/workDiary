@@ -21,6 +21,7 @@
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm"
                             :href="route('learning.paths.index')"
                             show-label>{{ __('learning.action.back') }}</x-icon-btn>
+                <x-collection-add-button :item="$path" />
             </x-slot:actions>
         </x-page-toolbar>
     </x-slot:toolbar>
@@ -91,5 +92,8 @@
             </x-card>
         </div>
     </div>
+
+    {{-- Verweise und Rückverweise (MVP-811). --}}
+    <x-content-references :subject="$path" />
 </x-page-shell>
 @endsection

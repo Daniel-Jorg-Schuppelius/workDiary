@@ -23,3 +23,11 @@ Los **informes** solo leen asientos contabilizados. IVA y criterio de caja son
 **Traspaso**: el paquete de auditoría contiene plan contable, diario, líneas,
 partidas abiertas y periodos; el traspaso DATEV nace de los asientos
 contabilizados.
+
+**Informe económico, presupuesto y liquidez:** De los mismos asientos en firme
+surgen el **informe económico** (ingresos, costes y resultado por grupos), la
+**comparación presupuestaria** por cuenta y centro de coste —los importes del
+año anterior pueden tomarse como punto de partida— y la **previsión de
+liquidez**. Los tres son análisis, no una segunda contabilidad: lo que ves allí
+consta así en el diario. Por eso las correcciones se hacen siempre en el
+asiento, nunca en el informe.

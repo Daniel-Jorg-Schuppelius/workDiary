@@ -1,7 +1,7 @@
 ---
 title: "Kommunikationsnotizen"
 topic: communication.notes
-version: 2
+version: 3
 audience: []
 related:
     - diary-entries.edit
@@ -48,6 +48,11 @@ neuesten zuerst – egal ob sie intern, beim Kunden, am Auftrag oder am Projekt
 abgelegt sind. Filtern lässt sich nach Ablage (intern oder Kunde), Kunde, Art
 und offenen Wiedervorlagen; die Suche prüft Betreff und Inhalt. Vertrauliche
 Notizen anderer erscheinen nur mit der entsprechenden Berechtigung.
+
+**Schlagwörter** vergeben Sie im Notizdialog, mehrere durch Komma getrennt.
+Die Liste filtert danach, und die Recherche findet eine Notiz auch über ihr
+Schlagwort. Die Auswahl im Filter zeigt nur Schlagwörter von Notizen, die Sie
+sehen dürfen.
 
 ## Schnellerfassung
 

@@ -53,3 +53,12 @@ conservata in modo permanente e integra il log di audit.
 L'esportazione legge esclusivamente dati esistenti — non modifica né
 documenti né dati anagrafici e può essere ripetuta un numero
 illimitato di volte.
+
+**Documentazione della procedura:** Oltre all'esportazione dei dati, la
+normativa richiede di descrivere *come* nascono: dalla rilevazione al
+trattamento fino alla conservazione. L'applicazione compone questa
+documentazione dallo stato reale del sistema: moduli attivi, intervalli di
+numerazione, termini di conservazione, ruoli e registrazione. Ciò che cambia
+nell'operatività cambia quindi anche nella documentazione, a differenza di un
+testo scritto una volta sola. Verificala prima di ogni controllo e integra le
+parti organizzative che nessun sistema può conoscere.

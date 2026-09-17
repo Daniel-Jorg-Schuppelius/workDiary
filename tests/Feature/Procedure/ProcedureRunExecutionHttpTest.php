@@ -11,7 +11,7 @@
 namespace Tests\Feature\Procedure;
 
 use App\Enums\Procedure\{ProcedureRunStatus, ProcedureStepRunStatus, ProcedureStepType};
-use App\Models\{DiaryEntry, Organization, ProcedureRun, ProcedureTemplate, User};
+use App\Models\{DiaryEntry, Organization, ProcedureDeviation, ProcedureRun, ProcedureTemplate, User};
 use App\Services\Procedure\{ProcedureExecutionService, ProcedureTemplateService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -49,6 +49,48 @@ class ProcedureRunExecutionHttpTest extends TestCase {
 
         $this->assertSame(ProcedureStepRunStatus::Done, $first->refresh()->status);
         $this->assertSame('erledigt', $first->note);
+    }
+
+    /**
+     * Abweichung über die Oberfläche erfassen (Vollscan 2026-09-15, `P4-01`).
+     * Der Recorder war gebaut, aber ohne Einstieg: Der Abweichungs-Report aus
+     * `MVP-713` hatte produktiv keinen Schreiber.
+     */
+    public function test_recording_a_deviation_marks_the_step_and_stores_it(): void {
+        [$user, $run] = $this->startedRun(['Erster Schritt', 'Zweiter Schritt']);
+        $first = $run->stepRuns()->orderBy('id')->first();
+
+        $this->actingAs($user)
+            ->from(route('procedure-runs.show', $run))
+            ->post(route('procedure-runs.steps.deviation', [$run, $first]), [
+                'deviation_type' => 'not_possible',
+                'severity' => 'medium',
+                'proposed_action' => 'none',
+                'reason_text' => 'Bauteil war vor Ort nicht zugaenglich, Kunde informiert.',
+            ])
+            ->assertRedirect(route('procedure-runs.show', $run));
+
+        $this->assertSame(ProcedureStepRunStatus::Deviated, $first->refresh()->status);
+        $deviation = ProcedureDeviation::query()->firstOrFail();
+        $this->assertSame((int) $first->id, (int) $deviation->procedure_step_run_id);
+        $this->assertSame('not_possible', $deviation->deviation_type->value);
+    }
+
+    public function test_deviation_with_a_too_short_reason_is_rejected(): void {
+        [$user, $run] = $this->startedRun(['Erster Schritt', 'Zweiter Schritt']);
+        $first = $run->stepRuns()->orderBy('id')->first();
+
+        $this->actingAs($user)
+            ->from(route('procedure-runs.show', $run))
+            ->post(route('procedure-runs.steps.deviation', [$run, $first]), [
+                'deviation_type' => 'partial',
+                'reason_text' => 'zu kurz',
+            ])
+            ->assertRedirect(route('procedure-runs.show', $run))
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, ProcedureDeviation::query()->count());
+        $this->assertNotSame(ProcedureStepRunStatus::Deviated, $first->refresh()->status);
     }
 
     public function test_executing_blocked_step_is_rejected_and_stays_pending(): void {

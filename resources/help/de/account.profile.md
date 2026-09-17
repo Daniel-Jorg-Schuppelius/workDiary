@@ -16,6 +16,9 @@ Design, Sprache, Zeitzone, Datums- und Zeitformat sowie die Startseite
 nach der Anmeldung. Auch globale Benachrichtigungseinstellungen wie
 der Mailversand und Ruhezeiten werden hier verwaltet.
 
+Zur Auswahl stehen nur Seiten, die du öffnen darfst. Ohne eigene Wahl gilt die
+Startseite, die deine Organisation für deine Rolle festgelegt hat.
+
 Die Passwortänderung erfolgt in einem eigenen Dialog. Für eine
 reguläre Änderung musst du dein aktuelles Passwort bestätigen; muss das
 Passwort erstmalig oder erzwungen gesetzt werden, entfällt diese

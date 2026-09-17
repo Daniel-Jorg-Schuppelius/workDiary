@@ -14,7 +14,7 @@ return [
     'group_source' => 'Document source', 'group_target' => 'Cible et sortie', 'group_invoice' => 'Données de facture', 'group_einvoice' => 'Facture électronique',
     'file' => 'Fichier de facture', 'file_hint' => 'PDF, XML (XRechnung), DOCX, DOC, XLSX ou XLS jusqu\'à 20 Mo. Les PDF ZUGFeRD et les XML XRechnung sont importés de manière structurée ; l\'OCR est utilisé pour les scans PDF si disponible.', 'delivery_format' => 'Format de sortie préféré',
     'review_hint' => 'L\'original reste inchangé dans la GED. Les données reconnues automatiquement sont des suggestions, pas une validation.',
-    'format' => ['pdf' => 'PDF', 'xrechnung' => 'XRechnung (XML)', 'zugferd' => 'ZUGFeRD (PDF hybride)', 'pdf_xrechnung' => 'PDF et XRechnung (XML)'],
+    'format' => ['pdf' => 'PDF', 'xrechnung' => 'XRechnung (XML)', 'xrechnung_cii' => 'XRechnung (XML, syntaxe CII)', 'zugferd' => 'ZUGFeRD (PDF hybride)', 'pdf_xrechnung' => 'PDF et XRechnung (XML)'],
     'default_line' => 'Prestations selon la facture originale :number', 'source_title' => 'Fichier original de la facture :number', 'source_description' => 'Document source inchangé de l\'import de facture.',
     'success' => 'Fichier de facture lu et créé comme brouillon. Veuillez vérifier les données et les lignes de facture.', 'options_title' => 'Données de facture et de facture électronique', 'options_action' => 'Données e-facture', 'options_saved' => 'Données de facture et de facture électronique enregistrées.',
     'invoice_number' => 'Numéro de facture', 'currency' => 'Devise', 'issue_date' => 'Date de facture', 'due_date' => 'Échéance', 'buyer_reference' => 'Référence acheteur / Leitweg-ID',

@@ -82,4 +82,15 @@ interface ExpenseLinkProvider {
 
     /** Wurde diese Auslage aktiv gepusht (im Gegensatz zur bloßen Zuordnung)? */
     public function wasPushed(Expense $expense): bool;
+
+    /**
+     * Legt zu einer gepushten Auslage den Gegenbeleg an (MVP-802) — idempotent:
+     * ein zweiter Aufruf liefert den vorhandenen Gegenbeleg.
+     *
+     * @throws RuntimeException wenn die Auslage nicht gepusht wurde
+     */
+    public function pushCounterVoucher(Expense $expense, string $reason): ExpenseVoucherRef;
+
+    /** Bereits angelegter Gegenbeleg, falls vorhanden. */
+    public function counterVoucherFor(Expense $expense): ?ExpenseVoucherRef;
 }

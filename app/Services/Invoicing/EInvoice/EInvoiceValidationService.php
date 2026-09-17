@@ -12,9 +12,10 @@ declare(strict_types=1);
 
 namespace App\Services\Invoicing\EInvoice;
 
+use App\Enums\Invoicing\XRechnungSyntax;
 use App\Models\Invoice;
 use CommonToolkit\ValueObjects\Money;
-use ERechnungToolkit\Validators\{KositValidator, UblSchemaValidator};
+use ERechnungToolkit\Validators\{CiiSchemaValidator, KositValidator, UblSchemaValidator};
 
 /**
  * Vollständige Ausgangs-Validierung (Feature 066, MVP-164): fachlicher
@@ -32,6 +33,7 @@ class EInvoiceValidationService {
      * @return array{
      *   preflight_errors: array<int, string>, preflight_warnings: array<int, string>,
      *   xml_generated: bool,
+     *   syntax: string,
      *   schema_errors: array<int, string>,
      *   kosit_available: bool, kosit_valid: bool|null,
      *   kosit_errors: array<int, string>, kosit_warnings: array<int, string>,
@@ -45,6 +47,7 @@ class EInvoiceValidationService {
             'preflight_errors' => $preflight['errors'],
             'preflight_warnings' => $preflight['warnings'],
             'xml_generated' => false,
+            'syntax' => XRechnungSyntax::Ubl->value,
             'schema_errors' => [],
             'kosit_available' => false,
             'kosit_valid' => null,
@@ -58,10 +61,13 @@ class EInvoiceValidationService {
             return $report; // ohne fachliche Basis kein XML-Versuch
         }
 
-        $xml = $this->generator->generate($invoice);
+        // Geprüft wird die Syntax, die tatsächlich zugestellt wird (MVP-805).
+        $syntax = $this->generator->syntaxFor($invoice);
+        $xml = $this->generator->generate($invoice, $syntax);
         $report['xml_generated'] = true;
+        $report['syntax'] = $syntax->value;
 
-        $schema = new UblSchemaValidator;
+        $schema = $syntax === XRechnungSyntax::Cii ? new CiiSchemaValidator : new UblSchemaValidator;
         if ($schema->isAvailable()) {
             $report['schema_errors'] = $schema->validate($xml);
         }
@@ -75,7 +81,7 @@ class EInvoiceValidationService {
             $report['kosit_warnings'] = array_map('strval', $result->getWarnings());
         }
 
-        $report['consistency'] = $this->checkConsistency($invoice, $xml);
+        $report['consistency'] = $this->checkConsistency($invoice, $xml, $syntax);
 
         $report['valid'] = $report['schema_errors'] === []
             && ($report['kosit_valid'] ?? true) !== false
@@ -93,13 +99,13 @@ class EInvoiceValidationService {
      *
      * @return array{checked: bool, zugferd_checked: bool, errors: array<int, string>}
      */
-    private function checkConsistency(Invoice $invoice, string $ublXml): array {
+    private function checkConsistency(Invoice $invoice, string $ublXml, XRechnungSyntax $syntax = XRechnungSyntax::Ubl): array {
         $result = ['checked' => false, 'zugferd_checked' => false, 'errors' => []];
 
         try {
             $parsed = (new \ERechnungToolkit\Parsers\ERechnungParser)->parse($ublXml);
             $result['checked'] = true;
-            $result['errors'] = [...$result['errors'], ...$this->compareTotals($invoice, $parsed, 'UBL')];
+            $result['errors'] = [...$result['errors'], ...$this->compareTotals($invoice, $parsed, strtoupper($syntax->value))];
         } catch (\Throwable $e) {
             $result['errors'][] = (string) __('UBL-Rückparse fehlgeschlagen: :reason', ['reason' => $e->getMessage()]);
         }

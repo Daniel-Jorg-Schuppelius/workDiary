@@ -186,6 +186,8 @@ return [
         'vacation_approved' => 'Ta demande de congé a été approuvée. :note',
         'vacation_rejected' => 'Ta demande de congé a été refusée. :note',
         'unclear_case_title' => 'Cas à clarifier le :date',
+        'open_attendance_title' => 'Tu es pointé depuis :time',
+        'open_attendance_body' => 'Pointe ton départ si tu as déjà terminé — sinon le système clôturera le pointage automatiquement plus tard.',
         'driving_time_violation_title' => 'Constat temps de conduite/repos du :date (:driver)',
         'month_submitted_title' => 'Clôture mensuelle :period soumise par :user',
         'month_approved_title' => 'Clôture mensuelle :period approuvée',

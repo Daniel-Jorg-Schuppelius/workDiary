@@ -10,8 +10,9 @@
 
 namespace App\Services\Install;
 
-use Illuminate\Support\Facades\{Config, DB};
+use Illuminate\Support\Facades\{Cache, Config, DB};
 use PDO;
+use Spatie\Permission\PermissionRegistrar;
 use Throwable;
 
 /**
@@ -145,6 +146,26 @@ class DatabaseConfigurator {
 
         DB::purge($driver);
         DB::reconnect($driver);
+
+        $this->rebindDatabaseCaches();
+    }
+
+    /**
+     * Cache-Stores mit database-Treiber (und Failover-Stores darüber) halten die
+     * beim ersten Zugriff aufgelöste Verbindung fest, ebenso der beim Boot
+     * erzeugte Spatie-Registrar. Ohne Neuaufbau löschen Migrationen/Seeder den
+     * Permission-Cache weiter in der Alt-DB („no such table: cache“).
+     */
+    private function rebindDatabaseCaches(): void {
+        $stores = array_keys(array_filter(
+            (array) Config::get('cache.stores', []),
+            static fn(mixed $store): bool => is_array($store) && in_array($store['driver'] ?? null, ['database', 'failover'], true),
+        ));
+        Cache::forgetDriver($stores);
+
+        if (app()->resolved(PermissionRegistrar::class)) {
+            app(PermissionRegistrar::class)->initializeCache();
+        }
     }
 
     /**

@@ -20,7 +20,6 @@ return [
 
     'field' => [
         'title' => 'Title',
-        'category' => 'Category',
         'tags' => 'Tags',
         'status' => 'Status',
         'problem' => 'Problem description',
@@ -66,10 +65,11 @@ return [
         'asset' => 'Asset',
         'customer' => 'Customer',
         'protocol' => 'Protocol',
+        'problem' => 'Problem',
     ],
 
     'hint' => [
-        'category' => 'e.g. printer, network, heating …',
+        'collection' => 'Optional. Add further collections later via “Add to collection”.',
         'tags' => 'Comma separated, e.g. firmware, model-x',
         'problem' => 'Which symptom/problem occurs?',
         'solution' => 'Which steps lead to the solution?',

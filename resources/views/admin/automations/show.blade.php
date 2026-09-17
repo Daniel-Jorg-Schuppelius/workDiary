@@ -16,28 +16,26 @@
 <x-page-shell>
     <a href="{{ route('admin.automations.index') }}" class="link link-hover text-sm">&larr; {{ __('Zur Übersicht') }}</a>
 
-    <div class="card bg-base-100 border border-base-300">
-        <div class="card-body space-y-2">
-            <h2 class="card-title">{{ $rule->name }}</h2>
-            <div class="flex flex-wrap gap-2 text-sm">
-                <x-status-badge tone="ghost">{{ __('Trigger') }}: {{ $rule->trigger_event }}</x-status-badge>
-                <x-status-badge tone="ghost">{{ __('Priorität') }}: {{ $rule->priority }}</x-status-badge>
-                @if ($rule->is_active)
-                    <x-status-badge tone="success">{{ __('Aktiv') }}</x-status-badge>
-                @else
-                    <x-status-badge tone="error">{{ __('Inaktiv') }}</x-status-badge>
-                @endif
-            </div>
-            <div>
-                <h3 class="font-semibold text-sm mt-2">{{ __('Bedingungen') }}</h3>
-                <pre class="bg-base-200 p-3 rounded text-xs overflow-x-auto">{{ json_encode($rule->conditions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
-            </div>
-            <div>
-                <h3 class="font-semibold text-sm">{{ __('Aktionen') }}</h3>
-                <pre class="bg-base-200 p-3 rounded text-xs overflow-x-auto">{{ json_encode($rule->actions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
-            </div>
+    <x-card class="flex flex-col gap-2 space-y-2">
+        <h2 class="card-title">{{ $rule->name }}</h2>
+        <div class="flex flex-wrap gap-2 text-sm">
+            <x-status-badge tone="ghost">{{ __('Trigger') }}: {{ $rule->trigger_event }}</x-status-badge>
+            <x-status-badge tone="ghost">{{ __('Priorität') }}: {{ $rule->priority }}</x-status-badge>
+            @if ($rule->is_active)
+                <x-status-badge tone="success">{{ __('Aktiv') }}</x-status-badge>
+            @else
+                <x-status-badge tone="error">{{ __('Inaktiv') }}</x-status-badge>
+            @endif
         </div>
-    </div>
+        <div>
+            <h3 class="font-semibold text-sm mt-2">{{ __('Bedingungen') }}</h3>
+            <pre class="bg-base-200 p-3 rounded text-xs overflow-x-auto">{{ json_encode($rule->conditions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
+        </div>
+        <div>
+            <h3 class="font-semibold text-sm">{{ __('Aktionen') }}</h3>
+            <pre class="bg-base-200 p-3 rounded text-xs overflow-x-auto">{{ json_encode($rule->actions, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) }}</pre>
+        </div>
+    </x-card>
 
     <section>
         <h3 class="font-semibold mb-2">{{ __('Audit-Log (letzte 50)') }}</h3>

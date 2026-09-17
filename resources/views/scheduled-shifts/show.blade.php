@@ -31,19 +31,17 @@
             </x-page-toolbar>
         </x-slot:toolbar>
 
-        <div class="card border border-base-300 bg-base-100 shadow-xs max-w-2xl">
-            <div class="card-body grid gap-3 sm:grid-cols-2">
-                <div><span class="text-xs uppercase text-muted">{{ __('Mitarbeiter') }}</span><div>{{ $shift->user?->name ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-muted">{{ __('Datum') }}</span><div>{{ $shift->date->fdate() }}</div></div>
-                <div><span class="text-xs uppercase text-muted">{{ __('Beginn') }}</span><div>{{ $shift->start_time ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-muted">{{ __('Ende') }}</span><div>{{ $shift->end_time ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-muted">{{ __('Schichttyp') }}</span><div>{{ $shift->shiftType?->name ?? '—' }}</div></div>
-                <div><span class="text-xs uppercase text-muted">{{ __('Status') }}</span><div>{{ $shift->statusLabel() }}</div></div>
-                @if ($shift->note)
-                    <div class="sm:col-span-2"><span class="text-xs uppercase text-muted">{{ __('Notiz') }}</span><div>{{ $shift->note }}</div></div>
-                @endif
-            </div>
-        </div>
+        <x-card class="shadow-xs max-w-2xl flex flex-col grid gap-3 sm:grid-cols-2">
+            <div><span class="text-xs uppercase text-muted">{{ __('Mitarbeiter') }}</span><div>{{ $shift->user?->name ?? '—' }}</div></div>
+            <div><span class="text-xs uppercase text-muted">{{ __('Datum') }}</span><div>{{ $shift->date->fdate() }}</div></div>
+            <div><span class="text-xs uppercase text-muted">{{ __('Beginn') }}</span><div>{{ $shift->start_time ?? '—' }}</div></div>
+            <div><span class="text-xs uppercase text-muted">{{ __('Ende') }}</span><div>{{ $shift->end_time ?? '—' }}</div></div>
+            <div><span class="text-xs uppercase text-muted">{{ __('Schichttyp') }}</span><div>{{ $shift->shiftType?->name ?? '—' }}</div></div>
+            <div><span class="text-xs uppercase text-muted">{{ __('Status') }}</span><div>{{ $shift->statusLabel() }}</div></div>
+            @if ($shift->note)
+                <div class="sm:col-span-2"><span class="text-xs uppercase text-muted">{{ __('Notiz') }}</span><div>{{ $shift->note }}</div></div>
+            @endif
+        </x-card>
 
         @can('delete', $shift)
             <x-action-form :action="route('scheduled-shifts.destroy', $shift)" method="DELETE"

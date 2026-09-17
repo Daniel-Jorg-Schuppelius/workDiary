@@ -1,7 +1,7 @@
 ---
 title: "Communication notes"
 topic: communication.notes
-version: 2
+version: 3
 audience: []
 related:
     - diary-entries.edit
@@ -49,6 +49,10 @@ first – whether they are filed internally, with a customer, on a work order or
 on a project. Filter by filing (internal or customer), customer, type and open
 follow-ups; the search covers subject and content. Confidential notes of other
 people only appear with the matching permission.
+
+Add **tags** in the note dialog, several separated by commas. The list filters
+by them, and the search also finds a note by its tag. The filter only offers
+tags of notes you are allowed to see.
 
 ## Quick capture
 

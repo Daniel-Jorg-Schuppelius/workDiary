@@ -30,6 +30,7 @@
             <x-slot:actions>
                 <x-status-badge size="sm" :tone="$document->effectiveStatus()->tone()">{{ $document->effectiveStatus()->label() }}</x-status-badge>
                 <x-icon-btn icon="arrow_back" tone="ghost" size="sm" :href="route('documents.index')" show-label>{{ __('Zur Übersicht') }}</x-icon-btn>
+                <x-collection-add-button :item="$document" />
                 @if ($document->currentVersion)
                     <x-icon-btn icon="download" tone="outline" size="sm" :href="route('documents.download', $document)" show-label>{{ __('Herunterladen') }}</x-icon-btn>
                 @endif
@@ -157,5 +158,8 @@
 
     {{-- Externe Beteiligte (Feature 033, Rang 28): Einladen/Widerrufen je Dokument. --}}
     @include('external-participants._panel', ['subject' => $document, 'externalType' => 'document'])
+
+    {{-- Verweise und Rückverweise (MVP-811). --}}
+    <x-content-references :subject="$document" />
 </x-page-shell>
 @endsection

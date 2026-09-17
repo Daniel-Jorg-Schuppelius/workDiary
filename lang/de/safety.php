@@ -170,6 +170,7 @@ return [
             'edit_item' => 'Gefährdung bearbeiten',
             'create_instruction' => 'Unterweisung erfassen',
             'sign' => 'Teilnahme bestätigen',
+            'sign_drawn' => 'Mit Unterschrift bestätigen',
             'create_checkup' => 'Vorsorge erfassen',
         ],
         'filter' => [
@@ -204,6 +205,7 @@ return [
             'delete_instruction' => 'Unterweisung löschen?',
             'delete_checkup' => 'Vorsorge-Eintrag löschen?',
             'sign' => 'Teilnahme jetzt verbindlich bestätigen?',
+            'sign_drawn_hint' => 'Bitte im Feld unterschreiben. Mit dem Absenden ist die Teilnahme verbindlich bestätigt.',
         ],
         'flash' => [
             'assessment_created' => 'Gefährdungsbeurteilung wurde angelegt.',
@@ -229,6 +231,7 @@ return [
             'after_pair_incomplete' => 'Risiko nach Maßnahme: Schwere und Wahrscheinlichkeit gemeinsam angeben.',
             'sign_only_self' => 'Nur die eingetragene Person kann ihre Teilnahme bestätigen.',
             'already_signed' => 'Die Teilnahme ist bereits bestätigt.',
+            'signature_invalid' => 'Die Unterschrift konnte nicht gelesen werden. Bitte erneut unterschreiben.',
             'delete_with_signatures' => 'Unterweisungen mit bestätigten Nachweisen können nicht gelöscht werden.',
         ],
         'status_summary' => ':signed von :total bestätigt',

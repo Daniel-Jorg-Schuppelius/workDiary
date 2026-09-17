@@ -22,3 +22,13 @@ viene calcolato automaticamente dalla data di fine validità e i documenti
 in scadenza possono generare notifiche. Attenzione: **l'eliminazione
 rimuove il documento con tutte le versioni** (soft delete, solo con il
 relativo permesso).
+
+## Inviare documenti
+
+I documenti — fatture, preventivi, bolle di consegna — possono essere inviati
+direttamente dalla pratica. Ogni invio viene registrato con destinatario,
+momento e canale, così resta ricostruibile **che cosa è andato a chi e quando**.
+
+La **cronologia degli invii** appartiene al documento, non alla casella di
+posta: anche chi non ha accesso all'account di posta vede se e quando è stato
+inviato. Un nuovo invio aggiunge una voce invece di sovrascrivere la precedente.

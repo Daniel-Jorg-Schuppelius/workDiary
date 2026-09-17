@@ -14,7 +14,7 @@ use App\Enums\Ideas\IdeaNodeColor;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\{Model, SoftDeletes};
-use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
+use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany, MorphMany};
 
 /**
  * Knoten einer Ideenlandkarte (Feature 054, MVP-105): hierarchischer Zweig
@@ -86,8 +86,13 @@ class IdeaNode extends Model {
         return $this->hasMany(self::class, 'parent_id')->orderBy('sort_order');
     }
 
-    /** @return HasMany<IdeaNodeReference, $this> */
-    public function references(): HasMany {
-        return $this->hasMany(IdeaNodeReference::class);
+    /**
+     * Überführungen und Verknüpfungen des Knotens — seit MVP-811 Verweise.
+     *
+     * @return MorphMany<ContentReference, $this>
+     */
+    public function references(): MorphMany {
+        return $this->morphMany(ContentReference::class, 'source')
+            ->whereIn('kind', [ContentReference::KIND_CONVERTED, ContentReference::KIND_LINKED]);
     }
 }

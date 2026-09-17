@@ -119,6 +119,79 @@ final class ExpenseVoucherPushTest extends TestCase {
         $this->assertSame(1, LexofficeVoucher::query()->count());
     }
 
+    // ── Korrektur per Gegenbeleg (MVP-802) ─────────────────────────────
+
+    private function fakePushAndCounter(): FakePluginHttp {
+        return FakePluginHttp::fake([
+            'https://api.lexoffice.io/v1/vouchers*' => [
+                FakePluginHttp::response(['id' => 'voucher-new-1', 'resourceUri' => 'https://api.lexoffice.io/v1/vouchers/voucher-new-1'], 200),
+                FakePluginHttp::response(['id' => 'voucher-counter-1', 'resourceUri' => 'https://api.lexoffice.io/v1/vouchers/voucher-counter-1'], 200),
+            ],
+        ]);
+    }
+
+    public function test_correction_pushes_a_credit_note_and_creates_a_linked_draft(): void {
+        $http = $this->fakePushAndCounter();
+        $expense = $this->expense();
+        app(LexofficeExpenseLinkProvider::class)->pushVoucher($expense);
+
+        $this->actingAs($this->admin)
+            ->post(route('expenses.correct', $expense), ['correction_reason' => 'Betrag falsch abgelesen'])
+            ->assertRedirect(route('expenses.index'))
+            ->assertSessionHas('success');
+
+        $counter = LexofficeVoucher::query()->where('external_id', 'voucher-counter-1')->sole();
+        $this->assertSame('purchasecreditnote', $counter->voucher_type);
+        // Der Belegtyp muss im Request stehen: Bis MVP-802 schrieb der Mapper `voucherType`,
+        // das die SDK-Entität verwarf — Push und Gegenbeleg gingen ohne Typ hinaus.
+        $http->assertSent(fn ($request): bool => str_contains((string) $request->getBody(), '"type":"purchaseinvoice"'));
+        $http->assertSent(fn ($request): bool => str_contains((string) $request->getBody(), '"type":"purchasecreditnote"')
+            && str_contains((string) $request->getBody(), 'Betrag falsch abgelesen'));
+
+        // Genehmigt, aber nicht erstattet: das Original wird storniert, sonst würden beide ausgezahlt.
+        $this->assertSame(ExpenseStatus::Cancelled, $expense->fresh()?->status);
+        $draft = Expense::query()->where('corrects_expense_id', $expense->id)->sole();
+        $this->assertSame(ExpenseStatus::Draft, $draft->status);
+        $this->assertSame('59.50', $draft->amount_gross?->getAmount());
+        $this->assertSame('Betrag falsch abgelesen', $draft->correction_reason);
+        $this->assertSame(1, $expense->auditLogs()->where('event', 'expense.corrected')->count());
+
+        // Doppelt abgeschickt: kein zweiter Gegenbeleg, keine zweite Korrektur.
+        $this->actingAs($this->admin)->post(route('expenses.correct', $expense), ['correction_reason' => 'Betrag falsch abgelesen']);
+        $this->assertSame(1, Expense::query()->where('corrects_expense_id', $expense->id)->count());
+        $this->assertSame(2, LexofficeVoucher::query()->count());
+    }
+
+    public function test_expense_that_was_not_pushed_is_not_corrected_by_counter_voucher(): void {
+        $this->fakePushAndCounter();
+        $expense = $this->expense();
+
+        $this->actingAs($this->admin)
+            ->post(route('expenses.correct', $expense), ['correction_reason' => 'Irrtum beim Erfassen'])
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, Expense::query()->where('corrects_expense_id', $expense->id)->count());
+        $this->assertSame(0, LexofficeVoucher::query()->count());
+    }
+
+    public function test_reimbursed_original_keeps_its_status_and_the_draft_warns(): void {
+        $this->fakePushAndCounter();
+        $expense = $this->expense();
+        app(LexofficeExpenseLinkProvider::class)->pushVoucher($expense);
+        $expense->forceFill(['status' => ExpenseStatus::Reimbursed->value, 'reimbursed_at' => now()])->save();
+
+        $this->actingAs($this->admin)->post(route('expenses.correct', $expense), ['correction_reason' => 'Falsche Kategorie'])->assertRedirect();
+
+        $this->assertSame(ExpenseStatus::Reimbursed, $expense->fresh()?->status);
+        $draft = Expense::query()->where('corrects_expense_id', $expense->id)->sole();
+        $this->actingAs($this->admin)->get(route('expenses.edit', $draft))
+            ->assertOk()
+            ->assertSee(__('Die ursprüngliche Auslage wurde bereits erstattet — bei der Erstattung dieser Korrektur nur die Differenz auszahlen.'));
+        $this->actingAs($this->admin)->get(route('expenses.receipt', $expense))
+            ->assertOk()
+            ->assertSee(__('Gegenbeleg übergeben'));
+    }
+
     /** Der Push ist unwiderruflich — die Freigabe steht davor. */
     public function test_unapproved_expense_is_refused(): void {
         $this->fakeCreate();

@@ -93,6 +93,39 @@ final class RecruitingLifecycleTest extends TestCase {
         $this->assertNotNull($anonymized->anonymized_at);
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13 (`files-2`): Die Anonymisierung entfernte
+     * Name und Mailadresse aus der Datenbank, die hochgeladenen Unterlagen mit
+     * Anschrift und Lichtbild blieben aber auf der Platte liegen — genau der
+     * Personenbezug, den sie tilgen soll.
+     */
+    public function test_anonymizing_deletes_the_uploaded_documents(): void {
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $hr = User::factory()->personalverwaltung()->create(['organization_id' => $this->organization->id]);
+        ['application' => $application] = app(RecruitingService::class)
+            ->intake(['candidate_name' => 'Bewerberin', 'source' => 'other'], $hr);
+
+        \Illuminate\Support\Facades\Storage::disk('local')->put('bewerbungen/lebenslauf.pdf', 'PDF');
+        $upload = \App\Models\Applications\JobApplicationUpload::query()->create([
+            'organization_id' => $this->organization->id,
+            'job_application_id' => $application->id,
+            'storage_disk' => 'local',
+            'storage_key' => 'bewerbungen/lebenslauf.pdf',
+            'original_name' => 'lebenslauf.pdf',
+            'mime' => 'application/pdf',
+            'size_bytes' => 3,
+            'sha256' => hash('sha256', 'PDF'),
+        ]);
+
+        app(RecruitingService::class)->anonymize($application->refresh(), $hr);
+
+        \Illuminate\Support\Facades\Storage::disk('local')->assertMissing('bewerbungen/lebenslauf.pdf');
+        $this->assertNull(
+            \App\Models\Applications\JobApplicationUpload::query()->find($upload->getKey()),
+            'Der Upload-Datensatz steht nach der Anonymisierung noch.',
+        );
+    }
+
     public function test_recruiting_area_is_isolated_from_normal_roles(): void {
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         ['application' => $application] = app(RecruitingService::class)->intake(['candidate_name' => 'C', 'source' => 'other'], $admin);

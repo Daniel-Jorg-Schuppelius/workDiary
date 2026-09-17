@@ -170,6 +170,7 @@ return [
             'edit_item' => 'Edit hazard',
             'create_instruction' => 'Record instruction',
             'sign' => 'Confirm participation',
+            'sign_drawn' => 'Confirm with signature',
             'create_checkup' => 'Record checkup',
         ],
         'filter' => [
@@ -204,6 +205,7 @@ return [
             'delete_instruction' => 'Delete instruction?',
             'delete_checkup' => 'Delete checkup entry?',
             'sign' => 'Confirm participation now (binding)?',
+            'sign_drawn_hint' => 'Please sign in the field. Submitting confirms the participation bindingly.',
         ],
         'flash' => [
             'assessment_created' => 'Risk assessment created.',
@@ -229,6 +231,7 @@ return [
             'after_pair_incomplete' => 'Risk after measure: enter severity and likelihood together.',
             'sign_only_self' => 'Only the listed person can confirm their participation.',
             'already_signed' => 'Participation is already confirmed.',
+            'signature_invalid' => 'The signature could not be read. Please sign again.',
             'delete_with_signatures' => 'Instructions with confirmed proofs cannot be deleted.',
         ],
         'status_summary' => ':signed of :total confirmed',

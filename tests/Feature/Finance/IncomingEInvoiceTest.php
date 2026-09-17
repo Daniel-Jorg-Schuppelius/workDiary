@@ -11,8 +11,10 @@
 namespace Tests\Feature\Finance;
 
 use App\Enums\Document\DocumentType;
+use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\{Customer, Document, Invoice, User};
 use App\Services\Invoicing\EInvoice\{IncomingEInvoiceService, XRechnungGenerator};
+use App\Services\Whistleblowing\Scanning\ScanDriver;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Tests\Concerns\WithOrganization;
@@ -89,6 +91,41 @@ final class IncomingEInvoiceTest extends TestCase {
         $invoice->save();
 
         return app(XRechnungGenerator::class)->generate($invoice->fresh(['items', 'customer']));
+    }
+
+    /**
+     * Dateisicherheitsprüfung im Eingang (Vollscan 2026-09-15, `P6-37`):
+     * Schritt 3 der dokumentierten Eingangsverarbeitung fehlte. Eine
+     * abgewiesene Datei darf weder als Eingang noch als Dokument entstehen.
+     */
+    public function test_infected_upload_is_rejected_without_storing_anything(): void {
+        app()->instance(ScanDriver::class, new class implements ScanDriver {
+            public function scan(string $absolutePath, ?string $mime): ?AttachmentScanStatus {
+                return AttachmentScanStatus::Rejected;
+            }
+        });
+
+        $result = app(IncomingEInvoiceService::class)
+            ->storeIncoming($this->admin, $this->sampleXml(), 'application/xml');
+
+        $this->assertSame('infected', $result['status']);
+        $this->assertNull($result['incoming']);
+        $this->assertSame(0, \App\Models\IncomingEInvoice::query()->withoutGlobalScopes()->count());
+        $this->assertSame(0, Document::query()->withoutGlobalScopes()->count());
+    }
+
+    /** Ohne Urteil (kein Scanner konfiguriert) läuft der Eingang weiter. */
+    public function test_upload_passes_when_the_scanner_gives_no_verdict(): void {
+        app()->instance(ScanDriver::class, new class implements ScanDriver {
+            public function scan(string $absolutePath, ?string $mime): ?AttachmentScanStatus {
+                return null;
+            }
+        });
+
+        $result = app(IncomingEInvoiceService::class)
+            ->storeIncoming($this->admin, $this->sampleXml(), 'application/xml');
+
+        $this->assertSame('created', $result['status']);
     }
 
     public function test_duplicate_upload_is_rejected_and_review_workflow_works(): void {

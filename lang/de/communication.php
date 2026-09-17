@@ -17,6 +17,8 @@ return [
     ],
 
     'field' => [
+
+        'tags' => 'Schlagwörter',
         'type' => 'Typ',
         'direction' => 'Richtung',
         'occurred_at' => 'Zeitpunkt',
@@ -97,6 +99,8 @@ return [
     ],
 
     'filter' => [
+
+        'all_tags' => 'Alle Schlagwörter',
         'search' => 'Suche',
         'search_placeholder' => 'Betreff oder Inhalt …',
         'all_customers' => 'Alle Kunden',
@@ -105,6 +109,8 @@ return [
     ],
 
     'hint' => [
+
+        'tags' => 'Mehrere durch Komma trennen, z. B. Wartung, Heizung.',
         'customer_not_published' => 'Die Notiz erscheint in der Kundenakte, aber nicht im Kundenportal.',
     ],
 
@@ -116,4 +122,14 @@ return [
     'empty_filtered' => 'Keine Notizen gefunden.',
     'confirm_delete' => 'Kommunikationsnotiz wirklich löschen?',
     'confirm_publish' => 'Notiz wirklich für den Kunden sichtbar machen?',
+    'convert' => [
+        'action' => 'In Wissensartikel überführen',
+        'error' => [
+            'confidential' => 'Vertrauliche Notizen lassen sich nicht in einen Wissensartikel überführen.',
+        ],
+        'flash' => [
+            'created' => 'Wissensartikel als Entwurf angelegt; er verweist auf die Notiz.',
+            'existing' => 'Diese Notiz wurde bereits überführt.',
+        ],
+    ],
 ];

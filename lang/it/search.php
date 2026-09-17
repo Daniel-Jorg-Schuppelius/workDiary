@@ -44,11 +44,15 @@ return [
         'sort_relevance' => 'Migliori risultati prima',
         'sort_date' => 'Più recenti prima',
         'similar' => 'Grafie simili',
+        'collection' => 'Raccolta',
+        'all_collections' => 'Tutte le raccolte',
     ],
 
     'filter' => [
         'project' => 'Progetto: :name',
         'remove' => 'Rimuovi filtro',
+        'tag' => 'Tag: :name',
+        'tag_without_hits' => 'Filtro per tag',
     ],
 
     'notice' => [
@@ -65,6 +69,10 @@ return [
 
     'types' => [
         'title' => 'Fonti',
+    ],
+
+    'facets' => [
+        'tags' => 'Tag nei risultati',
     ],
 
     'hits' => [

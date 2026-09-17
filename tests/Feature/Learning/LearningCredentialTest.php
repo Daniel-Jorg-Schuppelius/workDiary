@@ -56,6 +56,27 @@ class LearningCredentialTest extends TestCase {
         return LearningCertificate::query()->where('learning_enrollment_id', $enrollment->id)->firstOrFail();
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13 (`crypto-6`): Ein widerrufener
+     * Ausstellerschlüssel durfte weiterhin prüfen — damit blieb jeder mit ihm
+     * ausgestellte Nachweis gültig und der Widerruf war folgenlos.
+     */
+    public function test_ein_widerrufener_ausstellerschluessel_prueft_nicht_mehr(): void {
+        $certificate = $this->certificate();
+        $credential = $this->service()->issue($certificate);
+
+        $this->assertArrayHasKey('proof', $credential, 'Der Nachweis trägt keine Signatur.');
+        $this->assertTrue($this->service()->verify($credential), 'Der frische Nachweis prüft nicht.');
+
+        $key = $this->service()->keyFor($certificate->organization);
+        $key->forceFill(['revoked_at' => now()])->save();
+
+        $this->assertFalse(
+            $this->service()->verify($credential),
+            'Der Nachweis prüft trotz widerrufenem Ausstellerschlüssel.',
+        );
+    }
+
     public function test_schluessel_wird_einmal_erzeugt_und_wiederverwendet(): void {
         $first = $this->service()->keyFor($this->organization);
         $second = $this->service()->keyFor($this->organization);

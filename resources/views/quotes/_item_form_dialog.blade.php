@@ -25,6 +25,12 @@
 
     <x-form-group :legend="__('Position')" icon="request_quote" tone="primary" cols="2">
         <x-article-picker :articles="$articles ?? collect()" :selected="$item->article_id ?? null" />
+        {{-- Kupferzuschlag zum Tagespreis als eigene Position (MVP-804) — nur beim Anlegen. --}}
+        @unless ($item->exists)
+            <x-checkbox-field name="add_copper_surcharge" span="2" :checked="(bool) old('add_copper_surcharge', true)"
+                              :label="__('Kupferzuschlag (Tagespreis) als eigene Position anfügen')"
+                              :hint="__('Nur bei Artikeln mit Kupfergewicht und -basis und einer gepflegten DEL-Notierung; sonst entsteht keine Position.')" />
+        @endunless
         <x-input-field name="description" :label="__('Beschreibung')" required maxlength="1000" span="2" :value="old('description', $item->description ?? '')" />
         <x-input-field name="quantity" type="number" :label="__('Menge')" required min="0.001" step="0.001" :value="old('quantity', (string) ($item->quantity ?? '1.00'))" />
         <x-input-field name="unit" :label="__('Einheit')" maxlength="20" :value="old('unit', $item->unit ?? __('invoicing.unit_hour'))" />

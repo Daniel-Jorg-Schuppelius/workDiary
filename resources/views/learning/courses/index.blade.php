@@ -65,6 +65,16 @@
                 </select>
             </x-filter-field>
         @endif
+        @if ($tags->isNotEmpty())
+            <x-filter-field :label="__('learning.field.tags')" for="flt-tag">
+                <select id="flt-tag" name="tag" class="select select-sm select-bordered" data-autosubmit>
+                    <option value="">{{ __('learning.filter.all_tags') }}</option>
+                    @foreach ($tags as $tag)
+                        <option value="{{ $tag->sqid }}" @selected($tagId === $tag->id)>{{ $tag->name }}</option>
+                    @endforeach
+                </select>
+            </x-filter-field>
+        @endif
         <x-filter-field :label="__('learning.field.status')" for="flt-status">
             <select id="flt-status" name="status" class="select select-sm select-bordered" data-autosubmit>
                 <option value="">{{ __('learning.filter.all_status') }}</option>
@@ -90,6 +100,7 @@
                         <span>{{ $course->units_count }} {{ __('learning.field.units') }}</span>
                         @if ($course->duration_minutes) <span>· {{ $course->duration_minutes }} {{ __('learning.field.minutes_short') }}</span> @endif
                         @if ($course->category) <span>· {{ $course->category->name }}</span> @endif
+                        @foreach ($course->tags as $tag) <x-tag-badge :tag="$tag" /> @endforeach
                         @if (isset($ratings[$course->id]))
                             <span title="{{ __('learning.help.rating', ['count' => $ratings[$course->id]['count']]) }}">· ★ {{ number_format($ratings[$course->id]['average'], 1, ',', '') }}</span>
                         @endif
@@ -117,6 +128,9 @@
             <tr class="hover">
                 <td class="font-medium">
                     <a class="link link-hover" href="{{ route('learning.courses.show', $course) }}">{{ $course->title }}</a>
+                    @foreach ($course->tags as $tag)
+                        <x-tag-badge :tag="$tag" />
+                    @endforeach
                     @if ($course->certificate_enabled)
                         <x-status-badge tone="info" size="sm" outline>{{ __('learning.field.certificate') }}</x-status-badge>
                     @endif

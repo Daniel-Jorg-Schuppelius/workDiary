@@ -10,14 +10,15 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\Procedure\ProcedureStepRunStatus;
+use App\Enums\Procedure\{ProcedureDeviationProposedAction, ProcedureDeviationSeverity, ProcedureDeviationType, ProcedureStepRunStatus};
 use App\Exceptions\{ProcedureDeviationValidationException, ProcedureRunIncompleteException, ProcedureSecondPersonException, ProcedureStepBlockedException};
 use App\Models\{Attachment, DiaryEntry, ManufacturingOrder, ProcedureRun, ProcedureStepRun, ProcedureTemplate, User};
-use App\Services\Procedure\{ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
+use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, ProcedureExecutionService, SecondPersonGate, WaitStepService};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 /**
@@ -146,6 +147,38 @@ class ProcedureRunController extends Controller {
         }
 
         return back()->with('success', __('procedure.flash.stepCompleted'));
+    }
+
+    /**
+     * Abweichung zu einem Schritt erfassen (Vollscan 2026-09-15, `P4-01`).
+     * Der {@see DeviationRecorder} war vollständig gebaut, hatte aber ausserhalb
+     * der Tests keinen Aufrufer: Die Lauf-Oberfläche kannte nur erledigt,
+     * entfällt und fehlgeschlagen. Damit blieb der Abweichungs-Report aus
+     * `MVP-713` produktiv ohne Schreiber.
+     */
+    public function recordDeviation(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, DeviationRecorder $deviations): RedirectResponse {
+        Gate::authorize('execute', $run);
+        $this->assertStepBelongsToRun($run, $stepRun);
+
+        $data = $request->validate([
+            'deviation_type' => ['required', 'string', Rule::enum(ProcedureDeviationType::class)],
+            'severity' => ['nullable', 'string', Rule::enum(ProcedureDeviationSeverity::class)],
+            'proposed_action' => ['nullable', 'string', Rule::enum(ProcedureDeviationProposedAction::class)],
+            'reason_text' => ['required', 'string', 'max:2000'],
+        ]);
+
+        /** @var User $actor */
+        $actor = Auth::user();
+
+        try {
+            $deviations->record($stepRun, $actor, $data);
+        } catch (ProcedureDeviationValidationException $e) {
+            return back()->with('error', $e->reason === ProcedureDeviationValidationException::REASON_REASON_TOO_SHORT
+                ? __('procedure.validation.deviationReasonTooShort')
+                : __('procedure.validation.deviationInvalid', ['reason' => $e->reason]));
+        }
+
+        return back()->with('success', __('procedure.flash.deviationRecorded'));
     }
 
     /**

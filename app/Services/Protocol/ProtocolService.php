@@ -10,10 +10,12 @@
 
 namespace App\Services\Protocol;
 
+use App\Enums\Classification\ClassificationRequirementPhase;
 use App\Enums\Diary\Status as DiaryStatus;
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemResult, ProtocolItemType, ProtocolSignatureMethod, ProtocolSignatureRole, ProtocolStatus, ProtocolType, ProtocolVisibility};
-use App\Exceptions\{InvalidProtocolTransitionException, ProtocolValidationException};
+use App\Exceptions\{ClassificationRequirementException, InvalidProtocolTransitionException, ProtocolValidationException};
 use App\Models\{DiaryEntry, Protocol, ProtocolEvent, ProtocolItem, ProtocolSignature, User};
+use App\Services\Classification\ClassificationRequirementValidator;
 use App\Services\Diary\OrderService;
 use App\Services\Integration\LifecycleWebhookPublisher;
 use App\Services\OpenIssue\OpenIssueService;
@@ -34,6 +36,7 @@ use InvalidArgumentException;
 class ProtocolService {
     public function __construct(
         private readonly ProtocolItemValidator $itemValidator,
+        private readonly ClassificationRequirementValidator $requirements,
         private readonly OpenIssueService $openIssues,
         private readonly ProtocolHasher $hasher,
         private readonly ProtocolPdfRenderer $pdfRenderer,
@@ -126,7 +129,7 @@ class ProtocolService {
      */
     public function sign(Protocol $protocol, User $actor, ?array $signatureData = null): Protocol {
         $this->assertTransition($protocol, $protocol->status === ProtocolStatus::Draft ? 'signDirect' : 'sign');
-        $this->assertProtocolValid($protocol);
+        $this->assertProtocolValid($protocol, ClassificationRequirementPhase::BeforeSign);
 
         $signed = DB::transaction(function () use ($protocol, $actor, $signatureData): Protocol {
             $protocol->update([
@@ -441,8 +444,29 @@ class ProtocolService {
         }
     }
 
-    private function assertProtocolValid(Protocol $protocol): void {
+    /**
+     * @param  ClassificationRequirementPhase|null  $phase  Gesetzt nur dort, wo die
+     *   Klassifikationspflicht des Auftrags mitgilt (Signatur) — die
+     *   Pruefanforderung ist ein Zwischenschritt und bleibt frei davon.
+     */
+    private function assertProtocolValid(Protocol $protocol, ?ClassificationRequirementPhase $phase = null): void {
         $errors = $this->itemValidator->validateProtocol($protocol->load('items'));
+
+        // Pflichtklassifikationen vor der Signatur (MVP-795): ein Protokoll
+        // zu einem Auftrag erbt dessen Klassifikationspflichten. Die Lücken
+        // reihen sich in die vorhandene Fehlerliste ein, statt einen zweiten
+        // Fehlerkanal aufzumachen.
+        if ($phase !== null && $protocol->subject_type === DiaryEntry::class) {
+            $entry = DiaryEntry::query()->find($protocol->subject_id);
+            if ($entry instanceof DiaryEntry) {
+                try {
+                    $this->requirements->assertSatisfied($entry, $phase);
+                } catch (ClassificationRequirementException $exception) {
+                    $errors = [...$errors, ...$exception->messages()];
+                }
+            }
+        }
+
         if ($errors !== []) {
             throw new ProtocolValidationException($errors);
         }

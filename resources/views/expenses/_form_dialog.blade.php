@@ -23,6 +23,18 @@
     :form-data="['data-entry-form' => '', 'enctype' => 'multipart/form-data']"
     :submit-label="$expense ? __('Speichern') : __('Erfassen')">
 
+    {{-- MVP-802: Korrektur einer übergebenen Auslage — Bezug und Erstattungshinweis. --}}
+    @if ($expense?->corrects)
+        <div role="note" class="alert alert-warning mb-3 text-sm">
+            <div>
+                <p>{{ __('Korrektur zu Auslage #:id (Gegenbeleg übergeben). Grund: :reason', ['id' => $expense->corrects->id, 'reason' => $expense->correction_reason]) }}</p>
+                @if ($expense->corrects->status === \App\Enums\Expense\ExpenseStatus::Reimbursed)
+                    <p class="mt-1 font-semibold">{{ __('Die ursprüngliche Auslage wurde bereits erstattet — bei der Erstattung dieser Korrektur nur die Differenz auszahlen.') }}</p>
+                @endif
+            </div>
+        </div>
+    @endif
+
     @include('expenses._form_body', ['expense' => $expense ?? null])
 
     @if ($expense)

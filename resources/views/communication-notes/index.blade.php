@@ -16,7 +16,7 @@
 
 @php
     /** @var \Illuminate\Pagination\LengthAwarePaginator<int, \App\Models\CommunicationNote> $notes */
-    /** @var array{q: string, storage: string, customer: string, type: string, open_followups: bool} $filters */
+    /** @var array{q: string, storage: string, customer: string, type: string, open_followups: bool, tag: string} $filters */
     /** @var array<int, string|null> $contextUrls */
 @endphp
 
@@ -65,6 +65,17 @@
                 </select>
             </x-filter-field>
 
+            @if ($tags->isNotEmpty())
+                <x-filter-field :label="__('communication.field.tags')" for="notes-tag" class="min-w-40">
+                    <select id="notes-tag" name="tag" class="select select-sm select-bordered w-full" data-autosubmit>
+                        <option value="">{{ __('communication.filter.all_tags') }}</option>
+                        @foreach ($tags as $tag)
+                            <option value="{{ $tag->sqid }}" @selected($filters['tag'] === $tag->sqid)>{{ $tag->name }}</option>
+                        @endforeach
+                    </select>
+                </x-filter-field>
+            @endif
+
             <x-filter-toggle name="open_followups" id="notes-open-followups"
                              :label="__('communication.filter.open_followups')"
                              :checked="$filters['open_followups']" data-autosubmit />
@@ -95,6 +106,9 @@
                         <td class="whitespace-nowrap">{{ $note->occurred_at->fdatetime() }}</td>
                         <td class="max-w-md">
                             <a href="{{ route('communication-notes.show', $note) }}" data-entry-modal-trigger class="link link-hover font-semibold">{{ $note->subject }}</a>
+                            @foreach ($note->tags as $tag)
+                                <x-tag-badge :tag="$tag" />
+                            @endforeach
                             <div class="truncate text-xs text-muted">{{ \CommonToolkit\Helper\Data\StringHelper::truncate($note->body, 140) }}</div>
                         </td>
                         <td class="whitespace-nowrap">

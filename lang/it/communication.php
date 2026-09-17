@@ -17,6 +17,8 @@ return [
     ],
 
     'field' => [
+
+        'tags' => 'Tag',
         'type' => 'Tipo',
         'direction' => 'Direzione',
         'occurred_at' => 'Data e ora',
@@ -97,6 +99,8 @@ return [
     ],
 
     'filter' => [
+
+        'all_tags' => 'Tutti i tag',
         'search' => 'Cerca',
         'search_placeholder' => 'Oggetto o contenuto …',
         'all_customers' => 'Tutti i clienti',
@@ -105,6 +109,8 @@ return [
     ],
 
     'hint' => [
+
+        'tags' => 'Separa più tag con una virgola, ad es. manutenzione, riscaldamento.',
         'customer_not_published' => 'La nota compare nella scheda cliente, ma non nel portale clienti.',
     ],
 
@@ -116,4 +122,14 @@ return [
     'empty_filtered' => 'Nessuna nota trovata.',
     'confirm_delete' => 'Eliminare davvero questa nota di comunicazione?',
     'confirm_publish' => 'Rendere davvero questa nota visibile al cliente?',
+    'convert' => [
+        'action' => 'Converti in articolo della knowledge base',
+        'error' => [
+            'confidential' => 'Le note riservate non possono essere convertite in articolo della knowledge base.',
+        ],
+        'flash' => [
+            'created' => 'Articolo creato come bozza; rimanda alla nota.',
+            'existing' => 'Questa nota è già stata convertita.',
+        ],
+    ],
 ];

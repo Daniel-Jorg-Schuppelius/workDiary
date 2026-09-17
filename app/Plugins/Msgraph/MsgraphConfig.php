@@ -33,7 +33,7 @@ class MsgraphConfig {
     /** Sentinel: Instanz-App aus der ENV erzwingen (kein Org-Overlay). */
     public const INSTANCE = 0;
 
-    /** @return array{client_id: string, client_secret: string, tenant: string, api_base: string, authorize_url: string, token_url: string, scopes: string, intake_scopes: string, intake_page_size: int, backup_scopes: string, mail_scopes: string, contacts_scopes: string, tasks_scopes: string} */
+    /** @return array{client_id: string, client_secret: string, tenant: string, api_base: string, authorize_url: string, token_url: string, scopes: string, intake_scopes: string, intake_page_size: int, backup_scopes: string, mail_scopes: string, contacts_scopes: string, tasks_scopes: string, onenote_scopes: string} */
     public static function resolve(?int $organizationId = null): array {
         $overlay = $organizationId === self::INSTANCE
             ? null
@@ -64,6 +64,8 @@ class MsgraphConfig {
             'contacts_scopes' => (string) config('plugins.msgraph.contacts_scopes', 'offline_access User.Read Contacts.ReadWrite'),
             // To-Do-Sync (Feature 102, Schnitt E).
             'tasks_scopes' => (string) config('plugins.msgraph.tasks_scopes', 'offline_access User.Read Tasks.ReadWrite'),
+            // OneNote-Übernahme (Feature 155, MVP-815).
+            'onenote_scopes' => (string) config('plugins.msgraph.onenote_scopes', 'offline_access User.Read Notes.Read'),
         ];
     }
 
@@ -94,7 +96,12 @@ class MsgraphConfig {
         $resource = (string) parse_url($config['api_base'], PHP_URL_SCHEME) . '://' . (string) parse_url($config['api_base'], PHP_URL_HOST);
         $oidc = ['openid', 'profile', 'email', 'offline_access'];
         $scopes = [];
-        foreach ([$config['scopes'], $config['mail_scopes'], $config['contacts_scopes'], $config['tasks_scopes'], $config['intake_scopes']] as $set) {
+        // Notes.Read nur, wenn die Organisation die OneNote-Übernahme eingeschaltet hat.
+        $sets = [$config['scopes'], $config['mail_scopes'], $config['contacts_scopes'], $config['tasks_scopes'], $config['intake_scopes']];
+        if (self::oneNoteImportEnabled($organizationId)) {
+            $sets[] = $config['onenote_scopes'];
+        }
+        foreach ($sets as $set) {
             foreach (preg_split('/\s+/', trim($set)) ?: [] as $scope) {
                 if ($scope !== '') {
                     $scopes[in_array($scope, $oidc, true) ? $scope : $resource . '/' . $scope] = true;
@@ -108,5 +115,14 @@ class MsgraphConfig {
             'state' => $state,
             'scope' => implode(' ', array_keys($scopes)),
         ], '', '&', PHP_QUERY_RFC3986);
+    }
+
+    /**
+     * OneNote-Übernahme (MVP-815) ist ein eigener, abschaltbarer Teil mit
+     * eigenem Berechtigungsbereich — standardmäßig aus.
+     */
+    public static function oneNoteImportEnabled(?int $organizationId = null): bool {
+        return $organizationId !== self::INSTANCE
+            && PluginSettingsResolver::for(MsgraphPlugin::ID, $organizationId)->bool('onenote_import', false);
     }
 }

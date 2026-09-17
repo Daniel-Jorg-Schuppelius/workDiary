@@ -1,7 +1,7 @@
 ---
 title: "Fatture & documenti"
 topic: invoices.manage
-version: 3
+version: 5
 audience: []
 modules:
     - module.vertrieb
@@ -39,13 +39,23 @@ entrambi insieme.
 2. Escludi se serve singole registrazioni con la casella — restano
    aperte e ricompaiono al giro successivo.
 3. Controlla e completa la bozza; per posizione si espandono le
-   **registrazioni di origine** (1,50 h = 1:30 h).
+   **registrazioni di origine** (1,50 h = 1:30 h). Per un articolo con peso
+   di rame, la casella **supplemento rame** nella finestra della riga
+   aggiunge il supplemento al prezzo DEL del giorno come riga separata.
 4. Emetti o invia — PDF, invio e sincronizzazione esterna sono uscite
    dello stesso stato documentato.
 5. In caso di ritardo usa il **sollecito**: il livello 1 crea un
    promemoria di pagamento come PDF separato con riepilogo crediti,
    eventuale spesa e scadenza; l'e-mail contiene lettera e fattura
    originale. Non nasce un nuovo documento.
+
+**Fattura elettronica.** La XRechnung viene generata in sintassi UBL; se un
+destinatario richiede CII, scegli sul cliente o all’invio il formato di
+consegna «XRechnung (XML, sintassi CII)». Tramite Peppol si usa sempre UBL.
+Senza partita IVA — ad esempio come piccola impresa ai sensi del § 19 UStG —
+basta il codice fiscale nei dati di fatturazione elettronica: viene indicato
+anche come identificativo del venditore, richiesto dalla verifica del
+destinatario.
 
 ## Esempio pratico
 

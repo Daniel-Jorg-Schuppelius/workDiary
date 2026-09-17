@@ -45,7 +45,6 @@ final class KnowledgeArticleSource extends AbstractSearchSource {
             texts: [
                 $model->problem,
                 $model->solution,
-                $model->category,
                 ...self::strings($model->tags, 'name'),
                 $context->userName(self::intOrNull($model->created_by_user_id)),
             ],

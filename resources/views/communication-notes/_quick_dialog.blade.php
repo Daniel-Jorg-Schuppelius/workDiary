@@ -81,6 +81,7 @@
             <span class="label-text">{{ __('communication.field.body') }} *</span>
             <textarea name="body" rows="4" required maxlength="8000" class="textarea textarea-bordered w-full"></textarea>
         </label>
+        <x-input-field name="tags" span="2" maxlength="500" :label="__('communication.field.tags')" :hint="__('communication.hint.tags')" />
     </x-form-group>
 
     <details class="collapse collapse-arrow rounded-box border border-base-300 bg-base-100">

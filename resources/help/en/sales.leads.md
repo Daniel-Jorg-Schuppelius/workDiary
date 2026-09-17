@@ -1,7 +1,7 @@
 ---
 title: "Leads"
 topic: sales.leads
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -13,6 +13,13 @@ A **lead** is a prospect **before** customer status — from a referral, the
 web, a trade fair or a call. The lead file holds contact, source and need;
 qualification runs through the **communication notes** with follow-up, just
 like on a customer.
+
+**Leads from appointment bookings.** When someone without a customer record
+books through Calendly, a lead with the source “Appointment booking” can be
+created. Each organization turns this on in the Calendly settings; it is off by
+default. If an existing customer could match, no lead is created — the booking
+then waits in the assignment inbox. A repeat booking from the same address
+attaches to the open lead.
 
 ## The pipeline
 

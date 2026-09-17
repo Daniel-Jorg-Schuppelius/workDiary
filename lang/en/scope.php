@@ -107,6 +107,12 @@ return [
         'configured_at' => 'Last configured: :date',
         'not_licensed_hint' => 'Not included in the current plan — can be added via license management.',
     ],
+    'startpages' => [
+        'heading' => 'Start page per role',
+        'hint' => 'Where a person lands after signing in. Their own choice in the profile takes precedence. With several roles, the first one in this order that has a page set applies. A page the person may not open is skipped.',
+        'default' => 'Default',
+        'saved' => 'Start pages saved.',
+    ],
     'flash' => [
         'saved' => 'Feature scope saved (:disabled deactivated, :enabled activated). No data was deleted.',
         'no_recommendation' => 'There is no branch-profile recommendation for this organization.',

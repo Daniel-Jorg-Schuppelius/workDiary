@@ -75,6 +75,68 @@ class PaymentRunTest extends TestCase {
         return app(PaymentRunService::class);
     }
 
+    /**
+     * Lastschrifteinzug über die Oberfläche (Vollscan 2026-09-15, `P9-34`).
+     * Dienst, Dateibauer und Vorlauffristen waren gebaut, aber ohne Route und
+     * ohne Formular — der Weg war nur über Tests erreichbar.
+     */
+    public function test_direct_debit_can_be_created_over_http(): void {
+        $mandate = $this->mandate();
+
+        $this->actingAs($this->admin)
+            ->from(route('finance.payment-runs.index'))
+            ->post(route('finance.payment-runs.direct-debit.store'), [
+                'bank_account' => $this->account->sqid,
+                'mandate' => $mandate->sqid,
+                'amount' => '250.00',
+                'reference' => 'Wartungspauschale 2026',
+            ])
+            ->assertRedirectContains('/finanzen/zahllaeufe/');
+
+        $run = PaymentRun::query()->firstOrFail();
+        $this->assertSame('direct_debit', $run->kind->value);
+        $this->assertSame(1, $run->items()->count());
+    }
+
+    public function test_direct_debit_is_refused_for_an_unusable_mandate(): void {
+        $mandate = $this->mandate(['status' => 'revoked', 'revoked_on' => CarbonImmutable::today()->toDateString()]);
+
+        $this->actingAs($this->admin)
+            ->from(route('finance.payment-runs.index'))
+            ->post(route('finance.payment-runs.direct-debit.store'), [
+                'bank_account' => $this->account->sqid,
+                'mandate' => $mandate->sqid,
+                'amount' => '250.00',
+                'reference' => 'Wartungspauschale 2026',
+            ])
+            ->assertRedirect(route('finance.payment-runs.index'))
+            ->assertSessionHas('error');
+
+        $this->assertSame(0, PaymentRun::query()->count());
+    }
+
+    /** @param array<string, mixed> $attributes */
+    private function mandate(array $attributes = []): \App\Models\Finance\SepaMandate {
+        $customer = \App\Models\Customer::create([
+            'organization_id' => $this->org->id,
+            'name' => 'ACME GmbH',
+            'currency' => 'EUR',
+            'created_by' => $this->admin->id,
+        ]);
+
+        return \App\Models\Finance\SepaMandate::query()->create(array_merge([
+            'organization_id' => $this->org->id,
+            'customer_id' => $customer->id,
+            'reference' => 'MND-' . fake()->unique()->numberBetween(1000, 9999),
+            'kind' => 'recurring',
+            'status' => 'active',
+            'signed_on' => CarbonImmutable::today()->subMonths(2)->toDateString(),
+            'iban' => 'DE89370400440532013000',
+            'bic' => 'COBADEFFXXX',
+            'account_holder' => 'ACME GmbH',
+        ], $attributes));
+    }
+
     public function test_proposal_lists_released_invoices_only(): void {
         $this->invoice();
         $this->invoice(['status' => IncomingEInvoice::STATUS_APPROVED]);

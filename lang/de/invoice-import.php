@@ -25,6 +25,7 @@ return [
     'format' => [
         'pdf' => 'PDF',
         'xrechnung' => 'XRechnung (XML)',
+        'xrechnung_cii' => 'XRechnung (XML, CII-Syntax)',
         'zugferd' => 'ZUGFeRD (Hybrid-PDF)',
         'pdf_xrechnung' => 'PDF und XRechnung (XML)',
     ],

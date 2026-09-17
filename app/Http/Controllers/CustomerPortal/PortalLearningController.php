@@ -140,6 +140,11 @@ class PortalLearningController extends Controller {
      */
     private function visibleCourses() {
         return LearningCourse::query()
+            // Mandantengrenze ausdruecklich, nicht nur ueber die Reihenfolge der
+            // Middleware (Audit 2026-09, authflow-1): der Portal-Stack setzt den
+            // Guard `customer` vor `SetOrganizationContext`, deshalb bindet die
+            // Abfrage die Organisation des Portalnutzers selbst.
+            ->where('organization_id', $this->actor()->organization_id)
             ->with(['category', 'article'])
             ->withCount(['units as preview_units_count' => fn ($q) => $q->where('is_preview', true)])
             ->where('status', LearningCourseStatus::Released->value)
@@ -152,6 +157,9 @@ class PortalLearningController extends Controller {
     }
 
     private function guardVisible(LearningCourse $course, bool $catalog = true): void {
+        // Erst die Mandantengrenze, dann die Fachpruefung: ein Kurs einer
+        // fremden Organisation ist fuer diesen Portalnutzer nicht vorhanden.
+        abort_unless((int) $course->organization_id === (int) $this->actor()->organization_id, 404);
         abort_unless(
             $course->status === LearningCourseStatus::Released && $course->servesAudience(LearningAudience::Customer),
             404

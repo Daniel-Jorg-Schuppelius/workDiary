@@ -250,7 +250,7 @@ return [
     ],
     'sales' => [
         'lead_status' => ['new' => 'Neu', 'contacted' => 'Kontaktiert', 'qualified' => 'Qualifiziert', 'converted' => 'Konvertiert', 'discarded' => 'Verworfen'],
-        'lead_source' => ['referral' => 'Empfehlung', 'web' => 'Web', 'trade_fair' => 'Messe', 'phone' => 'Telefon', 'other' => 'Sonstige'],
+        'lead_source' => ['referral' => 'Empfehlung', 'web' => 'Web', 'trade_fair' => 'Messe', 'phone' => 'Telefon', 'booking' => 'Terminbuchung', 'other' => 'Sonstige'],
     ],
     // Sicherheitseinbehalte (Feature 113, MVP-602).
     // Bürgschaftsregister (Feature 114, MVP-603).
@@ -473,6 +473,7 @@ return [
             ],
             'attendance' => [
                 'unclearCase' => 'Ungeklärter Fall (Stempelzeiten)',
+                'openReminder' => 'Erinnerung: Stempelung noch offen',
             ],
             'monthClosure' => [
                 'submitted' => 'Monatsabschluss eingereicht',
@@ -889,7 +890,10 @@ return [
             'photo' => 'Pflichtfoto',
             'file' => 'Pflichtdokument',
             'defect' => 'Mangel',
-            'measurement.timestamped' => 'Messreihe',
+            // Verschachtelt, weil der Enum-Wert einen Punkt traegt und
+            // Arr::get segmentweise aufloest: ein flacher Schluessel
+            // 'measurement.timestamped' wird nie gefunden.
+            'measurement' => ['timestamped' => 'Messreihe'],
             'procedure_step' => 'Prozedur-Schritt',
             'signoff_internal' => 'Interne Freigabe',
         ],
@@ -1487,7 +1491,7 @@ return [
         ],
     ],
 
-    // Tagesabschluss (MVP-015, docs/tagesabschluss.md §3/§5).
+    // Tagesabschluss (MVP-015, WorkDiary-Architecture/tagesabschluss.md §3/§5).
     'dayClosure' => [
         'status' => [
             'open' => 'Offen',
@@ -1658,6 +1662,14 @@ return [
             'video' => 'Video',
             'embed' => 'Einbettung',
             'knowledge' => 'Wissensartikel',
+            'gallery' => 'Galerie',
+            'audio' => 'Audio',
+            'code' => 'Code',
+            'accordion' => 'Akkordeon',
+            'table' => 'Tabelle',
+            'procedure' => 'Prozedur',
+            'question' => 'Verständnisfrage',
+            'divider' => 'Trenner',
         ],
         'enrollment-status' => [
             'assigned' => 'Zugewiesen',

@@ -1,7 +1,7 @@
 ---
 title: "Lead"
 topic: sales.leads
-version: 1
+version: 2
 audience: []
 modules:
     - module.vertrieb
@@ -13,6 +13,13 @@ Un **lead** è un potenziale cliente **prima** dello stato di cliente — da
 passaparola, web, fiera o telefonata. La scheda lead tiene contatto, fonte ed
 esigenza; la qualificazione passa per le **note di comunicazione** con
 richiamo, come per un cliente.
+
+**Lead dalle prenotazioni di appuntamenti.** Se qualcuno senza scheda cliente
+prenota tramite Calendly, può nascere un lead con la fonte «Prenotazione
+appuntamento». Ogni organizzazione lo attiva nelle impostazioni di Calendly; di
+norma è disattivato. Se può trattarsi di un cliente esistente, non nasce alcun
+lead e la prenotazione resta nella casella di assegnazione. Una nuova
+prenotazione dallo stesso indirizzo si collega al lead aperto.
 
 ## La pipeline
 

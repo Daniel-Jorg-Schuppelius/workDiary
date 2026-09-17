@@ -637,6 +637,8 @@ CREATE TABLE IF NOT EXISTS "attendances"(
   "homeoffice_minutes" integer not null default '0',
   "errand_started_at" datetime,
   "errand_minutes" integer not null default '0',
+  "started_checkpoint_id" integer,
+  "ended_checkpoint_id" integer,
   foreign key("organization_id") references "organizations"("id") on delete set null,
   foreign key("user_id") references "users"("id") on delete cascade,
   foreign key("closed_by") references "users"("id") on delete set null,
@@ -1112,6 +1114,8 @@ CREATE TABLE IF NOT EXISTS "expenses"(
   "updated_by" integer,
   "created_at" datetime,
   "updated_at" datetime,
+  "corrects_expense_id" integer,
+  "correction_reason" varchar,
   foreign key("organization_id") references "organizations"("id") on delete set null,
   foreign key("user_id") references "users"("id") on delete cascade,
   foreign key("expense_category_id") references "expense_categories"("id") on delete set null,
@@ -2425,7 +2429,6 @@ CREATE TABLE IF NOT EXISTS "knowledge_articles"(
   "slug" varchar not null,
   "problem" text not null,
   "solution" text not null,
-  "category" varchar,
   "status" varchar not null default 'draft',
   "visibility" varchar not null default 'internal',
   "created_by_user_id" integer not null,
@@ -2445,29 +2448,6 @@ CREATE UNIQUE INDEX "knowledge_org_slug_uq" on "knowledge_articles"(
 CREATE INDEX "knowledge_org_status_idx" on "knowledge_articles"(
   "organization_id",
   "status"
-);
-CREATE INDEX "knowledge_org_category_idx" on "knowledge_articles"(
-  "organization_id",
-  "category"
-);
-CREATE TABLE IF NOT EXISTS "knowledge_article_links"(
-  "id" integer primary key autoincrement not null,
-  "knowledge_article_id" integer not null,
-  "linkable_type" varchar not null,
-  "linkable_id" integer not null,
-  "created_by_user_id" integer not null,
-  "created_at" datetime,
-  foreign key("knowledge_article_id") references "knowledge_articles"("id") on delete cascade,
-  foreign key("created_by_user_id") references "users"("id") on delete cascade
-);
-CREATE UNIQUE INDEX "knowledge_link_uq" on "knowledge_article_links"(
-  "knowledge_article_id",
-  "linkable_type",
-  "linkable_id"
-);
-CREATE INDEX "knowledge_link_linkable_idx" on "knowledge_article_links"(
-  "linkable_type",
-  "linkable_id"
 );
 CREATE TABLE IF NOT EXISTS "knowledge_article_feedback"(
   "id" integer primary key autoincrement not null,
@@ -7541,29 +7521,6 @@ CREATE UNIQUE INDEX "ideashare_unique" on "idea_map_shares"(
   "idea_map_id",
   "user_id",
   "team_id"
-);
-CREATE TABLE IF NOT EXISTS "idea_node_references"(
-  "id" integer primary key autoincrement not null,
-  "organization_id" integer not null,
-  "idea_node_id" integer not null,
-  "target_type" varchar not null,
-  "target_id" integer not null,
-  "kind" varchar not null,
-  "created_by" integer,
-  "created_at" datetime,
-  "updated_at" datetime,
-  foreign key("organization_id") references "organizations"("id") on delete cascade,
-  foreign key("idea_node_id") references "idea_nodes"("id") on delete cascade,
-  foreign key("created_by") references "users"("id") on delete set null
-);
-CREATE UNIQUE INDEX "idearef_conv_unique" on "idea_node_references"(
-  "idea_node_id",
-  "target_type",
-  "kind"
-);
-CREATE INDEX "idearef_target_idx" on "idea_node_references"(
-  "target_type",
-  "target_id"
 );
 CREATE TABLE IF NOT EXISTS "todoist_connections"(
   "id" integer primary key autoincrement not null,
@@ -19485,6 +19442,175 @@ CREATE INDEX "survey_inv_org_email_idx" on "survey_invitations"(
 CREATE UNIQUE INDEX "survey_inv_token_uq" on "survey_invitations"(
   "token_hash"
 );
+CREATE TABLE IF NOT EXISTS "attendance_checkpoints"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "name" varchar not null,
+  "kind" varchar not null,
+  "site_id" integer,
+  "vehicle_id" integer,
+  "token" varchar not null,
+  "latitude" numeric,
+  "longitude" numeric,
+  "radius_m" integer,
+  "active" tinyint(1) not null default '1',
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("site_id") references "sites"("id") on delete set null,
+  foreign key("vehicle_id") references "vehicles"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "attcp_org_active_idx" on "attendance_checkpoints"(
+  "organization_id",
+  "active"
+);
+CREATE UNIQUE INDEX "attcp_token_unique" on "attendance_checkpoints"("token");
+CREATE INDEX "att_started_cp_idx" on "attendances"("started_checkpoint_id");
+CREATE INDEX "att_ended_cp_idx" on "attendances"("ended_checkpoint_id");
+CREATE TABLE IF NOT EXISTS "legal_holds"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "holdable_type" varchar not null,
+  "holdable_id" integer not null,
+  "reason" text not null,
+  "reference" varchar,
+  "placed_by" integer,
+  "placed_at" datetime not null,
+  "released_by" integer,
+  "released_at" datetime,
+  "release_reason" text,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("placed_by") references "users"("id") on delete set null,
+  foreign key("released_by") references "users"("id") on delete set null
+);
+CREATE INDEX "lhold_holdable_idx" on "legal_holds"(
+  "holdable_type",
+  "holdable_id",
+  "released_at"
+);
+CREATE INDEX "lhold_org_active_idx" on "legal_holds"(
+  "organization_id",
+  "released_at"
+);
+CREATE INDEX "expenses_corrects_idx" on "expenses"("corrects_expense_id");
+CREATE TABLE IF NOT EXISTS "user_terminal_pins"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "user_id" integer not null,
+  "pin_hash" varchar not null,
+  "failed_attempts" integer not null default '0',
+  "locked_until" datetime,
+  "set_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("user_id") references "users"("id") on delete cascade,
+  foreign key("set_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "utpin_user_unique" on "user_terminal_pins"("user_id");
+CREATE TABLE IF NOT EXISTS "collections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "parent_id" integer,
+  "title" varchar not null,
+  "description" text,
+  "visibility" varchar not null default 'organization',
+  "position" integer not null default '0',
+  "created_by" integer,
+  "archived_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("parent_id") references "collections"("id") on delete set null,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE INDEX "coll_org_parent_idx" on "collections"(
+  "organization_id",
+  "parent_id"
+);
+CREATE TABLE IF NOT EXISTS "collection_items"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "collection_id" integer not null,
+  "collectable_type" varchar not null,
+  "collectable_id" integer not null,
+  "position" integer not null default '0',
+  "added_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("collection_id") references "collections"("id") on delete cascade,
+  foreign key("added_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "colli_unique_item" on "collection_items"(
+  "collection_id",
+  "collectable_type",
+  "collectable_id"
+);
+CREATE INDEX "colli_collectable_idx" on "collection_items"(
+  "collectable_type",
+  "collectable_id"
+);
+CREATE TABLE IF NOT EXISTS "content_references"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "source_type" varchar not null,
+  "source_id" integer not null,
+  "target_type" varchar not null,
+  "target_id" integer not null,
+  "kind" varchar not null,
+  "created_by" integer,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("created_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "cref_unique" on "content_references"(
+  "source_type",
+  "source_id",
+  "target_type",
+  "target_id",
+  "kind"
+);
+CREATE INDEX "cref_source_idx" on "content_references"(
+  "source_type",
+  "source_id"
+);
+CREATE INDEX "cref_target_idx" on "content_references"(
+  "target_type",
+  "target_id"
+);
+CREATE TABLE IF NOT EXISTS "msgraph_onenote_connections"(
+  "id" integer primary key autoincrement not null,
+  "organization_id" integer not null,
+  "access_token" text,
+  "refresh_token" text,
+  "token_expires_at" datetime,
+  "scopes" varchar,
+  "account_label" varchar,
+  "status" varchar not null default 'active',
+  "last_import_at" datetime,
+  "last_error" varchar,
+  "last_error_at" datetime,
+  "consecutive_failures" integer not null default '0',
+  "disabled_at" datetime,
+  "connected_by" integer,
+  "connected_at" datetime,
+  "disconnected_by" integer,
+  "disconnected_at" datetime,
+  "created_at" datetime,
+  "updated_at" datetime,
+  foreign key("organization_id") references "organizations"("id") on delete cascade,
+  foreign key("connected_by") references "users"("id") on delete set null,
+  foreign key("disconnected_by") references "users"("id") on delete set null
+);
+CREATE UNIQUE INDEX "msgon_org_unique" on "msgraph_onenote_connections"(
+  "organization_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -20300,3 +20426,11 @@ INSERT INTO migrations VALUES(811,'2027_02_21_100500_add_learning_course_options
 INSERT INTO migrations VALUES(812,'2027_02_21_100600_create_learning_gradebook_tables',27);
 INSERT INTO migrations VALUES(813,'2027_02_21_100700_add_learning_question_refinements',28);
 INSERT INTO migrations VALUES(814,'2027_02_21_100800_add_learning_course_to_survey_invitations',29);
+INSERT INTO migrations VALUES(815,'2027_02_22_100000_create_attendance_checkpoints',30);
+INSERT INTO migrations VALUES(816,'2027_02_22_100100_create_legal_holds',31);
+INSERT INTO migrations VALUES(817,'2027_02_22_100200_add_correction_to_expenses',32);
+INSERT INTO migrations VALUES(818,'2027_02_22_100300_create_user_terminal_pins',33);
+INSERT INTO migrations VALUES(819,'2027_02_22_100400_create_collections',34);
+INSERT INTO migrations VALUES(820,'2027_02_22_100500_create_content_references',35);
+INSERT INTO migrations VALUES(821,'2027_02_22_100600_move_knowledge_categories_to_collections',36);
+INSERT INTO migrations VALUES(822,'2027_02_22_100700_create_msgraph_onenote_connections',37);

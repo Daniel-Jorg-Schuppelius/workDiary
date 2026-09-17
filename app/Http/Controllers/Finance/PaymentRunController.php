@@ -14,7 +14,7 @@ namespace App\Http\Controllers\Finance;
 
 use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
-use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem};
+use App\Models\Finance\{BankAccount, PaymentRun, PaymentRunItem, SepaMandate};
 use App\Models\IncomingEInvoice;
 use App\Services\Finance\FinancialFormatsSupport;
 use App\Services\Finance\Sepa\{PaymentProposalService, PaymentRunService};
@@ -48,6 +48,16 @@ class PaymentRunController extends Controller {
                 ->orderByDesc('id')
                 ->paginate(25),
             'formatsAvailable' => FinancialFormatsSupport::isAvailable(),
+            // Einstieg für den Lastschrifteinzug (MVP-795): Konten und nutzbare
+            // Mandate, damit der pain.008-Weg nicht nur über Tests erreichbar ist.
+            'accounts' => BankAccount::query()->where('is_active', true)->orderBy('label')->get(),
+            'mandates' => SepaMandate::query()
+                ->with('customer')
+                ->where('status', \App\Enums\Finance\MandateStatus::Active->value)
+                ->orderBy('reference')
+                ->get()
+                ->filter(static fn (SepaMandate $mandate): bool => $mandate->isUsable())
+                ->values(),
         ]);
     }
 
@@ -94,6 +104,45 @@ class PaymentRunController extends Controller {
         }
 
         return redirect()->route('finance.payment-runs.show', $run)->with('status', __('sepa.run_created'));
+    }
+
+    /**
+     * Lastschrifteinzug anlegen (Vollscan 2026-09-15, `P9-34`). Der Dienst,
+     * der Dateibauer und die Vorlauffristen waren gebaut, aber nur über Tests
+     * erreichbar: keine Route, kein Formular. Damit blieb `pain.008` in der
+     * Anwendung unbenutzbar.
+     */
+    public function storeDirectDebit(Request $request): RedirectResponse {
+        abort_unless(Gate::allows(Permission::FinancePaymentRun->value), 403);
+
+        $data = $request->validate([
+            'bank_account' => ['required', 'string'],
+            'mandate' => ['required', 'string'],
+            'amount' => ['required', 'numeric', 'gt:0'],
+            'reference' => ['required', 'string', 'max:140'],
+            'execution_date' => ['nullable', 'date'],
+        ]);
+
+        $actor = $request->user();
+        abort_if($actor === null, 403);
+
+        $account = BankAccount::query()->findOrFail(Sqid::decodeOrNumeric(BankAccount::class, (string) $data['bank_account']));
+        $mandate = SepaMandate::query()->findOrFail(Sqid::decodeOrNumeric(SepaMandate::class, (string) $data['mandate']));
+
+        try {
+            $run = $this->runs->createDirectDebit(
+                $account,
+                $actor,
+                $mandate,
+                (float) $data['amount'],
+                (string) $data['reference'],
+                filled($data['execution_date'] ?? null) ? CarbonImmutable::parse((string) $data['execution_date']) : null,
+            );
+        } catch (RuntimeException $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
+        return redirect()->route('finance.payment-runs.show', $run)->with('status', __('sepa.direct_debit_created'));
     }
 
     /**

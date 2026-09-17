@@ -46,6 +46,12 @@ Route::get('/impressum', [\App\Http\Controllers\LegalPageController::class, 'imp
 Route::get('/datenschutz', [\App\Http\Controllers\LegalPageController::class, 'privacy'])->name('legal.privacy');
 Route::get('/barrierefreiheit', [\App\Http\Controllers\LegalPageController::class, 'accessibility'])->name('legal.accessibility');
 
+// Kiosk-Modus (MVP-800): Tablet als Stempelterminal, autorisiert über das
+// Gerätetoken im Pfad — ohne Anmeldung, gestempelt wird über api.terminal.ingest.
+Route::get('/kiosk/{token}', [\App\Http\Controllers\Attendance\KioskController::class, 'show'])
+    ->middleware('throttle:terminal-ingest')
+    ->name('kiosk.show');
+
 // CVD-Meldekanal nach RFC 9116: liegt in routes/well-known.php, bewusst OHNE
 // den web-Stack — er muss auch dann antworten, wenn Datenbank, Installation
 // oder Lizenz nicht in Ordnung sind.
@@ -381,6 +387,8 @@ Route::middleware('auth')->group(function () {
     // dort freigeschaltete User (is_new_system=true) bzw. Admins erreichbar.
     Route::middleware(['access.new', \App\Http\Middleware\EnforcePlanModules::class])->group(function () {
         Route::get('dashboard', [DashboardController::class, '__invoke'])->name('dashboard');
+        // Ziel nach dem Login (MVP-799): persönliche Wahl → Vorgabe je Rolle → Arbeitsliste.
+        Route::get('start', \App\Http\Controllers\StartPageController::class)->name('start');
 
         // ── Hinweisgeber: interne Fallbearbeitung (Phase 3) ─────────────────
         // Autorisierung pro Aktion ueber WhistleblowingCasePolicy (Permission
@@ -452,6 +460,8 @@ Route::middleware('auth')->group(function () {
             // ── MVP 2: Dienstleister-/AVV-Register (Art. 28) ─────────────────
             Route::get('dienstleister', [\App\Http\Controllers\Privacy\ProcessorController::class, 'index'])->name('processors.index');
             Route::get('dienstleister/neu', [\App\Http\Controllers\Privacy\ProcessorController::class, 'create'])->name('processors.create');
+            // Bearbeiten (MVP-798, Befund C1-08): update gab es, nur keinen Dialog.
+            Route::get('dienstleister/{processor}/bearbeiten', [\App\Http\Controllers\Privacy\ProcessorController::class, 'edit'])->name('processors.edit');
             Route::post('dienstleister', [\App\Http\Controllers\Privacy\ProcessorController::class, 'store'])->name('processors.store');
             Route::get('dienstleister/{processor}', [\App\Http\Controllers\Privacy\ProcessorController::class, 'show'])->name('processors.show');
             Route::put('dienstleister/{processor}', [\App\Http\Controllers\Privacy\ProcessorController::class, 'update'])->name('processors.update');
@@ -510,6 +520,12 @@ Route::middleware('auth')->group(function () {
 
             // Compliance-/Lueckenanalyse
             // Aufbewahrungs-Review (Restpunkt 66): Vorschläge sichten + bestätigen.
+            // Legal Hold (MVP-801): Sperrvermerke gegen Löschung und Anonymisierung.
+            Route::get('legal-hold', [\App\Http\Controllers\Privacy\LegalHoldController::class, 'index'])->name('legal-holds.index');
+            Route::get('legal-hold/neu', [\App\Http\Controllers\Privacy\LegalHoldController::class, 'create'])->name('legal-holds.create');
+            Route::post('legal-hold', [\App\Http\Controllers\Privacy\LegalHoldController::class, 'store'])->name('legal-holds.store');
+            Route::get('legal-hold/{hold}/aufheben', [\App\Http\Controllers\Privacy\LegalHoldController::class, 'releaseDialog'])->name('legal-holds.release-dialog');
+            Route::post('legal-hold/{hold}/aufheben', [\App\Http\Controllers\Privacy\LegalHoldController::class, 'release'])->name('legal-holds.release');
             Route::get('aufbewahrung', [\App\Http\Controllers\Privacy\RetentionController::class, 'index'])->name('retention.index');
             Route::post('aufbewahrung/scan', [\App\Http\Controllers\Privacy\RetentionController::class, 'scan'])->name('retention.scan');
             Route::post('aufbewahrung/{proposal}', [\App\Http\Controllers\Privacy\RetentionController::class, 'decide'])->name('retention.decide');
@@ -933,6 +949,7 @@ Route::middleware('auth')->group(function () {
         // Presets + Modul-Checkliste, Recht organization.scope.manage.
         Route::get('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'index'])->name('admin.scope.index');
         Route::post('admin/scope', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'save'])->name('admin.scope.save');
+        Route::post('admin/scope/startseiten', [\App\Http\Controllers\Admin\ScopeAdminController::class, 'saveStartPages'])->name('admin.scope.startpages');
 
         // Arbeitsbereiche kuratieren (Feature 082, MVP-379): welche Fokus-
         // Ansichten die Org anbietet, Default + Umbenennung. Recht wie Scope.
@@ -1724,6 +1741,16 @@ Route::middleware('auth')->group(function () {
         Route::post('admin/terminals/toggle-status', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'toggleStatus'])->name('admin.terminals.toggle-status');
         Route::post('admin/terminals/badges', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storeBadge'])->name('admin.terminals.badges.store');
         Route::post('admin/terminals/badges/revoke', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'revokeBadge'])->name('admin.terminals.badges.revoke');
+        // Terminal-PIN statt Ausweis (MVP-803).
+        Route::get('admin/terminals/pins/create', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'createPin'])->name('admin.terminals.pins.create');
+        Route::post('admin/terminals/pins', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storePin'])->name('admin.terminals.pins.store');
+        Route::post('admin/terminals/pins/unlock', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'unlockPin'])->name('admin.terminals.pins.unlock');
+        Route::post('admin/terminals/pins/remove', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'removePin'])->name('admin.terminals.pins.remove');
+        // Check-in-Punkte für QR-Code/NFC-Aufkleber (MVP-800).
+        Route::get('admin/terminals/checkpoints/create', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'createCheckpoint'])->name('admin.terminals.checkpoints.create');
+        Route::post('admin/terminals/checkpoints', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'storeCheckpoint'])->name('admin.terminals.checkpoints.store');
+        Route::post('admin/terminals/checkpoints/toggle', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'toggleCheckpoint'])->name('admin.terminals.checkpoints.toggle');
+        Route::get('admin/terminals/checkpoints/{checkpoint}/qr', [\App\Http\Controllers\Admin\TerminalAdminController::class, 'checkpointQr'])->name('admin.terminals.checkpoints.qr');
 
         // ── Freie Mandanten-Dimensionen (Feature 103, MVP-514 P2) ───────────────
         // ── Gespeicherte Report-Ansichten (MVP-529) ─────────────────────────────
@@ -2025,6 +2052,7 @@ Route::middleware('auth')->group(function () {
             Route::post('{application}/bewertungen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addReview'])->name('reviews.store');
             Route::post('{application}/unterlagen', [\App\Http\Controllers\Applications\JobApplicationController::class, 'addDocument'])->name('documents.store');
             Route::post('{application}/entscheiden', [\App\Http\Controllers\Applications\JobApplicationController::class, 'decide'])->name('decide');
+            Route::get('{application}/unterlagen/{upload}', [\App\Http\Controllers\Applications\JobApplicationController::class, 'downloadUpload'])->name('uploads.download');
             Route::get('{application}/auskunft', [\App\Http\Controllers\Applications\JobApplicationController::class, 'export'])->name('export');
             Route::post('{application}/anonymisieren', [\App\Http\Controllers\Applications\JobApplicationController::class, 'anonymize'])->name('anonymize');
             Route::post('{application}/onboarding', [\App\Http\Controllers\Applications\JobApplicationController::class, 'createDraft'])->name('draft.store');
@@ -2644,6 +2672,7 @@ Route::middleware('auth')->group(function () {
             Route::get('vorschlag', [\App\Http\Controllers\Finance\PaymentRunController::class, 'proposals'])->name('proposals');
             Route::post('/', [\App\Http\Controllers\Finance\PaymentRunController::class, 'store'])->name('store');
             Route::post('vorschlag/{invoice}/iban-bestaetigen', [\App\Http\Controllers\Finance\PaymentRunController::class, 'confirmIban'])->name('proposals.confirm-iban');
+            Route::post('lastschrift', [\App\Http\Controllers\Finance\PaymentRunController::class, 'storeDirectDebit'])->name('direct-debit.store');
             Route::get('{run}', [\App\Http\Controllers\Finance\PaymentRunController::class, 'show'])->name('show');
             Route::post('{run}/freigeben', [\App\Http\Controllers\Finance\PaymentRunController::class, 'release'])->name('release');
             Route::post('{run}/export', [\App\Http\Controllers\Finance\PaymentRunController::class, 'export'])->name('export');
@@ -2887,6 +2916,9 @@ Route::middleware('auth')->group(function () {
         // Zwischen-Status Homeoffice/Dienstgang (Feature 103, MVP-532).
         Route::post('attendance/intermediate', [AttendanceController::class, 'intermediate'])->name('attendance.intermediate');
         Route::post('attendance/cancel', [AttendanceController::class, 'cancel'])->name('attendance.cancel');
+        // QR-/NFC-Check-in an Standort oder Fahrzeug (MVP-800).
+        Route::get('checkin/{token}', [\App\Http\Controllers\Attendance\CheckinController::class, 'show'])->name('checkin.show');
+        Route::post('checkin/{token}', [\App\Http\Controllers\Attendance\CheckinController::class, 'stamp'])->middleware('throttle:30,1')->name('checkin.stamp');
         Route::put('attendance/{attendance}', [AttendanceController::class, 'update'])->name('attendance.update');
         Route::delete('attendance/{attendance}', [AttendanceController::class, 'destroy'])->name('attendance.destroy');
 
@@ -2940,6 +2972,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('expenses/{expense}/buchungsbeleg', [ExpenseController::class, 'unlinkVoucher'])->name('expenses.unlink-voucher');
         // Aktiver Belegpush (Feature 106): Auslage → Einkaufsbeleg im führenden System.
         Route::post('expenses/{expense}/buchungsbeleg/push', [ExpenseController::class, 'pushVoucher'])->name('expenses.push-voucher');
+        // Korrektur per Gegenbeleg (MVP-802).
+        Route::post('expenses/{expense}/buchungsbeleg/korrektur', [ExpenseController::class, 'correct'])->name('expenses.correct');
         Route::put('expenses/{expense}', [ExpenseController::class, 'update'])->name('expenses.update');
         Route::delete('expenses/{expense}', [ExpenseController::class, 'destroy'])->name('expenses.destroy');
         Route::post('expenses/{expense}/submit', [ExpenseController::class, 'submit'])->name('expenses.submit');
@@ -3187,6 +3221,11 @@ Route::middleware('auth')->group(function () {
             Route::put('lti/plattformen/{platform}', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'updatePlatform'])->name('lti-registrations.platforms.update');
             Route::delete('lti/plattformen/{platform}', [\App\Http\Controllers\Learning\LearningLtiRegistrationController::class, 'destroyPlatform'])->name('lti-registrations.platforms.destroy');
 
+            // Kompetenzmatrix (MVP-798, Befund C3-03).
+            Route::get('kompetenzen', [\App\Http\Controllers\Learning\LearningCompetencyController::class, 'index'])->name('competencies.index');
+            Route::post('kompetenzen', [\App\Http\Controllers\Learning\LearningCompetencyController::class, 'store'])->name('competencies.store');
+            Route::post('kompetenzen/einschaetzung', [\App\Http\Controllers\Learning\LearningCompetencyController::class, 'assess'])->name('competencies.assess');
+            Route::post('kompetenzen/soll', [\App\Http\Controllers\Learning\LearningCompetencyController::class, 'storeRequirement'])->name('competencies.requirements.store');
             Route::get('lernpfade', [\App\Http\Controllers\Learning\LearningPathController::class, 'index'])->name('paths.index');
             Route::post('lernpfade', [\App\Http\Controllers\Learning\LearningPathController::class, 'store'])->name('paths.store');
             Route::post('lernpfade/zuweisen', [\App\Http\Controllers\Learning\LearningPathController::class, 'assignByRole'])->name('paths.assign-by-role');
@@ -3327,6 +3366,7 @@ Route::middleware('auth')->group(function () {
         Route::post('communication-notes/{note}/publish', [CommunicationNoteController::class, 'publish'])->name('communication-notes.publish');
         Route::post('communication-notes/{note}/confidential', [CommunicationNoteController::class, 'confidential'])->name('communication-notes.confidential');
         Route::post('communication-notes/{note}/followup-complete', [CommunicationNoteController::class, 'completeFollowup'])->name('communication-notes.followup-complete');
+        Route::post('communication-notes/{note}/convert-knowledge', [CommunicationNoteController::class, 'convertToKnowledge'])->name('communication-notes.convert-knowledge');
         Route::delete('communication-notes/{note}', [CommunicationNoteController::class, 'destroy'])->name('communication-notes.destroy');
 
         // ── Dokumentenmanagement (MVP-031) ─────────────────────────────────
@@ -3359,6 +3399,29 @@ Route::middleware('auth')->group(function () {
         Route::post('knowledge/{article}/links', [\App\Http\Controllers\KnowledgeArticleController::class, 'storeLink'])->name('knowledge.links.store');
         Route::delete('knowledge/{article}/links/{link}', [\App\Http\Controllers\KnowledgeArticleController::class, 'destroyLink'])->name('knowledge.links.destroy');
         Route::delete('knowledge/{article}', [\App\Http\Controllers\KnowledgeArticleController::class, 'destroy'])->name('knowledge.destroy');
+
+        // ── Sammlungen (MVP-809, Feature 155) ─ Kern: die Inhalte bringen ihr Tarifmodul selbst mit
+        // Einstieg „Wissen“ (MVP-813): Baum, Liste/Kacheln und Filter über alle Sammlungstypen.
+        Route::get('wissen', [\App\Http\Controllers\KnowledgeHubController::class, 'index'])->name('knowledge-hub.index');
+        // Einbahn-Übernahme aus Obsidian und OneNote (MVP-815).
+        Route::get('wissen/import', [\App\Http\Controllers\KnowledgeImportController::class, 'create'])->name('knowledge-imports.create');
+        Route::post('wissen/import/obsidian', [\App\Http\Controllers\KnowledgeImportController::class, 'storeObsidian'])->name('knowledge-imports.obsidian');
+        Route::post('wissen/import/onenote', [\App\Http\Controllers\KnowledgeImportController::class, 'storeOneNote'])->name('knowledge-imports.onenote');
+        Route::get('collections', [\App\Http\Controllers\ContentCollectionController::class, 'index'])->name('collections.index');
+        Route::get('collections/create', [\App\Http\Controllers\ContentCollectionController::class, 'create'])->name('collections.create');
+        Route::post('collections', [\App\Http\Controllers\ContentCollectionController::class, 'store'])->name('collections.store');
+        Route::get('collections/add', [\App\Http\Controllers\ContentCollectionController::class, 'addDialog'])->name('collections.add');
+        Route::post('collections/items', [\App\Http\Controllers\ContentCollectionController::class, 'storeItem'])->name('collections.items.store');
+        Route::post('collections/items/bulk', [\App\Http\Controllers\ContentCollectionController::class, 'storeItems'])->name('collections.items.bulk');
+        Route::get('collections/{collection}/edit', [\App\Http\Controllers\ContentCollectionController::class, 'edit'])->name('collections.edit');
+        Route::put('collections/{collection}', [\App\Http\Controllers\ContentCollectionController::class, 'update'])->name('collections.update');
+        Route::post('collections/{collection}/archive', [\App\Http\Controllers\ContentCollectionController::class, 'archive'])->name('collections.archive');
+        Route::post('collections/{collection}/restore', [\App\Http\Controllers\ContentCollectionController::class, 'restore'])->name('collections.restore');
+        Route::delete('collections/{collection}/items/{item}', [\App\Http\Controllers\ContentCollectionController::class, 'destroyItem'])->name('collections.items.destroy');
+        // Verweise (MVP-811): gesetzt von der Detailseite, gelöst in der Verweiskarte.
+        Route::get('references/create', [\App\Http\Controllers\ContentReferenceController::class, 'create'])->name('references.create');
+        Route::post('references', [\App\Http\Controllers\ContentReferenceController::class, 'store'])->name('references.store');
+        Route::delete('references/{reference}', [\App\Http\Controllers\ContentReferenceController::class, 'destroy'])->name('references.destroy');
 
         // ── Ideenlandkarten (Feature 054, MVP-104/105) ─ Gate ideas.* → module.ideas
         Route::get('ideas', [\App\Http\Controllers\IdeaMapController::class, 'index'])->name('ideas.index');
@@ -3495,6 +3558,7 @@ Route::middleware('auth')->group(function () {
         Route::post('procedure-runs/{run}/steps/{stepRun}/execute', [\App\Http\Controllers\ProcedureRunController::class, 'executeStep'])->name('procedure-runs.steps.execute');
         Route::post('procedure-runs/{run}/steps/{stepRun}/wait/begin', [\App\Http\Controllers\ProcedureRunController::class, 'beginWait'])->name('procedure-runs.steps.wait.begin');
         Route::post('procedure-runs/{run}/steps/{stepRun}/wait/continue', [\App\Http\Controllers\ProcedureRunController::class, 'continueWait'])->name('procedure-runs.steps.wait.continue');
+        Route::post('procedure-runs/{run}/steps/{stepRun}/abweichung', [\App\Http\Controllers\ProcedureRunController::class, 'recordDeviation'])->name('procedure-runs.steps.deviation');
         Route::post('procedure-runs/{run}/steps/{stepRun}/second-person', [\App\Http\Controllers\ProcedureRunController::class, 'signSecondPerson'])->name('procedure-runs.steps.second-person');
         Route::post('procedure-runs/{run}/complete', [\App\Http\Controllers\ProcedureRunController::class, 'complete'])->name('procedure-runs.complete');
         Route::post('procedure-runs/{run}/abort', [\App\Http\Controllers\ProcedureRunController::class, 'abort'])->name('procedure-runs.abort');
@@ -4324,6 +4388,7 @@ Route::middleware('auth')->group(function () {
         Route::get('org/members-import', [OrgMemberController::class, 'importForm'])->name('org.members.import.form');
         Route::post('org/members-import', [OrgMemberController::class, 'import'])->name('org.members.import');
         Route::get('org/members-import/template', [OrgMemberController::class, 'importTemplate'])->name('org.members.import.template');
+        Route::get('org/members/{member}/austritt', [OrgMemberController::class, 'offboardDialog'])->name('org.members.offboard.dialog');
         Route::post('org/members/{member}/austritt', [OrgMemberController::class, 'offboard'])->name('org.members.offboard');
         // Digitale Personalakte (Feature 141, MVP-708): eigener hrFile-Zugriffskreis
         // (DocumentPolicy ohne Admin-Bypass); Download/Versionen/Löschen über documents.*.

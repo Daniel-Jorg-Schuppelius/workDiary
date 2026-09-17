@@ -349,6 +349,45 @@ abstract class AbstractEntityMergeService {
                 ->where($idCol, $sourceId)
                 ->update([$idCol => $targetId]);
         }
+
+        $this->repointContentReferences($morph, $sourceId, $targetId);
+    }
+
+    /**
+     * Verweise (MVP-811) hängen an jeder Entität, als Quelle wie als Ziel —
+     * deshalb hier für alle Merges statt in jeder Morph-Liste. Verweise, die
+     * das Ziel schon trägt, fallen auf der Quelle weg (Unique `cref_unique`).
+     */
+    protected function repointContentReferences(string $morph, int $sourceId, int $targetId): void {
+        if (! Schema::hasTable('content_references')) {
+            return;
+        }
+
+        foreach (['source' => 'target', 'target' => 'source'] as $side => $other) {
+            $duplicates = DB::table('content_references as src')
+                ->join('content_references as tgt', function ($join) use ($side, $other, $morph, $targetId): void {
+                    $join->on("src.{$other}_type", '=', "tgt.{$other}_type")
+                        ->on("src.{$other}_id", '=', "tgt.{$other}_id")
+                        ->on('src.kind', '=', 'tgt.kind')
+                        ->where("tgt.{$side}_type", '=', $morph)
+                        ->where("tgt.{$side}_id", '=', $targetId);
+                })
+                ->where("src.{$side}_type", $morph)
+                ->where("src.{$side}_id", $sourceId)
+                ->pluck('src.id')
+                ->all();
+            if ($duplicates !== []) {
+                DB::table('content_references')->whereIn('id', $duplicates)->delete();
+            }
+
+            $moved = DB::table('content_references')
+                ->where("{$side}_type", $morph)
+                ->where("{$side}_id", $sourceId)
+                ->update(["{$side}_id" => $targetId]);
+            if ($moved > 0) {
+                $this->repointed['content_references'] = ($this->repointed['content_references'] ?? 0) + $moved;
+            }
+        }
     }
 
     protected function repointTaggables(string $morph, int $sourceId, int $targetId): void {

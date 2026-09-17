@@ -29,9 +29,11 @@ figure so the portfolio is kept complete.
 invoices, timeline and actions. "Refresh" reconciles the provider state for
 exactly this domain.
 
-**DNS:** The zone is read on demand; records can be replaced or modified
-selectively. After a write the system detects deviations (DNS conflict) and
-surfaces them instead of overwriting. MX/SRV records require a priority.
+**DNS:** The zone is read on demand. In the interface, individual records can be
+added and deleted; replacing the whole zone is deliberately not offered there,
+because a wrong full replacement deletes every record of the domain. After a
+write the system detects deviations (DNS conflict) and surfaces them instead of
+overwriting. MX/SRV records require a priority.
 
 **Registration:** Availability is checked before registering. A registration
 needs a customer, an owner-contact handle, at least two nameservers and an

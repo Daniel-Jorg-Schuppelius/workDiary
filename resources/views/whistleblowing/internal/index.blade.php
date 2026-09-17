@@ -27,15 +27,29 @@
                 </tr>
             </x-slot:head>
             @forelse ($cases as $case)
+                @php $showMeta = in_array((int) $case->id, $metadataVisible ?? [], true); @endphp
                 <tr class="hover">
                     <td>
                         <a class="link" href="{{ route('whistleblowing.internal.show', $case) }}">
                             {{ $case->case_number }}
                         </a>
                     </td>
-                    <td>{{ __('whistleblowing.category.' . $case->category->value) }}</td>
+                    {{-- Kategorie/Priorität erst nach Zuweisung (MVP-802, Entscheid P13-26). --}}
+                    <td>
+                        @if ($showMeta)
+                            {{ __('whistleblowing.category.' . $case->category->value) }}
+                        @else
+                            <span class="text-muted" title="{{ __('Sichtbar nach Zuweisung') }}">—</span>
+                        @endif
+                    </td>
                     <td>{{ __('whistleblowing.status.' . $case->status->value) }}</td>
-                    <td>{{ __('whistleblowing.priority.' . $case->priority->value) }}</td>
+                    <td>
+                        @if ($showMeta)
+                            {{ __('whistleblowing.priority.' . $case->priority->value) }}
+                        @else
+                            <span class="text-muted" title="{{ __('Sichtbar nach Zuweisung') }}">—</span>
+                        @endif
+                    </td>
                     <td>{{ optional($case->acknowledgement_due_at)->format('d.m.Y') }}</td>
                     <td>{{ optional($case->feedback_due_at)->format('d.m.Y') }}</td>
                 </tr>

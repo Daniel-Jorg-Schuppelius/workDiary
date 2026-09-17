@@ -32,8 +32,10 @@ class TerminalIngestController extends Controller {
         description: 'Auth über Gerätetoken im Pfad.',
         tags: ['Ingest'],
         parameters: [new OA\Parameter(name: 'token', in: 'path', required: true, description: 'Gerätetoken des Terminals', schema: new OA\Schema(type: 'string'))],
-        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(required: ['badge_uid'], properties: [
+        requestBody: new OA\RequestBody(required: true, content: new OA\JsonContent(properties: [
             new OA\Property(property: 'badge_uid', type: 'string', description: 'Badge-Kennung (Alias: badge, credential)'),
+            new OA\Property(property: 'personnel_number', type: 'string', nullable: true, description: 'Personalnummer — mit pin statt badge_uid (MVP-803)'),
+            new OA\Property(property: 'pin', type: 'string', nullable: true, description: 'Terminal-PIN (4–8 Ziffern); nach 5 Fehlversuchen 15 Minuten gesperrt'),
             new OA\Property(property: 'event', type: 'string', default: 'toggle'),
             new OA\Property(property: 'event_type', type: 'string', enum: ['work', 'break', 'homeoffice', 'errand'], default: 'work'),
             new OA\Property(property: 'occurred_at', type: 'string', format: 'date-time', nullable: true),
@@ -78,7 +80,11 @@ class TerminalIngestController extends Controller {
         // MVP-516: `credential` als Alias (herstellerneutrale Terminals senden
         // die Kennung teils unter diesem Namen, vgl. Feature 103).
         $badgeUid = trim((string) ($request->input('badge_uid') ?? $request->input('badge') ?? $request->input('credential') ?? ''));
-        if ($badgeUid === '') {
+        // MVP-803: Personalnummer + PIN als Ersatz für einen vergessenen Ausweis.
+        $personnelNumber = trim((string) $request->input('personnel_number', ''));
+        $pin = (string) $request->input('pin', '');
+        $usesPin = $badgeUid === '' && $personnelNumber !== '' && $pin !== '';
+        if ($badgeUid === '' && ! $usesPin) {
             return response()->json(['status' => 'missing_badge'], 422);
         }
 
@@ -94,15 +100,16 @@ class TerminalIngestController extends Controller {
             ? (int) $request->input('queued')
             : null;
 
-        $result = $service->stamp(
-            $terminal,
-            $badgeUid,
+        $arguments = [
             (string) ($request->input('event') ?? 'toggle'),
             $request->has('occurred_at') ? (string) $request->input('occurred_at') : null,
             $request->has('event_id') ? (string) $request->input('event_id') : null,
             $eventType,
             $queued,
-        );
+        ];
+        $result = $usesPin
+            ? $service->stampWithPin($terminal, $personnelNumber, $pin, ...$arguments)
+            : $service->stamp($terminal, $badgeUid, ...$arguments);
         $status = $result['status'];
 
         // Manipulationsversuch nachvollziehbar machen (ohne Klartext-Kennung).

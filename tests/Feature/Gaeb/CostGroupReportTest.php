@@ -256,6 +256,48 @@ final class CostGroupReportTest extends TestCase {
         ), 'Die herstellerfreie Zeilenart wurde nicht gemeldet.');
     }
 
+    /**
+     * Vollscan 2026-09-15 (`P9-10`): gemeldet wurden bisher nur die
+     * herstellerfreien Sätze 70–89. Lose (Zeilenart 10), Zuschläge und die
+     * vertraglichen Regelungen fielen still durch — der Leser deutet sie
+     * weiterhin nicht, aber der Import verschweigt sie nicht mehr. Die beiden
+     * Fälle sind verschieden zu melden: „herstellerfrei" wäre für ein Los
+     * schlicht falsch.
+     */
+    public function test_gaeb90_reports_unhandled_standard_records_apart_from_vendor_ones(): void {
+        $lines = [
+            str_pad('00', 10) . '83' . str_pad('Musterprojekt', 50) . '1122PPPPI90',
+            '10Los 1 Erdarbeiten',
+            '211111  10 NNN         00000051300m2  ',
+            '25Boden loesen',
+            '751111  10 KG310',
+            '99                                                                   00001',
+        ];
+        $content = '';
+        foreach ($lines as $i => $body) {
+            $content .= str_pad(substr($body, 0, 74), 74) . str_pad((string) ($i + 1), 6, '0', STR_PAD_LEFT) . "\r\n";
+        }
+
+        $import = app(\App\Services\Gaeb\GaebImportService::class)
+            ->import($content, 'test.d83', $this->organization->id, ['created_by' => $this->admin->id]);
+
+        $warnings = $import->preflight['warnings'] ?? [];
+
+        $lot = array_values(array_filter(
+            $warnings,
+            static fn (string $warning): bool => str_contains($warning, 'Zeilenart 10'),
+        ));
+        $this->assertNotEmpty($lot, 'Der Los-Satz wurde nicht gemeldet.');
+        $this->assertStringNotContainsString('herstellerfrei', $lot[0]);
+
+        $vendor = array_values(array_filter(
+            $warnings,
+            static fn (string $warning): bool => str_contains($warning, 'Zeilenart 75'),
+        ));
+        $this->assertNotEmpty($vendor, 'Der herstellerfreie Satz wurde nicht gemeldet.');
+        $this->assertStringContainsString('herstellerfrei', $vendor[0]);
+    }
+
     // ── Kostenverfolgung (MVP-643) ───────────────────────────────────────
 
     /**

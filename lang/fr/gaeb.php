@@ -135,6 +135,7 @@ return [
         'no_items' => 'Le fichier ne contient aucun poste.',
         'markup_with_cost_approach' => 'Le poste :ref est un poste de majoration et porte pourtant des approches de coûts — la majoration se calcule sur d’autres postes, l’argent serait compté deux fois.',
         'vendor_record_type' => 'Le fichier contient :count enregistrements du type propriétaire :type — leur contenu n’est pas exploité (certains systèmes y placent les groupes de coûts).',
+        'unhandled_record_type' => 'Le fichier contient :count enregistrements du type :type — ce type n’est pas lu (par exemple lots, majorations ou clauses contractuelles) ; son contenu est absent de l’import.',
         'item_missing_ref' => 'Poste sans numéro d’ordre : :text',
         'duplicate_ref' => 'Le numéro d’ordre :ref apparaît plusieurs fois.',
         'missing_quantity' => 'Le poste :ref n’a pas de quantité.',

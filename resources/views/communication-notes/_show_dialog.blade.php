@@ -27,6 +27,9 @@
                 <x-status-badge :tone="$note->visibility->tone()">{{ $note->visibility->label() }}</x-status-badge>
             @endif
             <span class="text-muted">{{ $note->occurred_at->fdatetime() }}</span>
+            @foreach ($note->tags as $tag)
+                <x-tag-badge :tag="$tag" />
+            @endforeach
         </div>
 
         <dl class="grid grid-cols-1 gap-x-4 gap-y-1 sm:grid-cols-[auto_1fr]">
@@ -80,11 +83,26 @@
             </div>
         @endif
 
-        @can('update', $note)
-            <div class="flex justify-end">
+        {{-- Herkunft übernommener Notizen (MVP-815). --}}
+        <x-import-origin :subject="$note" />
+
+        {{-- Verweise und Rückverweise (MVP-811). --}}
+        <x-content-references :subject="$note" />
+
+        <div class="flex flex-wrap justify-end gap-2">
+            {{-- Umwandeln (MVP-813): Entwurf im Wissensarchiv mit Herkunftsverweis; vertrauliche Notizen nicht. --}}
+            @if (! $note->confidential
+                && app(\App\Services\Licensing\FeatureFlagResolver::class)->isEnabled('module.knowledge')
+                && \Illuminate\Support\Facades\Gate::allows('create', \App\Models\KnowledgeArticle::class))
+                <x-action-form :action="route('communication-notes.convert-knowledge', $note)">
+                    <x-icon-btn icon="school" tone="outline" size="sm" type="submit" show-label>{{ __('communication.convert.action') }}</x-icon-btn>
+                </x-action-form>
+            @endif
+            <x-collection-add-button :item="$note" />
+            @can('update', $note)
                 <x-icon-btn icon="edit" tone="outline" size="sm" data-entry-modal-trigger
                             :href="route('communication-notes.edit', $note)" show-label>{{ __('communication.action.edit') }}</x-icon-btn>
-            </div>
-        @endcan
+            @endcan
+        </div>
     </div>
 </x-modal>

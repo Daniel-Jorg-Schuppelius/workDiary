@@ -170,6 +170,7 @@ return [
             'edit_item' => 'Modifica pericolo',
             'create_instruction' => 'Registra formazione',
             'sign' => 'Conferma partecipazione',
+            'sign_drawn' => 'Conferma con firma',
             'create_checkup' => 'Registra visita',
         ],
         'filter' => [
@@ -204,6 +205,7 @@ return [
             'delete_instruction' => 'Eliminare la formazione?',
             'delete_checkup' => 'Eliminare la voce della visita?',
             'sign' => 'Confermare ora la partecipazione (vincolante)?',
+            'sign_drawn_hint' => 'Firmi nel campo. L\'invio conferma la partecipazione in modo vincolante.',
         ],
         'flash' => [
             'assessment_created' => 'Valutazione dei rischi creata.',
@@ -229,6 +231,7 @@ return [
             'after_pair_incomplete' => 'Rischio dopo la misura: inserire gravità e probabilità insieme.',
             'sign_only_self' => 'Solo la persona registrata può confermare la propria partecipazione.',
             'already_signed' => 'La partecipazione è già confermata.',
+            'signature_invalid' => 'Impossibile leggere la firma. Firmi di nuovo.',
             'delete_with_signatures' => 'Le formazioni con prove confermate non possono essere eliminate.',
         ],
         'status_summary' => ':signed di :total confermati',

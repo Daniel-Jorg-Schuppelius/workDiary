@@ -10,7 +10,7 @@
 
 namespace App\Models\Learning;
 
-use App\Enums\Learning\LearningUnitKind;
+use App\Enums\Learning\{LearningProgressStatus, LearningUnitKind};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use App\Models\Event;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
@@ -170,11 +170,57 @@ class LearningUnit extends Model {
     /**
      * Die Sperre selbst — an jeder Abschlussstelle geprüft, nicht nur in der
      * Ansicht (Player, Externe, Portal, Offline-Sync, Prüfung, Abgabe).
+     *
+     * @param  list<int>|null  $completedUnitIds  bereits bekannte abgeschlossene Einheiten (spart eine Abfrage)
      */
-    public function isReleasedFor(LearningEnrollment $enrollment, ?Carbon $now = null): bool {
+    public function isReleasedFor(LearningEnrollment $enrollment, ?Carbon $now = null, ?array $completedUnitIds = null): bool {
         $date = $this->releaseDateFor($enrollment);
+        if ($date !== null && $date->gt(($now ?? Carbon::now())->copy()->startOfDay())) {
+            return false;
+        }
 
-        return $date === null || $date->lte(($now ?? Carbon::now())->copy()->startOfDay());
+        return ! $this->isBlockedBySequenceFor($enrollment, $completedUnitIds);
+    }
+
+    /**
+     * Lineare Kurse (`sequential`, MVP-798 / Befund C3-13): Das Kennzeichen wurde
+     * gespeichert und exportiert, aber nirgends durchgesetzt. Offen ist eine
+     * Einheit erst, wenn ihr unmittelbarer Vorgänger (Reihenfolge `position`,
+     * wie in den Ansichten) abgeschlossen ist — die Kette trägt sich selbst.
+     *
+     * Bewusst ohne Zwischenspeicher: Der Offline-Abgleich schließt mehrere
+     * Einheiten in einem Request ab, ein Cache sperrte dort fälschlich. Ansichten
+     * mit fertiger Liste reichen sie herein und sparen die Abfrage.
+     *
+     * @param  list<int>|null  $completedUnitIds
+     */
+    public function isBlockedBySequenceFor(LearningEnrollment $enrollment, ?array $completedUnitIds = null): bool {
+        $course = $enrollment->course;
+        if (! $course instanceof LearningCourse || ! $course->sequential) {
+            return false;
+        }
+
+        $predecessorId = null;
+        $found = false;
+        foreach ($course->units as $unit) {
+            if ((int) $unit->id === (int) $this->id) {
+                $found = true;
+                break;
+            }
+            $predecessorId = (int) $unit->id;
+        }
+        if (! $found || $predecessorId === null) {
+            return false;
+        }
+
+        if ($completedUnitIds !== null) {
+            return ! in_array($predecessorId, array_map('intval', $completedUnitIds), true);
+        }
+
+        return ! $enrollment->progress()
+            ->where('learning_unit_id', $predecessorId)
+            ->where('status', LearningProgressStatus::Completed)
+            ->exists();
     }
 
     /** Mindestverweildauer in Sekunden (`completion_rule.min_seconds`), 0 = keine. */

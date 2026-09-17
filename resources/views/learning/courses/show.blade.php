@@ -20,6 +20,7 @@
                         :badge="$course->status->label()"
                         :badgeTone="$course->status->tone()">
             <x-slot:actions>
+                <x-collection-add-button :item="$course" />
                 @if ($aiOutline ?? false)
                     <x-icon-btn icon="auto_awesome" tone="outline" size="sm"
                                 data-entry-modal-trigger
@@ -392,5 +393,8 @@
             <p class="mt-2 text-xs text-muted">{{ __('learning.help.translate') }}</p>
         </form>
     </x-card>
+
+    {{-- Verweise und Rückverweise (MVP-811). --}}
+    <x-content-references :subject="$course" />
 </x-page-shell>
 @endsection

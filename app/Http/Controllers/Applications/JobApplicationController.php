@@ -95,7 +95,9 @@ class JobApplicationController extends Controller {
 
     public function show(JobApplication $application): View {
         Gate::authorize('view', $application);
-        $application->load(['requisition', 'posting', 'documents.document', 'interviews.interviewer', 'reviews.reviewer', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals', 'employeeDraft', 'responsible']);
+        // `uploads` sind die ueber den oeffentlichen Karrierebereich
+        // eingereichten Unterlagen; sie blieben bis `MVP-795` unerreichbar.
+        $application->load(['requisition', 'posting', 'documents.document', 'uploads', 'interviews.interviewer', 'reviews.reviewer', 'negotiations.versions', 'negotiations.reviewItems', 'negotiations.approvals', 'employeeDraft', 'responsible']);
 
         return view('applications.recruiting.applications.show', [
             'application' => $application,
@@ -220,6 +222,30 @@ class JobApplicationController extends Controller {
     }
 
     /** Auskunft/Export (Art. 15 DSGVO): strukturierte JSON-Kopie. */
+    /**
+     * Ausgabe einer eingereichten Bewerbungsunterlage (Vollscan `P6-46`).
+     * Muster wie beim Hinweisgeber-Anhang: Fachrecht, Zugehoerigkeit und
+     * Quarantaene-Gate, danach ein Download ohne aktive Inhalte.
+     */
+    public function downloadUpload(JobApplication $application, \App\Models\Applications\JobApplicationUpload $upload): SymfonyResponse {
+        Gate::authorize('view', $application);
+        abort_unless((int) $upload->job_application_id === (int) $application->getKey(), 404);
+        abort_unless($upload->isReleased(), 403);
+
+        $disk = \Illuminate\Support\Facades\Storage::disk((string) $upload->storage_disk);
+        abort_unless($disk->exists((string) $upload->storage_key), 404);
+
+        $name = str_replace(["\r", "\n", '"', '/', '\\'], '', basename((string) $upload->original_name));
+        $name = trim($name) !== '' ? $name : 'unterlage';
+        $application->audit('recruiting.upload_downloaded', ['upload_id' => $upload->id]);
+
+        return $disk->download((string) $upload->storage_key, $name, [
+            'Content-Type' => (string) ($upload->mime ?: 'application/octet-stream'),
+            'X-Content-Type-Options' => 'nosniff',
+            'Content-Security-Policy' => "default-src 'none'",
+        ]);
+    }
+
     public function export(JobApplication $application): SymfonyResponse {
         Gate::authorize('privacy', $application);
         $application->load(['requisition', 'interviews', 'documents']);

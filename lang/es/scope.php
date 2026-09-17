@@ -107,6 +107,12 @@ return [
         'configured_at' => 'Última configuración: :date',
         'not_licensed_hint' => 'No incluido en el plan actual; ampliable mediante la gestión de licencias.',
     ],
+    'startpages' => [
+        'heading' => 'Página de inicio por rol',
+        'hint' => 'Adónde llega una persona tras iniciar sesión. Su propia elección en el perfil tiene prioridad. Con varios roles se aplica el primero de este orden que tenga una página asignada. Una página que la persona no puede abrir se omite.',
+        'default' => 'Predeterminada',
+        'saved' => 'Páginas de inicio guardadas.',
+    ],
     'flash' => [
         'saved' => 'Alcance funcional guardado (:disabled desactivados, :enabled activados). No se eliminó ningún dato.',
         'no_recommendation' => 'No hay recomendación de perfil sectorial para esta organización.',

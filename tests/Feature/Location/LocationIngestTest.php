@@ -76,6 +76,33 @@ class LocationIngestTest extends TestCase {
         ];
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-13 (`api-5`): Der Eingang nahm beliebig viele
+     * Punkte je Anfrage an — ein Gerät konnte die Datenbank in einem Aufruf
+     * vollschreiben. Die Obergrenze **verwirft** den Rest, sie lehnt nicht ab:
+     * ein Offline-Puffer soll nicht am Stück scheitern.
+     */
+    public function test_ingest_caps_the_points_per_request_without_rejecting(): void {
+        $points = [];
+        for ($i = 0; $i <= LocationController::MAX_POINTS_PER_REQUEST; $i++) {
+            $points[] = [
+                'lat' => self::LAT + 0.0001,
+                'lng' => self::LNG,
+                'acc' => 10,
+                'recorded_at' => now()->setDate(2026, 6, 29)->setTime(8, 0)->addSeconds($i)->toIso8601String(),
+            ];
+        }
+        $this->assertCount(LocationController::MAX_POINTS_PER_REQUEST + 1, $points);
+
+        $this->postJson("/api/location/ingest/{$this->token}", ['points' => $points])->assertOk();
+
+        $this->assertSame(
+            LocationController::MAX_POINTS_PER_REQUEST,
+            LocationPoint::query()->count(),
+            'Der Eingang schreibt mehr Punkte, als die Obergrenze erlaubt.',
+        );
+    }
+
     public function test_invalid_token_is_rejected(): void {
         $this->postJson('/api/location/ingest/totallybogus', ['points' => $this->track()])
             ->assertStatus(401);

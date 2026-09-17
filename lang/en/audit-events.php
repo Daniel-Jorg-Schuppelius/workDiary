@@ -35,6 +35,10 @@ return [
     'incomingEInvoice' => [
         'ibanConfirmed' => 'Deviating invoice IBAN confirmed',
     ],
+    'legal_hold' => [
+        'placed' => 'Legal hold placed',
+        'released' => 'Legal hold released',
+    ],
     'paymentRun' => [
         'released' => 'Payment run released',
         'exported' => 'SEPA file created',
@@ -52,6 +56,8 @@ return [
         'adopted' => 'Material usage adopted as a component',
     ],
     'expense' => [
+        'corrected' => 'Expense corrected with counter voucher',
+        'created_as_correction' => 'Expense created as correction',
         'scanned' => 'Expense created from scanned receipt',
         'voucher_pushed' => 'Expense pushed to accounting as a voucher',
         'voucher_linked' => 'Expense linked to accounting voucher',
@@ -200,7 +206,13 @@ return [
         'disconnected' => 'Cloud document intake disconnected',
         'folderSelected' => 'Cloud intake folder selected',
     ],
+    'collection' => [
+        'imported' => 'Content imported into collection',
+        'item_added' => 'Item added to collection',
+        'item_removed' => 'Item removed from collection',
+    ],
     'communication' => [
+        'converted' => 'Note converted to knowledge article',
         'confidential' => [
             'set' => 'Communication marked confidential',
             'unset' => 'Confidentiality removed',
@@ -220,6 +232,10 @@ return [
             'reopened' => 'Violation recurred',
             'resolved' => 'Violation resolved',
         ],
+    ],
+    'content_reference' => [
+        'added' => 'Reference added',
+        'removed' => 'Reference removed',
     ],
     'contract' => [
         'activated' => 'Contract activated',
@@ -546,6 +562,10 @@ return [
         'settings_saved' => 'Microsoft 365 mail settings saved',
         'test_sent' => 'Microsoft 365 test mail sent',
     ],
+    'msgraph_onenote' => [
+        'connected' => 'OneNote connected',
+        'disconnected' => 'OneNote disconnected',
+    ],
     'msgraph_tasks' => [
         'link_removed' => 'Task list link removed',
         'link_saved' => 'Task list link saved',
@@ -705,6 +725,7 @@ return [
         'posting_published' => 'Job posting published',
         'public_application_received' => 'Public application received',
         'requisition_created' => 'Job requisition created',
+        'upload_downloaded' => 'Application document downloaded',
     ],
     'render_profile_activated' => 'Render profile activated',
     'rental' => [
@@ -895,6 +916,13 @@ return [
         'transferred' => 'Tender transferred',
     ],
     'terminal' => [
+        'pin_set' => 'Terminal PIN set',
+        'pin_removed' => 'Terminal PIN removed',
+        'pin_unlocked' => 'Terminal PIN unlocked',
+        'pin_locked' => 'Terminal PIN locked after failed attempts',
+        'checkpoint_created' => 'Check-in point created',
+        'checkpoint_enabled' => 'Check-in point enabled',
+        'checkpoint_disabled' => 'Check-in point disabled',
         'badge_assigned' => 'Badge assigned',
         'badge_revoked' => 'Badge revoked',
         'deactivated' => 'Terminal deactivated',

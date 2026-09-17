@@ -62,6 +62,9 @@
                             @foreach ($member->roles as $role)
                                 <x-status-badge size="sm" outline>{{ $role->name }}</x-status-badge>
                             @endforeach
+                            @if (in_array($member->id, $heldUserIds ?? [], true))
+                                <x-status-badge size="sm" tone="error">{{ __('Legal Hold') }}</x-status-badge>
+                            @endif
                             @if ($member->isDeactivated())
                                 <x-status-badge size="sm" tone="error" outline>{{ __('ausgeschieden') }}</x-status-badge>
                             @elseif ($member->left_at !== null)
@@ -96,12 +99,8 @@
                                 @endif
                                 @if (($canManageMembers ?? true) && ! $member->isDeactivated() && $member->id !== auth()->id())
                                     {{-- Feature 126 (H1/E4): Regelweg Austritt — deaktiviert, Nachweise bleiben. --}}
-                                    <x-action-form :action="route('org.members.offboard', $member)" method="POST"
-                                          :confirm="__('Austritt von :name zum heutigen Tag vollziehen? Das Konto wird deaktiviert, Nachweise bleiben erhalten.', ['name' => $member->name])"
-                                          :confirm-label="__('Austritt')">
-                                        <input type="hidden" name="left_at" value="{{ now()->toDateString() }}">
-                                        <x-icon-btn icon="logout" tone="warning" type="submit" :label="__('Austritt')" />
-                                    </x-action-form>
+                                    <x-icon-btn icon="logout" tone="warning" data-entry-modal-trigger
+                                                :href="route('org.members.offboard.dialog', $member)" :label="__('Austritt')" />
                                 @endif
                                 @if ($canManageMembers ?? true)
                                     <x-action-form :action="route('org.members.destroy', $member)" method="DELETE"

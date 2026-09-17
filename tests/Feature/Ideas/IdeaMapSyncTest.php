@@ -10,7 +10,7 @@
 
 namespace Tests\Feature\Ideas;
 
-use App\Models\{IdeaMap, IdeaNode, IdeaNodeLink, IdeaNodeReference, User};
+use App\Models\{ContentReference, IdeaMap, IdeaNode, IdeaNodeLink, User};
 use App\Services\Ideas\{IdeaMapService, IdeaNodeService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -125,9 +125,10 @@ final class IdeaMapSyncTest extends TestCase {
 
     public function test_sqid_identity_is_stable_so_references_survive(): void {
         $node = $this->nodes->create($this->map, $this->root, 'Überführbar');
-        $ref = IdeaNodeReference::create([
+        $ref = ContentReference::create([
             'organization_id' => $this->organization->id,
-            'idea_node_id' => $node->id,
+            'source_type' => $node->getMorphClass(),
+            'source_id' => $node->id,
             'target_type' => User::class,
             'target_id' => $this->owner->id,
             'kind' => 'linked',
@@ -138,7 +139,7 @@ final class IdeaMapSyncTest extends TestCase {
         ]))->assertOk();
 
         // Selbe id (kein Delete+Recreate) → Referenz zeigt weiter auf den Knoten.
-        $this->assertDatabaseHas('idea_node_references', ['id' => $ref->id, 'idea_node_id' => $node->id]);
+        $this->assertDatabaseHas('content_references', ['id' => $ref->id, 'source_id' => $node->id]);
         $this->assertSame('Umbenannt', $node->refresh()->title);
     }
 

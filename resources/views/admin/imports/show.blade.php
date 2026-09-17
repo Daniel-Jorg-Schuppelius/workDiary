@@ -44,30 +44,30 @@
 
     {{-- Status-Kacheln --}}
     <div class="grid grid-cols-2 md:grid-cols-6 gap-3">
-        <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
+        <x-card padding="p-3" class="flex flex-col gap-2">
             <div class="text-xs text-muted">{{ __('Status') }}</div>
             <div class="font-semibold">{{ $run->state->label() }}</div>
-        </div></div>
-        <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
+        </x-card>
+        <x-card padding="p-3" class="flex flex-col gap-2">
             <div class="text-xs text-muted">{{ __('Zeilen') }}</div>
             <div class="font-semibold tabular-nums">{{ $run->rows_total }}</div>
-        </div></div>
-        <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
+        </x-card>
+        <x-card padding="p-3" class="flex flex-col gap-2">
             <div class="text-xs text-muted">{{ __('Neu') }}</div>
             <div class="font-semibold tabular-nums text-success">{{ $run->rows_created }}</div>
-        </div></div>
-        <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
+        </x-card>
+        <x-card padding="p-3" class="flex flex-col gap-2">
             <div class="text-xs text-muted">{{ __('Aktualisiert') }}</div>
             <div class="font-semibold tabular-nums">{{ $run->rows_updated }}</div>
-        </div></div>
-        <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
+        </x-card>
+        <x-card padding="p-3" class="flex flex-col gap-2">
             <div class="text-xs text-muted">{{ __('Übersprungen') }}</div>
             <div class="font-semibold tabular-nums">{{ $run->rows_skipped }}</div>
-        </div></div>
-        <div class="card bg-base-100 shadow-sm"><div class="card-body p-3">
+        </x-card>
+        <x-card padding="p-3" class="flex flex-col gap-2">
             <div class="text-xs text-muted">{{ __('Fehler') }}</div>
             <div class="font-semibold tabular-nums {{ $run->rows_failed > 0 ? 'text-error' : '' }}">{{ $run->rows_failed }}</div>
-        </div></div>
+        </x-card>
     </div>
 
     {{-- Hinweis: Fernwartungs-Sitzungen ohne Geräte-Zuordnung landen in der Inbox --}}
@@ -198,63 +198,59 @@
 
     {{-- Vorschau --}}
     @if (! empty($run->preview))
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h3 class="font-semibold">{{ __('Vorschau (erste :n Zeilen)', ['n' => count($run->preview)]) }}</h3>
-                <x-table bare>
-                    <x-slot:head>
-                            <tr>
-                                <th>#</th>
-                                @foreach (($run->preview[0]['data'] ?? []) as $col => $_)
-                                    <th>{{ $col }}</th>
-                                @endforeach
-                                <th>{{ __('Hinweise') }}</th>
-                            </tr>
-                    </x-slot:head>
-                            @foreach ($run->preview as $entry)
-                                <tr class="{{ ! empty($entry['issues']) ? 'bg-error/10' : '' }}">
-                                    <td class="font-mono text-xs">{{ $entry['row'] }}</td>
-                                    @foreach ($entry['data'] as $col => $val)
-                                        <td class="text-xs">{{ \Illuminate\Support\Str::limit((string) $val, 40) }}</td>
-                                    @endforeach
-                                    <td class="text-xs">
-                                        @foreach ($entry['issues'] ?? [] as $iss)
-                                            <div><x-status-badge tone="error" size="xs">{{ $iss['code'] }}</x-status-badge> {{ $iss['field'] }}: {{ $iss['message'] }}</div>
-                                        @endforeach
-                                    </td>
-                                </tr>
+        <x-card class="flex flex-col gap-2">
+            <h3 class="font-semibold">{{ __('Vorschau (erste :n Zeilen)', ['n' => count($run->preview)]) }}</h3>
+            <x-table bare>
+                <x-slot:head>
+                        <tr>
+                            <th>#</th>
+                            @foreach (($run->preview[0]['data'] ?? []) as $col => $_)
+                                <th>{{ $col }}</th>
                             @endforeach
-                </x-table>
-            </div>
-        </div>
+                            <th>{{ __('Hinweise') }}</th>
+                        </tr>
+                </x-slot:head>
+                        @foreach ($run->preview as $entry)
+                            <tr class="{{ ! empty($entry['issues']) ? 'bg-error/10' : '' }}">
+                                <td class="font-mono text-xs">{{ $entry['row'] }}</td>
+                                @foreach ($entry['data'] as $col => $val)
+                                    <td class="text-xs">{{ \Illuminate\Support\Str::limit((string) $val, 40) }}</td>
+                                @endforeach
+                                <td class="text-xs">
+                                    @foreach ($entry['issues'] ?? [] as $iss)
+                                        <div><x-status-badge tone="error" size="xs">{{ $iss['code'] }}</x-status-badge> {{ $iss['field'] }}: {{ $iss['message'] }}</div>
+                                    @endforeach
+                                </td>
+                            </tr>
+                        @endforeach
+            </x-table>
+        </x-card>
     @endif
 
     {{-- Fehlerliste --}}
     @if ($errors->total() > 0)
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body">
-                <h3 class="font-semibold">{{ __('Fehler (:n)', ['n' => $errors->total()]) }}</h3>
-                <x-table table-sort="client">
-                    <x-slot:head>
-                        <tr>
-                            <x-table.th sort type="number">{{ __('Zeile') }}</x-table.th>
-                            <x-table.th sort type="string">{{ __('Feld') }}</x-table.th>
-                            <x-table.th sort type="string">{{ __('Code') }}</x-table.th>
-                            <x-table.th sort type="string">{{ __('Meldung') }}</x-table.th>
-                        </tr>
-                    </x-slot:head>
-                    @foreach ($errors as $err)
-                        <tr>
-                            <td class="font-mono text-xs">{{ $err->row_number }}</td>
-                            <td class="font-mono text-xs">{{ $err->field }}</td>
-                            <td><x-status-badge tone="error" size="xs">{{ $err->code->value }}</x-status-badge></td>
-                            <td class="text-sm">{{ $err->message }}</td>
-                        </tr>
-                    @endforeach
-                </x-table>
-                <x-pagination :paginator="$errors" standing />
-            </div>
-        </div>
+        <x-card class="flex flex-col gap-2">
+            <h3 class="font-semibold">{{ __('Fehler (:n)', ['n' => $errors->total()]) }}</h3>
+            <x-table table-sort="client">
+                <x-slot:head>
+                    <tr>
+                        <x-table.th sort type="number">{{ __('Zeile') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Feld') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Code') }}</x-table.th>
+                        <x-table.th sort type="string">{{ __('Meldung') }}</x-table.th>
+                    </tr>
+                </x-slot:head>
+                @foreach ($errors as $err)
+                    <tr>
+                        <td class="font-mono text-xs">{{ $err->row_number }}</td>
+                        <td class="font-mono text-xs">{{ $err->field }}</td>
+                        <td><x-status-badge tone="error" size="xs">{{ $err->code->value }}</x-status-badge></td>
+                        <td class="text-sm">{{ $err->message }}</td>
+                    </tr>
+                @endforeach
+            </x-table>
+            <x-pagination :paginator="$errors" standing />
+        </x-card>
     @endif
 </x-index-page>
 @endsection

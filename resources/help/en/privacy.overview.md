@@ -9,6 +9,7 @@ related:
     - documents.manage
     - isms.overview
     - glossary.core
+    - privacy.portal
 ---
 
 The data protection module supports your organization's day-to-day
@@ -26,7 +27,8 @@ privacy work. It is under active development – the building blocks:
   documented decision.
 - **TOM**: technical and organizational measures.
 - **Privacy incidents**: recording with the 72-hour notification duty
-  in mind (Art. 33/34).
+  in mind (Art. 33). The report to the authority and the notification of the
+  data subjects (Art. 34) are recorded separately.
 
 Special characteristics:
 
@@ -43,3 +45,13 @@ changed.
 
 Next steps: manage evidence (DPA documents, certificates) in the
 **Documents** module.
+
+**Retention, deletion and legal hold:** Under **Retention & deletion** the
+deletion concept proposes overdue data; nothing is deleted or anonymized before
+a two-step confirmation. If a data subject or legal proceeding is ongoing, place
+a hold on the person or customer under **Legal hold** – with a mandatory reason
+and an optional case reference. While it is active, no deletion proposals arise,
+confirmed deletions, anonymization and deleting accounts or customers are
+rejected, and the person's raw location points are kept. When customers are
+merged, the hold moves to the target customer. It is also released only with a
+reason; both remain visible in the person's or customer's log.

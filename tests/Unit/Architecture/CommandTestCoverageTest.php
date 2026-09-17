@@ -113,7 +113,21 @@ class CommandTestCoverageTest extends TestCase {
      */
     private function commands(): array {
         $commands = [];
+        // Plugin-Befehle liegen unter app/Plugins/<Plugin>/Console und wurden
+        // bis zum Vollscan 2026-09-15 (`C1-10`) gar nicht geprueft — genau dort
+        // fehlte der Test fuer den GoBD-Pflichtschritt vor dem Buchhaltungs-
+        // wechsel.
+        $sources = [];
         foreach ($this->phpFiles('app/Console/Commands') as $file) {
+            $sources[] = $file;
+        }
+        foreach ($this->phpFiles('app/Plugins') as $file) {
+            if (str_contains(str_replace('\\', '/', (string) $file), '/Console/')) {
+                $sources[] = $file;
+            }
+        }
+
+        foreach ($sources as $file) {
             $source = (string) file_get_contents($file);
             if (preg_match('/^abstract class /m', $source) === 1) {
                 continue;

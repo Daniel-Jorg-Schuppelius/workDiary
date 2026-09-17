@@ -1,11 +1,13 @@
 ---
 title: "Lernplattform"
 topic: learning.overview
-version: 1
+version: 3
 audience: []
 related:
     - training.overview
     - safety.overview
+    - learning.standards
+    - learning.subtitles
 ---
 
 Die Lernplattform beantwortet, **wie gelernt und geprüft wird**. *Was* wer
@@ -16,8 +18,17 @@ ohne sich zu doppeln.
 
 Ein Kurs besteht aus Abschnitten und Lerneinheiten. Eine Einheit ist
 entweder Inhalt, eine Prüfung, eine Aufgabe, ein Präsenztermin oder ein
-Fremdinhalt. Inhalte werden aus Blöcken gebaut (Text, Hinweis, Checkliste,
-Video, Einbettung) — freies HTML gibt es bewusst nicht.
+Fremdinhalt. Inhalte werden aus Blöcken gebaut (Text, Überschrift, Hinweis,
+Checkliste, Bild, Galerie, Datei, Video, Audio, Einbettung, Code, Akkordeon,
+Tabelle, Wissensartikel, Prozedur, Verständnisfrage, Trenner) — freies HTML gibt
+es bewusst nicht.
+
+**Jeder Block ist auch ohne Sehen, Hören oder Maus nutzbar.** Bilder und jedes
+Galeriebild brauchen einen Alternativtext, Audio ein Transkript, und
+Tabellenspalten brauchen Köpfe. Akkordeon und Lösung der Verständnisfrage
+klappen per Tastatur auf. Eine Verständnisfrage wird nicht bewertet: richtige
+Antworten beginnen im Editor mit `*`. Der Prozedurblock zeigt die gültige
+Version einer Prozedur; gestartet wird sie an einem Tagebucheintrag.
 
 **Einbettungen brauchen einen freigegebenen Host.** Die Sicherheitsrichtlinie
 der Anwendung blockiert fremde Seiten sonst still im Kurs; deshalb lehnt der
@@ -29,6 +40,10 @@ Start, nicht die Zuweisung — Pflicht-Einschreibungen sind ausgenommen. Eine
 **Prüfung ohne Kurs** ist ein Kurs der Art „Prüfung“ mit genau einer
 Prüfungseinheit; wer besteht, bekommt den hinterlegten Zielkurs angerechnet —
 mit demselben Rückfluss in Zertifikat, Unterweisungsnachweis und Qualifikation.
+
+Mit **Feste Reihenfolge** gibt ein Kurs jede Einheit erst frei, wenn die vorherige
+abgeschlossen ist; gesperrte Einheiten tragen den Hinweis „Nach der vorherigen
+Einheit“. Ein Freigabedatum der Einheit gilt zusätzlich.
 
 Wer von LearnDash kommt, übernimmt das **Export-ZIP** (Kurskatalog → „LearnDash-Import“): Kurse, Lektionen, Themen und Prüfungen entstehen als Entwürfe, Fragen landen im Katalog mit ihrer Kategorie. Bilder und Medien werden nicht kopiert (Platzhalter zum Nachpflegen), Lektionsvideos nur von freigegebenen Hosts. Abgeschlossene Kurse werden für Personen mit passender E-Mail als Einschreibung „importiert“ vermerkt — ohne Zertifikat und ohne Unterweisungsnachweis, denn ein importierter Abschluss ist kein eigener Nachweis. Der Probelauf zeigt vorher, was entstünde.
 
@@ -49,7 +64,8 @@ und zwar an jeder Abschlussstelle — Player, Portal, externer Zugang und
 Offline-Sync —, nicht nur in der Anzeige. Eine **Mindestverweildauer** zählt ab
 dem ersten Öffnen der Einheit oder über die Lernzeit. **Vorschau-Einheiten**
 sind im Portal ohne Einschreibung lesbar (nur Text). **Kategorien** aus den
-Einstellungen ordnen den Katalog; **Verfügbarkeitsfenster** und
+Einstellungen ordnen den Katalog, **Schlagwörter** bilden die Querachse und
+bleiben auch nach der Freigabe pflegbar; **Verfügbarkeitsfenster** und
 **Teilnehmergrenze** gelten für die Selbsteinschreibung — die Verwaltung darf
 weiterhin zuweisen, Pflicht-Einschreibungen umgehen die Grenze. Aufgaben
 tragen **Dateiregeln** (Endungen, Anzahl, Größe — nie lockerer als das System)
@@ -127,6 +143,19 @@ schlägt abgeschlossene Einschreibungen ohne Zertifikat nach der Frist des
 Rechtsraums zum Löschen vor (Versuche und Lernzeit gehen mit); Zertifikate
 bleiben wegen ihrer Nachweisfunktion länger und werden danach auf Initialen
 gekürzt — der Prüflink antwortet weiter.
+
+## Kompetenzen
+
+Die **Kompetenzmatrix** (Lernen → Kompetenzen) zeigt je Person die
+erreichte Stufe jeder Kompetenz. Stufen entstehen auf zwei Wegen: Ein Kurs mit
+hinterlegter Kompetenz belegt beim Abschluss seine Stufe — eine Wiederholung
+stuft nie herab, und bei Kursen mit Gültigkeitsdauer gilt die Stufe nur
+befristet. Eine **Einschätzung** durch die Lernverwaltung darf eine Stufe
+dagegen auch senken.
+
+Je Rolle lässt sich eine **Soll-Stufe** festlegen. Liegt eine Person darunter,
+markiert die Matrix die Lücke; abgelaufene Stufen zählen dabei nicht.
+Kompetenzen sperren nichts — Sperren bleiben bei der Qualifikation.
 
 ## Wer lernt
 

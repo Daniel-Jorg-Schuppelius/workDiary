@@ -26,24 +26,22 @@
         <x-empty-state framed icon="folder_off"
                        :title="__('backup_targets.cleanup_page.empty')" />
     @else
-        <div class="card bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <h3 class="card-title text-base">{{ $connection->provider->label() }} — {{ $connection->name }}</h3>
-                <ul class="divide-y divide-base-200">
-                    @foreach ($objects as $object)
-                        <li class="flex flex-wrap items-center gap-2 py-2 text-sm">
-                            <span class="font-mono">{{ $object->name }}</span>
-                            <span class="text-muted">{{ \Illuminate\Support\Number::fileSize($object->size) }}</span>
-                            @if (collect($knownPrefixes)->keys()->first(fn ($prefix) => str_ends_with((string) $prefix, '/' . $object->name)) !== null)
-                                <span class="badge badge-ghost badge-sm">{{ __('backup_targets.cleanup_page.known') }}</span>
-                            @else
-                                <span class="badge badge-warning badge-sm">{{ __('backup_targets.cleanup_page.orphan') }}</span>
-                            @endif
-                        </li>
-                    @endforeach
-                </ul>
-            </div>
-        </div>
+        <x-card class="flex flex-col gap-3">
+            <h3 class="card-title text-base">{{ $connection->provider->label() }} — {{ $connection->name }}</h3>
+            <ul class="divide-y divide-base-200">
+                @foreach ($objects as $object)
+                    <li class="flex flex-wrap items-center gap-2 py-2 text-sm">
+                        <span class="font-mono">{{ $object->name }}</span>
+                        <span class="text-muted">{{ \Illuminate\Support\Number::fileSize($object->size) }}</span>
+                        @if (collect($knownPrefixes)->keys()->first(fn ($prefix) => str_ends_with((string) $prefix, '/' . $object->name)) !== null)
+                            <span class="badge badge-ghost badge-sm">{{ __('backup_targets.cleanup_page.known') }}</span>
+                        @else
+                            <span class="badge badge-warning badge-sm">{{ __('backup_targets.cleanup_page.orphan') }}</span>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </x-card>
     @endif
 </x-index-page>
 @endsection

@@ -34,11 +34,12 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Auto-Approve: Krankmeldungen sind keine Genehmigungsprozesse. Sobald
-    | erfasst, gelten sie als reportet.
+    | Krankmeldungen sind keine Genehmigungsprozesse: Das Modell kennt keinen
+    | Status, nur `reported_at` — erfasst heisst gemeldet. Der frühere Schalter
+    | `auto_approve` versprach, eine Genehmigung abschalten zu koennen, die es
+    | gar nicht gibt; entfernt mit MVP-798 (Befund C2-05).
     |--------------------------------------------------------------------------
     */
-    'auto_approve' => (bool) env('SICKNESS_AUTO_APPROVE', true),
 
     /*
     |--------------------------------------------------------------------------

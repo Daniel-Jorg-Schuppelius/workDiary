@@ -44,99 +44,93 @@
     {{-- ── Kennzahlen-Karten ──────────────────────────────────────────── --}}
     <div class="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
         {{-- Sitzungen --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="devices" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.sessions') }}</h2>
-                </header>
-                @if (($sessions['available'] ?? false) === true)
-                    <dl class="grid grid-cols-1 gap-1 text-sm">
-                        <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                            <dt class="text-muted">{{ __('security.field.sessions_total') }}</dt>
-                            <dd class="font-mono text-xs">{{ $sessions['total'] ?? 0 }}</dd>
-                        </div>
-                        <div class="flex items-baseline justify-between gap-2">
-                            <dt class="text-muted">{{ __('security.field.sessions_active') }}</dt>
-                            <dd class="font-mono text-xs">{{ $sessions['active'] ?? 0 }}</dd>
-                        </div>
-                    </dl>
-                @else
-                    <p class="text-sm italic text-muted">
-                        {{ __('security.hint.sessions_driver', ['driver' => $sessions['driver'] ?? config('session.driver')]) }}
-                    </p>
-                @endif
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="devices" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.sessions') }}</h2>
+            </header>
+            @if (($sessions['available'] ?? false) === true)
+                <dl class="grid grid-cols-1 gap-1 text-sm">
+                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                        <dt class="text-muted">{{ __('security.field.sessions_total') }}</dt>
+                        <dd class="font-mono text-xs">{{ $sessions['total'] ?? 0 }}</dd>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-2">
+                        <dt class="text-muted">{{ __('security.field.sessions_active') }}</dt>
+                        <dd class="font-mono text-xs">{{ $sessions['active'] ?? 0 }}</dd>
+                    </div>
+                </dl>
+            @else
+                <p class="text-sm italic text-muted">
+                    {{ __('security.hint.sessions_driver', ['driver' => $sessions['driver'] ?? config('session.driver')]) }}
+                </p>
+            @endif
+        </x-card>
 
         {{-- 2FA --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="encrypted" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.two_factor') }}</h2>
-                </header>
-                <dl class="grid grid-cols-1 gap-1 text-sm">
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('security.field.users_total') }}</dt>
-                        <dd class="font-mono text-xs">{{ $twoFactor['users_total'] ?? 0 }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('security.field.users_with_2fa') }}</dt>
-                        <dd class="font-mono text-xs">{{ $twoFactor['users_with_2fa'] ?? 0 }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-muted">{{ __('security.field.credentials') }}</dt>
-                        <dd class="font-mono text-xs">{{ $twoFactor['credentials'] ?? 0 }}</dd>
-                    </div>
-                </dl>
-                <p class="text-xs italic text-muted">{{ __('security.hint.two_factor') }}</p>
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="encrypted" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.two_factor') }}</h2>
+            </header>
+            <dl class="grid grid-cols-1 gap-1 text-sm">
+                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                    <dt class="text-muted">{{ __('security.field.users_total') }}</dt>
+                    <dd class="font-mono text-xs">{{ $twoFactor['users_total'] ?? 0 }}</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                    <dt class="text-muted">{{ __('security.field.users_with_2fa') }}</dt>
+                    <dd class="font-mono text-xs">{{ $twoFactor['users_with_2fa'] ?? 0 }}</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-2">
+                    <dt class="text-muted">{{ __('security.field.credentials') }}</dt>
+                    <dd class="font-mono text-xs">{{ $twoFactor['credentials'] ?? 0 }}</dd>
+                </div>
+            </dl>
+            <p class="text-xs italic text-muted">{{ __('security.hint.two_factor') }}</p>
+        </x-card>
 
         {{-- Integrationen --}}
-        <article class="card border border-base-300 bg-base-100 shadow-sm">
-            <div class="card-body gap-3">
-                <header class="flex items-center gap-2">
-                    <x-icon name="hub" />
-                    <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.integrations') }}</h2>
-                </header>
-                <dl class="grid grid-cols-1 gap-1 text-sm">
-                    <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
-                        <dt class="text-muted">{{ __('security.field.plugins_active') }}</dt>
-                        <dd class="font-mono text-xs">{{ $integrations['count'] ?? 0 }}</dd>
-                    </div>
-                    <div class="flex items-baseline justify-between gap-2">
-                        <dt class="text-muted">{{ __('security.field.external_references') }}</dt>
-                        <dd class="font-mono text-xs">{{ $integrations['references'] ?? 0 }}</dd>
-                    </div>
-                </dl>
-                @if (! empty($integrations['plugins']))
-                    <div class="flex flex-wrap gap-1">
-                        @foreach ($integrations['plugins'] as $pluginId)
-                            <span class="badge badge-outline badge-sm font-mono">{{ $pluginId }}</span>
-                        @endforeach
-                    </div>
-                @else
-                    <p class="text-sm italic text-muted">{{ __('security.empty.integrations') }}</p>
-                @endif
-                {{-- KI-Dienste (Feature 025): aktive Provider-Verbindungen, nie Schlüssel. --}}
-                <dl class="grid grid-cols-1 gap-1 text-sm">
-                    <div class="flex items-baseline justify-between gap-2 border-t border-base-200/70 pt-1">
-                        <dt class="text-muted">{{ __('ai.security.active_connections') }}</dt>
-                        <dd class="font-mono text-xs">{{ $integrations['ai_count'] ?? 0 }}</dd>
-                    </div>
-                </dl>
-                @if (! empty($integrations['ai_connections']))
-                    <div class="flex flex-wrap gap-1">
-                        @foreach ($integrations['ai_connections'] as $ai)
-                            <span class="badge badge-outline badge-sm font-mono"
-                                  title="{{ $ai['name'] }}">{{ $ai['provider'] }} ({{ $ai['local'] ? __('ai.field.local') : __('ai.field.cloud') }})</span>
-                        @endforeach
-                    </div>
-                @endif
-            </div>
-        </article>
+        <x-card as="article" class="flex flex-col gap-3">
+            <header class="flex items-center gap-2">
+                <x-icon name="hub" />
+                <h2 class="font-['Space_Grotesk'] text-base font-semibold">{{ __('security.section.integrations') }}</h2>
+            </header>
+            <dl class="grid grid-cols-1 gap-1 text-sm">
+                <div class="flex items-baseline justify-between gap-2 border-b border-base-200/70 pb-1">
+                    <dt class="text-muted">{{ __('security.field.plugins_active') }}</dt>
+                    <dd class="font-mono text-xs">{{ $integrations['count'] ?? 0 }}</dd>
+                </div>
+                <div class="flex items-baseline justify-between gap-2">
+                    <dt class="text-muted">{{ __('security.field.external_references') }}</dt>
+                    <dd class="font-mono text-xs">{{ $integrations['references'] ?? 0 }}</dd>
+                </div>
+            </dl>
+            @if (! empty($integrations['plugins']))
+                <div class="flex flex-wrap gap-1">
+                    @foreach ($integrations['plugins'] as $pluginId)
+                        <span class="badge badge-outline badge-sm font-mono">{{ $pluginId }}</span>
+                    @endforeach
+                </div>
+            @else
+                <p class="text-sm italic text-muted">{{ __('security.empty.integrations') }}</p>
+            @endif
+            {{-- KI-Dienste (Feature 025): aktive Provider-Verbindungen, nie Schlüssel. --}}
+            <dl class="grid grid-cols-1 gap-1 text-sm">
+                <div class="flex items-baseline justify-between gap-2 border-t border-base-200/70 pt-1">
+                    <dt class="text-muted">{{ __('ai.security.active_connections') }}</dt>
+                    <dd class="font-mono text-xs">{{ $integrations['ai_count'] ?? 0 }}</dd>
+                </div>
+            </dl>
+            @if (! empty($integrations['ai_connections']))
+                <div class="flex flex-wrap gap-1">
+                    @foreach ($integrations['ai_connections'] as $ai)
+                        <span class="badge badge-outline badge-sm font-mono"
+                              title="{{ $ai['name'] }}">{{ $ai['provider'] }} ({{ $ai['local'] ? __('ai.field.local') : __('ai.field.cloud') }})</span>
+                    @endforeach
+                </div>
+            @endif
+        </x-card>
     </div>
 
     {{-- ── API-Tokens ─────────────────────────────────────────────────── --}}

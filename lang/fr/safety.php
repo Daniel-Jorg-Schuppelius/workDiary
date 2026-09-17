@@ -170,6 +170,7 @@ return [
             'edit_item' => 'Modifier le danger',
             'create_instruction' => 'Enregistrer une formation',
             'sign' => 'Confirmer la participation',
+            'sign_drawn' => 'Confirmer avec signature',
             'create_checkup' => 'Enregistrer une visite',
         ],
         'filter' => [
@@ -204,6 +205,7 @@ return [
             'delete_instruction' => 'Supprimer la formation ?',
             'delete_checkup' => 'Supprimer l’entrée de visite ?',
             'sign' => 'Confirmer maintenant la participation (définitif) ?',
+            'sign_drawn_hint' => 'Signez dans le champ. L\'envoi confirme la participation de manière contraignante.',
         ],
         'flash' => [
             'assessment_created' => 'Évaluation des risques créée.',
@@ -229,6 +231,7 @@ return [
             'after_pair_incomplete' => 'Risque après mesure : saisir gravité et probabilité ensemble.',
             'sign_only_self' => 'Seule la personne inscrite peut confirmer sa participation.',
             'already_signed' => 'La participation est déjà confirmée.',
+            'signature_invalid' => 'La signature n\'a pas pu être lue. Veuillez signer à nouveau.',
             'delete_with_signatures' => 'Les formations avec preuves confirmées ne peuvent pas être supprimées.',
         ],
         'status_summary' => ':signed sur :total confirmés',

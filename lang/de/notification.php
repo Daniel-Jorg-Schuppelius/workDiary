@@ -186,6 +186,8 @@ return [
         'vacation_approved' => 'Dein Urlaubsantrag wurde genehmigt. :note',
         'vacation_rejected' => 'Dein Urlaubsantrag wurde abgelehnt. :note',
         'unclear_case_title' => 'Ungeklärter Fall am :date',
+        'open_attendance_title' => 'Du bist seit :time Uhr eingestempelt',
+        'open_attendance_body' => 'Bitte ausstempeln, falls du schon Feierabend hast — sonst schließt das System die Stempelung später automatisch.',
         'driving_time_violation_title' => 'Lenk-/Ruhezeit-Befund vom :date (:driver)',
         'month_submitted_title' => 'Monatsabschluss :period von :user eingereicht',
         'month_approved_title' => 'Monatsabschluss :period genehmigt',

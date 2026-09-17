@@ -110,6 +110,7 @@
                 <x-action-form :action="route('domains.dns.read', $domain)">
                     <x-icon-btn icon="download" size="xs" type="submit" show-label>{{ __('domain.action.dns_read') }}</x-icon-btn>
                 </x-action-form>
+                <x-icon-btn icon="add" tone="primary" size="xs" data-open-dialog="domain-dns-add" show-label>{{ __('domain.action.dns_add') }}</x-icon-btn>
             @endif
         </x-slot:actions>
         @forelse ($domain->dnsZones as $zone)
@@ -121,6 +122,7 @@
                         <x-table.th>{{ __('domain.dns.name') }}</x-table.th>
                         <x-table.th>TTL</x-table.th>
                         <x-table.th>{{ __('domain.dns.content') }}</x-table.th>
+                        @if ($can['dns'])<x-table.th class="text-right"></x-table.th>@endif
                     </tr>
                 </x-slot:head>
                 @foreach ($zone->records as $record)
@@ -129,13 +131,53 @@
                         <td class="font-mono">{{ $record->name }}</td>
                         <td class="tabular-nums">{{ $record->ttl }}</td>
                         <td class="font-mono">{{ $record->content }}</td>
+                        @if ($can['dns'])
+                            <td class="text-right">
+                                {{-- Löschen je Eintrag (MVP-798, Befund C1-06): nur mit Namen —
+                                     die Validierung verlangt ihn, sonst liefe der Knopf ins Leere. --}}
+                                @if (trim((string) $record->name) !== '')
+                                    <x-action-form :action="route('domains.dns.modify', $domain)"
+                                                   :confirm="__('domain.action.dns_delete_confirm', ['type' => $record->type->value, 'name' => $record->name])"
+                                                   :confirm-label="__('domain.action.dns_delete')" confirm-icon="delete" confirm-tone="error">
+                                        <input type="hidden" name="delete[0][type]" value="{{ $record->type->value }}">
+                                        <input type="hidden" name="delete[0][name]" value="{{ $record->name }}">
+                                        <input type="hidden" name="delete[0][ttl]" value="{{ $record->ttl }}">
+                                        <input type="hidden" name="delete[0][priority]" value="{{ $record->priority }}">
+                                        <input type="hidden" name="delete[0][content]" value="{{ $record->content }}">
+                                        <x-icon-btn icon="delete" tone="error" size="xs" type="submit" :title="__('domain.action.dns_delete')" />
+                                    </x-action-form>
+                                @endif
+                            </td>
+                        @endif
                     </tr>
                 @endforeach
             </x-table>
         @empty
             <p class="text-sm text-muted">{{ __('domain.dns.empty') }}</p>
         @endforelse
+
     </x-card>
+
+    {{-- Eintrag hinzufügen (MVP-798, Befund C1-06). Zone ersetzen bleibt bewusst ohne
+         Einstieg: Ein falscher Vollersatz löscht alle Einträge der Domain. --}}
+    @if ($can['dns'])
+        <x-modal id="domain-dns-add" :embedded="false" tone="primary" icon="dns"
+            :eyebrow="$domain->external_domain" :title="__('domain.action.dns_add')"
+            :action="route('domains.dns.modify', $domain)"
+            :submit-label="__('domain.action.dns_add')">
+            <x-form-group :legend="__('domain.section.dns')" icon="dns" tone="primary" cols="2">
+                <x-select-field name="add[0][type]" id="domain-dns-add-type" :label="__('domain.dns.type')" required>
+                    @foreach (\App\Enums\Domain\DomainDnsRecordType::cases() as $recordType)
+                        <option value="{{ $recordType->value }}">{{ $recordType->value }}</option>
+                    @endforeach
+                </x-select-field>
+                <x-input-field name="add[0][name]" id="domain-dns-add-name" :label="__('domain.dns.name')" required maxlength="255" />
+                <x-input-field name="add[0][ttl]" id="domain-dns-add-ttl" type="number" min="60" label="TTL" />
+                <x-input-field name="add[0][priority]" id="domain-dns-add-priority" type="number" min="0" :label="__('domain.dns.priority')" />
+                <x-input-field name="add[0][content]" id="domain-dns-add-content" :label="__('domain.dns.content')" required maxlength="4000" span="2" />
+            </x-form-group>
+        </x-modal>
+    @endif
 
     {{-- Rechnungen (Blocked-State / capability-gegatet) --}}
     <x-card :title="__('domain.section.invoices')">
@@ -194,6 +236,14 @@
             @endif
 
             @if ($can['transfer'])
+                {{-- Eingehender Transfer (MVP-798, Befund C1-06): Der Endpunkt
+                     war gebaut, es fehlte das Eingabefeld für den Auth-Code. --}}
+                <x-action-form :action="route('domains.transfer-in', $domain)" class="flex flex-wrap items-end gap-2">
+                    <x-input-field name="auth_code" :label="__('domain.field.auth_code')"
+                                   maxlength="190" required class="input-sm" />
+                    <x-icon-btn icon="swap_horiz" size="sm" type="submit" show-label>{{ __('domain.action.transfer_in') }}</x-icon-btn>
+                </x-action-form>
+
                 <x-action-form :action="route('domains.transfer-lock', $domain)" class="flex items-end gap-2">
                     <input type="hidden" name="locked" value="{{ $domain->transferlock ? 0 : 1 }}">
                     <x-icon-btn icon="{{ $domain->transferlock ? 'lock_open' : 'lock' }}" size="sm" type="submit" show-label>

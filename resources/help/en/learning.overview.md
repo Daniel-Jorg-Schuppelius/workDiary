@@ -1,11 +1,13 @@
 ---
 title: "Learning platform"
 topic: learning.overview
-version: 1
+version: 3
 audience: []
 related:
     - training.overview
     - safety.overview
+    - learning.standards
+    - learning.subtitles
 ---
 
 The learning platform answers **how people learn and are assessed**. *What*
@@ -16,8 +18,17 @@ duplicating each other.
 
 A course consists of sections and learning units. A unit is either content, a
 quiz, an assignment, a classroom event or external material. Content is built
-from blocks (text, callout, checklist, video, embed) — free-form HTML is
-deliberately not available.
+from blocks (text, heading, callout, checklist, image, gallery, file, video,
+audio, embed, code, accordion, table, knowledge article, procedure,
+comprehension question, divider) — free-form HTML is deliberately not
+available.
+
+**Every block works without sight, hearing or a mouse.** Images and every
+gallery image need an alternative text, audio needs a transcript, and table
+columns need headers. Accordions and the answer to a comprehension question
+open with the keyboard. A comprehension question is not graded: in the editor,
+correct answers start with `*`. The procedure block shows the valid version of
+a procedure; it is started from a diary entry.
 
 **Embeds require an allowed host.** The application's security policy would
 otherwise block foreign pages silently inside the course, so the editor
@@ -29,6 +40,10 @@ start, not the assignment — mandatory enrolments are exempt. An **exam without
 course** is a course of type “exam” with exactly one quiz unit; whoever passes
 is credited with the configured target course — with the same feedback into
 certificate, instruction record and qualification.
+
+With **Fixed order**, a course releases each unit only once the previous one is
+completed; locked units show “After the previous unit”. A release date on the
+unit applies in addition.
 
 Coming from LearnDash, take over the **export ZIP** (course catalog → "LearnDash import"): courses, lessons, topics and quizzes are created as drafts, questions land in the catalog with their category. Images and media are not copied (placeholders to fill in), lesson videos only from allowed hosts. Completed courses are recorded as "imported" enrollments for people with a matching e-mail — without certificate and without instruction record, because an imported completion is no proof of its own. The dry run shows beforehand what would be created.
 
@@ -47,7 +62,8 @@ and/or a fixed date — the later one applies) locks a unit until that day at
 every completion point — player, portal, external access and offline sync —
 not only in the display. A **minimum dwell time** counts from first opening the
 unit or via learning time. **Preview units** are readable in the portal without
-enrollment (text only). **Categories** from the settings order the catalog;
+enrollment (text only). **Categories** from the settings order the catalog, **tags** add a cross axis and stay
+editable after release;
 **availability window** and **enrollment limit** apply to self-enrollment —
 management may still assign, and mandatory enrollments bypass the limit.
 Assignments carry **file rules** (extensions, count, size — never looser than
@@ -124,6 +140,19 @@ answers. The **retention review** proposes finished enrollments without a
 certificate for deletion once the regional period has passed (attempts and
 learning time go with them); certificates stay longer because they serve as
 proof and are then reduced to initials — the verification link keeps working.
+
+## Competencies
+
+The **competency matrix** (Learning → Competencies) shows the level
+each person has reached for every competency. Levels arise in two ways: a
+course linked to a competency grants its level on completion — repeating it
+never lowers the level, and for courses with a validity period the level is
+only granted for that period. An **assessment** by learning management, on the
+other hand, may also lower a level.
+
+A **required level** can be set per role. If a person falls below it, the
+matrix marks the gap; expired levels do not count. Competencies block nothing —
+blocking remains with qualifications.
 
 ## Who learns
 

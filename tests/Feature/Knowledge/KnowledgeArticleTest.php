@@ -12,6 +12,7 @@ namespace Tests\Feature\Knowledge;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Models\{KnowledgeArticle, User};
+use App\Services\Collections\ContentCollectionService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -27,14 +28,12 @@ class KnowledgeArticleTest extends TestCase {
                 'title' => 'Drucker meldet Papierstau',
                 'problem' => 'Drucker Modell X zeigt Papierstau, obwohl kein Papier klemmt.',
                 'solution' => "1. Einzugsrolle reinigen\n2. Firmware aktualisieren",
-                'category' => 'Drucker',
                 'tags' => 'firmware, modell-x',
             ])
             ->assertRedirect();
 
         $this->assertDatabaseHas('knowledge_articles', [
             'title' => 'Drucker meldet Papierstau',
-            'category' => 'Drucker',
             'status' => ArticleStatus::Draft->value,
             'created_by_user_id' => $user->id,
             'organization_id' => $user->organization_id,
@@ -224,22 +223,22 @@ class KnowledgeArticleTest extends TestCase {
         $this->assertSame(2, $article->feedback()->count());
     }
 
-    public function test_index_search_and_category_filter(): void {
-        $user = User::factory()->user()->create();
+    public function test_index_search_and_collection_filter(): void {
+        $user = User::factory()->admin()->create();
         app()->instance('currentOrganization', $user->organization);
 
         KnowledgeArticle::factory()->published()->create([
             'title' => 'Papierstau am Drucker',
             'problem' => 'Einzugsrolle verschlissen',
-            'category' => 'Drucker',
             'created_by_user_id' => $user->id,
         ]);
-        KnowledgeArticle::factory()->published()->create([
+        $vpn = KnowledgeArticle::factory()->published()->create([
             'title' => 'VPN-Verbindung bricht ab',
             'problem' => 'MTU-Problem im Heimnetz',
-            'category' => 'Netzwerk',
             'created_by_user_id' => $user->id,
         ]);
+        $network = app(ContentCollectionService::class)->create($user->organization, $user, ['title' => 'Netzwerk']);
+        app(ContentCollectionService::class)->addItem($network, $user, $vpn);
 
         $this->actingAs($user)
             ->get(route('knowledge.index', ['q' => 'Einzugsrolle']))
@@ -247,11 +246,30 @@ class KnowledgeArticleTest extends TestCase {
             ->assertSee('Papierstau am Drucker')
             ->assertDontSee('VPN-Verbindung bricht ab');
 
+        // Die Freitext-Kategorie ist seit MVP-814 eine Sammlung.
         $this->actingAs($user)
-            ->get(route('knowledge.index', ['category' => 'Netzwerk']))
+            ->get(route('knowledge.index', ['collection' => $network->sqid]))
             ->assertOk()
             ->assertSee('VPN-Verbindung bricht ab')
             ->assertDontSee('Papierstau am Drucker');
+    }
+
+    public function test_new_article_goes_straight_into_a_collection(): void {
+        $user = User::factory()->admin()->create();
+        app()->instance('currentOrganization', $user->organization);
+        $printers = app(ContentCollectionService::class)->create($user->organization, $user, ['title' => 'Drucker']);
+
+        $this->actingAs($user)->get(route('knowledge.create'))->assertOk()->assertSee('name="collection"', false);
+
+        $this->actingAs($user)->from(route('knowledge.index'))->post(route('knowledge.store'), [
+            'title' => 'Toner wird nicht erkannt',
+            'problem' => 'Chip am Toner verschmutzt.',
+            'solution' => 'Kontakte reinigen.',
+            'collection' => $printers->sqid,
+        ])->assertRedirect();
+
+        $article = KnowledgeArticle::query()->where('title', 'Toner wird nicht erkannt')->firstOrFail();
+        $this->assertSame([$printers->id], app(ContentCollectionService::class)->collectionsContaining($article, $user)->pluck('id')->all());
     }
 
     public function test_index_hides_foreign_drafts_from_plain_users_and_status_filter_works_for_teamleitung(): void {

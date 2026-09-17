@@ -18,3 +18,6 @@ attuale; salvando, l'account passa al nuovo sistema. Nel modello di
 orario di lavoro registri le tue ore previste come base per conti ore e
 report; l'abbonamento al calendario fornisce i tuoi appuntamenti come
 feed ICS, il cui link puoi rigenerare o revocare in qualsiasi momento.
+
+Sono proposte solo le pagine che puoi aprire. Senza una tua scelta vale la
+pagina iniziale impostata dalla tua organizzazione per il tuo ruolo.

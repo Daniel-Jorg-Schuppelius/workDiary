@@ -4,6 +4,7 @@
 // Speichert Entwürfe per fetch (PUT, JSON) und zeigt das Preflight-Ergebnis an.
 
 import { putJson } from "./lib/http.js";
+import { __ } from "./i18n.js";
 
 // Seitenmaße kommen ab MVP-652 aus der Editor-Config (A4 hoch ODER quer).
 const DEFAULT_PAGE_W = 210;
@@ -155,7 +156,12 @@ export function registerDesignEditor(Alpine) {
         inheritanceSummary(baseName) {
             const total = Object.keys(this.overrides).length;
             const own = this.overrideList().length;
-            return `„${baseName}“ · ${total - own}/${total} geerbt, ${own} überschrieben`;
+            return __("js.design.inheritance", {
+                base: baseName,
+                inherited: total - own,
+                total,
+                own,
+            });
         },
         // Als „bereits auf dem Firmenbogen" deklarierte Blöcke (nicht gedruckt).
         letterheadBlockLabels() {

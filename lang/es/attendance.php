@@ -33,6 +33,7 @@ return [
         'terminal' => 'Terminal',
         'phone' => 'Teléfono',
         'learning' => 'Tiempo de aprendizaje',
+        'checkin' => 'Check-in (QR/NFC)',
     ],
     'correction' => [
         'action' => [
@@ -44,5 +45,34 @@ return [
     'error' => [
         'target_day_locked' => 'El día de destino está cerrado o el mes aprobado: solicite una corrección de tiempo.',
         'duration_too_long' => 'Un fichaje no puede superar las :hours horas.',
+    ],
+    'checkpoint_kind' => [
+        'site' => 'Ubicación',
+        'vehicle' => 'Vehículo',
+    ],
+    'checkin' => [
+        'title' => 'Check-in',
+        'subtitle' => 'Entrada y salida con el código de la ubicación o del vehículo.',
+        'state' => [
+            'in' => 'Has fichado la entrada a las :time.',
+            'out' => 'Ahora no tienes la entrada fichada.',
+        ],
+        'action' => [
+            'in' => 'Entrada',
+            'out' => 'Salida',
+        ],
+        'location_hint' => 'Al fichar se comprueba una vez la posición (radio de :radius m). No se guarda.',
+        'flash' => [
+            'in' => 'Entrada en «:name» registrada.',
+            'out' => 'Salida en «:name» registrada.',
+        ],
+        'error' => [
+            'already_in' => 'Ya has fichado la entrada.',
+            'not_in' => 'No has fichado la entrada.',
+            'no_center' => 'Este punto tiene radio pero no ubicación. Contacta con la administración.',
+            'location_required' => 'Este punto requiere tu posición.',
+            'too_far' => 'Estás a :distance m; se permiten :radius m.',
+            'location_denied' => 'No se pudo determinar la posición. Permite el acceso a la ubicación.',
+        ],
     ],
 ];

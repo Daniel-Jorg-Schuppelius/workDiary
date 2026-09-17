@@ -86,6 +86,9 @@ class MsgraphAdminController extends ConnectionOAuthController {
             'todoLists' => $todoLists,
             'taskLinks' => $taskLinks,
             'projects' => $projects,
+            // OneNote-Übernahme (MVP-815): abschaltbar, eigener Grant.
+            'oneNoteEnabled' => MsgraphConfig::oneNoteImportEnabled((int) $organization->id),
+            'oneNoteConnection' => \App\Models\MsgraphOneNoteConnection::query()->where('organization_id', $organization->id)->first(),
         ]);
     }
 

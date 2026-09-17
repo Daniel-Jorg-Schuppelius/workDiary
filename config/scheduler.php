@@ -388,6 +388,14 @@ return [
             'criticality' => 'housekeeping',
             'expected_runtime_minutes' => 1,
         ],
+        // Abend-Erinnerung bei offener Stempelung (MVP-803), vor dem automatischen Schließen.
+        'attendance.open_reminder' => [
+            'command' => 'attendance:remind-open',
+            'cadence' => ['type' => 'dailyAt', 'time' => '19:00'],
+            'allowed' => ['dailyAt', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 1,
+        ],
         'attendance.close_open' => [
             'command' => 'attendance:close-open',
             'cadence' => ['type' => 'everyFifteenMinutes'],
@@ -426,6 +434,16 @@ return [
             'allowed' => ['dailyAt'],
             'criticality' => 'core',
             'expected_runtime_minutes' => 2,
+        ],
+        'recruiting.scan_uploads' => [
+            'command' => 'recruiting:scan-uploads',
+            'cadence' => ['type' => 'everyFifteenMinutes'],
+            'allowed' => ['everyFiveMinutes', 'everyFifteenMinutes', 'hourly'],
+            'criticality' => 'core',
+            'expected_runtime_minutes' => 2,
+            // Wie beim Hinweisgeber-Scan: Quarantäne darf im Wartungsfenster
+            // liegen bleiben, Freigabe ist kein Notfall.
+            'runs_in_maintenance' => false,
         ],
         'whistleblowing.scan' => [
             'command' => 'whistleblowing:scan',

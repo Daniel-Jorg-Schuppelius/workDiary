@@ -22,6 +22,22 @@
             <x-slot:actions>
                 @can('update', $requisition)
                     <x-icon-btn icon="edit" size="sm" data-entry-modal-trigger :href="route('recruiting.requisitions.edit', $requisition)" show-label>{{ __('Bearbeiten') }}</x-icon-btn>
+                    {{-- Karrierebereich veröffentlichen/pausieren (MVP-798, Befund C1-07):
+                         Die Endpunkte gab es seit MVP-437, nur keinen Einstieg. --}}
+                    @php $careerPosting = $requisition->postings->firstWhere('channel', 'website'); @endphp
+                    @if ($careerPosting?->status === 'published')
+                        <x-action-form :action="route('recruiting.requisitions.career.pause', $requisition)"
+                                       :confirm="__('Die Stelle verschwindet aus dem öffentlichen Karrierebereich. Eingegangene Bewerbungen bleiben erhalten.')"
+                                       :confirm-label="__('Pausieren')" confirm-icon="pause">
+                            <x-icon-btn icon="pause" size="sm" tone="outline" type="submit" show-label>{{ __('Pausieren') }}</x-icon-btn>
+                        </x-action-form>
+                    @else
+                        <x-action-form :action="route('recruiting.requisitions.career.publish', $requisition)"
+                                       :confirm="__('Die Stelle wird öffentlich im Karrierebereich sichtbar und ist ohne Anmeldung bewerbbar.')"
+                                       :confirm-label="__('Veröffentlichen')" confirm-icon="public">
+                            <x-icon-btn icon="public" size="sm" tone="primary" type="submit" show-label>{{ __('Veröffentlichen') }}</x-icon-btn>
+                        </x-action-form>
+                    @endif
                     <form method="POST" action="{{ route('recruiting.requisitions.status', $requisition) }}" class="flex items-center gap-1">
                         @csrf
                         <select name="status" class="select select-sm select-bordered" data-autosubmit aria-label="{{ __('Status') }}">

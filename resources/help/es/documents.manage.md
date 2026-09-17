@@ -24,3 +24,13 @@ partir de la fecha «válido hasta» y los documentos por caducar pueden
 notificarse mediante reglas. **Eliminar borra el documento con todas sus
 versiones** (borrado lógico, solo con permiso); las versiones son
 inmutables y las correcciones se hacen siempre con una versión nueva.
+
+## Enviar documentos
+
+Los documentos —facturas, presupuestos, albaranes— pueden enviarse directamente
+desde el expediente. Cada envío se registra con destinatario, momento y canal,
+de modo que después se puede reconstruir **qué se envió, a quién y cuándo**.
+
+El **historial de envíos** pertenece al documento, no al buzón: incluso quien no
+tiene acceso a la cuenta de correo ve si se envió y cuándo. Un reenvío genera
+una entrada adicional y no sobrescribe la anterior.

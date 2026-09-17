@@ -68,6 +68,10 @@ class CommunicationNoteService {
 
             $this->syncParticipants($note, $attributes['participants'] ?? []);
 
+            if (array_key_exists('tags', $attributes)) {
+                $note->syncTagNames((string) $attributes['tags']);
+            }
+
             if ($confidential) {
                 $note->audit('communication.confidential.set', ['actor_user_id' => $creator->id]);
             }
@@ -123,6 +127,10 @@ class CommunicationNoteService {
             if (array_key_exists('participants', $attributes)) {
                 $note->participants()->delete();
                 $this->syncParticipants($note, $attributes['participants']);
+            }
+
+            if (array_key_exists('tags', $attributes)) {
+                $note->syncTagNames((string) $attributes['tags']);
             }
 
             return $note->fresh(['participants']) ?? $note;

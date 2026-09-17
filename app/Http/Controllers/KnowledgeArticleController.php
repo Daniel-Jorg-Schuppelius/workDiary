@@ -12,8 +12,9 @@ namespace App\Http\Controllers;
 
 use App\Enums\Knowledge\ArticleStatus;
 use App\Enums\User\Permission as P;
-use App\Models\{Asset, Customer, DiaryEntry, KnowledgeArticle, KnowledgeArticleLink, Protocol, User};
+use App\Models\{Asset, ContentCollection, ContentCollectionItem, ContentReference, Customer, DiaryEntry, KnowledgeArticle, Protocol, User};
 use App\Services\Attachments\FileAttacher;
+use App\Services\Collections\ContentCollectionService;
 use App\Services\Knowledge\KnowledgeArticleService;
 use App\Support\Sqid;
 use Illuminate\Database\Eloquent\{Builder, Model};
@@ -38,6 +39,7 @@ class KnowledgeArticleController extends Controller {
 
     public function __construct(
         private readonly KnowledgeArticleService $service,
+        private readonly ContentCollectionService $collections,
     ) {}
 
     public function index(Request $request): View {
@@ -51,7 +53,7 @@ class KnowledgeArticleController extends Controller {
 
         $filters = [
             'q' => trim((string) $request->query('q', '')),
-            'category' => (string) $request->query('category', 'all'),
+            'collection' => (string) $request->query('collection', ''),
             'status' => (string) $request->query('status', 'all'),
             'sort' => (string) $request->query('sort', 'newest'),
         ];
@@ -73,8 +75,20 @@ class KnowledgeArticleController extends Controller {
         if ($filters['q'] !== '') {
             $query->search($filters['q']);
         }
-        if ($filters['category'] !== 'all' && $filters['category'] !== '') {
-            $query->where('category', $filters['category']);
+        // Sammlung statt Freitext-Kategorie (MVP-814), samt Untersammlungen.
+        $mayViewCollections = Gate::allows('viewAny', ContentCollection::class);
+        $collectionId = $mayViewCollections && $filters['collection'] !== ''
+            ? Sqid::decodeOrNumeric(ContentCollection::class, $filters['collection'])
+            : null;
+        if ($collectionId !== null) {
+            $collectionIds = $this->collections->visibleSubtreeIds($user, $user->organization_id, $collectionId);
+            $query->whereIn('knowledge_articles.id', static fn ($items) => $items
+                ->select('collectable_id')
+                ->from('collection_items')
+                ->where('collectable_type', (new KnowledgeArticle)->getMorphClass())
+                ->whereIn('collection_id', $collectionIds === [] ? [0] : $collectionIds));
+        } else {
+            $filters['collection'] = '';
         }
 
         if ($filters['sort'] === 'helpful') {
@@ -86,21 +100,16 @@ class KnowledgeArticleController extends Controller {
 
         $articles = $query->paginate(25)->withQueryString();
 
-        $categories = KnowledgeArticle::query()
-            ->whereNotNull('category')
-            ->distinct()
-            ->orderBy('category')
-            ->pluck('category');
-
         $hasActiveFilters = $filters['q'] !== ''
-            || $filters['category'] !== 'all'
+            || $filters['collection'] !== ''
             || $filters['status'] !== 'all'
             || $filters['sort'] !== 'newest';
 
         return view('knowledge.index', [
             'articles' => $articles,
             'filters' => $filters,
-            'categories' => $categories,
+            'collectionTree' => $mayViewCollections ? $this->collections->tree($user) : [],
+            'articleCollections' => $mayViewCollections ? $this->collectionsByArticle($user, $articles->getCollection()->modelKeys()) : [],
             'hasActiveFilters' => $hasActiveFilters,
             'canCreate' => Gate::allows('create', KnowledgeArticle::class),
             'canModerate' => $canModerate,
@@ -112,10 +121,11 @@ class KnowledgeArticleController extends Controller {
 
         /** @var User $user */
         $user = Auth::user();
-        $article->load(['creator', 'tags', 'links.linkable', 'links.creator', 'attachments']);
+        $article->load(['creator', 'tags', 'links.target', 'links.creator', 'attachments']);
 
         return view('knowledge.show', [
             'article' => $article,
+            'articleCollections' => Gate::allows('viewAny', ContentCollection::class) ? $this->collections->collectionsContaining($article, $user) : collect(),
             'ownFeedback' => $article->feedback()->where('user_id', $user->id)->first(),
             'linkLabels' => $this->linkLabels($article),
         ]);
@@ -131,6 +141,8 @@ class KnowledgeArticleController extends Controller {
 
         return view('knowledge._form_dialog', [
             'article' => null,
+            // Sammlung beim Anlegen (MVP-814, ersetzt die Freitext-Kategorie).
+            'collectionOptions' => Gate::allows('create', ContentCollection::class) ? $this->collections->tree($this->currentUser()) : [],
             'linkKind' => $linkKind,
             'linkId' => $linkId,
             'prefill' => $prefill,
@@ -151,6 +163,14 @@ class KnowledgeArticleController extends Controller {
             $this->service->linkTo($article, $subject, $creator);
         }
 
+        if (filled($data['collection'] ?? null) && Gate::allows('create', ContentCollection::class)) {
+            $collection = ContentCollection::query()->visibleTo($creator)->whereNull('archived_at')
+                ->find(Sqid::decodeOrNumeric(ContentCollection::class, (string) $data['collection']));
+            if ($collection !== null && Gate::allows('update', $collection)) {
+                $this->collections->addItem($collection, $creator, $article);
+            }
+        }
+
         $this->storeUploads($article, $request);
 
         return redirect()
@@ -163,6 +183,7 @@ class KnowledgeArticleController extends Controller {
 
         return view('knowledge._form_dialog', [
             'article' => $article->load('tags'),
+            'collectionOptions' => [],
             'linkKind' => null,
             'linkId' => null,
             'prefill' => [],
@@ -258,10 +279,10 @@ class KnowledgeArticleController extends Controller {
             ->with('success', __('knowledge.flash.linked'));
     }
 
-    public function destroyLink(KnowledgeArticle $article, KnowledgeArticleLink $link): RedirectResponse {
+    public function destroyLink(KnowledgeArticle $article, ContentReference $link): RedirectResponse {
         Gate::authorize('link', $article);
 
-        if ((int) $link->knowledge_article_id !== (int) $article->id) {
+        if ($link->source_type !== $article->getMorphClass() || (int) $link->source_id !== (int) $article->id || $link->kind !== ContentReference::KIND_LINKED) {
             abort(404);
         }
 
@@ -282,7 +303,7 @@ class KnowledgeArticleController extends Controller {
             'title' => ['required', 'string', 'min:3', 'max:180'],
             'problem' => ['required', 'string', 'max:10000'],
             'solution' => ['required', 'string', 'max:20000'],
-            'category' => ['nullable', 'string', 'max:80'],
+            'collection' => ['nullable', 'string', 'max:64'],
             'tags' => ['nullable', 'string', 'max:500'],
             // Optionale Anhänge (Bilder/Dokumente) direkt aus dem Dialog —
             // der Dialog wird als FormData (multipart) per AJAX gesendet.
@@ -377,10 +398,46 @@ class KnowledgeArticleController extends Controller {
     private function linkLabels(KnowledgeArticle $article): array {
         $labels = [];
         foreach ($article->links as $link) {
-            $kind = array_search($link->linkable_type, self::LINKABLE_MAP, true) ?: 'diary';
+            // Probleme verknüpft der Helpdesk (Known Error); sie standen bis MVP-811 fälschlich als „Auftrag“ da.
+            $kind = array_search($link->target_type, self::LINKABLE_MAP, true)
+                ?: ($link->target_type === (new \App\Models\Problem)->getMorphClass() ? 'problem' : 'diary');
             $labels[$link->id] = (string) __('knowledge.link_kind.' . $kind);
         }
 
         return $labels;
+    }
+
+    /**
+     * Sichtbare Sammlungen je Artikel der Seite — eine Abfrage statt einer je Zeile.
+     *
+     * @param  array<int, int|string>  $articleIds
+     * @return array<int, list<ContentCollection>>
+     */
+    private function collectionsByArticle(User $user, array $articleIds): array {
+        if ($articleIds === []) {
+            return [];
+        }
+
+        $map = [];
+        ContentCollectionItem::query()
+            ->where('collectable_type', (new KnowledgeArticle)->getMorphClass())
+            ->whereIn('collectable_id', $articleIds)
+            ->whereHas('collection', static fn ($q) => $q->visibleTo($user)->whereNull('archived_at'))
+            ->with('collection:id,title,visibility,created_by')
+            ->get()
+            ->each(static function (ContentCollectionItem $entry) use (&$map): void {
+                if ($entry->collection !== null) {
+                    $map[(int) $entry->collectable_id][] = $entry->collection;
+                }
+            });
+
+        return $map;
+    }
+
+    private function currentUser(): User {
+        /** @var User $user */
+        $user = Auth::user();
+
+        return $user;
     }
 }

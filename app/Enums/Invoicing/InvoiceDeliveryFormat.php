@@ -22,6 +22,8 @@ enum InvoiceDeliveryFormat: string implements HasLabel {
     case XRechnung = 'xrechnung';
     case Zugferd = 'zugferd';
     case PdfAndXRechnung = 'pdf_xrechnung';
+    /** XRechnung in UN/CEFACT-CII-Syntax (MVP-805) — nur, wenn der Empfänger sie verlangt; UBL bleibt Standard. */
+    case XRechnungCii = 'xrechnung_cii';
 
     public function label(): string {
         return match ($this) {
@@ -29,6 +31,7 @@ enum InvoiceDeliveryFormat: string implements HasLabel {
             self::XRechnung => (string) __('invoice-import.format.xrechnung'),
             self::Zugferd => (string) __('invoice-import.format.zugferd'),
             self::PdfAndXRechnung => (string) __('invoice-import.format.pdf_xrechnung'),
+            self::XRechnungCii => (string) __('invoice-import.format.xrechnung_cii'),
         };
     }
 
@@ -37,7 +40,12 @@ enum InvoiceDeliveryFormat: string implements HasLabel {
     }
 
     public function needsXRechnung(): bool {
-        return in_array($this, [self::XRechnung, self::PdfAndXRechnung], true);
+        return in_array($this, [self::XRechnung, self::PdfAndXRechnung, self::XRechnungCii], true);
+    }
+
+    /** Syntax der XRechnung: CII nur auf ausdrücklichen Wunsch, sonst UBL. */
+    public function xrechnungSyntax(): XRechnungSyntax {
+        return $this === self::XRechnungCii ? XRechnungSyntax::Cii : XRechnungSyntax::Ubl;
     }
 
     public function needsZugferd(): bool {
@@ -50,6 +58,7 @@ enum InvoiceDeliveryFormat: string implements HasLabel {
             self::XRechnung => 'xrechnung_ubl',
             self::Zugferd => 'zugferd_pdf',
             self::PdfAndXRechnung => 'pdf+xrechnung_ubl',
+            self::XRechnungCii => 'xrechnung_cii',
         };
     }
 }

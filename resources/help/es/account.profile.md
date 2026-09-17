@@ -18,3 +18,6 @@ contraseña actual, salvo cuando el cambio es inicial o forzado. En el
 modelo de jornada defines tus horas teóricas como base para cuentas de
 tiempo e informes, y la suscripción de calendario ofrece tus citas como
 feed ICS cuyo enlace puedes regenerar o revocar en cualquier momento.
+
+Solo se ofrecen páginas que puedes abrir. Sin elección propia se aplica la
+página de inicio que tu organización ha fijado para tu rol.

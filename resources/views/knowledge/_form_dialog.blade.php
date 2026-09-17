@@ -38,8 +38,17 @@
 
     <x-form-group :legend="__('knowledge.title.index')" icon="school" tone="primary" cols="2">
         <x-input-field name="title" :label="__('knowledge.field.title')" required minlength="3" maxlength="180" span="2" :value="old('title', $article?->title ?? ($prefill['title'] ?? ''))" />
-        <x-input-field name="category" :label="__('knowledge.field.category')" maxlength="80" :value="old('category', $article?->category)" placeholder="{{ __('knowledge.hint.category') }}" />
-        <x-input-field name="tags" :label="__('knowledge.field.tags')" maxlength="500" :value="old('tags', $tagNames)" placeholder="{{ __('knowledge.hint.tags') }}" />
+        {{-- Sammlung statt Freitext-Kategorie (MVP-814): beim Anlegen direkt einsortieren. --}}
+        @if (($collectionOptions ?? []) !== [])
+            <x-select-field name="collection" :label="__('collections.field.collection')" :hint="__('knowledge.hint.collection')">
+                <option value="">—</option>
+                @foreach ($collectionOptions as $row)
+                    @continue($row['collection']->isArchived())
+                    <option value="{{ $row['collection']->sqid }}" @selected(old('collection') === $row['collection']->sqid)>{{ str_repeat('– ', $row['depth'] - 1) }}{{ $row['collection']->title }}</option>
+                @endforeach
+            </x-select-field>
+        @endif
+        <x-input-field name="tags" :label="__('knowledge.field.tags')" maxlength="500" :value="old('tags', $tagNames)" placeholder="{{ __('knowledge.hint.tags') }}" :span="($collectionOptions ?? []) === [] ? 2 : null" />
     </x-form-group>
 
     <x-form-group :legend="__('knowledge.field.problem')" icon="report_problem" tone="warning" cols="1">

@@ -14,6 +14,8 @@ namespace App\Plugins\Calendly\Services;
 
 use App\Models\{AppointmentRequest, IntegrationInboxItem, Organization};
 use App\Plugins\Calendly\CalendlyPlugin;
+use App\Plugins\Support\PluginSettingsResolver;
+use App\Services\Sales\LeadService;
 use Carbon\CarbonImmutable;
 
 /**
@@ -30,6 +32,7 @@ class CalendlyIngestService {
     public function __construct(
         private readonly CalendlyAppointmentMatcher $matcher,
         private readonly CalendlyConfirmService $confirm,
+        private readonly LeadService $leads,
     ) {}
 
     /**
@@ -110,6 +113,14 @@ class CalendlyIngestService {
 
         if ($isNew && $request->customer_id === null) {
             $this->recordUnmatched($organization, $request, $invitee);
+
+            // Lead per Opt-in je Organisation (MVP-807, Entscheid P8-25).
+            if ($request->lead_id === null && PluginSettingsResolver::for(CalendlyPlugin::ID, $organization->id)->bool('create_leads', false)) {
+                $lead = $this->leads->fromAppointment($request);
+                if ($lead !== null) {
+                    $request->forceFill(['lead_id' => $lead->id])->save();
+                }
+            }
         }
 
         return $request;

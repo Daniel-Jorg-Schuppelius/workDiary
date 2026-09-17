@@ -22,6 +22,9 @@
             </div>
             @if ($canManage)
                 <x-slot:actions>
+                    <x-icon-btn icon="label" size="sm" tone="ghost" show-label
+                                :href="route('inventory.labels.serial', $serial)"
+                                target="_blank">{{ __('Etikett drucken') }}</x-icon-btn>
                     @if ($serial->status->value === 'blocked')
                         <form method="POST" action="{{ route('serials.unblock', $serial) }}">@csrf
                             <x-icon-btn icon="lock_open" size="sm" type="submit" show-label>{{ __('inventory.serial.action.unblock') }}</x-icon-btn>

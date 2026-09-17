@@ -150,7 +150,13 @@ class SafetyInstructionController extends Controller {
 
         /** @var User $actor */
         $actor = Auth::user();
-        $this->service->sign($participant, $actor, ip: $request->ip());
+        $data = $request->validate(['signature' => ['nullable', 'string', 'max:1400000']]);
+        $signature = trim((string) ($data['signature'] ?? ''));
+        if ($signature !== '') {
+            $this->service->signDrawn($participant, $actor, $signature, $request->ip());
+        } else {
+            $this->service->sign($participant, $actor, ip: $request->ip());
+        }
 
         return redirect()
             ->back()

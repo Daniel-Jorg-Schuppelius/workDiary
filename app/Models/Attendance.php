@@ -44,6 +44,8 @@ use Illuminate\Support\Carbon;
  * @property float|null $ended_lng
  * @property string|null $started_device
  * @property string|null $ended_device
+ * @property int|null $started_checkpoint_id
+ * @property int|null $ended_checkpoint_id
  * @property string|null $note
  * @property int|null $closed_by
  * @property int|null $created_by
@@ -83,6 +85,8 @@ class Attendance extends Model {
         'ended_lng',
         'started_device',
         'ended_device',
+        'started_checkpoint_id',
+        'ended_checkpoint_id',
         'note',
         'closed_by',
         'created_by',

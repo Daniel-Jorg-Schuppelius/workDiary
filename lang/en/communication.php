@@ -17,6 +17,8 @@ return [
     ],
 
     'field' => [
+
+        'tags' => 'Tags',
         'type' => 'Type',
         'direction' => 'Direction',
         'occurred_at' => 'Date & time',
@@ -97,6 +99,8 @@ return [
     ],
 
     'filter' => [
+
+        'all_tags' => 'All tags',
         'search' => 'Search',
         'search_placeholder' => 'Subject or content …',
         'all_customers' => 'All customers',
@@ -105,6 +109,8 @@ return [
     ],
 
     'hint' => [
+
+        'tags' => 'Separate several with commas, e.g. maintenance, heating.',
         'customer_not_published' => 'The note appears in the customer record, but not in the customer portal.',
     ],
 
@@ -116,4 +122,14 @@ return [
     'empty_filtered' => 'No notes found.',
     'confirm_delete' => 'Really delete this communication note?',
     'confirm_publish' => 'Really make this note visible to the customer?',
+    'convert' => [
+        'action' => 'Convert to knowledge article',
+        'error' => [
+            'confidential' => 'Confidential notes cannot be converted to a knowledge article.',
+        ],
+        'flash' => [
+            'created' => 'Knowledge article created as draft; it refers to the note.',
+            'existing' => 'This note has already been converted.',
+        ],
+    ],
 ];

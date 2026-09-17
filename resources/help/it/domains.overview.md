@@ -31,10 +31,12 @@ restano visibili nell'indicatore così da mantenere il portafoglio completo.
 dei nomi e DNS, fatture, cronologia e azioni. «Aggiorna» riconcilia lo stato
 del provider per quel dominio specifico.
 
-**DNS:** La zona viene letta su richiesta; i record possono essere sostituiti
-o modificati in modo mirato. Dopo una scrittura il sistema rileva gli
-scostamenti (conflitto DNS) e li rende visibili invece di sovrascriverli. I
-record MX/SRV richiedono una priorità.
+**DNS:** La zona viene letta su richiesta. Nell'interfaccia si possono aggiungere
+ed eliminare singoli record; la sostituzione dell'intera zona non è offerta di
+proposito, perché una sostituzione completa errata elimina tutti i record del
+dominio. Dopo una scrittura il sistema rileva gli scostamenti (conflitto DNS) e
+li rende visibili invece di sovrascriverli. I record MX/SRV richiedono una
+priorità.
 
 **Registrazione:** Prima della registrazione viene verificata la
 disponibilità. Una registrazione richiede un cliente, un handle di contatto

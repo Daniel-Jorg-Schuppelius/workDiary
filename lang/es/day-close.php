@@ -9,7 +9,7 @@
  */
 
 /*
- * Cierre diario (MVP-015, docs/tagesabschluss.md) — textos de la página,
+ * Cierre diario (MVP-015, WorkDiary-Architecture/tagesabschluss.md) — textos de la página,
  * mensajes del validador (§4), mensajes flash y errores. Mantenido en
  * paridad de/en/fr/it/es; las etiquetas de enums están en enums.php
  * (dayClosure.status / dayCorrection.status).

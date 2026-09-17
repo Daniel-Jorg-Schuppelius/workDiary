@@ -503,16 +503,19 @@ class InvoiceController extends Controller {
                 ->with('error', __('invoicing.einvoice.error_intro') . ' ' . implode(' ', $result['errors']));
         }
 
-        $xml = $generator->generate($invoice);
+        // Syntax aus dem Zustellformat (MVP-805): CII nur auf Wunsch des Empfängers.
+        $syntax = $generator->syntaxFor($invoice);
+        $xml = $generator->generate($invoice, $syntax);
         $filename = 'XRechnung_' . preg_replace('/[^A-Za-z0-9._-]/', '_', (string) $invoice->number) . '.xml';
+        $format = 'xrechnung_' . $syntax->value;
 
         // Übergabenachweis (MVP-168): Format + Dateihash revisionsfest im Audit.
         $invoice->audit('invoice.einvoice_exported', [
-            'format' => 'xrechnung_ubl',
+            'format' => $format,
             'filename' => $filename,
             'sha256' => CryptoHelper::hash($xml),
         ]);
-        $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD, 'xrechnung_ubl', null, CryptoHelper::hash($xml), ['filename' => $filename]);
+        $this->recordDispatch($invoice, \App\Models\DocumentDispatch::CHANNEL_DOWNLOAD, $format, null, CryptoHelper::hash($xml), ['filename' => $filename]);
 
         return response($xml, 200, [
             'Content-Type' => 'application/xml; charset=UTF-8',
@@ -633,7 +636,7 @@ class InvoiceController extends Controller {
         Gate::authorize('update', $invoice);
         $data = $request->validated();
 
-        $invoice->items()->create([
+        $item = $invoice->items()->create([
             'organization_id' => $invoice->organization_id,
             'article_id' => $data['article_id'] ?? null,
             'service_date' => $data['service_date'] ?? null,
@@ -649,6 +652,20 @@ class InvoiceController extends Controller {
             'tax_category' => $data['tax_category'] ?? null,
             'position' => $data['position'] ?? ((int) $invoice->items()->max('position') + 1),
         ]);
+
+        // Kupferzuschlag zum Tagespreis als eigene Position (MVP-804, Feature 107).
+        $surcharge = $request->boolean('add_copper_surcharge')
+            ? app(\App\Services\Procurement\MetalSurchargeService::class)->salesSurchargeItem($item->article_id, (string) $item->quantity, $item->unit)
+            : null;
+        if ($surcharge !== null) {
+            $invoice->items()->create($surcharge + [
+                'organization_id' => $invoice->organization_id,
+                'service_date' => $item->service_date,
+                'tax_rate' => $data['tax_rate'] ?? null,
+                'tax_category' => $data['tax_category'] ?? null,
+                'position' => (int) $invoice->items()->max('position') + 1,
+            ]);
+        }
 
         $this->refreshTotals($invoice);
 

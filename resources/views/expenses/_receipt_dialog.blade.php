@@ -74,6 +74,29 @@
                         </x-action-form>
                     @endif
                 </div>
+                @if ($wasPushed ?? false)
+                    {{-- MVP-802: Korrektur nur per Gegenbeleg — der übergebene Beleg ist unveränderlich. --}}
+                    <div class="mt-3 border-t border-base-300 pt-3 text-sm">
+                        @if ($counterVoucher ?? null)
+                            <p>
+                                <span class="badge badge-warning badge-sm">{{ __('Gegenbeleg übergeben') }}</span>
+                                {{ $counterVoucher->number ?: $counterVoucher->externalId }} · {{ optional($counterVoucher->date)->format('d.m.Y') }}
+                            </p>
+                            @if ($correction ?? null)
+                                <p class="mt-1 text-muted">{{ __('Korrigierte Auslage: #:id (:status)', ['id' => $correction->id, 'status' => $correction->status->label()]) }}</p>
+                            @endif
+                        @elseif ($canLink)
+                            <x-action-form :action="route('expenses.correct', $expense)"
+                                           :confirm="__('Gegenbeleg an die Buchhaltung übergeben? Er hebt den Beleg dort unwiderruflich auf; die korrigierte Auslage entsteht als Entwurf.')"
+                                           :confirm-label="__('Gegenbeleg übergeben')" confirm-icon="undo" confirm-tone="warning">
+                                <x-input-field name="correction_reason" :label="__('Grund der Korrektur')" required minlength="5" maxlength="500" />
+                                <div class="mt-2 flex justify-end">
+                                    <x-icon-btn icon="undo" tone="warning" size="sm" type="submit" show-label>{{ __('Per Gegenbeleg korrigieren') }}</x-icon-btn>
+                                </div>
+                            </x-action-form>
+                        @endif
+                    </div>
+                @endif
             @elseif (($canPush ?? false))
                 {{-- Feature 106: Die Dublette gar nicht erst entstehen lassen —
                      die Auslage wird selbst zum Beleg, die externe ID kommt

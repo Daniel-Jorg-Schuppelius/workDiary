@@ -23,6 +23,12 @@
                 <div class="mb-1 text-sm font-semibold">{{ __('terminal.new_heading') }}</div>
                 <p class="mb-2 text-xs text-muted">{{ __('terminal.new_hint') }}</p>
                 <code class="block break-all rounded bg-base-100 px-3 py-2 text-sm">{{ $issuedUrl }}</code>
+                @if ($issuedKioskUrl)
+                    {{-- Kiosk-Modus (MVP-800): dasselbe Gerätetoken, im Browser eines Tablets geöffnet. --}}
+                    <div class="mb-1 mt-3 text-sm font-semibold">{{ __('terminal.kiosk.heading') }}</div>
+                    <p class="mb-2 text-xs text-muted">{{ __('terminal.kiosk.hint') }}</p>
+                    <code class="block break-all rounded bg-base-100 px-3 py-2 text-sm">{{ $issuedKioskUrl }}</code>
+                @endif
             </div>
         @endif
 
@@ -151,6 +157,108 @@
                                     </td>
                                 </tr>
                             @endforeach
+                </x-table>
+            @endif
+        </x-card>
+        {{-- Terminal-PINs (MVP-803) --}}
+        <x-card :title="__('terminal.pin.heading')">
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.terminals.pins.create')"
+                            show-label>{{ __('terminal.pin.action.set') }}</x-icon-btn>
+            </x-slot:actions>
+            <p class="mb-3 text-sm text-muted">{{ __('terminal.pin.intro') }}</p>
+            @if ($pins->isEmpty())
+                <p class="text-sm text-muted">{{ __('terminal.pin.empty') }}</p>
+            @else
+                <x-table :bare="true">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('terminal.badge.user') }}</th>
+                            <th>{{ __('terminal.pin.field.personnel_number') }}</th>
+                            <th>{{ __('terminal.col.status') }}</th>
+                            <th></th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($pins as $pin)
+                        <tr>
+                            <td>{{ $pin->user?->name ?? '—' }}</td>
+                            <td class="font-mono text-xs">{{ $pin->user?->personnel_number ?? '—' }}</td>
+                            <td>
+                                @if ($pin->isLocked())
+                                    <span class="badge badge-error badge-sm">{{ __('terminal.pin.status.locked_until', ['time' => $pin->locked_until?->format('H:i')]) }}</span>
+                                @else
+                                    <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
+                                @endif
+                            </td>
+                            <td class="text-right whitespace-nowrap">
+                                @if ($pin->isLocked())
+                                    <form method="POST" action="{{ route('admin.terminals.pins.unlock') }}" class="inline">
+                                        @csrf
+                                        <input type="hidden" name="pin" value="{{ $pin->sqid }}">
+                                        <button type="submit" class="btn btn-ghost btn-xs">{{ __('terminal.pin.action.unlock') }}</button>
+                                    </form>
+                                @endif
+                                <x-action-form :action="route('admin.terminals.pins.remove')" class="inline"
+                                               :confirm="__('terminal.pin.confirm.remove')" :confirm-label="__('terminal.pin.action.remove')" confirm-tone="error">
+                                    <input type="hidden" name="pin" value="{{ $pin->sqid }}">
+                                    <button type="submit" class="btn btn-ghost btn-xs text-error">{{ __('terminal.pin.action.remove') }}</button>
+                                </x-action-form>
+                            </td>
+                        </tr>
+                    @endforeach
+                </x-table>
+            @endif
+        </x-card>
+        {{-- Check-in-Punkte (MVP-800) --}}
+        <x-card :title="__('terminal.checkpoint.heading')">
+            <x-slot:actions>
+                <x-icon-btn icon="add" tone="primary" size="sm"
+                            data-entry-modal-trigger
+                            :href="route('admin.terminals.checkpoints.create')"
+                            show-label>{{ __('terminal.checkpoint.action.create') }}</x-icon-btn>
+            </x-slot:actions>
+            <p class="mb-3 text-sm text-muted">{{ __('terminal.checkpoint.intro') }}</p>
+            @if ($checkpoints->isEmpty())
+                <p class="text-sm text-muted">{{ __('terminal.checkpoint.empty') }}</p>
+            @else
+                <x-table :bare="true">
+                    <x-slot:head>
+                        <tr>
+                            <th>{{ __('terminal.field.name') }}</th>
+                            <th>{{ __('terminal.checkpoint.field.kind') }}</th>
+                            <th>{{ __('terminal.checkpoint.field.location') }}</th>
+                            <th>{{ __('terminal.checkpoint.field.radius') }}</th>
+                            <th>{{ __('terminal.col.status') }}</th>
+                            <th></th>
+                        </tr>
+                    </x-slot:head>
+                    @foreach ($checkpoints as $checkpoint)
+                        <tr>
+                            <td>{{ $checkpoint->name }}</td>
+                            <td>{{ $checkpoint->kind->label() }}</td>
+                            <td class="text-muted">{{ $checkpoint->vehicle?->displayName() ?? $checkpoint->site?->name ?? '—' }}</td>
+                            <td class="text-muted">{{ $checkpoint->radius_m !== null ? $checkpoint->radius_m . ' m' : '—' }}</td>
+                            <td>
+                                @if ($checkpoint->active)
+                                    <span class="badge badge-success badge-sm">{{ __('terminal.status.active') }}</span>
+                                @else
+                                    <span class="badge badge-ghost badge-sm">{{ __('terminal.status.inactive') }}</span>
+                                @endif
+                            </td>
+                            <td class="text-right whitespace-nowrap">
+                                <x-icon-btn icon="qr_code_2" :href="route('admin.terminals.checkpoints.qr', $checkpoint->sqid)" :label="__('terminal.checkpoint.action.qr')" />
+                                <form method="POST" action="{{ route('admin.terminals.checkpoints.toggle') }}" class="inline">
+                                    @csrf
+                                    <input type="hidden" name="checkpoint" value="{{ $checkpoint->sqid }}">
+                                    <button type="submit" class="btn btn-ghost btn-xs {{ $checkpoint->active ? 'text-error' : '' }}">
+                                        {{ $checkpoint->active ? __('terminal.action.disable') : __('terminal.checkpoint.action.enable') }}
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    @endforeach
                 </x-table>
             @endif
         </x-card>

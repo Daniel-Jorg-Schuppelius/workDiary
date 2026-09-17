@@ -28,7 +28,7 @@
                 </select>
             </label>
             <label class="form-control">
-                <span class="label-text">{{ __('Tag') }}</span>
+                <span class="label-text">{{ __('Datum') }}</span>
                 <input type="date" name="day" value="{{ $day?->format('Y-m-d') }}" class="input input-bordered input-sm">
             </label>
             <button type="submit" class="btn btn-primary btn-sm">{{ __('Fenster anzeigen') }}</button>

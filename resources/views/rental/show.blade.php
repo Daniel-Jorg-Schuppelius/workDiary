@@ -360,7 +360,7 @@
     <x-card :title="__('Belegungsfenster')" padding="p-0">
         <x-table bare>
             <x-slot:head>
-                <tr><th>{{ __('Asset') }}</th><th>{{ __('Art') }}</th><th>{{ __('Zeitraum (inkl. Puffer)') }}</th><th>{{ __('Status') }}</th></tr>
+                <tr><th>{{ __('Asset') }}</th><th>{{ __('Art') }}</th><th>{{ __('Zeitraum (inkl. Puffer)') }}</th><th>{{ __('Status') }}</th><th></th></tr>
             </x-slot:head>
             @forelse ($case->reservations as $reservation)
                 <tr>
@@ -368,9 +368,23 @@
                     <td>{{ $reservation->kind->label() }}</td>
                     <td>{{ $reservation->blockedFrom()->fdatetime() }} – {{ $reservation->blockedUntil()->fdatetime() }}</td>
                     <td><x-status-badge size="md" outline>{{ __("values.{$reservation->status}") }}</x-status-badge></td>
+                    {{-- Storno (MVP-798, Befund C1-04): Endpunkt war da, Aktionsspalte fehlte.
+                         Rechteprüfung wie im Controller (create auf RentalCase). --}}
+                    <td class="text-right">
+                        @can('create', \App\Models\Rental\RentalCase::class)
+                            @if ($reservation->status === 'active')
+                                <x-action-form :action="route('rental.reservations.cancel', $reservation)"
+                                               :confirm="__('Das Belegungsfenster wird storniert und das Gerät im Kalender wieder freigegeben.')"
+                                               :confirm-label="__('Stornieren')" confirm-icon="event_busy">
+                                    <x-icon-btn icon="event_busy" size="xs" tone="error" type="submit"
+                                                :title="__('Stornieren')" />
+                                </x-action-form>
+                            @endif
+                        @endcan
+                    </td>
                 </tr>
             @empty
-                <x-table.empty :colspan="4" :title="__('Keine Belegungsfenster — entstehen mit der Reservierung.')" compact />
+                <x-table.empty :colspan="5" :title="__('Keine Belegungsfenster — entstehen mit der Reservierung.')" compact />
             @endforelse
         </x-table>
     </x-card>

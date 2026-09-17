@@ -74,6 +74,9 @@ class CalendlyPlugin extends AbstractPlugin implements AppointmentSyncer {
                 help: __('Leer = Instanz-App der Installation. Eine eigene Calendly-App muss dieselbe Redirect-URI registrieren.'))->toArray(),
             \App\Plugins\Contracts\SettingsField::password('client_secret', __('Client-Secret'),
                 help: __('Wird verschlüsselt gespeichert; leer lassen = gespeicherten Wert behalten.'))->toArray(),
+            // MVP-807 (Entscheid P8-25): Standard aus — ein Lead ist eine Vertriebsakte, keine Nebenwirkung einer Buchung.
+            \App\Plugins\Contracts\SettingsField::boolean('create_leads', __('Leads aus Buchungen ohne Kundenbezug anlegen'), false,
+                help: __('Nur wenn kein Bestandskunde infrage kommt; sonst bleibt die Buchung zur Zuordnung in der Inbox. Erneute Buchungen derselben Adresse hängen am offenen Lead.'))->toArray(),
         ];
     }
 

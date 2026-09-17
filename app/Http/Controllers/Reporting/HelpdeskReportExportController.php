@@ -16,7 +16,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Concerns\ResolvesGlobalDateRange;
 use App\Http\Controllers\Controller;
 use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, WritesReportCsv};
-use App\Models\{AuditLog, KnowledgeArticle, KnowledgeArticleLink, Problem, ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
+use App\Models\{AuditLog, KnowledgeArticle, Problem, ServiceQueue, ServiceTicket, SlaClockSegment, TicketSatisfaction};
 use App\Services\ServiceTicket\HelpdeskMetricsService;
 use App\Support\Sqid;
 use Illuminate\Http\{Request, Response};
@@ -285,10 +285,9 @@ class HelpdeskReportExportController extends Controller {
         /** @var KnowledgeArticle $article */
         $article = KnowledgeArticle::query()->whereNotNull('published_at')->findOrFail($articleId);
 
-        $problemIds = KnowledgeArticleLink::query()
-            ->where('knowledge_article_id', $article->id)
-            ->where('linkable_type', (new Problem())->getMorphClass())
-            ->pluck('linkable_id');
+        $problemIds = $article->links()
+            ->where('target_type', (new Problem())->getMorphClass())
+            ->pluck('target_id');
         abort_if($problemIds->isEmpty(), 404);
 
         /** @var LengthAwarePaginator<int, array<string, mixed>> $rows */

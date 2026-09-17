@@ -47,24 +47,58 @@ final class QualityHostingInvoiceReader {
     private const BLOCK_END = '/^(?:\d+\s+\d|Total|Dienst:|Service:|Vertrag:|Contract:|Grundgeb|Base fee|Basic fee)/u';
 
     /**
-     * Text zuerst zeilenausgerichtet aus dem Textlayer, sonst per OCR (C17).
-     * Toolkit-Fehler tragen den Serverpfad — nach außen nur der Dateiname.
+     * Text zuerst zeilenausgerichtet aus dem Textlayer, dann der entzifferte
+     * Textlayer, zuletzt OCR (C17, MVP-808). Toolkit-Fehler tragen den
+     * Serverpfad — nach außen nur der Dateiname.
      */
     public function read(string $path): ProviderInvoice {
         $name = basename($path);
+
         try {
-            $text = (new PDFTextProvider($path))->textWithFallback(
-                static fn(PDFTextProvider $p): ?string => $p->rowAlignedText(),
-                static fn(PDFTextProvider $p): ?string => $p->ocrRowAlignedText('deu+eng'),
-            );
+            $provider = new PDFTextProvider($path);
+            $invoice = $this->readFirstReadable([
+                static fn(): ?string => $provider->rowAlignedText(),
+                // Nachdruck ohne ToUnicode-Tabelle: der Textlayer ist Zeichensalat,
+                // das pdf-toolkit entziffert ihn mit dem OCR-Text als Schlüssel —
+                // die Beträge stammen dann aus dem Original, nicht aus der OCR.
+                static fn(): ?string => $provider->decodedLayerText('deu+eng'),
+                static fn(): ?string => $provider->ocrRowAlignedText('deu+eng'),
+            ]);
         } catch (Throwable $e) {
             throw new RuntimeException((string) __('resale_import.invoice.unreadable', ['file' => $name, 'reason' => str_replace($path, $name, $e->getMessage())]), 0, $e);
         }
-        if ($text === null) {
+        if ($invoice === null) {
             throw new RuntimeException((string) __('resale_import.invoice.no_text', ['file' => $name]));
         }
 
-        return $this->parse($text);
+        return $invoice;
+    }
+
+    /**
+     * Erste lesbare Fassung aus mehreren Textquellen. Bis MVP-808 gewann der
+     * erste **nicht leere** Text — ein Zeichensalat-Textlayer ist nicht leer,
+     * also kam die OCR nie zum Zug und der Import fand keine Positionen.
+     * Lesbar heißt: Belegnummer, mindestens eine Position, Summe stimmt.
+     * Die nächste Quelle wird erst abgefragt, wenn die vorige nicht reicht
+     * (OCR kostet); ohne lesbare Fassung zählt die erste mit Text.
+     *
+     * @param  list<\Closure(): ?string>  $sources
+     */
+    public function readFirstReadable(array $sources): ?ProviderInvoice {
+        $first = null;
+        foreach ($sources as $source) {
+            $text = $source();
+            if ($text === null || trim($text) === '') {
+                continue;
+            }
+            $invoice = $this->parse($text);
+            if ($invoice->number !== '' && $invoice->lines !== [] && $invoice->isConsistent()) {
+                return $invoice;
+            }
+            $first ??= $invoice;
+        }
+
+        return $first;
     }
 
     public function parse(string $text): ProviderInvoice {

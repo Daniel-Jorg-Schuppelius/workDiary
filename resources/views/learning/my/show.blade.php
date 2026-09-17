@@ -81,7 +81,7 @@
                     $isDone = in_array($unit->id, $completedUnitIds, true);
                     $needsLangHint = ! isset($translated[$unit->id]) && $sourceLocale !== app()->getLocale();
                     // Freischaltplan (MVP-788): die Sperre sitzt im Dienst; hier nur die Anzeige.
-                    $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment);
+                    $isLocked = ! $isDone && ! $unit->isReleasedFor($enrollment, null, $completedUnitIds);
                 @endphp
                 <x-card>
                     <div class="flex flex-wrap items-start justify-between gap-3">
@@ -100,7 +100,7 @@
                             @if ($isLocked)
                                 <x-status-badge tone="neutral" size="sm" outline>
                                     <x-icon name="lock_clock" />
-                                    {{ __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) }}
+                                    {{ $unit->releaseDateFor($enrollment)?->isFuture() ? __('learning.badge.available_from', ['date' => $unit->releaseDateFor($enrollment)?->translatedFormat('d.m.Y')]) : __('learning.badge.after_previous_unit') }}
                                 </x-status-badge>
                             @elseif ($unit->kind === \App\Enums\Learning\LearningUnitKind::Event && $unit->event)
                                 @php $participation = $eventParticipations[$unit->event_id] ?? null; @endphp
@@ -187,7 +187,7 @@
                         foreach (($translated[$unit->id]['blocks'] ?? []) as $t) {
                             $i = (int) ($t['index'] ?? -1);
                             if (isset($blocks[$i])) {
-                                $blocks[$i] = array_replace($blocks[$i], array_intersect_key($t, ['text' => 1, 'items' => 1]));
+                                $blocks[$i] = array_replace($blocks[$i], array_intersect_key($t, \App\Services\Learning\LearningTranslationService::TRANSLATED_BLOCK_KEYS));
                             }
                         }
                     @endphp

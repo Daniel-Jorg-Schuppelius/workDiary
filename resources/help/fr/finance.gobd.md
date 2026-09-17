@@ -54,3 +54,12 @@ le journal d'audit.
 L'export lit exclusivement des données existantes — il ne modifie ni
 pièces ni données de base et peut être répété autant de fois que
 nécessaire.
+
+**Documentation de procédure :** Au-delà de l'export des données, la
+réglementation exige de décrire *comment* elles naissent — de la saisie au
+traitement puis à la conservation. L'application constitue cette documentation
+à partir de l'état réel du système : modules actifs, plages de numérotation,
+durées de conservation, rôles et journalisation. Ce qui change en exploitation
+change donc aussi dans la documentation, contrairement à un texte rédigé une
+fois pour toutes. Relis-la avant chaque contrôle et complète les parties
+organisationnelles qu'aucun système ne peut connaître.

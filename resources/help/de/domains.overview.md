@@ -29,10 +29,12 @@ sichtbar, damit das Portfolio vollständig gepflegt wird.
 Rechnungen, Timeline und Aktionen. „Aktualisieren“ gleicht den
 Providerzustand für genau diese Domain ab.
 
-**DNS:** Die Zone wird auf Anforderung gelesen; Records lassen sich
-ersetzen oder gezielt ändern. Nach dem Schreiben erkennt das System
-Abweichungen (DNS-Konflikt) und macht sie sichtbar, statt sie zu
-überschreiben. MX-/SRV-Records verlangen eine Priorität.
+**DNS:** Die Zone wird auf Anforderung gelesen. In der Oberfläche lassen sich
+einzelne Einträge hinzufügen und löschen; die ganze Zone zu ersetzen ist dort
+bewusst nicht vorgesehen, weil ein falscher Vollersatz alle Einträge der Domain
+löscht. Nach dem Schreiben erkennt das System Abweichungen (DNS-Konflikt) und
+macht sie sichtbar, statt sie zu überschreiben. MX-/SRV-Records verlangen eine
+Priorität.
 
 **Registrieren:** Vor der Registrierung wird die Verfügbarkeit geprüft.
 Eine Registrierung braucht einen Kunden, ein Owner-Contact-Handle,

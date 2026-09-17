@@ -10,12 +10,19 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\Attendance\CheckpointKind;
 use App\Http\Controllers\Controller;
-use App\Models\{AttendanceTerminal, Organization, Site, User, UserBadge};
+use App\Models\{AttendanceCheckpoint, AttendanceTerminal, Organization, Site, User, UserBadge, UserTerminalPin, Vehicle};
+use App\Services\Attendance\TerminalPinService;
 use App\Services\SqidEncoder;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
+use BaconQrCode\Renderer\ImageRenderer;
+use BaconQrCode\Renderer\RendererStyle\RendererStyle;
+use BaconQrCode\Writer;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\{Rule, ValidationException};
 use Illuminate\View\View;
 
 /**
@@ -42,6 +49,19 @@ class TerminalAdminController extends Controller {
                 ->orderByDesc('id')
                 ->get(),
             'issuedUrl' => is_array(session('terminal_issued')) ? (session('terminal_issued')['url'] ?? null) : null,
+            'issuedKioskUrl' => is_array(session('terminal_issued')) ? (session('terminal_issued')['kiosk_url'] ?? null) : null,
+            // Terminal-PINs (MVP-803): wer eine hat, und ob sie gesperrt ist.
+            'pins' => UserTerminalPin::query()
+                ->where('organization_id', $organization->id)
+                ->with('user:id,name,personnel_number')
+                ->get()
+                ->sortBy(fn (UserTerminalPin $pin): string => (string) $pin->user?->name)
+                ->values(),
+            'checkpoints' => AttendanceCheckpoint::query()
+                ->where('organization_id', $organization->id)
+                ->with(['site:id,name', 'vehicle:id,label,license_plate'])
+                ->orderBy('name')
+                ->get(),
         ]);
     }
 
@@ -84,7 +104,7 @@ class TerminalAdminController extends Controller {
         $terminal->audit('terminal.registered', ['by_user_id' => (int) $admin->id]);
 
         return back()
-            ->with('terminal_issued', ['url' => route('api.terminal.ingest', ['token' => $plain])])
+            ->with('terminal_issued', ['url' => route('api.terminal.ingest', ['token' => $plain]), 'kiosk_url' => route('kiosk.show', ['token' => $plain])])
             ->with('success', __('terminal.flash.registered'));
     }
 
@@ -98,7 +118,7 @@ class TerminalAdminController extends Controller {
         $terminal->audit('terminal.token_rotated', ['by_user_id' => (int) $admin->id]);
 
         return back()
-            ->with('terminal_issued', ['url' => route('api.terminal.ingest', ['token' => $plain])])
+            ->with('terminal_issued', ['url' => route('api.terminal.ingest', ['token' => $plain]), 'kiosk_url' => route('kiosk.show', ['token' => $plain])])
             ->with('success', __('terminal.flash.token_rotated'));
     }
 
@@ -185,6 +205,153 @@ class TerminalAdminController extends Controller {
         }
 
         return back()->with('success', __('terminal.flash.badge_revoked'));
+    }
+
+    /** Dialog-Fragment: Terminal-PIN setzen (MVP-803). */
+    public function createPin(): View {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        return view('admin.terminals._pin_form_dialog', [
+            'users' => User::query()->where('organization_id', $organization->id)->whereNull('customer_id')
+                ->whereNull('deactivated_at')->whereNotNull('personnel_number')->orderBy('name')->get(['id', 'name', 'personnel_number']),
+        ]);
+    }
+
+    /** Setzt oder ersetzt die Terminal-PIN einer Person; gespeichert wird nur der Hash. */
+    public function storePin(Request $request, TerminalPinService $pins): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'user' => ['required', 'string'],
+            'pin' => ['required', 'string', 'confirmed'],
+        ]);
+        $pins->set($this->resolveUser($organization, (string) $data['user']), (string) $data['pin'], $admin);
+
+        return back()->with('success', __('terminal.pin.flash.set'));
+    }
+
+    public function unlockPin(Request $request, TerminalPinService $pins): RedirectResponse {
+        $admin = $this->admin();
+        $pins->unlock($this->resolvePin($this->organization($admin), (string) $request->input('pin', '')), $admin);
+
+        return back()->with('success', __('terminal.pin.flash.unlocked'));
+    }
+
+    public function removePin(Request $request, TerminalPinService $pins): RedirectResponse {
+        $admin = $this->admin();
+        $pins->remove($this->resolvePin($this->organization($admin), (string) $request->input('pin', '')), $admin);
+
+        return back()->with('success', __('terminal.pin.flash.removed'));
+    }
+
+    private function resolvePin(Organization $organization, string $sqid): UserTerminalPin {
+        $decoded = app(SqidEncoder::class)->decode(UserTerminalPin::class, $sqid);
+        $pin = $decoded !== null
+            ? UserTerminalPin::query()->whereKey($decoded)->where('organization_id', $organization->id)->first()
+            : null;
+        abort_unless($pin instanceof UserTerminalPin, 404);
+
+        return $pin;
+    }
+
+    /** Dialog-Fragment: Check-in-Punkt anlegen (MVP-800). */
+    public function createCheckpoint(): View {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        return view('admin.terminals._checkpoint_form_dialog', [
+            'sites' => Site::query()->where('organization_id', $organization->id)->orderBy('name')->get(['id', 'name']),
+            'vehicles' => Vehicle::query()->where('organization_id', $organization->id)->orderBy('license_plate')->get(['id', 'label', 'license_plate']),
+        ]);
+    }
+
+    /** Legt einen Check-in-Punkt an; QR-Code und NFC-Adresse zeigt die Druckansicht. */
+    public function storeCheckpoint(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $organization = $this->organization($admin);
+
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:120'],
+            'kind' => ['required', Rule::enum(CheckpointKind::class)],
+            'site' => ['nullable', 'string'],
+            'vehicle' => ['nullable', 'required_if:kind,vehicle', 'string'],
+            'latitude' => ['nullable', 'numeric', 'between:-90,90', 'required_with:longitude'],
+            'longitude' => ['nullable', 'numeric', 'between:-180,180', 'required_with:latitude'],
+            'radius_m' => ['nullable', 'integer', 'between:10,5000'],
+        ]);
+
+        $kind = CheckpointKind::from((string) $data['kind']);
+        $siteId = $kind === CheckpointKind::Site ? $this->resolveSiteId($organization, $data['site'] ?? null) : null;
+        $vehicleId = $kind === CheckpointKind::Vehicle ? $this->resolveVehicleId($organization, (string) ($data['vehicle'] ?? '')) : null;
+
+        $checkpoint = new AttendanceCheckpoint([
+            'organization_id' => $organization->id,
+            'name' => (string) $data['name'],
+            'kind' => $kind->value,
+            'site_id' => $siteId,
+            'vehicle_id' => $vehicleId,
+            'token' => AttendanceCheckpoint::newToken(),
+            'latitude' => $data['latitude'] ?? null,
+            'longitude' => $data['longitude'] ?? null,
+            'radius_m' => $data['radius_m'] ?? null,
+            'active' => true,
+            'created_by' => $admin->id,
+        ]);
+        // Ein Radius ohne Mittelpunkt würde jeden Check-in abweisen.
+        if ($checkpoint->requiresLocation() && $checkpoint->center() === null) {
+            throw ValidationException::withMessages(['radius_m' => (string) __('terminal.checkpoint.error.radius_without_center')]);
+        }
+        $checkpoint->save();
+        $checkpoint->audit('terminal.checkpoint_created', ['by_user_id' => (int) $admin->id]);
+
+        return back()->with('success', __('terminal.checkpoint.flash.created'));
+    }
+
+    /** Sperrt einen Check-in-Punkt oder gibt ihn wieder frei (verlorener Aufkleber). */
+    public function toggleCheckpoint(Request $request): RedirectResponse {
+        $admin = $this->admin();
+        $checkpoint = $this->resolveCheckpoint($this->organization($admin), (string) $request->input('checkpoint', ''));
+
+        $checkpoint->forceFill(['active' => ! $checkpoint->active])->save();
+        $checkpoint->audit($checkpoint->active ? 'terminal.checkpoint_enabled' : 'terminal.checkpoint_disabled', ['by_user_id' => (int) $admin->id]);
+
+        return back()->with('success', __($checkpoint->active ? 'terminal.checkpoint.flash.enabled' : 'terminal.checkpoint.flash.disabled'));
+    }
+
+    /** Druckansicht mit QR-Code; dieselbe Adresse lässt sich auf einen NFC-Aufkleber schreiben. */
+    public function checkpointQr(string $checkpoint): View {
+        $admin = $this->admin();
+        $model = $this->resolveCheckpoint($this->organization($admin), $checkpoint);
+        $url = route('checkin.show', ['token' => $model->token]);
+        $svg = (new Writer(new ImageRenderer(new RendererStyle(320, 2), new SvgImageBackEnd())))->writeString($url);
+
+        return view('admin.terminals.checkpoint_qr', [
+            'checkpoint' => $model,
+            'url' => $url,
+            'qrDataUri' => 'data:image/svg+xml;base64,' . base64_encode($svg),
+            'backUrl' => route('admin.terminals.index'),
+        ]);
+    }
+
+    private function resolveCheckpoint(Organization $organization, string $sqid): AttendanceCheckpoint {
+        $decoded = app(SqidEncoder::class)->decode(AttendanceCheckpoint::class, $sqid);
+        $checkpoint = $decoded !== null
+            ? AttendanceCheckpoint::query()->whereKey($decoded)->where('organization_id', $organization->id)->with(['site', 'vehicle'])->first()
+            : null;
+        abort_unless($checkpoint instanceof AttendanceCheckpoint, 404);
+
+        return $checkpoint;
+    }
+
+    private function resolveVehicleId(Organization $organization, string $sqid): int {
+        $decoded = app(SqidEncoder::class)->decode(Vehicle::class, $sqid);
+        if ($decoded === null || ! Vehicle::query()->whereKey($decoded)->where('organization_id', $organization->id)->exists()) {
+            throw ValidationException::withMessages(['vehicle' => (string) __('terminal.checkpoint.error.vehicle')]);
+        }
+
+        return $decoded;
     }
 
     private function resolveTerminal(Organization $organization, string $sqid): AttendanceTerminal {

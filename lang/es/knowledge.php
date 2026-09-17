@@ -20,7 +20,6 @@ return [
 
     'field' => [
         'title' => 'Título',
-        'category' => 'Categoría',
         'tags' => 'Etiquetas',
         'status' => 'Estado',
         'problem' => 'Descripción del problema',
@@ -66,10 +65,11 @@ return [
         'asset' => 'Activo',
         'customer' => 'Cliente',
         'protocol' => 'Protocolo',
+        'problem' => 'Problema',
     ],
 
     'hint' => [
-        'category' => 'p. ej. impresora, red, calefacción …',
+        'collection' => 'Opcional. Más colecciones después con «Añadir a colección».',
         'tags' => 'Separadas por comas, p. ej. firmware, modelo-x',
         'problem' => '¿Qué síntoma/problema aparece?',
         'solution' => '¿Qué pasos llevan a la solución?',

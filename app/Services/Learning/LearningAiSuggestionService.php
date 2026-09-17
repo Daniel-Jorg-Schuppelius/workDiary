@@ -210,6 +210,19 @@ class LearningAiSuggestionService {
             if (isset($block['items']) && is_array($block['items'])) {
                 $parts[] = implode('; ', array_map(static fn (mixed $i): string => (string) $i, $block['items']));
             }
+            // MVP-806: Akkordeon, Tabelle und Verständnisfrage tragen ihren Text strukturiert.
+            foreach ((array) ($block['sections'] ?? []) as $section) {
+                $parts[] = trim((string) (is_array($section) ? ($section['title'] ?? '') . "\n" . ($section['body'] ?? '') : ''));
+            }
+            foreach ((array) ($block['rows'] ?? []) as $row) {
+                $parts[] = implode(' | ', array_map(static fn (mixed $cell): string => (string) $cell, (array) $row));
+            }
+            foreach ((array) ($block['options'] ?? []) as $option) {
+                $parts[] = (string) (is_array($option) ? ($option['text'] ?? '') : '');
+            }
+            if (isset($block['explanation']) && is_string($block['explanation'])) {
+                $parts[] = $block['explanation'];
+            }
         }
 
         return trim(implode("\n", $parts));

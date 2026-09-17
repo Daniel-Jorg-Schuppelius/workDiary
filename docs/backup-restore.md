@@ -93,8 +93,15 @@ die Quelle automatisch auf der Statusseite.
 
 App-internes Snapshot-Backup mit Client-seitiger Verschlüsselung
 (libsodium secretstream, XChaCha20-Poly1305). Ziele werden unter
-**Administration → Backupziele** verbunden (Dropbox, OneDrive/SharePoint,
-Google Drive); S3/Azure sind spätere Adapter desselben Vertrags.
+**Administration → Backupziele** verbunden. Verfügbar sind **Dropbox,
+Google Drive, S3, Nextcloud und WebDAV** — je ein Plugin, das den Vertrag
+`App\Plugins\Contracts\BackupTarget` implementiert. **Azure** fehlt weiterhin;
+**OneDrive/SharePoint** ist **kein** Backupziel (Microsoft‐365-Anbindung gibt es
+nur für Mail und Aufgaben, Feature 102).
+
+> Nachgeführt am 2026-09-16 (`MVP-796`, Befund `P12-41`): Der bisherige Text
+> nannte OneDrive/SharePoint als Ziel und führte S3 als „späteren Adapter“ —
+> beides falsch herum; Nextcloud und WebDAV fehlten ganz.
 
 ### 3.1 Schlüssel — vor dem ersten Lauf festlegen
 

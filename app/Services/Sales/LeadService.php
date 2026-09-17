@@ -12,8 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Sales;
 
-use App\Enums\Sales\LeadStatus;
-use App\Models\{Customer, Lead, User};
+use App\Enums\Sales\{LeadSource, LeadStatus};
+use App\Models\{AppointmentRequest, Customer, Lead, User};
 use Illuminate\Support\{Carbon, Collection};
 use RuntimeException;
 
@@ -59,7 +59,9 @@ class LeadService {
      * @return Collection<int, Customer>
      */
     public function duplicateCandidates(Lead $lead): Collection {
-        $query = Customer::query()->limit(5);
+        // Ausdrücklich an die Organisation des Leads gebunden: aus einem Job
+        // ohne gebundene Organisation filterte der globale Scope nicht.
+        $query = Customer::query()->where('organization_id', $lead->organization_id)->limit(5);
 
         $terms = array_values(array_filter([
             trim((string) $lead->company),
@@ -81,6 +83,59 @@ class LeadService {
         });
 
         return new Collection($query->orderBy('name')->get()->all());
+    }
+
+    /**
+     * Lead aus einer Terminbuchung ohne Kundenbezug (MVP-807, Entscheid P8-25).
+     *
+     * Dieselbe Dublettenprüfung wie bei der manuellen Anlage — nur dass hier
+     * niemand die Warnliste sieht. Deshalb gilt: Gibt es mögliche
+     * Bestandskunden, entsteht **kein** Lead; die Buchung bleibt in der
+     * Zuordnungs-Inbox, und ein Mensch entscheidet. Bucht dieselbe Adresse
+     * erneut, hängt die Buchung am offenen Lead statt einen zweiten anzulegen.
+     */
+    public function fromAppointment(AppointmentRequest $appointment): ?Lead {
+        if ($appointment->customer_id !== null || $appointment->lead_id !== null) {
+            return null;
+        }
+
+        $email = trim((string) $appointment->invitee_email);
+        $name = trim((string) $appointment->invitee_name);
+        if ($email === '' && $name === '') {
+            return null;
+        }
+
+        if ($email !== '') {
+            $open = Lead::query()
+                ->where('organization_id', $appointment->organization_id)
+                ->whereRaw('LOWER(email) = ?', [mb_strtolower($email)])
+                ->whereNotIn('status', [LeadStatus::Converted->value, LeadStatus::Discarded->value])
+                ->whereNull('anonymized_at')
+                ->first();
+            if ($open instanceof Lead) {
+                return $open;
+            }
+        }
+
+        $lead = new Lead([
+            'organization_id' => $appointment->organization_id,
+            'contact_name' => $name !== '' ? $name : null,
+            'email' => $email !== '' ? $email : null,
+            'source' => LeadSource::Booking,
+            'status' => LeadStatus::New,
+            'interest' => $appointment->service_label,
+            'responsible_user_id' => $appointment->assigned_user_id,
+            'last_contact_at' => Carbon::now(),
+        ]);
+
+        if ($this->duplicateCandidates($lead)->isNotEmpty()) {
+            return null;
+        }
+
+        $lead->save();
+        $lead->audit('lead.created', ['source' => LeadSource::Booking->value, 'appointment_request_id' => $appointment->id]);
+
+        return $lead;
     }
 
     /**

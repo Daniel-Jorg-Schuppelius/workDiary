@@ -114,7 +114,8 @@ class PeppolInvoiceDispatcher {
         }
 
         try {
-            $ubl = $this->generator->generate($invoice);
+            // Peppol BIS Billing 3.0 ist UBL — unabhängig vom Zustellformat (MVP-805).
+            $ubl = $this->generator->generate($invoice, \App\Enums\Invoicing\XRechnungSyntax::Ubl);
         } catch (ValidationException $e) {
             // Preflight des Generators: fachliche Pflichtfelder fehlen. Nach
             // außen bleibt es EINE Fehlerart — der Aufrufer soll nicht zwei

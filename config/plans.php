@@ -269,6 +269,23 @@ return [
         // damit eine Unterweisung nie an der Lizenzstufe scheitert.
         'learning.courses.*' => 'module.lms',
         'learning.lti-registrations.*' => 'module.lms',
+        // Autoren- und Verwaltungswege der Lernplattform (MVP-798, Befund
+        // C3-27): rutschten bislang am Modul-Gate vorbei. Alle sieben Gruppen
+        // pruefen LearningManage bzw. LearningGrade, sind also Verwaltung.
+        // BEWUSST NICHT gemappt bleiben: learning.my.* (Pflichtunterweisung
+        // darf nie an der Lizenzstufe scheitern), learning.external.* (Externe
+        // ohne Konto), learning.certificates.verify/credential (Nachweis
+        // gegenueber Dritten), learning.checkin.* (Praesenz) sowie
+        // learning.cmi5.*/learning.lti.* — dort spricht ein fremdes System,
+        // das keine Lizenzpruefung beantworten kann.
+        'learning.questions.*' => 'module.lms',
+        'learning.settings.*' => 'module.lms',
+        'learning.grading.*' => 'module.lms',
+        'learning.paths.*' => 'module.lms',
+        'learning.competencies.*' => 'module.lms',
+        'learning.dossier.*' => 'module.lms',
+        'learning.bookings.*' => 'module.lms',
+        'learning.time-approvals.*' => 'module.lms',
         'agile.*' => 'module.agile_projects', // Feature 064 — eigenes Präfix (projects.* ist auf module.vertrieb gemappt!)
         // Feature 065: Tickets waren Core — module.helpdesk ist in pro UND
         // enterprise enthalten, damit das Gating keine Bestandsdaten sperrt.

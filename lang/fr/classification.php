@@ -13,4 +13,9 @@ return [
         'heading' => 'Qualité des données : classifications obligatoires manquantes',
         'missing' => ':domain manquant',
     ],
+    'error' => [
+        'requirementUnmet' => 'Classifications obligatoires manquantes : :domains',
+        'requirementMin' => 'Classification obligatoire « :domain » : au moins :min entrée(s) requise(s), présentes : :actual.',
+        'requirementMax' => 'Classification obligatoire « :domain » : au maximum :max entrée(s) autorisée(s), présentes : :actual.',
+    ],
 ];

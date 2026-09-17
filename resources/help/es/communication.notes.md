@@ -1,7 +1,7 @@
 ---
 title: "Notas de comunicación"
 topic: communication.notes
-version: 2
+version: 3
 audience: []
 related:
     - diary-entries.edit
@@ -30,6 +30,10 @@ las más recientes primero, tanto internas como de un cliente, un encargo o un
 proyecto. Filtros: ubicación (interna o cliente), cliente, tipo y seguimientos
 abiertos; la búsqueda revisa asunto y contenido. Las notas confidenciales de
 otras personas solo aparecen con el permiso correspondiente.
+
+Las **etiquetas** se asignan en el diálogo de la nota, varias separadas por
+comas. La lista filtra por ellas y la búsqueda encuentra una nota también por
+su etiqueta. El filtro solo ofrece etiquetas de notas que puedes ver.
 
 ## Captura rápida
 

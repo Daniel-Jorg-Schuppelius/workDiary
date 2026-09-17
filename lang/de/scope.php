@@ -107,6 +107,12 @@ return [
         'configured_at' => 'Zuletzt festgelegt: :date',
         'not_licensed_hint' => 'Im aktuellen Tarif nicht enthalten — über die Lizenzverwaltung erweiterbar.',
     ],
+    'startpages' => [
+        'heading' => 'Startseite je Rolle',
+        'hint' => 'Wohin eine Person nach dem Anmelden kommt. Die eigene Wahl im Profil geht vor. Bei mehreren Rollen gilt die erste in dieser Reihenfolge, für die eine Seite festgelegt ist. Eine Seite, die die Person nicht öffnen darf, wird übersprungen.',
+        'default' => 'Standard',
+        'saved' => 'Startseiten gespeichert.',
+    ],
     'flash' => [
         'saved' => 'Funktionsumfang gespeichert (:disabled deaktiviert, :enabled aktiviert). Es wurden keine Daten gelöscht.',
         'no_recommendation' => 'Für diese Organisation liegt keine Branchenprofil-Empfehlung vor.',

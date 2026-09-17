@@ -162,6 +162,12 @@ class CustomerController extends Controller {
     public function destroy(Customer $customer): RedirectResponse {
         Gate::authorize('delete', $customer);
 
+        // Legal Hold (MVP-801): gesperrte Kunden werden nicht gelöscht.
+        if (app(\App\Services\Privacy\LegalHoldService::class)->activeHoldFor($customer) !== null) {
+            return redirect()->route('customers.show', $customer)
+                ->with('error', __('Kunde steht unter Legal Hold — Löschen ist bis zur Aufhebung ausgeschlossen.'));
+        }
+
         if ($customer->hasNonDefaultProjects()) {
             return redirect()->route('customers.show', $customer)
                 ->with('error', __('Kunde kann nicht gelöscht werden: Es existieren noch Projekte. Bitte zuerst archivieren oder Projekte entfernen.'));

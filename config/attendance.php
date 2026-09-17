@@ -19,4 +19,12 @@ return [
      * ['attendance']['self_correction'].
      */
     'self_correction' => env('ATTENDANCE_SELF_CORRECTION', 'request'),
+
+    /*
+     | Abend-Erinnerung bei offener Stempelung (MVP-803): erinnert nur, wenn die
+     | Stempelung schon so lange offen ist — wer abends eine Schicht beginnt,
+     | bekommt beim Lauf keine Erinnerung. Vor dem automatischen Schließen
+     | (16 Stunden) bleibt so Zeit, selbst auszustempeln.
+     */
+    'open_reminder_after_minutes' => 8 * 60,
 ];
