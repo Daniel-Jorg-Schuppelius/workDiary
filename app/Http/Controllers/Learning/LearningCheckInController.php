@@ -19,6 +19,7 @@ use App\Models\User;
 use App\Services\Learning\LearningEventService;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
@@ -38,10 +39,20 @@ class LearningCheckInController extends Controller {
         private readonly LearningEventService $events,
     ) {}
 
-    public function show(LearningUnit $unit): View {
+    /** Sitzungsschlüssel des Einmal-Nachweises je Einheit (signed-1). */
+    private const NONCE_KEY = 'learning.checkin.nonce';
+
+    public function show(Request $request, LearningUnit $unit): View {
         [$enrollment, $event] = $this->context($unit);
 
+        // Der signierte Aufruf stellt einen einmaligen, sitzungsgebundenen
+        // Nachweis aus; ohne ihn bestätigt das POST nichts
+        // (Sicherheitsaudit 2026-09-17, signed-1).
+        $nonce = Str::random(32);
+        $request->session()->put(self::NONCE_KEY . '.' . $unit->getKey(), $nonce);
+
         return view('learning.my.checkin', [
+            'nonce' => $nonce,
             'unit' => $unit,
             'event' => $event,
             'enrollment' => $enrollment,
@@ -51,9 +62,16 @@ class LearningCheckInController extends Controller {
     }
 
     public function store(Request $request, LearningUnit $unit): RedirectResponse {
-        unset($request);
-
         [$enrollment] = $this->context($unit);
+
+        // Nur wer den signierten QR-Link geöffnet hat, kann bestätigen: der
+        // Nachweis gilt einmal und nur in dieser Sitzung (signed-1).
+        $key = self::NONCE_KEY . '.' . $unit->getKey();
+        $expected = (string) $request->session()->pull($key, '');
+        $given = (string) $request->input('checkin_nonce', '');
+        if ($expected === '' || ! hash_equals($expected, $given)) {
+            return back()->withErrors(['checkin_nonce' => (string) __('learning.errors.checkin_link_required')]);
+        }
 
         try {
             $this->events->checkIn($enrollment, $unit, $this->actor());

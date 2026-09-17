@@ -85,4 +85,24 @@ final class UrlSafetyTest extends TestCase {
         // Ausdrücklich freigegebenes internes Ziel bleibt erreichbar.
         $this->assertSame([], UrlSafety::pinnedResolution('http://192.168.0.5:8080/hook', true));
     }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (ssrf-7): CGNAT, NAT64, 6to4 und Teredo
+     * gelten der PHP-Filterprüfung als öffentlich, führen aber ins interne Netz
+     * (100.100.100.200 ist der Metadatendienst von Alibaba Cloud).
+     */
+    public function test_transition_and_carrier_ranges_are_not_public(): void {
+        foreach ([
+            'http://100.100.100.200/latest/meta-data/',
+            'http://198.18.0.1/',
+            'http://192.0.0.1/',
+            'http://[64:ff9b::7f00:1]/',
+            'http://[2002:7f00:1::]/',
+            'http://[2001:0:1::]/',
+            'http://[fec0::1]/',
+        ] as $url) {
+            $this->assertFalse(UrlSafety::isPubliclyRoutableHttpUrl($url), $url . ' darf nicht als öffentlich gelten.');
+            $this->assertNull(UrlSafety::pinnedResolution($url), $url . ' darf nicht gebunden werden.');
+        }
+    }
 }

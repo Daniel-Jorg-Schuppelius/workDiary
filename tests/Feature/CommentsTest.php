@@ -10,6 +10,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\User\Permission;
 use App\Models\{Comment, DiaryEntry, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -24,6 +25,9 @@ class CommentsTest extends TestCase {
     public function test_authenticated_user_can_create_comment(): void {
         $owner = User::factory()->user()->create();
         $author = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
+        // Kommentieren setzt das Sichtrecht am Auftrag voraus
+        // (Sicherheitsaudit 2026-09-17, authz-comment-1).
+        $author->givePermissionTo(Permission::DiaryViewAny->value);
         $entry = DiaryEntry::factory()->for($owner)->create();
 
         $this->actingAs($author)
@@ -36,6 +40,19 @@ class CommentsTest extends TestCase {
             'user_id' => $author->id,
             'body' => 'Mein Kommentar',
         ]);
+    }
+
+    /** Ohne Sichtrecht am Auftrag gibt es auch keinen Kommentar (authz-comment-1). */
+    public function test_user_without_view_right_cannot_comment_on_foreign_entry(): void {
+        $owner = User::factory()->user()->create();
+        $fremd = User::factory()->user()->create(['organization_id' => $owner->organization_id]);
+        $entry = DiaryEntry::factory()->for($owner)->create();
+
+        $this->actingAs($fremd)
+            ->post(route('diary.comments.store', $entry), ['body' => 'Mitlesen'])
+            ->assertForbidden();
+
+        $this->assertDatabaseMissing('comments', ['commentable_id' => $entry->id]);
     }
 
     public function test_guest_cannot_create_comment(): void {

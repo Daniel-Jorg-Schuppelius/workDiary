@@ -243,13 +243,24 @@ class SsoAdminController extends Controller {
             return back()->withErrors(['domain' => __('sso.error.domain_invalid')])->withInput();
         }
 
-        $existing = OrganizationSsoDomain::query()->where('domain', $domain)->first();
-        if ($existing instanceof OrganizationSsoDomain) {
-            if ((int) $existing->organization_id !== (int) $organization->id) {
-                return back()->withErrors(['domain' => __('sso.error.domain_taken')])->withInput();
-            }
-
+        $own = OrganizationSsoDomain::query()
+            ->where('domain', $domain)
+            ->where('organization_id', $organization->id)
+            ->first();
+        if ($own instanceof OrganizationSsoDomain) {
             return back()->with('success', __('sso.flash.domain_added'));
+        }
+
+        // Nur ein NACHGEWIESENER Eintrag blockiert: ein bloßer Eintrag eines
+        // anderen Mandanten hatte die Domain sonst für alle gesperrt und das
+        // auch noch verraten (Sicherheitsaudit 2026-09-17, tenant-sso-domain-6).
+        $verifiedElsewhere = OrganizationSsoDomain::query()
+            ->where('domain', $domain)
+            ->where('organization_id', '!=', $organization->id)
+            ->whereNotNull('verified_at')
+            ->exists();
+        if ($verifiedElsewhere) {
+            return back()->withErrors(['domain' => __('sso.error.domain_taken')])->withInput();
         }
 
         // Unverifiziert angelegt (Sicherheitsscan 2026-08-23, S-49): erst der
@@ -303,10 +314,31 @@ class SsoAdminController extends Controller {
             }
         }
 
+        // Den Nachweis kann nur ein Mandant führen: wer die DNS-Kontrolle zeigt,
+        // bekommt die Domain — andere, noch nicht nachgewiesene Ansprüche auf
+        // dieselbe Domain fallen weg (tenant-sso-domain-6).
+        if ($found && OrganizationSsoDomain::query()
+            ->where('domain', $record->domain)
+            ->where('organization_id', '!=', $organization->id)
+            ->whereNotNull('verified_at')
+            ->exists()) {
+            $record->forceFill(['verification_checked_at' => now()])->save();
+
+            return back()->withErrors(['domain' => __('sso.error.domain_taken')]);
+        }
+
         $record->forceFill([
             'verification_checked_at' => now(),
             'verified_at' => $found ? now() : null,
         ])->save();
+
+        if ($found) {
+            OrganizationSsoDomain::query()
+                ->where('domain', $record->domain)
+                ->where('organization_id', '!=', $organization->id)
+                ->whereNull('verified_at')
+                ->delete();
+        }
 
         return $found
             ? back()->with('success', __('sso.flash.domain_verified'))

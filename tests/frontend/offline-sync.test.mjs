@@ -170,6 +170,7 @@ function installDocument({
     syncEndpoint = "https://app.test/sync",
     attachmentEndpoint = "https://app.test/sync-att",
     badge = null,
+    owner = "",
 } = {}) {
     Object.defineProperty(globalThis, "document", {
         configurable: true,
@@ -185,6 +186,9 @@ function installDocument({
                     return attachmentEndpoint
                         ? { getAttribute: () => attachmentEndpoint }
                         : null;
+                }
+                if (sel === 'meta[name="sync-owner"]') {
+                    return owner ? { getAttribute: () => owner } : null;
                 }
                 if (sel === "[data-sync-status]") return badge;
                 return null; // csrf-token-Meta u. a.
@@ -248,7 +252,7 @@ const { __testables } = await import(
 const {
     buildPayload, flush, updateBadge, uploadPhotos,
     outboxAll, outboxPut, outboxDelete, storeAll, storePut, clearAll,
-    courseStore, courseGet, courseDelete,
+    courseStore, courseGet, courseDelete, currentOwner, enforceOwner,
 } = __testables;
 
 /** Frische Umgebung: leere DB, Standard-Dokument, online. */
@@ -713,3 +717,43 @@ test("courseStore wirft bei Fehlerantwort und legt nichts ab", async () => {
     assert.equal(await courseGet("enr1"), undefined);
 });
 
+/* ------------------------------------------------------------------ */
+/* Kontobindung der Outbox (Sicherheitsaudit 2026-09-17, storage-1)    */
+/* ------------------------------------------------------------------ */
+
+test("flush: Befehle eines anderen Kontos werden nicht gesendet", async () => {
+    installDocument({ owner: "ich" });
+    await outboxPut(command("eigen", { owner: "ich" }));
+    await outboxPut(command("fremd", { owner: "jemand-anders" }));
+
+    const calls = installFetch([jsonResponse(200, { results: [] })]);
+    await flush();
+
+    assert.equal(calls.length, 1);
+    const gesendet = JSON.parse(calls[0].init.body).commands;
+    assert.deepEqual(
+        gesendet.map((c) => c.client_uuid),
+        ["eigen"],
+    );
+    // Der fremde Befehl bleibt liegen, wird aber nie übertragen.
+    assert.equal((await outboxAll()).length, 2);
+});
+
+test("Kontowechsel auf dem Gerät leert die lokale Ablage", async () => {
+    const store = new Map();
+    globalThis.window.localStorage = {
+        getItem: (k) => (store.has(k) ? store.get(k) : null),
+        setItem: (k, v) => store.set(k, String(v)),
+    };
+
+    installDocument({ owner: "person-a" });
+    await outboxPut(command("a", { owner: "person-a" }));
+    await enforceOwner();
+    assert.equal((await outboxAll()).length, 1);
+
+    installDocument({ owner: "person-b" });
+    assert.equal(currentOwner(), "person-b");
+    await enforceOwner();
+
+    assert.equal((await outboxAll()).length, 0);
+});

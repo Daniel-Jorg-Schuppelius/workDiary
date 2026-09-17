@@ -13,6 +13,10 @@
         <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
         <meta name="csrf-token" content="{{ csrf_token() }}">
         <meta name="sync-endpoint" content="{{ route('api.internal.sync.commands') }}">
+        {{-- Besitzerin der Offline-Outbox (Sicherheitsaudit 2026-09-17,
+             storage-1): Auf geteilten Geräten dürfen Befehle einer Person nie
+             unter dem nächsten Konto eingespielt werden. --}}
+        <meta name="sync-owner" content="{{ auth()->user()?->sqid }}">
         {{-- Foto-Queue der Offline-Erfassung (Audit 2026-08, W4.1). --}}
         <meta name="sync-attachment-endpoint" content="{{ route('api.internal.sync.attachments') }}">
         <meta name="geocode-url" content="{{ route('api.internal.geocode') }}">

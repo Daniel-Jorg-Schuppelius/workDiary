@@ -62,6 +62,13 @@ class AuthenticateScim {
         app()->instance('currentOrganization', $organization);
         app(PermissionRegistrar::class)->setPermissionsTeamId($organization->id);
 
+        // Mandantensperre (Sicherheitsscan 2026-08-23, S-42): sie galt nur für
+        // angemeldete Zugriffe — SCIM hat keine Sitzung und provisionierte
+        // weiter in gesperrte Mandanten (Audit 2026-09-17, tenant-status-1).
+        if (! $organization->publicSurfacesAvailable()) {
+            return ScimResponse::error(423, 'Tenant is locked.');
+        }
+
         // Enterprise-Gating (SCIM = module.sso), nach dem Binden der Organisation.
         if (! app(FeatureFlagResolver::class)->isEnabled('module.sso')) {
             return ScimResponse::error(403, 'SCIM provisioning requires the Enterprise plan.');

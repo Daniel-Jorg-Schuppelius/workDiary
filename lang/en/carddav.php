@@ -63,6 +63,7 @@ return [
         'saved' => 'CardDAV connection saved.',
         'invalid_url' => 'The base URL must start with http:// or https://.',
         'private_url_blocked' => 'The base URL points to a private/internal address. Enable the private address opt-in for a server on your own network.',
+        'foreign_origin' => 'The address does not belong to the configured CardDAV server.',
         'password_required' => 'An app password is required for a new connection.',
         'no_connection' => 'No active CardDAV connection available.',
         'discovery_failed' => 'Address book discovery failed — server unreachable or credentials invalid.',

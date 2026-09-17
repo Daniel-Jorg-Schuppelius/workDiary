@@ -264,12 +264,25 @@ class HttpCalDavGateway implements CalDavGateway {
 
     /** Relative hrefs des Servers auf die Basis-URL beziehen. */
     private function absolute(string $href): string {
-        if (str_starts_with($href, 'http://') || str_starts_with($href, 'https://')) {
-            return $href;
-        }
         $base = (string) $this->connection->base_url;
         $parts = parse_url($base);
         $origin = ($parts['scheme'] ?? 'https') . '://' . ($parts['host'] ?? '') . (isset($parts['port']) ? ':' . $parts['port'] : '');
+
+        // Absolute Adressen aus der Server-Antwort gelten nur, solange sie zur
+        // konfigurierten Verbindung gehören. Sonst führte ein Server mit einem
+        // fremden `href` den Abruf ins interne Netz — an der geprüften Basis-URL
+        // vorbei (Sicherheitsaudit 2026-09-17, ssrf-6).
+        if (str_starts_with($href, 'http://') || str_starts_with($href, 'https://')) {
+            if (str_starts_with($href, $origin . '/') || $href === $origin) {
+                return $href;
+            }
+
+            // Fremde Herkunft: nur der Pfad wird übernommen (Muster Nextcloud).
+            $path = (string) (parse_url($href, PHP_URL_PATH) ?: '/');
+            $query = (string) (parse_url($href, PHP_URL_QUERY) ?: '');
+
+            return $origin . '/' . ltrim($path, '/') . ($query !== '' ? '?' . $query : '');
+        }
 
         return $origin . '/' . ltrim($href, '/');
     }

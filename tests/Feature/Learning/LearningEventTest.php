@@ -246,7 +246,8 @@ class LearningEventTest extends TestCase {
             ['unit' => $unit->sqid],
         );
 
-        $this->actingAs($enrollment->user)->get($signed)->assertOk();
+        $response = $this->actingAs($enrollment->user)->get($signed);
+        $response->assertOk();
 
         // Bestätigt wird per POST — der bloße Aufruf setzt nichts.
         $this->assertSame(
@@ -254,8 +255,22 @@ class LearningEventTest extends TestCase {
             EventParticipant::query()->where('user_id', $enrollment->user_id)->first()?->status
         );
 
+        // Ohne den Einmal-Nachweis aus dem signierten Aufruf zählt das POST
+        // nicht (Sicherheitsaudit 2026-09-17, signed-1).
         $this->actingAs($enrollment->user)
             ->post(route('learning.checkin.store', $unit->sqid))
+            ->assertSessionHasErrors('checkin_nonce');
+        $this->assertSame(
+            ParticipantStatus::Accepted,
+            EventParticipant::query()->where('user_id', $enrollment->user_id)->first()?->status
+        );
+
+        // Mit dem Nachweis aus der Seite: bestätigt.
+        $this->actingAs($enrollment->user)->get($signed)->assertOk();
+        $nonce = (string) session('learning.checkin.nonce.' . $unit->getKey());
+        $this->assertNotSame('', $nonce);
+        $this->actingAs($enrollment->user)
+            ->post(route('learning.checkin.store', $unit->sqid), ['checkin_nonce' => $nonce])
             ->assertRedirect();
 
         $this->assertSame(

@@ -11,6 +11,7 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Enums\User\Permission;
+use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Models\SecurityAdvisory;
 use App\Services\Security\{OsvAdvisoryService, SecurityOverviewService};
@@ -27,6 +28,8 @@ use Throwable;
  * Abhängigkeiten (OSV-Advisories, Rang 70) inkl. manueller VEX-Bewertung.
  */
 class SecurityController extends Controller {
+    use RequiresPlatformOperator;
+
     public function index(SecurityOverviewService $overview): View {
         Gate::authorize(Permission::SecurityView->value);
 
@@ -45,6 +48,10 @@ class SecurityController extends Controller {
     /** Manueller OSV-Abruf von der Sicherheitsseite (Rang 70). */
     public function pullAdvisories(OsvAdvisoryService $service): RedirectResponse {
         Gate::authorize(Permission::SecurityView->value);
+        // Advisories und ihre Bewertung gelten installationsweit — ein Org-Admin
+        // darf sie nicht für alle Mandanten setzen
+        // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+        $this->assertPlatformOperator();
 
         try {
             $result = $service->pull();
@@ -65,6 +72,7 @@ class SecurityController extends Controller {
     /** Manuelle VEX-Bewertung eines Advisories festhalten (Rang 70). */
     public function updateAdvisoryStatement(Request $request, SecurityAdvisory $advisory): RedirectResponse {
         Gate::authorize(Permission::SecurityView->value);
+        $this->assertPlatformOperator();
 
         $data = $request->validate([
             'statement' => ['nullable', 'string', 'max:1000'],

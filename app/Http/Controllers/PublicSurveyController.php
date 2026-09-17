@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Models\Survey\SurveyInvitation;
 use App\Services\Survey\SurveyService;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -23,6 +24,8 @@ use RuntimeException;
  * widerrufen/abgelaufen/unbekannt ⇒ 404 (Muster PublicAuditPackage).
  */
 class PublicSurveyController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function show(string $token): View {
         [$invitation, $survey] = $this->resolve($token);
 
@@ -80,6 +83,9 @@ class PublicSurveyController extends Controller {
 
         $survey = $invitation->survey()->withoutGlobalScopes()->first();
         abort_if($survey === null || ! $survey->active, 404);
+
+        // Gesperrter Mandant: auch der Token-Weg endet hier (tenant-status-1).
+        $this->assertTenantPublicSurfacesAvailable((int) $survey->organization_id);
 
         return [$invitation, $survey];
     }

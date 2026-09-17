@@ -154,6 +154,8 @@ return [
         'email_changed_message' => 'Your account\'s sign-in address was changed to :email. If this wasn’t you, change your password immediately and contact your administrator.',
         'passkey_added_title' => 'New passkey added',
         'passkey_added_message' => 'A new security key/passkey was added to your account. If this wasn’t you, remove it immediately and change your password.',
+        'two_factor_lockout_title' => 'Second factor is being guessed',
+        'two_factor_lockout_message' => 'Your account had too many wrong two-factor codes and the sign-in was cancelled. If this wasn’t you, change your password — someone may already know it.',
         'lockout_title' => 'Too many failed attempts — account briefly locked',
         'lockout_message' => 'Your account was the target of several failed sign-in attempts and was briefly locked. If this wasn’t you, change your password.',
         'security_threat_title' => 'Possible attack: :event',

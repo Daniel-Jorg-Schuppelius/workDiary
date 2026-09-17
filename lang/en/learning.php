@@ -875,6 +875,7 @@ return [
             'without_launch' => 'The manifest has no launch file (no SCO with an href).',
         ],
         'checkin_closed' => 'Check-in is not possible outside the time window around the session.',
+        'checkin_link_required' => 'Please scan the event’s QR code — without opening the link the confirmation does not count.',
         'submission_file_required' => 'This assignment requires at least one file.',
         'image_alt_required' => 'An image needs alternative text — without it, it does not exist for people who cannot see it.',
         'approval_decided' => 'This learning time has already been decided.',

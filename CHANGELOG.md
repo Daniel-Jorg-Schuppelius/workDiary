@@ -1127,3 +1127,37 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
 - **Drei neue Architektur-Gates** halten den Stand: URL-Senken im Frontend
   müssen über `sameOriginPath()` laufen, `{!! … !!}` in Blade steht auf einer
   begründeten Liste, und rohes SQL darf keine Variablen im String tragen.
+- **Die 29 leichten Befunde des Datenfluss-Audits sind ebenfalls behoben.**
+  Im Einzelnen:
+  - **Rechte**: Kommentare am Auftrag und Tickets über die REST-API prüfen das
+    Recht am Vorgang; private Notizen lassen sich nicht mehr von Dritten in
+    „intern vertraulich" umwandeln; Fahrzeuge anlegen und ändern verlangt das
+    Recht „Fuhrpark verwalten".
+  - **Anhänge** folgen der Sichtbarkeit ihres Trägers, auch wenn dieser keine
+    eigene Regel hat (Ticket-Notizen, Lern-Abgaben, Prüfprotokolle).
+  - **Dateien**: Hochgeladenes Rechnungs-XML wird in der Vorschau als Text
+    ausgeliefert, Ordnernamen im Toggl-Import können den Stammordner nicht mehr
+    verlassen, die gespeicherte Dateiendung stammt aus dem erkannten Typ, und
+    ein Vergabe-ZIP schleust keine fremden Dateitypen ins Dokumentenarchiv.
+  - **Oberfläche**: Kostengruppen-Codes aus GAEB-Dateien und der Name eines
+    Design-Basisprofils stehen nicht mehr in Alpine-Ausdrücken; die
+    Offline-Outbox gehört dem angemeldeten Konto (Kontowechsel leert sie).
+  - **Exporte**: Compliance-Nachweise und das Monatsabschluss-Bündel laufen
+    durch den Formel-Guard; Maschinenformate (DATEV, GoBD-Z3) bleiben
+    ausdrücklich unverändert.
+  - **Anmeldung**: Zwei-Faktor-Versuche zählen zusätzlich je Konto (danach ist
+    die Anmeldung neu zu beginnen, mit Hinweis an die Person); das Portal-Login
+    meldet das Gerät erst nach dem zweiten Faktor; Terminal-PINs sind
+    sechsstellig, die Sperre eskaliert (15 min → 1 h → 1 Tag) und verrät bei
+    PIN-Nutzung keine Salden mehr; der QR-Check-in verlangt den Aufruf über den
+    signierten Link.
+  - **Zugänge enden mit dem Austritt**: Kalender-Abo und Standort-Gerätetoken
+    werden widerrufen, externe Lernzugänge bei jedem Aufruf neu geprüft.
+  - **Mandanten**: Gesperrte Mandanten sind auch über Token-Links und SCIM
+    dicht; installationsweite Betriebsdaten (Advisories, Update-Hinweise,
+    Plugin-Schema, globale Plugin-Fehler) ändert nur der Plattform-Betreiber;
+    eine SSO-Domain blockiert andere erst mit DNS-Nachweis.
+  - **SSRF**: Der Betreiber-Schalter für private Netze wirkt jetzt überall,
+    der Geocode-Cache gilt je Anbieter, CalDAV/CardDAV folgen keinen fremden
+    Adressen aus Server-Antworten, und die Sperrliste kennt CGNAT, NAT64,
+    6to4 und Teredo.

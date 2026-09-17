@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Support\Toolkit;
 
+use App\Support\CsvExport;
 use CommonToolkit\Contracts\Interfaces\CSV\FieldInterface;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Parsers\CSVDocumentParser;
@@ -51,14 +52,23 @@ final class CsvFacade {
     /**
      * Baut eine CSV-String-Repräsentation aus Header und Zeilen (mit \r\n-Zeilen).
      *
+     * Datenzeilen laufen standardmäßig durch den Formel-Guard
+     * ({@see CsvExport}); reines Quoting entschärft keine
+     * Formel, Excel wertet `=`, `+`, `-` und `@` beim Öffnen aus
+     * (Sicherheitsaudit 2026-09-17, csvformula-1). Maschinenformate, deren
+     * Bytes gebunden sind (DATEV, Lohnexport), schalten ihn ausdrücklich ab.
+     *
      * @param  list<string>  $headers
      * @param  list<array<string, scalar|null>>  $rows
      */
-    public static function buildCsv(array $headers, array $rows, string $delimiter = ';', string $enclosure = '"'): string {
+    public static function buildCsv(array $headers, array $rows, string $delimiter = ';', string $enclosure = '"', bool $guardFormulas = true): string {
         $out = StringHelper::encodeLine($headers, $delimiter, $enclosure) . "\r\n";
 
         foreach ($rows as $row) {
             $cells = array_map(static fn(string $key): mixed => $row[$key] ?? '', $headers);
+            if ($guardFormulas) {
+                $cells = CsvExport::guardRow($cells);
+            }
             $out .= StringHelper::encodeLine($cells, $delimiter, $enclosure) . "\r\n";
         }
 

@@ -10,6 +10,7 @@
 
 namespace Tests\Feature;
 
+use App\Enums\User\Permission;
 use App\Enums\Vehicle\{VehiclePropulsion, VehicleType};
 use App\Models\{User, Vehicle};
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -28,6 +29,9 @@ class VehicleTest extends TestCase {
         parent::setUp();
         $this->setUpOrganization();
         $this->user = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        // Stammdatenpflege am Fuhrpark hängt an `vehicle.manage`
+        // (Sicherheitsaudit 2026-09-17, authz-vehicle-1).
+        $this->user->givePermissionTo(Permission::VehicleManage->value);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
     }
 
@@ -64,6 +68,28 @@ class VehicleTest extends TestCase {
         $this->assertNotNull($vehicle->fresh()->archived_at);
     }
 
+    public function test_user_without_manage_permission_cannot_create_or_change_vehicles(): void {
+        $ohneRecht = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $vehicle = Vehicle::factory()->create(['organization_id' => $this->organization->id]);
+
+        $this->actingAs($ohneRecht);
+        $this->post(route('vehicles.store'), [
+            'license_plate' => 'B-XX 999',
+            'label' => 'Ohne Recht',
+            'vehicle_type' => VehicleType::Van->value,
+            'propulsion' => VehiclePropulsion::Diesel->value,
+        ])->assertForbidden();
+        $this->put(route('vehicles.update', $vehicle), [
+            'license_plate' => $vehicle->license_plate,
+            'label' => 'fremd',
+            'vehicle_type' => $vehicle->vehicle_type->value,
+            'propulsion' => $vehicle->propulsion->value,
+        ])->assertForbidden();
+        $this->delete(route('vehicles.destroy', $vehicle))->assertForbidden();
+
+        $this->assertNull($vehicle->fresh()->archived_at);
+    }
+
     public function test_non_owner_cannot_update_assigned_vehicle(): void {
         $owner = User::factory()->user()->create(['organization_id' => $this->organization->id]);
         $vehicle = Vehicle::factory()->create([
@@ -71,7 +97,7 @@ class VehicleTest extends TestCase {
             'default_user_id' => $owner->id,
         ]);
 
-        $this->actingAs($this->user);
+        $this->actingAs(User::factory()->user()->create(['organization_id' => $this->organization->id]));
         $this->put(route('vehicles.update', $vehicle), [
             'license_plate' => $vehicle->license_plate,
             'label' => 'hacked',

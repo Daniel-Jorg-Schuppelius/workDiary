@@ -154,6 +154,8 @@ return [
         'email_changed_message' => 'La dirección de acceso de tu cuenta se cambió a :email. Si no fuiste tú, cambia tu contraseña de inmediato y avisa a tu administración.',
         'passkey_added_title' => 'Nueva clave de acceso añadida',
         'passkey_added_message' => 'Se añadió una nueva llave de seguridad o clave de acceso a tu cuenta. Si no fuiste tú, elimínala de inmediato y cambia tu contraseña.',
+        'two_factor_lockout_title' => 'Están adivinando tu segundo factor',
+        'two_factor_lockout_message' => 'Tu cuenta acumuló demasiados códigos de doble factor incorrectos y se canceló el inicio de sesión. Si no fuiste tú, cambia tu contraseña: alguien podría conocerla ya.',
         'lockout_title' => 'Demasiados intentos fallidos — cuenta bloqueada brevemente',
         'lockout_message' => 'Su cuenta fue objetivo de varios intentos de inicio de sesión fallidos y se bloqueó brevemente. Si no fue usted, cambie su contraseña.',
         'security_threat_title' => 'Posible ataque: :event',

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Http\Requests\PublicSignatureRequest;
 use App\Models\{Organization, Timesheet};
 use App\Services\Timesheet\SignatureService;
@@ -18,6 +19,8 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response;
 
 class PublicSignatureController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(protected SignatureService $signatures) {}
 
     public function show(string $token): View|Response {
@@ -55,6 +58,8 @@ class PublicSignatureController extends Controller {
                 ->withoutGlobalScopes()
                 ->find($timesheet->organization_id);
             abort_if(! $org instanceof Organization, 404);
+            // Gesperrter Mandant: keine Unterschrift mehr (tenant-status-1).
+            $this->assertTenantPublicSurfacesAvailable($org);
             app()->instance('currentOrganization', $org);
         }
 

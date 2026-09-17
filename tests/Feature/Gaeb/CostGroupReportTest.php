@@ -691,4 +691,27 @@ final class CostGroupReportTest extends TestCase {
             ->assertSee('Baugrube, Erdbau')
             ->assertSee('Ohne Zuordnung');
     }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (xss-4): Katalogcodes kommen aus fremden
+     * GAEB-Dateien. In den Alpine-Ausdrücken des Pivots stehen deshalb nur
+     * Zahlen — ein Code mit Apostroph brach vorher aus dem JS-String aus.
+     */
+    public function test_pivot_never_puts_catalog_codes_into_alpine_expressions(): void {
+        $this->catalog();
+        $boeser = "3')||(alert(1))||('";
+        $this->assign($this->item('1.1', '10', '100'), $boeser);
+
+        $response = $this->actingAs($this->admin)
+            ->get(route('bill-of-quantities.cost-groups', $this->bill) . '?level=all');
+
+        $response->assertOk();
+        $html = (string) $response->getContent();
+        // classList.toggle('…') im Layout ist kein Alpine-Ausdruck — daher gezielt
+        // auf die Ausdrücke des Pivots prüfen.
+        $this->assertStringNotContainsString('x-on:click="toggle(\'', $html);
+        $this->assertStringNotContainsString('x-show="visible(\'', $html);
+        $this->assertStringNotContainsString("3')||(", $html, 'Der Apostroph des Codes darf nie roh ankommen.');
+        $this->assertStringContainsString('x-on:click="toggle(0)"', $html, 'Der Pivot arbeitet mit Zahlen.');
+    }
 }

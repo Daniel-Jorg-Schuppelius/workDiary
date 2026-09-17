@@ -134,7 +134,9 @@ final class SecurityAdvisoriesTest extends TestCase {
 
     public function test_security_page_lists_advisories_and_saves_statement(): void {
         $this->setUpOrganization();
-        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        // VEX-Bewertungen gelten installationsweit: nur der Plattform-Betreiber
+        // setzt sie (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+        $admin = User::factory()->platformAdmin()->create(['organization_id' => $this->organization->id]);
         $advisory = SecurityAdvisory::query()->create([
             'external_id' => self::VULN_ID,
             'ecosystem' => 'composer',

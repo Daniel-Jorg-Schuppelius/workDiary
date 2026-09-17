@@ -43,6 +43,9 @@ class LibCardDavGateway implements CardDavGateway {
         try {
             $addressbookUrl = (string) $this->connection->addressbook_url;
             if ($addressbookUrl !== '') {
+                // Das gespeicherte Adressbuch kam einmal aus der Server-Antwort:
+                // vor jedem Kontakt erneut gegen die Verbindung prüfen (ssrf-6).
+                CardDavUrlGuard::assertSameOriginAsBase($addressbookUrl, (string) $this->connection->base_url, $this->connection->allowsPrivateNetwork());
                 // Displayname-PROPFIND auf das gewählte Adressbuch: prüft
                 // Erreichbarkeit UND Zugangsdaten in einem Rutsch.
                 (new AddressbookCollection($addressbookUrl, $this->account()))->getName();

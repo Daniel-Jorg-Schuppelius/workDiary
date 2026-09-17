@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\{Auth, Gate};
 
 class CommentController extends Controller {
     public function store(Request $request, DiaryEntry $diary): RedirectResponse {
+        // Sichtrecht am Auftrag zuerst — sonst schrieb (und las) jede Person
+        // mit Kommentarrecht an fremden Aufträgen mit
+        // (Sicherheitsaudit 2026-09-17, authz-comment-1; Muster wie
+        // TimeEntryCommentController).
+        Gate::authorize('view', $diary);
         Gate::authorize('create', Comment::class);
 
         $diary->comments()->create([

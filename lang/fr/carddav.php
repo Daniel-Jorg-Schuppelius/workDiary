@@ -63,6 +63,7 @@ return [
         'saved' => 'Connexion CardDAV enregistrée.',
         'invalid_url' => 'L\'URL de base doit commencer par http:// ou https://.',
         'private_url_blocked' => 'L\'URL de base pointe vers une adresse privée/interne. Activez l\'autorisation des adresses privées pour un serveur sur votre propre réseau.',
+        'foreign_origin' => 'L’adresse n’appartient pas au serveur CardDAV configuré.',
         'password_required' => 'Un mot de passe d\'application est requis pour une nouvelle connexion.',
         'no_connection' => 'Aucune connexion CardDAV active disponible.',
         'discovery_failed' => 'Échec de la recherche des carnets d\'adresses — serveur injoignable ou identifiants invalides.',

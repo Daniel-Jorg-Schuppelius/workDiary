@@ -36,6 +36,8 @@ class CommentController extends Controller {
         ],
     )]
     public function store(Request $request, DiaryEntry $diary): JsonResponse {
+        // Wie im Web-Weg: erst das Sichtrecht am Auftrag (authz-comment-1).
+        Gate::authorize('view', $diary);
         Gate::authorize('create', Comment::class);
         $data = $request->validate(['body' => ['required', 'string', 'max:65535']]);
         $comment = $diary->comments()->create([

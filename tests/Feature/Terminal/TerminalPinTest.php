@@ -42,13 +42,13 @@ final class TerminalPinTest extends TestCase {
     public function test_admin_sets_a_pin_that_is_stored_only_as_hash(): void {
         $this->actingAs($this->admin)->post(route('admin.terminals.pins.store'), [
             'user' => $this->employee->sqid,
-            'pin' => '2468',
-            'pin_confirmation' => '2468',
+            'pin' => '246813',
+            'pin_confirmation' => '246813',
         ])->assertRedirect()->assertSessionHas('success');
 
         $stored = (string) DB::table('user_terminal_pins')->value('pin_hash');
-        $this->assertNotSame('2468', $stored);
-        $this->assertStringNotContainsString('2468', $stored);
+        $this->assertNotSame('246813', $stored);
+        $this->assertStringNotContainsString('246813', $stored);
         $this->assertSame(1, UserTerminalPin::query()->sole()->auditLogs()->where('event', 'terminal.pin_set')->count());
 
         $this->actingAs($this->admin)->get(route('admin.terminals.index'))->assertOk()->assertSee('4711');
@@ -57,61 +57,61 @@ final class TerminalPinTest extends TestCase {
     public function test_pin_rules_are_enforced(): void {
         $this->actingAs($this->admin)->post(route('admin.terminals.pins.store'), ['user' => $this->employee->sqid, 'pin' => '12', 'pin_confirmation' => '12'])
             ->assertSessionHasErrors('pin');
-        $this->actingAs($this->admin)->post(route('admin.terminals.pins.store'), ['user' => $this->employee->sqid, 'pin' => '1234', 'pin_confirmation' => '4321'])
+        $this->actingAs($this->admin)->post(route('admin.terminals.pins.store'), ['user' => $this->employee->sqid, 'pin' => '123456', 'pin_confirmation' => '654321'])
             ->assertSessionHasErrors('pin');
 
         $withoutNumber = User::factory()->user()->create(['organization_id' => $this->organization->id]);
-        $this->actingAs($this->admin)->post(route('admin.terminals.pins.store'), ['user' => $withoutNumber->sqid, 'pin' => '1234', 'pin_confirmation' => '1234'])
+        $this->actingAs($this->admin)->post(route('admin.terminals.pins.store'), ['user' => $withoutNumber->sqid, 'pin' => '123456', 'pin_confirmation' => '123456'])
             ->assertSessionHasErrors('user');
 
         $this->assertSame(0, UserTerminalPin::query()->count());
     }
 
     public function test_personnel_number_and_pin_clock_in_at_the_terminal(): void {
-        app(TerminalPinService::class)->set($this->employee, '2468', $this->admin);
+        app(TerminalPinService::class)->set($this->employee, '246813', $this->admin);
 
-        $this->pinScan('4711', '2468')->assertOk()->assertJson(['status' => 'clocked_in']);
+        $this->pinScan('4711', '246813')->assertOk()->assertJson(['status' => 'clocked_in']);
 
         $this->assertNotNull(Attendance::query()->where('user_id', $this->employee->id)->whereNull('ended_at')->first());
     }
 
     public function test_unknown_number_and_wrong_pin_answer_the_same(): void {
-        app(TerminalPinService::class)->set($this->employee, '2468', $this->admin);
+        app(TerminalPinService::class)->set($this->employee, '246813', $this->admin);
 
-        $this->pinScan('9999', '2468')->assertOk()->assertJson(['status' => 'invalid_pin']);
-        $this->pinScan('4711', '0000')->assertOk()->assertJson(['status' => 'invalid_pin']);
+        $this->pinScan('9999', '246813')->assertOk()->assertJson(['status' => 'invalid_pin']);
+        $this->pinScan('4711', '000000')->assertOk()->assertJson(['status' => 'invalid_pin']);
 
         $this->assertSame(0, Attendance::query()->count());
     }
 
     public function test_pin_locks_after_five_failures_and_admin_can_unlock(): void {
         Carbon::setTestNow(Carbon::parse('2026-09-17 08:00:00'));
-        $pin = app(TerminalPinService::class)->set($this->employee, '2468', $this->admin);
+        $pin = app(TerminalPinService::class)->set($this->employee, '246813', $this->admin);
 
         foreach (range(1, TerminalPinService::MAX_ATTEMPTS) as $attempt) {
-            $this->pinScan('4711', '1111', 'e-' . $attempt)->assertJson(['status' => 'invalid_pin']);
+            $this->pinScan('4711', '111111', 'e-' . $attempt)->assertJson(['status' => 'invalid_pin']);
         }
         $this->assertTrue($pin->fresh()?->isLocked());
         $this->assertSame(1, $pin->auditLogs()->where('event', 'terminal.pin_locked')->count());
 
         // Gesperrt: auch die richtige PIN wird abgewiesen.
-        $this->pinScan('4711', '2468', 'e-right-locked')->assertJson(['status' => 'invalid_pin']);
+        $this->pinScan('4711', '246813', 'e-right-locked')->assertJson(['status' => 'invalid_pin']);
 
         $this->actingAs($this->admin)->post(route('admin.terminals.pins.unlock'), ['pin' => $pin->sqid])->assertRedirect();
-        $this->pinScan('4711', '2468', 'e-after-unlock')->assertJson(['status' => 'clocked_in']);
+        $this->pinScan('4711', '246813', 'e-after-unlock')->assertJson(['status' => 'clocked_in']);
 
         Carbon::setTestNow();
     }
 
     public function test_lock_expires_after_the_lock_period(): void {
         Carbon::setTestNow(Carbon::parse('2026-09-17 08:00:00'));
-        app(TerminalPinService::class)->set($this->employee, '2468', $this->admin);
+        app(TerminalPinService::class)->set($this->employee, '246813', $this->admin);
         foreach (range(1, TerminalPinService::MAX_ATTEMPTS) as $attempt) {
-            $this->pinScan('4711', '1111', 'l-' . $attempt);
+            $this->pinScan('4711', '111111', 'l-' . $attempt);
         }
 
         Carbon::setTestNow(Carbon::parse('2026-09-17 08:16:00'));
-        $this->pinScan('4711', '2468', 'l-later')->assertJson(['status' => 'clocked_in']);
+        $this->pinScan('4711', '246813', 'l-later')->assertJson(['status' => 'clocked_in']);
 
         Carbon::setTestNow();
     }
@@ -129,5 +129,45 @@ final class TerminalPinTest extends TestCase {
             'pin' => $pin,
             'event_id' => $eventId,
         ]));
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (kiosk-1): Der Fehlzähler wurde mit jeder
+     * Sperre zurückgesetzt — eine kurze PIN war damit dauerhaft ratbar. Jetzt
+     * zählt er weiter und die Sperre wächst.
+     */
+    public function test_repeated_lockouts_escalate_and_finally_hold(): void {
+        Carbon::setTestNow(Carbon::parse('2026-09-17 08:00:00'));
+        $pin = app(TerminalPinService::class)->set($this->employee, '246813', $this->admin);
+
+        // Erste Sperre: 15 Minuten.
+        foreach (range(1, TerminalPinService::MAX_ATTEMPTS) as $attempt) {
+            $this->pinScan('4711', '111111', 'esk-a-' . $attempt);
+        }
+        $this->assertSame(TerminalPinService::MAX_ATTEMPTS, (int) $pin->fresh()?->failed_attempts);
+
+        // Zweite Sperre nach Ablauf: eine Stunde.
+        Carbon::setTestNow(Carbon::parse('2026-09-17 08:16:00'));
+        foreach (range(1, TerminalPinService::MAX_ATTEMPTS) as $attempt) {
+            $this->pinScan('4711', '111111', 'esk-b-' . $attempt);
+        }
+        Carbon::setTestNow(Carbon::parse('2026-09-17 08:32:00'));
+        $this->pinScan('4711', '246813', 'esk-b-right')->assertJson(['status' => 'invalid_pin']);
+
+        // Dritte Runde: einen Tag gesperrt — Raten wird damit sinnlos.
+        Carbon::setTestNow(Carbon::parse('2026-09-17 09:32:00'));
+        foreach (range(1, TerminalPinService::MAX_ATTEMPTS) as $attempt) {
+            $this->pinScan('4711', '111111', 'esk-c-' . $attempt);
+        }
+        $this->assertSame(3 * TerminalPinService::MAX_ATTEMPTS, (int) $pin->fresh()?->failed_attempts);
+
+        Carbon::setTestNow(Carbon::parse('2026-09-17 12:00:00'));
+        $this->pinScan('4711', '246813', 'esk-c-right')->assertJson(['status' => 'invalid_pin']);
+
+        // Die Verwaltung kann jederzeit entsperren.
+        $this->actingAs($this->admin)->post(route('admin.terminals.pins.unlock'), ['pin' => $pin->sqid])->assertRedirect();
+        $this->pinScan('4711', '246813', 'esk-unlocked')->assertJson(['status' => 'clocked_in']);
+
+        Carbon::setTestNow();
     }
 }

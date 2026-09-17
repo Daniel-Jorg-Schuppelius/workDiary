@@ -48,10 +48,15 @@ class GeocodeCache extends Model {
         'lng' => 'decimal:7',
     ];
 
-    public static function hashFor(string $query): string {
-        $hash = CryptoHelper::hash(mb_strtolower(trim($query)));
+    /**
+     * Schlüssel des installationsweiten Caches. Die Anbieter-Adresse geht mit
+     * ein: sonst füllte ein Mandant mit eigener Nominatim-URL die Koordinaten
+     * für alle anderen (Sicherheitsaudit 2026-09-17, ssrf-4).
+     */
+    public static function hashFor(string $query, string $providerBaseUrl = ''): string {
+        $provider = rtrim(mb_strtolower(trim($providerBaseUrl)), '/');
 
-        return $hash;
+        return CryptoHelper::hash(mb_strtolower(trim($query)) . '|' . $provider);
     }
 
     public function isExpired(?Carbon $now = null): bool {

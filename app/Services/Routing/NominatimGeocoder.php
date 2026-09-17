@@ -37,7 +37,9 @@ class NominatimGeocoder {
             return null;
         }
 
-        $hash = GeocodeCache::hashFor($query);
+        // Der Cache gilt je Anbieter: eine org-eigene Nominatim-URL darf nicht
+        // die Koordinaten der ganzen Installation setzen (ssrf-4).
+        $hash = GeocodeCache::hashFor($query, (string) ($this->config['base_url'] ?? ''));
 
         /** @var GeocodeCache|null $cached */
         $cached = GeocodeCache::query()->where('query_hash', $hash)->first();

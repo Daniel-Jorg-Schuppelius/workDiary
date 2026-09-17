@@ -32,6 +32,10 @@
         // Live-Vorschau der Firmenbogen-Auswahl (sqid → Vorschau-URL).
         'assets' => ['first' => $version->firstAsset?->sqid, 'following' => $version->followingAsset?->sqid],
         'assetPreviews' => $assetPreviews,
+        // Name des Basisprofils NICHT in den Alpine-Ausdruck interpolieren:
+        // der HTML-Parser dekodiert &#039; zurück, bevor Alpine den Ausdruck
+        // liest (Sicherheitsaudit 2026-09-17, alpine-1).
+        'baseName' => $baseName ?? null,
     ];
     $blockCases = \App\Enums\DocumentDesign\InformationBlock::cases();
     $stateCases = \App\Enums\DocumentDesign\InformationBlockState::cases();
@@ -210,7 +214,7 @@
                     @if ($canInherit)
                         <p class="mb-1 text-xs" x-show="inheritEnabled" x-cloak>
                             <span class="badge badge-info badge-xs align-middle">{{ __('document_design.editor.inherits_badge') }}</span>
-                            <span x-text="inheritanceSummary('{{ $baseName }}')"></span>
+                            <span x-text="inheritanceSummary"></span>
                         </p>
                     @endif
                     <p class="mb-2 text-xs text-warning" x-show="letterheadBlockLabels().length" x-cloak>

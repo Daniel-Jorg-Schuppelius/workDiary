@@ -71,7 +71,9 @@ class LocationController extends Controller {
         }
 
         $user = $device->user;
-        if ($user === null) {
+        // Deaktivierte Konten: der Gerätetoken endet mit dem Austritt
+        // (Audit 2026-09-17, offboard-1).
+        if ($user === null || ! $user->canLogin()) {
             return response()->json(['error' => 'invalid_token'], 401);
         }
 

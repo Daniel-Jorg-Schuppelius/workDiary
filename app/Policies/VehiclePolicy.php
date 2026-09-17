@@ -10,13 +10,15 @@
 
 namespace App\Policies;
 
+use App\Enums\User\Permission;
 use App\Models\{User, Vehicle};
 use App\Policies\Concerns\HasAdminBypass;
 
 /**
- * Org-wide vehicles: every authenticated user may list them, but only
- * the default driver (or any admin) can update/archive. Admin bypass is
- * handled by {@see HasAdminBypass::before()}.
+ * Fahrzeuge der Organisation: sehen darf sie jede angemeldete Person, die
+ * Einzelansicht bleibt beim Stammfahrer. Anlegen, Ändern und Archivieren
+ * verlangt `vehicle.manage`; der Admin-Bypass kommt aus
+ * {@see HasAdminBypass::before()}.
  */
 class VehiclePolicy {
     use HasAdminBypass;
@@ -33,13 +35,19 @@ class VehiclePolicy {
         return (int) $vehicle->default_user_id === (int) $user->id;
     }
 
+    /**
+     * Stammdatenpflege am Fuhrpark ist ein eigenes Recht
+     * ({@see Permission::VehicleManage}) — vorher durfte jede angemeldete
+     * Person Fahrzeuge anlegen, ändern und archivieren, auch fremde
+     * (Sicherheitsaudit 2026-09-17, authz-vehicle-1). Der Admin-Bypass des
+     * Traits gilt weiterhin.
+     */
     public function create(User $user): bool {
-        return true;
+        return $user->can(Permission::VehicleManage->value);
     }
 
     public function update(User $user, Vehicle $vehicle): bool {
-        return $vehicle->default_user_id === null
-            || (int) $vehicle->default_user_id === (int) $user->id;
+        return $user->can(Permission::VehicleManage->value);
     }
 
     public function delete(User $user, Vehicle $vehicle): bool {

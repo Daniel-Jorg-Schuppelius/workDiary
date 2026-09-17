@@ -50,7 +50,59 @@ class AttachmentPolicy {
             return Gate::forUser($user)->allows('view', $parent);
         }
 
+        // Lern-Abgaben: die eigene Abgabe darf man immer sehen, fremde nur mit
+        // Sicht auf den Kurs (Trainer/Verwaltung) — die Einschreibung selbst
+        // hat keine Policy, der Kurs schon.
+        $enrollment = match (true) {
+            $parent instanceof \App\Models\Learning\LearningSubmission => $parent->enrollment,
+            $parent instanceof \App\Models\Learning\LearningAnswer => $parent->attempt?->enrollment,
+            default => null,
+        };
+        if ($enrollment !== null) {
+            if ((int) $enrollment->user_id === (int) $user->id) {
+                return true;
+            }
+            $course = $enrollment->course;
+
+            return $course !== null && Gate::forUser($user)->allows('view', $course);
+        }
+
+        // Träger ohne eigene Regel, aber mit Elternobjekt: das Elternobjekt
+        // entscheidet. Ohne diese Auflösung reichte die gemeinsame Organisation
+        // — Mailanhänge interner Ticket-Notizen und fremde Lern-Abgaben waren
+        // über die Anhang-Kennung abrufbar
+        // (Sicherheitsaudit 2026-09-17, idor-attachment-5).
+        $delegate = self::delegateFor($parent);
+        if ($delegate !== null) {
+            return Gate::forUser($user)->allows('view', $delegate);
+        }
+
         return true;
+    }
+
+    /**
+     * Elternobjekt eines Trägers ohne eigene Policy. Neue Träger gehören in
+     * diese Liste oder brauchen eine eigene Policy — das Architektur-Gate
+     * {@see \Tests\Unit\Architecture\AttachmentCarrierPolicyRuleTest} hält
+     * das nach.
+     */
+    private static function delegateFor(mixed $parent): ?\Illuminate\Database\Eloquent\Model {
+        $target = match (true) {
+            $parent instanceof \App\Models\ServiceTicketMessage => $parent->ticket,
+            $parent instanceof \App\Models\Learning\LearningUnit => $parent->course,
+            $parent instanceof \App\Models\ProtocolItem => $parent->protocol,
+            $parent instanceof \App\Models\Disposal\DisposalItem => $parent->job,
+            $parent instanceof \App\Models\AssetFinance\AssetFinanceEndProcess => $parent->contract,
+            $parent instanceof \App\Models\Supplier\SupplierCredential => $parent->supplier,
+            $parent instanceof \App\Models\AssetCompliance\AssetInspectionEvent => $parent->asset,
+            $parent instanceof \App\Models\AssetCompliance\AssetInspectionSchedule => $parent->asset,
+            $parent instanceof \App\Models\Rental\RentalHandoverReport => $parent->asset,
+            $parent instanceof \App\Models\Rental\RentalReturnReport => $parent->asset,
+            $parent instanceof \App\Models\AssetDefect => $parent->asset,
+            default => null,
+        };
+
+        return $target instanceof \Illuminate\Database\Eloquent\Model ? $target : null;
     }
 
     public function create(User $user): bool {

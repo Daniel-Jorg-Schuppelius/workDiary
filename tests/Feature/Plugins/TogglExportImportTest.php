@@ -605,4 +605,28 @@ class TogglExportImportTest extends TestCase {
         }
         @rmdir($dir);
     }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (files-trav-1): Die Ordnernamen kommen aus
+     * dem Formular. Ein Eintrag wie `../../storage` hing sich sonst ungeprüft
+     * an den gehärteten Stammpfad.
+     */
+    public function test_folder_names_cannot_escape_the_base_path(): void {
+        $aussen = dirname($this->base) . '/toggl_fremd_' . uniqid();
+        $this->buildOwn($aussen . '/Geheim');
+
+        try {
+            $result = (new TogglExportImporter)->import(
+                $this->base,
+                $this->organization,
+                ['../' . basename($aussen) . '/Geheim' => ['mode' => TogglExportImporter::MODE_OWN]],
+                TogglExportImporter::USER_PER_EMAIL_CREATE,
+                dryRun: true,
+            );
+
+            $this->assertSame([], $result['workspaces'], 'Ein Pfad außerhalb des Stammordners darf nichts liefern.');
+        } finally {
+            $this->rrmdir($aussen);
+        }
+    }
 }

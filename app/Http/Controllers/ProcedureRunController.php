@@ -17,7 +17,6 @@ use App\Services\Procedure\{DeviationRecorder, ProcedureApplicabilityResolver, P
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
-use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
@@ -120,7 +119,9 @@ class ProcedureRunController extends Controller {
             'status' => ['required', 'in:done,n_a,failed'],
             'value' => ['nullable', 'string', 'max:2000'],
             'note' => ['nullable', 'string', 'max:2000'],
-            'proof' => ['nullable', 'file', 'max:20480'],
+            // Typ-Allowlist und Kontingent wie bei jedem anderen Anhang
+            // (Sicherheitsaudit 2026-09-17, files-upload-1).
+            'proof' => array_merge(['nullable'], \App\Services\Attachments\FileAttacher::rule()),
         ]);
 
         /** @var User $actor */
@@ -395,24 +396,22 @@ class ProcedureRunController extends Controller {
      * {@see AttachmentController::store()}.
      */
     private function storeProof(Request $request, ProcedureRun $run, ProcedureStepRun $stepRun, User $actor): int {
+        /** @var \Illuminate\Http\UploadedFile $file */
         $file = $request->file('proof');
-        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?? ''));
-        $folder = 'attachments/procedure-runs/' . now()->format('Y/m');
-        $filename = Str::uuid()->toString() . ($ext !== '' ? '.' . $ext : '');
-        $path = $file->storeAs($folder, $filename, 'local');
 
-        $attachment = Attachment::query()->create([
-            'organization_id' => $run->organization_id,
-            'attachable_type' => $stepRun->getMorphClass(),
-            'attachable_id' => $stepRun->id,
-            'user_id' => $actor->id,
-            'disk' => 'local',
-            'path' => $path,
-            'original_name' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
-            'mime' => $file->getMimeType() ?? 'application/octet-stream',
-            'size' => (int) $file->getSize(),
-            'meta_type' => 'procedure_proof',
-        ]);
+        // Über den FileAttacher statt eigener Ablage: derselbe Ordner, dieselbe
+        // Endungsableitung und das Speicherkontingent der Lizenz
+        // (Sicherheitsaudit 2026-09-17, files-upload-1).
+        $attachment = app(\App\Services\Attachments\FileAttacher::class)->store(
+            $stepRun,
+            $file,
+            (int) $actor->id,
+            [
+                'organization_id' => $run->organization_id,
+                'meta_type' => 'procedure_proof',
+            ],
+            'attachments/procedure-runs',
+        );
 
         return (int) $attachment->id;
     }

@@ -30,6 +30,15 @@ class TwoFactorChallengeController extends Controller {
 
     private const MAX_ATTEMPTS = 5;
 
+    /**
+     * Zusätzlicher Zähler je Konto — unabhängig von der Adresse. Der
+     * Nutzer+IP-Zähler allein ließ verteiltes Raten des sechsstelligen Codes zu,
+     * sobald das Passwort bekannt war (Sicherheitsaudit 2026-09-17, 2fa-1).
+     */
+    private const MAX_USER_ATTEMPTS = 10;
+
+    private const USER_DECAY_SECONDS = 900;
+
     public function __construct(
         private readonly TwoFactorService $twoFactor,
         private readonly EmailOtpService $emailOtp,
@@ -138,6 +147,14 @@ class TwoFactorChallengeController extends Controller {
         }
 
         $throttleKey = '2fa:' . $userId . '|' . $request->ip();
+        $userKey = '2fa-user:' . $userId;
+        if (RateLimiter::tooManyAttempts($userKey, self::MAX_USER_ATTEMPTS)) {
+            // Geparkte Identität verwerfen: ab hier muss das Passwort erneut her.
+            $request->session()->forget(['auth.2fa.id', 'auth.2fa.remember', 'auth.2fa.username']);
+            $this->notifyTwoFactorLockout((int) $userId);
+
+            return redirect()->route('login')->withErrors(['username' => __('Zu viele Fehlversuche. Bitte melden Sie sich erneut an.')]);
+        }
         if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_ATTEMPTS)) {
             $seconds = RateLimiter::availableIn($throttleKey);
 
@@ -172,6 +189,7 @@ class TwoFactorChallengeController extends Controller {
 
         if (! $passed) {
             RateLimiter::hit($throttleKey, 60);
+            RateLimiter::hit($userKey, self::USER_DECAY_SECONDS);
             app(\App\Services\Security\SecurityEventLogger::class)->log(
                 \App\Enums\Security\SecurityEventType::TwoFactorFailed,
                 ['user' => $user->email, 'method' => $recovery !== '' ? 'recovery' : ($emailCode !== '' ? 'email' : 'totp')],
@@ -181,6 +199,7 @@ class TwoFactorChallengeController extends Controller {
         }
 
         RateLimiter::clear($throttleKey);
+        RateLimiter::clear($userKey);
         $remember = (bool) $request->session()->pull('auth.2fa.remember', false);
         $username = (string) $request->session()->pull('auth.2fa.username', '');
         $request->session()->forget('auth.2fa.id');
@@ -192,5 +211,33 @@ class TwoFactorChallengeController extends Controller {
         $this->syncLegacyUserIdIfMissing($user, $username);
 
         return $this->applyWorkModeAndRedirect($request, $user);
+    }
+
+    /** Hinweis an die betroffene Person: ihr zweiter Faktor wird gerade geraten. */
+    private function notifyTwoFactorLockout(int $userId): void {
+        $user = User::query()->find($userId);
+        if (! $user instanceof User) {
+            return;
+        }
+
+        try {
+            app(\App\Services\Security\SecurityEventLogger::class)->log(
+                \App\Enums\Security\SecurityEventType::AuthLockout,
+                ['user' => $user->email, 'method' => '2fa'],
+            );
+            $user->notify(new \App\Notifications\GenericEventNotification(
+                \App\Enums\Notification\NotificationEvent::SecurityLockout,
+                [
+                    'title' => (string) __('notification.message.two_factor_lockout_title'),
+                    'title_key' => 'notification.message.two_factor_lockout_title',
+                    'message' => (string) __('notification.message.two_factor_lockout_message'),
+                    'message_key' => 'notification.message.two_factor_lockout_message',
+                    'url' => route('account.2fa.show'),
+                ],
+                ['database', 'mail'],
+            ));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('auth.2fa_lockout_notify_failed', ['error' => $e->getMessage()]);
+        }
     }
 }

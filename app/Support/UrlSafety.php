@@ -49,7 +49,7 @@ final class UrlSafety {
         // IP-Literal? Dann muss es bereits hier öffentlich sein (kein DNS nötig).
         $literal = trim($host, '[]');
         if (filter_var($literal, FILTER_VALIDATE_IP) !== false) {
-            return IPHelper::isPublicIP($literal);
+            return self::isPubliclyRoutableIp($literal);
         }
 
         if (self::isNumericHostForm($literal)) {
@@ -116,7 +116,7 @@ final class UrlSafety {
         // auflöst. Ein nicht auflösbarer Host ist KEIN SSRF-Ziel (es gibt nichts
         // Internes zu erreichen) – die Verbindung scheitert dann ohnehin harmlos.
         foreach (self::resolveHost($host) as $ip) {
-            if (! IPHelper::isPublicIP($ip)) {
+            if (! self::isPubliclyRoutableIp($ip)) {
                 return false;
             }
         }
@@ -138,7 +138,7 @@ final class UrlSafety {
 
         $literal = trim($host, '[]');
         if (filter_var($literal, FILTER_VALIDATE_IP) !== false) {
-            return IPHelper::isPublicIP($literal);
+            return self::isPubliclyRoutableIp($literal);
         }
 
         if (self::isNumericHostForm($literal)) {
@@ -160,7 +160,7 @@ final class UrlSafety {
         }
 
         foreach (self::resolveHost($host) as $ip) {
-            if (! IPHelper::isPublicIP($ip)) {
+            if (! self::isPubliclyRoutableIp($ip)) {
                 return false;
             }
         }
@@ -270,7 +270,7 @@ final class UrlSafety {
         }
         if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
             // IP-Literal: nichts zu binden — die Prüfung galt bereits der Zieladresse.
-            return $allowPrivateNetwork || IPHelper::isPublicIP($host) ? [] : null;
+            return $allowPrivateNetwork || self::isPubliclyRoutableIp($host) ? [] : null;
         }
 
         $port = (int) ($parts['port'] ?? ($parts['scheme'] === 'https' ? 443 : 80));
@@ -281,13 +281,56 @@ final class UrlSafety {
 
         if (! $allowPrivateNetwork) {
             foreach ($ips as $ip) {
-                if (! IPHelper::isPublicIP($ip)) {
+                if (! self::isPubliclyRoutableIp($ip)) {
                     return null;
                 }
             }
         }
 
         return [$host . ':' . $port . ':' . implode(',', $ips)];
+    }
+
+    /**
+     * Zusätzlich gesperrte Bereiche, die `FILTER_FLAG_NO_PRIV_RANGE`/
+     * `NO_RES_RANGE` durchlassen (Sicherheitsaudit 2026-09-17, ssrf-7):
+     * Provider-NAT und Übergangstechniken führen genauso ins interne Netz wie
+     * 10/8 — 100.100.100.200 ist der Metadatendienst von Alibaba Cloud.
+     *
+     * @var list<string>
+     */
+    private const EXTRA_BLOCKED_RANGES = [
+        '100.64.0.0/10',   // CGNAT (RFC 6598), u. a. Alibaba-Metadaten
+        '198.18.0.0/15',   // Benchmarking (RFC 2544)
+        '192.0.0.0/24',    // IETF-Protokollzuweisungen (RFC 6890)
+        '192.31.196.0/24', // AS112-v4
+        '192.52.193.0/24', // AMT
+        '192.175.48.0/24', // Direct Delegation AS112
+        '64:ff9b::/96',    // NAT64 (RFC 6052)
+        '64:ff9b:1::/48',  // lokales NAT64 (RFC 8215)
+        '2002::/16',       // 6to4
+        '2001::/32',       // Teredo
+        '2001:10::/28',    // ORCHID
+        '2001:20::/28',    // ORCHIDv2
+        'fec0::/10',       // site-local (veraltet, wird noch geroutet)
+        '::ffff:0:0/96',   // IPv4-mapped — die v4-Adresse dahinter prüft niemand
+    ];
+
+    /**
+     * Öffentlich erreichbare Adresse? Toolkit-Prüfung plus die Bereiche, die
+     * sie durchlässt ({@see EXTRA_BLOCKED_RANGES}).
+     */
+    private static function isPubliclyRoutableIp(string $ip): bool {
+        if (! IPHelper::isPublicIP($ip)) {
+            return false;
+        }
+
+        foreach (self::EXTRA_BLOCKED_RANGES as $range) {
+            if (IPHelper::isInRange($ip, $range)) {
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**

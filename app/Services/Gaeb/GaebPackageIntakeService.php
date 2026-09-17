@@ -101,12 +101,13 @@ final class GaebPackageIntakeService {
                 continue;
             }
 
-            if ($opportunity !== null) {
+            if ($opportunity !== null && $this->isAllowedDocument($entry)) {
                 $this->storeDocument($entry, $actor, $opportunity);
                 $result['documents']++;
             } else {
                 // Ohne Vorgang fehlt der Akte-Bezug; die Datei blind ins DMS zu
-                // legen, machte sie unauffindbar.
+                // legen, machte sie unauffindbar. Ebenso übersprungen wird,
+                // was die Dateityp-Allowlist des DMS nicht kennt.
                 $result['skipped']++;
             }
         }
@@ -160,6 +161,26 @@ final class GaebPackageIntakeService {
             'status' => GaebImportStatus::Pending,
             'created_by' => $actor->id,
         ]);
+    }
+
+    /**
+     * Endung und erkannter Inhaltstyp müssen zur Allowlist des DMS passen —
+     * ein Vergabe-ZIP darf keine Dateitypen einschleusen, die der reguläre
+     * Upload ablehnt (Sicherheitsaudit 2026-09-17, files-upload-1).
+     *
+     * @param  array{name: string, contents: string}  $entry
+     */
+    private function isAllowedDocument(array $entry): bool {
+        $name = basename($entry['name']);
+        $ext = strtolower((string) pathinfo($name, PATHINFO_EXTENSION));
+        if (! in_array($ext, \App\Services\Document\DocumentService::ALLOWED_EXTENSIONS, true)) {
+            return false;
+        }
+
+        $finfo = new \finfo(FILEINFO_MIME_TYPE);
+        $mime = (string) $finfo->buffer($entry['contents']);
+
+        return in_array($mime, \App\Services\Document\DocumentService::ALLOWED_MIMES, true);
     }
 
     /** @param array{name: string, contents: string} $entry */

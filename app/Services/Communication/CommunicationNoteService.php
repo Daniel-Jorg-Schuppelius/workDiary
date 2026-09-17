@@ -178,6 +178,7 @@ class CommunicationNoteService {
 
     /** Markiert eine Notiz als vertraulich; erzwingt visibility=internal (§4). */
     public function markConfidential(CommunicationNote $note, User $actor): CommunicationNote {
+        $this->assertNotPrivate($note);
         if ($note->confidential) {
             return $note;
         }
@@ -194,6 +195,7 @@ class CommunicationNoteService {
     }
 
     public function unmarkConfidential(CommunicationNote $note, User $actor): CommunicationNote {
+        $this->assertNotPrivate($note);
         if (! $note->confidential) {
             return $note;
         }
@@ -388,5 +390,18 @@ class CommunicationNoteService {
         }
 
         return $direction;
+    }
+
+    /**
+     * Eine private Notiz wird von außen nicht angefasst — auch nicht über die
+     * Vertraulichkeits-Schalter, die sie sonst in „intern" umwandeln und damit
+     * lesbar machen würden (Sicherheitsaudit 2026-09-17, authz-note-1).
+     */
+    private function assertNotPrivate(CommunicationNote $note): void {
+        if ($note->visibility === CommunicationVisibility::Private) {
+            throw ValidationException::withMessages([
+                'visibility' => (string) __('communication.error.private_not_publishable'),
+            ]);
+        }
     }
 }

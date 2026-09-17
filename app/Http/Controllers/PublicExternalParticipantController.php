@@ -11,6 +11,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ExternalParticipant\ExternalAbility;
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Models\{ExternalParticipant, Organization};
 use App\Services\Attachments\FileAttacher;
 use App\Services\ExternalParticipant\ExternalParticipantService;
@@ -32,6 +33,8 @@ use Symfony\Component\HttpFoundation\Response;
  * Brute-Force-Schutz über throttle (Route).
  */
 class PublicExternalParticipantController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(private readonly ExternalParticipantService $service) {}
 
     public function show(string $token): View|Response {
@@ -121,6 +124,8 @@ class PublicExternalParticipantController extends Controller {
         if (! empty($orgId)) {
             $org = Organization::query()->withoutGlobalScopes()->find($orgId);
             if ($org instanceof Organization) {
+                // Gesperrter Mandant: kein Beitrag von außen (tenant-status-1).
+                $this->assertTenantPublicSurfacesAvailable($org);
                 app()->instance('currentOrganization', $org);
             }
         }

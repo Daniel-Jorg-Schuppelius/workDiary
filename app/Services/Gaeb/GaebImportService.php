@@ -267,17 +267,35 @@ class GaebImportService {
      */
     private function persistAssignments(BillOfQuantity $boq, int $organizationId, Model $assignable, array $assignments): void {
         foreach ($assignments as $assignment) {
+            $code = self::sanitizeCatalogCode((string) $assignment->getCode());
+            if ($code === '') {
+                continue;
+            }
+
             BoqCatalogAssignment::query()->create([
                 'organization_id' => $organizationId,
                 'bill_of_quantity_id' => $boq->id,
                 'assignable_type' => $assignable->getMorphClass(),
                 'assignable_id' => $assignable->getKey(),
                 'catalog_key' => $assignment->getCatalogId(),
-                'code' => $assignment->getCode(),
+                'code' => $code,
                 'quantity' => $assignment->getQuantity(),
                 'source' => 'import',
             ]);
         }
+    }
+
+    /**
+     * Katalogcodes kommen aus einer fremden GAEB-Datei und landen in Ansicht
+     * und Auswertung. Erlaubt sind nur Ziffern, Buchstaben, Punkt, Bindestrich,
+     * Unterstrich, Schrägstrich und Leerzeichen — alles andere wird verworfen
+     * (Sicherheitsaudit 2026-09-17, xss-4). Bleibt nichts übrig, entsteht keine
+     * Zuordnung; der Import bricht deshalb nicht ab.
+     */
+    private static function sanitizeCatalogCode(string $code): string {
+        $clean = (string) preg_replace('/[^0-9A-Za-zÄÖÜäöüß.\-_\/ ]/u', '', trim($code));
+
+        return mb_substr($clean, 0, 40);
     }
 
     /**

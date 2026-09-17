@@ -211,7 +211,14 @@ class ScimUserService {
     private function revokeAccess(User $user): void {
         $user->tokens()->delete(); // Sanctum
         DB::table('sessions')->where('user_id', $user->id)->delete(); // DB-Session-Driver
-        $user->forceFill(['remember_token' => Str::random(60)])->save(); // „remember me" entwerten
+        // „remember me" entwerten und die sitzungslosen Zugänge mitnehmen:
+        // Kalender-Abo und Standort-Gerätetoken (Audit 2026-09-17, offboard-1).
+        $user->forceFill(['remember_token' => Str::random(60), 'calendar_feed_token_hash' => null])->save();
+
+        \App\Models\LocationDeviceToken::query()
+            ->where('user_id', $user->id)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()]);
     }
 
     private function storeExternalId(User $user, ?string $externalId): void {

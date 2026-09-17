@@ -107,6 +107,14 @@ class ExternalLearningController extends Controller {
 
         abort_if($enrollment === null, 403);
 
+        // Der Zugang wird bei JEDEM Request neu geprüft: Widerruf, Ablauf der
+        // Einschreibung oder des Gastzugangs endeten sonst erst mit der Sitzung
+        // (Sicherheitsaudit 2026-09-17, learning-ext-1).
+        if (! $this->accessStillValid($enrollment)) {
+            $request->session()->forget(self::SESSION_KEY);
+            abort(403);
+        }
+
         // Ohne angemeldete Person ist keine Organisation gebunden — der
         // Mandanten-Scope liefe leer und nachgelagerte Schreibvorgänge
         // (Fortschritt, Zertifikat) hätten keinen Mandanten. Deshalb wird er
@@ -117,5 +125,27 @@ class ExternalLearningController extends Controller {
         }
 
         return $enrollment;
+    }
+
+    /**
+     * Gilt der Gastzugang noch? Verlangt eine offene, nicht abgelaufene
+     * Einschreibung, einen nicht widerrufenen Gast und mindestens einen
+     * gültigen Zugangslink.
+     */
+    private function accessStillValid(LearningEnrollment $enrollment): bool {
+        if ($enrollment->isAccessExpired()) {
+            return false;
+        }
+
+        $participant = $enrollment->externalParticipant;
+        if ($participant === null || ! $participant->isUsable()) {
+            return false;
+        }
+
+        return \App\Models\Learning\LearningAccessToken::query()
+            ->where('learning_enrollment_id', $enrollment->id)
+            ->whereNull('revoked_at')
+            ->where('expires_at', '>', now())
+            ->exists();
     }
 }

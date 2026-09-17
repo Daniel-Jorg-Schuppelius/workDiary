@@ -25,6 +25,11 @@ use Illuminate\View\View;
 class TwoFactorChallengeController extends Controller {
     private const MAX_ATTEMPTS = 5;
 
+    /** Zähler je Konto, unabhängig von der Adresse (Audit 2026-09-17, 2fa-1). */
+    private const MAX_USER_ATTEMPTS = 10;
+
+    private const USER_DECAY_SECONDS = 900;
+
     public function __construct(
         private readonly TwoFactorService $twoFactor,
         private readonly EmailOtpService $emailOtp,
@@ -115,6 +120,12 @@ class TwoFactorChallengeController extends Controller {
         }
 
         $throttleKey = 'customer-2fa:' . $userId . '|' . $request->ip();
+        $userKey = 'customer-2fa-user:' . $userId;
+        if (RateLimiter::tooManyAttempts($userKey, self::MAX_USER_ATTEMPTS)) {
+            $request->session()->forget(['auth.customer.2fa.id', 'auth.customer.2fa.remember']);
+
+            return redirect()->route('customer.login')->withErrors(['email' => __('Zu viele Fehlversuche. Bitte melden Sie sich erneut an.')]);
+        }
         if (RateLimiter::tooManyAttempts($throttleKey, self::MAX_ATTEMPTS)) {
             return back()->withErrors(['code' => __('auth.throttle', ['seconds' => RateLimiter::availableIn($throttleKey)])]);
         }
@@ -135,11 +146,13 @@ class TwoFactorChallengeController extends Controller {
 
         if (! $passed) {
             RateLimiter::hit($throttleKey, 60);
+            RateLimiter::hit($userKey, self::USER_DECAY_SECONDS);
 
             return back()->withErrors(['code' => __('Der Code ist ungültig.')]);
         }
 
         RateLimiter::clear($throttleKey);
+        RateLimiter::clear($userKey);
         $remember = (bool) $request->session()->pull('auth.customer.2fa.remember', false);
         $request->session()->forget('auth.customer.2fa.id');
 

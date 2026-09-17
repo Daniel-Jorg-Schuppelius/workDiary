@@ -71,7 +71,8 @@ class IcsFeedController extends Controller {
         }
         // Auflösung über den Hash (S-44) — gespeichert ist kein Klartext mehr.
         $user = User::query()->where('calendar_feed_token_hash', User::hashCalendarFeedToken($token))->first();
-        abort_unless($user instanceof User, 404);
+        // Deaktivierte Konten liefern nichts mehr (Audit 2026-09-17, offboard-1).
+        abort_unless($user instanceof User && $user->canLogin(), 404);
 
         return response($this->ics->feedPersonalSchedule($user), 200, [
             'Content-Type' => 'text/calendar; charset=utf-8',

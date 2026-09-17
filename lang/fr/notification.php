@@ -154,6 +154,8 @@ return [
         'email_changed_message' => 'L’adresse de connexion de votre compte a été remplacée par :email. Si ce n’était pas vous, changez immédiatement votre mot de passe et prévenez votre administration.',
         'passkey_added_title' => 'Nouvelle clé d’accès ajoutée',
         'passkey_added_message' => 'Une nouvelle clé de sécurité ou clé d’accès a été ajoutée à votre compte. Si ce n’était pas vous, supprimez-la immédiatement et changez votre mot de passe.',
+        'two_factor_lockout_title' => 'Votre second facteur est deviné',
+        'two_factor_lockout_message' => 'Votre compte a reçu trop de codes de double authentification erronés et la connexion a été interrompue. Si ce n’était pas vous, changez votre mot de passe : quelqu’un le connaît peut-être déjà.',
         'lockout_title' => 'Trop de tentatives échouées — compte brièvement verrouillé',
         'lockout_message' => 'Votre compte a été la cible de plusieurs tentatives de connexion échouées et a été brièvement verrouillé. Si ce n’était pas vous, changez votre mot de passe.',
         'security_threat_title' => 'Attaque possible : :event',

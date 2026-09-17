@@ -16,8 +16,8 @@ use App\Enums\Attendance\AttendanceStatus;
 use App\Enums\TimeApproval\MonthClosureStatus;
 use App\Models\{Attachment, Attendance, AuditLog, MonthClosure, Organization, TimeEntry, User};
 use App\Services\Compliance\AttendanceComplianceChecker;
+use App\Support\{CsvExport, Tz};
 use App\Support\Query\DateRange;
-use App\Support\Tz;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Builders\CSVDocumentBuilder;
 use CommonToolkit\Entities\CSV\DataLine;
@@ -258,8 +258,15 @@ class MonthClosureBundleService {
      */
     private function csv(array $rows): string {
         $builder = new CSVDocumentBuilder(self::CSV_DELIMITER, self::CSV_ENCLOSURE);
-        foreach ($rows as $row) {
-            $builder->addRow(new DataLine($row, self::CSV_DELIMITER, self::CSV_ENCLOSURE));
+        foreach ($rows as $index => $row) {
+            // Datenzeilen durch den Formel-Guard; die Kopfzeile besteht aus
+            // eigenen Spaltennamen (Sicherheitsaudit 2026-09-17, csvformula-1).
+            // Der Manifest-Hash läuft über den erzeugten Inhalt und bleibt gültig.
+            $cells = $index === 0 ? $row : array_map(
+                static fn (string $value): string => (string) CsvExport::guard($value),
+                $row,
+            );
+            $builder->addRow(new DataLine($cells, self::CSV_DELIMITER, self::CSV_ENCLOSURE));
         }
 
         return (new CSVGenerator())->generate($builder->build(), includeHeader: false);

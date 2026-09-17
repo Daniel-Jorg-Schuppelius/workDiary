@@ -76,7 +76,13 @@ final class FileAttacher {
             }
         }
 
-        $ext = strtolower($file->getClientOriginalExtension() ?: ($file->extension() ?: 'bin'));
+        // Endung aus dem SERVER-seitig erkannten Typ, nicht aus dem
+        // Client-Namen: eine hochgeladene „rechnung.pdf.php" landete sonst als
+        // .php in der Ablage (Sicherheitsaudit 2026-09-17, files-upload-1).
+        $ext = strtolower($file->extension() ?: 'bin');
+        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+            $ext = 'bin';
+        }
         $path = $file->storeAs(($folder ?? 'attachments') . '/' . now()->format('Y/m'), Str::uuid()->toString() . '.' . $ext, 'local');
 
         // Über die generische morphMany-Relation (statt der HasAttachments-

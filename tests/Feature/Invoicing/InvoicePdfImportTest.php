@@ -193,6 +193,27 @@ final class InvoicePdfImportTest extends TestCase {
         $this->assertTrue((bool) data_get($invoice->fresh()?->import_metadata, 'reviewed'));
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-17 (files-xss-1): Hochgeladenes XML lief in der
+     * Vorschau als Seite im Ursprung der Anwendung. Es geht jetzt als Text
+     * hinaus und trägt eine abgeschottete CSP.
+     */
+    public function test_xml_preview_is_served_as_inert_text(): void {
+        $this->actingAs($this->admin)->post(route('invoices.pdf-import.store'), [
+            'customer_id' => $this->customer->sqid,
+            'delivery_format' => InvoiceDeliveryFormat::PdfAndXRechnung->value,
+            'file' => UploadedFile::fake()->createWithContent('xrechnung.xml', $this->sampleXRechnungXml()),
+        ])->assertRedirect();
+        $invoice = Invoice::query()->firstOrFail();
+
+        $response = $this->actingAs($this->admin)->get(route('invoices.pdf-import.preview', $invoice));
+
+        $response->assertOk();
+        $this->assertStringStartsWith('text/plain', (string) $response->headers->get('content-type'));
+        $this->assertStringContainsString('sandbox', (string) $response->headers->get('content-security-policy'));
+        $this->assertStringContainsString("default-src 'none'", (string) $response->headers->get('content-security-policy'));
+    }
+
     public function test_xlsx_item_table_is_detected_and_creates_real_line_items(): void {
         $path = tempnam(sys_get_temp_dir(), 'invoice-xlsx-') . '.xlsx';
         $builder = (new \CommonToolkit\Builders\XLSXDocumentBuilder)->sheet('Rechnung')->addRows([

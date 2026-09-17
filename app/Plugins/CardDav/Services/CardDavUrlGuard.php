@@ -36,4 +36,32 @@ final class CardDavUrlGuard {
             privateHint: 'Für einen Server im eigenen Netz muss die Freigabe privater Adressen ausdrücklich aktiviert werden.',
         );
     }
+
+    /**
+     * Adressbuch- und Discovery-Adressen kommen aus der Antwort des Servers
+     * (hrefs, SRV-Einträge). Sie gelten nur, wenn sie zur konfigurierten
+     * Verbindung gehören — sonst führte ein Server den Abruf an der geprüften
+     * Basis-URL vorbei (Sicherheitsaudit 2026-09-17, ssrf-6).
+     */
+    public static function assertSameOriginAsBase(string $url, string $baseUrl, bool $allowPrivateNetwork): void {
+        self::assertAcceptable($url, $allowPrivateNetwork);
+
+        if (self::origin($url) !== self::origin($baseUrl)) {
+            throw new \RuntimeException((string) __('carddav.flash.foreign_origin'));
+        }
+    }
+
+    /** Schema + Host + Port einer Adresse, kleingeschrieben. */
+    private static function origin(string $url): string {
+        $parts = parse_url(trim($url));
+        if ($parts === false) {
+            return '';
+        }
+
+        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
+        $host = strtolower((string) ($parts['host'] ?? ''));
+        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
+
+        return $scheme . '://' . $host . $port;
+    }
 }

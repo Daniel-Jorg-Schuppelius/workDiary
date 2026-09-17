@@ -154,6 +154,8 @@ return [
         'email_changed_message' => 'Die Anmeldeadresse Ihres Kontos wurde auf :email geändert. Waren Sie das nicht, ändern Sie sofort Ihr Passwort und wenden Sie sich an Ihre Administration.',
         'passkey_added_title' => 'Neuer Passkey hinzugefügt',
         'passkey_added_message' => 'Ihrem Konto wurde ein neuer Sicherheitsschlüssel/Passkey hinzugefügt. Waren Sie das nicht, entfernen Sie ihn sofort und ändern Sie Ihr Passwort.',
+        'two_factor_lockout_title' => 'Zweiter Faktor wird geraten',
+        'two_factor_lockout_message' => 'Zu Ihrem Konto gab es zu viele falsche Codes für die Zwei-Faktor-Bestätigung. Die Anmeldung wurde abgebrochen. Waren Sie das nicht, ändern Sie Ihr Passwort — jemand kennt es womöglich bereits.',
         'lockout_title' => 'Zu viele Fehlversuche — Konto kurzzeitig gesperrt',
         'lockout_message' => 'Ihr Konto war Ziel mehrerer fehlgeschlagener Anmeldeversuche und wurde kurzzeitig gesperrt. Waren Sie das nicht, ändern Sie Ihr Passwort.',
         'security_threat_title' => 'Angriffsverdacht: :event',

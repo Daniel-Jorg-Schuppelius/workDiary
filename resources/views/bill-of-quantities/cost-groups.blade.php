@@ -77,7 +77,22 @@
                 {{-- Pivot (MVP-648): alle drei Ebenen ineinander. Die Summe einer
                      Oberebene entsteht aus ihren Kindern, nicht aus einer
                      zweiten Rechnung. --}}
-                <div x-data="treeTable(@js(array_column($pivot['rows'], 'code')))">
+                @php
+                    // Alpine bekommt nur Zahlen: Katalogcodes kommen aus fremden
+                    // GAEB-Dateien (Sicherheitsaudit 2026-09-17, xss-4).
+                    $pivotIds = [];
+                    foreach ($pivot['rows'] as $lvl1) {
+                        $pivotIds[$lvl1['code']] ??= count($pivotIds);
+                        foreach ($lvl1['children'] ?? [] as $lvl2) {
+                            $pivotIds[$lvl2['code']] ??= count($pivotIds);
+                            foreach ($lvl2['children'] ?? [] as $lvl3) {
+                                $pivotIds[$lvl3['code']] ??= count($pivotIds);
+                            }
+                        }
+                    }
+                    $pivotOpen = array_values(array_map(fn ($code) => (int) $pivotIds[$code], array_column($pivot['rows'], 'code')));
+                @endphp
+                <div x-data="treeTable(@js($pivotOpen))">
                 <x-table bare>
                     <x-slot:head>
                         <tr>
@@ -87,11 +102,11 @@
                         </tr>
                     </x-slot:head>
                     @foreach ($pivot['rows'] as $first)
-                        @include('bill-of-quantities._pivot_row', ['node' => $first, 'ancestors' => [], 'bill' => $bill, 'money' => $money])
+                        @include('bill-of-quantities._pivot_row', ['node' => $first, 'ancestors' => [], 'bill' => $bill, 'money' => $money, 'ids' => $pivotIds])
                         @foreach ($first['children'] as $second)
-                            @include('bill-of-quantities._pivot_row', ['node' => $second, 'ancestors' => [$first['code']], 'bill' => $bill, 'money' => $money])
+                            @include('bill-of-quantities._pivot_row', ['node' => $second, 'ancestors' => [$first['code']], 'bill' => $bill, 'money' => $money, 'ids' => $pivotIds])
                             @foreach ($second['children'] as $third)
-                                @include('bill-of-quantities._pivot_row', ['node' => $third, 'ancestors' => [$first['code'], $second['code']], 'bill' => $bill, 'money' => $money])
+                                @include('bill-of-quantities._pivot_row', ['node' => $third, 'ancestors' => [$first['code'], $second['code']], 'bill' => $bill, 'money' => $money, 'ids' => $pivotIds])
                             @endforeach
                         @endforeach
                     @endforeach

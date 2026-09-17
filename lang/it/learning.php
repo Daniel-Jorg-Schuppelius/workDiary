@@ -875,6 +875,7 @@ return [
             'without_launch' => 'Nel manifest manca il file di avvio (nessuno SCO con href).',
         ],
         'checkin_closed' => 'Il check-in non è possibile fuori dalla finestra temporale intorno all’incontro.',
+        'checkin_link_required' => 'Scansiona il QR code dell’incontro: senza aprire il link la conferma non vale.',
         'submission_file_required' => 'Questo compito richiede almeno un file.',
         'image_alt_required' => 'Un’immagine ha bisogno di un testo alternativo: senza, per chi non la vede non esiste.',
         'approval_decided' => 'Su questo tempo di apprendimento è già stata presa una decisione.',

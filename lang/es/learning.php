@@ -875,6 +875,7 @@ return [
             'without_launch' => 'El manifiesto no tiene archivo de inicio (ningún SCO con href).',
         ],
         'checkin_closed' => 'El registro no es posible fuera del intervalo de tiempo en torno a la sesión.',
+        'checkin_link_required' => 'Escanea el código QR del evento: sin abrir el enlace la confirmación no cuenta.',
         'submission_file_required' => 'Esta tarea exige al menos un archivo.',
         'image_alt_required' => 'Una imagen necesita texto alternativo: sin él no existe para quienes no pueden verla.',
         'approval_decided' => 'Sobre este tiempo de aprendizaje ya se ha decidido.',

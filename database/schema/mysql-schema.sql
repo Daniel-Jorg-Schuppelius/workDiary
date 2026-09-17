@@ -13171,7 +13171,7 @@ CREATE TABLE `organization_sso_domains` (
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`id`),
-  UNIQUE KEY `org_sso_domain_unique` (`domain`),
+  UNIQUE KEY `org_sso_domain_org_unique` (`domain`,`organization_id`),
   KEY `organization_sso_domains_organization_id_foreign` (`organization_id`),
   KEY `organization_sso_domains_created_by_foreign` (`created_by`),
   CONSTRAINT `organization_sso_domains_created_by_foreign` FOREIGN KEY (`created_by`) REFERENCES `users` (`id`) ON DELETE SET NULL,
@@ -21940,3 +21940,4 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (819,'2027_02_22_10
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (820,'2027_02_22_100500_create_content_references',86);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (821,'2027_02_22_100600_move_knowledge_categories_to_collections',87);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (822,'2027_02_22_100700_create_msgraph_onenote_connections',88);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (823,'2027_02_22_100800_sso_domain_unique_per_organization',89);

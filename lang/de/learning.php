@@ -875,6 +875,7 @@ return [
             'without_launch' => 'Im Manifest fehlt die Einstiegsdatei (kein SCO mit href).',
         ],
         'checkin_closed' => 'Der Check-in ist außerhalb des Zeitfensters um den Termin nicht möglich.',
+        'checkin_link_required' => 'Bitte den QR-Code des Termins scannen — ohne den Aufruf über den Link zählt die Bestätigung nicht.',
         'submission_file_required' => 'Diese Aufgabe verlangt mindestens eine Datei.',
         'image_alt_required' => 'Ein Bild braucht einen Alternativtext — ohne ihn ist es für Menschen, die es nicht sehen können, nicht vorhanden.',
         'approval_decided' => 'Über diese Lernzeit wurde bereits entschieden.',

@@ -114,4 +114,35 @@ class CommunicationNoteVisibilityTest extends TestCase {
             ->post(route('communication-notes.confidential', $note), ['confidential' => 1])
             ->assertForbidden();
     }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (authz-note-1): Eine private Notiz gehört
+     * ihrer Verfasserin. `confidential.manage` konnte sie vorher auf „intern
+     * vertraulich" umschalten — und sie damit lesbar machen.
+     */
+    public function test_private_note_cannot_be_converted_by_others(): void {
+        $author = User::factory()->user()->create();
+        $admin = User::factory()->admin()->create(['organization_id' => $author->organization_id]);
+        $entry = DiaryEntry::factory()->for($author)->create();
+
+        $note = CommunicationNote::factory()->for($entry, 'notable')->create([
+            'organization_id' => $author->organization_id,
+            'created_by_user_id' => $author->id,
+            'visibility' => 'private',
+        ]);
+
+        $this->actingAs($admin)
+            ->post(route('communication-notes.confidential', $note), ['confidential' => '1'])
+            ->assertNotFound();
+        $this->actingAs($admin)
+            ->post(route('communication-notes.publish', $note))
+            ->assertNotFound();
+        $this->actingAs($admin)
+            ->post(route('communication-notes.followup-complete', $note))
+            ->assertNotFound();
+
+        $note->refresh();
+        $this->assertFalse((bool) $note->confidential);
+        $this->assertSame('private', $note->visibility->value);
+    }
 }

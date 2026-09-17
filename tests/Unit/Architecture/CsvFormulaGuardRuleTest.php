@@ -40,10 +40,11 @@ class CsvFormulaGuardRuleTest extends TestCase {
      */
     private const EXCEPTIONS = [
         'app/Support/CsvExport.php' => 'Hier wohnt der Guard selbst; die Kopfzeile besteht aus anwendungseigenen Spaltennamen.',
-        'app/Support/Toolkit/CsvFacade.php' => 'Dünne Naht zum Toolkit ohne eigene Fachdaten — die Aufrufer guarden.',
+        'app/Support/Toolkit/CsvFacade.php' => 'Naht zum Toolkit: buildCsv() guardet die Datenzeilen selbst (Parameter guardFormulas), die Kopfzeile besteht aus anwendungseigenen Spaltennamen.',
         'app/Console/Commands/ExportAuditLog.php' => 'GoBD-Ausleitung: die Bytes sind über den head_hash kryptografisch gebunden. Ein vorangestellter Apostroph zerstörte genau den Nachweis, den die Datei erbringen soll.',
         'app/Services/TimeExport/Profiles/GenericCsvProfile.php' => 'Lohnexport per SFTP an ein Lohnsystem; payload_hash weist den ausgelieferten Stand nach. Geänderte Bytes hieße geänderte Lohndaten.',
         'app/Services/Import/CsvPreflightAnalyzer.php' => 'Zwischenform beim IMPORT (XLSX-Blatt als CSV-Zeilen), keine ausgelieferte Datei.',
+        'app/Services/Finance/GdpduExportService.php' => 'GoBD-Datenträgerüberlassung Z3: die Dateien sind über index.xml und den Paket-Hash gebunden und werden von der Prüfsoftware eingelesen, nicht in Excel geöffnet. Ein vorangestellter Apostroph zerstörte den Nachweis.',
     ];
 
     public function test_csv_ausgabe_nutzt_den_formel_guard(): void {
@@ -53,13 +54,25 @@ class CsvFormulaGuardRuleTest extends TestCase {
             $source = (string) file_get_contents($path);
             $relative = str_replace($this->repoRoot() . '/', '', $path);
 
-            if (! str_contains($source, 'encodeLine(')) {
+            // CSV entsteht auf drei Wegen: direkt über encodeLine(), über die
+            // Toolkit-Naht buildCsv() und über den CSVGenerator des Toolkits
+            // (Sicherheitsaudit 2026-09-17, csvformula-1).
+            $writesCsv = str_contains($source, 'encodeLine(')
+                || str_contains($source, 'CsvFacade::buildCsv(')
+                || str_contains($source, 'new CSVGenerator');
+            if (! $writesCsv) {
                 continue;
             }
             if (isset(self::EXCEPTIONS[$relative])) {
                 continue;
             }
-            if (str_contains($source, 'guardRow(') || str_contains($source, 'CsvExport::guard(')) {
+            if (
+                str_contains($source, 'guardRow(')
+                || str_contains($source, 'CsvExport::guard(')
+                // buildCsv() guardet standardmäßig; ein ausdrückliches
+                // guardFormulas: false steht mit Begründung im Aufrufer.
+                || str_contains($source, 'CsvFacade::buildCsv(')
+            ) {
                 continue;
             }
 

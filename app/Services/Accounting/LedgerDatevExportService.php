@@ -92,7 +92,10 @@ class LedgerDatevExportService {
         }
 
         return [
-            'csv' => CsvFacade::buildCsv(self::HEADERS, $rows),
+            // DATEV-ASCII ist ein Maschinenformat: die Datei wird eingelesen,
+            // nicht in Excel geöffnet, und der Nachweis hängt an den Bytes.
+            // Deshalb ohne Formel-Guard (csvformula-1).
+            'csv' => CsvFacade::buildCsv(self::HEADERS, $rows, guardFormulas: false),
             'rows' => count($rows),
             'debit' => $debit->getAmount(),
             'credit' => $credit->getAmount(),

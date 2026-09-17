@@ -281,6 +281,9 @@ class PluginAdminControllerTest extends TestCase {
             'exception_class' => 'X',
             'message' => 'something broke',
             'occurred_at' => now(),
+            // Org-eigener Fehler: installationsweite quittiert nur der Betreiber
+            // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+            'organization_id' => $this->organization->id,
         ]);
 
         $this->actingAs($this->admin)

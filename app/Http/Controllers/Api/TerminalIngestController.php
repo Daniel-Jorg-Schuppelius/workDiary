@@ -118,7 +118,10 @@ class TerminalIngestController extends Controller {
         }
 
         $payload = ['status' => $status];
-        if ($terminal->show_status && $result['user'] !== null && in_array($status, ['clocked_in', 'clocked_out', 'break_started', 'break_ended', 'homeoffice_started', 'homeoffice_ended', 'errand_started', 'errand_ended'], true)) {
+        // Bei PIN-Stempelungen bleibt die Anzeige leer: ein erratener Treffer
+        // verriete sonst Name, Gleitzeit- und Urlaubssaldo
+        // (Sicherheitsaudit 2026-09-17, kiosk-1).
+        if (! $usesPin && $terminal->show_status && $result['user'] !== null && in_array($status, ['clocked_in', 'clocked_out', 'break_started', 'break_ended', 'homeoffice_started', 'homeoffice_ended', 'errand_started', 'errand_ended'], true)) {
             $payload += $this->statusInfo($result['user']);
         }
 

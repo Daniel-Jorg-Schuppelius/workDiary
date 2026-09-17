@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Models\{Customer, Quote, QuoteItem, User};
 use App\Services\Invoicing\QuoteService;
 use CommonToolkit\Helper\Data\CryptoHelper;
@@ -26,6 +27,8 @@ use Illuminate\Support\Facades\{Auth, Gate};
  * Entwurfsrechnung. Nach Versand wird versioniert, nie geändert.
  */
 class QuoteController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(private readonly QuoteService $quotes) {}
 
     public function create(): View {
@@ -308,6 +311,9 @@ class QuoteController extends Controller {
     /** Token gegen den gespeicherten Hash prüfen (kein Login, kein Sqid-Raten). */
     private function assertPortalToken(Quote $quote, string $token): void {
         abort_if($quote->acceptance_token_hash === null || $token === '', 404);
+        // Gesperrter Mandant: das Angebot lässt sich nicht mehr annehmen
+        // (Sicherheitsaudit 2026-09-17, tenant-status-1).
+        $this->assertTenantPublicSurfacesAvailable((int) $quote->organization_id);
         abort_unless(hash_equals((string) $quote->acceptance_token_hash, CryptoHelper::hash($token)), 404);
     }
 

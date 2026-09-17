@@ -63,6 +63,7 @@ return [
         'saved' => 'CardDAV-Anbindung gespeichert.',
         'invalid_url' => 'Die Basis-URL muss mit http:// oder https:// beginnen.',
         'private_url_blocked' => 'Die Basis-URL zeigt auf eine private/interne Adresse. Für einen Server im eigenen Netz die Freigabe privater Adressen aktivieren.',
+        'foreign_origin' => 'Die Adresse gehört nicht zum eingerichteten CardDAV-Server.',
         'password_required' => 'Für eine neue Anbindung ist ein App-Passwort erforderlich.',
         'no_connection' => 'Keine aktive CardDAV-Anbindung vorhanden.',
         'discovery_failed' => 'Adressbuch-Suche fehlgeschlagen — Server nicht erreichbar oder Zugangsdaten ungültig.',

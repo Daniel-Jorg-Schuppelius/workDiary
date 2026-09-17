@@ -131,7 +131,15 @@ class UserOffboardingService {
             'deactivated_at' => now(),
             'left_at' => $member->left_at ?? now()->toDateString(),
             'remember_token' => Str::random(60),
+            // Kalender-Abo und Gerätetoken sind Zugänge ohne Sitzung: sie liefen
+            // nach dem Austritt weiter (Sicherheitsaudit 2026-09-17, offboard-1).
+            'calendar_feed_token_hash' => null,
         ])->save();
+
+        \App\Models\LocationDeviceToken::query()
+            ->where('user_id', $member->id)
+            ->whereNull('revoked_at')
+            ->update(['revoked_at' => now()]);
 
         // Aktive Sitzungen und API-Zugänge enden mit dem Austritt sofort.
         DB::table('sessions')->where('user_id', $member->id)->delete();

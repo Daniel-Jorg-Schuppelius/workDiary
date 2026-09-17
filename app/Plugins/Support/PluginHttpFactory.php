@@ -45,7 +45,9 @@ class PluginHttpFactory {
      * ignoriert das Intervall, damit Tests nicht real schlafen.
      */
     public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
-        $allowPrivateNetwork ??= $this->allowsPrivateNetwork($pluginId);
+        // Eine Entscheidung für Prüfung UND Weiterleitungs-Guard des Clients:
+        // das Opt-in gilt nur, solange der Betreiber es erlaubt (ssrf-2).
+        $allowPrivateNetwork = $this->privateNetworkAllowed($pluginId, $allowPrivateNetwork);
         $this->assertTargetAllowed($pluginId, $baseUrl, $allowPrivateNetwork);
 
         $client = new PluginApiClient($pluginId, $baseUrl, null, $allowPrivateNetwork);
@@ -173,7 +175,7 @@ class PluginHttpFactory {
 
         UrlSafety::assertAcceptableExternalBaseUrl(
             $baseUrl,
-            $allowPrivateNetwork ?? $this->allowsPrivateNetwork($pluginId),
+            $this->privateNetworkAllowed($pluginId, $allowPrivateNetwork),
             'Plugin ' . $pluginId,
             'Ziel-URL',
             'Für selbst gehostete Instanzen die Einstellung „Private Netzwerke erlauben" aktivieren.',
@@ -189,6 +191,29 @@ class PluginHttpFactory {
      * Nominatim/OSRM. Rufer mit eigener Kennung (KI-Verbindungen:
      * `is_local`) geben den Wert direkt mit.
      */
+    /**
+     * Endgültige Entscheidung über Ziele im privaten Netz: das Opt-in des
+     * Aufrufers ODER des Plugins — aber nur, solange der Betreiber-Schalter
+     * `plugins.allow_private_network_opt_in` es zulässt. Vorher wirkte der
+     * Schalter nur an den Einstellungsmasken; KI-Verbindungen (`is_local`),
+     * Nominatim/OSRM-Overrides und das GitLab-Plugin gingen daran vorbei
+     * (Sicherheitsaudit 2026-09-17, ssrf-2).
+     */
+    protected function privateNetworkAllowed(string $pluginId, ?bool $requested = null): bool {
+        $wanted = $requested ?? $this->allowsPrivateNetwork($pluginId);
+        if (! $wanted) {
+            return false;
+        }
+
+        // Betreiber-Liste (Kern-Dienste wie ein eigenes Nominatim) bleibt
+        // wirksam: sie ist die Vorgabe des Betreibers, nicht die eines Mandanten.
+        if (in_array($pluginId, (array) config('plugins.private_network_targets', []), true)) {
+            return true;
+        }
+
+        return (bool) config('plugins.allow_private_network_opt_in', true);
+    }
+
     protected function allowsPrivateNetwork(string $pluginId): bool {
         if (in_array($pluginId, (array) config('plugins.private_network_targets', []), true)) {
             return true;

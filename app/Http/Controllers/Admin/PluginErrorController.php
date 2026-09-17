@@ -110,6 +110,7 @@ class PluginErrorController extends Controller {
     public function acknowledge(Request $request, PluginError $pluginError): RedirectResponse {
         $admin = $this->ensureAdmin($request);
         $this->ensureVisible($pluginError, $admin);
+        $this->ensureMayChange($pluginError, $admin);
 
         if (! $pluginError->isAcknowledged()) {
             $pluginError->acknowledged_at = now();
@@ -124,6 +125,7 @@ class PluginErrorController extends Controller {
     public function reopen(Request $request, PluginError $pluginError): RedirectResponse {
         $admin = $this->ensureAdmin($request);
         $this->ensureVisible($pluginError, $admin);
+        $this->ensureMayChange($pluginError, $admin);
 
         $pluginError->acknowledged_at = null;
         $pluginError->acknowledged_by = null;
@@ -141,6 +143,10 @@ class PluginErrorController extends Controller {
 
         $query = PluginError::query()->whereNull('acknowledged_at');
         $this->scopeToAdmin($query, $admin);
+        // Ohne Betreiberrolle bleiben installationsweite Fehler unberührt.
+        if (! $admin->isGlobalAdmin()) {
+            $query->whereNotNull('organization_id');
+        }
 
         if ($request->boolean('all_filtered')) {
             if (($plugin = (string) $request->string('plugin')) !== '') {
@@ -216,6 +222,16 @@ class PluginErrorController extends Controller {
             $error->organization_id === null || (int) $error->organization_id === (int) $admin->organization_id,
             404,
         );
+    }
+
+    /**
+     * Installationsweite Fehler (organization_id = null, z. B. beim Boot) sieht
+     * jeder Org-Admin — quittieren darf sie nur der Plattform-Betreiber:
+     * ein Mandant nahm sonst allen anderen die Warnung weg
+     * (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+     */
+    private function ensureMayChange(PluginError $error, User $admin): void {
+        abort_if($error->organization_id === null && ! $admin->isGlobalAdmin(), 403);
     }
 
     private function ensureAdmin(Request $request): User {

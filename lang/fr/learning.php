@@ -875,6 +875,7 @@ return [
             'without_launch' => 'Le manifeste ne comporte pas de fichier de lancement (aucun SCO avec href).',
         ],
         'checkin_closed' => 'L’enregistrement n’est pas possible en dehors du créneau autour de la session.',
+        'checkin_link_required' => 'Veuillez scanner le QR code de la session — sans passer par le lien, la confirmation ne compte pas.',
         'submission_file_required' => 'Ce devoir exige au moins un fichier.',
         'image_alt_required' => 'Une image a besoin d’un texte alternatif : sans lui, elle n’existe pas pour les personnes qui ne la voient pas.',
         'approval_decided' => 'Ce temps d’apprentissage a déjà fait l’objet d’une décision.',

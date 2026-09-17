@@ -99,15 +99,42 @@ final class SsoDiscoveryTest extends TestCase {
         $this->assertSame(0, OrganizationSsoDomain::query()->count());
     }
 
-    public function test_domain_owned_by_other_org_is_rejected(): void {
+    /**
+     * Sicherheitsaudit 2026-09-17 (tenant-sso-domain-6): Nur eine NACHGEWIESENE
+     * Domain blockiert andere Mandanten. Ein bloßer Eintrag tat es vorher auch
+     * — Squatting inklusive Auskunft, dass die Domain belegt ist.
+     */
+    public function test_verified_domain_of_other_org_is_rejected(): void {
         $other = Organization::factory()->create();
-        OrganizationSsoDomain::query()->create(['organization_id' => $other->id, 'domain' => 'firma.de']);
+        OrganizationSsoDomain::query()->create([
+            'organization_id' => $other->id,
+            'domain' => 'firma.de',
+            'verified_at' => now(),
+        ]);
 
         $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
         $this->actingAs($admin)->post(route('admin.sso.domains.add'), ['domain' => 'firma.de'])
             ->assertSessionHasErrors('domain');
 
         $this->assertSame(1, OrganizationSsoDomain::query()->count());
+    }
+
+    /** Ein unverifizierter Fremdeintrag sperrt die Domain nicht (tenant-sso-domain-6). */
+    public function test_unverified_claim_of_other_org_does_not_block(): void {
+        $other = Organization::factory()->create();
+        $fremd = OrganizationSsoDomain::query()->create(['organization_id' => $other->id, 'domain' => 'firma.de']);
+
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($admin)->post(route('admin.sso.domains.add'), ['domain' => 'firma.de'])
+            ->assertSessionHasNoErrors();
+
+        $eigene = OrganizationSsoDomain::query()
+            ->where('organization_id', $this->organization->id)
+            ->where('domain', 'firma.de')
+            ->first();
+        $this->assertNotNull($eigene);
+        $this->assertNull($eigene->verified_at);
+        $this->assertNotNull($fremd->fresh(), 'Der fremde Anspruch bleibt, bis jemand nachweist.');
     }
 
     /**

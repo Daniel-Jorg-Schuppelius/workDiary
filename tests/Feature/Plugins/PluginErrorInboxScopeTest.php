@@ -48,6 +48,9 @@ class PluginErrorInboxScopeTest extends TestCase {
             'exception_class' => 'X',
             'message' => 'kaputt',
             'occurred_at' => now(),
+            // Ohne ausdrückliche Angabe ein Fehler der eigenen Organisation:
+            // installationsweite quittiert nur der Betreiber (tenant-platform-ops-4).
+            'organization_id' => $this->organization->id,
         ], $attributes));
     }
 
@@ -173,5 +176,24 @@ final class ScopeTestPlugin implements Plugin {
     }
     public function settingsSchema(): array {
         return [];
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (tenant-platform-ops-4): Ein Org-Admin sieht
+     * installationsweite Fehler, quittiert sie aber nicht — sonst nähme er die
+     * Warnung allen anderen Mandanten weg.
+     */
+    public function test_org_admin_cannot_acknowledge_installation_wide_errors(): void {
+        $global = $this->makeError(['organization_id' => null, 'message' => 'globaler fehler']);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.plugin-errors.acknowledge', $global))
+            ->assertForbidden();
+        $this->assertNull($global->refresh()->acknowledged_at);
+
+        $this->actingAs($this->admin)
+            ->post(route('admin.plugin-errors.bulk-acknowledge'), ['all_filtered' => '1'])
+            ->assertRedirect();
+        $this->assertNull($global->refresh()->acknowledged_at);
     }
 }

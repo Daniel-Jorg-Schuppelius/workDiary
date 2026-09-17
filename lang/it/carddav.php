@@ -63,6 +63,7 @@ return [
         'saved' => 'Connessione CardDAV salvata.',
         'invalid_url' => 'L\'URL di base deve iniziare con http:// o https://.',
         'private_url_blocked' => 'L\'URL di base punta a un indirizzo privato/interno. Attivare il consenso agli indirizzi privati per un server nella propria rete.',
+        'foreign_origin' => 'L’indirizzo non appartiene al server CardDAV configurato.',
         'password_required' => 'Per una nuova connessione è necessaria una password per app.',
         'no_connection' => 'Nessuna connessione CardDAV attiva disponibile.',
         'discovery_failed' => 'Ricerca delle rubriche non riuscita — server non raggiungibile o credenziali non valide.',

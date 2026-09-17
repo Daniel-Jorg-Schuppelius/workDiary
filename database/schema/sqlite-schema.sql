@@ -13744,9 +13744,6 @@ CREATE TABLE IF NOT EXISTS "organization_sso_domains"(
   foreign key("organization_id") references "organizations"("id") on delete cascade,
   foreign key("created_by") references "users"("id") on delete set null
 );
-CREATE UNIQUE INDEX "org_sso_domain_unique" on "organization_sso_domains"(
-  "domain"
-);
 CREATE TABLE IF NOT EXISTS "audit_logs"(
   "id" integer primary key autoincrement not null,
   "user_id" integer,
@@ -19611,6 +19608,10 @@ CREATE TABLE IF NOT EXISTS "msgraph_onenote_connections"(
 CREATE UNIQUE INDEX "msgon_org_unique" on "msgraph_onenote_connections"(
   "organization_id"
 );
+CREATE UNIQUE INDEX "org_sso_domain_org_unique" on "organization_sso_domains"(
+  "domain",
+  "organization_id"
+);
 
 INSERT INTO migrations VALUES(1,'0001_01_01_000000_create_users_table',1);
 INSERT INTO migrations VALUES(2,'0001_01_01_000001_create_cache_table',1);
@@ -20434,3 +20435,4 @@ INSERT INTO migrations VALUES(819,'2027_02_22_100400_create_collections',34);
 INSERT INTO migrations VALUES(820,'2027_02_22_100500_create_content_references',35);
 INSERT INTO migrations VALUES(821,'2027_02_22_100600_move_knowledge_categories_to_collections',36);
 INSERT INTO migrations VALUES(822,'2027_02_22_100700_create_msgraph_onenote_connections',37);
+INSERT INTO migrations VALUES(823,'2027_02_22_100800_sso_domain_unique_per_organization',38);

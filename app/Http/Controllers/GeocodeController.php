@@ -12,6 +12,7 @@ namespace App\Http\Controllers;
 
 use App\Services\Routing\{GeocodingException, NominatimGeocoder};
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Arr;
 
 /**
  * Internal AJAX endpoint used by Blade forms (TravelLog/Customer) to
@@ -39,6 +40,8 @@ class GeocodeController extends Controller {
             return response()->json(['error' => 'not_found'], 404);
         }
 
-        return response()->json($result->toArray());
+        // `from_cache` bleibt intern: es verriete, ob eine Adresse in der
+        // Installation schon einmal aufgelöst wurde (Audit 2026-09-17, ssrf-4).
+        return response()->json(Arr::except($result->toArray(), ['from_cache']));
     }
 }

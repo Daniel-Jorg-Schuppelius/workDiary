@@ -86,13 +86,21 @@ class TogglExportImporter {
      */
     public function import(string $basePath, Organization $organization, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
         $basePath = rtrim($basePath, '/');
+        $realBase = realpath($basePath);
         $sources = [];
         foreach ($workspaceModes as $folder => $config) {
             if ($config['mode'] === self::MODE_SKIP) {
                 continue;
             }
-            $path = $basePath . '/' . $folder;
-            if (! is_dir($path)) {
+            // Der Ordnername kommt aus dem Formular: nur ein einzelner Name,
+            // kein Pfad — und das Ergebnis muss unter dem Stammordner liegen
+            // (Sicherheitsaudit 2026-09-17, files-trav-1).
+            $name = basename(str_replace('\\', '/', (string) $folder));
+            if ($name === '' || $name === '.' || $name === '..' || $realBase === false) {
+                continue;
+            }
+            $path = realpath($basePath . '/' . $name);
+            if ($path === false || ! is_dir($path) || ! str_starts_with($path, $realBase . DIRECTORY_SEPARATOR)) {
                 continue;
             }
             $sources[(string) $folder] = new FolderWorkspaceSource($path, $this->reader);

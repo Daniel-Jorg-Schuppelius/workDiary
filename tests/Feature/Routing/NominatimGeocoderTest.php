@@ -61,7 +61,10 @@ class NominatimGeocoderTest extends TestCase {
 
     public function test_second_lookup_is_served_from_cache(): void {
         GeocodeCache::query()->create([
-            'query_hash' => GeocodeCache::hashFor('Hamburg'),
+            // Der Cache-Schlüssel trägt seit dem Audit 2026-09-17 (ssrf-4) die
+            // Anbieter-Adresse — ein Mandant mit eigener URL vergiftet damit
+            // niemanden mehr.
+            'query_hash' => GeocodeCache::hashFor('Hamburg', 'http://nominatim.test'),
             'query' => 'Hamburg',
             'address_formatted' => 'Hamburg, Deutschland',
             'lat' => 53.5511,
@@ -94,5 +97,31 @@ class NominatimGeocoderTest extends TestCase {
 
         $this->expectException(GeocodingException::class);
         $this->geocoder()->geocode('Berlin');
+    }
+
+    /** Eigene Anbieter-Adresse ⇒ eigener Cache-Eintrag (ssrf-4). */
+    public function test_cache_is_bound_to_the_provider(): void {
+        GeocodeCache::query()->create([
+            'query_hash' => GeocodeCache::hashFor('Hamburg', 'http://fremd.test'),
+            'query' => 'Hamburg',
+            'address_formatted' => 'Irgendwo',
+            'lat' => 1.0,
+            'lng' => 2.0,
+            'provider' => 'nominatim',
+            'raw' => [],
+        ]);
+
+        $fake = FakePluginHttp::fake([
+            'http://nominatim.test/*' => FakePluginHttp::response([
+                ['lat' => '53.5511', 'lon' => '9.9937', 'display_name' => 'Hamburg, Deutschland'],
+            ]),
+        ]);
+
+        $result = $this->geocoder()->geocode('Hamburg');
+
+        $this->assertNotNull($result);
+        $this->assertFalse($result->fromCache, 'Der Eintrag eines anderen Anbieters darf nicht gelten.');
+        $this->assertSame(53.5511, $result->lat);
+        $fake->assertSentCount(1);
     }
 }

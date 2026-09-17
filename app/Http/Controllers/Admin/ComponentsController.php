@@ -317,6 +317,9 @@ class ComponentsController extends Controller {
     /** Manueller Update-Check (MVP-054) — auch im manual-Modus erlaubt. */
     public function checkUpdates(UpdateCheckService $updates): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
+        // Update-Stand und Hinweise gelten für die ganze Installation
+        // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+        $this->assertPlatformOperator();
 
         try {
             $open = $updates->checkRemote();
@@ -332,6 +335,9 @@ class ComponentsController extends Controller {
     /** Offline-Import des signierten Update-Dokuments (Air-Gap, MVP-054). */
     public function importUpdates(\Illuminate\Http\Request $request, UpdateCheckService $updates): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
+        // Update-Stand und Hinweise gelten für die ganze Installation
+        // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+        $this->assertPlatformOperator();
         $request->validate(['feed' => ['required', 'file', 'max:1024']]);
 
         try {
@@ -348,6 +354,9 @@ class ComponentsController extends Controller {
     /** Routinehinweis zurückstellen (auditiert via ComponentUpdate). */
     public function snoozeUpdate(\Illuminate\Http\Request $request, \App\Models\ComponentUpdate $componentUpdate): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
+        // Update-Stand und Hinweise gelten für die ganze Installation
+        // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+        $this->assertPlatformOperator();
         $days = (int) \App\Support\Setting::get('operations.snooze_days', 7);
         $componentUpdate->update(['snoozed_until' => now()->addDays(max(1, $days))]);
 
@@ -358,6 +367,9 @@ class ComponentsController extends Controller {
     /** Hinweis dauerhaft quittieren (Anzeige bleibt, Meldungen stumm). */
     public function acknowledgeUpdate(\Illuminate\Http\Request $request, \App\Models\ComponentUpdate $componentUpdate): RedirectResponse {
         Gate::authorize(Permission::MetricsView->value);
+        // Update-Stand und Hinweise gelten für die ganze Installation
+        // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+        $this->assertPlatformOperator();
         $componentUpdate->update([
             'acknowledged_at' => now(),
             'acknowledged_by' => $request->user()?->id,

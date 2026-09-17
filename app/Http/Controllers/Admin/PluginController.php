@@ -414,7 +414,11 @@ class PluginController extends Controller {
      * Shell. Downgrades verweigert der SchemaManager.
      */
     public function upgrade(Request $request, string $plugin, PluginManager $manager, \App\Plugins\PluginSchemaManager $schema): RedirectResponse {
-        $this->ensureAdmin($request);
+        $admin = $this->ensureAdmin($request);
+        // Plugin-Schemata sind installationsweit: die Migration betrifft alle
+        // Mandanten, nicht nur den eigenen
+        // (Sicherheitsaudit 2026-09-17, tenant-platform-ops-4).
+        abort_unless($admin->isGlobalAdmin(), 403);
         $instance = $manager->get($plugin);
         abort_unless($instance !== null, 404);
 

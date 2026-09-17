@@ -237,6 +237,52 @@ async function uploadPhotos(clientUuid) {
     }
 }
 
+/**
+ * Sqid der angemeldeten Person (Sicherheitsaudit 2026-09-17, storage-1). Die
+ * Outbox liegt pro Browserprofil, nicht pro Konto — auf einem geteilten Gerät
+ * hätten sonst Stempelungen und Kommentare der einen Person unter der nächsten
+ * gestanden.
+ */
+function currentOwner() {
+    return (
+        document
+            .querySelector('meta[name="sync-owner"]')
+            ?.getAttribute("content") || ""
+    );
+}
+
+const OWNER_KEY = "workdiary-sync-owner";
+
+function storedOwner() {
+    try {
+        return window.localStorage.getItem(OWNER_KEY) || "";
+    } catch (_) {
+        return "";
+    }
+}
+
+function rememberOwner(owner) {
+    try {
+        window.localStorage.setItem(OWNER_KEY, owner);
+    } catch (_) {
+        /* privater Modus: dann greift die Filterung im Flush */
+    }
+}
+
+/** Kontowechsel auf dem Gerät: alles Lokale verwerfen (wie beim Abmelden, §3.4). */
+async function enforceOwner() {
+    const owner = currentOwner();
+    if (owner === "") return;
+
+    const previous = storedOwner();
+    if (previous !== "" && previous !== owner) {
+        await clearAll().catch(() => {});
+    }
+    if (previous !== owner) {
+        rememberOwner(owner);
+    }
+}
+
 let flushing = false;
 
 async function flush() {
@@ -248,6 +294,13 @@ async function flush() {
     } catch (_) {
         return;
     }
+
+    // Befehle eines anderen Kontos werden nie gesendet (storage-1). Ohne
+    // Besitzervermerk (Altbestand) gelten sie als eigene — der Kontowechsel
+    // leert die Ablage ohnehin.
+    const owner = currentOwner();
+    commands = commands.filter((c) => !c.owner || !owner || c.owner === owner);
+
     if (commands.length === 0) {
         updateBadge();
         return;
@@ -445,6 +498,7 @@ function bindForms() {
                 client_uuid: clientUuid,
                 type,
                 payload,
+                owner: currentOwner(),
                 captured_at: new Date().toISOString(),
             })
                 .then(() => queuePhotos(clientUuid, form, payload))
@@ -733,7 +787,10 @@ export function initOfflineSync() {
         if (document.visibilityState === "visible") flush();
     });
 
-    flush();
+    // Erst der Kontoabgleich, dann der Flush (storage-1).
+    enforceOwner()
+        .catch(() => {})
+        .then(flush);
 
     const changesRoot = document.querySelector("[data-offline-changes]");
     if (changesRoot) renderChangesPage(changesRoot);
@@ -756,4 +813,6 @@ export const __testables = {
     storeAll,
     storePut,
     clearAll,
+    currentOwner,
+    enforceOwner,
 };

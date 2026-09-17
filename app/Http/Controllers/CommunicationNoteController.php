@@ -246,6 +246,7 @@ class CommunicationNoteController extends Controller {
 
     public function publish(CommunicationNote $note): RedirectResponse {
         Gate::authorize('publishToCustomer', CommunicationNote::class);
+        $this->guardPrivate($note);
 
         /** @var User $actor */
         $actor = Auth::user();
@@ -259,6 +260,10 @@ class CommunicationNoteController extends Controller {
 
     public function confidential(Request $request, CommunicationNote $note): RedirectResponse {
         Gate::authorize('manageConfidential', CommunicationNote::class);
+        // Ohne diese Zeile konnte confidential.manage eine fremde PRIVATE Notiz
+        // auf „intern vertraulich" stellen und sie danach lesen
+        // (Sicherheitsaudit 2026-09-17, authz-note-1).
+        $this->guardPrivate($note);
 
         $data = $request->validate([
             'confidential' => ['required', 'boolean'],
@@ -283,6 +288,7 @@ class CommunicationNoteController extends Controller {
 
     public function completeFollowup(CommunicationNote $note): RedirectResponse {
         Gate::authorize('completeFollowup', $note);
+        $this->guardPrivate($note);
 
         /** @var User $actor */
         $actor = Auth::user();

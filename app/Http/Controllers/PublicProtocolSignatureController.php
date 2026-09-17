@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Services\Customer\CustomerQueryService;
 use App\Services\Protocol\ProtocolSignatureTokenService;
 use Illuminate\Http\{RedirectResponse, Request};
@@ -18,6 +19,8 @@ use RuntimeException;
 use Symfony\Component\HttpFoundation\Response;
 
 class PublicProtocolSignatureController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(
         private readonly ProtocolSignatureTokenService $tokens,
         private readonly CustomerQueryService $queries,
@@ -37,6 +40,9 @@ class PublicProtocolSignatureController extends Controller {
         if (! empty($protocol->organization_id)) {
             $org = \App\Models\Organization::query()->withoutGlobalScopes()->find($protocol->organization_id);
             if ($org instanceof \App\Models\Organization) {
+                // Gesperrter Mandant: auch der Unterschriften-Link endet hier
+                // (tenant-status-1).
+                $this->assertTenantPublicSurfacesAvailable($org);
                 app()->instance('currentOrganization', $org);
             }
         }

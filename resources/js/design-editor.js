@@ -67,6 +67,8 @@ export function registerDesignEditor(Alpine) {
         // (assetPreviews: sqid → Vorschau-URL), gespeichert mit dem Entwurf.
         assets: { first: "", following: "" },
         assetPreviews: {},
+        // Name des Basisprofils (nur Anzeige; kommt aus data-config).
+        baseName: "",
 
         init() {
             const cfg = JSON.parse(this.$el.dataset.config || "{}");
@@ -88,6 +90,7 @@ export function registerDesignEditor(Alpine) {
                 note: null,
             };
             this.blockLabels = cfg.blockLabels ?? {};
+            this.baseName = cfg.baseName ?? "";
             this.canInherit = !!cfg.canInherit;
             let sections = cfg.overrideSections;
             this.inheritEnabled = this.canInherit && Array.isArray(sections);
@@ -122,7 +125,9 @@ export function registerDesignEditor(Alpine) {
             this.assetPreviews = cfg.assetPreviews ?? {};
             // Direktsprung, z. B. „#tab-release" aus der Einstiegs-Checkliste.
             const hashTab = (window.location.hash || "").replace("#tab-", "");
-            if (["appearance", "layout", "content", "release"].includes(hashTab)) {
+            if (
+                ["appearance", "layout", "content", "release"].includes(hashTab)
+            ) {
                 this.tab = hashTab;
             }
         },
@@ -133,7 +138,9 @@ export function registerDesignEditor(Alpine) {
         // Vorschau-URL des gewählten Bogens je Seitenrolle ("" = kein Bogen).
         assetPreviewSrc(role) {
             const key = this.assets[role];
-            return key && this.assetPreviews[key] ? this.assetPreviews[key] : "";
+            return key && this.assetPreviews[key]
+                ? this.assetPreviews[key]
+                : "";
         },
 
         // Sektion wirksam aus diesem Profil (nicht geerbt)?
@@ -152,12 +159,14 @@ export function registerDesignEditor(Alpine) {
         reloadPreview() {
             this.previewTick++;
         },
-        // Effektive Vererbungsquelle als Kurzfassung an der Vorschau.
-        inheritanceSummary(baseName) {
+        // Effektive Vererbungsquelle als Kurzfassung an der Vorschau. Der
+        // Name kommt aus der Konfiguration, nicht aus dem Alpine-Ausdruck
+        // (Sicherheitsaudit 2026-09-17, alpine-1).
+        get inheritanceSummary() {
             const total = Object.keys(this.overrides).length;
             const own = this.overrideList().length;
             return __("js.design.inheritance", {
-                base: baseName,
+                base: this.baseName,
                 inherited: total - own,
                 total,
                 own,
@@ -192,7 +201,9 @@ export function registerDesignEditor(Alpine) {
             const m = this.layout[this.contentKey()];
             m.left = round1(clamp(box.x, 0, this.pageW - 10));
             m.top = round1(clamp(box.y, 0, this.pageH - 10));
-            m.right = round1(clamp(this.pageW - box.x - box.width, 0, this.pageW - 10));
+            m.right = round1(
+                clamp(this.pageW - box.x - box.width, 0, this.pageW - 10),
+            );
             m.bottom = round1(
                 clamp(this.pageH - box.y - box.height, 0, this.pageH - 10),
             );

@@ -10,6 +10,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Controllers\Concerns\ChecksTenantPublicSurfaces;
 use App\Models\Isms\IsmsAuditPackage;
 use App\Services\Isms\AuditPackageService;
 use Illuminate\Support\Carbon;
@@ -28,6 +29,8 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
  * Brute-Force-Schutz über throttle (Route).
  */
 class PublicAuditPackageController extends Controller {
+    use ChecksTenantPublicSurfaces;
+
     public function __construct(private readonly AuditPackageService $packages) {}
 
     /**
@@ -93,6 +96,9 @@ class PublicAuditPackageController extends Controller {
             ->whereKey($record->isms_audit_package_id)
             ->first();
         abort_if($package === null || ! $package->isFinalized(), 404);
+
+        // Gesperrter Mandant: auch der Prüfer-Link endet hier (tenant-status-1).
+        $this->assertTenantPublicSurfacesAvailable((int) $package->organization_id);
 
         $path = (string) $package->file_path;
         // Pfad-Härtung analog AuditPackageController::download().

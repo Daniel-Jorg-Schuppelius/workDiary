@@ -35,6 +35,8 @@
             <p class="mt-3 text-sm text-base-content/80">{{ __('learning.help.checkin_self') }}</p>
             <form method="POST" action="{{ route('learning.checkin.store', $unit->sqid) }}" class="mt-3">
                 @csrf
+                {{-- Einmal-Nachweis aus dem signierten QR-Aufruf (Audit 2026-09-17, signed-1). --}}
+                <input type="hidden" name="checkin_nonce" value="{{ $nonce }}">
                 <x-icon-btn icon="how_to_reg" tone="primary" size="sm" type="submit" show-label>{{ __('learning.action.checkin') }}</x-icon-btn>
             </form>
         @else

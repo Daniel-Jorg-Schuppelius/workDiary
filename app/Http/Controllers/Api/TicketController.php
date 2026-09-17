@@ -13,9 +13,10 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\User;
+use App\Models\{ServiceTicket, User};
 use App\Services\ServiceTicket\ServiceTicketService;
 use Illuminate\Http\{JsonResponse, Request};
+use Illuminate\Support\Facades\Gate;
 use OpenApi\Attributes as OA;
 
 /**
@@ -45,6 +46,10 @@ class TicketController extends Controller {
         ],
     )]
     public function store(Request $request, ServiceTicketService $tickets): JsonResponse {
+        // Die API hing allein am Token-Scope; das Recht am Vorgang prüfte
+        // niemand (Sicherheitsaudit 2026-09-17, authz-api-ticket-1).
+        Gate::authorize('create', ServiceTicket::class);
+
         $data = $request->validate([
             'title' => ['required', 'string', 'min:2', 'max:255'],
             'description' => ['nullable', 'string', 'max:10000'],

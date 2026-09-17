@@ -355,9 +355,27 @@ class InvoicePdfImportController extends Controller {
             ]);
         }
 
-        return response()->file($disk->path($version->path), [
+        $headers = [
             'Content-Disposition' => 'inline; filename="' . addcslashes($version->original_name, '"\\') . '"',
-        ]);
+        ];
+
+        // Hochgeladenes XML wird nicht als Markup ausgeliefert: XHTML-Namespace
+        // im Rechnungs-XML lief sonst als Seite im Ursprung der Anwendung
+        // (Sicherheitsaudit 2026-09-17, files-xss-1). Als Text plus eigene,
+        // abgeschottete CSP bleibt es eine reine Anzeige.
+        if ($this->isXmlPreview($version)) {
+            $headers['Content-Type'] = 'text/plain; charset=utf-8';
+            $headers['Content-Security-Policy'] = "sandbox; default-src 'none'; style-src 'unsafe-inline'; frame-ancestors 'self'";
+        }
+
+        return response()->file($disk->path($version->path), $headers);
+    }
+
+    /** XML-Quelle (E-Rechnung) — erkennbar am Medientyp oder an der Endung. */
+    private function isXmlPreview(\App\Models\DocumentVersion $version): bool {
+        $mime = strtolower((string) $version->mime);
+
+        return str_contains($mime, 'xml') || str_ends_with(strtolower((string) $version->original_name), '.xml');
     }
 
     private function sourceDocument(Invoice $invoice): Document {

@@ -169,6 +169,18 @@ class CardDavAdminController extends Controller {
             return back()->with('error', __('carddav.flash.addressbook_not_discovered'));
         }
 
+        // Die Discovery-Liste kommt vom Server: das gewählte Adressbuch muss
+        // zur konfigurierten Verbindung gehören (Audit 2026-09-17, ssrf-6).
+        try {
+            \App\Plugins\CardDav\Services\CardDavUrlGuard::assertSameOriginAsBase(
+                (string) $chosen['url'],
+                (string) $connection->base_url,
+                $connection->allowsPrivateNetwork(),
+            );
+        } catch (\Throwable $e) {
+            return back()->with('error', $e->getMessage());
+        }
+
         // Quellen-Wechsel: Sync-Stand und Spiegel gehören zum alten Adressbuch.
         if ($connection->addressbook_url !== $chosen['url']) {
             $connection->sync_token = null;
