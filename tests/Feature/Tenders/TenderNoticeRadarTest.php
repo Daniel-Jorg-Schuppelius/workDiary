@@ -121,6 +121,19 @@ final class TenderNoticeRadarTest extends TestCase {
         $this->assertIsArray($notice->payload);
     }
 
+    /** Die Bekanntmachungs-URL stammt aus dem Feed: nur öffentliches http(s) wird ein Link. */
+    public function test_feed_urls_other_than_http_are_dropped(): void {
+        $this->fakeTransport([FakeTenderNoticeHttpFactory::zip($this->zipWith([
+            [...$this->release('notice-1', 'Neubau Kita'), 'url' => 'javascript:alert(document.cookie)'],
+            [...$this->release('notice-2', 'Sanierung Turnhalle'), 'url' => 'https://www.evergabe.example/notice-2'],
+        ]))]);
+
+        app(TenderNoticeImporter::class)->importDay(now()->subDay());
+
+        $this->assertNull(TenderNotice::query()->where('notice_id', 'notice-1')->value('url'));
+        $this->assertSame('https://www.evergabe.example/notice-2', TenderNotice::query()->where('notice_id', 'notice-2')->value('url'));
+    }
+
     /** Ein leeres Tagespaket ist ein gültiges Ergebnis, kein Fehler. */
     public function test_empty_day_is_not_an_error(): void {
         $this->fakeTransport([FakeTenderNoticeHttpFactory::zip($this->zipWith([]))]);

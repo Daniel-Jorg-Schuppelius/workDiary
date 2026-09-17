@@ -11,7 +11,7 @@
  */
 
 import { __ } from "./i18n.js";
-import { escHtml, safeUrl, html, setHtml, clearHtml } from "./lib/html.js";
+import { escHtml, safeUrl, sameOriginPath, html, setHtml, clearHtml } from "./lib/html.js";
 import { getJson } from "./lib/http.js";
 
 const DIALOG_ID = "global-search-dialog";
@@ -218,7 +218,9 @@ const onKeydown = (root, e) => {
     } else if (e.key === "Enter") {
         if (activeIndex >= 0 && flatItems[activeIndex]) {
             e.preventDefault();
-            window.location.href = flatItems[activeIndex].url;
+            // Wie der Link selbst: nur Ziele der eigenen Origin.
+            const target = sameOriginPath(flatItems[activeIndex].url);
+            if (target !== null) window.location.href = target;
         }
     }
 };

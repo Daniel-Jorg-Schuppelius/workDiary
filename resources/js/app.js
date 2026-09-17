@@ -20,7 +20,7 @@ import { registerServiceWorker, bindInstallPrompt } from "./pwa.js";
 import { initOfflineSync } from "./offline-sync.js";
 import { initVideoPositions } from "./video-position.js";
 import { __ } from "./i18n.js";
-import { html, setHtml, safeUrl, trustedServerHtml } from "./lib/html.js";
+import { html, setHtml, safeUrl, sameOriginPath, trustedServerHtml } from "./lib/html.js";
 import { postJson, request } from "./lib/http.js";
 import { initCharts } from "./charts.js";
 import "./sortable-tables.js";
@@ -967,8 +967,9 @@ document.addEventListener("click", (event) => {
                             response.headers.get("content-type") || "";
                         if (contentType.includes("application/json")) {
                             const payload = await response.json();
-                            if (payload.redirect) {
-                                window.location.href = payload.redirect;
+                            const redirect = sameOriginPath(payload.redirect);
+                            if (redirect !== null) {
+                                window.location.href = redirect;
                                 return;
                             }
                         }

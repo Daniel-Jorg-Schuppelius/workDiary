@@ -11,7 +11,7 @@
 // Seitenwechsel (volle Page-Loads, kein SPA) öffnet die Sidebar dann mit dem
 // NEUEN Seitenkontext, nie mit veraltetem Inhalt.
 
-import { html, setHtml, clearHtml, trustedServerHtml } from "./lib/html.js";
+import { html, setHtml, clearHtml, trustedServerHtml, sameOriginPath } from "./lib/html.js";
 import { getJson, postJson } from "./lib/http.js";
 
 const DRAWER_SELECTOR = "[data-help-drawer]";
@@ -442,11 +442,18 @@ function renderTopic(payload) {
     const fullpage = document.querySelector("[data-help-fullpage]");
     if (fullpage instanceof HTMLAnchorElement) {
         const template = fullpage.getAttribute("data-url-template") || "";
-        if (template && payload.topic) {
-            fullpage.href = template.replace(
-                "__TOPIC__",
-                encodeURIComponent(payload.topic),
-            );
+        // data-Attribut ist DOM-Text: nur Pfade der eigenen Origin (Code-Scanning #2).
+        const target =
+            template && payload.topic
+                ? sameOriginPath(
+                      template.replace(
+                          "__TOPIC__",
+                          encodeURIComponent(payload.topic),
+                      ),
+                  )
+                : null;
+        if (target !== null) {
+            fullpage.href = target;
             fullpage.classList.remove("hidden");
         } else {
             fullpage.classList.add("hidden");

@@ -99,6 +99,21 @@ class LearningContentTest extends TestCase {
         $this->assertSame('https://video.example.test/abc', $blocks[0]['url']);
     }
 
+    /** `javascript://` trägt einen erlaubten Host, liefe im iframe aber als Skript. */
+    public function test_einbettung_ohne_https_wird_trotz_freigegebenem_host_abgewiesen(): void {
+        $this->organization->update(['settings' => ['learning' => ['embed_hosts' => ['example.test']]]]);
+        $unit = $this->unit();
+
+        foreach (['javascript://video.example.test/%0Aalert(document.domain)', 'data://video.example.test/text/html,x', 'http://video.example.test/abc'] as $url) {
+            try {
+                $this->content()->appendBlock($unit->refresh(), LearningBlockKind::Embed, ['url' => $url]);
+                $this->fail('Angenommen: ' . $url);
+            } catch (ValidationException $e) {
+                $this->assertArrayHasKey('url', $e->errors());
+            }
+        }
+    }
+
     public function test_bloecke_lassen_sich_sortieren_und_entfernen(): void {
         $unit = $this->unit();
         $this->content()->appendBlock($unit, LearningBlockKind::Heading, ['text' => 'Erstes']);

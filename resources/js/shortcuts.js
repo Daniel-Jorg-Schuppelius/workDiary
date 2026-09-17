@@ -20,6 +20,7 @@
 // Tippen und mit Browser-Kürzeln.
 
 import { __ } from "./i18n.js";
+import { sameOriginPath } from "./lib/html.js";
 
 const DIALOG_ID = "shortcuts-dialog";
 const LIST_SELECTOR = "[data-shortcuts-list]";
@@ -70,8 +71,8 @@ function keyLabel(key) {
 /** Ziel-URL eines Navigations-Kürzels; null = kein Recht / nicht gesetzt. */
 function targetUrl(target) {
     if (!target) return null;
-    const value = document.body.getAttribute(`data-shortcut-${target}`);
-    return value && value !== "" ? value : null;
+    // Ziele stehen als data-Attribut am body: nur Pfade der eigenen Origin.
+    return sameOriginPath(document.body.getAttribute(`data-shortcut-${target}`));
 }
 
 /** Nur Kürzel, deren Ziel der Nutzer tatsächlich hat. */

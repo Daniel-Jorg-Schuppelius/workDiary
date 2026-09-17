@@ -23,6 +23,7 @@
  */
 
 import { __ } from "../i18n.js";
+import { sameOriginPath } from "./html.js";
 
 /** @returns {string} CSRF-Token aus dem Layout-Meta-Tag. */
 export function csrfToken() {
@@ -82,7 +83,8 @@ export async function request(url, options = {}) {
         Accept: "application/json",
         "X-Requested-With": "XMLHttpRequest",
     };
-    if (method !== "GET" && method !== "HEAD") {
+    // Das CSRF-Token geht nur an die eigene Origin, nie an eine fremde URL.
+    if (method !== "GET" && method !== "HEAD" && sameOriginPath(url) !== null) {
         h["X-CSRF-TOKEN"] = csrfToken();
     }
     Object.assign(h, headers);
@@ -203,9 +205,12 @@ export async function postForm(url, formData, options = {}) {
  * @param {string|null} [spoofMethod] z. B. "PATCH" (sonst reiner POST)
  */
 export function submitForm(url, fields = {}, spoofMethod = null) {
+    // URLs kommen aus data-Attributen: nur Ziele der eigenen Origin (samt CSRF-Token).
+    const target = sameOriginPath(url);
+    if (target === null) return;
     const form = document.createElement("form");
     form.method = "POST";
-    form.action = url;
+    form.action = target;
     form.hidden = true;
 
     /** @param {string} name @param {string} value */

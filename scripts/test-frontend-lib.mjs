@@ -15,7 +15,7 @@ globalThis.window = { location: { origin: "https://app.example.test" } };
 
 const {
     escHtml, escCssValue, safeUrl, html, setHtml, clearHtml,
-    trustedServerHtml, rawHtml, SafeHtml,
+    trustedServerHtml, rawHtml, SafeHtml, sameOriginPath,
 } = await import(
     new URL("../resources/js/lib/html.js", import.meta.url).href
 );
@@ -28,6 +28,20 @@ const eq = (label, actual, expected) => {
     console.log(`FAIL ${label}\n  erwartet: ${JSON.stringify(expected)}\n  bekommen: ${JSON.stringify(a)}`);
 };
 const ok = (label, cond) => { if (cond) pass++; else { fail++; console.log(`FAIL ${label}`); } };
+
+// --- sameOriginPath: Navigationsziele aus DOM-Text (Code-Scanning #1/#2) ---
+eq("sameOriginPath absolut eigene Origin", sameOriginPath("https://app.example.test/flex?user=abc#x"), "/flex?user=abc#x");
+eq("sameOriginPath relativ", sameOriginPath("/projects/1?milestone=none"), "/projects/1?milestone=none");
+eq("sameOriginPath Unterverzeichnis", sameOriginPath("https://app.example.test/app/hilfe/topic"), "/app/hilfe/topic");
+ok("sameOriginPath javascript:", sameOriginPath("javascript:alert(1)") === null);
+ok("sameOriginPath fremde Origin", sameOriginPath("https://evil.example/phish") === null);
+ok("sameOriginPath protokollrelativ fremd", sameOriginPath("//evil.example/x") === null);
+ok("sameOriginPath data:", sameOriginPath("data:text/html,<script>alert(1)</script>") === null);
+ok("sameOriginPath leer", sameOriginPath("") === null);
+globalThis.window.location.href = "https://app.example.test/reports/sales?period=q1";
+eq("sameOriginPath relative Query zur aktuellen Seite", sameOriginPath("?period=q2"), "/reports/sales?period=q2");
+delete globalThis.window.location.href;
+eq("sameOriginPath doppelter Slash wird kein Host", sameOriginPath("https://app.example.test//evil.example/x"), "/evil.example/x");
 
 // --- escHtml: alle fünf Zeichen (die alten Escaper ließen ' bzw. & durch) ---
 eq("escHtml alle 5", escHtml(`<>&"'`), "&lt;&gt;&amp;&quot;&#039;");

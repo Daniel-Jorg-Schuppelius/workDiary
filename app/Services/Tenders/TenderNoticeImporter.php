@@ -14,6 +14,7 @@ namespace App\Services\Tenders;
 
 use App\Models\Tenders\TenderNotice;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use App\Support\UrlSafety;
 use Carbon\CarbonInterface;
 use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
@@ -191,7 +192,8 @@ final class TenderNoticeImporter {
             'submission_deadline' => isset($tender['tenderPeriod']['endDate'])
                 ? Carbon::parse((string) $tender['tenderPeriod']['endDate'])
                 : null,
-            'url' => isset($release['url']) ? (string) $release['url'] : null,
+            // Fremde Feed-Daten: nur öffentliche http(s)-Adressen werden ein Link.
+            'url' => is_string($release['url'] ?? null) && UrlSafety::isAcceptableExternalHttpUrl($release['url']) ? $release['url'] : null,
             'payload' => $release,
         ]);
     }

@@ -128,6 +128,33 @@ export function safeUrl(value) {
 }
 
 /**
+ * Navigationsziel aus DOM-Text (Option-Werte, data-Attribute) für
+ * `location.href`/`a.href`: nur http(s) auf der eigenen Origin, zurück kommt
+ * ein Pfad ab `/` (samt Query und Fragment). Fremde Origins, `javascript:` &
+ * Co. ergeben `null` — der Aufrufer navigiert dann nicht.
+ *
+ * @param {unknown} value
+ * @returns {string | null}
+ */
+export function sameOriginPath(value) {
+    const raw = String(value ?? "").trim();
+    if (raw === "") return null;
+
+    try {
+        // Relative Ziele (`?filter=…`, `#…`) gelten wie im Link relativ zur aktuellen Seite.
+        const parsed = new URL(raw, window.location.href || window.location.origin);
+        if (!["http:", "https:"].includes(parsed.protocol) || parsed.origin !== window.location.origin) {
+            return null;
+        }
+
+        // Konstantes Präfix: das Ergebnis kann nie mit einem Schema beginnen.
+        return "/" + (parsed.pathname + parsed.search + parsed.hash).replace(/^\/+/, "");
+    } catch (_e) {
+        return null;
+    }
+}
+
+/**
  * Tagged Template, das interpolierte Werte automatisch escaped. `SafeHtml`
  * wird unverändert übernommen, sodass Fragmente sich schachteln lassen, ohne
  * doppelt escaped zu werden. Arrays werden verbunden — `${items.map(…)}`

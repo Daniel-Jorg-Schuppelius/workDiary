@@ -99,7 +99,8 @@
                     </td>
                     <td class="text-right">
                         <div class="flex items-center justify-end gap-1">
-                            @if ($notice?->url)
+                            {{-- Feed-Daten: Altbestand vor der Import-Prüfung nur als http(s)-Link. --}}
+                            @if ($notice?->url && \App\Support\UrlSafety::isAcceptableExternalHttpUrl($notice->url))
                                 <x-icon-btn icon="open_in_new" size="sm" :href="$notice->url" target="_blank"
                                             rel="noopener" :title="__('Bekanntmachung öffnen')" />
                             @endif

@@ -1,3 +1,5 @@
+import { sameOriginPath } from "./lib/html.js";
+
 /*
  * inline-actions.js — delegierte Ersatz-Handler für frühere Inline-Event-
  * Attribute (onclick/onchange/onsubmit/…). Inline-Handler sind unter der
@@ -8,7 +10,7 @@
  *
  * Muster:
  *   data-autosubmit            change → form.submit() (Wert "request" → requestSubmit())
- *   data-navigate-select       change → window.location.href = value (wenn gesetzt)
+ *   data-navigate-select       change → window.location.href = value (nur eigene Origin)
  *   data-open-dialog="<id>"    click  → <dialog id>.showModal()
  *   data-print                 click  → window.print() (App-Layout; Standalone-
  *                              Druckseiten binden dasselbe Attribut über
@@ -47,7 +49,9 @@ document.addEventListener("change", (event) => {
         el.closest("[data-navigate-select]")
     );
     if (nav) {
-        if (nav.value) window.location.href = nav.value;
+        // Option-Werte sind DOM-Text: nur Pfade der eigenen Origin (Code-Scanning #1).
+        const target = sameOriginPath(nav.value);
+        if (target !== null) window.location.href = target;
         return;
     }
 

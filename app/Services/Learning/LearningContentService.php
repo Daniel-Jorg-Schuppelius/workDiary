@@ -402,8 +402,11 @@ class LearningContentService {
      */
     private function guardHost(LearningUnit $unit, string $url): void {
         $host = mb_strtolower((string) parse_url($url, PHP_URL_HOST));
+        // Nur https: `javascript://erlaubter.host/%0A…` trägt einen erlaubten Host
+        // und würde im iframe als Skript laufen.
+        $scheme = mb_strtolower((string) parse_url($url, PHP_URL_SCHEME));
 
-        if ($host === '') {
+        if ($host === '' || $scheme !== 'https') {
             throw ValidationException::withMessages([
                 'url' => (string) __('learning.errors.embed_url_invalid'),
             ]);

@@ -271,7 +271,8 @@ function initChat(root) {
         if (d.first_unread_id) {
             const el = document.getElementById(`chat-msg-${d.first_unread_id}`);
             if (el) {
-                const label = root.dataset.txtNew || "Neue Nachrichten";
+                // data-Attribut ist DOM-Text: vor dem Einfügen als HTML escapen.
+                const label = escHtml(root.dataset.txtNew || "Neue Nachrichten");
                 el.insertAdjacentHTML(
                     "beforebegin",
                     `<div id="chat-unread-divider" class="my-2 flex items-center gap-2 px-3 text-xs font-semibold text-primary"><span class="h-px flex-1 bg-primary/40"></span>${label}<span class="h-px flex-1 bg-primary/40"></span></div>`,

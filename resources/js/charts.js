@@ -59,6 +59,8 @@
  * @property {Array<{label:string,value:number}>} [percentiles]
  */
 
+import { sameOriginPath } from "./lib/html.js";
+
 /** @type {Promise<any>|null} */
 let chartLibPromise = null;
 
@@ -820,8 +822,9 @@ async function enhance(figure) {
             if (elements.length === 0 || elements[0].datasetIndex !== 0) {
                 return;
             }
-            const target = urls[elements[0].index];
-            if (typeof target === "string" && target !== "") {
+            // Drill-down-Ziele stehen im Spec aus dem DOM: nur eigene Origin.
+            const target = sameOriginPath(urls[elements[0].index]);
+            if (target !== null) {
                 window.location.assign(target);
             }
         };

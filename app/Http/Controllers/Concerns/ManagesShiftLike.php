@@ -11,7 +11,7 @@
 namespace App\Http\Controllers\Concerns;
 
 use App\Models\User;
-use App\Support\LookupCache;
+use App\Support\{LookupCache, UrlSafety};
 use Carbon\CarbonImmutable;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
@@ -53,7 +53,7 @@ trait ManagesShiftLike {
     }
 
     private function redirectAfter(Request $request, string $message, string $fallbackRoute): RedirectResponse {
-        $back = $this->safeBackUrl($request->input('_back'), $fallbackRoute);
+        $back = $this->safeBackUrl($request->input('_back'), $fallbackRoute, $request->getHost());
 
         return redirect($back)->with('success', $message);
     }
@@ -61,17 +61,12 @@ trait ManagesShiftLike {
     /**
      * Gibt eine sichere Rücksprung-URL zurück.
      * Externe URLs (anderer Host) werden auf $fallback zurückgesetzt,
-     * um Open-Redirect-Angriffe zu verhindern.
+     * um Open-Redirect-Angriffe zu verhindern. Die frühere Hostprüfung ließ
+     * `/\fremd.example` (Browser lesen das als `//fremd.example`) und Schemata
+     * ohne Host durch; die gemeinsame Prüfung schließt beides.
      */
-    private function safeBackUrl(mixed $candidate, string $fallback): string {
-        if (! is_string($candidate) || $candidate === '') {
-            return $fallback;
-        }
-
-        // Nur URLs desselben Hosts zulassen; reine Pfade (/foo) sind ebenfalls ok.
-        $parsed = parse_url($candidate);
-
-        if (isset($parsed['host']) && $parsed['host'] !== parse_url(config('app.url'), PHP_URL_HOST)) {
+    private function safeBackUrl(mixed $candidate, string $fallback, string $appHost): string {
+        if (! is_string($candidate) || ! UrlSafety::isSameOriginOrRelative($candidate, $appHost)) {
             return $fallback;
         }
 

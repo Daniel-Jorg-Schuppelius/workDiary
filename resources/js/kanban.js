@@ -34,6 +34,7 @@
 
 import { __ } from "./i18n.js";
 import { submitForm } from "./lib/http.js";
+import { sameOriginPath } from "./lib/html.js";
 
 // from-Status → to-Status → Aktion (Status-Codes aus App\Enums\Diary\Status).
 // dialog: Dialog-ID für Pflichtangaben; fields: feste Zusatzfelder;
@@ -85,8 +86,9 @@ function openActionDialog(dialogId, url) {
         document.getElementById(dialogId)
     );
     const form = dlg?.querySelector("form");
-    if (!dlg || !form || typeof dlg.showModal !== "function") return false;
-    form.action = url;
+    const target = sameOriginPath(url);
+    if (!dlg || !form || target === null || typeof dlg.showModal !== "function") return false;
+    form.action = target;
     form.reset();
     dlg.showModal();
     return true;

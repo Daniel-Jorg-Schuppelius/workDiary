@@ -12,6 +12,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import listPlugin from "@fullcalendar/list";
 import interactionPlugin from "@fullcalendar/interaction";
+import { sameOriginPath } from "./lib/html.js";
 
 document.addEventListener("DOMContentLoaded", () => {
     const el = document.getElementById("calendar");
@@ -52,7 +53,8 @@ document.addEventListener("DOMContentLoaded", () => {
         eventClick: (info) => {
             if (info.event.url) {
                 info.jsEvent.preventDefault();
-                window.location.href = info.event.url;
+                const target = sameOriginPath(info.event.url);
+                if (target !== null) window.location.href = target;
             }
         },
     });
