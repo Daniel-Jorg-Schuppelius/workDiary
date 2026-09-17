@@ -59,6 +59,9 @@ class TwoFactorController extends Controller {
         if (empty($user->two_factor_recovery_codes)) {
             $request->session()->flash('two_factor_recovery_codes', $this->twoFactor->ensureRecoveryCodes($user));
         }
+        // Ein Passkey ist ein dauerhaftes Anmeldemittel — die Person erfährt
+        // davon (Sicherheitsaudit 2026-09-17, authflow-1).
+        $this->notifyPasskeyAdded($user);
         $request->session()->flash('success', __('Sicherheitsschlüssel / Passkey aktiviert.'));
 
         return response()->json(['ok' => true]);
@@ -279,4 +282,22 @@ class TwoFactorController extends Controller {
         return ! $user->is_new_system && blank($user->two_factor_secret);
     }
 
+    /** Hinweis-Mail über ein neu hinterlegtes Anmeldemittel; darf nie die Registrierung brechen. */
+    private function notifyPasskeyAdded(User $user): void {
+        try {
+            $user->notify(new \App\Notifications\GenericEventNotification(
+                \App\Enums\Notification\NotificationEvent::SecurityNewDevice,
+                [
+                    'title' => (string) __('notification.message.passkey_added_title'),
+                    'title_key' => 'notification.message.passkey_added_title',
+                    'message' => (string) __('notification.message.passkey_added_message'),
+                    'message_key' => 'notification.message.passkey_added_message',
+                    'url' => route($user->customer_id !== null ? 'customer.2fa.show' : 'account.2fa.show'),
+                ],
+                ['database', 'mail'],
+            ));
+        } catch (\Throwable $e) {
+            \Illuminate\Support\Facades\Log::warning('auth.passkey_notify_failed', ['error' => $e->getMessage()]);
+        }
+    }
 }

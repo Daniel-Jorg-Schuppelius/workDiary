@@ -16,6 +16,7 @@
 // nächsten Anzeigen holt er den Serverbaum neu statt den Mount-Stand zu zeigen.
 
 import { getJson, postJson } from "./lib/http.js";
+import { escHtml } from "./lib/html.js";
 
 const DEBOUNCE_MS = 1200;
 
@@ -141,6 +142,9 @@ export function registerIdeaCanvas(Alpine) {
                 keypress: !!this.cfg.can_update,
                 allowUndo: true, // Undo/Redo aus der Bibliothek
                 newTopicName: this.cfg.labels?.new_node || undefined,
+                // Mind Elixir setzt Beschriftungen von Querverbindungen und
+                // Zusammenfassungen per innerHTML; der Hook macht sie zu Text.
+                markdown: (text) => String(escHtml(text ?? "")),
             });
 
             const data = this.hydrate();

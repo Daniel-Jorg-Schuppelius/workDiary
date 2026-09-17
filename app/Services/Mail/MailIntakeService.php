@@ -322,14 +322,79 @@ class MailIntakeService {
         }
 
         if (preg_match('/\[([A-Z0-9\-\/]{4,30})\]/i', $message->subject, $matches) === 1) {
-            return \App\Models\ServiceTicket::query()
+            $ticket = \App\Models\ServiceTicket::query()
                 ->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)
                 ->where('ticket_no', $matches[1])
                 ->first();
+
+            // Ticketnummern sind fortlaufend und stehen in jeder Kundenmail:
+            // ohne Absenderprüfung konnte jeder Fremde eine öffentliche
+            // „Kundenantwort" samt kundensichtbarem Anhang in ein beliebiges
+            // Ticket schreiben (Sicherheitsaudit 2026-09-17, ingress-1).
+            // Passt der Absender nicht zum Vorgang, läuft die Mail in die
+            // normale Inbox statt in den Verlauf.
+            if ($ticket !== null && $this->senderBelongsToTicket($ticket, $message)) {
+                return $ticket;
+            }
         }
 
         return null;
+    }
+
+    /**
+     * Gehört die Absenderadresse zu diesem Vorgang? Anerkannt sind die Adresse
+     * des Kunden, seiner Ansprechpartner und Portalzugänge, die meldende Person
+     * sowie jede Adresse, die im Verlauf schon angeschrieben wurde.
+     */
+    private function senderBelongsToTicket(\App\Models\ServiceTicket $ticket, ParsedMessage $message): bool {
+        $sender = mb_strtolower(trim((string) $message->fromEmail));
+        if ($sender === '') {
+            return false;
+        }
+
+        $known = [];
+
+        $customer = $ticket->customer_id !== null
+            ? \App\Models\Customer::query()->withoutGlobalScopes()->whereKey($ticket->customer_id)->first()
+            : null;
+        if ($customer !== null) {
+            $known[] = (string) $customer->email;
+            foreach ($customer->contact_persons ?? [] as $person) {
+                $known[] = (string) ($person['email'] ?? '');
+            }
+
+            foreach (\App\Models\User::query()->withoutGlobalScopes()
+                ->where('organization_id', $ticket->organization_id)
+                ->where('customer_id', $customer->getKey())
+                ->pluck('email') as $portalEmail) {
+                $known[] = (string) $portalEmail;
+            }
+        }
+
+        if ($ticket->reported_by_user_id !== null) {
+            $known[] = (string) \App\Models\User::query()->withoutGlobalScopes()
+                ->whereKey($ticket->reported_by_user_id)->value('email');
+        }
+
+        // Empfänger früherer Nachrichten des Vorgangs: wer bereits angeschrieben
+        // wurde, darf antworten (auch ohne Stammdatensatz).
+        foreach (\App\Models\ServiceTicketMessage::query()->withoutGlobalScopes()
+            ->where('service_ticket_id', $ticket->getKey())
+            ->get(['to', 'cc']) as $previous) {
+            foreach ([...(array) ($previous->to ?? []), ...(array) ($previous->cc ?? [])] as $recipient) {
+                $known[] = (string) $recipient;
+            }
+        }
+
+        foreach ($known as $candidate) {
+            $candidate = mb_strtolower(trim($candidate));
+            if ($candidate !== '' && hash_equals($candidate, $sender)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**

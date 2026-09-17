@@ -27,9 +27,11 @@ class LegacyUserAdminTest extends TestCase {
     }
 
     public function test_legacy_user_store_rejects_too_long_password(): void {
+        // Legacy-Admin über die verknüpfte Legacy-ID; die Org-Admin-Rolle allein öffnet den Legacy-Bereich nicht mehr.
         $admin = User::factory()->admin()->create([
             'name' => 'admin',
             'email' => 'admin-users@example.test',
+            'legacy_user_id' => 1,
         ]);
 
         $this->actingAs($admin)

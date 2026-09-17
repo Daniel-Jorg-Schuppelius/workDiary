@@ -63,10 +63,16 @@ class LegacyUserProvider extends EloquentUserProvider {
         parent::__construct($hasher, User::class);
     }
 
+    /**
+     * Deaktivierte Konten werden auch MITTEN in einer laufenden Sitzung
+     * abgewiesen: das Löschen der `sessions`-Zeilen beim Austritt wirkt nur
+     * mit `SESSION_DRIVER=database`, bei Redis blieb die Sitzung sonst
+     * unbegrenzt nutzbar (Sicherheitsaudit 2026-09-17, session-1).
+     */
     public function retrieveById($identifier): ?Authenticatable {
         $user = parent::retrieveById($identifier);
 
-        if ($user instanceof User && $user->customer_id !== null) {
+        if ($user instanceof User && ($user->customer_id !== null || ! $user->canLogin())) {
             return null;
         }
 
@@ -76,7 +82,7 @@ class LegacyUserProvider extends EloquentUserProvider {
     public function retrieveByToken($identifier, $token): ?Authenticatable {
         $user = parent::retrieveByToken($identifier, $token);
 
-        if ($user instanceof User && $user->customer_id !== null) {
+        if ($user instanceof User && ($user->customer_id !== null || ! $user->canLogin())) {
             return null;
         }
 

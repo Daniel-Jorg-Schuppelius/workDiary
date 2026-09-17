@@ -70,8 +70,11 @@ class DiaryExportController extends Controller {
 
     /** @return Builder<DiaryEntry> */
     private function buildQuery(Request $request): Builder {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
         /** @var Builder<DiaryEntry> $query */
         $query = DiaryEntry::query()
+            ->visibleInBulkTo($user)
             ->with(['user:id,name', 'tags:id,name'])
             ->orderByDesc('start_at');
 

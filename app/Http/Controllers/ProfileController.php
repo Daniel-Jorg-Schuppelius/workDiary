@@ -10,13 +10,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\Notification\NotificationEvent;
 use App\Http\Controllers\Concerns\ManagesUserContactDetails;
 use App\Models\{Attachment, User};
+use App\Notifications\GenericEventNotification;
 use App\Services\Attachments\ImageMetaUploader;
+use App\Support\Auth\RecentAuthentication;
 use CommonToolkit\Helper\Data\PhoneNumberHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
-use Illuminate\Validation\Rule;
+use Illuminate\Support\Facades\{Hash, Log, Notification};
+use Illuminate\Validation\{Rule, ValidationException};
 
 class ProfileController extends Controller {
     use ManagesUserContactDetails;
@@ -66,6 +70,17 @@ class ProfileController extends Controller {
             }],
         ] + $this->contactDetailRules());
 
+        // Der E-Mail-Wechsel verlegt Passwort-Reset und Mail-Codes auf die neue
+        // Adresse — aus kurzem Sitzungszugriff würde sonst eine dauerhafte
+        // Kontoübernahme (Sicherheitsaudit 2026-09-17, authflow-1). Daher nur
+        // mit frischer Anmeldung oder aktuellem Passwort, und die alte Adresse
+        // erfährt davon.
+        $previousEmail = (string) $user->email;
+        $emailChanged = mb_strtolower(trim((string) $data['email'])) !== mb_strtolower($previousEmail);
+        if ($emailChanged) {
+            $this->assertMayChangeEmail($request, $user);
+        }
+
         $user->fill(['name' => $data['name'], 'email' => $data['email']]);
         $this->fillUserContactFields($user, $data);
 
@@ -111,7 +126,59 @@ class ProfileController extends Controller {
             $this->avatarUploader->delete($user, Attachment::META_AVATAR);
         }
 
+        if ($emailChanged) {
+            $this->notifyPreviousAddress($user, $previousEmail);
+        }
+
         return back()->with('success', __('Profil aktualisiert.'));
+    }
+
+    /**
+     * Frische Anmeldung (≤ auth.password_timeout) oder Feld `current_password`.
+     * SSO-pflichtige Konten ohne nutzbares Passwort melden sich dafür erneut an.
+     */
+    private function assertMayChangeEmail(Request $request, User $user): void {
+        if (RecentAuthentication::isRecent($request)) {
+            return;
+        }
+
+        $current = (string) $request->input('current_password', '');
+        if ($current !== '' && Hash::check($current, (string) $user->password)) {
+            RecentAuthentication::confirm($request);
+
+            return;
+        }
+
+        throw ValidationException::withMessages([
+            'current_password' => __('Bitte bestätigen Sie die Änderung der E-Mail-Adresse mit Ihrem aktuellen Passwort.'),
+        ]);
+    }
+
+    /** Hinweis an die bisherige Adresse — dort fällt eine Übernahme zuerst auf. */
+    private function notifyPreviousAddress(User $user, string $previousEmail): void {
+        if ($previousEmail === '') {
+            return;
+        }
+
+        $params = ['email' => (string) $user->email];
+
+        try {
+            Notification::route('mail', $previousEmail)->notify(new GenericEventNotification(
+                NotificationEvent::SecurityNewDevice,
+                [
+                    'title' => (string) __('notification.message.email_changed_title'),
+                    'title_key' => 'notification.message.email_changed_title',
+                    'message' => (string) __('notification.message.email_changed_message', $params),
+                    'message_key' => 'notification.message.email_changed_message',
+                    'message_params' => $params,
+                    'url' => route('account.password.edit'),
+                ],
+                ['mail'],
+            ));
+        } catch (\Throwable $e) {
+            // Der Hinweis darf die Änderung nie verhindern.
+            Log::warning('profile.email_change_notice_failed', ['error' => $e->getMessage()]);
+        }
     }
 
     /**

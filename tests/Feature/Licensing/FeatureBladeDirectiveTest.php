@@ -59,7 +59,7 @@ class FeatureBladeDirectiveTest extends TestCase {
         ))) extends LicenseService {
             public function __construct(private readonly LicenseResult $result) {}
             public function isEnforced(): bool { return true; }
-            public function current(?string $host = null): LicenseResult { return $this->result; }
+            public function current(): LicenseResult { return $this->result; }
         };
         $this->app->instance(LicenseService::class, $stub);
         $this->app->forgetInstance(\App\Services\Licensing\FeatureFlagResolver::class);

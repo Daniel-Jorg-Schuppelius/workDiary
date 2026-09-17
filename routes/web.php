@@ -279,6 +279,12 @@ Route::middleware('auth')->group(function () {
     // Passwort/Profil verwalten.
     Route::post('/mode/{mode}', [HomeController::class, 'switchMode'])->name('mode.switch');
 
+    // Passwortbestätigung vor Anmeldemittel-Änderungen (Audit 2026-09-17,
+    // authflow-1) — Ziel der `reauth`-Middleware.
+    Route::get('passwort-bestaetigen', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'show'])->name('password.confirm');
+    Route::post('passwort-bestaetigen', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'store'])
+        ->middleware('throttle:6,1')->name('password.confirm.store');
+
     Route::get('account/password', [AccountPasswordController::class, 'edit'])->name('account.password.edit');
     Route::post('account/password', [AccountPasswordController::class, 'update'])->middleware('throttle:password')->name('account.password.update');
 
@@ -294,8 +300,10 @@ Route::middleware('auth')->group(function () {
     Route::post('account/two-factor/email', [TwoFactorController::class, 'enableEmail'])->name('account.2fa.email.enable');
     Route::post('account/two-factor/email/resend', [TwoFactorController::class, 'resendEmailCode'])->name('account.2fa.email.resend');
     Route::post('account/two-factor/email/confirm', [TwoFactorController::class, 'confirmEmail'])->name('account.2fa.email.confirm');
-    Route::post('account/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->name('account.2fa.webauthn.options');
-    Route::post('account/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->name('account.2fa.webauthn.register');
+    // Ein Passkey überlebt Passwort-Reset und Sitzungswiderruf: Registrierung
+    // nur mit frischer Anmeldung (Sicherheitsaudit 2026-09-17, authflow-1).
+    Route::post('account/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->middleware('reauth')->name('account.2fa.webauthn.options');
+    Route::post('account/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->middleware('reauth')->name('account.2fa.webauthn.register');
     Route::delete('account/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->middleware('throttle:6,1')->name('account.2fa.credential.destroy');
     Route::delete('account/two-factor', [TwoFactorController::class, 'disable'])->middleware('throttle:6,1')->name('account.2fa.disable');
 
@@ -4546,8 +4554,8 @@ Route::middleware('auth')->group(function () {
         Route::delete('push/unsubscribe', [PushSubscriptionController::class, 'destroy'])->name('push.unsubscribe');
 
         Route::get('profile/api-tokens', [ApiTokenController::class, 'index'])->name('profile.api-tokens.index');
-        Route::get('profile/api-tokens/create', [ApiTokenController::class, 'create'])->name('profile.api-tokens.create');
-        Route::post('profile/api-tokens', [ApiTokenController::class, 'store'])->name('profile.api-tokens.store');
+        Route::get('profile/api-tokens/create', [ApiTokenController::class, 'create'])->middleware('reauth')->name('profile.api-tokens.create');
+        Route::post('profile/api-tokens', [ApiTokenController::class, 'store'])->middleware('reauth')->name('profile.api-tokens.store');
         Route::delete('profile/api-tokens/{id}', [ApiTokenController::class, 'destroy'])
             ->where('id', '[A-Za-z0-9]+')
             ->name('profile.api-tokens.destroy');

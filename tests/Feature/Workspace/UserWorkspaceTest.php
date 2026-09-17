@@ -62,6 +62,8 @@ final class UserWorkspaceTest extends TestCase {
         $response->assertOk();
         $response->assertSee('Meiner');
         $response->assertDontSee('Fremder');
+        // Sicherheitsaudit 2026-09-17 (xss-3): Umschalten als echtes Formular, kein data-Gadget mehr.
+        $response->assertDontSee('data-workspace-activate', false);
     }
 
     public function test_create_and_update_persist_the_selection_in_order(): void {

@@ -55,6 +55,22 @@ class CustomersReportTest extends TestCase {
         ]);
     }
 
+    /** Sicherheitsaudit 2026-09-17 (authz-report-1): Team-Analysen nur mit report.view oder als Admin. */
+    public function test_team_analyses_and_drilldowns_need_report_view(): void {
+        $employee = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $this->actingAs($employee);
+
+        foreach ([
+            route('reports.customers', ['user' => $this->user->sqid]),
+            route('reports.customers.drilldown.open-issues', ['customer_id' => $this->customer->sqid]),
+            route('reports.customers.drilldown.protocols', ['customer_id' => $this->customer->sqid, 'export' => 'csv']),
+            route('reports.entry-types'),
+            route('reports.assets'),
+        ] as $url) {
+            $this->get($url)->assertForbidden();
+        }
+    }
+
     public function test_route_renders_for_authenticated_user(): void {
         $response = $this->actingAs($this->user)->get(route('reports.customers'));
         $response->assertOk();

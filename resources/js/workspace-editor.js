@@ -31,12 +31,7 @@
  *   [data-workspace-remove]   Zeile entfernen
  *   [data-workspace-template] <template> einer Auswahlzeile
  *   [data-workspace-count]    Zähler, [data-workspace-empty] Leerhinweis
- *
- * Ausserdem: [data-workspace-activate] (Liste) schaltet über den bestehenden
- * Server-Endpunkt auf einen Arbeitsbereich um — Formular-POST über lib/http.js.
  */
-
-import { submitForm } from "./lib/http.js";
 
 /** Pixel, ab denen aus einem Klick ein Ziehen wird. */
 const DRAG_THRESHOLD = 4;
@@ -185,17 +180,6 @@ function reorderTo(list, chip, clientY) {
 document.addEventListener("click", (event) => {
     const target = event.target instanceof Element ? event.target : null;
     if (!target) return;
-
-    // Arbeitsbereich aus der Liste heraus aktivieren (Server entscheidet).
-    const activate = /** @type {HTMLElement | null} */ (
-        target.closest("[data-workspace-activate]")
-    );
-    if (activate) {
-        event.preventDefault();
-        const url = activate.dataset.url || "";
-        if (url !== "") submitForm(url);
-        return;
-    }
 
     const root = editorOf(target);
     if (!root) return;

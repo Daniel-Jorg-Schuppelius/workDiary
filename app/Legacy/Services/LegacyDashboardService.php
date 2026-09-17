@@ -113,8 +113,9 @@ class LegacyDashboardService {
             'vacations' => $vacationQuery->paginate(15, ['*'], 'vpage')->withQueryString(),
             'vacationKpis' => $this->vacationKpis($vacationQuery, $tabCounts['urlaub']),
             'vacationIsAdmin' => $vacationCanViewAll,
+            // Nutzer tragen keinen Org-Scope: nur die eigene Organisation anbieten (tenant-legacy-2).
             'vacationUsers' => $vacationCanViewAll
-                ? User::query()->orderBy('name')->get(['id', 'name'])
+                ? User::query()->where('organization_id', $currentUser->organization_id)->orderBy('name')->get(['id', 'name'])
                 : collect(),
             'sort' => $tabSort,
             'dir' => $tabDir,
@@ -198,7 +199,7 @@ class LegacyDashboardService {
 
         // Mitarbeiter-Filter: Wer alle Daten sehen darf (Admin oder Buchhaltung),
         // darf nach beliebigem Legacy-User filtern. Normale User sehen nur eigene Einträge.
-        if (! $canViewAll && $legacyUserId > 0) {
+        if (! $canViewAll) { // ohne Legacy-Konto (ID ≤ 0) fail-closed: keine Treffer
             $query->where('user', $legacyUserId);
         } elseif ($canViewAll && $filterUserId !== null) {
             $query->where('user', $filterUserId);
@@ -219,7 +220,7 @@ class LegacyDashboardService {
             $filterUserId = (int) $rawFilterUser;
         }
 
-        if (! $canViewAll && $legacyUserId > 0) {
+        if (! $canViewAll) { // ohne Legacy-Konto (ID ≤ 0) fail-closed: keine Treffer
             $query->where('user', $legacyUserId);
         } elseif ($canViewAll && $filterUserId !== null) {
             $query->where('user', $filterUserId);
@@ -272,7 +273,7 @@ class LegacyDashboardService {
             $query->orderBy('von')->orderBy('user');
         }
 
-        if (! $canViewAll && $legacyUserId > 0) {
+        if (! $canViewAll) { // ohne Legacy-Konto (ID ≤ 0) fail-closed: keine Treffer
             $query->where('user', $legacyUserId);
         } elseif ($canViewAll && $filterUserId !== null) {
             $query->where('user', $filterUserId);

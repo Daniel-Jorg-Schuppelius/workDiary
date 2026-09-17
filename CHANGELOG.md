@@ -1083,3 +1083,47 @@ die Einzelheiten stehen in den verlinkten Feature-Dokumenten des Schwester-Repos
   Raw-Block-Erkennung ein ungültiges `<?php(` (kein PHP-Open-Tag) — der
   Block wurde nie ausgeführt („Undefined variable $showServiceDates").
   Alle `@php`-Vorkommen der View nutzen jetzt die Blockform.
+
+### Security
+
+- **Datenfluss-Sicherheitsaudit 2026-09-17: alle schweren und mittleren Befunde
+  behoben.** Anlass waren zwei CodeQL-Warnungen; geprüft wurde in neun
+  Lückenklassen (Quelle → Senke), 54 Befunde, davon 5 schwere und 20 mittlere.
+  Im Einzelnen:
+  - **Zeitkorrektur-Anträge** schreiben nur noch erlaubte Felder auf eigene
+    Zeit- und Anwesenheitseinträge; Mandant und Person sind erzwungen.
+  - **Karten und Ideenlandkarten** escapen Namen und Beschriftungen, bevor sie
+    in Popups bzw. in die Landkarte gehen; URL-Ziele aus dem DOM müssen
+    gleiche Herkunft haben.
+  - **Weiterleitungen der Plugin-Clients** werden erneut gegen die
+    SSRF-Schranke geprüft; der FTP-Katalogabruf ignoriert die PASV-Adresse des
+    Servers; Webhook-Zustellung und Web-Push binden die geprüfte IP an die
+    Verbindung (DNS-Rebinding).
+  - **Legacy-Bereich**: Migration nur für Plattform-Betreiber und ohne
+    Überschreiben bestehender Konten; Archiv und Tagebuch prüfen das Eigentum
+    je Eintrag.
+  - **Auswertungen, Supportbericht, Auftrags-Export und Touren** prüfen jetzt
+    Recht und Sichtbereich statt nur die Organisation.
+  - **SSO**: E-Mail-Verknüpfung und automatische Kontoanlage nur für
+    nachgewiesene SSO-Domains, bei OIDC zusätzlich nur mit vom Anbieter
+    bestätigter E-Mail-Adresse.
+  - **Anmeldemittel**: Passkey anlegen, API-Token ausstellen und die
+    Anmelde-E-Mail wechseln verlangen eine frische Anmeldung bzw. das
+    Passwort; die bisherige Adresse wird über den Wechsel informiert, neue
+    Passkeys werden gemeldet.
+  - **Sitzungen**: deaktivierte Konten und widerrufene Portalzugänge fliegen
+    sofort aus laufenden Sitzungen, ein Passwortwechsel entwertet fremde
+    Sitzungen unabhängig vom Sitzungsspeicher. `system:health` warnt, wenn
+    `SESSION_DRIVER` nicht `database` ist (dann wirkt nur die gezielte
+    Fernabmeldung einzelner Sitzungen nicht).
+  - **Lizenz**: Die Domainbindung wird gegen `APP_URL` geprüft statt gegen den
+    Host-Header — ein fremder `Host:` kann weder den Lizenz-Cache vergiften
+    noch die Betreiberlizenz ersetzen.
+  - **Helpdesk-Mail**: Eine Mail mit `[TICKET-NO]` im Betreff landet nur dann
+    als kundensichtbare Antwort im Vorgang, wenn der Absender dazugehört.
+  - **Anonyme Portale** (Meldeportal, Betroffenenportal, Karriere) bekommen
+    eine eigene Sitzung; ihre Sitzungszeile nennt kein Konto mehr.
+  Die 29 leichten Befunde sind im Bericht dokumentiert und offen.
+- **Drei neue Architektur-Gates** halten den Stand: URL-Senken im Frontend
+  müssen über `sameOriginPath()` laufen, `{!! … !!}` in Blade steht auf einer
+  begründeten Liste, und rohes SQL darf keine Variablen im String tragen.

@@ -192,6 +192,28 @@ class LearningQuestionEditingTest extends TestCase {
         $this->assertSame(1, (int) $quiz->questions()->whereKey($first->id)->firstOrFail()->pivot->position);
     }
 
+    /** Sicherheitsaudit 2026-09-17 (files-idor-1): eine untergeschobene Anhangs-ID kopiert keine fremde Datei. */
+    public function test_kopie_uebernimmt_keinen_fremden_anhang(): void {
+        Storage::fake('local');
+        [, , $quiz] = $this->quiz();
+        $editor = app(LearningQuestionEditorService::class);
+        $other = $editor->create(
+            $this->organization->id,
+            ['kind' => 'hotspot', 'prompt' => 'Fremdes Bild', 'points' => 1, 'options' => '*10,10,20,20: Ziel'],
+            UploadedFile::fake()->image('fremd.png', 50, 50),
+            $this->author(),
+            $quiz,
+        );
+        $victim = $editor->create($this->organization->id, ['kind' => 'hotspot', 'prompt' => 'Ohne Bild', 'points' => 1, 'options' => '*10,10,20,20: Ziel'], null, null, $quiz);
+        $victim->forceFill(['settings' => [...(array) $victim->settings, 'image_attachment_id' => $other->settings['image_attachment_id']]])->save();
+
+        $attachments = \App\Models\Attachment::query()->count();
+        $copy = $editor->duplicate($victim->refresh(), $this->author());
+
+        $this->assertSame($attachments, \App\Models\Attachment::query()->count());
+        $this->assertNotSame($other->settings['image_attachment_id'], $copy->settings['image_attachment_id'] ?? null);
+    }
+
     public function test_verschieben_tauscht_mit_dem_nachbarn(): void {
         [$course, $unit, $quiz] = $this->quiz();
         $editor = app(LearningQuestionEditorService::class);

@@ -175,6 +175,11 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::post('/profile/email', [\App\Http\Controllers\CustomerPortal\ProfileController::class, 'requestEmailChange'])
             ->middleware('throttle:6,1')->name('profile.email.request');
 
+        // Passwortbestätigung vor Anmeldemittel-Änderungen — Ziel von `reauth:customer`.
+        Route::get('/passwort-bestaetigen', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'show'])->name('password.confirm');
+        Route::post('/passwort-bestaetigen', [\App\Http\Controllers\Auth\ConfirmPasswordController::class, 'store'])
+            ->middleware('throttle:6,1')->name('password.confirm.store');
+
         // 2FA-Selbstverwaltung.
         Route::get('/two-factor', [TwoFactorController::class, 'show'])->name('2fa.show');
         Route::post('/two-factor', [TwoFactorController::class, 'enable'])->name('2fa.enable');
@@ -183,8 +188,10 @@ Route::prefix('customer-portal')->name('customer.')->group(function (): void {
         Route::post('/two-factor/email', [TwoFactorController::class, 'enableEmail'])->name('2fa.email.enable');
         Route::post('/two-factor/email/resend', [TwoFactorController::class, 'resendEmailCode'])->name('2fa.email.resend');
         Route::post('/two-factor/email/confirm', [TwoFactorController::class, 'confirmEmail'])->name('2fa.email.confirm');
-        Route::post('/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->name('2fa.webauthn.options');
-        Route::post('/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->name('2fa.webauthn.register');
+        // Passkey überlebt Passwort-Reset und Zugangs-Widerruf: Registrierung
+        // nur mit frischer Anmeldung (Sicherheitsaudit 2026-09-17, authflow-1).
+        Route::post('/two-factor/webauthn/options', [TwoFactorController::class, 'webauthnOptions'])->middleware('reauth:customer')->name('2fa.webauthn.options');
+        Route::post('/two-factor/webauthn', [TwoFactorController::class, 'webauthnRegister'])->middleware('reauth:customer')->name('2fa.webauthn.register');
         Route::delete('/two-factor/credential/{credential}', [TwoFactorController::class, 'removeCredential'])->name('2fa.credential.destroy');
         Route::delete('/two-factor', [TwoFactorController::class, 'disable'])->name('2fa.disable');
     });

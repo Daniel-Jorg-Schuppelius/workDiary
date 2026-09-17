@@ -38,7 +38,16 @@
 
     async function register(optionsUrl, registerUrl, onError) {
         try {
-            const opt = await (await postJson(optionsUrl)).json();
+            const optRes = await postJson(optionsUrl);
+            // 423: Die Aktion verlangt eine frische Anmeldung (Audit 2026-09-17,
+            // authflow-1) — zur Bestätigungsseite, danach zurück.
+            if (optRes.status === 423) {
+                const info = await optRes.json().catch(() => ({}));
+                if (info.redirect) { window.location.href = info.redirect; return; }
+                onError && onError(info.message || 'Fehler');
+                return;
+            }
+            const opt = await optRes.json();
             opt.challenge = b64uToBuf(opt.challenge);
             opt.user.id = b64uToBuf(opt.user.id);
             (opt.excludeCredentials || []).forEach(c => c.id = b64uToBuf(c.id));
@@ -53,6 +62,10 @@
                 },
             };
             const res = await postJson(registerUrl, body);
+            if (res.status === 423) {
+                const info = await res.json().catch(() => ({}));
+                if (info.redirect) { window.location.href = info.redirect; return; }
+            }
             if (res.ok) { window.location.reload(); }
             else { onError && onError((await res.json().catch(() => ({}))).message || 'Fehler'); }
         } catch (e) { onError && onError(e.message || 'Abgebrochen'); }

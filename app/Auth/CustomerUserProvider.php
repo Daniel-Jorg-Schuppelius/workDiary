@@ -29,16 +29,21 @@ class CustomerUserProvider extends EloquentUserProvider {
         parent::__construct($hasher, User::class);
     }
 
+    /**
+     * Wie im internen Provider: ein widerrufener Portalzugang endet sofort,
+     * auch wenn der Sitzungsspeicher nicht die Datenbank ist
+     * (Sicherheitsaudit 2026-09-17, session-1).
+     */
     public function retrieveById($identifier): ?Authenticatable {
         $user = parent::retrieveById($identifier);
 
-        return $user instanceof User && $user->customer_id !== null ? $user : null;
+        return $user instanceof User && $user->customer_id !== null && $user->canLogin() ? $user : null;
     }
 
     public function retrieveByToken($identifier, $token): ?Authenticatable {
         $user = parent::retrieveByToken($identifier, $token);
 
-        return $user instanceof User && $user->customer_id !== null ? $user : null;
+        return $user instanceof User && $user->customer_id !== null && $user->canLogin() ? $user : null;
     }
 
     /** @param array<string, mixed> $credentials */

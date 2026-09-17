@@ -72,6 +72,17 @@ abstract class TestCase extends BaseTestCase {
         DatabaseHealth::reset();
     }
 
+    /**
+     * Markiert die Sitzung als frisch angemeldet — `actingAs()` feuert kein
+     * Login-Ereignis, die `reauth`-Schranke (Audit 2026-09-17, authflow-1)
+     * würde sonst jede geschützte Aktion abweisen.
+     */
+    protected function withRecentAuthentication(): static {
+        $this->withSession([\App\Support\Auth\RecentAuthentication::SESSION_KEY => time()]);
+
+        return $this;
+    }
+
     protected function tearDown(): void {
         DatabaseHealth::reset();
 

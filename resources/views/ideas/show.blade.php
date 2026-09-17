@@ -356,7 +356,8 @@
             </template>
             {{-- Höhe wird per JS auf den Restplatz bis zum Viewport-Ende gesetzt
                  (fitHeight); min-h-96 ist die Smartphone-Untergrenze/Fallback. --}}
-            <div x-ref="meHost"
+            {{-- Mind Elixir rendert Beschriftungen in diesen Knoten: Alpine bleibt draußen. --}}
+            <div x-ref="meHost" x-ignore
                  class="rounded-box border border-base-300 bg-base-100 overflow-hidden min-h-96"
                  role="application" aria-label="{{ __('ideas.editor.canvas') }}"></div>
         </div>

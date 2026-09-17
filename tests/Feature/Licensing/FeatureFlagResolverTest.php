@@ -65,7 +65,7 @@ class FeatureFlagResolverTest extends TestCase {
 
             public function isEnforced(): bool { return true; }
 
-            public function current(?string $host = null): LicenseResult {
+            public function current(): LicenseResult {
                 return $this->result;
             }
         };

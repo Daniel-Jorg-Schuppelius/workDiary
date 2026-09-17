@@ -106,7 +106,7 @@ class CustomerTwoFactorTest extends TestCase {
     }
 
     public function test_webauthn_registration_options_in_portal(): void {
-        $response = $this->actingAs($this->portalUser, 'customer')->post(route('customer.2fa.webauthn.options'));
+        $response = $this->withRecentAuthentication()->actingAs($this->portalUser, 'customer')->post(route('customer.2fa.webauthn.options'));
 
         $response->assertOk();
         $this->assertArrayHasKey('challenge', $response->json());

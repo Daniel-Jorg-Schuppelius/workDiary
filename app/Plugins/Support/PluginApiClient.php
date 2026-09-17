@@ -33,7 +33,12 @@ use Illuminate\Http\Client\Response;
  * Guzzle-Transport durch einen Mock-Handler ersetzen können.
  */
 class PluginApiClient extends ClientAbstract {
-    public function __construct(string $pluginId, string $baseUrl, ?GuzzleClient $httpClient = null) {
+    /** Ziele im privaten Netz sind für dieses Plugin ausdrücklich freigegeben (allow_private_network). */
+    private bool $privateNetworkAllowed = false;
+
+    public function __construct(string $pluginId, string $baseUrl, ?GuzzleClient $httpClient = null, bool $allowPrivateNetwork = false) {
+        // Vor parent::__construct(): dort entsteht der Guzzle-Client aus buildClientConfig().
+        $this->privateNetworkAllowed = $allowPrivateNetwork;
         parent::__construct($baseUrl, null, false, $httpClient);
 
         $this->setUserAgent('workDiary-plugin/' . $pluginId);
@@ -133,5 +138,32 @@ class PluginApiClient extends ClientAbstract {
         }
 
         return new Response($psrResponse);
+    }
+
+    /**
+     * Jede Weiterleitung erneut durch die SSRF-Schranke (Sicherheitsaudit
+     * 2026-09-17, ssrf-1): geprüft wurde bisher nur die Basis-URL, Guzzle
+     * folgte danach jedem `Location` — auch auf 169.254.169.254 oder interne
+     * Dienste. Nur http(s); private Ziele nur mit Opt-in des Plugins.
+     *
+     * @return array<string, mixed>
+     */
+    protected function buildClientConfig(): array {
+        $config = parent::buildClientConfig();
+        if (is_array($config['allow_redirects'] ?? null)) {
+            $privateAllowed = $this->privateNetworkAllowed;
+            $config['allow_redirects']['on_redirect'] = static function ($request, $response, $uri) use ($privateAllowed): void {
+                $target = (string) $uri;
+                $scheme = strtolower((string) parse_url($target, PHP_URL_SCHEME));
+                $allowed = $privateAllowed
+                    ? in_array($scheme, ['http', 'https'], true)
+                    : \App\Support\UrlSafety::isPubliclyRoutableHttpUrl($target);
+                if (! $allowed) {
+                    throw new \GuzzleHttp\Exception\RequestException('Weiterleitung auf ein nicht erlaubtes Ziel blockiert.', $request, $response);
+                }
+            };
+        }
+
+        return $config;
     }
 }

@@ -21,7 +21,7 @@ class LicenseController extends Controller {
     public function __construct(private readonly LicenseService $service) {}
 
     public function show(Request $request): View {
-        $result = $this->service->current($request->getHost());
+        $result = $this->service->current();
 
         return view('licensing.required', [
             'status' => $result->status,
@@ -43,7 +43,11 @@ class LicenseController extends Controller {
         // ersetzen. Vorher genügte ein beliebiger vom Hersteller signierter
         // Schlüssel (auch ein abgelaufener) plus passender Host-Header, um
         // alle Mandanten ohne eigene Org-Lizenz auf `free` herabzustufen.
-        if ($this->service->current($request->getHost())->isUsable()) {
+        // Maßgeblich ist, ob überhaupt ein Schlüssel installiert ist — nicht,
+        // ob er gerade nutzbar ist: bei domaingebundener Lizenz und fremdem
+        // Host war das Ergebnis „nicht nutzbar", und die Sperre entfiel
+        // (Sicherheitsaudit 2026-09-17, license-1).
+        if ($this->service->hasInstalledKey()) {
             $user = $request->user();
             abort_unless($user instanceof User && $user->isGlobalAdmin(), 403);
         }

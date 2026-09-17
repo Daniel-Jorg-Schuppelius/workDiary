@@ -58,7 +58,10 @@ class ProblemReportController extends Controller {
         return view($embedded ? 'problem-reports._form_dialog' : 'problem-reports.create', [
             'context' => [
                 'route' => substr((string) $request->query('route', ''), 0, 150),
-                'url' => substr((string) $request->query('url', ''), 0, 500),
+                // Wird Abbrechen-Link und Rücksprung: nur eigene Adressen (S-19/D12-10, Audit 2026-09-17).
+                'url' => UrlSafety::isSameOriginOrRelative(substr((string) $request->query('url', ''), 0, 500), $request->getHost())
+                    ? substr((string) $request->query('url', ''), 0, 500)
+                    : '',
                 'help_topic' => substr((string) $request->query('topic', ''), 0, 150),
                 'error_code' => $request->query('code') !== null ? (int) $request->query('code') : null,
                 'request_id' => $errorRequestId,

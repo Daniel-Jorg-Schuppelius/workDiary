@@ -31,7 +31,7 @@ class SupportReportController extends Controller {
         Gate::authorize(Permission::PlatformSupportExport->value);
 
         // Inhalts-Übersicht (Spec §5): bauen, aber nicht packen.
-        $bundle = $builder->build();
+        $bundle = $builder->build(['platform_scope' => $this->isPlatformOperator()]);
         $preview = $packager->preview($bundle);
 
         return view('admin.support.report', [
@@ -63,6 +63,7 @@ class SupportReportController extends Controller {
         $bundle = $builder->build([
             'include_samples' => $includeSamples,
             'include_schema' => $includeSchema,
+            'platform_scope' => $this->isPlatformOperator(),
         ]);
 
         $package = $packager->package($bundle, $password);
@@ -105,7 +106,7 @@ class SupportReportController extends Controller {
         /** @var User $user */
         $user = $request->user();
 
-        $bundle = $builder->build();
+        $bundle = $builder->build(['platform_scope' => $this->isPlatformOperator()]);
         $json = JsonHelper::encode($bundle, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
         $filename = 'support-report-' . Carbon::now()->format('Y-m-d') . '.json';
 
@@ -136,7 +137,7 @@ class SupportReportController extends Controller {
     public function preview(Request $request, SupportReportBuilder $builder): JsonResponse {
         Gate::authorize(Permission::PlatformSupportExport->value);
 
-        $bundle = $builder->build();
+        $bundle = $builder->build(['platform_scope' => $this->isPlatformOperator()]);
 
         return response()->json($bundle, 200, [
             'X-Content-Type-Options' => 'nosniff',

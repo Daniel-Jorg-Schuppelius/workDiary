@@ -215,6 +215,69 @@ class TimeCorrectionServiceTest extends TestCase {
         $this->assertSame(TimeCorrectionStatus::Rejected, $rejected->status);
     }
 
+    /** Sicherheitsaudit 2026-09-17 (massassign-1): fremde Einträge bleiben unerreichbar. */
+    public function test_apply_ignores_entries_of_other_people(): void {
+        $attacker = $this->makeUser();
+        $colleague = $this->makeUser();
+        $admin = $this->makeUser();
+        $foreign = $this->makeTimeEntry($colleague);
+
+        $request = $this->service->createDraft($attacker, CarbonImmutable::parse('2024-03-10'), str_repeat('A', 30), [[
+            'target_type' => TimeEntry::class,
+            'target_id' => $foreign->id,
+            'action' => 'update',
+            'before' => null,
+            'after' => ['minutes' => 600],
+        ]], $attacker);
+        $request = $this->service->approve($this->service->submit($request, $attacker), $admin);
+
+        try {
+            $this->service->apply($request);
+            $this->fail('Fremder Eintrag wurde korrigiert.');
+        } catch (TimeCorrectionWorkflowException $e) {
+            $this->assertSame('targetMissing', $e->reasonCode);
+        }
+        $this->assertSame(60, (int) $foreign->fresh()?->minutes);
+    }
+
+    public function test_draft_rejects_foreign_owner_and_protected_fields(): void {
+        $user = $this->makeUser();
+        $other = $this->makeUser();
+
+        foreach ([
+            [['user_id' => $other->id, 'minutes' => 30], 'itemForeignOwner'],
+            [['organization_id' => $this->organization->id + 999, 'minutes' => 30], 'itemForeignOwner'],
+            [['hourly_rate' => '999.00'], 'itemFieldNotAllowed'],
+            [['exported' => false], 'itemFieldNotAllowed'],
+            [['project_id' => 999999], 'itemForeignReference'],
+        ] as [$after, $code]) {
+            try {
+                $this->service->createDraft($user, CarbonImmutable::parse('2024-03-10'), str_repeat('A', 30), [[
+                    'target_type' => TimeEntry::class, 'target_id' => null, 'action' => 'create', 'before' => null, 'after' => $after,
+                ]], $user);
+                $this->fail('Angenommen: ' . json_encode($after));
+            } catch (TimeCorrectionWorkflowException $e) {
+                $this->assertSame($code, $e->reasonCode, json_encode($after));
+            }
+        }
+    }
+
+    public function test_created_entry_always_belongs_to_the_person_concerned(): void {
+        $user = $this->makeUser();
+        $admin = $this->makeUser();
+        $project = Project::factory()->create(['organization_id' => $this->organization->id]);
+
+        $request = $this->service->createDraft($user, CarbonImmutable::parse('2024-03-11'), str_repeat('A', 30), [[
+            'target_type' => TimeEntry::class, 'target_id' => null, 'action' => 'create', 'before' => null,
+            'after' => ['organization_id' => $this->organization->id, 'user_id' => $user->id, 'project_id' => $project->id, 'date' => '2024-03-11', 'minutes' => 45, 'description' => 'Nachtrag'],
+        ]], $user);
+        $this->service->apply($this->service->approve($this->service->submit($request, $user), $admin));
+
+        $entry = TimeEntry::query()->where('description', 'Nachtrag')->firstOrFail();
+        $this->assertSame($user->id, (int) $entry->user_id);
+        $this->assertSame($this->organization->id, (int) $entry->organization_id);
+    }
+
     private function makeUser(): User {
         /** @var User $user */
         $user = User::factory()->create(['organization_id' => $this->organization->id]);

@@ -12,7 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Auth\Sso;
 
-use App\Models\{SsoConnection, SsoIdentity, User};
+use App\Enums\Auth\SsoProtocol;
+use App\Models\{OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -34,7 +35,9 @@ use Illuminate\Support\Facades\Log;
  */
 class SsoLoginService {
     /**
-     * @param array{subject: string, email: string|null, name?: string|null} $identity
+     * `email_verified`: OIDC-Claim (null bei SAML, das keinen kennt).
+     *
+     * @param array{subject: string, email: string|null, name?: string|null, email_verified?: bool|null} $identity
      */
     public function resolveUser(SsoConnection $connection, array $identity): User {
         $subject = $identity['subject'];
@@ -47,7 +50,7 @@ class SsoLoginService {
         $user = $existing?->user()->withoutGlobalScopes()->first();
 
         if (! $user instanceof User) {
-            $user = $this->linkByEmail($connection, $subject, $identity['email'])
+            $user = $this->linkByEmail($connection, $subject, $identity['email'], $identity['email_verified'] ?? null)
                 ?? $this->provisionJit($connection, $subject, $identity);
         }
         if (! $user instanceof User) {
@@ -70,10 +73,14 @@ class SsoLoginService {
         $connection->audit('sso.login', ['user_id' => $user->id, 'protocol' => $connection->protocol->value]);
     }
 
-    private function linkByEmail(SsoConnection $connection, string $subject, ?string $email): ?User {
+    private function linkByEmail(SsoConnection $connection, string $subject, ?string $email, ?bool $emailVerified): ?User {
         if (! $connection->allow_email_link || ! filled($email)) {
             return null;
         }
+        // Eine E-Mail, die der IdP nicht bestätigt hat, ist kein Identitätsnachweis:
+        // wer sie im IdP-Profil frei setzen kann, übernähme sonst das Konto samt
+        // Admin-Rechten, ohne Passwort und Zweitfaktor (Sicherheitsaudit 2026-09-17, sso-2).
+        $this->assertTrustedEmail($connection, (string) $email, $emailVerified, 'email_link');
 
         // Entra-Abwehr (nOAuth, MS365-Plan G1): auch für Alt-Konfigurationen,
         // die vor dem Konfigurations-Guard angelegt wurden — der email-Claim
@@ -118,7 +125,7 @@ class SsoLoginService {
      * E-Mail-Kollision ⇒ Ablehnung. Lizenz-Nutzerlimit wie bei manueller
      * Anlage ({@see \App\Services\Plan\LimitGuard}).
      *
-     * @param array{subject: string, email: string|null, name?: string|null} $identity
+     * @param array{subject: string, email: string|null, name?: string|null, email_verified?: bool|null} $identity
      */
     private function provisionJit(SsoConnection $connection, string $subject, array $identity): ?User {
         if (! $connection->jit_provisioning) {
@@ -129,6 +136,9 @@ class SsoLoginService {
         if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
             $this->reject($connection, 'jit_email_missing');
         }
+        // Neue Konten nur für nachgewiesene Domains der Organisation — sonst legte
+        // z. B. das Google-Preset für jedes beliebige Google-Konto ein Konto an (sso-1).
+        $this->assertTrustedEmail($connection, $email, $identity['email_verified'] ?? null, 'jit');
 
         if (User::query()->withoutGlobalScopes()->whereRaw('LOWER(email) = ?', [$email])->exists()) {
             // Konto existiert bereits (gleiche oder fremde Org) — kein stilles
@@ -173,6 +183,27 @@ class SsoLoginService {
         $connection->audit('sso.user_provisioned', ['user_id' => $user->id, 'role' => $role !== '' ? $role : null]);
 
         return $user;
+    }
+
+    /**
+     * E-Mail als Schlüssel nur, wenn (a) ein OIDC-IdP sie als bestätigt
+     * meldet und (b) ihre Domain eine nachgewiesene SSO-Domain der
+     * Organisation ist. SAML kennt keine Bestätigung — dort trägt (b) allein.
+     */
+    private function assertTrustedEmail(SsoConnection $connection, string $email, ?bool $emailVerified, string $context): void {
+        if ($connection->protocol === SsoProtocol::Oidc && $emailVerified !== true) {
+            $this->reject($connection, $context . '_email_unverified');
+        }
+
+        $domain = OrganizationSsoDomain::normalize($email);
+        $verified = OrganizationSsoDomain::query()
+            ->where('organization_id', $connection->organization_id)
+            ->where('domain', $domain)
+            ->whereNotNull('verified_at')
+            ->exists();
+        if (! $verified) {
+            $this->reject($connection, $context . '_domain_unverified');
+        }
     }
 
     private function assertLoginAllowed(SsoConnection $connection, User $user): void {

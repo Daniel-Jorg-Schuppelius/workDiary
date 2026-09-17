@@ -51,6 +51,15 @@
             <input type="email" id="email" name="email" value="{{ old('email', $user->email) }}" class="input input-bordered w-full" required>
             @error('email')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
         </div>
+        {{-- Ein E-Mail-Wechsel verlegt Passwort-Reset und Mail-Codes: nur mit
+             frischer Anmeldung oder aktuellem Passwort (Audit 2026-09-17,
+             authflow-1). --}}
+        <div class="fieldset">
+            <label class="fieldset-label" for="current_password">{{ __('Aktuelles Passwort') }}</label>
+            <input type="password" id="current_password" name="current_password" autocomplete="current-password" class="input input-bordered w-full">
+            <p class="mt-1 text-xs text-muted">{{ __('Nur nötig, wenn Sie die E-Mail-Adresse ändern und sich vor mehr als 15 Minuten angemeldet haben.') }}</p>
+            @error('current_password')<p class="mt-1 text-sm text-error">{{ $message }}</p>@enderror
+        </div>
     </x-form-group>
 
     @include('users._contact_fields', ['user' => $user])

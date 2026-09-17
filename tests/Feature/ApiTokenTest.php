@@ -41,7 +41,7 @@ class ApiTokenTest extends TestCase {
     public function test_create_token_shows_plain_text_once(): void {
         $user = User::factory()->user()->create();
 
-        $response = $this->actingAs($user)->post(route('profile.api-tokens.store'), [
+        $response = $this->withRecentAuthentication()->actingAs($user)->post(route('profile.api-tokens.store'), [
             'name' => 'CLI',
         ])->assertRedirect(route('profile.api-tokens.index'));
 
@@ -63,7 +63,7 @@ class ApiTokenTest extends TestCase {
     public function test_store_persists_selected_abilities(): void {
         $user = User::factory()->user()->create();
 
-        $this->actingAs($user)->post(route('profile.api-tokens.store'), [
+        $this->withRecentAuthentication()->actingAs($user)->post(route('profile.api-tokens.store'), [
             'name' => 'Scoped',
             'abilities' => ['diary:read', 'assets:read'],
         ])->assertRedirect();
@@ -75,7 +75,7 @@ class ApiTokenTest extends TestCase {
     public function test_store_without_abilities_defaults_to_wildcard(): void {
         $user = User::factory()->user()->create();
 
-        $this->actingAs($user)->post(route('profile.api-tokens.store'), ['name' => 'Full'])->assertRedirect();
+        $this->withRecentAuthentication()->actingAs($user)->post(route('profile.api-tokens.store'), ['name' => 'Full'])->assertRedirect();
 
         $this->assertSame(['*'], $user->tokens()->firstOrFail()->abilities);
     }
@@ -83,7 +83,7 @@ class ApiTokenTest extends TestCase {
     public function test_store_rejects_unknown_ability(): void {
         $user = User::factory()->user()->create();
 
-        $this->actingAs($user)->post(route('profile.api-tokens.store'), [
+        $this->withRecentAuthentication()->actingAs($user)->post(route('profile.api-tokens.store'), [
             'name' => 'Bogus',
             'abilities' => ['diary:read', 'made-up:thing'],
         ])->assertSessionHasErrors('abilities.1');
@@ -96,7 +96,7 @@ class ApiTokenTest extends TestCase {
 
         // Anlegen läuft standardkonform über den Modal-Dialog (create), nicht mehr
         // über ein Inline-Formular auf der Index-Seite.
-        $this->actingAs($user)->get(route('profile.api-tokens.create'))
+        $this->withRecentAuthentication()->actingAs($user)->get(route('profile.api-tokens.create'))
             ->assertOk()
             ->assertSee('diary:read')
             ->assertSee(__('Aufträge lesen'));

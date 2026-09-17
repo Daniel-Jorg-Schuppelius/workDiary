@@ -157,6 +157,8 @@ class SsoController extends Controller {
                 'email' => $email,
                 // Anzeigename fürs JIT-Provisioning (G2); nie Matching-Schlüssel.
                 'name' => is_string($claims['name'] ?? null) ? $claims['name'] : null,
+                // Bestätigte E-Mail (bool oder "true"): Voraussetzung für E-Mail-Verknüpfung und JIT.
+                'email_verified' => filter_var($claims['email_verified'] ?? null, FILTER_VALIDATE_BOOL, FILTER_NULL_ON_FAILURE),
             ]);
         } catch (SsoLoginException $e) {
             return $this->failed($e->getMessage());

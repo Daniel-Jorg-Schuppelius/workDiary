@@ -23,6 +23,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeAnalysisReportController extends Controller {
+    use Concerns\RequiresTeamReportAccess;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
@@ -31,6 +32,8 @@ class EntryTypeAnalysisReportController extends Controller {
     public function __construct(private readonly EntryTypeAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         [$from, $to] = $this->resolveRange($request);
         $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 

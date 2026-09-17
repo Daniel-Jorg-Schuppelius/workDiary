@@ -105,6 +105,11 @@ return Application::configure(basePath: dirname(__DIR__))
             \App\Http\Middleware\Learning\RejectScormContentHost::class,
         ]);
         $middleware->web(append: [
+            // Treiberunabhängiger Sitzungsschutz (Sicherheitsaudit 2026-09-17,
+            // session-1): ein Passwortwechsel entwertet fremde Sitzungen auch
+            // dann, wenn der Sitzungsspeicher nicht die Datenbank ist — das
+            // Löschen der `sessions`-Zeilen greift dort nicht.
+            \Illuminate\Session\Middleware\AuthenticateSession::class,
             RedirectIfNotInstalled::class,
             EnsureValidLicense::class,
             SecurityHeaders::class,
@@ -167,6 +172,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Auth, Org-Context, Locale, 2FA, Tracking oder Reverb (Abschnitt 6.2).
         $middleware->group('whistleblowing', [
             HandleDatabaseUnavailable::class,
+            // Eigenes Sitzungs-Cookie: die Portal-Sitzung darf nicht dieselbe
+            // Zeile sein wie die Anmeldung des Mitarbeiters (privacy-wb-1).
+            \App\Http\Middleware\UseAnonymousPortalSession::class,
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -181,6 +189,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // (sessionlos/Embed) und schuetzt sich ueber signierten Formularzustand.
         $middleware->group('careers', [
             HandleDatabaseUnavailable::class,
+            // Eigenes Sitzungs-Cookie: die Portal-Sitzung darf nicht dieselbe
+            // Zeile sein wie die Anmeldung des Mitarbeiters (privacy-wb-1).
+            \App\Http\Middleware\UseAnonymousPortalSession::class,
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -195,6 +206,9 @@ return Application::configure(basePath: dirname(__DIR__))
         // Inline-Styles, dafuer laeuft die Seite ganz ohne JavaScript.
         $middleware->group('dsar', [
             HandleDatabaseUnavailable::class,
+            // Eigenes Sitzungs-Cookie: die Portal-Sitzung darf nicht dieselbe
+            // Zeile sein wie die Anmeldung des Mitarbeiters (privacy-wb-1).
+            \App\Http\Middleware\UseAnonymousPortalSession::class,
             \Illuminate\Cookie\Middleware\EncryptCookies::class,
             \Illuminate\Session\Middleware\StartSession::class,
             \Illuminate\View\Middleware\ShareErrorsFromSession::class,
@@ -253,6 +267,9 @@ return Application::configure(basePath: dirname(__DIR__))
             'abilities' => \Laravel\Sanctum\Http\Middleware\CheckAbilities::class,
             // Kundenportal-Bereichsfreigaben (MVP-511): portal.capability:diary.
             'portal.capability' => \App\Http\Middleware\EnsurePortalCapability::class,
+            // Frische Anmeldung für Anmeldemittel-Änderungen (Audit 2026-09-17, authflow-1):
+            // `reauth` intern, `reauth:customer` im Portal.
+            'reauth' => \App\Http\Middleware\RequireRecentAuthentication::class,
         ]);
 
         // Der Backup-Heartbeat muss auch im Wartungsmodus durchkommen: das

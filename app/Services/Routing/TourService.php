@@ -69,15 +69,13 @@ class TourService {
     public function assignOrders(Tour $tour, array $orderIds): Tour {
         return DB::transaction(function () use ($tour, $orderIds): Tour {
             // Release previously assigned entries no longer in the list.
-            DiaryEntry::query()
-                ->where('tour_id', $tour->id)
-                ->whereNotIn('id', $orderIds)
-                ->update(['tour_id' => null, 'tour_position' => null, 'status' => DiaryStatus::Open->value]);
+            $this->releaseEntries(DiaryEntry::query()->where('tour_id', $tour->id)->whereNotIn('id', $orderIds));
 
             $position = 1;
             foreach ($orderIds as $orderId) {
                 $entry = DiaryEntry::query()->find($orderId);
-                if (! $entry instanceof DiaryEntry) {
+                // Aufträge einer anderen Tour bleiben dort (Sicherheitsaudit 2026-09-17, authz-tour-1).
+                if (! $entry instanceof DiaryEntry || ($entry->tour_id !== null && (int) $entry->tour_id !== (int) $tour->id)) {
                     continue;
                 }
                 $attrs = [
@@ -103,6 +101,19 @@ class TourService {
 
             return $tour->refresh();
         });
+    }
+
+    /**
+     * Löst Aufträge aus einer Tour. Zurückgesetzt wird nur der Status, den die
+     * Tour selbst gesetzt hat (In Bearbeitung → Offen); abgenommene,
+     * abgerechnete oder erledigte Aufträge behalten ihren Stand
+     * (Sicherheitsaudit 2026-09-17, authz-tour-1).
+     *
+     * @param  \Illuminate\Database\Eloquent\Builder<DiaryEntry>  $entries
+     */
+    public function releaseEntries(\Illuminate\Database\Eloquent\Builder $entries): void {
+        (clone $entries)->where('status', DiaryStatus::InProgress->value)->update(['status' => DiaryStatus::Open->value]);
+        $entries->update(['tour_id' => null, 'tour_position' => null]);
     }
 
     /**

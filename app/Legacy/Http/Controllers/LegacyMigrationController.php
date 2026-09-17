@@ -10,16 +10,25 @@
 
 namespace App\Legacy\Http\Controllers;
 
+use App\Http\Controllers\Concerns\RequiresPlatformOperator;
 use App\Http\Controllers\Controller;
 use App\Legacy\Http\Requests\RunLegacyMigrationRequest;
-use App\Models\{AuditLog, DiaryEntry, EmergencyAssignment, OnCallShift, User};
+use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\{Artisan, DB, Gate};
+use Illuminate\Support\Facades\{Artisan, DB};
 
+/**
+ * Legacy-Migration: liest die installationsweite Legacy-Datenbank und legt
+ * Konten an. Deshalb nur für den Plattform-Betreiber — ein Org-Admin konnte
+ * sonst Legacy-Daten in den eigenen Mandanten kopieren (Sicherheitsaudit
+ * 2026-09-17, tenant-legacy-1).
+ */
 class LegacyMigrationController extends Controller {
+    use RequiresPlatformOperator;
+
     public function index(): View {
-        Gate::authorize('viewAny', AuditLog::class);
+        $this->assertPlatformOperator();
 
         return view('admin.legacy-migration', [
             'stats' => $this->stats(),
@@ -28,6 +37,7 @@ class LegacyMigrationController extends Controller {
     }
 
     public function run(RunLegacyMigrationRequest $request): RedirectResponse {
+        $this->assertPlatformOperator();
         $type = $request->validated()['type'];
         $options = match ($type) {
             'users' => ['--users' => true],

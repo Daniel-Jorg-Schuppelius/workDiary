@@ -94,7 +94,7 @@ class LicenseStatusTransitionTest extends TestCase {
                 parent::__construct($files, $cache);
             }
 
-            protected function evaluate(?string $host): LicenseResult {
+            protected function evaluate(): LicenseResult {
                 $payload = new LicensePayload(
                     licensee: 'TestCo',
                     email: null,

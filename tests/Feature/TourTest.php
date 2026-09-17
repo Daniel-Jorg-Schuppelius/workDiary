@@ -328,6 +328,70 @@ class TourTest extends TestCase {
             ->assertSee('data-map', false);
     }
 
+    /** Sicherheitsaudit 2026-09-17 (authz-tour-1): fremde Aufträge lassen sich nicht in die eigene Tour ziehen. */
+    public function test_employee_cannot_pull_foreign_orders_or_reset_finished_ones(): void {
+        $employee = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $colleague = User::factory()->user()->create(['organization_id' => $this->organization->id]);
+        $tour = Tour::factory()->create(['organization_id' => $this->organization->id, 'user_id' => $employee->id, 'tour_date' => CarbonImmutable::today()->toDateString()]);
+        $foreign = DiaryEntry::factory()->for($colleague)->service()->create(['organization_id' => $this->organization->id, 'status' => DiaryStatus::Open]);
+        $own = DiaryEntry::factory()->for($employee)->service()->create(['organization_id' => $this->organization->id, 'status' => DiaryStatus::Open]);
+
+        $this->actingAs($employee)->put(route('tours.update', $tour), [
+            'user_id' => $employee->id,
+            'tour_date' => CarbonImmutable::today()->toDateString(),
+            'order_ids' => [$foreign->sqid, $own->sqid],
+        ])->assertRedirect();
+
+        $this->assertNull($foreign->fresh()?->tour_id);
+        $this->assertSame(DiaryStatus::Open, $foreign->fresh()?->status);
+        $this->assertSame($tour->id, (int) $own->fresh()?->tour_id);
+
+        // Abgerechnete Aufträge behalten beim Lösen ihren Status.
+        $own->forceFill(['status' => DiaryStatus::Invoiced])->saveQuietly();
+        app(TourService::class)->assignOrders($tour, []);
+        $this->assertSame(DiaryStatus::Invoiced, $own->fresh()?->status);
+        $this->assertNull($own->fresh()?->tour_id);
+
+        // Tour einem Kollegen unterschieben geht nur als Admin.
+        $this->actingAs($employee)->put(route('tours.update', $tour), [
+            'user_id' => $colleague->id,
+            'tour_date' => CarbonImmutable::today()->toDateString(),
+        ])->assertForbidden();
+    }
+
+    /** Sicherheitsaudit 2026-09-17 (S-18-Rest): Leaflet setzt Popups per innerHTML. */
+    public function test_map_popup_escapes_tour_and_driver_names(): void {
+        $admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+        $driver = User::factory()->create(['organization_id' => $this->organization->id, 'name' => '<b x-init="$el.click()">Fahrer</b>']);
+        $tour = Tour::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $driver->id,
+            'tour_date' => CarbonImmutable::today()->toDateString(),
+            'name' => '<img src=x onerror=alert(1)>',
+        ]);
+        $stop = DiaryEntry::factory()->service()->create([
+            'organization_id' => $this->organization->id,
+            'scheduled_for' => CarbonImmutable::today()->toDateString(),
+            'address_lat' => 52.5,
+            'address_lng' => 13.4,
+        ]);
+        app(TourService::class)->assignOrders($tour, [$stop->id]);
+
+        $html = $this->actingAs($admin)
+            ->get(route('tours.map', ['from' => CarbonImmutable::today()->toDateString(), 'to' => CarbonImmutable::today()->toDateString(), 'user' => 'all']))
+            ->assertOk()
+            ->getContent();
+
+        $this->assertMatchesRegularExpression('/data-map\s+x-ignore/', (string) $html);
+        preg_match('/data-config="([^"]+)"/', (string) $html, $match);
+        $config = json_decode(html_entity_decode($match[1] ?? '', ENT_QUOTES), true);
+        $popups = array_values(array_filter(array_column($config['markers'] ?? [], 'popup')));
+        $this->assertNotEmpty($popups);
+        $this->assertStringNotContainsString('<img', $popups[0]);
+        $this->assertStringNotContainsString('<b x-init', $popups[0]);
+        $this->assertStringContainsString('&lt;img src=x onerror=alert(1)&gt;', $popups[0]);
+    }
+
     public function test_routing_setting_override_resolves_from_organization(): void {
         $this->organization->forceFill([
             'settings' => ['routing' => ['osrm' => ['base_url' => 'http://osrm.internal:5000']]],

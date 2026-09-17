@@ -57,6 +57,11 @@ final class UrlSafetyTest extends TestCase {
             'fremder host'          => ['https://evil.example/phish', false],
             'protokoll-relativ'     => ['//evil.example/phish', false],
             'backslash-trick'       => ['/\\evil.example', false],
+            'backslash-authority'   => ['https://evil.example\\@app.local', false],
+            'tab-trick'             => ["/\t/evil.example", false],
+            'zeilenumbruch'         => ["/diary\r\nLocation: https://evil.example", false],
+            'userinfo'              => ['https://evil.example@app.local/diary', false],
+            'fremdes schema'        => ['javascript://app.local/%0Aalert(1)', false],
             'leer'                  => ['', false],
         ];
     }
@@ -64,5 +69,20 @@ final class UrlSafetyTest extends TestCase {
     #[DataProvider('redirectTargets')]
     public function test_same_origin_or_relative(string $url, bool $expected): void {
         $this->assertSame($expected, UrlSafety::isSameOriginOrRelative($url, 'app.local'), $url);
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (ssrf-5): Prüfung und Verbindung müssen
+     * dieselbe Adresse benutzen, sonst wechselt ein Angreifer-DNS dazwischen.
+     */
+    public function test_pinned_resolution_is_fail_closed(): void {
+        $this->assertNull(UrlSafety::pinnedResolution('https://kein-eintrag.invalid/hook'));
+        $this->assertNull(UrlSafety::pinnedResolution('https://127.0.0.1/hook'));
+        $this->assertNull(UrlSafety::pinnedResolution('ftp://example.com/hook'));
+
+        // IP-Literale sind bereits die Zieladresse — nichts zu binden.
+        $this->assertSame([], UrlSafety::pinnedResolution('https://93.184.216.34/hook'));
+        // Ausdrücklich freigegebenes internes Ziel bleibt erreichbar.
+        $this->assertSame([], UrlSafety::pinnedResolution('http://192.168.0.5:8080/hook', true));
     }
 }

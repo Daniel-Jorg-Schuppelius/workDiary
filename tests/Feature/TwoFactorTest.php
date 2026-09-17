@@ -107,7 +107,7 @@ class TwoFactorTest extends TestCase {
     public function test_webauthn_registration_options_endpoint_returns_challenge(): void {
         $user = User::factory()->user()->create(['is_new_system' => true]);
 
-        $response = $this->actingAs($user)->post(route('account.2fa.webauthn.options'));
+        $response = $this->withRecentAuthentication()->actingAs($user)->post(route('account.2fa.webauthn.options'));
 
         $response->assertOk();
         $this->assertArrayHasKey('challenge', $response->json());

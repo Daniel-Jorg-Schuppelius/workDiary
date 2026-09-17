@@ -197,7 +197,8 @@ class LegacyArchiveController extends Controller {
             $filterUserId = (int) $rawFilterUser;
         }
 
-        if (! $canViewAll && $legacyUserId > 0) {
+        // Ohne Gesamtsicht nur eigene Einträge — ohne Legacy-Konto (ID ≤ 0) also keine (fail-closed).
+        if (! $canViewAll) {
             $diaryQuery->where('user', $legacyUserId);
             $onCallQuery->where('user', $legacyUserId);
             $notdienstQuery->where('user', $legacyUserId);
@@ -270,6 +271,8 @@ class LegacyArchiveController extends Controller {
     }
 
     public function show(LegacyArchiveDiaryEntry $entry): View|Response {
+        // Dieselbe Grenze wie in der Liste: fortlaufende IDs dürfen nichts Fremdes öffnen (idor-legacy-1/-3).
+        abort_unless(self::mayViewEntry((int) $entry->user), 404);
         $entry->load('mitarbeiter:id,uname');
 
         if (request()->boolean('dialog')) {
@@ -337,5 +340,14 @@ class LegacyArchiveController extends Controller {
             'success',
             'Archivierung abgeschlossen: ' . $result['total'] . ' Datensaetze verschoben (Auftraege ' . $result['diary'] . ', Bereitschaft ' . $result['oncall'] . ', Notdienst ' . $result['notdienst'] . ').'
         );
+    }
+
+    /** Gesamtsicht (Legacy-Admin, Buchhaltung, Plattform-Betreiber) oder eigener Eintrag. */
+    public static function mayViewEntry(int $entryUserId): bool {
+        /** @var User $user */
+        $user = Auth::user();
+        $legacyUserId = LegacyRoleResolver::resolveLegacyUserId($user);
+
+        return $user->canViewAllLegacyData() || $user->isGlobalAdmin() || ($legacyUserId > 0 && $entryUserId === $legacyUserId);
     }
 }

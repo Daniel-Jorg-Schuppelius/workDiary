@@ -45,9 +45,10 @@ class PluginHttpFactory {
      * ignoriert das Intervall, damit Tests nicht real schlafen.
      */
     public function client(string $pluginId, string $baseUrl, float $requestInterval = 0.0, ?bool $allowPrivateNetwork = null): PluginApiClient {
+        $allowPrivateNetwork ??= $this->allowsPrivateNetwork($pluginId);
         $this->assertTargetAllowed($pluginId, $baseUrl, $allowPrivateNetwork);
 
-        $client = new PluginApiClient($pluginId, $baseUrl);
+        $client = new PluginApiClient($pluginId, $baseUrl, null, $allowPrivateNetwork);
         $interval = $requestInterval > 0 ? $requestInterval : self::configuredRequestInterval($pluginId);
         if ($interval > 0) {
             $client->setRequestInterval(min($interval, self::MAX_REQUEST_INTERVAL));

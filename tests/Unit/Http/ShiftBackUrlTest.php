@@ -29,6 +29,8 @@ final class ShiftBackUrlTest extends TestCase {
         yield 'Backslash-Trick' => ['/\\evil.example/login', '/fallback'];
         yield 'javascript' => ['javascript:alert(1)', '/fallback'];
         yield 'Schema ohne Host' => ['https:evil.example', '/fallback'];
+        yield 'Backslash-Authority' => ['https://evil.example\\@app.example.test/x', '/fallback'];
+        yield 'Tab-Trick' => ["/\t/evil.example", '/fallback'];
         yield 'leer' => ['', '/fallback'];
     }
 

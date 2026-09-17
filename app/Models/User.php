@@ -178,10 +178,14 @@ class User extends Authenticatable implements \Illuminate\Contracts\Translation\
 
     /**
      * Darf der User den Legacy-Bereich der Anwendung nutzen?
-     * Admins haben immer Zugriff.
+     *
+     * Die Legacy-Datenbank gehört der Installation, nicht einem Mandanten:
+     * die org-lokale Admin-Rolle öffnet sie deshalb nicht mehr, sondern nur
+     * ein Legacy-Konto, ein Legacy-Admin oder der Plattform-Betreiber
+     * (Sicherheitsaudit 2026-09-17, tenant-legacy-2).
      */
     public function canAccessLegacy(): bool {
-        return $this->isAdmin() || $this->existsInLegacy();
+        return $this->isGlobalAdmin() || LegacyBridge::isLegacyAdmin($this) || $this->existsInLegacy();
     }
 
     /**

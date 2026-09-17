@@ -16,7 +16,7 @@ use Illuminate\Console\Command;
 
 class ShowCommand extends Command {
     protected $signature = 'license:show
-        {--host= : Domain für die Prüfung simulieren}
+        {--host= : Domain für die Prüfung simulieren (sonst der Host aus app.url)}
         {--org= : Organisation (license_uid oder ID) – zeigt deren org-gebundene Lizenz}';
 
     protected $description = 'Zeigt Status und Inhalt der installierten Lizenz (global oder org-gebunden mit --org).';
@@ -37,7 +37,14 @@ class ShowCommand extends Command {
             $service->flushOrganization($org);
             $result = $service->forOrganization($org);
         } else {
-            $result = $service->current($this->option('host') ?: null);
+            // Die laufende Bewertung hängt am Host aus `app.url` (Audit
+            // 2026-09-17, license-1); `--host` simuliert einen anderen, ohne
+            // den installationsweiten Cache zu berühren.
+            $host = $this->option('host');
+            $key = $service->rawKey();
+            $result = (is_string($host) && $host !== '' && $key !== null)
+                ? $service->verify($key, $host)
+                : $service->current();
         }
 
         $this->line('Status   : ' . $result->status->value);

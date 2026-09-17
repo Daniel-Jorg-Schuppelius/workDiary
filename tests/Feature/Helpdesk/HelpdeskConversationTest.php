@@ -153,6 +153,46 @@ final class HelpdeskConversationTest extends TestCase {
         $this->assertSame(2, ServiceTicketMessage::query()->where('service_ticket_id', $ticket->id)->count());
     }
 
+    /**
+     * Sicherheitsaudit 2026-09-17 (ingress-1): Ticketnummern sind fortlaufend
+     * und stehen in jeder Kundenmail. Der Betreff-Weg gilt daher nur für
+     * Absender, die zum Vorgang gehören.
+     */
+    public function test_subject_threading_requires_a_known_sender(): void {
+        [, $connection] = $this->queueWithMailbox();
+        $customer = \App\Models\Customer::factory()->create([
+            'organization_id' => $this->org->id,
+            'email' => 'kunde@acme.test',
+        ]);
+        $ticket = $this->ticket(['customer_id' => $customer->id]);
+
+        $fremd = new ParsedMessage(
+            messageId: '<fremd-1@angreifer>',
+            uid: 20,
+            fromEmail: 'angreifer@fremd.test',
+            fromName: 'Fremd',
+            subject: 'Rechnung [' . $ticket->ticket_no . ']',
+            body: 'Bitte Anhang beachten.',
+            receivedAt: Carbon::now(),
+        );
+
+        $this->assertNotSame('ticket_message', app(MailIntakeService::class)->intake($this->org, $connection, $fremd));
+        $this->assertSame(0, ServiceTicketMessage::query()->where('service_ticket_id', $ticket->id)->count());
+
+        $bekannt = new ParsedMessage(
+            messageId: '<kunde-1@acme>',
+            uid: 21,
+            fromEmail: 'Kunde@Acme.test',
+            fromName: 'Kunde',
+            subject: 'Nachfrage [' . $ticket->ticket_no . ']',
+            body: 'Gibt es Neues?',
+            receivedAt: Carbon::now(),
+        );
+
+        $this->assertSame('ticket_message', app(MailIntakeService::class)->intake($this->org, $connection, $bekannt));
+        $this->assertSame(1, ServiceTicketMessage::query()->where('service_ticket_id', $ticket->id)->count());
+    }
+
     public function test_spoofed_foreign_message_id_does_not_thread(): void {
         [, $connection] = $this->queueWithMailbox();
 

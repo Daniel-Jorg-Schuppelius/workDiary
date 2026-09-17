@@ -11,7 +11,7 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{Organization, SsoConnection, SsoIdentity, User};
+use App\Models\{Organization, OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Jose\Component\Core\{AlgorithmManager, JWK};
 use Jose\Component\KeyManagement\JWKFactory;
@@ -67,6 +67,15 @@ final class OidcLoginTest extends TestCase {
             self::ISSUER . '/jwks' => FakePluginHttp::response([
                 'keys' => [$this->idpKey->toPublic()->jsonSerialize()],
             ]),
+        ]);
+    }
+
+    /** Nachgewiesene SSO-Domain der Organisation — Voraussetzung für E-Mail-Verknüpfung und JIT. */
+    private function verifyDomain(string $domain = 'example.org'): void {
+        OrganizationSsoDomain::query()->create([
+            'organization_id' => $this->organization->id,
+            'domain' => $domain,
+            'verified_at' => now(),
         ]);
     }
 
@@ -219,12 +228,13 @@ final class OidcLoginTest extends TestCase {
 
     public function test_email_link_optin_links_exactly_one_account(): void {
         $this->connection->forceFill(['allow_email_link' => true])->save();
+        $this->verifyDomain();
         $user = User::factory()->create([
             'organization_id' => $this->organization->id,
             'email' => 'person@example.org',
         ]);
 
-        $this->runFlow(['email' => 'person@example.org'])->assertRedirect();
+        $this->runFlow(['email' => 'person@example.org', 'email_verified' => true])->assertRedirect();
 
         $this->assertAuthenticatedAs($user);
         $this->assertDatabaseHas('sso_identities', [
@@ -236,13 +246,44 @@ final class OidcLoginTest extends TestCase {
 
     public function test_email_link_never_crosses_tenant_boundary(): void {
         $this->connection->forceFill(['allow_email_link' => true])->save();
+        $this->verifyDomain();
         $foreignOrg = Organization::factory()->create();
         User::factory()->create([
             'organization_id' => $foreignOrg->id,
             'email' => 'person@example.org',
         ]);
 
+        $this->runFlow(['email' => 'person@example.org', 'email_verified' => true])->assertRedirect(route('login'));
+        $this->assertGuest();
+        $this->assertSame(0, SsoIdentity::query()->count());
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (sso-2): Ohne `email_verified` ist die
+     * Adresse im IdP-Profil frei setzbar — sie darf kein Konto öffnen.
+     */
+    public function test_email_link_requires_verified_email_claim(): void {
+        $this->connection->forceFill(['allow_email_link' => true])->save();
+        $this->verifyDomain();
+        User::factory()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'person@example.org',
+        ]);
+
         $this->runFlow(['email' => 'person@example.org'])->assertRedirect(route('login'));
+        $this->assertGuest();
+        $this->assertSame(0, SsoIdentity::query()->count());
+    }
+
+    /** Sicherheitsaudit 2026-09-17 (sso-1): fremde Mail-Domain verknüpft nichts. */
+    public function test_email_link_requires_verified_domain(): void {
+        $this->connection->forceFill(['allow_email_link' => true])->save();
+        User::factory()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'person@example.org',
+        ]);
+
+        $this->runFlow(['email' => 'person@example.org', 'email_verified' => true])->assertRedirect(route('login'));
         $this->assertGuest();
         $this->assertSame(0, SsoIdentity::query()->count());
     }
@@ -264,9 +305,10 @@ final class OidcLoginTest extends TestCase {
 
     public function test_sso_never_creates_accounts(): void {
         $this->connection->forceFill(['allow_email_link' => true])->save();
+        $this->verifyDomain();
         $before = User::query()->count();
 
-        $this->runFlow(['email' => 'nobody@example.org'])->assertRedirect(route('login'));
+        $this->runFlow(['email' => 'nobody@example.org', 'email_verified' => true])->assertRedirect(route('login'));
 
         $this->assertGuest();
         $this->assertSame($before, User::query()->count(), 'SSO darf nie Konten anlegen.');

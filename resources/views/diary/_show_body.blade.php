@@ -113,7 +113,7 @@
         {{-- Vom Auftrag in die Auswertung (MVP-807, Entscheid P2-06): nur wer die
              Analyse sehen darf (Tarif und Recht), bekommt den Link. Inline-Form wie im
              Rest der Datei — ein PHP-Block daneben bringt den Blade-Compiler aus dem Tritt. --}}
-        @php($mayOpenReport = static fn (string $route): bool => app(\App\Services\Licensing\FeatureFlagResolver::class)->routeEnabled($route) && app(\App\Services\Navigation\NavGate::class)->mayAccess($route))
+        @php($mayOpenReport = static fn (string $route): bool => app(\App\Services\Licensing\FeatureFlagResolver::class)->routeEnabled($route) && app(\App\Services\Navigation\NavGate::class)->mayAccess($route) && \App\Http\Controllers\Reporting\CustomerAnalysisReportController::mayViewTeamReports(auth()->user()))
         @if ($diary->customer)
             <div class="rounded-xl border border-base-300 bg-base-200 px-4 py-3">
                 <p class="mb-1 text-xs text-muted">{{ __('Kunde') }}</p>

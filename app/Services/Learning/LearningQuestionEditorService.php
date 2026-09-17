@@ -145,7 +145,14 @@ class LearningQuestionEditorService {
             }
 
             $imageId = $question->settings['image_attachment_id'] ?? null;
-            $image = $imageId !== null ? Attachment::query()->find((int) $imageId) : null;
+            // Nur das Bild genau dieser Frage kopieren: die ID steht in frei
+            // importierbaren Settings (Sicherheitsaudit 2026-09-17, files-idor-1).
+            $image = $imageId !== null
+                ? Attachment::query()
+                    ->where('attachable_type', $question->getMorphClass())
+                    ->where('attachable_id', $question->id)
+                    ->find((int) $imageId)
+                : null;
             if ($image !== null) {
                 // Eigene Datei je Frage — sonst risse das Löschen der einen
                 // Frage der anderen das Bild weg.

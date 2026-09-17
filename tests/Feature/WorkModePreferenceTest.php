@@ -35,13 +35,22 @@ class WorkModePreferenceTest extends TestCase {
     }
 
     public function test_preferred_work_mode_reflects_stored_value_for_dual_access(): void {
-        // Admin = Zugriff auf beide Bereiche → kein Normalisieren des Werts.
-        $user = User::factory()->admin()->create();
+        // Zugriff auf beide Bereiche → kein Normalisieren des Werts. Seit dem
+        // Datenfluss-Audit 2026-09-17 (tenant-legacy-2) genügt dafür die
+        // Org-Admin-Rolle nicht mehr: es braucht einen Legacy-Bezug.
+        $user = User::factory()->admin()->create(['legacy_user_id' => 1, 'is_new_system' => true]);
 
         $this->assertSame('legacy', $user->preferredWorkMode(), 'Default ohne gespeicherten Wert.');
 
         $user->setPreference('work_mode', 'new');
         $this->assertSame('new', $user->fresh()->preferredWorkMode());
+    }
+
+    /** Ohne Legacy-Bezug gibt es nichts zu wählen — der Default ist der neue Bereich. */
+    public function test_preferred_work_mode_is_new_without_legacy_binding(): void {
+        $user = User::factory()->admin()->create(['legacy_user_id' => null, 'is_new_system' => true]);
+
+        $this->assertSame('new', $user->preferredWorkMode());
     }
 
     public function test_switch_mode_route_persists_into_preferences(): void {

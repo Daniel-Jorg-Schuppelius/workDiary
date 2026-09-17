@@ -1122,7 +1122,10 @@ class NavigationRegistry {
                     'label' => __('Projekte & Kunden'),
                     'icon' => 'folder_special',
                     'items' => $this->compactItems([
-                        ['route' => 'reports.customers', 'label' => __('Kundenanalyse'), 'icon' => 'bar_chart', 'modal' => false, 'matches' => ['reports.customers']],
+                        // Team-Analysen (Sicherheitsaudit 2026-09-17): nur report.view/Admin.
+                        \App\Http\Controllers\Reporting\CustomerAnalysisReportController::mayViewTeamReports($user)
+                            ? ['route' => 'reports.customers', 'label' => __('Kundenanalyse'), 'icon' => 'bar_chart', 'modal' => false, 'matches' => ['reports.customers']]
+                            : null,
                         // Kundenwert/Kundenbindung (MVP-465/466): Erlösdaten → nur report.view/Admin.
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.customer-value', 'label' => __('Kundenwert'), 'icon' => 'diamond', 'modal' => false, 'matches' => ['reports.customer-value']]
@@ -1130,8 +1133,12 @@ class NavigationRegistry {
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
                             ? ['route' => 'reports.customer-retention', 'label' => __('Kundenbindung'), 'icon' => 'favorite', 'modal' => false, 'matches' => ['reports.customer-retention']]
                             : null,
-                        ['route' => 'reports.entry-types', 'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']],
-                        ['route' => 'reports.assets', 'label' => __('Produktanalyse'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['reports.assets']],
+                        \App\Http\Controllers\Reporting\CustomerAnalysisReportController::mayViewTeamReports($user)
+                            ? ['route' => 'reports.entry-types', 'label' => __('Auftragstypanalyse'), 'icon' => 'stacked_bar_chart', 'modal' => false, 'matches' => ['reports.entry-types']]
+                            : null,
+                        \App\Http\Controllers\Reporting\CustomerAnalysisReportController::mayViewTeamReports($user)
+                            ? ['route' => 'reports.assets', 'label' => __('Produktanalyse'), 'icon' => 'inventory_2', 'modal' => false, 'matches' => ['reports.assets']]
+                            : null,
                         ['route' => 'reports.customer-project', 'label' => __('Kunden & Projekte'), 'icon' => 'pie_chart', 'modal' => false, 'matches' => ['reports.customer-project']],
                         // MVP-514 P3: aufgeteilte Zeit je Dimension (Feature 103).
                         ($user?->isAdmin() || $user?->can(Permission::ReportView->value))
@@ -1936,7 +1943,10 @@ class NavigationRegistry {
                     $pluginPanelRoutes[] = (string) $panel['route'];
                 }
             }
-            $adminNavItems[] = ['route' => 'admin.legacy-migration.index', 'label' => __('Legacy-Migration'), 'icon' => 'sync_alt', 'modal' => false];
+            // Legacy-Migration ist installationsweit (Sicherheitsaudit 2026-09-17): nur der Plattform-Betreiber.
+            if ($isPlatformAdmin) {
+                $adminNavItems[] = ['route' => 'admin.legacy-migration.index', 'label' => __('Legacy-Migration'), 'icon' => 'sync_alt', 'modal' => false];
+            }
         }
         if (! $isLegacyMode && (Gate::allows('manage-members') || $user->can(Permission::UserPayrollManage->value))) {
             // Admin ODER Personalverwaltung/GF (Personal-/Lohndaten + Arbeitszeit-Modell).

@@ -82,7 +82,8 @@ class SupportReportControllerTest extends TestCase {
         $payload = json_decode((string) $response->getContent(), true);
         $this->assertIsArray($payload);
         $this->assertArrayHasKey('release', $payload);
-        $this->assertArrayHasKey('health', $payload);
+        // Betriebszustand der Installation nur im Betreiber-Bericht (Sicherheitsaudit 2026-09-17).
+        $this->assertSame('organization', $payload['scope']);
 
         $this->assertDatabaseHas('audit_logs', [
             'user_id' => $admin->id,
@@ -99,12 +100,27 @@ class SupportReportControllerTest extends TestCase {
     }
 
     public function test_browser_preview_returns_json_payload(): void {
-        $admin = User::factory()->admin()->create();
+        $admin = User::factory()->admin()->platformAdmin()->create();
 
         $this->actingAs($admin)
             ->get(route('admin.support.report.preview'))
             ->assertOk()
-            ->assertJsonStructure(['installation', 'release', 'health', 'plugin_errors', 'operations']);
+            ->assertJsonStructure(['installation', 'release', 'health', 'plugin_errors', 'operations', 'log_tail', 'failed_jobs']);
+    }
+
+    /** Sicherheitsaudit 2026-09-17 (authz-support-1): Org-Admins sehen keine installationsweiten Daten. */
+    public function test_org_admin_preview_leaves_out_installation_wide_data(): void {
+        $admin = User::factory()->admin()->create();
+
+        $json = $this->actingAs($admin)
+            ->get(route('admin.support.report.preview'))
+            ->assertOk()
+            ->assertJsonPath('scope', 'organization')
+            ->json();
+
+        foreach (['log_tail', 'failed_jobs', 'table_row_counts', 'diagnostics', 'configuration', 'plugin_errors', 'operations', 'audit_event_counts', 'health'] as $key) {
+            $this->assertArrayNotHasKey($key, $json, $key);
+        }
     }
 
     public function test_browser_preview_forbidden_for_regular_user(): void {

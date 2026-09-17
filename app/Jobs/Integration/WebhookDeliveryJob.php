@@ -83,6 +83,17 @@ class WebhookDeliveryJob implements ShouldQueue {
             return;
         }
 
+        // Auflösung und Verbindung koppeln (Sicherheitsaudit 2026-09-17,
+        // ssrf-5): ohne Bindung löst cURL beim Verbinden erneut auf, und ein
+        // Angreifer-DNS mit TTL 0 zeigt dann nach innen. Ohne Bindung wird
+        // nicht zugestellt.
+        $pin = \App\Support\UrlSafety::pinnedResolution((string) $endpoint->url);
+        if ($pin === null) {
+            $this->markFailure($delivery, $endpoint, 'Blocked: unresolvable or non-public host');
+
+            return;
+        }
+
         $signature = $this->sign($endpoint->secret);
 
         try {
@@ -103,6 +114,7 @@ class WebhookDeliveryJob implements ShouldQueue {
                     'Content-Type' => 'application/json',
                 ],
                 'body' => $this->body,
+                ...($pin !== [] ? ['curl' => [CURLOPT_RESOLVE => $pin]] : []),
             ]);
 
             $status = $response->status();

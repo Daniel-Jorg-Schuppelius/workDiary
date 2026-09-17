@@ -20,11 +20,14 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class EntryTypeDrilldownReportController extends Controller {
     use BuildsOpenIssueDrilldown;
+    use Concerns\RequiresTeamReportAccess;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         $range = $this->globalDateRange();
         [$from, $to] = $this->globalDateRangeBounds();
 
@@ -102,6 +105,8 @@ class EntryTypeDrilldownReportController extends Controller {
     }
 
     public function protocols(Request $request): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         $range = $this->globalDateRange();
         [$from, $to] = $this->globalDateRangeBounds();
 

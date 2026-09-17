@@ -22,6 +22,7 @@ use Illuminate\View\View;
 use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 
 class CustomerAnalysisReportController extends Controller {
+    use Concerns\RequiresTeamReportAccess;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
@@ -30,6 +31,8 @@ class CustomerAnalysisReportController extends Controller {
     public function __construct(private readonly CustomerAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         [$from, $to] = $this->resolveRange($request);
 
         $minMinutes = max(0, (int) $request->integer('min_minutes', 0));

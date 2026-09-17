@@ -36,6 +36,12 @@ class AuthEventSubscriber {
     public function handleLogin(Login $event): void {
         $this->logForUser($event->user, 'auth.login');
 
+        // Eine gerade abgeschlossene Anmeldung zählt als Bestätigung: die
+        // `reauth`-Schranke vor Passkey, API-Token und E-Mail-Wechsel soll
+        // nur ältere, womöglich übernommene Sitzungen aufhalten
+        // (Sicherheitsaudit 2026-09-17, authflow-1).
+        \App\Support\Auth\RecentAuthentication::confirm(request());
+
         if ($event->user instanceof User) {
             try {
                 // Impossible Travel (MVP-449) VOR touch(): danach ist die

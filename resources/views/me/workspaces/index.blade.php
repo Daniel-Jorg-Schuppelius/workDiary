@@ -57,11 +57,9 @@
                         </td>
                         <td class="text-right tabular-nums">{{ count($workspace->keys()) }}</td>
                         <td class="text-right whitespace-nowrap">
-                            <x-icon-btn icon="play_arrow"
-                                        tone="primary"
-                                        data-workspace-activate
-                                        data-url="{{ route('me.focus.switch', $key) }}"
-                                        :label="__('scope.focus.switcher')" />
+                            <x-action-form :action="route('me.focus.switch', $key)" class="inline-flex">
+                                <x-icon-btn icon="play_arrow" tone="primary" type="submit" :label="__('scope.focus.switcher')" />
+                            </x-action-form>
                             <x-icon-btn icon="edit"
                                         data-entry-modal-trigger
                                         :href="route('me.workspaces.edit', $workspace)"

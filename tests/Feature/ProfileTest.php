@@ -32,7 +32,7 @@ class ProfileTest extends TestCase {
     public function test_user_can_update_name_and_email(): void {
         $user = User::factory()->user()->create(['name' => 'Alt', 'email' => 'alt@example.test']);
 
-        $this->actingAs($user)->put(route('account.profile.update'), [
+        $this->withRecentAuthentication()->actingAs($user)->put(route('account.profile.update'), [
             'name' => 'Neu',
             'email' => 'neu@example.test',
         ])->assertRedirect();
@@ -46,7 +46,7 @@ class ProfileTest extends TestCase {
         User::factory()->user()->create(['email' => 'taken@example.test']);
         $user = User::factory()->user()->create();
 
-        $this->actingAs($user)->put(route('account.profile.update'), [
+        $this->withRecentAuthentication()->actingAs($user)->put(route('account.profile.update'), [
             'name' => $user->name,
             'email' => 'taken@example.test',
         ])->assertSessionHasErrors('email');

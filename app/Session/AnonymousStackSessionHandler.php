@@ -50,6 +50,25 @@ final class AnonymousStackSessionHandler extends DatabaseSessionHandler {
         return parent::addRequestInformation($payload);
     }
 
+    /**
+     * Keine Kontobindung in der Sitzungszeile der anonymen Portale: `user_id`
+     * käme aus dem Standard-Guard und zeigte auf den angemeldeten Mitarbeiter
+     * (Sicherheitsaudit 2026-09-17, privacy-wb-1). Zusätzlich zur Cookie-Trennung
+     * ({@see \App\Http\Middleware\UseAnonymousPortalSession}) — doppelt hält.
+     *
+     * @param  array<mixed>  $payload
+     * @return $this
+     */
+    protected function addUserInformation(&$payload) {
+        if ($this->onAnonymousStack()) {
+            $payload = array_merge($payload, ['user_id' => null]);
+
+            return $this;
+        }
+
+        return parent::addUserInformation($payload);
+    }
+
     private function onAnonymousStack(): bool {
         $container = $this->container;
         if ($container === null || ! $container->bound('request')) {

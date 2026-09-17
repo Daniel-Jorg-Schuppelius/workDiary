@@ -41,7 +41,9 @@ class DiaryController extends Controller {
         ],
     )]
     public function index(Request $request): AnonymousResourceCollection {
-        $q = DiaryEntry::query()->with(['user:id,name', 'tags']);
+        /** @var User $user */
+        $user = Auth::user();
+        $q = DiaryEntry::query()->visibleInBulkTo($user)->with(['user:id,name', 'tags']);
 
         if ($request->filled('status') && $request->status !== 'all') {
             $q->where('status', (int) $request->status);

@@ -11,7 +11,7 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{Organization, SsoConnection, SsoIdentity, User};
+use App\Models\{Organization, OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
 use App\Services\Auth\Sso\{EntraIssuer, SsoLoginException, SsoLoginService};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
@@ -36,6 +36,15 @@ final class SsoEntraHardeningTest extends TestCase {
         $this->setUpOrganization(['plan' => Organization::PLAN_ENTERPRISE]);
         app(PermissionRegistrar::class)->setPermissionsTeamId($this->organization->id);
         $this->admin = User::factory()->admin()->create(['organization_id' => $this->organization->id]);
+    }
+
+    /** Nachgewiesene SSO-Domain — Voraussetzung für JIT und E-Mail-Verknüpfung (Audit 2026-09-17). */
+    private function verifyDomain(string $domain = 'firma.example'): void {
+        OrganizationSsoDomain::query()->create([
+            'organization_id' => $this->organization->id,
+            'domain' => $domain,
+            'verified_at' => now(),
+        ]);
     }
 
     /** @param array<string, mixed> $attributes */
@@ -116,10 +125,11 @@ final class SsoEntraHardeningTest extends TestCase {
             'issuer' => 'https://login.microsoftonline.com/11111111-2222-3333-4444-555555555555/v2.0',
             'allow_email_link' => true, // Alt-Konfiguration vor dem Guard
         ]);
+        $this->verifyDomain();
         User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'opfer@firma.example']);
 
         $this->expectException(SsoLoginException::class);
-        app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'attacker-sub', 'email' => 'opfer@firma.example']);
+        app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'attacker-sub', 'email' => 'opfer@firma.example', 'email_verified' => true]);
     }
 
     // ── JIT-Provisioning (G2) ───────────────────────────────────────────
@@ -133,9 +143,10 @@ final class SsoEntraHardeningTest extends TestCase {
 
     public function test_jit_creates_new_user_with_default_role_once(): void {
         $connection = $this->connection(['jit_provisioning' => true, 'jit_role' => 'user']);
+        $this->verifyDomain();
 
         $user = app(SsoLoginService::class)->resolveUser($connection, [
-            'subject' => 'neu-1', 'email' => 'Neu@Firma.example', 'name' => 'Neue Person',
+            'subject' => 'neu-1', 'email' => 'Neu@Firma.example', 'name' => 'Neue Person', 'email_verified' => true,
         ]);
 
         $this->assertSame('neu@firma.example', $user->email);
@@ -147,17 +158,18 @@ final class SsoEntraHardeningTest extends TestCase {
         $this->assertDatabaseHas('audit_logs', ['event' => 'sso.user_provisioned']);
 
         // Zweiter Login derselben Identität: kein zweites Konto.
-        $again = app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'neu-1', 'email' => 'neu@firma.example']);
+        $again = app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'neu-1', 'email' => 'neu@firma.example', 'email_verified' => true]);
         $this->assertSame($user->id, $again->id);
         $this->assertSame(1, SsoIdentity::query()->where('sso_connection_id', $connection->id)->count());
     }
 
     public function test_jit_rejects_email_collision_instead_of_linking(): void {
         $connection = $this->connection(['jit_provisioning' => true]);
+        $this->verifyDomain();
         $existing = User::factory()->create(['organization_id' => $this->organization->id, 'email' => 'kollision@firma.example']);
 
         try {
-            app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'fremd-1', 'email' => 'kollision@firma.example']);
+            app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'fremd-1', 'email' => 'kollision@firma.example', 'email_verified' => true]);
             $this->fail('SsoLoginException erwartet.');
         } catch (SsoLoginException) {
             // erwartet — niemals stilles Verknüpfen (nOAuth-Schutz).
@@ -172,5 +184,39 @@ final class SsoEntraHardeningTest extends TestCase {
 
         $this->expectException(SsoLoginException::class);
         app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'ohne-mail', 'email' => null]);
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (sso-1): Ohne nachgewiesene Domain legte ein
+     * Preset (z. B. Google) für jedes beliebige Fremdkonto ein Konto an.
+     */
+    public function test_jit_requires_verified_organization_domain(): void {
+        $connection = $this->connection(['jit_provisioning' => true]);
+        $before = User::query()->count();
+
+        try {
+            app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'fremd-2', 'email' => 'wer@gmail.example', 'email_verified' => true]);
+            $this->fail('SsoLoginException erwartet.');
+        } catch (SsoLoginException) {
+            // erwartet
+        }
+
+        $this->assertSame($before, User::query()->count());
+    }
+
+    /** Sicherheitsaudit 2026-09-17 (sso-2): unbestätigte OIDC-E-Mail legt kein Konto an. */
+    public function test_jit_requires_verified_email_claim(): void {
+        $connection = $this->connection(['jit_provisioning' => true]);
+        $this->verifyDomain();
+        $before = User::query()->count();
+
+        try {
+            app(SsoLoginService::class)->resolveUser($connection, ['subject' => 'neu-2', 'email' => 'neu@firma.example']);
+            $this->fail('SsoLoginException erwartet.');
+        } catch (SsoLoginException) {
+            // erwartet
+        }
+
+        $this->assertSame($before, User::query()->count());
     }
 }

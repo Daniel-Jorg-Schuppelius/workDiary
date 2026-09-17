@@ -56,7 +56,13 @@ class SupportReportBuilder {
     ) {}
 
     /**
-     * @param  array{include_samples?:bool,include_schema?:bool,log_tail?:int,failed_jobs_limit?:int}  $options
+     * `platform_scope` = false (Org-Admin ohne Betreiberrolle) lässt alles weg,
+     * was die ganze Installation zeigt — Log, fehlgeschlagene Jobs, Tabellen-
+     * größen, Diagnose, Konfiguration, globale Zähler (Sicherheitsaudit
+     * 2026-09-17, authz-support-1; S-02 hatte das nur für Diagnose und
+     * System-Einstellungen geschlossen).
+     *
+     * @param  array{include_samples?:bool,include_schema?:bool,log_tail?:int,failed_jobs_limit?:int,platform_scope?:bool}  $options
      * @return array<string, mixed>
      */
     public function build(array $options = []): array {
@@ -64,7 +70,27 @@ class SupportReportBuilder {
         $logTail = max(1, min(2000, (int) ($options['log_tail'] ?? 500)));
         $failedJobsLimit = max(1, min(1000, (int) ($options['failed_jobs_limit'] ?? 200)));
 
+        if (! ($options['platform_scope'] ?? true)) {
+            return [
+                'generated_at' => $generatedAt->toIso8601String(),
+                'schema_version' => 2,
+                'scope' => 'organization',
+                'installation' => $this->installation(),
+                'release' => $this->release(),
+                'composer' => $this->composerHashes(),
+                'npm' => $this->npmHashes(),
+                'migrations' => $this->migrations(),
+                'scheduler' => $this->schedulerSnapshot(),
+                'updates' => $this->updatesSnapshot(),
+                'options' => [
+                    'include_samples' => false,
+                    'include_schema' => (bool) ($options['include_schema'] ?? false),
+                ],
+            ];
+        }
+
         return [
+            'scope' => 'platform',
             'generated_at' => $generatedAt->toIso8601String(),
             'schema_version' => 2,
             'installation' => $this->installation(),

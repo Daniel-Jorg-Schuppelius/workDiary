@@ -11,7 +11,7 @@
 namespace Tests\Feature\Sso;
 
 use App\Enums\Auth\SsoProtocol;
-use App\Models\{Organization, SsoConnection, SsoIdentity, User};
+use App\Models\{Organization, OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use OneLogin\Saml2\Utils;
 use RobRichards\XMLSecLibs\{XMLSecurityDSig, XMLSecurityKey};
@@ -272,6 +272,7 @@ final class SamlLoginTest extends TestCase {
 
     public function test_email_optin_links_saml_name_id(): void {
         $this->connection->forceFill(['allow_email_link' => true])->save();
+        $this->verifyDomain();
         $user = User::factory()->create([
             'organization_id' => $this->organization->id,
             'email' => 'user@example.org',
@@ -284,6 +285,31 @@ final class SamlLoginTest extends TestCase {
             'sso_connection_id' => $this->connection->id,
             'user_id' => $user->id,
             'subject' => 'user@example.org',
+        ]);
+    }
+
+    /**
+     * Sicherheitsaudit 2026-09-17 (sso-1): SAML kennt kein `email_verified`,
+     * daher trägt die nachgewiesene Organisationsdomain die Verknüpfung allein.
+     */
+    public function test_email_optin_requires_verified_domain(): void {
+        $this->connection->forceFill(['allow_email_link' => true])->save();
+        User::factory()->create([
+            'organization_id' => $this->organization->id,
+            'email' => 'user@example.org',
+        ]);
+
+        $this->postAcs($this->samlResponse())->assertRedirect(route('login'));
+        $this->assertGuest();
+        $this->assertSame(0, SsoIdentity::query()->count());
+    }
+
+    /** Nachgewiesene SSO-Domain der Organisation. */
+    private function verifyDomain(string $domain = 'example.org'): void {
+        OrganizationSsoDomain::query()->create([
+            'organization_id' => $this->organization->id,
+            'domain' => $domain,
+            'verified_at' => now(),
         ]);
     }
 

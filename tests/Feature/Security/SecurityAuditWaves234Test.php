@@ -163,6 +163,11 @@ class SecurityAuditWaves234Test extends TestCase {
         $this->assertTrue($this->ftpOptions()->ssl(), 'Der FTP-Abruf liefe ohne TLS.');
     }
 
+    /** Sicherheitsaudit 2026-09-17 (ssrf-3): der Datenkanal folgt nicht der PASV-Adresse des Servers. */
+    public function test_the_catalog_ftp_connection_ignores_the_passive_address(): void {
+        $this->assertTrue($this->ftpOptions()->ignorePassiveAddress());
+    }
+
     /** Gegenprobe: der bewusste Schalter des Betreibers wirkt. */
     public function test_the_operator_can_still_allow_plaintext_ftp_on_purpose(): void {
         config(['procurement.ftp_allow_plaintext' => true]);

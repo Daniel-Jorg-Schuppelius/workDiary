@@ -200,6 +200,16 @@ class TourController extends Controller {
         // status NICHT per Massenzuweisung: Übergänge über start()/complete() (TourService mit Transition-Guards);
         // direktes Setzen umginge Guards und Seiteneffekte.
         $data = collect($request->validated())->except('status')->all();
+
+        /** @var User $auth */
+        $auth = Auth::user();
+        // Fahrerwechsel wie beim Anlegen: eigene Org, fremde Fahrer nur als Admin (Audit 2026-09-17, authz-tour-1).
+        if (isset($data['user_id']) && (int) $data['user_id'] !== (int) $tour->user_id) {
+            $driver = User::query()->where('organization_id', $auth->organization_id)->findOrFail((int) $data['user_id']);
+            if (! $auth->isAdmin() && (int) $driver->id !== (int) $auth->id) {
+                throw new AccessDeniedHttpException('Nur Admins dürfen Touren für andere Nutzer anlegen.');
+            }
+        }
         $tour->fill($data)->save();
 
         $orderIds = $request->input('order_ids', []);
@@ -209,6 +219,9 @@ class TourController extends Controller {
                 static fn ($id): ?int => \App\Support\Sqid::decodeOrNumeric(\App\Models\DiaryEntry::class, (string) $id),
                 $orderIds,
             )));
+            // Nur Aufträge, die der Nutzer auch bearbeiten dürfte; bereits in der Tour hängende bleiben erhalten.
+            $ids = array_values(array_filter($ids, static fn (int $id): bool => ($entry = DiaryEntry::query()->find($id)) instanceof DiaryEntry
+                && ((int) $entry->tour_id === (int) $tour->id || Gate::allows('update', $entry))));
             $this->tours->assignOrders($tour, $ids);
         }
 
@@ -219,9 +232,7 @@ class TourController extends Controller {
     public function destroy(Tour $tour): RedirectResponse {
         Gate::authorize('delete', $tour);
 
-        DiaryEntry::query()
-            ->where('tour_id', $tour->id)
-            ->update(['tour_id' => null, 'tour_position' => null, 'status' => DiaryStatus::Open->value]);
+        $this->tours->releaseEntries(DiaryEntry::query()->where('tour_id', $tour->id));
         $tour->delete();
 
         return redirect()->route('tours.index')
@@ -328,7 +339,8 @@ class TourController extends Controller {
                     'lng' => (float) $stop->address_lng,
                     'label' => ($stop->tour_position ?? ($pos + 1)) . '. ' . $stop->title,
                     // Vollaudit 2026-07 (M14): Kartenpunkt führt zum Auftrag.
-                    'popup' => $label . '<br><a href="' . e(route('diary.show', $stop)) . '" class="link">' . e((string) $stop->title) . '</a><br>' . e((string) $stop->address_city),
+                    // Popup ist HTML (Leaflet setzt innerHTML): auch Tour- und Fahrername escapen (S-18-Rest).
+                    'popup' => e($label) . '<br><a href="' . e(route('diary.show', $stop)) . '" class="link">' . e((string) $stop->title) . '</a><br>' . e((string) $stop->address_city),
                     'layer' => 'tours',
                     'color' => $color,
                 ];

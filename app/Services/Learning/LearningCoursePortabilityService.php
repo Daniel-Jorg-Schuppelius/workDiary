@@ -297,7 +297,8 @@ class LearningCoursePortabilityService {
                 'explanation' => $question['explanation'] ?? null,
                 'points' => (int) ($question['points'] ?? 1),
                 'position' => (int) ($question['position'] ?? $index + 1),
-                'settings' => is_array($question['settings'] ?? null) ? $question['settings'] : null,
+                // Anhangs-IDs gehören zur Quellinstallation: nie übernehmen (Audit 2026-09-17, files-idor-1).
+                'settings' => is_array($question['settings'] ?? null) ? array_diff_key($question['settings'], ['image_attachment_id' => true]) : null,
             ]);
 
             foreach ($question['options'] ?? [] as $position => $option) {

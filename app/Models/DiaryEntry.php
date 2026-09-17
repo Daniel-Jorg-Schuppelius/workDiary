@@ -317,6 +317,20 @@ class DiaryEntry extends Model {
         return $this->location_mode->label();
     }
 
+    /**
+     * Massenabzüge (CSV/PDF-Export, API-Liste) folgen derselben Grenze wie
+     * DiaryEntryPolicy::view: ohne `diary.viewAny` nur eigene Aufträge
+     * (Sicherheitsaudit 2026-09-17, authz-diary-1). Die Team-Sicht in Liste
+     * und Kanban bleibt bewusst offen (KanbanTest).
+     *
+     * @param  Builder<DiaryEntry>  $query
+     */
+    public function scopeVisibleInBulkTo(Builder $query, User $user): void {
+        if (! $user->can(\App\Enums\User\Permission::DiaryViewAny->value)) {
+            $query->where($query->getModel()->qualifyColumn('user_id'), $user->id);
+        }
+    }
+
     /** @param Builder<DiaryEntry> $query */
     public function scopeNotArchived(Builder $query): void {
         $query->where('is_archived', false);

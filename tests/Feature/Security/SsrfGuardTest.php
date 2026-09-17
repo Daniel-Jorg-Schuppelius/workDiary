@@ -93,4 +93,41 @@ final class SsrfGuardTest extends TestCase {
         app(\App\Plugins\Support\PluginHttpFactory::class)->coreClient('csaf', 'http://127.0.0.1/provider-metadata.json');
     }
 
+    /** Sicherheitsaudit 2026-09-17 (ssrf-1): Weiterleitungen laufen erneut durch die Schranke. */
+    public function test_redirects_to_internal_targets_are_blocked(): void {
+        $redirect = $this->redirectHook(false);
+        $request = new \GuzzleHttp\Psr7\Request('GET', 'https://files.example.test/doc.txt');
+        $response = new \GuzzleHttp\Psr7\Response(302);
+
+        foreach (['http://169.254.169.254/latest/meta-data/', 'http://127.0.0.1:8080/', 'http://10.0.0.5:9200/_search', 'file:///etc/passwd'] as $target) {
+            try {
+                $redirect($request, $response, new \GuzzleHttp\Psr7\Uri($target));
+                $this->fail('Weiterleitung erlaubt: ' . $target);
+            } catch (\GuzzleHttp\Exception\RequestException) {
+                $this->addToAssertionCount(1);
+            }
+        }
+
+        // Öffentliches IP-Literal (ohne DNS) bleibt erlaubt.
+        $redirect($request, $response, new \GuzzleHttp\Psr7\Uri('https://93.184.216.34/download'));
+
+        // Mit ausdrücklichem Opt-in für private Netze: intern ja, fremdes Schema nein.
+        $private = $this->redirectHook(true);
+        $private($request, $response, new \GuzzleHttp\Psr7\Uri('http://10.0.0.5/dav/file'));
+        $this->expectException(\GuzzleHttp\Exception\RequestException::class);
+        $private($request, $response, new \GuzzleHttp\Psr7\Uri('file:///etc/passwd'));
+    }
+
+    private function redirectHook(bool $allowPrivateNetwork): callable {
+        $client = new class('nextcloud', 'https://files.example.test', null, $allowPrivateNetwork) extends PluginApiClient {
+            /** @return array<string, mixed> */
+            public function config(): array {
+                return $this->buildClientConfig();
+            }
+        };
+        $hook = $client->config()['allow_redirects']['on_redirect'] ?? null;
+        $this->assertIsCallable($hook);
+
+        return $hook;
+    }
 }

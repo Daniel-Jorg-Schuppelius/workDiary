@@ -182,10 +182,11 @@ class HighFindingsWave2Test extends TestCase {
         // Ist eine nutzbare Lizenz installiert, ist das Aufspielen einer
         // anderen eine Betreiber-Handlung — vorher genügte ein beliebiger
         // signierter Schlüssel plus passender Host-Header.
+        // Maßgeblich ist der installierte Schlüssel, nicht sein Status
+        // (Audit 2026-09-17, license-1): bei domaingebundener Lizenz und
+        // fremdem Host war das Ergebnis „nicht nutzbar" und die Sperre entfiel.
         $service = $this->partialMock(\App\Services\Licensing\LicenseService::class, function ($mock): void {
-            $mock->shouldReceive('current')->andReturn(
-                new \App\Services\Licensing\LicenseResult(\App\Services\Licensing\LicenseStatus::Valid, null, null)
-            );
+            $mock->shouldReceive('hasInstalledKey')->andReturnTrue();
             $mock->shouldNotReceive('install');
         });
 

@@ -169,13 +169,21 @@ final class UrlSafety {
     }
 
     /**
-     * Sicheres Redirect-Ziel? Nur absolute Pfade auf demselben Host bzw.
+     * Sicheres Redirect-Ziel? Nur absolute http(s)-URLs auf demselben Host bzw.
      * relative Pfade (beginnend mit „/", aber kein protokoll-relatives „//host").
      * Verhindert Open-Redirects auf fremde Domains.
+     *
+     * Browser lesen URLs anders als parse_url(): ein Backslash beendet bei
+     * http(s) die Authority (`https://evil\@app` geht zu evil), Tabs und
+     * Zeilenumbrüche werden entfernt (`/\t/evil` wird `//evil`). Solche Werte
+     * sind deshalb nie ein gültiges Ziel (Sicherheitsaudit 2026-09-17).
      */
     public static function isSameOriginOrRelative(string $url, string $appHost): bool {
         $url = trim($url);
-        if ($url === '' || str_starts_with($url, '//') || str_starts_with($url, '/\\')) {
+        if ($url === '' || str_contains($url, '\\') || preg_match('/[\x00-\x1F\x7F]/', $url) === 1) {
+            return false;
+        }
+        if (str_starts_with($url, '//')) {
             return false;
         }
 
@@ -186,10 +194,13 @@ final class UrlSafety {
 
         $host = $parts['host'] ?? null;
         if ($host === null) {
-            return str_starts_with($url, '/'); // relativer Pfad
+            return str_starts_with($url, '/') && ! isset($parts['scheme']); // relativer Pfad
         }
 
-        return strcasecmp($host, $appHost) === 0;
+        return in_array(strtolower((string) ($parts['scheme'] ?? '')), ['http', 'https'], true)
+            && ! isset($parts['user'])
+            && ! isset($parts['pass'])
+            && strcasecmp($host, $appHost) === 0;
     }
 
     /**
@@ -229,6 +240,54 @@ final class UrlSafety {
         }
 
         return true;
+    }
+
+    /**
+     * Bindet eine geprüfte URL an die soeben aufgelöste Adresse
+     * (Sicherheitsaudit 2026-09-17, ssrf-5): Ohne diese Kopplung löst cURL beim
+     * Verbinden erneut auf, und ein Angreifer-DNS mit TTL 0 antwortet der
+     * Prüfung öffentlich und dem Verbindungsaufbau mit 127.0.0.1 bzw.
+     * 169.254.169.254 (DNS-Rebinding).
+     *
+     * Rückgabe sind Einträge für `CURLOPT_RESOLVE` (`host:port:ip`). Zur
+     * Laufzeit fail-closed: löst der Host nicht auf oder zeigt eine seiner
+     * Adressen nach innen, gibt es KEINE Bindung und damit keinen Abruf.
+     * IP-Literale und (bei `$allowPrivateNetwork`) ausdrücklich erlaubte
+     * interne Ziele brauchen keine Bindung — dort ist nichts zu wechseln bzw.
+     * das interne Ziel ist gewollt.
+     *
+     * @return list<string>|null null = nicht bindbar ⇒ Abruf unterlassen
+     */
+    public static function pinnedResolution(string $url, bool $allowPrivateNetwork = false): ?array {
+        $parts = parse_url(trim($url));
+        if ($parts === false || ! in_array($parts['scheme'] ?? '', ['http', 'https'], true)) {
+            return null;
+        }
+
+        $host = trim((string) ($parts['host'] ?? ''), '[]');
+        if ($host === '') {
+            return null;
+        }
+        if (filter_var($host, FILTER_VALIDATE_IP) !== false) {
+            // IP-Literal: nichts zu binden — die Prüfung galt bereits der Zieladresse.
+            return $allowPrivateNetwork || IPHelper::isPublicIP($host) ? [] : null;
+        }
+
+        $port = (int) ($parts['port'] ?? ($parts['scheme'] === 'https' ? 443 : 80));
+        $ips = self::resolveHost($host);
+        if ($ips === []) {
+            return $allowPrivateNetwork ? [] : null;
+        }
+
+        if (! $allowPrivateNetwork) {
+            foreach ($ips as $ip) {
+                if (! IPHelper::isPublicIP($ip)) {
+                    return null;
+                }
+            }
+        }
+
+        return [$host . ':' . $port . ':' . implode(',', $ips)];
     }
 
     /**

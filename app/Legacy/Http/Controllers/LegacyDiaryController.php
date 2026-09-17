@@ -130,6 +130,7 @@ class LegacyDiaryController extends Controller {
     }
 
     public function show(LegacyDiaryEntry $entry): View|Response {
+        abort_unless(LegacyArchiveController::mayViewEntry((int) $entry->user), 404);
         $entry->load('author:id,uname');
 
         if (request()->boolean('dialog')) {

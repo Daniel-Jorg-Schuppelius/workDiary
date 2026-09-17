@@ -185,7 +185,7 @@ class LimitGuardTest extends TestCase {
         $stub = new class($result, $enforced) extends LicenseService {
             public function __construct(private readonly LicenseResult $result, private readonly bool $enforced) {}
             public function isEnforced(): bool { return $this->enforced; }
-            public function current(?string $host = null): LicenseResult { return $this->result; }
+            public function current(): LicenseResult { return $this->result; }
         };
         $this->app->instance(LicenseService::class, $stub);
     }

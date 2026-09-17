@@ -28,6 +28,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  */
 class AssetDrilldownReportController extends Controller {
     use BuildsOpenIssueDrilldown;
+    use Concerns\RequiresTeamReportAccess;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use WritesReportCsv;
@@ -38,6 +39,8 @@ class AssetDrilldownReportController extends Controller {
      * Drilldown ins Asset-Dossier.
      */
     public function recurringDefects(Request $request, RecurringDefectService $service): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         $user = $request->user();
         if (! $user instanceof User) {
             abort(403);
@@ -65,6 +68,8 @@ class AssetDrilldownReportController extends Controller {
     }
 
     public function openIssues(Request $request): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         $range = $this->globalDateRange();
         [$from, $to] = $this->globalDateRangeBounds();
 
@@ -113,6 +118,8 @@ class AssetDrilldownReportController extends Controller {
     }
 
     public function protocols(Request $request): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         $range = $this->globalDateRange();
         [$from, $to] = $this->globalDateRangeBounds();
 

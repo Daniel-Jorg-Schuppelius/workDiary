@@ -36,6 +36,22 @@ class TimeCorrectionService {
     /** @var list<string> Erlaubte Target-Typen für Items. */
     public const ALLOWED_TARGETS = [TimeEntry::class, Attendance::class];
 
+    /**
+     * Felder, die eine Korrektur je Zieltyp setzen darf (Sicherheitsaudit
+     * 2026-09-17, massassign-1). Mandant, Person, Sätze, Export- und
+     * Portalstatus kommen nie aus dem Antrag.
+     *
+     * @var array<class-string, list<string>>
+     */
+    private const EDITABLE_FIELDS = [
+        TimeEntry::class => ['date', 'started_at', 'ended_at', 'break_minutes', 'minutes', 'description', 'project_id', 'task_id', 'activity_category_id', 'kind', 'activity_type', 'billable'],
+        // `source` wird beim Anwenden ohnehin auf Manual gesetzt.
+        Attendance::class => ['date', 'started_at', 'ended_at', 'break_minutes_manual', 'duration_minutes', 'status', 'note', 'source'],
+    ];
+
+    /** Verweise, die in der Organisation des Antrags liegen müssen. */
+    private const ORGANIZATION_REFERENCES = ['project_id' => 'projects', 'task_id' => 'tasks', 'activity_category_id' => 'activity_categories'];
+
     public function __construct(
         private readonly MonthClosureService $monthClosures,
     ) {}
@@ -61,6 +77,7 @@ class TimeCorrectionService {
         }
         foreach ($items as $i => $item) {
             $this->assertItemShape($item, $i);
+            $items[$i]['after'] = $this->normalizeAfter((string) $item['target_type'], $item['after'] ?? null, $owner, $i);
         }
 
         $requestedById = $requestedBy instanceof User ? (int) $requestedBy->id : ((int) (Auth::id() ?? $owner->id));
@@ -301,10 +318,10 @@ class TimeCorrectionService {
         unset($actor); // Akteur kommt im Audit über Auditable::resolveAuditUserId.
 
         try {
-            return DB::transaction(function () use ($request): TimeCorrectionRequest {
+            return DB::transaction(function () use ($request, $owner): TimeCorrectionRequest {
                 foreach ($request->items()->get() as $item) {
                     /** @var TimeCorrectionItem $item */
-                    $this->applyItem($item);
+                    $this->applyItem($item, $owner);
                 }
 
                 $request->fill([
@@ -327,7 +344,7 @@ class TimeCorrectionService {
 
     // ── intern ─────────────────────────────────────────────────────────
 
-    private function applyItem(TimeCorrectionItem $item): void {
+    private function applyItem(TimeCorrectionItem $item, User $owner): void {
         $targetType = $item->target_type;
         if (! in_array($targetType, self::ALLOWED_TARGETS, true)) {
             throw new TimeCorrectionWorkflowException(
@@ -344,7 +361,7 @@ class TimeCorrectionService {
             && in_array($item->action, ['update', 'delete'], true)
             && $item->target_id !== null
         ) {
-            $existing = TimeEntry::query()->find((int) $item->target_id);
+            $existing = $this->ownedTarget(TimeEntry::class, (int) $item->target_id, $owner);
             if ($existing !== null && $existing->exported) {
                 throw new TimeCorrectionWorkflowException(
                     'sourceTransferred',
@@ -354,7 +371,11 @@ class TimeCorrectionService {
             }
         }
 
-        $after = $item->after ?? [];
+        // Auch Altanträge von vor der Allowlist laufen hier durch.
+        $after = $this->normalizeAfter($targetType, $item->after, $owner, (int) $item->id) ?? [];
+        if (in_array($item->action, ['create', 'update'], true)) {
+            $this->assertDayUnlocked($owner, $after['date'] ?? $after['started_at'] ?? null);
+        }
 
         // Jede aus einer Korrektur geschriebene Stempelung ist per Definition
         // manuell (kein echter Stempel) → Quelle erzwingen (Nachvollziehbarkeit).
@@ -363,9 +384,9 @@ class TimeCorrectionService {
         }
 
         match ($item->action) {
-            'create' => $this->applyCreate($targetType, $after, $item),
-            'update' => $this->applyUpdate($targetType, (int) $item->target_id, $after, $item),
-            'delete' => $this->applyDelete($targetType, (int) $item->target_id, $item),
+            'create' => $this->applyCreate($targetType, [...$after, 'organization_id' => $owner->organization_id, 'user_id' => $owner->id], $item),
+            'update' => $this->applyUpdate($targetType, (int) $item->target_id, $after, $item, $owner),
+            'delete' => $this->applyDelete($targetType, (int) $item->target_id, $item, $owner),
             default => throw new TimeCorrectionWorkflowException(
                 'unsupportedAction',
                 __('Aktion :action wird nicht unterstützt.', ['action' => $item->action]),
@@ -404,9 +425,8 @@ class TimeCorrectionService {
      * @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass
      * @param  array<string, mixed>  $attrs
      */
-    private function applyUpdate(string $modelClass, int $id, array $attrs, TimeCorrectionItem $item): void {
-        /** @var \Illuminate\Database\Eloquent\Model|null $model */
-        $model = $modelClass::query()->find($id);
+    private function applyUpdate(string $modelClass, int $id, array $attrs, TimeCorrectionItem $item, User $owner): void {
+        $model = $this->ownedTarget($modelClass, $id, $owner);
         if ($model === null) {
             throw new TimeCorrectionWorkflowException(
                 'targetMissing',
@@ -414,14 +434,14 @@ class TimeCorrectionService {
                 ['target_id' => $id, 'target_type' => $modelClass],
             );
         }
+        $this->assertDayUnlocked($owner, $model->getAttribute('date'));
         $model->fill($attrs)->save();
         $this->auditApplied($model, $item);
     }
 
     /** @param  class-string<\Illuminate\Database\Eloquent\Model>  $modelClass */
-    private function applyDelete(string $modelClass, int $id, TimeCorrectionItem $item): void {
-        /** @var \Illuminate\Database\Eloquent\Model|null $model */
-        $model = $modelClass::query()->find($id);
+    private function applyDelete(string $modelClass, int $id, TimeCorrectionItem $item, User $owner): void {
+        $model = $this->ownedTarget($modelClass, $id, $owner);
         if ($model === null) {
             // Vollaudit 2026-07 (M2): kein stiller No-op mehr — Existenzprüfung
             // wie bei applyUpdate (zeit-korrekturen.md §4).
@@ -431,8 +451,88 @@ class TimeCorrectionService {
                 ['target_id' => $id, 'target_type' => $modelClass],
             );
         }
+        $this->assertDayUnlocked($owner, $model->getAttribute('date'));
         $this->auditApplied($model, $item);
         $model->delete();
+    }
+
+    /**
+     * Ziel nur, wenn es der betroffenen Person im Mandanten des Antrags gehört —
+     * fremde Einträge gelten als nicht vorhanden.
+     *
+     * @template TModel of \Illuminate\Database\Eloquent\Model
+     *
+     * @param  class-string<TModel>  $modelClass
+     * @return TModel|null
+     */
+    private function ownedTarget(string $modelClass, int $id, User $owner): ?\Illuminate\Database\Eloquent\Model {
+        return $modelClass::query()
+            ->where('organization_id', $owner->organization_id)
+            ->where('user_id', $owner->id)
+            ->find($id);
+    }
+
+    /**
+     * Nur erlaubte Felder; `organization_id`/`user_id` dürfen nur den
+     * Betroffenen nennen und werden beim Anwenden ohnehin gesetzt, Verweise
+     * müssen in dessen Organisation liegen.
+     *
+     * @param  array<string, mixed>|null  $after
+     * @return array<string, mixed>|null
+     */
+    private function normalizeAfter(string $targetType, ?array $after, User $owner, int $index): ?array {
+        if ($after === null) {
+            return null;
+        }
+
+        foreach (['organization_id' => (int) $owner->organization_id, 'user_id' => (int) $owner->id] as $key => $expected) {
+            if (array_key_exists($key, $after)) {
+                if ((int) $after[$key] !== $expected) {
+                    throw new TimeCorrectionWorkflowException(
+                        'itemForeignOwner',
+                        __('Item :i: Korrekturen gelten nur für die betroffene Person.', ['i' => $index]),
+                        ['index' => $index, 'field' => $key],
+                    );
+                }
+                unset($after[$key]);
+            }
+        }
+
+        $disallowed = array_values(array_diff(array_keys($after), self::EDITABLE_FIELDS[$targetType] ?? []));
+        if ($disallowed !== []) {
+            throw new TimeCorrectionWorkflowException(
+                'itemFieldNotAllowed',
+                __('Item :i: Feld :field lässt sich per Korrektur nicht ändern.', ['i' => $index, 'field' => implode(', ', $disallowed)]),
+                ['index' => $index, 'fields' => $disallowed],
+            );
+        }
+
+        foreach (self::ORGANIZATION_REFERENCES as $field => $table) {
+            if (isset($after[$field]) && ! DB::table($table)->where('id', (int) $after[$field])->where('organization_id', $owner->organization_id)->exists()) {
+                throw new TimeCorrectionWorkflowException(
+                    'itemForeignReference',
+                    __('Item :i: Feld :field verweist auf einen unbekannten Datensatz.', ['i' => $index, 'field' => $field]),
+                    ['index' => $index, 'field' => $field],
+                );
+            }
+        }
+
+        return $after;
+    }
+
+    /** Die Monatssperre gilt auch für den Tag des Ziels, nicht nur für den Antragstag. */
+    private function assertDayUnlocked(User $owner, mixed $day): void {
+        if ($day === null || $day === '') {
+            return;
+        }
+        $date = $day instanceof \DateTimeInterface ? CarbonImmutable::instance($day) : CarbonImmutable::parse((string) $day);
+        if ($this->monthClosures->isPeriodLockedForUser($owner, $date->startOfDay())) {
+            throw new TimeCorrectionWorkflowException(
+                'monthLocked',
+                __('Der Quell-Tag liegt in einem gesperrten Monat — bitte erst :action.', ['action' => __('Monat wieder öffnen')]),
+                ['scope_date' => $date->toDateString()],
+            );
+        }
     }
 
     /** @param  list<TimeCorrectionStatus>  $allowed */

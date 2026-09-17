@@ -24,7 +24,7 @@ class LegacyMigrationTest extends TestCase {
 
     public function test_legacy_write_blocked_by_default(): void {
         Config::set('app.legacy_write_enabled', false);
-        $user = User::factory()->admin()->create();
+        $user = User::factory()->admin()->create(['legacy_user_id' => 1]);
 
         $response = $this->actingAs($user)->post(route('legacy.diary.store'), [
             'inhalt' => 'Test',
@@ -56,8 +56,23 @@ class LegacyMigrationTest extends TestCase {
             ->assertForbidden();
     }
 
-    public function test_admin_can_view_migration_dashboard(): void {
+    /** Sicherheitsaudit 2026-09-17 (tenant-legacy-2): die Org-Admin-Rolle allein öffnet den Legacy-Bereich nicht. */
+    public function test_org_admin_without_legacy_account_has_no_legacy_access(): void {
         $admin = User::factory()->admin()->create();
+
+        // Wer den neuen Bereich nutzen darf, wird dorthin umgeleitet statt ins Legacy-Archiv.
+        $this->actingAs($admin)->get(route('legacy.archive.index'))->assertRedirect(route('dashboard'));
+    }
+
+    /** Sicherheitsaudit 2026-09-17 (tenant-legacy-1): installationsweit, also nur der Plattform-Betreiber. */
+    public function test_org_admin_can_neither_view_nor_run_the_migration(): void {
+        $admin = User::factory()->admin()->create();
+        $this->actingAs($admin)->get(route('admin.legacy-migration.index'))->assertForbidden();
+        $this->actingAs($admin)->post(route('admin.legacy-migration.run'), ['type' => 'users'])->assertForbidden();
+    }
+
+    public function test_admin_can_view_migration_dashboard(): void {
+        $admin = User::factory()->admin()->platformAdmin()->create();
         $this->actingAs($admin)
             ->get(route('admin.legacy-migration.index'))
             ->assertOk()

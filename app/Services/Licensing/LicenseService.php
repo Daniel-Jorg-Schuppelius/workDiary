@@ -16,7 +16,6 @@ use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
 use Illuminate\Filesystem\Filesystem;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -42,7 +41,15 @@ class LicenseService {
         return (bool) config('license.enforce', true);
     }
 
-    public function current(?string $host = null): LicenseResult {
+    /**
+     * Installationsweite Lizenzbewertung. Bewusst OHNE Host-Parameter: die
+     * Domainbindung wird gegen den Host aus `app.url` geprüft, nie gegen den
+     * Host-Header. Sonst legte ein anonymer Request mit fremdem `Host:` das
+     * Ergebnis `DomainMismatch` in den installationsweiten Cache und stufte
+     * alle Mandanten ohne eigene Lizenz auf `free` herab
+     * (Sicherheitsaudit 2026-09-17, license-1).
+     */
+    public function current(): LicenseResult {
         $integrity = $this->checkIntegrity();
         if ($integrity !== null) {
             return $integrity;
@@ -50,21 +57,34 @@ class LicenseService {
 
         $ttl = (int) config('license.cache_ttl', 300);
         if ($ttl > 0) {
-            $cached = $this->safeCacheGet(self::CACHE_KEY . ':' . ($host ?? '_'));
+            $cached = $this->safeCacheGet(self::CACHE_KEY . ':_');
             if ($cached instanceof LicenseResult) {
                 return $cached;
             }
         }
 
-        $result = $this->evaluate($host);
+        $result = $this->evaluate();
 
         $this->recordStatusTransition($result);
 
         if ($ttl > 0) {
-            $this->safeCacheCall(fn() => $this->cache->put(self::CACHE_KEY . ':' . ($host ?? '_'), $result, $ttl));
+            $this->safeCacheCall(fn() => $this->cache->put(self::CACHE_KEY . ':_', $result, $ttl));
         }
 
         return $result;
+    }
+
+    /** Host, an den eine domaingebundene Lizenz gebunden sein muss: der aus `app.url`. */
+    public static function appHost(): string {
+        $url = (string) config('app.url', '');
+        $host = (string) (parse_url($url, PHP_URL_HOST) ?: '');
+
+        return mb_strtolower(trim($host));
+    }
+
+    /** Liegt überhaupt ein Schlüssel vor (Datei oder ENV)? Unabhängig von seiner Gültigkeit. */
+    public function hasInstalledKey(): bool {
+        return $this->rawKey() !== null;
     }
 
     /**
@@ -107,7 +127,10 @@ class LicenseService {
     public function install(string $licenseKey): LicenseResult {
         $licenseKey = trim($licenseKey);
         $result = $this->verify($licenseKey);
-        if (! $result->isUsable() && $result->status !== LicenseStatus::Expired) {
+        // Abgelaufene Schlüssel werden NICHT mehr geschrieben: sonst ersetzte ein
+        // alter, signierter Schlüssel die laufende Betreiberlizenz und stufte
+        // alle Mandanten herab (Sicherheitsaudit 2026-09-17, license-1).
+        if (! $result->isUsable()) {
             return $result;
         }
 
@@ -305,7 +328,9 @@ class LicenseService {
         $payload = LicensePayload::fromArray($decoded);
 
         if ($payload->domain !== null && $payload->domain !== '') {
-            $effectiveHost = $host ?? (app()->runningInConsole() ? '' : (string) app(Request::class)->getHost());
+            // Der Host-Header ist Angreifereingabe; maßgeblich ist die
+            // konfigurierte Adresse der Installation (license-1).
+            $effectiveHost = $host ?? self::appHost();
             if (! self::matchesDomain($effectiveHost, $payload->domain)) {
                 return new LicenseResult(
                     LicenseStatus::DomainMismatch,
@@ -344,13 +369,13 @@ class LicenseService {
         return LicenseResult::ok(LicenseStatus::Valid, $payload);
     }
 
-    protected function evaluate(?string $host): LicenseResult {
+    protected function evaluate(): LicenseResult {
         $key = $this->rawKey();
         if ($key === null) {
             return LicenseResult::fail(LicenseStatus::Missing, 'Keine Lizenz installiert.');
         }
 
-        return $this->verify($key, $host);
+        return $this->verify($key);
     }
 
     /**

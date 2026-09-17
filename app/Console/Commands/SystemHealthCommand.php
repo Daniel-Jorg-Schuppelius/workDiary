@@ -123,6 +123,16 @@ class SystemHealthCommand extends Command {
     public function runWarnings(): array {
         $warnings = [];
 
+        // Sitzungswiderruf (Austritt, SCIM, Portal-Widerruf, Fernabmeldung)
+        // löscht Zeilen in `sessions`; andere Treiber kennen diese Tabelle
+        // nicht (Sicherheitsaudit 2026-09-17, session-1). Die Sperre
+        // deaktivierter Konten greift zwar treiberunabhängig im Auth-Provider,
+        // die gezielte Fernabmeldung einzelner Sitzungen aber nicht.
+        $sessionDriver = (string) config('session.driver');
+        if ($sessionDriver !== 'database') {
+            $warnings[] = ['SESSION_DRIVER', sprintf('„%s" — das gezielte Beenden einzelner Sitzungen (Sitzungsverwaltung, Passwortwechsel) wirkt nur mit SESSION_DRIVER=database.', $sessionDriver)];
+        }
+
         foreach (['whistleblowing.key' => 'WHISTLEBLOWING_KEY', 'dataprotection.key' => 'DATAPROTECTION_KEY'] as $configKey => $envName) {
             $configured = (string) config($configKey, '');
             if ($configured !== '' && ! EnvelopeCrypto::isUsableKey($configured)) {

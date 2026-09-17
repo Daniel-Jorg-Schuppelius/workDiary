@@ -94,6 +94,11 @@ class CatalogFetchService {
             'ssl' => ! (bool) config('procurement.ftp_allow_plaintext', false),
             'timeout' => 30,
             'passive' => true,
+            // Sicherheitsaudit 2026-09-17 (ssrf-3): die PASV-Antwort des Servers
+            // nennt IP:Port des Datenkanals — ohne diese Option verbindet sich der
+            // App-Server dorthin, auch auf 127.0.0.1 oder interne Netze. So gilt
+            // die bereits geprüfte Adresse der Steuerverbindung.
+            'ignorePassiveAddress' => true,
         ]);
     }
 

@@ -29,6 +29,7 @@ use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
  * Strukturen (Asset, DiaryEntry.asset_id, OpenIssue subject, Protocol Defect).
  */
 class AssetAnalysisReportController extends Controller {
+    use Concerns\RequiresTeamReportAccess;
     use RendersReportPdf;
     use ResolvesGlobalDateRange;
     use ResolvesStandardReportFilters;
@@ -37,6 +38,8 @@ class AssetAnalysisReportController extends Controller {
     public function __construct(private readonly AssetAnalysisReportBuilder $builder) {}
 
     public function index(Request $request): View|Response|SymfonyResponse {
+        $this->authorizeTeamReport();
+
         [$from, $to] = $this->resolveRange($request);
         $label = CarbonFmt::fdate($from) . ' – ' . CarbonFmt::fdate($to);
 

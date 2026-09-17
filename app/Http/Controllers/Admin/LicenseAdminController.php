@@ -38,7 +38,7 @@ class LicenseAdminController extends Controller {
     public function index(Request $request): View {
         Gate::authorize(Permission::PlatformLicenseView->value);
 
-        $result = $this->service->current($request->getHost());
+        $result = $this->service->current();
 
         $orgCount = Organization::query()->count();
 
@@ -444,7 +444,7 @@ class LicenseAdminController extends Controller {
         $organization = $user->organization;
         abort_if($organization === null, Response::HTTP_NOT_FOUND);
 
-        $result = $this->service->current($request->getHost());
+        $result = $this->service->current();
         $payload = $result->payload;
         $licensedFlags = $payload !== null
             ? array_map(static fn($v): string => (string) $v, $payload->features)

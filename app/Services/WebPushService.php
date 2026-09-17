@@ -32,13 +32,12 @@ class WebPushService {
             return 0;
         }
 
-        $webPush = $this->webPush();
-        if (! $webPush) {
-            return 0;
-        }
-
         $body = JsonHelper::encode($payload);
         $sent = 0;
+
+        /** @var list<PushSubscription> $deliverable */
+        $deliverable = [];
+        $pins = [];
 
         foreach ($subscriptions as $sub) {
             /** @var PushSubscription $sub */
@@ -50,6 +49,29 @@ class WebPushService {
                 continue;
             }
 
+            // Die geprüfte Adresse wird an die Verbindung gebunden, sonst löst
+            // cURL erneut auf und ein Angreifer-DNS liefert dann eine interne
+            // Adresse (Sicherheitsaudit 2026-09-17, ssrf-5). Ohne Auflösung
+            // wird nicht zugestellt.
+            $pin = UrlSafety::pinnedResolution((string) $sub->endpoint);
+            if ($pin === null) {
+                continue;
+            }
+
+            $deliverable[] = $sub;
+            $pins = array_merge($pins, $pin);
+        }
+
+        if ($deliverable === []) {
+            return 0;
+        }
+
+        $webPush = $this->webPush($pins);
+        if (! $webPush) {
+            return 0;
+        }
+
+        foreach ($deliverable as $sub) {
             $subscription = Subscription::create([
                 'endpoint' => $sub->endpoint,
                 'keys' => [
@@ -92,7 +114,8 @@ class WebPushService {
         return $sum;
     }
 
-    protected function webPush(): ?WebPush {
+    /** @param list<string> $pins `host:port:ip`-Bindungen der Endpunkte dieses Laufs (ssrf-5). */
+    protected function webPush(array $pins = []): ?WebPush {
         if ($this->webPush !== null) {
             return $this->webPush;
         }
@@ -115,6 +138,9 @@ class WebPushService {
             ],
         ], [
             'TTL' => config('webpush.ttl'),
-        ], null, ['allow_redirects' => false]);
+        ], null, array_filter([
+            'allow_redirects' => false,
+            'curl' => $pins !== [] ? [CURLOPT_RESOLVE => $pins] : null,
+        ], static fn ($value): bool => $value !== null));
     }
 }

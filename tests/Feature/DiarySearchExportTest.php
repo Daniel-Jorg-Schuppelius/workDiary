@@ -68,4 +68,19 @@ class DiarySearchExportTest extends TestCase {
         $response->assertSee('Druckbarer Eintrag');
         $response->assertSee('window.print()', false);
     }
+
+    /** Sicherheitsaudit 2026-09-17 (authz-diary-1): ohne diary.viewAny nur eigene Aufträge im Export und in der API. */
+    public function test_exports_and_api_list_only_own_entries_without_view_any(): void {
+        $user = User::factory()->user()->create();
+        $colleague = User::factory()->user()->create(['organization_id' => $user->organization_id]);
+        DiaryEntry::factory()->for($user)->create(['organization_id' => $user->organization_id, 'content' => 'Eigener Auftrag']);
+        DiaryEntry::factory()->for($colleague)->create(['organization_id' => $user->organization_id, 'content' => 'Fremder Auftrag Geheimnis']);
+
+        $this->actingAs($user);
+        $csv = $this->get(route('diary.export.csv'))->assertOk()->streamedContent();
+        $this->assertStringContainsString('Eigener Auftrag', $csv);
+        $this->assertStringNotContainsString('Fremder Auftrag Geheimnis', $csv);
+
+        $this->get(route('diary.export.pdf'))->assertOk()->assertDontSee('Fremder Auftrag Geheimnis');
+    }
 }

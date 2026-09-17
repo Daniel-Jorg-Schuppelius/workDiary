@@ -27,7 +27,7 @@ class EnsureValidLicense {
             return $next($request);
         }
 
-        $result = $this->service->current($request->getHost());
+        $result = $this->service->current();
 
         // App-weites Gate schützt nur noch die Code-Integrität: nur Tampered sperrt hart.
         // Tier-/Modul-Zugang läuft über die org-gebundene Lizenz (FeatureFlagResolver + EnforcePlanModules).

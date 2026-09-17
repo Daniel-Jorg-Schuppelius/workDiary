@@ -50,6 +50,8 @@
 <div
     id="{{ $mapId }}"
     data-map
+    {{-- Leaflet fügt Popups per innerHTML ein: Alpine darf darin nichts initialisieren. --}}
+    x-ignore
     data-config="{{ json_encode($config, JSON_THROW_ON_ERROR) }}"
     style="height: {{ $height }};"
     {{ $attributes->merge(['class' => 'rounded-box border border-base-300 overflow-hidden relative z-0 isolate']) }}

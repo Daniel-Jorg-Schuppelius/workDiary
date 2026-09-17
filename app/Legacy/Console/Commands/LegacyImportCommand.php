@@ -98,16 +98,17 @@ class LegacyImportCommand extends Command {
         $bar->start();
 
         foreach ($legacyUsers as $legacy) {
-            User::updateOrCreate(
-                ['legacy_user_id' => $legacy->id],
-                [
+            // Nur Neuanlagen: bestehende Konten behalten Name, E-Mail und Passwort
+            // (vorher setzte jeder Lauf verknüpfte Konten zurück und sperrte sie aus).
+            $user = User::query()->firstOrNew(['legacy_user_id' => $legacy->id]);
+            if (! $user->exists) {
+                $user->fill([
                     'name' => $this->normalizeLegacyText((string) ($legacy->uname ?? '')),
                     'email' => $this->normalizeLegacyText((string) ($legacy->email ?: ($legacy->uname . '@workdiary.local'))),
-                    // Zufalls-Passwort bei Neuanlage; vorhandene werden NICHT überschrieben.
                     'password' => Hash::make(Str::random(40)),
                     'must_change_password' => true,
-                ]
-            );
+                ])->save();
+            }
             $bar->advance();
         }
 

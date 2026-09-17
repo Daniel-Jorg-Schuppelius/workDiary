@@ -69,7 +69,9 @@ final class IdeaMapControllerTest extends TestCase {
     public function test_owner_sees_and_updates_own_map(): void {
         $map = $this->mapOf($this->owner);
 
-        $this->actingAs($this->owner)->get(route('ideas.show', $map))->assertOk()->assertSee('Private Karte');
+        $this->actingAs($this->owner)->get(route('ideas.show', $map))->assertOk()->assertSee('Private Karte')
+            // Sicherheitsaudit 2026-09-17: Mind Elixir rendert in diesen Knoten, Alpine bleibt draußen.
+            ->assertSee('x-ref="meHost" x-ignore', false);
         $this->actingAs($this->owner)->get(route('ideas.index'))->assertOk()->assertSee('Private Karte');
 
         $this->actingAs($this->owner)->put(route('ideas.update', $map), [
