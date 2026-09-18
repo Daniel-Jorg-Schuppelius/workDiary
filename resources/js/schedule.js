@@ -798,6 +798,15 @@ function updateTypeRow(id, type) {
     if (startEl) startEl.textContent = type.default_start_time ?? "–";
     const endEl = document.getElementById(`type-end-${id}`);
     if (endEl) endEl.textContent = type.default_end_time ?? "–";
+    const statusBadge = /** @type {HTMLElement | null} */ (
+        row.querySelector("span.badge")
+    );
+    if (statusBadge) {
+        const isActive = Boolean(type.is_active);
+        statusBadge.textContent = isActive ? "ja" : "nein";
+        statusBadge.classList.toggle("badge-success", isActive);
+        statusBadge.classList.toggle("badge-ghost", !isActive);
+    }
 }
 
 function addTypeRow(type) {

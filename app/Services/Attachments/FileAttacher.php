@@ -109,7 +109,32 @@ final class FileAttacher {
      * @param  array<string, mixed>  $extra
      */
     public function storeContent(Model $parent, string $content, string $originalName, ?string $mime, ?int $userId, array $extra = [], ?string $folder = null): Attachment {
-        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION) ?: 'bin');
+        $detectedMime = null;
+        if (class_exists(\finfo::class)) {
+            $finfo = new \finfo(\FILEINFO_MIME_TYPE);
+            $detected = $finfo->buffer($content);
+            $detectedMime = is_string($detected) ? strtolower($detected) : null;
+        }
+
+        $effectiveMime = strtolower((string) ($detectedMime ?: $mime ?: ''));
+        $mimeToExt = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png',
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'application/pdf' => 'pdf',
+            'text/plain' => 'txt',
+            'text/csv' => 'csv',
+            'application/zip' => 'zip',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document' => 'docx',
+            'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' => 'xlsx',
+        ];
+
+        $ext = $mimeToExt[$effectiveMime] ?? 'bin';
+        if (!in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+            $ext = 'bin';
+        }
+
         $path = ($folder ?? 'attachments') . '/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.' . $ext;
         \Illuminate\Support\Facades\Storage::disk('local')->put($path, $content);
 

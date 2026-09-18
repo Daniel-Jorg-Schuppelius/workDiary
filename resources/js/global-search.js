@@ -26,6 +26,7 @@ const searchUrl = () => {
 let activeIndex = -1;
 let flatItems = [];
 let debounceTimer = null;
+let requestSeq = 0;
 let lastQuery = "";
 
 const setStatus = (root, text, { loading = false } = {}) => {
@@ -168,12 +169,13 @@ const updateActive = (root) => {
     });
 };
 
-const fetchResults = async (root, term) => {
+const fetchResults = async (root, term, requestId) => {
     setStatus(root, __("Suche …"), { loading: true });
     try {
         const { ok, data: json } = await getJson(
             `${searchUrl()}?q=${encodeURIComponent(term)}`,
         );
+        if (requestId !== requestSeq) return;
         if (!ok || !json) {
             setStatus(root, __("Suche fehlgeschlagen."));
             return;
@@ -181,6 +183,7 @@ const fetchResults = async (root, term) => {
         setStatus(root, "");
         renderResults(root, json.groups || [], json.allUrl || null);
     } catch (e) {
+        if (requestId !== requestSeq) return;
         setStatus(root, __("Suche fehlgeschlagen."));
     }
 };
@@ -190,6 +193,10 @@ const onInput = (root) => {
     if (!input) return;
     const term = (input.value || "").trim();
     lastQuery = term;
+    if (debounceTimer) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+    }
     if (term.length < MIN_LEN) {
         setStatus(root, "");
         renderHint(
@@ -198,9 +205,11 @@ const onInput = (root) => {
         );
         return;
     }
-    if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
-        if (lastQuery === term) fetchResults(root, term);
+        if (lastQuery === term) {
+            const requestId = ++requestSeq;
+            fetchResults(root, term, requestId);
+        }
     }, DEBOUNCE_MS);
 };
 
