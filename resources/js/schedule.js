@@ -803,7 +803,7 @@ function updateTypeRow(id, type) {
     );
     if (statusBadge) {
         const isActive = Boolean(type.is_active);
-        statusBadge.textContent = isActive ? "ja" : "nein";
+        statusBadge.textContent = isActive ? __("ja") : __("nein");
         statusBadge.classList.toggle("badge-success", isActive);
         statusBadge.classList.toggle("badge-ghost", !isActive);
     }
