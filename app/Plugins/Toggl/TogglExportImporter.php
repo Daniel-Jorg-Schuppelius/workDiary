@@ -15,6 +15,8 @@ use App\Enums\TimeEntry\TimeEntryKind;
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, TimeEntry, User};
 use App\Plugins\Support\AttachesImportedTags;
 use App\Plugins\Toggl\Sources\{FolderWorkspaceSource, TogglEntry, TogglWorkspaceReader, WorkspaceSourceInterface};
+use CommonToolkit\Helper\Data\EmailHelper;
+use CommonToolkit\Helper\FileSystem\Folder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -86,7 +88,6 @@ class TogglExportImporter {
      */
     public function import(string $basePath, Organization $organization, array $workspaceModes, string $userMode, bool $dryRun, array $userMap = []): array {
         $basePath = rtrim($basePath, '/');
-        $realBase = realpath($basePath);
         $sources = [];
         foreach ($workspaceModes as $folder => $config) {
             if ($config['mode'] === self::MODE_SKIP) {
@@ -96,11 +97,11 @@ class TogglExportImporter {
             // kein Pfad — und das Ergebnis muss unter dem Stammordner liegen
             // (Sicherheitsaudit 2026-09-17, files-trav-1).
             $name = basename(str_replace('\\', '/', (string) $folder));
-            if ($name === '' || $name === '.' || $name === '..' || $realBase === false) {
+            if ($name === '' || $name === '.' || $name === '..') {
                 continue;
             }
-            $path = realpath($basePath . '/' . $name);
-            if ($path === false || ! is_dir($path) || ! str_starts_with($path, $realBase . DIRECTORY_SEPARATOR)) {
+            $path = Folder::resolveWithin($basePath, $name);
+            if ($path === null || ! Folder::exists($path)) {
                 continue;
             }
             $sources[(string) $folder] = new FolderWorkspaceSource($path, $this->reader);
@@ -552,7 +553,7 @@ class TogglExportImporter {
             // MVP-509: sichtbar zur Zuordnung stellen statt still auf den
             // Organisationsinhaber zu buchen — Zuordnung oben pflegen und
             // den (idempotenten) Import erneut ausführen.
-            $emailKey = mb_strtolower(trim((string) $entry->userEmail));
+            $emailKey = EmailHelper::normalize((string) $entry->userEmail);
             $stats['entries_unresolved_user']++;
             $stats['unresolved_emails'][$emailKey] = (int) ($stats['unresolved_emails'][$emailKey] ?? 0) + 1;
 

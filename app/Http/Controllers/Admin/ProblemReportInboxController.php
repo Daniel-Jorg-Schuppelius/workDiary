@@ -17,6 +17,7 @@ use App\Enums\User\Permission;
 use App\Http\Controllers\Controller;
 use App\Models\ProblemReport;
 use App\Support\Setting;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Validation\Rule;
@@ -107,7 +108,7 @@ class ProblemReportInboxController extends Controller {
 
         return response()->streamDownload(
             static function () use ($problemReport): void {
-                echo json_encode($problemReport->exportPayload(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+                echo JsonHelper::encode($problemReport->exportPayload(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
             },
             $problemReport->reference_no . '.json',
             ['Content-Type' => 'application/json'],

@@ -14,7 +14,10 @@ namespace App\Plugins\Fritzbox\Sources;
 
 use App\Support\Toolkit\CsvFacade;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\Data\{PhoneNumberHelper, StringHelper};
+use CommonToolkit\ValueObjects\Duration;
+use InvalidArgumentException;
 use RuntimeException;
 
 /**
@@ -87,7 +90,7 @@ class FritzboxCsvParser {
         }
         $raw = StringHelper::stripBom($raw);
 
-        return (string) preg_replace('/^\s*sep=.\s*\r?\n/i', '', $raw, 1);
+        return CsvStringHelper::stripExcelSeparatorHint($raw);
     }
 
     /**
@@ -156,11 +159,11 @@ class FritzboxCsvParser {
 
     /** FRITZ!Box-Dauer ist `H:MM` (Stunden:Minuten), nicht Minuten:Sekunden. */
     private function parseDurationMinutes(string $value): int {
-        if (preg_match('/^(\d+):(\d{1,2})$/', $value, $matches) !== 1) {
+        try {
+            return Duration::fromClock($value)->getTotalMinutes();
+        } catch (InvalidArgumentException) {
             return 0;
         }
-
-        return ((int) $matches[1]) * 60 + (int) $matches[2];
     }
 
     /**

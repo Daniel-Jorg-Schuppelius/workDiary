@@ -11,6 +11,7 @@
 namespace App\Services\Backup\Support;
 
 use App\Services\Backup\Exceptions\BackupCryptoException;
+use CommonToolkit\Helper\FileSystem\File;
 use SensitiveParameter;
 
 /**
@@ -28,12 +29,12 @@ class SecretStreamFile {
     private const CHUNK_SIZE = 1_048_576; // 1 MiB Klartext je Chunk
 
     public function encrypt(string $plainPath, string $cipherPath, #[SensitiveParameter] string $key, string $additionalData): void {
-        $in = @fopen($plainPath, 'rb');
+        $in = File::openStream($plainPath, 'rb');
         if ($in === false) {
             throw new BackupCryptoException("Quelldatei nicht lesbar: {$plainPath}");
         }
 
-        $out = @fopen($cipherPath, 'wb');
+        $out = File::openStream($cipherPath, 'wb');
         if ($out === false) {
             fclose($in);
 
@@ -66,12 +67,12 @@ class SecretStreamFile {
     }
 
     public function decrypt(string $cipherPath, string $plainPath, #[SensitiveParameter] string $key, string $additionalData): void {
-        $in = @fopen($cipherPath, 'rb');
+        $in = File::openStream($cipherPath, 'rb');
         if ($in === false) {
             throw new BackupCryptoException("Verschlüsselte Datei nicht lesbar: {$cipherPath}");
         }
 
-        $out = @fopen($plainPath, 'wb');
+        $out = File::openStream($plainPath, 'wb');
         if ($out === false) {
             fclose($in);
 

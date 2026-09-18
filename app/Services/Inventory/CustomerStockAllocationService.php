@@ -90,7 +90,8 @@ class CustomerStockAllocationService {
     private function describe(ArticleVariant $variant, string $qty): string {
         $name = trim((string) ($variant->article->name ?? $variant->sku ?? ''));
         $unit = (string) ($variant->article->base_unit ?? '');
-        $qtyLabel = rtrim(rtrim(NumberHelper::normalizeDecimalString($qty), '0'), '.');
+        // Nur Nachkomma-Nullen: rtrim machte aus der Menge 10 eine 1.
+        $qtyLabel = NumberHelper::trimTrailingZeros(NumberHelper::normalizeDecimalString($qty));
 
         return trim(sprintf('%s (%s %s)', $name !== '' ? $name : (string) __('customer-material.stock_item'), $qtyLabel, $unit));
     }

@@ -15,7 +15,9 @@ use App\Models\Surcharge\SurchargeRule;
 use App\Services\HolidayService;
 use App\Support\Setting;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Support\Collection;
+use InvalidArgumentException;
 
 /**
  * Zerlegt einen Arbeitszeitraum in zuschlagsfähige Segmente (Feature 005, MVP).
@@ -291,8 +293,11 @@ class SurchargeCalculator {
         if ($time === null || $time === '') {
             return null;
         }
-        $parts = explode(':', $time);
 
-        return ((int) $parts[0]) * 60 + (int) ($parts[1] ?? 0);
+        try {
+            return Duration::fromClock($time)->getTotalMinutes();
+        } catch (InvalidArgumentException) {
+            return 0;
+        }
     }
 }

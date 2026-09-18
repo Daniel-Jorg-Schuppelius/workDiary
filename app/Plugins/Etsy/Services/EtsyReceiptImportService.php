@@ -18,6 +18,8 @@ use App\Plugins\Etsy\{EtsyConfig, EtsyPlugin};
 use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};
 use App\Services\Integration\Match\MatchProfile;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\RoundingMode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use RuntimeException;
 use Throwable;
 
@@ -371,7 +373,7 @@ class EtsyReceiptImportService {
             $divisor = 100;
         }
 
-        return number_format($amount / $divisor, 2, '.', '');
+        return NumberHelper::dividePrecise((string) $amount, (string) $divisor, 2, RoundingMode::HalfUp);
     }
 
     private static function stringOrNull(mixed $value): ?string {

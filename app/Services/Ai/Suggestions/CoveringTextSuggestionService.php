@@ -15,7 +15,6 @@ namespace App\Services\Ai\Suggestions;
 use App\Models\{Invoice, Organization};
 use App\Services\Ai\{AiInvocationService, AiMemoryService};
 use App\Services\Ai\Dto\{AiTextResult, AiTranslationResult, FormulateRequest, TranslateRequest};
-use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Begleittext-Entwürfe für die Versand-/Mahn-Dialoge und die
@@ -50,7 +49,7 @@ class CoveringTextSuggestionService {
 
         $facts = [
             'Rechnung ' . $invoice->number,
-            'Betrag ' . NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $invoice->currency->value,
+            'Betrag ' . ($invoice->total?->format(withSymbol: false) ?? '0,00') . ' ' . $invoice->currency->value,
         ];
         if ($invoice->due_on !== null) {
             $facts[] = 'zahlbar bis ' . $invoice->due_on->format('d.m.Y');
@@ -76,7 +75,7 @@ class CoveringTextSuggestionService {
         $kind = $level <= 1 ? 'freundliche Zahlungserinnerung' : $level . '. Mahnung, bestimmter Ton';
         $facts = [
             'Rechnung ' . $invoice->number,
-            'offener Betrag ' . NumberHelper::toGermanFormat(($invoice->total?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $invoice->currency->value,
+            'offener Betrag ' . ($invoice->total?->format(withSymbol: false) ?? '0,00') . ' ' . $invoice->currency->value,
         ];
         if ($invoice->due_on !== null) {
             $facts[] = 'fällig seit ' . $invoice->due_on->format('d.m.Y');

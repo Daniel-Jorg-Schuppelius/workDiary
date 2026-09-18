@@ -10,7 +10,9 @@
 
 namespace App\Services\Install;
 
+use CommonToolkit\Helper\FileSystem\File;
 use RuntimeException;
+use Throwable;
 
 /**
  * Schreibt gezielt einzelne Schlüssel in die .env-Datei, ohne die übrigen
@@ -28,7 +30,7 @@ final class EnvWriter {
     }
 
     public function exists(): bool {
-        return is_file($this->path);
+        return File::isFile($this->path);
     }
 
     public function path(): string {
@@ -83,12 +85,14 @@ final class EnvWriter {
         }
 
         $example = base_path('.env.example');
-        if (is_file($example)) {
-            if (! @copy($example, $this->path)) {
+        if (File::isFile($example)) {
+            // Inhalt statt copy(): copy() übernähme den Modus der Vorlage (rw-r--r--).
+            try {
+                $template = File::read($example);
+            } catch (Throwable) {
                 throw new RuntimeException('Konnte .env nicht aus .env.example erzeugen: ' . $this->path);
             }
-
-            $this->restrictPermissions();
+            $this->write($template);
 
             // Sichere Vorgabe für eine ABGEBROCHENE Installation
             // (Sicherheitsscan 2026-08-23, S-66): `.env.example` ist eine
@@ -113,36 +117,36 @@ final class EnvWriter {
             return '';
         }
 
-        $contents = @file_get_contents($this->path);
-        if ($contents === false) {
+        try {
+            return File::read($this->path);
+        } catch (Throwable) {
             throw new RuntimeException('Konnte .env nicht lesen: ' . $this->path);
         }
-
-        return $contents;
-    }
-
-    private function write(string $contents): void {
-        if (@file_put_contents($this->path, $contents, LOCK_EX) === false) {
-            throw new RuntimeException('Konnte .env nicht schreiben: ' . $this->path);
-        }
-
-        $this->restrictPermissions();
     }
 
     /**
-     * Nur der Eigentümer darf die .env lesen (Sicherheitsscan 2026-08-23, S-53).
+     * Nur der Eigentümer darf die .env lesen (Sicherheitsscan 2026-08-23, S-53):
+     * in ihr stehen APP_KEY (entschlüsselt jeden encrypted-Cast), das
+     * DB-Passwort, der Backup-Hauptschlüssel und die OAuth-Geheimnisse. Die
+     * Rechte stehen vor dem Inhalt.
      *
-     * `copy()` übernimmt den Modus der Vorlage — und `.env.example` liegt im
-     * Repository mit rw-r--r--. Auf einem Shared-Host oder einem Server mit
-     * mehreren Konten war die Datei damit für jeden lesbar, und in ihr stehen
-     * APP_KEY (entschlüsselt jeden encrypted-Cast), das DB-Passwort, der
-     * Backup-Hauptschlüssel und die OAuth-Geheimnisse.
+     * Bewusst in place, nicht atomar: ein rename gäbe die Datei dem
+     * ausführenden Nutzer — schreibt der Deploy (EnsureSqidsSaltCommand) als
+     * anderer Nutzer, könnte PHP-FPM die .env danach nicht mehr lesen.
      *
-     * Best-effort: auf Dateisystemen ohne POSIX-Rechte scheitert chmod, ohne
-     * dass deshalb die Installation abbrechen sollte.
+     * Best-effort: ohne POSIX-Rechte oder als Nicht-Eigentümer scheitert chmod —
+     * dann ohne Rechtevorgabe, statt die Installation abzubrechen.
      */
-    private function restrictPermissions(): void {
-        @chmod($this->path, 0600);
+    private function write(string $contents): void {
+        try {
+            File::write($this->path, $contents, permissions: 0600, lock: true);
+        } catch (Throwable) {
+            try {
+                File::write($this->path, $contents, lock: true);
+            } catch (Throwable) {
+                throw new RuntimeException('Konnte .env nicht schreiben: ' . $this->path);
+            }
+        }
     }
 
     private function stringify(string|int|bool|null $value): string {

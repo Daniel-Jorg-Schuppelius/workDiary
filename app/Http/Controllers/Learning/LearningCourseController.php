@@ -26,6 +26,8 @@ use App\Services\Attachments\FileAttacher;
 use App\Services\Learning\{LearningAiSuggestionService, LearningAttendanceListPdfRenderer, LearningContentService, LearningCoursePortabilityService, LearningCourseService, LearningOutlineParser, LearningQuestionCatalogService, LearningQuestionEditorService, LearningTranslationService};
 use App\Services\Media\VideoTranscodingService;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request, Response, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\Validation\{Rule, ValidationException};
@@ -1113,7 +1115,7 @@ class LearningCourseController extends Controller {
 
         return response()->streamDownload(
             static function () use ($payload): void {
-                echo json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+                echo JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
             },
             $filename,
             ['Content-Type' => 'application/json'],
@@ -1128,7 +1130,7 @@ class LearningCourseController extends Controller {
             'file' => ['required', 'file', 'mimetypes:application/json,text/plain', 'max:5120'],
         ]);
 
-        $raw = (string) file_get_contents($request->file('file')->getRealPath());
+        $raw = File::read((string) $request->file('file')->getRealPath());
         $payload = json_decode($raw, true);
 
         if (! is_array($payload)) {
@@ -1365,7 +1367,7 @@ class LearningCourseController extends Controller {
 
         app(VideoTranscodingService::class)->attachSubtitle(
             $attachment,
-            (string) file_get_contents($file->getRealPath()),
+            File::read((string) $file->getRealPath()),
             (string) $data['locale'],
         );
 

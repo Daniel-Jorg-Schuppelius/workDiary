@@ -12,7 +12,7 @@ namespace App\Services\Document;
 
 use App\Enums\Document\{DocumentStatus, DocumentType};
 use App\Models\{Document, DocumentVersion, User};
-use App\Support\Filename;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\{Carbon, Str};
@@ -181,7 +181,7 @@ class DocumentService {
                 'version_no' => $nextNo,
                 'disk' => 'local',
                 'path' => $path,
-                'original_name' => Filename::sanitize($originalName),
+                'original_name' => File::sanitizeDisplayName($originalName),
                 'mime' => $mime !== null && $mime !== '' ? $mime : 'application/octet-stream',
                 'size' => strlen($contents),
                 'uploaded_by_user_id' => $actor->id,
@@ -340,7 +340,7 @@ class DocumentService {
             'version_no' => $versionNo,
             'disk' => 'local',
             'path' => $path,
-            'original_name' => Filename::sanitize($file->getClientOriginalName()),
+            'original_name' => File::sanitizeDisplayName($file->getClientOriginalName()),
             'mime' => $file->getMimeType(),
             'size' => (int) $file->getSize(),
             'uploaded_by_user_id' => $uploader->id,

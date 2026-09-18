@@ -15,6 +15,7 @@ use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\Dropbox\{DropboxConfig, DropboxPlugin};
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
 use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -193,7 +194,7 @@ class DropboxBackupClient {
     public function download(string $remoteRef): StreamInterface {
         $response = $this->content->requestResponse('POST', $this->contentBase . '/files/download', [
             'headers' => [
-                'Dropbox-API-Arg' => json_encode(['path' => $remoteRef], JSON_THROW_ON_ERROR),
+                'Dropbox-API-Arg' => JsonHelper::encode(['path' => $remoteRef]),
                 // Dropbox verlangt einen leeren Body ohne JSON-Content-Type.
                 'Content-Type' => 'text/plain; charset=dropbox-cors-hack',
             ],
@@ -228,7 +229,7 @@ class DropboxBackupClient {
     private function contentCall(string $path, array $args, string $body): \Illuminate\Http\Client\Response {
         return $this->content->requestResponse('POST', $this->contentBase . $path, [
             'headers' => [
-                'Dropbox-API-Arg' => json_encode($args, JSON_THROW_ON_ERROR),
+                'Dropbox-API-Arg' => JsonHelper::encode($args),
                 'Content-Type' => 'application/octet-stream',
             ],
             'body' => $body,

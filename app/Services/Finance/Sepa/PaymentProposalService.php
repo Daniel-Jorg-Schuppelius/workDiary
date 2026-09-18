@@ -14,7 +14,7 @@ namespace App\Services\Finance\Sepa;
 
 use App\Models\{IncomingEInvoice, Supplier};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\BankHelper;
+use CommonToolkit\Helper\Data\{BankHelper, NumberHelper};
 use Illuminate\Support\Collection;
 
 /**
@@ -50,14 +50,17 @@ class PaymentProposalService {
         $supplier = $this->supplierFor($invoice);
         [$iban, $bic] = $this->bankDetails($invoice, $supplier);
 
-        $gross = round((float) ($invoice->amount_gross?->toFloat() ?? 0.0), 2);
+        $grossMoney = $invoice->amount_gross;
+        $gross = round($grossMoney?->toFloat() ?? 0.0, 2);
         $discountDate = $this->discountDate($invoice);
         $usesDiscount = $discountDate !== null
             && $discountDate->greaterThanOrEqualTo($today)
             && (float) ($invoice->discount_percent ?? 0) > 0;
 
-        $amount = $usesDiscount
-            ? round($gross * (1 - ((float) $invoice->discount_percent / 100)), 2)
+        // Wie Invoice::skontoAmount(): der Skontobetrag wird exakt gerechnet,
+        // gerundet und abgezogen — Überweisung und Skontobuchung passen zueinander.
+        $amount = $usesDiscount && $grossMoney !== null
+            ? $grossMoney->minusPercentage(NumberHelper::normalizeDecimalString((string) $invoice->discount_percent))->toFloat()
             : $gross;
 
         // Skontotermin schlägt Nettotermin — er ist der teurere, wenn man ihn

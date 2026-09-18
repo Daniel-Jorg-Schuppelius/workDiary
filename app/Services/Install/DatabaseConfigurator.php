@@ -10,6 +10,7 @@
 
 namespace App\Services\Install;
 
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\Facades\{Cache, Config, DB};
 use PDO;
 use Spatie\Permission\PermissionRegistrar;
@@ -46,11 +47,12 @@ class DatabaseConfigurator {
         try {
             if ($driver === 'sqlite') {
                 $database = (string) ($config['database'] ?? database_path('database.sqlite'));
-                if ($database !== ':memory:' && ! is_file($database)) {
-                    @touch($database);
+                // Ein Fehlschlag von touch() landet im catch unten (false).
+                if ($database !== ':memory:' && ! File::isFile($database)) {
+                    File::touch($database);
                 }
 
-                return is_file($database) || $database === ':memory:';
+                return $database === ':memory:' || File::isFile($database);
             }
 
             $pdo = new PDO(
@@ -79,8 +81,12 @@ class DatabaseConfigurator {
 
         if ($driver === 'sqlite') {
             $database = (string) ($config['database'] ?? database_path('database.sqlite'));
-            if ($database !== ':memory:' && ! is_file($database)) {
-                @touch($database);
+            if ($database !== ':memory:' && ! File::isFile($database)) {
+                try {
+                    File::touch($database);
+                } catch (Throwable) {
+                    // Best effort: die Migration meldet eine fehlende Datei selbst.
+                }
             }
 
             $this->env->setMany([

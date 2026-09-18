@@ -43,6 +43,8 @@ class CsvFormulaGuardRuleTest extends TestCase {
         'app/Support/Toolkit/CsvFacade.php' => 'Naht zum Toolkit: buildCsv() guardet die Datenzeilen selbst (Parameter guardFormulas), die Kopfzeile besteht aus anwendungseigenen Spaltennamen.',
         'app/Console/Commands/ExportAuditLog.php' => 'GoBD-Ausleitung: die Bytes sind über den head_hash kryptografisch gebunden. Ein vorangestellter Apostroph zerstörte genau den Nachweis, den die Datei erbringen soll.',
         'app/Services/TimeExport/Profiles/GenericCsvProfile.php' => 'Lohnexport per SFTP an ein Lohnsystem; payload_hash weist den ausgelieferten Stand nach. Geänderte Bytes hieße geänderte Lohndaten.',
+        'app/Services/TimeExport/Profiles/DatevLodasProfile.php' => 'Lohnimportdatei für DATEV LODAS, kein Tabellendokument; payload_hash weist den Stand nach. Ein Apostroph vor negativen Stunden („-2,00") verfälschte die Lohndaten.',
+        'app/Services/TimeExport/Profiles/LexwareProfile.php' => 'Lohnimportdatei für Lexware Lohn, kein Tabellendokument; payload_hash weist den Stand nach. Ein Apostroph vor negativen Werten verfälschte die Lohndaten.',
         'app/Services/Import/CsvPreflightAnalyzer.php' => 'Zwischenform beim IMPORT (XLSX-Blatt als CSV-Zeilen), keine ausgelieferte Datei.',
         'app/Services/Finance/GdpduExportService.php' => 'GoBD-Datenträgerüberlassung Z3: die Dateien sind über index.xml und den Paket-Hash gebunden und werden von der Prüfsoftware eingelesen, nicht in Excel geöffnet. Ein vorangestellter Apostroph zerstörte den Nachweis.',
     ];

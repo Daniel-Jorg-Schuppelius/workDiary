@@ -20,6 +20,7 @@ use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
 use App\Services\Import\{CsvPreflightAnalyzer, EntitySpecRegistry, HeaderMapper};
 use App\Services\Import\Source\CsvImportSource;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -119,7 +120,7 @@ class ImportMappingSuggestionService {
             $run,
             self::CAPABILITY,
             implode(' | ', $header),
-            (string) json_encode($entries, JSON_UNESCAPED_UNICODE),
+            JsonHelper::encode($entries, JSON_UNESCAPED_UNICODE),
             $last,
             $user,
         );

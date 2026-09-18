@@ -14,6 +14,7 @@ namespace App\Support\Crypto;
 
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{BankHelper, CryptoHelper};
+use CommonToolkit\Helper\Data\EmailHelper;
 
 /**
  * Nachschlage-Abdruck („Blindindex") für verschlüsselt gespeicherte Werte.
@@ -72,14 +73,14 @@ final class BlindIndex {
 
     /** E-Mail in der bisherigen Normalform (kleingeschrieben, getrimmt). */
     public static function ofEmail(?string $email): ?string {
-        $normalized = mb_strtolower(trim((string) $email));
+        $normalized = EmailHelper::normalize((string) $email);
 
         return $normalized === '' ? null : self::of($normalized);
     }
 
     /** @return list<string> */
     public static function emailCandidates(?string $email): array {
-        $normalized = mb_strtolower(trim((string) $email));
+        $normalized = EmailHelper::normalize((string) $email);
 
         return $normalized === '' ? [] : self::candidates($normalized);
     }

@@ -13,11 +13,11 @@ namespace App\Services;
 use App\Http\Controllers\OrganizationSwitchController;
 use App\Models\{Organization, OrganizationAuditLog, User};
 use CommonToolkit\Helper\Data\JsonHelper;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Files, Folder as ToolkitFolder};
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Log, Schema, Storage};
 use RuntimeException;
-use ZipArchive;
 
 /**
  * Bündelt den vollständigen Lebenszyklus einer Organisation:
@@ -150,11 +150,8 @@ class OrganizationLifecycleService {
         $zipRelPath = $relDir . '/' . $base . '.zip';
         $zipAbsPath = $disk->path($zipRelPath);
 
-        $zip = new ZipArchive;
-        if ($zip->open($zipAbsPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            throw new RuntimeException('Konnte ZIP-Datei nicht öffnen: ' . $zipAbsPath);
-        }
-
+        /** @var list<array{archiveName: string, path?: string, content?: string}> $entries */
+        $entries = [];
         $manifest = [
             'organization' => [
                 'id' => $org->id,
@@ -198,35 +195,29 @@ class OrganizationLifecycleService {
             }
             $ndjson = $rows->map(fn($row) => JsonHelper::encode($row, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
                 ->implode("\n");
-            $zip->addFromString('data/' . $table . '.jsonl', $ndjson);
+            $entries[] = ['archiveName' => 'data/' . $table . '.jsonl', 'content' => $ndjson];
             $manifest['tables'][$table] = $count;
         }
 
         // 2) Organization-Stammsatz separat sichern (hat selbst keine
         //    organization_id-Spalte).
-        $zip->addFromString(
-            'data/_organization.json',
-            JsonHelper::encode($org->toArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
-        );
+        $entries[] = [
+            'archiveName' => 'data/_organization.json',
+            'content' => JsonHelper::encode($org->toArray(), JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+        ];
 
         // 3) Dateien aus bekannten orgspezifischen Storage-Pfaden.
         foreach ($this->storageFoldersFor($org) as $relFolder) {
             $abs = storage_path('app/' . ltrim($relFolder, '/'));
-            if (! is_dir($abs)) {
+            if (! ToolkitFolder::exists($abs)) {
                 continue;
             }
             $count = 0;
-            $it = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($abs, \FilesystemIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::SELF_FIRST,
-            );
-            foreach ($it as $file) {
-                if (! $file->isFile()) {
-                    continue;
-                }
-                $localName = 'files/' . ltrim($relFolder, '/') . '/' .
-                    ltrim(str_replace($abs, '', $file->getPathname()), DIRECTORY_SEPARATOR);
-                $zip->addFile($file->getPathname(), $localName);
+            foreach (Files::get($abs, true) as $path) {
+                $entries[] = [
+                    'archiveName' => 'files/' . ltrim($relFolder, '/') . '/' . substr($path, strlen($abs) + 1),
+                    'path' => $path,
+                ];
                 $count++;
             }
             if ($count > 0) {
@@ -234,19 +225,19 @@ class OrganizationLifecycleService {
             }
         }
 
-        $zip->addFromString(
-            'manifest.json',
-            JsonHelper::encode($manifest, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
-        );
-        $zip->close();
+        $entries[] = [
+            'archiveName' => 'manifest.json',
+            'content' => JsonHelper::encode($manifest, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT),
+        ];
+        ZipFile::createFromEntries($entries, $zipAbsPath);
 
-        $hash = ToolkitFile::exists($zipAbsPath) ? ToolkitFile::hash($zipAbsPath) : null;
+        $hash = ToolkitFile::hash($zipAbsPath);
 
         $this->log($org, OrganizationAuditLog::ACTION_EXPORT, $actor, [
             'file' => $zipRelPath,
             'tables' => $manifest['tables'],
             'files' => $manifest['files'],
-            'bytes' => ToolkitFile::exists($zipAbsPath) ? ToolkitFile::size($zipAbsPath) : null,
+            'bytes' => ToolkitFile::size($zipAbsPath),
         ], $hash);
 
         return $zipRelPath;
@@ -321,8 +312,14 @@ class OrganizationLifecycleService {
         // Zusaetzlich die historischen Ablage-Verzeichnisse (best effort).
         foreach ($this->storageFoldersFor($org) as $relFolder) {
             $abs = storage_path('app/' . ltrim($relFolder, '/'));
-            if (is_dir($abs)) {
-                $this->rrmdir($abs);
+            if (! ToolkitFolder::exists($abs)) {
+                continue;
+            }
+            try {
+                // Symlink-sicher: Links werden entfernt, ihre Ziele bleiben.
+                ToolkitFolder::delete($abs, true);
+            } catch (\Throwable $e) {
+                Log::warning('Purge: Ablageordner nicht vollständig gelöscht', ['folder' => $relFolder, 'error' => $e->getMessage()]);
             }
         }
 
@@ -556,24 +553,6 @@ class OrganizationLifecycleService {
             $candidates,
             fn(string $p) => ! str_ends_with($p, '/') && ! str_ends_with($p, '/0'),
         )));
-    }
-
-    private function rrmdir(string $dir): void {
-        if (! is_dir($dir)) {
-            return;
-        }
-        $it = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST,
-        );
-        foreach ($it as $file) {
-            if ($file->isDir()) {
-                @rmdir($file->getPathname());
-            } else {
-                @unlink($file->getPathname());
-            }
-        }
-        @rmdir($dir);
     }
 
     /**

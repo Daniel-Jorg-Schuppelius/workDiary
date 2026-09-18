@@ -39,56 +39,42 @@ class CatalogXlsxImportService {
     }
 
     /**
-     * Der Toolkit-Parser liest nur Dateien — der Binär-Content läuft daher
-     * über eine Temp-Datei (Präzedenz: CsvPreflightAnalyzer, A13).
-     *
      * @return list<array<string, string>>
      */
     private function parse(SupplierCatalogSource $source, string $content): array {
-        $path = tempnam(sys_get_temp_dir(), 'wd-xlsx-');
-        if ($path === false) {
+        try {
+            $document = XLSXDocumentParser::fromString($content, $source->has_header);
+        } catch (Throwable) {
             throw new RuntimeException((string) __('procurement.catalog.error.xlsx_invalid'));
         }
 
-        try {
-            file_put_contents($path, $content);
-
-            try {
-                $document = XLSXDocumentParser::fromFile($path, $source->has_header);
-            } catch (Throwable) {
-                throw new RuntimeException((string) __('procurement.catalog.error.xlsx_invalid'));
-            }
-
-            $sheetName = trim((string) $source->sheet_name);
-            $sheet = $sheetName !== '' ? $document->getSheetByName($sheetName) : $document->getFirstSheet();
-            if ($sheet === null) {
-                throw new RuntimeException((string) __('procurement.catalog.error.sheet_not_found', ['sheet' => $sheetName]));
-            }
-
-            // Spaltennamen aus der Kopfzeile bzw. synthetisch (col0..colN) —
-            // gleiche Konvention wie der CSV-Pfad.
-            $columns = $source->has_header
-                ? array_map(static fn ($name): string => (string) $name, array_values($sheet->getHeaderNames()))
-                : null;
-
-            $records = [];
-            foreach ($sheet->getRows() as $row) {
-                $values = array_map(
-                    static fn (Cell $cell): string => $cell->toCanonicalString(),
-                    array_values($row->getCells()),
-                );
-                $names = $columns ?? array_map(static fn (int $i): string => 'col' . $i, array_keys($values));
-
-                $record = [];
-                foreach ($names as $i => $name) {
-                    $record[$name] = $values[$i] ?? '';
-                }
-                $records[] = $record;
-            }
-
-            return $records;
-        } finally {
-            @unlink($path);
+        $sheetName = trim((string) $source->sheet_name);
+        $sheet = $sheetName !== '' ? $document->getSheetByName($sheetName) : $document->getFirstSheet();
+        if ($sheet === null) {
+            throw new RuntimeException((string) __('procurement.catalog.error.sheet_not_found', ['sheet' => $sheetName]));
         }
+
+        // Spaltennamen aus der Kopfzeile bzw. synthetisch (col0..colN) —
+        // gleiche Konvention wie der CSV-Pfad.
+        $columns = $source->has_header
+            ? array_map(static fn ($name): string => (string) $name, array_values($sheet->getHeaderNames()))
+            : null;
+
+        $records = [];
+        foreach ($sheet->getRows() as $row) {
+            $values = array_map(
+                static fn (Cell $cell): string => $cell->toCanonicalString(),
+                array_values($row->getCells()),
+            );
+            $names = $columns ?? array_map(static fn (int $i): string => 'col' . $i, array_keys($values));
+
+            $record = [];
+            foreach ($names as $i => $name) {
+                $record[$name] = $values[$i] ?? '';
+            }
+            $records[] = $record;
+        }
+
+        return $records;
     }
 }

@@ -18,6 +18,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\{AccountingAccount, AccountingTaxCode};
 use App\Services\Accounting\{ChartOfAccountsService, ChartOfAccountsTemplateService};
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -137,7 +138,7 @@ class ChartOfAccountsController extends Controller {
             'is_cash' => (bool) ($data['is_cash'] ?? false),
             'is_clearing' => (bool) ($data['is_clearing'] ?? false),
             'euer_category' => $this->euerCategory($data),
-            'deductible_percent' => number_format((float) ($data['deductible_percent'] ?? 100), 2, '.', ''),
+            'deductible_percent' => Decimal::of((string) ($data['deductible_percent'] ?? 100), 2)->getValue(),
             'datev_account' => $data['datev_account'] ?? null,
             'description' => $data['description'] ?? null,
         ]);
@@ -217,7 +218,7 @@ class ChartOfAccountsController extends Controller {
             'is_clearing' => ['nullable', 'boolean'],
             'euer_category' => ['nullable', 'string', 'in:' . implode(',', array_column(EuerCategory::cases(), 'value'))],
             'bwa_group' => ['nullable', 'string', 'in:' . implode(',', array_column(BwaGroup::cases(), 'value'))],
-            'deductible_percent' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'deductible_percent' => ['nullable', 'numeric', 'decimal:0,8', 'min:0', 'max:100'],
             'datev_account' => ['nullable', 'string', 'max:16'],
             'description' => ['nullable', 'string', 'max:500'],
         ]);

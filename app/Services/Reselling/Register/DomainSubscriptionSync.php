@@ -18,7 +18,7 @@ use App\Models\Domain\DomainProjection;
 use App\Models\{LexofficeArticle, Organization};
 use App\Models\Reselling\{ResalePeriod, ResalePriceEntry, ResaleSubscription};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, StringHelper};
 use Illuminate\Support\Collection;
 
 /**
@@ -77,7 +77,7 @@ final class DomainSubscriptionSync {
                 'status' => $status,
                 'domain_projection_id' => $projection->id,
             ];
-            $hash = (string) CryptoHelper::hash(json_encode($attributes, JSON_THROW_ON_ERROR));
+            $hash = (string) CryptoHelper::hash(JsonHelper::encode($attributes));
 
             $subscription = ResaleSubscription::query()->withoutGlobalScopes()
                 ->where('organization_id', $organizationId)
@@ -231,7 +231,7 @@ final class DomainSubscriptionSync {
             if ($article->resale_role === ResaleArticleRole::Excluded) {
                 continue;
             }
-            $name = mb_strtolower(trim(preg_replace('/\s+/u', ' ', (string) $article->name) ?? ''));
+            $name = mb_strtolower(StringHelper::normalizeWhitespace((string) $article->name, unicode: true));
             if (in_array($name, $wanted, true)) {
                 $hits[] = $article;
             }

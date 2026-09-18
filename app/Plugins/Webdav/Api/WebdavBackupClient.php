@@ -12,13 +12,14 @@ declare(strict_types=1);
 
 namespace App\Plugins\Webdav\Api;
 
+use APIToolkit\API\WebDav\{MultiStatus, Propfind};
 use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\PluginHealthService;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject, ChunkedFileReader};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
 use App\Plugins\Webdav\WebdavPlugin;
 use App\Support\UrlSafety;
-use CommonToolkit\Helper\Data\XmlHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\Client\Response;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -127,7 +128,7 @@ class WebdavBackupClient {
         try {
             $response = $this->send('PROPFIND', $this->base, [
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => $this->propfindBody('<d:resourcetype/>'),
+                'body' => Propfind::body(['d:resourcetype']),
             ]);
         } catch (Throwable) {
             return false;
@@ -147,7 +148,7 @@ class WebdavBackupClient {
         try {
             $response = $this->send('PROPFIND', $this->base, [
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => $this->propfindBody('<d:quota-available-bytes/><d:quota-used-bytes/>'),
+                'body' => Propfind::body(['d:quota-available-bytes', 'd:quota-used-bytes']),
             ]);
         } catch (Throwable) {
             return ['total' => null, 'used' => null];
@@ -156,9 +157,9 @@ class WebdavBackupClient {
             return ['total' => null, 'used' => null];
         }
 
-        $xml = $response->body();
-        $available = $this->firstInt($xml, '//d:quota-available-bytes');
-        $used = $this->firstInt($xml, '//d:quota-used-bytes');
+        $self = MultiStatus::parse($response->body())[0] ?? null;
+        $available = $this->quotaValue($self?->property(self::DAV_NS, 'quota-available-bytes'));
+        $used = $this->quotaValue($self?->property(self::DAV_NS, 'quota-used-bytes'));
 
         return [
             'total' => ($available === null || $used === null) ? null : $available + $used,
@@ -220,7 +221,7 @@ class WebdavBackupClient {
         try {
             $response = $this->send('PROPFIND', $this->fileUrl($prefix), [
                 'headers' => ['Depth' => '1', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => $this->propfindBody('<d:getcontentlength/><d:getlastmodified/><d:resourcetype/>'),
+                'body' => Propfind::body(['d:getcontentlength', 'd:getlastmodified', 'd:resourcetype']),
             ]);
         } catch (Throwable) {
             return [];
@@ -271,7 +272,7 @@ class WebdavBackupClient {
     }
 
     private function putWhole(string $localPath, string $remoteName): void {
-        $handle = fopen($localPath, 'rb');
+        $handle = File::openStream($localPath, 'rb');
         if ($handle === false) {
             throw new RuntimeException("WebDAV upload: local file '{$localPath}' is not readable.");
         }
@@ -374,13 +375,7 @@ class WebdavBackupClient {
         return (int) $response->header('Content-Length');
     }
 
-    private function propfindBody(string $props): string {
-        return '<?xml version="1.0" encoding="utf-8"?>'
-            . '<d:propfind xmlns:d="DAV:"><d:prop>' . $props . '</d:prop></d:propfind>';
-    }
-
-    private function firstInt(string $xml, string $xpath): ?int {
-        $value = XmlHelper::xpathFirst($xml, $xpath, ['d' => self::DAV_NS]);
+    private function quotaValue(?string $value): ?int {
         if ($value === null || trim($value) === '') {
             return null;
         }
@@ -395,29 +390,21 @@ class WebdavBackupClient {
         $requested = trim($prefix, '/');
         $out = [];
 
-        foreach (XmlHelper::xpathNodes($xml, '//d:response', ['d' => self::DAV_NS]) as $node) {
-            $hrefNode = $node->getElementsByTagNameNS(self::DAV_NS, 'href')->item(0);
-            if ($hrefNode === null) {
-                continue;
-            }
-            $path = $this->hrefToPath((string) $hrefNode->nodeValue);
+        foreach (MultiStatus::parse($xml) as $response) {
+            $path = $this->hrefToPath($response->href);
             if ($path === null || $path === $requested) {
                 continue; // Selbst-Eintrag der Collection.
             }
-            if ($node->getElementsByTagNameNS(self::DAV_NS, 'collection')->length > 0) {
+            if ($response->isCollection) {
                 continue; // Ordner sind keine Backup-Objekte.
             }
 
-            $size = $node->getElementsByTagNameNS(self::DAV_NS, 'getcontentlength')->item(0);
-            $modified = $node->getElementsByTagNameNS(self::DAV_NS, 'getlastmodified')->item(0);
-
+            $modified = trim((string) $response->property(self::DAV_NS, 'getlastmodified'));
             $out[] = new BackupRemoteObject(
                 ref: $path,
                 name: basename($path),
-                size: $size === null ? 0 : (int) $size->nodeValue,
-                modifiedAt: ($modified === null || trim((string) $modified->nodeValue) === '')
-                    ? null
-                    : (string) $modified->nodeValue,
+                size: (int) trim((string) $response->property(self::DAV_NS, 'getcontentlength')),
+                modifiedAt: $modified === '' ? null : $modified,
             );
         }
 

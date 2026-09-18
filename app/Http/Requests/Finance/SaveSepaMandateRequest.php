@@ -37,7 +37,7 @@ class SaveSepaMandateRequest extends FormRequest {
         // pain.008-Datei bekäme die IBAN samt Leerzeichen (Vollscan 2026-08-23, E2).
         $this->merge([
             'iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) $this->input('iban', '')) ?? '',
-            'bic' => strtoupper((string) preg_replace('/\s+/', '', (string) $this->input('bic', ''))) ?: null,
+            'bic' => \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) $this->input('bic', '')),
         ]);
     }
 

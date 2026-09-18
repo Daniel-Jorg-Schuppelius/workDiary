@@ -15,6 +15,7 @@ namespace App\Plugins\Todoist\Services;
 use App\Models\{ExternalReference, Organization, TodoistConnection, User};
 use App\Plugins\Todoist\Api\TodoistApiClient;
 use App\Plugins\Todoist\TodoistPlugin;
+use CommonToolkit\Helper\Data\EmailHelper;
 
 /**
  * Preflight vor der Aktivierung einer Projektzuordnung (Feature 055,
@@ -85,7 +86,7 @@ class TodoistPreflightService {
         $collaboratorRows = [];
         foreach ($collaborators as $collaborator) {
             $externalId = isset($collaborator['id']) ? (string) $collaborator['id'] : '';
-            $email = mb_strtolower(trim((string) ($collaborator['email'] ?? '')));
+            $email = EmailHelper::normalize((string) ($collaborator['email'] ?? ''));
             $mappedUserId = $mappedCollaborators->get($externalId);
             $collaboratorRows[] = [
                 'id' => $externalId,

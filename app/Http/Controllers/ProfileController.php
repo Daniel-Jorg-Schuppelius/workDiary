@@ -16,7 +16,7 @@ use App\Models\{Attachment, User};
 use App\Notifications\GenericEventNotification;
 use App\Services\Attachments\ImageMetaUploader;
 use App\Support\Auth\RecentAuthentication;
-use CommonToolkit\Helper\Data\PhoneNumberHelper;
+use CommonToolkit\Helper\Data\{EmailHelper, PhoneNumberHelper};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Hash, Log, Notification};
@@ -76,7 +76,7 @@ class ProfileController extends Controller {
         // mit frischer Anmeldung oder aktuellem Passwort, und die alte Adresse
         // erfährt davon.
         $previousEmail = (string) $user->email;
-        $emailChanged = mb_strtolower(trim((string) $data['email'])) !== mb_strtolower($previousEmail);
+        $emailChanged = EmailHelper::normalize((string) $data['email']) !== EmailHelper::normalize($previousEmail);
         if ($emailChanged) {
             $this->assertMayChangeEmail($request, $user);
         }

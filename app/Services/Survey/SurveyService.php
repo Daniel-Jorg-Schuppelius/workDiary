@@ -14,6 +14,7 @@ namespace App\Services\Survey;
 
 use App\Models\Customer;
 use App\Models\Survey\{Survey, SurveyAnswer, SurveyInvitation, SurveyResponse};
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
@@ -58,7 +59,7 @@ class SurveyService {
             'organization_id' => $survey->organization_id,
             'survey_id' => $survey->id,
             'customer_id' => $customer?->id,
-            'email' => mb_strtolower(trim($email)),
+            'email' => EmailHelper::normalize($email),
             'context_kind' => $contextKind,
             'token_hash' => SurveyInvitation::hashToken($token),
             'expires_at' => Carbon::now()->addDays(30),
@@ -76,7 +77,7 @@ class SurveyService {
         return ! SurveyInvitation::query()
             ->withoutGlobalScopes()
             ->where('organization_id', $survey->organization_id)
-            ->where('email', mb_strtolower(trim($email)))
+            ->where('email', EmailHelper::normalize($email))
             ->whereNotNull('sent_at')
             ->where('sent_at', '>=', Carbon::now()->subDays($this->fatigueDays()))
             ->exists();

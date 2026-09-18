@@ -14,7 +14,7 @@ namespace App\Services\Reselling\Register;
 
 use App\Services\Reselling\Mirror\MirrorLine;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Helper\Data\DateHelper;
+use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
 
 /**
  * Lizenzen und Monate einer Rechnungsposition (Feature 152). Der Reseller
@@ -131,7 +131,7 @@ final class LicenseMonths {
      * die Monate („6 Mon."), sonst die nackten Lizenzmonate.
      */
     public static function label(float $licenceMonths, float $perLicence): string {
-        $fmt = static fn(float $v): string => rtrim(rtrim(number_format($v, 2, ',', '.'), '0'), ',');
+        $fmt = static fn(float $v): string => NumberHelper::toGermanFormat($v, 2, withThousandsSeparator: true, trimTrailingZeros: true);
         if ($perLicence > 0 && $licenceMonths >= $perLicence - 0.001) {
             $licences = $licenceMonths / $perLicence;
             if (abs($licences - round($licences)) < 0.001) {

@@ -10,16 +10,15 @@
 
 namespace App\Plugins\OpenProject\Sources;
 
+use CommonToolkit\ValueObjects\Duration;
+use InvalidArgumentException;
+
 /**
  * Wandelt die ISO-8601-Dauer der OpenProject-Zeiteinträge (`hours`, z. B.
  * "PT2H30M", "P1DT4H") in Minuten um und zurück. OpenProject liefert die
  * gebuchte Dauer als ISO-8601-Periode; workDiary rechnet intern mit Minuten.
  */
 final class OpenProjectDuration {
-    private const MINUTES_PER_DAY = 24 * 60;
-
-    private const MINUTES_PER_WEEK = 7 * self::MINUTES_PER_DAY;
-
     /** Parst eine ISO-8601-Dauer in (gerundete) Minuten. Ungültig/leer = 0. */
     public static function toMinutes(?string $iso): int {
         $iso = trim((string) $iso);
@@ -27,26 +26,18 @@ final class OpenProjectDuration {
             return 0;
         }
 
-        if (! preg_match('/^P(?:(\d+)W)?(?:(\d+)D)?(?:T(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?)?$/', $iso, $m)) {
+        try {
+            // Sekundenrest kaufmännisch runden (getTotalMinutes() schneidet ab).
+            return max(0, (int) round(Duration::fromIso8601($iso)->getTotalSeconds() / 60));
+        } catch (InvalidArgumentException) {
             return 0;
         }
-
-        $weeks = (int) ($m[1] ?? 0);
-        $days = (int) ($m[2] ?? 0);
-        $hours = (int) ($m[3] ?? 0);
-        $minutes = (int) ($m[4] ?? 0);
-        $seconds = (float) ($m[5] ?? 0);
-
-        $total = $weeks * self::MINUTES_PER_WEEK
-            + $days * self::MINUTES_PER_DAY
-            + $hours * 60
-            + $minutes
-            + $seconds / 60;
-
-        return max(0, (int) round($total));
     }
 
-    /** Formatiert Minuten als ISO-8601-Dauer (z. B. 150 → "PT2H30M"). */
+    /**
+     * Formatiert Minuten als ISO-8601-Dauer (z. B. 150 → "PT2H30M").
+     * Bewusst nicht Duration::toIso8601(): die Null bleibt "PT0H" (nicht "PT0S").
+     */
     public static function fromMinutes(int $minutes): string {
         $minutes = max(0, $minutes);
         $hours = intdiv($minutes, 60);

@@ -81,6 +81,23 @@ class InvoiceSpecTest extends TestCase {
         $this->assertContains(ImportErrorCode::OutOfRange, array_map(static fn($i) => $i->code, $issues));
     }
 
+    /**
+     * Toolkit-Audit 2026-09: Carbon::parse las „01/02/2024" als 2. Januar,
+     * machte aus dem 31.02. still den 2. März und nahm „next monday" an.
+     */
+    public function test_dates_are_read_german_first_without_overflow_or_relative_values(): void {
+        $spec = new InvoiceSpec();
+
+        $issues = $spec->validateRow($spec->normalize($this->row(['issued_on' => '31.02.2024', 'due_on' => 'next monday'])), $this->organization);
+        $fields = array_map(static fn($i) => $i->field, array_filter($issues, static fn($i) => $i->code === ImportErrorCode::Format));
+        $this->assertContains('issued_on', $fields);
+        $this->assertContains('due_on', $fields);
+
+        [, $issue] = $spec->upsert($spec->normalize($this->row(['issued_on' => '01/02/2024'])), $this->organization);
+        $this->assertNull($issue);
+        $this->assertSame('2024-02-01', \App\Models\Invoice::query()->latest('id')->first()?->issued_on?->toDateString());
+    }
+
     public function test_external_billing_sovereignty_blocks_row(): void {
         $this->customer->update(['billing_mode' => BillingMode::Lexoffice]);
         $spec = new InvoiceSpec();

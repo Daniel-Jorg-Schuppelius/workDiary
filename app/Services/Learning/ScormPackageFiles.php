@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningCmi5Package, LearningScormPackage};
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 
 /**
  * Dateien eines entpackten SCORM-Pakets ausliefern — gemeinsam für den gleichen
@@ -39,16 +40,10 @@ final class ScormPackageFiles {
             return null;
         }
 
-        $target = $base . '/' . ($path !== '' ? $path : $default);
+        // Relativ zum Paketordner; ein führender Slash bricht nicht aus.
+        $real = Folder::resolveWithin($base, ltrim($path !== '' ? $path : $default, '/'));
 
-        $real = realpath($target);
-        $realBase = realpath($base);
-
-        if ($real === false || $realBase === false || ! str_starts_with($real, $realBase . DIRECTORY_SEPARATOR) || ! is_file($real)) {
-            return null;
-        }
-
-        return $real;
+        return $real !== null && File::isFile($real) ? $real : null;
     }
 
     /**

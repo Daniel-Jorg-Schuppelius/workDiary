@@ -22,9 +22,10 @@ use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Numbering\NumberSequenceService;
 use App\Services\Operations\{OperationsAlertService, OperationsSignal};
 use App\Support\{Setting, UrlSafety};
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\{File, Log, Mail};
+use Illuminate\Support\Facades\{Log, Mail};
 
 /**
  * Fehlermeldesystem (Feature 041, MVP-053): erzeugt Meldungen mit
@@ -183,7 +184,7 @@ class ProblemReportService {
             ? (string) app(AssignRequestId::CONTAINER_KEY)
             : null;
         $path = storage_path('logs/laravel.log');
-        if ($requestId === null || !File::exists($path)) {
+        if ($requestId === null || !ToolkitFile::isFile($path)) {
             return [];
         }
 
@@ -199,19 +200,11 @@ class ProblemReportService {
                 '"request_id": "' . $requestId . '"',
             ];
 
-            // Nur das Ende lesen: File::get() lädt sonst ein GB-Log komplett in den Speicher (Toolkit-Tail liest rückwärts).
+            // Nur das Ende lesen: komplett eingelesen käme ein GB-Log in den Speicher (Toolkit-Tail liest rückwärts).
             $lines = ToolkitFile::tail($path, 2000);
             $matching = array_values(array_filter(
                 $lines,
-                static function (string $line) use ($needles): bool {
-                    foreach ($needles as $needle) {
-                        if (str_contains($line, $needle)) {
-                            return true;
-                        }
-                    }
-
-                    return false;
-                },
+                static fn (string $line): bool => StringHelper::containsAny($line, $needles),
             ));
 
             return $this->logFilter->filterMany(array_slice($matching, -self::LOG_EXCERPT_LINES));

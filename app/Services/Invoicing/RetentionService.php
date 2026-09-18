@@ -16,6 +16,7 @@ use App\Enums\Invoicing\{RetentionBase, RetentionKind, RetentionStatus};
 use App\Models\{Invoice, User};
 use App\Models\Invoicing\InvoiceRetention;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -63,7 +64,10 @@ class RetentionService {
             throw new RuntimeException((string) __('invoicing.retention.no_total'));
         }
 
-        $amount = $percent !== null ? round($base * $percent / 100, 2) : round((float) $fixedAmount, 2);
+        // Anteil präzise (HalfUp auf Cent) statt float-Multiplikation.
+        $amount = $percent !== null
+            ? Money::ofFloat($base, $invoice->currency, 2)->percentage($percent)->toFloat()
+            : round((float) $fixedAmount, 2);
         if ($amount <= 0.0) {
             throw new RuntimeException((string) __('invoicing.retention.amount_positive'));
         }

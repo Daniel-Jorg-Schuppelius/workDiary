@@ -13,6 +13,7 @@ namespace App\Models;
 use App\Casts\{MoneyCast, PercentageCast};
 use App\Models\Concerns\{BelongsToOrganization, HasAttachments, HasSqid, HashChainable, HashChained};
 use Carbon\Carbon;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
@@ -131,6 +132,6 @@ class CashEntry extends Model implements HashChainable {
     private function hashAmount(): string {
         $raw = $this->getAttributes()['amount'] ?? null;
 
-        return $raw === null ? '' : number_format((float) $raw, 2, '.', '');
+        return $raw === null ? '' : Decimal::of((string) $raw, 2)->getValue();
     }
 }

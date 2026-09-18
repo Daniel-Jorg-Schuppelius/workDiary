@@ -37,12 +37,6 @@ abstract class AbstractEntitySpec implements EntitySpec {
         return $str === '' ? null : $str;
     }
 
-    protected function boolish(mixed $value): bool {
-        $v = mb_strtolower(trim((string) $value));
-
-        return in_array($v, ['1', 'ja', 'yes', 'true', 'wahr', 'y', 'j'], true);
-    }
-
     protected function upperOrNull(?string $value): ?string {
         return $value === null ? null : mb_strtoupper($value);
     }

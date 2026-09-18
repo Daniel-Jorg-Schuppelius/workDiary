@@ -14,7 +14,7 @@ namespace App\Services\CustomerPortal;
 
 use App\Mail\{PortalEmailChangeConfirmMail, PortalEmailChangedNoticeMail};
 use App\Models\User;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Mail, URL};
 
@@ -39,7 +39,7 @@ class PortalEmailChangeService {
             throw new \RuntimeException((string) __('Dieser Zugang ist deaktiviert.'));
         }
 
-        $newEmail = mb_strtolower(trim($newEmail));
+        $newEmail = EmailHelper::normalize($newEmail);
 
         if ($newEmail === mb_strtolower((string) $portalUser->email)) {
             $portalUser->audit('portal.profile.email_change_blocked', ['reason' => 'unchanged']);
@@ -116,7 +116,7 @@ class PortalEmailChangeService {
 
     /** Öffentlicher Hash-Parameter — enthält die Adresse nicht im Klartext. */
     public function hashFor(string $email): string {
-        return CryptoHelper::hash(mb_strtolower(trim($email)));
+        return CryptoHelper::hash(EmailHelper::normalize($email));
     }
 
     private function emailTaken(string $email, User $except): bool {

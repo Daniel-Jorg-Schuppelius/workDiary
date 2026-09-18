@@ -14,6 +14,7 @@ namespace App\Console\Commands\Integrity;
 
 use App\Enums\Security\IntegrityCheckStatus;
 use App\Services\Release\CodeIntegrityService;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;
 
 /**
@@ -216,7 +217,7 @@ class WatchCommand extends Command {
             return;
         }
         $newDir = $parent . DIRECTORY_SEPARATOR . $event['name'];
-        if (is_dir($newDir) && ! is_link($newDir) && ! app(CodeIntegrityService::class)->isExcludedPath($newDir)) {
+        if (Folder::isDirectory($newDir) && ! File::isLink($newDir) && ! app(CodeIntegrityService::class)->isExcludedPath($newDir)) {
             $this->addWatch($fd, $newDir);
         }
     }

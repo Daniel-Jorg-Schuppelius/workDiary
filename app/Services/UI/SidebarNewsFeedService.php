@@ -14,6 +14,7 @@ namespace App\Services\UI;
 
 use App\Support\{Setting, UrlSafety};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\Data\{StringHelper, XmlHelper};
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
@@ -45,7 +46,7 @@ final class SidebarNewsFeedService {
 
         $url = $this->configuredUrl();
         $payload = Cache::get(self::CACHE_KEY);
-        if (! is_array($payload) || ($payload['url_hash'] ?? null) !== hash('sha256', $url)) {
+        if (! is_array($payload) || ($payload['url_hash'] ?? null) !== CryptoHelper::hash($url)) {
             return [];
         }
 
@@ -122,7 +123,7 @@ final class SidebarNewsFeedService {
         }
 
         Cache::forever(self::CACHE_KEY, [
-            'url_hash' => hash('sha256', $url),
+            'url_hash' => CryptoHelper::hash($url),
             'refreshed_at' => CarbonImmutable::now()->toIso8601String(),
             'items' => array_slice($parsed['items'], 0, $this->maxItems()),
         ]);

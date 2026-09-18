@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Costing\CostElementCatalog;
 use App\Models\User;
 use App\Services\Gaeb\CostElementCatalogService;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -65,7 +66,7 @@ class CostElementCatalogController extends Controller {
 
         try {
             $catalog = $this->catalogs->import(
-                (string) file_get_contents($request->file('file')->getRealPath()),
+                File::read((string) $request->file('file')->getRealPath()),
                 $this->currentOrganization()->id,
                 $this->actor(),
                 $data['name'] ?? null,

@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Webdav\Services;
 
+use APIToolkit\API\WebDav\Propfind;
 use App\Models\WebdavConnection;
 use App\Plugins\Support\Mirror\RemoteFileGateway;
 use App\Plugins\Support\PluginApiClient;
@@ -124,7 +125,7 @@ class HttpWebdavGateway implements RemoteFileGateway {
             $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/'), [
                 'auth' => $this->auth(),
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>',
+                'body' => Propfind::body(['d:resourcetype']),
             ]);
         } catch (Throwable) {
             return false;

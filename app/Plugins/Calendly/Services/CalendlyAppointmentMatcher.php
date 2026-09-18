@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\Calendly\Services;
 
 use App\Models\{Customer, Organization, User};
+use CommonToolkit\Helper\Data\EmailHelper;
 
 /**
  * Ordnet einen Calendly-Invitee einem Kunden und den Host einem WorkDiary-
@@ -30,7 +31,7 @@ class CalendlyAppointmentMatcher {
         // Person selbst (Sicherheitsscan 2026-08-23, S-60). Was keine Adresse
         // ist, wird gar nicht erst gesucht — das spart einen Volltreffer-Scan
         // über `contact_persons` und schließt Musterzeichen aus.
-        if ($email !== '' && filter_var($email, FILTER_VALIDATE_EMAIL) !== false) {
+        if (EmailHelper::isEmail($email)) {
             $byEmail = Customer::query()
                 ->where('organization_id', $organization->id)
                 ->whereRaw('LOWER(email) = ?', [mb_strtolower($email)])

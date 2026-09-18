@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Mail;
 
 use App\Models\ProblemReport;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Mail\Mailable;
 use Illuminate\Mail\Mailables\{Attachment, Content, Envelope};
@@ -45,7 +46,7 @@ class ProblemReportForwardMail extends Mailable {
     public function attachments(): array {
         return [
             Attachment::fromData(
-                fn(): string => (string) json_encode($this->report->exportPayload(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
+                fn(): string => JsonHelper::encode($this->report->exportPayload(), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE),
                 $this->report->reference_no . '.json',
             )->withMime('application/json'),
         ];

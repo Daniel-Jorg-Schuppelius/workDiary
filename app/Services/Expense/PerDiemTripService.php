@@ -13,6 +13,7 @@ namespace App\Services\Expense;
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod, PerDiemTripStatus};
 use App\Models\{Expense, ExpenseCategory, PerDiemDay, PerDiemTrip, TravelLog};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -131,9 +132,9 @@ class PerDiemTripService {
                 'description' => sprintf('Verpflegungsmehraufwand %s (%s)', $trip->purpose, $trip->location),
                 'payment_method' => PaymentMethod::PrivatePaid->value,
                 'currency' => optional($trip->days->first())->currency ?? 'EUR',
-                'amount_net' => number_format($total, 2, '.', ''),
+                'amount_net' => NumberHelper::toUSFormat($total, 2),
                 'tax_rate' => '0.00',
-                'amount_gross' => number_format($total, 2, '.', ''),
+                'amount_gross' => NumberHelper::toUSFormat($total, 2),
                 'billable' => false,
                 'status' => ExpenseStatus::Pending->value,
             ]);

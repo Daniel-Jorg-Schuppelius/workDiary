@@ -15,6 +15,7 @@ namespace App\Services\Compliance\Rules;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation, ResolvesShiftTiming};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /** ArbZG §3: max. Tagesarbeitszeit (Standard 10h, ggf. erweitert auf 8h Durchschnitt). */
 final class MaxDailyHoursRule implements ComplianceRule {
@@ -54,7 +55,7 @@ final class MaxDailyHoursRule implements ComplianceRule {
                     code: 'max_daily_hours',
                     severity: ComplianceViolation::SEVERITY_ERROR,
                     message: __('Tagesarbeitszeit :h h überschreitet Maximum :max h.', [
-                        'h' => number_format($hours, 1, ',', ''),
+                        'h' => NumberHelper::toGermanFormat($hours, 1),
                         'max' => $maxH,
                     ]),
                     relatedShiftIds: $sameDay->pluck('id')->map(fn($id) => (int) $id)->all(),

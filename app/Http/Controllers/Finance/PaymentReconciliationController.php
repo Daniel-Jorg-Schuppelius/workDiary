@@ -19,7 +19,6 @@ use App\Services\Accounting\AccountingSovereigntyResolver;
 use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Finance\{BankImportException, BankImportService, FinancialFormatsSupport, MatchingService, ReconciliationService};
 use App\Support\Sqid;
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\View\View;
@@ -192,7 +191,7 @@ class PaymentReconciliationController extends Controller {
         foreach ($invoices as $invoice) {
             $options[] = [
                 'value' => 'invoice:' . $invoice->sqid,
-                'label' => $invoice->number . ' · ' . NumberHelper::toGermanFormat($invoice->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true),
+                'label' => $invoice->number . ' · ' . ($invoice->total?->format(withSymbol: false) ?? '0,00'),
             ];
         }
 
@@ -203,7 +202,7 @@ class PaymentReconciliationController extends Controller {
         foreach ($expenses as $expense) {
             $options[] = [
                 'value' => 'expense:' . $expense->sqid,
-                'label' => \App\Support\EntityType::label(Expense::class) . ' #' . $expense->id . ' · ' . NumberHelper::toGermanFormat(($expense->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true),
+                'label' => \App\Support\EntityType::label(Expense::class) . ' #' . $expense->id . ' · ' . ($expense->amount_gross?->format(withSymbol: false) ?? '0,00'),
             ];
         }
 
@@ -216,7 +215,7 @@ class PaymentReconciliationController extends Controller {
             ->get();
         foreach ($agreements as $agreement) {
             $expected = $agreement->expected_monthly_amount !== null
-                ? ' · ~' . NumberHelper::toGermanFormat($agreement->expected_monthly_amount->toFloat(), 2, withThousandsSeparator: true)
+                ? ' · ~' . $agreement->expected_monthly_amount->format(withSymbol: false)
                 : '';
             $options[] = [
                 'value' => 'account:' . $agreement->sqid,

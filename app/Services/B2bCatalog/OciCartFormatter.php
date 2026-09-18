@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\B2bCatalog;
 
 use App\Models\B2b\B2bCatalogItem;
+use CommonToolkit\Helper\Data\NumberHelper;
 use ERechnungToolkit\Enums\UnitCode;
 
 /**
@@ -48,7 +49,7 @@ class OciCartFormatter {
             $fields["NEW_ITEM-DESCRIPTION[{$n}]"] = (string) $article->name;
             $fields["NEW_ITEM-MATNR[{$n}]"] = (string) $article->number;
             $fields["NEW_ITEM-VENDORMAT[{$n}]"] = (string) $article->number;
-            $fields["NEW_ITEM-QUANTITY[{$n}]"] = $this->decimal($line['quantity']);
+            $fields["NEW_ITEM-QUANTITY[{$n}]"] = NumberHelper::toUSFormat((float) $line['quantity'], 3, trimTrailingZeros: true);
             $fields["NEW_ITEM-UNIT[{$n}]"] = $this->isoUnit((string) $article->base_unit);
             $fields["NEW_ITEM-PRICE[{$n}]"] = $price !== null ? $price->getAmount() : '0.0000';
             $fields["NEW_ITEM-CURRENCY[{$n}]"] = $article->currency->value;
@@ -70,7 +71,7 @@ class OciCartFormatter {
                 $fields["NEW_ITEM-DESCRIPTION[{$n}]"] = (string) __('b2b_catalog.copper_surcharge_position', ['number' => (string) $article->number]);
                 $fields["NEW_ITEM-MATNR[{$n}]"] = $article->number . '-CU';
                 $fields["NEW_ITEM-VENDORMAT[{$n}]"] = $article->number . '-CU';
-                $fields["NEW_ITEM-QUANTITY[{$n}]"] = $this->decimal($line['quantity']);
+                $fields["NEW_ITEM-QUANTITY[{$n}]"] = NumberHelper::toUSFormat((float) $line['quantity'], 3, trimTrailingZeros: true);
                 $fields["NEW_ITEM-UNIT[{$n}]"] = $this->isoUnit((string) $article->base_unit);
                 $fields["NEW_ITEM-PRICE[{$n}]"] = $surcharge->getAmount();
                 $fields["NEW_ITEM-CURRENCY[{$n}]"] = $article->currency->value;
@@ -79,10 +80,6 @@ class OciCartFormatter {
         }
 
         return $fields;
-    }
-
-    private function decimal(float $value): string {
-        return rtrim(rtrim(number_format($value, 3, '.', ''), '0'), '.');
     }
 
     /**

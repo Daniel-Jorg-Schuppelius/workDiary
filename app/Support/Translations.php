@@ -11,7 +11,7 @@
 namespace App\Support;
 
 use CommonToolkit\Helper\Data\JsonHelper;
-use CommonToolkit\Helper\FileSystem\{File, Folder};
+use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
 use Illuminate\Support\Arr;
 
 /**
@@ -44,7 +44,7 @@ class Translations {
     /** @return array<string, string> */
     public static function loadJson(string $code): array {
         $path = self::jsonPath($code);
-        if (! is_file($path)) {
+        if (! File::isFile($path)) {
             return [];
         }
 
@@ -72,15 +72,16 @@ class Translations {
      * @return list<string>
      */
     public static function namespaceFiles(): array {
-        $files = glob(self::langPath('de') . '/*.php') ?: [];
+        $directory = self::langPath('de');
+        $files = Folder::exists($directory) ? Folder::findByPattern($directory, '*.php') : [];
 
-        return array_map('basename', $files);
+        return array_values(array_map('basename', $files));
     }
 
     /** @return array<string, mixed> */
     public static function loadPhp(string $code, string $file): array {
         $path = self::langPath($code) . '/' . $file;
-        if (! is_file($path)) {
+        if (! File::isFile($path)) {
             return [];
         }
         $data = require $path;
@@ -156,17 +157,12 @@ class Translations {
 
         $files = [];
         foreach ([base_path('resources/views'), base_path('app')] as $dir) {
-            $it = new \RecursiveIteratorIterator(new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS));
-            foreach ($it as $file) {
-                if ($file instanceof \SplFileInfo && str_ends_with($file->getFilename(), '.php')) {
-                    $files[] = $file->getPathname();
-                }
-            }
+            $files = [...$files, ...Files::get($dir, true, ['php'])];
         }
 
         $keys = [];
         foreach ($files as $path) {
-            $src = (string) file_get_contents($path);
+            $src = File::read($path);
             if (! preg_match_all('~(?<![A-Za-z0-9_])(?:__|trans)\(\s*([\'"])((?:\\\\.|(?!\1).)*)\1\s*[,)]~s', $src, $m)) {
                 continue;
             }

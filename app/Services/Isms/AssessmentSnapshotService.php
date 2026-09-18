@@ -14,6 +14,7 @@ namespace App\Services\Isms;
 
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsNormStatus, IsmsScope};
 use Carbon\CarbonInterface;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 
@@ -51,7 +52,7 @@ class AssessmentSnapshotService {
             'isms_scope_id' => $subject->getAttribute('isms_scope_id'),
             'subject_type' => $subject->getMorphClass(),
             'subject_id' => (int) $subject->getKey(),
-            'payload' => json_encode($payload),
+            'payload' => JsonHelper::encode($payload),
             'recorded_at' => now(),
         ]);
     }

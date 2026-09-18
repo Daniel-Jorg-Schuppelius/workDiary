@@ -806,7 +806,7 @@ class InvoiceGenerator {
                         'quantity' => '-1',
                         'unit' => (string) __('invoicing.unit_flat'),
                         'unit_price' => (string) $row['net'],
-                        'tax_rate' => number_format((float) $row['rate'], 2, '.', ''),
+                        'tax_rate' => NumberHelper::toUSFormat((float) $row['rate'], 2),
                         'tax_category' => data_get($dp->tax_context, 'category'),
                         'position' => ++$position,
                     ]);

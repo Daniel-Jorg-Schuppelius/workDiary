@@ -12,7 +12,6 @@ namespace App\Models;
 
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Concerns\{BelongsToOrganization, HasSqid, Searchable};
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Support\Carbon;
@@ -203,7 +202,7 @@ class InvoiceMailTemplate extends Model {
             'document_number' => (string) $invoice->number,
             'document_date' => optional($invoice->issued_on ?? $invoice->created_at)->format('d.m.Y') ?? '',
             'due_date' => optional($invoice->due_on)->format('d.m.Y') ?? '',
-            'total' => NumberHelper::toGermanFormat($invoice->total?->toFloat() ?? 0.0, 2, withThousandsSeparator: true),
+            'total' => $invoice->total?->format(withSymbol: false) ?? '0,00',
             'currency' => $invoice->currency->value,
             'company_name' => $companyName,
             'document_label' => $invoice->documentLabel(),

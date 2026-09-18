@@ -11,6 +11,7 @@
 namespace App\Plugins;
 
 use App\Models\{PluginError, PluginState};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\{DB, Log};
 use Throwable;
@@ -91,7 +92,7 @@ class PluginErrorRecorder {
             'organization_id' => $organizationId,
             'phase' => $phase,
             'exception_class' => $e::class,
-            'message' => $this->truncate($e->getMessage(), 2000),
+            'message' => StringHelper::truncate($e->getMessage(), 2000, '…'),
             'trace' => $e->getTraceAsString(),
             'context' => $context,
             'error_hash' => $hash,
@@ -236,13 +237,5 @@ class PluginErrorRecorder {
         } catch (Throwable) {
             // Cache-Invalidierung darf nie werfen.
         }
-    }
-
-    private function truncate(string $value, int $max): string {
-        if (mb_strlen($value) <= $max) {
-            return $value;
-        }
-
-        return mb_substr($value, 0, $max - 1) . '…';
     }
 }

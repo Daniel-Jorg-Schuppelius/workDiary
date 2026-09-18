@@ -17,6 +17,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Document, User};
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
 use Illuminate\View\View;
@@ -53,7 +54,7 @@ class IncomingInvoiceController extends Controller {
         ]);
 
         $file = $request->file('file');
-        $contents = (string) file_get_contents((string) $file->getRealPath());
+        $contents = File::read((string) $file->getRealPath());
 
         /** @var User $actor */
         $actor = Auth::user();

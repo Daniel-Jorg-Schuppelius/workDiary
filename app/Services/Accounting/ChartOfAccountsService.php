@@ -16,7 +16,7 @@ use App\Enums\Finance\{AccountType, BalanceSide, EuerCategory};
 use App\Models\Accounting\{AccountingAccount, AccountingEntryLine};
 use App\Models\Organization;
 use App\Support\Toolkit\CsvFacade;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -119,7 +119,7 @@ class ChartOfAccountsService {
                     'name' => $name,
                     'type' => $type,
                     'normal_balance' => $this->balanceSide($row['normal_balance'] ?? null) ?? $type->normalBalance(),
-                    'is_open_item' => $this->flag($row['is_open_item'] ?? null),
+                    'is_open_item' => (bool) StringHelper::parseBool($row['is_open_item'] ?? null),
                     'datev_account' => trim((string) ($row['datev_account'] ?? '')) ?: null,
                 ];
 
@@ -164,9 +164,5 @@ class ChartOfAccountsService {
         $normalized = strtolower(trim((string) $value));
 
         return $normalized === '' ? null : BalanceSide::tryFrom($normalized);
-    }
-
-    private function flag(mixed $value): bool {
-        return in_array(strtolower(trim((string) $value)), ['1', 'ja', 'yes', 'true', 'x'], true);
     }
 }

@@ -15,7 +15,7 @@ namespace App\Services\CustomerPortal;
 use App\Mail\CustomerPortalInvitationMail;
 use App\Models\{Customer, User};
 use App\Services\Auth\UserSessionInvalidator;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{Hash, Mail};
 use Illuminate\Validation\ValidationException;
@@ -53,7 +53,7 @@ class PortalAccessService {
      *                             Grund — keine Konten-Enumeration)
      */
     public function invite(Customer $customer, string $name, string $email, User $actor): User {
-        $email = mb_strtolower(trim($email));
+        $email = EmailHelper::normalize($email);
 
         // users.email ist global eindeutig. Die Antwort verrät nicht, ob die
         // Adresse intern, in einer anderen Organisation oder bereits als

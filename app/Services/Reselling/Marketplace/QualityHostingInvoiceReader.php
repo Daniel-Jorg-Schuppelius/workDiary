@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use PDFToolkit\Helper\PDFTextProvider;
 use RuntimeException;
 use Throwable;
@@ -268,7 +268,7 @@ final class QualityHostingInvoiceReader {
     private function company(string $raw): array {
         $contract = preg_match(self::CONTRACT, $raw, $c) === 1 ? $c[1] : null;
         if (preg_match('/(CNL\d+)\s*\((.+?)\)\s*(?:(?:Vertrag|Contract):.*)?$/u', $raw, $m) === 1) {
-            return ['key' => $m[1], 'name' => trim(preg_replace('/\s+/', ' ', $m[2]) ?? $m[2]), 'contract' => $contract];
+            return ['key' => $m[1], 'name' => StringHelper::normalizeWhitespace($m[2]), 'contract' => $contract];
         }
 
         return ['key' => null, 'name' => trim(preg_replace('/\s*(?:Vertrag|Contract):.*$/u', '', $raw) ?? $raw), 'contract' => $contract];

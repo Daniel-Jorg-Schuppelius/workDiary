@@ -14,7 +14,7 @@ use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\DomainProviderConnection;
 use App\Plugins\DomainReselling\DomainResellingConfig;
 use App\Plugins\Support\Domain\DomainRateBudgetException;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -119,8 +119,7 @@ class DomainAvailabilityService {
      */
     private function flag(array $row, array $keys): bool {
         foreach ($keys as $key) {
-            $value = strtolower($row[$key] ?? '');
-            if (in_array($value, ['1', 'true', 'yes'], true)) {
+            if (StringHelper::parseBool($row[$key] ?? null) === true) {
                 return true;
             }
         }

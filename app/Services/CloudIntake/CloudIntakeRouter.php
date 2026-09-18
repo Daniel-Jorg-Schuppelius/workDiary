@@ -17,6 +17,7 @@ use App\Models\Contract\Contract;
 use App\Plugins\Support\Intake\IntakeItem;
 use App\Services\Document\DocumentService;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Carbon;
@@ -77,7 +78,7 @@ class CloudIntakeRouter {
 
         try {
             $result = app(\App\Services\Gaeb\GaebPackageIntakeService::class)->intake(
-                (string) file_get_contents($quarantinePath),
+                File::read($quarantinePath),
                 $item->name,
                 $organizationId,
                 $actor,
@@ -110,7 +111,7 @@ class CloudIntakeRouter {
         try {
             $result = app(\App\Services\B2bCatalog\B2bOrderIntakeService::class)->intake(
                 $organization,
-                (string) file_get_contents($quarantinePath),
+                File::read($quarantinePath),
                 \App\Models\B2b\B2bOrder::SOURCE_CLOUD,
             );
         } catch (\RuntimeException) {
@@ -126,7 +127,7 @@ class CloudIntakeRouter {
     private function routeInvoice(IntakeItem $item, string $quarantinePath, User $actor): array {
         $result = $this->invoices->storeIncoming(
             $actor,
-            (string) file_get_contents($quarantinePath),
+            File::read($quarantinePath),
             $item->mime,
             $quarantinePath,
             source: 'cloud_intake',
@@ -175,7 +176,7 @@ class CloudIntakeRouter {
                 $version = $this->documents->addVersionFromContents(
                     $document,
                     $actor,
-                    (string) file_get_contents($quarantinePath),
+                    File::read($quarantinePath),
                     $item->name,
                     $item->mime,
                     note: 'Cloud-Import: neue Revision ' . $item->revision,

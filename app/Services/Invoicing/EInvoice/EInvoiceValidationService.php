@@ -111,29 +111,18 @@ class EInvoiceValidationService {
         }
 
         if ($this->generator->zugferdAvailable()) {
-            $tempPath = null;
             try {
                 // Identische visuelle Darstellung wie der Download (inkl.
                 // Dokumentdesign-Komposition, Feature 076).
                 $visualHtml = app(\App\Services\Invoicing\InvoicePdfRenderer::class)->composedHtml($invoice);
                 $pdf = $this->generator->generateZugferdPdf($invoice, $visualHtml);
-                if ($pdf !== null) {
-                    $tempPath = tempnam(sys_get_temp_dir(), 'zugferd-check-');
-                    if ($tempPath !== false) {
-                        file_put_contents($tempPath, $pdf);
-                        $cii = (new \ERechnungToolkit\Parsers\ZugferdPdfParser)->parseFile($tempPath);
-                        if ($cii !== null) {
-                            $result['zugferd_checked'] = true;
-                            $result['errors'] = [...$result['errors'], ...$this->compareTotals($invoice, $cii, 'ZUGFeRD/CII')];
-                        }
-                    }
+                $cii = $pdf !== null ? (new \ERechnungToolkit\Parsers\ZugferdPdfParser)->parseString($pdf) : null;
+                if ($cii !== null) {
+                    $result['zugferd_checked'] = true;
+                    $result['errors'] = [...$result['errors'], ...$this->compareTotals($invoice, $cii, 'ZUGFeRD/CII')];
                 }
             } catch (\Throwable $e) {
                 $result['errors'][] = (string) __('ZUGFeRD-Abgleich fehlgeschlagen: :reason', ['reason' => $e->getMessage()]);
-            } finally {
-                if (is_string($tempPath)) {
-                    @unlink($tempPath);
-                }
             }
         }
 

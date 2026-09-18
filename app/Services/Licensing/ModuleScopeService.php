@@ -15,6 +15,7 @@ namespace App\Services\Licensing;
 use App\Enums\Licensing\ModuleStatus;
 use App\Models\{AuditLog, LicenseFlagOverride, Organization, User};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\FileSystem\File;
 
 /**
  * Funktionsumfang der Organisation (Feature 081, MVP-373).
@@ -72,7 +73,7 @@ class ModuleScopeService {
         }
 
         $path = database_path("data/branchprofiles/{$code}.php");
-        if (! is_file($path)) {
+        if (! File::isFile($path)) {
             return null;
         }
 

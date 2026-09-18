@@ -14,6 +14,7 @@ use App\Http\Controllers\Api\LocationController;
 use App\Http\Controllers\Controller;
 use App\Models\Location\LocationDeviceToken;
 use App\Services\Location\GoogleTimelineImporter;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\View\View;
@@ -90,7 +91,7 @@ class LocationDeviceController extends Controller {
             $user->setPreference(LocationController::OPT_IN_PREFERENCE, true);
         }
 
-        $json = (string) file_get_contents($request->file('file')->getRealPath());
+        $json = File::read((string) $request->file('file')->getRealPath());
         $count = $importer->import($user, $json);
 
         return redirect()->route('location.devices.index')

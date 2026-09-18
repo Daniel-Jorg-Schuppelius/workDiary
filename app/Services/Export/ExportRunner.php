@@ -17,6 +17,7 @@ use App\Models\{ExportRun, Organization, User};
 use App\Support\{CsvExport, XlsxExport};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -90,23 +91,24 @@ final class ExportRunner {
         $rowsTotal = 0;
 
         if ($format === ExportFormat::Csv) {
-            $handle = fopen($absolutePath, 'wb');
-            if ($handle === false) {
-                throw new \RuntimeException('Export-Datei konnte nicht geöffnet werden.');
+            $lines = (function () use ($spec, $organization, $filters, $columns, &$rowsTotal): \Generator {
+                yield self::BOM;
+                yield StringHelper::encodeLine($columns, ';') . "\r\n";
+                foreach ($spec->query($organization, $filters) as $model) {
+                    $row = $spec->toRow($model);
+                    $cells = array_map(static fn(string $code): mixed => $row[$code] ?? '', $columns);
+                    // Formel-Guard (Sicherheitsscan 2026-08-23, S-46): hier fließen
+                    // frei editierbare Felder in die Datei — der eigene Anzeigename,
+                    // Kunden-Kommentar, Rechnungstext. Reines CSV-Quoting hilft
+                    // nicht: Excel wertet `=…` beim Öffnen trotzdem aus.
+                    yield StringHelper::encodeLine(CsvExport::guardRow($cells), ';') . "\r\n";
+                    $rowsTotal++;
+                }
+            })();
+            // writeStream prüft jedes fwrite — ein Schreibfehler (Platte voll) wird zum Fehlerlauf.
+            if (File::writeStream($absolutePath, $lines) === false) {
+                throw new \RuntimeException('Export-Datei konnte nicht geschrieben werden.');
             }
-            fwrite($handle, self::BOM);
-            fwrite($handle, StringHelper::encodeLine($columns, ';') . "\r\n");
-            foreach ($spec->query($organization, $filters) as $model) {
-                $row = $spec->toRow($model);
-                $cells = array_map(static fn(string $code): mixed => $row[$code] ?? '', $columns);
-                // Formel-Guard (Sicherheitsscan 2026-08-23, S-46): hier fließen
-                // frei editierbare Felder in die Datei — der eigene Anzeigename,
-                // Kunden-Kommentar, Rechnungstext. Reines CSV-Quoting hilft
-                // nicht: Excel wertet `=…` beim Öffnen trotzdem aus.
-                fwrite($handle, StringHelper::encodeLine(CsvExport::guardRow($cells), ';') . "\r\n");
-                $rowsTotal++;
-            }
-            fclose($handle);
 
             return $rowsTotal;
         }

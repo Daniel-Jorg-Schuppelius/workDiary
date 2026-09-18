@@ -14,6 +14,7 @@ use App\Enums\Classification\ClassificationDomain;
 use App\Exceptions\ClassificationValidationException;
 use App\Models\Classification;
 use App\Models\Concerns\Auditable;
+use CommonToolkit\Helper\Data\ColorHelper;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -36,8 +37,6 @@ class ClassificationManager {
     public const CODE_REGEX = '/^[a-z][a-z0-9_]{1,58}$/';
 
     public const MAX_LABEL_LENGTH = 180;
-
-    public const COLOR_REGEX = '/^#[0-9a-fA-F]{6}$/';
 
     public const SORT_STEP = 10;
 
@@ -68,7 +67,7 @@ class ClassificationManager {
      * @param  array<string, mixed>  $attributes
      */
     public function createForOrganization(int $organizationId, ClassificationDomain $domain, array $attributes): Classification {
-        $this->validateAttributes($attributes);
+        $attributes = $this->validateAttributes($attributes);
 
         $code = (string) $attributes['code'];
 
@@ -118,11 +117,9 @@ class ClassificationManager {
                 throw ClassificationValidationException::invalidLabel();
             }
         }
-        if (
-            array_key_exists('color_hex', $attributes) && $attributes['color_hex'] !== null
-            && preg_match(self::COLOR_REGEX, (string) $attributes['color_hex']) !== 1
-        ) {
-            throw ClassificationValidationException::invalidColor((string) $attributes['color_hex']);
+        if (array_key_exists('color_hex', $attributes) && $attributes['color_hex'] !== null) {
+            $attributes['color_hex'] = ColorHelper::normalizeHex((string) $attributes['color_hex'])
+                ?? throw ClassificationValidationException::invalidColor((string) $attributes['color_hex']);
         }
 
         $update = array_intersect_key($attributes, array_flip([
@@ -254,7 +251,7 @@ class ClassificationManager {
                     'color_hex' => $row['color_hex'] ?? null,
                     'icon' => $row['icon'] ?? null,
                 ];
-                $this->validateAttributes($attrs);
+                $attrs = $this->validateAttributes($attrs);
 
                 $existing = Classification::query()
                     ->where('organization_id', $organizationId)
@@ -317,9 +314,12 @@ class ClassificationManager {
     }
 
     /**
+     * Prüft die Attribute und liefert sie mit normalisierter Farbe (#rrggbb) zurück.
+     *
      * @param  array<string, mixed>  $attributes
+     * @return array<string, mixed>
      */
-    private function validateAttributes(array $attributes): void {
+    private function validateAttributes(array $attributes): array {
         $code = isset($attributes['code']) ? (string) $attributes['code'] : '';
         if (preg_match(self::CODE_REGEX, $code) !== 1) {
             throw ClassificationValidationException::invalidCode($code);
@@ -330,11 +330,11 @@ class ClassificationManager {
             throw ClassificationValidationException::invalidLabel();
         }
 
-        if (
-            ! empty($attributes['color_hex'])
-            && preg_match(self::COLOR_REGEX, (string) $attributes['color_hex']) !== 1
-        ) {
-            throw ClassificationValidationException::invalidColor((string) $attributes['color_hex']);
+        if (! empty($attributes['color_hex'])) {
+            $attributes['color_hex'] = ColorHelper::normalizeHex((string) $attributes['color_hex'])
+                ?? throw ClassificationValidationException::invalidColor((string) $attributes['color_hex']);
         }
+
+        return $attributes;
     }
 }

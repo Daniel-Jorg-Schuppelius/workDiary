@@ -20,7 +20,7 @@ use DateTimeInterface;
  */
 abstract class AbstractExportSpec implements ExportSpec {
     /**
-     * Bool → 1/0 (leer bei null), passend zur boolish()-Logik des Imports.
+     * Bool → 1/0 (leer bei null), passend zu StringHelper::parseBool() im Import.
      */
     protected function boolCell(?bool $value): string {
         if ($value === null) {

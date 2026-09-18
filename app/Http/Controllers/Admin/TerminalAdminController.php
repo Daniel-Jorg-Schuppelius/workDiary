@@ -19,6 +19,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
@@ -330,7 +331,7 @@ class TerminalAdminController extends Controller {
         return view('admin.terminals.checkpoint_qr', [
             'checkpoint' => $model,
             'url' => $url,
-            'qrDataUri' => 'data:image/svg+xml;base64,' . base64_encode($svg),
+            'qrDataUri' => (string) DataUrlHelper::encode($svg, 'image/svg+xml'),
             'backUrl' => route('admin.terminals.index'),
         ]);
     }

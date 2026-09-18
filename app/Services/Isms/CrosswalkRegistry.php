@@ -11,6 +11,7 @@
 namespace App\Services\Isms;
 
 use CommonToolkit\Helper\Data\DateHelper;
+use CommonToolkit\Helper\FileSystem\Folder;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -133,7 +134,7 @@ class CrosswalkRegistry {
         }
 
         $directory = $this->path ?? config_path('isms-crosswalks');
-        $files = glob($directory . DIRECTORY_SEPARATOR . '*.php') ?: [];
+        $files = Folder::exists($directory) ? Folder::findByPattern($directory, '*.php') : [];
         sort($files);
 
         $crosswalks = [];

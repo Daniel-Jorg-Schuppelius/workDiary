@@ -11,6 +11,7 @@
 namespace App\Services\TimeApproval;
 
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Konsistenzprüfungen für den Tagesabschluss (MVP-015,
@@ -214,7 +215,7 @@ class DayClosureValidator {
             self::CHECK_TIME_UNALLOCATED => (string) __('day-close.check.time.unallocated_minutes', ['minutes' => $meta['minutes'] ?? 0]),
             self::CHECK_BREAK_REQUIRED => (string) __('day-close.check.break.required', ['taken' => $meta['taken'] ?? 0, 'required' => $meta['required'] ?? 0]),
             self::CHECK_GAP_IN_ATTENDANCE => (string) __('day-close.check.time.gap_in_attendance', ['minutes' => $meta['minutes'] ?? 0]),
-            self::CHECK_BALANCE_THRESHOLD => (string) __('day-close.check.balance.threshold', ['hours' => number_format(((int) ($meta['balance'] ?? 0)) / 60, 1)]),
+            self::CHECK_BALANCE_THRESHOLD => (string) __('day-close.check.balance.threshold', ['hours' => NumberHelper::toGermanFormat(((int) ($meta['balance'] ?? 0)) / 60, 1, withThousandsSeparator: true)]),
             self::CHECK_ENTRY_MISSING_COMMENT => (string) __('day-close.check.entry.missing_comment', ['count' => $meta['count'] ?? 0]),
             self::CHECK_WORKTIME_OVERRUN => (string) __('day-close.check.worktime.overrun', ['minutes' => $meta['minutes'] ?? 0]),
             default => (string) __('day-close.check.unknown', ['code' => $issue['code']]),

@@ -22,7 +22,7 @@ use Carbon\CarbonImmutable;
 use CommonToolkit\Builders\CSVDocumentBuilder;
 use CommonToolkit\Entities\CSV\DataLine;
 use CommonToolkit\Generators\CSV\CSVGenerator;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -82,7 +82,7 @@ class MonthClosureBundleService {
             ];
         }
 
-        $binary = $this->zip($files);
+        $binary = ZipFile::createFromStrings($files);
         Storage::disk('local')->put($path, $binary);
 
         /** @var Attachment $attachment */
@@ -198,7 +198,7 @@ class MonthClosureBundleService {
                     (string) $log->created_at?->toIso8601String(),
                     (string) $log->event,
                     (string) ($log->user->name ?? ''),
-                    (string) json_encode($log->getAttribute('changes'), JSON_UNESCAPED_UNICODE),
+                    JsonHelper::encode($log->getAttribute('changes'), JSON_UNESCAPED_UNICODE),
                 ];
             });
         $files['audit-auszug.csv'] = $this->csv($rows);
@@ -270,33 +270,5 @@ class MonthClosureBundleService {
         }
 
         return (new CSVGenerator())->generate($builder->build(), includeHeader: false);
-    }
-
-    /**
-     * @param  array<string, string>  $files
-     */
-    private function zip(array $files): string {
-        $dir = storage_path('app/month-closure-tmp/' . bin2hex(random_bytes(8)));
-        if (! is_dir($dir)) {
-            mkdir($dir, 0700, true);
-        }
-        $paths = [];
-        try {
-            foreach ($files as $name => $content) {
-                $path = $dir . '/' . $name;
-                file_put_contents($path, $content);
-                $paths[] = $path;
-            }
-            $zipPath = $dir . '/package.zip';
-            ZipFile::create($paths, $zipPath);
-            $binary = (string) file_get_contents($zipPath);
-        } finally {
-            foreach (glob($dir . '/*') ?: [] as $f) {
-                @unlink($f);
-            }
-            @rmdir($dir);
-        }
-
-        return $binary;
     }
 }

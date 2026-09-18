@@ -16,6 +16,7 @@ use App\Enums\Privacy\AgreementStatus;
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{JointControllerAgreement, ProcessingActivity, Processor};
 use App\Support\Sqid;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\View\View;
@@ -70,7 +71,7 @@ class JointControllerAgreementController extends Controller {
             $stored = $file->store('privacy/gvv', 'local');
             if ($stored !== false) {
                 $gvv->setAttribute('document_path', $stored);
-                $gvv->setAttribute('document_name', \App\Support\Filename::sanitize($file->getClientOriginalName()));
+                $gvv->setAttribute('document_name', File::sanitizeDisplayName($file->getClientOriginalName()));
             }
         }
         $gvv->save();

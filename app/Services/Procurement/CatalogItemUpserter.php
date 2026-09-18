@@ -15,7 +15,7 @@ namespace App\Services\Procurement;
 use App\Enums\Procurement\CatalogItemStatus;
 use App\Models\{SupplierCatalogItem, SupplierCatalogItemPrice, SupplierCatalogSource};
 use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -66,7 +66,7 @@ class CatalogItemUpserter {
                     ksort($values['extra_attributes']);
                 }
                 // Staffeln gehen in den Hash ein, damit reine Staffeländerungen erkannt werden.
-                $hash = CryptoHelper::hash(implode('|', array_map(fn ($v) => is_array($v) ? (string) json_encode($v) : (string) $v, $values)) . '#' . $this->tierSignature($tiers), HashAlgorithm::SHA1);
+                $hash = CryptoHelper::hash(implode('|', array_map(fn ($v) => is_array($v) ? JsonHelper::encode($v) : (string) $v, $values)) . '#' . $this->tierSignature($tiers), HashAlgorithm::SHA1);
 
                 $item = SupplierCatalogItem::query()
                     ->where('supplier_catalog_source_id', $source->id)

@@ -21,7 +21,7 @@ use App\Services\Reselling\Purchase\PurchaseDocument;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -184,7 +184,7 @@ final class PurchaseAllocator {
                 $legacyHash = (string) CryptoHelper::hash('provider|' . $provider->value . '|' . $invoice->number . '|0' . $lineKey);
                 $duplicate = ResalePurchaseEntry::query()->withoutGlobalScopes()->where('organization_id', $organization->id)
                     ->where(static fn($q) => $q->where('raw_hash', $hash)
-                        ->orWhere(static fn($legacy) => $legacy->where('raw_hash', $legacyHash)->where('net_amount', number_format($line->total, 2, '.', ''))))
+                        ->orWhere(static fn($legacy) => $legacy->where('raw_hash', $legacyHash)->where('net_amount', NumberHelper::toUSFormat($line->total, 2))))
                     ->exists();
                 if ($duplicate) {
                     $result['duplicates']++;

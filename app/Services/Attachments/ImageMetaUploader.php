@@ -11,6 +11,7 @@
 namespace App\Services\Attachments;
 
 use App\Models\{Attachment, Organization, User};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{Auth, Storage};
 use Illuminate\Support\Str;
@@ -75,7 +76,7 @@ class ImageMetaUploader {
             'user_id' => Auth::id(),
             'disk' => 'local',
             'path' => $path,
-            'original_name' => self::sanitizeFilename($file->getClientOriginalName()),
+            'original_name' => File::sanitizeDisplayName($file->getClientOriginalName()),
             'mime' => $serverMime,
             'size' => $file->getSize(),
             'meta_type' => $meta,
@@ -96,12 +97,5 @@ class ImageMetaUploader {
         }
         Storage::disk($existing->disk)->delete($existing->path);
         $existing->delete();
-    }
-
-    private static function sanitizeFilename(string $name): string {
-        $name = preg_replace('/[\x00-\x1F\x7F]/u', '', $name) ?? '';
-        $name = str_replace(['/', '\\'], '_', $name);
-
-        return trim(mb_substr($name, 0, 255));
     }
 }

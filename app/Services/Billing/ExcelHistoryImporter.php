@@ -17,6 +17,7 @@ use App\Models\ActivityCategory;
 use App\Models\Billing\CustomerBillingAgreement;
 use App\Models\{Customer, TimeEntry, User};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\Month;
 use CommonToolkit\Parsers\XLSXDocumentParser;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Str;
@@ -34,12 +35,6 @@ use RuntimeException;
  * D=Endzeit; Abrechnungsblock L/M ab Zeile 2: Gesamt/Abgerechnet/Vormonat/Offen.
  */
 class ExcelHistoryImporter {
-    private const MONTHS = [
-        'Januar' => 1, 'Februar' => 2, 'März' => 3, 'April' => 4,
-        'Mai' => 5, 'Juni' => 6, 'Juli' => 7, 'August' => 8,
-        'September' => 9, 'Oktober' => 10, 'November' => 11, 'Dezember' => 12,
-    ];
-
     /**
      * @return list<array{sheet: string, year: int, month: int, entries_created: int, entries_skipped: int, minutes: int, payment: float|null, payment_created: bool, excel_gross: float|null}>
      */
@@ -80,9 +75,9 @@ class ExcelHistoryImporter {
         if (! preg_match('/^(\p{L}+)\s+(\d{4})$/u', trim($name), $m)) {
             return null;
         }
-        $month = self::MONTHS[$m[1]] ?? null;
+        $month = Month::fromName($m[1]);
 
-        return $month === null ? null : [(int) $m[2], $month];
+        return $month === null ? null : [(int) $m[2], $month->value];
     }
 
     /**

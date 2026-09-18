@@ -18,6 +18,7 @@ use App\Models\{DiaryEntry, Organization, User, Vehicle};
 use App\Models\Passenger\{PassengerConcession, PassengerFareTariff, PassengerRide, PassengerVehicleProfile};
 use App\Services\Invoicing\TaxResolver;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -402,7 +403,8 @@ class PassengerRideService {
             ]);
         }
 
-        $taxAmount = bcdiv(bcmul($meterNet, $taxRate, 6), '100', 2);
+        // Kaufmännisch runden (HalfUp) — bcdiv(…, 2) schnitt den Steuerbetrag ab.
+        $taxAmount = NumberHelper::percentOfPrecise($meterNet, $taxRate, 2);
         $ride->forceFill([
             'status' => RideStatus::Completed,
             'completed_at' => now(),

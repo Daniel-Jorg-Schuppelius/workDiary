@@ -12,7 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Calendar;
 
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use DateTimeImmutable;
 
 /**
@@ -59,7 +59,7 @@ final class RemoteCalendarEvent implements RemoteCalendarItem {
      * der {@see \App\Models\ExternalReference}-Payload — CalDAV-Muster).
      */
     public function fingerprint(): string {
-        return CryptoHelper::hash((string) json_encode([
+        return CryptoHelper::hash(JsonHelper::encode([
             $this->title,
             $this->description,
             $this->location,

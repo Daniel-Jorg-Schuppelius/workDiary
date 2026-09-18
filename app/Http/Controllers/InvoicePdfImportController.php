@@ -19,7 +19,8 @@ use App\Services\Document\DocumentService;
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\{InvoiceGenerator, InvoicePdfImportService, TaxResolver};
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper, VatNumberHelper};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate};
 use Illuminate\Validation\Rule;
@@ -85,7 +86,7 @@ class InvoicePdfImportController extends Controller {
             ]);
         }
 
-        $bytes = (string) file_get_contents((string) $file->getRealPath());
+        $bytes = File::read((string) $file->getRealPath());
         $sha256 = CryptoHelper::hash($bytes);
         $duplicate = Invoice::query()
             ->where('organization_id', $customer->organization_id)
@@ -124,8 +125,8 @@ class InvoicePdfImportController extends Controller {
             if ($extractedIban !== null && $orgIban !== null && $extractedIban !== $orgIban) {
                 $extracted['warnings'][] = 'seller_iban_mismatch';
             }
-            $extractedVat = strtoupper((string) preg_replace('/\s+/', '', (string) ($extracted['seller_vat'] ?? '')));
-            $orgVat = strtoupper((string) preg_replace('/\s+/', '', (string) ($einvoiceSeller['vat_id'] ?? '')));
+            $extractedVat = VatNumberHelper::normalize((string) ($extracted['seller_vat'] ?? ''));
+            $orgVat = VatNumberHelper::normalize((string) ($einvoiceSeller['vat_id'] ?? ''));
             if ($extractedVat !== '' && $orgVat !== '' && $extractedVat !== $orgVat) {
                 $extracted['warnings'][] = 'seller_vat_mismatch';
             }
@@ -215,7 +216,7 @@ class InvoicePdfImportController extends Controller {
                     'description' => __('invoice-import.default_line', ['number' => $detectedNumber !== '' ? $detectedNumber : $number]),
                     'quantity' => '1.000',
                     'unit' => 'Stk.',
-                    'unit_price' => number_format($net, 4, '.', ''),
+                    'unit_price' => NumberHelper::toUSFormat($net, 4),
                     'tax_rate' => $taxRate,
                     'position' => 1,
                 ]);

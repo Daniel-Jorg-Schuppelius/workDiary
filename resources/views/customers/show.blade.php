@@ -122,8 +122,8 @@
                 @elseif ($customer->address)
                     <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{{ $customer->address }}</x-detail-grid.row>
                 @endif
-                {{-- intl statt CountryCode::getLabel(): Toolkit-Labels sind nur Deutsch, Anzeige muss der UI-Locale folgen --}}
-                <x-detail-grid.row :label="__('Land')" :value="$customer->country ? \Locale::getDisplayRegion('-' . $customer->country, app()->getLocale()) : null" />
+                {{-- getLabel(Locale) folgt der UI-Locale (intl), unbekannte Codes bleiben roh --}}
+                <x-detail-grid.row :label="__('Land')" :value="$customer->country ? (\CommonToolkit\Enums\CountryCode::tryFrom($customer->country)?->getLabel(app()->getLocale()) ?? $customer->country) : null" />
             </x-detail-grid>
             <x-contact-persons :persons="$customer->contact_persons" />
         </x-card>

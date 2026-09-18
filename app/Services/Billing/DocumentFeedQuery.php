@@ -12,6 +12,8 @@ namespace App\Services\Billing;
 
 use App\Models\Invoice;
 use App\Services\Billing\Feed\{DocumentFeedSourceRegistry, FeedProjection};
+use CommonToolkit\Enums\CountryCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Carbon;
@@ -263,15 +265,16 @@ class DocumentFeedQuery {
         }
 
         if ($f->search !== '') {
-            // Deutsche Betragseingabe (1.167,08) → 1167.08 für den Spaltenvergleich.
-            $amount = str_replace(',', '.', str_replace(['.', ' '], '', $f->search));
+            // Betragseingabe → kanonischer Dezimalstring für den Spaltenvergleich:
+            // „1.167,08" wie „12.50" (der Punkt war hier bisher immer Tausender).
+            $amount = NumberHelper::normalizeDecimalStringOrNull($f->search, CountryCode::Germany);
             $datePatterns = $this->dateLikePatterns($f->search);
 
             $query->where(function (Builder $q) use ($f, $amount, $datePatterns): void {
                 $q->whereLikeEscaped('number', $f->search)
                     ->orWhereLikeEscaped('contact_name', $f->search);
 
-                if (is_numeric($amount)) {
+                if ($amount !== null) {
                     $q->orWhereLikeEscaped('amount_gross', $amount);
                 }
 

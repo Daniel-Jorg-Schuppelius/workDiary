@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support\Backup;
 
+use CommonToolkit\Helper\FileSystem\File;
 use RuntimeException;
 
 /**
@@ -27,12 +28,15 @@ final class ChunkedFileReader {
      * Fehlertext wie beim eigentlichen Öffnen in {@see each()}.
      */
     public static function size(string $localPath): int {
-        $size = @filesize($localPath);
-        if ($size === false || ! is_readable($localPath)) {
+        if (! File::isFile($localPath) || ! File::isReadable($localPath, false)) {
             throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}");
         }
 
-        return (int) $size;
+        try {
+            return File::size($localPath);
+        } catch (\Throwable $e) {
+            throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}", 0, $e);
+        }
     }
 
     /**
@@ -43,7 +47,7 @@ final class ChunkedFileReader {
      * @param  callable(string $chunk, int $offset): void  $onChunk
      */
     public static function each(string $localPath, int $chunkSize, callable $onChunk): int {
-        if (@filesize($localPath) === false) {
+        if (! File::isFile($localPath)) {
             throw new RuntimeException("Backup-Teil nicht lesbar: {$localPath}");
         }
 
@@ -53,7 +57,7 @@ final class ChunkedFileReader {
         // Gesamt-Bytezahl bleiben App-Vertrag der Backup-Uploads.
         try {
             $offset = 0;
-            foreach (\CommonToolkit\Helper\FileSystem\File::readChunks($localPath, max(1, $chunkSize), null, strict: true) as $chunk) {
+            foreach (File::readChunks($localPath, max(1, $chunkSize), null, strict: true) as $chunk) {
                 $onChunk($chunk, $offset);
                 $offset += strlen($chunk);
             }

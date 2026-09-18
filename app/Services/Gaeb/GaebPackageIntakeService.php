@@ -18,6 +18,7 @@ use App\Models\{GaebImport, User};
 use App\Services\Document\DocumentService;
 use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Enums\GaebFormat;
 use ERechnungToolkit\Helper\Gaeb\GaebFormatDetector;
@@ -177,10 +178,10 @@ final class GaebPackageIntakeService {
             return false;
         }
 
-        $finfo = new \finfo(FILEINFO_MIME_TYPE);
-        $mime = (string) $finfo->buffer($entry['contents']);
+        // finfo, bei unklarem Ergebnis Magic Bytes; leerer Inhalt (false) fällt durch.
+        $mime = File::mimeTypeFromContent($entry['contents']);
 
-        return in_array($mime, \App\Services\Document\DocumentService::ALLOWED_MIMES, true);
+        return $mime !== false && in_array($mime, \App\Services\Document\DocumentService::ALLOWED_MIMES, true);
     }
 
     /** @param array{name: string, contents: string} $entry */

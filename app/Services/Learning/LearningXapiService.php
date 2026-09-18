@@ -14,6 +14,8 @@ namespace App\Services\Learning;
 
 use App\Enums\Learning\LearningUnitKind;
 use App\Models\Learning\{LearningEnrollment, LearningUnit, LearningXapiStatement};
+use CommonToolkit\Helper\Data\JsonHelper;
+use ELearningToolkit\XApi\{Outcome, ProgressRule};
 use Illuminate\Support\{Carbon, Str};
 
 /**
@@ -30,18 +32,6 @@ use Illuminate\Support\{Carbon, Str};
  * Die Statements werden **roh** gespeichert; ausgewertet wird eine Kopie.
  */
 class LearningXapiService {
-    /** Verben, die einen Abschluss bedeuten. */
-    private const COMPLETING_VERBS = [
-        'http://adlnet.gov/expapi/verbs/completed',
-        'http://adlnet.gov/expapi/verbs/passed',
-        'https://w3id.org/xapi/dod-isd/verbs/completed',
-    ];
-
-    /** Verben, die ein Scheitern bedeuten — sie schließen nie ab. */
-    private const FAILING_VERBS = [
-        'http://adlnet.gov/expapi/verbs/failed',
-    ];
-
     public function __construct(
         private readonly LearningEnrollmentService $enrollments,
     ) {}
@@ -74,34 +64,24 @@ class LearningXapiService {
             'statement_id' => $statementId,
             'verb' => $verb,
             'object_id' => $objectId !== null ? mb_substr($objectId, 0, 500) : null,
-            'payload' => (string) json_encode($statement, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'payload' => JsonHelper::encode($statement, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'stored_at' => Carbon::now(),
         ]);
 
-        $this->applyProgress($enrollment, $statement, $verb);
+        $this->applyProgress($enrollment, $statement);
 
         return $record;
     }
 
     /**
-     * Fortschritt aus einem Statement ableiten — nur bei eindeutigen
-     * Verben und nur, wenn das Ergebnis nicht auf Scheitern lautet.
+     * Fortschritt nach der Regel des elearning-toolkits: nur eindeutige
+     * Abschluss-Verben, und ein `completed` mit `success: false` ist kein
+     * Nachweis. Ausgewertet wird roh — auch unsaubere Statements zählen.
      *
      * @param  array<string, mixed>  $statement
      */
-    private function applyProgress(LearningEnrollment $enrollment, array $statement, ?string $verb): void {
-        if ($verb === null || in_array($verb, self::FAILING_VERBS, true)) {
-            return;
-        }
-
-        if (! in_array($verb, self::COMPLETING_VERBS, true)) {
-            return;
-        }
-
-        // Ein `completed` mit `success: false` ist kein Nachweis.
-        $success = $statement['result']['success'] ?? null;
-
-        if ($success === false) {
+    private function applyProgress(LearningEnrollment $enrollment, array $statement): void {
+        if (ProgressRule::evaluateRaw($statement) !== Outcome::Completed) {
             return;
         }
 

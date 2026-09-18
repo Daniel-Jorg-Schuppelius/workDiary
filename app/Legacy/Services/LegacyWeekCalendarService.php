@@ -10,15 +10,15 @@
 
 namespace App\Legacy\Services;
 
-use App\Support\WeekDay;
 use Carbon\{Carbon, CarbonInterface};
+use CommonToolkit\Enums\Weekday;
 
 class LegacyWeekCalendarService {
     /**
      * @return array{monday: Carbon, sunday: Carbon, weekOffset: int, selectedWeek: string}
      */
     public function resolveWindow(int $weekOffset, string $weekDate): array {
-        $baseMonday = Carbon::now()->startOfWeek(WeekDay::MONDAY);
+        $baseMonday = Carbon::now()->startOfWeek(Weekday::MONDAY->value);
         $monday = $baseMonday->copy()->addWeeks($weekOffset);
 
         if (preg_match('/^(\d{4})-W(\d{2})$/', $weekDate, $matches) === 1) {

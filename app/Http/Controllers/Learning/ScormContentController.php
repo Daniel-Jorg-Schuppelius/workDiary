@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Learning\{LearningCmi5Package, LearningEnrollment, LearningScormPackage};
 use App\Services\Learning\{ScormContentToken, ScormPackageFiles};
 use App\Support\Learning\ScormContentHost;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use ELearningToolkit\Scorm\LaunchPath;
 use Illuminate\Http\Response;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
@@ -37,7 +38,7 @@ final class ScormContentController extends Controller {
         $appOrigin = ScormContentHost::appOrigin();
         abort_if($appOrigin === null, 404);
 
-        $nonce = rtrim(strtr(base64_encode(random_bytes(18)), '+/', '-_'), '=');
+        $nonce = CryptoHelper::base64UrlEncode(random_bytes(18));
         $launchUrl = '/scorm/' . $token . '/inhalt/' . LaunchPath::encode((string) $package->launch_href);
 
         $response = response()->view('learning.scorm-content.wrapper', [

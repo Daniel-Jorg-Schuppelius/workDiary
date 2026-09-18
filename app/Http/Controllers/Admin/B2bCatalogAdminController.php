@@ -18,6 +18,7 @@ use App\Models\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem, B2bOrder};
 use App\Models\{Customer, Organization, User};
 use App\Services\B2bCatalog\B2bOrderIntakeService;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -173,7 +174,7 @@ class B2bCatalogAdminController extends Controller {
             'order_file' => ['required', 'file', 'max:10240', 'mimes:xml,txt'],
         ]);
 
-        $xml = (string) file_get_contents((string) $request->file('order_file')?->getRealPath());
+        $xml = File::read((string) $request->file('order_file')?->getRealPath());
 
         try {
             $result = $service->intake($organization, $xml, B2bOrder::SOURCE_UPLOAD);
@@ -200,7 +201,7 @@ class B2bCatalogAdminController extends Controller {
      * K-Kontrollsatz mit der Kundennummer, effektive Nettopreise der
      * freigegebenen Artikel (Feature 099, `custom_price`).
      */
-    public function exportDatanorm(Request $request, B2bCatalogAccess $access, \App\Services\Procurement\DatanormExportService $export): \Symfony\Component\HttpFoundation\BinaryFileResponse|RedirectResponse {
+    public function exportDatanorm(Request $request, B2bCatalogAccess $access, \App\Services\Procurement\DatanormExportService $export): \Illuminate\Http\Response|RedirectResponse {
         $admin = $this->admin();
         $this->guard($admin, $access);
         $request->validate(['version' => ['nullable', 'in:4,5']]);

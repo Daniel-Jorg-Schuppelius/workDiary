@@ -13,6 +13,7 @@ namespace App\Services\Invoicing\EInvoice;
 use App\Enums\Invoicing\XRechnungSyntax;
 use App\Models\{Invoice, InvoiceItem, Organization};
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use ERechnungToolkit\Builders\ERechnungDocumentBuilder;
 use ERechnungToolkit\Entities\{Document, PaymentTerms, TaxSubtotal, TaxTotal};
@@ -389,7 +390,7 @@ class XRechnungGenerator {
         if ($totals['document_discount']->isPositive()) {
             $categoriesByRate = [];
             foreach ($invoice->items as $item) {
-                $rateKey = number_format($item->tax_rate !== null ? (float) $item->tax_rate->getNumericValue() : $taxRate, 2, '.', '');
+                $rateKey = NumberHelper::toUSFormat($item->tax_rate !== null ? (float) $item->tax_rate->getNumericValue() : $taxRate, 2);
                 $categoriesByRate[$rateKey] ??= $this->itemTaxCategory($item, $category);
             }
             foreach ($totals['by_rate'] as $rateKey => $group) {
@@ -475,7 +476,7 @@ class XRechnungGenerator {
             // Toolkit-Normalisierung (Vollaudit 2026-07, N40); '' statt null
             // erhält die bisherige Ausgabe-Semantik der Pflichtfeld-Prüfung.
             'iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN($get('iban')) ?? '',
-            'bic' => strtoupper((string) preg_replace('/\s+/', '', $get('bic'))),
+            'bic' => \CommonToolkit\Helper\Data\BankHelper::normalizeBIC($get('bic')) ?? '',
             'account_holder' => $get('account_holder'),
             'payment_terms_days' => $days > 0 ? $days : self::DEFAULT_PAYMENT_TERMS_DAYS,
             'small_business' => (string) ($einvoice['small_business'] ?? '0') === '1',
@@ -544,7 +545,7 @@ class XRechnungGenerator {
                 note: sprintf(
                     '#SKONTO#TAGE=%d#PROZENT=%s#',
                     (int) $invoice->skonto_days,
-                    number_format($skontoPercent, 2, '.', ''),
+                    NumberHelper::toUSFormat($skontoPercent, 2),
                 ),
                 netPaymentDays: $netDays,
                 discountPercent: $skontoPercent,

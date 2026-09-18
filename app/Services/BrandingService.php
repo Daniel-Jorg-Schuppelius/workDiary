@@ -12,7 +12,7 @@ namespace App\Services;
 
 use App\Http\Controllers\AttachmentController;
 use App\Models\{Attachment, Organization};
-use CommonToolkit\Helper\Data\ColorHelper;
+use CommonToolkit\Helper\Data\{ColorHelper, DataUrlHelper};
 use Illuminate\Support\Facades\{Auth, Storage};
 
 /**
@@ -232,9 +232,7 @@ class BrandingService {
             if ($contents === null || $contents === '') {
                 return null;
             }
-            $mime = $att->mime ?: 'image/png';
-
-            return 'data:' . $mime . ';base64,' . base64_encode($contents);
+            return DataUrlHelper::encode($contents, $att->mime ?: 'image/png') ?: null;
         } catch (\Throwable $e) {
             report($e);
 

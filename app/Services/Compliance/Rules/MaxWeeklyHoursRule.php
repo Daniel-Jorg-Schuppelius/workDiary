@@ -17,6 +17,7 @@ use App\Models\ScheduledShift;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation, ResolvesShiftTiming};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /** Wochenarbeitszeit (default 48h, ISO-Woche). */
 final class MaxWeeklyHoursRule implements ComplianceRule {
@@ -57,7 +58,7 @@ final class MaxWeeklyHoursRule implements ComplianceRule {
                     code: 'max_weekly_hours',
                     severity: ComplianceViolation::SEVERITY_WARNING,
                     message: __('Wochenarbeitszeit :h h (KW :w) überschreitet Maximum :max h.', [
-                        'h' => number_format($hours, 1, ',', ''),
+                        'h' => NumberHelper::toGermanFormat($hours, 1),
                         'w' => $weekStart->isoFormat('W'),
                         'max' => $maxH,
                     ]),

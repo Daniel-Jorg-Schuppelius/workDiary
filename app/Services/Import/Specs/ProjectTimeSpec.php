@@ -21,6 +21,7 @@ use App\Services\TimeApproval\MonthClosureService;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use Throwable;
 
 /**
@@ -104,7 +105,7 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
 
         if (($row['user_email'] ?? null) === null) {
             $issues[] = $this->requiredIssue('user_email');
-        } elseif (! filter_var($row['user_email'], FILTER_VALIDATE_EMAIL)) {
+        } elseif (! EmailHelper::isEmail($row['user_email'])) {
             $issues[] = $this->formatIssue('user_email', (string) __('import.error.format.email'));
         }
 
@@ -281,7 +282,7 @@ class ProjectTimeSpec extends AbstractEntitySpec implements HasMappableValues, I
     private function resolveBillable(array $row): bool {
         $value = $row['billable'] ?? null;
 
-        return ($value === null || $value === '') ? true : $this->boolish($value);
+        return ($value === null || $value === '') ? true : (bool) StringHelper::parseBool($value);
     }
 
     /**

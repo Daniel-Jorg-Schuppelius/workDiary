@@ -17,7 +17,6 @@ use App\Models\{Asset, Attachment, Customer, DiaryEntry, Document, Expense, Form
 use App\Services\Asset\AssetFormOptions;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Support\{CarbonFmt, OrganizationContext};
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\Gate;
 
 /**
@@ -214,8 +213,9 @@ class GlobalSearchService {
                         'id' => $e->id,
                         'title' => $e->vendor ?: ($e->description ?: (string) __('Spese #:id', ['id' => $e->id])),
                         'subtitle' => CarbonFmt::fdate($e->date)
-                            . ' · ' . NumberHelper::toGermanFormat(($e->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' €',
-                        'url' => route('expenses.show', $e),
+                            . ' · ' . ($e->amount_gross?->format() ?? '0,00 €'),
+                        // Es gibt keine Detailseite (expenses.show fehlte → 500 bei jedem Spesen-Treffer).
+                        'url' => route('expenses.index', ['from' => $e->date->toDateString(), 'to' => $e->date->toDateString()]),
                     ])
                     ->all()
             );

@@ -19,6 +19,7 @@ use App\Plugins\RemoteSupport\{RemoteSessionImporter, RemoteSupportConfig};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\AbstractEntitySpec;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
 use CommonToolkit\Helper\Data\StringHelper;
 
 /**
@@ -86,7 +87,7 @@ class RemoteSessionSpec extends AbstractEntitySpec {
         // generische CSV-Leser die echte Kopfzeile als Header erkennt.
         $raw = StringHelper::stripBom($raw); // Feature 052
 
-        return (string) preg_replace('/^\s*sep=.\s*\r?\n/i', '', $raw, 1);
+        return CsvStringHelper::stripExcelSeparatorHint($raw);
     }
 
     public function normalize(array $row): array {

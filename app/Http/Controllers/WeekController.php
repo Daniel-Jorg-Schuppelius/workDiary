@@ -15,8 +15,8 @@ use App\Models\User;
 use App\Services\Calendar\WeekViewService;
 use App\Services\HolidayService;
 use App\Services\UI\DateRangeContext;
-use App\Support\WeekDay;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Enums\Weekday;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
@@ -32,8 +32,8 @@ class WeekController extends Controller {
         // Backward-Compat: ?date=YYYY-MM-DD setzt den globalen Range auf die Woche und leitet auf die saubere URL um.
         if ($request->filled('date')) {
             $date = $this->parseDate((string) $request->query('date'));
-            $weekStart = $date->startOfWeek(WeekDay::MONDAY);
-            $weekEnd = $weekStart->endOfWeek(WeekDay::SUNDAY);
+            $weekStart = $date->startOfWeek(Weekday::MONDAY->value);
+            $weekEnd = $weekStart->endOfWeek(Weekday::SUNDAY->value);
             app(DateRangeContext::class)->set(
                 DateRangeContext::PRESET_CUSTOM,
                 $weekStart->toDateString(),
@@ -149,11 +149,11 @@ class WeekController extends Controller {
      * @return array<int, CarbonImmutable>
      */
     private function collectWeekStarts(CarbonInterface $from, CarbonInterface $to): array {
-        $cursor = CarbonImmutable::instance($from)->startOfWeek(WeekDay::MONDAY)->startOfDay();
+        $cursor = CarbonImmutable::instance($from)->startOfWeek(Weekday::MONDAY->value)->startOfDay();
         $end = CarbonImmutable::instance($to)->endOfDay();
 
         if ($end->lessThan($cursor)) {
-            return [CarbonImmutable::today()->startOfWeek(WeekDay::MONDAY)->startOfDay()];
+            return [CarbonImmutable::today()->startOfWeek(Weekday::MONDAY->value)->startOfDay()];
         }
 
         $weeks = [];
@@ -165,7 +165,7 @@ class WeekController extends Controller {
 
         return $weeks !== []
             ? $weeks
-            : [CarbonImmutable::today()->startOfWeek(WeekDay::MONDAY)->startOfDay()];
+            : [CarbonImmutable::today()->startOfWeek(Weekday::MONDAY->value)->startOfDay()];
     }
 
     private function parseDate(string $value): CarbonImmutable {

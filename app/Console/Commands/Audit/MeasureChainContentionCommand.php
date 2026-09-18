@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Audit;
 
 use App\Models\{AuditLog, Organization, User};
+use CommonToolkit\Helper\Data\{JsonHelper, StringHelper};
 use Illuminate\Console\Command;
 use Illuminate\Process\Pool;
 use Illuminate\Support\Facades\{DB, Process};
@@ -116,7 +117,7 @@ class MeasureChainContentionCommand extends Command {
             if (! is_array($payload)) {
                 $this->warn(sprintf('  Arbeitsprozess Exit %d ohne verwertbare Ausgabe: %s',
                     $result->exitCode() ?? -1,
-                    mb_substr(preg_replace('/\s+/', ' ', trim((string) $result->errorOutput())) ?? '', 0, 600)));
+                    mb_substr(StringHelper::normalizeWhitespace((string) $result->errorOutput()), 0, 600)));
                 $failed++;
 
                 continue;
@@ -183,7 +184,7 @@ class MeasureChainContentionCommand extends Command {
     private function runWorker(int $organizationId, int $inserts): int {
         $organization = Organization::query()->find($organizationId);
         if (! $organization instanceof Organization) {
-            $this->output->write(json_encode(['rows' => 0, 'total_ms' => 0, 'max_ms' => 0]) ?: '');
+            $this->output->write(JsonHelper::encode(['rows' => 0, 'total_ms' => 0, 'max_ms' => 0]));
 
             return self::FAILURE;
         }
@@ -220,13 +221,13 @@ class MeasureChainContentionCommand extends Command {
             $max = max($max, $elapsed);
         }
 
-        $this->output->write(json_encode([
+        $this->output->write(JsonHelper::encode([
             'organization' => $organizationId,
             'rows' => $written,
             'deadlocks' => $deadlocks,
             'total_ms' => round($total, 3),
             'max_ms' => round($max, 3),
-        ]) ?: '');
+        ]));
 
         return self::SUCCESS;
     }

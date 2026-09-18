@@ -12,6 +12,9 @@ namespace App\Http\Requests;
 
 class SavePerDiemRateRequest extends BaseFormRequest {
     protected function prepareForValidation(): void {
+        if ($this->filled('country')) {
+            $this->merge(['country' => $this->string('country')->upper()->value()]);
+        }
         if ($this->filled('currency')) {
             $this->merge(['currency' => $this->string('currency')->upper()->value()]);
         }
@@ -22,7 +25,7 @@ class SavePerDiemRateRequest extends BaseFormRequest {
      */
     public function rules(): array {
         return [
-            'country' => ['required', 'string', 'size:2'],
+            'country' => ['required', 'string', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
             'region_label' => ['nullable', 'string', 'max:100'],
             'valid_from' => ['required', 'date'],
             'valid_to' => ['nullable', 'date', 'after_or_equal:valid_from'],

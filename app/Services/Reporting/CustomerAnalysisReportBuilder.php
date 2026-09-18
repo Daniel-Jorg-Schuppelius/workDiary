@@ -16,6 +16,8 @@ use App\Models\{Customer, DiaryEntry, OpenIssue, Project, Protocol, TimeEntry};
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -48,9 +50,9 @@ class CustomerAnalysisReportBuilder {
         // Cache je (Org, Filter) — kundenanalyse.md §6 (Vollscan 2026-08-23, A6).
         $ttl = (int) config('reports.customer_analysis_cache_seconds', 300);
         $organizationId = app()->bound('currentOrganization') ? (int) (app('currentOrganization')->id ?? 0) : 0;
-        $cacheKey = sprintf('report.customers.%d.%s', $organizationId, md5(json_encode([
+        $cacheKey = sprintf('report.customers.%d.%s', $organizationId, CryptoHelper::hash(JsonHelper::encode([
             $from->toIso8601String(), $to->toIso8601String(), $projectId, $userId, $entryTypeId, $excludedCustomerIds,
-        ]) ?: ''));
+        ]), HashAlgorithm::MD5));
 
         $compute = fn (): array => $this->aggregate($from, $to, $projectId, $userId, $entryTypeId, $excludedCustomerIds);
 

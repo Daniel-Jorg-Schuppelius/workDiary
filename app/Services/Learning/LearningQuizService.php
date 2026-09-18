@@ -14,6 +14,7 @@ namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningAnswer, LearningEnrollment, LearningQuestion, LearningQuiz, LearningQuizAttempt, LearningQuizAttemptWaiver};
 use App\Models\User;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -112,7 +113,7 @@ class LearningQuizService {
                 'expires_at' => $quiz->time_limit_minutes !== null
                     ? $now->copy()->addMinutes($quiz->time_limit_minutes)
                     : null,
-                'questions_snapshot' => json_encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'questions_snapshot' => JsonHelper::encode($snapshot, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 'max_points' => array_sum(array_map(static fn (array $q): int => (int) $q['points'], $snapshot)),
                 'client_ip' => $context['client_ip'] ?? null,
                 'user_agent' => isset($context['user_agent']) ? mb_substr((string) $context['user_agent'], 0, 255) : null,

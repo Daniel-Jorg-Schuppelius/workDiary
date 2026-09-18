@@ -15,6 +15,7 @@ namespace App\Services\Compliance\Rules;
 use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\ScheduledShift;
 use App\Services\Compliance\{ComplianceRule, ComplianceViolation, ResolvesShiftTiming};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /** ArbZG §5: Mindestruhezeit (Standard 11h) zwischen zwei Schichten. */
 final class RestPeriodRule implements ComplianceRule {
@@ -66,7 +67,7 @@ final class RestPeriodRule implements ComplianceRule {
                     code: 'rest_period',
                     severity: ComplianceViolation::SEVERITY_ERROR,
                     message: __('Ruhezeit nur :gh h (Mindest :mh h) zur Schicht am :date.', [
-                        'gh' => number_format($gap, 1, ',', ''),
+                        'gh' => NumberHelper::toGermanFormat($gap, 1),
                         'mh' => $minRest,
                         'date' => $os->format('d.m.Y H:i'),
                     ]),

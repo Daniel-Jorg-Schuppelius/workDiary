@@ -252,4 +252,11 @@ class TimeAccountFrameworkTest extends TestCase {
             ->assertSee('Nachtstunden-Konto')
             ->assertDontSee('Fremdkonto');
     }
+
+    public function test_minutes_unit_formats_negative_balances_as_clock(): void {
+        // Toolkit-Duration: Vorzeichen einmal vorn, kein „-0:00" für Rundungsreste.
+        $this->assertSame('-1:30 h', TimeAccountUnit::Minutes->format(-90.0));
+        $this->assertSame('0:00 h', TimeAccountUnit::Minutes->format(-0.4));
+        $this->assertSame('2:05 h', TimeAccountUnit::Minutes->format(125.0));
+    }
 }

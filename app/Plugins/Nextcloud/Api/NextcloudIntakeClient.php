@@ -16,6 +16,7 @@ use App\Plugins\Nextcloud\Contracts\NextcloudTransportFactory;
 use App\Plugins\Nextcloud\NextcloudConfig;
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Services\CloudIntake\StaleCheckpointException;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -126,12 +127,9 @@ class NextcloudIntakeClient {
         $done = $queue === [];
         $tombstones = ($done && ! $overflow) ? $this->reconcileTombstones($seen) : [];
 
-        $nextCheckpoint = json_encode(
-            $done
-                ? ['queue' => [], 'seen' => [], 'overflow' => false]
-                : ['queue' => $queue, 'seen' => array_keys($seen), 'overflow' => $overflow],
-            JSON_THROW_ON_ERROR,
-        );
+        $nextCheckpoint = JsonHelper::encode($done
+            ? ['queue' => [], 'seen' => [], 'overflow' => false]
+            : ['queue' => $queue, 'seen' => array_keys($seen), 'overflow' => $overflow]);
 
         return new IntakeChangePage($items, $tombstones, $nextCheckpoint, hasMore: ! $done);
     }

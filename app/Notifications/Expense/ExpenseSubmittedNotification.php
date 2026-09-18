@@ -13,7 +13,6 @@ namespace App\Notifications\Expense;
 use App\Models\Expense;
 use App\Notifications\DirectNotification;
 use App\Support\NotificationText;
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Notifications\Messages\MailMessage;
 
 class ExpenseSubmittedNotification extends DirectNotification {
@@ -67,6 +66,6 @@ class ExpenseSubmittedNotification extends DirectNotification {
     }
 
     private function formattedAmount(): string {
-        return NumberHelper::toGermanFormat(($this->expense->amount_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) . ' ' . $this->expense->currency->value;
+        return ($this->expense->amount_gross?->format(withSymbol: false) ?? '0,00') . ' ' . $this->expense->currency->value;
     }
 }

@@ -15,6 +15,7 @@ namespace App\Console\Commands\Reselling;
 use App\Models\Organization;
 use App\Models\Reselling\ResaleImport;
 use App\Services\Reselling\Register\MarketplaceImporter;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 
 /**
@@ -45,7 +46,7 @@ class ImportResaleCommand extends Command {
             if ($path === '') {
                 continue;
             }
-            if (! is_file($path)) {
+            if (! File::isFile($path)) {
                 $this->error("Datei nicht gefunden: {$path}");
 
                 return self::FAILURE;

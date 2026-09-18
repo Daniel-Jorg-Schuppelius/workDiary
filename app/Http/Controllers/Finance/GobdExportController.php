@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Jobs\Finance\GobdExportJob;
 use App\Models\GobdExport;
 use App\Services\Finance\GdpduExportService;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -113,7 +114,7 @@ class GobdExportController extends Controller {
         abort_unless($export->organization_id === $this->currentOrganization()->id, 404);
 
         $path = $export->packagePath();
-        abort_unless($export->status->isDownloadable() && $path !== null && is_file($path), 404);
+        abort_unless($export->status->isDownloadable() && $path !== null && File::isFile($path), 404);
 
         // Die Datenträgerüberlassung verlässt das Haus — wer sie abgeholt hat,
         // gehört in die Auditspur (GoBD).

@@ -122,7 +122,7 @@
                                 @endif
                             </td>
                             {{-- Anzeige-Makros statt Roh-Formatierung (Vollaudit 2026-07, N52). --}}
-                            <td class="text-right font-mono text-xs">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($receipt->total_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $receipt->currency?->value }}</td>
+                            <td class="text-right font-mono text-xs">{{ $receipt->total_gross?->format(withSymbol: false) ?? '0,00' }} {{ $receipt->currency?->value }}</td>
                             <td class="text-xs">{{ $receipt->ordered_at?->fdatetime() ?? '—' }}</td>
                             <td>
                                 @if ($receipt->was_shipped || $receipt->shipped_pushed_at !== null)

@@ -14,6 +14,7 @@ namespace App\Services\Mail;
 
 use App\Models\{EmailConnection, MsgraphMailConnection};
 use App\Plugins\Msgraph\Api\MsgraphMailClient;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Carbon;
 use Throwable;
 
@@ -88,7 +89,7 @@ class GraphMailboxGateway implements MailboxGateway {
 
         $from = (array) ($message['from'] ?? []);
         $fromAddress = (array) ($from['emailAddress'] ?? []);
-        $email = strtolower(trim((string) ($fromAddress['address'] ?? '')));
+        $email = EmailHelper::normalize((string) ($fromAddress['address'] ?? ''));
         $name = trim((string) ($fromAddress['name'] ?? ''));
 
         $body = (array) ($message['body'] ?? []);

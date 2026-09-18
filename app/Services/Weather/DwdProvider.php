@@ -19,7 +19,6 @@ use App\Support\Setting;
 use Carbon\CarbonInterface;
 use CommonToolkit\Enums\Units\SpeedUnit;
 use CommonToolkit\Helper\Data\{StringHelper, UnitConversionHelper};
-use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Support\Carbon;
@@ -251,29 +250,24 @@ class DwdProvider implements WeatherProvider {
     }
 
     /**
-     * Extrahiert die `produkt_klima_tag_*.txt` aus dem ZIP (Toolkit,
-     * Zip-Slip-geschützt und mit Entpack-Grenzen, Sicherheitsscan S-56).
+     * Liest die `produkt_klima_tag_*.txt` aus dem ZIP (Toolkit, Zip-Slip-
+     * geschützt und mit Lese-Grenzen, Sicherheitsscan S-56) — im Speicher,
+     * ohne Arbeitsverzeichnis. Nur die Produktdatei wird entpackt.
      *
      * Das Archiv kommt von einem fremden Server. Ein Tageswerte-Archiv des DWD
      * hat eine Handvoll Einträge und wenige Megabyte — die Grenzen sind darauf
      * zugeschnitten und nicht auf „irgendein ZIP".
      */
     private function extractProductCsv(string $zipBody): ?string {
-        $workDir = sys_get_temp_dir() . '/dwd-' . bin2hex(random_bytes(8));
-        try {
-            Folder::create($workDir, 0755, true);
-            $zipPath = $workDir . '/tageswerte.zip';
-            File::write($zipPath, $zipBody);
-            ZipFile::extract($zipPath, $workDir, true, maxEntries: 50, maxBytes: 256 * 1024 * 1024, maxRatio: 200);
+        $products = ZipFile::readEntries(
+            $zipBody,
+            maxEntries: 50,
+            maxBytes: 256 * 1024 * 1024,
+            skipEntry: static fn(string $name): bool => ! fnmatch('produkt_*.txt', $name, FNM_PATHNAME),
+        );
+        ksort($products);
 
-            $products = glob($workDir . '/produkt_*.txt') ?: [];
-
-            return $products === [] ? null : File::read($products[0]);
-        } finally {
-            if (is_dir($workDir)) {
-                Folder::delete($workDir, true);
-            }
-        }
+        return $products === [] ? null : (string) reset($products);
     }
 
     /** DWD-Zahlwert: leere Felder und Fehlwert −999 werden zu NULL. */

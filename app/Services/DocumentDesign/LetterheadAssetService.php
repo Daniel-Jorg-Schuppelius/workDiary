@@ -16,12 +16,15 @@ use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole, PageFor
 use App\Models\DocumentDesign\LetterheadAsset;
 use App\Models\{Organization, User};
 use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\FileSystem\File;
+use ERRORToolkit\Exceptions\FileSystem\FileNotWrittenException;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
 use PDFToolkit\Enums\PaperFormat;
 use PDFToolkit\Helper\PDFHelper;
+use Throwable;
 
 /**
  * Sicherer Firmenbogen-Upload (MVP-296): Endung, deklariertes MIME und
@@ -41,7 +44,7 @@ class LetterheadAssetService {
 
     public function store(Organization $organization, UploadedFile $file, LetterheadPageRole $role, string $name, ?User $uploader = null, PageFormat $format = PageFormat::A4Portrait): LetterheadAsset {
         $sourceType = $this->sourceType($file);
-        $raw = (string) file_get_contents($file->getRealPath());
+        $raw = File::read((string) $file->getRealPath());
 
         if (strlen($raw) > (int) config('document_design.limits.max_kb') * 1024) {
             throw new InvalidArgumentException(__('Die Datei überschreitet die maximale Größe.'));
@@ -125,58 +128,55 @@ class LetterheadAssetService {
      * @param array<int, string> $notes
      */
     private function normalizePdf(string $raw, array &$notes, PageFormat $format = PageFormat::A4Portrait): ?string {
-        $base = tempnam(sys_get_temp_dir(), 'lh_');
-        if ($base === false) {
+        // Eine Temp-Datei für alle PDFHelper-Aufrufe; die Endung prüft das pdf-toolkit.
+        try {
+            return File::withTemp($raw, function (string $tmp) use (&$notes, $format): ?string {
+                if (! PDFHelper::isValidPdf($tmp)) {
+                    $notes[] = (string) __('Die PDF-Struktur ist ungültig oder beschädigt.');
+
+                    return null;
+                }
+                if (PDFHelper::getPageCount($tmp) !== 1) {
+                    $notes[] = (string) __('Der Firmenbogen muss genau eine Seite besitzen (getrenntes Asset je Seitenrolle).');
+
+                    return null;
+                }
+
+                $size = PDFHelper::getPageSize($tmp);
+                $detected = PDFHelper::detectFormat($tmp);
+                // MVP-652: A4 in der Ausrichtung des gewählten Seitenformats.
+                $orientationMismatch = $size !== null && $size->isLandscape() !== $format->isLandscape();
+                if ($detected !== PaperFormat::A4 || $orientationMismatch) {
+                    $notes[] = (string) __('Es wird A4 im Format :format erwartet.', ['format' => $format->label()]);
+
+                    return null;
+                }
+
+                $rendered = PDFHelper::renderPageToImage($tmp, 1, (int) config('document_design.render_dpi'));
+                if ($rendered === null) {
+                    $notes[] = (string) __('Die PDF-Seite konnte nicht sicher gerastert werden.');
+
+                    return null;
+                }
+
+                try {
+                    $png = File::read($rendered);
+                } finally {
+                    try {
+                        File::delete($rendered);
+                    } catch (Throwable) {
+                        // Best effort: Rasterdatei liegt im Temp-Verzeichnis.
+                    }
+                }
+
+                // Auch die Rasterung re-encodieren: deckt Transparenz ab und
+                // garantiert ein einheitliches, metadatenfreies PNG.
+                return $this->normalizeImage($png, $notes, $format);
+            }, 'lh_', 'pdf');
+        } catch (FileNotWrittenException) {
             $notes[] = (string) __('Temporäre Datei konnte nicht angelegt werden.');
 
             return null;
-        }
-        // Das pdf-toolkit prüft die Dateiendung — tempnam liefert keine.
-        $tmp = $base . '.pdf';
-
-        try {
-            file_put_contents($tmp, $raw);
-
-            if (! PDFHelper::isValidPdf($tmp)) {
-                $notes[] = (string) __('Die PDF-Struktur ist ungültig oder beschädigt.');
-
-                return null;
-            }
-            if (PDFHelper::getPageCount($tmp) !== 1) {
-                $notes[] = (string) __('Der Firmenbogen muss genau eine Seite besitzen (getrenntes Asset je Seitenrolle).');
-
-                return null;
-            }
-
-            $size = PDFHelper::getPageSize($tmp);
-            $detected = PDFHelper::detectFormat($tmp);
-            // MVP-652: A4 in der Ausrichtung des gewählten Seitenformats.
-            $orientationMismatch = $size !== null && $size->isLandscape() !== $format->isLandscape();
-            if ($detected !== PaperFormat::A4 || $orientationMismatch) {
-                $notes[] = (string) __('Es wird A4 im Format :format erwartet.', ['format' => $format->label()]);
-
-                return null;
-            }
-
-            $rendered = PDFHelper::renderPageToImage($tmp, 1, (int) config('document_design.render_dpi'));
-            if ($rendered === null) {
-                $notes[] = (string) __('Die PDF-Seite konnte nicht sicher gerastert werden.');
-
-                return null;
-            }
-
-            try {
-                $png = (string) file_get_contents($rendered);
-            } finally {
-                @unlink($rendered);
-            }
-
-            // Auch die Rasterung re-encodieren: deckt Transparenz ab und
-            // garantiert ein einheitliches, metadatenfreies PNG.
-            return $this->normalizeImage($png, $notes, $format);
-        } finally {
-            @unlink($tmp);
-            @unlink($base);
         }
     }
 

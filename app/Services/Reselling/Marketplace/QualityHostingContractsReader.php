@@ -17,6 +17,7 @@ use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, OpensXlsxDoc
 use Carbon\CarbonImmutable;
 use CommonToolkit\Entities\XLSX\Cell;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\FileSystem\File;
 use RuntimeException;
 
 /**
@@ -50,7 +51,7 @@ final class QualityHostingContractsReader {
 
     public function read(string $file): PurchasesImport {
         $name = basename($file);
-        if (! is_readable($file)) {
+        if (! File::isReadable($file, false)) {
             throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
 

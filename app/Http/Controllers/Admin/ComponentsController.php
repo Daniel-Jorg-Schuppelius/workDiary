@@ -233,7 +233,7 @@ class ComponentsController extends Controller {
         abort_unless($organization instanceof \App\Models\Organization, 404);
 
         $document = $vex->generate($organization);
-        $json = (string) json_encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        $json = JsonHelper::encode($document, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
         $name = $vex->fileName();
 
         Storage::disk('local')->put(self::SBOM_DIR . '/' . $name, $json);

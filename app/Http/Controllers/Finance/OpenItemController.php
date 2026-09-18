@@ -18,6 +18,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\Accounting\AccountingOpenItem;
 use App\Services\Accounting\OpenItemService;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -71,14 +72,14 @@ class OpenItemController extends Controller {
 
         $data = $request->validate([
             'kind' => ['required', 'string', 'in:discount,retention,write_off'],
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount' => ['required', 'numeric', 'decimal:0,8', 'gt:0'],
             'note' => ['nullable', 'string', 'max:191'],
         ]);
 
         $this->openItems->settle(
             $item,
             SettlementKind::from((string) $data['kind']),
-            number_format((float) $data['amount'], 2, '.', ''),
+            Decimal::of((string) $data['amount'], 2)->getValue(),
             null,
             $data['note'] ?? null,
         );

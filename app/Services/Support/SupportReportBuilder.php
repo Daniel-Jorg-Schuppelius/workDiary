@@ -14,8 +14,8 @@ use App\Models\{AuditLog, PluginError};
 use App\Services\Diagnostics\DiagnosticsService;
 use App\Services\Release\ReleaseManifestService;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
-use Illuminate\Support\Facades\{DB, File};
+use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Files, Folder as ToolkitFolder};
+use Illuminate\Support\Facades\DB;
 use Throwable;
 
 /**
@@ -324,16 +324,13 @@ class SupportReportBuilder {
     /** @return array<string, list<string>> */
     private function configKeys(): array {
         $dir = config_path();
-        if (! File::isDirectory($dir)) {
+        if (! ToolkitFolder::exists($dir)) {
             return [];
         }
 
         $out = [];
-        foreach (File::files($dir) as $file) {
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
-            $name = $file->getBasename('.php');
+        foreach (Files::get($dir, false, ['php']) as $file) {
+            $name = basename($file, '.php');
             try {
                 $values = (array) config($name);
                 $keys = $this->collectKeys($values);
@@ -462,11 +459,11 @@ class SupportReportBuilder {
     /** @return list<string> */
     private function logTail(int $tail): array {
         $logFile = storage_path('logs/laravel.log');
-        if (! File::isFile($logFile)) {
+        if (! ToolkitFile::isFile($logFile)) {
             return [];
         }
         try {
-            // Rückwärts lesen statt File::get(): ein großes Log darf den Support-Bericht nicht in den Speicher-Tod reißen.
+            // Rückwärts lesen statt komplett einlesen: ein großes Log darf den Support-Bericht nicht in den Speicher-Tod reißen.
             $slice = ToolkitFile::tail($logFile, $tail);
         } catch (Throwable) {
             return [];

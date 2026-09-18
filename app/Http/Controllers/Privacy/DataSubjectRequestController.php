@@ -19,6 +19,7 @@ use App\Models\{AuditLog, Customer, Lead, Supplier, User};
 use App\Models\Privacy\DataSubjectRequest;
 use App\Services\Privacy\{DataSubjectRequestService, PrivacyExportService, SubjectDataExporter};
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -203,9 +204,9 @@ class DataSubjectRequestController extends Controller {
         $payload = $this->exporter->requestExport($dsr);
         $this->audit($request, 'privacy.dsr.exported', DataSubjectRequest::class, (int) $dsr->id);
 
-        $json = json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        $json = JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 
-        return response((string) $json, 200, [
+        return response($json, 200, [
             'Content-Type' => 'application/json',
             'Content-Disposition' => 'attachment; filename="' . $dsr->request_number . '.json"',
         ]);

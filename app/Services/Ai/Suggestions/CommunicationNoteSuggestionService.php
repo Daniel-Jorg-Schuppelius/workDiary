@@ -20,6 +20,7 @@ use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
 use App\Services\Ai\Support\CustomerNameMasker;
 use App\Services\Communication\CommunicationNoteService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 
@@ -110,7 +111,7 @@ class CommunicationNoteSuggestionService {
             $note,
             self::CAPABILITY,
             $body,
-            (string) json_encode($entries, JSON_UNESCAPED_UNICODE),
+            JsonHelper::encode($entries, JSON_UNESCAPED_UNICODE),
             $result,
             $user,
         );
@@ -147,7 +148,7 @@ class CommunicationNoteSuggestionService {
         if ($remaining === []) {
             $this->markDecided($suggestion, AiTextSuggestion::STATUS_ACCEPTED, $user);
         } else {
-            $suggestion->forceFill(['suggestion' => (string) json_encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
+            $suggestion->forceFill(['suggestion' => JsonHelper::encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
         }
 
         $this->auditDecision($suggestion, 'accepted', $user, ['field' => $field]);

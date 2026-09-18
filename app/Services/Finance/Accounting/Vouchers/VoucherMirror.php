@@ -14,6 +14,7 @@ namespace App\Services\Finance\Accounting\Vouchers;
 
 use App\Models\{Customer, ExternalReference, Supplier};
 use App\Models\Finance\AccountingVoucher;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 
 /**
@@ -104,16 +105,12 @@ class VoucherMirror {
         if (! is_int($cents) && ! (is_string($cents) && preg_match('/^-?\d+$/', $cents) === 1)) {
             return null;
         }
-        $value = (int) $cents;
-        $sign = $value < 0 ? '-' : '';
-        $abs = abs($value);
-
-        return $sign . intdiv($abs, 100) . '.' . str_pad((string) ($abs % 100), 2, '0', STR_PAD_LEFT);
+        return NumberHelper::dividePrecise((string) (int) $cents, '100', 2);
     }
 
     /** Dezimalwert eines Fremdsystems (Zahl oder Zahlstring) als Dezimalstring. */
     public static function decimal(mixed $value): ?string {
-        return is_numeric($value) ? number_format((float) $value, 2, '.', '') : null;
+        return is_numeric($value) ? NumberHelper::toUSFormat((float) $value, 2) : null;
     }
 
     /** Datumswert eines Fremdsystems als `Y-m-d`; leer/unlesbar → null. */

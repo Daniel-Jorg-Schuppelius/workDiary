@@ -14,7 +14,7 @@ namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningCertificate, LearningIssuerKey};
 use App\Models\Organization;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\{Carbon, Str};
 
 /**
@@ -204,7 +204,7 @@ class LearningCredentialService {
     private function canonical(array $document): string {
         $sorted = $this->sortRecursive($document);
 
-        return (string) json_encode($sorted, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return JsonHelper::encode($sorted, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**

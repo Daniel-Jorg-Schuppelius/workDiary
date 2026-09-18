@@ -16,6 +16,7 @@ use App\Plugins\GoogleDrive\{GoogleDriveConfig, GoogleDrivePlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Services\CloudIntake\StaleCheckpointException;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -405,11 +406,11 @@ class GoogleDriveClient {
     }
 
     private function encodeCheckpoint(string $phase, ?string $pageToken, ?string $startPageToken): string {
-        return (string) json_encode(array_filter([
+        return JsonHelper::encode(array_filter([
             'phase' => $phase,
             'pageToken' => $pageToken,
             'startPageToken' => $startPageToken,
-        ], static fn ($v) => $v !== null), JSON_THROW_ON_ERROR);
+        ], static fn ($v) => $v !== null));
     }
 
     private function guardCheckpointResponse(\Illuminate\Http\Client\Response $response): void {

@@ -19,6 +19,7 @@ use App\Services\Expense\ExpenseService;
 use App\Support\{CsvExport, SortableQuery};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -349,10 +350,10 @@ class ExpenseController extends Controller {
                     (string) $expense->vendor,
                     $expense->project->name ?? '',
                     $expense->customer->name ?? '',
-                    number_format(($expense->amount_gross?->toFloat() ?? 0.0), 2, ',', ''),
-                    number_format(($expense->amount_net?->toFloat() ?? 0.0), 2, ',', ''),
-                    number_format(($expense->tax_amount?->toFloat() ?? 0.0), 2, ',', ''),
-                    number_format(($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : 0.0), 2, ',', ''),
+                    $expense->amount_gross?->format(withSymbol: false, withThousandsSeparator: false) ?? '0,00',
+                    $expense->amount_net?->format(withSymbol: false, withThousandsSeparator: false) ?? '0,00',
+                    $expense->tax_amount?->format(withSymbol: false, withThousandsSeparator: false) ?? '0,00',
+                    NumberHelper::toGermanFormat($expense->tax_rate !== null ? (float) $expense->tax_rate->getNumericValue() : 0.0, 2),
                     $expense->currency->value,
                     $expense->payment_method->label(),
                     $expense->status->label(),

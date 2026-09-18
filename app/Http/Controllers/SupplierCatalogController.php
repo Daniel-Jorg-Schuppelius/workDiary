@@ -17,6 +17,7 @@ use App\Http\Requests\SaveSupplierCatalogSourceRequest;
 use App\Models\{Article, ArticleVariant, PricingChangeAlert, Supplier, SupplierCatalogImport, SupplierCatalogItem, SupplierCatalogSource, Warehouse};
 use App\Services\Procurement\{CatalogArticleAdopter, CatalogFetchService, CatalogImportDispatcher, CatalogLinkService, PriceSuggestionService, ShopinfoParser};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -249,7 +250,7 @@ class SupplierCatalogController extends Controller {
             'catalog_csv' => ['required', 'file', 'max:16384'],
             'import_mode' => ['nullable', 'in:auto,snapshot,delta'],
         ]);
-        $content = (string) file_get_contents((string) $request->file('catalog_csv')?->getRealPath());
+        $content = File::read((string) $request->file('catalog_csv')?->getRealPath());
 
         $mapping = $this->mappingFromRequest($request);
         if (in_array($supplierCatalog->format, [CatalogSourceFormat::Csv, CatalogSourceFormat::Xlsx], true) && $mapping !== []) {
@@ -495,7 +496,7 @@ class SupplierCatalogController extends Controller {
         $this->assertSourceOrg($supplierCatalog);
         $request->validate(['shopinfo' => ['required', 'file', 'max:4096']]);
 
-        $content = (string) file_get_contents((string) $request->file('shopinfo')?->getRealPath());
+        $content = File::read((string) $request->file('shopinfo')?->getRealPath());
         try {
             $discovery = $parser->parse($content);
         } catch (RuntimeException $e) {

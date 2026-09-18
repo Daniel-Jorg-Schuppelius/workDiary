@@ -16,6 +16,7 @@ use App\Enums\Learning\{LearningAudience, LearningCourseKind, LearningCourseStat
 use App\Models\Learning\{LearningCourse, LearningCourseCategory, LearningCourseVersion, LearningSection, LearningUnit};
 use App\Models\{Organization, User};
 use App\Services\Training\TrainingCatalogService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -317,7 +318,7 @@ class LearningCourseService {
             'is_preview' => (bool) ($attributes['is_preview'] ?? false),
             'points' => max(0, (int) ($attributes['points'] ?? 0)),
             'duration_minutes' => $attributes['duration_minutes'] ?? null,
-            'content' => is_array($content) ? json_encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : $content,
+            'content' => is_array($content) ? JsonHelper::encode($content, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) : $content,
             'completion_rule' => $attributes['completion_rule'] ?? null,
             'release_rule' => $attributes['release_rule'] ?? null,
         ]);
@@ -362,7 +363,7 @@ class LearningCourseService {
                 'organization_id' => $course->organization_id,
                 'version' => $next,
                 'label' => $label,
-                'content_snapshot' => json_encode($this->buildSnapshot($course), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'content_snapshot' => JsonHelper::encode($this->buildSnapshot($course), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 'released_at' => now(),
                 'released_by_user_id' => $actor?->id,
                 'is_current' => true,

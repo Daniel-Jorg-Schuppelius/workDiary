@@ -17,6 +17,7 @@ use App\Models\{Article, BillOfQuantity, BoqItem, Material, Project};
 use App\Services\Gaeb\{BoqCostingService, BoqExportService, BoqImportConflictException, BoqProgressService, BoqWorkflowException, BoqWorkflowService, GaebImportService};
 use App\Services\SqidEncoder;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Enums\GaebFormat;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -605,7 +606,7 @@ class BillOfQuantityController extends Controller {
 
         try {
             $estimate = $estimates->import(
-                (string) file_get_contents($request->file('file')->getRealPath()),
+                File::read((string) $request->file('file')->getRealPath()),
                 $this->currentOrganization()->id,
                 $this->actorOrFail(),
                 $project,
@@ -743,7 +744,7 @@ class BillOfQuantityController extends Controller {
             }
         }
 
-        $content = (string) file_get_contents($request->file('file')->getRealPath());
+        $content = File::read((string) $request->file('file')->getRealPath());
         $filename = (string) $request->file('file')->getClientOriginalName();
 
         try {

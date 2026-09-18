@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Console\Commands;
 
+use CommonToolkit\Helper\FileSystem\{Files, Folder};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\{Crypt, DB};
 
@@ -126,9 +127,13 @@ class SecurityRekeyEncryptedCommand extends Command {
     /** @return list<class-string<\Illuminate\Database\Eloquent\Model>> */
     private static function modelClasses(): array {
         $root = dirname(__DIR__, 3);
-        $files = glob($root . '/app/Models/{,*/,*/*/}*.php', GLOB_BRACE) ?: [];
-        foreach (glob($root . '/app/Plugins/*/Models/*.php') ?: [] as $file) {
-            $files[] = $file;
+        // Files::get liefert unaufgelöste Pfade — der Klassenname entsteht per substr aus $root.
+        $files = Files::get($root . '/app/Models', true, ['php']);
+        foreach (Folder::get($root . '/app/Plugins') as $pluginDir) {
+            $models = $root . '/app/Plugins/' . basename($pluginDir) . '/Models';
+            if (Folder::exists($models)) {
+                $files = [...$files, ...Files::get($models, false, ['php'])];
+            }
         }
 
         $classes = [];

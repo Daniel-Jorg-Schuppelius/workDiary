@@ -14,6 +14,7 @@ namespace App\Jobs;
 
 use App\Enums\ServiceTicket\TicketMessageKind;
 use App\Models\ServiceTicketMessage;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -62,7 +63,7 @@ class ServiceTicketReplyMailJob implements ShouldQueue {
             throw new \RuntimeException('Nur öffentliche Antworten dürfen versendet werden (kind=' . $message->kind->value . ').');
         }
 
-        $recipients = array_values(array_filter((array) ($message->to ?? []), fn($mail) => filter_var($mail, FILTER_VALIDATE_EMAIL) !== false));
+        $recipients = array_values(array_filter((array) ($message->to ?? []), fn($mail) => EmailHelper::isEmail($mail)));
         if ($recipients === []) {
             $message->update(['delivery_status' => 'failed']);
 

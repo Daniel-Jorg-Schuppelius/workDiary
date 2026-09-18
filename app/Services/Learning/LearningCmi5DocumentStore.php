@@ -15,7 +15,7 @@ namespace App\Services\Learning;
 use App\Models\Learning\LearningXapiDocument;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use ELearningToolkit\Cmi5\{Cmi5, LearnerPreferences};
 use Illuminate\Database\Eloquent\Builder;
 
@@ -89,7 +89,7 @@ final class LearningCmi5DocumentStore {
             throw new Cmi5LrsRejection(400, 'merge_requires_json');
         }
 
-        $merged = json_encode(array_merge($old, $new), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $merged = JsonHelper::encode(array_merge($old, $new), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         return $this->put($organizationId, $kind, $activityId, $agentHash, $registration, $documentId, $merged, 'application/json');
     }
@@ -116,7 +116,7 @@ final class LearningCmi5DocumentStore {
             return;
         }
 
-        $document = json_encode(LearnerPreferences::document([$language], null), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        $document = JsonHelper::encode(LearnerPreferences::document([$language], null), JSON_UNESCAPED_SLASHES);
 
         $this->put($organizationId, $kind, null, $agentHash, null, Cmi5::PROFILE_LEARNER_PREFERENCES, $document, 'application/json');
     }

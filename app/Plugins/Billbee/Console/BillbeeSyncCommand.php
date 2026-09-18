@@ -16,6 +16,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Organization, PluginSetting};
 use App\Plugins\Billbee\BillbeePlugin;
 use App\Plugins\Billbee\Services\{BillbeeArticleMappingService, BillbeeOrderImportService};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -39,7 +40,7 @@ class BillbeeSyncCommand extends Command {
         $failures = $this->forEachOrganization(
             function (Organization $organization) use ($orders, $mappings): void {
                 $counters = $orders->import($organization) + ['mapping' => $mappings->import($organization)];
-                $this->info(sprintf('Org %d: %s', $organization->id, (string) json_encode($counters)));
+                $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             },
             onError: function (Organization $organization, Throwable $e): void {
                 $this->error(sprintf('Org %d: %s', $organization->id, class_basename($e)));

@@ -14,6 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, Organization, Project, User};
 use App\Services\Integration\ProjectKeywordMatcher;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -302,7 +303,7 @@ trait MatchesTimeImportTargets {
 
     /** Merkt eine Quell-E-Mail → Benutzer-Zuordnung (inkl. Alias-Fallback). */
     public function rememberUserEmail(Organization $organization, string $email, User $user): void {
-        $key = mb_strtolower(trim($email));
+        $key = EmailHelper::normalize($email);
         if ($key === '') {
             return;
         }

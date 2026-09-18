@@ -135,6 +135,9 @@ class SiteController extends Controller {
         $request->merge([
             'customer_id' => $customerId,
         ]);
+        if ($request->filled('country')) {
+            $request->merge(['country' => $request->string('country')->upper()->value()]);
+        }
 
         $data = $request->validate([
             'customer_id' => ['required', 'integer', new \App\Rules\ExistsInCurrentOrganization('customers')],
@@ -143,7 +146,7 @@ class SiteController extends Controller {
             'address_street' => ['nullable', 'string', 'max:160'],
             'address_zip' => ['nullable', 'string', 'max:16'],
             'address_city' => ['nullable', 'string', 'max:120'],
-            'country' => ['nullable', 'string', 'max:2'],
+            'country' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
             // MVP-513 P0: Feiertags-Rechtsraum des Standorts (leer = Org-Einstellung).
             'holiday_provider' => ['nullable', 'string', \Illuminate\Validation\Rule::in(\App\Support\HolidayRegions::providers())],
             'geo_lat' => ['nullable', 'numeric', 'between:-90,90'],

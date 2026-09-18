@@ -749,6 +749,7 @@ return [
     ],
     'errors' => [
         'learndash_zip' => 'El archivo no se puede abrir.',
+        'learndash_zip_too_large' => 'El archivo descomprimido es demasiado grande (como máximo :mb MB de datos de LearnDash).',
         'learndash_no_courses' => 'El archivo no contiene cursos de LearnDash (post_type_course.ld).',
         'weights_sum' => 'Los pesos deben sumar 100 — o quedar todos vacíos.',
         'component_unit_invalid' => 'La unidad no pertenece a este curso o no tiene examen/tarea.',

@@ -20,6 +20,7 @@ use App\Models\Accounting\{AccountingAccount, AccountingEntry};
 use App\Services\Accounting\JournalService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -105,7 +106,8 @@ class JournalController extends Controller {
             'document_reference' => ['nullable', 'string', 'max:64'],
             'debit_account' => ['required', 'string'],
             'credit_account' => ['required', 'string'],
-            'amount' => ['required', 'numeric', 'gt:0'],
+            // decimal statt nur numeric: keine Exponentenschreibweise (bcmath).
+            'amount' => ['required', 'numeric', 'decimal:0,8', 'gt:0'],
             'post' => ['nullable', 'boolean'],
         ]);
 
@@ -113,7 +115,7 @@ class JournalController extends Controller {
         $creditId = (int) Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['credit_account']);
         $this->assertOwnAccounts($organization->id, [$debitId, $creditId]);
 
-        $amount = number_format((float) $data['amount'], 2, '.', '');
+        $amount = Decimal::of((string) $data['amount'], 2)->getValue();
         $entry = $this->journal->draft($organization, [
             'booked_on' => CarbonImmutable::parse((string) $data['booked_on']),
             'document_on' => isset($data['document_on']) ? CarbonImmutable::parse((string) $data['document_on']) : null,

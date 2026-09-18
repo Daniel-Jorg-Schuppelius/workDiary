@@ -15,6 +15,7 @@ namespace App\Services\Ai\Dto;
 use App\Enums\Ai\AiVerb;
 use App\Services\Ai\Contracts\AiRequestInterface;
 use App\Services\Ai\Dto\Concerns\HashesPayload;
+use CommonToolkit\Helper\Data\JsonHelper;
 
 /**
  * Verb „Erklären" (Feature 025): strukturierte Kennzahlen/Codes →
@@ -48,6 +49,6 @@ final class ExplainRequest implements AiRequestInterface {
     }
 
     public function estimatedUnits(): int {
-        return $this->estimateTokens((string) json_encode($this->facts), (string) $this->question);
+        return $this->estimateTokens(JsonHelper::encode($this->facts), (string) $this->question);
     }
 }

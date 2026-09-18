@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace Tests\Feature\License;
 
 use App\Services\Licensing\{LicenseSeal, LicenseService, LicenseStatus};
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\Concerns\WithOrganization;
@@ -39,8 +40,8 @@ class LicenseCommandsTest extends TestCase {
         $this->setUpOrganization();
 
         $keypair = sodium_crypto_sign_keypair();
-        $this->publicB64 = LicenseService::b64Encode(sodium_crypto_sign_publickey($keypair));
-        $this->privateB64 = LicenseService::b64Encode(sodium_crypto_sign_secretkey($keypair));
+        $this->publicB64 = CryptoHelper::base64UrlEncode(sodium_crypto_sign_publickey($keypair));
+        $this->privateB64 = CryptoHelper::base64UrlEncode(sodium_crypto_sign_secretkey($keypair));
 
         $uid = bin2hex(random_bytes(6));
         config([

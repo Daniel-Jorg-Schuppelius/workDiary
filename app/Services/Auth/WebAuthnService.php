@@ -16,7 +16,7 @@ use App\Enums\Auth\TwoFactorType;
 use App\Models\Auth\TwoFactorCredential;
 use App\Models\User;
 use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Symfony\Component\Serializer\SerializerInterface;
 use Webauthn\AttestationStatement\{AttestationStatementSupportManager, NoneAttestationStatementSupport};
 use Webauthn\{AuthenticatorAssertionResponse, AuthenticatorAssertionResponseValidator, AuthenticatorAttestationResponse, AuthenticatorAttestationResponseValidator, AuthenticatorSelectionCriteria, PublicKeyCredential, PublicKeyCredentialCreationOptions, PublicKeyCredentialDescriptor, PublicKeyCredentialParameters, PublicKeyCredentialRequestOptions, PublicKeyCredentialRpEntity, PublicKeyCredentialSource, PublicKeyCredentialUserEntity};
@@ -90,7 +90,7 @@ class WebAuthnService {
         return array_values($user->twoFactorCredentials()
             ->where('type', TwoFactorType::Webauthn->value)->whereNotNull('confirmed_at')
             ->get()
-            ->map(fn(TwoFactorCredential $c) => $this->serializer->deserialize((string) json_encode($c->data), PublicKeyCredentialSource::class, 'json'))
+            ->map(fn(TwoFactorCredential $c) => $this->serializer->deserialize(JsonHelper::encode($c->data), PublicKeyCredentialSource::class, 'json'))
             ->all());
     }
 
@@ -201,7 +201,7 @@ class WebAuthnService {
         return $user->twoFactorCredentials()->create([
             'type' => TwoFactorType::Webauthn->value,
             'label' => $label ?: __('Sicherheitsschlüssel'),
-            'credential_id' => $this->b64u($source->publicKeyCredentialId),
+            'credential_id' => CryptoHelper::base64UrlEncode($source->publicKeyCredentialId),
             'data' => $this->sourceToArray($source),
             'confirmed_at' => now(),
             'last_used_at' => now(),
@@ -222,13 +222,13 @@ class WebAuthnService {
 
         $stored = $user->twoFactorCredentials()
             ->where('type', TwoFactorType::Webauthn->value)
-            ->where('credential_id', $this->b64u($credential->rawId))
+            ->where('credential_id', CryptoHelper::base64UrlEncode($credential->rawId))
             ->whereNotNull('confirmed_at')->first();
         if ($stored === null) {
             return false;
         }
 
-        $source = $this->serializer->deserialize((string) json_encode($stored->data), PublicKeyCredentialSource::class, 'json');
+        $source = $this->serializer->deserialize(JsonHelper::encode($stored->data), PublicKeyCredentialSource::class, 'json');
         $validator = AuthenticatorAssertionResponseValidator::create($this->ceremonyFactory($host)->requestCeremony());
         $updated = $validator->check($source, $response, $options, $this->rpId($host), $source->userHandle);
 
@@ -253,10 +253,5 @@ class WebAuthnService {
         $arr = json_decode($this->serializer->serialize($source, 'json'), true);
 
         return $arr;
-    }
-
-    /** base64url-Kodierung der binären Credential-ID. */
-    private function b64u(string $bytes): string {
-        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
     }
 }

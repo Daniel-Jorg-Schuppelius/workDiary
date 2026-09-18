@@ -12,6 +12,7 @@ namespace Tests\Feature\Licensing;
 
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Tests\TestCase;
@@ -51,7 +52,7 @@ final class LicenseHostBindingTest extends TestCase {
 
         $json = (string) json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        return LicenseService::b64Encode($json) . '.' . LicenseService::b64Encode(sodium_crypto_sign_detached($json, $this->secretKey));
+        return CryptoHelper::base64UrlEncode($json) . '.' . CryptoHelper::base64UrlEncode(sodium_crypto_sign_detached($json, $this->secretKey));
     }
 
     private function installKey(string $key): void {

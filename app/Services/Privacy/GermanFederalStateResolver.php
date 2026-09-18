@@ -12,31 +12,13 @@ declare(strict_types=1);
 
 namespace App\Services\Privacy;
 
+use CommonToolkit\Helper\Data\{StringHelper, TaxNumberHelper};
+
 /**
  * Liefert nur bei einem eindeutigen zweistelligen PLZ-Leitbereich ein
  * Bundesland. Grenzbereiche bleiben bewusst unaufgeloest.
  */
 class GermanFederalStateResolver {
-    /** @var array<string, string> */
-    private const NAMES = [
-        'BW' => 'Baden-Württemberg',
-        'BY' => 'Bayern',
-        'BE' => 'Berlin',
-        'BB' => 'Brandenburg',
-        'HB' => 'Bremen',
-        'HH' => 'Hamburg',
-        'HE' => 'Hessen',
-        'MV' => 'Mecklenburg-Vorpommern',
-        'NI' => 'Niedersachsen',
-        'NW' => 'Nordrhein-Westfalen',
-        'RP' => 'Rheinland-Pfalz',
-        'SL' => 'Saarland',
-        'SN' => 'Sachsen',
-        'ST' => 'Sachsen-Anhalt',
-        'SH' => 'Schleswig-Holstein',
-        'TH' => 'Thüringen',
-    ];
-
     /** @var array<int, string> */
     private const UNAMBIGUOUS_PREFIXES = [
         1 => 'SN', 2 => 'SN', 3 => 'BB', 4 => 'SN', 6 => 'ST', 7 => 'TH', 8 => 'SN', 9 => 'SN',
@@ -60,8 +42,8 @@ class GermanFederalStateResolver {
             return null;
         }
 
-        $digits = preg_replace('/\D+/', '', (string) $postalCode);
-        if (! is_string($digits) || strlen($digits) !== 5) {
+        $digits = StringHelper::extractDigits((string) $postalCode);
+        if (strlen($digits) !== 5) {
             return null;
         }
 
@@ -70,7 +52,7 @@ class GermanFederalStateResolver {
             return null;
         }
 
-        return ['code' => $code, 'name' => self::NAMES[$code], 'postal_code' => $digits];
+        return ['code' => $code, 'name' => TaxNumberHelper::getFederalStates()[$code], 'postal_code' => $digits];
     }
 
     private function isGermany(?string $country): bool {

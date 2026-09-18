@@ -94,6 +94,7 @@ return [
             'duplicate_file' => 'Ce fichier a déjà été importé (doublon).',
             'unavailable' => 'L’import bancaire est un module complémentaire optionnel et payant, non activé dans cette installation. Son activation est possible sur demande à :contact.',
             'unavailable_badge' => 'Module complémentaire non activé',
+            'unsupported_format' => 'Le format :format n\'est pas pris en charge pour l\'import de relevés bancaires (attendu : CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [

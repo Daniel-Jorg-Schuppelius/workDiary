@@ -26,6 +26,11 @@ Verhalten, Fehlersemantik, Locale, Zeitzone, Rundung, Encoding und
 Rückwärtskompatibilität vergleichen. Nach einer Migration: betroffene Tests +
 `composer test`/PHPStan/Pint grün halten.
 
+**Gate:** `tests/Unit/Architecture/ToolkitFirstRuleTest.php` meldet rohe Aufrufe
+(`json_encode`, `number_format`, Dateisystem-Funktionen, `ZipArchive`, `proc_open`/`exec`,
+`finfo`, `wordwrap`, `rtrim(rtrim(` …) in `app/`. Ausnahme nur mit Begründung in die
+Allowlist der Regel — Geschäftsregel oder belegter Unterschied, nicht Bequemlichkeit.
+
 ### Die Toolkits (Details: capability-map)
 
 | Toolkit | Namespace | Zuständig für |
@@ -40,7 +45,7 @@ Rückwärtskompatibilität vergleichen. Nach einer Migration: betroffene Tests +
 | php-api-toolkit | `APIToolkit\` | HTTP-/API-Client-Fundament (Basis der SDKs): `ClientAbstract` mit Retry/Backoff/Retry-After und injizierbarem Guzzle, Auth inkl. OAuth2 (PKCE/Revocation), `CursorPaginator`, typisierte HTTP-Exceptions — Plugins beziehen ihre Clients über `App\Plugins\Support\PluginHttpFactory` (`client()`/`sdkClient()`/`clientCredentialsGrant()`); die frühere `PluginHttp`-Klasse existiert nicht mehr |
 | php-error-toolkit | `ERRORToolkit\` | Logging-Fundament aller Toolkits: `LoggerRegistry` (+ Laravel-Bridge: auto-discovertes ServiceProvider leitet Toolkit-Logs in den Laravel-Log-Channel, ENV `ERROR_TOOLKIT_LOG_CHANNEL`), `ErrorLog`-Trait, Datei-/Konsolen-Logger, FileSystem-Exceptions |
 | php-translation-toolkit | `TranslationToolkit\` | Maschinelle Übersetzung: `TranslationService` (Cache→Provider→Usage-Listener), Provider DeepL/Azure Translator/LibreTranslate inkl. Glossar-Erzwingung, `TranslationRegistry`. Die Adapter unter `app/Services/Ai/Providers/` (Basis `AbstractTranslationAdapter`) verbinden nur noch `AiProviderConnection`/`TranslateRequest` mit dem Toolkit — **Übersetzungsprotokolle gehören ins Toolkit**, app-seitig bleiben Geschäftsregeln (DeepL-Free-Sperre, Gedächtnis-Glossar, Budget, Fehler-Redaktion) |
-| php-elearning-toolkit | `ELearningToolkit\` | E-Learning-Standards ohne Laravel: SCORM 1.2/2004 (Manifest, sicheres Entpacken, Abschlussregel), xAPI 1.0.3 (Statement-Validierung), cmi5 (Kursstruktur, Start-URL, LaunchData, Statement-Regeln, LMS-Statements), LTI 1.3 (JWT, Login, Launch-Prüfung, Deep Linking) — **noch unveröffentlicht**, App bindet es über `composer.local.json` ein; Betrieb (Inhalts-Host, LRS, Schlüsselablage) bleibt unter `App\Services\Learning` |
+| php-elearning-toolkit | `ELearningToolkit\` | E-Learning-Standards ohne Laravel: SCORM 1.2/2004 (Manifest, sicheres Entpacken, Abschlussregel), xAPI 1.0.3 (Statement-Validierung), cmi5 (Kursstruktur, Start-URL, LaunchData, Statement-Regeln, LMS-Statements), LTI 1.3 (JWT, Login, Launch-Prüfung, Deep Linking) — reguläre Abhängigkeit (`^0.1.2`); Betrieb (Inhalts-Host, LRS, Schlüsselablage) bleibt unter `App\Services\Learning` |
 
 ### Bewusst app-lokal (nicht erneut vorschlagen)
 
@@ -76,3 +81,4 @@ eingebunden): Feature-/MVP-Doku unter `features/`, Security-Doku unter
 - Toolkit-API-Referenz: [toolkit-capability-map.md](../WorkDiary-Architecture/toolkit-capability-map.md)
 - Migrationslog & A–F-Klassifikation: [toolkit-konsolidierung-2026-06.md](../WorkDiary-Architecture/toolkit-konsolidierung-2026-06.md)
 - Audit-Befunde (offene Migrations-/Erweiterungskandidaten): [toolkit-audit-2026-06.md](../WorkDiary-Architecture/toolkit-audit-2026-06.md)
+- Audit 2026-09 (Eigenbau statt Toolkit, Gate, Toolkit-Kandidaten): [toolkit-audit-2026-09.md](../WorkDiary-Architecture/toolkit-audit-2026-09.md)

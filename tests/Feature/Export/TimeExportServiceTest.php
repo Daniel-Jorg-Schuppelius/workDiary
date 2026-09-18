@@ -293,6 +293,30 @@ class TimeExportServiceTest extends TestCase {
         $this->assertCount(2, $lines, 'Kopfzeile + eine Datenzeile.');
     }
 
+    /**
+     * Toolkit-Audit 2026-09: Die Zeilen entstanden per implode(';') — ein
+     * Semikolon in der frei pflegbaren Personalnummer verschob alle Spalten.
+     */
+    public function test_payroll_csv_quotes_values_containing_the_delimiter(): void {
+        $admin = $this->makeAdmin();
+        $user = $this->makeUser();
+        $user->forceFill(['personnel_number' => '47;11'])->save();
+        $this->seedAttendance($user, 8 * 60);
+        $this->approvedClosureFor($user, $admin);
+
+        $this->actingAs($admin);
+        $built = $this->service->build(
+            $this->service->prepare($this->organization, $this->year, $this->month, 'datev', 'organization', actor: $admin),
+            $admin,
+        );
+
+        $content = (string) Storage::disk('local')->get((string) $built->file_path);
+        $lines = array_values(array_filter(explode("\r\n", $content), static fn (string $l): bool => $l !== ''));
+
+        $this->assertSame('"47;11";31.01.2024;1000;8,00;', $lines[1]);
+        $this->assertCount(5, str_getcsv($lines[1], ';', '"', ''), 'Spaltenzahl bleibt erhalten');
+    }
+
     public function test_datev_lodas_profile_falls_back_to_user_id_without_personnel_number(): void {
         $admin = $this->makeAdmin();
         $user = $this->makeUser(); // ohne personnel_number

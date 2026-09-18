@@ -15,6 +15,7 @@ namespace App\Models;
 use App\Casts\MoneyCast;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -153,7 +154,7 @@ class Quote extends Model {
             $rate = $item->tax_rate !== null
                 ? (float) $item->tax_rate->getNumericValue()
                 : ($fallbackRate ??= $this->defaultTaxRate());
-            $key = number_format($rate, 2, '.', '');
+            $key = NumberHelper::toUSFormat($rate, 2);
             // MVP-416: Zeilennetto inkl. Positionsrabatt.
             $net = $item->netAmount();
             $netByRate[$key] = isset($netByRate[$key]) ? $netByRate[$key]->plus($net) : $net;

@@ -14,6 +14,7 @@ namespace App\Services\Procurement;
 
 use App\Models\{Article, PriceChangeRequest, SupplierCatalogItem, User};
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -87,7 +88,7 @@ class PriceApprovalService {
 
         $item = $request->item;
         $suggestion = $item instanceof SupplierCatalogItem ? $this->pricing->suggestForItem($item) : null;
-        if ($suggestion === null || bccomp($this->numeric($suggestion['price']), $this->numeric($request->suggested_price?->getAmount() ?? '0'), 4) !== 0) {
+        if ($suggestion === null || bccomp(NumberHelper::normalizeDecimalString($suggestion['price']), NumberHelper::normalizeDecimalString($request->suggested_price?->getAmount() ?? '0'), 4) !== 0) {
             $request->forceFill([
                 'status' => PriceChangeRequest::STATUS_EXPIRED,
                 'decided_by' => $approver->id,
@@ -135,10 +136,5 @@ class PriceApprovalService {
         if ($request->status !== PriceChangeRequest::STATUS_REQUESTED) {
             throw new RuntimeException((string) __('procurement.approval.error.not_open'));
         }
-    }
-
-    /** @return numeric-string */
-    private function numeric(string $value): string {
-        return is_numeric($value) ? $value : '0';
     }
 }

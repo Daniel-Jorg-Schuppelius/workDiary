@@ -16,6 +16,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportSco
 use App\Models\{TimeAccount, User};
 use App\Support\{Sqid, XlsxExport};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\{Auth, DB};
 use Illuminate\View\View;
@@ -249,7 +250,7 @@ class TimeAccountComparisonReportController extends Controller {
         $out = array_merge(
             [$this->headerRow($periods)],
             array_map(static fn (array $row): array => array_map(
-                static fn ($v) => is_float($v) ? number_format($v, 2, '.', '') : $v,
+                static fn ($v) => is_float($v) ? NumberHelper::toUSFormat($v, 2) : $v,
                 $row,
             ), $this->bodyRows($rows)),
         );

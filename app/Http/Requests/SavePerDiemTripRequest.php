@@ -17,6 +17,9 @@ class SavePerDiemTripRequest extends BaseFormRequest {
 
     protected function prepareForValidation(): void {
         $this->mergeOrgLocalToUtc(['started_at', 'ended_at']);
+        if ($this->filled('country')) {
+            $this->merge(['country' => $this->string('country')->upper()->value()]);
+        }
     }
 
     /** @var array<string, class-string> */
@@ -29,7 +32,7 @@ class SavePerDiemTripRequest extends BaseFormRequest {
     /** @return array<string, mixed> */
     public function rules(): array {
         return [
-            'country' => ['required', 'string', 'size:2'],
+            'country' => ['required', 'string', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
             'purpose' => ['required', 'string', 'max:255'],
             'location' => ['required', 'string', 'max:255'],
             'workplace_key' => ['nullable', 'string', 'max:100'],

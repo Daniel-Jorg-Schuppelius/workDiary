@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Attachments;
 
 use App\Models\Attachment;
-use App\Support\{Filename, Setting};
+use App\Support\Setting;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
@@ -94,7 +94,7 @@ final class FileAttacher {
             'user_id' => $userId,
             'disk' => 'local',
             'path' => $path,
-            'original_name' => Filename::sanitize($file->getClientOriginalName()),
+            'original_name' => File::sanitizeDisplayName($file->getClientOriginalName()),
             'mime' => $file->getMimeType() ?? '',
             'size' => $file->getSize(),
         ], $extra));
@@ -105,7 +105,7 @@ final class FileAttacher {
     /**
      * Content-Variante (Vollaudit 2026-07, M46): legt bereits vorliegende
      * Roh-Inhalte (z. B. Mail-Intake-Übernahmen) mit demselben Ablage-Rezept
-     * ab — gleicher Ordner, UUID-Name, Filename::sanitize, morphMany-create.
+     * ab — gleicher Ordner, UUID-Name, File::sanitizeDisplayName, morphMany-create.
      *
      * @param  array<string, mixed>  $extra
      */
@@ -127,7 +127,7 @@ final class FileAttacher {
             'user_id' => $userId,
             'disk' => 'local',
             'path' => $path,
-            'original_name' => Filename::sanitize($originalName),
+            'original_name' => File::sanitizeDisplayName($originalName),
             'mime' => $mime ?? '',
             'size' => strlen($content),
         ], $extra));

@@ -16,7 +16,7 @@ use App\Enums\Media\{MediaRenditionKind, MediaState, SubtitleSource};
 use App\Models\{Attachment, User};
 use App\Models\Media\MediaRendition;
 use App\Services\Licensing\LimitGuard;
-use CommonToolkit\Helper\FileSystem\Folder;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use CommonToolkit\Helper\Media\MediaHelper;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Storage;
@@ -135,7 +135,7 @@ class VideoTranscodingService {
         $disk = Storage::disk($attachment->disk);
         $source = $disk->path($attachment->path);
 
-        if (! is_file($source)) {
+        if (! File::isFile($source)) {
             return $this->fail($attachment, (string) __('media.errors.source_missing'));
         }
 
@@ -183,7 +183,9 @@ class VideoTranscodingService {
         $folder = dirname($attachment->path) . '/renditions/' . $attachment->id;
         $absoluteFolder = $disk->path($folder);
 
-        if (! is_dir($absoluteFolder) && ! mkdir($absoluteFolder, 0775, true) && ! is_dir($absoluteFolder)) {
+        try {
+            Folder::create($absoluteFolder, 0775, true);
+        } catch (\Throwable) {
             return $this->fail($attachment, (string) __('media.errors.target_unwritable'));
         }
 
@@ -244,7 +246,7 @@ class VideoTranscodingService {
         $disk = Storage::disk($attachment->disk);
         $source = $disk->path($attachment->path);
 
-        if (! is_file($source)) {
+        if (! File::isFile($source)) {
             throw new RuntimeException((string) __('media.errors.source_missing'));
         }
 
@@ -277,7 +279,7 @@ class VideoTranscodingService {
             // nichts verloren. Die Prüfung muss sein: Folder::delete wirft auf
             // ein fehlendes Verzeichnis — im finally-Zweig würde diese
             // Ausnahme den eigentlichen Fehler verdecken.
-            if (is_dir($workDir)) {
+            if (Folder::exists($workDir)) {
                 Folder::delete($workDir, true);
             }
         }
@@ -375,7 +377,7 @@ class VideoTranscodingService {
         // stripVideo: false — wir wollen ausdrücklich das Bild behalten.
         $ok = MediaHelper::convert($source, $target, $args, $output, $code, false);
 
-        if (! $ok || ! is_file($target)) {
+        if (! $ok || ! File::isFile($target)) {
             return false;
         }
 
@@ -391,7 +393,7 @@ class VideoTranscodingService {
                 'disk' => $attachment->disk,
                 'path' => $folder . '/' . $variant . '.mp4',
                 'mime' => 'video/mp4',
-                'size_bytes' => (int) filesize($target),
+                'size_bytes' => File::size($target),
                 'height' => $height,
             ]
         );
@@ -408,7 +410,7 @@ class VideoTranscodingService {
         $output = [];
         $code = 0;
 
-        if (! MediaHelper::convert($source, $target, $args, $output, $code, false) || ! is_file($target)) {
+        if (! MediaHelper::convert($source, $target, $args, $output, $code, false) || ! File::isFile($target)) {
             return;
         }
 
@@ -424,7 +426,7 @@ class VideoTranscodingService {
                 'disk' => $attachment->disk,
                 'path' => $folder . '/poster.jpg',
                 'mime' => 'image/jpeg',
-                'size_bytes' => (int) filesize($target),
+                'size_bytes' => File::size($target),
             ]
         );
     }

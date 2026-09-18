@@ -14,6 +14,7 @@ namespace App\Services\Auth;
 
 use App\Mail\TwoFactorCodeMail;
 use App\Models\User;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\{Cache, Hash, Log, Mail, RateLimiter};
 use Throwable;
 
@@ -85,7 +86,7 @@ class EmailOtpService {
      * invalidiert – userbasiert, damit IP-Rotation den Schutz nicht aushebelt.
      */
     public function verify(User $user, string $code): bool {
-        $code = preg_replace('/\D/', '', $code) ?? '';
+        $code = StringHelper::extractDigits($code);
         if ($code === '') {
             return false;
         }

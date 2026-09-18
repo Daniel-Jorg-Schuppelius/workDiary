@@ -387,8 +387,7 @@ class LiquidityForecastBuilder extends AbstractAccountingReportBuilder {
                 if (! $unit instanceof Money) {
                     continue;
                 }
-                $quantity = (string) $line->quantity;
-                $net = $unit->times(is_numeric($quantity) ? $quantity : '0')->withScale(2);
+                $net = $unit->times(NumberHelper::normalizeDecimalString((string) $line->quantity))->withScale(2);
                 if ($line->discount_percent !== null) {
                     $net = $line->discount_percent->subtractFrom($net);
                 }

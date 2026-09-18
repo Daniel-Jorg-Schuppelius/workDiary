@@ -13,6 +13,10 @@ namespace App\Console\Commands;
 use App\Models\{Article, ArticleVariant, ContactBankAccount, Customer, LexofficeArticle, Supplier, SupplierCatalogItem, User};
 use App\Models\Finance\BankAccount;
 use App\Services\Stammdaten\IdentifierIssueDetector;
+use App\Support\CsvExport;
+use CommonToolkit\Enums\Common\CSV\QuotingStyle;
+use CommonToolkit\Helper\Data\CSV\StringHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 use Illuminate\Database\Eloquent\Model;
 
@@ -82,17 +86,19 @@ class AuditIdentifiersCommand extends Command {
 
         $csv = $this->option('csv');
         if (is_string($csv) && $csv !== '') {
-            $handle = fopen($csv, 'w');
-            if ($handle === false) {
+            // Quoting wie das frühere fputcsv; die Stammdatenwerte laufen durch den
+            // Formel-Guard (S-46) — der Bericht wird in Excel geöffnet.
+            $lines = [StringHelper::encodeLine(['model', 'id', 'field', 'value', 'reason', 'suggestion'], ';', '"', QuotingStyle::FPUTCSV)];
+            foreach ($findings as $f) {
+                $lines[] = StringHelper::encodeLine(CsvExport::guardRow(array_values($f)), ';', '"', QuotingStyle::FPUTCSV);
+            }
+            try {
+                File::write($csv, implode("\n", $lines) . "\n");
+            } catch (\Throwable) {
                 $this->error('CSV konnte nicht geschrieben werden: ' . $csv);
 
                 return self::FAILURE;
             }
-            fputcsv($handle, ['model', 'id', 'field', 'value', 'reason', 'suggestion'], ';');
-            foreach ($findings as $f) {
-                fputcsv($handle, array_values($f), ';');
-            }
-            fclose($handle);
             $this->info('CSV geschrieben: ' . $csv);
         }
 

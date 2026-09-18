@@ -85,14 +85,14 @@ class ExternalPayoutReportController extends Controller {
                 $amount = round($minutes / 60 * $rate, 2);
                 $basis = __(':hours × :rate', [
                     'hours' => NumberHelper::toGermanFormat($minutes / 60, 2, withThousandsSeparator: true) . ' h',
-                    'rate' => NumberHelper::toGermanFormat($rate, 2, withThousandsSeparator: true) . ' €',
+                    'rate' => $user->compensation_rate?->format() ?? '0,00 €',
                 ]);
             } elseif ($model === CompensationModel::Pauschal) {
                 $flat = ($user->flat_amount?->toFloat() ?? 0.0);
                 $interval = $user->flat_interval;
                 if ($interval === FlatInterval::Monatlich) {
                     $amount = $flat * $monthCount;
-                    $basis = NumberHelper::toGermanFormat($flat, 2, withThousandsSeparator: true) . ' € × ' . $monthCount . ' ' . __('Monate');
+                    $basis = ($user->flat_amount?->format() ?? '0,00 €') . ' × ' . $monthCount . ' ' . __('Monate');
                 } elseif ($interval === FlatInterval::ProEinsatz) {
                     $einsatzDays = TimeEntry::query()
                         ->where('user_id', $user->id)
@@ -100,7 +100,7 @@ class ExternalPayoutReportController extends Controller {
                         ->distinct()
                         ->count('date');
                     $amount = $flat * $einsatzDays;
-                    $basis = NumberHelper::toGermanFormat($flat, 2, withThousandsSeparator: true) . ' € × ' . $einsatzDays . ' ' . __('Einsätze');
+                    $basis = ($user->flat_amount?->format() ?? '0,00 €') . ' × ' . $einsatzDays . ' ' . __('Einsätze');
                 } else { // Einmalig
                     $amount = $flat;
                     $basis = __('Einmalig');

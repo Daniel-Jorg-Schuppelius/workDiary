@@ -15,6 +15,7 @@ namespace App\Models\DocumentDesign;
 use App\Enums\DocumentDesign\{LetterheadAssetStatus, LetterheadPageRole};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\User;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Facades\Storage;
@@ -134,6 +135,6 @@ class LetterheadAsset extends Model {
         }
         $raw = $disk->get($this->normalized_path);
 
-        return $raw === null ? null : 'data:image/png;base64,' . base64_encode($raw);
+        return $raw === null ? null : (DataUrlHelper::encode($raw, 'image/png') ?: null);
     }
 }

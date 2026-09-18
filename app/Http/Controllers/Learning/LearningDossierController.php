@@ -18,6 +18,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Organization, Team, User};
 use App\Services\Learning\{LearningDossierPdfRenderer, QualificationDossierService};
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Collection as EloquentCollection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Carbon;
@@ -111,7 +112,7 @@ class LearningDossierController extends Controller {
 
         return response()->streamDownload(
             static function () use ($payload): void {
-                echo json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
+                echo JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
             },
             'nachweismappe-' . $from->toDateString() . '.json',
             ['Content-Type' => 'application/json']

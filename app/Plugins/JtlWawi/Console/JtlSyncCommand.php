@@ -15,6 +15,7 @@ namespace App\Plugins\JtlWawi\Console;
 use App\Models\{JtlConnection, Organization, PluginSetting};
 use App\Plugins\JtlWawi\JtlWawiPlugin;
 use App\Plugins\JtlWawi\Services\JtlSyncService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -51,7 +52,7 @@ class JtlSyncCommand extends Command {
 
             try {
                 $counters = $sync->run($connection);
-                $this->info(sprintf('Org %d: %s', $organization->id, json_encode($counters)));
+                $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             } catch (Throwable $e) {
                 $failures++;
                 $this->error(sprintf('Org %d: %s', $organization->id, class_basename($e)));

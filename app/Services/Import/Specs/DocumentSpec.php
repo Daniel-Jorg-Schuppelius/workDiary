@@ -19,7 +19,7 @@ use App\Services\Attachments\FileAttacher;
 use App\Services\Document\DocumentService;
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{ResolvesImportReferences, ValidatesImportDates};
-use App\Support\Filename;
+use CommonToolkit\Helper\Data\StringHelper;
 use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Throwable;
@@ -104,7 +104,7 @@ class DocumentSpec extends AbstractEntitySpec {
                 'file' => ($v = $this->trimmedString($raw)) === null ? null : ltrim(str_replace('\\', '/', $v), '/'),
                 'target_type' => $this->targetType($this->trimmedString($raw)),
                 'document_type', 'status' => $this->trimmedString($raw),
-                'confidential' => $raw === null || trim((string) $raw) === '' ? null : $this->boolish($raw),
+                'confidential' => $raw === null || trim((string) $raw) === '' ? null : (bool) StringHelper::parseBool($raw),
                 default => $this->trimmedString($raw),
             };
         }
@@ -183,7 +183,7 @@ class DocumentSpec extends AbstractEntitySpec {
             }
 
             $file = (string) $row['file'];
-            $originalName = Filename::sanitize(basename($file));
+            $originalName = File::sanitizeDisplayName($file);
             $size = strlen($content);
             $maxBytes = FileAttacher::maxKb() * 1024;
             if ($size > $maxBytes) {

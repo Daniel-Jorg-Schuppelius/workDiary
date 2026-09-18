@@ -15,11 +15,11 @@ namespace App\Console\Commands;
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
 use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Console\Command;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\{DB, Schema, Storage};
 use RuntimeException;
-use ZipArchive;
 
 /**
  * Exportiert die revisionssicheren Audit-Ketten maschinell auswertbar (GoBD):
@@ -44,17 +44,12 @@ class ExportAuditLog extends Command {
 
         $disk = Storage::disk((string) $this->option('disk'));
         $dir = (string) $this->option('dir');
-        $disk->makeDirectory($dir);
 
         $stamp = Carbon::now()->format('Ymd-His');
         $relPath = $dir . '/audit-' . $stamp . '.zip';
-        $absPath = $disk->path($relPath);
 
-        $zip = new ZipArchive;
-        if ($zip->open($absPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) !== true) {
-            throw new RuntimeException('Konnte ZIP nicht öffnen: ' . $absPath);
-        }
-
+        /** @var array<string, string> $entries Eintragsreihenfolge = Archivreihenfolge */
+        $entries = [];
         $manifest = [
             'generated_at' => Carbon::now()->toIso8601String(),
             // Frist je Rechtsraum (Restpunkt 67) — Fallback: config-Default.
@@ -70,7 +65,7 @@ class ExportAuditLog extends Command {
             }
 
             $columns = Schema::getColumnListing($table);
-            $zip->addFromString("data/{$table}.csv", $this->toCsv($table, $columns));
+            $entries["data/{$table}.csv"] = $this->toCsv($table, $columns);
 
             $head = DB::table('audit_chain_heads')->where('chain', $table)->first();
             $integrityOk = $this->call('audit:verify', ['--chain' => $table]) === self::SUCCESS;
@@ -84,11 +79,14 @@ class ExportAuditLog extends Command {
             ];
         }
 
-        $zip->addFromString('manifest.json', JsonHelper::encode(
+        $entries['manifest.json'] = JsonHelper::encode(
             $manifest,
             JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT,
-        ));
-        $zip->close();
+        );
+
+        if (! $disk->put($relPath, ZipFile::createFromStrings($entries))) {
+            throw new RuntimeException('Konnte Audit-Export nicht speichern: ' . $relPath);
+        }
 
         $this->info('Audit-Export erstellt: ' . $relPath);
 

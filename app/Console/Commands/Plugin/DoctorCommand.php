@@ -13,6 +13,7 @@ namespace App\Console\Commands\Plugin;
 use App\Plugins\Contracts\Plugin;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\PluginSettingsResolver;
+use CommonToolkit\Helper\FileSystem\Folder;
 use Illuminate\Console\Command;
 
 /**
@@ -132,7 +133,7 @@ class DoctorCommand extends Command {
     /** @param list<string> $violations */
     private function checkSchema(Plugin $plugin, array &$violations): void {
         $path = $plugin->migrationsPath();
-        if ($path !== null && ! is_dir($path)) {
+        if ($path !== null && ! Folder::exists($path)) {
             $violations[] = "{$plugin->id()}: migrationsPath existiert nicht: {$path}.";
         }
     }

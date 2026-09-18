@@ -83,7 +83,7 @@
                 @elseif ($supplier->address)
                     <x-detail-grid.row :label="__('Adresse')" class="whitespace-pre-line">{{ $supplier->address }}</x-detail-grid.row>
                 @endif
-                <x-detail-grid.row :label="__('Land')" :value="$supplier->country" />
+                <x-detail-grid.row :label="__('Land')" :value="$supplier->country ? (\CommonToolkit\Enums\CountryCode::tryFrom($supplier->country)?->getLabel(app()->getLocale()) ?? $supplier->country) : null" />
             </x-detail-grid>
             <x-contact-persons :persons="$supplier->contact_persons" />
         </x-card>

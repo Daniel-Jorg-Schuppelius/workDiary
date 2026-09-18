@@ -19,6 +19,7 @@ use App\Plugins\Contracts\BackupTarget;
 use App\Services\Backup\BackupNaming;
 use App\Services\Backup\Concerns\ResolvesBackupTarget;
 use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -89,16 +90,13 @@ class IntegrityAnchorService {
         }
 
         $payload = $this->payload($manifest, $lastCheck);
-        $temporary = tempnam(sys_get_temp_dir(), 'wd-anchor-');
-        if ($temporary === false) {
-            return null;
-        }
 
         try {
-            file_put_contents($temporary, JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
             $adapter ??= $this->adapter($connection);
-            $adapter->backupEnsureFolder($connection, $this->naming->pseudonym());
-            $adapter->backupUploadPart($connection, $temporary, $this->remoteName());
+            File::withTemp(JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES), function (string $temporary) use ($adapter, $connection): void {
+                $adapter->backupEnsureFolder($connection, $this->naming->pseudonym());
+                $adapter->backupUploadPart($connection, $temporary, $this->remoteName());
+            }, 'wd-anchor-');
 
             return $payload;
         } catch (\Throwable $e) {
@@ -106,8 +104,6 @@ class IntegrityAnchorService {
             Log::warning('integrity.anchor_push_failed', ['error' => $e->getMessage()]);
 
             return null;
-        } finally {
-            @unlink($temporary);
         }
     }
 

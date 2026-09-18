@@ -164,7 +164,7 @@ class PermitController extends Controller {
         }
 
         // Kanonische Ablage über FileAttacher (M46-Rest, Folgepunkt 2026-07-20);
-        // original_name läuft damit über Filename::sanitize statt des lokalen
+        // original_name läuft damit über File::sanitizeDisplayName statt des lokalen
         // mb_substr-Zuschnitts (strengerer Kanon, bewusstes Delta).
         app(FileAttacher::class)->store($permit, $file, Auth::id() !== null ? (int) Auth::id() : null, [
             'organization_id' => $permit->organization_id,

@@ -13,6 +13,7 @@ namespace App\Plugins\Lexoffice;
 use APIToolkit\API\Authentication\BearerAuthentication;
 use App\Models\LexofficeVoucher;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\Client\Response;
 use RuntimeException;
 
@@ -148,14 +149,7 @@ class LexofficeVoucherFileService {
 
         return [
             'body' => (string) $disk->get($voucher->file_path),
-            'content_type' => match ($extension) {
-                'png' => 'image/png',
-                'jpg', 'jpeg' => 'image/jpeg',
-                'gif' => 'image/gif',
-                'tif', 'tiff' => 'image/tiff',
-                'xml' => 'application/xml',
-                default => 'application/pdf',
-            },
+            'content_type' => File::mimeTypeForExtension($extension) ?? 'application/pdf',
             'extension' => $extension,
         ];
     }

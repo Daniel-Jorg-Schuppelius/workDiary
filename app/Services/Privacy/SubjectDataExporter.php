@@ -37,6 +37,7 @@ use App\Services\Privacy\SubjectData\{ApplicationRecordsSection,
     WorkTimeSummarySection
 };
 use App\Support\Toolkit\CsvFacade;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
@@ -157,7 +158,7 @@ class SubjectDataExporter {
 
     /** @param array<string, mixed> $payload */
     public function toJson(array $payload): string {
-        return (string) json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+        return JsonHelper::encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     }
 
     /**

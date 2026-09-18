@@ -18,7 +18,7 @@ class SaveBankAccountRequest extends BaseFormRequest {
         // Dubletten-Blindindex (BankHelper::hashIBAN) hasht sonst rohen Input.
         $this->merge([
             'iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) $this->input('iban', '')) ?? '',
-            'bic' => strtoupper((string) preg_replace('/\s+/', '', (string) $this->input('bic', ''))) ?: null,
+            'bic' => \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) $this->input('bic', '')),
         ]);
     }
 

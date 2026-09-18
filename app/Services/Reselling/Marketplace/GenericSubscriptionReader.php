@@ -19,6 +19,7 @@ use CommonToolkit\Entities\CSV\HeaderLine;
 use CommonToolkit\Entities\XLSX\Cell;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, StringHelper};
+use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use CommonToolkit\ValueObjects\Money;
 use RuntimeException;
@@ -73,7 +74,7 @@ final class GenericSubscriptionReader {
 
     public function read(string $file, SubscriptionProvider $provider = SubscriptionProvider::Other): PurchasesImport {
         $name = basename($file);
-        if (! is_readable($file)) {
+        if (! File::isReadable($file, false)) {
             throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
         $skipped = [];

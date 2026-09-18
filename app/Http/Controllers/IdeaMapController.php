@@ -16,6 +16,7 @@ use App\Http\Requests\SaveIdeaMapRequest;
 use App\Models\{AuditLog, IdeaMap, IdeaMapShare, IdeaNode, Team, User};
 use App\Services\Ideas\{IdeaMapImportService, IdeaMapService};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Cache, Gate};
 use Illuminate\View\View;
@@ -92,7 +93,7 @@ class IdeaMapController extends Controller {
 
         /** @var \Illuminate\Http\UploadedFile $file */
         $file = $request->file('file');
-        $content = (string) file_get_contents($file->getRealPath());
+        $content = File::read((string) $file->getRealPath());
 
         /** @var User $user */
         $user = Auth::user();

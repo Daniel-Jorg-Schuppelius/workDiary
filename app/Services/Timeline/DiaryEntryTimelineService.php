@@ -15,6 +15,7 @@ use App\Enums\Procedure\ProcedureRunStatus;
 use App\Enums\Protocol\ProtocolEventType;
 use App\Models\{AuditLog, CommunicationNote, Customer, DiaryEntry, Document, Invoice, MaterialUsage, OpenIssueEvent, ProcedureRun, ProtocolEvent, Quote, Shipment, TimeEntry, User};
 use App\Services\Licensing\FeatureFlagResolver;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 
@@ -590,7 +591,9 @@ class DiaryEntryTimelineService {
                 occurredAt: $usage->created_at,
                 actor: null,
                 title: (string) __('timeline.event.material_added'),
-                summary: rtrim(rtrim((string) $usage->quantity, '0'), '.') . ' ' . $usage->unit . ' — ' . $usage->description,
+                // Die Menge aus dem Wertobjekt: (string) Quantity trägt die Einheit schon —
+                // daraus wurde „2.500 Stk Stk".
+                summary: NumberHelper::trimTrailingZeros($usage->quantity?->getValue()->format() ?? '0', ',') . ' ' . $usage->unit . ' — ' . $usage->description,
             );
         }
 

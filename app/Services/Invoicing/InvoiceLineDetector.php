@@ -95,12 +95,12 @@ class InvoiceLineDetector {
             $lines[] = [
                 'position' => $position,
                 'description' => $description,
-                'quantity' => number_format($quantity, 3, '.', ''),
+                'quantity' => NumberHelper::toUSFormat($quantity, 3),
                 'unit' => $unit !== '' ? mb_substr($unit, 0, 20) : 'Stk.',
-                'unit_price' => number_format($unitPrice, 4, '.', ''),
-                'tax_rate' => $taxRate !== null && $taxRate <= 100.0 ? number_format($taxRate, 2, '.', '') : null,
+                'unit_price' => NumberHelper::toUSFormat($unitPrice, 4),
+                'tax_rate' => $taxRate !== null && $taxRate <= 100.0 ? NumberHelper::toUSFormat($taxRate, 2) : null,
                 'discount_amount' => null,
-                'amount' => number_format($amount, 2, '.', ''),
+                'amount' => NumberHelper::toUSFormat($amount, 2),
             ];
         }
 

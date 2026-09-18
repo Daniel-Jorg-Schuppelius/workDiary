@@ -16,6 +16,7 @@ use App\Models\{Article, ArticleVariant, Organization};
 use App\Models\B2b\{B2bCatalogAccess, B2bCatalogItem};
 use App\Support\UnitCodeMapper;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use CommonToolkit\ValueObjects\Money;
 use DateTimeImmutable;
 use ERechnungToolkit\Entities\Datanorm\{DatanormArticle, DatanormCatalog, DatanormCustomer, DatanormPriceChange, DatanormTextBlock};
@@ -456,7 +457,7 @@ class DatanormExportService {
                     $nextQty = (float) $next->min_qty;
                     $to = fmod($nextQty, 1.0) === 0.0
                         ? (string) (int) ($nextQty - 1)
-                        : number_format($nextQty - 0.01, 2, '.', '');
+                        : NumberHelper::toUSFormat($nextQty - 0.01);
                 }
                 $target->addScalePrice(new \ERechnungToolkit\Entities\Datanorm\DatanormScalePrice(
                     articleNumber: $target->getArticleNumber(),
@@ -466,7 +467,7 @@ class DatanormExportService {
                     isDiscount: false,
                     priceIndicator: $priceIndicator,
                     basis: \ERechnungToolkit\Entities\Datanorm\DatanormScalePrice::BASIS_QUANTITY,
-                    from: rtrim(rtrim((string) $tier->min_qty, '0'), '.'),
+                    from: NumberHelper::trimTrailingZeros((string) $tier->min_qty),
                     to: $to
                 ));
             }
@@ -508,7 +509,8 @@ class DatanormExportService {
     private function wrapText(string $text): array {
         $lines = [];
         foreach (preg_split('/\r\n|\r|\n/', $text) ?: [] as $paragraph) {
-            $wrapped = wordwrap($paragraph, 40, "\n", true);
+            // Zeichen statt Bytes: wordwrap brach Umlaute nach 20 Zeichen um.
+            $wrapped = StringHelper::wrap($paragraph, 40, "\n", true);
             foreach (explode("\n", $wrapped) as $line) {
                 $lines[] = $line;
             }

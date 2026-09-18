@@ -13,8 +13,8 @@ declare(strict_types=1);
 namespace App\Services\Whistleblowing\Scanning;
 
 use App\Enums\Whistleblowing\AttachmentScanStatus;
+use CommonToolkit\Helper\Shell;
 use Illuminate\Support\Facades\Log;
-use Symfony\Component\Process\Process;
 use Throwable;
 
 /**
@@ -27,18 +27,21 @@ use Throwable;
 class ClamAvScanDriver implements ScanDriver {
     public function scan(string $absolutePath, ?string $mime): ?AttachmentScanStatus {
         $binary = (string) config('whistleblowing.clamav_binary', 'clamdscan');
-        $process = new Process([$binary, '--no-summary', '--fdpass', $absolutePath]);
-        $process->setTimeout(60);
 
         try {
-            $process->run();
+            $result = Shell::run([$binary, '--no-summary', '--fdpass', $absolutePath], 60.0);
         } catch (Throwable $e) {
             Log::warning('Whistleblowing ClamAV-Scan fehlgeschlagen', ['error' => $e->getMessage()]);
 
             return null; // fail-safe
         }
+        if ($result->timedOut) {
+            Log::warning('Whistleblowing ClamAV-Scan fehlgeschlagen', ['error' => 'Timeout']);
 
-        return match ($process->getExitCode()) {
+            return null; // fail-safe
+        }
+
+        return match ($result->exitCode) {
             0 => AttachmentScanStatus::Clean,
             1 => AttachmentScanStatus::Rejected,
             default => null,

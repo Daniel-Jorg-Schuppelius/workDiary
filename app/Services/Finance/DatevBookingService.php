@@ -18,7 +18,7 @@ use App\Services\Export\ExportRunner;
 use App\Services\Finance\Datev\{DatevBookingAdapter, DatevBookingConfig, DatevBookingFieldResolver};
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
 use DateTimeImmutable;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\{DB, Storage};
@@ -331,7 +331,7 @@ class DatevBookingService {
             if ($row['tax_key'] === null) {
                 $warnings[] = (string) __('finance.datev.preflight.unknown_tax_key', [
                     'ref' => $row['document_ref'],
-                    'rate' => number_format($row['tax_rate'], 2),
+                    'rate' => NumberHelper::toGermanFormat($row['tax_rate'], 2, withThousandsSeparator: true),
                 ]);
             }
 

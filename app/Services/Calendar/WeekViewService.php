@@ -11,8 +11,9 @@
 namespace App\Services\Calendar;
 
 use App\Models\{DiaryEntry, EmergencyAssignment, OnCallShift, User};
-use App\Support\{Setting, Tz, WeekDay};
+use App\Support\{Setting, Tz};
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Enums\Weekday;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Collection;
 
@@ -33,7 +34,7 @@ class WeekViewService {
         // Tagesgrenzen in der aktiven Anzeige-Zeitzone verankern, damit Positionierung/Tagesspalten der Wanduhr
         // entsprechen. Die Werte sind echte Instants (lokale Mitternacht) – Vergleiche rechnen instant-basiert.
         $tz = Tz::current();
-        $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();
+        $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(Weekday::MONDAY->value)->startOfDay();
         $end = $start->addDays(7); // exclusive
 
         // Für DB-Queries die Fenstergrenzen nach UTC umrechnen (Spalten sind UTC).
@@ -112,7 +113,7 @@ class WeekViewService {
         $tz = Tz::current();
         $windows = [];
         foreach ($anchors as $anchor) {
-            $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();
+            $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(Weekday::MONDAY->value)->startOfDay();
             $windows[] = ['start' => $start, 'end' => $start->addDays(7)];
         }
         $rangeStart = min(array_map(fn (array $w) => $w['start'], $windows))->setTimezone('UTC');
@@ -176,7 +177,7 @@ class WeekViewService {
             return new Collection;
         }
         $tz = Tz::current();
-        $starts = array_map(fn (CarbonInterface $a) => CarbonImmutable::instance($a)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay(), $anchors);
+        $starts = array_map(fn (CarbonInterface $a) => CarbonImmutable::instance($a)->setTimezone($tz)->startOfWeek(Weekday::MONDAY->value)->startOfDay(), $anchors);
         $startUtc = min($starts)->setTimezone('UTC');
         $endUtc = max($starts)->addDays(7)->setTimezone('UTC');
 
@@ -201,7 +202,7 @@ class WeekViewService {
     /** @return Collection<int, User> */
     public function usersInWeek(CarbonInterface $anchor): Collection {
         $tz = Tz::current();
-        $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(WeekDay::MONDAY)->startOfDay();
+        $start = CarbonImmutable::instance($anchor)->setTimezone($tz)->startOfWeek(Weekday::MONDAY->value)->startOfDay();
         $end = $start->addDays(7);
         $startUtc = $start->setTimezone('UTC');
         $endUtc = $end->setTimezone('UTC');

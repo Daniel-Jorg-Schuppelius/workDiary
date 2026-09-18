@@ -15,6 +15,7 @@ namespace App\Services\Import\Source;
 use App\Enums\Import\ImportErrorCode;
 use App\Services\Import\{EntitySpec, ValidationIssue};
 use App\Services\Import\Source\Ical\IcalEvent;
+use CommonToolkit\Helper\Data\EmailHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use DateTimeZone;
 use Sabre\VObject\Component\VEvent;
@@ -186,7 +187,7 @@ final class IcalImportSource implements ImportSource {
                 $value = substr($value, 7);
             }
             $value = trim($value);
-            if (filter_var($value, FILTER_VALIDATE_EMAIL)) {
+            if (EmailHelper::isEmail($value)) {
                 return mb_strtolower($value);
             }
         }

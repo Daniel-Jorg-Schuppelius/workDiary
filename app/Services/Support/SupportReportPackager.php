@@ -12,8 +12,7 @@ namespace App\Services\Support;
 
 use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder as ToolkitFolder};
-use RuntimeException;
-use ZipArchive;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 
 /**
  * Verpackt das vom {@see SupportReportBuilder} erzeugte Array als ZIP-Datei
@@ -33,27 +32,14 @@ class SupportReportPackager {
             ToolkitFolder::create($dir, 0755, true);
         }
 
-        $zip = new ZipArchive();
-        $opened = $zip->open($targetPath, ZipArchive::CREATE | ZipArchive::OVERWRITE);
-        if ($opened !== true) {
-            throw new RuntimeException('Konnte ZIP-Datei nicht öffnen (Code ' . (int) $opened . ').');
-        }
-
-        $entryName = 'support-report.json';
-        $zip->addFromString($entryName, $json);
-
-        $passwordSet = false;
-        if ($password !== null && $password !== '') {
-            $zip->setPassword($password);
-            // AES-256, falls verfügbar; fällt sonst auf ZipCrypto zurück.
-            $encryption = defined('ZipArchive::EM_AES_256') ? ZipArchive::EM_AES_256 : 0;
-            if ($encryption !== 0) {
-                $zip->setEncryptionName($entryName, $encryption);
-                $passwordSet = true;
-            }
-        }
-
-        $zip->close();
+        // Passwort nur mit AES-256 — ohne Unterstützung bleibt das Archiv
+        // unverschlüsselt und `password_set` meldet das dem Aufrufer.
+        $passwordSet = $password !== null && $password !== '' && ZipFile::supportsEncryption();
+        ZipFile::createFromEntries(
+            [['archiveName' => 'support-report.json', 'content' => $json]],
+            $targetPath,
+            $passwordSet ? $password : null,
+        );
 
         $bytes = ToolkitFile::size($targetPath);
         $sha256 = ToolkitFile::hash($targetPath);

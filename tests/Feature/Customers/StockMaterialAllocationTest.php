@@ -79,6 +79,20 @@ class StockMaterialAllocationTest extends TestCase {
         $this->assertSame('7.0000', app(InventoryLedger::class)->available($this->variant, $this->warehouse));
     }
 
+    /** Toolkit-Audit 2026-09: rtrim machte aus der Menge 10 eine 1. */
+    public function test_allocation_description_keeps_whole_quantities(): void {
+        $this->actingAs($this->admin)
+            ->post(route('customers.material-costs.stock.store', $this->customer), [
+                'variant_id' => $this->variant->sqid,
+                'warehouse_id' => $this->warehouse->sqid,
+                'qty' => '10',
+                'allocated_on' => now()->toDateString(),
+            ]);
+
+        $allocation = $this->customer->materialCostAllocations()->firstOrFail();
+        $this->assertMatchesRegularExpression('/\(10\b/', (string) $allocation->description);
+    }
+
     public function test_deleting_stock_allocation_returns_stock(): void {
         $allocation = app(CustomerStockAllocationService::class)
             ->issueForCustomer($this->customer, $this->variant, $this->warehouse, '3', actorUserId: $this->admin->id);

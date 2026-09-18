@@ -14,6 +14,7 @@ namespace App\Services\Ai\Providers;
 
 use App\Services\Ai\Contracts\LlmProviderInterface;
 use App\Services\Ai\Dto\{AiClassificationResult, AiExtractionResult, AiFindResult, AiTextResult, AiTranslationResult, ClassifyRequest, ExamplePair, ExplainRequest, ExtractRequest, FindRequest, FormulateRequest, GlossaryEntry, SummarizeRequest, TranslateRequest};
+use CommonToolkit\Helper\Data\JsonHelper;
 
 /**
  * Gemeinsame Verb-Implementierung der LLM-Familie (Feature 025, MVP-407):
@@ -74,7 +75,7 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
     public function classify(ClassifyRequest $request): AiClassificationResult {
         $system = implode("\n", [
             'Du ordnest einen Text Katalogwerten zu (Sprache: ' . $request->language . ').',
-            'Erlaubte Werte (NUR diese, exakt wie geschrieben): ' . json_encode($request->catalog, JSON_UNESCAPED_UNICODE),
+            'Erlaubte Werte (NUR diese, exakt wie geschrieben): ' . JsonHelper::encode($request->catalog, JSON_UNESCAPED_UNICODE),
             $request->multiple
                 ? 'Antworte NUR mit einem JSON-Array der passenden Werte (auch leer möglich).'
                 : 'Antworte NUR mit einem JSON-Array mit höchstens EINEM Wert.',
@@ -92,7 +93,7 @@ abstract class AbstractLlmProvider extends AbstractHttpAiProvider implements Llm
             'Antworte NUR mit der Erklärung.',
         ]);
 
-        $user = (string) json_encode($request->facts, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+        $user = JsonHelper::encode($request->facts, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
         if ($request->question !== null) {
             $user .= "\n\nFrage: " . $request->question;
         }

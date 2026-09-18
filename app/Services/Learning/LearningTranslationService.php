@@ -18,7 +18,7 @@ use App\Models\User;
 use App\Services\Ai\AiInvocationService;
 use App\Services\Ai\Dto\{AiTranslationResult, TranslateRequest};
 use App\Services\Ai\Exceptions\AiException;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -136,7 +136,7 @@ class LearningTranslationService {
             ? [$subject->title, $subject->subtitle]
             : [$subject->getAttribute('title'), $subject->getAttribute('content')];
 
-        return (string) CryptoHelper::hash(json_encode($payload, JSON_UNESCAPED_UNICODE) ?: '');
+        return (string) CryptoHelper::hash(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE));
     }
 
     /**
@@ -243,7 +243,7 @@ class LearningTranslationService {
             // Fassung als geprüft durch.
             $translation->fill([
                 'organization_id' => (int) $subject->getAttribute('organization_id'),
-                'payload' => (string) json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'payload' => JsonHelper::encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 'source_hash' => $this->sourceHash($subject),
                 'status' => LearningTranslationStatus::Draft,
                 'approved_by_user_id' => null,

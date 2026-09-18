@@ -94,6 +94,7 @@ return [
             'duplicate_file' => 'Diese Datei wurde bereits importiert (Dublette).',
             'unavailable' => 'Der Bankimport ist ein optionales, kostenpflichtiges Zusatzmodul und in dieser Installation nicht aktiviert. Eine Freischaltung ist auf Anfrage unter :contact möglich.',
             'unavailable_badge' => 'Zusatzmodul nicht aktiviert',
+            'unsupported_format' => 'Das Format :format wird für den Kontoauszugsimport nicht unterstützt (erwartet: CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [

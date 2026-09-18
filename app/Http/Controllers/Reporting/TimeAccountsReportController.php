@@ -16,6 +16,7 @@ use App\Http\Controllers\Reporting\Concerns\{RendersReportPdf, ResolvesReportSco
 use App\Models\{TimeAccount, TimeAccountEntry, User};
 use App\Support\Query\DateRange;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -122,9 +123,9 @@ class TimeAccountsReportController extends Controller {
         foreach ($rows as $row) {
             $out[] = [
                 $row['user']->name,
-                number_format($row['opening'], 2, '.', ''),
-                number_format($row['turnover'], 2, '.', ''),
-                number_format($row['closing'], 2, '.', ''),
+                NumberHelper::toUSFormat($row['opening'], 2),
+                NumberHelper::toUSFormat($row['turnover'], 2),
+                NumberHelper::toUSFormat($row['closing'], 2),
             ];
         }
 

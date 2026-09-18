@@ -66,6 +66,25 @@ class BankFormatImportTest extends TestCase {
         }
     }
 
+    /**
+     * Toolkit-Audit 2026-09: jedes `<Document` galt als CAMT.053, und ein
+     * „pain.001" irgendwo im Text machte eine Datei zum Überweisungsauftrag.
+     */
+    public function test_iso_detection_uses_the_message_type_not_a_text_search(): void {
+        $camt053 = (string) file_get_contents(base_path('tests/Fixtures/finance/camt053_sample.xml'));
+        $withPurpose = str_replace('</Document>', '<!-- Verwendungszweck: Sammler pain.001 --></Document>', $camt053);
+        $this->assertSame(BankStatementFormat::Camt053, BankStatementParser::detectFormat($withPurpose));
+
+        $camt052 = '<?xml version="1.0" encoding="UTF-8"?><Document xmlns="urn:iso:std:iso:20022:tech:xsd:camt.052.001.08"><BkToCstmrAcctRpt/></Document>';
+        try {
+            BankStatementParser::detectFormat($camt052);
+            $this->fail('camt.052 darf nicht als CAMT.053 durchgehen');
+        } catch (\App\Services\Finance\BankImportException $e) {
+            $this->assertSame('unsupportedFormat', $e->reason);
+            $this->assertStringContainsString('CAMT.052', $e->getMessage());
+        }
+    }
+
     public function test_ofx_import_creates_same_internal_schema(): void {
         $statements = $this->importService()->import($this->fixtureFile('ofx_sample.ofx'), $this->organization->id);
 

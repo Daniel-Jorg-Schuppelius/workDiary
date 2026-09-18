@@ -20,6 +20,7 @@ use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 use CommonToolkit\Builders\Payment\EpcQrBuilder;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Throwable;
 
 /**
@@ -182,6 +183,6 @@ class GirocodeService {
         $svg = (new Writer(new ImageRenderer(new RendererStyle(self::SIZE_PX, 1), new SvgImageBackEnd())))
             ->writeString($payload);
 
-        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+        return (string) DataUrlHelper::encode($svg, 'image/svg+xml');
     }
 }

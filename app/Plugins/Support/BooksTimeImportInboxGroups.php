@@ -14,6 +14,7 @@ namespace App\Plugins\Support;
 
 use App\Models\{Customer, ExternalReference, ExternalReferenceAlias, ForeignCustomer, IntegrationInboxItem, Organization, Project, TimeEntry, User};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Collection;
 
 /**
@@ -87,7 +88,7 @@ trait BooksTimeImportInboxGroups {
      * Gruppe buchbar macht.
      */
     protected function recordPendingUser(Organization $organization, ImportedTimeEntry $entry): void {
-        $email = mb_strtolower(trim((string) $entry->userEmail));
+        $email = EmailHelper::normalize((string) $entry->userEmail);
         $groupKey = self::PENDING_USER_GROUP_PREFIX . ($email !== '' ? $email : self::PENDING_USER_NO_SIGNAL);
 
         $this->recordPendingItem($organization, $entry->entryKey, [
@@ -335,7 +336,7 @@ trait BooksTimeImportInboxGroups {
 
     /** Hängt ein offenes Item in die Benutzer-Gruppe seiner Quell-E-Mail um. */
     private function regroupAsPendingUser(IntegrationInboxItem $item, ImportedTimeEntry $entry): void {
-        $email = mb_strtolower(trim((string) $entry->userEmail));
+        $email = EmailHelper::normalize((string) $entry->userEmail);
         $item->update([
             'group_key' => self::PENDING_USER_GROUP_PREFIX . ($email !== '' ? $email : self::PENDING_USER_NO_SIGNAL),
             'display_title' => $email !== ''

@@ -18,6 +18,7 @@ use App\Models\Finance\BillingTransfer;
 use App\Plugins\OrgaMax\Api\OrgaMaxClientFactory;
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Services\Finance\BillingPositionBuilder;
+use CommonToolkit\Helper\Data\JsonHelper;
 use GuzzleHttp\Exception\ConnectException;
 use Orgamax\API\Client;
 use Orgamax\API\Endpoints\OrdersEndpoint;
@@ -137,7 +138,7 @@ class OrgaMaxTarget implements FacturationTarget {
             $rows = $orders->search(['offset' => $offset, 'limit' => $pageSize])?->getValues() ?? [];
             foreach ($rows as $row) {
                 $externalId = $row->getId() !== null ? (string) $row->getId() : '';
-                if ($externalId === '' || ! str_contains((string) json_encode($row->toArray()), $marker)) {
+                if ($externalId === '' || ! str_contains(JsonHelper::encode($row->toArray()), $marker)) {
                     continue;
                 }
 

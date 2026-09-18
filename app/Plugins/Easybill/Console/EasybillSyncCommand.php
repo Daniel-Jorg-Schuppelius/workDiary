@@ -16,6 +16,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\PluginSetting;
 use App\Plugins\Easybill\EasybillPlugin;
 use App\Plugins\Easybill\Services\EasybillDocumentPullService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -38,7 +39,7 @@ class EasybillSyncCommand extends Command {
         $failures = $this->forEachOrganization(
             function (\App\Models\Organization $organization) use ($pull): void {
                 $counters = $pull->pull((int) $organization->id);
-                $this->info(sprintf('Org %d: %s', $organization->id, (string) json_encode($counters)));
+                $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             },
             onError: function (\App\Models\Organization $organization, Throwable $e): void {
                 $this->error(sprintf('Org %d: %s', $organization->id, class_basename($e)));

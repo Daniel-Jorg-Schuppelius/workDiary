@@ -18,6 +18,7 @@ use App\Services\Billing\Contracts\ExpenseLinkProvider;
 use App\Services\Billing\ExpenseVoucherRef;
 use App\Support\Billing\VoucherTypes;
 use App\Support\Sqid;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\{Carbon, Collection};
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -350,7 +351,7 @@ class LexofficeExpenseLinkProvider implements ExpenseLinkProvider {
             $disk = Storage::disk($attachment->disk);
             if ($disk->exists($attachment->path)) {
                 $local = $disk->path($attachment->path);
-                if (is_file($local)) {
+                if (File::isFile($local)) {
                     $paths[] = $local;
                 }
             }

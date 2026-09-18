@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Travel;
 
 use App\Models\{TravelLog, Vehicle};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Fachregeln des steuerlichen Fahrtenbuchs (Feature 137, GoBD „zeitnah,
@@ -61,7 +62,7 @@ final class LogbookRules {
         }
         if (abs($driven - $distance) > $driven * self::PLAUSIBILITY_TOLERANCE) {
             $errors['distance_km'] = (string) __('Distanz (:distance km) und Tacho-Differenz (:driven km) weichen um mehr als :tolerance % ab.', [
-                'distance' => number_format($distance, 2, ',', '.'),
+                'distance' => NumberHelper::toGermanFormat($distance, 2, withThousandsSeparator: true),
                 'driven' => $driven,
                 'tolerance' => (int) (self::PLAUSIBILITY_TOLERANCE * 100),
             ]);

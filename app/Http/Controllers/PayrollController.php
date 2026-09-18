@@ -14,8 +14,10 @@ use App\Enums\User\Permission;
 use App\Models\{MinimumWage, MinimumWageReference, Organization, User};
 use App\Services\Payroll\{EurostatMinimumWageImporter, MinimumWageService};
 use App\Support\Sqid;
+use CommonToolkit\Enums\CountryCode;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 use Throwable;
 
@@ -151,9 +153,12 @@ class PayrollController extends Controller {
     public function updateSettings(Request $request): RedirectResponse {
         $organization = $this->authorizePayroll();
 
+        if ($request->filled('country')) {
+            $request->merge(['country' => $request->string('country')->upper()->value()]);
+        }
         $data = $request->validate([
             // Payroll-/SV-spezifisch (eigene Gruppe)
-            'country' => ['nullable', 'string', 'size:2'],
+            'country' => ['nullable', 'string', Rule::enum(CountryCode::class)],
             'company_number' => ['nullable', 'string', 'max:32'],
             'tax_office' => ['nullable', 'string', 'max:191'],
             // Steuerliche Identifikatoren — geteilte Quelle mit Branding/Rechnungen

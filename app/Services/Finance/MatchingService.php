@@ -17,6 +17,7 @@ use App\Models\{Expense, Invoice};
 use App\Models\Finance\{BankTransaction, PaymentAllocation};
 use App\Services\Finance\Banking\ReferenceExtractor;
 use App\Support\Crypto\BlindIndex;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -322,7 +323,7 @@ class MatchingService {
         // replicate() lässt den Primärschlüssel aus — für die Selbst-Ausschluss-
         // Klausel in suggestReturnOrigins wird er explizit mitgegeben.
         $probe->id = $transaction->id;
-        $probe->amount = number_format(abs($signed), 2, '.', '');
+        $probe->amount = NumberHelper::toUSFormat(abs($signed), 2);
         $probe->direction = $signed < 0 ? TransactionDirection::Debit : TransactionDirection::Credit;
         $probe->end_to_end_id = $endToEnd;
         $probe->mandate_ref = isset($detail['mandate_ref']) && is_string($detail['mandate_ref']) ? $detail['mandate_ref'] : null;

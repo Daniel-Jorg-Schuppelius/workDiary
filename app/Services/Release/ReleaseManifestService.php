@@ -15,6 +15,7 @@ use App\Services\Isms\SbomGenerator;
 use App\Services\Licensing\FeatureFlagResolver;
 use App\Services\Licensing\{LicenseSeal, LicenseService};
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\{DB, Storage};
 
@@ -184,19 +185,20 @@ class ReleaseManifestService {
         ];
 
         foreach ($candidates as $name => $path) {
-            if (! is_file($path) || ! is_readable($path)) {
+            if (! File::isFile($path) || ! File::isReadable($path, false)) {
                 continue;
             }
-            $contents = file_get_contents($path);
-            if ($contents === false) {
+            try {
+                $sha256 = File::hash($path);
+                $bytes = File::size($path);
+            } catch (\Throwable) {
                 continue;
             }
-            $sha256 = CryptoHelper::hash($contents);
             $artifacts[] = [
                 'name' => $name,
                 'path' => $this->relativeArtifactPath($name, $path),
                 'sha256' => $sha256,
-                'bytes' => strlen($contents),
+                'bytes' => $bytes,
             ];
         }
 
@@ -234,7 +236,7 @@ class ReleaseManifestService {
 
         $signature = sodium_crypto_sign_detached($canonical, $private);
 
-        return LicenseService::b64Encode($signature);
+        return CryptoHelper::base64UrlEncode($signature);
     }
 
     /** Ob diese Instanz Manifeste signieren kann (Herausgeber, Private Key vorhanden). */

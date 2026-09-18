@@ -15,7 +15,7 @@ namespace App\Services\Learning;
 use App\Models\Learning\{LearningCmi5AuState, LearningCmi5Registration, LearningCmi5Session, LearningCmi5Unit, LearningEnrollment, LearningXapiDocument};
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use ELearningToolkit\Cmi5\{Cmi5, Cmi5Exception, LaunchData, LaunchMode, LaunchUrl, LmsStatements};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\DB;
@@ -77,7 +77,7 @@ final class LearningCmi5LaunchService {
 
             $toolkitUnit = $this->runtime->toolkitUnit($au);
             $toolkitSession = $this->runtime->session($session, $au, $registration, $state);
-            $launchData = json_encode(LaunchData::document($toolkitUnit, $toolkitSession, $returnUrl), JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $launchData = JsonHelper::encode(LaunchData::document($toolkitUnit, $toolkitSession, $returnUrl), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
             $this->documents->put($enrollment->organization_id, LearningXapiDocument::KIND_STATE, $au->activity_id, $agentHash, $registration->registration, Cmi5::STATE_LAUNCH_DATA, $launchData, 'application/json');
             $this->documents->ensureLearnerPreferences($enrollment->organization_id, $agentHash, LearningCmi5Runtime::languageTag());

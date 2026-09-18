@@ -462,4 +462,28 @@ class GlobalSearchControllerTest extends TestCase {
         $this->assertContains('Zuluwort Notiz', $activityTitles, 'Kommunikationsnotizen sind nicht modul-gegatet.');
         $this->assertNotContains('Zuluwort Artikel', $activityTitles, 'Free-Plan darf keine Wissensbasis-Treffer liefern.');
     }
+
+    public function test_expense_subtitle_uses_the_expense_currency(): void {
+        // Regression: der Untertitel hing fest „ €" an — eine CHF-Spese stand als Euro da.
+        \App\Models\Expense::factory()->create([
+            'organization_id' => $this->organization->id,
+            'user_id' => $this->user->id,
+            'vendor' => 'Zuglinie Basel',
+            'currency' => 'CHF',
+            'amount_net' => '12.50',
+            'tax_rate' => '0',
+            'tax_amount' => '0',
+            'amount_gross' => '12.50',
+        ]);
+
+        $groups = $this->actingAs($this->user)
+            ->getJson(route('api.internal.search', ['q' => 'zuglinie']))
+            ->assertOk()
+            ->json('groups');
+
+        $expenses = collect($groups)->firstWhere('key', 'expenses');
+        $this->assertNotNull($expenses);
+        $this->assertStringEndsWith('12,50 CHF', $expenses['items'][0]['subtitle']);
+        $this->assertStringContainsString(route('expenses.index'), $expenses['items'][0]['url']);
+    }
 }

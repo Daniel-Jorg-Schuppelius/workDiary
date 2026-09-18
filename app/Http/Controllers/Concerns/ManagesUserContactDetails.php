@@ -115,7 +115,7 @@ trait ManagesUserContactDetails {
             'account_holder' => $this->blankToNull($bank['account_holder'] ?? null),
             // Toolkit-Normalisierung (Vollaudit 2026-07, M39/N40).
             'iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) ($bank['iban'] ?? '')),
-            'bic' => ($b = strtoupper((string) preg_replace('/\s+/', '', (string) ($bank['bic'] ?? '')))) !== '' ? $b : null,
+            'bic' => \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) ($bank['bic'] ?? '')),
             'bank_name' => $this->blankToNull($bank['bank_name'] ?? null),
         ];
 

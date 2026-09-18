@@ -98,13 +98,16 @@ class SealCommand extends Command {
      * denied" fehl (LicenseSeal::data() fällt dann auf env zurück).
      */
     private function warnAboutFilePermissions(string $path): void {
-        $owner = function_exists('fileowner') ? @fileowner($path) : false;
-        $ownerName = is_int($owner) && function_exists('posix_getpwuid')
-            ? (posix_getpwuid($owner)['name'] ?? (string) $owner)
-            : ($owner === false ? 'unbekannt' : (string) $owner);
-
-        $perms = @fileperms($path);
-        $mode = is_int($perms) ? substr(sprintf('%o', $perms), -4) : '----';
+        try {
+            $ownerName = (string) ToolkitFile::owner($path);
+        } catch (\Throwable) {
+            $ownerName = 'unbekannt';
+        }
+        try {
+            $mode = (string) ToolkitFile::permissions($path);
+        } catch (\Throwable) {
+            $mode = '----';
+        }
 
         $this->newLine();
         $this->warn('Hinweis zu Dateirechten:');
@@ -136,7 +139,6 @@ class SealCommand extends Command {
             . "// Generiert durch `php artisan license:seal`. Nicht manuell bearbeiten.\n\n"
             . 'return ' . var_export($payload, true) . ";\n";
 
-        ToolkitFile::write($path, $content);
-        @chmod($path, 0600);
+        ToolkitFile::write($path, $content, permissions: 0600, lock: true);
     }
 }

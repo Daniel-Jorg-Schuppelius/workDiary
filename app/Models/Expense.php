@@ -14,7 +14,7 @@ use App\Casts\{MoneyCast, PercentageCast};
 use App\Enums\Expense\{ExpenseStatus, PaymentMethod};
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasAttachments, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\ValueObjects\{Money, Percentage};
+use CommonToolkit\ValueObjects\{Decimal, Money, Percentage};
 use Database\Factories\ExpenseFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -128,7 +128,7 @@ class Expense extends Model {
         // Nur brutto erfasst: Netto herausrechnen (Bruttobetrag ÷ (1 + Satz)).
         if (!$net->isPositive() && $gross->isPositive()) {
             $net = $rate->isPositive()
-                ? $gross->dividedBy(1 + (float) $rate->getNumericValue() / 100)
+                ? $gross->dividedBy($rate->asFactor()->plus(Decimal::one())->getValue())
                 : $gross;
             $this->amount_net = $net;
         }

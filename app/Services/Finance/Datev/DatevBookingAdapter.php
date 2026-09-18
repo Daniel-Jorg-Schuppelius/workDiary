@@ -20,7 +20,7 @@ use CommonToolkit\FinancialFormats\Entities\DATEV\Header\BookingBatchHeaderLine;
 use CommonToolkit\FinancialFormats\Enums\DATEV\HeaderFields\V700\BookingBatchHeaderField as F;
 use CommonToolkit\FinancialFormats\Generators\DATEV\DatevDocumentGenerator;
 use CommonToolkit\FinancialFormats\Parsers\DatevDocumentParser;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use DateTimeImmutable;
 use Throwable;
 
@@ -197,7 +197,7 @@ final class DatevBookingAdapter {
         // beide enden im DATEV-Komma-Format ohne Tausendertrenner.
         $set(F::Umsatz, is_string($row['amount'])
             ? NumberHelper::toGermanFormat(NumberHelper::absPrecise($row['amount']), 2)
-            : number_format(abs($row['amount']), 2, ',', ''));
+            : NumberHelper::toGermanFormat(abs($row['amount']), 2));
         $set(F::SollHabenKennzeichen, $row['soll_haben']);
         $set(F::Konto, $row['account']);
         $set(F::Gegenkonto, $row['contra_account']);
@@ -251,7 +251,7 @@ final class DatevBookingAdapter {
         }
         $formatted = is_string($amount)
             ? NumberHelper::toGermanFormat(NumberHelper::absPrecise($amount), 2)
-            : number_format(abs($amount), 2, ',', '');
+            : NumberHelper::toGermanFormat(abs($amount), 2);
 
         return preg_match('/^[1-9]\d{0,7},\d{2}$/', $formatted) === 1 ? $formatted : null;
     }
@@ -260,7 +260,7 @@ final class DatevBookingAdapter {
     private function plain(?string $value, int $max): string {
         $clean = str_replace([';', '"', "\r", "\n"], ' ', (string) $value);
 
-        return $this->clip(preg_replace('/\s+/', ' ', $clean) ?? '', $max);
+        return $this->clip(StringHelper::collapseWhitespace($clean), $max);
     }
 
     /**

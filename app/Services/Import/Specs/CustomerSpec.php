@@ -17,6 +17,7 @@ use App\Models\Organization;
 use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Integration\Profiles\CustomerMatchProfile;
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use Throwable;
 
 /**
@@ -116,7 +117,7 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
         foreach ($this->columns() as $col) {
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
-                'billable' => $raw === null || $raw === '' ? null : $this->boolish($raw),
+                'billable' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
                 'hourly_rate', 'internal_rate' => $this->decimal($this->trimmedString($raw)),
                 'country', 'currency' => $this->upperOrNull($this->trimmedString($raw)),
                 default => $this->trimmedString($raw),
@@ -135,7 +136,7 @@ class CustomerSpec extends AbstractEntitySpec implements \App\Services\Import\Ha
             $issues[] = $this->tooLongIssue('name', 255);
         }
 
-        if (! empty($row['email']) && ! filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($row['email']) && ! EmailHelper::isEmail($row['email'])) {
             $issues[] = $this->formatIssue('email', (string) __('import.error.format.email'));
         }
 

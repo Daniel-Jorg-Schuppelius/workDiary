@@ -17,6 +17,7 @@ use App\Models\{CommunicationNote, ContentCollection, ExternalReference, Knowled
 use App\Services\Collections\{ContentCollectionService, ContentReferenceService};
 use App\Services\Communication\CommunicationNoteService;
 use App\Services\Knowledge\KnowledgeArticleService;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Str;
 
@@ -180,7 +181,7 @@ class KnowledgeImportService {
         }
         $report->truncated++;
 
-        return mb_substr($text, 0, $max - 1) . '…';
+        return StringHelper::truncate($text, $max, '…');
     }
 
     /** @param  array<string, Model>  $byName */

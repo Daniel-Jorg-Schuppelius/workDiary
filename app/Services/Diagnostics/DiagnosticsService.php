@@ -15,7 +15,8 @@ use App\Models\{AttendanceTerminal, AuditLog, BackupHeartbeat, Organization};
 use App\Services\Licensing\{LicenseService, LicenseStatus, ModuleStatusResolver};
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\JsonHelper;
-use Illuminate\Support\Facades\{Cache, DB, File};
+use CommonToolkit\Helper\FileSystem\{File, Folder};
+use Illuminate\Support\Facades\{Cache, DB};
 use Throwable;
 
 /**
@@ -510,11 +511,15 @@ class DiagnosticsService {
         foreach ($disks as $diskName) {
             $diskCfg = (array) config('filesystems.disks.' . $diskName, []);
             $root = (string) ($diskCfg['root'] ?? '');
-            if ($root === '' || ! File::isDirectory($root)) {
+            if ($root === '' || ! Folder::exists($root)) {
                 $metrics['disk.' . $diskName] = null;
                 continue;
             }
-            $bytes = $this->dirSize($root);
+            try {
+                $bytes = Folder::size($root);
+            } catch (Throwable) {
+                $bytes = 0;
+            }
             $metrics['disk.' . $diskName . '.bytes'] = $bytes;
             $metrics['disk.' . $diskName . '.root'] = $root;
         }
@@ -651,15 +656,15 @@ class DiagnosticsService {
         $sbomPath = storage_path('app/sbom.cdx.json');
         $sbomComponents = null;
         $sbomGeneratedAt = null;
-        if (File::exists($sbomPath)) {
+        if (File::isFile($sbomPath)) {
             try {
                 /** @var array{components?: array<int, mixed>}|null $sbom */
-                $sbom = JsonHelper::decode(File::get($sbomPath));
+                $sbom = JsonHelper::decode(File::read($sbomPath));
                 $sbomComponents = is_array($sbom) ? count($sbom['components'] ?? []) : null;
             } catch (Throwable) {
                 $sbomComponents = null;
             }
-            $sbomGeneratedAt = CarbonImmutable::createFromTimestamp(File::lastModified($sbomPath));
+            $sbomGeneratedAt = CarbonImmutable::createFromTimestamp(File::modifiedTime($sbomPath));
             if ($sbomGeneratedAt->diffInDays(CarbonImmutable::now(), true) > self::SBOM_STALE_DAYS) {
                 $status = DiagnosticStatus::worst($status, DiagnosticStatus::Warn);
                 $messages[] = sprintf('SBOM älter als %d Tage — neu erzeugen (composer sbom).', self::SBOM_STALE_DAYS);
@@ -688,11 +693,13 @@ class DiagnosticsService {
         $envMode = null;
         $envWorldReadable = false;
         $envPath = base_path('.env');
-        if (is_file($envPath)) {
-            $perms = @fileperms($envPath);
-            if (is_int($perms)) {
-                $envMode = substr(sprintf('%o', $perms), -4);
+        if (File::isFile($envPath)) {
+            try {
+                $perms = (int) File::permissions($envPath, false);
+                $envMode = sprintf('%04o', $perms);
                 $envWorldReadable = ($perms & 0o077) !== 0;
+            } catch (Throwable) {
+                // Rechte nicht lesbar — kein Befund statt Fehlalarm.
             }
         }
         if ($envWorldReadable) {
@@ -795,24 +802,5 @@ class DiagnosticsService {
         }
 
         return null;
-    }
-
-    private function dirSize(string $path): int {
-        $size = 0;
-        try {
-            $iterator = new \RecursiveIteratorIterator(
-                new \RecursiveDirectoryIterator($path, \FilesystemIterator::SKIP_DOTS),
-                \RecursiveIteratorIterator::SELF_FIRST
-            );
-            foreach ($iterator as $file) {
-                if ($file->isFile()) {
-                    $size += $file->getSize();
-                }
-            }
-        } catch (Throwable) {
-            return 0;
-        }
-
-        return $size;
     }
 }

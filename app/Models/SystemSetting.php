@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Models;
 
 use App\Models\Concerns\Auditable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\{Cache, Crypt};
 
@@ -60,7 +61,7 @@ class SystemSetting extends Model {
     }
 
     public function setResolvedValue(mixed $value, bool $sensitive): void {
-        $encoded = json_encode($value, JSON_THROW_ON_ERROR);
+        $encoded = JsonHelper::encode($value);
         $this->is_sensitive = $sensitive;
         $this->value = $sensitive ? Crypt::encryptString($encoded) : $encoded;
     }

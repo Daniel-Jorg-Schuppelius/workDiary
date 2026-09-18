@@ -20,6 +20,7 @@ use App\Services\Accounting\Reports\{AccountLedgerBuilder, LiquidityBuilder, Tri
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -209,7 +210,7 @@ class SeedAccountingLoadCommand extends Command {
                 }
 
                 $bookedOn = CarbonImmutable::parse($period->starts_on)->addDays($index % 27);
-                $amount = number_format(50 + ($index % 950) + (($index % 7) / 10), 2, '.', '');
+                $amount = NumberHelper::toUSFormat(50 + ($index % 950) + (($index % 7) / 10), 2);
 
                 $entryRows[] = [
                     'organization_id' => $organization->id,

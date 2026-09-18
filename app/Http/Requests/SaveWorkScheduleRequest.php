@@ -11,7 +11,9 @@
 namespace App\Http\Requests;
 
 use App\Enums\WorkSchedule\ScheduleType;
+use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Validation\Rule;
+use InvalidArgumentException;
 
 class SaveWorkScheduleRequest extends BaseFormRequest {
     /**
@@ -149,12 +151,15 @@ class SaveWorkScheduleRequest extends BaseFormRequest {
     }
 
     private function minutesBetween(string $start, string $end): int {
-        if (preg_match('/^\d{1,2}:\d{2}$/', $start) !== 1 || preg_match('/^\d{1,2}:\d{2}$/', $end) !== 1) {
+        if ($start === '' || $end === '') {
             return 0;
         }
-        [$sh, $sm] = array_map('intval', explode(':', $start));
-        [$eh, $em] = array_map('intval', explode(':', $end));
 
-        return max(0, ($eh * 60 + $em) - ($sh * 60 + $sm));
+        // Ungültige Zeiten ergeben 0 — date_format:H:i weist sie danach ab.
+        try {
+            return max(0, Duration::fromClock($end)->minus(Duration::fromClock($start))->getTotalMinutes());
+        } catch (InvalidArgumentException) {
+            return 0;
+        }
     }
 }

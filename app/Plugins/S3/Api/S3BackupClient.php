@@ -16,6 +16,7 @@ use App\Models\Backup\BackupTargetConnection;
 use App\Plugins\Support\Backup\{BackupAccount, BackupRemoteObject};
 use Aws\S3\Exception\S3Exception;
 use Aws\S3\{MultipartUploader, S3Client};
+use CommonToolkit\Helper\FileSystem\File;
 use GuzzleHttp\Psr7\Utils;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -128,12 +129,12 @@ class S3BackupClient {
      * erst beim Wiederherstellen auf.
      */
     public function upload(string $localPath, string $remoteName): string {
-        if (! is_file($localPath)) {
+        if (! File::isFile($localPath)) {
             throw new RuntimeException('Lokale Backup-Datei fehlt: ' . basename($localPath));
         }
 
         $key = $this->key($remoteName);
-        $size = (int) filesize($localPath);
+        $size = File::size($localPath);
 
         if ($size >= self::MULTIPART_THRESHOLD) {
             $this->guard(function () use ($localPath, $key): void {

@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Toggl\Sources;
 
-use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 
 /**
  * Liest einen einzelnen Toggl-Workspace-Export-Ordner ein, wie ihn der
@@ -35,23 +35,14 @@ class TogglWorkspaceReader {
      */
     public static function detectWorkspaces(string $basePath): array {
         $basePath = rtrim($basePath, '/');
-        if (! is_dir($basePath)) {
-            return [];
-        }
-
-        $items = scandir($basePath);
-        if ($items === false) {
+        if (! Folder::exists($basePath)) {
             return [];
         }
 
         $names = [];
-        foreach ($items as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $dir = $basePath . '/' . $entry;
-            if (is_dir($dir) && is_file($dir . '/projects.json')) {
-                $names[] = $entry;
+        foreach (Folder::get($basePath) as $dir) {
+            if (File::isFile($dir . '/projects.json')) {
+                $names[] = basename($dir);
             }
         }
         sort($names);
@@ -137,7 +128,7 @@ class TogglWorkspaceReader {
      * @return array<int, TogglEntry>
      */
     public function entries(string $workspacePath): array {
-        $files = glob($workspacePath . '/Toggl_time_entries_*.csv') ?: [];
+        $files = Folder::exists($workspacePath) ? Folder::findByPattern($workspacePath, 'Toggl_time_entries_*.csv') : [];
         sort($files);
 
         $entries = [];
@@ -158,7 +149,7 @@ class TogglWorkspaceReader {
      * @return array<int, array<string, mixed>>
      */
     private function json(string $path): array {
-        if (! is_file($path)) {
+        if (! File::isFile($path)) {
             return [];
         }
         $decoded = json_decode(File::read($path), true);

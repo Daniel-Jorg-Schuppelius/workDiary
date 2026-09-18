@@ -15,6 +15,7 @@ namespace App\Http\Controllers\Privacy;
 use App\Http\Controllers\Controller;
 use App\Models\Privacy\{DataSubjectRequest, Incident, PrivacyAttachment, TechnicalMeasure};
 use App\Services\Privacy\{DataProtectionCryptoService, SubjectDataExporter};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
@@ -104,7 +105,7 @@ class PrivacyAttachmentController extends Controller {
             'organization_id' => $attachable->getAttribute('organization_id'),
             'attachable_type' => $attachable->getMorphClass(),
             'attachable_id' => $attachable->getKey(),
-            'filename' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
+            'filename' => File::sanitizeDisplayName($file->getClientOriginalName()),
             'path' => $stored,
             'size' => $file->getSize(),
             'mime' => $file->getMimeType(),

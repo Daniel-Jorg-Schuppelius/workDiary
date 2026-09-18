@@ -17,6 +17,7 @@ use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersi
 use App\Models\{Organization, User};
 use App\Services\DocumentDesign\{LetterheadAssetService, RenderProfileService, SampleDocumentService};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\{Auth, Storage};
@@ -196,11 +197,7 @@ class DocumentDesignController extends Controller {
         abort_unless($disk->exists($asset->original_path), 404);
 
         $isPdf = $asset->source_type === 'pdf';
-        $mime = match ($asset->source_type) {
-            'pdf' => 'application/pdf',
-            'png' => 'image/png',
-            default => 'image/jpeg',
-        };
+        $mime = File::mimeTypeForExtension((string) $asset->source_type) ?? 'image/jpeg';
         $basename = Str::slug(pathinfo((string) $asset->original_name, PATHINFO_FILENAME)) ?: 'firmenbogen';
 
         return response((string) $disk->get($asset->original_path), 200, [

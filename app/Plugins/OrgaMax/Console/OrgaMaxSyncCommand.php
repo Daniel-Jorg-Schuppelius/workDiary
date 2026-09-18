@@ -16,6 +16,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{OrgaMaxConnection, Organization, PluginSetting};
 use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\OrgaMaxSyncService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -54,7 +55,7 @@ class OrgaMaxSyncCommand extends Command {
             $this->withOrganizationContext($organization, function () use ($sync, $connection, &$failures): void {
                 try {
                     $counters = $sync->run($connection);
-                    $this->info(sprintf('Org %d: %s', $connection->organization_id, json_encode($counters)));
+                    $this->info(sprintf('Org %d: %s', $connection->organization_id, JsonHelper::encode($counters)));
                 } catch (Throwable $e) {
                     $failures++;
                     $connection->forceFill(['last_error' => mb_substr($e::class, 0, 200)])->save();

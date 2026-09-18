@@ -58,7 +58,7 @@ class RetentionReleaseScan extends AbstractDeadlineScan {
         $invoice = $retention->invoice;
         $params = [
             'number' => (string) ($invoice->number ?? '–'),
-            'amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($retention->amount->toFloat(), 2, withThousandsSeparator: true),
+            'amount' => $retention->amount->format(withSymbol: false),
             'date' => $retention->due_on?->format('d.m.Y') ?? '–',
         ];
 

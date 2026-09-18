@@ -16,10 +16,11 @@ use App\Enums\Whistleblowing\AttachmentScanStatus;
 use App\Models\User;
 use App\Models\Whistleblowing\WhistleblowingCase;
 use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
-use RuntimeException;
-use ZipArchive;
+use Throwable;
 
 /**
  * Autorisierter Export einer einzelnen Fallakte (Abschnitt 17). Erzeugt
@@ -44,17 +45,8 @@ class WhistleblowingExportService {
     public function export(WhistleblowingCase $case, string $reason, User $actor): array {
         $this->messages->addInternalNote($case, 'Export-Grund: ' . $reason, $actor);
 
-        $path = tempnam(sys_get_temp_dir(), 'wbexport_');
-        if ($path === false) {
-            throw new RuntimeException('Konnte keine temporaere Exportdatei anlegen.');
-        }
-
-        $zip = new ZipArchive;
-        if ($zip->open($path, ZipArchive::OVERWRITE | ZipArchive::CREATE) !== true) {
-            throw new RuntimeException('Konnte das Export-ZIP nicht oeffnen.');
-        }
-
-        $zip->addFromString('manifest.json', $this->json([
+        $entries = [];
+        $entries[] = ['archiveName' => 'manifest.json', 'content' => $this->json([
             'case_number' => $case->getAttribute('case_number'),
             'public_id' => $case->getAttribute('public_id'),
             'status' => $case->getAttribute('status'),
@@ -65,22 +57,22 @@ class WhistleblowingExportService {
             'exported_at' => Carbon::now()->toIso8601String(),
             'exported_by' => $actor->getKey(),
             'export_reason' => $reason,
-        ]));
+        ])];
 
-        $zip->addFromString('content.json', $this->json([
+        $entries[] = ['archiveName' => 'content.json', 'content' => $this->json([
             'subject' => $case->subject_ciphertext,
             'description' => $case->description_ciphertext,
             'contact' => $case->contact_ciphertext,
-        ]));
+        ])];
 
-        $zip->addFromString('messages.json', $this->json(
+        $entries[] = ['archiveName' => 'messages.json', 'content' => $this->json(
             $case->messages()->orderBy('sent_at')->get()->map(fn($m) => [
                 'author' => $m->author_type->value,
                 'visibility' => $m->visibility->value,
                 'sent_at' => (string) $m->sent_at,
                 'body' => $m->body_ciphertext,
             ])->all()
-        ));
+        )];
 
         // Nur freigegebene Anhaenge beilegen; Originalnamen entschluesselt.
         $disk = Storage::disk((string) config('whistleblowing.disk', 'whistleblowing'));
@@ -92,11 +84,22 @@ class WhistleblowingExportService {
                 // Verschluesselte Anhaenge (Sicherheitsaudit 2026-09-13) muessen fuer
                 // das Paket entschluesselt werden; der Dienst kennt beide Formen.
                 $attachment->setRelation('case', $case);
-                $zip->addFromString('files/' . basename((string) $attachment->storage_key), $this->attachments->contents($attachment));
+                $entries[] = [
+                    'archiveName' => 'files/' . basename((string) $attachment->storage_key),
+                    'content' => $this->attachments->contents($attachment),
+                ];
             }
         }
 
-        $zip->close();
+        // Toolkit prueft das Schliessen des Archivs (vorher ungeprueft) und raeumt bei Fehlern auf.
+        $path = File::createTemp('', 'wbexport_', 'zip');
+        try {
+            ZipFile::createFromEntries($entries, $path);
+        } catch (Throwable $e) {
+            File::delete($path);
+
+            throw $e;
+        }
 
         $this->events->record($case, WhistleblowingEventService::CASE_EXPORTED, $actor);
 

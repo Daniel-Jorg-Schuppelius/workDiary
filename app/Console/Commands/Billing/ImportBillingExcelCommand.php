@@ -13,6 +13,7 @@ namespace App\Console\Commands\Billing;
 use App\Models\{Customer, User};
 use App\Services\Billing\{CustomerAccountStatementService, ExcelHistoryImporter};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 
@@ -49,7 +50,7 @@ class ImportBillingExcelCommand extends Command {
         }
 
         $file = (string) $this->argument('file');
-        if (! is_readable($file)) {
+        if (! File::isReadable($file, false)) {
             $this->error("Datei nicht lesbar: {$file}");
 
             return self::FAILURE;

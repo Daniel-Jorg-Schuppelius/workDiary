@@ -14,6 +14,7 @@ namespace App\Models\Passenger;
 
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use App\Models\{User, Vehicle};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\{BelongsTo, HasMany};
@@ -127,21 +128,10 @@ class PassengerShiftSettlement extends Model {
     public function paymentTotal(): string {
         $total = '0.00';
         foreach (['cash_total', 'card_total', 'voucher_total', 'invoice_total', 'mediator_total'] as $column) {
-            $total = bcadd($total, $this->numeric($this->getAttribute($column)), 2);
+            $total = bcadd($total, NumberHelper::normalizeDecimalString((string) $this->getAttribute($column)), 2);
         }
 
         return $total;
-    }
-
-    /**
-     * Dezimal-Casts liefern `string`; bcmath verlangt `numeric-string`.
-     *
-     * @return numeric-string
-     */
-    private function numeric(mixed $value): string {
-        $raw = trim((string) $value);
-
-        return is_numeric($raw) ? $raw : '0';
     }
 
     /**
@@ -152,8 +142,8 @@ class PassengerShiftSettlement extends Model {
      */
     public function computeDifference(): string {
         return bcsub(
-            bcsub($this->numeric($this->meter_total), $this->paymentTotal(), 2),
-            $this->numeric($this->cancelled_total),
+            bcsub(NumberHelper::normalizeDecimalString((string) $this->meter_total), $this->paymentTotal(), 2),
+            NumberHelper::normalizeDecimalString((string) $this->cancelled_total),
             2,
         );
     }

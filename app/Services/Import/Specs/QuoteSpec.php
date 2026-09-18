@@ -16,6 +16,7 @@ use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\{Organization, Quote, QuoteItem};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{ResolvesImportReferences, ValidatesImportDates};
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\DB;
 use Throwable;
 
@@ -103,7 +104,7 @@ class QuoteSpec extends AbstractEntitySpec {
                 'version', 'position' => ($v = $this->decimal($this->trimmedString($raw))) !== null ? (int) round((float) $v) : null,
                 'quantity', 'unit_price', 'tax_rate' => $this->decimal($this->trimmedString($raw)),
                 'status' => $this->lowerOrNull($this->trimmedString($raw)),
-                'optional' => $raw === null || trim((string) $raw) === '' ? null : $this->boolish($raw),
+                'optional' => $raw === null || trim((string) $raw) === '' ? null : (bool) StringHelper::parseBool($raw),
                 default => $this->trimmedString($raw),
             };
         }

@@ -10,7 +10,7 @@
 
 namespace App\Console\Commands\License;
 
-use App\Services\Licensing\LicenseService;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 
@@ -24,8 +24,8 @@ class KeygenCommand extends Command {
         $secret = sodium_crypto_sign_secretkey($keypair);
         $public = sodium_crypto_sign_publickey($keypair);
 
-        $secretB64 = LicenseService::b64Encode($secret);
-        $publicB64 = LicenseService::b64Encode($public);
+        $secretB64 = CryptoHelper::base64UrlEncode($secret);
+        $publicB64 = CryptoHelper::base64UrlEncode($public);
 
         $this->warn('WICHTIG: Den Private Key NIEMALS in die App-Installation einspielen.');
         $this->line('');
@@ -35,8 +35,8 @@ class KeygenCommand extends Command {
         $out = $this->option('out');
         if (is_string($out) && $out !== '') {
             $payload = "LICENSE_PUBLIC_KEY={$publicB64}\nLICENSE_PRIVATE_KEY={$secretB64}\n";
-            ToolkitFile::write($out, $payload);
-            @chmod($out, 0600);
+            // Rechte stehen vor dem Inhalt — der Private Key liegt nie mit umask-Rechten auf der Platte.
+            ToolkitFile::write($out, $payload, permissions: 0600, lock: true);
             $this->info('Keys geschrieben nach: ' . $out);
         }
 

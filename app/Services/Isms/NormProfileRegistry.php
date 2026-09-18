@@ -11,6 +11,7 @@
 namespace App\Services\Isms;
 
 use CommonToolkit\Helper\Data\DateHelper;
+use CommonToolkit\Helper\FileSystem\Folder;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -115,7 +116,7 @@ class NormProfileRegistry {
         }
 
         $directory = $this->path ?? config_path('isms-norms');
-        $files = glob($directory . DIRECTORY_SEPARATOR . '*.php') ?: [];
+        $files = Folder::exists($directory) ? Folder::findByPattern($directory, '*.php') : [];
         sort($files);
 
         $profiles = [];

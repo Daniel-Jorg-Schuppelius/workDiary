@@ -14,6 +14,7 @@ use App\Enums\Tour\TourStatus;
 use App\Models\{Customer, ForeignCustomer, Project, TimeEntry, Tour, TravelLog};
 use App\Support\Setting;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Geo\GeoHelper;
 use Illuminate\Support\{Carbon, Collection};
 
 /**
@@ -183,7 +184,7 @@ class TravelChargeService {
             quantity: $km,
             unit: 'km',
             unitPrice: round($rate, 4),
-            description: sprintf('%s %s km am %s', $config['label'], rtrim(rtrim(NumberHelper::toGermanFormat($km, 2, withThousandsSeparator: true), '0'), ','), $dateLabel),
+            description: sprintf('%s %s km am %s', $config['label'], NumberHelper::toGermanFormat($km, 2, withThousandsSeparator: true, trimTrailingZeros: true), $dateLabel),
         );
     }
 
@@ -221,7 +222,7 @@ class TravelChargeService {
             return 0.0;
         }
 
-        $oneWay = $this->haversineKm($originLat, $originLng, $custLat, $custLng);
+        $oneWay = GeoHelper::haversineKm($originLat, $originLng, $custLat, $custLng);
 
         return $config['round_trip'] ? $oneWay * 2 : $oneWay;
     }
@@ -237,14 +238,5 @@ class TravelChargeService {
                 }
             })
             ->exists();
-    }
-
-    private function haversineKm(float $lat1, float $lng1, float $lat2, float $lng2): float {
-        $earth = 6371.0; // km
-        $dLat = deg2rad($lat2 - $lat1);
-        $dLng = deg2rad($lng2 - $lng1);
-        $h = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
-
-        return 2 * $earth * asin(min(1.0, sqrt($h)));
     }
 }

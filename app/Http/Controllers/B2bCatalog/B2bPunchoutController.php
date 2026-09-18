@@ -19,7 +19,7 @@ use App\Models\Organization;
 use App\Services\B2bCatalog\OciCartFormatter;
 use App\Services\Security\SecurityEventLogger;
 use App\Services\SqidEncoder;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\Data\{JsonHelper, NumberHelper, WebLinkHelper};
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Crypt, DB};
@@ -67,12 +67,12 @@ class B2bPunchoutController extends Controller {
         // Bewusst ohne Model-Events/Audit — reiner Nutzungszeitstempel.
         DB::table('b2b_catalog_accesses')->where('id', $access->id)->update(['last_used_at' => now()]);
 
-        $token = Crypt::encryptString(json_encode([
+        $token = Crypt::encryptString(JsonHelper::encode([
             'a' => $access->id,
             'h' => $hookUrl,
             'r' => trim((string) $request->input('RETURNTARGET', '_top')) ?: '_top',
             'e' => now()->addMinutes(self::TOKEN_TTL_MINUTES)->getTimestamp(),
-        ], JSON_THROW_ON_ERROR));
+        ]));
 
         return redirect()->route('b2b-punchout.browse', ['org' => $organization->slug, 't' => $token]);
     }
@@ -159,7 +159,7 @@ class B2bPunchoutController extends Controller {
         }
 
         $hookUrl = (string) $session['hook_url'];
-        $request->attributes->set('b2b.form_action', $this->origin($hookUrl));
+        $request->attributes->set('b2b.form_action', WebLinkHelper::origin($hookUrl, ['https']) ?? '');
 
         return response()->view('b2b.catalog.transfer', [
             'organization' => $organization,
@@ -202,16 +202,6 @@ class B2bPunchoutController extends Controller {
             'hook_url' => (string) ($payload['h'] ?? ''),
             'return_target' => (string) ($payload['r'] ?? '_top'),
         ];
-    }
-
-    private function origin(string $url): string {
-        $parts = parse_url($url);
-        $origin = strtolower((string) ($parts['scheme'] ?? 'https')) . '://' . (string) ($parts['host'] ?? '');
-        if (isset($parts['port'])) {
-            $origin .= ':' . $parts['port'];
-        }
-
-        return $origin;
     }
 
     private function errorView(string $message, int $status): Response {

@@ -101,22 +101,17 @@ class BackupVerifyService {
     }
 
     private function verifyPart(BackupTarget $adapter, BackupTargetConnection $connection, BackupGeneration $generation, BackupGenerationPart $part, string $dataKey): void {
-        $cipherPath = tempnam(sys_get_temp_dir(), 'wd-verify-');
-        $plainPath = tempnam(sys_get_temp_dir(), 'wd-verify-');
-        if ($cipherPath === false || $plainPath === false) {
-            throw new BackupPreflightException('Temporäre Verifikationsdatei konnte nicht angelegt werden.');
-        }
-
-        try {
+        // Beide Temp-Dateien (0600) räumt das Toolkit auch im Fehlerfall ab.
+        File::withTemp('', fn(string $cipherPath) => File::withTemp('', function (string $plainPath) use ($cipherPath, $adapter, $connection, $generation, $part, $dataKey): void {
             $stream = $adapter->backupDownload($connection, (string) $part->remote_ref);
-            $out = fopen($cipherPath, 'wb');
-            if ($out === false) {
+            $chunks = (static function () use ($stream): \Generator {
+                while (!$stream->eof()) {
+                    yield $stream->read(1_048_576);
+                }
+            })();
+            if (File::writeStream($cipherPath, $chunks) === false) {
                 throw new BackupPreflightException('Verifikationsdatei nicht schreibbar.');
             }
-            while (!$stream->eof()) {
-                fwrite($out, $stream->read(1_048_576));
-            }
-            fclose($out);
 
             if ($this->sha256($cipherPath) !== $part->cipher_sha256) {
                 throw new BackupPreflightException("Teil {$part->part_no}: Ciphertext-Hash weicht ab.");
@@ -126,10 +121,7 @@ class BackupVerifyService {
             if ($this->sha256($plainPath) !== $part->plain_sha256) {
                 throw new BackupPreflightException("Teil {$part->part_no}: Klartext-Hash weicht ab.");
             }
-        } finally {
-            @unlink($cipherPath);
-            @unlink($plainPath);
-        }
+        }, 'wd-verify-'), 'wd-verify-');
     }
 
     /**

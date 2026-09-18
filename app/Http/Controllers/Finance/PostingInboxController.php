@@ -22,6 +22,7 @@ use App\Services\Accounting\InternalTransferService;
 use App\Services\Accounting\Posting\{PostingInboxService, PostingSourceRegistry};
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -184,7 +185,7 @@ class PostingInboxController extends Controller {
         $data = $request->validate([
             'from_account' => ['required', 'integer'],
             'to_account' => ['required', 'integer'],
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount' => ['required', 'numeric', 'decimal:0,8', 'gt:0'],
             'booked_on' => ['required', 'date'],
             'note' => ['required', 'string', 'min:3', 'max:500'],
         ]);
@@ -193,7 +194,7 @@ class PostingInboxController extends Controller {
 
         $this->transfers->record($organization, [
             'booked_on' => CarbonImmutable::parse((string) $data['booked_on']),
-            'amount' => number_format((float) $data['amount'], 2, '.', ''),
+            'amount' => Decimal::of((string) $data['amount'], 2)->getValue(),
             'from_account' => (clone $accounts)->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['from_account']))->firstOrFail(),
             'to_account' => (clone $accounts)->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['to_account']))->firstOrFail(),
             'note' => (string) $data['note'],

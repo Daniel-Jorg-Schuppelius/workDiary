@@ -15,7 +15,7 @@ namespace App\Services\Applications;
 use App\Models\Applications\{ApplicationContractNegotiation, ApplicationContractVersion, ApplicationOpportunity, JobApplication};
 use App\Models\User;
 use App\Services\ServiceTicket\ApprovalService;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -73,7 +73,7 @@ class ContractNegotiationService {
         }
 
         return DB::transaction(function () use ($negotiation, $kind, $summary, $conditions, $actor, $documentId): ApplicationContractVersion {
-            $payload = $conditions !== [] ? (string) json_encode($conditions) : null;
+            $payload = $conditions !== [] ? JsonHelper::encode($conditions) : null;
             $version = ApplicationContractVersion::query()->create([
                 'organization_id' => $negotiation->organization_id,
                 'negotiation_id' => $negotiation->id,

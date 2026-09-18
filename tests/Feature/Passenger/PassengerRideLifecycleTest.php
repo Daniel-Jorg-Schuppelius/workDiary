@@ -348,6 +348,30 @@ class PassengerRideLifecycleTest extends TestCase {
         return $this->service()->transition($ride, RideStatus::Occupied, $this->dispatcher);
     }
 
+    /**
+     * Toolkit-Audit 2026-09: Steuer und Tarifpreis wurden auf zwei Stellen
+     * abgeschnitten (bcdiv/bcadd), nicht kaufmännisch gerundet.
+     */
+    public function test_tax_and_tariff_price_are_rounded_half_up(): void {
+        $this->qualifyDriver();
+        $this->concession();
+        $this->vehicleProfile();
+
+        // 12,36 × 7 % = 0,8652 → 0,87 (abgeschnitten wären es 0,86).
+        $ride = $this->service()->complete($this->occupiedRide(), [
+            'meter_net' => '12.36',
+            'tax_rate' => '7',
+            'payment_method' => 'cash',
+            'occupied_km' => '3',
+        ], $this->dispatcher);
+        $this->assertSame('0.87', (string) $ride->tax_amount);
+        $this->assertSame('13.23', (string) $ride->gross_amount);
+
+        // 4,30 + 2,80 × 1,006 km = 7,1168 → 7,12 (abgeschnitten wären es 7,11).
+        $this->assertSame('7.12', $this->tariff()->calculate('1.006', 0));
+        $this->assertSame('7.12', $this->tariff()->calculate('1,006', 0), 'Komma-Eingabe wird gelesen, nicht zu 0');
+    }
+
     public function test_status_machine_rejects_backward_and_skip_transitions(): void {
         $ride = $this->acceptTaxiRide();
 

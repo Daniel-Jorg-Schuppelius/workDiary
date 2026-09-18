@@ -21,6 +21,8 @@ use App\Services\Reporting\ReportFilters;
 use App\Support\ChartBucket;
 use App\Support\Query\DateRange;
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
@@ -427,13 +429,6 @@ class AbsencesReportController extends Controller {
      */
     private function exportCsv(array $rows, array $totals, string $from, string $to, int $balanceYear, array $exportFilters, Request $request): Response {
         $filename = sprintf('abwesenheiten_%s_%s.csv', $from, $to);
-        $fmt = static function (int $m): string {
-            $sign = $m < 0 ? '-' : '';
-            $abs = abs($m);
-
-            return sprintf('%s%d:%02d', $sign, intdiv($abs, 60), $abs % 60);
-        };
-        $fmtDays = static fn(?float $d): string => $d !== null ? number_format($d, 1, ',', '') : '';
         $out = [['Mitarbeiter', 'Urlaub (Werktage)', 'Krank', 'Sonderurlaub', 'Unbezahlt', 'Ausstehend', sprintf('Anspruch %d', $balanceYear), sprintf('Rest %d', $balanceYear), 'Flex-Änderung', 'Flex-Saldo']];
         foreach ($rows as $r) {
             $out[] = [
@@ -443,10 +438,10 @@ class AbsencesReportController extends Controller {
                 $r['special_days'],
                 $r['unpaid_days'],
                 $r['pending_days'],
-                $fmtDays($r['entitled_total_days'] ?? null),
-                $fmtDays($r['remaining_days'] ?? null),
-                $fmt($r['flex_change_minutes']),
-                $r['flex_balance_minutes'] !== null ? $fmt($r['flex_balance_minutes']) : '',
+                isset($r['entitled_total_days']) ? NumberHelper::toGermanFormat($r['entitled_total_days'], 1) : '',
+                isset($r['remaining_days']) ? NumberHelper::toGermanFormat($r['remaining_days'], 1) : '',
+                Duration::ofMinutes($r['flex_change_minutes'])->toClock(),
+                $r['flex_balance_minutes'] !== null ? Duration::ofMinutes($r['flex_balance_minutes'])->toClock() : '',
             ];
         }
         $out[] = [
@@ -458,8 +453,8 @@ class AbsencesReportController extends Controller {
             $totals['pending_days'],
             '',
             '',
-            $fmt($totals['flex_change_minutes']),
-            $fmt($totals['flex_balance_minutes']),
+            Duration::ofMinutes($totals['flex_change_minutes'])->toClock(),
+            Duration::ofMinutes($totals['flex_balance_minutes'])->toClock(),
         ];
 
         return $this->csvWithMetadata($out, $filename, 'absences', $exportFilters, $request);

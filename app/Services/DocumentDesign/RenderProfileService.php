@@ -15,6 +15,7 @@ namespace App\Services\DocumentDesign;
 use App\Enums\DocumentDesign\{InformationBlock, InformationBlockState, LetterheadPageRole, PageFormat, RenderDocumentFamily, RenderDocumentKind, RenderProfileStatus, TableStylePreset};
 use App\Models\DocumentDesign\{DocumentRenderProfile, DocumentRenderProfileVersion, LetterheadAsset};
 use App\Models\{Organization, User};
+use CommonToolkit\Helper\Data\ColorHelper;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -406,8 +407,8 @@ class RenderProfileService {
 
         $organization = Organization::query()->withoutGlobalScopes()->find($version->organization_id);
         $colors = (array) (($organization?->brandingSettings() ?? [])['colors'] ?? []);
-        $primary = $this->hexOrNull($colors['primary'] ?? null);
-        $accent = $this->hexOrNull($colors['accent'] ?? null);
+        $primary = ColorHelper::normalizeHex(is_string($colors['primary'] ?? null) ? $colors['primary'] : null);
+        $accent = ColorHelper::normalizeHex(is_string($colors['accent'] ?? null) ? $colors['accent'] : null);
         if ($primary === null && $accent === null) {
             return $version;
         }
@@ -474,12 +475,6 @@ class RenderProfileService {
         }
 
         return $clean['header_text'] === null && $clean['footer_text'] === null ? null : $clean;
-    }
-
-    private function hexOrNull(mixed $value): ?string {
-        $value = trim((string) $value);
-
-        return preg_match('/^#[0-9a-fA-F]{6}$/', $value) === 1 ? strtolower($value) : null;
     }
 
     /**
@@ -704,7 +699,7 @@ class RenderProfileService {
                 'number' => max((float) ($bound['min'] ?? 0), min((float) ($bound['max'] ?? PHP_FLOAT_MAX), (float) $value)),
                 'bool' => (bool) $value,
                 'option' => in_array((string) $value, $bound['options'] ?? [], true) ? (string) $value : null,
-                'color' => preg_match('/^#[0-9a-fA-F]{6}$/', (string) $value) === 1 ? strtolower((string) $value) : null,
+                'color' => ColorHelper::normalizeHex((string) $value),
                 default => null,
             };
             if ($overrides[$key] === null) {

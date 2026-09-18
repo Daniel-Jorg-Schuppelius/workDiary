@@ -16,6 +16,7 @@ use App\Enums\Inventory\StockState;
 use App\Models\{ArticleVariant, JtlStockSnapshot, Warehouse};
 use App\Plugins\JtlWawi\Api\JtlGatewayFactory;
 use App\Plugins\JtlWawi\JtlWawiPlugin;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Liest Bestände aus der führenden JTL-Wawi (Feature 078, MVP-319/320).
@@ -90,10 +91,10 @@ class JtlStockReader {
                 'warehouse_id' => $warehouse->id,
             ],
             [
-                'quantity_total' => $this->qty($total),
-                'quantity_available' => $this->qty($total - $reserved - $blocked),
-                'quantity_reserved' => $this->qty($reserved),
-                'quantity_blocked' => $this->qty($blocked),
+                'quantity_total' => NumberHelper::toUSFormat($total, 4),
+                'quantity_available' => NumberHelper::toUSFormat($total - $reserved - $blocked, 4),
+                'quantity_reserved' => NumberHelper::toUSFormat($reserved, 4),
+                'quantity_blocked' => NumberHelper::toUSFormat($blocked, 4),
                 'fetched_at' => now(),
             ],
         );
@@ -115,8 +116,4 @@ class JtlStockReader {
         return $this->refresh($variant, $warehouse);
     }
 
-    /** @return numeric-string */
-    private function qty(float $value): string {
-        return number_format($value, 4, '.', '');
-    }
 }

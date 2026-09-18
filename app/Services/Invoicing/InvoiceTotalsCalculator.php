@@ -12,6 +12,7 @@ namespace App\Services\Invoicing;
 
 use App\Models\Invoice;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\{Money, Percentage};
 
 /**
@@ -60,7 +61,7 @@ class InvoiceTotalsCalculator {
         $byRate = [];
         foreach ($invoice->items as $item) {
             $rate = self::percent($item->tax_rate) ?? self::percent($invoice->tax_rate);
-            $key = number_format($rate !== null ? (float) $rate->getNumericValue() : 0.0, 2, '.', '');
+            $key = NumberHelper::toUSFormat($rate !== null ? (float) $rate->getNumericValue() : 0.0, 2);
             $net = self::money($item->amount, $currency);
             $byRate[$key] = isset($byRate[$key]) ? $byRate[$key]->plus($net) : $net;
         }

@@ -14,7 +14,8 @@ use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ScheduledShift, ShiftType, User};
 use App\Support\Setting;
 use Carbon\Carbon;
-use CommonToolkit\Parsers\CSVDocumentParser;
+use CommonToolkit\Entities\XLSX\Cell;
+use CommonToolkit\Parsers\{CSVDocumentParser, XLSXDocumentParser};
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Session};
@@ -170,11 +171,11 @@ class ScheduleImportController extends Controller {
      * @return array<int, array<int, string>>
      */
     private function parseFile(string $path, string $extension): array {
-        if (in_array($extension, ['xlsx', 'xls'])) {
-            return $this->parseSpreadsheet($path);
-        }
-
-        return $this->parseCsv($path);
+        return match ($extension) {
+            'xlsx' => $this->parseXlsx($path),
+            'xls' => $this->parseSpreadsheet($path),
+            default => $this->parseCsv($path),
+        };
     }
 
     /**
@@ -192,6 +193,25 @@ class ScheduleImportController extends Controller {
     }
 
     /**
+     * .xlsx über den Toolkit-Parser (erstes Blatt, inkl. Kopfzeile): Datums-
+     * zellen kommen als `Y-m-d` statt als Excel-Seriennummer, Uhrzeiten als
+     * `Y-m-d H:i:s` — beides versteht Carbon::parse() in confirm().
+     *
+     * @return array<int, array<int, string>>
+     */
+    private function parseXlsx(string $path): array {
+        $sheet = XLSXDocumentParser::fromFile($path, hasHeader: false, sheetIndex: 0)->getFirstSheet();
+        $rows = [];
+        foreach ($sheet?->getRows() ?? [] as $row) {
+            $rows[] = array_map(static fn (Cell $cell): string => $cell->toCanonicalString(), $row->getCells());
+        }
+
+        return $rows;
+    }
+
+    /**
+     * Altes .xls-Format: nur PhpSpreadsheet liest es.
+     *
      * @return array<int, array<int, string>>
      */
     private function parseSpreadsheet(string $path): array {

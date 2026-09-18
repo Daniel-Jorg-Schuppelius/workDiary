@@ -11,6 +11,7 @@
 namespace App\Plugins;
 
 use App\Plugins\Contracts\Plugin;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use ReflectionClass;
 
 /**
@@ -74,13 +75,12 @@ final class PluginDiscovery {
             return self::$scanned;
         }
 
-        $pattern = app_path('Plugins' . DIRECTORY_SEPARATOR . '*' . DIRECTORY_SEPARATOR . '*Plugin.php');
-
         $classes = [];
-        foreach (glob($pattern) ?: [] as $file) {
-            // Konvention strikt: <Name>/<Name>Plugin.php — sonst matcht der Glob
-            // auch Contracts/Plugin.php (das Interface selbst) und Warnungen fluten.
-            if (basename($file) !== basename(\dirname($file)) . 'Plugin.php') {
+        foreach (Folder::get(app_path('Plugins')) as $dir) {
+            // Konvention strikt: <Name>/<Name>Plugin.php — Contracts/Plugin.php
+            // (das Interface selbst) und Support/ fallen so heraus.
+            $file = $dir . DIRECTORY_SEPARATOR . basename($dir) . 'Plugin.php';
+            if (! File::isFile($file)) {
                 continue;
             }
             $class = self::classFromPath($file);

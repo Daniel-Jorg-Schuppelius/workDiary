@@ -17,6 +17,7 @@ use App\Plugins\Contracts\{PluginCapability, ShippingProvider};
 use App\Plugins\Support\ChecksCarrierHealth;
 use App\Plugins\Ups\Api\UpsApiClient;
 use App\Services\Shipping\{CarrierTokenCache, ShipmentLabel, ShipmentRequest, ShipperAddress, TrackingEvent, TrackingResult};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use RuntimeException;
 use Throwable;
@@ -213,7 +214,7 @@ class UpsPlugin extends AbstractPlugin implements ShippingProvider {
                 'Packaging' => ['Code' => '02'], // Customer Supplied Package
                 'PackageWeight' => [
                     'UnitOfMeasurement' => ['Code' => 'KGS'],
-                    'Weight' => number_format($package->weightGrams / 1000, 1, '.', ''),
+                    'Weight' => NumberHelper::toUSFormat($package->weightGrams / 1000, 1),
                 ],
             ];
             if ($package->lengthCm !== null && $package->widthCm !== null && $package->heightCm !== null) {

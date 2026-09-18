@@ -11,6 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Support\{Locales, Translations};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 
 /**
@@ -53,7 +54,7 @@ class LangCheckCommand extends Command {
                 if ($code === 'en') {
                     continue;
                 }
-                if (! is_file(Translations::langPath($code) . '/' . $file)) {
+                if (! File::isFile(Translations::langPath($code) . '/' . $file)) {
                     $gaps++;
                     $this->warn(sprintf('%s/%s: Datei fehlt', $code, $file));
 

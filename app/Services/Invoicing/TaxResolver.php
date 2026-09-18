@@ -79,7 +79,7 @@ class TaxResolver {
         }
 
         $eu = array_map('strtoupper', (array) config('taxation.eu_countries', []));
-        $vatId = str_replace(' ', '', (string) ($customer->vat_id ?? ''));
+        $vatId = (string) ($customer->vat_id ?? '');
 
         // EU-B2B mit formal gültiger USt-IdNr. → Reverse Charge (AE).
         if (in_array($buyerCountry, $eu, true) && $vatId !== '' && Validator::isValidVatId($vatId)) {

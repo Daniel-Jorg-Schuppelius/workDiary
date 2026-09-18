@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands\Plugin;
 
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;
 use Illuminate\Support\Str;
 
@@ -30,22 +31,20 @@ class MakePluginCommand extends Command {
         $id = Str::kebab($studly);
         $dir = app_path('Plugins/' . $studly);
 
-        if (is_dir($dir)) {
+        if (Folder::exists($dir)) {
             $this->error("Verzeichnis existiert bereits: {$dir}");
 
             return self::FAILURE;
         }
 
-        mkdir($dir, 0755, true);
-        file_put_contents($dir . '/' . $studly . 'Plugin.php', $this->pluginStub($studly, $id));
-        file_put_contents($dir . '/' . $studly . 'ServiceProvider.php', $this->providerStub($studly, $id));
-        file_put_contents($dir . '/config.php', $this->configStub($id));
+        Folder::create($dir, 0755, true);
+        File::write($dir . '/' . $studly . 'Plugin.php', $this->pluginStub($studly, $id));
+        File::write($dir . '/' . $studly . 'ServiceProvider.php', $this->providerStub($studly, $id));
+        File::write($dir . '/config.php', $this->configStub($id));
 
         $testDir = base_path('tests/Feature/Plugins/' . $studly);
-        if (! is_dir($testDir)) {
-            mkdir($testDir, 0755, true);
-        }
-        file_put_contents($testDir . '/' . $studly . 'PluginTest.php', $this->testStub($studly, $id));
+        Folder::create($testDir, 0755, true);
+        File::write($testDir . '/' . $studly . 'PluginTest.php', $this->testStub($studly, $id));
 
         $this->info("Plugin-Gerüst erzeugt: app/Plugins/{$studly}/ (ID: {$id})");
         $this->line('Nächste Schritte: capabilities() + settingsSchema() ausfüllen, healthCheck() implementieren,');

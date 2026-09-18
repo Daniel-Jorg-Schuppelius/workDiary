@@ -18,7 +18,7 @@ use App\Models\Reselling\{CompanyMapping, ResaleImport, ResalePeriod, ResalePric
 use App\Services\Reselling\Marketplace\{GenericSubscriptionReader, MarketplaceEntitlement, MarketplacePurchasesReader, ProductNameMatcher, PurchasesImport, PurchasesImportMerger, QualityHostingContractsReader, QualityHostingPriceListReader, UnitPriceCatalog};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Support\Facades\{DB, Log};
 use Throwable;
@@ -164,7 +164,7 @@ final class MarketplaceImporter {
                 'renewal' => $entitlement->endsOn === null ? RenewalMode::Auto : RenewalMode::Cancel,
                 'currency' => $unitFee->getCurrency()->value,
             ];
-            $hash = (string) CryptoHelper::hash(json_encode($attributes, JSON_THROW_ON_ERROR));
+            $hash = (string) CryptoHelper::hash(JsonHelper::encode($attributes));
 
             $subscription = ResaleSubscription::query()->withoutGlobalScopes()
                 ->where('organization_id', $organization->id)

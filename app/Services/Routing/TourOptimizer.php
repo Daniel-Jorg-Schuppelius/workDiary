@@ -11,6 +11,7 @@
 namespace App\Services\Routing;
 
 use App\Support\Setting;
+use CommonToolkit\Helper\Geo\GeoHelper;
 
 /**
  * Nearest-Neighbor + 2-opt tour optimizer.
@@ -81,7 +82,7 @@ class TourOptimizer {
         for ($i = 0; $i < $m; $i++) {
             $row = [];
             for ($j = 0; $j < $m; $j++) {
-                $row[] = $i === $j ? 0.0 : $this->haversine($points[$i], $points[$j]);
+                $row[] = $i === $j ? 0.0 : GeoHelper::haversineMeters($points[$i]->lat, $points[$i]->lng, $points[$j]->lat, $points[$j]->lng);
             }
             $matrix[] = $row;
         }
@@ -201,16 +202,5 @@ class TourOptimizer {
      */
     private function estimateDurationSeconds(float $distanceMeters): int {
         return (int) round($distanceMeters / (40_000 / 3600));
-    }
-
-    private function haversine(Coordinate $a, Coordinate $b): float {
-        $earth = 6_371_000.0; // meters
-        $lat1 = deg2rad($a->lat);
-        $lat2 = deg2rad($b->lat);
-        $dLat = $lat2 - $lat1;
-        $dLng = deg2rad($b->lng - $a->lng);
-        $h = sin($dLat / 2) ** 2 + cos($lat1) * cos($lat2) * sin($dLng / 2) ** 2;
-
-        return 2 * $earth * asin(min(1.0, sqrt($h)));
     }
 }

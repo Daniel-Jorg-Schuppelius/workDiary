@@ -11,8 +11,8 @@
 namespace App\Services\Release;
 
 use App\Services\Isms\SbomGenerator;
-use App\Services\Licensing\LicenseService;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\FileSystem\File;
 
 /**
  * Verifiziert ein Release-Manifest (Feature 022, MVP):
@@ -50,18 +50,18 @@ class ReleaseVerifier {
             $expected = (string) $artifact['sha256'];
             $path = $this->resolveArtifactPath($name);
 
-            if ($path === null || ! is_file($path) || ! is_readable($path)) {
+            if ($path === null || ! File::isFile($path) || ! File::isReadable($path, false)) {
                 $issues[] = sprintf('Artefakt "%s" fehlt oder ist nicht lesbar.', $name);
 
                 continue;
             }
-            $contents = file_get_contents($path);
-            if ($contents === false) {
+            try {
+                $actual = File::hash($path);
+            } catch (\Throwable) {
                 $issues[] = sprintf('Artefakt "%s" konnte nicht gelesen werden.', $name);
 
                 continue;
             }
-            $actual = CryptoHelper::hash($contents);
             if (! hash_equals($expected, $actual)) {
                 $issues[] = sprintf('Prüfsumme von "%s" weicht ab (erwartet %s, ist %s).', $name, $expected, $actual);
             }
@@ -100,8 +100,8 @@ class ReleaseVerifier {
      * @return bool|null  true/false bei Prüfung; null, wenn kein Public Key vorliegt.
      */
     private function verifySignature(array $manifest, string $signatureB64, mixed $embeddedPublicKey): ?bool {
-        $signature = LicenseService::b64Decode($signatureB64);
-        if ($signature === null || strlen($signature) !== SODIUM_CRYPTO_SIGN_BYTES) {
+        $signature = CryptoHelper::base64UrlDecode($signatureB64);
+        if ($signature === false || strlen($signature) !== SODIUM_CRYPTO_SIGN_BYTES) {
             return false;
         }
 
@@ -142,9 +142,9 @@ class ReleaseVerifier {
             return null;
         }
 
-        $raw = LicenseService::b64Decode($b64);
+        $raw = CryptoHelper::base64UrlDecode($b64);
 
-        return ($raw !== null && strlen($raw) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) ? $raw : null;
+        return ($raw !== false && strlen($raw) === SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) ? $raw : null;
     }
 
     private function resolveArtifactPath(string $name): ?string {

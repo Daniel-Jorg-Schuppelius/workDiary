@@ -135,7 +135,7 @@ class TogglCsvParser {
             description: $description,
             startedAt: $startedAt,
             endedAt: $endedAt,
-            billable: $this->isBillable($get('billable')),
+            billable: (bool) StringHelper::parseBool($get('billable')),
             userEmail: $email,
             tags: $this->parseTags($get('tags')),
             legacyEntryKey: TogglEntry::legacyCsvKey($startedAt->toIso8601String(), $endedAt->toIso8601String(), $client, $project, $description),
@@ -163,12 +163,6 @@ class TogglCsvParser {
         } catch (\InvalidArgumentException) {
             return 0;
         }
-    }
-
-    private function isBillable(?string $value): bool {
-        $value = strtolower((string) $value);
-
-        return in_array($value, ['yes', 'ja', 'oui', 'sì', 'si', 'true', '1'], true);
     }
 
     private function nullIfBlank(?string $value): ?string {

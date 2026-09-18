@@ -13,6 +13,7 @@ namespace Tests\Feature\Licensing;
 use App\Models\{Organization, User};
 use App\Services\Licensing\{FeatureFlagResolver, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -35,7 +36,7 @@ class OrgLicensingTest extends TestCase {
         $json = (string) json_encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $sig = sodium_crypto_sign_detached($json, $this->secretKey);
 
-        return LicenseService::b64Encode($json) . '.' . LicenseService::b64Encode($sig);
+        return CryptoHelper::base64UrlEncode($json) . '.' . CryptoHelper::base64UrlEncode($sig);
     }
 
     /** @param array<string,mixed> $overrides */

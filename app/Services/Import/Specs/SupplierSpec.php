@@ -17,6 +17,7 @@ use App\Models\Organization;
 use App\Services\Import\{ImportOutcome, InboxFirstSpec, ValidationIssue};
 use App\Services\Import\Specs\Concerns\DedupsAndStages;
 use App\Services\Integration\Profiles\SupplierMatchProfile;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Throwable;
 
 /**
@@ -133,7 +134,7 @@ class SupplierSpec extends AbstractEntitySpec implements InboxFirstSpec {
             $issues[] = $this->tooLongIssue('name', 255);
         }
 
-        if (! empty($row['email']) && ! filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($row['email']) && ! EmailHelper::isEmail($row['email'])) {
             $issues[] = $this->formatIssue('email', (string) __('import.error.format.email'));
         }
 

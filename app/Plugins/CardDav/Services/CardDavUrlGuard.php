@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Plugins\CardDav\Services;
 
 use App\Support\UrlSafety;
+use CommonToolkit\Helper\Data\WebLinkHelper;
 
 /**
  * SSRF-Leitplanke der CardDAV-Anbindung (Bauturbo A9, MVP-329). Ein
@@ -46,22 +47,10 @@ final class CardDavUrlGuard {
     public static function assertSameOriginAsBase(string $url, string $baseUrl, bool $allowPrivateNetwork): void {
         self::assertAcceptable($url, $allowPrivateNetwork);
 
-        if (self::origin($url) !== self::origin($baseUrl)) {
+        // Fail-closed: ohne bestimmbaren Ursprung gilt die Adresse als fremd.
+        $origin = WebLinkHelper::origin(trim($url));
+        if ($origin === null || $origin !== WebLinkHelper::origin(trim($baseUrl))) {
             throw new \RuntimeException((string) __('carddav.flash.foreign_origin'));
         }
-    }
-
-    /** Schema + Host + Port einer Adresse, kleingeschrieben. */
-    private static function origin(string $url): string {
-        $parts = parse_url(trim($url));
-        if ($parts === false) {
-            return '';
-        }
-
-        $scheme = strtolower((string) ($parts['scheme'] ?? ''));
-        $host = strtolower((string) ($parts['host'] ?? ''));
-        $port = isset($parts['port']) ? ':' . $parts['port'] : '';
-
-        return $scheme . '://' . $host . $port;
     }
 }

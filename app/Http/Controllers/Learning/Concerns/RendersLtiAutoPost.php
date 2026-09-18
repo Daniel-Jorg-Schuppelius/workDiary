@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers\Learning\Concerns;
 
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Http\Response;
 
 /**
@@ -22,7 +23,7 @@ use Illuminate\Http\Response;
 trait RendersLtiAutoPost {
     /** @param  array<string, string>  $fields */
     private function autoPost(string $action, array $fields, string $formAction): Response {
-        $nonce = rtrim(strtr(base64_encode(random_bytes(18)), '+/', '-_'), '=');
+        $nonce = CryptoHelper::base64UrlEncode(random_bytes(18));
         $response = response()->view('learning.lti.auto-post', ['action' => $action, 'fields' => $fields, 'nonce' => $nonce]);
 
         $response->headers->set('Content-Security-Policy', implode('; ', [

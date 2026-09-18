@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Privacy\{ProcessingActivity, ProcessingAgreement, Processor, Subprocessor};
 use App\Services\Privacy\AgreementService;
 use App\Support\Sqid;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Gate, Storage};
 use Illuminate\View\View;
@@ -68,7 +69,7 @@ class ProcessingAgreementController extends Controller {
             $stored = $file->store('privacy/agreements', 'local');
             if ($stored !== false) {
                 $agreement->setAttribute('document_path', $stored);
-                $agreement->setAttribute('document_name', \App\Support\Filename::sanitize($file->getClientOriginalName()));
+                $agreement->setAttribute('document_name', File::sanitizeDisplayName($file->getClientOriginalName()));
             }
         }
         $agreement->save();

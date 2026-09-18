@@ -143,7 +143,7 @@ class KimaiCsvParser {
             description: $description,
             startedAt: $startedAt,
             endedAt: $endedAt,
-            billable: $this->isBillable($get('billable')),
+            billable: (bool) StringHelper::parseBool($get('billable')),
             userEmail: $this->nullIfBlank($get('email')),
             tags: $this->parseTags($get('tags')),
         );
@@ -170,12 +170,6 @@ class KimaiCsvParser {
 
         // Dezimalstunden (Kimai „Export dezimal", Punkt-separiert).
         return (int) round(((float) $duration) * 3600);
-    }
-
-    private function isBillable(?string $value): bool {
-        $value = strtolower(trim((string) $value));
-
-        return in_array($value, ['1', 'true', 'yes', 'ja', 'oui', 'sì', 'si'], true);
     }
 
     /**

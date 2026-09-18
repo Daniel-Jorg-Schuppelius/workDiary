@@ -13,6 +13,7 @@ namespace App\Services\Isms;
 use App\Enums\Isms\{ControlImplementationStatus, RequirementSource};
 use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
 use App\Models\User;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -202,7 +203,7 @@ class RequirementService {
             $error = $result->error();
             throw ValidationException::withMessages([
                 'file' => __('Kein gültiger OSCAL-Katalog: :error', [
-                    'error' => $error !== null ? (string) json_encode((new \Opis\JsonSchema\Errors\ErrorFormatter)->format($error, false)) : 'unbekannt',
+                    'error' => $error !== null ? JsonHelper::encode((new \Opis\JsonSchema\Errors\ErrorFormatter)->format($error, false)) : 'unbekannt',
                 ]),
             ]);
         }

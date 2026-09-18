@@ -17,6 +17,7 @@ use App\Models\Disposal\DisposalJob;
 use App\Models\Organization;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Support\Facades\Storage;
 
 /**
@@ -119,7 +120,7 @@ class DisposalRecordPdfRenderer {
             return null;
         }
 
-        return 'data:image/png;base64,' . base64_encode($binary);
+        return DataUrlHelper::encode($binary, 'image/png') ?: null;
     }
 
     /**

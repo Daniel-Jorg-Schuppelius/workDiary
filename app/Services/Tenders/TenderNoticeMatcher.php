@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Tenders;
 
 use App\Models\Tenders\{TenderFilterProfile, TenderNotice, TenderNoticeMatch};
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Gleicht Bekanntmachungen gegen die Suchprofile der Organisationen ab
@@ -126,13 +127,7 @@ final class TenderNoticeMatcher {
         $keywords = $this->words($profile->keywords);
         if ($keywords !== []) {
             $criteria++;
-            foreach ($keywords as $word) {
-                if (str_contains($haystack, $word)) {
-                    $hits++;
-
-                    break;
-                }
-            }
+            $hits += StringHelper::containsAny($haystack, $keywords) ? 1 : 0;
         }
 
         // Alle gesetzten Kriterien müssen zutreffen: Ein Profil aus „Bau in

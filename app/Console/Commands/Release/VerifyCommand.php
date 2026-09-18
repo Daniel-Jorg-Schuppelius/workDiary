@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Console\Commands\Release;
 
 use App\Services\Release\{ReleaseManifestService, ReleaseVerifier};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -71,14 +72,16 @@ class VerifyCommand extends Command {
     private function loadManifestJson(): ?string {
         $path = $this->argument('path');
         if (is_string($path) && $path !== '') {
-            if (! is_file($path) || ! is_readable($path)) {
+            if (! File::isFile($path) || ! File::isReadable($path, false)) {
                 $this->error('Manifest nicht gefunden oder nicht lesbar: ' . $path);
 
                 return null;
             }
-            $contents = file_get_contents($path);
-
-            return $contents === false ? null : $contents;
+            try {
+                return File::read($path);
+            } catch (\Throwable) {
+                return null;
+            }
         }
 
         if (! Storage::disk('local')->exists(ReleaseManifestService::STORAGE_PATH)) {

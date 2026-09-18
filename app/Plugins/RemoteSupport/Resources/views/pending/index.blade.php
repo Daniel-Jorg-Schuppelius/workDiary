@@ -36,8 +36,8 @@
     {{-- Kunden→Projekt-/Fremdkunden-Maps EINMAL pro Seite; die remoteAssign-
          Formulare lesen sie von hier statt sie je Karte zu duplizieren. --}}
     <div id="remote-assign-maps" hidden
-         data-project-map="{{ json_encode($projectMap, JSON_UNESCAPED_UNICODE) }}"
-         data-foreign-map="{{ json_encode($foreignMap, JSON_UNESCAPED_UNICODE) }}"></div>
+         data-project-map="{{ \CommonToolkit\Helper\Data\JsonHelper::encode($projectMap, JSON_UNESCAPED_UNICODE) }}"
+         data-foreign-map="{{ \CommonToolkit\Helper\Data\JsonHelper::encode($foreignMap, JSON_UNESCAPED_UNICODE) }}"></div>
 
     <div x-data="tabs('ids')" data-tab-persist="remote-support-pending-tab" data-tab-url-sync data-tab-allowed="ids,sessions">
         <div role="tablist" class="tabs tabs-box mb-3 w-fit">
@@ -82,7 +82,7 @@
                 @foreach ($groups as $group)
                     @php
                         $sug = $suggestions[$group->provider . '|' . $group->remote_id] ?? null;
-                        $sugData = $sug === null ? null : json_encode([
+                        $sugData = $sug === null ? null : \CommonToolkit\Helper\Data\JsonHelper::encode([
                             'shared' => $sug->kind === 'shared',
                             'customer' => $sug->customerSqid,
                             'foreign' => $sug->foreignSqid,

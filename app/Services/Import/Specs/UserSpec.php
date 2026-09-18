@@ -15,6 +15,7 @@ namespace App\Services\Import\Specs;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\{Organization, User};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Str;
 use Throwable;
 
@@ -75,7 +76,7 @@ class UserSpec extends AbstractEntitySpec {
         }
         if (($row['email'] ?? null) === null) {
             $issues[] = $this->requiredIssue('email');
-        } elseif (! filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+        } elseif (! EmailHelper::isEmail($row['email'])) {
             $issues[] = $this->formatIssue('email', (string) __('import.error.format.email'));
         }
 

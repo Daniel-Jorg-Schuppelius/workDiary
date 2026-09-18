@@ -10,6 +10,7 @@
 
 namespace App\Console\Commands;
 
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Str;
@@ -85,7 +86,7 @@ class HelpCoverageCommand extends Command {
             if ($topic === '') {
                 continue;
             }
-            if (! is_file(resource_path("help/de/{$topic}.md"))) {
+            if (! File::isFile(resource_path("help/de/{$topic}.md"))) {
                 $missing[] = $topic;
             }
         }
@@ -103,7 +104,8 @@ class HelpCoverageCommand extends Command {
         /** @var list<string> $locales */
         $locales = array_values(array_filter((array) config('app.available_locales', ['de', 'en'])));
 
-        $source = collect(glob(resource_path('help/de/*.md')) ?: [])
+        $sourceDir = resource_path('help/de');
+        $source = collect(Folder::exists($sourceDir) ? Folder::findByPattern($sourceDir, '*.md') : [])
             ->map(fn(string $path): string => basename($path, '.md'));
 
         $count = 0;
@@ -112,7 +114,7 @@ class HelpCoverageCommand extends Command {
                 continue;
             }
             foreach ($source as $topic) {
-                if (! is_file(resource_path("help/{$locale}/{$topic}.md"))) {
+                if (! File::isFile(resource_path("help/{$locale}/{$topic}.md"))) {
                     $this->line("Fehlende Übersetzung ({$locale}): {$topic}");
                     $count++;
                 }

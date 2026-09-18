@@ -15,6 +15,7 @@ namespace App\Services\Inventory;
 use App\Enums\Numbering\NumberScope;
 use App\Models\{Article, ArticleVariant, Organization, StockSerial};
 use App\Services\Numbering\NumberSequenceService;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Erzeugt Seriennummern für die Eigenfertigung über die lokale Nummernhoheit
@@ -69,7 +70,7 @@ class SerialNumberGenerator {
 
     /** Luhn-Prüfziffer über alle Ziffern der Eingabe (0–9). */
     public function luhnCheckDigit(string $value): int {
-        $digits = preg_replace('/\D/', '', $value) ?? '';
+        $digits = StringHelper::extractDigits($value);
         $sum = 0;
         $double = true;
         for ($i = strlen($digits) - 1; $i >= 0; $i--) {

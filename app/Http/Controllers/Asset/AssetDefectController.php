@@ -16,6 +16,7 @@ use App\Http\Controllers\Controller;
 use App\Models\{Asset, AssetDefect, User};
 use App\Services\Asset\AssetAssignmentService;
 use App\Services\Attachments\FileAttacher;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Gate;
@@ -139,7 +140,7 @@ class AssetDefectController extends Controller {
                 'user_id' => $user->id,
                 'disk' => 'local',
                 'path' => $path,
-                'original_name' => \App\Support\Filename::sanitize($photo->getClientOriginalName()),
+                'original_name' => File::sanitizeDisplayName($photo->getClientOriginalName()),
                 'mime' => $photo->getMimeType() ?: 'application/octet-stream',
                 'size' => $photo->getSize(),
                 'meta_type' => AssetDefect::PHOTO_META,

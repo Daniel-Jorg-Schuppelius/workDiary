@@ -14,6 +14,7 @@ namespace App\Services\Auth\Sso;
 
 use App\Enums\Auth\SsoProtocol;
 use App\Models\{OrganizationSsoDomain, SsoConnection, SsoIdentity, User};
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -132,8 +133,8 @@ class SsoLoginService {
             return null;
         }
 
-        $email = mb_strtolower(trim((string) ($identity['email'] ?? '')));
-        if ($email === '' || filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
+        $email = EmailHelper::normalize((string) ($identity['email'] ?? ''));
+        if (! EmailHelper::isEmail($email)) {
             $this->reject($connection, 'jit_email_missing');
         }
         // Neue Konten nur für nachgewiesene Domains der Organisation — sonst legte

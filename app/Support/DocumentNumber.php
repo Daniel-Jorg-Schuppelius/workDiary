@@ -13,7 +13,7 @@ declare(strict_types=1);
 namespace App\Support;
 
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\{Decimal, Money};
 use Illuminate\Support\Facades\App;
 
 /**
@@ -31,9 +31,9 @@ use Illuminate\Support\Facades\App;
  * soll nicht wechselnde Zahlenformate lesen müssen, weil ein Kunde
  * italienisch abgerechnet wird.
  *
- * Die Geldformatierung selbst kommt aus dem common-toolkit
- * ({@see NumberHelper::formatCurrency()}); hier steht nur, welche Konvention
- * zu welcher Sprache gehört.
+ * Die Formatierung selbst kommt aus dem common-toolkit ({@see Money::format()},
+ * {@see Decimal::format()}); hier steht nur, welche Konvention zu welcher
+ * Sprache gehört.
  */
 final class DocumentNumber {
     /**
@@ -69,33 +69,21 @@ final class DocumentNumber {
      */
     public static function money(string|float|int|null $amount, CurrencyCode $currency = CurrencyCode::Euro, ?string $locale = null): string {
         $c = self::conventions($locale);
+        $money = is_float($amount) ? Money::ofFloat($amount, $currency, 2) : Money::of($amount ?? 0, $currency, 2);
 
-        return NumberHelper::formatCurrency(
-            (float) ($amount ?? 0),
-            $currency,
-            2,
-            $c['decimal'],
-            $c['thousands'],
-            $c['symbol_before'],
-        );
+        return $money->format(true, true, $c['decimal'], $c['thousands'], $c['symbol_before']);
     }
 
     /**
      * Reine Zahl (Menge, Satz) in der Belegsprache — ohne Währung.
      *
-     * Bewusst `number_format` statt eines Toolkit-Aufrufs: Das Toolkit kennt
-     * `toGermanFormat`/`toUSFormat` mit **festen** Trennzeichen und keine
-     * parametrierbare Variante; eine, die nur `number_format` durchreicht,
-     * wäre der dünne Wrapper, den die Projektregeln ausschließen.
+     * {@see Decimal::format()} rundet präzise (HalfUp) und kommt mit dem
+     * Mehrbyte-Tausendertrenner (U+00A0) zurecht.
      */
     public static function decimal(string|float|int|null $value, int $decimals = 2, bool $withThousandsSeparator = true, ?string $locale = null): string {
         $c = self::conventions($locale);
+        $number = is_float($value) ? Decimal::ofFloat($value, $decimals) : Decimal::of($value ?? 0, $decimals);
 
-        return number_format(
-            (float) ($value ?? 0),
-            $decimals,
-            $c['decimal'],
-            $withThousandsSeparator ? $c['thousands'] : '',
-        );
+        return $number->format($c['decimal'], $withThousandsSeparator ? $c['thousands'] : '');
     }
 }

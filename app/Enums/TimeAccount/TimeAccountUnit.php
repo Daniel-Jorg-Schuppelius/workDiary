@@ -12,6 +12,8 @@ namespace App\Enums\TimeAccount;
 
 use App\Enums\Concerns\HasOptions;
 use App\Enums\Contracts\HasLabel;
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Duration;
 
 /** Einheit eines Zeitkontos (MVP-526). */
 enum TimeAccountUnit: string implements HasLabel {
@@ -32,12 +34,9 @@ enum TimeAccountUnit: string implements HasLabel {
     /** Formatiert einen Kontowert in der Konteneinheit. */
     public function format(float $quantity): string {
         if ($this === self::Minutes) {
-            $sign = $quantity < 0 ? '-' : '';
-            $abs = (int) round(abs($quantity));
-
-            return $sign . intdiv($abs, 60) . ':' . str_pad((string) ($abs % 60), 2, '0', STR_PAD_LEFT) . ' h';
+            return Duration::ofMinutes((int) round($quantity))->toClock() . ' h';
         }
 
-        return \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($quantity, $this === self::Count ? 0 : 2, withThousandsSeparator: true) . ' ' . $this->label();
+        return NumberHelper::toGermanFormat($quantity, $this === self::Count ? 0 : 2, withThousandsSeparator: true) . ' ' . $this->label();
     }
 }

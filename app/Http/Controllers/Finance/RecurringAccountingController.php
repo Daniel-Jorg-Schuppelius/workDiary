@@ -20,6 +20,7 @@ use App\Models\Accounting\{AccountingAccount, AccountingRecurringRun, Accounting
 use App\Models\InvoiceSchedule;
 use App\Services\Accounting\RecurringAccountingService;
 use App\Support\Sqid;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -156,7 +157,7 @@ class RecurringAccountingController extends Controller {
             'due_day' => ['required', 'integer', 'between:1,28'],
             'starts_on' => ['required', 'date'],
             'ends_on' => ['nullable', 'date', 'after_or_equal:starts_on'],
-            'expected_amount' => ['nullable', 'numeric', 'gte:0'],
+            'expected_amount' => ['nullable', 'numeric', 'decimal:0,8', 'gte:0'],
             'debit_account' => ['nullable', 'string'],
             'credit_account' => ['nullable', 'string'],
             'note' => ['nullable', 'string', 'max:500'],
@@ -180,7 +181,7 @@ class RecurringAccountingController extends Controller {
                 ->count();
             abort_unless($own === count(array_unique([$debitId, $creditId])), 422);
 
-            $amount = number_format((float) $data['expected_amount'], 2, '.', '');
+            $amount = Decimal::of((string) $data['expected_amount'], 2)->getValue();
             $lines = [
                 ['accounting_account_id' => $debitId, 'debit' => $amount, 'credit' => '0.00'],
                 ['accounting_account_id' => $creditId, 'debit' => '0.00', 'credit' => $amount],
@@ -195,7 +196,7 @@ class RecurringAccountingController extends Controller {
             'starts_on' => (string) $data['starts_on'],
             'ends_on' => $data['ends_on'] ?? null,
             'expected_amount' => isset($data['expected_amount'])
-                ? number_format((float) $data['expected_amount'], 2, '.', '')
+                ? Decimal::of((string) $data['expected_amount'], 2)->getValue()
                 : null,
             'template_lines' => $lines,
             'note' => $data['note'] ?? null,

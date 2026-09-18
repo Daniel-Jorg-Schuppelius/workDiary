@@ -11,6 +11,7 @@
 namespace App\Plugins\Toggl;
 
 use App\Plugins\Toggl\Sources\TogglWorkspaceReader;
+use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\Str;
 
@@ -35,16 +36,10 @@ class TogglExportArchiveService {
     /**
      * Beschränkt einen vom Admin angegebenen Import-Pfad auf erlaubte
      * Basisverzeichnisse (konfigurierter Toggl-Export-Pfad + storage/app/toggl-imports)
-     * via realpath-Prefix. Verhindert das Auslesen beliebiger Server-Verzeichnisse.
+     * via realpath-Eingrenzung (Toolkit). Verhindert das Auslesen beliebiger
+     * Server-Verzeichnisse; relative Pfade gelten relativ zur jeweiligen Basis.
      */
     public function safeImportPath(string $path): ?string {
-        if (trim($path) === '') {
-            return null;
-        }
-        $real = realpath($path);
-        if ($real === false || ! is_dir($real)) {
-            return null;
-        }
         // Nur der EIGENE Import-Ordner (S-56) — plus der global konfigurierte
         // Export-Pfad, der bewusst geteilt ist (Betreiber legt ihn fest).
         $bases = array_filter([
@@ -52,9 +47,9 @@ class TogglExportArchiveService {
             storage_path('app/toggl-imports/' . $this->organizationFolder()),
         ]);
         foreach ($bases as $base) {
-            $realBase = realpath((string) $base);
-            if ($realBase !== false && ($real === $realBase || str_starts_with($real, $realBase . DIRECTORY_SEPARATOR))) {
-                return $real;
+            $resolved = Folder::resolveWithin((string) $base, $path, allowBase: true);
+            if ($resolved !== null && Folder::exists($resolved)) {
+                return $resolved;
             }
         }
 
@@ -79,16 +74,21 @@ class TogglExportArchiveService {
         // `safeImportPath()` ließ jeden davon als Quelle zu — ein Org-Admin
         // konnte den Export eines anderen Mandanten einlesen.
         $base = storage_path('app/toggl-imports/' . $this->organizationFolder());
-        if (! is_dir($base)) {
-            @mkdir($base, 0775, true);
-        }
-        $this->pruneOldImports($base);
-
         $target = $base . '/' . now()->format('Ymd_His') . '_' . Str::random(8);
-        @mkdir($target, 0775, true);
+        try {
+            Folder::create($base, 0775, true);
+            $this->pruneOldImports($base);
+            Folder::create($target, 0775, true);
+        } catch (\Throwable) {
+            throw new TogglArchiveException((string) __('ZIP konnte nicht entpackt werden.'));
+        }
 
         if (! ZipFile::isZipFile($archivePath)) {
-            $this->rrmdir($target);
+            try {
+                Folder::delete($target, true); // symlink-sicher: Links weg, Ziele bleiben
+            } catch (\Throwable) {
+                // Best effort — Reste räumt pruneOldImports() beim nächsten Upload ab.
+            }
 
             throw new TogglArchiveException((string) __('Keine gültige ZIP-Datei.'));
         }
@@ -103,7 +103,11 @@ class TogglExportArchiveService {
                 maxRatio: self::MAX_RATIO,
             );
         } catch (\Throwable $e) {
-            $this->rrmdir($target);
+            try {
+                Folder::delete($target, true); // symlink-sicher: Links weg, Ziele bleiben
+            } catch (\Throwable) {
+                // Best effort — Reste räumt pruneOldImports() beim nächsten Upload ab.
+            }
 
             throw new TogglArchiveException((string) __('ZIP konnte nicht entpackt werden.'));
         }
@@ -125,20 +129,25 @@ class TogglExportArchiveService {
             }
 
             // Flacher Single-Workspace-Export → in Unterordner „Workspace" heben.
-            if (is_file($dir . '/projects.json')) {
+            if (File::isFile($dir . '/projects.json')) {
                 $wrap = $dir . '/Workspace';
-                @mkdir($wrap, 0775, true);
-                foreach ((array) glob($dir . '/*') as $item) {
-                    if ($item === $wrap) {
-                        continue;
+                $items = [...Files::get($dir), ...Folder::get($dir)];
+                try {
+                    Folder::create($wrap, 0775, true);
+                    foreach ($items as $item) {
+                        if ($item !== $wrap && basename($item) !== 'Workspace') {
+                            File::rename($item, $wrap . '/' . basename($item));
+                        }
                     }
-                    @rename((string) $item, $wrap . '/' . basename((string) $item));
+                } catch (\Throwable) {
+                    // Best effort: detectWorkspaces() meldet einen unvollständigen Export.
                 }
 
                 return $dir;
             }
 
-            $subdirs = array_values(array_filter((array) glob($dir . '/*', GLOB_ONLYDIR)));
+            // Sichtbare Unterordner (wie glob('*')): versteckte zählen nicht als Wrapper.
+            $subdirs = array_values(array_filter(Folder::get($dir), static fn(string $sub): bool => ! str_starts_with(basename($sub), '.')));
             if (count($subdirs) === 1) {
                 $dir = $subdirs[0];
 
@@ -152,26 +161,16 @@ class TogglExportArchiveService {
 
     /** Entfernt entpackte Import-Ordner, die älter als einen Tag sind (Best-Effort). */
     private function pruneOldImports(string $base): void {
-        foreach ((array) glob($base . '/*', GLOB_ONLYDIR) as $dir) {
-            if (is_string($dir) && @filemtime($dir) !== false && filemtime($dir) < now()->subDay()->getTimestamp()) {
-                $this->rrmdir($dir);
+        $cutoff = now()->subDay()->getTimestamp();
+        foreach (Folder::get($base) as $dir) {
+            try {
+                if (Folder::modifiedTime($dir) < $cutoff) {
+                    Folder::delete($dir, true); // symlink-sicher: Links weg, Ziele bleiben
+                }
+            } catch (\Throwable) {
+                // Best effort — der nächste Upload versucht es erneut.
             }
         }
-    }
-
-    /** Rekursives Löschen eines Verzeichnisses (Best-Effort). */
-    private function rrmdir(string $dir): void {
-        if (! is_dir($dir)) {
-            return;
-        }
-        foreach ((array) scandir($dir) as $entry) {
-            if ($entry === '.' || $entry === '..') {
-                continue;
-            }
-            $path = $dir . '/' . $entry;
-            is_dir($path) ? $this->rrmdir($path) : @unlink($path);
-        }
-        @rmdir($dir);
     }
 
     /** Unterordner je Organisation — ohne gebundene Org ein neutraler Platz. */

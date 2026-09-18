@@ -20,6 +20,7 @@ use App\Models\Applications\ApplicationOpportunity;
 use App\Models\{GaebImport, Project, User};
 use App\Services\Gaeb\{BoqImportConflictException, GaebImportService, GaebPackageIntakeService};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Storage};
@@ -73,7 +74,7 @@ class GaebPackageController extends Controller {
         $opportunity = $this->resolveOpportunity($request->input('opportunity'));
 
         $file = $request->file('file');
-        $contents = (string) file_get_contents($file->getRealPath());
+        $contents = File::read((string) $file->getRealPath());
 
         try {
             $result = $this->intake->intake(

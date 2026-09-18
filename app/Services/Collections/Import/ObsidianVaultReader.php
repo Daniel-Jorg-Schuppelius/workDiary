@@ -16,6 +16,7 @@ use App\Models\CloudIntake\CloudDocumentConnection;
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\Support\Intake\IntakeItem;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\StringHelper;
 use Symfony\Component\Yaml\Exception\ParseException;
 use Symfony\Component\Yaml\Yaml;
 
@@ -86,7 +87,7 @@ class ObsidianVaultReader {
 
     /** Eine Markdown-Datei als Dokument; `$relativePath` ist der Pfad im Tresor. */
     public function parse(string $externalId, string $relativePath, string $content, ?string $modifiedAt = null, string $connectionLabel = ''): ImportedDocument {
-        $content = str_replace(["\r\n", "\r"], "\n", preg_replace('/^\xEF\xBB\xBF/', '', $content) ?? $content);
+        $content = StringHelper::normalizeLineEndings(StringHelper::stripBom($content), "\n");
         [$frontMatter, $body] = $this->splitFrontMatter($content);
 
         $segments = array_values(array_filter(explode('/', $relativePath), static fn (string $s): bool => $s !== ''));

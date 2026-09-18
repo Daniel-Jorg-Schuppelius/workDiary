@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\CalDav\Services;
 
+use APIToolkit\API\WebDav\{MultiStatus, Propfind};
 use App\Models\CalDavConnection;
 use App\Plugins\CalDav\Contracts\CalDavGateway;
 use App\Plugins\Support\PluginApiClient;
@@ -75,7 +76,7 @@ class HttpCalDavGateway implements CalDavGateway {
             $response = $this->http->requestResponse('PROPFIND', rtrim($this->connection->base_url, '/') . '/' . trim($this->connection->calendar_path, '/'), [
                 'auth' => [$this->connection->username, $this->connection->app_password],
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => '<?xml version="1.0" encoding="utf-8"?><d:propfind xmlns:d="DAV:"><d:prop><d:resourcetype/></d:prop></d:propfind>',
+                'body' => Propfind::body(['d:resourcetype']),
             ]);
         } catch (Throwable) {
             return false;
@@ -221,45 +222,23 @@ class HttpCalDavGateway implements CalDavGateway {
     }
 
     /**
-     * Zeilen eines Multi-Status. Der Parser kommt aus dem common-toolkit —
-     * DAV-XML ist gewöhnliches XML mit Namensräumen.
+     * Zeilen eines Multi-Status über den WebDAV-Parser des api-toolkits:
+     * 404/410 auf Antwortebene sind Löschungen (RFC 6578).
      *
      * @return list<array{href: string, etag: string, ics: string, gone: bool}>
      */
     private function responseRows(string $xml): array {
-        $ns = ['d' => 'DAV:', 'c' => 'urn:ietf:params:xml:ns:caldav'];
         $rows = [];
-
-        foreach (XmlHelper::xpathNodes($xml, '//d:response', $ns) as $node) {
-            $href = trim((string) ($this->firstValue($node, 'd:href', $ns) ?? ''));
-            if ($href === '') {
-                continue;
-            }
-            $status = (string) ($this->firstValue($node, 'd:status', $ns) ?? '');
+        foreach (MultiStatus::parse($xml) as $response) {
             $rows[] = [
-                'href' => $href,
-                'etag' => trim((string) ($this->firstValue($node, './/d:getetag', $ns) ?? ''), " \t\n\r\0\x0B\""),
-                'ics' => (string) ($this->firstValue($node, './/c:calendar-data', $ns) ?? ''),
-                'gone' => str_contains($status, ' 404') || str_contains($status, ' 410'),
+                'href' => $response->href,
+                'etag' => (string) $response->etag(),
+                'ics' => (string) $response->property('urn:ietf:params:xml:ns:caldav', 'calendar-data'),
+                'gone' => $response->isGone(),
             ];
         }
 
         return $rows;
-    }
-
-    /** @param array<string, string> $ns */
-    private function firstValue(\DOMElement $node, string $path, array $ns): ?string {
-        $document = $node->ownerDocument;
-        if ($document === null) {
-            return null;
-        }
-        $xpath = new \DOMXPath($document);
-        foreach ($ns as $prefix => $uri) {
-            $xpath->registerNamespace($prefix, $uri);
-        }
-        $found = $xpath->query($path, $node);
-
-        return ($found !== false && $found->length > 0) ? (string) $found->item(0)?->nodeValue : null;
     }
 
     /** Relative hrefs des Servers auf die Basis-URL beziehen. */

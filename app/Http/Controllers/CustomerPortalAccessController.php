@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Enums\User\Permission;
 use App\Models\{Customer, User};
 use App\Services\CustomerPortal\PortalAccessService;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -49,7 +50,7 @@ class CustomerPortalAccessController extends Controller {
         $this->service->invite($customer, $data['name'], $data['email'], $actor);
 
         return redirect()->route('customers.show', ['customer' => $customer, '#' => 'portal-access'])
-            ->with('success', __('Einladung an :email versendet.', ['email' => mb_strtolower(trim((string) $data['email']))]));
+            ->with('success', __('Einladung an :email versendet.', ['email' => EmailHelper::normalize((string) $data['email'])]));
     }
 
     public function resend(Customer $customer, User $portalUser): RedirectResponse {

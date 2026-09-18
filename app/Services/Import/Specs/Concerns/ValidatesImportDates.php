@@ -14,27 +14,47 @@ namespace App\Services\Import\Specs\Concerns;
 
 use App\Services\Concerns\ParsesMixedDate;
 use App\Services\Import\ValidationIssue;
-use Throwable;
+use CommonToolkit\Enums\DateTimeFormat;
+use CommonToolkit\Helper\Data\DateHelper;
+use DateTimeInterface;
+use InvalidArgumentException;
 
 /**
  * Datumsspalten im Import (MVP-707): normalize() lässt den Rohwert stehen,
  * validateRow() meldet nicht Deutbares als Formatfehler, upsert() wandelt über
- * das gemeinsame {@see ParsesMixedDate}-Muster — kein eigener Datumsparser.
+ * {@see DateHelper::normalizeToIso()} — kein eigener Datumsparser. Der Trait
+ * {@see ParsesMixedDate} bleibt für Specs, die aus bereits normalisierten
+ * ISO-Daten weiterrechnen.
  */
 trait ValidatesImportDates {
     use ParsesMixedDate;
 
     /** `Y-m-d` oder null (leer); wirft bei nicht deutbarem Wert. */
     protected function dateString(mixed $value): ?string {
-        return $this->parseDate($value)?->toDateString();
+        if ($value === null || $value === '') {
+            return null;
+        }
+        if ($value instanceof DateTimeInterface) {
+            return $value->format('Y-m-d');
+        }
+
+        // Deutsche Lesart (01/02/2026 = 1. Februar), keine relativen Angaben
+        // („next monday") und kein Überlauf — Carbon::parse machte aus dem
+        // 31.02. still den 3. März.
+        $iso = DateHelper::normalizeToIso(trim((string) $value), DateTimeFormat::DE);
+        if ($iso === null) {
+            throw new InvalidArgumentException('Kein gültiges Datum: ' . (string) $value);
+        }
+
+        return substr($iso, 0, 10);
     }
 
     protected function isValidDate(mixed $value): bool {
         try {
-            $this->parseDate($value);
+            $this->dateString($value);
 
             return true;
-        } catch (Throwable) {
+        } catch (InvalidArgumentException) {
             return false;
         }
     }

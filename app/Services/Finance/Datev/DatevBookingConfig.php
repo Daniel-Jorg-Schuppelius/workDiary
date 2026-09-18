@@ -14,6 +14,8 @@ namespace App\Services\Finance\Datev;
 
 use App\Enums\Finance\ChartOfAccounts;
 use App\Models\{Customer, Expense, Organization};
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Decimal;
 
 /**
  * Buchhaltungskonfiguration je Organisation (Feature 045, „Priorität 2": die
@@ -111,7 +113,7 @@ final class DatevBookingConfig {
      * Schlüssel und hält den Map-Typ stabil bei array<string, string>).
      */
     private static function rateKey(float|string $rate): string {
-        return 'r' . number_format((float) $rate, 2, '.', '');
+        return 'r' . (is_float($rate) ? NumberHelper::toUSFormat($rate, 2) : Decimal::of($rate, 2)->getValue());
     }
 
     /**

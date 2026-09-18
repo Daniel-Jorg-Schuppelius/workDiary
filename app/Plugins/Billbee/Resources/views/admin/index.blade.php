@@ -87,7 +87,7 @@
                                 @endif
                             </td>
                             {{-- Anzeige-Makros statt Roh-Formatierung (Vollaudit 2026-07, N52). --}}
-                            <td class="text-right font-mono text-xs">{{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat(($order->total_gross?->toFloat() ?? 0.0), 2, withThousandsSeparator: true) }} {{ $order->currency?->value }}</td>
+                            <td class="text-right font-mono text-xs">{{ $order->total_gross?->format(withSymbol: false) ?? '0,00' }} {{ $order->currency?->value }}</td>
                             <td class="text-xs">{{ $order->ordered_at?->fdatetime() ?? '—' }}</td>
                         </tr>
                     @empty

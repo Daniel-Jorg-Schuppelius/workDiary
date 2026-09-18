@@ -16,6 +16,7 @@ use App\Enums\Import\ImportEntity;
 use App\Models\Organization;
 use App\Services\Import\Source\Ical\{AttendanceIcalMapper, ProjectTimeIcalMapper};
 use App\Support\Tz;
+use CommonToolkit\Helper\FileSystem\File;
 use RuntimeException;
 
 /**
@@ -57,14 +58,9 @@ final class ImportSourceFactory {
      * `BEGIN:VCALENDAR`).
      */
     public function isIcal(string $absolutePath): bool {
-        $handle = @fopen($absolutePath, 'rb');
-        if ($handle === false) {
-            return false;
-        }
-        $head = (string) fread($handle, self::DETECT_BYTES);
-        fclose($handle);
+        $head = File::readPartial($absolutePath, self::DETECT_BYTES);
 
-        return stripos($head, 'BEGIN:VCALENDAR') !== false;
+        return $head !== false && stripos($head, 'BEGIN:VCALENDAR') !== false;
     }
 
     private function icalMapper(ImportEntity $entity): ?IcalEventMapper {

@@ -97,18 +97,8 @@ class WhistleblowingAttachmentService {
             return $fn($disk->path($attachment->storage_key));
         }
 
-        $tmp = tempnam(sys_get_temp_dir(), 'wbatt');
-        if ($tmp === false) {
-            throw new RuntimeException('Konnte keine Temporaerdatei anlegen.');
-        }
-
-        try {
-            file_put_contents($tmp, $this->contents($attachment));
-
-            return $fn($tmp);
-        } finally {
-            @unlink($tmp);
-        }
+        // Klartext nur in einer 0600-Temporaerdatei, die das Toolkit immer wieder loescht.
+        return File::withTemp($this->contents($attachment), $fn, 'wbatt');
     }
 
     public function storeReporterUpload(WhistleblowingCase $case, UploadedFile $file): Attachment {
@@ -125,8 +115,9 @@ class WhistleblowingAttachmentService {
         if (! is_string($dek) || $dek === '') {
             throw new RuntimeException('Fall-Schluessel nicht verfuegbar - Anhang wird nicht abgelegt.');
         }
-        $plaintext = @file_get_contents($file->getRealPath());
-        if ($plaintext === false) {
+        try {
+            $plaintext = File::read((string) $file->getRealPath());
+        } catch (Throwable) {
             throw new RuntimeException('Konnte die hochgeladene Datei nicht lesen.');
         }
         Storage::disk($disk)->put($key, $this->crypto->encryptWithDek($plaintext, $dek));

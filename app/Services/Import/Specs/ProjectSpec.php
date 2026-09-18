@@ -16,6 +16,7 @@ use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Enums\Project\ProjectStatus;
 use App\Models\{Customer, Organization, Project};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use CommonToolkit\Helper\Data\StringHelper;
 use Throwable;
 
 /**
@@ -77,7 +78,7 @@ class ProjectSpec extends AbstractEntitySpec {
         foreach ($this->columns() as $col) {
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
-                'billable' => $raw === null || $raw === '' ? null : $this->boolish($raw),
+                'billable' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
                 'hourly_rate', 'internal_rate', 'budget' => $this->decimal($this->trimmedString($raw)),
                 'time_budget' => ($v = $this->trimmedString($raw)) !== null && ctype_digit($v) ? (int) $v : null,
                 'starts_on', 'ends_on' => $this->parseDate($this->trimmedString($raw)),

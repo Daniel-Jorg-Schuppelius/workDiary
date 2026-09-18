@@ -16,6 +16,7 @@ use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\{Customer, Organization, Supplier};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\ResolvesImportReferences;
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
 use Throwable;
 
 /**
@@ -77,7 +78,7 @@ class ContactPersonSpec extends AbstractEntitySpec {
             $out[$col] = match ($col) {
                 'party_type' => $this->partyType($this->trimmedString($raw)),
                 'email' => $this->lowerOrNull($this->trimmedString($raw)),
-                'primary' => $raw === null || trim((string) $raw) === '' ? null : $this->boolish($raw),
+                'primary' => $raw === null || trim((string) $raw) === '' ? null : (bool) StringHelper::parseBool($raw),
                 default => $this->trimmedString($raw),
             };
         }
@@ -104,7 +105,7 @@ class ContactPersonSpec extends AbstractEntitySpec {
             $issues[] = $this->tooLongIssue('name', 200);
         }
 
-        if (! empty($row['email']) && ! filter_var($row['email'], FILTER_VALIDATE_EMAIL)) {
+        if (! empty($row['email']) && ! EmailHelper::isEmail($row['email'])) {
             $issues[] = $this->formatIssue('email', (string) __('import.error.format.email'));
         }
         if (! empty($row['phone']) && mb_strlen((string) $row['phone']) > 64) {

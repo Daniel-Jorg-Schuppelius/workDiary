@@ -15,6 +15,7 @@ use App\Http\Controllers\Concerns\{ParsesIndexQuery, ResolvesCurrentOrganization
 use App\Http\Requests\SaveArticleRequest;
 use App\Models\{Article, ArticleOptionDefinition, ArticleOptionValue, ArticleVariant};
 use App\Services\Article\{ArticleService, VariantResolver};
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -177,12 +178,12 @@ class ArticleController extends Controller {
     public function storeTier(Request $request, Article $article): RedirectResponse {
         Gate::authorize('update', $article);
         $data = $request->validate([
-            'min_qty' => ['required', 'numeric', 'min:0.01', 'max:99999999'],
+            'min_qty' => ['required', 'numeric', 'decimal:0,8', 'min:0.01', 'max:99999999'],
             'unit_price' => ['required', 'numeric', 'min:0', 'max:99999999'],
         ]);
 
         $article->priceTiers()->updateOrCreate(
-            ['article_id' => $article->id, 'min_qty' => number_format((float) $data['min_qty'], 2, '.', '')],
+            ['article_id' => $article->id, 'min_qty' => Decimal::of((string) $data['min_qty'], 2)->getValue()],
             ['organization_id' => $article->organization_id, 'unit_price' => (string) $data['unit_price']]
         );
 

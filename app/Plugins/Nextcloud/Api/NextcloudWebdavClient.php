@@ -10,10 +10,9 @@
 
 namespace App\Plugins\Nextcloud\Api;
 
+use APIToolkit\API\WebDav\{MultiStatus, Propfind};
 use App\Plugins\Support\PluginApiClient;
 use App\Support\UrlSafety;
-use CommonToolkit\Helper\Data\XmlHelper;
-use DOMElement;
 use Illuminate\Http\Client\Response;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
@@ -31,10 +30,9 @@ use Throwable;
  *
  * Läuft über den {@see PluginApiClient} (api-toolkit ≥ v2.9.2: WebDAV-Verben
  * mit methodenbewusstem Retry); der injizierbare Client macht den Transport
- * ohne echten HTTP-Verkehr testbar (MockHandler-Transport). PROPFIND-
- * Multistatus wird über den namespaced-XPath des gemeinsamen {@see XmlHelper}
- * geparst (toolkit-first) — der generische `xmlToArray` scheitert an den
- * DAV:/oc:-Präfixen.
+ * ohne echten HTTP-Verkehr testbar (MockHandler-Transport). PROPFIND-Bodies
+ * und Multistatus kommen aus dem api-toolkit ({@see Propfind},
+ * {@see MultiStatus}); hier bleibt nur die Nextcloud-eigene href-Zuordnung.
  */
 class NextcloudWebdavClient {
     private const DAV_NS = 'DAV:';
@@ -74,7 +72,7 @@ class NextcloudWebdavClient {
         try {
             $response = $this->send('PROPFIND', $this->filesBaseUrl(), [
                 'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-                'body' => $this->propfindBody('<d:resourcetype/>'),
+                'body' => Propfind::body(['d:resourcetype']),
             ]);
         } catch (Throwable) {
             return false;
@@ -93,8 +91,9 @@ class NextcloudWebdavClient {
     public function listChildren(string $serverPath): array {
         $response = $this->send('PROPFIND', $this->fileUrl($serverPath), [
             'headers' => ['Depth' => '1', 'Content-Type' => 'application/xml; charset=utf-8'],
-            'body' => $this->propfindBody(
-                '<oc:fileid/><d:getetag/><d:getcontenttype/><d:getcontentlength/><d:getlastmodified/><d:resourcetype/>'
+            'body' => Propfind::body(
+                ['oc:fileid', 'd:getetag', 'd:getcontenttype', 'd:getcontentlength', 'd:getlastmodified', 'd:resourcetype'],
+                ['oc' => self::OC_NS],
             ),
         ]);
 
@@ -117,20 +116,19 @@ class NextcloudWebdavClient {
     public function quota(): array {
         $response = $this->send('PROPFIND', $this->filesBaseUrl(), [
             'headers' => ['Depth' => '0', 'Content-Type' => 'application/xml; charset=utf-8'],
-            'body' => $this->propfindBody('<d:quota-available-bytes/><d:quota-used-bytes/>'),
+            'body' => Propfind::body(['d:quota-available-bytes', 'd:quota-used-bytes']),
         ]);
         if ($response->status() !== 207) {
             throw new RuntimeException('Nextcloud quota PROPFIND failed (HTTP ' . $response->status() . ').');
         }
 
-        $nodes = XmlHelper::xpathNodes($response->body(), '//d:response', ['d' => self::DAV_NS, 'oc' => self::OC_NS]);
-        $self = $nodes[0] ?? null;
-        if (! $self instanceof DOMElement) {
+        $self = MultiStatus::parse($response->body())[0] ?? null;
+        if ($self === null) {
             return ['total' => null, 'used' => null];
         }
 
-        $usedRaw = $this->firstValue($self, self::DAV_NS, 'quota-used-bytes');
-        $availRaw = $this->firstValue($self, self::DAV_NS, 'quota-available-bytes');
+        $usedRaw = trim((string) $self->property(self::DAV_NS, 'quota-used-bytes'));
+        $availRaw = trim((string) $self->property(self::DAV_NS, 'quota-available-bytes'));
         $used = $usedRaw !== '' ? (int) $usedRaw : null;
         $avail = $availRaw !== '' ? (int) $availRaw : null;
 
@@ -267,13 +265,6 @@ class NextcloudWebdavClient {
         return (int) $response->header('Content-Length');
     }
 
-    private function propfindBody(string $props): string {
-        return '<?xml version="1.0" encoding="utf-8"?>'
-            . '<d:propfind xmlns:d="DAV:" xmlns:oc="http://owncloud.org/ns"><d:prop>'
-            . $props
-            . '</d:prop></d:propfind>';
-    }
-
     /**
      * @param  array<string, mixed>  $options
      */
@@ -293,28 +284,25 @@ class NextcloudWebdavClient {
      * @return list<array{path: string, is_dir: bool, fileid: string, etag: string, mime: ?string, size: int, modified: ?string}>
      */
     private function parseChildren(string $xml, string $requestedServerPath): array {
-        $responses = XmlHelper::xpathNodes($xml, '//d:response', ['d' => self::DAV_NS, 'oc' => self::OC_NS]);
         $requestedNorm = trim($requestedServerPath, '/');
 
         $out = [];
-        foreach ($responses as $response) {
-            $hrefNode = $response->getElementsByTagNameNS(self::DAV_NS, 'href')->item(0);
-            if ($hrefNode === null) {
-                continue;
-            }
-            $path = $this->hrefToServerPath((string) $hrefNode->nodeValue);
+        foreach (MultiStatus::parse($xml) as $response) {
+            $path = $this->hrefToServerPath($response->href);
             if ($path === null || trim($path, '/') === $requestedNorm) {
                 continue; // Selbst-Eintrag der Collection überspringen.
             }
 
+            $mime = trim((string) $response->property(self::DAV_NS, 'getcontenttype'));
+            $modified = trim((string) $response->property(self::DAV_NS, 'getlastmodified'));
             $out[] = [
                 'path' => trim($path, '/'),
-                'is_dir' => $response->getElementsByTagNameNS(self::DAV_NS, 'collection')->length > 0,
-                'fileid' => $this->firstValue($response, self::OC_NS, 'fileid'),
-                'etag' => trim($this->firstValue($response, self::DAV_NS, 'getetag'), '"'),
-                'mime' => ($m = $this->firstValue($response, self::DAV_NS, 'getcontenttype')) !== '' ? $m : null,
-                'size' => (int) $this->firstValue($response, self::DAV_NS, 'getcontentlength'),
-                'modified' => ($mod = $this->firstValue($response, self::DAV_NS, 'getlastmodified')) !== '' ? $mod : null,
+                'is_dir' => $response->isCollection,
+                'fileid' => trim((string) $response->property(self::OC_NS, 'fileid')),
+                'etag' => (string) $response->etag(),
+                'mime' => $mime !== '' ? $mime : null,
+                'size' => (int) trim((string) $response->property(self::DAV_NS, 'getcontentlength')),
+                'modified' => $modified !== '' ? $modified : null,
             ];
         }
 
@@ -340,17 +328,5 @@ class NextcloudWebdavClient {
         }
 
         return null;
-    }
-
-    /** Erster nicht-leerer Wert einer Property (leere 404-propstat ignorieren). */
-    private function firstValue(DOMElement $response, string $ns, string $local): string {
-        foreach ($response->getElementsByTagNameNS($ns, $local) as $node) {
-            $value = trim((string) $node->nodeValue);
-            if ($value !== '') {
-                return $value;
-            }
-        }
-
-        return '';
     }
 }

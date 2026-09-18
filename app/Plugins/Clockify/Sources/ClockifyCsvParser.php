@@ -157,7 +157,7 @@ class ClockifyCsvParser {
             description: $description,
             startedAt: $startedAt,
             endedAt: $endedAt,
-            billable: $this->isBillable($get('billable')),
+            billable: (bool) StringHelper::parseBool($get('billable')),
             userEmail: $email,
             tags: $this->parseTags($get('tags')),
         );
@@ -226,12 +226,6 @@ class ClockifyCsvParser {
         }
 
         return 0;
-    }
-
-    private function isBillable(?string $value): bool {
-        $value = strtolower(trim((string) $value));
-
-        return in_array($value, ['yes', '1', 'true', 'ja', 'oui', 'sì', 'si'], true);
     }
 
     /**

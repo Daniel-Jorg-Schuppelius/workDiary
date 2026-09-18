@@ -15,15 +15,16 @@ namespace App\Services\Invoicing;
 use App\Services\Invoicing\EInvoice\IncomingEInvoiceService;
 use CommonToolkit\Enums\CountryCode;
 use CommonToolkit\Helper\Data\{DateHelper, NumberHelper};
+use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
+use CommonToolkit\Helper\Shell;
 use CommonToolkit\Parsers\XLSXDocumentParser;
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
 use ERechnungToolkit\Enums\{TaxCategory, UnitCode};
 use PDFToolkit\Enums\PDFTextVariant;
 use PDFToolkit\Helper\PDFTextProvider;
 use PDFToolkit\Registries\PDFReaderRegistry;
-use Symfony\Component\Process\Process;
 use Throwable;
-use ZipArchive;
 
 /**
  * Liest PDF-, Word-, Excel- und XML-Rechnungen und erzeugt ausschließlich
@@ -35,6 +36,11 @@ use ZipArchive;
 class InvoicePdfImportService {
     /** Capability-Key des KI-Fallbacks (Registrierung: config/ai.php). */
     public const AI_CAPABILITY = 'invoicing.document_extraction';
+
+    /** ZIP-Bomb-Grenzen für OOXML (DOCX/XLSX). */
+    private const OFFICE_MAX_ENTRIES = 5000;
+
+    private const OFFICE_MAX_BYTES = 64 * 1024 * 1024;
 
     /**
      * @return array<string, mixed>
@@ -196,7 +202,7 @@ class InvoicePdfImportService {
 
         $result['lines'] = $lines;
         if ($result['net'] === null) {
-            $result['net'] = number_format($sum, 2, '.', '');
+            $result['net'] = NumberHelper::toUSFormat($sum, 2);
             $result['warnings'] = array_values(array_diff($result['warnings'], ['missing_net']));
         }
     }
@@ -241,7 +247,7 @@ class InvoicePdfImportService {
             $percent = (float) str_replace(',', '.', $percentRaw);
             $days = (int) (string) $daysRaw;
             if ($percent > 0.0 && $percent < 100.0 && $days > 0 && $days <= 365) {
-                $result['skonto'] = ['percent' => number_format($percent, 2, '.', ''), 'days' => $days];
+                $result['skonto'] = ['percent' => NumberHelper::toUSFormat($percent, 2), 'days' => $days];
             }
         }
 
@@ -265,7 +271,7 @@ class InvoicePdfImportService {
         }
 
         $incoming = new IncomingEInvoiceService;
-        $contents = (string) file_get_contents($path);
+        $contents = File::read($path);
         $document = $incoming->parse($contents, $mime, $path);
         if ($document === null) {
             return null;
@@ -307,10 +313,10 @@ class InvoicePdfImportService {
             $lines[] = [
                 'position' => $position,
                 'description' => $description !== '' ? $description : (string) __('invoicing.service'),
-                'quantity' => number_format($line->getQuantity(), 3, '.', ''),
+                'quantity' => NumberHelper::toUSFormat($line->getQuantity(), 3),
                 'unit' => $this->unitLabel($line->getUnitCode()),
                 'unit_price' => $unitPrice->getAmount(),
-                'tax_rate' => number_format($line->getTaxPercent(), 2, '.', ''),
+                'tax_rate' => NumberHelper::toUSFormat($line->getTaxPercent(), 2),
                 'tax_category' => $line->getTaxCategory()->value,
                 'discount_amount' => $discount->isPositive() ? $discount->getAmount() : null,
             ];
@@ -327,7 +333,7 @@ class InvoicePdfImportService {
             }
         }
         if ($dominant !== null) {
-            $taxRate = number_format($dominant->getPercent(), 2, '.', '');
+            $taxRate = NumberHelper::toUSFormat($dominant->getPercent(), 2);
             $reverseCharge = $dominant->getCategory() === TaxCategory::REVERSE_CHARGE;
         }
 
@@ -335,14 +341,14 @@ class InvoicePdfImportService {
         $skonto = null;
         if ($terms !== null && ($terms->getDiscountPercent() ?? 0.0) > 0.0 && (int) ($terms->getDiscountDays() ?? 0) > 0) {
             $skonto = [
-                'percent' => number_format((float) $terms->getDiscountPercent(), 2, '.', ''),
+                'percent' => NumberHelper::toUSFormat((float) $terms->getDiscountPercent(), 2),
                 'days' => (int) $terms->getDiscountDays(),
             ];
         } elseif (preg_match('/#SKONTO#TAGE=(\d+)#PROZENT=(\d+(?:[.,]\d+)?)#/u', (string) $terms?->getNote(), $skontoMatch) === 1) {
             // BR-DE-18-Note (XRechnung-CIUS): der Parser liefert Skonto bisher
             // nur als Freitext — typisierte Felder gewinnen, sobald vorhanden.
             $skonto = [
-                'percent' => number_format((float) str_replace(',', '.', $skontoMatch[2]), 2, '.', ''),
+                'percent' => NumberHelper::toUSFormat((float) str_replace(',', '.', $skontoMatch[2]), 2),
                 'days' => (int) $skontoMatch[1],
             ];
         }
@@ -502,65 +508,66 @@ class InvoicePdfImportService {
      * @return array{0: string, 1: ?string, 2: bool, 3: list<list<mixed>>, 4: ?string}
      */
     private function docxContent(string $path): array {
-        $zip = $this->openOfficeArchive($path, 'word/document.xml');
-
+        $this->assertOfficeArchive($path, 'word/document.xml');
         try {
-            $parts = [];
-            $rows = [];
-            for ($index = 0; $index < $zip->numFiles; $index++) {
-                $name = (string) $zip->getNameIndex($index);
-                if (preg_match('#^word/(?:document|header\d+|footer\d+)\.xml$#', $name) !== 1) {
-                    continue;
-                }
-                $xml = $zip->getFromIndex($index);
-                if (! is_string($xml) || str_contains($xml, '<!DOCTYPE') || str_contains($xml, '<!ENTITY')) {
-                    continue;
-                }
-                $dom = new \DOMDocument;
-                $previous = libxml_use_internal_errors(true);
-                try {
-                    if ($dom->loadXML($xml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING)) {
-                        $xpath = new \DOMXPath($dom);
-                        $paragraphs = $xpath->query('//*[local-name()="p"]');
-                        if ($paragraphs !== false) {
-                            foreach ($paragraphs as $paragraph) {
-                                if (! $paragraph instanceof \DOMNode) {
-                                    continue;
-                                }
-                                $value = trim((string) $paragraph->textContent);
-                                if ($value !== '') {
-                                    $parts[] = $value;
-                                }
+            $documentParts = ZipFile::readEntriesFromFile(
+                $path,
+                self::OFFICE_MAX_ENTRIES,
+                self::OFFICE_MAX_BYTES,
+                static fn(string $name): bool => preg_match('#^word/(?:document|header\d+|footer\d+)\.xml$#', $name) !== 1,
+            );
+        } catch (Throwable $e) {
+            throw new \RuntimeException('Invalid Office Open XML document.', 0, $e);
+        }
+
+        $parts = [];
+        $rows = [];
+        foreach ($documentParts as $xml) {
+            if (str_contains($xml, '<!DOCTYPE') || str_contains($xml, '<!ENTITY')) {
+                continue;
+            }
+            $dom = new \DOMDocument;
+            $previous = libxml_use_internal_errors(true);
+            try {
+                if ($dom->loadXML($xml, LIBXML_NONET | LIBXML_NOERROR | LIBXML_NOWARNING)) {
+                    $xpath = new \DOMXPath($dom);
+                    $paragraphs = $xpath->query('//*[local-name()="p"]');
+                    if ($paragraphs !== false) {
+                        foreach ($paragraphs as $paragraph) {
+                            if (! $paragraph instanceof \DOMNode) {
+                                continue;
                             }
-                        }
-                        $tableRows = $xpath->query('//*[local-name()="tbl"][not(ancestor::*[local-name()="tbl"])]/*[local-name()="tr"]');
-                        if ($tableRows !== false) {
-                            foreach ($tableRows as $tableRow) {
-                                if (! $tableRow instanceof \DOMElement) {
-                                    continue;
-                                }
-                                $cells = [];
-                                foreach ($tableRow->childNodes as $cell) {
-                                    if ($cell instanceof \DOMElement && $cell->localName === 'tc') {
-                                        $cells[] = trim((string) $cell->textContent);
-                                    }
-                                }
-                                if ($cells !== []) {
-                                    $rows[] = $cells;
-                                }
+                            $value = trim((string) $paragraph->textContent);
+                            if ($value !== '') {
+                                $parts[] = $value;
                             }
                         }
                     }
-                } finally {
-                    libxml_clear_errors();
-                    libxml_use_internal_errors($previous);
+                    $tableRows = $xpath->query('//*[local-name()="tbl"][not(ancestor::*[local-name()="tbl"])]/*[local-name()="tr"]');
+                    if ($tableRows !== false) {
+                        foreach ($tableRows as $tableRow) {
+                            if (! $tableRow instanceof \DOMElement) {
+                                continue;
+                            }
+                            $cells = [];
+                            foreach ($tableRow->childNodes as $cell) {
+                                if ($cell instanceof \DOMElement && $cell->localName === 'tc') {
+                                    $cells[] = trim((string) $cell->textContent);
+                                }
+                            }
+                            if ($cells !== []) {
+                                $rows[] = $cells;
+                            }
+                        }
+                    }
                 }
+            } finally {
+                libxml_clear_errors();
+                libxml_use_internal_errors($previous);
             }
-
-            return [implode("\n", $parts), 'docx', false, $rows, null];
-        } finally {
-            $zip->close();
         }
+
+        return [implode("\n", $parts), 'docx', false, $rows, null];
     }
 
     /**
@@ -605,15 +612,13 @@ class InvoicePdfImportService {
 
     /** Legacy-DOC: rein lesender Konverter, falls catdoc auf dem Host verfügbar ist. */
     private function legacyWordText(string $path): string {
-        $process = new Process(['catdoc', $path]);
-        $process->setTimeout(30);
         try {
-            $process->mustRun();
+            $result = Shell::run(['catdoc', $path], 30.0);
         } catch (Throwable) {
             return '';
         }
 
-        return $process->getOutput();
+        return $result->isSuccessful() ? $result->output : '';
     }
 
     /**
@@ -649,33 +654,19 @@ class InvoicePdfImportService {
         return [implode("\n", $lines), 'phpspreadsheet', false, $rows, null];
     }
 
+    /** ZIP-Bomb-/Format-Guard vor jedem OOXML-Parser — über die Einträge, ohne zu entpacken. */
     private function assertOfficeArchive(string $path, string $requiredEntry): void {
-        $zip = $this->openOfficeArchive($path, $requiredEntry);
-        $zip->close();
-    }
-
-    /** ZIP-Bomb-/Format-Guard vor jedem OOXML-Parser. */
-    private function openOfficeArchive(string $path, string $requiredEntry): ZipArchive {
-        $zip = new ZipArchive;
-        if ($zip->open($path) !== true) {
+        try {
+            $entries = ZipFile::listContents($path);
+        } catch (Throwable $e) {
+            throw new \RuntimeException('Invalid Office Open XML document.', 0, $e);
+        }
+        if (count($entries) > self::OFFICE_MAX_ENTRIES || ! in_array($requiredEntry, array_column($entries, 'name'), true)) {
             throw new \RuntimeException('Invalid Office Open XML document.');
         }
-        if ($zip->locateName($requiredEntry) === false || $zip->numFiles > 5000) {
-            $zip->close();
-            throw new \RuntimeException('Invalid Office Open XML document.');
+        if (array_sum(array_column($entries, 'size')) > self::OFFICE_MAX_BYTES) {
+            throw new \RuntimeException('Office Open XML document exceeds extraction limit.');
         }
-
-        $uncompressed = 0;
-        for ($index = 0; $index < $zip->numFiles; $index++) {
-            $stat = $zip->statIndex($index);
-            $uncompressed += (int) ($stat['size'] ?? 0);
-            if ($uncompressed > 64 * 1024 * 1024) {
-                $zip->close();
-                throw new \RuntimeException('Office Open XML document exceeds extraction limit.');
-            }
-        }
-
-        return $zip;
     }
 
     /**
@@ -807,6 +798,6 @@ class InvoicePdfImportService {
     }
 
     private function decimal(float $value): string {
-        return number_format(max(0.0, $value), 2, '.', '');
+        return NumberHelper::toUSFormat(max(0.0, $value), 2);
     }
 }

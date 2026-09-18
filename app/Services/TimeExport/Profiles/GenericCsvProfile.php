@@ -13,6 +13,7 @@ namespace App\Services\TimeExport\Profiles;
 use App\Models\{TimeExport, TimeExportLine};
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Generisches CSV-Profil (MVP-019).
@@ -69,7 +70,7 @@ class GenericCsvProfile implements ExportProfile {
                 (string) ($line->cost_center ?? ''),
                 $line->period_start->format('Y-m-d'),
                 $line->period_end->format('Y-m-d'),
-                number_format((float) $line->quantity, 4, '.', ''),
+                NumberHelper::toUSFormat((float) $line->quantity, 4),
                 $line->unit,
                 (string) ($line->note ?? ''),
             ]);

@@ -13,6 +13,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, Customer, Organization, ShiftType, TimeAccount, User, WorkSchedule};
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -147,7 +148,7 @@ class AuditDiffController extends Controller {
             return $value ? '1' : '0';
         }
         if (is_array($value)) {
-            return (string) json_encode($value, JSON_UNESCAPED_UNICODE);
+            return JsonHelper::encode($value, JSON_UNESCAPED_UNICODE);
         }
 
         return (string) $value;

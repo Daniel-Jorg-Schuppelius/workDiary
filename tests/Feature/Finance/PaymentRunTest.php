@@ -157,6 +157,18 @@ class PaymentRunTest extends TestCase {
         );
     }
 
+    /**
+     * Toolkit-Audit 2026-09: Der Zahlbetrag wurde in float gerundet statt der
+     * Skontobetrag — im Halbcent-Fall passten Überweisung und Skonto nicht
+     * zu {@see \App\Models\Invoice::skontoAmount()}.
+     */
+    public function test_discount_amount_is_rounded_before_it_is_deducted(): void {
+        $invoice = $this->invoice(['amount_gross' => '1.00', 'discount_percent' => '0.50', 'discount_days' => 10]);
+
+        // Skonto 0,005 € → 0,01 €; gezahlt werden 0,99 €.
+        $this->assertSame(0.99, app(PaymentProposalService::class)->proposalFor($invoice)['amount']);
+    }
+
     public function test_expired_discount_falls_back_to_the_due_date(): void {
         $invoice = $this->invoice([
             'issue_date' => CarbonImmutable::today()->subDays(30)->toDateString(),

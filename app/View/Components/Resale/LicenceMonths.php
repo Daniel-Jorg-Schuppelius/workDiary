@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\View\Components\Resale;
 
 use App\Services\Reselling\Register\LicenseMonths;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\View\Component;
 
@@ -37,7 +38,7 @@ final class LicenceMonths extends Component {
 
     /** Zahl ohne Nachkomma-Nullen, deutsches Format wie `Money::format()`. */
     public static function compact(float|int|string $value): string {
-        return rtrim(rtrim(number_format((float) $value, 2, ',', '.'), '0'), ',');
+        return NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true, trimTrailingZeros: true);
     }
 
     public function text(): string {

@@ -15,11 +15,13 @@ namespace App\Services\Learning;
 use App\Enums\Learning\{LearningEnrollmentSource, LearningEnrollmentStatus, LearningQuestionKind, LearningUnitKind};
 use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningQuiz, LearningSection, LearningUnit};
 use App\Models\{Organization, User};
-use CommonToolkit\Helper\Data\StringHelper;
+use CommonToolkit\Exceptions\Parsers\DocumentLimitExceededException;
+use CommonToolkit\Helper\Data\{EmailHelper, StringHelper};
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
-use ZipArchive;
+use Throwable;
 
 /**
  * LearnDash-Importer (Feature 149, MVP-792). Liest das Export-ZIP von
@@ -42,6 +44,11 @@ use ZipArchive;
  * nur.
  */
 class LearnDashImportService {
+    /** Obergrenzen für die entpackten .ld-Dateien eines Exports (ZIP-Bomben-Schutz). */
+    private const MAX_UNPACKED_BYTES = 512 * 1024 * 1024;
+
+    private const MAX_ENTRIES = 5000;
+
     /** ProQuiz-Kopf: „WPQ" + 10 Ziffern, danach Base64 (JSON oder serialize). */
     private const PROQUIZ_HEADER = 13;
 
@@ -103,24 +110,33 @@ class LearnDashImportService {
      * @return array{courses: list<array<string, mixed>>, lessons: list<array<string, mixed>>, topics: list<array<string, mixed>>, quizzes: list<array<string, mixed>>, proquiz: array<int, array<string, mixed>>, activity: list<array<string, mixed>>, users: array<int, string>}
      */
     private function read(string $zipPath): array {
-        $zip = new ZipArchive;
-        if ($zip->open($zipPath) !== true) {
+        // Nur die .ld-Dateien, mit Obergrenze: der Upload darf 200 MB groß sein,
+        // entpackt las getFromName bisher ohne jede Grenze (ZIP-Bombe).
+        try {
+            $entries = ZipFile::readEntriesFromFile(
+                $zipPath,
+                self::MAX_ENTRIES,
+                self::MAX_UNPACKED_BYTES,
+                static fn (string $name): bool => ! str_ends_with($name, '.ld'),
+            );
+        } catch (DocumentLimitExceededException) {
+            throw ValidationException::withMessages(['file' => (string) __('learning.errors.learndash_zip_too_large', ['mb' => intdiv(self::MAX_UNPACKED_BYTES, 1024 * 1024)])]);
+        } catch (Throwable) {
             throw ValidationException::withMessages(['file' => (string) __('learning.errors.learndash_zip')]);
         }
 
-        $lines = function (string $name) use ($zip): array {
-            $raw = $zip->getFromName($name);
-            if ($raw === false) {
+        $lines = function (string $name) use ($entries): array {
+            $raw = $entries[$name] ?? null;
+            if ($raw === null) {
                 // Ältere Exporte legen die Dateien in einem Unterordner ab.
-                for ($i = 0; $i < $zip->numFiles; $i++) {
-                    $entry = (string) $zip->getNameIndex($i);
+                foreach ($entries as $entry => $content) {
                     if (str_ends_with($entry, '/' . $name)) {
-                        $raw = $zip->getFromIndex($i);
+                        $raw = $content;
                         break;
                     }
                 }
             }
-            if ($raw === false || trim($raw) === '') {
+            if ($raw === null || trim($raw) === '') {
                 return [];
             }
             $rows = [];
@@ -156,15 +172,13 @@ class LearnDashImportService {
             $user = is_array($row['user'] ?? null) ? $row['user'] : $row;
             $data = is_array($user['data'] ?? null) ? $user['data'] : $user;
             $id = (int) ($data['ID'] ?? $user['ID'] ?? 0);
-            $email = strtolower(trim((string) ($data['user_email'] ?? $user['user_email'] ?? '')));
+            $email = EmailHelper::normalize((string) ($data['user_email'] ?? $user['user_email'] ?? ''));
             if ($id > 0 && $email !== '') {
                 $users[$id] = $email;
             }
         }
 
-        // Alles lesen, BEVOR das Archiv geschlossen wird — die Closures
-        // greifen sonst auf ein geschlossenes ZipArchive zu.
-        $result = [
+        return [
             'courses' => $posts('course'),
             'lessons' => $posts('lesson'),
             'topics' => $posts('topic'),
@@ -173,9 +187,6 @@ class LearnDashImportService {
             'activity' => $lines('user_activity.ld'),
             'users' => $users,
         ];
-        $zip->close();
-
-        return $result;
     }
 
     /**
@@ -590,7 +601,7 @@ class LearnDashImportService {
     private function plain(string $html): string {
         $text = strip_tags((string) preg_replace('/<br\s*\/?>/i', "\n", $html));
 
-        return trim(StringHelper::normalizeWhitespace(html_entity_decode($text, ENT_QUOTES | ENT_HTML5, 'UTF-8')));
+        return trim(StringHelper::normalizeWhitespace(StringHelper::htmlEntitiesToText($text)));
     }
 
     private function title(mixed $raw, string $fallback): string {

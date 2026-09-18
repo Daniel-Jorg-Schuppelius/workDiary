@@ -11,8 +11,12 @@
 namespace App\Services\Backup;
 
 use App\Services\Backup\Exceptions\BackupPreflightException;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
+use CommonToolkit\Helper\Shell;
 use Illuminate\Support\Facades\DB;
-use Symfony\Component\Process\{ExecutableFinder, Process};
+use Symfony\Component\Process\ExecutableFinder;
+use Throwable;
 
 /**
  * Snapshot-Erstellung der Cloud-Backups (Feature 017 Phase 32, MVP-362).
@@ -32,10 +36,12 @@ class BackupSnapshotBuilder {
      */
     public function preflight(): void {
         $workDir = $this->workRoot();
-        if (!is_dir($workDir) && !@mkdir($workDir, 0770, true)) {
+        try {
+            Folder::create($workDir, 0770, true);
+        } catch (Throwable) {
             throw new BackupPreflightException("Backup-Arbeitsverzeichnis nicht anlegbar: {$workDir}");
         }
-        if (!is_writable($workDir)) {
+        if (!Folder::isWritable($workDir)) {
             throw new BackupPreflightException("Backup-Arbeitsverzeichnis nicht beschreibbar: {$workDir}");
         }
 
@@ -60,12 +66,14 @@ class BackupSnapshotBuilder {
 
         $dir = $this->workRoot() . '/' . $snapshotUuid;
         $metaDir = $dir . '/meta';
-        if (!@mkdir($metaDir, 0770, true) && !is_dir($metaDir)) {
+        try {
+            Folder::create($metaDir, 0770, true);
+        } catch (Throwable) {
             throw new BackupPreflightException("Snapshot-Verzeichnis nicht anlegbar: {$metaDir}");
         }
 
         $dumpPath = $this->dumpDatabase($metaDir);
-        file_put_contents($metaDir . '/inventory.json', json_encode($this->inventory($snapshotUuid), JSON_THROW_ON_ERROR | JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        File::write($metaDir . '/inventory.json', JsonHelper::encode($this->inventory($snapshotUuid), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
 
         $tarPath = $dir . '/snapshot.tar';
         $command = [$this->resolveBinary('tar'), '-cf', $tarPath];
@@ -80,15 +88,14 @@ class BackupSnapshotBuilder {
         array_push($command, '-C', $filesRoot, ...$filesPaths);
         array_push($command, '-C', $dir, 'meta');
 
-        $process = new Process($command, timeout: self::PROCESS_TIMEOUT);
-        $process->run();
-        if (!$process->isSuccessful()) {
-            throw new BackupPreflightException('tar-Aufruf fehlgeschlagen: ' . mb_substr(trim($process->getErrorOutput()), 0, 300));
+        $result = Shell::run($command, self::PROCESS_TIMEOUT);
+        if (!$result->isSuccessful()) {
+            throw new BackupPreflightException('tar-Aufruf fehlgeschlagen: ' . ($result->timedOut ? 'Timeout' : mb_substr(trim($result->errorOutput), 0, 300)));
         }
 
         return [
             'tar_path' => $tarPath,
-            'plain_size' => (int) filesize($tarPath),
+            'plain_size' => File::size($tarPath),
             'sources' => ['database' => basename($dumpPath), 'files' => 'storage/app', 'inventory' => 'meta/inventory.json'],
         ];
     }
@@ -104,7 +111,7 @@ class BackupSnapshotBuilder {
             $partSize = 1_048_576; // Untergrenze 1 MiB — Schutz vor Fehlkonfiguration
         }
 
-        $in = @fopen($tarPath, 'rb');
+        $in = File::openStream($tarPath, 'rb');
         if ($in === false) {
             throw new BackupPreflightException("Snapshot-Archiv nicht lesbar: {$tarPath}");
         }
@@ -115,7 +122,7 @@ class BackupSnapshotBuilder {
             do {
                 $partNo++;
                 $partPath = $tarPath . '.part-' . $partNo;
-                $out = fopen($partPath, 'wb');
+                $out = File::openStream($partPath, 'wb');
                 if ($out === false) {
                     throw new BackupPreflightException("Teil-Datei nicht schreibbar: {$partPath}");
                 }
@@ -130,7 +137,7 @@ class BackupSnapshotBuilder {
                 }
                 fclose($out);
                 if ($written === 0 && $partNo > 1) {
-                    @unlink($partPath); // leerer Überhang nach exakt aufgehender Größe
+                    File::delete($partPath); // leerer Überhang nach exakt aufgehender Größe
                     $partNo--;
                     break;
                 }
@@ -146,18 +153,15 @@ class BackupSnapshotBuilder {
     /** Räumt das Arbeitsverzeichnis eines Snapshots vollständig ab. */
     public function cleanup(string $snapshotUuid): void {
         $dir = $this->workRoot() . '/' . $snapshotUuid;
-        if (!is_dir($dir)) {
+        if (!Folder::exists($dir)) {
             return;
         }
 
-        $items = new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator($dir, \FilesystemIterator::SKIP_DOTS),
-            \RecursiveIteratorIterator::CHILD_FIRST,
-        );
-        foreach ($items as $item) {
-            $item->isDir() ? @rmdir($item->getPathname()) : @unlink($item->getPathname());
+        try {
+            Folder::delete($dir, true);
+        } catch (Throwable) {
+            // Best effort: Reste räumt der nächste Lauf bzw. die Retention ab.
         }
-        @rmdir($dir);
     }
 
     private function dumpDatabase(string $targetDir): string {
@@ -168,23 +172,22 @@ class BackupSnapshotBuilder {
         if ($driver === 'sqlite') {
             $source = (string) ($cfg['database'] ?? '');
             $target = $targetDir . '/db.sqlite';
-            if (!@copy($source, $target)) {
+            try {
+                File::copy($source, $target);
+            } catch (Throwable) {
                 throw new BackupPreflightException("SQLite-Datenbank nicht kopierbar: {$source}");
             }
 
             return $target;
         }
 
+        // Das Dump-Binary schreibt die Datei selbst (--file/--result-file):
+        // Schreibfehler (Platte voll) enden so im Exit-Code statt still.
         $target = $targetDir . '/db.sql';
-        $out = fopen($target, 'wb');
-        if ($out === false) {
-            throw new BackupPreflightException("Dump-Datei nicht schreibbar: {$target}");
-        }
-
         if ($driver === 'pgsql') {
             $command = [
                 $this->resolveBinary('pg_dump'),
-                '--format=plain', '--no-owner',
+                '--format=plain', '--no-owner', '--file=' . $target,
                 '-h', (string) ($cfg['host'] ?? '127.0.0.1'),
                 '-p', (string) ($cfg['port'] ?? '5432'),
                 '-U', (string) ($cfg['username'] ?? ''),
@@ -194,7 +197,7 @@ class BackupSnapshotBuilder {
         } else {
             $command = [
                 $this->resolveBinary('mysqldump'),
-                '--single-transaction', '--quick', '--no-tablespaces',
+                '--single-transaction', '--quick', '--no-tablespaces', '--result-file=' . $target,
                 '-h', (string) ($cfg['host'] ?? '127.0.0.1'),
                 '-P', (string) ($cfg['port'] ?? '3306'),
                 '-u', (string) ($cfg['username'] ?? ''),
@@ -204,18 +207,15 @@ class BackupSnapshotBuilder {
             $env = ['MYSQL_PWD' => (string) ($cfg['password'] ?? '')];
         }
 
-        $process = new Process($command, env: $env, timeout: self::PROCESS_TIMEOUT);
-        $exitCode = $process->run(function (string $type, string $buffer) use ($out): void {
-            if ($type === Process::OUT) {
-                fwrite($out, $buffer);
+        $result = Shell::run($command, self::PROCESS_TIMEOUT, $env);
+        if (!$result->isSuccessful() || !File::isFile($target)) {
+            try {
+                File::delete($target);
+            } catch (Throwable) {
+                // Teil-Dump bleibt im Snapshot-Verzeichnis; cleanup() räumt es ab.
             }
-        });
-        fclose($out);
 
-        if ($exitCode !== 0) {
-            @unlink($target);
-
-            throw new BackupPreflightException('DB-Dump fehlgeschlagen: ' . mb_substr(trim($process->getErrorOutput()), 0, 300));
+            throw new BackupPreflightException('DB-Dump fehlgeschlagen: ' . ($result->timedOut ? 'Timeout' : mb_substr(trim($result->errorOutput), 0, 300)));
         }
 
         return $target;
@@ -259,7 +259,7 @@ class BackupSnapshotBuilder {
     private function resolveBinary(string $name): string {
         $configured = (string) config("backup_targets.binaries.{$name}", $name);
         if (str_contains($configured, '/')) {
-            if (!is_file($configured) || !is_executable($configured)) {
+            if (!File::isFile($configured) || !is_executable($configured)) {
                 throw new BackupPreflightException("Backup-Binary nicht ausführbar: {$configured} ({$name})");
             }
 
@@ -278,7 +278,7 @@ class BackupSnapshotBuilder {
 
     private function assertSqliteFile(): void {
         $database = (string) config('database.connections.' . $this->dumpConnection() . '.database', '');
-        if ($database === '' || $database === ':memory:' || !is_file($database)) {
+        if ($database === '' || $database === ':memory:' || !File::isFile($database)) {
             throw new BackupPreflightException(
                 'SQLite-Backup braucht eine dateibasierte Datenbank (kein :memory:).',
             );

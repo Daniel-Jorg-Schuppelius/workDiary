@@ -12,6 +12,7 @@ namespace App\Services\Protocol;
 
 use App\Enums\Protocol\{ProtocolEventType, ProtocolItemPhotoPhase};
 use App\Models\{Attachment, Protocol, ProtocolItem, ProtocolItemPhoto, User};
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\{Carbon, Str};
@@ -78,6 +79,12 @@ class ProtocolItemPhotoService {
         $options['exif'] = $this->readExifFromPath($absolute, (bool) ($options['allow_geo'] ?? false));
         $this->sanitizePhoto($absolute, $mime);
         clearstatcache(true, $absolute);
+        try {
+            // Größe NACH dem Stripping; bei Lesefehler die Upload-Größe.
+            $size = ToolkitFile::size($absolute) ?: (int) $file->getSize();
+        } catch (\Throwable) {
+            $size = (int) $file->getSize();
+        }
 
         $attachment = Attachment::query()->create([
             'attachable_type' => ProtocolItem::class,
@@ -85,9 +92,9 @@ class ProtocolItemPhotoService {
             'user_id' => $actor->id,
             'disk' => $disk,
             'path' => $path,
-            'original_name' => \App\Support\Filename::sanitize($file->getClientOriginalName()),
+            'original_name' => ToolkitFile::sanitizeDisplayName($file->getClientOriginalName()),
             'mime' => $mime,
-            'size' => (int) (@filesize($absolute) ?: $file->getSize()),
+            'size' => $size,
         ]);
 
         return $this->attach($item, $attachment, $phase, $actor, $options);
@@ -354,8 +361,8 @@ class ProtocolItemPhotoService {
             $lat = $this->gpsToDecimal((array) $exif['GPSLatitude'], (string) $exif['GPSLatitudeRef']);
             $lng = $this->gpsToDecimal((array) $exif['GPSLongitude'], (string) $exif['GPSLongitudeRef']);
             if ($lat !== null && $lng !== null) {
-                $out['geo_lat'] = number_format($lat, 6, '.', '');
-                $out['geo_lng'] = number_format($lng, 6, '.', '');
+                $out['geo_lat'] = NumberHelper::toUSFormat($lat, 6);
+                $out['geo_lng'] = NumberHelper::toUSFormat($lng, 6);
             }
         }
         return $out;

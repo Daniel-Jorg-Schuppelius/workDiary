@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Mail;
 
 use App\Models\EmailConnection;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Carbon;
 use Throwable;
 use Webklex\PHPIMAP\{ClientManager, Message};
@@ -148,7 +149,7 @@ class ImapMailboxGateway implements MailboxGateway {
     private function splitAddress(string $raw): array {
         $raw = trim($raw);
         if (preg_match('/^(.*)<([^>]+)>\s*$/', $raw, $m) === 1) {
-            return [strtolower(trim($m[2])), trim($m[1], " \"'")];
+            return [EmailHelper::normalize($m[2]), trim($m[1], " \"'")];
         }
 
         return [strtolower($raw), ''];

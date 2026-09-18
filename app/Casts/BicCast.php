@@ -10,6 +10,7 @@
 
 namespace App\Casts;
 
+use CommonToolkit\Helper\Data\BankHelper;
 use CommonToolkit\ValueObjects\Bic;
 use Illuminate\Database\Eloquent\Model;
 
@@ -44,7 +45,7 @@ class BicCast extends ValueObjectCast {
      * @param  array<string, mixed>  $attributes
      */
     protected function storeScalar(string $raw, Model $model, array $attributes): string {
-        $normalised = strtoupper(str_replace(' ', '', $raw));
+        $normalised = BankHelper::normalizeBIC($raw) ?? '';
 
         return $this->toValueObject($normalised, $model, $attributes) === null ? $raw : $normalised;
     }

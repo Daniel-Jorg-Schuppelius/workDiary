@@ -11,6 +11,7 @@
 namespace App\Services\MeterReading;
 
 use App\Models\{Asset, MeterReading, User};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
@@ -47,10 +48,10 @@ class MeterReadingService {
             'organization_id' => $asset->organization_id,
             'asset_id' => $asset->id,
             'read_at' => $readAt,
-            'value' => number_format($value, 4, '.', ''),
+            'value' => NumberHelper::toUSFormat($value, 4),
             'unit' => $unit,
-            'previous_value' => $previousValue !== null ? number_format($previousValue, 4, '.', '') : null,
-            'consumption' => $consumption !== null ? number_format($consumption, 4, '.', '') : null,
+            'previous_value' => $previousValue !== null ? NumberHelper::toUSFormat($previousValue, 4) : null,
+            'consumption' => $consumption !== null ? NumberHelper::toUSFormat($consumption, 4) : null,
             'read_by_user_id' => $actor->id,
             'photo_path' => $payload['photo_path'] ?? null,
             'notes' => $payload['notes'] ?? null,

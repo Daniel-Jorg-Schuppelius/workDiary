@@ -10,6 +10,8 @@
 
 namespace App\Services\Support;
 
+use CommonToolkit\Helper\Data\StringHelper;
+
 /**
  * Redaktiert sensible Inhalte aus Log-Zeilen vor Aufnahme in einen
  * Supportbericht (MVP-045 §3). Stateful: ID-Surrogate bleiben innerhalb
@@ -130,8 +132,7 @@ class SupportReportLogFilter {
         return preg_replace_callback(
             '/(?<![A-Za-z0-9])\+\d[\d \-\/]{6,18}\d(?![A-Za-z0-9])/',
             static function (array $m): string {
-                $digits = preg_replace('/\D+/', '', $m[0]);
-                return strlen($digits ?? '') >= 7 ? '<redacted:phone>' : $m[0];
+                return strlen(StringHelper::extractDigits($m[0])) >= 7 ? '<redacted:phone>' : $m[0];
             },
             $line
         ) ?? $line;

@@ -11,6 +11,7 @@
 namespace App\Services\Procurement;
 
 use App\Models\{PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine};
+use CommonToolkit\Helper\Data\NumberHelper;
 use ERechnungToolkit\Entities\DespatchLine;
 use ERechnungToolkit\Parsers\DespatchAdviceParser;
 use Illuminate\Support\Collection;
@@ -80,7 +81,7 @@ class DespatchAdviceImportService {
             if ($orderLine === null) {
                 continue;
             }
-            $lineData[] = ['line' => $orderLine, 'qty' => $this->formatQty($despatchLine->getDeliveredQuantity())];
+            $lineData[] = ['line' => $orderLine, 'qty' => NumberHelper::toUSFormat($despatchLine->getDeliveredQuantity(), AdviceService::SCALE)];
         }
 
         if ($lineData === []) {
@@ -125,7 +126,4 @@ class DespatchAdviceImportService {
         return null;
     }
 
-    private function formatQty(float $quantity): string {
-        return number_format($quantity, AdviceService::SCALE, '.', '');
-    }
 }

@@ -15,6 +15,7 @@ namespace App\Services\Mail;
 use App\Models\{Customer, EmailConnection, IntegrationInboxItem, Organization};
 use App\Services\Integration\Match\{EntityMatcher, MatchStrategy};
 use App\Services\Integration\Profiles\CustomerMatchProfile;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Database\Eloquent\Model;
 
 /**
@@ -348,7 +349,7 @@ class MailIntakeService {
      * sowie jede Adresse, die im Verlauf schon angeschrieben wurde.
      */
     private function senderBelongsToTicket(\App\Models\ServiceTicket $ticket, ParsedMessage $message): bool {
-        $sender = mb_strtolower(trim((string) $message->fromEmail));
+        $sender = EmailHelper::normalize((string) $message->fromEmail);
         if ($sender === '') {
             return false;
         }
@@ -388,7 +389,7 @@ class MailIntakeService {
         }
 
         foreach ($known as $candidate) {
-            $candidate = mb_strtolower(trim($candidate));
+            $candidate = EmailHelper::normalize($candidate);
             if ($candidate !== '' && hash_equals($candidate, $sender)) {
                 return true;
             }

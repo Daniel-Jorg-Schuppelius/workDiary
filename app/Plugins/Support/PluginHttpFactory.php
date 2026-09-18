@@ -10,7 +10,7 @@
 
 namespace App\Plugins\Support;
 
-use APIToolkit\API\Authentication\OAuth2\OAuth2ClientCredentialsGrant;
+use APIToolkit\API\Authentication\OAuth2\{OAuth2AuthorizationCodeGrant, OAuth2ClientCredentialsGrant, OAuth2GrantAbstract};
 use APIToolkit\Contracts\Abstracts\API\ClientAbstract;
 use App\Support\UrlSafety;
 use GuzzleHttp\Client as GuzzleClient;
@@ -140,8 +140,30 @@ class PluginHttpFactory {
         return $this->configureGrant(new OAuth2ClientCredentialsGrant($clientId, $clientSecret, $tokenUrl), $pluginId);
     }
 
-    /** Transport-Defaults analog {@see PluginApiClient}: User-Agent, Timeout 10 s, kein Throttling. */
-    protected function configureGrant(OAuth2ClientCredentialsGrant $grant, string $pluginId): OAuth2ClientCredentialsGrant {
+    /**
+     * Authorization-Code-Grant (OAuth2/OpenID Connect) eines Kerndienstes
+     * gegen Authorize- und Token-Endpunkt — Transport-Defaults und SSRF-
+     * Schranke wie {@see coreClient()}; Tests ersetzen den Transport über
+     * {@see \Tests\Support\FakePluginHttp}.
+     */
+    public function authorizationCodeGrant(string $serviceId, string $clientId, string $clientSecret, string $authorizeUrl, string $tokenUrl, string $redirectUri): OAuth2AuthorizationCodeGrant {
+        $this->assertTargetAllowed($serviceId, $tokenUrl, $this->privateNetworkAllowed($serviceId));
+
+        $grant = $this->configureGrant(new OAuth2AuthorizationCodeGrant($clientId, $clientSecret, $authorizeUrl, $tokenUrl, $redirectUri), $serviceId);
+        $grant->setUserAgent('workDiary/' . $serviceId);
+
+        return $grant;
+    }
+
+    /**
+     * Transport-Defaults analog {@see PluginApiClient}: User-Agent, Timeout 10 s, kein Throttling.
+     *
+     * @template TGrant of OAuth2GrantAbstract
+     *
+     * @param  TGrant  $grant
+     * @return TGrant
+     */
+    protected function configureGrant(OAuth2GrantAbstract $grant, string $pluginId): OAuth2GrantAbstract {
         $grant->setUserAgent('workDiary-plugin/' . $pluginId);
         $grant->setTimeout(10.0);
         $grant->setRequestInterval(0.0);

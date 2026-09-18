@@ -12,6 +12,7 @@ declare(strict_types=1);
 
 namespace App\Plugins\Support;
 
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Support\ServiceProvider;
 use ReflectionClass;
 use RuntimeException;
@@ -38,12 +39,13 @@ abstract class PluginServiceProviderBase extends ServiceProvider {
 
     final public function boot(): void {
         $routes = $this->pluginDir() . '/routes.php';
-        if (is_file($routes)) {
+        if (File::isFile($routes)) {
             $this->loadRoutesFrom($routes);
         }
 
+        // isDirectory statt exists: kein Log je Request und Plugin ohne Views.
         $views = $this->pluginDir() . '/Resources/views';
-        if (is_dir($views)) {
+        if (Folder::isDirectory($views)) {
             $this->loadViewsFrom($views, $this->pluginId());
         }
 

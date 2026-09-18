@@ -15,6 +15,7 @@ namespace App\Services\Import\Specs;
 use App\Enums\Import\{ImportEntity, ImportErrorCode};
 use App\Models\{Material, Organization};
 use App\Services\Import\{ImportOutcome, ValidationIssue};
+use CommonToolkit\Helper\Data\StringHelper;
 use Throwable;
 
 /**
@@ -55,7 +56,7 @@ class MaterialSpec extends AbstractEntitySpec {
         foreach ($this->columns() as $col) {
             $raw = $row[$col] ?? null;
             $out[$col] = match ($col) {
-                'is_active' => $raw === null || $raw === '' ? null : $this->boolish($raw),
+                'is_active' => $raw === null || $raw === '' ? null : (bool) StringHelper::parseBool($raw),
                 'default_unit_price', 'tax_rate' => $this->decimal($this->trimmedString($raw)),
                 default => $this->trimmedString($raw),
             };

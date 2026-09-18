@@ -14,6 +14,7 @@ use APIToolkit\API\Authentication\BasicAuthentication;
 use App\Plugins\OpenProject\Exceptions\{OpenProjectApiException, OpenProjectRateLimitException};
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory, RemoteTimeFingerprint, RemoteTimeWriter};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\Client\Response;
 
 /**
@@ -142,7 +143,7 @@ class OpenProjectApiClient implements RemoteTimeWriter {
         }
 
         $out = [];
-        foreach ($this->collect('/time_entries', ['filters' => json_encode($filters)]) as $el) {
+        foreach ($this->collect('/time_entries', ['filters' => JsonHelper::encode($filters)]) as $el) {
             $entry = $this->mapTimeEntry((array) $el);
             if ($entry !== null) {
                 $out[] = $entry;

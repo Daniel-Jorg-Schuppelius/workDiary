@@ -281,7 +281,7 @@ final class FormFieldDefinition {
 
         if ($type === FormFieldType::Number) {
             $unit = trim((string) ($field['unit'] ?? ''));
-            $number = rtrim(rtrim(NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true), '0'), ',');
+            $number = NumberHelper::toGermanFormat((float) $value, 2, withThousandsSeparator: true, trimTrailingZeros: true);
 
             return $unit === '' ? $number : $number . ' ' . $unit;
         }

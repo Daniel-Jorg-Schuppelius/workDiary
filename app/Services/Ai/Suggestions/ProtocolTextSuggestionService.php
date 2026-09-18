@@ -25,6 +25,7 @@ use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
 use App\Services\Ai\Support\CustomerNameMasker;
 use App\Services\Classification\ClassificationResolver;
 use App\Services\Protocol\ProtocolService;
+use CommonToolkit\Helper\Data\JsonHelper;
 
 /**
  * KI-Welle 1 für Protokolle (Feature 143, MVP-711): veredelt den Mangel-/
@@ -141,7 +142,7 @@ class ProtocolTextSuggestionService {
             $item,
             self::CAPABILITY_CLASSIFY,
             $source,
-            (string) json_encode(array_values($entries), JSON_UNESCAPED_UNICODE),
+            JsonHelper::encode(array_values($entries), JSON_UNESCAPED_UNICODE),
             $result,
             $user,
         );
@@ -239,7 +240,7 @@ class ProtocolTextSuggestionService {
         if ($remaining === []) {
             $this->markDecided($suggestion, AiTextSuggestion::STATUS_ACCEPTED, $user);
         } else {
-            $suggestion->forceFill(['suggestion' => (string) json_encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
+            $suggestion->forceFill(['suggestion' => JsonHelper::encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
         }
 
         $this->auditDecision($suggestion, 'accepted', $user, ['kind' => $kind, 'value' => $value]);

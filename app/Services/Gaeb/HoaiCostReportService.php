@@ -14,6 +14,7 @@ namespace App\Services\Gaeb;
 
 use App\Models\Costing\CostEstimate;
 use App\Models\Project;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Kostenermittlung nach den vier HOAI-Stufen als Bericht (Feature 109,
@@ -129,7 +130,7 @@ final class HoaiCostReportService {
 
     /** „311" wird zu „300" — der Bericht vergleicht auf der ersten Ebene. */
     private function codeOf(?string $code): string {
-        $digits = preg_replace('/\D/', '', (string) $code) ?? '';
+        $digits = StringHelper::extractDigits((string) $code);
 
         return $digits === '' ? '' : substr($digits, 0, 1) . str_repeat('0', max(0, strlen($digits) - 1));
     }

@@ -18,6 +18,7 @@ use App\Support\Query\DateRange;
 use App\Support\XlsxExport;
 use Carbon\Carbon;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -273,7 +274,7 @@ class MonthByUserTeamReportController extends Controller {
                 'xLabel' => __('Mitarbeiter'),
                 'rows' => $heatmapRows,
                 'colLabels' => array_values($monthLabels),
-                'format' => fn(float $minutes): string => intdiv((int) $minutes, 60) . ':' . str_pad((string) ((int) $minutes % 60), 2, '0', STR_PAD_LEFT),
+                'format' => fn(float $minutes): string => Duration::ofMinutes((int) $minutes)->toClock(),
             ],
         ], $filename, 'landscape', $request, 'month-by-user-team', $exportFilters);
     }

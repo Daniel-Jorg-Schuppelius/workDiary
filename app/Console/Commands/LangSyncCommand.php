@@ -11,6 +11,7 @@
 namespace App\Console\Commands;
 
 use App\Support\{Locales, Translations};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 
 /**
@@ -92,7 +93,7 @@ class LangSyncCommand extends Command {
         // bestehende Dateien NIE anfassen (handformatierte Übersetzungen bleiben erhalten).
         $created = 0;
         foreach (Translations::namespaceFiles() as $file) {
-            if (is_file(Translations::langPath($code) . '/' . $file)) {
+            if (File::isFile(Translations::langPath($code) . '/' . $file)) {
                 continue;
             }
             Translations::writeRequireStub($code, $file);

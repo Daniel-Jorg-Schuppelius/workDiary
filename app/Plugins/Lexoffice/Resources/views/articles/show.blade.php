@@ -64,7 +64,7 @@
                 <dt class="text-xs text-muted">{{ __('Netto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->net_unit_price !== null)
-                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
+                        {{ $article->net_unit_price?->withScale(2)->format(withSymbol: false) ?? '0,00' }} {{ $article->currency->value }}
                     @else
                         —
                     @endif
@@ -74,7 +74,7 @@
                 <dt class="text-xs text-muted">{{ __('Brutto-Preis') }}</dt>
                 <dd class="tabular-nums">
                     @if ($article->gross_unit_price !== null)
-                        {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->gross_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
+                        {{ $article->gross_unit_price?->withScale(2)->format(withSymbol: false) ?? '0,00' }} {{ $article->currency->value }}
                     @else
                         —
                     @endif

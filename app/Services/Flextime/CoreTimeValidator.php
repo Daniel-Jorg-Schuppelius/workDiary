@@ -12,6 +12,8 @@ namespace App\Services\Flextime;
 
 use App\Models\{TimeEntry, User, WorkSchedule};
 use App\Support\Tz;
+use CommonToolkit\ValueObjects\Duration;
+use InvalidArgumentException;
 
 /**
  * Kernzeit-/Rahmenzeit-/Pflichtpausen-Prüfung je Zeiteintrag (Vollreview W2.1):
@@ -129,8 +131,10 @@ class CoreTimeValidator {
 
     /** 'HH:MM[:SS]' → Minuten seit Mitternacht. */
     private static function minutesOfDay(string $time): int {
-        [$h, $m] = array_map('intval', array_pad(explode(':', $time), 2, '0'));
-
-        return $h * 60 + $m;
+        try {
+            return Duration::fromClock($time)->getTotalMinutes();
+        } catch (InvalidArgumentException) {
+            return 0;
+        }
     }
 }

@@ -15,7 +15,7 @@ namespace App\Services\Privacy;
 use App\Enums\Privacy\DataSubjectRequestType;
 use App\Mail\Privacy\DsarReceiptMail;
 use App\Models\Privacy\{DataSubjectRequest, DsarPortal, PrivacyAttachment};
-use App\Support\Filename;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Log, Mail, URL};
 use Throwable;
@@ -114,7 +114,7 @@ class DsarPortalIntakeService {
             'organization_id' => $dsr->organization_id,
             'attachable_type' => $dsr->getMorphClass(),
             'attachable_id' => $dsr->getKey(),
-            'filename' => Filename::sanitize($file->getClientOriginalName()),
+            'filename' => File::sanitizeDisplayName($file->getClientOriginalName()),
             'path' => $stored,
             'size' => $file->getSize(),
             'mime' => $file->getMimeType(),

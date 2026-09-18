@@ -104,11 +104,11 @@
                                         <div class="grid grid-cols-2 gap-3 p-2">
                                             <div>
                                                 <div class="font-semibold mb-1">{{ __('Lokal') }}</div>
-                                                <pre class="whitespace-pre-wrap">{{ json_encode(array_intersect_key($conflict->local_snapshot, array_flip($diff)), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                                <pre class="whitespace-pre-wrap">{{ \CommonToolkit\Helper\Data\JsonHelper::encode(array_intersect_key($conflict->local_snapshot, array_flip($diff)), JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                                             </div>
                                             <div>
                                                 <div class="font-semibold mb-1">{{ __('Lexoffice') }}</div>
-                                                <pre class="whitespace-pre-wrap">{{ json_encode($conflict->remote_snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
+                                                <pre class="whitespace-pre-wrap">{{ \CommonToolkit\Helper\Data\JsonHelper::encode($conflict->remote_snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE) }}</pre>
                                             </div>
                                         </div>
                                     </td>

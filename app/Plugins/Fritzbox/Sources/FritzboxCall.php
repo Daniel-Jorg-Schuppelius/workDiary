@@ -13,6 +13,8 @@ declare(strict_types=1);
 namespace App\Plugins\Fritzbox\Sources;
 
 use Carbon\CarbonImmutable;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
 
 /**
  * Ein Anruf aus der FRITZ!Box-Anrufliste. Die Box liefert nur Start + Dauer
@@ -49,13 +51,13 @@ final class FritzboxCall {
      * überlappender Monatslisten erzeugen denselben Key.
      */
     public function callKey(): string {
-        return 'call:' . sha1(implode('|', [
+        return 'call:' . CryptoHelper::hash(implode('|', [
             $this->startedAt->format('YmdHis'),
             $this->e164 ?? $this->numberRaw,
             (string) $this->type,
             (string) $this->durationMinutes,
             (string) $this->ownLine,
-        ]));
+        ]), HashAlgorithm::SHA1);
     }
 
     /** Verpasst/erfolglos (Typ 2 bzw. Dauer 0) — wird nie importiert. */

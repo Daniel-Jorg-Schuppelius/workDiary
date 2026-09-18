@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Reselling\Marketplace;
 
+use CommonToolkit\Helper\Data\StringHelper;
+
 /**
  * Endkunde im Marketplace-Export. Der Schlüssel ist die Kundennummer der
  * Quelle (Telekom: numerische Owner-Company-ID, Quality Hosting: CNL-Nummer),
@@ -39,7 +41,7 @@ final readonly class MarketplaceCompany {
         $text = str_replace(['ä', 'ö', 'ü', 'ß'], ['ae', 'oe', 'ue', 'ss'], $text);
         $text = preg_replace('/[^a-z0-9]+/u', ' ', $text) ?? '';
 
-        return trim(preg_replace('/\s+/', ' ', $text) ?? '');
+        return StringHelper::normalizeWhitespace($text);
     }
 
     public static function normalizeName(string $name): string {

@@ -17,6 +17,7 @@ use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{ImportValueMapping, Organization, ScheduledShift, ShiftType, User};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{ParsesLocalDateTime, ResolvesImportUsers};
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Facades\Auth;
 use Throwable;
 
@@ -89,7 +90,7 @@ class ScheduledShiftSpec extends AbstractEntitySpec implements HasMappableValues
 
         if (($row['user_email'] ?? null) === null) {
             $issues[] = $this->requiredIssue('user_email');
-        } elseif (! filter_var($row['user_email'], FILTER_VALIDATE_EMAIL)) {
+        } elseif (! EmailHelper::isEmail($row['user_email'])) {
             $issues[] = $this->formatIssue('user_email', (string) __('import.error.format.email'));
         }
 

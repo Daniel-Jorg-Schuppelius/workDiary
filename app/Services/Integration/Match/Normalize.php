@@ -12,6 +12,8 @@ declare(strict_types=1);
 
 namespace App\Services\Integration\Match;
 
+use CommonToolkit\Helper\Data\StringHelper;
+
 /**
  * Normalisierungs- und Ähnlichkeitshelfer für den Entitäts-Abgleich. Bewusst
  * statisch und zustandslos — von allen {@see MatchStrategy} geteilt.
@@ -19,9 +21,7 @@ namespace App\Services\Integration\Match;
 final class Normalize {
     /** Lowercase, getrimmt, kollabierte Leerzeichen (für Namen/Firmen). */
     public static function text(?string $value): string {
-        $value = mb_strtolower(trim((string) $value));
-
-        return (string) preg_replace('/\s+/', ' ', $value);
+        return StringHelper::normalizeWhitespace(mb_strtolower((string) $value));
     }
 
     /** Wie text(), aber ohne jegliche Leerzeichen (für IDs/Nummern/PLZ/USt-IdNr.). */
@@ -32,11 +32,11 @@ final class Normalize {
             $value = $value->getValue();
         }
 
-        return (string) preg_replace('/\s+/', '', mb_strtolower(trim(is_scalar($value) ? (string) $value : '')));
+        return StringHelper::removeWhitespace(mb_strtolower(is_scalar($value) ? (string) $value : ''));
     }
 
     /** Ähnlichkeit zweier Strings als 0..1-Score (Toolkit, B20/v1.26). */
     public static function similarity(string $a, string $b): float {
-        return \CommonToolkit\Helper\Data\StringHelper::similarity($a, $b);
+        return StringHelper::similarity($a, $b);
     }
 }

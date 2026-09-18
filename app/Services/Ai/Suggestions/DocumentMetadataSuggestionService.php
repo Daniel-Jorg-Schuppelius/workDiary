@@ -21,6 +21,7 @@ use App\Services\Ai\Exceptions\AiException;
 use App\Services\Ai\Suggestions\Concerns\DecidesSuggestions;
 use App\Services\Ai\Support\CustomerNameMasker;
 use App\Services\Document\DocumentService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Storage;
@@ -111,7 +112,7 @@ class DocumentMetadataSuggestionService {
             $document,
             self::CAPABILITY,
             (string) __('ai.dms.source_hint', ['name' => (string) ($document->currentVersion->original_name ?? $document->title)]),
-            (string) json_encode($entries, JSON_UNESCAPED_UNICODE),
+            JsonHelper::encode($entries, JSON_UNESCAPED_UNICODE),
             $result,
             $user,
         );
@@ -146,7 +147,7 @@ class DocumentMetadataSuggestionService {
         if ($remaining === []) {
             $this->markDecided($suggestion, AiTextSuggestion::STATUS_ACCEPTED, $user);
         } else {
-            $suggestion->forceFill(['suggestion' => (string) json_encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
+            $suggestion->forceFill(['suggestion' => JsonHelper::encode($remaining, JSON_UNESCAPED_UNICODE)])->save();
         }
 
         $this->auditDecision($suggestion, 'accepted', $user, ['field' => $field]);

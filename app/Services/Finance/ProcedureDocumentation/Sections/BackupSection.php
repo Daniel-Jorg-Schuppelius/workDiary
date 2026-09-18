@@ -15,6 +15,7 @@ namespace App\Services\Finance\ProcedureDocumentation\Sections;
 use App\Models\Backup\{BackupGeneration, BackupTargetConnection};
 use App\Models\{BackupHeartbeat, Organization};
 use App\Services\Finance\ProcedureDocumentation\{FormatsSectionValues, ProcedureSection, SectionContext};
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Datensicherung (systemweit): Backup-Ziele OHNE Tokens (nur Anbieter/Name/
@@ -106,7 +107,7 @@ final class BackupSection implements ProcedureSection {
         if ($used === null && $total === null) {
             return '—';
         }
-        $format = static fn (?int $bytes): string => $bytes === null ? '—' : number_format($bytes / 1_073_741_824, 1, ',', '.') . ' GB';
+        $format = static fn (?int $bytes): string => $bytes === null ? '—' : NumberHelper::toGermanFormat($bytes / 1_073_741_824, 1, withThousandsSeparator: true) . ' GB';
 
         return $format($used) . ' / ' . $format($total);
     }

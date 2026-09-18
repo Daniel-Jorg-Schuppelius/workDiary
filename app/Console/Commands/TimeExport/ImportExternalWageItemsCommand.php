@@ -12,6 +12,7 @@ namespace App\Console\Commands\TimeExport;
 
 use App\Models\{ExternalWageItem, Organization, User};
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 
 /**
@@ -34,7 +35,7 @@ class ImportExternalWageItemsCommand extends Command {
 
     public function handle(): int {
         $file = (string) $this->argument('file');
-        if (! is_readable($file)) {
+        if (! File::isReadable($file, false)) {
             $this->error(sprintf('Datei nicht lesbar: %s', $file));
 
             return self::FAILURE;

@@ -17,7 +17,8 @@ use App\Services\Finance\BillingPositionBuilder;
 use App\Support\CsvExport;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
-use CommonToolkit\Helper\Data\StringHelper as TextHelper;
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper as TextHelper};
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
 
@@ -232,6 +233,6 @@ class FileTarget implements FacturationTarget {
             return '';
         }
 
-        return number_format((float) $value, 2, '.', '');
+        return is_float($value) ? NumberHelper::toUSFormat($value, 2) : Decimal::of((string) $value, 2)->getValue();
     }
 }

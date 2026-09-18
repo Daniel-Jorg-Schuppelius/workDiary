@@ -12,6 +12,7 @@ namespace App\Models;
 
 use App\Enums\Expense\PerDiemTripStatus;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Database\Factories\PerDiemTripFactory;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -87,7 +88,7 @@ class PerDiemTrip extends Model {
 
     /** Summe aller Tagesbeträge (nach Kürzungen). */
     public function totalAmount(): string {
-        return number_format((float) $this->days->sum(fn(PerDiemDay $d): float => $d->amount?->toFloat() ?? 0.0), 2, '.', '');
+        return NumberHelper::toUSFormat((float) $this->days->sum(fn(PerDiemDay $d): float => $d->amount?->toFloat() ?? 0.0), 2);
     }
 
     /** @return BelongsTo<User, $this> */

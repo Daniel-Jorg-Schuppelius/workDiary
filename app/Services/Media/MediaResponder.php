@@ -14,6 +14,7 @@ namespace App\Services\Media;
 
 use App\Models\Attachment;
 use App\Models\Media\MediaRendition;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\{BinaryFileResponse, Response, StreamedResponse};
 
@@ -58,10 +59,10 @@ class MediaResponder {
         // Nur lokale Ablagen liefern einen echten Dateisystempfad. Bei
         // entfernten (S3 & Co.) zeigt `path()` ins Leere — dann bleibt der
         // Strom, also ohne Springen, aber wenigstens abspielbar. Genau
-        // deshalb entscheidet `is_file()` und nicht der Ablagename.
+        // deshalb entscheidet `File::isFile()` und nicht der Ablagename.
         $absolute = $storage->path($path);
 
-        if (is_file($absolute)) {
+        if (File::isFile($absolute)) {
             $response = new BinaryFileResponse($absolute);
             $response->setAutoLastModified();
             $response->headers->set('Content-Type', $mime);

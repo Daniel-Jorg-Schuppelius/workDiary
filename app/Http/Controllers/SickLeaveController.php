@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SaveSickLeaveRequest;
 use App\Models\{Attachment, SickLeave, User};
 use App\Support\LookupCache;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Http\{RedirectResponse, Request, UploadedFile};
 use Illuminate\Support\Facades\{Auth, Gate, Storage, URL};
@@ -189,17 +190,10 @@ class SickLeaveController extends Controller {
             'user_id' => Auth::id(),
             'disk' => $disk,
             'path' => $path,
-            'original_name' => $this->sanitizeFilename($file->getClientOriginalName()),
+            'original_name' => File::sanitizeDisplayName($file->getClientOriginalName(), 255, 'datei'),
             'mime' => $file->getMimeType() ?? 'application/octet-stream',
             'size' => $file->getSize() ?: 0,
         ]);
-    }
-
-    private function sanitizeFilename(string $name): string {
-        $name = basename($name);
-        $name = preg_replace('/[\x00-\x1F\x7F\/\\\\]/', '_', $name) ?? 'datei';
-
-        return mb_substr($name, 0, 255);
     }
 
     /**

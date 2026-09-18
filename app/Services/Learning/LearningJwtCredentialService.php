@@ -14,6 +14,7 @@ namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningCertificate, LearningIssuerKey};
 use App\Models\Organization;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\{Carbon, Str};
 use Jose\Component\Core\AlgorithmManager;
 use Jose\Component\KeyManagement\JWKFactory;
@@ -129,7 +130,7 @@ class LearningJwtCredentialService {
 
         $jws = (new JWSBuilder(new AlgorithmManager([new RS256()])))
             ->create()
-            ->withPayload((string) json_encode(array_filter($payload, static fn ($v): bool => $v !== null), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
+            ->withPayload(JsonHelper::encode(array_filter($payload, static fn ($v): bool => $v !== null), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES))
             ->addSignature($jwk, [
                 'alg' => 'RS256',
                 'typ' => 'vc+ld+jwt',

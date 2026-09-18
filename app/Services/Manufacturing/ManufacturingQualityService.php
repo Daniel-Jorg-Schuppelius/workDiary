@@ -52,10 +52,10 @@ class ManufacturingQualityService {
         $rework = '0';
 
         foreach ($reports as $report) {
-            $produced = bcadd($produced, $this->num($report->produced_qty), self::SCALE);
-            $good = bcadd($good, $this->num($report->good_qty), self::SCALE);
-            $scrap = bcadd($scrap, $this->num($report->scrap_qty), self::SCALE);
-            $rework = bcadd($rework, $this->num($report->rework_qty), self::SCALE);
+            $produced = bcadd($produced, NumberHelper::normalizeDecimalString((string) $report->produced_qty), self::SCALE);
+            $good = bcadd($good, NumberHelper::normalizeDecimalString((string) $report->good_qty), self::SCALE);
+            $scrap = bcadd($scrap, NumberHelper::normalizeDecimalString((string) $report->scrap_qty), self::SCALE);
+            $rework = bcadd($rework, NumberHelper::normalizeDecimalString((string) $report->rework_qty), self::SCALE);
         }
 
         return [
@@ -76,12 +76,5 @@ class ManufacturingQualityService {
      */
     private function rate(string $part, string $total): string {
         return NumberHelper::divideOrDefault($part, $total, self::SCALE, '0.0000');
-    }
-
-    /** @return numeric-string */
-    private function num(mixed $value): string {
-        $value = (string) $value;
-
-        return is_numeric($value) ? $value : '0';
     }
 }

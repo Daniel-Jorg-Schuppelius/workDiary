@@ -16,6 +16,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Organization, PluginSetting};
 use App\Plugins\Etsy\EtsyPlugin;
 use App\Plugins\Etsy\Services\{EtsyLedgerImportService, EtsyReceiptImportService};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -36,7 +37,7 @@ class EtsySyncCommand extends Command {
         $failures = $this->forEachOrganization(
             function (Organization $organization) use ($receipts, $ledger): void {
                 $counters = $receipts->import($organization) + ['ledger' => $ledger->import($organization)];
-                $this->info(sprintf('Org %d: %s', $organization->id, (string) json_encode($counters)));
+                $this->info(sprintf('Org %d: %s', $organization->id, JsonHelper::encode($counters)));
             },
             onError: function (Organization $organization, Throwable $e): void {
                 $this->error(sprintf('Org %d: %s', $organization->id, class_basename($e)));

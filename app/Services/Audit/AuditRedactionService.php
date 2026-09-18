@@ -14,6 +14,7 @@ namespace App\Services\Audit;
 
 use App\Models\{AuditLog, AuditRedaction, User};
 use App\Models\Concerns\HashChainable;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use InvalidArgumentException;
 use RuntimeException;
@@ -129,7 +130,7 @@ class AuditRedactionService {
                 foreach ($entries as $entry) {
                     DB::table($chainTable)
                         ->where('id', $entry['id'])
-                        ->update(['changes' => json_encode($entry['changes'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
+                        ->update(['changes' => JsonHelper::encode($entry['changes'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)]);
                     $rows++;
                 }
 

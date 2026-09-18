@@ -11,12 +11,12 @@
 namespace Tests\Feature\Procurement;
 
 use App\Models\{Article, User};
+use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Parsers\DatanormParser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\PermissionRegistrar;
 use Tests\Concerns\WithOrganization;
 use Tests\TestCase;
-use ZipArchive;
 
 /**
  * Feature 107 W5: DATANORM-Export des Artikelstamms — ZIP mit DATANORM.001 +
@@ -70,15 +70,12 @@ final class ArticleDatanormExportTest extends TestCase {
         $response->assertOk();
         $this->assertSame('application/zip', $response->headers->get('content-type'));
 
-        $file = $response->getFile();
-        $zip = new ZipArchive;
-        $this->assertTrue($zip->open($file->getPathname()));
-        $datanorm = (string) $zip->getFromName('DATANORM.001');
-        $datpreis = (string) $zip->getFromName('DATPREIS.001');
-        $wrg = (string) $zip->getFromName('DATANORM.WRG');
-        $rab = (string) $zip->getFromName('DATANORM.RAB');
-        $datainfo = (string) $zip->getFromName('DATAINFO.TXT');
-        $zip->close();
+        $entries = ZipFile::readEntries((string) $response->getContent());
+        $datanorm = $entries['DATANORM.001'] ?? '';
+        $datpreis = $entries['DATPREIS.001'] ?? '';
+        $wrg = $entries['DATANORM.WRG'] ?? '';
+        $rab = $entries['DATANORM.RAB'] ?? '';
+        $datainfo = $entries['DATAINFO.TXT'] ?? '';
 
         return ['datanorm' => $datanorm, 'datpreis' => $datpreis, 'wrg' => $wrg, 'rab' => $rab, 'datainfo' => $datainfo];
     }
@@ -191,10 +188,7 @@ final class ArticleDatanormExportTest extends TestCase {
 
         // Standardsatz der Gruppe: 89,50 − 10 % = 80,55.
         $response = $this->actingAs($this->admin)->get(route('b2b-catalog.datanorm', $access));
-        $zip = new ZipArchive;
-        $this->assertTrue($zip->open($response->getFile()->getPathname()));
-        $catalog = (new DatanormParser)->parse((string) $zip->getFromName('DATPREIS.001'));
-        $zip->close();
+        $catalog = (new DatanormParser)->parse(ZipFile::readEntries((string) $response->getContent())['DATPREIS.001'] ?? '');
         $this->assertSame('80.55', $catalog->getPriceChanges()[0]->getPrice()?->getAmount());
 
         // Kunden-Override 20 %: 89,50 − 20 % = 71,60.
@@ -204,10 +198,7 @@ final class ArticleDatanormExportTest extends TestCase {
             'customer_id' => $customer->id, 'kind' => 'discount', 'value' => '20',
         ]);
         $response = $this->actingAs($this->admin)->get(route('b2b-catalog.datanorm', $access));
-        $zip = new ZipArchive;
-        $this->assertTrue($zip->open($response->getFile()->getPathname()));
-        $catalog = (new DatanormParser)->parse((string) $zip->getFromName('DATPREIS.001'));
-        $zip->close();
+        $catalog = (new DatanormParser)->parse(ZipFile::readEntries((string) $response->getContent())['DATPREIS.001'] ?? '');
         $this->assertSame('71.60', $catalog->getPriceChanges()[0]->getPrice()?->getAmount());
     }
 
@@ -264,10 +255,7 @@ final class ArticleDatanormExportTest extends TestCase {
         $response = $this->actingAs($this->admin)->get(route('b2b-catalog.datanorm', $access));
         $response->assertOk();
 
-        $zip = new ZipArchive;
-        $this->assertTrue($zip->open($response->getFile()->getPathname()));
-        $content = (string) $zip->getFromName('DATPREIS.001');
-        $zip->close();
+        $content = ZipFile::readEntries((string) $response->getContent())['DATPREIS.001'] ?? '';
 
         $catalog = (new DatanormParser)->parse($content);
         // K-Kontrollsatz trägt die Kundennummer des Empfängers.

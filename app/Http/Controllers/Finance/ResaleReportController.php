@@ -25,6 +25,7 @@ use App\Settings\SettingScope;
 use App\Support\{CsvExport, Setting, XlsxExport};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use CommonToolkit\ValueObjects\Money;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
@@ -314,8 +315,8 @@ class ResaleReportController extends Controller {
                 $subscription->productLabel() ?? '',
                 $period->label(),
                 $period->quantity,
-                self::decimal($period->requiredMonths()),
-                self::decimal($period->openMonths()),
+                NumberHelper::toGermanFormat($period->requiredMonths(), 2),
+                NumberHelper::toGermanFormat($period->openMonths(), 2),
                 $subscription->sale_unit_price?->withScale(2)->format(withSymbol: false, withThousandsSeparator: false) ?? '',
                 $period->openAmount()?->format(withSymbol: false, withThousandsSeparator: false) ?? '',
                 $period->currency->value,
@@ -360,9 +361,5 @@ class ResaleReportController extends Controller {
         }
 
         return CsvExport::streamFromRows($filename . '.csv', $header, $rows);
-    }
-
-    private static function decimal(float $value): string {
-        return number_format($value, 2, ',', '');
     }
 }

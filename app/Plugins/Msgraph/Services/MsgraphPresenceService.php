@@ -14,6 +14,7 @@ namespace App\Plugins\Msgraph\Services;
 
 use App\Models\{MsgraphConnection, Organization, User};
 use App\Plugins\Msgraph\Api\MsgraphCalendarClient;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Throwable;
@@ -51,7 +52,7 @@ class MsgraphPresenceService {
             return []; // Scope nicht erteilt → Feature still aus
         }
 
-        $emails = $users->map(fn (User $u): string => strtolower(trim((string) $u->email)))
+        $emails = $users->map(fn (User $u): string => EmailHelper::normalize((string) $u->email))
             ->filter()
             ->unique()
             ->values();

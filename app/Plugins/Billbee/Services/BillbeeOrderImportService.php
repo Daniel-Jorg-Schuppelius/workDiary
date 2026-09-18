@@ -18,6 +18,7 @@ use App\Plugins\Billbee\BillbeePlugin;
 use App\Services\Integration\{IntegrationResolver, MatchProfileRegistry};
 use App\Services\Integration\Match\MatchProfile;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use RuntimeException;
 
 /**
@@ -93,7 +94,7 @@ class BillbeeOrderImportService {
                 'channel' => self::stringOrNull($seller['Platform'] ?? $buyer['Platform'] ?? $order['ApiAccountName'] ?? null),
                 'state' => (int) ($order['State'] ?? 0),
                 'currency' => self::stringOrNull($order['Currency'] ?? null),
-                'total_gross' => number_format((float) ($order['TotalCost'] ?? 0), 2, '.', ''),
+                'total_gross' => NumberHelper::toUSFormat((float) ($order['TotalCost'] ?? 0), 2),
                 'buyer_external_id' => $buyerExternalId !== '' ? $buyerExternalId : null,
                 'buyer' => $buyer !== [] ? $buyer : null,
                 'items' => is_array($order['OrderItems'] ?? null) ? $order['OrderItems'] : null,

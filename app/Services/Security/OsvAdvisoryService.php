@@ -14,6 +14,7 @@ namespace App\Services\Security;
 
 use App\Models\SecurityAdvisory;
 use App\Plugins\Support\PluginHttpFactory;
+use CommonToolkit\Helper\FileSystem\File;
 use RuntimeException;
 
 /**
@@ -139,9 +140,9 @@ class OsvAdvisoryService {
         $packages = [];
 
         $composerLock = base_path('composer.lock');
-        if (is_file($composerLock)) {
+        if (File::isFile($composerLock)) {
             /** @var array{packages?: array<int, array{name?: string, version?: string}>} $lock */
-            $lock = (array) json_decode((string) file_get_contents($composerLock), true);
+            $lock = (array) json_decode(File::read($composerLock), true);
             foreach ((array) ($lock['packages'] ?? []) as $package) {
                 if (! isset($package['name'], $package['version'])) {
                     continue;
@@ -157,9 +158,9 @@ class OsvAdvisoryService {
         }
 
         $npmLock = base_path('package-lock.json');
-        if (is_file($npmLock)) {
+        if (File::isFile($npmLock)) {
             /** @var array{packages?: array<string, array{version?: string, dev?: bool}>} $lock */
-            $lock = (array) json_decode((string) file_get_contents($npmLock), true);
+            $lock = (array) json_decode(File::read($npmLock), true);
             foreach ((array) ($lock['packages'] ?? []) as $path => $package) {
                 if ($path === '' || ($package['dev'] ?? false) === true) {
                     continue;

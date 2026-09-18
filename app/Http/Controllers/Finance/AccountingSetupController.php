@@ -24,6 +24,7 @@ use App\Services\Accounting\Reports\VatPreviewBuilder;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\ValueObjects\Decimal;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -187,7 +188,7 @@ class AccountingSetupController extends Controller {
         $data = $request->validate([
             'year' => ['required', 'integer', 'min:2000', 'max:2100'],
             'granted_on' => ['nullable', 'date'],
-            'special_prepayment_amount' => ['nullable', 'numeric', 'min:0'],
+            'special_prepayment_amount' => ['nullable', 'numeric', 'decimal:0,8', 'min:0'],
             'note' => ['nullable', 'string', 'max:500'],
         ]);
 
@@ -196,7 +197,7 @@ class AccountingSetupController extends Controller {
             (int) $data['year'],
             isset($data['granted_on']) ? CarbonImmutable::parse((string) $data['granted_on']) : null,
             isset($data['special_prepayment_amount'])
-                ? number_format((float) $data['special_prepayment_amount'], 2, '.', '')
+                ? Decimal::of((string) $data['special_prepayment_amount'], 2)->getValue()
                 : null,
             $actor,
             $data['note'] ?? null,
@@ -231,7 +232,7 @@ class AccountingSetupController extends Controller {
 
         $data = $request->validate([
             'year' => ['required', 'integer', 'min:2000', 'max:2100'],
-            'amount' => ['required', 'numeric', 'gt:0'],
+            'amount' => ['required', 'numeric', 'decimal:0,8', 'gt:0'],
             'prepayment_account' => ['required', 'string'],
             'money_account' => ['required', 'string'],
             'booked_on' => ['required', 'date'],
@@ -244,7 +245,7 @@ class AccountingSetupController extends Controller {
             (int) $data['year'],
             (clone $accounts)->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['prepayment_account']))->firstOrFail(),
             (clone $accounts)->whereKey(Sqid::decodeOrNumeric(AccountingAccount::class, (string) $data['money_account']))->firstOrFail(),
-            number_format((float) $data['amount'], 2, '.', ''),
+            Decimal::of((string) $data['amount'], 2)->getValue(),
             CarbonImmutable::parse((string) $data['booked_on']),
             $actor,
         );

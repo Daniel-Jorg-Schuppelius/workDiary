@@ -12,10 +12,9 @@ namespace App\Services\Licensing;
 
 use App\Models\{AuditLog, Organization};
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\JsonHelper;
-use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\FileSystem\{File as ToolkitFile, Folder as ToolkitFolder};
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
@@ -33,7 +32,6 @@ class LicenseService {
     private static ?float $integrityCheckedAt = null;
 
     public function __construct(
-        private readonly Filesystem $files,
         private readonly CacheRepository $cache,
     ) {}
 
@@ -135,9 +133,9 @@ class LicenseService {
         }
 
         $path = storage_path('app/' . config('license.key_path', 'license.key'));
-        $this->files->ensureDirectoryExists(dirname($path));
-        $this->files->put($path, $licenseKey);
-        @chmod($path, 0600);
+        ToolkitFolder::create(dirname($path), 0755, true);
+        // Rechte vor dem Inhalt: der Schlüssel liegt nie mit umask-Rechten auf der Platte.
+        ToolkitFile::write($path, $licenseKey, permissions: 0600, lock: true);
 
         $this->flush();
 
@@ -178,8 +176,8 @@ class LicenseService {
             $path = (string) config('license.private_key_path', '');
             if ($path !== '') {
                 $full = str_starts_with($path, '/') ? $path : base_path($path);
-                if ($this->files->exists($full)) {
-                    $b64 = $this->extractEnvValue((string) $this->files->get($full), 'LICENSE_PRIVATE_KEY');
+                if (ToolkitFile::isFile($full)) {
+                    $b64 = $this->extractEnvValue(ToolkitFile::read($full), 'LICENSE_PRIVATE_KEY');
                 }
             }
         }
@@ -187,9 +185,9 @@ class LicenseService {
             return null;
         }
 
-        $key = self::b64Decode($b64);
+        $key = CryptoHelper::base64UrlDecode($b64);
 
-        return ($key !== null && strlen($key) === SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) ? $key : null;
+        return ($key !== false && strlen($key) === SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) ? $key : null;
     }
 
     /** Kann diese Instanz Lizenzen ausstellen (Private Key vorhanden)? */
@@ -254,7 +252,7 @@ class LicenseService {
         $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $signature = sodium_crypto_sign_detached($json, $private);
 
-        return self::b64Encode($json) . '.' . self::b64Encode($signature);
+        return CryptoHelper::base64UrlEncode($json) . '.' . CryptoHelper::base64UrlEncode($signature);
     }
 
     /**
@@ -285,8 +283,8 @@ class LicenseService {
         }
 
         $path = storage_path('app/' . config('license.key_path', 'license.key'));
-        if ($this->files->exists($path)) {
-            $content = trim((string) $this->files->get($path));
+        if (ToolkitFile::isFile($path)) {
+            $content = trim(ToolkitFile::read($path));
 
             return $content !== '' ? $content : null;
         }
@@ -305,10 +303,10 @@ class LicenseService {
             return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenzschlüssel hat ein unbekanntes Format.');
         }
 
-        $payloadJson = self::b64Decode($parts[0]);
-        $signature = self::b64Decode($parts[1]);
+        $payloadJson = CryptoHelper::base64UrlDecode($parts[0]);
+        $signature = CryptoHelper::base64UrlDecode($parts[1]);
 
-        if ($payloadJson === null || $payloadJson === '' || $signature === null || $signature === '') {
+        if ($payloadJson === false || $payloadJson === '' || $signature === false || $signature === '') {
             return LicenseResult::fail(LicenseStatus::Malformed, 'Lizenzschlüssel ist nicht korrekt kodiert.');
         }
 
@@ -497,8 +495,8 @@ class LicenseService {
         if ($b64 === '') {
             return null;
         }
-        $raw = self::b64Decode($b64);
-        if ($raw === null || strlen($raw) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
+        $raw = CryptoHelper::base64UrlDecode($b64);
+        if ($raw === false || strlen($raw) !== SODIUM_CRYPTO_SIGN_PUBLICKEYBYTES) {
             return null;
         }
 
@@ -540,7 +538,7 @@ class LicenseService {
 
         foreach ($files as $relativePath => $expectedHash) {
             $path = base_path((string) $relativePath);
-            if (! $this->files->exists($path)) {
+            if (! ToolkitFile::isFile($path)) {
                 return LicenseResult::fail(
                     LicenseStatus::Tampered,
                     'Lizenz-Integrität verletzt: Datei fehlt (' . $relativePath . ').'
@@ -573,17 +571,5 @@ class LicenseService {
         }
 
         return false;
-    }
-
-    public static function b64Encode(string $bytes): string {
-        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
-    }
-
-    public static function b64Decode(string $value): ?string {
-        $value = strtr($value, '-_', '+/');
-        $padded = $value . str_repeat('=', (4 - strlen($value) % 4) % 4);
-        $decoded = base64_decode($padded, true);
-
-        return $decoded === false ? null : $decoded;
     }
 }

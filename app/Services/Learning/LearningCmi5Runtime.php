@@ -15,7 +15,7 @@ namespace App\Services\Learning;
 use App\Models\Learning\{LearningCmi5AuState, LearningCmi5Package, LearningCmi5Registration, LearningCmi5Session, LearningCmi5Unit, LearningEnrollment, LearningXapiStatement};
 use App\Models\User;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use ELearningToolkit\Cmi5\{Actor, AssignableUnit, LaunchMode, LmsStatements, MoveOn, SatisfiedScope, Session};
 use ELearningToolkit\XApi\Verbs;
 use Illuminate\Support\{Carbon, Str};
@@ -128,7 +128,7 @@ final class LearningCmi5Runtime {
             'statement_id' => is_string($statement['id'] ?? null) ? strtolower($statement['id']) : null,
             'verb' => is_string($verb['id'] ?? null) ? $verb['id'] : null,
             'object_id' => is_string($object['id'] ?? null) ? mb_substr($object['id'], 0, 500) : null,
-            'payload' => json_encode($statement, JSON_THROW_ON_ERROR | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'payload' => JsonHelper::encode($statement, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'stored_at' => $at,
         ]);
     }

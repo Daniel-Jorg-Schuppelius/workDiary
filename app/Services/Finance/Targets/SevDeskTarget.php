@@ -18,6 +18,7 @@ use App\Models\Finance\BillingTransfer;
 use App\Plugins\SevDesk\Api\{SevDeskClient, SevDeskClientFactory};
 use App\Plugins\SevDesk\{SevDeskConfig, SevDeskPlugin};
 use App\Services\Finance\BillingPositionBuilder;
+use CommonToolkit\Helper\Data\NumberHelper;
 use GuzzleHttp\Exception\ConnectException;
 use RuntimeException;
 
@@ -130,7 +131,7 @@ class SevDeskTarget implements FacturationTarget {
         } else {
             $invoice['taxType'] = 'default';
             $invoice['taxRate'] = $vatRate;
-            $invoice['taxText'] = (string) __('finance.sevdesk.tax_text', ['rate' => rtrim(rtrim(number_format($vatRate, 2, '.', ''), '0'), '.')]);
+            $invoice['taxText'] = (string) __('finance.sevdesk.tax_text', ['rate' => NumberHelper::toUSFormat($vatRate, 2, trimTrailingZeros: true)]);
         }
 
         try {

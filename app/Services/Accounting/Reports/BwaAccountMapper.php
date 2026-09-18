@@ -14,6 +14,7 @@ namespace App\Services\Accounting\Reports;
 
 use App\Enums\Finance\{AccountType, BwaGroup, EuerCategory};
 use App\Models\Accounting\AccountingAccount;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Konto → BWA-Zeile (Feature 142, MVP-709).
@@ -150,7 +151,7 @@ final class BwaAccountMapper {
      * 84000) erweitern nach rechts — die Gliederung steckt vorn.
      */
     private function leadingNumber(mixed $number): ?int {
-        $digits = preg_replace('/\D/', '', (string) $number) ?? '';
+        $digits = StringHelper::extractDigits((string) $number);
         if (strlen($digits) < 4) {
             return null;
         }

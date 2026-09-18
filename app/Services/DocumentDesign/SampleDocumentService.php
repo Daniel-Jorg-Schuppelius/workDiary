@@ -15,6 +15,7 @@ namespace App\Services\DocumentDesign;
 use App\Enums\DocumentDesign\{InformationBlock, PageFormat, RenderDocumentFamily, RenderDocumentKind};
 use App\Models\Organization;
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\Duration;
 use PDFToolkit\Entities\PDFContent;
 use PDFToolkit\Registries\PDFWriterRegistry;
 use RuntimeException;
@@ -246,18 +247,17 @@ class SampleDocumentService {
             $minutes = 420 + ($d % 4) * 30;
             $totalMinutes += $minutes;
             $rows .= sprintf(
-                '<tr><td>%02d.06.2026</td><td>08:00</td><td>%s</td><td class="num">0:30</td><td class="num">%d:%02d</td></tr>',
+                '<tr><td>%02d.06.2026</td><td>08:00</td><td>%s</td><td class="num">0:30</td><td class="num">%s</td></tr>',
                 $d,
                 sprintf('%02d:%02d', intdiv(510 + ($d % 4) * 30, 60), (510 + ($d % 4) * 30) % 60),
-                intdiv($minutes, 60),
-                $minutes % 60,
+                Duration::ofMinutes($minutes)->toClock(),
             );
         }
 
         return '<table><thead><tr><th>' . __('Datum') . '</th><th>' . __('Beginn') . '</th><th>' . __('Ende') . '</th><th class="num">' . __('Pause') . '</th><th class="num">' . __('Arbeitszeit') . '</th></tr></thead>'
             . '<tbody>' . $rows . '</tbody>'
             . ($design->show(InformationBlock::Totals) ? '<tfoot><tr><td colspan="4" class="num">' . __('Summe') . '</td><td class="num">'
-                . intdiv($totalMinutes, 60) . ':' . sprintf('%02d', $totalMinutes % 60) . '</td></tr></tfoot>' : '')
+                . Duration::ofMinutes($totalMinutes)->toClock() . '</td></tr></tfoot>' : '')
             . '</table>';
     }
 

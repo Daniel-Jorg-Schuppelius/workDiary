@@ -16,6 +16,7 @@ use App\Enums\Learning\LearningQuestionKind;
 use App\Models\{Attachment, User};
 use App\Models\Learning\{LearningQuestion, LearningQuiz};
 use App\Services\Attachments\FileAttacher;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
 
@@ -209,10 +210,10 @@ class LearningQuestionEditorService {
                 static fn (array $spot): string => sprintf(
                     '%s%s,%s,%s,%s: %s',
                     ! empty($spot['is_correct']) ? '*' : '',
-                    self::num($spot['x'] ?? 0),
-                    self::num($spot['y'] ?? 0),
-                    self::num($spot['w'] ?? 0),
-                    self::num($spot['h'] ?? 0),
+                    NumberHelper::toUSFormat((float) ($spot['x'] ?? 0), 2, trimTrailingZeros: true),
+                    NumberHelper::toUSFormat((float) ($spot['y'] ?? 0), 2, trimTrailingZeros: true),
+                    NumberHelper::toUSFormat((float) ($spot['w'] ?? 0), 2, trimTrailingZeros: true),
+                    NumberHelper::toUSFormat((float) ($spot['h'] ?? 0), 2, trimTrailingZeros: true),
                     (string) ($spot['label'] ?? ''),
                 ),
                 array_values((array) ($settings['hotspots'] ?? [])),
@@ -439,12 +440,5 @@ class LearningQuestionEditorService {
         }
 
         return ['rows' => $rows, 'columns' => $columns];
-    }
-
-    /** Zahl ohne überflüssige Nullen, Punkt als Dezimaltrenner (wie der Parser sie liest). */
-    private static function num(mixed $value): string {
-        $float = (float) $value;
-
-        return rtrim(rtrim(number_format($float, 2, '.', ''), '0'), '.');
     }
 }

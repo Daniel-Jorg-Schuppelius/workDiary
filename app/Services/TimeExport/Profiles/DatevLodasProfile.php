@@ -12,13 +12,16 @@ namespace App\Services\TimeExport\Profiles;
 
 use App\Models\{TimeExport, TimeExportLine};
 use App\Services\TimeExport\WageTypeResolver;
+use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * DATEV-LODAS-naher CSV-Export (Feature 005, MVP).
  *
  * Format (dokumentiert, KEINE zertifizierte LODAS-Datei):
- *   - CSV ohne BOM, Trenner ;  EOL \r\n, keine Quotes (Felder sind numerisch
- *     bzw. enthalten keine Trennzeichen)
+ *   - CSV ohne BOM, Trenner ;  EOL \r\n; Anführungszeichen nur, wo ein Wert
+ *     Trenner, Anführungszeichen oder Zeilenumbruch enthält (freie Personal-
+ *     nummer/Kostenstelle) — saubere Zeilen bleiben byte-gleich
  *   - Header: Personalnummer;Datum;Lohnart;Stunden;Kostenstelle
  *   - Personalnummer: users.personnel_number, Fallback User-ID
  *   - Datum: TT.MM.JJJJ — bei tagesgenauen Zuschlagszeilen der Kalendertag,
@@ -60,7 +63,7 @@ class DatevLodasProfile implements ExportProfile {
     }
 
     public function render(TimeExport $export): string {
-        $rows = [implode(self::DELIMITER, ['Personalnummer', 'Datum', 'Lohnart', 'Stunden', 'Kostenstelle'])];
+        $rows = [CsvStringHelper::encodeLine(['Personalnummer', 'Datum', 'Lohnart', 'Stunden', 'Kostenstelle'], self::DELIMITER)];
 
         $resolver = new WageTypeResolver((int) $export->organization_id, $this->key());
         $lines = $export->lines()
@@ -84,13 +87,13 @@ class DatevLodasProfile implements ExportProfile {
             // Org-Mapping vor Regel-Code vor Default (A21, Rückwärtskompatibilität).
             $wageTypeCode = $resolver->resolveCode($line) ?? $this->normalWageTypeCode;
 
-            $rows[] = implode(self::DELIMITER, [
+            $rows[] = CsvStringHelper::encodeLine([
                 $personnelNo,
                 $date,
                 $wageTypeCode,
-                number_format((float) $line->quantity, 2, ',', ''),
+                NumberHelper::toGermanFormat((float) $line->quantity, 2),
                 (string) $line->cost_center,
-            ]);
+            ], self::DELIMITER);
         }
 
         return implode(self::EOL, $rows) . self::EOL;

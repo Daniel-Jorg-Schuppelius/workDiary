@@ -14,10 +14,10 @@ namespace App\Services\Auth\Sso;
 
 use App\Models\SsoConnection;
 use CommonToolkit\Enums\HashAlgorithm;
-use CommonToolkit\Helper\Data\CryptoHelper;
-use DOMDocument;
-use DOMXPath;
+use CommonToolkit\Helper\Data\{CryptoHelper, EmailHelper, XmlHelper};
+use ErrorException;
 use Illuminate\Support\Facades\{Cache, Log};
+use InvalidArgumentException;
 use OneLogin\Saml2\{AuthnRequest, Response, Settings, Utils};
 
 /**
@@ -192,15 +192,16 @@ class SamlClient {
     }
 
     private function assertionId(Response $response): ?string {
-        $document = new DOMDocument();
-        if (! @$document->loadXML((string) $response->document->saveXML())) {
+        try {
+            $id = trim((string) XmlHelper::xpathFirst(
+                (string) $response->document->saveXML(),
+                '//saml:Assertion/@ID',
+                ['saml' => 'urn:oasis:names:tc:SAML:2.0:assertion'],
+            ));
+        } catch (InvalidArgumentException|ErrorException) {
+            // Ungültiges XML: keine Assertion-ID (Aufrufer lehnt ab).
             return null;
         }
-
-        $xpath = new DOMXPath($document);
-        $xpath->registerNamespace('saml', 'urn:oasis:names:tc:SAML:2.0:assertion');
-        $nodes = $xpath->query('//saml:Assertion/@ID');
-        $id = $nodes !== false && $nodes->length > 0 ? trim((string) $nodes->item(0)?->nodeValue) : '';
 
         return $id !== '' ? $id : null;
     }
@@ -217,11 +218,11 @@ class SamlClient {
 
         foreach ($candidates as $claim) {
             $value = $attributes[$claim][0] ?? null;
-            if (is_string($value) && filter_var($value, FILTER_VALIDATE_EMAIL) !== false) {
+            if (is_string($value) && EmailHelper::isEmail($value)) {
                 return $value;
             }
         }
 
-        return filter_var($nameId, FILTER_VALIDATE_EMAIL) !== false ? $nameId : null;
+        return EmailHelper::isEmail($nameId) ? $nameId : null;
     }
 }

@@ -22,7 +22,7 @@ use App\Plugins\OrgaMax\OrgaMaxPlugin;
 use App\Plugins\OrgaMax\Services\{OrgaMaxConnectionService, OrgaMaxScopePreflight, OrgaMaxSyncService};
 use App\Plugins\Support\Concerns\ResolvesPluginOrgContext;
 use App\Services\Integration\IntegrationOutboxService;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -181,7 +181,7 @@ class OrgaMaxAdminController extends Controller {
             return back()->with('error', __('orgamax.sync.failed'));
         }
 
-        return back()->with('success', __('orgamax.sync.done', ['counters' => json_encode($counters)]));
+        return back()->with('success', __('orgamax.sync.done', ['counters' => JsonHelper::encode($counters)]));
     }
 
     public function disconnect(): RedirectResponse {

@@ -18,6 +18,7 @@ use App\Models\{Attendance, ImportValueMapping, Organization, User};
 use App\Services\Import\{HasMappableValues, ImportOutcome, ValidationIssue};
 use App\Services\Import\Specs\Concerns\{BindsTimeImportReference, ParsesLocalDateTime, ResolvesImportUsers};
 use App\Services\TimeApproval\DayCloseService;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Throwable;
 
 /**
@@ -97,7 +98,7 @@ class AttendanceSpec extends AbstractEntitySpec implements HasMappableValues {
 
         if (($row['user_email'] ?? null) === null) {
             $issues[] = $this->requiredIssue('user_email');
-        } elseif (! filter_var($row['user_email'], FILTER_VALIDATE_EMAIL)) {
+        } elseif (! EmailHelper::isEmail($row['user_email'])) {
             $issues[] = $this->formatIssue('user_email', (string) __('import.error.format.email'));
         }
 

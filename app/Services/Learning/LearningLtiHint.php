@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Learning;
 
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use JsonException;
 
 /**
@@ -35,13 +36,13 @@ final class LearningLtiHint {
      */
     public function issue(string $purpose, array $claims, int $ttlSeconds = 600, ?CarbonImmutable $now = null): string {
         $now ??= CarbonImmutable::now();
-        $body = self::encode(json_encode([
+        $body = CryptoHelper::base64UrlEncode(JsonHelper::encode([
             'p' => $purpose,
             'x' => $now->getTimestamp() + max(1, $ttlSeconds),
             'c' => $claims,
-        ], JSON_THROW_ON_ERROR));
+        ]));
 
-        return $body . '.' . self::encode(hash_hmac('sha256', $body, self::key(), true));
+        return $body . '.' . CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key(), true));
     }
 
     /** @return array<mixed>|null die Angaben, oder `null` bei falscher Signatur, fremdem Zweck oder Ablauf */
@@ -54,14 +55,14 @@ final class LearningLtiHint {
 
         [$body, $mac] = $parts;
 
-        if (! hash_equals(self::encode(hash_hmac('sha256', $body, self::key(), true)), $mac)) {
+        if (! hash_equals(CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key(), true)), $mac)) {
             return null;
         }
 
-        $json = self::decode($body);
+        $json = CryptoHelper::base64UrlDecode($body);
 
         try {
-            $data = $json === null ? null : json_decode($json, true, 4, JSON_THROW_ON_ERROR);
+            $data = $json === false ? null : json_decode($json, true, 4, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             return null;
         }
@@ -87,15 +88,5 @@ final class LearningLtiHint {
 
         // Eigener Ableitungszweck: kein anderes Signat der Anwendung passt hierher.
         return hash_hmac('sha256', 'learning-lti-hint', $appKey, true);
-    }
-
-    private static function encode(string $bytes): string {
-        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
-    }
-
-    private static function decode(string $text): ?string {
-        $decoded = base64_decode(strtr($text, '-_', '+/'), true);
-
-        return $decoded === false ? null : $decoded;
     }
 }

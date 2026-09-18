@@ -15,6 +15,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\{Cache, Hash};
 use Illuminate\Support\Str;
 use PragmaRX\Google2FAQRCode\Google2FA;
@@ -32,7 +33,7 @@ class TwoFactorService {
 
     /** Prüft einen 6-stelligen TOTP-Code (mit ±1 Zeitfenster Toleranz). */
     public function verify(string $secret, string $code): bool {
-        $code = preg_replace('/\D/', '', $code) ?? '';
+        $code = StringHelper::extractDigits($code);
         if ($code === '') {
             return false;
         }
@@ -49,7 +50,7 @@ class TwoFactorService {
      * existiert der Schlüssel bereits, war der Code schon in Gebrauch.
      */
     public function verifyForUser(User $user, string $secret, string $code): bool {
-        $code = preg_replace('/\D/', '', $code) ?? '';
+        $code = StringHelper::extractDigits($code);
         if ($code === '') {
             return false;
         }

@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Reselling\Marketplace;
 
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Eine Anbieterrechnung oder -gutschrift (Feature 152, MVP-762), aus dem PDF
@@ -57,8 +58,8 @@ final class ProviderInvoice {
         }
 
         return (string) __('resale_import.invoice.total_mismatch', [
-            'lines' => number_format($this->linesTotal(), 2, ',', '.'),
-            'net' => number_format((float) $this->netTotal, 2, ',', '.'),
+            'lines' => NumberHelper::toGermanFormat($this->linesTotal(), 2, withThousandsSeparator: true),
+            'net' => NumberHelper::toGermanFormat((float) $this->netTotal, 2, withThousandsSeparator: true),
         ]);
     }
 }

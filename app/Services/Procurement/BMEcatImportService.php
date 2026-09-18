@@ -14,6 +14,7 @@ namespace App\Services\Procurement;
 
 use App\Models\SupplierCatalogSource;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use ERechnungToolkit\Entities\Bmecat\{BmecatArticle, BmecatCatalog, BmecatPrice};
 use ERechnungToolkit\Parsers\BmecatParser;
 use Illuminate\Support\Facades\Log;
@@ -106,7 +107,7 @@ class BMEcatImportService {
      */
     private function tiers(BmecatArticle $article): array {
         return array_map(static fn (BmecatPrice $price): array => [
-            'min_qty' => number_format($price->getLowerBound(), 4, '.', ''),
+            'min_qty' => NumberHelper::toUSFormat($price->getLowerBound(), 4),
             'unit_price' => (string) $price->getAmount()?->getAmount(),
         ], $article->getScalePrices());
     }

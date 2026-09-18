@@ -169,19 +169,27 @@ class BackupRunService {
             $cipherPath = $plainPath . '.enc';
             $this->crypter->encryptPart($plainPath, $cipherPath, $dataKey, $uuid, $partNo);
 
-            $cipherSize = (int) filesize($cipherPath);
+            $cipherSize = File::size($cipherPath);
             $cipherTotal += $cipherSize;
             BackupGenerationPart::query()->create([
                 'generation_id' => $generation->id,
                 'part_no' => $partNo,
-                'plain_size' => (int) filesize($plainPath),
+                'plain_size' => File::size($plainPath),
                 'cipher_size' => $cipherSize,
                 'plain_sha256' => File::hash($plainPath),
                 'cipher_sha256' => File::hash($cipherPath),
             ]);
-            @unlink($plainPath); // Klartext-Teil sofort entsorgen
+            try {
+                File::delete($plainPath); // Klartext-Teil sofort entsorgen
+            } catch (Throwable) {
+                // Best effort: cleanup() räumt das Arbeitsverzeichnis ohnehin ab.
+            }
         }
-        @unlink($result['tar_path']);
+        try {
+            File::delete($result['tar_path']);
+        } catch (Throwable) {
+            // Best effort, s. o.
+        }
 
         $generation->forceFill([
             'status' => BackupGenerationStatus::Uploading,
@@ -224,14 +232,18 @@ class BackupRunService {
                 continue;
             }
             $cipherPath = $this->cipherPath($generation, $part->part_no);
-            if (!is_file($cipherPath)) {
+            if (!File::isFile($cipherPath)) {
                 throw new BackupPreflightException(
                     "Verschlüsselter Teil {$part->part_no} fehlt lokal — Lauf kann nicht fortgesetzt werden.",
                 );
             }
             $ref = $adapter->backupUploadPart($connection, $cipherPath, $this->naming->partName($prefix, $part->part_no));
             $part->forceFill(['remote_ref' => $ref, 'uploaded_at' => now()])->save();
-            @unlink($cipherPath);
+            try {
+                File::delete($cipherPath);
+            } catch (Throwable) {
+                // Best effort: cleanup() räumt das Arbeitsverzeichnis ohnehin ab.
+            }
         }
     }
 
@@ -262,20 +274,11 @@ class BackupRunService {
 
         $commit = $this->crypter->buildCommitDocument($manifest, $dataKey, $generation->snapshot_uuid);
 
-        $commitPath = tempnam(sys_get_temp_dir(), 'wd-commit-');
-        if ($commitPath === false) {
-            throw new BackupPreflightException('Commit-Datei konnte nicht angelegt werden.');
-        }
-        try {
-            file_put_contents($commitPath, $commit['document']);
-            $remoteRef = $adapter->backupUploadPart(
-                $connection,
-                $commitPath,
-                $this->naming->commitName((string) $generation->remote_prefix),
-            );
-        } finally {
-            @unlink($commitPath);
-        }
+        $remoteRef = File::withTemp($commit['document'], fn(string $commitPath): string => $adapter->backupUploadPart(
+            $connection,
+            $commitPath,
+            $this->naming->commitName((string) $generation->remote_prefix),
+        ), 'wd-commit-');
 
         $generation->forceFill([
             'status' => BackupGenerationStatus::Committed,
@@ -368,7 +371,7 @@ class BackupRunService {
         // Nur fortsetzbar, wenn alle offenen Teile lokal noch vorliegen.
         $pending = $candidate->parts()->whereNull('uploaded_at')->orderBy('part_no')->get();
         foreach ($pending as $part) {
-            if (!is_file($this->cipherPath($candidate, $part->part_no))) {
+            if (!File::isFile($this->cipherPath($candidate, $part->part_no))) {
                 $candidate->forceFill([
                     'status' => BackupGenerationStatus::Failed,
                     'last_error' => 'Wiederaufnahme unmöglich: lokale Teile fehlen.',

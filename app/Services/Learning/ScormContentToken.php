@@ -14,6 +14,7 @@ namespace App\Services\Learning;
 
 use App\Models\Learning\{LearningCmi5Package, LearningEnrollment, LearningScormPackage, LearningUnit};
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use JsonException;
 
 /**
@@ -36,14 +37,14 @@ final class ScormContentToken {
     public function issue(LearningEnrollment $enrollment, LearningUnit $unit, LearningScormPackage|LearningCmi5Package $package, ?CarbonImmutable $now = null): string {
         $now ??= CarbonImmutable::now();
 
-        $body = self::encode((string) json_encode([
+        $body = CryptoHelper::base64UrlEncode(JsonHelper::encode([
             'e' => $enrollment->id,
             'u' => $unit->id,
             'p' => $package->id,
             'x' => $now->getTimestamp() + max(60, (int) config('learning.scorm.token_ttl', 28800)),
         ]));
 
-        return $body . '.' . self::encode(hash_hmac('sha256', $body, self::key($package instanceof LearningCmi5Package ? self::KIND_CMI5 : self::KIND_SCORM), true));
+        return $body . '.' . CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key($package instanceof LearningCmi5Package ? self::KIND_CMI5 : self::KIND_SCORM), true));
     }
 
     /**
@@ -58,14 +59,14 @@ final class ScormContentToken {
 
         [$body, $mac] = $parts;
 
-        if (! hash_equals(self::encode(hash_hmac('sha256', $body, self::key($kind), true)), $mac)) {
+        if (! hash_equals(CryptoHelper::base64UrlEncode(hash_hmac('sha256', $body, self::key($kind), true)), $mac)) {
             return null;
         }
 
-        $json = self::decode($body);
+        $json = CryptoHelper::base64UrlDecode($body);
 
         try {
-            $data = $json === null ? null : json_decode($json, true, 4, JSON_THROW_ON_ERROR);
+            $data = $json === false ? null : json_decode($json, true, 4, JSON_THROW_ON_ERROR);
         } catch (JsonException) {
             return null;
         }
@@ -90,15 +91,5 @@ final class ScormContentToken {
 
         // Eigener Ableitungszweck: ein Token lässt sich nicht als anderes Signat verwenden.
         return hash_hmac('sha256', $kind === self::KIND_CMI5 ? 'cmi5-content-token' : 'scorm-content-token', $appKey, true);
-    }
-
-    private static function encode(string $bytes): string {
-        return rtrim(strtr(base64_encode($bytes), '+/', '-_'), '=');
-    }
-
-    private static function decode(string $text): ?string {
-        $decoded = base64_decode(strtr($text, '-_', '+/'), true);
-
-        return $decoded === false ? null : $decoded;
     }
 }

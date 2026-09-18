@@ -17,6 +17,7 @@ use App\Plugins\DomainReselling\DomainResellingConfig;
 use App\Plugins\Support\Domain\DomainResponse;
 use CommonToolkit\Enums\CurrencyCode;
 use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\Data\{NumberHelper, StringHelper};
 use Illuminate\Support\Carbon;
 
 /**
@@ -65,7 +66,7 @@ class DomainSyncService {
                     'user_class' => $this->field($row, ['userclass', 'class']),
                     'active' => $this->boolField($row, ['active', 'status'], true),
                     'currency' => $this->currency($this->field($row, ['currency'])),
-                    'balance_snapshot' => $this->decimal($this->field($row, ['balance', 'accountbalance'])),
+                    'balance_snapshot' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['balance', 'accountbalance']) ?? ''),
                     'balance_at' => Carbon::now(),
                     'raw_hash' => CryptoHelper::hash(JsonHelper::encode($row)),
                     'synced_at' => Carbon::now(),
@@ -250,7 +251,7 @@ class DomainSyncService {
             'accounting_at' => $this->date($this->field($row, ['paiddate', 'accountingdate'])) ?? $projection->accounting_at,
             'failure_at' => $this->date($this->field($row, ['failuredate'])) ?? $projection->failure_at,
             'finalization_at' => $this->date($this->field($row, ['finalizationdate'])) ?? $projection->finalization_at,
-            'renewal_price' => $this->decimal($this->field($row, ['renewalprice', 'price'])),
+            'renewal_price' => NumberHelper::normalizeDecimalStringOrNull($this->field($row, ['renewalprice', 'price']) ?? ''),
             'renewal_currency' => $this->currency($this->field($row, ['currency', 'renewalcurrency']))?->value,
             'revision' => $this->field($row, ['revision', 'roid']),
             'owner_handle' => $this->ownerHandle($row) ?? $projection->owner_handle,
@@ -313,11 +314,8 @@ class DomainSyncService {
      */
     private function boolField(array $row, array $keys, bool $default): bool {
         $value = $this->field($row, $keys);
-        if ($value === null) {
-            return $default;
-        }
 
-        return in_array(strtolower($value), ['1', 'true', 'yes', 'active'], true);
+        return $value === null ? $default : (StringHelper::parseBool($value) ?? false);
     }
 
     private function date(?string $value): ?Carbon {
@@ -330,10 +328,6 @@ class DomainSyncService {
         } catch (\Throwable) {
             return null;
         }
-    }
-
-    private function decimal(?string $value): ?float {
-        return $value !== null && is_numeric($value) ? (float) $value : null;
     }
 
     private function currency(?string $value): ?CurrencyCode {

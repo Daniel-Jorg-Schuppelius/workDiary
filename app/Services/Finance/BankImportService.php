@@ -19,7 +19,7 @@ use App\Services\Concerns\ResolvesActorId;
 use App\Services\Finance\Banking\{BankStatementParser, NormalizedStatement, NormalizedTransaction};
 use App\Support\Crypto\BlindIndex;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\{DB, Storage};
 
@@ -258,7 +258,7 @@ class BankImportService {
         $rows = [];
         foreach ($tx->details as $detail) {
             $rows[] = [
-                'amount' => number_format($detail->signedAmount, 2, '.', ''),
+                'amount' => NumberHelper::toUSFormat($detail->signedAmount, 2),
                 'end_to_end_id' => $detail->endToEndId,
                 'mandate_ref' => $detail->mandateRef,
                 'counterparty_name' => $detail->counterpartyName,
@@ -285,7 +285,7 @@ class BankImportService {
         return CryptoHelper::hash(implode('|', [
             $statement->file_hash,
             $tx->lineIndex,
-            number_format($tx->amount, 2, '.', ''),
+            NumberHelper::toUSFormat($tx->amount, 2),
             $tx->direction->value,
             $tx->bookingDate,
             $tx->endToEndId ?? '',

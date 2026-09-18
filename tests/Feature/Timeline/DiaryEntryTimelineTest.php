@@ -167,6 +167,18 @@ class DiaryEntryTimelineTest extends TestCase {
         $this->assertSame($sorted, $timestamps, 'Timeline ist nicht absteigend sortiert.');
     }
 
+    /** Toolkit-Audit 2026-09: aus der Materialmenge wurde „2.500 m m". */
+    public function test_material_summary_shows_the_quantity_once_in_german_format(): void {
+        $user = User::factory()->user()->create();
+        $entry = $this->makeEntryWithAllSources($user);
+
+        $this->actingAsWithContext($user);
+        $items = $this->service()->forDiaryEntry($entry, $user)['items'];
+        $material = array_values(array_filter($items, fn($item) => str_starts_with($item->id, 'material:')));
+
+        $this->assertSame('2,5 m — Kupferrohr 15mm', $material[0]->summary);
+    }
+
     public function test_confidential_note_is_hidden_from_other_users_but_visible_to_creator(): void {
         $author = User::factory()->user()->create();
         $other = User::factory()->user()->create(['organization_id' => $author->organization_id]);

@@ -17,6 +17,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{ServiceTicket, TicketRoutingRule};
 use App\Services\ServiceTicket\TicketRoutingService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -81,7 +82,7 @@ class TicketRoutingController extends Controller {
         $summary = $log === []
             ? __('Keine Regel trifft zu.')
             : implode('; ', array_map(
-                fn(array $entry): string => $entry['rule']->name . ' → ' . json_encode($entry['actions'], JSON_UNESCAPED_UNICODE),
+                fn(array $entry): string => $entry['rule']->name . ' → ' . JsonHelper::encode($entry['actions'], JSON_UNESCAPED_UNICODE),
                 $log,
             ));
 

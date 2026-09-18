@@ -16,7 +16,7 @@ use App\Models\CloudIntake\{CloudDocumentConnection, CloudDocumentItem};
 use App\Plugins\Contracts\DocumentIntakeSource;
 use App\Plugins\PluginManager;
 use App\Plugins\Support\Intake\IntakeItem;
-use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\Cache;
@@ -253,8 +253,12 @@ class CloudIntakeRunner {
                 default => $result['rejected']++,
             };
         } finally {
-            if ($quarantine !== null && is_file($quarantine)) {
-                @unlink($quarantine);
+            if ($quarantine !== null) {
+                try {
+                    File::delete($quarantine);
+                } catch (Throwable) {
+                    // Best effort: Quarantäne-Reste sind ohne Referenz wertlos.
+                }
             }
         }
     }
@@ -262,19 +266,12 @@ class CloudIntakeRunner {
     /** Download mit hartem Byte-Budget in den Quarantäne-Bereich. */
     private function downloadToQuarantine(CloudDocumentConnection $connection, DocumentIntakeSource $adapter, IntakeItem $item, int $maxSize): ?string {
         $dir = storage_path('app/cloud-intake-quarantine');
-        if (! is_dir($dir)) {
-            mkdir($dir, 0770, true);
-        }
+        Folder::create($dir, 0770, true);
         $path = $dir . '/' . Str::uuid()->toString();
 
         $stream = $adapter->intakeDownload($connection, $item);
-        $handle = fopen($path, 'wb');
-        if ($handle === false) {
-            throw new \RuntimeException('Quarantäne-Datei nicht beschreibbar.');
-        }
-
         $written = 0;
-        try {
+        $chunks = (static function () use ($stream, $maxSize, &$written): \Generator {
             while (! $stream->eof()) {
                 $chunk = $stream->read(8192);
                 if ($chunk === '') {
@@ -282,18 +279,35 @@ class CloudIntakeRunner {
                 }
                 $written += strlen($chunk);
                 if ($written > $maxSize) {
-                    return null; // Budget überschritten — Datei verwerfen
+                    return; // Budget überschritten — Rest nicht mehr lesen
                 }
-                fwrite($handle, $chunk);
+                yield $chunk;
             }
-        } finally {
-            fclose($handle);
-            if ($written > $maxSize && is_file($path)) {
-                @unlink($path);
+        })();
+
+        // writeStream prüft jedes fwrite: ein Schreibfehler endet nicht mehr in einer stillen Teil-Datei.
+        $failure = null;
+        try {
+            if (File::writeStream($path, $chunks) === false) {
+                throw new \RuntimeException('Quarantäne-Datei nicht beschreibbar.');
             }
+            if ($written <= $maxSize) {
+                return $path;
+            }
+        } catch (Throwable $e) {
+            $failure = $e;
         }
 
-        return $written > $maxSize ? null : $path;
+        // Fehler oder Budget überschritten — Teil-Datei verwerfen (best effort).
+        try {
+            File::delete($path);
+        } catch (Throwable) {
+        }
+        if ($failure !== null) {
+            throw $failure;
+        }
+
+        return null;
     }
 
     /**

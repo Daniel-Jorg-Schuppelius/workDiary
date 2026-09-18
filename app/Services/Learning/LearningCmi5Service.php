@@ -15,9 +15,10 @@ namespace App\Services\Learning;
 use App\Models\Learning\{LearningCmi5Package, LearningUnit};
 use App\Models\User;
 use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use ELearningToolkit\Cmi5\{AssignableUnit, Block, Cmi5Exception, CourseStructure, LanguageMap};
 use ELearningToolkit\Package\{ExtractedPackage, PackageException, PackageExtractor};
-use Illuminate\Support\Facades\{DB, File};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 
@@ -40,7 +41,7 @@ class LearningCmi5Service {
 
         try {
             if ($isStructureOnly) {
-                $xml = (string) @file_get_contents($filePath);
+                $xml = File::read($filePath);
             } else {
                 $relative = 'learning/cmi5/' . $unit->organization_id . '/' . Str::lower(Str::random(16));
                 $absolute = storage_path('app/' . $relative);
@@ -51,7 +52,13 @@ class LearningCmi5Service {
             $structure = CourseStructure::fromXml($xml);
         } catch (PackageException|Cmi5Exception $e) {
             if ($absolute !== null) {
-                File::deleteDirectory($absolute);
+                try {
+                    if (Folder::exists($absolute)) {
+                        Folder::delete($absolute, true);
+                    }
+                } catch (\Throwable) {
+                    // Best effort wie zuvor (symlink-sicher, Links werden nur entfernt).
+                }
             }
 
             // Das Toolkit bleibt sprachneutral — übersetzt wird hier.
@@ -110,7 +117,13 @@ class LearningCmi5Service {
         // Erst nach dem Commit: Ein Rollback hätte die alten Dateien noch gebraucht.
         foreach ($obsolete as $path) {
             if (is_string($path) && $path !== '' && $path !== $relative) {
-                File::deleteDirectory(storage_path('app/' . $path));
+                try {
+                    if (Folder::exists(storage_path('app/' . $path))) {
+                        Folder::delete(storage_path('app/' . $path), true);
+                    }
+                } catch (\Throwable) {
+                    // Best effort wie zuvor (symlink-sicher, Links werden nur entfernt).
+                }
             }
         }
 

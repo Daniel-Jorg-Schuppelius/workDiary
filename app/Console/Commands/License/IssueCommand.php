@@ -10,9 +10,8 @@
 
 namespace App\Console\Commands\License;
 
-use App\Services\Licensing\LicenseService;
 use Carbon\CarbonImmutable;
-use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use CommonToolkit\Helper\FileSystem\File as ToolkitFile;
 use Illuminate\Console\Command;
 
@@ -47,8 +46,8 @@ class IssueCommand extends Command {
             return self::FAILURE;
         }
 
-        $privateKey = LicenseService::b64Decode($privateB64);
-        if ($privateKey === null || strlen($privateKey) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
+        $privateKey = CryptoHelper::base64UrlDecode($privateB64);
+        if ($privateKey === false || strlen($privateKey) !== SODIUM_CRYPTO_SIGN_SECRETKEYBYTES) {
             $this->error('Private Key hat falsches Format.');
 
             return self::FAILURE;
@@ -73,15 +72,14 @@ class IssueCommand extends Command {
         $json = JsonHelper::encode($payload, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
         $signature = sodium_crypto_sign_detached($json, $privateKey);
-        $licenseKey = LicenseService::b64Encode($json) . '.' . LicenseService::b64Encode($signature);
+        $licenseKey = CryptoHelper::base64UrlEncode($json) . '.' . CryptoHelper::base64UrlEncode($signature);
 
         $this->info('Lizenzschlüssel:');
         $this->line($licenseKey);
 
         $out = $this->option('out');
         if (is_string($out) && $out !== '') {
-            ToolkitFile::write($out, $licenseKey);
-            @chmod($out, 0600);
+            ToolkitFile::write($out, $licenseKey, permissions: 0600, lock: true);
             $this->info('Geschrieben nach: ' . $out);
         }
 

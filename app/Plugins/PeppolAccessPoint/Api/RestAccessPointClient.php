@@ -14,6 +14,7 @@ namespace App\Plugins\PeppolAccessPoint\Api;
 
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Plugins\Support\{PluginApiClient, PluginHttpFactory};
+use CommonToolkit\Helper\Data\JsonHelper;
 use DateTimeImmutable;
 use ERechnungToolkit\Contracts\AccessPointClientInterface;
 use ERechnungToolkit\Enums\PeppolTransportStatus;
@@ -148,7 +149,7 @@ final class RestAccessPointClient implements AccessPointClientInterface {
                 $messageId,
                 $envelope,
                 $this->timestamp($item, 'receivedAt') ?? new DateTimeImmutable,
-                json_encode($item, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: null,
+                JsonHelper::encode($item, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             );
         }
 

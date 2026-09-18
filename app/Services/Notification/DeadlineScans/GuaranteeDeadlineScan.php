@@ -68,7 +68,7 @@ class GuaranteeDeadlineScan extends AbstractDeadlineScan {
         $params = [
             'reference' => (string) ($guarantee->reference ?? '–'),
             'issuer' => $guarantee->issuerLabel(),
-            'amount' => \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($guarantee->amount->toFloat(), 2, withThousandsSeparator: true),
+            'amount' => $guarantee->amount->format(withSymbol: false),
             'date' => $dueAt?->format('d.m.Y') ?? '–',
         ];
 

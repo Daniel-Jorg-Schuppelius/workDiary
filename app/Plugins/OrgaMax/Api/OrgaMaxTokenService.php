@@ -14,6 +14,7 @@ namespace App\Plugins\OrgaMax\Api;
 
 use APIToolkit\Exceptions\{ApiException, UnauthorizedException};
 use App\Models\OrgaMaxConnection;
+use CommonToolkit\Helper\Data\CryptoHelper;
 use Illuminate\Support\Carbon;
 use Orgamax\API\Endpoints\AuthEndpoint;
 
@@ -93,7 +94,7 @@ class OrgaMaxTokenService {
         if (count($parts) < 2) {
             return null;
         }
-        $payload = json_decode((string) base64_decode(strtr($parts[1], '-_', '+/'), true), true);
+        $payload = json_decode((string) CryptoHelper::base64UrlDecode($parts[1]), true);
         $exp = is_array($payload) ? ($payload['exp'] ?? null) : null;
 
         return is_numeric($exp) ? Carbon::createFromTimestamp((int) $exp) : null;

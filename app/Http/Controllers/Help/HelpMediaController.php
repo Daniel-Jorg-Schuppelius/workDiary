@@ -13,6 +13,9 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Help;
 
 use App\Http\Controllers\Controller;
+use CommonToolkit\Enums\HashAlgorithm;
+use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
@@ -33,16 +36,13 @@ class HelpMediaController extends Controller {
         $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
         abort_unless(in_array($extension, self::ALLOWED_EXTENSIONS, true), 404);
 
-        $root = realpath((string) config('help-center.media_path'));
-        abort_if($root === false, 404);
-
-        $file = realpath($root . DIRECTORY_SEPARATOR . $path);
         // Containment: aufgelöster Pfad muss INNERHALB des Media-Roots liegen
         // (fängt ../-Traversal und Symlink-Ausbrüche gleichermaßen).
-        abort_if($file === false || ! str_starts_with($file, $root . DIRECTORY_SEPARATOR), 404);
+        $file = Folder::resolveWithin((string) config('help-center.media_path'), ltrim($path, '/'));
+        abort_if($file === null || ! File::isFile($file), 404);
 
         return response()
             ->file($file, ['Cache-Control' => 'private, max-age=' . self::CACHE_SECONDS])
-            ->setEtag(md5($file . '|' . (string) filemtime($file)));
+            ->setEtag((string) CryptoHelper::hash($file . '|' . File::modifiedTime($file), HashAlgorithm::MD5));
     }
 }

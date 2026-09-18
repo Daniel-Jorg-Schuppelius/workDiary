@@ -18,7 +18,7 @@ use App\Services\Expense\ExpenseInvoicingService;
 use App\Services\Invoicing\InvoiceGenerator;
 use App\Services\Invoicing\{InvoiceIssueException, InvoiceIssueService};
 use App\Services\UI\DateRangeContext;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper};
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, DB, Gate, Mail};
@@ -282,7 +282,7 @@ class InvoiceController extends Controller {
             'invoice' => $invoice,
             'nextLevel' => $nextLevel,
             'defaultTo' => $invoice->customer->primaryContact()['email'] ?? $invoice->customer->email ?? '',
-            'defaultFee' => $step['fee'] > 0 ? number_format($step['fee'], 2, '.', '') : null,
+            'defaultFee' => $step['fee'] > 0 ? NumberHelper::toUSFormat($step['fee'], 2) : null,
             'defaultPayUntil' => now()->addDays($step['pay_days'])->toDateString(),
             'interest' => $interest,
             'aiUsable' => $aiUsable,

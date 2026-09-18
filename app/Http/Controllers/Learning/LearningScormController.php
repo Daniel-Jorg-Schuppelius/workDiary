@@ -18,6 +18,7 @@ use App\Models\Learning\{LearningCourse, LearningEnrollment, LearningScormPackag
 use App\Models\User;
 use App\Services\Learning\{LearningScormService, LearningXapiService, ScormContentToken, ScormPackageFiles};
 use App\Support\Learning\ScormContentHost;
+use CommonToolkit\Helper\Data\JsonHelper;
 use ELearningToolkit\Scorm\LaunchPath;
 use Illuminate\Http\{JsonResponse, RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -145,7 +146,7 @@ class LearningScormController extends Controller {
         /** @var array<string, mixed> $statement */
         $statement = (array) $request->input('statement', []);
 
-        abort_if(strlen((string) json_encode($statement)) > 64000, 413);
+        abort_if(strlen(JsonHelper::encode($statement)) > 64000, 413);
 
         $record = $this->xapi->store($enrollment, $statement);
 

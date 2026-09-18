@@ -13,6 +13,7 @@ namespace App\Http\Controllers;
 use App\Models\DiaryEntry;
 use App\Services\UI\DateRangeContext;
 use App\Support\CsvExport;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
@@ -28,15 +29,16 @@ class DiaryExportController extends Controller {
         $rows = (function () use ($query): \Generator {
             /** @var DiaryEntry $entry */
             foreach ($query->lazy(500) as $entry) {
+                // Mehrzeiler flachziehen; Formel-Guard übernimmt CsvExport zentral.
                 yield [
                     $entry->id,
-                    $this->oneLine($entry->statusLabel()),
-                    $this->oneLine(optional($entry->user)->name ?? ''),
+                    StringHelper::normalizeWhitespace($entry->statusLabel()),
+                    StringHelper::normalizeWhitespace(optional($entry->user)->name ?? ''),
                     optional($entry->start_at)->format('Y-m-d H:i') ?? '',
                     optional($entry->end_at)->format('Y-m-d H:i') ?? '',
-                    $this->oneLine($entry->content ?? ''),
-                    $this->oneLine($entry->response ?? ''),
-                    $this->oneLine($entry->tags->pluck('name')->implode(', ')),
+                    StringHelper::normalizeWhitespace($entry->content ?? ''),
+                    StringHelper::normalizeWhitespace($entry->response ?? ''),
+                    StringHelper::normalizeWhitespace($entry->tags->pluck('name')->implode(', ')),
                     $entry->is_archived ? '1' : '0',
                     optional($entry->created_at)->format('Y-m-d H:i') ?? '',
                 ];
@@ -107,10 +109,5 @@ class DiaryExportController extends Controller {
         }
 
         return $query;
-    }
-
-    // Mehrzeiler flachziehen; Formel-Guard übernimmt CsvExport zentral.
-    private function oneLine(string $value): string {
-        return trim(preg_replace('/\s+/', ' ', $value) ?? '');
     }
 }

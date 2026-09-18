@@ -14,7 +14,7 @@ use App\Enums\Domain\{DomainCapabilityArea, DomainProviderCommandStatus};
 use App\Models\Domain\{DomainProviderCommand, DomainProviderConnection};
 use App\Models\User;
 use App\Plugins\Support\Domain\{DomainCapabilityBlockedException, DomainProviderException};
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\{Carbon, Str};
 use RuntimeException;
@@ -57,9 +57,10 @@ class DomainCommandService {
             'subject_type' => $subject !== null ? $subject::class : null,
             'subject_id' => $subject?->getKey(),
             'customer_id' => $customerId,
-            'payload' => $this->redactPayload($payload),
+            // Redaktion: nie Passwort/Auth-Code in der gespeicherten Payload.
+            'payload' => JsonHelper::maskSensitiveArray($payload, ['password', 'auth', 'authcode', 'pw'], '[redacted]', false),
             'preflight_snapshot' => $preflightSnapshot,
-            'payload_hash' => CryptoHelper::hash(json_encode($payload) ?: ''),
+            'payload_hash' => CryptoHelper::hash(JsonHelper::encode($payload)),
             'status' => $requiresSecondApproval ? DomainProviderCommandStatus::Draft : DomainProviderCommandStatus::Approved,
             'requires_second_approval' => $requiresSecondApproval,
             'requested_by_user_id' => $requestedBy?->id,
@@ -170,22 +171,6 @@ class DomainCommandService {
         $row = $this->create($connection, $area, $command, $target, $payload, false, $subject, $customerId, $preflightSnapshot, $requestedBy);
 
         return $this->dispatch($row);
-    }
-
-    /**
-     * Redaktion: nie Passwort/Auth-Code in der gespeicherten Payload.
-     *
-     * @param  array<string, scalar|null>  $payload
-     * @return array<string, scalar|null>
-     */
-    private function redactPayload(array $payload): array {
-        foreach (['password', 'auth', 'authcode', 'pw'] as $secret) {
-            if (array_key_exists($secret, $payload)) {
-                $payload[$secret] = '[redacted]';
-            }
-        }
-
-        return $payload;
     }
 
     private function redactResponse(int $code, string $description): string {

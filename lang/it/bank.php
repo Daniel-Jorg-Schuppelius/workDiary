@@ -94,6 +94,7 @@ return [
             'duplicate_file' => 'Questo file è già stato importato (duplicato).',
             'unavailable' => 'L’importazione bancaria è un modulo aggiuntivo opzionale e a pagamento, non attivato in questa installazione. L’attivazione è possibile su richiesta a :contact.',
             'unavailable_badge' => 'Modulo aggiuntivo non attivato',
+            'unsupported_format' => 'Il formato :format non è supportato per l\'importazione degli estratti conto (previsti: CAMT.053, MT940, OFX, QIF, QXF, PAIN.001/008).',
         ],
     ],
     'reconcile' => [

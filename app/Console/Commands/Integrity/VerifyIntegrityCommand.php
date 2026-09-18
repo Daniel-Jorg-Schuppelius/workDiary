@@ -14,6 +14,7 @@ namespace App\Console\Commands\Integrity;
 
 use App\Enums\Security\IntegrityCheckStatus;
 use App\Services\Release\CodeIntegrityService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 
 /**
@@ -42,7 +43,7 @@ class VerifyIntegrityCommand extends Command {
         $check = $service->runVerification($trigger, withAnchor: (bool) $this->option('anchor'));
 
         if ((bool) $this->option('json')) {
-            $this->line((string) json_encode([
+            $this->line(JsonHelper::encode([
                 'status' => $check->status->value,
                 'baseline_source' => $check->baseline_source,
                 'baseline_root' => $check->baseline_root,

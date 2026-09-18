@@ -13,7 +13,7 @@ namespace App\Services\Protocol;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Protocol;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, DataUrlHelper};
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
@@ -88,7 +88,7 @@ class ProtocolPdfRenderer {
                 $att = $photo->attachment;
                 $src = null;
                 if ($att !== null && $disk->exists($att->path)) {
-                    $src = 'data:' . $att->mime . ';base64,' . base64_encode((string) $disk->get($att->path));
+                    $src = DataUrlHelper::encode((string) $disk->get($att->path), $att->mime) ?: null;
                 }
                 $previews[] = [
                     'src' => $src,

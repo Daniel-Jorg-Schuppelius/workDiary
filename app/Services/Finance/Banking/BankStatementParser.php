@@ -22,6 +22,10 @@ use CommonToolkit\FinancialFormats\Entities\QIF\Transaction as QifTransaction;
 use CommonToolkit\FinancialFormats\Entities\QXF\Transaction as QxfTransaction;
 use CommonToolkit\FinancialFormats\Entities\Swift\Mt9xx\Purpose as Mt940Purpose;
 use CommonToolkit\FinancialFormats\Entities\Swift\Mt9xx\Type940\{Document as Mt940Document, Transaction as Mt940Transaction};
+use CommonToolkit\FinancialFormats\Enums\BankFormat;
+use CommonToolkit\FinancialFormats\Enums\ISO20022\Camt\CamtType;
+use CommonToolkit\FinancialFormats\Enums\ISO20022\Pain\PainType;
+use CommonToolkit\FinancialFormats\Helper\Data\BankFormatDetector;
 use CommonToolkit\FinancialFormats\Parsers\ISO20022\{CamtParser, PainParser};
 use CommonToolkit\FinancialFormats\Parsers\OFX\OfxDocumentParser;
 use CommonToolkit\FinancialFormats\Parsers\QIF\QifDocumentParser;
@@ -57,39 +61,41 @@ final class BankStatementParser {
     private const FALLBACK_CURRENCY = 'EUR';
 
     /**
-     * Inhaltsbasierte Formaterkennung (nie anhand der Dateiendung):
-     * OFX-Header/OFX-Wurzel ⇒ OFX; QXF-Wurzel ⇒ QXF; PAIN-Namespace bzw.
-     * -Wurzelelement ⇒ PAIN.001/008; XML mit <Document ⇒ CAMT.053;
-     * QIF-Bang-Direktive ⇒ QIF; sonst MT940 (Fallback wie bisher).
+     * Inhaltsbasierte Formaterkennung (nie anhand der Dateiendung) über das
+     * financial-formats-Toolkit: ISO-20022-Dateien nach Namespace bzw.
+     * Wurzelelement — bisher galt jedes `<Document` als CAMT.053, auch
+     * camt.052/054. Ohne eindeutiges Merkmal gilt MT940 (Fallback wie bisher).
+     *
+     * @throws BankImportException Für ISO-20022-Nachrichten, die der Import nicht verarbeitet.
      */
     public static function detectFormat(string $content): BankStatementFormat {
-        $head = ltrim($content);
+        FinancialFormatsSupport::ensureAvailable();
 
-        if (str_contains($head, 'OFXHEADER') || str_contains($head, '<OFX>') || str_contains($head, '<OFX ') || str_contains($head, '<?OFX')) {
-            return BankStatementFormat::Ofx;
-        }
+        return match (BankFormatDetector::detect($content)) {
+            BankFormat::OFX => BankStatementFormat::Ofx,
+            BankFormat::QXF => BankStatementFormat::Qxf,
+            BankFormat::QIF => BankStatementFormat::Qif,
+            BankFormat::CAMT, BankFormat::PAIN => self::isoFormat($content),
+            BankFormat::MT940, null => BankStatementFormat::Mt940,
+        };
+    }
 
-        if (str_starts_with($head, '<QXF') || preg_match('/^<\?xml[^>]*\?>\s*<QXF[\s>]/s', $head) === 1) {
-            return BankStatementFormat::Qxf;
-        }
+    /**
+     * @throws BankImportException
+     */
+    private static function isoFormat(string $content): BankStatementFormat {
+        $type = BankFormatDetector::detectIsoType($content);
 
-        if (str_contains($head, 'pain.001') || str_contains($head, '<CstmrCdtTrfInitn')) {
-            return BankStatementFormat::Pain001;
-        }
-
-        if (str_contains($head, 'pain.008') || str_contains($head, '<CstmrDrctDbtInitn')) {
-            return BankStatementFormat::Pain008;
-        }
-
-        if (str_contains($head, '<?xml') || str_contains($head, '<Document')) {
-            return BankStatementFormat::Camt053;
-        }
-
-        if (str_starts_with($head, '!Type:') || str_starts_with($head, '!Account') || str_starts_with($head, '!Option')) {
-            return BankStatementFormat::Qif;
-        }
-
-        return BankStatementFormat::Mt940;
+        return match ($type) {
+            CamtType::CAMT053 => BankStatementFormat::Camt053,
+            PainType::PAIN_001 => BankStatementFormat::Pain001,
+            PainType::PAIN_008 => BankStatementFormat::Pain008,
+            default => throw new BankImportException(
+                'unsupportedFormat',
+                (string) __('bank.import.error.unsupported_format', ['format' => strtoupper($type->value ?? 'XML')]),
+                ['format' => $type?->value],
+            ),
+        };
     }
 
     /**

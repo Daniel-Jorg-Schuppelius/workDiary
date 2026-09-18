@@ -18,6 +18,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
@@ -100,6 +101,6 @@ class LabelController extends Controller {
     private function qrDataUri(string $value): string {
         $svg = (new Writer(new ImageRenderer(new RendererStyle(120, 1), new SvgImageBackEnd())))->writeString($value);
 
-        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+        return (string) DataUrlHelper::encode($svg, 'image/svg+xml');
     }
 }

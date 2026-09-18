@@ -15,6 +15,7 @@ namespace App\Services\Learning;
 use App\Enums\Learning\LearningBlockKind;
 use App\Models\Learning\LearningUnit;
 use App\Models\{Organization, ProcedureTemplate};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -433,7 +434,7 @@ class LearningContentService {
     private function store(LearningUnit $unit, array $blocks): array {
         return DB::transaction(function () use ($unit, $blocks): array {
             $unit->update([
-                'content' => json_encode($blocks, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                'content' => JsonHelper::encode($blocks, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             ]);
 
             return $unit->refresh()->blocks();

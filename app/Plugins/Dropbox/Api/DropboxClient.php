@@ -16,6 +16,7 @@ use App\Plugins\Dropbox\{DropboxConfig, DropboxPlugin};
 use App\Plugins\Support\{ConnectionTokenStore, PluginHttpFactory};
 use App\Plugins\Support\Intake\{IntakeAccount, IntakeChangePage, IntakeContainer, IntakeItem};
 use App\Services\CloudIntake\StaleCheckpointException;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Psr\Http\Message\StreamInterface;
 use RuntimeException;
 
@@ -136,7 +137,7 @@ class DropboxClient {
     public function download(IntakeItem $item): StreamInterface {
         $response = $this->content->requestResponse('POST', $this->contentBase . '/files/download', [
             'headers' => [
-                'Dropbox-API-Arg' => json_encode(['path' => $item->itemId], JSON_THROW_ON_ERROR),
+                'Dropbox-API-Arg' => JsonHelper::encode(['path' => $item->itemId]),
                 // Dropbox verlangt einen leeren Body ohne JSON-Content-Type.
                 'Content-Type' => 'text/plain; charset=dropbox-cors-hack',
             ],

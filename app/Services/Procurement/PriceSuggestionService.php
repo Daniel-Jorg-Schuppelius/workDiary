@@ -13,8 +13,9 @@ declare(strict_types=1);
 namespace App\Services\Procurement;
 
 use App\Models\{Article, PricingMarginRule, SupplierCatalogItem};
-use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\ValueObjects\Money;
+use CommonToolkit\Enums\{CurrencyCode, RoundingMode};
+use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\ValueObjects\{Decimal, Money};
 use RuntimeException;
 
 /**
@@ -59,15 +60,17 @@ class PriceSuggestionService {
             return null;
         }
 
+        // Aufschlag/Marge präzise auf dem Decimal-EK; float erst für die Rundungsstrategie.
+        $ek = NumberHelper::normalizeDecimalString($purchasePrice);
         $raw = null;
         if ($rule->target_margin !== null) {
-            $m = (float) $rule->target_margin->getNumericValue() / 100;
-            if ($m > 0 && $m < 1) {
-                $raw = $p / (1 - $m);
+            $m = $rule->target_margin->asFactor();
+            if ($m->isPositive() && $m->lessThan(Decimal::one())) {
+                $raw = (float) NumberHelper::dividePrecise($ek, Decimal::one()->minus($m)->getValue(), 6, RoundingMode::HalfUp);
             }
         }
         if ($raw === null && $rule->markup_percent !== null) {
-            $raw = $p * (1 + (float) $rule->markup_percent->getNumericValue() / 100);
+            $raw = (float) NumberHelper::addPrecise($ek, NumberHelper::percentOfPrecise($ek, $rule->markup_percent->getNumericValue(), 6), 6);
         }
         if ($raw === null) {
             return null;
@@ -83,7 +86,7 @@ class PriceSuggestionService {
         $belowMin = $rule->min_margin !== null && $margin < (float) $rule->min_margin->getNumericValue() - 0.0001;
 
         return [
-            'price' => number_format($price, 2, '.', ''),
+            'price' => NumberHelper::toUSFormat($price, 2),
             'margin' => round($margin, 1),
             'below_min' => $belowMin,
         ];
@@ -119,8 +122,8 @@ class PriceSuggestionService {
         if ($rate !== null) {
             $labour = round($minutes / 60 * $rate, 2);
             if ($labour > 0) {
-                $suggestion['price'] = number_format((float) $suggestion['price'] + $labour, 2, '.', '');
-                $suggestion['labour'] = number_format($labour, 2, '.', '');
+                $suggestion['price'] = NumberHelper::toUSFormat((float) $suggestion['price'] + $labour, 2);
+                $suggestion['labour'] = NumberHelper::toUSFormat($labour, 2);
             }
         }
 

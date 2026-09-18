@@ -21,6 +21,7 @@ use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\ImageRenderer;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Support\Facades\URL;
 
 /**
@@ -83,6 +84,6 @@ class LearningAttendanceListPdfRenderer {
     private function qrDataUri(string $url): string {
         $svg = (new Writer(new ImageRenderer(new RendererStyle(220, 1), new SvgImageBackEnd())))->writeString($url);
 
-        return 'data:image/svg+xml;base64,' . base64_encode($svg);
+        return (string) DataUrlHelper::encode($svg, 'image/svg+xml');
     }
 }

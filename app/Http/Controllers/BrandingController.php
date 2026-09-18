@@ -89,11 +89,9 @@ class BrandingController extends Controller {
             }
         }
 
-        // IBAN über den Toolkit-Normalisierer (Vollaudit 2026-07, M39/N40);
-        // BIC bleibt manuell (kein Toolkit-Pendant).
+        // IBAN/BIC über die Toolkit-Normalisierer (Vollaudit 2026-07, M39/N40).
         $data['branding']['legal']['iban'] = \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) ($data['branding']['legal']['iban'] ?? ''));
-        $bic = (string) preg_replace('/\s+/', '', (string) ($data['branding']['legal']['bic'] ?? ''));
-        $data['branding']['legal']['bic'] = $bic !== '' ? strtoupper($bic) : null;
+        $data['branding']['legal']['bic'] = \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) ($data['branding']['legal']['bic'] ?? ''));
 
         $branding = $this->stripEmpty($data['branding']);
 

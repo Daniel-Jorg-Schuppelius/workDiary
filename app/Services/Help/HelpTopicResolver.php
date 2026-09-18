@@ -12,6 +12,7 @@ namespace App\Services\Help;
 
 use App\Models\{HelpTopic, User};
 use App\Services\Licensing\FeatureFlagResolver;
+use CommonToolkit\Helper\Data\StringHelper;
 use Illuminate\Support\Facades\App;
 
 class HelpTopicResolver {
@@ -146,7 +147,7 @@ class HelpTopicResolver {
      * @return array{0:string, 1:string, 2:string}
      */
     private function snippetFor(string $bodyMd, string $query): array {
-        $text = trim((string) preg_replace('/\s+/u', ' ', $bodyMd));
+        $text = StringHelper::normalizeWhitespace($bodyMd, unicode: true);
 
         $pos = mb_stripos($text, $query);
         if ($pos === false) {

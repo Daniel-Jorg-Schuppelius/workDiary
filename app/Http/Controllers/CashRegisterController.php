@@ -19,7 +19,6 @@ use App\Services\Accounting\Posting\PostingInboxService;
 use App\Services\Attachments\FileAttacher;
 use App\Services\Finance\CashBookService;
 use App\Support\Sqid;
-use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
 use Illuminate\View\View;
@@ -242,7 +241,7 @@ class CashRegisterController extends Controller {
 
         $message = ($closing->difference?->toFloat() ?? 0.0) === 0.0
             ? __('Tagesabschluss erfasst — Kassensturz ohne Differenz.')
-            : __('Tagesabschluss erfasst — Differenz :diff.', ['diff' => NumberHelper::toGermanFormat(($closing->difference?->toFloat() ?? 0.0), 2, withThousandsSeparator: true)]);
+            : __('Tagesabschluss erfasst — Differenz :diff.', ['diff' => $closing->difference?->format(withSymbol: false) ?? '0,00']);
 
         return redirect()->route('cash-registers.show', $cashRegister)->with('status', $message);
     }

@@ -224,4 +224,22 @@ class LearnDashImportTest extends TestCase {
             @unlink($empty);
         }
     }
+
+    /** Toolkit-Audit 2026-09: Ausbruchspfade im Archiv werden abgelehnt, nicht gelesen. */
+    public function test_archive_with_path_traversal_entry_is_rejected(): void {
+        $path = tempnam(sys_get_temp_dir(), 'ld') . '.zip';
+        $zip = new ZipArchive;
+        $zip->open($path, ZipArchive::CREATE);
+        $zip->addFromString('../post_type_course.ld', $this->jsonl([$this->ldPost(1, 'sfwd-courses', 'Kurs')]));
+        $zip->close();
+
+        try {
+            app(LearnDashImportService::class)->import($this->organization, $path, null);
+            $this->fail('Ein Archiv mit Ausbruchspfad muss abgelehnt werden.');
+        } catch (ValidationException $e) {
+            $this->assertSame([__('learning.errors.learndash_zip')], $e->errors()['file']);
+        } finally {
+            @unlink($path);
+        }
+    }
 }

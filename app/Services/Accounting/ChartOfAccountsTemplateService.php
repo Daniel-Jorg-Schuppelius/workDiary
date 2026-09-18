@@ -16,7 +16,8 @@ use App\Enums\Finance\{AccountType, EuerCategory, PostingAccountRole, PostingSou
 use App\Models\Accounting\{AccountingAccount, AccountingPostingRule, AccountingTaxCode};
 use App\Models\Organization;
 use Carbon\CarbonImmutable;
-use Illuminate\Support\Facades\{DB, File};
+use CommonToolkit\Helper\FileSystem\{Files, Folder};
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
 /**
@@ -48,17 +49,13 @@ class ChartOfAccountsTemplateService {
     public function available(): array {
         $templates = [];
 
-        if (! File::isDirectory($this->directory())) {
+        if (! Folder::exists($this->directory())) {
             return $templates;
         }
 
-        foreach (File::files($this->directory()) as $file) {
-            if ($file->getExtension() !== 'php') {
-                continue;
-            }
-
+        foreach (Files::get($this->directory(), false, ['php']) as $file) {
             /** @var array<string, mixed> $template */
-            $template = require $file->getPathname();
+            $template = require $file;
             if (! isset($template['code'])) {
                 continue;
             }

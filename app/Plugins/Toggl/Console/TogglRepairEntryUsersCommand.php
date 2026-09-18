@@ -16,6 +16,7 @@ use App\Plugins\Toggl\Sources\{TogglApiClient, TogglCsvParser};
 use App\Plugins\Toggl\{TogglConfig, TogglImportService, TogglPlugin};
 use App\Services\Timekeeping\TimeEntryEditPolicy;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 
 /**
@@ -40,13 +41,13 @@ class TogglRepairEntryUsersCommand extends Command {
         $path = (string) ($this->argument('csv') ?? '');
         $csvEntries = null;
         if ($path !== '') {
-            if (! is_file($path) || ! is_readable($path)) {
+            if (! File::isFile($path) || ! File::isReadable($path, false)) {
                 $this->error("CSV nicht lesbar: {$path}");
 
                 return self::FAILURE;
             }
 
-            $csvEntries = (new TogglCsvParser)->parse((string) file_get_contents($path));
+            $csvEntries = (new TogglCsvParser)->parse(File::read($path));
             if ($csvEntries === []) {
                 $this->warn('Keine Einträge in der CSV gefunden.');
 

@@ -13,6 +13,7 @@ namespace App\Services\Timesheet;
 use App\Enums\DocumentDesign\RenderDocumentKind;
 use App\Models\Timesheet;
 use App\Services\DocumentDesign\DocumentDesignRenderer;
+use CommonToolkit\Helper\Data\DataUrlHelper;
 use Illuminate\Support\Facades\Storage;
 
 class PdfRenderer {
@@ -23,9 +24,7 @@ class PdfRenderer {
         if ($timesheet->signatureAttachment) {
             $att = $timesheet->signatureAttachment;
             if (Storage::disk($att->disk)->exists($att->path)) {
-                $signaturePng = 'data:image/png;base64,' . base64_encode(
-                    Storage::disk($att->disk)->get($att->path) ?? ''
-                );
+                $signaturePng = DataUrlHelper::encode(Storage::disk($att->disk)->get($att->path) ?? '', 'image/png') ?: null;
             }
         }
 

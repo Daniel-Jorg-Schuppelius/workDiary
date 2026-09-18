@@ -13,7 +13,7 @@ namespace App\Services\Domain;
 use App\Enums\Domain\DomainCapabilityArea;
 use App\Models\Domain\{DomainAccountingEntry, DomainProjection, DomainProviderConnection, DomainResellerAccount};
 use CommonToolkit\Enums\CurrencyCode;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper, NumberHelper};
 use Illuminate\Support\Carbon;
 
 /**
@@ -32,7 +32,7 @@ class DomainAccountingService {
 
         $count = 0;
         foreach ($response->rows() as $row) {
-            $rawHash = CryptoHelper::hash(json_encode($row) ?: '');
+            $rawHash = CryptoHelper::hash(JsonHelper::encode($row));
             $user = $row['user'] ?? $row['subuser'] ?? '';
             $reseller = $user !== '' ? DomainResellerAccount::query()
                 ->where('connection_id', $connection->id)
@@ -66,10 +66,10 @@ class DomainAccountingService {
                     'type' => $row['type'] ?? null,
                     'description' => $row['description'] ?? null,
                     'reference' => $row['reference'] ?? null,
-                    'quantity' => $this->num($row['quantity'] ?? null),
-                    'net_amount' => $this->num($row['amount'] ?? $row['netamount'] ?? null),
-                    'vat_rate' => $this->num($row['vatrate'] ?? null),
-                    'tax_amount' => $this->num($row['vat'] ?? $row['taxamount'] ?? null),
+                    'quantity' => NumberHelper::normalizeDecimalStringOrNull($row['quantity'] ?? ''),
+                    'net_amount' => NumberHelper::normalizeDecimalStringOrNull($row['amount'] ?? $row['netamount'] ?? ''),
+                    'vat_rate' => NumberHelper::normalizeDecimalStringOrNull($row['vatrate'] ?? ''),
+                    'tax_amount' => NumberHelper::normalizeDecimalStringOrNull($row['vat'] ?? $row['taxamount'] ?? ''),
                     'currency' => isset($row['currency']) ? CurrencyCode::tryFrom(strtoupper($row['currency']))?->value : null,
                     'synced_at' => Carbon::now(),
                 ],
@@ -78,9 +78,5 @@ class DomainAccountingService {
         }
 
         return $count;
-    }
-
-    private function num(?string $value): ?float {
-        return $value !== null && is_numeric($value) ? (float) $value : null;
     }
 }

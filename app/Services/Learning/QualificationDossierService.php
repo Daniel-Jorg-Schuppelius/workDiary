@@ -17,7 +17,7 @@ use App\Models\Learning\{LearningCertificate, LearningEnrollment};
 use App\Models\{Organization, User, UserQualification};
 use App\Models\Safety\SafetyInstructionParticipant;
 use App\Models\Training\TrainingAssignment;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
 use Illuminate\Support\{Carbon, Collection};
 
 /**
@@ -184,7 +184,7 @@ class QualificationDossierService {
             'people' => $people,
         ];
 
-        $payload['hash'] = CryptoHelper::hash(json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES) ?: '');
+        $payload['hash'] = CryptoHelper::hash(JsonHelper::encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         return $payload;
     }

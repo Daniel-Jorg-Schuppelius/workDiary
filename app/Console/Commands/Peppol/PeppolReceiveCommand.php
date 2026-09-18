@@ -16,6 +16,7 @@ use App\Console\Concerns\IteratesOrganizations;
 use App\Models\{Organization, PluginSetting};
 use App\Plugins\PeppolAccessPoint\PeppolAccessPointPlugin;
 use App\Services\Peppol\PeppolInboundService;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -40,7 +41,7 @@ class PeppolReceiveCommand extends Command {
         $failures = $this->forEachOrganization(
             function (Organization $organization) use ($inbound, $limit): void {
                 $counters = $inbound->poll($organization, $limit);
-                $this->info(sprintf('Organisation #%d: %s', $organization->id, (string) json_encode($counters)));
+                $this->info(sprintf('Organisation #%d: %s', $organization->id, JsonHelper::encode($counters)));
             },
             onError: function (Organization $organization, Throwable $e): void {
                 $this->error(sprintf('Organisation #%d: %s — %s', $organization->id, class_basename($e), $e->getMessage()));

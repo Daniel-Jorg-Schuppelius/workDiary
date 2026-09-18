@@ -46,7 +46,7 @@ class SaveForeignCustomerRequest extends BaseFormRequest {
             'mobile' => ['nullable', 'string', 'max:64'],
             'homepage' => ['nullable', 'url', 'max:255'],
             'address' => ['nullable', 'string', 'max:1000'],
-            'country' => ['nullable', 'string', 'size:2'],
+            'country' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
             'color' => ['nullable', 'string', 'max:16'],
             'comment' => ['nullable', 'string', 'max:5000'],
         ];

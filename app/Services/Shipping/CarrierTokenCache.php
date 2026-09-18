@@ -14,6 +14,7 @@ namespace App\Services\Shipping;
 
 use APIToolkit\API\Authentication\OAuth2\OAuth2Token;
 use App\Models\CarrierConnection;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Contracts\Encryption\DecryptException;
 use Illuminate\Support\Facades\{Cache, Crypt};
 use InvalidArgumentException;
@@ -77,7 +78,7 @@ final class CarrierTokenCache {
 
         Cache::put(
             $this->key($connection),
-            Crypt::encryptString((string) json_encode($token->toArray())),
+            Crypt::encryptString(JsonHelper::encode($token->toArray())),
             max(self::EXPIRY_LEEWAY_SECONDS, $expiresIn - self::EXPIRY_LEEWAY_SECONDS),
         );
     }

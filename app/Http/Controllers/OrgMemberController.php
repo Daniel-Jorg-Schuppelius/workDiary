@@ -17,6 +17,7 @@ use App\Models\User;
 use App\Services\Auth\UserSessionInvalidator;
 use App\Services\Licensing\LimitGuard;
 use App\Support\SortableQuery;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate, Hash};
 use Illuminate\Validation\Rule;
@@ -186,12 +187,12 @@ class OrgMemberController extends Controller {
                 continue;
             }
             $name = trim((string) ($data['name'] ?? ''));
-            $email = strtolower(trim((string) ($data['email'] ?? '')));
+            $email = EmailHelper::normalize((string) ($data['email'] ?? ''));
             $personnelNumber = trim((string) ($data['personnel_number'] ?? ''));
             $role = strtolower(trim((string) ($data['role'] ?? '')));
             $role = $role === '' ? UserRole::User->value : $role;
 
-            if ($name === '' || ! filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            if ($name === '' || ! EmailHelper::isEmail($email)) {
                 $skipped[] = __('Zeile :line: Name oder E-Mail ungültig.', ['line' => $lineNo]);
 
                 continue;

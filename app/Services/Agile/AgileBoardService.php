@@ -15,6 +15,7 @@ namespace App\Services\Agile;
 use App\Enums\Agile\AgileColumnCategory;
 use App\Models\Agile\AgileBoard;
 use App\Models\{Project, Task, User};
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Support\Facades\DB;
 use RuntimeException;
 
@@ -83,7 +84,7 @@ class AgileBoardService {
 
         $payload = array_intersect_key($attributes, array_flip(['name', 'description', 'dod_items', 'method']));
         if (isset($payload['dod_items'])) {
-            $payload['dod_items'] = json_encode(array_values($payload['dod_items']));
+            $payload['dod_items'] = JsonHelper::encode(array_values($payload['dod_items']));
         }
 
         $updated = AgileBoard::query()

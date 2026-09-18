@@ -15,6 +15,7 @@ namespace App\Services\Gaeb;
 use App\Models\{BillOfQuantity, BoqCatalog, BoqCatalogAssignment, BoqItem, BoqItemQuantitySplit};
 use App\Models\Catalog\{CatalogEntry, CatalogRegistry};
 use App\Models\Costing\CostEstimate;
+use CommonToolkit\Helper\Data\StringHelper;
 
 /**
  * Kostengruppen-Auswertung eines Leistungsverzeichnisses (Feature 109,
@@ -236,7 +237,7 @@ final class CostGroupReportService {
         $tree = [];
         foreach ($leaves['rows'] as $row) {
             $code = $row['code'];
-            $digits = preg_replace('/\D/', '', $code) ?? '';
+            $digits = StringHelper::extractDigits($code);
             if ($digits === '') {
                 // Eine Nummer ohne Ziffern lässt sich nicht falten; sie bleibt
                 // als eigene Wurzel stehen, statt aus der Summe zu fallen.
@@ -505,7 +506,7 @@ final class CostGroupReportService {
 
     /** „311" auf Ebene 2 ist „310", auf Ebene 1 „300". */
     private function truncate(string $code, int $level): string {
-        $digits = preg_replace('/\D/', '', $code) ?? $code;
+        $digits = StringHelper::extractDigits($code);
         if ($digits === '' || $level >= 3 || strlen($digits) <= $level) {
             return $code;
         }

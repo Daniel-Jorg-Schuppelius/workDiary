@@ -18,6 +18,7 @@ use App\Services\Absence\VacationBalanceService;
 use App\Services\HolidayService;
 use App\Support\Sqid;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
@@ -310,7 +311,7 @@ class AbsenceCalendarReportController extends Controller {
                     $span['to']->toDateString(),
                     $neutral ? (string) __('abwesend') : $span['label'],
                     (string) ((int) $span['from']->diffInDays($span['to']->addDay())),
-                    number_format($this->balanceService->workingDaysInYear($span['from'], $span['to'], $year), 2, '.', ''),
+                    NumberHelper::toUSFormat($this->balanceService->workingDaysInYear($span['from'], $span['to'], $year), 2),
                 ];
             }
         }

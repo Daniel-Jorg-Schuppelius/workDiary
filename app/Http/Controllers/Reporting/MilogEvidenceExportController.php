@@ -19,6 +19,7 @@ use App\Models\{Attendance, Organization, User};
 use App\Support\Query\DateRange;
 use App\Support\Toolkit\CsvFacade;
 use App\Support\Tz;
+use CommonToolkit\ValueObjects\Duration;
 use Illuminate\Http\{Request, Response};
 use Illuminate\Support\Facades\Gate;
 
@@ -111,7 +112,7 @@ class MilogEvidenceExportController extends Controller {
                     $agg['start']->copy()->setTimezone($tz)->format('H:i'),
                     $agg['end']->copy()->setTimezone($tz)->format('H:i'),
                     $agg['breaks'],
-                    sprintf('%d:%02d', intdiv($net, 60), $net % 60),
+                    Duration::ofMinutes($net)->toClock(),
                 ]);
             }
         }

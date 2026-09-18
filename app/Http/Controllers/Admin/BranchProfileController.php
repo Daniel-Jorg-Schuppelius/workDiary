@@ -14,6 +14,7 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{AuditLog, User};
 use App\Services\Classification\BranchProfileInstaller;
+use CommonToolkit\Helper\FileSystem\Folder;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Arr, Collection};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -180,8 +181,9 @@ class BranchProfileController extends Controller {
      */
     private function availableProfiles(): Collection {
         $profiles = [];
+        $directory = database_path('data/branchprofiles');
 
-        foreach (glob(database_path('data/branchprofiles/*.php')) ?: [] as $file) {
+        foreach (Folder::exists($directory) ? Folder::findByPattern($directory, '*.php') : [] as $file) {
             /** @var array<string, mixed> $profile */
             $profile = require $file;
 

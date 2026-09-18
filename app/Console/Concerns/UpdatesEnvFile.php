@@ -22,7 +22,7 @@ trait UpdatesEnvFile {
     protected function writableEnvPath(): ?string {
         $path = app()->environmentFilePath();
 
-        return $path !== '' && is_file($path) && is_writable($path) ? $path : null;
+        return $path !== '' && ToolkitFile::isFile($path) && ToolkitFile::isWritable($path, false) ? $path : null;
     }
 
     /** Prüft, ob KEY in der .env mit nicht-leerem Wert gesetzt ist. */

@@ -14,7 +14,6 @@ use App\Models\AuditLog;
 use App\Services\Licensing\{LicensePayload, LicenseResult, LicenseService, LicenseStatus};
 use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Cache\Repository as CacheRepository;
-use Illuminate\Filesystem\Filesystem;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Tests\TestCase;
@@ -85,13 +84,12 @@ class LicenseStatusTransitionTest extends TestCase {
     }
 
     private function makeService(LicenseStatus $status): LicenseService {
-        return new class($status, app(Filesystem::class), app(CacheRepository::class)) extends LicenseService {
+        return new class($status, app(CacheRepository::class)) extends LicenseService {
             public function __construct(
                 private readonly LicenseStatus $status,
-                Filesystem $files,
                 CacheRepository $cache,
             ) {
-                parent::__construct($files, $cache);
+                parent::__construct($cache);
             }
 
             protected function evaluate(): LicenseResult {

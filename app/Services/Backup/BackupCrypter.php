@@ -11,7 +11,8 @@
 namespace App\Services\Backup;
 
 use App\Services\Backup\Support\SecretStreamFile;
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, JsonHelper};
+use CommonToolkit\Helper\FileSystem\File;
 use SensitiveParameter;
 
 /**
@@ -44,32 +45,24 @@ class BackupCrypter {
      * @return array{document: string, key_envelope: string, recovery_envelope: string|null, manifest_sha256: string}
      */
     public function buildCommitDocument(array $manifest, #[SensitiveParameter] string $dataKey, string $snapshotUuid): array {
-        $plain = json_encode($manifest, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $plain = JsonHelper::encode($manifest, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
-        $plainPath = tempnam(sys_get_temp_dir(), 'wd-manifest-');
-        $cipherPath = tempnam(sys_get_temp_dir(), 'wd-manifest-');
-        if ($plainPath === false || $cipherPath === false) {
-            throw new \RuntimeException('Temporäre Manifest-Datei konnte nicht angelegt werden.');
-        }
-
-        try {
-            file_put_contents($plainPath, $plain);
+        // Temp-Dateien (0600) räumt das Toolkit auch im Fehlerfall ab.
+        $cipher = File::withTemp($plain, fn(string $plainPath): string => File::withTemp('', function (string $cipherPath) use ($plainPath, $dataKey, $snapshotUuid): string {
             $this->stream->encrypt($plainPath, $cipherPath, $dataKey, self::manifestAd($snapshotUuid));
-            $cipher = (string) file_get_contents($cipherPath);
-        } finally {
-            @unlink($plainPath);
-            @unlink($cipherPath);
-        }
+
+            return File::read($cipherPath);
+        }, 'wd-manifest-'), 'wd-manifest-');
 
         $envelopes = $this->keyring->wrapDataKey($dataKey);
-        $document = json_encode([
+        $document = JsonHelper::encode([
             'version' => self::COMMIT_VERSION,
             'snapshot_uuid' => $snapshotUuid,
             'key_envelope' => $envelopes['key_envelope'],
             'recovery_envelope' => $envelopes['recovery_envelope'],
             'manifest' => base64_encode($cipher),
             'signature' => $this->keyring->signCommit($cipher),
-        ], JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES);
+        ], JSON_UNESCAPED_SLASHES);
 
         return [
             'document' => $document,

@@ -16,6 +16,8 @@ use App\Enums\Shift\ScheduledShiftStatus;
 use App\Models\{FlexBalance, ScheduledShift, User};
 use App\Support\Query\DateRange;
 use Carbon\CarbonImmutable;
+use CommonToolkit\ValueObjects\Duration;
+use InvalidArgumentException;
 
 /**
  * Vorausberechnung des Gleitzeitsaldos (MVP-521, Q1-Konzept
@@ -114,8 +116,10 @@ final class FlexForecastService {
     }
 
     private function timeToMinutes(string $time): int {
-        [$h, $m] = array_map(intval(...), array_pad(explode(':', $time), 2, '0'));
-
-        return $h * 60 + $m;
+        try {
+            return Duration::fromClock($time)->getTotalMinutes();
+        } catch (InvalidArgumentException) {
+            return 0;
+        }
     }
 }

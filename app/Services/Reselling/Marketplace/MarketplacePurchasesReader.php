@@ -17,6 +17,7 @@ use App\Services\Reselling\Marketplace\Concerns\{NormalizesHeaders, ParsesImport
 use CommonToolkit\Contracts\Interfaces\CSV\FieldInterface;
 use CommonToolkit\Entities\CSV\HeaderLine;
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use RuntimeException;
 
@@ -58,7 +59,7 @@ final class MarketplacePurchasesReader {
 
     public function read(string $file): PurchasesImport {
         $name = basename($file);
-        if (! is_readable($file)) {
+        if (! File::isReadable($file, false)) {
             throw new RuntimeException((string) __('resale_import.file.unreadable', ['file' => $name]));
         }
 

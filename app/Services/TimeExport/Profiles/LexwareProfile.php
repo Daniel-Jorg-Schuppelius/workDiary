@@ -12,11 +12,15 @@ namespace App\Services\TimeExport\Profiles;
 
 use App\Models\{TimeExport, TimeExportLine};
 use App\Services\TimeExport\WageTypeResolver;
+use CommonToolkit\Helper\Data\CSV\StringHelper as CsvStringHelper;
+use CommonToolkit\Helper\Data\NumberHelper;
 
 /**
  * Lexware-Lohn-naher CSV-Export (Feature 005). Analog zu {@see DatevLodasProfile},
  * aber im Lexware-üblichen Format:
- *   - CSV ohne BOM, Trenner `;`, EOL `\r\n`, Zeichensatz Windows-1252 (ANSI)
+ *   - CSV ohne BOM, Trenner `;`, EOL `\r\n`, Zeichensatz Windows-1252 (ANSI);
+ *     Anführungszeichen nur, wo ein Wert Trenner, Anführungszeichen oder
+ *     Zeilenumbruch enthält
  *   - Header: `Jahr;Monat;Personalnummer;Lohnartnummer;Wert;Stundensatz`
  *   - Jahr/Monat aus dem Zeilen-Zeitraum (`period_end`)
  *   - Personalnummer: `users.personnel_number`, Fallback User-ID
@@ -54,7 +58,7 @@ class LexwareProfile implements ExportProfile {
     }
 
     public function render(TimeExport $export): string {
-        $rows = [implode(self::DELIMITER, ['Jahr', 'Monat', 'Personalnummer', 'Lohnartnummer', 'Wert', 'Stundensatz'])];
+        $rows = [CsvStringHelper::encodeLine(['Jahr', 'Monat', 'Personalnummer', 'Lohnartnummer', 'Wert', 'Stundensatz'], self::DELIMITER)];
 
         $resolver = new WageTypeResolver((int) $export->organization_id, $this->key());
         $lines = $export->lines()
@@ -74,14 +78,14 @@ class LexwareProfile implements ExportProfile {
             // Org-Mapping vor Regel-Code vor Default (A21, Rückwärtskompatibilität).
             $wageTypeCode = $resolver->resolveCode($line) ?? $this->normalWageTypeCode;
 
-            $rows[] = implode(self::DELIMITER, [
+            $rows[] = CsvStringHelper::encodeLine([
                 $line->period_end->format('Y'),
                 $line->period_end->format('m'),
                 $personnelNo,
                 $wageTypeCode,
-                number_format((float) $line->quantity, 2, ',', ''),
+                NumberHelper::toGermanFormat((float) $line->quantity, 2),
                 '', // Stundensatz: führt Lexware aus dem Lohnart-Stamm
-            ]);
+            ], self::DELIMITER);
         }
 
         $csv = implode(self::EOL, $rows) . self::EOL;

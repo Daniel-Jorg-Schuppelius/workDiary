@@ -80,7 +80,7 @@ class ManufacturingCostingService {
             foreach ($order->timeEntries()->pluck('minutes') as $minutes) {
                 $orderMinutes += (int) $minutes;
             }
-            $orderScrap = $this->num($order->scrapTotal());
+            $orderScrap = NumberHelper::normalizeDecimalString((string) $order->scrapTotal());
             $deviation = bcsub($costing['actual'], $costing['planned'], self::SCALE);
 
             $rows[] = [
@@ -146,21 +146,21 @@ class ManufacturingCostingService {
 
         foreach ($order->materials()->where('is_tool', false)->get() as $material) {
             $unit = $this->unitCost($material);
-            $planned = bcadd($planned, bcmul($this->num($material->target_qty), $unit, self::SCALE), self::SCALE);
+            $planned = bcadd($planned, bcmul(NumberHelper::normalizeDecimalString((string) $material->target_qty), $unit, self::SCALE), self::SCALE);
 
             // Echte Ist-Kosten (beim Verbrauch erfasst) bevorzugen; sonst auf
             // Menge × Stammkosten zurückfallen.
-            $captured = $this->num($material->actual_cost?->getAmount());
+            $captured = NumberHelper::normalizeDecimalString((string) $material->actual_cost?->getAmount());
             $materialActual = bccomp($captured, '0', self::SCALE) > 0
                 ? $captured
-                : bcmul($this->num($material->consumed_qty), $unit, self::SCALE);
+                : bcmul(NumberHelper::normalizeDecimalString((string) $material->consumed_qty), $unit, self::SCALE);
             $actual = bcadd($actual, $materialActual, self::SCALE);
         }
 
         $labor = '0';
         foreach ($order->timeEntries()->get() as $entry) {
             $hours = bcdiv((string) $entry->minutes, '60', 6);
-            $labor = bcadd($labor, bcmul($hours, $this->num($entry->internal_rate?->getAmount()), self::SCALE), self::SCALE);
+            $labor = bcadd($labor, bcmul($hours, NumberHelper::normalizeDecimalString((string) $entry->internal_rate?->getAmount()), self::SCALE), self::SCALE);
         }
 
         $total = bcadd($actual, $labor, self::SCALE);
@@ -187,7 +187,7 @@ class ManufacturingCostingService {
 
     /** @return numeric-string */
     private function unitCost(ManufacturingOrderMaterial $material): string {
-        $snapshot = $this->num($material->cost_snapshot?->getAmount());
+        $snapshot = NumberHelper::normalizeDecimalString((string) $material->cost_snapshot?->getAmount());
         if (bccomp($snapshot, '0', self::SCALE) > 0) {
             return $snapshot;
         }
@@ -195,7 +195,7 @@ class ManufacturingCostingService {
         if ($material->article_variant_id !== null) {
             $variant = ArticleVariant::query()->find($material->article_variant_id);
             if ($variant instanceof ArticleVariant) {
-                $price = $this->num($variant->purchase_price?->getAmount());
+                $price = NumberHelper::normalizeDecimalString((string) $variant->purchase_price?->getAmount());
                 if (bccomp($price, '0', self::SCALE) > 0) {
                     return $price;
                 }
@@ -204,16 +204,9 @@ class ManufacturingCostingService {
 
         $article = Article::query()->find($material->article_id);
         if ($article instanceof Article) {
-            return $this->num($article->default_purchase_price?->getAmount());
+            return NumberHelper::normalizeDecimalString((string) $article->default_purchase_price?->getAmount());
         }
 
         return '0';
-    }
-
-    /** @return numeric-string */
-    private function num(mixed $value): string {
-        $value = (string) $value;
-
-        return is_numeric($value) ? $value : '0';
     }
 }

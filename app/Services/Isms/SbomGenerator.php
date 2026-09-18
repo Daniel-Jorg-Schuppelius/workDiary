@@ -12,6 +12,8 @@ namespace App\Services\Isms;
 
 use App\Plugins\PluginManager;
 use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\Helper\Shell;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Str;
 
@@ -220,12 +222,12 @@ class SbomGenerator {
      */
     public function resolveGitHash(): ?string {
         try {
-            $out = @exec('git -C ' . escapeshellarg(base_path()) . ' rev-parse --short HEAD 2>/dev/null');
+            $result = Shell::run(['git', '-C', base_path(), 'rev-parse', '--short', 'HEAD'], 10.0);
         } catch (\Throwable) {
             return null;
         }
 
-        $hash = is_string($out) ? trim($out) : '';
+        $hash = $result->isSuccessful() ? trim($result->output) : '';
 
         return preg_match('/^[0-9a-f]{6,40}$/', $hash) === 1 ? $hash : null;
     }
@@ -482,9 +484,8 @@ class SbomGenerator {
 
     private function readLockfile(string $file): string {
         $path = base_path($file);
-        $content = is_file($path) ? file_get_contents($path) : false;
 
-        return $content === false ? '{}' : $content;
+        return File::isFile($path) ? File::read($path) : '{}';
     }
 
     /** @return array<string, string> */

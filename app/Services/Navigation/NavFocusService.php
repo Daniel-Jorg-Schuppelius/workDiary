@@ -13,6 +13,7 @@ declare(strict_types=1);
 namespace App\Services\Navigation;
 
 use App\Models\{Organization, User, UserWorkspace};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -256,7 +257,7 @@ class NavFocusService {
         }
 
         $path = database_path("data/branchprofiles/{$code}.php");
-        if (! is_file($path)) {
+        if (! File::isFile($path)) {
             return null;
         }
 

@@ -14,6 +14,7 @@ namespace App\Console\Commands;
 
 use App\Services\Support\SupportReportBuilder;
 use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 use Throwable;
 
@@ -50,7 +51,9 @@ class SupportReportCommand extends Command {
             return self::SUCCESS;
         }
 
-        if (@file_put_contents($output, $json) === false) {
+        try {
+            File::write($output, $json);
+        } catch (\Throwable) {
             $this->error(sprintf('Konnte Datei nicht schreiben: %s', $output));
 
             return self::FAILURE;

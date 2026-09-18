@@ -15,6 +15,8 @@ namespace App\Console\Commands;
 use App\Models\Organization;
 use App\Services\Learning\LearnDashImportService;
 use App\Support\Sqid;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 use Illuminate\Validation\ValidationException;
 
@@ -29,7 +31,7 @@ class LearningImportLearnDashCommand extends Command {
 
     public function handle(LearnDashImportService $importer): int {
         $zip = (string) $this->argument('zip');
-        if (! is_file($zip)) {
+        if (! File::isFile($zip)) {
             $this->error('Datei nicht gefunden: ' . $zip);
 
             return self::FAILURE;
@@ -54,7 +56,7 @@ class LearningImportLearnDashCommand extends Command {
             return self::FAILURE;
         }
 
-        $this->line((string) json_encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
+        $this->line(JsonHelper::encode($report, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES));
 
         return self::SUCCESS;
     }

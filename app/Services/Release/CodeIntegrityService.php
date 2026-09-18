@@ -19,7 +19,8 @@ use App\Notifications\GenericEventNotification;
 use App\Services\Isms\SbomGenerator;
 use CommonToolkit\Enums\HashAlgorithm;
 use CommonToolkit\Helper\Data\CryptoHelper;
-use CommonToolkit\Helper\FileSystem\File;
+use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
+use CommonToolkit\Helper\Shell;
 use Illuminate\Support\Facades\{Notification, Storage};
 
 /**
@@ -80,11 +81,11 @@ class CodeIntegrityService {
     public function envFingerprint(): ?array {
         // Dieselbe Wurzel wie der Datei-Scan (`integrity.base`-Override).
         $path = $this->basePath() . DIRECTORY_SEPARATOR . '.env';
-        if (! is_file($path) || ! is_readable($path)) {
+        if (! File::isFile($path) || ! File::isReadable($path, false)) {
             return null;
         }
 
-        $contents = (string) file_get_contents($path);
+        $contents = File::read($path);
         $keys = [];
         foreach (preg_split('/\R/', $contents) ?: [] as $line) {
             $line = trim((string) $line);
@@ -340,7 +341,7 @@ class CodeIntegrityService {
      * @return list<string>
      */
     private function gitWarnings(array $manifest): array {
-        if (! is_dir($this->basePath() . DIRECTORY_SEPARATOR . '.git')) {
+        if (! Folder::exists($this->basePath() . DIRECTORY_SEPARATOR . '.git')) {
             return [];
         }
 
@@ -373,11 +374,12 @@ class CodeIntegrityService {
      */
     private function gitDirtyPaths(): array {
         try {
-            $output = @shell_exec('git -C ' . escapeshellarg($this->basePath()) . ' status --porcelain 2>/dev/null');
+            $result = Shell::run(['git', '-C', $this->basePath(), 'status', '--porcelain'], 30.0);
         } catch (\Throwable) {
             return [];
         }
-        if (! is_string($output) || trim($output) === '') {
+        $output = $result->isSuccessful() ? $result->output : '';
+        if (trim($output) === '') {
             return [];
         }
 
@@ -458,25 +460,10 @@ class CodeIntegrityService {
 
         foreach ((array) config('integrity.paths', []) as $rel) {
             $absolute = $base . DIRECTORY_SEPARATOR . (string) $rel;
-            if (! is_dir($absolute) || is_link($absolute)) {
+            if (! Folder::exists($absolute) || File::isLink($absolute)) {
                 continue;
             }
-            $dirs[] = $absolute;
-            $stack = [$absolute];
-            while ($stack !== []) {
-                $dir = array_pop($stack);
-                foreach (@scandir($dir) ?: [] as $item) {
-                    if ($item === '.' || $item === '..') {
-                        continue;
-                    }
-                    $path = $dir . DIRECTORY_SEPARATOR . $item;
-                    if (! is_dir($path) || is_link($path) || $this->isExcludedPath($path)) {
-                        continue;
-                    }
-                    $dirs[] = $path;
-                    $stack[] = $path;
-                }
-            }
+            $dirs = [...$dirs, $absolute, ...Folder::get($absolute, true, skip: $this->skipsLinksAndExcludes(...))];
         }
 
         return array_values(array_unique($dirs));
@@ -530,7 +517,7 @@ class CodeIntegrityService {
 
         foreach ((array) config('integrity.paths', []) as $dir) {
             $absolute = $base . DIRECTORY_SEPARATOR . $dir;
-            if (! is_dir($absolute) || is_link($absolute)) {
+            if (! Folder::exists($absolute) || File::isLink($absolute)) {
                 continue;
             }
             foreach ($this->walk($absolute) as $file) {
@@ -540,7 +527,7 @@ class CodeIntegrityService {
 
         foreach ((array) config('integrity.root_files', []) as $rootFile) {
             $absolute = $base . DIRECTORY_SEPARATOR . $rootFile;
-            if (is_file($absolute)) {
+            if (File::isFile($absolute)) {
                 $entries[] = $this->fileEntry($base, $absolute);
             }
         }
@@ -559,20 +546,18 @@ class CodeIntegrityService {
 
         $base = $this->basePath();
         $vendor = $base . DIRECTORY_SEPARATOR . (string) config('integrity.vendor.path', 'vendor');
-        if (! is_dir($vendor)) {
+        if (! Folder::exists($vendor)) {
             return [];
         }
 
         $packages = [];
 
         // vendor-Root (autoload.php) + composer/ + bin/ als Pseudo-Paket.
-        $autoloaderFiles = [];
-        foreach (glob($vendor . '/*.php') ?: [] as $file) {
-            $autoloaderFiles[] = $file;
-        }
+        // Files::get statt findByPattern: Pfade bleiben unaufgelöst (relativePath braucht das Basis-Präfix).
+        $autoloaderFiles = Files::get($vendor, false, ['php']);
         foreach (['composer', 'bin'] as $sub) {
             $dir = $vendor . DIRECTORY_SEPARATOR . $sub;
-            if (is_dir($dir)) {
+            if (Folder::exists($dir)) {
                 foreach ($this->walk($dir) as $file) {
                     $autoloaderFiles[] = $file;
                 }
@@ -582,9 +567,9 @@ class CodeIntegrityService {
             $packages[] = $this->packageEntry(self::AUTOLOADER_PACKAGE, $base, $autoloaderFiles);
         }
 
-        foreach ($this->subDirectories($vendor) as $vendorDir) {
-            foreach ($this->subDirectories($vendorDir) as $packageDir) {
-                $files = iterator_to_array($this->walk($packageDir), false);
+        foreach (Folder::get($vendor, skip: $this->skipsLinksAndExcludes(...)) as $vendorDir) {
+            foreach (Folder::get($vendorDir, skip: $this->skipsLinksAndExcludes(...)) as $packageDir) {
+                $files = $this->walk($packageDir);
                 if ($files === []) {
                     continue;
                 }
@@ -599,73 +584,26 @@ class CodeIntegrityService {
     }
 
     /**
-     * Rekursiver Datei-Walk: Symlinks und konfigurierte Ausschluss-Präfixe
-     * werden beim Traversieren übersprungen (nicht erst nachgefiltert).
+     * Dateien unter $directory: Ausschluss-Präfixe werden beim Abstieg
+     * übersprungen (nicht erst nachgefiltert), Verzeichnis-Links nie betreten;
+     * Datei-Links (vendor/bin) zählen mit ihrem Zielinhalt.
      *
-     * @return \Generator<string>
+     * @return list<string>
      */
-    private function walk(string $directory): \Generator {
-        $base = $this->basePath();
-        $excludes = array_map(
-            static fn(string $p): string => str_replace('/', DIRECTORY_SEPARATOR, trim($p, '/')),
-            (array) config('integrity.exclude', []),
-        );
-
-        $stack = [$directory];
-        while ($stack !== []) {
-            $dir = array_pop($stack);
-            $items = @scandir($dir);
-            if ($items === false) {
-                continue;
-            }
-            foreach ($items as $item) {
-                if ($item === '.' || $item === '..') {
-                    continue;
-                }
-                $path = $dir . DIRECTORY_SEPARATOR . $item;
-                $relative = ltrim(substr($path, strlen($base)), DIRECTORY_SEPARATOR);
-                foreach ($excludes as $exclude) {
-                    if ($relative === $exclude || str_starts_with($relative, $exclude . DIRECTORY_SEPARATOR)) {
-                        continue 2;
-                    }
-                }
-                if (is_link($path)) {
-                    if (is_file($path)) {
-                        yield $path; // Datei-Symlink (vendor/bin) hasht den Zielinhalt
-                    }
-
-                    continue; // Verzeichnis-Symlinks nie betreten (Loop-/Upload-Schutz)
-                }
-                if (is_dir($path)) {
-                    $stack[] = $path;
-                } elseif (is_file($path)) {
-                    yield $path;
-                }
-            }
-        }
+    private function walk(string $directory): array {
+        return Files::get($directory, true, skip: $this->isExcludedPath(...));
     }
 
-    /** @return list<string> */
-    private function subDirectories(string $directory): array {
-        $dirs = [];
-        foreach (@scandir($directory) ?: [] as $item) {
-            if ($item === '.' || $item === '..') {
-                continue;
-            }
-            $path = $directory . DIRECTORY_SEPARATOR . $item;
-            if (is_dir($path) && ! is_link($path)) {
-                $dirs[] = $path;
-            }
-        }
-        sort($dirs);
-
-        return $dirs;
+    /** Verzeichnis-Links und Ausschluss-Präfixe — für die Verzeichnis-Walks. */
+    private function skipsLinksAndExcludes(string $path): bool {
+        return File::isLink($path) || $this->isExcludedPath($path);
     }
 
     /** @return array{path: string, sha256: string, bytes: int}|null */
     private function fileEntry(string $base, string $absolute): ?array {
         try {
             $hash = File::hash($absolute, HashAlgorithm::SHA256);
+            $bytes = File::size($absolute);
         } catch (\Throwable) {
             return null; // Race: Datei zwischen Listing und Hash verschwunden
         }
@@ -673,7 +611,7 @@ class CodeIntegrityService {
         return [
             'path' => $this->relativePath($base, $absolute),
             'sha256' => $hash,
-            'bytes' => (int) (@filesize($absolute) ?: 0),
+            'bytes' => $bytes,
         ];
     }
 

@@ -12,6 +12,7 @@ namespace App\Services\Backup;
 
 use App\Services\Backup\Exceptions\{BackupCommitInvalidException, BackupCryptoException};
 use App\Services\Backup\Support\SecretStreamFile;
+use CommonToolkit\Helper\FileSystem\File;
 use SensitiveParameter;
 
 /**
@@ -69,20 +70,12 @@ class BackupDecrypter {
             $dataKey = $this->keyring->unwrapDataKey($decoded['key_envelope']);
         }
 
-        $cipherPath = tempnam(sys_get_temp_dir(), 'wd-manifest-');
-        $plainPath = tempnam(sys_get_temp_dir(), 'wd-manifest-');
-        if ($cipherPath === false || $plainPath === false) {
-            throw new \RuntimeException('Temporäre Manifest-Datei konnte nicht angelegt werden.');
-        }
-
-        try {
-            file_put_contents($cipherPath, $cipher);
+        // Temp-Dateien (0600) räumt das Toolkit auch im Fehlerfall ab.
+        $manifest = File::withTemp($cipher, fn(string $cipherPath): mixed => File::withTemp('', function (string $plainPath) use ($cipherPath, $dataKey, $decoded): mixed {
             $this->stream->decrypt($cipherPath, $plainPath, $dataKey, BackupCrypter::manifestAd($decoded['snapshot_uuid']));
-            $manifest = json_decode((string) file_get_contents($plainPath), true);
-        } finally {
-            @unlink($cipherPath);
-            @unlink($plainPath);
-        }
+
+            return json_decode(File::read($plainPath), true);
+        }, 'wd-manifest-'), 'wd-manifest-');
 
         if (!is_array($manifest)) {
             throw new BackupCommitInvalidException('Manifest-Inhalt ist nach der Entschlüsselung unlesbar.');

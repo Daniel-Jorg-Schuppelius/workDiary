@@ -11,7 +11,7 @@
 namespace App\Services\Help;
 
 use CommonToolkit\Helper\Data\StringHelper;
-use Illuminate\Support\Facades\File;
+use CommonToolkit\Helper\FileSystem\{File, Files, Folder};
 use League\CommonMark\GithubFlavoredMarkdownConverter;
 
 /**
@@ -41,12 +41,12 @@ class HelpTopicLoader {
 
     /** @return list<string> */
     public function locales(): array {
-        if (! File::isDirectory($this->rootPath)) {
+        if (! Folder::exists($this->rootPath)) {
             return [];
         }
 
         $locales = [];
-        foreach (File::directories($this->rootPath) as $dir) {
+        foreach (Folder::get($this->rootPath) as $dir) {
             $locales[] = basename($dir);
         }
         sort($locales);
@@ -57,16 +57,13 @@ class HelpTopicLoader {
     /** @return list<string> */
     public function topicsForLocale(string $locale): array {
         $dir = $this->rootPath . DIRECTORY_SEPARATOR . $locale;
-        if (! File::isDirectory($dir)) {
+        if (! Folder::exists($dir)) {
             return [];
         }
 
         $topics = [];
-        foreach (File::files($dir) as $file) {
-            if ($file->getExtension() !== 'md') {
-                continue;
-            }
-            $topics[] = $file->getBasename('.md');
+        foreach (Files::get($dir, false, ['md']) as $file) {
+            $topics[] = basename($file, '.md');
         }
         sort($topics);
 
@@ -95,7 +92,7 @@ class HelpTopicLoader {
             return null;
         }
 
-        $raw = File::get($path);
+        $raw = File::read($path);
         [$frontMatter, $bodyMd] = $this->splitFrontMatter($raw);
 
         $converter = new GithubFlavoredMarkdownConverter([
@@ -120,7 +117,7 @@ class HelpTopicLoader {
             'related' => $this->normalizeList($frontMatter['related'] ?? []),
             'headings' => $headings,
             'schema' => is_string($frontMatter['schema'] ?? null) ? (string) $frontMatter['schema'] : '',
-            'source_updated_at' => \Carbon\CarbonImmutable::createFromTimestamp(File::lastModified($path)),
+            'source_updated_at' => \Carbon\CarbonImmutable::createFromTimestamp(File::modifiedTime($path)),
         ];
     }
 
@@ -141,7 +138,7 @@ class HelpTopicLoader {
             static function (array $m) use (&$headings, &$seen): string {
                 $level = (int) $m[1];
                 $inner = $m[2];
-                $text = trim(html_entity_decode(strip_tags($inner), ENT_QUOTES | ENT_HTML5, 'UTF-8'));
+                $text = trim(StringHelper::htmlEntitiesToText(strip_tags($inner)));
 
                 $slug = \Illuminate\Support\Str::slug($text);
                 if ($slug === '') {
@@ -223,7 +220,7 @@ class HelpTopicLoader {
                 $localized = $ext !== ''
                     ? substr($path, 0, -(strlen($ext) + 1)) . '.' . $locale . '.' . $ext
                     : $path;
-                $resolved = is_file($mediaRoot . DIRECTORY_SEPARATOR . $localized) ? $localized : $path;
+                $resolved = File::isFile($mediaRoot . DIRECTORY_SEPARATOR . $localized) ? $localized : $path;
 
                 return $m[1] . '/hilfe/media/' . $resolved . $m[3];
             },

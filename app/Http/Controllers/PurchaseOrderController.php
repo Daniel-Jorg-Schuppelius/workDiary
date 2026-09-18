@@ -17,6 +17,7 @@ use App\Http\Requests\SavePurchaseOrderRequest;
 use App\Models\{Article, PurchaseOrder, PurchaseOrderAdvice, PurchaseOrderLine, Supplier, Warehouse};
 use App\Services\Procurement\{AdviceService, DespatchAdviceImportService, GoodsReceiptService, ProcurementSuggestionService, PurchaseOrderExportService, PurchaseOrderPdfRenderer, PurchaseOrderService, UglInvoiceReconciler};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Parsers\UglInvoiceParser;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -238,7 +239,7 @@ class PurchaseOrderController extends Controller {
             'advice_xml' => ['required', 'file', 'mimetypes:application/xml,text/xml', 'max:2048'],
         ]);
 
-        $xml = (string) file_get_contents((string) $request->file('advice_xml')?->getRealPath());
+        $xml = File::read((string) $request->file('advice_xml')?->getRealPath());
 
         try {
             $import->import($xml, Auth::id(), $purchaseOrder);
@@ -265,7 +266,7 @@ class PurchaseOrderController extends Controller {
             'invoice_ugl' => ['required', 'file', 'max:2048'],
         ]);
 
-        $content = (string) file_get_contents((string) $request->file('invoice_ugl')?->getRealPath());
+        $content = File::read((string) $request->file('invoice_ugl')?->getRealPath());
 
         try {
             $invoice = (new UglInvoiceParser)->parse($content);

@@ -201,6 +201,19 @@ final class IncomingEInvoiceTest extends TestCase {
         }
     }
 
+    /**
+     * Toolkit-Audit 2026-09: Der Eingang prüfte nur gegen das UBL-Schema —
+     * jede ZUGFeRD-/CII-Rechnung lief ohne XSD-Prüfung durch.
+     */
+    public function test_incoming_cii_invoice_is_checked_against_the_cii_schema(): void {
+        $broken = app(IncomingEInvoiceService::class)->validateXml(
+            '<?xml version="1.0"?><rsm:CrossIndustryInvoice xmlns:rsm="urn:un:unece:uncefact:data:standard:CrossIndustryInvoice:100"><rsm:Broken/></rsm:CrossIndustryInvoice>'
+        );
+
+        $this->assertTrue($broken['schema_checked']);
+        $this->assertNotSame([], $broken['schema_errors']);
+    }
+
     public function test_parse_roundtrip_extracts_core_fields(): void {
         $service = app(IncomingEInvoiceService::class);
 

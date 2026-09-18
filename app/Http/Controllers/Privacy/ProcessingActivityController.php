@@ -20,6 +20,7 @@ use App\Services\Privacy\{PrivacyExportService, ProcessingActivityService};
 use App\Support\CsvExport;
 use CommonToolkit\Enums\Common\CSV\QuotingStyle;
 use CommonToolkit\Helper\Data\CSV\StringHelper;
+use CommonToolkit\Helper\Data\JsonHelper;
 use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
@@ -155,7 +156,7 @@ class ProcessingActivityController extends Controller {
             ]),
             'print' => view('privacy.activities.print', ['snapshot' => $snapshot]),
             default => response(
-                (string) json_encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+                JsonHelper::encode($snapshot, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
                 200,
                 ['Content-Type' => 'application/json', 'Content-Disposition' => 'attachment; filename="vvt-' . $date . '.json"'],
             ),

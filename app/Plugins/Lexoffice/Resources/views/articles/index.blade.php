@@ -88,7 +88,7 @@
                         <td class="text-base-content/70">{{ $article->unit_name }}</td>
                         <td class="text-right tabular-nums">
                             @if ($article->net_unit_price !== null)
-                                {{ \CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($article->net_unit_price?->toFloat() ?? 0.0, 2, withThousandsSeparator: true) }} {{ $article->currency->value }}
+                                {{ $article->net_unit_price?->withScale(2)->format(withSymbol: false) ?? '0,00' }} {{ $article->currency->value }}
                             @else
                                 <span class="text-muted">—</span>
                             @endif

@@ -17,10 +17,9 @@ use App\Models\Article;
 use App\Services\Procurement\DatanormExportService;
 use CommonToolkit\Helper\FileSystem\FileTypes\ZipFile;
 use ERechnungToolkit\Enums\{DatanormPriceIndicator, DatanormVersion};
-use Illuminate\Http\{RedirectResponse, Request};
+use Illuminate\Http\{RedirectResponse, Request, Response};
 use Illuminate\Support\Facades\Gate;
-use RuntimeException;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
+use Symfony\Component\HttpFoundation\HeaderUtils;
 
 /**
  * DATANORM-Export des Artikelstamms (Feature 107, W5): liefert ein ZIP mit
@@ -31,7 +30,7 @@ use Symfony\Component\HttpFoundation\BinaryFileResponse;
 class ArticleExportController extends Controller {
     use ResolvesCurrentOrganization;
 
-    public function datanorm(Request $request, DatanormExportService $export): BinaryFileResponse|RedirectResponse {
+    public function datanorm(Request $request, DatanormExportService $export): Response|RedirectResponse {
         Gate::authorize('viewAny', Article::class);
         $request->validate([
             'version' => ['nullable', 'in:4,5'],
@@ -83,30 +82,18 @@ class ArticleExportController extends Controller {
             'user_agent' => substr((string) $request->userAgent(), 0, 255),
         ]);
 
-        return $this->zipResponse($result['files'], ($isPriceFile ? 'datpreis' : 'datanorm') . '-v' . ($version === DatanormVersion::V4 ? '4' : '5') . '.zip');
+        return self::buildZipResponse($result['files'], ($isPriceFile ? 'datpreis' : 'datanorm') . '-v' . ($version === DatanormVersion::V4 ? '4' : '5') . '.zip');
     }
 
     /**
      * @param  array<string, string>  $files
      */
-    public static function buildZipResponse(array $files, string $downloadName): BinaryFileResponse {
-        $path = tempnam(sys_get_temp_dir(), 'datanorm');
-        if ($path === false) {
-            throw new RuntimeException('Failed to create temporary export file.');
-        }
+    public static function buildZipResponse(array $files, string $downloadName): Response {
         // C6 (Vollscan 2026-08-23): ZIP-Bau übers Common-Toolkit inkl.
-        // Eintragspfad-Guard; die Tempdatei bleibt nur fürs Download-Handling.
-        file_put_contents($path, ZipFile::createFromStrings($files));
-
-        return response()->download($path, $downloadName, [
+        // Eintragspfad-Guard — direkt aus dem Speicher, ohne Tempdatei.
+        return response(ZipFile::createFromStrings($files), 200, [
             'Content-Type' => 'application/zip',
-        ])->deleteFileAfterSend(true);
-    }
-
-    /**
-     * @param  array<string, string>  $files
-     */
-    private function zipResponse(array $files, string $downloadName): BinaryFileResponse {
-        return self::buildZipResponse($files, $downloadName);
+            'Content-Disposition' => HeaderUtils::makeDisposition(HeaderUtils::DISPOSITION_ATTACHMENT, $downloadName),
+        ]);
     }
 }

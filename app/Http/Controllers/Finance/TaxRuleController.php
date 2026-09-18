@@ -17,10 +17,13 @@ use App\Http\Controllers\Concerns\ResolvesCurrentOrganization;
 use App\Http\Controllers\Controller;
 use App\Models\{TaxRule, User};
 use App\Services\Invoicing\TaxResolver;
+use CommonToolkit\Enums\CountryCode;
+use CommonToolkit\Helper\FileSystem\File;
 use CommonToolkit\Parsers\CSVDocumentParser;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\Rule;
 
 /**
  * Steuerregelmatrix (Phase 23, MVP-242): Admin-Pflege der org-eigenen
@@ -70,8 +73,11 @@ class TaxRuleController extends Controller {
 
     public function store(Request $request): RedirectResponse {
         $this->authorizeConfig();
+        if ($request->filled('country')) {
+            $request->merge(['country' => $request->string('country')->upper()->value()]);
+        }
         $data = $request->validate([
-            'country' => ['required', 'string', 'size:2'],
+            'country' => ['required', 'string', Rule::enum(CountryCode::class)],
             'region' => ['nullable', 'string', 'max:10'],
             'category' => ['required', 'in:' . implode(',', TaxRule::CATEGORIES)],
             'rate_type' => ['required', 'in:' . implode(',', TaxRule::RATE_TYPES)],
@@ -119,7 +125,7 @@ class TaxRuleController extends Controller {
         $this->authorizeConfig();
         $request->validate(['file' => ['required', 'file', 'max:1024', 'mimes:csv,txt']]);
 
-        $csv = trim((string) file_get_contents((string) $request->file('file')->getRealPath()));
+        $csv = trim(File::read((string) $request->file('file')->getRealPath()));
         // Toolkit-Parser statt zeilenweisem str_getcsv (B15): hält gequotete
         // Mehrzeilenfelder zusammen; Toleranz-Semantik bleibt unverändert.
         try {

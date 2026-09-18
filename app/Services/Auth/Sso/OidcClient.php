@@ -21,6 +21,7 @@ use Jose\Component\Core\{AlgorithmManager, JWKSet};
 use Jose\Component\Signature\Algorithm\{ES256, PS256, RS256};
 use Jose\Component\Signature\JWSVerifier;
 use Jose\Component\Signature\Serializer\CompactSerializer;
+use Throwable;
 
 /**
  * OIDC-Relying-Party für den SSO-Login (Feature 057, MVP-120). Transport über
@@ -89,16 +90,12 @@ class OidcClient {
         $nonce = Str::random(40);
         $verifier = OAuth2AuthorizationCodeGrant::generatePkceVerifier();
 
-        $url = (string) $discovery['authorization_endpoint'] . '?' . http_build_query([
-            'response_type' => 'code',
-            'client_id' => (string) $connection->client_id,
-            'redirect_uri' => route('sso.oidc.callback'),
-            'scope' => $connection->scopeList(),
-            'state' => $state,
-            'nonce' => $nonce,
-            'code_challenge' => OAuth2AuthorizationCodeGrant::pkceChallenge($verifier),
-            'code_challenge_method' => 'S256',
-        ]);
+        $url = $this->grant($connection, $discovery)->getAuthorizationUrl(
+            $state,
+            array_values(array_filter(explode(' ', $connection->scopeList()))),
+            ['nonce' => $nonce],
+            $verifier,
+        );
 
         return ['url' => $url, 'state' => $state, 'nonce' => $nonce, 'verifier' => $verifier];
     }
@@ -113,28 +110,22 @@ class OidcClient {
     public function exchangeAndVerify(SsoConnection $connection, string $code, string $verifier, string $expectedNonce): array {
         $discovery = $this->discovery($connection);
 
-        $tokenEndpoint = (string) $discovery['token_endpoint'];
-        $client = $this->http->coreClient('sso-oidc', $tokenEndpoint);
+        $grant = $this->grant($connection, $discovery);
         // Einmal-Code: kein Transport-Retry, ein zweiter Versuch träfe beim
         // IdP auf einen bereits verbrauchten Authorization-Code.
-        $client->setMaxRetries(1);
+        $grant->setMaxRetries(1);
 
-        $response = $client->requestResponse('post', $tokenEndpoint, [
-            'form_params' => [
-                'grant_type' => 'authorization_code',
-                'code' => $code,
-                'redirect_uri' => route('sso.oidc.callback'),
-                'client_id' => (string) $connection->client_id,
-                'client_secret' => (string) $connection->client_secret,
-                'code_verifier' => $verifier,
-            ],
-        ]);
-
-        $idToken = $response->successful() ? $response->json('id_token') : null;
-        if (! is_string($idToken) || $idToken === '') {
+        $failure = 'missing_id_token';
+        try {
+            $idToken = $grant->exchangeAuthorizationCode($code, $verifier)->getIdToken();
+        } catch (Throwable $e) {
+            $idToken = null;
+            $failure = class_basename($e);
+        }
+        if ($idToken === null) {
             Log::warning('SSO/OIDC: Token-Endpoint ohne id_token.', [
                 'connection_id' => $connection->id,
-                'status' => $response->status(),
+                'failure' => $failure,
             ]);
 
             throw new SsoLoginException(__('sso.error.token_exchange_failed'));
@@ -144,6 +135,22 @@ class OidcClient {
             'claims' => $this->verifyIdToken($connection, $idToken, $expectedNonce, $discovery),
             'id_token' => $idToken,
         ];
+    }
+
+    /**
+     * Authorization-Code-Grant des api-toolkits gegen die Discovery-Endpunkte.
+     *
+     * @param  array<string, mixed>  $discovery
+     */
+    private function grant(SsoConnection $connection, array $discovery): OAuth2AuthorizationCodeGrant {
+        return $this->http->authorizationCodeGrant(
+            'sso-oidc',
+            (string) $connection->client_id,
+            (string) $connection->client_secret,
+            (string) $discovery['authorization_endpoint'],
+            (string) $discovery['token_endpoint'],
+            route('sso.oidc.callback'),
+        );
     }
 
     /**

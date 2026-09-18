@@ -40,7 +40,7 @@ trait PartyFormFields {
             'address_street' => ['nullable', 'string', 'max:255'],
             'address_zip' => ['nullable', 'string', 'max:32'],
             'address_city' => ['nullable', 'string', 'max:128'],
-            'country' => ['nullable', 'string', 'size:2'],
+            'country' => ['nullable', 'string', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CountryCode::class)],
             'currency' => ['required', \Illuminate\Validation\Rule::enum(\CommonToolkit\Enums\CurrencyCode::class)],
             'timezone' => ['nullable', 'string', 'max:64', 'timezone'],
             'color' => ['nullable', 'string', 'max:16'],
@@ -97,17 +97,14 @@ trait PartyFormFields {
      * @return array<string, mixed>
      */
     protected function partyNormalizedData(): array {
-        // IBAN über den Toolkit-Normalisierer (Vollaudit 2026-07, N40) —
-        // identische Semantik (Whitespace-Strip + Uppercase, leer → null);
-        // BIC bleibt manuell (kein Toolkit-Pendant).
-        $bic = (string) preg_replace('/\s+/', '', (string) $this->input('bank_bic', ''));
-
+        // IBAN/BIC über die Toolkit-Normalisierer (Vollaudit 2026-07, N40) —
+        // Whitespace-Strip + Uppercase, leer → null.
         return [
             'currency' => $this->string('currency')->upper()->value() ?: 'EUR',
             'country' => $this->string('country')->upper()->value() ?: null,
             'contact_persons' => $this->normalizedContactPersons(),
             'bank_iban' => \CommonToolkit\Helper\Data\BankHelper::normalizeIBAN((string) $this->input('bank_iban', '')),
-            'bank_bic' => $bic !== '' ? strtoupper($bic) : null,
+            'bank_bic' => \CommonToolkit\Helper\Data\BankHelper::normalizeBIC((string) $this->input('bank_bic', '')),
         ];
     }
 

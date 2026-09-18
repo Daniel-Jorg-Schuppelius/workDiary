@@ -17,6 +17,7 @@ use App\Models\Metering\{MeterBillingAgreement, MeterBillingRun};
 use App\Services\Finance\BillingModeResolver;
 use App\Services\Invoicing\{InvoiceGenerator, TaxResolver};
 use Carbon\{CarbonImmutable, CarbonInterface};
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Support\Facades\DB;
 
 /**
@@ -287,7 +288,7 @@ class MeterBillingService {
                     ]),
                     'quantity' => '1',
                     'unit' => (string) __('invoicing.unit_flat'),
-                    'unit_price' => number_format($base, 4, '.', ''),
+                    'unit_price' => NumberHelper::toUSFormat($base, 4),
                     'tax_category' => $tax['category'],
                     'position' => $position++,
                 ]);
@@ -303,13 +304,13 @@ class MeterBillingService {
                     'service_date' => $periodEnd->toDateString(),
                     'description' => __('metering.line.usage', [
                         'title' => $agreement->title,
-                        'consumption' => rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat($consumption, 3, withThousandsSeparator: true), '0'), ','),
-                        'free' => rtrim(rtrim(\CommonToolkit\Helper\Data\NumberHelper::toGermanFormat((float) $agreement->free_units, 3, withThousandsSeparator: true), '0'), ','),
+                        'consumption' => NumberHelper::toGermanFormat($consumption, 3, withThousandsSeparator: true, trimTrailingZeros: true),
+                        'free' => NumberHelper::toGermanFormat((float) $agreement->free_units, 3, withThousandsSeparator: true, trimTrailingZeros: true),
                         'unit' => (string) ($agreement->unit ?? ''),
                     ]) . ($estimated ? ' ' . __('metering.line.estimated') : ''),
-                    'quantity' => number_format($billable, 3, '.', ''),
+                    'quantity' => NumberHelper::toUSFormat($billable, 3),
                     'unit' => (string) ($agreement->unit ?? __('metering.unit_default')),
-                    'unit_price' => number_format($billable > 0.0 ? $variable / $billable : 0.0, 4, '.', ''),
+                    'unit_price' => NumberHelper::toUSFormat($billable > 0.0 ? $variable / $billable : 0.0, 4),
                     'tax_category' => $tax['category'],
                     'position' => $position,
                 ]);
@@ -345,7 +346,7 @@ class MeterBillingService {
             'period_end' => $periodEnd->toDateString(),
             'invoice_id' => $invoice?->id,
             'skipped_reason' => $reason,
-            'consumption' => $consumption === null ? null : number_format($consumption, 3, '.', ''),
+            'consumption' => $consumption === null ? null : NumberHelper::toUSFormat($consumption, 3),
         ]);
     }
 }

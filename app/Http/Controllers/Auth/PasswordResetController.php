@@ -15,6 +15,7 @@ use App\Models\User;
 use App\Notifications\PasswordResetLink;
 use App\Services\Auth\UserSessionInvalidator;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\EmailHelper;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\{Carbon, Str};
 use Illuminate\Support\Facades\{DB, Hash};
@@ -41,7 +42,7 @@ class PasswordResetController extends Controller {
 
     public function email(Request $request): RedirectResponse {
         $data = $request->validate(['email' => ['required', 'email', 'max:255']]);
-        $email = mb_strtolower(trim($data['email']));
+        $email = EmailHelper::normalize($data['email']);
 
         $user = User::query()->whereRaw('LOWER(email) = ?', [$email])->whereNull('customer_id')->first();
         if ($user instanceof User && $user->email && ! $this->sentRecently($user->email)) {
@@ -92,7 +93,7 @@ class PasswordResetController extends Controller {
             'email' => ['required', 'email'],
             'password' => ['required', 'confirmed', Password::defaults()],
         ]);
-        $email = mb_strtolower(trim($data['email']));
+        $email = EmailHelper::normalize($data['email']);
 
         $row = DB::table('password_reset_tokens')->whereRaw('LOWER(email) = ?', [$email])->first();
         $valid = $row !== null

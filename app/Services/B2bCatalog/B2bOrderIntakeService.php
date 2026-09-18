@@ -16,7 +16,7 @@ use App\Enums\Diary\Status;
 use App\Models\Article;
 use App\Models\B2b\{B2bCatalogAccess, B2bOrder};
 use App\Models\{Customer, DiaryEntry, Organization, User};
-use CommonToolkit\Helper\Data\CryptoHelper;
+use CommonToolkit\Helper\Data\{CryptoHelper, NumberHelper, VatNumberHelper};
 use ERechnungToolkit\Entities\Order;
 use ERechnungToolkit\Parsers\OpenTransOrderParser;
 use Illuminate\Database\QueryException;
@@ -156,12 +156,11 @@ class B2bOrderIntakeService {
             ->with('customer')
             ->get();
 
-        $normalizeVat = static fn(string $vat): string => strtoupper((string) preg_replace('/\s+/', '', $vat));
         if ($buyerVat !== '') {
-            $wanted = $normalizeVat($buyerVat);
+            $wanted = VatNumberHelper::normalize($buyerVat);
             foreach ($accesses as $access) {
                 $vat = (string) ($access->customer->vat_id ?? '');
-                if ($vat !== '' && $normalizeVat($vat) === $wanted) {
+                if ($vat !== '' && VatNumberHelper::normalize($vat) === $wanted) {
                     return $access;
                 }
             }
@@ -251,7 +250,7 @@ class B2bOrderIntakeService {
     private function entryContent(B2bOrder $order): string {
         $rows = [];
         foreach ($order->lines as $line) {
-            $qty = rtrim(rtrim(number_format((float) ($line['quantity'] ?? 0), 3, ',', ''), '0'), ',');
+            $qty = NumberHelper::toGermanFormat((float) ($line['quantity'] ?? 0), 3, trimTrailingZeros: true);
             $rows[] = sprintf(
                 '%s× %s — %s%s',
                 $qty,

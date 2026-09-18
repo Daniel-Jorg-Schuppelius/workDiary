@@ -14,8 +14,11 @@ namespace App\Services\Invoicing\EInvoice;
 
 use CommonToolkit\Helper\Data\{CryptoHelper, XmlHelper};
 use CommonToolkit\Helper\Data\NumberHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use ERechnungToolkit\Entities\Document as EInvoiceDocument;
 use ERechnungToolkit\Parsers\{ERechnungParser, ZugferdPdfParser};
+use ERechnungToolkit\Validators\{CiiSchemaValidator, UblSchemaValidator};
+use ERRORToolkit\Exceptions\FileSystem\FileNotWrittenException;
 use SimpleXMLElement;
 use Throwable;
 
@@ -60,21 +63,26 @@ class IncomingEInvoiceService {
         if (! $isPdf) {
             return str_contains(substr($contents, 0, 512), '<') ? $contents : null;
         }
-        if ($path === null) {
+        $parser = new ZugferdPdfParser;
+        if (! $parser->isAvailable()) {
             return null;
         }
 
         try {
-            return (new \ERechnungToolkit\Parsers\ZugferdPdfParser)->extractXml($path);
+            // Kanäle ohne Datei (Mail, Peppol, API) liefern nur Bytes — bisher
+            // blieb deren ZUGFeRD-XML deshalb ungeprüft.
+            return $path !== null && File::isFile($path)
+                ? $parser->extractXml($path)
+                : $parser->extractXmlFromString($contents);
         } catch (Throwable) {
             return null;
         }
     }
 
     /**
-     * Eingangs-Validierung (MVP-166): UBL-XSD (nur wenn das Schema das
-     * Wurzelelement kennt — CII wird nur von KoSIT geprüft) + KoSIT
-     * (XSD/EN-16931/CIUS). Verfügbarkeit wird transparent ausgewiesen.
+     * Eingangs-Validierung (MVP-166): XSD der tatsächlichen Syntax (UBL oder
+     * CII, gewählt am Wurzelelement) + KoSIT (XSD/EN-16931/CIUS).
+     * Verfügbarkeit wird transparent ausgewiesen.
      *
      * @return array{schema_checked: bool, schema_errors: array<int, string>, kosit_available: bool, kosit_valid: bool|null, kosit_errors: array<int, string>}
      */
@@ -87,13 +95,22 @@ class IncomingEInvoiceService {
             'kosit_errors' => [],
         ];
 
-        $schema = new \ERechnungToolkit\Validators\UblSchemaValidator;
-        // XXE-gehärteter Root-Sniff für die XSD-Auswahl (null = kein parsebares XML).
+        // XXE-gehärteter Root-Sniff für die XSD-Auswahl. Bisher kannte nur das
+        // UBL-Schema den Eingang — jede ZUGFeRD-/CII-Rechnung blieb ungeprüft.
         $parsed = XmlHelper::safeLoadString($xml);
-        $root = $parsed instanceof SimpleXMLElement ? $parsed->getName() : null;
-        if ($schema->isAvailable() && $root !== null && $schema->supports($root)) {
-            $result['schema_checked'] = true;
-            $result['schema_errors'] = $schema->validate($xml);
+        if ($parsed instanceof SimpleXMLElement) {
+            $root = $parsed->getName();
+            $cii = new CiiSchemaValidator;
+            $ubl = new UblSchemaValidator;
+            $schema = match (true) {
+                $cii->supports($root, dom_import_simplexml($parsed)->namespaceURI) => $cii,
+                $ubl->supports($root) => $ubl,
+                default => null,
+            };
+            if ($schema !== null && $schema->isAvailable()) {
+                $result['schema_checked'] = true;
+                $result['schema_errors'] = $schema->validate($xml);
+            }
         }
 
         $kosit = new \ERechnungToolkit\Validators\KositValidator;
@@ -161,23 +178,13 @@ class IncomingEInvoiceService {
         $driver = app(\App\Services\Whistleblowing\Scanning\ScanDriver::class);
 
         $absolute = $file?->getRealPath() ?: $path;
-        $temporary = null;
-        if ($absolute === null || ! is_file($absolute)) {
-            // Kanäle ohne Datei (Mail, Peppol, API) liefern nur Bytes.
-            $temporary = tempnam(sys_get_temp_dir(), 'einvoice-scan-');
-            if ($temporary === false) {
-                return false;
-            }
-            file_put_contents($temporary, $contents);
-            $absolute = $temporary;
-        }
-
         try {
-            $verdict = $driver->scan($absolute, $mime);
-        } finally {
-            if ($temporary !== null && is_file($temporary)) {
-                @unlink($temporary);
-            }
+            // Kanäle ohne Datei (Mail, Peppol, API) liefern nur Bytes.
+            $verdict = $absolute !== null && File::isFile($absolute)
+                ? $driver->scan($absolute, $mime)
+                : File::withTemp($contents, fn(string $temporary) => $driver->scan($temporary, $mime), 'einvoice-scan-');
+        } catch (FileNotWrittenException) {
+            return false;
         }
 
         return $verdict === \App\Enums\Whistleblowing\AttachmentScanStatus::Rejected;
@@ -383,33 +390,15 @@ class IncomingEInvoiceService {
 
     private function parsePdf(string $contents, ?string $path): ?EInvoiceDocument {
         $parser = new ZugferdPdfParser;
-        if (! $parser->isAvailable()) {
-            return null;
-        }
-
-        // Der PDF-Parser arbeitet dateibasiert; ohne bekannten Pfad kurz puffern.
-        $tempPath = null;
-        if ($path === null || ! is_file($path)) {
-            $tempPath = tempnam(sys_get_temp_dir(), 'einvoice-');
-            if ($tempPath === false) {
-                return null;
-            }
-            file_put_contents($tempPath, $contents);
-            $path = $tempPath;
-        }
-
         try {
-            if (! $parser->isZugferdPdf($path)) {
-                return null;
+            // Mit bekanntem Pfad direkt, sonst puffert das Toolkit die Bytes selbst.
+            if ($path !== null && File::isFile($path)) {
+                return $parser->isAvailable() && $parser->isZugferdPdf($path) ? $parser->parseFile($path) : null;
             }
 
-            return $parser->parseFile($path);
+            return $parser->parseString($contents);
         } catch (Throwable) {
             return null;
-        } finally {
-            if ($tempPath !== null) {
-                @unlink($tempPath);
-            }
         }
     }
 }

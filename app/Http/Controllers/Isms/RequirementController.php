@@ -17,6 +17,7 @@ use App\Models\Isms\{IsmsApplicabilityStatement, IsmsRequirement, IsmsScope};
 use App\Models\User;
 use App\Services\Isms\{NormProfileRegistry, RegisterExportService, RequirementService};
 use App\Services\SqidEncoder;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Http\{RedirectResponse, Request};
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\{Auth, Gate};
@@ -242,7 +243,7 @@ class RequirementController extends Controller {
         $actor = Auth::user();
         $result = $this->service->importOscalCatalog(
             $actor,
-            (string) file_get_contents((string) $request->file('file')->getRealPath()),
+            File::read((string) $request->file('file')->getRealPath()),
             $scope,
         );
 

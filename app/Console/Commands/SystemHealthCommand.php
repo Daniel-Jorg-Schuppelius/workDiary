@@ -23,6 +23,8 @@ use App\Plugins\Support\PluginSettingsResolver;
 use App\Services\Licensing\{LicenseService, LicenseStatus};
 use App\Support\Crypto\EnvelopeCrypto;
 use Carbon\CarbonImmutable;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
@@ -49,7 +51,7 @@ class SystemHealthCommand extends Command {
         $failed = array_values(array_filter($checks, static fn(array $c): bool => ! $c[1]));
 
         if ((bool) $this->option('json')) {
-            $this->line((string) json_encode([
+            $this->line(JsonHelper::encode([
                 'version' => (string) config('app.version', '0.1.0-dev'),
                 'environment' => (string) app()->environment(),
                 'healthy' => $failed === [],
@@ -255,14 +257,12 @@ class SystemHealthCommand extends Command {
 
         try {
             $probe = $path . DIRECTORY_SEPARATOR . '.health-check-' . Str::random(8);
-            if (@file_put_contents($probe, 'ok') === false) {
-                return ['Storage', false, sprintf('%s ist nicht beschreibbar', $path)];
-            }
-            @unlink($probe);
+            File::write($probe, 'ok');
+            File::delete($probe);
 
             return ['Storage', true, sprintf('%s beschreibbar', $path)];
-        } catch (Throwable $e) {
-            return ['Storage', false, Str::limit($e->getMessage(), 120)];
+        } catch (Throwable) {
+            return ['Storage', false, sprintf('%s ist nicht beschreibbar', $path)];
         }
     }
 

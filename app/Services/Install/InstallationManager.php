@@ -11,6 +11,8 @@
 namespace App\Services\Install;
 
 use App\Models\User;
+use CommonToolkit\Helper\Data\JsonHelper;
+use CommonToolkit\Helper\FileSystem\{File, Folder};
 use Illuminate\Support\Facades\Artisan;
 use RuntimeException;
 use Throwable;
@@ -67,21 +69,19 @@ class InstallationManager {
             return (bool) $flag;
         }
 
-        return is_file($this->lockPath);
+        return File::isFile($this->lockPath);
     }
 
     public function markInstalled(): void {
-        $dir = dirname($this->lockPath);
-        if (! is_dir($dir)) {
-            @mkdir($dir, 0775, true);
-        }
-
-        $payload = json_encode([
+        $payload = JsonHelper::encode([
             'installed_at' => now()->toIso8601String(),
             'version' => (string) config('app.version', '1.0.0'),
-        ], JSON_PRETTY_PRINT) ?: '{}';
+        ], JSON_PRETTY_PRINT);
 
-        if (@file_put_contents($this->lockPath, $payload, LOCK_EX) === false) {
+        try {
+            Folder::create(dirname($this->lockPath), 0775, true);
+            File::write($this->lockPath, $payload, lock: true);
+        } catch (Throwable) {
             throw new RuntimeException('Konnte Installations-Marker nicht schreiben: ' . $this->lockPath);
         }
     }
@@ -93,11 +93,13 @@ class InstallationManager {
      * @return bool true, wenn ein Marker entfernt wurde; false, wenn keiner existierte
      */
     public function markUninstalled(): bool {
-        if (! is_file($this->lockPath)) {
+        if (! File::isFile($this->lockPath)) {
             return false;
         }
 
-        if (! @unlink($this->lockPath)) {
+        try {
+            File::delete($this->lockPath);
+        } catch (Throwable) {
             throw new RuntimeException('Konnte Installations-Marker nicht entfernen: ' . $this->lockPath);
         }
 
@@ -163,7 +165,7 @@ class InstallationManager {
         foreach ($this->writablePaths() as $path) {
             $checks[] = [
                 'label' => 'Schreibbar: ' . $this->relative($path),
-                'ok' => is_writable($path),
+                'ok' => Folder::exists($path) ? Folder::isWritable($path) : File::isWritable($path, false),
                 'hint' => 'Schreibrechte für "' . $this->relative($path) . '" setzen.',
             ];
         }

@@ -15,6 +15,7 @@ namespace App\Models\Passenger;
 use App\Enums\Passenger\RideOperationMode;
 use App\Models\Concerns\{Auditable, BelongsToOrganization, HasSqid};
 use CommonToolkit\Enums\CurrencyCode;
+use CommonToolkit\Helper\Data\NumberHelper;
 use Illuminate\Database\Eloquent\{Builder, Model};
 use Illuminate\Database\Eloquent\Factories\{Factory, HasFactory};
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -126,28 +127,17 @@ class PassengerFareTariff extends Model {
      * @return numeric-string
      */
     public function calculate(string $km, int $seconds): string {
-        $price = $this->numeric($this->base_price);
-        $price = bcadd($price, bcmul($this->numeric($this->price_per_km), $this->numeric($km), 6), 6);
-        $price = bcadd($price, bcmul($this->numeric($this->price_per_minute), bcdiv((string) $seconds, '60', 6), 6), 6);
+        $price = NumberHelper::normalizeDecimalString((string) $this->base_price);
+        $price = bcadd($price, bcmul(NumberHelper::normalizeDecimalString((string) $this->price_per_km), NumberHelper::normalizeDecimalString((string) $km), 6), 6);
+        $price = bcadd($price, bcmul(NumberHelper::normalizeDecimalString((string) $this->price_per_minute), bcdiv((string) $seconds, '60', 6), 6), 6);
 
-        $minPrice = $this->min_price !== null ? $this->numeric($this->min_price) : null;
+        $minPrice = $this->min_price !== null ? NumberHelper::normalizeDecimalString((string) $this->min_price) : null;
         if ($minPrice !== null && bccomp($price, $minPrice, 6) < 0) {
             $price = $minPrice;
         }
 
-        return bcadd($price, '0', 2);
-    }
-
-    /**
-     * Dezimal-Casts liefern `string`; bcmath verlangt `numeric-string`.
-     * Nicht-numerische Werte gelten als 0 (defensiv, nie Exception im Preis).
-     *
-     * @return numeric-string
-     */
-    private function numeric(mixed $value): string {
-        $raw = trim((string) $value);
-
-        return is_numeric($raw) ? $raw : '0';
+        // Kaufmännisch runden (HalfUp) — bcadd(…, 2) schnitt die dritte Stelle ab.
+        return NumberHelper::roundPrecise($price, 2);
     }
 
     /**
@@ -158,14 +148,14 @@ class PassengerFareTariff extends Model {
         if ($this->fixed_price_min_percent === null && $this->fixed_price_max_percent === null) {
             return true;
         }
-        $tariffPrice = $this->numeric($tariffPrice);
+        $tariffPrice = NumberHelper::normalizeDecimalString((string) $tariffPrice);
         if (bccomp($tariffPrice, '0', 2) <= 0) {
             return true;
         }
 
-        $ratio = bcmul(bcdiv($this->numeric($fixedPrice), $tariffPrice, 8), '100', 4);
-        $min = $this->fixed_price_min_percent !== null ? $this->numeric($this->fixed_price_min_percent) : null;
-        $max = $this->fixed_price_max_percent !== null ? $this->numeric($this->fixed_price_max_percent) : null;
+        $ratio = bcmul(bcdiv(NumberHelper::normalizeDecimalString((string) $fixedPrice), $tariffPrice, 8), '100', 4);
+        $min = $this->fixed_price_min_percent !== null ? NumberHelper::normalizeDecimalString((string) $this->fixed_price_min_percent) : null;
+        $max = $this->fixed_price_max_percent !== null ? NumberHelper::normalizeDecimalString((string) $this->fixed_price_max_percent) : null;
 
         return ($min === null || bccomp($ratio, $min, 4) >= 0)
             && ($max === null || bccomp($ratio, $max, 4) <= 0);
