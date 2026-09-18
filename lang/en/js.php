@@ -46,6 +46,8 @@ return [
         'col_employee' => 'Employee',
         'col_score' => 'Score',
         'col_reason' => 'Reason',
+        'type_active_yes' => 'yes',
+        'type_active_no' => 'no',
     ],
     'bulk' => [
         'select_one' => 'Please select at least one entry first.',

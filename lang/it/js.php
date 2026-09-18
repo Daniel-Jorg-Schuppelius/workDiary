@@ -41,6 +41,8 @@ return [
         'col_employee' => 'Collaboratore',
         'col_score' => 'Punteggio',
         'col_reason' => 'Motivazione',
+        'type_active_yes' => 'sì',
+        'type_active_no' => 'no',
     ],
     'bulk' => [
         'select_one' => 'Seleziona prima almeno una voce.',

@@ -174,6 +174,8 @@ const fetchResults = async (root, term) => {
         const { ok, data: json } = await getJson(
             `${searchUrl()}?q=${encodeURIComponent(term)}`,
         );
+        // Veraltete Antwort (neuere, gekürzte oder geleerte Eingabe) nicht rendern.
+        if (term !== lastQuery) return;
         if (!ok || !json) {
             setStatus(root, __("Suche fehlgeschlagen."));
             return;
@@ -181,6 +183,7 @@ const fetchResults = async (root, term) => {
         setStatus(root, "");
         renderResults(root, json.groups || [], json.allUrl || null);
     } catch (e) {
+        if (term !== lastQuery) return;
         setStatus(root, __("Suche fehlgeschlagen."));
     }
 };
@@ -190,6 +193,10 @@ const onInput = (root) => {
     if (!input) return;
     const term = (input.value || "").trim();
     lastQuery = term;
+    if (debounceTimer) {
+        clearTimeout(debounceTimer);
+        debounceTimer = null;
+    }
     if (term.length < MIN_LEN) {
         setStatus(root, "");
         renderHint(
@@ -198,7 +205,6 @@ const onInput = (root) => {
         );
         return;
     }
-    if (debounceTimer) clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => {
         if (lastQuery === term) fetchResults(root, term);
     }, DEBOUNCE_MS);
@@ -245,11 +251,14 @@ const openDialog = () => {
     );
     if (input) {
         input.value = "";
-        if (root)
+        lastQuery = "";
+        if (root) {
+            setStatus(root, "");
             renderHint(
                 root,
                 __("Tippe mindestens 2 Zeichen, um Ergebnisse zu sehen."),
             );
+        }
         setTimeout(() => input.focus(), 30);
     }
 };

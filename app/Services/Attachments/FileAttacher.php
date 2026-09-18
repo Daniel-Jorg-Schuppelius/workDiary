@@ -14,6 +14,7 @@ namespace App\Services\Attachments;
 
 use App\Models\Attachment;
 use App\Support\{Filename, Setting};
+use CommonToolkit\Helper\FileSystem\File;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Str;
@@ -109,7 +110,15 @@ final class FileAttacher {
      * @param  array<string, mixed>  $extra
      */
     public function storeContent(Model $parent, string $content, string $originalName, ?string $mime, ?int $userId, array $extra = [], ?string $folder = null): Attachment {
-        $ext = strtolower(pathinfo($originalName, PATHINFO_EXTENSION) ?: 'bin');
+        // Wie store(): Endung aus dem am INHALT erkannten Typ, nie aus dem Namen —
+        // eine Mail-Anlage „rechnung.pdf.php" landete sonst als .php in der Ablage.
+        // Leerer Inhalt ist hier legitim; das Toolkit protokollierte ihn als Fehler.
+        $detected = $content !== '' ? File::mimeTypeFromContent($content) : false;
+        $ext = ($detected !== false ? File::extensionForMimeType($detected) : null) ?? 'bin';
+        if (! in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+            $ext = 'bin';
+        }
+
         $path = ($folder ?? 'attachments') . '/' . now()->format('Y/m') . '/' . Str::uuid()->toString() . '.' . $ext;
         \Illuminate\Support\Facades\Storage::disk('local')->put($path, $content);
 

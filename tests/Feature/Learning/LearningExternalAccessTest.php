@@ -87,6 +87,21 @@ class LearningExternalAccessTest extends TestCase {
         Carbon::setTestNow();
     }
 
+    public function test_bestehende_externe_session_wird_nach_token_ablauf_abgewiesen(): void {
+        [$enrollment] = $this->externalEnrollment();
+        $token = $this->service()->issue($enrollment, null, 1);
+
+        $this->get(route('learning.external.enter', $token))
+            ->assertRedirect(route('learning.external.show'));
+
+        Carbon::setTestNow(Carbon::now()->addDays(2));
+
+        $this->get(route('learning.external.show'))
+            ->assertForbidden();
+
+        Carbon::setTestNow();
+    }
+
     public function test_interne_lernende_bekommen_keinen_einmal_link(): void {
         $courses = app(LearningCourseService::class);
         $course = $courses->createCourse($this->organization, null, ['title' => 'Intern']);
